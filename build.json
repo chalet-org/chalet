@@ -1,0 +1,134 @@
+{
+	"version": "0.0.1",
+	"workspace": "Chalet",
+	"environment": {
+		"language": "C++",
+		"showCommands": false,
+		"path": []
+	},
+	/*"configurations": [
+		{
+			"name": "Release",
+			"optimizations": "3",
+			"linkTimeOptimization": true,
+			"stripSymbols": true
+		},
+		{
+			"name": "Debug",
+			"optimizations": "0",
+			"debugSymbols": true
+		},
+		{
+			"name": "RelWithDebInfo",
+			"optimizations": "2",
+			"debugSymbols": true
+		},
+		{
+			"name": "MinSizeRel",
+			"optimizations": "size",
+			"linkTimeOptimization": true,
+			"stripSymbols": true
+		}
+	],*/
+	/*"configurations": [
+		"Release",
+		"Debug",
+		"RelWithDebInfo",
+		"MinSizeRel"
+	],*/
+	"allProjects": {
+		"cppStandard": "c++17",
+		"dumpAssembly": false,
+		// "maxJobs": 8,
+		"rtti": false,
+		"staticLinking": true,
+		"posixThreads": true,
+		"warnings": "strict",
+		// "compileOptions": [],
+		// "linkerOptions": [],
+		"defines:Debug": [
+			"_DEBUG"
+		],
+		"includeDirs": [
+			"vendor",
+			"src/Libraries/json-schema-validator"
+		],
+		"links": [
+			"stdc++fs"
+		],
+		"macosFrameworkPaths": [
+			"/Library/Frameworks"
+		],
+		"macosFrameworks": [],
+		"runDependencies": []
+	},
+	"projects": [
+		{
+			"name": "chalet",
+			"kind": "consoleApplication",
+			"location": "src",
+			"pch": "src/PCH.hpp",
+			"runProject": true
+			/*"preBuild": {
+				"alwaysRun": true,
+				"script": "env/prebuild.sh"
+			},
+			"postBuild": {
+				"alwaysRun": true,
+				"script": "env/postbuild.sh"
+			}*/
+		},
+		{
+			"name": "tests_chalet",
+			"kind": "consoleApplication",
+			"location": {
+				"include": [
+					"test",
+					"src"
+				],
+				"exclude": "src/Main.cpp"
+			},
+			"pch": "src/PCH.hpp",
+			"runArguments": "-w NoTests -s",
+			"onlyInConfiguration": "Release"
+		}
+	],
+	"bundle": {
+		"appName": "Chalet",
+		"shortDescription": "Chalet Build System",
+		"longDescription": "A Modern C/C++ Build System for GCC/Clang",
+		"path": "build",
+		"configuration": "Release",
+		"projects": [
+			"chalet"
+		],
+		"dependencies": [],
+		"exclude": [
+			"*.psd",
+			"*.rar",
+			"*.7z",
+			"Thumbs.db",
+			".DS_Store"
+		],
+		"macos": {
+			"bundleName": "Chalet",
+			"bundleIdentifier": "com.developer.chalet",
+			"icon": "env/chalet-logo.png",
+			"infoPropertyList": "env/osx/Info.plist.json",
+			"makeDmg": true,
+			"dmgBackground": {
+				"1x": "env/osx/dmg-background.png",
+				"2x": "env/osx/dmg-background@2x.png"
+			},
+			"dylibs": []
+		},
+		"linux": {
+			"icon": "env/chalet-logo.png",
+			"desktopEntry": "env/linux/app.desktop"
+		},
+		"windows": {
+			"icon": "env/windows/app.ico",
+			"manifest": "env/windows/app.manifest"
+		}
+	}
+}

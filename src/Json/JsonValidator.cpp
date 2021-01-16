@@ -1,0 +1,315 @@
+/*
+	Distributed under the OSI-approved BSD 3-Clause License.
+	See accompanying file LICENSE.txt for details.
+*/
+
+#include "Json/JsonValidator.hpp"
+
+#include "Libraries/Format.hpp"
+#include "Libraries/Regex.hpp"
+#include "Terminal/Output.hpp"
+#include "Utility/String.hpp"
+
+namespace chalet
+{
+using Validator = JsonSchema::json_validator;
+
+/*****************************************************************************/
+struct JsonValidator::Impl
+{
+	Validator validator;
+};
+
+/*****************************************************************************/
+struct ErrorHandler : JsonSchema::error_handler
+{
+	explicit ErrorHandler(JsonValidator::ValidationErrors& inErrors, const std::string& inFile) :
+		m_errors(inErrors),
+		m_file(inFile)
+	{}
+
+private:
+	JsonValidator::ValidationErrors& m_errors;
+	const std::string& m_file;
+
+	std::string getValueFromDump(const std::string& inString);
+	std::string getPropertyFromErrorMsg(const std::string& inString);
+	std::string parseRawError(JsonValidationError& outError);
+
+	virtual void error(const nlohmann::json_pointer<nlohmann::json>& pointer, const nlohmann::json& instance, const JsonSchemaError type, std::any data) final;
+};
+
+/*****************************************************************************/
+void ErrorHandler::error(const nlohmann::json_pointer<nlohmann::json>& pointer, const nlohmann::json& instance, const JsonSchemaError type, std::any data)
+{
+	JsonValidationError error;
+
+	// check if we're in an array
+	if (!pointer.empty())
+	{
+		static constexpr auto regex = ctll::fixed_string{ "^([0-9]+)$" };
+		if (auto m = ctre::match<regex>(pointer.back()))
+		{
+			// use the key of the array instead of the index
+			error.key = pointer.parent_pointer().back();
+		}
+		else
+		{
+			error.key = pointer.back();
+		}
+	}
+
+	error.classification = JsonErrorClassification::Fatal;
+	error.typeName = instance.type_name();
+	error.type = type;
+	error.data = std::move(data);
+	error.value = instance.dump();
+
+	error.message = parseRawError(error);
+
+	m_errors.push_back(error);
+}
+
+/*****************************************************************************/
+std::string ErrorHandler::getValueFromDump(const std::string& inString)
+{
+	return inString.substr(1, inString.size() - 2);
+}
+
+/*****************************************************************************/
+std::string ErrorHandler::getPropertyFromErrorMsg(const std::string& inString)
+{
+	std::size_t start = inString.find_first_of('\'') + 1;
+	std::size_t end = inString.find_last_of('\'');
+
+	return inString.substr(start, end - start);
+}
+
+/*****************************************************************************/
+std::string ErrorHandler::parseRawError(JsonValidationError& outError)
+{
+	auto& data = outError.data;
+
+	/*
+		// Leftover from old error handler (wtf was this?)
+
+		if (String::startsWith("Value", outError.messageRaw))
+		{
+			return fmt::format("An invalid value was found in '{}'. {}", outError.key, outError.messageRaw);
+		}
+	*/
+
+	// std::cout << "outError.type: " << static_cast<int>(outError.type) << std::endl;
+
+	switch (outError.type)
+	{
+		case JsonSchemaError::schema_ref_unresolved:
+			return "unresolved or freed schema-reference " + std::any_cast<std::string>(data);
+
+		case JsonSchemaError::no_root_schema_set:
+			return "no root schema has yet been set for validating an instance";
+
+		case JsonSchemaError::logical_not:
+			return "the subschema has succeeded, but it is required to not validate";
+
+		case JsonSchemaError::logical_combination:
+			return fmt::format("An invalid key/value pair was found in '{}'. Review the expected schema.", outError.key);
+
+		case JsonSchemaError::logical_combination_all_of: {
+			const auto msg = std::any_cast<std::pair<JsonSchemaError, std::any>>(data);
+
+			JsonValidationError subError = outError;
+			subError.type = msg.first;
+			subError.data = std::move(msg.second);
+			return "at least one subschema has failed, but all of them are required to validate - " + parseRawError(subError);
+		}
+
+		case JsonSchemaError::logical_combination_any_of:
+			return ""; // not currently handled
+
+		case JsonSchemaError::logical_combination_one_of:
+			return "more than one subschema has succeeded, but exactly one of them is required to validate";
+
+		case JsonSchemaError::type_instance_unexpected_type:
+			return fmt::format("An invalid value was found in '{}'. Found {}", outError.key, outError.typeName);
+
+		case JsonSchemaError::type_instance_not_found_in_required_enum: {
+			// TODO: Logic to try to whitelist keys from throwing errors
+			return fmt::format("An invalid value was found in '{}'. Expected string enum", outError.key);
+		}
+
+		case JsonSchemaError::type_instance_not_const:
+			return "instance not const";
+
+		case JsonSchemaError::string_min_length: {
+			const std::size_t min_length = std::any_cast<std::size_t>(data);
+			return "instance is too short as per minLength:" + std::to_string(min_length);
+		}
+
+		case JsonSchemaError::string_max_length: {
+			const std::size_t max_length = std::any_cast<std::size_t>(data);
+			return "instance is too long as per maxLength:" + std::to_string(max_length);
+		}
+
+		case JsonSchemaError::string_content_checker_not_provided: {
+			auto sub_data = std::any_cast<std::pair<std::string, std::string>>(data);
+			return "a content checker was not provided but a contentEncoding or contentMediaType for this string have been present: '" + sub_data.first + "' '" + sub_data.second + "'";
+		}
+
+		case JsonSchemaError::string_content_checker_failed:
+			return "content-checking failed: " + std::any_cast<std::string>(data);
+
+		case JsonSchemaError::string_expected_found_binary_data:
+			return "expected string, but get binary data";
+
+		case JsonSchemaError::string_regex_pattern_mismatch: {
+			auto pattern = std::any_cast<std::string>(data);
+			std::string value = getValueFromDump(outError.value);
+
+			return fmt::format("An invalid value was found in '{}': '{}'. Expected the pattern '{}'", outError.key, value, pattern);
+		}
+
+		case JsonSchemaError::string_format_checker_not_provided:
+			return "a format checker was not provided but a format keyword for this string is present: " + std::any_cast<std::string>(data);
+
+		case JsonSchemaError::string_format_checker_failed:
+			return "format-checking failed: " + std::any_cast<std::string>(data);
+
+		case JsonSchemaError::numeric_multiple_of: {
+			auto multiple = std::any_cast<Json::number_float_t>(data);
+			return "instance is not a multiple of " + std::to_string(multiple);
+		}
+
+		case JsonSchemaError::numeric_exceeds_maximum: {
+			auto maximum = std::any_cast<Json::number_float_t>(data);
+			return "instance exceeds maximum of " + std::to_string(maximum);
+		}
+
+		case JsonSchemaError::numeric_below_minimum: {
+			auto minimum = std::any_cast<Json::number_float_t>(data);
+			return "instance is below minimum of " + std::to_string(minimum);
+		}
+
+		case JsonSchemaError::null_found_non_null:
+			return "expected to be null";
+
+			// case JsonSchemaError::boolean_false_schema_required_empty_array:
+			// 	return "false-schema required empty array";
+
+		case JsonSchemaError::boolean_invalid_per_false_schema:
+			return "Not allowed.";
+
+		case JsonSchemaError::required_property_not_found: {
+			auto property = std::any_cast<std::string>(data);
+			std::string key = outError.key.empty() ? "root" : outError.key;
+
+			return fmt::format("The property '{}' is required by {} '{}', but was not found.", property, outError.typeName, key);
+		}
+
+		case JsonSchemaError::object_too_many_properties:
+			return "too many properties";
+
+		case JsonSchemaError::object_too_few_properties:
+			return "too few properties";
+
+		case JsonSchemaError::object_required_property_not_found: {
+			auto property = std::any_cast<std::string>(data);
+			std::string key = outError.key.empty() ? "root" : outError.key;
+
+			return fmt::format("The property '{}' is required by {} '{}', but was not found.", property, outError.typeName, key);
+		}
+
+		case JsonSchemaError::object_additional_property_failed: {
+			const auto msg = std::any_cast<std::tuple<JsonSchemaError, std::any, std::string>>(data);
+
+			JsonValidationError subError = outError;
+			subError.type = std::any_cast<JsonSchemaError>(std::get<0>(msg));
+			subError.data = std::move(std::get<1>(msg));
+			const auto& key = std::get<2>(msg);
+
+			return fmt::format("Validation failed on '{}' for additional property '{}': {}", outError.key, key, parseRawError(subError));
+		}
+
+		case JsonSchemaError::array_too_many_items:
+			return "array has too many items";
+
+		case JsonSchemaError::array_too_few_items:
+			return "array has too few items";
+
+		case JsonSchemaError::array_items_must_be_unique:
+			return "items have to be unique for this array";
+
+		case JsonSchemaError::array_does_not_contain_required_element_per_contains:
+			return "array does not contain required element as per 'contains'";
+
+		case JsonSchemaError::none:
+		default:
+			break;
+	}
+
+	Diagnostic::error(fmt::format("{}: Schema failed validation for '{}' (expected {}). See details below.", m_file, outError.key, outError.typeName));
+	Output::msgDisplayBlack(fmt::format("   unhandled error: {}\n", static_cast<std::underlying_type<JsonSchemaError>::type>(outError.type)));
+
+	return "";
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+JsonValidator::JsonValidator(Json&& inSchema, const std::string& inFile) :
+	m_impl(std::make_unique<Impl>()),
+	m_file(inFile)
+{
+	m_impl->validator.set_root_schema(std::move(inSchema));
+}
+
+/*****************************************************************************/
+JsonValidator::~JsonValidator() = default;
+
+/*****************************************************************************/
+bool JsonValidator::validate(const Json& inJsonContent)
+{
+	ErrorHandler errorHandler{ m_errors, m_file };
+	m_impl->validator.validate(inJsonContent, errorHandler);
+
+	return m_errors.size() == 0;
+}
+
+/*****************************************************************************/
+bool JsonValidator::printErrors()
+{
+	if (m_errors.size() == 0)
+		return true;
+
+	Diagnostic::errorHeader(fmt::format("{} Errors", m_file));
+
+	for (auto& error : m_errors)
+	{
+		if (error.message.empty())
+			continue;
+
+		Diagnostic::errorMessage(error.message);
+
+		/*switch (error.type)
+		{
+			case JsonErrorClassification::Fatal:
+				break;
+			case JsonErrorClassification::Warning:
+				// Output::print(Color::yellow, fmt::format("    Attempting to continue build anyway..."));
+				break;
+			default:
+				break;
+		}*/
+	}
+
+	Output::lineBreak();
+
+	return false;
+}
+
+/*****************************************************************************/
+const JsonValidator::ValidationErrors& JsonValidator::errors() const noexcept
+{
+	return m_errors;
+}
+}

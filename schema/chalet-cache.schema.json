@@ -1,0 +1,252 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"tools",
+		"compilers"
+	],
+	"definitions": {
+		"tools-ar": {
+			"type": "string",
+			"description": "The executable path to GNU ar",
+			"default": "/usr/bin/ar"
+		},
+		"tools-brew": {
+			"type": "string",
+			"description": "The executable path to brew (MacOS)",
+			"default": "/usr/local/bin/brew"
+		},
+		"tools-cmake": {
+			"type": "string",
+			"description": "The executable path to CMake",
+			"default": "/usr/local/bin/cmake"
+		},
+		"tools-codesign": {
+			"type": "string",
+			"description": "The executable path to codesign (MacOS",
+			"default": "/usr/bin/codesign"
+		},
+		"tools-git": {
+			"type": "string",
+			"description": "The executable path to git.",
+			"default": "/usr/bin/git"
+		},
+		"tools-hdiutil": {
+			"type": "string",
+			"description": "The executable path to Apple's hdiutil (MacOS)",
+			"default": "/usr/bin/hdiutil"
+		},
+		"tools-install_name_tool": {
+			"type": "string",
+			"description": "The executable path to Apple's install_name_tool (MacOS)",
+			"default": "/usr/bin/install_name_tool"
+		},
+		"tools-ldd": {
+			"type": "string",
+			"description": "The executable path to ldd.",
+			"default": "/usr/bin/ldd"
+		},
+		"tools-macosSdk": {
+			"type": "string",
+			"description": "The path to the current MacOS SDK (MacOS)"
+		},
+		"tools-make": {
+			"type": "string",
+			"description": "The executable path to GNU make utility.",
+			"default": "/usr/bin/make"
+		},
+		"tools-makeicns": {
+			"type": "string",
+			"description": "The executable path to makeicns (MacOS / Homebrew)",
+			"default": "/usr/local/bin/makeicns"
+		},
+		"tools-ninja": {
+			"type": "string",
+			"description": "The path to ninja's executable."
+		},
+		"tools-otool": {
+			"type": "string",
+			"description": "The executable path to Apple's otool (MacOS)",
+			"default": "/usr/bin/otool"
+		},
+		"tools-plutil": {
+			"type": "string",
+			"description": "The executable path to Apple's plutil (MacOS)",
+			"default": "/usr/bin/plutil"
+		},
+		"tools-ranlib": {
+			"type": "string",
+			"description": "The executable path to ranlib.",
+			"default": "/usr/bin/ranlib"
+		},
+		"tools-strip": {
+			"type": "string",
+			"description": "The executable path to strip.",
+			"default": "/usr/bin/strip"
+		},
+		"tools-tiffutil": {
+			"type": "string",
+			"description": "The executable path to tiffutil",
+			"default": "/usr/bin/tiffutil"
+		},
+		"compilers-cpp": {
+			"type": "string",
+			"description": "The executable path to the C++ compiler",
+			"default": "/usr/bin/c++"
+		},
+		"compilers-c": {
+			"type": "string",
+			"description": "The executable path to the C compiler",
+			"default": "/usr/bin/cc"
+		},
+		"compilers-windowsResource": {
+			"type": "string",
+			"description": "The executable path to the resource compiler (Windows)"
+		},
+		"environment-path": {
+			"type": "array",
+			"description": "Any additional paths to include not otherwise in the PATH environment variable.",
+			"uniqueItems": true,
+			"items": {
+				"type": "string"
+			}
+		},
+		"environment-architecture": {
+			"type": "string",
+			"description": "The target platform architecture",
+			"enum": [
+				"auto",
+				"x86",
+				"x64",
+				"ARM",
+				"ARM64"
+			],
+			"default": "auto"
+		},
+		"environment-strategy": {
+			"type": "string",
+			"description": "The build strategy to use.",
+			"enum": [
+				"makefile",
+				"native-experimental",
+				"ninja-experimental"
+			],
+			"default": "makefile"
+		}
+	},
+	"properties": {
+		"tools": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "The list of tools for the platform",
+			"required": [
+				"ar",
+				"brew",
+				"cmake",
+				"codesign",
+				"git",
+				"hdiutil",
+				"install_name_tool",
+				"ldd",
+				"macosSdk",
+				"make",
+				"makeicns",
+				"ninja",
+				"otool",
+				"plutil",
+				"ranlib",
+				"strip",
+				"tiffutil"
+			],
+			"properties": {
+				"ar": {
+					"$ref": "#/definitions/tools-ar"
+				},
+				"brew": {
+					"$ref": "#/definitions/tools-brew"
+				},
+				"cmake": {
+					"$ref": "#/definitions/tools-cmake"
+				},
+				"codesign": {
+					"$ref": "#/definitions/tools-codesign"
+				},
+				"git": {
+					"$ref": "#/definitions/tools-git"
+				},
+				"hdiutil": {
+					"$ref": "#/definitions/tools-hdiutil"
+				},
+				"install_name_tool": {
+					"$ref": "#/definitions/tools-install_name_tool"
+				},
+				"ldd": {
+					"$ref": "#/definitions/tools-ldd"
+				},
+				"macosSdk": {
+					"$ref": "#/definitions/tools-macosSdk"
+				},
+				"make": {
+					"$ref": "#/definitions/tools-make"
+				},
+				"makeicns": {
+					"$ref": "#/definitions/tools-makeicns"
+				},
+				"ninja": {
+					"$ref": "#/definitions/tools-ninja"
+				},
+				"otool": {
+					"$ref": "#/definitions/tools-otool"
+				},
+				"plutil": {
+					"$ref": "#/definitions/tools-plutil"
+				},
+				"ranlib": {
+					"$ref": "#/definitions/tools-ranlib"
+				},
+				"strip": {
+					"$ref": "#/definitions/tools-strip"
+				},
+				"tiffutil": {
+					"$ref": "#/definitions/tools-tiffutil"
+				}
+			}
+		},
+		"compilers": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "The list of compilers for the platform",
+			"required": [
+				"C++",
+				"C",
+				"windowsResource"
+			],
+			"properties": {
+				"C++": {
+					"$ref": "#/definitions/compilers-cpp"
+				},
+				"C": {
+					"$ref": "#/definitions/compilers-c"
+				},
+				"windowsResource": {
+					"$ref": "#/definitions/compilers-windowsResource"
+				}
+			}
+		},
+		"workingDirectory": {
+			"type": "string",
+			"description": "The working directory of the workspace"
+		},
+		"dependencies": {
+			"type": "object",
+			"description": "The dependency cache"
+		},
+		"data": {
+			"type": "object"
+		},
+		"strategy": {
+			"$ref": "#/definitions/environment-strategy"
+		}
+	}
+}

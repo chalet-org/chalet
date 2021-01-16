@@ -1,0 +1,1372 @@
+/*
+	Distributed under the OSI-approved BSD 3-Clause License.
+	See accompanying file LICENSE.txt for details.
+*/
+
+#include "BuildJson/BuildJsonSchema.hpp"
+
+#include "Utility/String.hpp"
+#include "Json/JsonComments.hpp"
+
+namespace chalet
+{
+/*****************************************************************************/
+Json Schema::getBuildJson()
+{
+	// Note: By parsing json from a string instead of _json literal, we can use ordered_json
+
+	// clang-format off
+	std::string schema = R"json({
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"version",
+		"workspace",
+		"environment",
+		"projects"
+	],
+	"definitions": {
+		"bundle-appName": {
+			"type": "string",
+			"description": "The name of the app, if different from the workspace name"
+		},
+		"bundle-configuration": {
+			"type": "string",
+			"description": "The name of the build configuration to use for the distribution."
+		},
+		"bundle-dependencies": {
+			"type": "array",
+			"uniqueItems": true,
+			"items": {
+				"type": "string"
+			}
+		},
+		"bundle-exclude": {
+			"type": "array",
+			"uniqueItems": true,
+			"items": {
+				"type": "string"
+			}
+		},
+		"bundle-linux": {
+			"type": "object",
+			"description": "Variables to describe the linux application.",
+			"additionalProperties": false,
+			"required": [
+				"icon",
+				"desktopEntry"
+			],
+			"properties": {
+				"desktopEntry": {
+					"type": "string",
+					"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated."
+				},
+				"icon": {
+					"type": "string",
+					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
+				}
+			}
+		},
+		"bundle-longDescription": {
+			"type": "string"
+		},
+		"bundle-macos": {
+			"type": "object",
+			"description": "Variables to describe the macos application bundle.",
+			"additionalProperties": false,
+			"required": [
+				"bundleName",
+				"bundleIdentifier",
+				"icon",
+				"infoPropertyList"
+			],
+			"properties": {
+				"bundleIdentifier": {
+					"type": "string"
+				},
+				"bundleName": {
+					"type": "string"
+				},
+				"dmgBackground": {
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"properties": {
+								"1x": {
+									"type": "string"
+								},
+								"2x": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"1x"
+							],
+							"type": "object"
+						}
+					]
+				},
+				"dylibs": {
+					"items": {
+						"type": "string"
+					},
+					"uniqueItems": true,
+					"type": "array"
+				},
+				"icon": {
+					"type": "string"
+				},
+				"infoPropertyList": {
+					"type": "string"
+				},
+				"makeDmg": {
+					"type": "boolean",
+					"description": "If true, a .dmg image will be built",
+					"default": false
+				}
+			}
+		},
+		"bundle-path": {
+			"type": "string",
+			"description": "The output folder to place the final build along with all of its dependencies.",
+			"default": "build"
+		},
+		"bundle-projects": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "An array of projects to include in the bundle",
+			"items": {
+				"type": "string",
+				"description": "The name of the project",
+				"pattern": "${pattern:projectName}"
+			}
+		},
+		"bundle-shortDescription": {
+			"type": "string"
+		},
+		"bundle-windows": {
+			"type": "object",
+			"description": "Variables to describe the windows application.",
+			"additionalProperties": false,
+			"required": [
+				"icon",
+				"manifest"
+			],
+			"properties": {
+				"icon": {
+					"type": "string",
+					"description": "The windows icon to use for the project"
+				},
+				"manifest": {
+					"type": "string"
+				}
+			}
+		},
+		"configurations-debugSymbols": {
+			"type": "boolean",
+			"description": "true to include debug symbols, false otherwise.",
+			"default": false
+		},
+		"configurations-linkTimeOptimization": {
+			"type": "boolean",
+			"description": "true to use link-time optimization, false otherwise.",
+			"default": false
+		},
+		"configurations-name": {
+			"type": "string",
+			"description": "The name of the build configuration."
+		},
+		"configurations-optimizations": {
+			"type": "string",
+			"description": "The optimization level of the build.",
+			"enum": [
+				"0",
+				"1",
+				"2",
+				"3",
+				"debug",
+				"size",
+				"fast"
+			]
+		},
+		"configurations-stripSymbols": {
+			"type": "boolean",
+			"description": "true to strip symbols from the build, false otherwise.",
+			"default": false
+		},
+		"dependency-repository": {
+			"type": "string",
+			"description": "The url of the git repository.",
+			"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
+		},
+		"dependency-branch": {
+			"type": "string",
+			"description": "The branch to checkout. Defaults to 'master'",
+			"default": "master"
+		},
+		"dependency-commit": {
+			"type": "string",
+			"description": "The SHA1 hash of the commit to checkout.",
+			"pattern": "^[0-9a-f]{7,40}$"
+		},
+		"dependency-name": {
+			"type": "string",
+			"description": "The destination directory name for the repository within 'modulePath'. If none is provided, defaults to the repository name",
+			"pattern": "^[\\w\\-\\+\\.]{3,100}$"
+		},
+		"dependency-tag": {
+			"type": "string",
+			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
+		},
+		"dependency-submodules": {
+			"type": "boolean",
+			"description": "Do submodules need to be cloned?",
+			"default": false
+		},
+		"dependency": {
+			"type": "object",
+			"oneOf": [
+				{
+					"additionalProperties": false,
+					"required": [
+						"repository",
+						"tag"
+					],
+					"properties": {
+						"repository": {
+							"$ref": "#/definitions/dependency-repository"
+						},
+						"name": {
+							"$ref": "#/definitions/dependency-name"
+						},
+						"submodules": {
+							"$ref": "#/definitions/dependency-submodules"
+						},
+						"tag": {
+							"$ref": "#/definitions/dependency-tag"
+						}
+					}
+				},
+				{
+					"additionalProperties": false,
+					"required": [
+						"repository"
+					],
+					"properties": {
+						"repository": {
+							"$ref": "#/definitions/dependency-repository"
+						},
+						"name": {
+							"$ref": "#/definitions/dependency-name"
+						},
+						"submodules": {
+							"$ref": "#/definitions/dependency-submodules"
+						},
+						"branch": {
+							"$ref": "#/definitions/dependency-branch"
+						},
+						"commit": {
+							"$ref": "#/definitions/dependency-commit"
+						}
+					}
+				}
+			]
+		},
+		"environment-language": {
+			"type": "string",
+			"description": "The target language (C or C++).",
+			"enum": [
+				"C",
+				"C++"
+			],
+			"default": "C++"
+		},
+		"environment-modulePath": {
+			"type": "string",
+			"description": "The path to install depdendency modules into (see dependencies).",
+			"default": "chalet_modules"
+		},
+		"environment-path": {
+			"type": "array",
+			"description": "Any additional paths to include.",
+			"uniqueItems": true,
+			"items": {
+				"type": "string"
+			}
+		},
+		"environment-showCommands": {
+			"description": "true to show the commands run during the build, false to just show the source file.",
+			"type": "boolean",
+			"default": false
+		},
+		"enum-platform": {
+			"type": "string",
+			"enum": [
+				"windows",
+				"macos",
+				"linux"
+			]
+		},
+		"project": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"cStandard": {
+					"$ref": "#/definitions/project-cStandard"
+				},
+				"cmake": {
+					"$ref": "#/definitions/project-cmake"
+				},
+				"compileOptions": {
+					"$ref": "#/definitions/project-compileOptions"
+				},
+				"cppStandard": {
+					"$ref": "#/definitions/project-cppStandard"
+				},
+				"defines": {
+					"$ref": "#/definitions/project-defines"
+				},
+				"dumpAssembly": {
+					"$ref": "#/definitions/project-dumpAssembly"
+				},
+				"files": {
+					"$ref": "#/definitions/project-files"
+				},
+				"includeDirs": {
+					"$ref": "#/definitions/project-includeDirs"
+				},
+				"kind": {
+					"$ref": "#/definitions/project-kind"
+				},
+				"libDirs": {
+					"$ref": "#/definitions/project-libDirs"
+				},
+				"linkerScript": {
+					"$ref": "#/definitions/project-linkerScript"
+				},
+				"linkerOptions": {
+					"$ref": "#/definitions/project-linkerOptions"
+				},
+				"links": {
+					"$ref": "#/definitions/project-links"
+				},
+				"location": {
+					"$ref": "#/definitions/project-location"
+				},
+				"macosFrameworkPaths": {
+					"$ref": "#/definitions/project-macosFrameworkPaths"
+				},
+				"macosFrameworks": {
+					"$ref": "#/definitions/project-macosFrameworks"
+				},
+				"maxJobs": {
+					"$ref": "#/definitions/project-maxJobs"
+				},
+				"name": {
+					"$ref": "#/definitions/project-name"
+				},
+				"objectiveCxx": {
+					"$ref": "#/definitions/project-objectiveCxx"
+				},
+				"onlyInConfiguration": {
+					"$ref": "#/definitions/project-onlyInConfiguration"
+				},
+				"notInConfiguration": {
+					"$ref": "#/definitions/project-notInConfiguration"
+				},
+				"onlyInPlatform": {
+					"$ref": "#/definitions/project-onlyInPlatform"
+				},
+				"notInPlatform": {
+					"$ref": "#/definitions/project-notInPlatform"
+				},
+				"pch": {
+					"$ref": "#/definitions/project-pch"
+				},
+				"posixThreads": {
+					"$ref": "#/definitions/project-posixThreads"
+				},
+				"rtti": {
+					"$ref": "#/definitions/project-rtti"
+				},
+				"runProject": {
+					"$ref": "#/definitions/project-runProject"
+				},
+				"runArguments": {
+					"$ref": "#/definitions/project-runArguments"
+				},
+				"runDependencies": {
+					"$ref": "#/definitions/project-runDependencies"
+				},
+				"staticLinking": {
+					"$ref": "#/definitions/project-staticLinking"
+				},
+				"staticLinks": {
+					"$ref": "#/definitions/project-staticLinks"
+				},
+				"warnings": {
+					"$ref": "#/definitions/project-warnings"
+				},
+				"windowsPrefixOutputFilename": {
+					"$ref": "#/definitions/project-windowsPrefixOutputFilename"
+				},
+				"windowsOutputDef": {
+					"$ref": "#/definitions/project-windowsOutputDef"
+				},
+				"preBuild": {
+					"$ref": "#/definitions/project-scripts",
+					"description": "Script(s) to run before the target's build"
+				},
+				"postBuild": {
+					"$ref": "#/definitions/project-scripts",
+					"description": "Script(s) to run after the target's build"
+				}
+			},
+			"patternProperties": {
+				"cmake(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cmake"
+				},
+				"cStandard(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cStandard"
+				},
+				"compileOptions(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-compileOptions"
+				},
+				"cppStandard(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cppStandard"
+				},
+				"defines(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-defines"
+				},
+				"includeDirs(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-includeDirs"
+				},
+				"libDirs(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-libDirs"
+				},
+				"linkerScript(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-linkerScript"
+				},
+				"linkerOptions(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-linkerOptions"
+				},
+				"links(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-links"
+				},
+				"maxJobs(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-maxJobs"
+				},
+				"objectiveCxx(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-objectiveCxx"
+				},
+				"runProject(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-runProject"
+				},
+				"runDependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-runDependencies"
+				},
+				"staticLinks(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-staticLinks"
+				}
+			}
+		},
+		"project-windowsPrefixOutputFilename": {
+			"type": "boolean",
+			"description": "Only applies to dynamic library projects (kind=dynamicLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
+			"default": true
+		},
+		"project-cStandard": {
+			"type": "string",
+			"description": "The C standard to use in the compilation",
+			"enum": [
+				"c90",
+				"c89",
+				"iso9899:1990",
+				"iso9899:199409",
+				"c99",
+				"c9x",
+				"iso9899:1999",
+				"iso9899:199x",
+				"c11",
+				"c1x",
+				"iso9899:2011",
+				"c17",
+				"c18",
+				"iso9899:2017",
+				"iso9899:2018",
+				"c2x",
+				"gnu90",
+				"gnu89",
+				"gnu99",
+				"gnu9x",
+				"gnu11",
+				"gnu1x",
+				"gnu17",
+				"gnu18",
+				"gnu2x"
+			],
+			"default": "c11"
+		},
+		"project-cmake": {
+			"description": "Build the location with cmake",
+			"anyOf": [
+				{
+					"type": "boolean"
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": [
+						"enabled"
+					],
+					"properties": {
+						"defines": {
+							"type": "array",
+							"uniqueItems": true,
+							"items": {
+								"type": "string"
+							}
+						},
+						"enabled": {
+							"type": "boolean",
+							"default": true
+						},
+						"recheck": {
+							"type": "boolean",
+							"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
+							"default": false
+						}
+					}
+				}
+			]
+		},
+		"project-compileOptions": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "Options to add during the compilation step.",
+			"items": {
+				"type": "string"
+			}
+		},
+		"project-cppStandard": {
+			"type": "string",
+			"description": "The C++ standard to use in the compilation",
+			"enum": [
+				"c++98",
+				"c++03",
+				"gnu++98",
+				"gnu++03",
+				"c++11",
+				"C++0x",
+				"gnu++11",
+				"gnu++0x",
+				"c++14",
+				"c++1y",
+				"gnu++14",
+				"gnu++1y",
+				"c++17",
+				"c++1z",
+				"gnu++17",
+				"gnu++1z",
+				"c++20",
+				"c++2a",
+				"gnu++20",
+				"gnu++2a"
+			],
+			"default": "c++17"
+		},
+		"project-defines": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "Macro definitions to be used by the preprocessor",
+			"items": {
+				"type": "string"
+			}
+		},
+		"project-dumpAssembly": {
+			"type": "boolean",
+			"description": "true to use include an asm dump of each file in the build, false otherwise.",
+			"default": false
+		},
+		"project-files": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "Explicitly define the source files, relative to the working directory.",
+			"items": {
+				"type": "string"
+			}
+		},
+		"project-includeDirs": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "A list of directories to include with the project.",
+			"items": {
+				"type": "string"
+			}
+		},
+		"project-kind": {
+			"type": "string",
+			"description": "The type of the project's compiled binary.",
+			"enum": [
+				"staticLibrary",
+				"dynamicLibrary",
+				"consoleApplication",
+				"desktopApplication"
+			]
+		},
+		"project-libDirs": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
+			"items": {
+				"type": "string"
+			}
+		},
+		"project-linkerScript": {
+			"type": "string",
+			"description": "An LD linker script path (.ld file) to pass to the linker command"
+		},
+		"project-linkerOptions": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "Options to add during the linking step.",
+			"items": {
+				"type": "string"
+			}
+		},
+		"project-links": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "A list of dynamic links to use with the linker",
+			"items": {
+				"type": "string",
+				"pattern": "${pattern:projectLinks}"
+			}
+		},
+		"project-location": {
+			"description": "The root path of the source files, relative to the working directory.",
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"type": "string"
+					}
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": [
+						"include"
+					],
+					"patternProperties": {
+						"exclude(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"items": {
+										"type": "string"
+									}
+								}
+							]
+						},
+						"include(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"items": {
+										"type": "string"
+									}
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		"project-macosFrameworkPaths": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "A list of paths to search for MacOS Frameworks",
+			"items": {
+				"type": "string"
+			}
+		},
+		"project-macosFrameworks": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "",
+			"items": {
+				"type": "string"
+			}
+		},
+		"project-maxJobs": {
+			"type": "integer",
+			"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
+			"minimum": 1
+		},
+		"project-name": {
+			"type": "string",
+			"description": "The name of the project.",
+			"pattern": "${pattern:projectName}"
+		},
+		"project-objectiveCxx": {
+			"type": "boolean",
+			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
+			"default": false
+		},
+		"project-onlyInConfiguration": {
+			"description": "Only compile this project in specific build configuration(s)",
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"type": "string"
+					}
+				}
+			]
+		},
+		"project-notInConfiguration": {
+			"description": "Don't compile this project in specific build configuration(s)",
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"type": "string"
+					}
+				}
+			]
+
+		},
+		"project-onlyInPlatform": {
+			"description": "Only compile this project on specific platform(s)",
+			"oneOf": [
+				{
+					"$ref": "#/definitions/enum-platform"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"$ref": "#/definitions/enum-platform"
+					}
+				}
+			]
+		},
+		"project-notInPlatform": {
+			"description": "Don't compile this project on specific platform(s)",
+			"oneOf": [
+				{
+					"$ref": "#/definitions/enum-platform"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"$ref": "#/definitions/enum-platform"
+					}
+				}
+			]
+
+		},
+		"project-pch": {
+			"type": "string",
+			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
+		},
+		"project-posixThreads": {
+			"type": "boolean",
+			"description": "TODO: remove?",
+			"default": true
+		},
+		"project-rtti": {
+			"type": "boolean",
+			"description": "true to include run-time type information (default), false to exclude.",
+			"default": true
+		},
+		"project-runProject": {
+			"type": "boolean",
+			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple projects are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
+			"default": false
+		},
+		"project-runArguments": {
+			"type": "string",
+			"description": "If the project is the run target, a string of arguments to pass to the run command."
+		},
+		"project-runDependencies": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
+			"items": {
+				"type": "string"
+			}
+		},
+		"project-scripts": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"type": "string"
+					}
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": [
+						"script"
+					],
+					"properties": {
+						"script": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"items": {
+										"type": "string"
+									},
+									"uniqueItems": true,
+									"type": "array"
+								}
+							]
+						},
+						"alwaysRun": {
+							"type": "boolean",
+							"description": "Always run the script, regardless of whether the target is up to date.",
+							"default": false
+						}
+					}
+				}
+			]
+		},
+		"project-staticLinking": {
+			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
+			"type": "boolean",
+			"default": false
+		},
+		"project-staticLinks": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "A list of static links to use with the linker",
+			"items": {
+				"type": "string",
+				"pattern": "${pattern:projectLinks}"
+			}
+		},
+		"project-warnings": {
+			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
+			"anyOf": [
+				{
+					"type": "string",
+					"enum": [
+						"none",
+						"minimal",
+						"error",
+						"pedantic",
+						"strict",
+						"strictPedantic",
+						"veryStrict"
+					]
+				},
+				{
+					"type": "array",
+					"items": {
+						"type": "string",
+						"uniqueItems": true,
+						"enum": [
+							"abi",
+							"absolute-value",
+							"address",
+							"aggregate-return",
+							"all",
+							"alloc-size-larger-than=CC_ALLOC_SIZE_LARGER_THAN",
+							"alloc-zero",
+							"alloca",
+							"alloca-larger-than=CC_ALLOCA_LARGER_THAN",
+							"arith-conversion",
+							"array-bounds",
+							"array-bounds=1",
+							"array-bounds=2",
+							"array-parameter",
+							"array-parameter=1",
+							"array-parameter=2",
+							"attribute-alias",
+							"attribute-alias=0",
+							"attribute-alias=1",
+							"attribute-alias=2",
+							"bad-function-cast",
+							"bool-compare",
+							"bool-operation",
+							"c90-c99-compat",
+							"c99-c11-compat",
+							"c11-c2x-compat",
+							"c++-compat",
+							"c++11-compat",
+							"c++14-compat",
+							"c++17-compat",
+							"c++20-compat",
+							"cast-align",
+							"cast-align=strict",
+							"cast-function-type",
+							"cast-qual",
+							"catch-value",
+							"char-subscripts",
+							"clobbered",
+							"comment",
+							"comments",
+							"conversion",
+							"dangling-else",
+							"date-time",
+							"declaration-after-statement",
+							"deprecated-copy",
+							"disabled-optimization",
+							"double-promotion",
+							"duplicate-decl-specifier",
+							"duplicated-branches",
+							"duplicated-cond",
+							"empty-body",
+							"enum-compare",
+							"enum-conversion",
+							"effc++",
+							"extra",
+							"error",
+							"expansion-to-defined",
+							"fatal-errors",
+							"float-conversion",
+							"float-equal",
+							"format",
+							"format=0",
+							"format=1",
+							"format=2",
+							"format-nonliteral",
+							"format-overflow",
+							"format-overflow=1",
+							"format-overflow=2",
+							"format-security",
+							"format-signedness",
+							"format-truncation",
+							"format-truncation=1",
+							"format-truncation=2",
+							"format-y2k",
+							"frame-address",
+							"frame-larger-than=CC_FRAME_LARGER_THAN",
+							"ignored-qualifiers",
+							"implicit-fallthrough",
+							"implicit-fallthrough=0",
+							"implicit-fallthrough=1",
+							"implicit-fallthrough=2",
+							"implicit-fallthrough=3",
+							"implicit-fallthrough=4",
+							"implicit-fallthrough=5",
+							"implicit",
+							"implicit-int",
+							"implicit-function-declaration",
+							"init-self",
+							"inline",
+							"int-in-bool-context",
+							"invalid-memory-model",
+							"invalid-pch",
+							"jump-misses-init",
+							"larger-than=CC_LARGER_THAN",
+							"logical-not-parentheses",
+							"logical-op",
+							"long-long",
+							"main",
+							"maybe-uninitialized",
+							"memset-elt-size",
+							"memset-transposed-args",
+							"misleading-indentation",
+							"missing-attributes",
+							"missing-braces",
+							"missing-declarations",
+							"missing-field-initializers",
+							"missing-include-dirs",
+							"missing-parameter-type",
+							"missing-prototypes",
+							"multistatement-macros",
+							"narrowing",
+							"nested-externs",
+							"no-address-of-packed-member",
+							"no-aggressive-loop-optimizations",
+							"no-alloc-size-larger-than",
+							"no-alloca-larger-than",
+							"no-attribute-alias",
+							"no-attribute-warning",
+							"no-attributes",
+							"no-builtin-declaration-mismatch",
+							"no-builtin-macro-redefined",
+							"no-coverate-mismatch",
+							"no-cpp",
+							"no-deprecated",
+							"no-deprecated-declarations",
+							"no-designated-init",
+							"no-discarded-qualifier",
+							"no-discarded-array-qualifiers",
+							"no-div-by-zero",
+							"no-endif-labels",
+							"no-incompatible-pointer-types",
+							"no-int-conversion",
+							"no-format-contains-nul",
+							"no-format-extra-args",
+							"no-format-zero-length",
+							"no-frame-larger-than",
+							"no-free-nonheap-object",
+							"no-if-not-aligned",
+							"no-ignored-attributes",
+							"no-implicit-int",
+							"no-implicit-function-declaration",
+							"no-int-to-pointer-cast",
+							"no-invalid-memory-model",
+							"no-larger-than",
+							"no-long-long",
+							"no-lto-type-mismatch",
+							"no-missing-profile",
+							"no-missing-field-initializers",
+							"no-multichar",
+							"no-odr",
+							"no-overflow",
+							"no-overlength-strings",
+							"no-override-init-side-effects",
+							"no-pedantic-ms-format",
+							"no-pointer-compare",
+							"no-pointer-to-int-cast",
+							"no-pragmas",
+							"no-prio-ctor-dtor",
+							"no-return-local-addr",
+							"no-scalar-storage-order",
+							"no-shadow-ivar",
+							"no-shift-count-negative",
+							"no-shift-count-overflow",
+							"no-shift-overflow",
+							"no-sizeof-array-argument",
+							"no-stack-usage",
+							"no-stringop-overflow",
+							"no-stringop-overread",
+							"no-stringop-truncation",
+							"no-switch-bool",
+							"no-switch-outside-range",
+							"no-switch-unreachable",
+							"no-trigraphs",
+							"no-unused-function",
+							"no-unused-result",
+							"no-unused-variable",
+							"no-varargs",
+							"no-variadic-macros",
+							"no-vla",
+							"no-vla-larger-than",
+							"noexcept",
+							"non-virtual-dtor",
+							"nonnull",
+							"nonnull-compare",
+							"nopacked-bitfield-compat",
+							"normalized=none",
+							"normalized=id",
+							"normalized=nfc",
+							"normalized=nfkc",
+							"null-dereference",
+							"odr",
+							"old-style-cast",
+							"old-style-declaration",
+							"old-style-definition",
+							"openmp-simd",
+							"overlength-strings",
+							"overloaded-virtual",
+							"override-init",
+							"packed",
+							"packed-not-aligned",
+							"padded",
+							"parentheses",
+							"pedantic",
+							"pedantic-errors",
+							"pessimizing-move",
+							"pointer-arith",
+							"pointer-sign",
+							"range-loop-construct",
+							"redundant-decls",
+							"redundant-move",
+							"reorder",
+							"restrict",
+							"return-type",
+							"scrict-null-sentinel",
+							"sequence-point",
+							"shadow",
+							"shadow=global",
+							"shadow=local",
+							"shadow=compatible-local",
+							"shift-negative-value",
+							"shift-overflow=1",
+							"shift-overflow=2",
+							"sign-compare",
+							"sign-conversion",
+							"sign-promo",
+							"sizeof-array-div",
+							"sizeof-pointer-div",
+							"sizeof-pointer-memaccess",
+							"stack-protector",
+							"stack-usage=CC_STACK_USAGE",
+							"strict-aliasing",
+							"strict-aliasing=1",
+							"strict-aliasing=2",
+							"strict-aliasing=3",
+							"strict-overflow",
+							"strict-overflow=1",
+							"strict-overflow=2",
+							"strict-overflow=3",
+							"strict-overflow=4",
+							"strict-overflow=5",
+							"strict-prototypes",
+							"string-compare",
+							"stringop-overflow",
+							"stringop-overflow=1",
+							"stringop-overflow=2",
+							"stringop-overflow=3",
+							"stringop-overflow=4",
+							"suggest-attribute=pure",
+							"suggest-attribute=const",
+							"suggest-attribute=noreturn",
+							"suggest-attribute=format",
+							"suggest-attribute=cold",
+							"suggest-attribute=malloc",
+							"switch",
+							"switch-default",
+							"switch-enum",
+							"switch-unreachable",
+							"sync-nand",
+							"system-headers",
+							"tautological-compare",
+							"traditional",
+							"traditional-conversion",
+							"trampolines",
+							"trigraphs",
+							"type-limits",
+							"undef",
+							"uninitialized",
+							"unknown-pragmas",
+							"unreachable-code",
+							"unsafe-loop-optimizations",
+							"unsuffixed-float-constants",
+							"unused",
+							"unused-but-set-parameter",
+							"unused-but-set-variable",
+							"unused-const-variable",
+							"unused-const-variable=1",
+							"unused-const-variable=2",
+							"unused-function",
+							"unused-label",
+							"unused-local-typedefs",
+							"unused-macros",
+							"unused-parameter",
+							"unused-value",
+							"unused-variable",
+							"variadic-macros",
+							"vector-operation-performance",
+							"vla",
+							"vla-larger-than=CC_VLA_LARGER_THAN",
+							"vla-parameter",
+							"volatile-register-var",
+							"write-strings",
+							"zero-as-null-pointer-constant",
+							"zero-length-bounds"
+						]
+					}
+				}
+			]
+		},
+		"project-windowsOutputDef": {
+			"type": "boolean",
+			"description": "If true for a dynamic library (dll) target on Windows, a .def file will be created",
+			"default": false
+		}
+	},
+	"properties": {
+		"allProjects": {
+			"$ref": "#/definitions/project"
+		},
+		"bundle": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Variables to describe the final output build.",
+			"required": [
+				"path",
+				"configuration",
+				"projects"
+			],
+			"patternProperties": {
+				"dependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/bundle-dependencies"
+				},
+				"exclude(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/bundle-exclude"
+				}
+			},
+			"properties": {
+				"appName": {
+					"$ref": "#/definitions/bundle-appName"
+				},
+				"configuration": {
+					"$ref": "#/definitions/bundle-configuration"
+				},
+				"dependencies": {
+					"$ref": "#/definitions/bundle-dependencies"
+				},
+				"exclude": {
+					"$ref": "#/definitions/bundle-exclude"
+				},
+				"linux": {
+					"$ref": "#/definitions/bundle-linux"
+				},
+				"longDescription": {
+					"$ref": "#/definitions/bundle-longDescription"
+				},
+				"macos": {
+					"$ref": "#/definitions/bundle-macos"
+				},
+				"path": {
+					"$ref": "#/definitions/bundle-path"
+				},
+				"projects": {
+					"$ref": "#/definitions/bundle-projects"
+				},
+				"shortDescription": {
+					"$ref": "#/definitions/bundle-shortDescription"
+				},
+				"windows": {
+					"$ref": "#/definitions/bundle-windows"
+				}
+			}
+		},
+		"configurations": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "An array of build configurations",
+			"items": {
+				"anyOf": [
+					{
+						"type": "string",
+						"description": "A configuration preset",
+						"enum": [
+							"Release",
+							"Debug",
+							"RelWithDebInfo",
+							"MinSizeRel"
+						]
+					},
+					{
+						"type": "object",
+						"additionalProperties": false,
+						"required": [
+							"name"
+						],
+						"properties": {
+							"debugSymbols": {
+								"$ref": "#/definitions/configurations-debugSymbols"
+							},
+							"linkTimeOptimization": {
+								"$ref": "#/definitions/configurations-linkTimeOptimization"
+							},
+							"name": {
+								"$ref": "#/definitions/configurations-name"
+							},
+							"optimizations": {
+								"$ref": "#/definitions/configurations-optimizations"
+							},
+							"stripSymbols": {
+								"$ref": "#/definitions/configurations-stripSymbols"
+							}
+						}
+					}
+				]
+			}
+		},
+		"dependencies": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "A sequential list of dependencies to install prior to building or via the install command",
+			"items": {
+				"$ref": "#/definitions/dependency"
+			}
+		},
+		"environment": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Variables to describe the typical environments built in",
+			"required": [
+				"language"
+			],
+			"patternProperties": {
+				"path(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/environment-path"
+				}
+			},
+			"properties": {
+				"path": {
+					"$ref": "#/definitions/environment-path"
+				},
+				"modulePath": {
+					"$ref": "#/definitions/environment-modulePath"
+				},
+				"language": {
+					"$ref": "#/definitions/environment-language"
+				},
+				"showCommands": {
+					"$ref": "#/definitions/environment-showCommands"
+				}
+			}
+		},
+		"projects": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "A sequential list of projects to build",
+			"items": {
+				"$ref": "#/definitions/project"
+			}
+		},
+		"version": {
+			"type": "string",
+			"description": "Version of the workspace project.",
+			"pattern": "^[\\w\\-\\+\\.]+$"
+		},
+		"workspace": {
+			"type": "string",
+			"description": "The name of the workspace.",
+			"pattern": "^[\\w\\-\\+ ]+$"
+		}
+	}
+}
+)json";
+	// clang-format on
+
+	// This regex is the same for both links & names because a link can be a project name
+	const std::string nameRegex = R"(^[\\w\\-\\+\\.]{3,}$)";
+	const std::string linkRegex = R"(^[\\w\\-\\+\\.]+$)";
+	String::replaceAll(schema, "${pattern:projectName}", nameRegex);
+	String::replaceAll(schema, "${pattern:projectLinks}", linkRegex);
+
+	return JsonComments::parseLiteral(schema);
+}
+}

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Categories=Application;
+Terminal=false
+Exec=${mainProject}
+Path=${path}
+Name=${appName}
+Comment=${shortDescription}
+Icon=${icon}

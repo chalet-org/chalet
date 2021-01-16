@@ -1,0 +1,13 @@
+{
+	"CFBundleName": "${bundleName}",
+	"CFBundleDisplayName": "${appName}",
+	"CFBundleIdentifier": "${bundleIdentifier}",
+	"CFBundleVersion": "${version}",
+	"CFBundleDevelopmentRegion": "en",
+	"CFBundleInfoDictionaryVersion": "6.0",
+	"CFBundlePackageType": "APPL",
+	"CFBundleSignature": "????",
+	"CFBundleExecutable": "${mainProject}",
+	"CFBundleIconFile": "${icon}",
+	"NSHighResolutionCapable": true
+}

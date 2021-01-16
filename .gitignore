@@ -1,0 +1,11 @@
+# General
+Thumbs.db
+.DS_Store
+
+# Chalet
+bin
+build
+chalet_modules/
+
+# VS Code
+.vscode/ipch

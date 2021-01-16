@@ -1,0 +1,186 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"options": {
+		"env": {
+			"CHALET_DEBUG": "bin/Debug/chalet-debug"
+		}
+	},
+	"windows": {
+		"options": {
+			"env": {
+				"Path": "${config:terminal.integrated.env.windows.Path}"
+			}
+		}
+	},
+	"linux": {
+		"options": {
+			"env": {
+				"PATH": "${config:terminal.integrated.env.linux.PATH}"
+			}
+		}
+	},
+	"osx": {
+		"options": {
+			"env": {
+				"PATH": "${config:terminal.integrated.env.osx.PATH}"
+			}
+		}
+	},
+	"presentation": {
+		"echo": false,
+		"reveal": "always",
+		"focus": true,
+		"panel": "shared",
+		"clear": false,
+		"showReuseMessage": true,
+		"revealProblems": "never"
+	},
+	"tasks": [
+		{
+			"label": "Build & Run: Release",
+			"command": "${CHALET_DEBUG} buildrun Release",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+		},
+		{
+			"label": "Build: Release",
+			"command": "${CHALET_DEBUG} build Release",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Run: Release",
+			"command": "${CHALET_DEBUG} run Release",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Rebuild: Release",
+			"command": "${CHALET_DEBUG} rebuild Release",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Clean: Release",
+			"command": "${CHALET_DEBUG} clean Release",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Build & Run: Debug",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} buildrun Release",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Build: Debug",
+			"command": "bash ./build.sh Debug",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Rebuild: Debug",
+			"command": "rm -rf bin/Debug && bash ./build.sh Debug",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Build & Run: Tests",
+			"command": "${CHALET_DEBUG} buildrun Release tests_chalet",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Run: Tests",
+			"command": "${CHALET_DEBUG} run Release tests_chalet",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Bundle",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} bundle",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
+			"label": "Clean",
+			"command": "rm -rf bin build",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		}
+	]
+}
