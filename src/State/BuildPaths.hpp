@@ -6,7 +6,6 @@
 #ifndef CHALET_BUILD_PATHS_HPP
 #define CHALET_BUILD_PATHS_HPP
 
-#include "BuildJson/BuildEnvironment.hpp"
 #include "BuildJson/ProjectConfiguration.hpp"
 #include "State/SourceOutputs.hpp"
 
@@ -35,7 +34,7 @@ struct BuildPaths
 private:
 	friend class BuildState;
 
-	explicit BuildPaths(const BuildEnvironment& inEnvironment);
+	BuildPaths() = default;
 
 	void initialize(const std::string& inBuildConfiguration);
 
@@ -55,10 +54,8 @@ private:
 	StringList getFileList(const ProjectConfiguration& inProject) const;
 	StringList getDirectoryList(const ProjectConfiguration& inProject) const;
 
-	const BuildEnvironment& m_environment;
-
 	std::string m_workingDirectory;
-	mutable std::string m_binDir;
+	mutable std::string m_binDir{ "bin" };
 	std::string m_buildDir;
 	std::string m_objDir;
 	std::string m_depDir;

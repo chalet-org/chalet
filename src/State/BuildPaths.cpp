@@ -17,13 +17,6 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildPaths::BuildPaths(const BuildEnvironment& inEnvironment) :
-	m_environment(inEnvironment)
-{
-	m_binDir = "bin";
-}
-
-/*****************************************************************************/
 void BuildPaths::initialize(const std::string& inBuildConfiguration)
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");

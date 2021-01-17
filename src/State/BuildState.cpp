@@ -15,7 +15,6 @@ namespace chalet
 BuildState::BuildState(const CommandLineInputs& inInputs) :
 	m_platform(inInputs.platform()),
 	environment(m_buildConfiguration),
-	paths(environment),
 	bundle(environment, projects, paths, compilers),
 	cache(info, paths)
 {
