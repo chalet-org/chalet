@@ -10,8 +10,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainLLVM::CompileToolchainLLVM(const BuildState& inState, const ProjectConfiguration& inProject) :
-	CompileToolchainGNU(inState, inProject)
+CompileToolchainLLVM::CompileToolchainLLVM(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig) :
+	CompileToolchainGNU(inState, inProject, inConfig)
 {
 }
 

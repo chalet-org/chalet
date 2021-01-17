@@ -43,7 +43,6 @@ bool shellRemove(const std::string& inPath, const bool inCleanOutput = true);
 std::string which(const std::string_view& inExecutable, const bool inCleanOutput = true);
 
 std::string testCompilerFlags(const std::string& inCompilerExec, const bool inCleanOutput = true);
-std::string testAppleClang(const std::string& inCompilerExec, const bool inCleanOutput = true);
 
 #if defined(CHALET_MACOS)
 const std::string& getXcodePath();

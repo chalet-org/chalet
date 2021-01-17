@@ -202,9 +202,6 @@ bool BuildJsonParser::parseEnvironment(const Json& inJson)
 		return false;
 	}
 
-	if (std::string val; assignStringAndValidate(val, environment, "language"))
-		m_state.environment.setLanguage(val);
-
 	if (std::string val; assignStringAndValidate(val, environment, "modulePath"))
 		m_state.environment.setModulePath(val);
 
@@ -214,7 +211,7 @@ bool BuildJsonParser::parseEnvironment(const Json& inJson)
 	if (bool val = false; JsonNode::assignFromKey(val, environment, "showCommands"))
 		m_state.environment.setShowCommands(val);
 
-	return m_state.environment.configureCompilerPaths();
+	return true;
 }
 
 /*****************************************************************************/
@@ -390,7 +387,6 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 /*****************************************************************************/
 bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAllProjects)
 {
-	auto& environment = m_state.environment;
 	const auto& buildConfiguration = m_state.buildConfiguration();
 	const auto& platform = m_state.platform();
 
@@ -399,6 +395,9 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 	if (std::string val; assignStringAndValidate(val, inNode, "name"))
 		outProject.setName(val);
+
+	if (std::string val; assignStringAndValidate(val, inNode, "language"))
+		outProject.setLanguage(val);
 
 	if (!parseFilesAndLocation(outProject, inNode, inAllProjects))
 		return false;
@@ -523,8 +522,9 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 	if (!inAllProjects)
 	{
-		std::string libDir = environment.compilerPathLib();
-		std::string includeDir = environment.compilerPathInclude();
+		auto& compilerConfig = m_state.compilers.getConfig(outProject.language());
+		std::string libDir = compilerConfig.compilerPathLib();
+		std::string includeDir = compilerConfig.compilerPathInclude();
 		outProject.addLibDir(libDir);
 		outProject.addIncludeDir(includeDir);
 	}

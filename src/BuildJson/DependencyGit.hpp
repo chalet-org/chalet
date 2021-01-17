@@ -6,13 +6,13 @@
 #ifndef CHALET_DEPENDENCY_GIT_HPP
 #define CHALET_DEPENDENCY_GIT_HPP
 
-#include "BuildJson/CompileEnvironment.hpp"
+#include "BuildJson/BuildEnvironment.hpp"
 
 namespace chalet
 {
 struct DependencyGit
 {
-	explicit DependencyGit(const CompileEnvironment& inEnvironment);
+	explicit DependencyGit(const BuildEnvironment& inEnvironment);
 
 	const std::string& repository() const noexcept;
 	void setRepository(const std::string& inValue) noexcept;
@@ -37,7 +37,7 @@ struct DependencyGit
 	bool parseDestination();
 
 private:
-	const CompileEnvironment& m_environment;
+	const BuildEnvironment& m_environment;
 
 	std::string m_repository;
 	std::string m_branch{ "master" };

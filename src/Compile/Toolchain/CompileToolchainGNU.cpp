@@ -14,10 +14,11 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const ProjectConfiguration& inProject) :
+CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig) :
 	m_state(inState),
 	m_project(inProject),
-	m_compilerType(m_state.environment.compilerType())
+	m_config(inConfig),
+	m_compilerType(m_config.compilerType())
 {
 }
 
@@ -43,7 +44,7 @@ const std::string& CompileToolchainGNU::getIncludes()
 		}
 
 #if !defined(CHALET_WIN32)
-		if (!m_state.environment.isMingw())
+		if (!m_config.isMingw())
 		{
 			// must be last
 			std::string localInclude = "/usr/local/include";
@@ -72,7 +73,7 @@ const std::string& CompileToolchainGNU::getLibDirs()
 		libs.push_back(buildDir);
 
 #if !defined(CHALET_WIN32)
-		if (!m_state.environment.isMingw())
+		if (!m_config.isMingw())
 		{
 			// must be last
 			std::string localLib = "/usr/local/lib";
@@ -121,7 +122,7 @@ const std::string& CompileToolchainGNU::getDefines()
 /*****************************************************************************/
 std::string CompileToolchainGNU::getLangStandard(const bool treatAsC)
 {
-	const bool useC = m_state.environment.language() == CodeLanguage::C || treatAsC;
+	const bool useC = m_project.language() == CodeLanguage::C || treatAsC;
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
 	std::string ret = String::toLowerCase(langStandard);
 
@@ -143,7 +144,7 @@ const std::string& CompileToolchainGNU::getLinks()
 	{
 		m_links = String::getPrefixed(m_project.links(), "-l");
 
-		if (m_project.objectiveCxx() && !m_state.environment.isAppleClang())
+		if (m_project.objectiveCxx() && !m_config.isAppleClang())
 		{
 			m_links += " -lobjc";
 		}
@@ -199,7 +200,7 @@ const std::string& CompileToolchainGNU::getCompileOptions()
 {
 	if (m_compileOptions.empty())
 	{
-		if (m_project.objectiveCxx() && !m_state.environment.isAppleClang())
+		if (m_project.objectiveCxx() && !m_config.isAppleClang())
 		{
 
 #if defined(CHALET_MACOS)
@@ -218,7 +219,7 @@ const std::string& CompileToolchainGNU::getCompileOptions()
 			m_compileOptions += " -fno-rtti";
 
 		// #if defined(CHALET_LINUX)
-		if (m_state.environment.isGcc())
+		if (m_config.isGcc())
 		{
 			if (!String::contains("-fPIC", m_compileOptions))
 				m_compileOptions = "-fPIC " + m_compileOptions;
@@ -258,7 +259,7 @@ const std::string& CompileToolchainGNU::getLinkerOptions()
 
 		if (debugSymbols)
 		{
-			if (m_state.environment.isClang())
+			if (m_config.isClang())
 			{
 				// -pg not supported in apple clang
 				// TODO: gcc/clang distinction on mac?
@@ -271,7 +272,7 @@ const std::string& CompileToolchainGNU::getLinkerOptions()
 				// 	ret += " -pg";
 			}
 		}
-		else if (!m_state.environment.isAppleClang())
+		else if (!m_config.isAppleClang())
 		{
 			// No lto on mac & not in debug
 			if (configuration.linkTimeOptimization() && !String::contains("-flto", ret))
@@ -281,7 +282,7 @@ const std::string& CompileToolchainGNU::getLinkerOptions()
 		// #if defined(CHALET_LINUX)
 		if (m_project.posixThreads() && !String::contains("-pthread", ret))
 		{
-			if (m_state.environment.isMingw() && m_project.staticLinking())
+			if (m_config.isMingw() && m_project.staticLinking())
 				ret += " -Wl,-Bstatic -lstdc++ -lpthread";
 			else
 				ret += " -pthread";
@@ -289,7 +290,7 @@ const std::string& CompileToolchainGNU::getLinkerOptions()
 		// #endif
 
 		// TODO: Check if there's a clang/apple clang version of this
-		if (!m_state.environment.isClang())
+		if (!m_config.isClang())
 		{
 			const auto& linkerScript = m_project.linkerScript();
 			if (!linkerScript.empty())
@@ -302,7 +303,7 @@ const std::string& CompileToolchainGNU::getLinkerOptions()
 		{
 			// if (String::contains("-libstdc++", ret))
 			// 	String::replaceAll(ret, "-libstdc++", "");
-			if (m_state.environment.isClang())
+			if (m_config.isClang())
 			{
 				if (!String::contains("-static-libsan", ret))
 					ret += " -static-libsan";
@@ -331,7 +332,7 @@ const std::string& CompileToolchainGNU::getLinkerOptions()
 			}
 		}
 
-		if (m_state.environment.isMingwGcc())
+		if (m_config.isMingwGcc())
 		{
 			const ProjectKind kind = m_project.kind();
 			if (kind == ProjectKind::DesktopApplication && !debugSymbols)
@@ -359,7 +360,7 @@ const std::string& CompileToolchainGNU::getLinkerOptions()
 /*****************************************************************************/
 const std::string& CompileToolchainGNU::getStripSymbols()
 {
-	if (!m_state.environment.isClang())
+	if (!m_config.isClang())
 	{
 		if (m_stripSymbols.empty() && m_state.configuration.stripSymbols())
 		{
@@ -431,7 +432,7 @@ std::string CompileToolchainGNU::getAsmGenerateCommand(const std::string& inputF
 /*****************************************************************************/
 std::string CompileToolchainGNU::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency)
 {
-	const auto& cc = m_state.environment.compilerExecutable();
+	const auto& cc = m_config.compilerExecutable();
 	const auto cFlags = getCompileFlags();
 	const auto& defines = getDefines();
 	const auto& includeDirs = getIncludes();
@@ -469,7 +470,7 @@ std::string CompileToolchainGNU::getRcCompileCommand(const std::string& inputFil
 /*****************************************************************************/
 std::string CompileToolchainGNU::getCppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency)
 {
-	const auto& cc = m_state.environment.compilerExecutable();
+	const auto& cc = m_config.compilerExecutable();
 	const auto cFlags = getCompileFlags();
 	const auto& defines = getDefines();
 	const auto& includeDirs = getIncludes();
@@ -490,7 +491,7 @@ std::string CompileToolchainGNU::getCppCompileCommand(const std::string& inputFi
 /*****************************************************************************/
 std::string CompileToolchainGNU::getObjcppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const bool treatAsC)
 {
-	const auto& cc = m_state.environment.compilerExecutable();
+	const auto& cc = m_config.compilerExecutable();
 	const auto cFlags = getCompileFlags(treatAsC);
 	const auto& defines = getDefines();
 	const auto& includeDirs = getIncludes();
@@ -513,13 +514,13 @@ std::string CompileToolchainGNU::getLinkerTargetCommand(const std::string& outpu
 	const auto& linkerOptions = getLinkerOptions();
 	const auto& links = getLinks();
 
-	const auto& cc = m_state.environment.compilerExecutable();
+	const auto& cc = m_config.compilerExecutable();
 
 	switch (kind)
 	{
 		case ProjectKind::DynamicLibrary: {
 			// TODO: any difference in MinGW Clang vs GCC
-			if (m_state.environment.isMingw())
+			if (m_config.isMingw())
 			{
 				std::string outputDef;
 				if (m_project.windowsOutputDef())
@@ -535,7 +536,7 @@ std::string CompileToolchainGNU::getLinkerTargetCommand(const std::string& outpu
 					FMT_ARG(sourceObjs),
 					FMT_ARG(links));
 			}
-			else if (m_state.environment.isClang())
+			else if (m_config.isClang())
 			{
 				return fmt::format("{cc} -dynamiclib -fPIC -undefined suppress -flat_namespace {linkerOptions} {libDirs} -o {outputFile} {sourceObjs} {links}",
 					FMT_ARG(cc),

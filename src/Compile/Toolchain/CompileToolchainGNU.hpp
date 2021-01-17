@@ -6,6 +6,7 @@
 #ifndef CHALET_COMPILE_TOOLCHAIN_GNU_HPP
 #define CHALET_COMPILE_TOOLCHAIN_GNU_HPP
 
+#include "Compile/CompilerConfig.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
 #include "BuildJson/ProjectConfiguration.hpp"
@@ -15,7 +16,7 @@ namespace chalet
 {
 struct CompileToolchainGNU : ICompileToolchain
 {
-	explicit CompileToolchainGNU(const BuildState& inState, const ProjectConfiguration& inProject);
+	explicit CompileToolchainGNU(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
 
 	virtual ToolchainType type() const override;
 
@@ -44,6 +45,7 @@ protected:
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;
+	const CompilerConfig& m_config;
 
 	const CppCompilerType m_compilerType;
 

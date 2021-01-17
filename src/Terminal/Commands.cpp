@@ -500,26 +500,10 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec, const
 #if defined(CHALET_WIN32)
 	std::string command = fmt::format("{} -x c nul -dM -E", inCompilerExec);
 #else
-	std::string command = fmt::format("{} -x c /dev/null -dM -E | grep -e '__clang__' -e '__GNUC__'", inCompilerExec);
+	std::string command = fmt::format("{} -x c /dev/null -dM -E | grep -e '__clang__' -e '__GNUC__' -e 'Apple LLVM'", inCompilerExec);
 #endif
 	std::string result = Commands::shellWithOutput(command, inCleanOutput);
 	return result;
-}
-
-/*****************************************************************************/
-std::string Commands::testAppleClang(const std::string& inCompilerExec, const bool inCleanOutput)
-{
-#if defined(CHALET_MACOS)
-	if (inCompilerExec.empty())
-		return std::string();
-
-	std::string command = fmt::format("{} -x c /dev/null -dM -E | grep 'Apple LLVM'", inCompilerExec);
-	std::string result = Commands::shellWithOutput(command, inCleanOutput);
-	return result;
-#else
-	UNUSED(inCompilerExec, inCleanOutput);
-	return std::string();
-#endif
 }
 
 #if defined(CHALET_MACOS)

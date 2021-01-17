@@ -17,7 +17,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildPaths::BuildPaths(const CompileEnvironment& inEnvironment) :
+BuildPaths::BuildPaths(const BuildEnvironment& inEnvironment) :
 	m_environment(inEnvironment)
 {
 	m_binDir = "bin";
@@ -216,12 +216,12 @@ std::string BuildPaths::getPrecompiledHeader(const ProjectConfiguration& inProje
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectConfiguration& inProject) const
+std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inIsClang) const
 {
 	std::string ret;
 	if (inProject.usesPch())
 	{
-		auto ext = m_environment.isClang() ? "pch" : "gch";
+		auto ext = inIsClang ? "pch" : "gch";
 
 		const std::string base = getPrecompiledHeaderInclude(inProject);
 		ret = fmt::format("{base}.{ext}",

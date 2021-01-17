@@ -14,7 +14,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProjectConfiguration::ProjectConfiguration(const std::string& inBuildConfig, const CompileEnvironment& inEnvironment) :
+ProjectConfiguration::ProjectConfiguration(const std::string& inBuildConfig, const BuildEnvironment& inEnvironment) :
 	m_buildConfiguration(inBuildConfig),
 	m_environment(inEnvironment),
 	m_cmakeDefines(getDefaultCmakeDefines()),
@@ -189,35 +189,13 @@ void ProjectConfiguration::addRunDependencies(StringList& inList)
 
 void ProjectConfiguration::addRunDependency(std::string& inValue)
 {
-	const auto add = [this](std::string& in) {
-		Path::sanitize(in);
-		List::addIfDoesNotExist(m_runDependencies, std::move(in));
-	};
+	if (inValue.back() != '/')
+		inValue += "/";
 
-	if (Commands::pathExists(inValue))
-	{
-		add(inValue);
-		return;
-	}
+	parseStringVariables(inValue);
+	Path::sanitize(inValue);
 
-	const auto& compilerPathBin = m_environment.compilerPathBin();
-	std::string resolved = fmt::format("{}/{}", compilerPathBin, inValue);
-
-	if (Commands::pathExists(resolved))
-	{
-		add(resolved);
-		return;
-	}
-
-	for (auto& buildDep : m_environment.path())
-	{
-		resolved = fmt::format("{}/{}", buildDep, inValue);
-		if (Commands::pathExists(resolved))
-		{
-			add(resolved);
-			break;
-		}
-	}
+	List::addIfDoesNotExist(m_runDependencies, std::move(inValue));
 }
 
 /*****************************************************************************/
@@ -383,6 +361,29 @@ const std::string& ProjectConfiguration::cppStandard() const noexcept
 void ProjectConfiguration::setCppStandard(const std::string& inValue) noexcept
 {
 	m_cppStandard = inValue;
+}
+
+/*****************************************************************************/
+CodeLanguage ProjectConfiguration::language() const noexcept
+{
+	return m_language;
+}
+
+void ProjectConfiguration::setLanguage(const std::string& inValue) noexcept
+{
+	if (String::equals(inValue, "C++"))
+	{
+		m_language = CodeLanguage::CPlusPlus;
+	}
+	else if (String::equals(inValue, "C"))
+	{
+		m_language = CodeLanguage::C;
+	}
+	else
+	{
+		chalet_assert(false, "Invalid language for ProjectConfiguration::setLanguage");
+		m_language = CodeLanguage::None;
+	}
 }
 
 /*****************************************************************************/

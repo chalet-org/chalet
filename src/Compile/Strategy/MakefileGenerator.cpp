@@ -243,7 +243,8 @@ std::string MakefileGenerator::getMakePchRecipe()
 
 	if (usePch)
 	{
-		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project);
+		const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
+		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
 		const auto colorBlue = getBlueColor();
 
 		ret = fmt::format(R"makefile(
@@ -270,7 +271,8 @@ std::string MakefileGenerator::getPchRecipe()
 		const auto quietFlag = getQuietFlag();
 		const auto& depDir = m_state.paths.depDir();
 		const auto& pch = m_project.pch();
-		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project);
+		const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
+		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
 		const auto colorBlue = getBlueColor();
 		const auto mv = getMoveCommand();
 
@@ -343,7 +345,8 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project);
+	const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
 	const auto colorBlue = getBlueColor();
 	const auto compileEcho = getCompileEchoSources();
 	const auto mv = getMoveCommand();

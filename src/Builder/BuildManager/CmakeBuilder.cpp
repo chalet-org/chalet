@@ -66,11 +66,12 @@ bool CmakeBuilder::run()
 		std::string defines = String::getPrefixed(m_project.cmakeDefines(), "-D");
 
 		const bool ninja = m_state.environment.strategy() == StrategyType::Ninja;
+		const auto& compileConfig = m_state.compilers.getConfig(m_project.language());
 
 		std::string generator;
 		if (ninja)
 			generator = "Ninja";
-		else if (m_state.environment.isMingw())
+		else if (compileConfig.isMingw())
 			generator = "MinGW Makefiles";
 		else
 			generator = "Unix Makefiles";

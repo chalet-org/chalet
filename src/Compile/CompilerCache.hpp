@@ -3,14 +3,17 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CACHE_COMPILERS_HPP
-#define CHALET_CACHE_COMPILERS_HPP
+#ifndef CHALET_COMPILER_CACHE_HPP
+#define CHALET_COMPILER_CACHE_HPP
+
+#include "Compile/CodeLanguage.hpp"
+#include "Compile/CompilerConfig.hpp"
 
 namespace chalet
 {
-struct CacheCompilers
+struct CompilerCache
 {
-	CacheCompilers() = default;
+	CompilerCache() = default;
 
 	const std::string& cpp() const noexcept;
 	void setCpp(const std::string& inValue) noexcept;
@@ -21,11 +24,15 @@ struct CacheCompilers
 	const std::string& rc() const noexcept;
 	void setRc(const std::string& inValue) noexcept;
 
+	CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
+
 private:
+	mutable std::map<CodeLanguage, CompilerConfig> m_configs;
+
 	std::string m_cpp;
 	std::string m_cc;
 	std::string m_rc;
 };
 }
 
-#endif // CHALET_CACHE_COMPILERS_HPP
+#endif // CHALET_COMPILER_CACHE_HPP

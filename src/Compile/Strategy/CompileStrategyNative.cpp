@@ -185,7 +185,8 @@ bool CompileStrategyNative::run()
 /*****************************************************************************/
 void CompileStrategyNative::getCompileCommands(const StringList& inObjects)
 {
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project);
+	const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
 	if (m_project.usesPch())
 	{
 		std::string source = m_project.pch();

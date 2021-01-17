@@ -2,7 +2,6 @@
 	"version": "0.0.1",
 	"workspace": "Chalet",
 	"environment": {
-		"language": "C++23423!!#!23",
 		"showCommands": false,
 		// "platform": "auto",
 		// "strategy": "native-experimental",
@@ -26,6 +25,7 @@
 		"Debug"
 	],*/
 	"allProjects": {
+		"language": "C++23423!!#!23",
 		"cppStandard": "c++17",
 		"dumpAssembly": false,
 		// "maxJobs": 8,

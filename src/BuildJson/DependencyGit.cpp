@@ -12,7 +12,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-DependencyGit::DependencyGit(const CompileEnvironment& inEnvironment) :
+DependencyGit::DependencyGit(const BuildEnvironment& inEnvironment) :
 	m_environment(inEnvironment)
 {
 }

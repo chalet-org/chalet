@@ -78,12 +78,6 @@ bool Router::run()
 		if (!parseBuildJson(file))
 			return false;
 
-		if (!m_buildState->environment.testCompilerMacros())
-		{
-			Diagnostic::error("Unimplemented or unknown compiler toolchain.");
-			return false;
-		}
-
 		m_buildState->initializeBuild(m_inputs);
 	}
 
@@ -251,9 +245,6 @@ bool Router::managePathVariables()
 
 	if (m_buildState != nullptr)
 	{
-		Environment::set("PATH", m_buildState->environment.getPathString());
-		// LOG(Environment::getPath());
-
 #if defined(CHALET_LINUX)
 		// This is needed on linux to look for additional libraries at runtime
 		// TODO: This might actually vary between distros. Figure out if any of this is needed?

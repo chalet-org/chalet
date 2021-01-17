@@ -7,13 +7,13 @@
 #define CHALET_BUILD_STATE_HPP
 
 #include "BuildJson/AppBundle.hpp"
-#include "BuildJson/CompileEnvironment.hpp"
+#include "BuildJson/BuildEnvironment.hpp"
 #include "BuildJson/ConfigurationOptions.hpp"
 #include "BuildJson/DependencyGit.hpp"
 #include "BuildJson/ProjectConfiguration.hpp"
 #include "BuildJson/WorkspaceInfo.hpp"
-#include "CacheJson/CacheCompilers.hpp"
 #include "CacheJson/CacheTools.hpp"
+#include "Compile/CompilerCache.hpp"
 #include "State/BuildCache.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CommandLineInputs.hpp"
@@ -29,9 +29,9 @@ public:
 	explicit BuildState(const CommandLineInputs& inInputs);
 
 	CacheTools tools;
-	CacheCompilers compilers;
+	CompilerCache compilers;
 	WorkspaceInfo info;
-	CompileEnvironment environment;
+	BuildEnvironment environment;
 	BuildPaths paths;
 	ConfigurationOptions configuration;
 	ProjectConfigurationList projects;

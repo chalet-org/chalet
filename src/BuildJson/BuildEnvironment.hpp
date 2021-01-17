@@ -1,0 +1,64 @@
+/*
+	Distributed under the OSI-approved BSD 3-Clause License.
+	See accompanying file LICENSE.txt for details.
+*/
+
+#ifndef CHALET_BUILD_ENVIRONMENT_HPP
+#define CHALET_BUILD_ENVIRONMENT_HPP
+
+#include "BuildJson/WorkspaceInfo.hpp"
+#include "Compile/CodeLanguage.hpp"
+#include "Compile/CompilerConfig.hpp"
+#include "Compile/Strategy/StrategyType.hpp"
+#include "State/CommandLineInputs.hpp"
+
+namespace chalet
+{
+struct BuildEnvironment
+{
+	explicit BuildEnvironment(const std::string& inBuildConfig);
+
+	uint processorCount() const noexcept;
+
+	StrategyType strategy() const noexcept;
+	void setStrategy(const std::string& inValue) noexcept;
+
+	const std::string& platform() const noexcept;
+	void setPlatform(const std::string& inValue) noexcept;
+
+	const std::string& modulePath() const noexcept;
+	void setModulePath(const std::string& inValue) noexcept;
+
+	bool showCommands() const noexcept;
+	void setShowCommands(const bool inValue) noexcept;
+	bool cleanOutput() const noexcept;
+
+	const StringList& path() const noexcept;
+	void addPaths(StringList& inList);
+	void addPath(std::string& inValue);
+	const std::string& originalPath() const noexcept;
+	void setPathVariable(const CompilerConfig& inCompilerConfig);
+
+private:
+	const std::string& getPathString(const CompilerConfig& inCompilerConfig);
+	StringList getDefaultPaths();
+
+	const std::string& m_buildConfiguration;
+
+	std::string m_platform = "auto";
+	std::string m_modulePath{ "chalet_modules" };
+	StringList m_path;
+
+	std::string m_pathString;
+	std::string m_originalPath;
+
+	uint m_processorCount = 0;
+
+	StrategyType m_strategy = StrategyType::Makefile;
+	CodeLanguage m_lastLanguage = CodeLanguage::None;
+
+	bool m_showCommands = false;
+};
+}
+
+#endif // CHALET_BUILD_ENVIRONMENT_HPP

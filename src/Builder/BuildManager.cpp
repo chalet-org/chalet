@@ -67,6 +67,9 @@ bool BuildManager::run(const Route inRoute)
 
 		m_project = project.get();
 
+		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+		m_state.environment.setPathVariable(compilerConfig);
+
 		if (runCommand && !project->runProject())
 			continue;
 
@@ -158,8 +161,9 @@ bool BuildManager::doBuild(const Route inRoute)
 	}
 
 	{
-		auto compilerType = m_state.environment.compilerType();
-		auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, *m_project);
+		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+		auto compilerType = compilerConfig.compilerType();
+		auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, *m_project, compilerConfig);
 
 		auto strategyType = m_state.environment.strategy();
 		auto buildStrategy = CompileFactory::makeStrategy(strategyType, m_state, *m_project, buildToolchain);
@@ -211,7 +215,8 @@ bool BuildManager::copyRunDependencies()
 	{
 		const auto& workingDirectory = m_state.paths.workingDirectory();
 		const auto& buildDir = m_state.paths.buildDir();
-		const auto& runDependencies = m_project->runDependencies();
+		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+		auto runDependencies = getResolvedRunDependenciesList(compilerConfig);
 
 		std::string outputFolder = fmt::format("{workingDirectory}/{buildDir}",
 			FMT_ARG(workingDirectory),
@@ -233,6 +238,43 @@ bool BuildManager::copyRunDependencies()
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+StringList BuildManager::getResolvedRunDependenciesList(const CompilerConfig& inConfig)
+{
+	chalet_assert(m_project != nullptr, "");
+
+	StringList ret;
+	const auto& compilerPathBin = inConfig.compilerPathBin();
+
+	for (auto& dep : m_project->runDependencies())
+	{
+		if (Commands::pathExists(dep))
+		{
+			ret.push_back(dep);
+			continue;
+		}
+
+		std::string resolved = fmt::format("{}/{}", compilerPathBin, dep);
+		if (Commands::pathExists(resolved))
+		{
+			ret.push_back(std::move(resolved));
+			continue;
+		}
+
+		for (auto& buildDep : m_state.environment.path())
+		{
+			resolved = fmt::format("{}/{}", buildDep, dep);
+			if (Commands::pathExists(resolved))
+			{
+				ret.push_back(std::move(resolved));
+				break;
+			}
+		}
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

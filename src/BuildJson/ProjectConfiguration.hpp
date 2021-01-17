@@ -6,15 +6,16 @@
 #ifndef CHALET_PROJECT_CONFIGURATION_HPP
 #define CHALET_PROJECT_CONFIGURATION_HPP
 
-#include "BuildJson/CompileEnvironment.hpp"
+#include "BuildJson/BuildEnvironment.hpp"
 #include "BuildJson/ProjectKind.hpp"
+#include "Compile/CodeLanguage.hpp"
 #include "State/CommandLineInputs.hpp"
 
 namespace chalet
 {
 struct ProjectConfiguration
 {
-	explicit ProjectConfiguration(const std::string& inBuildConfig, const CompileEnvironment& inEnvironment);
+	explicit ProjectConfiguration(const std::string& inBuildConfig, const BuildEnvironment& inEnvironment);
 
 	bool isExecutable() const noexcept;
 
@@ -77,6 +78,9 @@ struct ProjectConfiguration
 	void parseOutputFilename() noexcept;
 
 	const std::string& outputFile() const noexcept;
+
+	CodeLanguage language() const noexcept;
+	void setLanguage(const std::string& inValue) noexcept;
 
 	const std::string& cStandard() const noexcept;
 	void setCStandard(const std::string& inValue) noexcept;
@@ -169,7 +173,7 @@ private:
 	StringList parseWarnings(const std::string& inValue);
 
 	const std::string& m_buildConfiguration;
-	const CompileEnvironment& m_environment;
+	const BuildEnvironment& m_environment;
 
 	StringList m_fileExtensions;
 	StringList m_defines;
@@ -202,6 +206,7 @@ private:
 	std::string m_linkerScript;
 
 	ProjectKind m_kind = ProjectKind::None;
+	CodeLanguage m_language = CodeLanguage::None;
 	uint m_maxJobs = 0;
 
 	bool m_alwaysRunPostBuildScript = false;

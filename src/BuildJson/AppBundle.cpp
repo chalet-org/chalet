@@ -14,10 +14,11 @@
 namespace chalet
 {
 /*****************************************************************************/
-AppBundle::AppBundle(const CompileEnvironment& inEnvironment, const ProjectConfigurationList& inProjectList, const BuildPaths& inPaths) :
+AppBundle::AppBundle(const BuildEnvironment& inEnvironment, const ProjectConfigurationList& inProjectList, const BuildPaths& inPaths, const CompilerCache& inCompilers) :
 	m_environment(inEnvironment),
 	m_projectConfigs(inProjectList),
-	m_paths(inPaths)
+	m_paths(inPaths),
+	m_compilers(inCompilers)
 {
 }
 
@@ -168,15 +169,7 @@ void AppBundle::addDependency(std::string& inValue)
 		return;
 	}
 
-	const auto& compilerPathBin = m_environment.compilerPathBin();
-	std::string resolved = fmt::format("{}/{}", compilerPathBin, inValue);
-	if (Commands::pathExists(resolved))
-	{
-		add(resolved);
-		return;
-	}
-
-	resolved = fmt::format("{}/{}", m_paths.buildDir(), inValue);
+	std::string resolved = fmt::format("{}/{}", m_paths.buildDir(), inValue);
 	if (Commands::pathExists(resolved))
 	{
 		add(resolved);
@@ -185,6 +178,16 @@ void AppBundle::addDependency(std::string& inValue)
 
 	for (auto& project : m_projectConfigs)
 	{
+		const auto& compilerConfig = m_compilers.getConfig(project->language());
+		const auto& compilerPathBin = compilerConfig.compilerPathBin();
+
+		resolved = fmt::format("{}/{}", compilerPathBin, inValue);
+		if (Commands::pathExists(resolved))
+		{
+			add(resolved);
+			return;
+		}
+
 		// LOG(resolved, " ", project->outputFile());
 		if (String::contains(project->outputFile(), resolved))
 		{

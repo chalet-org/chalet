@@ -6,7 +6,7 @@
 #ifndef CHALET_BUILD_JSON_PROPS_HPP
 #define CHALET_BUILD_JSON_PROPS_HPP
 
-#include "BuildJson/CompileEnvironment.hpp"
+#include "Compile/CodeLanguage.hpp"
 
 namespace chalet
 {
@@ -15,7 +15,7 @@ struct BuildJsonProps
 	std::string workspaceName;
 	std::string version;
 	std::string projectName;
-	CodeLanguage language = CodeLanguage::CPlusPlus;
+	CodeLanguage language = CodeLanguage::None;
 };
 }
 

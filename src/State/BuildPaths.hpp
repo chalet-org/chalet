@@ -6,7 +6,7 @@
 #ifndef CHALET_BUILD_PATHS_HPP
 #define CHALET_BUILD_PATHS_HPP
 
-#include "BuildJson/CompileEnvironment.hpp"
+#include "BuildJson/BuildEnvironment.hpp"
 #include "BuildJson/ProjectConfiguration.hpp"
 #include "State/SourceOutputs.hpp"
 
@@ -26,7 +26,7 @@ struct BuildPaths
 	std::string getTargetFilename(const ProjectConfiguration& inProject) const;
 	std::string getTargetBasename(const ProjectConfiguration& inProject) const;
 	std::string getPrecompiledHeader(const ProjectConfiguration& inProject) const;
-	std::string getPrecompiledHeaderTarget(const ProjectConfiguration& inProject) const;
+	std::string getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inIsClang) const;
 	std::string getPrecompiledHeaderInclude(const ProjectConfiguration& inProject) const;
 
 	SourceOutputs getOutputs(const ProjectConfiguration& inProject) const;
@@ -35,7 +35,7 @@ struct BuildPaths
 private:
 	friend class BuildState;
 
-	explicit BuildPaths(const CompileEnvironment& inEnvironment);
+	explicit BuildPaths(const BuildEnvironment& inEnvironment);
 
 	void initialize(const std::string& inBuildConfiguration);
 
@@ -55,7 +55,7 @@ private:
 	StringList getFileList(const ProjectConfiguration& inProject) const;
 	StringList getDirectoryList(const ProjectConfiguration& inProject) const;
 
-	const CompileEnvironment& m_environment;
+	const BuildEnvironment& m_environment;
 
 	std::string m_workingDirectory;
 	mutable std::string m_binDir;

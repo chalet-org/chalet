@@ -7,6 +7,7 @@
 #define CHALET_MAKEFILE_RUNNER_HPP
 
 #include "BuildJson/ProjectConfiguration.hpp"
+#include "Compile/CompilerConfig.hpp"
 #include "Router/Route.hpp"
 #include "State/BuildState.hpp"
 #include "Utility/Timer.hpp"
@@ -26,6 +27,7 @@ public:
 private:
 	bool doBuild(const Route inRoute = Route::Unknown);
 	bool copyRunDependencies();
+	StringList getResolvedRunDependenciesList(const CompilerConfig& inConfig);
 	bool doRun();
 	bool doClean(const StringList& inObjectList, const StringList& inDepList, const bool inFullClean = false);
 	bool doLazyClean();

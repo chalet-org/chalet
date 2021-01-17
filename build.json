@@ -2,7 +2,6 @@
 	"version": "0.0.1",
 	"workspace": "Chalet",
 	"environment": {
-		"language": "C++",
 		"showCommands": false,
 		"path": []
 	},
@@ -37,6 +36,7 @@
 		"MinSizeRel"
 	],*/
 	"allProjects": {
+		"language": "C++",
 		"cppStandard": "c++17",
 		"dumpAssembly": false,
 		// "maxJobs": 8,

@@ -37,14 +37,14 @@ namespace chalet
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileToolchain CompileFactory::makeToolchain(const ToolchainType inType, const BuildState& inState, const ProjectConfiguration& inProject)
+[[nodiscard]] CompileToolchain CompileFactory::makeToolchain(const ToolchainType inType, const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig)
 {
 	switch (inType)
 	{
 		case ToolchainType::GNU:
-			return std::make_unique<CompileToolchainGNU>(inState, inProject);
+			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
 		case ToolchainType::LLVM:
-			return std::make_unique<CompileToolchainLLVM>(inState, inProject);
+			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
 		default:
 			break;
 	}
@@ -54,7 +54,7 @@ namespace chalet
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileToolchain CompileFactory::makeToolchain(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectConfiguration& inProject)
+[[nodiscard]] CompileToolchain CompileFactory::makeToolchain(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig)
 {
 	switch (inCompilerType)
 	{
@@ -62,11 +62,11 @@ namespace chalet
 		case CppCompilerType::Clang:
 		case CppCompilerType::MingwClang:
 		case CppCompilerType::EmScripten:
-			return std::make_unique<CompileToolchainLLVM>(inState, inProject);
+			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
 		case CppCompilerType::Intel:
 		case CppCompilerType::MingwGcc:
 		case CppCompilerType::Gcc:
-			return std::make_unique<CompileToolchainGNU>(inState, inProject);
+			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
 		case CppCompilerType::VisualStudio:
 		case CppCompilerType::Unknown:
 		default:

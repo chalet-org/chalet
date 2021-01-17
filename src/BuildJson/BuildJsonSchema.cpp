@@ -23,7 +23,6 @@ Json Schema::getBuildJson()
 	"required": [
 		"version",
 		"workspace",
-		"environment",
 		"projects"
 	],
 	"definitions": {
@@ -275,15 +274,6 @@ Json Schema::getBuildJson()
 				}
 			]
 		},
-		"environment-language": {
-			"type": "string",
-			"description": "The target language (C or C++).",
-			"enum": [
-				"C",
-				"C++"
-			],
-			"default": "C++"
-		},
 		"environment-modulePath": {
 			"type": "string",
 			"description": "The path to install depdendency modules into (see dependencies).",
@@ -340,6 +330,9 @@ Json Schema::getBuildJson()
 				},
 				"kind": {
 					"$ref": "#/definitions/project-kind"
+				},
+				"language": {
+					"$ref": "#/definitions/project-language"
 				},
 				"libDirs": {
 					"$ref": "#/definitions/project-libDirs"
@@ -616,6 +609,15 @@ Json Schema::getBuildJson()
 				"consoleApplication",
 				"desktopApplication"
 			]
+		},
+		"project-language": {
+			"type": "string",
+			"description": "The target language of the project.",
+			"enum": [
+				"C",
+				"C++"
+			],
+			"default": "C++"
 		},
 		"project-libDirs": {
 			"type": "array",
@@ -1315,9 +1317,7 @@ Json Schema::getBuildJson()
 			"type": "object",
 			"additionalProperties": false,
 			"description": "Variables to describe the typical environments built in",
-			"required": [
-				"language"
-			],
+			"required": [],
 			"patternProperties": {
 				"path(\\.windows|\\.macos|\\.linux)": {
 					"$ref": "#/definitions/environment-path"
@@ -1329,9 +1329,6 @@ Json Schema::getBuildJson()
 				},
 				"modulePath": {
 					"$ref": "#/definitions/environment-modulePath"
-				},
-				"language": {
-					"$ref": "#/definitions/environment-language"
 				},
 				"showCommands": {
 					"$ref": "#/definitions/environment-showCommands"

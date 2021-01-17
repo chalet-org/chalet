@@ -6,6 +6,7 @@
 #ifndef CHALET_COMPILE_FACTORY_HPP
 #define CHALET_COMPILE_FACTORY_HPP
 
+#include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
@@ -23,9 +24,9 @@ namespace CompileFactory
 {
 [[nodiscard]] CompileStrategy makeStrategy(const StrategyType inType, BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain);
 
-[[nodiscard]] CompileToolchain makeToolchain(const ToolchainType inType, const BuildState& inState, const ProjectConfiguration& inProject);
+[[nodiscard]] CompileToolchain makeToolchain(const ToolchainType inType, const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
 
-[[nodiscard]] CompileToolchain makeToolchain(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectConfiguration& inProject);
+[[nodiscard]] CompileToolchain makeToolchain(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
 }
 }
 

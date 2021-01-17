@@ -31,10 +31,8 @@ Json FileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	std::string ret = R"json({
 	"version": "${version}",
 	"workspace": "${workspace}",
-	"environment": {
-		"language": "${language}"
-	},
 	"allProjects": {
+		"language": "${language}",
 		"${langStandardKey}": "${langStandardValue}",
 		"warnings": "pedantic"
 	},

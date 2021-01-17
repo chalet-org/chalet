@@ -9,15 +9,15 @@
 #include "BuildJson/Bundle/BundleLinux.hpp"
 #include "BuildJson/Bundle/BundleMacOS.hpp"
 #include "BuildJson/Bundle/BundleWindows.hpp"
-#include "BuildJson/CompileEnvironment.hpp"
 #include "BuildJson/ProjectConfiguration.hpp"
+#include "Compile/CompilerCache.hpp"
 #include "State/BuildPaths.hpp"
 
 namespace chalet
 {
 struct AppBundle
 {
-	explicit AppBundle(const CompileEnvironment& inEnvironment, const ProjectConfigurationList& inProjectList, const BuildPaths& inPaths);
+	explicit AppBundle(const BuildEnvironment& inEnvironment, const ProjectConfigurationList& inProjectList, const BuildPaths& inPaths, const CompilerCache& inCompilers);
 
 	const BundleLinux& linuxBundle() const noexcept;
 	void setLinuxBundle(const BundleLinux& inValue);
@@ -57,9 +57,10 @@ struct AppBundle
 	void sortDependencies();
 
 private:
-	const CompileEnvironment& m_environment;
+	const BuildEnvironment& m_environment;
 	const ProjectConfigurationList& m_projectConfigs;
 	const BuildPaths& m_paths;
+	const CompilerCache& m_compilers;
 
 	BundleLinux m_linuxBundle;
 	BundleMacOS m_macosBundle;
