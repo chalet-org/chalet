@@ -88,6 +88,6 @@ std::string ConfigurationOptions::parseOptimizations(const std::string& inValue)
 	if (String::equals(inValue, "fast"))
 		return "-Ofast";
 
-	return "";
+	return std::string();
 }
 }

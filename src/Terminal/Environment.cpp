@@ -62,7 +62,7 @@ std::string Environment::getPath()
 	if (path == nullptr)
 	{
 		Diagnostic::errorAbort("Could not retrieve PATH");
-		return "";
+		return std::string();
 	}
 	return std::string(path);
 }
@@ -75,7 +75,7 @@ std::string Environment::getUserDirectory()
 	if (user == nullptr)
 	{
 		Diagnostic::errorAbort("Could not resolve user directory");
-		return "";
+		return std::string();
 	}
 
 	std::string ret{ user };
@@ -88,7 +88,7 @@ std::string Environment::getUserDirectory()
 	if (user == nullptr)
 	{
 		Diagnostic::errorAbort("Could not resolve user directory");
-		return "";
+		return std::string();
 	}
 
 	return std::string(user);

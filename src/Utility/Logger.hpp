@@ -18,7 +18,7 @@
 // 	#define LOG_LEVEL_DETAILED()
 // #endif
 
-#ifdef _DEBUG
+// #ifdef _DEBUG
 
 namespace chalet
 {
@@ -45,8 +45,8 @@ private:
 } // namespace priv
 }
 
-	#include "Utility/Logger.inl"
+#include "Utility/Logger.inl"
 
-#endif
+// #endif
 
 #endif // CHALET_LOGGER_HPP

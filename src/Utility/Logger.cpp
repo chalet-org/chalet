@@ -5,7 +5,7 @@
 
 #include "Utility/Logger.hpp"
 
-#ifdef _DEBUG
+// #ifdef _DEBUG
 namespace
 {
 enum class LoggingLevel
@@ -62,4 +62,4 @@ std::string Logger::classMethod(const std::string& inFile, const std::string& in
 }
 }
 }
-#endif
+// #endif

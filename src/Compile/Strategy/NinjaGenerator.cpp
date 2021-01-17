@@ -77,7 +77,7 @@ std::string NinjaGenerator::getRules(const StringList& inExtensions)
 		if (m_rules.find(ext) == m_rules.end())
 		{
 			Diagnostic::error(fmt::format("Ninja rule not found for file extension: '{}'", ext));
-			return "";
+			return std::string();
 		}
 
 #if !defined(CHALET_WIN32)

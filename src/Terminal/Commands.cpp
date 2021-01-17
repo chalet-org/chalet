@@ -33,7 +33,7 @@ std::string Commands::getWorkingDirectory()
 	catch (const fs::filesystem_error& err)
 	{
 		std::cout << err.what() << std::endl;
-		return "";
+		return std::string();
 	}
 }
 
@@ -480,9 +480,9 @@ std::string Commands::which(const std::string_view& inExecutable, const bool inC
 		String::replaceAll(result, "/usr/bin/", "");
 #elif defined(CHALET_MACOS)
 
-	auto& xcodePath = getXcodePath();
 	if (String::startsWith("/usr/bin/", result))
 	{
+		auto& xcodePath = getXcodePath();
 		std::string withXcodepath = xcodePath + result;
 		if (Commands::pathExists(withXcodepath))
 			result = std::move(withXcodepath);

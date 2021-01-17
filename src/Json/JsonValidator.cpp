@@ -125,7 +125,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		}
 
 		case JsonSchemaError::logical_combination_any_of:
-			return ""; // not currently handled
+			return std::string(); // not currently handled
 
 		case JsonSchemaError::logical_combination_one_of:
 			return "more than one subschema has succeeded, but exactly one of them is required to validate";
@@ -250,7 +250,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 	Diagnostic::error(fmt::format("{}: Schema failed validation for '{}' (expected {}). See details below.", m_file, outError.key, outError.typeName));
 	Output::msgDisplayBlack(fmt::format("   unhandled error: {}\n", static_cast<std::underlying_type<JsonSchemaError>::type>(outError.type)));
 
-	return "";
+	return std::string();
 }
 
 /*****************************************************************************/

@@ -155,7 +155,7 @@ std::string MakefileGenerator::getCompileEchoAsm()
 	if (m_cleanOutput)
 		return "@echo '   $@'";
 
-	return "";
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -164,7 +164,7 @@ std::string MakefileGenerator::getCompileEchoSources()
 	if (m_cleanOutput)
 		return "\n\t@echo '   $<'";
 
-	return "";
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -178,7 +178,7 @@ std::string MakefileGenerator::getCompileEchoLinker()
 			FMT_ARG(unicodeLinking));
 	}
 
-	return "";
+	return std::string();
 }
 
 /*****************************************************************************/
