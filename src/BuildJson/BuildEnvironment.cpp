@@ -131,13 +131,13 @@ const std::string& BuildEnvironment::getPathString(const CompilerConfig& inCompi
 		StringList outList;
 
 		m_originalPath = Environment::getPath();
-		const auto& compilerPathBin = inCompilerConfig.compilerPathBin();
+		std::string compilerPathBin = inCompilerConfig.compilerPathBin();
 
 		//
 		if (!compilerPathBin.empty())
 		{
 #if defined(CHALET_WIN32)
-			Path::sanitize(m_compilerPathBin);
+			Path::sanitize(compilerPathBin);
 #endif
 			if (!String::contains(compilerPathBin, m_originalPath))
 				outList.push_back(compilerPathBin);
