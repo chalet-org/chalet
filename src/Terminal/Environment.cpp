@@ -43,7 +43,7 @@ void Environment::set(const char* inName, const std::string& inValue)
 {
 #ifdef CHALET_WIN32
 	std::string outValue = fmt::format("{}={}", inName, inValue);
-	// std::cout << outValue << std::endl;
+	// LOG(outValue);
 
 	int result = putenv(outValue.c_str());
 #else

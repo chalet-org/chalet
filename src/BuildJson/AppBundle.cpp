@@ -185,7 +185,7 @@ void AppBundle::addDependency(std::string& inValue)
 
 	for (auto& project : m_projectConfigs)
 	{
-		// std::cout << resolved << " " << project->outputFile() << std::endl;
+		// LOG(resolved, " ", project->outputFile());
 		if (String::contains(project->outputFile(), resolved))
 		{
 			add(resolved);

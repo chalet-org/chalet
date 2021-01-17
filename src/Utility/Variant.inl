@@ -34,7 +34,7 @@ Variant::Variant(T&& inValue)
 	}
 	else
 	{
-		std::cout << __PRETTY_FUNCTION__ << std::endl;
+		LOG(__PRETTY_FUNCTION__);
 		m_kind = Kind::Empty;
 	}
 }

@@ -252,7 +252,7 @@ bool Router::managePathVariables()
 	if (m_buildState != nullptr)
 	{
 		Environment::set("PATH", m_buildState->environment.getPathString());
-		// std::cout << Environment::getPath() << std::endl;
+		// LOG(Environment::getPath());
 
 #if defined(CHALET_LINUX)
 		// This is needed on linux to look for additional libraries at runtime
@@ -289,7 +289,7 @@ bool Router::managePathVariables()
 			if (old != nullptr)
 				libraryPath = libraryPath.empty() ? oldLd : fmt::format("{}:{}", libraryPath, old);
 
-			// std::cout << ldLibraryPath << std::endl;
+			// LOG(ldLibraryPath);
 
 			Environment::set(kLdLibraryPath, ldLibraryPath);
 			Environment::set(kLibraryPath, libraryPath);

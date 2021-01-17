@@ -99,7 +99,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		}
 	*/
 
-	// std::cout << "outError.type: " << static_cast<int>(outError.type) << std::endl;
+	// LOG("outError.type: ", static_cast<int>(outError.type));
 
 	switch (outError.type)
 	{

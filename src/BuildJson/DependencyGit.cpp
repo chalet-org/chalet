@@ -94,11 +94,11 @@ void DependencyGit::setSubmodules(const bool inValue) noexcept
 /*****************************************************************************/
 bool DependencyGit::parseDestination()
 {
-	// std::cout << "repository: " << m_repository << "\n";
-	// std::cout << "branch: " << m_branch << "\n";
-	// std::cout << "tag: " << m_tag << "\n";
-	// std::cout << "name: " << m_name << "\n";
-	// std::cout << "destination: " << m_destination << std::endl;
+	// LOG("repository: ", m_repository);
+	// LOG("branch: ", m_branch);
+	// LOG("tag: ", m_tag);
+	// LOG("name: ", m_name);
+	// LOG("destination: ", m_destination);
 
 	if (!m_destination.empty())
 		return false;
@@ -124,7 +124,7 @@ bool DependencyGit::parseDestination()
 
 	m_destination = fmt::format("{}/{}", modulePath, baseName);
 
-	// std::cout << m_destination << std::endl;
+	// LOG(m_destination);
 
 	return true;
 }

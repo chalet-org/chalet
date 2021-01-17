@@ -31,7 +31,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	for (int i = 0; i < argc; ++i)
 	{
 		std::string arg(argv[i] ? argv[i] : "");
-		// std::cout << "\"" << arg << "\"" << std::endl;
+		// LOG("\"", arg, "\"");
 
 		if (String::contains(" ", arg))
 		{
@@ -109,7 +109,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		}
 	}
 
-	// std::cout << CommandLineInputs::file() << " " << inputFile << std::endl;
+	// LOG(CommandLineInputs::file(), " ", inputFile);
 
 	return true;
 }

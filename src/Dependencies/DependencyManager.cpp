@@ -84,7 +84,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		if (update)
 		{
 			const std::string currentBranch = m_state.tools.getCurrentGitRepositoryBranch(destination, m_cleanOutput);
-			// std::cout << "'" << currentBranch << "'  '" << branch << "'" << std::endl;
+			// LOG("'", currentBranch, "'  '", branch, "'");
 
 			// in this case, HEAD means the branch is on a tag or commit
 			if ((currentBranch != "HEAD" || commitValid) && currentBranch != branch)
@@ -97,7 +97,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 			if (update && commitValid)
 			{
 				const std::string currentCommit = m_state.tools.getCurrentGitRepositoryHash(destination, m_cleanOutput);
-				// std::cout << "'" << currentTag << "'  '" << tag << "'" << std::endl;
+				// LOG("'", currentTag, "'  '", tag, "'");
 
 				if (!String::startsWith(commit, currentCommit))
 				{
@@ -110,7 +110,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 			if (update && tagValid)
 			{
 				const std::string currentTag = m_state.tools.getCurrentGitRepositoryTag(destination, m_cleanOutput);
-				// std::cout << "'" << currentTag << "'  '" << tag << "'" << std::endl;
+				// LOG("'", currentTag, "'  '", tag, "'");
 
 				if (currentTag != tag)
 				{
@@ -162,7 +162,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 				FMT_ARG(repository),
 				FMT_ARG(destination));
 
-			// std::cout << cmd << std::endl;
+			// LOG(cmd);
 
 			res &= Commands::shell(cmd, m_cleanOutput);
 

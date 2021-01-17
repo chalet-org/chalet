@@ -6,17 +6,17 @@
 #ifndef CHALET_LOGGER_HPP
 #define CHALET_LOGGER_HPP
 
-#ifdef _DEBUG
-	#define LOG(...) priv::Logger(__FILE__, __FUNCTION__, __VA_ARGS__)
-	#define LOG_CLASS_METHOD() priv::Logger(priv::Logger::classMethod(__FILE__, __FUNCTION__))
-	#define LOG_LEVEL_NORMAL() priv::logNormal()
-	#define LOG_LEVEL_DETAILED() priv::logDetailed()
-#else
-	#define LOG(...)
-	#define LOG_CLASS_METHOD()
-	#define LOG_LEVEL_NORMAL()
-	#define LOG_LEVEL_DETAILED()
-#endif
+// #ifdef _DEBUG
+#define LOG(...) priv::Logger(__FILE__, __FUNCTION__, __VA_ARGS__)
+#define LOG_CLASS_METHOD() priv::Logger(priv::Logger::classMethod(__FILE__, __FUNCTION__))
+#define LOG_LEVEL_NORMAL() priv::logNormal()
+#define LOG_LEVEL_DETAILED() priv::logDetailed()
+// #else
+// 	#define LOG(...)
+// 	#define LOG_CLASS_METHOD()
+// 	#define LOG_LEVEL_NORMAL()
+// 	#define LOG_LEVEL_DETAILED()
+// #endif
 
 #ifdef _DEBUG
 

@@ -102,7 +102,7 @@ std::string BuildCache::getHash(const std::string& inIdentifier, const Type inCa
 
 	std::string ret = fmt::format("{}/{}", cacheRef, hash);
 
-	// std::cout << ret << std::endl;
+	// LOG(ret);
 
 	return ret;
 }
@@ -374,7 +374,7 @@ std::string BuildCache::getBuildHash(std::string appPath)
 	String::replaceAll(md5, "\\", "");
 #endif
 
-	// std::cout << md5 << std::endl;
+	// LOG(md5);
 
 	return Hash::string(md5);
 }

@@ -128,7 +128,7 @@ void Application::testSignalHandling()
 	// int a = 0;
 	// int test2 = 25 / a; // SIGFPE / arithmetic error
 
-	// std::cout << test2 << std::endl;
+	// LOG(test2);
 
 	// ::raise(SIGILL);
 	// ::raise(SIGTERM);

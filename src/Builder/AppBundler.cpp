@@ -57,7 +57,7 @@ bool AppBundler::run()
 	makeBundlePath(bundlePath, executablePath, resourcePath);
 
 	// auto path = Environment::getPath();
-	// std::cout << path << std::endl;
+	// LOG(path);
 
 	bool result = true;
 

@@ -242,7 +242,7 @@ std::string CacheTools::getCurrentGitRepositoryBranch(const std::string& inRepoP
 		fmt::arg("git", m_git),
 		FMT_ARG(inRepoPath));
 
-	// std::cout << cmd << std::endl;
+	// LOG(cmd);
 
 	std::string branch = Commands::shellWithOutput(cmd, inCleanOutput);
 	String::replaceAll(branch, "\n", "");
@@ -263,7 +263,7 @@ std::string CacheTools::getCurrentGitRepositoryTag(const std::string& inRepoPath
 		FMT_ARG(inRepoPath),
 		FMT_ARG(null));
 
-	// std::cout << cmd << std::endl;
+	// LOG(cmd);
 
 	std::string tag = Commands::shellWithOutput(cmd, inCleanOutput);
 	String::replaceAll(tag, "\n", "");
@@ -278,7 +278,7 @@ std::string CacheTools::getCurrentGitRepositoryHash(const std::string& inRepoPat
 		fmt::arg("git", m_git),
 		FMT_ARG(inRepoPath));
 
-	// std::cout << cmd << std::endl;
+	// LOG(cmd);
 
 	std::string hash = Commands::shellWithOutput(cmd, inCleanOutput);
 	String::replaceAll(hash, "\n", "");
@@ -294,7 +294,7 @@ std::string CacheTools::getCurrentGitRepositoryHashFromRemote(const std::string&
 		FMT_ARG(inRepoPath),
 		FMT_ARG(inBranch));
 
-	// std::cout << cmd << std::endl;
+	// LOG(cmd);
 
 	std::string originHash = Commands::shellWithOutput(cmd, inCleanOutput);
 	String::replaceAll(originHash, "\n", "");
@@ -309,7 +309,7 @@ bool CacheTools::updateGitRepositoryShallow(const std::string& inRepoPath, const
 		fmt::arg("git", m_git),
 		FMT_ARG(inRepoPath));
 
-	// std::cout << cmd << std::endl;
+	// LOG(cmd);
 
 	return Commands::shell(cmd, inCleanOutput);
 }
@@ -322,7 +322,7 @@ bool CacheTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const
 		FMT_ARG(inRepoPath),
 		FMT_ARG(inCommit));
 
-	// std::cout << cmd << std::endl;
+	// LOG(cmd);
 
 	return Commands::shell(cmd, inCleanOutput);
 }

@@ -248,7 +248,7 @@ bool BuildManager::doRun()
 
 	const auto& runArguments = m_project->runArguments();
 
-	// std::cout << workingDirectory << std::endl;
+	// LOG(workingDirectory);
 
 	std::string outputFolder = fmt::format("{workingDirectory}/{buildDir}",
 		FMT_ARG(workingDirectory),
@@ -257,14 +257,14 @@ bool BuildManager::doRun()
 	Output::msgLaunch(buildDir, outputFile);
 	Output::lineBreak();
 
-	// std::cout << runOptions << std::endl;
-	// std::cout << runArguments << std::endl;
+	// LOG(runOptions);
+	// LOG(runArguments);
 
 	std::string file = fmt::format("{outputFolder}/{outputFile}",
 		FMT_ARG(outputFolder),
 		FMT_ARG(outputFile));
 
-	// std::cout << file << std::endl;
+	// LOG(file);
 
 	if (!Commands::pathExists(file))
 		return false;
@@ -272,7 +272,7 @@ bool BuildManager::doRun()
 	std::string args = !runOptions.empty() ? runOptions : runArguments;
 	std::string cmd = fmt::format("{} {}", file, args);
 
-	// std::cout << cmd << std::endl;
+	// LOG(cmd);
 
 	return Commands::shell(cmd);
 }
@@ -490,7 +490,7 @@ std::string BuildManager::getRunOutputFile()
 			outputFile = project->outputFile();
 			m_project = project.get();
 
-			// std::cout << proj->runArguments() << std::endl;
+			// LOG(proj->runArguments());
 
 			break;
 		}

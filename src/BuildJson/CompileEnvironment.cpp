@@ -24,7 +24,7 @@ CompileEnvironment::CompileEnvironment(const CacheCompilers& inCompilers, const 
 	m_buildConfiguration(inBuildConfig),
 	m_processorCount(std::thread::hardware_concurrency())
 {
-	// std::cout << "Processor count: " << m_processorCount << std::endl;
+	// LOG("Processor count: ", m_processorCount);
 }
 
 /*****************************************************************************/
@@ -211,8 +211,8 @@ bool CompileEnvironment::testCompilerMacros()
 		return false;
 	}
 
-	// std::cout << fmt::format("gcc: {}, clang: {}, appleClang: {}, mingw32: {}, mingw64: {}, emscripten: {}, intel: {},", gcc, clang, appleClang, mingw32, mingw64, emscripten, intel) << std::endl;
-	// std::cout << "m_compilerType: " << static_cast<int>(m_compilerType) << std::endl;
+	// LOG(fmt::format("gcc: {}, clang: {}, appleClang: {}, mingw32: {}, mingw64: {}, emscripten: {}, intel: {},", gcc, clang, appleClang, mingw32, mingw64, emscripten, intel));
+	// LOG("m_compilerType: ", static_cast<int>(m_compilerType));
 
 	return true;
 }
