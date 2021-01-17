@@ -33,6 +33,8 @@ public:
 	static const std::string kArgInitPath;
 
 private:
+	std::string getHelpCommand();
+
 	Route getRouteFromString(const std::string& inRouteString);
 
 	void makeParser();
@@ -64,7 +66,16 @@ private:
 	ArgumentMap m_argumentMap;
 
 	Route m_route;
+
 	std::string m_routeString;
+
+	const std::string kCommand = "<command>";
+
+	const std::string kHelpBuildConfiguration = "The build configuration";
+	const std::string kHelpRunProject = "A project to run";
+	const std::string kHelpRunArguments = "The arguments to pass to the run project";
+	const std::string kHelpInitName = "The name of the project to initialize";
+	const std::string kHelpInitPath = "The path of the project to initialize";
 };
 }
 

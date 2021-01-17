@@ -28,6 +28,36 @@ private:
 
 	BuildState& m_state;
 	const std::string& m_filename;
+
+	const std::string kKeyTools = "tools";
+	const std::string kKeyCompilers = "compilers";
+	const std::string kKeyStrategy = "strategy";
+	const std::string kKeyWorkingDirectory = "workingDirectory";
+	const std::string kKeyDependencies = "dependencies";
+	const std::string kKeyData = "data";
+
+	const std::string kKeyCpp = "C++";
+	const std::string kKeyCc = "C";
+	const std::string kKeyWindowsResource = "windowsResource";
+
+	// should match executables
+	const std::string kKeyAr = "ar";
+	const std::string kKeyBrew = "brew";
+	const std::string kKeyCmake = "cmake";
+	const std::string kKeyCodeSign = "codesign";
+	const std::string kKeyGit = "git";
+	const std::string kKeyHdiUtil = "hdiutil";
+	const std::string kKeyInstallNameTool = "install_name_tool";
+	const std::string kKeyLdd = "ldd";
+	const std::string kKeyMacosSdk = "macosSdk";
+	const std::string kKeyMake = "make";
+	const std::string kKeyMakeIcns = "makeicns";
+	const std::string kKeyNinja = "ninja";
+	const std::string kKeyOtool = "otool";
+	const std::string kKeyPlUtil = "plutil";
+	const std::string kKeyRanLib = "ranlib";
+	const std::string kKeyStrip = "strip";
+	const std::string kKeyTiffUtil = "tiffutil";
 };
 }
 

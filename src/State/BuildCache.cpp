@@ -16,18 +16,6 @@
 
 namespace chalet
 {
-namespace
-{
-const std::string kKeyStrategy = "strategy";
-const std::string kKeyWorkingDirectory = "workingDirectory";
-const std::string kKeyData = "data";
-
-const std::string kKeyDataVersion = "01";
-const std::string kKeyDataVersionDebug = "f1";
-const std::string kKeyDataStrategy = "02";
-const std::string kKeyDataWorkingDirectory = "03";
-}
-
 /*****************************************************************************/
 BuildCache::BuildCache(const WorkspaceInfo& inInfo, const BuildPaths& inPaths) :
 	m_info(inInfo),

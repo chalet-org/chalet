@@ -26,8 +26,8 @@
             "intelliSenseMode": "clang-x64",
             "compilerPath": "/usr/bin/clang",
             "macFrameworkPath": [
-                "/Library/Frameworks",
-                "/System/Library/Frameworks"
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
             ],
             "includePath": [
                 "${workspaceFolder}/src",
@@ -44,8 +44,7 @@
             "cppStandard": "c++17",
             "forcedInclude": [
                 "${workspaceFolder}/src/PCH.hpp"
-            ],
-            "compileCommands": "${workspaceFolder}/bin/Debug/compile_commands.json"
+            ]
         },
         {
             "name": "Win32",

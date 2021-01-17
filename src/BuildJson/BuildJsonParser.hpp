@@ -60,6 +60,15 @@ private:
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
+
+	const std::string kKeyBundle = "bundle";
+	const std::string kKeyEnvironment = "environment";
+	const std::string kKeyConfigurations = "configurations";
+	const std::string kKeyDependencies = "dependencies";
+	const std::string kKeyProjects = "projects";
+
+	const std::string kKeyAllProjects = "allProjects";
+
 	std::string m_filename;
 };
 }

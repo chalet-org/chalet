@@ -21,18 +21,6 @@
 namespace chalet
 {
 /*****************************************************************************/
-namespace
-{
-const std::string kKeyBundle = "bundle";
-const std::string kKeyEnvironment = "environment";
-const std::string kKeyConfigurations = "configurations";
-const std::string kKeyDependencies = "dependencies";
-const std::string kKeyProjects = "projects";
-
-const std::string kKeyAllProjects = "allProjects";
-}
-
-/*****************************************************************************/
 BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, BuildState& inState, std::string inFilename) :
 	m_inputs(inInputs),
 	m_state(inState),
