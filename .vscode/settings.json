@@ -1,27 +1,22 @@
 {
 	"C_Cpp.preferredPathSeparator": "Forward Slash",
 	"debug.toolBarLocation": "docked",
-	"editor.fontFamily": "'Courier Prime Code', 'Ubuntu Mono', 'Courier', 'Courier New', Consolas, monospace",
-	"editor.tabSize": 4,
+	"editor.formatOnSave": true,
 	"editor.insertSpaces": false,
+	"editor.tabSize": 4,
 	"files.encoding": "utf8",
 	"files.trimTrailingWhitespace": true,
 	"files.eol": "\n",
-	"files.restoreUndoStack": false,
 	"files.exclude": {
 		"src/Libraries/json-schema-validator/": true,
 		"vendor": true,
 		// "bin/": true,
-		"build/": true,
-		"**/*.7z": true,
-		"**/*.rar": true,
-		"**/Thumbs.db": true
+		"build/": true
 	},
 	"search.exclude": {
 		"vendor": true,
 		"src/Libraries/json-schema-validator": true
 	},
-	"editor.formatOnSave": true,
 	"terminal.integrated.shell.windows": "C:/Program Files/Git/bin/bash.exe",
 	"terminal.integrated.env.windows": {
 		"Path": "C:/msys64/mingw64/bin"
@@ -53,8 +48,5 @@
 			],
 			"url": "./schema/chalet-cache.schema.json"
 		}
-	],
-	"[applescript]": {
-		"files.encoding": "utf8"
-	}
+	]
 }
