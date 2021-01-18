@@ -31,7 +31,6 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 
 	const auto& depDir = m_state.paths.depDir();
 
-	const auto dumpAsmRecipe = getDumpAsmRecipe();
 	const auto assemblyRecipe = getAsmRecipe();
 	const auto pchRecipe = getPchRecipe();
 	const auto makePchRecipe = getMakePchRecipe();
@@ -73,7 +72,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 makebuild: {target}
 	{colorBlue}
 .DELETE_ON_ERROR: makebuild
-{dumpAsmRecipe}{makePchRecipe}{cppRecipes}{pchRecipe}{rcRecipe}{assemblyRecipe}{targetRecipe}
+{makePchRecipe}{cppRecipes}{pchRecipe}{rcRecipe}{assemblyRecipe}{targetRecipe}
 
 {depDir}/%.d: ;
 .PRECIOUS: {depDir}/%.d
@@ -83,7 +82,6 @@ include $(wildcard $(SOURCE_DEPS))
 		FMT_ARG(suffixes),
 		FMT_ARG(colorBlue),
 		FMT_ARG(target),
-		FMT_ARG(dumpAsmRecipe),
 		FMT_ARG(makePchRecipe),
 		FMT_ARG(cppRecipes),
 		FMT_ARG(pchRecipe),
@@ -179,27 +177,6 @@ std::string MakefileGenerator::getCompileEchoLinker()
 	}
 
 	return std::string();
-}
-
-/*****************************************************************************/
-std::string MakefileGenerator::getDumpAsmRecipe()
-{
-	std::string ret;
-
-	const bool dumpAssembly = m_project.dumpAssembly();
-	if (dumpAssembly)
-	{
-		const auto colorBlue = getBlueColor();
-
-		ret = fmt::format(R"makefile(
-dumpasm: $(SOURCE_ASMS)
-	{colorBlue}
-.PHONY: dumpasm
-)makefile",
-			FMT_ARG(colorBlue));
-	}
-
-	return ret;
 }
 
 /*****************************************************************************/
@@ -313,6 +290,7 @@ std::string MakefileGenerator::getRcRecipe()
 	const auto colorBlue = getBlueColor();
 	const auto compileEcho = getCompileEchoSources();
 	const auto mv = getMoveCommand();
+	const auto pchPreReq = getPchOrderOnlyPreReq();
 
 	const auto dependency = fmt::format("{depDir}/$*.rc",
 		FMT_ARG(depDir));
@@ -321,12 +299,13 @@ std::string MakefileGenerator::getRcRecipe()
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.rc.res: %.rc
-{objDir}/%.rc.res: %.rc {depDir}/%.rc.d
+{objDir}/%.rc.res: %.rc {depDir}/%.rc.d{pchPreReq}
 	{colorBlue}{compileEcho}
 	{quietFlag}{rcCompile} && {mv} {dependency}.Td {dependency}.d
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
+		FMT_ARG(pchPreReq),
 		FMT_ARG(colorBlue),
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),
@@ -350,6 +329,7 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 	const auto colorBlue = getBlueColor();
 	const auto compileEcho = getCompileEchoSources();
 	const auto mv = getMoveCommand();
+	const auto pchPreReq = getPchOrderOnlyPreReq();
 
 	const auto dependency = fmt::format("{depDir}/$*.{ext}",
 		FMT_ARG(depDir),
@@ -359,13 +339,14 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}
-{objDir}/%.{ext}.o: %.{ext} {pchTarget} {depDir}/%.{ext}.d
+{objDir}/%.{ext}.o: %.{ext} {pchTarget} {depDir}/%.{ext}.d{pchPreReq}
 	{colorBlue}{compileEcho}
 	{quietFlag}{cppCompile} && {mv} {dependency}.Td {dependency}.d
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
 		FMT_ARG(ext),
+		FMT_ARG(pchPreReq),
 		FMT_ARG(pchTarget),
 		FMT_ARG(colorBlue),
 		FMT_ARG(compileEcho),
@@ -390,6 +371,7 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 	const auto colorBlue = getBlueColor();
 	const auto compileEcho = getCompileEchoSources();
 	const auto mv = getMoveCommand();
+	const auto pchPreReq = getPchOrderOnlyPreReq();
 
 	const auto dependency = fmt::format("{depDir}/$*.{ext}",
 		FMT_ARG(depDir),
@@ -399,13 +381,14 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}
-{objDir}/%.{ext}.o: %.{ext} {depDir}/%.{ext}.d
+{objDir}/%.{ext}.o: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{colorBlue}{compileEcho}
 	{quietFlag}{objcCompile} && {mv} {dependency}.Td {dependency}.d
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
 		FMT_ARG(ext),
+		FMT_ARG(pchPreReq),
 		FMT_ARG(colorBlue),
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),
@@ -422,15 +405,17 @@ std::string MakefileGenerator::getTargetRecipe()
 	std::string ret;
 
 	const auto quietFlag = getQuietFlag();
-	const auto sourceObjs = "$(SOURCE_OBJS)";
+
+	const auto preReqs = getLinkerPreReqs();
+
 	const auto linkerTarget = m_state.paths.getTargetFilename(m_project);
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(m_project);
-	const auto linkerCommand = m_toolchain->getLinkerTargetCommand(linkerTarget, sourceObjs, linkerTargetBase);
+	const auto linkerCommand = m_toolchain->getLinkerTargetCommand(linkerTarget, "$(SOURCE_OBJS)", linkerTargetBase);
 	const auto compileEcho = getCompileEchoLinker();
 	const auto colorBlue = getBlueColor();
 
 	ret = fmt::format(R"makefile(
-{linkerTarget}: {sourceObjs}
+{linkerTarget}: {preReqs}
 	{colorBlue}
 	{compileEcho}
 	{quietFlag}{linkerCommand}
@@ -438,11 +423,33 @@ std::string MakefileGenerator::getTargetRecipe()
 )makefile",
 		FMT_ARG(linkerTarget),
 		FMT_ARG(colorBlue),
-		FMT_ARG(sourceObjs),
+		FMT_ARG(preReqs),
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),
 		FMT_ARG(linkerCommand));
 
 	return ret;
 }
+
+/*****************************************************************************/
+std::string MakefileGenerator::getPchOrderOnlyPreReq()
+{
+	std::string ret;
+	if (m_project.usesPch())
+		ret = " | makepch";
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string MakefileGenerator::getLinkerPreReqs()
+{
+	std::string ret = "$(SOURCE_OBJS)";
+
+	if (m_project.dumpAssembly())
+		ret += " $(SOURCE_ASMS)";
+
+	return ret;
+}
+
 }

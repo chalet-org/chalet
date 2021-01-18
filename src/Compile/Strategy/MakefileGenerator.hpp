@@ -33,7 +33,6 @@ private:
 	std::string getCompileEchoSources();
 	std::string getCompileEchoLinker();
 
-	std::string getDumpAsmRecipe();
 	std::string getAsmRecipe();
 	std::string getMakePchRecipe();
 	std::string getPchRecipe();
@@ -41,6 +40,9 @@ private:
 	std::string getCppRecipe(const std::string& ext);
 	std::string getObjcRecipe(const std::string& ext);
 	std::string getTargetRecipe();
+
+	std::string getPchOrderOnlyPreReq();
+	std::string getLinkerPreReqs();
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

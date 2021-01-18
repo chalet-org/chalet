@@ -29,7 +29,6 @@ private:
 	const ProjectConfiguration& m_project;
 	CompileToolchain& m_toolchain;
 
-	std::string m_makeSync;
 	std::string m_makeAsync;
 
 	std::string m_cacheFile;

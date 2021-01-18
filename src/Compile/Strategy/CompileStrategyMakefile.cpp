@@ -11,6 +11,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -82,10 +83,6 @@ bool CompileStrategyMakefile::initialize()
 
 	std::string makeParams = fmt::format("-C \".\" -f \"{}\" --no-print-directory", m_cacheFile);
 
-	m_makeSync = fmt::format("{makeExec} {makeParams}",
-		FMT_ARG(makeExec),
-		FMT_ARG(makeParams));
-
 	m_makeAsync = fmt::format("{makeExec}{jobs} {makeParams}",
 		FMT_ARG(makeExec),
 		FMT_ARG(jobs),
@@ -97,28 +94,10 @@ bool CompileStrategyMakefile::initialize()
 /*****************************************************************************/
 bool CompileStrategyMakefile::run()
 {
-	if (m_project.usesPch())
-	{
-		if (!Commands::shell(fmt::format("{} makepch", m_makeSync)))
-		{
-			Output::lineBreak();
-			return false;
-		}
-	}
-
 	if (!Commands::shell(fmt::format("{} makebuild", m_makeAsync)))
 	{
 		Output::lineBreak();
 		return false;
-	}
-
-	if (m_project.dumpAssembly())
-	{
-		if (!Commands::shell(fmt::format("{} dumpasm", m_makeAsync)))
-		{
-			Output::lineBreak();
-			return false;
-		}
 	}
 
 	return true;
