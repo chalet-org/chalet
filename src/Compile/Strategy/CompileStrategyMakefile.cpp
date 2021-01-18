@@ -94,11 +94,17 @@ bool CompileStrategyMakefile::initialize()
 /*****************************************************************************/
 bool CompileStrategyMakefile::run()
 {
+	// Timer timer;
+
 	if (!Commands::shell(fmt::format("{} makebuild", m_makeAsync)))
 	{
 		Output::lineBreak();
 		return false;
 	}
+
+	// This is typically build time - 20 ms
+	// auto result = timer.stop();
+	// Output::print(Color::reset, fmt::format("   Make invocation time: {}ms", result));
 
 	return true;
 }
