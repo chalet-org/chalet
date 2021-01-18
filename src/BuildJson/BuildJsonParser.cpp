@@ -224,7 +224,7 @@ bool BuildJsonParser::makePathVariable()
 	auto rootPath = m_state.compilers.getRootPathVariable();
 	auto pathVariable = m_state.environment.makePathVariable(rootPath);
 
-	LOG(pathVariable);
+	// LOG(pathVariable);
 
 	Environment::set("PATH", pathVariable);
 
