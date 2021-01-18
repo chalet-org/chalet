@@ -19,10 +19,29 @@ bool Environment::isBash() noexcept
 	if (s_terminalType == TerminalType::Unset)
 	{
 #if defined(CHALET_WIN32)
-		// TODO: Check this more thoroughly, but this seems to work
-		// auto result = Environment::get("PROMPT");
-		// s_terminalType = result == nullptr ? TerminalType::CommandPrompt : TerminalType::Bash;
-		s_terminalType = TerminalType::Bash;
+		// MSYSTEM: Non-nullptr in MSYS2, Git Bash & std::system calls
+		auto result = Environment::get("MSYSTEM");
+		if (result != nullptr)
+		{
+			s_terminalType = TerminalType::Bash;
+		}
+		else
+		{
+			// PROMPT: nullptr in MSYS2/Git Bash, but not in std::system calls
+			result = Environment::get("PROMPT"); // Command Prompt
+			if (result != nullptr)
+			{
+				s_terminalType = TerminalType::CommandPrompt;
+			}
+			else
+			{
+				// Assume it's Powershell. PSHOME will be defined if it is, but it won't technically be part of "Env:"
+				// aka 'echo $PSHOME' (PS path) vs 'echo $env:PSHOME' (blank) -- JOY
+				s_terminalType = TerminalType::Powershell;
+
+				// TODO: Windows Terminal
+			}
+		}
 #else
 		s_terminalType = TerminalType::Bash;
 #endif
@@ -59,6 +78,10 @@ void Environment::set(const char* inName, const std::string& inValue)
 std::string Environment::getPath()
 {
 	Constant path = Environment::get("PATH");
+#if defined(CHALET_WIN32)
+	if (path == nullptr)
+		path = Environment::get("Path");
+#endif
 	if (path == nullptr)
 	{
 		Diagnostic::errorAbort("Could not retrieve PATH");

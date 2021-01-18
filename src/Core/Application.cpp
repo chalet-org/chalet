@@ -30,7 +30,7 @@ int Application::run(const int argc, const char* const argv[])
 
 	if (!Environment::isBash())
 	{
-		Diagnostic::error(fmt::format("This application was designed for use with bash on Windows. Command Prompt & PowerShell are not yet supported."));
+		Diagnostic::error(fmt::format("This application was designed for use with bash on Windows. Command Prompt, PowerShell & MSVC are not yet supported."), "Critical Error");
 		return EXIT_SUCCESS;
 	}
 

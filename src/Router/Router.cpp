@@ -135,10 +135,7 @@ bool Router::cmdBundle()
 	chalet_assert(m_buildState != nullptr, "");
 
 	if (!cmdBuild())
-	{
-		Diagnostic::error("Something went wrong?");
 		return false;
-	}
 
 	AppBundler bundler(*m_buildState);
 

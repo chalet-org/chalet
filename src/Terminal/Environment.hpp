@@ -23,7 +23,9 @@ private:
 	{
 		Unset,
 		Bash,
-		CommandPrompt
+		CommandPrompt,
+		Powershell,
+		// WindowsTerminal
 	};
 
 	static TerminalType s_terminalType;

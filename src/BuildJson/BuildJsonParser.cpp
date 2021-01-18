@@ -227,6 +227,9 @@ bool BuildJsonParser::makePathVariable()
 	// LOG(pathVariable);
 
 	Environment::set("PATH", pathVariable);
+	// #if defined(CHALET_WIN32)
+	// 	Environment::set("Path", pathVariable);
+	// #endif
 
 	return true;
 }
