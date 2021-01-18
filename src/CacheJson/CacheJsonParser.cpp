@@ -67,10 +67,12 @@ bool CacheJsonParser::validatePaths()
 		return false;
 	}
 
+#if defined(CHALET_WIN32)
 	if (!Commands::pathExists(compilers.rc()))
 	{
 		Diagnostic::warn(fmt::format("{}: Windows Resource compiler could not be found.", m_filename));
 	}
+#endif
 
 	if (!Commands::pathExists(m_make))
 	{
