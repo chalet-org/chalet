@@ -24,6 +24,8 @@ struct CompilerCache
 	const std::string& rc() const noexcept;
 	void setRc(const std::string& inValue) noexcept;
 
+	std::string getRootPathVariable();
+
 	CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
 
 private:

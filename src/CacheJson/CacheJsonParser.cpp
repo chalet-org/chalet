@@ -44,9 +44,46 @@ bool CacheJsonParser::serialize()
 		return false;
 	}
 
-	// TOOD: hashing to check for file changes
-	//   If there were changes, iterate through the keys to check if the executables are valid
-	//   If there were none, just skip that step
+	if (!validatePaths())
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CacheJsonParser::validatePaths()
+{
+	auto& compilers = m_state.compilers;
+
+	if (!Commands::pathExists(compilers.cpp()))
+	{
+		Diagnostic::errorAbort(fmt::format("{}: C++ compiler could not be found.", m_filename));
+		return false;
+	}
+
+	if (!Commands::pathExists(compilers.cc()))
+	{
+		Diagnostic::errorAbort(fmt::format("{}: C compiler could not be found.", m_filename));
+		return false;
+	}
+
+	if (!Commands::pathExists(compilers.rc()))
+	{
+		Diagnostic::warn(fmt::format("{}: Windows Resource compiler could not be found.", m_filename));
+	}
+
+	if (!Commands::pathExists(m_make))
+	{
+		Diagnostic::errorAbort(fmt::format("{}: 'make' could not be found.", m_filename));
+		return false;
+	}
+
+#if defined(CHALET_MACOS)
+	if (!Commands::pathExists(m_state.tools.macosSdk()))
+	{
+		Diagnostic::errorAbort(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
+	}
+#endif
 
 	return true;
 }
@@ -110,11 +147,6 @@ bool CacheJsonParser::makeCache()
 			if (cpp.empty())
 			{
 				cpp = Commands::which("c++");
-				if (cpp.empty())
-				{
-					Diagnostic::errorAbort(fmt::format("{}: C++ compiler could not be found.", m_filename));
-					return false;
-				}
 			}
 		}
 
@@ -131,11 +163,6 @@ bool CacheJsonParser::makeCache()
 			if (cc.empty())
 			{
 				cc = Commands::which("cc");
-				if (cc.empty())
-				{
-					Diagnostic::errorAbort(fmt::format("{}: C compiler could not be found.", m_filename));
-					return false;
-				}
 			}
 		}
 
@@ -149,11 +176,6 @@ bool CacheJsonParser::makeCache()
 #if defined(CHALET_WIN32)
 		if (rc.empty())
 			rc = Commands::which("rc");
-
-		if (rc.empty())
-		{
-			Diagnostic::warn(fmt::format("{}: Windows Resource compiler could not be found.", m_filename));
-		}
 #endif
 
 		compilers[kKeyWindowsResource] = std::move(rc);
@@ -176,12 +198,6 @@ bool CacheJsonParser::makeCache()
 #if defined(CHALET_MACOS)
 		std::string sdkPath = Commands::shellWithOutput("xcrun --sdk macosx --show-sdk-path");
 		String::replaceAll(sdkPath, "\n", "");
-		if (sdkPath.empty())
-		{
-			Diagnostic::errorAbort(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
-			return false;
-		}
-
 		tools[kKeyMacosSdk] = std::move(sdkPath);
 #else
 		tools[kKeyMacosSdk] = std::string();
@@ -196,12 +212,6 @@ bool CacheJsonParser::makeCache()
 		if (make.empty())
 			make = Commands::which("mingw32-make");
 #endif
-
-		if (make.empty())
-		{
-			Diagnostic::errorAbort(fmt::format("{}: 'make' could not be found.", m_filename));
-			return false;
-		}
 
 		tools[kKeyMake] = std::move(make);
 		m_state.cache.setDirty(true);
@@ -295,7 +305,10 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 		m_state.tools.setLdd(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyMake))
+	{
 		m_state.tools.setMake(val);
+		m_make = std::move(val);
+	}
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyMakeIcns))
 		m_state.tools.setMakeIcns(val);

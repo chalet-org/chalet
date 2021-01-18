@@ -36,13 +36,9 @@ struct BuildEnvironment
 	const StringList& path() const noexcept;
 	void addPaths(StringList& inList);
 	void addPath(std::string& inValue);
-	const std::string& originalPath() const noexcept;
-	void setPathVariable(const CompilerConfig& inCompilerConfig);
+	std::string makePathVariable(const std::string& inRootPath);
 
 private:
-	const std::string& getPathString(const CompilerConfig& inCompilerConfig);
-	StringList getDefaultPaths();
-
 	const std::string& m_buildConfiguration;
 
 	std::string m_platform = "auto";
@@ -50,12 +46,11 @@ private:
 	StringList m_path;
 
 	std::string m_pathString;
-	std::string m_originalPath;
+	StringList m_pathInternal;
 
 	uint m_processorCount = 0;
 
 	StrategyType m_strategy = StrategyType::Makefile;
-	CodeLanguage m_lastLanguage = CodeLanguage::None;
 
 	bool m_showCommands = false;
 };

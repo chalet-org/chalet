@@ -67,9 +67,6 @@ bool BuildManager::run(const Route inRoute)
 
 		m_project = project.get();
 
-		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-		m_state.environment.setPathVariable(compilerConfig);
-
 		if (runCommand && !project->runProject())
 			continue;
 

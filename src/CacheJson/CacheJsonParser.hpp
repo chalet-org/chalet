@@ -18,6 +18,7 @@ struct CacheJsonParser : public JsonParser
 	virtual bool serialize() final;
 
 private:
+	bool validatePaths();
 	bool makeCache();
 	bool serializeFromJsonRoot(const Json& inJson);
 
@@ -58,6 +59,8 @@ private:
 	const std::string kKeyRanLib = "ranlib";
 	const std::string kKeyStrip = "strip";
 	const std::string kKeyTiffUtil = "tiffutil";
+
+	std::string m_make;
 };
 }
 

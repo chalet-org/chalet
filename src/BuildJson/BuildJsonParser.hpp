@@ -27,6 +27,7 @@ private:
 	void parseBuildConfiguration(const Json& inNode);
 
 	bool parseEnvironment(const Json& inNode);
+	bool makePathVariable();
 
 	bool parseConfiguration(const Json& inNode);
 

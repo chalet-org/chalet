@@ -124,100 +124,27 @@ void BuildEnvironment::addPath(std::string& inValue)
 }
 
 /*****************************************************************************/
-const std::string& BuildEnvironment::getPathString(const CompilerConfig& inCompilerConfig)
+std::string BuildEnvironment::makePathVariable(const std::string& inRootPath)
 {
-	if (m_pathString.empty())
+	auto separator = Path::getSeparator();
+
+	StringList outList;
+
+	for (auto& path : m_path)
 	{
-		StringList outList;
+		if (!Commands::pathExists(path))
+			continue;
 
-		m_originalPath = Environment::getPath();
-		std::string compilerPathBin = inCompilerConfig.compilerPathBin();
-
-		//
-		if (!compilerPathBin.empty())
-		{
-#if defined(CHALET_WIN32)
-			Path::sanitize(compilerPathBin);
-#endif
-			if (!String::contains(compilerPathBin, m_originalPath))
-				outList.push_back(compilerPathBin);
-		}
-
-		//
-		for (auto& p : m_path)
-		{
-			// TODO: function for this:
-			if (!Commands::pathExists(p))
-				continue;
-
-			std::string path = Commands::getCanonicalPath(p);
-
-			if (!String::contains(path, m_originalPath))
-				outList.push_back(std::move(path));
-		}
-
-		StringList osPaths = getDefaultPaths();
-		for (auto& p : osPaths)
-		{
-			if (!Commands::pathExists(p))
-				continue;
-
-			std::string path = Commands::getCanonicalPath(p);
-
-			if (!String::contains(path, m_originalPath))
-				outList.push_back(std::move(path));
-		}
-
-		//
-		if (!m_originalPath.empty())
-		{
-#if defined(CHALET_WIN32)
-			Path::sanitize(m_originalPath);
-#endif
-			outList.push_back(m_originalPath);
-		}
-
-		const std::string del = Path::getSeparator();
-
-		m_pathString = String::join(outList, del);
-		Path::sanitize(m_pathString);
+		if (!String::contains(path, inRootPath))
+			outList.push_back(std::move(path));
 	}
 
-	return m_pathString;
-}
+	outList.push_back(inRootPath);
 
-/*****************************************************************************/
-StringList BuildEnvironment::getDefaultPaths()
-{
-#if !defined(CHALET_WIN32)
-	return {
-		"/usr/local/sbin",
-		"/usr/local/bin",
-		"/usr/sbin",
-		"/usr/bin",
-		"/sbin",
-		"/bin"
-	};
-#endif
+	std::string ret = String::join(outList, separator);
+	Path::sanitize(ret);
 
-	return {};
-}
-
-const std::string& BuildEnvironment::originalPath() const noexcept
-{
-	return m_originalPath;
-}
-
-/*****************************************************************************/
-void BuildEnvironment::setPathVariable(const CompilerConfig& inCompilerConfig)
-{
-	if (m_lastLanguage == inCompilerConfig.language())
-		return;
-
-	Environment::set("PATH", getPathString(inCompilerConfig));
-	// LOG(Environment::getPath());
-
-	m_lastLanguage = inCompilerConfig.language();
+	return ret;
 }
 
 }

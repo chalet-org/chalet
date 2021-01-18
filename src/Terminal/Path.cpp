@@ -77,4 +77,22 @@ void Path::msysDrivesToWindowsDrives(std::string& outPath)
 		String::replaceAll(outPath, fmt::format("/{}/", capture), fmt::format("{}:/", String::toUpperCase(capture)));
 	}
 }
+
+/*****************************************************************************/
+StringList Path::getOSPaths()
+{
+#if !defined(CHALET_WIN32)
+	return {
+		"/usr/local/sbin",
+		"/usr/local/bin",
+		"/usr/sbin",
+		"/usr/bin",
+		"/sbin",
+		"/bin"
+	};
+#endif
+
+	return {};
+}
+
 }

@@ -5,6 +5,12 @@
 
 #include "Compile/CompilerCache.hpp"
 
+#include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
+#include "Terminal/Path.hpp"
+#include "Utility/List.hpp"
+#include "Utility/String.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -38,8 +44,45 @@ void CompilerCache::setRc(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+std::string CompilerCache::getRootPathVariable()
+{
+	auto originalPath = Environment::getPath();
+	Path::sanitize(originalPath);
+
+	StringList outList;
+
+	if (auto ccRoot = String::getPathFolder(m_cc); !List::contains(outList, ccRoot))
+		outList.push_back(std::move(ccRoot));
+
+	if (auto cppRoot = String::getPathFolder(m_cpp); !List::contains(outList, cppRoot))
+		outList.push_back(std::move(cppRoot));
+
+	for (auto& path : Path::getOSPaths())
+	{
+		if (!Commands::pathExists(path))
+			continue;
+
+		if (!List::contains(outList, path))
+			outList.push_back(std::move(path));
+	}
+
+	auto separator = Path::getSeparator();
+	for (auto& path : String::split(originalPath, separator))
+	{
+		if (!List::contains(outList, path))
+			outList.push_back(std::move(path));
+	}
+
+	std::string ret = String::join(outList, separator);
+	Path::sanitize(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
 CompilerConfig& CompilerCache::getConfig(const CodeLanguage inLanguage) const
 {
+	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
 	if (m_configs.find(inLanguage) != m_configs.end())
 	{
 		return m_configs.at(inLanguage);

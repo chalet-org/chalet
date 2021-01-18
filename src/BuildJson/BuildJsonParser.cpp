@@ -11,6 +11,7 @@
 #include "BuildJson/Bundle/BundleWindows.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -86,6 +87,9 @@ bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 		return false;
 
 	if (!parseEnvironment(inJson))
+		return false;
+
+	if (!makePathVariable())
 		return false;
 
 	if (!parseConfiguration(inJson))
@@ -210,6 +214,19 @@ bool BuildJsonParser::parseEnvironment(const Json& inJson)
 
 	if (bool val = false; JsonNode::assignFromKey(val, environment, "showCommands"))
 		m_state.environment.setShowCommands(val);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::makePathVariable()
+{
+	auto rootPath = m_state.compilers.getRootPathVariable();
+	auto pathVariable = m_state.environment.makePathVariable(rootPath);
+
+	LOG(pathVariable);
+
+	Environment::set("PATH", pathVariable);
 
 	return true;
 }
@@ -522,7 +539,8 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 	if (!inAllProjects)
 	{
-		auto& compilerConfig = m_state.compilers.getConfig(outProject.language());
+		auto language = outProject.language();
+		auto& compilerConfig = m_state.compilers.getConfig(language);
 		std::string libDir = compilerConfig.compilerPathLib();
 		std::string includeDir = compilerConfig.compilerPathInclude();
 		outProject.addLibDir(libDir);

@@ -39,13 +39,10 @@ const std::string& CompilerConfig::compilerExecutable() const noexcept
 /*****************************************************************************/
 bool CompilerConfig::configureCompilerPaths()
 {
-	std::string exec = compilerExecutable();
+	const auto& exec = compilerExecutable();
+	chalet_assert(!exec.empty(), "No compiler was found");
 	if (exec.empty())
-	{
-		auto language = m_language == CodeLanguage::CPlusPlus ? "C++" : "C";
-		Diagnostic::errorAbort(fmt::format("No compiler was found for language '{}'.", language));
 		return false;
-	}
 
 	std::string path = String::getPathFolder(exec);
 	if (!String::endsWith("/bin", path))
@@ -83,11 +80,11 @@ bool CompilerConfig::testCompilerMacros()
 	// GCC will just have __GNUC__
 	// Clang will have both __clang__ & __GNUC__ (based on GCC 4)
 	// Emscription will have __EMSCRIPTEN__, __clang__ & __GNUC__ (based on Clang)
-	// Apple Clang (Xcode/CommandLineTools) is detected from the __VERSION__ macro (for now),
+	// Apple Clang (Xcode/CommandLineTools) is detected from __VERSION__ (for now),
 	//   since one can install both GCC and Clang from Homebrew, which will also contain __APPLE__ & __APPLE_CC__
 	// GCC in MinGW 32, MinGW-w64 32-bit will have both __GNUC__ and __MINGW32__
 	// GCC in MinGW-w64 64-bit will also have __MINGW64__
-	// Intel will have __INTEL_COMPILER (or at the very least __INTEL_COMPILER_BUILD_DATE) & __GNUC__ (Also GCC-based)
+	// Intel will have __INTEL_COMPILER (or at the very least __INTEL_COMPILER_BUILD_DATE) & __GNUC__ (Also GCC-based as far as I know)
 
 	// TODO: Visual Studio will need its own detection method to check for _MSC_VER
 
