@@ -95,7 +95,7 @@ bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 	if (!parseConfiguration(inJson))
 		return false;
 
-	if (!parseDependencies(inJson))
+	if (!parseExternalDependencies(inJson))
 		return false;
 
 	if (!parseProjects(inJson))
@@ -206,8 +206,8 @@ bool BuildJsonParser::parseEnvironment(const Json& inJson)
 		return false;
 	}
 
-	if (std::string val; assignStringAndValidate(val, environment, "modulePath"))
-		m_state.environment.setModulePath(val);
+	if (std::string val; assignStringAndValidate(val, environment, "externalDepDir"))
+		m_state.environment.setExternalDepDir(val);
 
 	if (StringList list; assignStringListFromConfig(list, environment, "path"))
 		m_state.environment.addPaths(list);
@@ -302,40 +302,40 @@ bool BuildJsonParser::parseConfiguration(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseDependencies(const Json& inNode)
+bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 {
 	// don't care if there are no dependencies
-	if (!inNode.contains(kKeyDependencies))
+	if (!inNode.contains(kKeyExternalDependencies))
 		return true;
 
-	const Json& dependencies = inNode.at(kKeyDependencies);
-	if (!dependencies.is_array() || dependencies.size() == 0)
+	const Json& externalDependencies = inNode.at(kKeyExternalDependencies);
+	if (!externalDependencies.is_array() || externalDependencies.size() == 0)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' must contain at least one dependency.", m_filename, kKeyDependencies));
+		Diagnostic::errorAbort(fmt::format("{}: '{}' must contain at least one external dependency.", m_filename, kKeyExternalDependencies));
 		return false;
 	}
 
-	for (auto& dependencyJson : dependencies)
+	for (auto& dependencyJson : externalDependencies)
 	{
 		auto dependency = std::make_unique<DependencyGit>(m_state.environment);
 
-		if (!parseDependency(*dependency, dependencyJson))
+		if (!parseExternalDependency(*dependency, dependencyJson))
 			return false;
 
-		m_state.dependencies.push_back(std::move(dependency));
+		m_state.externalDependencies.push_back(std::move(dependency));
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseDependency(DependencyGit& outDependency, const Json& inNode)
+bool BuildJsonParser::parseExternalDependency(DependencyGit& outDependency, const Json& inNode)
 {
 	if (std::string val; assignStringAndValidate(val, inNode, "repository"))
 		outDependency.setRepository(val);
 	else
 	{
-		Diagnostic::errorAbort(fmt::format("{}: 'repository' is required for all dependencies.", m_filename));
+		Diagnostic::errorAbort(fmt::format("{}: 'repository' is required for all  external dependencies.", m_filename));
 		return false;
 	}
 

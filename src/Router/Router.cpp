@@ -105,7 +105,7 @@ bool Router::cmdInstall()
 bool Router::cmdConfigure()
 {
 	// TODO: Compare cache.json & build.json and make any adjustments to cache,
-	//   but ultimately, we don't want to get dependencies, nor build of course
+	//   but ultimately, we don't want to fetch external dependencies, nor build of course
 	return true;
 }
 

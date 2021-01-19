@@ -103,12 +103,12 @@ bool DependencyGit::parseDestination()
 	if (!m_destination.empty())
 		return false;
 
-	const auto& modulePath = m_environment.modulePath();
-	chalet_assert(!modulePath.empty(), "modulePath can't be blank.");
+	const auto& externalDepDir = m_environment.externalDepDir();
+	chalet_assert(!externalDepDir.empty(), "externalDepDir can't be blank.");
 
 	if (!m_name.empty())
 	{
-		m_destination = fmt::format("{}/{}", modulePath, m_name);
+		m_destination = fmt::format("{}/{}", externalDepDir, m_name);
 		return true;
 	}
 
@@ -122,7 +122,7 @@ bool DependencyGit::parseDestination()
 
 	std::string baseName = String::getPathBaseName(m_repository);
 
-	m_destination = fmt::format("{}/{}", modulePath, baseName);
+	m_destination = fmt::format("{}/{}", externalDepDir, baseName);
 
 	// LOG(m_destination);
 

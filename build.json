@@ -3,6 +3,7 @@
 	"workspace": "Chalet",
 	"environment": {
 		"showCommands": false,
+		"externalDepDir": "chalet_external",
 		"path": []
 	},
 	/*"configurations": [
@@ -134,8 +135,8 @@
 			"icon": "env/windows/app.ico",
 			"manifest": "env/windows/app.manifest"
 		}
-	} /*,
-	"dependencies": [
+	},
+	"externalDependencies": [
 		{
 			"name": "catch2",
 			"repository": "git@github.com:catchorg/Catch2.git",
@@ -163,5 +164,5 @@
 			"name": "ust",
 			"repository": "git@github.com:MisterTea/UniversalStacktrace.git"
 		}
-	]*/
+	]
 }

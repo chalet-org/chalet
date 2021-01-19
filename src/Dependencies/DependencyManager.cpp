@@ -30,16 +30,16 @@ bool DependencyManager::run(const bool inInstallCmd)
 	if (m_state.tools.git().empty())
 		return true;
 
-	const auto& modulePath = m_state.environment.modulePath();
+	const auto& externalDepDir = m_state.environment.externalDepDir();
 	auto& environmentCache = m_state.cache.environmentCache();
 
-	Json& dependencyCache = environmentCache.json["dependencies"];
+	Json& dependencyCache = environmentCache.json["externalDependencies"];
 
 	StringList destinationCache;
 
 	bool result = true;
 	int count = 0;
-	for (auto& dep : m_state.dependencies)
+	for (auto& dep : m_state.externalDependencies)
 	{
 		const auto& repository = dep->repository();
 		const auto& destination = dep->destination();
@@ -48,7 +48,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		if (destination.empty() || String::startsWith(".", destination) || String::startsWith("/", destination))
 		{
 			// This shouldn't occur, but would be pretty bad if it did
-			Diagnostic::errorAbort(fmt::format("The depdendency destination was blank for '{}'.", repository));
+			Diagnostic::errorAbort(fmt::format("The external dependency destination was blank for '{}'.", repository));
 			return false;
 		}
 
@@ -208,7 +208,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 				if (removed)
 				{
 					std::string name = it;
-					String::replaceAll(name, fmt::format("{}/", modulePath), "");
+					String::replaceAll(name, fmt::format("{}/", externalDepDir), "");
 
 					Output::msgDisplayBlack(fmt::format("Removed unused dependency: '{}'", name));
 					++count;
@@ -221,8 +221,8 @@ bool DependencyManager::run(const bool inInstallCmd)
 			m_state.cache.setDirty(true);
 		}
 
-		if (Commands::pathIsEmpty(modulePath, true))
-			result &= Commands::remove(modulePath);
+		if (Commands::pathIsEmpty(externalDepDir, true))
+			result &= Commands::remove(externalDepDir);
 	}
 
 	if (count > 0)

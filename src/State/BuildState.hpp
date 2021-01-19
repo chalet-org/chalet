@@ -35,7 +35,7 @@ public:
 	BuildPaths paths;
 	ConfigurationOptions configuration;
 	ProjectConfigurationList projects;
-	DependencyList dependencies;
+	DependencyList externalDependencies;
 	AppBundle bundle;
 	BuildCache cache;
 

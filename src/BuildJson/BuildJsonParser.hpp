@@ -31,8 +31,8 @@ private:
 
 	bool parseConfiguration(const Json& inNode);
 
-	bool parseDependencies(const Json& inNode);
-	bool parseDependency(DependencyGit& outDependency, const Json& inNode);
+	bool parseExternalDependencies(const Json& inNode);
+	bool parseExternalDependency(DependencyGit& outDependency, const Json& inNode);
 
 	bool parseProjects(const Json& inNode);
 	bool parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAllProjects = false);
@@ -65,7 +65,7 @@ private:
 	const std::string kKeyBundle = "bundle";
 	const std::string kKeyEnvironment = "environment";
 	const std::string kKeyConfigurations = "configurations";
-	const std::string kKeyDependencies = "dependencies";
+	const std::string kKeyExternalDependencies = "externalDependencies";
 	const std::string kKeyProjects = "projects";
 
 	const std::string kKeyAllProjects = "allProjects";

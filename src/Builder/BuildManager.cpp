@@ -345,7 +345,7 @@ bool BuildManager::doLazyClean()
 		Commands::removeRecursively(buildOutputDir, m_cleanOutput);
 
 	// TODO: Clean CMake projects
-	// TODO: Flag to clean dependencies
+	// TODO: Flag to clean externalDependencies
 
 	if (!m_cleanOutput)
 		Output::lineBreak();

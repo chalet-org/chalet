@@ -36,15 +36,16 @@
 	"json.schemas": [
 		{
 			"fileMatch": [
-				"build/chalet-cache.json"
+				"build.json",
+				"build-*.json"
 			],
-			"url": "./schema/chalet-cache.schema.json"
+			"url": "./schema/chalet.schema.json"
 		},
 		{
 			"fileMatch": [
-				"build*.json"
+				"build/chalet-cache.json"
 			],
-			"url": "./schema/chalet.schema.json"
+			"url": "./schema/chalet-cache.schema.json"
 		}
 	]
 }

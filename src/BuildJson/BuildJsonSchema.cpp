@@ -196,36 +196,36 @@ Json Schema::getBuildJson()
 			"description": "true to strip symbols from the build, false otherwise.",
 			"default": false
 		},
-		"dependency-repository": {
+		"externalDependency-repository": {
 			"type": "string",
 			"description": "The url of the git repository.",
 			"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
 		},
-		"dependency-branch": {
+		"externalDependency-branch": {
 			"type": "string",
 			"description": "The branch to checkout. Defaults to 'master'",
 			"default": "master"
 		},
-		"dependency-commit": {
+		"externalDependency-commit": {
 			"type": "string",
 			"description": "The SHA1 hash of the commit to checkout.",
 			"pattern": "^[0-9a-f]{7,40}$"
 		},
-		"dependency-name": {
+		"externalDependency-name": {
 			"type": "string",
-			"description": "The destination directory name for the repository within 'modulePath'. If none is provided, defaults to the repository name",
+			"description": "The destination directory name for the repository within 'externalDepDir'. If none is provided, defaults to the repository name",
 			"pattern": "^[\\w\\-\\+\\.]{3,100}$"
 		},
-		"dependency-tag": {
+		"externalDependency-tag": {
 			"type": "string",
 			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
 		},
-		"dependency-submodules": {
+		"externalDependency-submodules": {
 			"type": "boolean",
 			"description": "Do submodules need to be cloned?",
 			"default": false
 		},
-		"dependency": {
+		"externalDependency": {
 			"type": "object",
 			"oneOf": [
 				{
@@ -236,16 +236,16 @@ Json Schema::getBuildJson()
 					],
 					"properties": {
 						"repository": {
-							"$ref": "#/definitions/dependency-repository"
+							"$ref": "#/definitions/externalDependency-repository"
 						},
 						"name": {
-							"$ref": "#/definitions/dependency-name"
+							"$ref": "#/definitions/externalDependency-name"
 						},
 						"submodules": {
-							"$ref": "#/definitions/dependency-submodules"
+							"$ref": "#/definitions/externalDependency-submodules"
 						},
 						"tag": {
-							"$ref": "#/definitions/dependency-tag"
+							"$ref": "#/definitions/externalDependency-tag"
 						}
 					}
 				},
@@ -256,27 +256,27 @@ Json Schema::getBuildJson()
 					],
 					"properties": {
 						"repository": {
-							"$ref": "#/definitions/dependency-repository"
+							"$ref": "#/definitions/externalDependency-repository"
 						},
 						"name": {
-							"$ref": "#/definitions/dependency-name"
+							"$ref": "#/definitions/externalDependency-name"
 						},
 						"submodules": {
-							"$ref": "#/definitions/dependency-submodules"
+							"$ref": "#/definitions/externalDependency-submodules"
 						},
 						"branch": {
-							"$ref": "#/definitions/dependency-branch"
+							"$ref": "#/definitions/externalDependency-branch"
 						},
 						"commit": {
-							"$ref": "#/definitions/dependency-commit"
+							"$ref": "#/definitions/externalDependency-commit"
 						}
 					}
 				}
 			]
 		},
-		"environment-modulePath": {
+		"environment-externalDepDir": {
 			"type": "string",
-			"description": "The path to install depdendency modules into (see dependencies).",
+			"description": "The path to install external dependencies into (see externalDependencies).",
 			"default": "chalet_external"
 		},
 		"environment-path": {
@@ -1304,12 +1304,12 @@ Json Schema::getBuildJson()
 				]
 			}
 		},
-		"dependencies": {
+		"externalDependencies": {
 			"type": "array",
 			"uniqueItems": true,
-			"description": "A sequential list of dependencies to install prior to building or via the install command",
+			"description": "A sequential list of externalDependencies to install prior to building or via the install command",
 			"items": {
-				"$ref": "#/definitions/dependency"
+				"$ref": "#/definitions/externalDependency"
 			}
 		},
 		"environment": {
@@ -1326,8 +1326,8 @@ Json Schema::getBuildJson()
 				"path": {
 					"$ref": "#/definitions/environment-path"
 				},
-				"modulePath": {
-					"$ref": "#/definitions/environment-modulePath"
+				"externalDepDir": {
+					"$ref": "#/definitions/environment-externalDepDir"
 				},
 				"showCommands": {
 					"$ref": "#/definitions/environment-showCommands"

@@ -102,7 +102,7 @@ bool CacheJsonParser::makeCache()
 	environmentCache.makeNode(kKeyWorkingDirectory, JsonDataType::string);
 	environmentCache.makeNode(kKeyCompilers, JsonDataType::object);
 	environmentCache.makeNode(kKeyTools, JsonDataType::object);
-	environmentCache.makeNode(kKeyDependencies, JsonDataType::object);
+	environmentCache.makeNode(kKeyExternalDependencies, JsonDataType::object);
 	environmentCache.makeNode(kKeyData, JsonDataType::object);
 
 	{

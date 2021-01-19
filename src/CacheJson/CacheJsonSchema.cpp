@@ -256,9 +256,9 @@ Json Schema::getCacheJson()
 			"type": "string",
 			"description": "The working directory of the workspace"
 		},
-		"dependencies": {
+		"externalDependencies": {
 			"type": "object",
-			"description": "The dependency cache"
+			"description": "The external dependency cache"
 		},
 		"data": {
 			"type": "object"

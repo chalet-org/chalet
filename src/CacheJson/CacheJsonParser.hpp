@@ -34,7 +34,7 @@ private:
 	const std::string kKeyCompilers = "compilers";
 	const std::string kKeyStrategy = "strategy";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
-	const std::string kKeyDependencies = "dependencies";
+	const std::string kKeyExternalDependencies = "externalDependencies";
 	const std::string kKeyData = "data";
 
 	const std::string kKeyCpp = "C++";

@@ -70,12 +70,12 @@ void BuildEnvironment::setPlatform(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& BuildEnvironment::modulePath() const noexcept
+const std::string& BuildEnvironment::externalDepDir() const noexcept
 {
 	return m_modulePath;
 }
 
-void BuildEnvironment::setModulePath(const std::string& inValue) noexcept
+void BuildEnvironment::setExternalDepDir(const std::string& inValue) noexcept
 {
 	if (inValue.empty())
 		return;

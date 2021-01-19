@@ -26,8 +26,8 @@ struct BuildEnvironment
 	const std::string& platform() const noexcept;
 	void setPlatform(const std::string& inValue) noexcept;
 
-	const std::string& modulePath() const noexcept;
-	void setModulePath(const std::string& inValue) noexcept;
+	const std::string& externalDepDir() const noexcept;
+	void setExternalDepDir(const std::string& inValue) noexcept;
 
 	bool showCommands() const noexcept;
 	void setShowCommands(const bool inValue) noexcept;

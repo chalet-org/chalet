@@ -699,10 +699,10 @@ void ProjectConfiguration::parseStringVariables(std::string& outString)
 {
 	String::replaceAll(outString, "${configuration}", m_buildConfiguration);
 
-	const auto& modulePath = m_environment.modulePath();
-	if (!modulePath.empty())
+	const auto& externalDepDir = m_environment.externalDepDir();
+	if (!externalDepDir.empty())
 	{
-		String::replaceAll(outString, "${modulePath}", modulePath);
+		String::replaceAll(outString, "${externalDepDir}", externalDepDir);
 	}
 
 	if (!m_name.empty())
