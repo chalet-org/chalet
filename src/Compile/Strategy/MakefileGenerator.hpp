@@ -33,6 +33,7 @@ private:
 	std::string getCompileEchoSources();
 	std::string getCompileEchoLinker();
 
+	std::string getDumpAsmRecipe();
 	std::string getAsmRecipe();
 	std::string getMakePchRecipe();
 	std::string getPchRecipe();

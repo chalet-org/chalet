@@ -31,6 +31,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 
 	const auto& depDir = m_state.paths.depDir();
 
+	const auto dumpAsmRecipe = getDumpAsmRecipe();
 	const auto assemblyRecipe = getAsmRecipe();
 	const auto pchRecipe = getPchRecipe();
 	const auto makePchRecipe = getMakePchRecipe();
@@ -72,7 +73,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 makebuild: {target}
 	{colorBlue}
 .DELETE_ON_ERROR: makebuild
-{makePchRecipe}{cppRecipes}{pchRecipe}{rcRecipe}{assemblyRecipe}{targetRecipe}
+{dumpAsmRecipe}{makePchRecipe}{cppRecipes}{pchRecipe}{rcRecipe}{assemblyRecipe}{targetRecipe}
 
 {depDir}/%.d: ;
 .PRECIOUS: {depDir}/%.d
@@ -82,6 +83,7 @@ include $(wildcard $(SOURCE_DEPS))
 		FMT_ARG(suffixes),
 		FMT_ARG(colorBlue),
 		FMT_ARG(target),
+		FMT_ARG(dumpAsmRecipe),
 		FMT_ARG(makePchRecipe),
 		FMT_ARG(cppRecipes),
 		FMT_ARG(pchRecipe),
@@ -177,6 +179,27 @@ std::string MakefileGenerator::getCompileEchoLinker()
 	}
 
 	return std::string();
+}
+
+/*****************************************************************************/
+std::string MakefileGenerator::getDumpAsmRecipe()
+{
+	std::string ret;
+
+	const bool dumpAssembly = m_project.dumpAssembly();
+	if (dumpAssembly)
+	{
+		const auto colorBlue = getBlueColor();
+
+		ret = fmt::format(R"makefile(
+dumpasm: $(SOURCE_ASMS)
+	{colorBlue}
+.PHONY: dumpasm
+)makefile",
+			FMT_ARG(colorBlue));
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -445,9 +468,6 @@ std::string MakefileGenerator::getPchOrderOnlyPreReq()
 std::string MakefileGenerator::getLinkerPreReqs()
 {
 	std::string ret = "$(SOURCE_OBJS)";
-
-	if (m_project.dumpAssembly())
-		ret += " $(SOURCE_ASMS)";
 
 	return ret;
 }
