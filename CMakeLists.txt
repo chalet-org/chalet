@@ -28,6 +28,7 @@ endif()
 file(GLOB_RECURSE SOURCES
 	src/*.cpp
 	src/*.rc
+	vendor/json-schema-validator/*.cpp
 )
 
 add_executable(${TARGET_NAME} ${SOURCES})
@@ -37,7 +38,7 @@ target_precompile_headers(${TARGET_NAME} PRIVATE src/PCH.hpp)
 target_include_directories(${TARGET_NAME}
 	PRIVATE
 		src/
-		src/Libraries/json-schema-validator/
+		vendor/json-schema-validator/
 		vendor/
 )
 

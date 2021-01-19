@@ -5,7 +5,7 @@ Thumbs.db
 # Chalet
 bin
 build
-chalet_modules/
+chalet_external/
 
 # VS Code
 .vscode/ipch

@@ -53,5 +53,5 @@
 		"key": "shift+f10",
 		"command": "workbench.action.tasks.runTask",
 		"args": "Run: Debug"
-	},
+	}
 ]

@@ -8,7 +8,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "Libraries/json-schema-validator/nlohmann/json-schema.hpp"
+#include "json-schema-validator/nlohmann/json-schema.hpp"
 
 namespace chalet
 {

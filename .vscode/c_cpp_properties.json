@@ -5,9 +5,9 @@
             "intelliSenseMode": "gcc-x64",
             "includePath": [
                 "${workspaceFolder}/src",
+                "${workspaceFolder}/vendor/json-schema-validator",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
-                "${workspaceFolder}/src/Libraries/json-schema-validator",
                 "/usr/local/include/**",
                 "/usr/include/**"
             ],
@@ -31,9 +31,9 @@
             ],
             "includePath": [
                 "${workspaceFolder}/src",
+                "${workspaceFolder}/vendor/json-schema-validator",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
-                "${workspaceFolder}/src/Libraries/json-schema-validator",
                 "/usr/local/include/"
             ],
             "defines": [
@@ -52,9 +52,9 @@
             "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
             "includePath": [
                 "${workspaceFolder}/src",
+                "${workspaceFolder}/vendor/json-schema-validator",
                 "${workspaceFolder}/vendor",
-                "${workspaceFolder}/test",
-                "${workspaceFolder}/src/Libraries/json-schema-validator"
+                "${workspaceFolder}/test"
             ],
             "defines": [
                 "_WIN32",

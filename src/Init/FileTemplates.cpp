@@ -119,7 +119,7 @@ Thumbs.db
 # Build
 bin
 build
-chalet_modules/
+chalet_external/
 )";
 
 	return ret;

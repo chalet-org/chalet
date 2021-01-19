@@ -277,7 +277,7 @@ Json Schema::getBuildJson()
 		"environment-modulePath": {
 			"type": "string",
 			"description": "The path to install depdendency modules into (see dependencies).",
-			"default": "chalet_modules"
+			"default": "chalet_external"
 		},
 		"environment-path": {
 			"type": "array",

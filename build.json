@@ -50,8 +50,8 @@
 			"_DEBUG"
 		],
 		"includeDirs": [
-			"vendor",
-			"src/Libraries/json-schema-validator"
+			"vendor/json-schema-validator",
+			"vendor"
 		],
 		"links": [
 			"stdc++fs"
@@ -66,7 +66,10 @@
 		{
 			"name": "chalet",
 			"kind": "consoleApplication",
-			"location": "src",
+			"location": [
+				"src",
+				"vendor/json-schema-validator"
+			],
 			"pch": "src/PCH.hpp",
 			"runProject": true
 			/*"preBuild": {
@@ -83,8 +86,9 @@
 			"kind": "consoleApplication",
 			"location": {
 				"include": [
-					"test",
-					"src"
+					"src",
+					"vendor/json-schema-validator",
+					"test"
 				],
 				"exclude": "src/Main.cpp"
 			},

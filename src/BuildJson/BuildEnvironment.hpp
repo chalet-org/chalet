@@ -42,7 +42,7 @@ private:
 	const std::string& m_buildConfiguration;
 
 	std::string m_platform = "auto";
-	std::string m_modulePath{ "chalet_modules" };
+	std::string m_modulePath{ "chalet_external" };
 	StringList m_path;
 
 	std::string m_pathString;
