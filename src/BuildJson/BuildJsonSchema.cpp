@@ -434,6 +434,9 @@ Json Schema::getBuildJson()
 				"defines(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
 					"$ref": "#/definitions/project-defines"
 				},
+				"dumpAssembly(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-dumpAssembly"
+				},
 				"includeDirs(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
 					"$ref": "#/definitions/project-includeDirs"
 				},

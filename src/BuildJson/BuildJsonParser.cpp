@@ -476,7 +476,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	if (bool val = false; parseKeyFromConfig(val, inNode, "objectiveCxx"))
 		outProject.setObjectiveCxx(val);
 
-	if (bool val = false; JsonNode::assignFromKey(val, inNode, "dumpAssembly"))
+	if (bool val = false; parseKeyFromConfig(val, inNode, "dumpAssembly"))
 		outProject.setDumpAssembly(val);
 
 	if (ushort val = 0; parseKeyFromConfig(val, inNode, "maxJobs"))
