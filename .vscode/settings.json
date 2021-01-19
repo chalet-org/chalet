@@ -10,7 +10,7 @@
 	"files.exclude": {
 		"vendor": true,
 		// "build/": true,
-		"dist/": true
+		// "dist/": true
 	},
 	"search.exclude": {
 		"vendor": true
