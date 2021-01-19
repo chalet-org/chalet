@@ -21,8 +21,8 @@ BuildCache::BuildCache(const WorkspaceInfo& inInfo, const BuildPaths& inPaths) :
 	m_info(inInfo),
 	m_paths(inPaths)
 {
-	m_removeOldCacheFolder = m_environmentCache.json.empty();
 	m_environmentCache.load(fmt::format("{}/chalet-cache.json", m_paths.buildDir()));
+	m_removeOldCacheFolder = m_environmentCache.json.empty();
 }
 
 /*****************************************************************************/
