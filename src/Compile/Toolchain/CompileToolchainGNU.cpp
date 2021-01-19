@@ -282,10 +282,10 @@ const std::string& CompileToolchainGNU::getLinkerOptions()
 		// #if defined(CHALET_LINUX)
 		if (m_project.posixThreads() && !String::contains("-pthread", ret))
 		{
-			if (m_config.isMingw() && m_project.staticLinking())
-				ret += " -Wl,-Bstatic -lstdc++ -lpthread";
-			else
-				ret += " -pthread";
+			// if (m_config.isMingw() && m_project.staticLinking())
+			// 	ret += " -Wl,-Bstatic -lstdc++ -lpthread";  // probably junk. revisit?
+			// else
+			ret += " -pthread";
 		}
 		// #endif
 
