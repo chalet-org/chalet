@@ -43,9 +43,10 @@ bool CmakeBuilder::run()
 	}
 
 	const auto& loc = m_project.locations().front();
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	auto cwd = Commands::getWorkingDirectoryPath();
-	auto outDirPath = cwd / loc / "bin" / buildConfiguration;
+	auto outDirPath = cwd / loc / buildOutputDir;
 	std::string outDir = outDirPath.string();
 
 	Path::sanitize(outDir);
@@ -92,9 +93,11 @@ bool CmakeBuilder::run()
 		if (ninja)
 		{
 			const auto& ninjaExec = m_state.tools.ninja();
-			if (!Commands::shell(fmt::format("cd {outDir} && {ninjaExec}",
-					FMT_ARG(outDir),
-					FMT_ARG(ninjaExec))))
+			auto ninjaCommand = fmt::format("cd {outDir} && {ninjaExec}",
+				FMT_ARG(outDir),
+				FMT_ARG(ninjaExec));
+
+			if (!Commands::shell(ninjaCommand))
 				return false;
 		}
 		else
@@ -110,7 +113,7 @@ bool CmakeBuilder::run()
 			if (m_state.tools.makeVersionMajor() >= 4)
 				syncTarget = " --output-sync=target";
 
-			std::string makeCommand = fmt::format("cd {outDir} && {makeExec}{jobs}{syncTarget}",
+			auto makeCommand = fmt::format("cd {outDir} && {makeExec}{jobs}{syncTarget}",
 				FMT_ARG(outDir),
 				FMT_ARG(makeExec),
 				FMT_ARG(jobs),

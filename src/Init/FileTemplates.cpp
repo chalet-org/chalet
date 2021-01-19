@@ -117,8 +117,8 @@ Thumbs.db
 .DS_Store
 
 # Build
-bin
 build
+dist
 chalet_external/
 )";
 

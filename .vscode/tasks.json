@@ -4,7 +4,7 @@
 	"version": "2.0.0",
 	"options": {
 		"env": {
-			"CHALET_DEBUG": "bin/Debug/chalet-debug"
+			"CHALET_DEBUG": "build/Debug/chalet-debug"
 		}
 	},
 	"windows": {
@@ -124,7 +124,7 @@
 		},
 		{
 			"label": "Rebuild: Debug",
-			"command": "rm -rf bin/Debug && bash ./build.sh Debug",
+			"command": "rm -rf build/Debug && bash ./build.sh Debug",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -172,7 +172,7 @@
 		},
 		{
 			"label": "Clean",
-			"command": "rm -rf bin build",
+			"command": "rm -rf build dist",
 			"type": "shell",
 			"group": {
 				"kind": "build",

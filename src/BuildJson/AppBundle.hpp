@@ -37,8 +37,8 @@ struct AppBundle
 	const std::string& longDescription() const noexcept;
 	void setLongDescription(const std::string& inValue);
 
-	const std::string& path() const noexcept;
-	void setPath(const std::string& inValue);
+	const std::string& outDir() const noexcept;
+	void setOutDir(const std::string& inValue);
 
 	const std::string& configuration() const noexcept;
 	void setConfiguration(const std::string& inValue);
@@ -73,7 +73,7 @@ private:
 	std::string m_appName;
 	std::string m_shortDescription;
 	std::string m_longDescription;
-	std::string m_path{ "build" };
+	std::string m_distDir{ "dist" };
 	std::string m_configuration;
 };
 }

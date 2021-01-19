@@ -19,7 +19,7 @@ elif [[ $OSTYPE == 'msys' || $OSTYPE == 'win32' ]]; then
 	PLATFORM=windows
 fi
 
-BUILD_FOLDER="bin/$BUILD_CONFIGURATION"
+BUILD_FOLDER="build/$BUILD_CONFIGURATION"
 mkdir -p "$BUILD_FOLDER"
 cd "$CWD/$BUILD_FOLDER"
 

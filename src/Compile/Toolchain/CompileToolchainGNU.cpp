@@ -69,8 +69,8 @@ const std::string& CompileToolchainGNU::getLibDirs()
 	{
 		StringList libs = m_project.libDirs();
 
-		const auto& buildDir = m_state.paths.buildDir();
-		libs.push_back(buildDir);
+		const auto& buildOutputDir = m_state.paths.buildOutputDir();
+		libs.push_back(buildOutputDir);
 
 #if !defined(CHALET_WIN32)
 		if (!m_config.isMingw())

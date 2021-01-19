@@ -9,8 +9,8 @@
 	"files.eol": "\n",
 	"files.exclude": {
 		"vendor": true,
-		// "bin/": true,
-		"build/": true
+		// "build/": true,
+		"dist/": true
 	},
 	"search.exclude": {
 		"vendor": true
@@ -36,15 +36,15 @@
 	"json.schemas": [
 		{
 			"fileMatch": [
-				"build*.json"
+				"build/chalet-cache.json"
 			],
-			"url": "./schema/chalet.schema.json"
+			"url": "./schema/chalet-cache.schema.json"
 		},
 		{
 			"fileMatch": [
-				"bin/chalet-cache.json"
+				"build*.json"
 			],
-			"url": "./schema/chalet-cache.schema.json"
+			"url": "./schema/chalet.schema.json"
 		}
 	]
 }

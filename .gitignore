@@ -3,8 +3,8 @@ Thumbs.db
 .DS_Store
 
 # Chalet
-bin
 build
+dist
 chalet_external/
 
 # VS Code

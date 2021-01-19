@@ -13,6 +13,7 @@
 #include "Json/JsonComments.hpp"
 
 // TODO: Buckaroo integration?
+// TODO: Implement ThreadPool
 
 namespace chalet
 {
@@ -219,6 +220,9 @@ bool DependencyManager::run(const bool inInstallCmd)
 			dependencyCache.erase(it);
 			m_state.cache.setDirty(true);
 		}
+
+		if (Commands::pathIsEmpty(modulePath, true))
+			result &= Commands::remove(modulePath);
 	}
 
 	if (count > 0)

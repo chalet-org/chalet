@@ -5,7 +5,7 @@
 			"name": "GDB/LLDB",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/bin/Debug/chalet-debug",
+			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				"buildrun",
 				"Release"
@@ -22,7 +22,7 @@
 				}
 			],
 			"windows": {
-				"program": "${workspaceFolder}/bin/Debug/chalet-debug.exe",
+				"program": "${workspaceFolder}/build/Debug/chalet-debug.exe",
 				"MIMode": "gdb",
 				"miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
 				"env": {

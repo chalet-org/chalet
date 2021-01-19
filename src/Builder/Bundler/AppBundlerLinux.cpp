@@ -21,18 +21,18 @@ namespace chalet
 	Type=Application
 	Categories=Game;Application;
 	Terminal=false
-	Exec=/home/user/dev/project/build/app
-	Path=/home/user/dev/project/build
+	Exec=/home/user/dev/project/dist/app
+	Path=/home/user/dev/project/dist
 	Name=My Project
 	Comment=Short Description
-	Icon=/home/user/dev/project/build/app.png
+	Icon=/home/user/dev/project/dist/app.png
 */
 
 /*****************************************************************************/
 AppBundlerLinux::AppBundlerLinux(BuildState& inState) :
 	m_state(inState)
 {
-	const std::string kUserApplications = ".local/share/applications";
+	const std::string kUserApplications{ ".local/share/applications" };
 
 	auto home = Environment::getUserDirectory();
 	m_home = fs::path{ home };
@@ -100,7 +100,7 @@ bool AppBundlerLinux::bundleForPlatform(const bool inCleanOutput)
 		if (!project->isExecutable())
 			continue;
 
-		const std::string filename = fmt::format("{}/{}", bundlePath, project->outputFile());
+		const auto filename = fmt::format("{}/{}", bundlePath, project->outputFile());
 		fs::path outDesktopEntry{ bundlePath / fs::path{ fs::path{ filename }.stem().string() + ".desktop" } };
 		std::string desktopEntryString = outDesktopEntry.string();
 		fs::path iconPath = bundlePath / fs::path{ icon }.filename();
@@ -131,17 +131,17 @@ bool AppBundlerLinux::bundleForPlatform(const bool inCleanOutput)
 /*****************************************************************************/
 std::string AppBundlerLinux::getBundlePath() const
 {
-	return m_state.bundle.path();
+	return m_state.bundle.outDir();
 }
 
 std::string AppBundlerLinux::getExecutablePath() const
 {
-	return m_state.bundle.path();
+	return m_state.bundle.outDir();
 }
 
 std::string AppBundlerLinux::getResourcePath() const
 {
-	return m_state.bundle.path();
+	return m_state.bundle.outDir();
 }
 
 }

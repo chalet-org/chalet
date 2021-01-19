@@ -16,8 +16,8 @@ struct BuildPaths
 	const std::string& workingDirectory() const noexcept;
 	void setWorkingDirectory(const std::string& inValue);
 
-	const std::string& binDir() const;
-	const std::string& buildDir() const noexcept;
+	const std::string& buildDir() const;
+	const std::string& buildOutputDir() const noexcept;
 	const std::string& objDir() const noexcept;
 	const std::string& depDir() const noexcept;
 	const std::string& asmDir() const noexcept;
@@ -55,8 +55,8 @@ private:
 	StringList getDirectoryList(const ProjectConfiguration& inProject) const;
 
 	std::string m_workingDirectory;
-	mutable std::string m_binDir{ "bin" };
-	std::string m_buildDir;
+	mutable std::string m_buildDir{ "build" };
+	std::string m_buildOutputDir;
 	std::string m_objDir;
 	std::string m_depDir;
 	std::string m_asmDir;

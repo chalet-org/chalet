@@ -21,10 +21,10 @@ void BuildPaths::initialize(const std::string& inBuildConfiguration)
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
-	m_buildDir = fmt::format("{}/{}", m_binDir, inBuildConfiguration);
-	m_objDir = fmt::format("{}/obj", m_buildDir);
-	m_depDir = fmt::format("{}/dep", m_buildDir);
-	m_asmDir = fmt::format("{}/asm", m_buildDir);
+	m_buildOutputDir = fmt::format("{}/{}", m_buildDir, inBuildConfiguration);
+	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
+	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
+	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
 
 	m_initialized = true;
 }
@@ -61,14 +61,14 @@ void BuildPaths::setWorkingDirectory(const std::string& inValue)
 }
 
 /*****************************************************************************/
-const std::string& BuildPaths::binDir() const
+const std::string& BuildPaths::buildDir() const
 {
-	chalet_assert(!m_binDir.empty(), "binDir was not defined");
+	chalet_assert(!m_buildDir.empty(), "buildDir was not defined");
 	if (!m_binDirMade)
 	{
-		if (!Commands::pathExists(m_binDir))
+		if (!Commands::pathExists(m_buildDir))
 		{
-			m_binDirMade = Commands::makeDirectory(m_binDir);
+			m_binDirMade = Commands::makeDirectory(m_buildDir);
 		}
 		else
 		{
@@ -76,13 +76,13 @@ const std::string& BuildPaths::binDir() const
 		}
 	}
 
-	return m_binDir;
+	return m_buildDir;
 }
 
-const std::string& BuildPaths::buildDir() const noexcept
+const std::string& BuildPaths::buildOutputDir() const noexcept
 {
-	chalet_assert(m_initialized, "BuildPaths::buildDir() called before BuildPaths::initialize().");
-	return m_buildDir;
+	chalet_assert(m_initialized, "BuildPaths::buildOutputDir() called before BuildPaths::initialize().");
+	return m_buildOutputDir;
 }
 
 const std::string& BuildPaths::objDir() const noexcept
@@ -138,7 +138,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject) cons
 		ret.directories.reserve(3 + objSubDirs.size() + depSubDirs.size());
 	}
 
-	ret.directories.push_back(m_buildDir);
+	ret.directories.push_back(m_buildOutputDir);
 	ret.directories.push_back(m_objDir);
 	ret.directories.push_back(m_depDir);
 
@@ -175,7 +175,7 @@ std::string BuildPaths::getTargetFilename(const ProjectConfiguration& inProject)
 {
 	const auto& filename = inProject.outputFile();
 
-	return fmt::format("{}/{}", buildDir(), filename);
+	return fmt::format("{}/{}", buildOutputDir(), filename);
 }
 
 /*****************************************************************************/
@@ -193,7 +193,7 @@ std::string BuildPaths::getTargetBasename(const ProjectConfiguration& inProject)
 		base = String::getPathFolderBaseName(inProject.outputFile());
 	}
 
-	return fmt::format("{}/{}", buildDir(), base);
+	return fmt::format("{}/{}", buildOutputDir(), base);
 }
 
 /*****************************************************************************/

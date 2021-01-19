@@ -89,15 +89,15 @@ void AppBundle::setLongDescription(const std::string& inValue)
 }
 
 /*****************************************************************************/
-const std::string& AppBundle::path() const noexcept
+const std::string& AppBundle::outDir() const noexcept
 {
-	return m_path;
+	return m_distDir;
 }
 
-void AppBundle::setPath(const std::string& inValue)
+void AppBundle::setOutDir(const std::string& inValue)
 {
-	m_path = inValue;
-	Path::sanitize(m_path);
+	m_distDir = inValue;
+	Path::sanitize(m_distDir);
 }
 
 /*****************************************************************************/
@@ -169,7 +169,7 @@ void AppBundle::addDependency(std::string& inValue)
 		return;
 	}
 
-	std::string resolved = fmt::format("{}/{}", m_paths.buildDir(), inValue);
+	std::string resolved = fmt::format("{}/{}", m_paths.buildOutputDir(), inValue);
 	if (Commands::pathExists(resolved))
 	{
 		add(resolved);

@@ -43,7 +43,7 @@ void BuildState::initializeCache(const CommandLineInputs& inInputs)
 	cache.checkIfWorkingDirectoryChanged();
 
 	cache.removeStaleProjectCaches(buildConfiguration(), projectNames, BuildCache::Type::Local);
-	cache.removeBuildIfCacheChanged(paths.buildDir());
+	cache.removeBuildIfCacheChanged(paths.buildOutputDir());
 	cache.saveEnvironmentCache();
 }
 

@@ -46,12 +46,12 @@ bool AppBundler::run()
 {
 	auto& bundle = m_state.bundle;
 
-	const auto& buildDir = m_state.paths.buildDir();
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& bundleProjects = bundle.projects();
 
-	const std::string bundlePath = m_impl->getBundlePath();
-	const std::string executablePath = m_impl->getExecutablePath();
-	const std::string resourcePath = m_impl->getResourcePath();
+	const auto bundlePath = m_impl->getBundlePath();
+	const auto executablePath = m_impl->getExecutablePath();
+	const auto resourcePath = m_impl->getResourcePath();
 
 	removeOldFiles();
 	makeBundlePath(bundlePath, executablePath, resourcePath);
@@ -73,8 +73,8 @@ bool AppBundler::run()
 			continue;
 
 		const auto& filename = project->outputFile();
-		const std::string target = fmt::format("{buildDir}/{filename}",
-			FMT_ARG(buildDir),
+		const auto target = fmt::format("{buildOutputDir}/{filename}",
+			FMT_ARG(buildOutputDir),
 			FMT_ARG(filename));
 
 		if (project->isExecutable())
@@ -101,8 +101,8 @@ bool AppBundler::run()
 #if !defined(CHALET_WIN32)
 		if (List::contains(executables, dep))
 		{
-			const std::string filename = String::getPathFilename(dep);
-			const std::string executable = fmt::format("{}/{}", executablePath, filename);
+			const auto filename = String::getPathFilename(dep);
+			const auto executable = fmt::format("{}/{}", executablePath, filename);
 			result &= Commands::setExecutableFlag(executable, m_cleanOutput);
 		}
 #endif
@@ -125,8 +125,8 @@ bool AppBundler::run()
 /*****************************************************************************/
 bool AppBundler::removeOldFiles()
 {
-	const auto& distFolder = m_state.bundle.path();
-	bool result = Commands::removeRecursively(distFolder, m_cleanOutput);
+	const auto& outDir = m_state.bundle.outDir();
+	bool result = Commands::removeRecursively(outDir, m_cleanOutput);
 
 	result &= m_impl->removeOldFiles(m_cleanOutput);
 

@@ -312,10 +312,13 @@ bool Commands::pathExists(const fs::path& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::pathIsEmpty(const fs::path& inPath)
+bool Commands::pathIsEmpty(const fs::path& inPath, const bool inCheckExists)
 {
 	try
 	{
+		if (inCheckExists && !fs::exists(inPath))
+			return false;
+
 		if (!fs::is_directory(inPath))
 		{
 			throw std::runtime_error("Not a directory");

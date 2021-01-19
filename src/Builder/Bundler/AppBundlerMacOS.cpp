@@ -53,7 +53,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	auto& macosBundle = bundle.macosBundle();
 	auto& bundleProjects = bundle.projects();
 
-	const auto& distFolder = bundle.path();
+	const auto& outDir = bundle.outDir();
 
 	const auto& version = m_state.info.version();
 	const auto& icon = macosBundle.icon();
@@ -62,10 +62,10 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	const auto& bundleName = macosBundle.bundleName();
 	const auto& infoPropertyList = macosBundle.infoPropertyList();
 
-	const std::string bundlePath = getBundlePath();
-	const std::string frameworkPath = fmt::format("{}/Frameworks", bundlePath);
-	const std::string resourcePath = getResourcePath();
-	const std::string executablePath = getExecutablePath();
+	const auto bundlePath = getBundlePath();
+	const auto frameworkPath = fmt::format("{}/Frameworks", bundlePath);
+	const auto resourcePath = getResourcePath();
+	const auto executablePath = getExecutablePath();
 
 	Commands::makeDirectory(frameworkPath, inCleanOutput);
 
@@ -196,11 +196,11 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 			Output::print(Color::blue, "   Creating the disk image for the application...");
 		}
 
-		const std::string tmpDmg = fmt::format("{}/.tmp.dmg", distFolder);
+		const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);
 		dmgResult &= Commands::shell(fmt::format("{} create -megabytes 54 -fs HFS+ -volname '{}' '{}' &> /dev/null", hdiUtil, bundleName, tmpDmg), inCleanOutput);
 		dmgResult &= Commands::shell(fmt::format("{} attach '{}' &> /dev/null", hdiUtil, tmpDmg), inCleanOutput);
 
-		const std::string appPath = fmt::format("{}/{}.app", distFolder, bundleName);
+		const std::string appPath = fmt::format("{}/{}.app", outDir, bundleName);
 		dmgResult &= Commands::shell(fmt::format("cp -r '{}' '{}'", appPath, volumePath), inCleanOutput);
 
 		const std::string backgroundPath = fmt::format("{}/.background", volumePath);
@@ -220,7 +220,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 
 		dmgResult &= Commands::shell(fmt::format("{} detach '{}/' &> /dev/null", hdiUtil, volumePath), inCleanOutput);
 
-		const std::string outDmgPath = fmt::format("{}/{}.dmg", distFolder, bundleName);
+		const std::string outDmgPath = fmt::format("{}/{}.dmg", outDir, bundleName);
 		dmgResult &= Commands::shell(fmt::format("{} convert '{}' -format UDZO -o '{}' &> /dev/null", hdiUtil, tmpDmg, outDmgPath), inCleanOutput);
 
 		dmgResult &= Commands::remove(tmpDmg, inCleanOutput);
@@ -241,10 +241,10 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 /*****************************************************************************/
 std::string AppBundlerMacOS::getBundlePath() const
 {
-	const auto& distFolder = m_state.bundle.path();
+	const auto& outDir = m_state.bundle.outDir();
 	const auto& bundleName = m_state.bundle.macosBundle().bundleName();
 
-	return fmt::format("{}/{}.app/Contents", distFolder, bundleName);
+	return fmt::format("{}/{}.app/Contents", outDir, bundleName);
 }
 
 std::string AppBundlerMacOS::getExecutablePath() const

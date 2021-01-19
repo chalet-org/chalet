@@ -101,7 +101,7 @@
 		"appName": "Chalet",
 		"shortDescription": "Chalet Build System",
 		"longDescription": "A Modern C/C++ Build System for GCC/Clang",
-		"path": "build",
+		"outDir": "dist",
 		"configuration": "Release",
 		"projects": [
 			"chalet"
@@ -134,5 +134,34 @@
 			"icon": "env/windows/app.ico",
 			"manifest": "env/windows/app.manifest"
 		}
-	}
+	} /*,
+	"dependencies": [
+		{
+			"name": "catch2",
+			"repository": "git@github.com:catchorg/Catch2.git",
+			"branch": "v2.x"
+		},
+		{
+			"name": "ctre",
+			"repository": "git@github.com:hanickadot/compile-time-regular-expressions.git"
+		},
+		{
+			"repository": "git@github.com:fmtlib/fmt.git"
+		},
+		{
+			"name": "ghc_fs",
+			"repository": "git@github.com:gulrak/filesystem.git"
+		},
+		{
+			"name": "nlohmann_json",
+			"repository": "git@github.com:nlohmann/json.git"
+		},
+		{
+			"repository": "git@github.com:agauniyal/rang.git"
+		},
+		{
+			"name": "ust",
+			"repository": "git@github.com:MisterTea/UniversalStacktrace.git"
+		}
+	]*/
 }

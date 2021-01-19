@@ -128,10 +128,10 @@ Json Schema::getBuildJson()
 				}
 			}
 		},
-		"bundle-path": {
+		"bundle-outDir": {
 			"type": "string",
 			"description": "The output folder to place the final build along with all of its dependencies.",
-			"default": "build"
+			"default": "dist"
 		},
 		"bundle-projects": {
 			"type": "array",
@@ -1214,7 +1214,6 @@ Json Schema::getBuildJson()
 			"additionalProperties": false,
 			"description": "Variables to describe the final output build.",
 			"required": [
-				"path",
 				"configuration",
 				"projects"
 			],
@@ -1248,8 +1247,8 @@ Json Schema::getBuildJson()
 				"macos": {
 					"$ref": "#/definitions/bundle-macos"
 				},
-				"path": {
-					"$ref": "#/definitions/bundle-path"
+				"outDir": {
+					"$ref": "#/definitions/bundle-outDir"
 				},
 				"projects": {
 					"$ref": "#/definitions/bundle-projects"

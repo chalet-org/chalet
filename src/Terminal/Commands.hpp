@@ -31,7 +31,7 @@ void forEachFileMatch(const std::string& inPath, const StringList& inPatterns, c
 bool readFileAndReplace(const fs::path& inFile, const std::function<void(std::string&)>& onReplace);
 
 bool pathExists(const fs::path& inPath);
-bool pathIsEmpty(const fs::path& inPath);
+bool pathIsEmpty(const fs::path& inPath, const bool inCheckExists = false);
 
 bool createFileWithContents(const std::string& inFile, const std::string& inContents);
 

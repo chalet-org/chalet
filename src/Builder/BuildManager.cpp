@@ -211,18 +211,18 @@ bool BuildManager::copyRunDependencies()
 	if (m_project->name() == m_runProjectName)
 	{
 		const auto& workingDirectory = m_state.paths.workingDirectory();
-		const auto& buildDir = m_state.paths.buildDir();
+		const auto& buildOutputDir = m_state.paths.buildOutputDir();
 		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
 		auto runDependencies = getResolvedRunDependenciesList(compilerConfig);
 
-		std::string outputFolder = fmt::format("{workingDirectory}/{buildDir}",
+		auto outputFolder = fmt::format("{workingDirectory}/{buildOutputDir}",
 			FMT_ARG(workingDirectory),
-			FMT_ARG(buildDir));
+			FMT_ARG(buildOutputDir));
 
 		int copied = 0;
 		for (auto& dep : runDependencies)
 		{
-			std::string depFile = String::getPathFilename(dep);
+			auto depFile = String::getPathFilename(dep);
 			if (!Commands::pathExists(fmt::format("{}/{}", outputFolder, depFile)))
 			{
 				result &= Commands::copy(dep, outputFolder, true);
@@ -253,7 +253,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const CompilerConfig& in
 			continue;
 		}
 
-		std::string resolved = fmt::format("{}/{}", compilerPathBin, dep);
+		auto resolved = fmt::format("{}/{}", compilerPathBin, dep);
 		if (Commands::pathExists(resolved))
 		{
 			ret.push_back(std::move(resolved));
@@ -277,29 +277,29 @@ StringList BuildManager::getResolvedRunDependenciesList(const CompilerConfig& in
 /*****************************************************************************/
 bool BuildManager::doRun()
 {
-	std::string outputFile = getRunOutputFile();
+	auto outputFile = getRunOutputFile();
 	if (outputFile.empty())
 		return false;
 
 	const auto& workingDirectory = m_state.paths.workingDirectory();
-	const auto& buildDir = m_state.paths.buildDir();
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& runOptions = m_inputs.runOptions();
 
 	const auto& runArguments = m_project->runArguments();
 
 	// LOG(workingDirectory);
 
-	std::string outputFolder = fmt::format("{workingDirectory}/{buildDir}",
+	auto outputFolder = fmt::format("{workingDirectory}/{buildOutputDir}",
 		FMT_ARG(workingDirectory),
-		FMT_ARG(buildDir));
+		FMT_ARG(buildOutputDir));
 
-	Output::msgLaunch(buildDir, outputFile);
+	Output::msgLaunch(buildOutputDir, outputFile);
 	Output::lineBreak();
 
 	// LOG(runOptions);
 	// LOG(runArguments);
 
-	std::string file = fmt::format("{outputFolder}/{outputFile}",
+	auto file = fmt::format("{outputFolder}/{outputFile}",
 		FMT_ARG(outputFolder),
 		FMT_ARG(outputFile));
 
@@ -308,8 +308,8 @@ bool BuildManager::doRun()
 	if (!Commands::pathExists(file))
 		return false;
 
-	std::string args = !runOptions.empty() ? runOptions : runArguments;
-	std::string cmd = fmt::format("{} {}", file, args);
+	const auto& args = !runOptions.empty() ? runOptions : runArguments;
+	auto cmd = fmt::format("{} {}", file, args);
 
 	// LOG(cmd);
 
@@ -321,10 +321,10 @@ bool BuildManager::doLazyClean()
 {
 	chalet_assert(m_project != nullptr, "");
 
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& buildDir = m_state.paths.buildDir();
-	const auto& binDir = m_state.paths.binDir();
 
-	if (!Commands::pathExists(buildDir))
+	if (!Commands::pathExists(buildOutputDir))
 	{
 		Output::msgNothingToClean();
 		Output::lineBreak();
@@ -340,9 +340,9 @@ bool BuildManager::doLazyClean()
 	const auto& build = m_state.buildConfiguration();
 
 	if (build.empty())
-		Commands::removeRecursively(binDir, m_cleanOutput);
-	else
 		Commands::removeRecursively(buildDir, m_cleanOutput);
+	else
+		Commands::removeRecursively(buildOutputDir, m_cleanOutput);
 
 	// TODO: Clean CMake projects
 	// TODO: Flag to clean dependencies
@@ -358,15 +358,15 @@ bool BuildManager::doClean(const StringList& inObjectList, const StringList& inD
 {
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& buildDir = m_state.paths.buildDir();
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
-	if (m_cleanOutput && Commands::pathExists(buildDir))
+	if (m_cleanOutput && Commands::pathExists(buildOutputDir))
 	{
 		Output::msgCleaningRebuild();
 		Output::lineBreak();
 	}
 
-	std::string pch = m_state.paths.getPrecompiledHeader(*m_project);
+	auto pch = m_state.paths.getPrecompiledHeader(*m_project);
 
 	auto cacheAndRemove = [=](const StringList& inList, StringList& outCache) -> void {
 		for (auto& item : inList)
@@ -567,13 +567,13 @@ void BuildManager::testTerminalMessages()
 {
 	const auto& buildConfiguration = m_state.buildConfiguration();
 	const auto& distConfig = m_state.bundle.configuration();
-	const auto& buildDir = m_state.paths.buildDir();
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	const std::string name{ "cool-program.exe" };
 	const std::string profAnalysis{ "profiler_analysis.stats" };
 
 	Output::msgBuildSuccess();
-	Output::msgLaunch(buildDir, name);
+	Output::msgLaunch(buildOutputDir, name);
 	Output::msgBuildFail();
 	Output::msgBuildProdError(distConfig);
 	Output::msgProfilerDone(profAnalysis);

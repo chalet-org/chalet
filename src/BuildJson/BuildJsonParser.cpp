@@ -790,7 +790,7 @@ bool BuildJsonParser::parseBundle(const Json& inNode)
 		m_state.bundle.setLongDescription(val);
 
 	if (std::string val; assignStringAndValidate(val, bundle, "path"))
-		m_state.bundle.setPath(val);
+		m_state.bundle.setOutDir(val);
 
 	if (StringList list; assignStringListFromConfig(list, bundle, "projects"))
 		m_state.bundle.addProjects(list);
