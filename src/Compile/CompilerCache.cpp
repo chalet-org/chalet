@@ -57,10 +57,12 @@ std::string CompilerCache::getRootPathVariable()
 	if (auto cppRoot = String::getPathFolder(m_cpp); !List::contains(outList, cppRoot))
 		outList.push_back(std::move(cppRoot));
 
-	for (auto& path : Path::getOSPaths())
+	for (auto& p : Path::getOSPaths())
 	{
-		if (!Commands::pathExists(path))
+		if (!Commands::pathExists(p))
 			continue;
+
+		auto path = Commands::getCanonicalPath(p); // probably not needed, but just in case
 
 		if (!List::contains(outList, path))
 			outList.push_back(std::move(path));

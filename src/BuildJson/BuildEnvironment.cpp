@@ -130,10 +130,12 @@ std::string BuildEnvironment::makePathVariable(const std::string& inRootPath)
 
 	StringList outList;
 
-	for (auto& path : m_path)
+	for (auto& p : m_path)
 	{
-		if (!Commands::pathExists(path))
+		if (!Commands::pathExists(p))
 			continue;
+
+		auto path = Commands::getCanonicalPath(p); // for any relative paths
 
 		if (!String::contains(path, inRootPath))
 			outList.push_back(std::move(path));
