@@ -55,7 +55,9 @@ bool CacheJsonParser::serialize()
 bool CacheJsonParser::validatePaths()
 {
 	auto& compilers = m_state.compilers;
+#if defined(CHALET_DEBUG)
 	auto& cacheJson = m_state.cache.environmentCache();
+#endif
 
 	if (!Commands::pathExists(compilers.cpp()))
 	{
