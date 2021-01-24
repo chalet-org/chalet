@@ -12,24 +12,54 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
+    - name: 'Checkout'
       uses: actions/checkout@v2
-    - name: Get GCC 10
+    - name: 'Get GCC 10'
       run: |
         sudo apt update
         sudo apt install gcc-10 g++-10
       shell: bash
-    - name: Build
-      run: bash ./build_all.sh
+    - name: 'Build: Debug'
+      run: bash ./build.sh Debug
       shell: bash
       env:
         CC: gcc-10
         CXX: g++-10
-  macosx:
+    - name: 'Build: Release'
+      run: build/Debug/chalet-debug buildrun Release
+      shell: bash
+      env:
+        CC: gcc-10
+        CXX: g++-10
+  macos:
     runs-on: macos-latest
     steps:
-    - name: Checkout
+    - name: 'Checkout'
       uses: actions/checkout@v2
-    - name: Build
-      run: bash ./build_all.sh
+    - name: 'Build: Debug'
+      run: bash ./build.sh Debug
       shell: bash
+    - name: 'Build: Release'
+      run: build/Debug/chalet-debug buildrun Release
+      shell: bash
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - name: 'Get MSYS2'
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          base-devel
+          git
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-cmake
+    - name: 'Checkout'
+      uses: actions/checkout@v2
+    - name: 'Build: Debug'
+      run: bash ./build.sh Debug
+    - name: 'Build: Release'
+      run: build/Debug/chalet-debug buildrun Release
