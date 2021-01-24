@@ -17,10 +17,10 @@ jobs:
     - name: Get GCC 10
       run: |
         sudo apt update
-         sudo apt install gcc-10 g++-10
+        sudo apt install gcc-10 g++-10
       shell: bash
     - name: Build
-      run: ./build_all.sh
+      run: bash ./build_all.sh
       shell: bash
       env:
         CC: gcc-10
@@ -31,5 +31,5 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Build
-      run: ./build_all.sh
+      run: bash ./build_all.sh
       shell: bash
