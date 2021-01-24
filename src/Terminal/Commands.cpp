@@ -476,8 +476,8 @@ std::string Commands::which(const std::string_view& inExecutable, const bool inC
 		result += ".exe";
 
 	// MINGW hell - there might be a better solution for this
-	if (String::startsWith("/mingw64/bin/", result))
-		String::replaceAll(result, "/mingw64/bin/", "");
+	// if (String::startsWith("/mingw64/bin/", result))
+	// 	String::replaceAll(result, "/mingw64/bin/", "");
 
 	if (String::startsWith("/usr/bin/", result))
 		String::replaceAll(result, "/usr/bin/", "");
