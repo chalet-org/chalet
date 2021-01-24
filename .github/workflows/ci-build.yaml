@@ -14,12 +14,22 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Get GCC 10
+      run: |
+        sudo apt update
+         sudo apt install gcc-10 g++-10
+      shell: bash
     - name: Build
-      run: bash ./build_all.sh
+      run: ./build_all.sh
+      shell: bash
+      env:
+        CC: gcc-10
+        CXX: g++-10
   macosx:
     runs-on: macos-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Build
-      run: bash ./build_all.sh
+      run: ./build_all.sh
+      shell: bash

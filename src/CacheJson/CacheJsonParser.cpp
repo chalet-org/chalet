@@ -8,6 +8,7 @@
 #include "CacheJson/CacheJsonSchema.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
@@ -142,14 +143,23 @@ bool CacheJsonParser::makeCache()
 
 	if (!compilers.contains(kKeyCpp))
 	{
-		auto cpp = Commands::which("clang++");
-		if (cpp.empty())
+		auto varCXX = Environment::get("CXX");
+		std::string cpp;
+		if (varCXX == nullptr)
 		{
-			cpp = Commands::which("g++");
+			cpp = Commands::which("clang++");
 			if (cpp.empty())
 			{
-				cpp = Commands::which("c++");
+				cpp = Commands::which("g++");
+				if (cpp.empty())
+				{
+					cpp = Commands::which("c++");
+				}
 			}
+		}
+		else
+		{
+			cpp = std::string(varCXX);
 		}
 
 		compilers[kKeyCpp] = std::move(cpp);
@@ -158,14 +168,23 @@ bool CacheJsonParser::makeCache()
 
 	if (!compilers.contains(kKeyCc))
 	{
-		auto cc = Commands::which("clang");
-		if (cc.empty())
+		auto varCC = Environment::get("CC");
+		std::string cc;
+		if (varCC == nullptr)
 		{
-			cc = Commands::which("gcc");
+			cc = Commands::which("clang");
 			if (cc.empty())
 			{
-				cc = Commands::which("cc");
+				cc = Commands::which("gcc");
+				if (cc.empty())
+				{
+					cc = Commands::which("cc");
+				}
 			}
+		}
+		else
+		{
+			cc = std::string(varCC);
 		}
 
 		compilers[kKeyCc] = std::move(cc);
