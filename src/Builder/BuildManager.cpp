@@ -65,10 +65,10 @@ bool BuildManager::run(const Route inRoute)
 		if (!project->includeInBuild())
 			continue;
 
-		m_project = project.get();
-
 		if (runCommand && !project->runProject())
 			continue;
+
+		m_project = project.get();
 
 		if (project->cmake())
 		{
@@ -448,7 +448,7 @@ bool BuildManager::cmdRun()
 	chalet_assert(m_project != nullptr, "");
 
 	const auto& buildConfiguration = m_state.buildConfiguration();
-	const auto& outputFile = m_project->outputFile();
+	auto outputFile = getRunOutputFile();
 
 	Output::msgRun(buildConfiguration, outputFile);
 	Output::lineBreak();

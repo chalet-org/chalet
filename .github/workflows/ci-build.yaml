@@ -11,6 +11,12 @@ on:
 jobs:
   linux:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        env:
+          CC: gcc-10
+          CXX: g++-10
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v2
@@ -18,30 +24,30 @@ jobs:
       run: |
         sudo apt update
         sudo apt install gcc-10 g++-10
-      shell: bash
     - name: 'Build: Debug'
       run: bash ./build.sh Debug
-      shell: bash
-      env:
-        CC: gcc-10
-        CXX: g++-10
     - name: 'Build: Release'
-      run: build/Debug/chalet-debug buildrun Release
-      shell: bash
-      env:
-        CC: gcc-10
-        CXX: g++-10
+      run: build/Debug/chalet-debug build Release
+    - name: 'Run: Tests'
+      run: build/Release/chalet run Release tests_chalet
+    - name: 'Bundle'
+      run: build/Release/chalet bundle
   macos:
     runs-on: macos-latest
+    defaults:
+      run:
+        shell: bash
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v2
     - name: 'Build: Debug'
       run: bash ./build.sh Debug
-      shell: bash
     - name: 'Build: Release'
-      run: build/Debug/chalet-debug buildrun Release
-      shell: bash
+      run: build/Debug/chalet-debug build Release
+    - name: 'Run: Tests'
+      run: build/Release/chalet run Release tests_chalet
+    - name: 'Bundle'
+      run: build/Release/chalet bundle
   windows:
     runs-on: windows-latest
     defaults:
@@ -62,4 +68,15 @@ jobs:
     - name: 'Build: Debug'
       run: bash ./build.sh Debug
     - name: 'Build: Release'
-      run: build/Debug/chalet-debug buildrun Release
+      run: |
+        echo $PATH
+        echo $Path
+        which g++
+        which gcc
+        which g++.exe
+        which gcc.exe
+        build/Debug/chalet-debug build Release
+    - name: 'Run: Tests'
+      run: build/Release/chalet run Release tests_chalet
+    - name: 'Bundle'
+      run: build/Release/chalet bundle
