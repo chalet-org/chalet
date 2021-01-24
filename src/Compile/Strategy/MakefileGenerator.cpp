@@ -123,7 +123,7 @@ std::string MakefileGenerator::getColorCommand(const ushort inId)
 
 	return isBash && hasTerm ?
 		"tput setaf " + std::to_string(inId) :
-		isBash && !hasTerm ? "echo" : "echo.";
+		isBash && !hasTerm ? "echo -n" : "echo|set /p=\"\"";
 }
 
 /*****************************************************************************/
