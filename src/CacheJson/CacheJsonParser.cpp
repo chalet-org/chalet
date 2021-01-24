@@ -145,7 +145,10 @@ bool CacheJsonParser::makeCache()
 	{
 		auto varCXX = Environment::get("CXX");
 		std::string cpp;
-		if (varCXX == nullptr)
+		if (varCXX != nullptr)
+			cpp = Commands::which(varCXX);
+
+		if (cpp.empty())
 		{
 			cpp = Commands::which("clang++");
 			if (cpp.empty())
@@ -157,10 +160,6 @@ bool CacheJsonParser::makeCache()
 				}
 			}
 		}
-		else
-		{
-			cpp = std::string(varCXX);
-		}
 
 		compilers[kKeyCpp] = std::move(cpp);
 		m_state.cache.setDirty(true);
@@ -170,7 +169,10 @@ bool CacheJsonParser::makeCache()
 	{
 		auto varCC = Environment::get("CC");
 		std::string cc;
-		if (varCC == nullptr)
+		if (varCC != nullptr)
+			cc = Commands::which(varCC);
+
+		if (cc.empty())
 		{
 			cc = Commands::which("clang");
 			if (cc.empty())
@@ -181,10 +183,6 @@ bool CacheJsonParser::makeCache()
 					cc = Commands::which("cc");
 				}
 			}
-		}
-		else
-		{
-			cc = std::string(varCC);
 		}
 
 		compilers[kKeyCc] = std::move(cc);

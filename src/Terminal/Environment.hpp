@@ -11,6 +11,7 @@ namespace chalet
 struct Environment
 {
 	static bool isBash() noexcept;
+	static bool hasTerm() noexcept;
 
 	static Constant get(const char* inName);
 	static void set(const char* inName, const std::string& inValue);
@@ -29,6 +30,7 @@ private:
 	};
 
 	static TerminalType s_terminalType;
+	static short s_hasTerm;
 };
 }
 

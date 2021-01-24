@@ -119,8 +119,11 @@ std::string MakefileGenerator::getColorCommand(const ushort inId)
 	chalet_assert(inId >= 0 && inId <= 9, "Invalid value for tput setaf");
 
 	const bool isBash = Environment::isBash();
+	const bool hasTerm = Environment::hasTerm();
 
-	return isBash ? "tput setaf " + std::to_string(inId) : "echo.";
+	return isBash && hasTerm ?
+		"tput setaf " + std::to_string(inId) :
+		isBash && !hasTerm ? "echo" : "echo.";
 }
 
 /*****************************************************************************/

@@ -87,18 +87,34 @@ bool CompileStrategyNinja::initialize()
 /*****************************************************************************/
 bool CompileStrategyNinja::run()
 {
+	const bool hasTerm = Environment::hasTerm();
+
 	const std::string colorBlue = "tput setaf 4";
 	const std::string colorMagenta = "tput setaf 5";
 
-	bool result = Commands::shell(fmt::format("{} && {}", colorBlue, m_ninja));
-	Output::lineBreak();
+	{
+		std::string command;
+		if (hasTerm)
+			command = fmt::format("{} && {}", colorBlue, m_ninja);
+		else
+			command = m_ninja;
 
-	if (!result)
-		return false;
+		bool result = Commands::shell(command);
+		Output::lineBreak();
+
+		if (!result)
+			return false;
+	}
 
 	if (m_project.dumpAssembly())
 	{
-		result = Commands::shell(fmt::format("{} && {} dumpasm", colorMagenta, m_ninja));
+		std::string command;
+		if (hasTerm)
+			command = fmt::format("{} && {}", colorMagenta, m_ninja);
+		else
+			command = m_ninja;
+
+		bool result = Commands::shell(command);
 		Output::lineBreak();
 
 		if (!result)

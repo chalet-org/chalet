@@ -12,6 +12,7 @@ namespace chalet
 {
 /*****************************************************************************/
 Environment::TerminalType Environment::s_terminalType = TerminalType::Unset;
+short Environment::s_hasTerm = -1;
 
 /*****************************************************************************/
 bool Environment::isBash() noexcept
@@ -48,6 +49,18 @@ bool Environment::isBash() noexcept
 	}
 
 	return s_terminalType == TerminalType::Bash;
+}
+
+/*****************************************************************************/
+bool Environment::hasTerm() noexcept
+{
+	if (s_hasTerm == -1)
+	{
+		auto varTERM = Environment::get("TERM");
+		s_hasTerm = varTERM == nullptr ? 0 : 1;
+	}
+
+	return s_hasTerm == 1;
 }
 
 /*****************************************************************************/
