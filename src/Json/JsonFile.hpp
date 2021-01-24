@@ -21,6 +21,8 @@ struct JsonFile
 	void load(std::string inFilename);
 	void save();
 
+	void dumpToTerminal();
+
 	void setContents(Json&& inJson);
 
 	const std::string& filename() const noexcept;

@@ -52,6 +52,12 @@ void JsonFile::save()
 }
 
 /*****************************************************************************/
+void JsonFile::dumpToTerminal()
+{
+	std::cout << json.dump(1, '\t') << std::endl;
+}
+
+/*****************************************************************************/
 void JsonFile::setContents(Json&& inJson)
 {
 	json = std::move(inJson);

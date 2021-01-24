@@ -55,15 +55,22 @@ bool CacheJsonParser::serialize()
 bool CacheJsonParser::validatePaths()
 {
 	auto& compilers = m_state.compilers;
+	auto& cacheJson = m_state.cache.environmentCache();
 
 	if (!Commands::pathExists(compilers.cpp()))
 	{
+#if defined(CHALET_DEBUG)
+		cacheJson.dumpToTerminal();
+#endif
 		Diagnostic::errorAbort(fmt::format("{}: C++ compiler could not be found.", m_filename));
 		return false;
 	}
 
 	if (!Commands::pathExists(compilers.cc()))
 	{
+#if defined(CHALET_DEBUG)
+		cacheJson.dumpToTerminal();
+#endif
 		Diagnostic::errorAbort(fmt::format("{}: C compiler could not be found.", m_filename));
 		return false;
 	}
@@ -71,12 +78,18 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_WIN32)
 	if (!Commands::pathExists(compilers.rc()))
 	{
+	#if defined(CHALET_DEBUG)
+		cacheJson.dumpToTerminal();
+	#endif
 		Diagnostic::warn(fmt::format("{}: Windows Resource compiler could not be found.", m_filename));
 	}
 #endif
 
 	if (!Commands::pathExists(m_make))
 	{
+#if defined(CHALET_DEBUG)
+		cacheJson.dumpToTerminal();
+#endif
 		Diagnostic::errorAbort(fmt::format("{}: 'make' could not be found.", m_filename));
 		return false;
 	}
@@ -84,6 +97,9 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_MACOS)
 	if (!Commands::pathExists(m_state.tools.macosSdk()))
 	{
+	#if defined(CHALET_DEBUG)
+		cacheJson.dumpToTerminal();
+	#endif
 		Diagnostic::errorAbort(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
 	}
 #endif
