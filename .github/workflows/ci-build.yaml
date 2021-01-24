@@ -14,9 +14,9 @@ jobs:
     defaults:
       run:
         shell: bash
-        env:
-          CC: gcc-10
-          CXX: g++-10
+      env:
+        CC: gcc-10
+        CXX: g++-10
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v2
