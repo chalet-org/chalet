@@ -59,6 +59,12 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 
 	const auto suffixes = String::getPrefixed(inOutputs.fileExtensions, ".");
 
+#if defined(CHALET_WIN32)
+	const auto shell = "cmd.exe";
+#else
+	const auto shell = "/bin/sh";
+#endif
+
 	//
 	//
 	//
@@ -68,7 +74,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 .SUFFIXES:
 .SUFFIXES: {suffixes}
 
-.SECONDARY:
+SHELL = {shell}
 
 makebuild: {target}
 	{colorBlue}
@@ -81,6 +87,7 @@ makebuild: {target}
 include $(wildcard $(SOURCE_DEPS))
 )makefile",
 		FMT_ARG(suffixes),
+		FMT_ARG(shell),
 		FMT_ARG(colorBlue),
 		FMT_ARG(target),
 		FMT_ARG(dumpAsmRecipe),
@@ -123,7 +130,7 @@ std::string MakefileGenerator::getColorCommand(const ushort inId)
 
 	return isBash && hasTerm ?
 		"tput setaf " + std::to_string(inId) :
-		isBash && !hasTerm ? "echo -n" : "echo|set /p=\"\"";
+		isBash && !hasTerm ? "printf ''" : "echo|set /p=\"\"";
 }
 
 /*****************************************************************************/
@@ -156,7 +163,7 @@ std::string MakefileGenerator::getMoveCommand()
 std::string MakefileGenerator::getCompileEchoAsm()
 {
 	if (m_cleanOutput)
-		return "@echo '   $@'";
+		return "@printf '   $@\\n'";
 
 	return std::string();
 }
@@ -165,7 +172,7 @@ std::string MakefileGenerator::getCompileEchoAsm()
 std::string MakefileGenerator::getCompileEchoSources()
 {
 	if (m_cleanOutput)
-		return "\n\t@echo '   $<'";
+		return "\n\t@printf '   $<\\n'";
 
 	return std::string();
 }
@@ -177,7 +184,7 @@ std::string MakefileGenerator::getCompileEchoLinker()
 	{
 		const auto unicodeLinking = getUnicodeLinkingCommand();
 
-		return fmt::format(u8"@{unicodeLinking} && echo '  Linking $@'",
+		return fmt::format(u8"@{unicodeLinking} && printf '  Linking $@\\n'",
 			FMT_ARG(unicodeLinking));
 	}
 
@@ -445,7 +452,7 @@ std::string MakefileGenerator::getTargetRecipe()
 	{colorBlue}
 	{compileEcho}
 	{quietFlag}{linkerCommand}
-	@echo
+	@printf '\n'
 )makefile",
 		FMT_ARG(linkerTarget),
 		FMT_ARG(colorBlue),
