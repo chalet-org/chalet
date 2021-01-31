@@ -115,6 +115,12 @@ bool BuildJsonParser::validBuildRequested()
 	{
 		if (project->includeInBuild())
 			count++;
+
+		if (project->language() == CodeLanguage::None)
+		{
+			Diagnostic::errorAbort(fmt::format("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project->name()), "Error parsing file");
+			return false;
+		}
 	}
 	return count > 0;
 }

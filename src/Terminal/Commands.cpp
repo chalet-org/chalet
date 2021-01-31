@@ -477,17 +477,7 @@ std::string Commands::which(const std::string_view& inExecutable, const bool inC
 
 	// MINGW hell - there might be a better solution for this
 	if (String::startsWith("/mingw64/bin/", result))
-	{
-		auto msysRoot = Commands::shellWithOutput("cygpath -w /");
-		String::replaceAll(msysRoot, "\n", "");
-		if (String::endsWith("/", msysRoot))
-		{
-			msysRoot.pop_back();
-			result = msysRoot + result + ".exe";
-		}
-		else
-			String::replaceAll(result, "/mingw64/bin/", "");
-	}
+		String::replaceAll(result, "/mingw64/bin/", "");
 
 	if (String::startsWith("/usr/bin/", result))
 		String::replaceAll(result, "/usr/bin/", "");
