@@ -31,6 +31,12 @@ std::string getAnsiStyle(const Color inColor, const bool inBold = false)
 	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
 	return fmt::format("\033[{style};{color}m", FMT_ARG(style), FMT_ARG(color));
 }
+
+/*****************************************************************************/
+std::string_view getAnsiReset()
+{
+	return "\033[0m";
+}
 #endif
 
 /*****************************************************************************/
@@ -80,7 +86,8 @@ void Output::displayStyledSymbol(const Color inColor, const std::string& inSymbo
 		std::cout << inColor << fmt::format("{}  {}", inSymbol, inMessage) << rang::style::reset << std::endl;
 #else
 	const auto color = getAnsiStyle(inColor, inBold);
-	std::cout << fmt::format("{color}{inSymbol}  {inMessage}\n", FMT_ARG(color), FMT_ARG(inSymbol), FMT_ARG(inMessage));
+	const auto reset = getAnsiReset();
+	std::cout << fmt::format("{color}{inSymbol}  {inMessage}", FMT_ARG(color), FMT_ARG(inSymbol), FMT_ARG(inMessage)) << reset << std::endl;
 #endif
 }
 
@@ -105,7 +112,7 @@ void Output::reset()
 #if defined(CHALET_WIN32)
 	std::cout << rang::style::reset << std::endl;
 #else
-	std::cout << fmt::format("\033[0m");
+	std::cout << getAnsiReset() << std::endl;
 #endif
 }
 
@@ -115,7 +122,7 @@ void Output::lineBreak()
 #if defined(CHALET_WIN32)
 	std::cout << rang::style::reset << std::endl;
 #else
-	std::cout << fmt::format("\033[0m\n");
+	std::cout << getAnsiReset() << std::endl;
 #endif
 }
 
@@ -126,7 +133,8 @@ void Output::print(const Color inColor, const std::string& inText)
 	std::cout << inColor << inText << rang::style::reset << std::endl;
 #else
 	const auto color = getAnsiStyle(inColor);
-	std::cout << fmt::format("{color}{inText}\n", FMT_ARG(color), FMT_ARG(inText));
+	const auto reset = getAnsiReset();
+	std::cout << color << inText << reset << std::endl;
 #endif
 }
 
@@ -154,7 +162,8 @@ void Output::msgDisplayBlack(const std::string& inString)
 	std::cout << rang::fg::black << rang::style::bold << fmt::format("   {}", inString) << rang::style::reset << std::endl;
 #else
 	const auto color = getAnsiStyle(Color::black, true);
-	std::cout << fmt::format("\033[1;30m{}\n", inString);
+	const auto reset = getAnsiReset();
+	std::cout << color << inString << reset << std::endl;
 #endif
 }
 
