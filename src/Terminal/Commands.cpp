@@ -478,9 +478,16 @@ std::string Commands::which(const std::string_view& inExecutable, const bool inC
 	{
 		auto& cygPath = getCygPath();
 		std::string withCygPath = cygPath + result + ".exe";
-		LOG(withCygPath);
 		if (Commands::pathExists(withCygPath))
+		{
 			result = std::move(withCygPath);
+		}
+		else
+		{
+			String::replaceAll(withCygPath, ".exe", "");
+			if (Commands::pathExists(withCygPath))
+				result = std::move(withCygPath);
+		}
 	}
 	else
 	{
@@ -507,11 +514,14 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec, const
 		return std::string();
 
 #if defined(CHALET_WIN32)
-	std::string command = fmt::format("{} -x c nul -dM -E", inCompilerExec);
+	const std::string null = "nul";
 #else
-	std::string command = fmt::format("{} -x c /dev/null -dM -E | grep -e '__clang__' -e '__GNUC__' -e 'Apple LLVM'", inCompilerExec);
+	const std::string null = "/dev/null";
 #endif
-	std::string result = Commands::shellWithOutput(command, inCleanOutput);
+
+	auto command = fmt::format("{inCompilerExec} -x c {null} -dM -E", FMT_ARG(inCompilerExec), FMT_ARG(null));
+	auto result = Commands::shellWithOutput(command, inCleanOutput);
+
 	return result;
 }
 

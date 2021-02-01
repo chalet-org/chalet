@@ -68,14 +68,7 @@ jobs:
     - name: 'Build: Debug'
       run: bash ./build.sh Debug
     - name: 'Build: Release'
-      run: |
-        echo $PATH
-        echo $Path
-        which g++
-        which gcc
-        which g++.exe
-        which gcc.exe
-        build/Debug/chalet-debug build Release
+      run: build/Debug/chalet-debug build Release
     - name: 'Run: Tests'
       run: build/Release/chalet run Release tests_chalet
     - name: 'Bundle'
