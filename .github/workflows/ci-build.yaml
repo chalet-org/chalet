@@ -25,6 +25,8 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: true
         prerelease: true
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
   linux:
     needs: release
     runs-on: ubuntu-latest
