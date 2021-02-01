@@ -1,10 +1,9 @@
-name: Node.js Package
+name: Chalet Release
 
 on:
   push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+    tags:
+      - 'v*'
   release:
     types: [created]
 
@@ -21,10 +20,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: release-${{ github.sha }}
-        release_name: Release ${{ github.ref }}
-        draft: true
+        tag_name: ${{ github.ref }}
+        release_name: Chalet ${{ github.ref }}
+        draft: false
         prerelease: true
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
   linux:
     needs: release
     runs-on: ubuntu-latest
