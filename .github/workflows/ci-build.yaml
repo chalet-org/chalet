@@ -23,23 +23,37 @@ jobs:
     - name: 'Get GCC 10'
       run: |
         sudo apt update
-        sudo apt install gcc-10 g++-10
+        sudo apt install gcc-10 g++-10 zip
     - name: 'Build: Debug'
       run: bash ./build.sh Debug
     - name: 'Build: Release'
       run: build/Debug/chalet-debug build Release
     - name: 'Run: Tests'
       run: build/Release/chalet run Release tests_chalet
-    - name: 'Bundle'
-      run: build/Release/chalet bundle
-    - name: 'Upload binary'
-      uses: svenstaro/upload-release-action@v2
+    - name: 'Zip binary'
+      run: |
+        mkdir -p dist
+        zip -j dist/chalet-linux.zip build/Release/chalet LICENSE.txt
+    - name: 'Create Release'
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: build/Release/chalet
-        asset_name: chalet-linux
-        tag: ${{ github.ref }}
-        overwrite: true
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: 'Upload binary'
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/chalet-linux.zip
+        asset_name: chalet-linux.zip
+        asset_content_type: application/zip
   macos:
     runs-on: macos-latest
     defaults:
@@ -54,14 +68,30 @@ jobs:
       run: build/Debug/chalet-debug build Release
     - name: 'Run: Tests'
       run: build/Release/chalet run Release tests_chalet
-    - name: 'Upload binary'
-      uses: svenstaro/upload-release-action@v2
+    - name: 'Zip binary'
+      run: |
+        mkdir -p dist
+        zip -j dist/chalet-macos.zip build/Release/chalet LICENSE.txt
+    - name: 'Create Release'
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: build/Release/chalet
-        asset_name: chalet-macos
-        tag: ${{ github.ref }}
-        overwrite: true
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: 'Upload binary'
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/chalet-macos.zip
+        asset_name: chalet-macos.zip
+        asset_content_type: application/zip
   windows:
     runs-on: windows-latest
     defaults:
@@ -75,6 +105,7 @@ jobs:
         install: >-
           base-devel
           git
+          zip
           mingw-w64-x86_64-toolchain
           mingw-w64-x86_64-cmake
     - name: 'Checkout'
@@ -85,13 +116,27 @@ jobs:
       run: build/Debug/chalet-debug build Release
     - name: 'Run: Tests'
       run: build/Release/chalet run Release tests_chalet
-    - name: 'Bundle'
-      run: build/Release/chalet bundle
-    - name: 'Upload binary'
-      uses: svenstaro/upload-release-action@v2
+    - name: 'Zip binary'
+      run: |
+        mkdir -p dist
+        zip -j dist/chalet-win32.zip build/Release/chalet.exe LICENSE.txt
+    - name: 'Create Release'
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: build/Release/chalet.exe
-        asset_name: chalet-win32
-        tag: ${{ github.ref }}
-        overwrite: true
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: 'Upload binary'
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/chalet-win32.zip
+        asset_name: chalet-win32.zip
+        asset_content_type: application/zip
