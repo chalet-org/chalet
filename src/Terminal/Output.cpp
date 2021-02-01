@@ -23,7 +23,6 @@ std::string getFormattedBuildTarget(const std::string& inBuildConfiguration, con
 	return fmt::format("{} (target: {})", inBuildConfiguration, inName);
 }
 
-#if !defined(CHALET_WIN32)
 /*****************************************************************************/
 std::string getAnsiStyle(const Color inColor, const bool inBold = false)
 {
@@ -37,7 +36,6 @@ std::string_view getAnsiReset()
 {
 	return "\033[0m";
 }
-#endif
 
 /*****************************************************************************/
 // TODO: move this
@@ -79,16 +77,9 @@ std::string getCleanGitPath(const std::string inPath)
 /*****************************************************************************/
 void Output::displayStyledSymbol(const Color inColor, const std::string& inSymbol, const std::string& inMessage, const bool inBold)
 {
-#if defined(CHALET_WIN32)
-	if (inBold)
-		std::cout << rang::style::bold << inColor << fmt::format("{}  {}", inSymbol, inMessage) << rang::style::reset << std::endl;
-	else
-		std::cout << inColor << fmt::format("{}  {}", inSymbol, inMessage) << rang::style::reset << std::endl;
-#else
 	const auto color = getAnsiStyle(inColor, inBold);
 	const auto reset = getAnsiReset();
 	std::cout << fmt::format("{color}{inSymbol}  {inMessage}", FMT_ARG(color), FMT_ARG(inSymbol), FMT_ARG(inMessage)) << reset << std::endl;
-#endif
 }
 
 /*****************************************************************************/
@@ -109,33 +100,21 @@ void Output::warnBlankKeyInList(const std::string& inKey)
 /*****************************************************************************/
 void Output::reset()
 {
-#if defined(CHALET_WIN32)
-	std::cout << rang::style::reset << std::endl;
-#else
 	std::cout << getAnsiReset() << std::endl;
-#endif
 }
 
 /*****************************************************************************/
 void Output::lineBreak()
 {
-#if defined(CHALET_WIN32)
-	std::cout << rang::style::reset << std::endl;
-#else
 	std::cout << getAnsiReset() << std::endl;
-#endif
 }
 
 /*****************************************************************************/
 void Output::print(const Color inColor, const std::string& inText)
 {
-#if defined(CHALET_WIN32)
-	std::cout << inColor << inText << rang::style::reset << std::endl;
-#else
 	const auto color = getAnsiStyle(inColor);
 	const auto reset = getAnsiReset();
 	std::cout << color << inText << reset << std::endl;
-#endif
 }
 
 /*****************************************************************************/
@@ -158,13 +137,9 @@ void Output::msgUpdatingDependency(const std::string& inGitUrl, const std::strin
 /*****************************************************************************/
 void Output::msgDisplayBlack(const std::string& inString)
 {
-#if defined(CHALET_WIN32)
-	std::cout << rang::fg::black << rang::style::bold << fmt::format("   {}", inString) << rang::style::reset << std::endl;
-#else
 	const auto color = getAnsiStyle(Color::black, true);
 	const auto reset = getAnsiReset();
-	std::cout << color << inString << reset << std::endl;
-#endif
+	std::cout << color << fmt::format("   {}", inString) << reset << std::endl;
 }
 
 /*****************************************************************************/
