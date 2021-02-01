@@ -21,18 +21,12 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState, const ProjectConfigura
 {
 	m_rules = {
 		{ "cpp", &NinjaGenerator::getCppRule },
-		{ "CPP", &NinjaGenerator::getCppRule },
 		{ "cc", &NinjaGenerator::getCppRule },
-		{ "CC", &NinjaGenerator::getCppRule },
 		{ "cxx", &NinjaGenerator::getCppRule },
-		{ "CXX", &NinjaGenerator::getCppRule },
 		{ "c++", &NinjaGenerator::getCppRule },
-		{ "C++", &NinjaGenerator::getCppRule },
 		{ "c", &NinjaGenerator::getCppRule },
-		{ "C", &NinjaGenerator::getCppRule },
 		{ "mm", &NinjaGenerator::getCppRule },
 		{ "m", &NinjaGenerator::getCppRule },
-		{ "M", &NinjaGenerator::getCppRule },
 		{ "rc", &NinjaGenerator::getRcRule },
 	};
 }
@@ -79,11 +73,12 @@ default makebuild
 std::string NinjaGenerator::getRules(const StringList& inExtensions)
 {
 	std::string rules = getPchRule();
-	for (auto& ext : inExtensions)
+	for (auto& inExt : inExtensions)
 	{
+		auto ext = String::toLowerCase(inExt);
 		if (m_rules.find(ext) == m_rules.end())
 		{
-			Diagnostic::error(fmt::format("Ninja rule not found for file extension: '{}'", ext));
+			Diagnostic::errorAbort(fmt::format("Ninja rule not found for file extension: '{}'", ext));
 			return std::string();
 		}
 
@@ -281,7 +276,7 @@ std::string NinjaGenerator::getObjBuildRules(const StringList& inObjects, const 
 			source = source.substr(0, source.size() - 4);
 
 		std::string rule = "cxx";
-		if (String::endsWith(".rc", source))
+		if (String::endsWith(".rc", source) || String::endsWith(".RC", source))
 			rule = "rc";
 
 		ret += fmt::format("build {obj}: {rule} {source}{pchImplicitDep}\n",

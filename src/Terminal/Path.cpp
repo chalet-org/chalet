@@ -42,7 +42,7 @@ void Path::sanitize(std::string& outValue, const bool inRemoveNewLine)
 void Path::sanitizeWithDrives(std::string& outPath)
 {
 	Path::windowsDrivesToMsysDrives(outPath);
-	Path::sanitize(outPath);
+	Path::sanitize(outPath, true);
 
 	String::replaceAll(outPath, ';', ':');
 }

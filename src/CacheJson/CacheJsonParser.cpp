@@ -244,10 +244,12 @@ bool CacheJsonParser::makeCache()
 
 	if (!tools.contains(kKeyMake))
 	{
-		std::string make = Commands::which(kKeyMake);
 #if defined(CHALET_WIN32)
+		std::string make = Commands::which("mingw32-make");
 		if (make.empty())
-			make = Commands::which("mingw32-make");
+			make = Commands::which(kKeyMake);
+#elif
+		std::string make = Commands::which(kKeyMake);
 #endif
 
 		tools[kKeyMake] = std::move(make);

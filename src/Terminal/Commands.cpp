@@ -18,7 +18,9 @@ namespace chalet
 {
 namespace
 {
-#if defined(CHALET_MACOS)
+#if defined(CHALET_WIN32)
+std::string kCygPath;
+#elif defined(CHALET_MACOS)
 std::string kXcodePath;
 #endif
 }
@@ -472,23 +474,27 @@ std::string Commands::which(const std::string_view& inExecutable, const bool inC
 #if defined(CHALET_WIN32)
 	Path::msysDrivesToWindowsDrives(result);
 
-	if (!result.empty() && !String::endsWith(".exe", result) && !String::startsWith("/", result))
-		result += ".exe";
-
-	// MINGW hell - there might be a better solution for this
-	if (String::startsWith("/mingw64/bin/", result))
-		String::replaceAll(result, "/mingw64/bin/", "");
-
-	if (String::startsWith("/usr/bin/", result))
-		String::replaceAll(result, "/usr/bin/", "");
+	if (String::startsWith("/", result))
+	{
+		auto& cygPath = getCygPath();
+		std::string withCygPath = cygPath + result + ".exe";
+		LOG(withCygPath);
+		if (Commands::pathExists(withCygPath))
+			result = std::move(withCygPath);
+	}
+	else
+	{
+		if (!result.empty() && !String::endsWith(".exe", result))
+			result += ".exe";
+	}
 #elif defined(CHALET_MACOS)
 
 	if (String::startsWith("/usr/bin/", result))
 	{
 		auto& xcodePath = getXcodePath();
-		std::string withXcodepath = xcodePath + result;
-		if (Commands::pathExists(withXcodepath))
-			result = std::move(withXcodepath);
+		std::string withXcodePath = xcodePath + result;
+		if (Commands::pathExists(withXcodePath))
+			result = std::move(withXcodePath);
 	}
 #endif
 	return result;
@@ -508,6 +514,21 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec, const
 	std::string result = Commands::shellWithOutput(command, inCleanOutput);
 	return result;
 }
+
+#if defined(CHALET_WIN32)
+/*****************************************************************************/
+const std::string& Commands::getCygPath()
+{
+	if (kCygPath.empty())
+	{
+		kCygPath = Commands::shellWithOutput("cygpath -m /", true);
+		Path::sanitize(kCygPath, true);
+		kCygPath.pop_back();
+	}
+
+	return kCygPath;
+}
+#endif
 
 #if defined(CHALET_MACOS)
 /*****************************************************************************/
