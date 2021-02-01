@@ -89,8 +89,8 @@ bool CompileStrategyNinja::run()
 {
 	const bool hasTerm = Environment::hasTerm();
 
-	const std::string colorBlue = "tput setaf 4";
-	const std::string colorMagenta = "tput setaf 5";
+	const std::string colorBlue = "printf '\\033[0;34m'";
+	const std::string colorMagenta = "printf '\\033[0;35m'";
 
 	{
 		std::string command;

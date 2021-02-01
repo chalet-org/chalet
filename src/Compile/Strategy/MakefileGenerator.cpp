@@ -9,6 +9,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -27,7 +28,6 @@ MakefileGenerator::MakefileGenerator(const BuildState& inState, const ProjectCon
 std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 {
 	const auto target = m_state.paths.getTargetFilename(m_project);
-	const auto colorBlue = getBlueColor();
 
 	const auto& depDir = m_state.paths.depDir();
 
@@ -77,7 +77,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 SHELL = {shell}
 
 makebuild: {target}
-	{colorBlue}
+	printf ''
 .DELETE_ON_ERROR: makebuild
 {dumpAsmRecipe}{makePchRecipe}{cppRecipes}{pchRecipe}{rcRecipe}{assemblyRecipe}{targetRecipe}
 
@@ -88,7 +88,6 @@ include $(wildcard $(SOURCE_DEPS))
 )makefile",
 		FMT_ARG(suffixes),
 		FMT_ARG(shell),
-		FMT_ARG(colorBlue),
 		FMT_ARG(target),
 		FMT_ARG(dumpAsmRecipe),
 		FMT_ARG(makePchRecipe),
@@ -109,43 +108,6 @@ include $(wildcard $(SOURCE_DEPS))
 }
 
 /*****************************************************************************/
-std::string MakefileGenerator::getUnicodeLinkingCommand()
-{
-#if defined(CHALET_WIN32)
-	return "printf '\\xE2\\x87\\x9B'";
-#elif defined(CHALET_MACOS)
-	return u8"printf \"\u21DB\"";
-#else
-	return u8"echo -n \"\u21DB\"";
-#endif
-}
-
-/*****************************************************************************/
-std::string MakefileGenerator::getColorCommand(const ushort inId)
-{
-	chalet_assert(inId >= 0 && inId <= 9, "Invalid value for tput setaf");
-
-	const bool isBash = Environment::isBash();
-	const bool hasTerm = Environment::hasTerm();
-
-	return isBash && hasTerm ?
-		"tput setaf " + std::to_string(inId) :
-		isBash && !hasTerm ? "printf ''" : "echo|set /p=\"\"";
-}
-
-/*****************************************************************************/
-std::string MakefileGenerator::getBlueColor()
-{
-	return fmt::format("@{}", getColorCommand(4));
-}
-
-/*****************************************************************************/
-std::string MakefileGenerator::getMagentaColor()
-{
-	return fmt::format("@{}", getColorCommand(5));
-}
-
-/*****************************************************************************/
 std::string MakefileGenerator::getQuietFlag()
 {
 	return m_cleanOutput ? "@" : "";
@@ -163,7 +125,10 @@ std::string MakefileGenerator::getMoveCommand()
 std::string MakefileGenerator::getCompileEchoAsm()
 {
 	if (m_cleanOutput)
-		return "@printf '   $@\\n'";
+	{
+		const auto purple = "\\033[0;35m";
+		return fmt::format("@printf '   {purple}$@\\n'", FMT_ARG(purple));
+	}
 
 	return std::string();
 }
@@ -172,7 +137,10 @@ std::string MakefileGenerator::getCompileEchoAsm()
 std::string MakefileGenerator::getCompileEchoSources()
 {
 	if (m_cleanOutput)
-		return "\n\t@printf '   $<\\n'";
+	{
+		const auto blue = "\\033[0;34m";
+		return fmt::format("@printf '   {blue}$<\\n'", FMT_ARG(blue));
+	}
 
 	return std::string();
 }
@@ -182,10 +150,12 @@ std::string MakefileGenerator::getCompileEchoLinker()
 {
 	if (m_cleanOutput)
 	{
-		const auto unicodeLinking = getUnicodeLinkingCommand();
+		const auto arrow = Unicode::rightwardsTripleArrow();
+		const auto blue = "\\033[0;34m";
 
-		return fmt::format(u8"@{unicodeLinking} && printf '  Linking $@\\n'",
-			FMT_ARG(unicodeLinking));
+		return fmt::format(u8"@printf '{arrow}  {blue}Linking $@\\n'",
+			FMT_ARG(arrow),
+			FMT_ARG(blue));
 	}
 
 	return std::string();
@@ -199,14 +169,11 @@ std::string MakefileGenerator::getDumpAsmRecipe()
 	const bool dumpAssembly = m_project.dumpAssembly();
 	if (dumpAssembly)
 	{
-		const auto colorBlue = getBlueColor();
-
-		ret = fmt::format(R"makefile(
+		ret = R"makefile(
 dumpasm: $(SOURCE_ASMS)
-	{colorBlue}
+	printf ''
 .PHONY: dumpasm
-)makefile",
-			FMT_ARG(colorBlue));
+)makefile";
 	}
 
 	return ret;
@@ -223,19 +190,16 @@ std::string MakefileGenerator::getAsmRecipe()
 		const auto quietFlag = getQuietFlag();
 		const auto& asmDir = m_state.paths.asmDir();
 		const auto& objDir = m_state.paths.objDir();
-		const auto colorMagenta = getMagentaColor();
 		const auto asmCompile = m_toolchain->getAsmGenerateCommand("'$<'", "'$@'");
 		const auto compileEcho = getCompileEchoAsm();
 
 		ret = fmt::format(R"makefile(
 {asmDir}/%.o.asm: {objDir}/%.o
-	{colorMagenta}
 	{compileEcho}
 	{quietFlag}{asmCompile}
 )makefile",
 			FMT_ARG(asmDir),
 			FMT_ARG(objDir),
-			FMT_ARG(colorMagenta),
 			FMT_ARG(compileEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(asmCompile));
@@ -255,15 +219,13 @@ std::string MakefileGenerator::getMakePchRecipe()
 	{
 		const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
 		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
-		const auto colorBlue = getBlueColor();
 
 		ret = fmt::format(R"makefile(
 makepch: {pchTarget}
-	{colorBlue}
+	printf ''
 .PHONY: makepch
 )makefile",
-			FMT_ARG(pchTarget),
-			FMT_ARG(colorBlue));
+			FMT_ARG(pchTarget));
 	}
 
 	return ret;
@@ -283,7 +245,6 @@ std::string MakefileGenerator::getPchRecipe()
 		const auto& pch = m_project.pch();
 		const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
 		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
-		const auto colorBlue = getBlueColor();
 		const auto mv = getMoveCommand();
 
 		const auto dependency = fmt::format("{depDir}/{pch}",
@@ -296,12 +257,11 @@ std::string MakefileGenerator::getPchRecipe()
 		ret = fmt::format(R"makefile(
 {pchTarget}: {pch}
 {pchTarget}: {pch} {dependency}.d
-	{colorBlue}{compileEcho}
+	{compileEcho}
 	{quietFlag}{pchCompile} && {mv} {dependency}.Td {dependency}.d
 )makefile",
 			FMT_ARG(pchTarget),
 			FMT_ARG(pch),
-			FMT_ARG(colorBlue),
 			FMT_ARG(compileEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(pchCompile),
@@ -320,7 +280,6 @@ std::string MakefileGenerator::getRcRecipe()
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
-	const auto colorBlue = getBlueColor();
 	const auto compileEcho = getCompileEchoSources();
 	const auto mv = getMoveCommand();
 	const auto pchPreReq = getPchOrderOnlyPreReq();
@@ -333,13 +292,12 @@ std::string MakefileGenerator::getRcRecipe()
 	ret = fmt::format(R"makefile(
 {objDir}/%.rc.res: %.rc
 {objDir}/%.rc.res: %.rc {depDir}/%.rc.d{pchPreReq}
-	{colorBlue}{compileEcho}
+	{compileEcho}
 	{quietFlag}{rcCompile} && {mv} {dependency}.Td {dependency}.d
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
 		FMT_ARG(pchPreReq),
-		FMT_ARG(colorBlue),
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),
 		FMT_ARG(rcCompile),
@@ -359,7 +317,6 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 	const auto& objDir = m_state.paths.objDir();
 	const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
-	const auto colorBlue = getBlueColor();
 	const auto compileEcho = getCompileEchoSources();
 	const auto mv = getMoveCommand();
 	const auto pchPreReq = getPchOrderOnlyPreReq();
@@ -373,7 +330,7 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}
 {objDir}/%.{ext}.o: %.{ext} {pchTarget} {depDir}/%.{ext}.d{pchPreReq}
-	{colorBlue}{compileEcho}
+	{compileEcho}
 	{quietFlag}{cppCompile} && {mv} {dependency}.Td {dependency}.d
 )makefile",
 		FMT_ARG(objDir),
@@ -381,7 +338,6 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 		FMT_ARG(ext),
 		FMT_ARG(pchPreReq),
 		FMT_ARG(pchTarget),
-		FMT_ARG(colorBlue),
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),
 		FMT_ARG(cppCompile),
@@ -401,7 +357,6 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
-	const auto colorBlue = getBlueColor();
 	const auto compileEcho = getCompileEchoSources();
 	const auto mv = getMoveCommand();
 	const auto pchPreReq = getPchOrderOnlyPreReq();
@@ -415,14 +370,13 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}
 {objDir}/%.{ext}.o: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
-	{colorBlue}{compileEcho}
+	{compileEcho}
 	{quietFlag}{objcCompile} && {mv} {dependency}.Td {dependency}.d
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
 		FMT_ARG(ext),
 		FMT_ARG(pchPreReq),
-		FMT_ARG(colorBlue),
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),
 		FMT_ARG(objcCompile),
@@ -445,17 +399,14 @@ std::string MakefileGenerator::getTargetRecipe()
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(m_project);
 	const auto linkerCommand = m_toolchain->getLinkerTargetCommand(linkerTarget, "$(SOURCE_OBJS)", linkerTargetBase);
 	const auto compileEcho = getCompileEchoLinker();
-	const auto colorBlue = getBlueColor();
 
 	ret = fmt::format(R"makefile(
 {linkerTarget}: {preReqs}
-	{colorBlue}
 	{compileEcho}
 	{quietFlag}{linkerCommand}
 	@printf '\n'
 )makefile",
 		FMT_ARG(linkerTarget),
-		FMT_ARG(colorBlue),
 		FMT_ARG(preReqs),
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),

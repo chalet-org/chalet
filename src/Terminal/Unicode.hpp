@@ -18,6 +18,7 @@ constexpr Constant boldSaltire();
 constexpr Constant circledSaltire();
 constexpr Constant heavyCurvedDownRightArrow();
 constexpr Constant heavyCurvedUpRightArrow();
+constexpr Constant rightwardsTripleArrow();
 }
 }
 

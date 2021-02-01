@@ -53,4 +53,10 @@ constexpr Constant Unicode::heavyCurvedUpRightArrow()
 {
 	return u8"\xE2\x9E\xA6";
 }
+
+/*****************************************************************************/
+constexpr Constant Unicode::rightwardsTripleArrow()
+{
+	return u8"\xE2\x87\x9B";
+}
 }

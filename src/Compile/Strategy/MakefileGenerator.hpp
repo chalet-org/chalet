@@ -19,14 +19,9 @@ struct MakefileGenerator
 	std::string getContents(const SourceOutputs& inOutputs);
 
 private:
-	std::string getUnicodeLinkingCommand();
-	std::string getColorCommand(const ushort inId);
-
 	//
 	std::string getCompileFlags();
 
-	std::string getBlueColor();
-	std::string getMagentaColor();
 	std::string getQuietFlag();
 	std::string getMoveCommand();
 	std::string getCompileEchoAsm();
