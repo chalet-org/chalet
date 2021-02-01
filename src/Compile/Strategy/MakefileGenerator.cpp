@@ -62,7 +62,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 
 	if (m_project.objectiveCxx())
 	{
-		for (auto ext : String::filterIf({ "m", "mm", "M" }, inOutputs.fileExtensions))
+		for (auto ext : String::filterIf({ "m", "M", "mm" }, inOutputs.fileExtensions))
 		{
 			cppRecipes += getObjcRecipe(ext);
 		}
