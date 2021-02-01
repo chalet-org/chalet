@@ -20,13 +20,20 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState, const ProjectConfigura
 	m_toolchain(inToolchain)
 {
 	m_rules = {
-		{ "rc", &NinjaGenerator::getRcRule },
 		{ "cpp", &NinjaGenerator::getCppRule },
-		{ "c", &NinjaGenerator::getCppRule },
+		{ "CPP", &NinjaGenerator::getCppRule },
 		{ "cc", &NinjaGenerator::getCppRule },
-		{ "m", &NinjaGenerator::getCppRule },
+		{ "CC", &NinjaGenerator::getCppRule },
+		{ "cxx", &NinjaGenerator::getCppRule },
+		{ "CXX", &NinjaGenerator::getCppRule },
+		{ "c++", &NinjaGenerator::getCppRule },
+		{ "C++", &NinjaGenerator::getCppRule },
+		{ "c", &NinjaGenerator::getCppRule },
+		{ "C", &NinjaGenerator::getCppRule },
 		{ "mm", &NinjaGenerator::getCppRule },
+		{ "m", &NinjaGenerator::getCppRule },
 		{ "M", &NinjaGenerator::getCppRule },
+		{ "rc", &NinjaGenerator::getRcRule },
 	};
 }
 

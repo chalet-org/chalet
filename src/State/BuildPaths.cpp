@@ -115,7 +115,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject) cons
 
 	for (auto& file : files.list)
 	{
-		std::string ext = String::getPathSuffix(file);
+		auto ext = String::getPathSuffix(file);
 		List::addIfDoesNotExist(ret.fileExtensions, std::move(ext));
 	}
 
@@ -330,7 +330,8 @@ StringList BuildPaths::getFileList(const ProjectConfiguration& inProject) const
 
 	const auto& locations = inProject.locations();
 
-	const std::string searchString = String::join(inProject.fileExtensions(), " ");
+	auto searchString = String::join(inProject.fileExtensions(), " ");
+	searchString += " " + String::toUpperCase(searchString);
 
 	const auto& excludesList = inProject.locationExcludes();
 	std::string excludes = String::join(excludesList, " ");

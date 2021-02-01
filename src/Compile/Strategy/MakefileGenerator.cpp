@@ -39,12 +39,12 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 
 	std::string rcRecipe;
 #if defined(CHALET_WIN32)
-	if (List::contains(inOutputs.fileExtensions, std::string("rc")))
+	for (auto ext : String::filterIf({ "rc", "RC" }, inOutputs.fileExtensions))
 		rcRecipe = getRcRecipe();
 #endif
 
 	std::string cppRecipes;
-	for (auto ext : String::filterIf({ "cpp", "c", "cc" }, inOutputs.fileExtensions))
+	for (auto ext : String::filterIf({ "cpp", "CPP", "cc", "CC", "cxx", "CXX", "c++", "C++", "c", "C" }, inOutputs.fileExtensions))
 	{
 		cppRecipes += getCppRecipe(ext);
 	}

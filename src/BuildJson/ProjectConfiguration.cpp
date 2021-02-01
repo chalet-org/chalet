@@ -22,14 +22,13 @@ ProjectConfiguration::ProjectConfiguration(const std::string& inBuildConfig, con
 {
 	StringList exts = {
 		"cpp",
+		"cc",
 		"cxx",
 		"c++",
-		"cc",
 		"c",
 		"mm",
 		"m",
-		"M",
-		"rc",
+		"rc"
 	};
 	addFileExtensions(exts);
 }
