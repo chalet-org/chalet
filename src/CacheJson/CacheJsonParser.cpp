@@ -248,7 +248,7 @@ bool CacheJsonParser::makeCache()
 		std::string make = Commands::which("mingw32-make");
 		if (make.empty())
 			make = Commands::which(kKeyMake);
-#elif
+#else
 		std::string make = Commands::which(kKeyMake);
 #endif
 
