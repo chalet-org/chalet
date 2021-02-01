@@ -93,7 +93,7 @@ void Application::configureOsTerminal()
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 #endif
 
-	Environment::set("GCC_COLORS", "error=01;31:warning=01;33:note=01;36:locus=00;34");
+	Environment::set("GCC_COLORS", "error=01;31:warning=01;33:note=01;36:caret=01;32:locus=00;34:quote=01");
 }
 
 /*****************************************************************************/

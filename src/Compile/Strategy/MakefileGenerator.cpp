@@ -20,7 +20,7 @@ namespace
 constexpr Constant unicodeRightwardsTripleArrow()
 {
 #if defined(CHALET_WIN32)
-	return "printf '\\xE2\\x87\\x9B'";
+	return "\\xE2\\x87\\x9B";
 #else
 	return u8"\xE2\x87\x9B";
 #endif
@@ -164,7 +164,7 @@ std::string MakefileGenerator::getCompileEchoLinker()
 		const auto arrow = unicodeRightwardsTripleArrow();
 		const auto blue = "\\033[0;34m";
 
-		return fmt::format(u8"@printf '{arrow}  {blue}Linking $@\\n'",
+		return fmt::format(u8"@printf '{blue}{arrow}  Linking $@\\n'",
 			FMT_ARG(arrow),
 			FMT_ARG(blue));
 	}
@@ -269,7 +269,8 @@ std::string MakefileGenerator::getPchRecipe()
 {pchTarget}: {pch}
 {pchTarget}: {pch} {dependency}.d
 	{compileEcho}
-	{quietFlag}{pchCompile} && {mv} {dependency}.Td {dependency}.d
+	{quietFlag}{pchCompile}
+	{quietFlag}{mv} {dependency}.Td {dependency}.d
 )makefile",
 			FMT_ARG(pchTarget),
 			FMT_ARG(pch),
@@ -304,7 +305,8 @@ std::string MakefileGenerator::getRcRecipe()
 {objDir}/%.rc.res: %.rc
 {objDir}/%.rc.res: %.rc {depDir}/%.rc.d{pchPreReq}
 	{compileEcho}
-	{quietFlag}{rcCompile} && {mv} {dependency}.Td {dependency}.d
+	{quietFlag}{rcCompile}
+	{quietFlag}{mv} {dependency}.Td {dependency}.d
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
@@ -342,7 +344,8 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 {objDir}/%.{ext}.o: %.{ext}
 {objDir}/%.{ext}.o: %.{ext} {pchTarget} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
-	{quietFlag}{cppCompile} && {mv} {dependency}.Td {dependency}.d
+	{quietFlag}{cppCompile}
+	{quietFlag}{mv} {dependency}.Td {dependency}.d
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
@@ -382,7 +385,8 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 {objDir}/%.{ext}.o: %.{ext}
 {objDir}/%.{ext}.o: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
-	{quietFlag}{objcCompile} && {mv} {dependency}.Td {dependency}.d
+	{quietFlag}{objcCompile}
+	{quietFlag}{mv} {dependency}.Td {dependency}.d
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
