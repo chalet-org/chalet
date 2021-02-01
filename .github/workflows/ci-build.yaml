@@ -32,6 +32,14 @@ jobs:
       run: build/Release/chalet run Release tests_chalet
     - name: 'Bundle'
       run: build/Release/chalet bundle
+    - name: 'Upload binary'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/Release/chalet
+        asset_name: chalet-linux
+        tag: ${{ github.ref }}
+        overwrite: true
   macos:
     runs-on: macos-latest
     defaults:
@@ -46,8 +54,14 @@ jobs:
       run: build/Debug/chalet-debug build Release
     - name: 'Run: Tests'
       run: build/Release/chalet run Release tests_chalet
-    - name: 'Bundle'
-      run: build/Release/chalet bundle
+    - name: 'Upload binary'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/Release/chalet
+        asset_name: chalet-macos
+        tag: ${{ github.ref }}
+        overwrite: true
   windows:
     runs-on: windows-latest
     defaults:
@@ -73,3 +87,11 @@ jobs:
       run: build/Release/chalet run Release tests_chalet
     - name: 'Bundle'
       run: build/Release/chalet bundle
+    - name: 'Upload binary'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/Release/chalet.exe
+        asset_name: chalet-win32
+        tag: ${{ github.ref }}
+        overwrite: true
