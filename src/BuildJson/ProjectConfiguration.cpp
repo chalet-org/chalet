@@ -22,6 +22,8 @@ ProjectConfiguration::ProjectConfiguration(const std::string& inBuildConfig, con
 {
 	StringList exts = {
 		"cpp",
+		"cxx",
+		"c++",
 		"cc",
 		"c",
 		"mm",
