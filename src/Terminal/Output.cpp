@@ -80,7 +80,7 @@ void Output::displayStyledSymbol(const Color inColor, const std::string& inSymbo
 		std::cout << inColor << fmt::format("{}  {}", inSymbol, inMessage) << rang::style::reset << std::endl;
 #else
 	const auto color = getAnsiStyle(inColor, inBold);
-	fmt::print("{color}{inSymbol}  {inMessage}\n", FMT_ARG(color), FMT_ARG(inSymbol), FMT_ARG(inMessage));
+	std::cout << fmt::format("{color}{inSymbol}  {inMessage}\n", FMT_ARG(color), FMT_ARG(inSymbol), FMT_ARG(inMessage));
 #endif
 }
 
@@ -105,7 +105,7 @@ void Output::reset()
 #if defined(CHALET_WIN32)
 	std::cout << rang::style::reset << std::endl;
 #else
-	fmt::print("\033[0m");
+	std::cout << fmt::format("\033[0m");
 #endif
 }
 
@@ -115,7 +115,7 @@ void Output::lineBreak()
 #if defined(CHALET_WIN32)
 	std::cout << rang::style::reset << std::endl;
 #else
-	fmt::print("\033[0m\n");
+	std::cout << fmt::format("\033[0m\n");
 #endif
 }
 
@@ -126,7 +126,7 @@ void Output::print(const Color inColor, const std::string& inText)
 	std::cout << inColor << inText << rang::style::reset << std::endl;
 #else
 	const auto color = getAnsiStyle(inColor);
-	fmt::print("{color}{inText}\n", FMT_ARG(color), FMT_ARG(inText));
+	std::cout << fmt::format("{color}{inText}\n", FMT_ARG(color), FMT_ARG(inText));
 #endif
 }
 
@@ -153,7 +153,8 @@ void Output::msgDisplayBlack(const std::string& inString)
 #if defined(CHALET_WIN32)
 	std::cout << rang::fg::black << rang::style::bold << fmt::format("   {}", inString) << rang::style::reset << std::endl;
 #else
-	fmt::print("\033[1;30m{}\n", inString);
+	const auto color = getAnsiStyle(Color::black, true);
+	std::cout << fmt::format("\033[1;30m{}\n", inString);
 #endif
 }
 
