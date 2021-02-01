@@ -135,7 +135,7 @@
 			"icon": "env/windows/app.ico",
 			"manifest": "env/windows/app.manifest"
 		}
-	}/*,
+	} /*,
 	"externalDependencies": [
 		{
 			"name": "catch2",
@@ -156,9 +156,6 @@
 		{
 			"name": "nlohmann_json",
 			"repository": "git@github.com:nlohmann/json.git"
-		},
-		{
-			"repository": "git@github.com:agauniyal/rang.git"
 		},
 		{
 			"name": "ust",

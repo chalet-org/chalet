@@ -94,7 +94,7 @@ bool Commands::makeDirectory(const std::string& inPath, const bool inCleanOutput
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::blue, fmt::format("mkdir -p '{}'", inPath));
+			Output::print(Color::Blue, fmt::format("mkdir -p '{}'", inPath));
 
 		fs::create_directories(inPath);
 
@@ -131,7 +131,7 @@ bool Commands::remove(const std::string& inPath, const bool inCleanOutput)
 			return true;
 
 		if (!inCleanOutput)
-			Output::print(Color::blue, fmt::format("rm -rf '{}'", inPath));
+			Output::print(Color::Blue, fmt::format("rm -rf '{}'", inPath));
 
 		bool result = fs::remove(inPath);
 		return result;
@@ -149,7 +149,7 @@ bool Commands::removeRecursively(const std::string& inPath, const bool inCleanOu
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::blue, fmt::format("rm -rf '{}'", inPath));
+			Output::print(Color::Blue, fmt::format("rm -rf '{}'", inPath));
 
 		bool result = fs::remove_all(inPath) > 0;
 		return result;
@@ -171,7 +171,7 @@ bool Commands::setExecutableFlag(const std::string& inPath, const bool inCleanOu
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::blue, fmt::format("chmod +x '{}'", inPath));
+			Output::print(Color::Blue, fmt::format("chmod +x '{}'", inPath));
 
 		fs::permissions(inPath,
 			fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
@@ -197,7 +197,7 @@ bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std:
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::blue, fmt::format("ln -s '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("ln -s '{}' '{}'", inFrom, inTo));
 
 		fs::create_directory_symlink(inFrom, inTo);
 
@@ -221,7 +221,7 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::blue, fmt::format("ln -s '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("ln -s '{}' '{}'", inFrom, inTo));
 
 		fs::create_symlink(inFrom, inTo);
 
@@ -246,7 +246,7 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const bo
 		if (inCleanOutput)
 			Output::msgCopying(inFrom, inTo);
 		else
-			Output::print(Color::blue, fmt::format("cp -r '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("cp -r '{}' '{}'", inFrom, inTo));
 
 		fs::copy(from, to, fs::copy_options::recursive);
 
@@ -267,7 +267,7 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 		if (inCleanOutput)
 			Output::msgCopying(inFrom, inTo);
 		else
-			Output::print(Color::blue, fmt::format("cp -r '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("cp -r '{}' '{}'", inFrom, inTo));
 
 		fs::copy(inFrom, inTo);
 
@@ -285,7 +285,7 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::blue, fmt::format("mv '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("mv '{}' '{}'", inFrom, inTo));
 
 		fs::rename(inFrom, inTo);
 
@@ -403,7 +403,7 @@ bool Commands::shell(const std::string& inCmd, const bool inCleanOutput)
 {
 	// UNUSED(inCleanOutput);
 	if (!inCleanOutput)
-		Output::print(Color::blue, inCmd);
+		Output::print(Color::Blue, inCmd);
 
 	bool result = std::system(inCmd.c_str()) == EXIT_SUCCESS;
 	return result;
@@ -413,7 +413,7 @@ bool Commands::shell(const std::string& inCmd, const bool inCleanOutput)
 bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput)
 {
 	if (!inCleanOutput)
-		Output::print(Color::blue, inCmd);
+		Output::print(Color::Blue, inCmd);
 
 #if defined(CHALET_WIN32)
 	bool result = std::system(inCmd.c_str()) == EXIT_SUCCESS;
@@ -439,7 +439,7 @@ std::string Commands::shellWithOutput(const std::string& inCmd, const bool inCle
 	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(inCmd.c_str(), "r"), pclose);
 
 	if (!inCleanOutput)
-		Output::print(Color::blue, inCmd);
+		Output::print(Color::Blue, inCmd);
 
 	if (!pipe)
 	{

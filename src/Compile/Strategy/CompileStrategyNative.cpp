@@ -7,7 +7,7 @@
 
 #include "Compile/Strategy/NinjaGenerator.hpp"
 #include "Libraries/Format.hpp"
-#include "Libraries/Rang.hpp"
+#include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -29,11 +29,11 @@ bool printCommand(std::string output, std::string command, Color inColor, std::s
 	s_mutex.lock();
 	if (total > 0)
 	{
-		std::cout << inColor << fmt::format("{}  ", symbol) << Color::reset << fmt::format("[{}/{}] ", index, total);
+		std::cout << Output::getAnsiStyle(inColor) << fmt::format("{}  ", symbol) << Output::getAnsiReset() << fmt::format("[{}/{}] ", index, total);
 	}
 	else
 	{
-		std::cout << inColor << fmt::format("{}  ", symbol);
+		std::cout << Output::getAnsiStyle(inColor) << fmt::format("{}  ", symbol);
 	}
 
 	if (cleanOutput)
@@ -112,7 +112,7 @@ bool CompileStrategyNative::run()
 	{
 		totalCompiles++;
 
-		result |= printCommand(m_pch.output, m_pch.command, Color::blue, " ", cleanOutput, index, totalCompiles);
+		result |= printCommand(m_pch.output, m_pch.command, Color::Blue, " ", cleanOutput, index, totalCompiles);
 		result |= executeCommand(m_pch.command);
 		index++;
 	}
@@ -122,7 +122,7 @@ bool CompileStrategyNative::run()
 		std::vector<std::future<bool>> threadResults;
 		for (auto& it : m_compiles)
 		{
-			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::blue, " ", cleanOutput, index, totalCompiles));
+			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Blue, " ", cleanOutput, index, totalCompiles));
 			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command));
 			index++;
 		}
@@ -144,7 +144,7 @@ bool CompileStrategyNative::run()
 		{
 			Output::lineBreak();
 
-			result |= printCommand(m_linker.output, m_linker.command, Color::blue, u8"\xE2\x87\x9B", cleanOutput);
+			result |= printCommand(m_linker.output, m_linker.command, Color::Blue, u8"\xE2\x87\x9B", cleanOutput);
 			result |= executeCommand(m_linker.command);
 		}
 	}
@@ -157,7 +157,7 @@ bool CompileStrategyNative::run()
 		std::vector<std::future<bool>> threadResults;
 		for (auto& it : m_assemblies)
 		{
-			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::magenta, " ", cleanOutput, index, totalCompiles));
+			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Magenta, " ", cleanOutput, index, totalCompiles));
 			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command));
 			index++;
 		}

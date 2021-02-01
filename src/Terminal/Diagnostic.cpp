@@ -8,7 +8,7 @@
 #include <exception>
 
 #include "Libraries/Format.hpp"
-#include "Libraries/Rang.hpp"
+#include "Terminal/Output.hpp"
 
 namespace chalet
 {
@@ -36,7 +36,8 @@ void Diagnostic::warn(const std::string& inMessage, const std::string& inTitle)
 	Diagnostic::showHeader(type, inTitle);
 	Diagnostic::showMessage(type, inMessage);
 
-	std::cout << rang::style::reset << std::endl;
+	const auto reset = Output::getAnsiReset();
+	std::cout << reset << std::endl;
 }
 
 /*****************************************************************************/
@@ -46,7 +47,8 @@ void Diagnostic::error(const std::string& inMessage, const std::string& inTitle)
 	Diagnostic::showHeader(type, inTitle);
 	Diagnostic::showMessage(type, inMessage);
 
-	std::cerr << rang::style::reset << std::endl;
+	const auto reset = Output::getAnsiReset();
+	std::cerr << reset << std::endl;
 }
 
 /*****************************************************************************/
@@ -79,8 +81,9 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 
 	Diagnostic::error(inMessage, inTitle);
 
-	// rang formatting gets used in the exception message
-	std::cerr << rang::style::bold << rang::fg::black;
+	const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
+
+	std::cerr << boldBlack;
 	sExceptionThrown = true;
 
 	if (!inThrow)
@@ -92,13 +95,18 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 /*****************************************************************************/
 void Diagnostic::customAssertion(const std::string_view& inExpression, const std::string_view& inMessage, const std::string_view& inFile, const uint inLineNumber)
 {
+	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
+	const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
+	const auto blue = Output::getAnsiStyle(Color::Blue);
+	const auto reset = Output::getAnsiReset();
+
 	std::cerr << "\n"
-			  << rang::style::bold << rang::fg::red << "Assertion Failed:\n  at "
-			  << rang::style::reset << inExpression << " " << rang::fg::blue << inFile << ":" << inLineNumber << rang::style::reset << std::endl;
+			  << boldRed << "Assertion Failed:\n  at " << reset
+			  << inExpression << " " << blue << inFile << ":" << inLineNumber << reset << std::endl;
 
 	if (!inMessage.empty())
 		std::cerr << "\n"
-				  << rang::style::bold << rang::fg::black << inMessage << rang::style::reset << std::endl;
+				  << boldBlack << inMessage << reset << std::endl;
 
 	sAssertionFailure = true;
 
@@ -115,9 +123,10 @@ bool Diagnostic::assertionFailure() noexcept
 void Diagnostic::showHeader(const Type inType, const std::string& inTitle)
 {
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
-	auto color = inType == Type::Error ? rang::fg::red : rang::fg::yellow;
+	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
+	const auto reset = Output::getAnsiReset();
 
-	out << rang::style::bold << color << inTitle << ":" << rang::style::reset << std::endl;
+	out << color << inTitle << ":" << reset << std::endl;
 }
 
 /*****************************************************************************/

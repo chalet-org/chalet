@@ -295,7 +295,7 @@ bool JsonValidator::printErrors()
 			case JsonErrorClassification::Fatal:
 				break;
 			case JsonErrorClassification::Warning:
-				// Output::print(Color::yellow, fmt::format("    Attempting to continue build anyway..."));
+				// Output::print(Color::Yellow, fmt::format("    Attempting to continue build anyway..."));
 				break;
 			default:
 				break;

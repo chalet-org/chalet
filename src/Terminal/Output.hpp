@@ -6,12 +6,16 @@
 #ifndef CHALET_OUTPUT_HPP
 #define CHALET_OUTPUT_HPP
 
-#include "Libraries/Rang.hpp"
+#include "Terminal/Color.hpp"
 
 namespace chalet
 {
 namespace Output
 {
+std::string getAnsiStyle(const Color inColor, const bool inBold = false);
+std::string getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold = false);
+std::string_view getAnsiReset();
+
 void displayStyledSymbol(const Color inColor, const std::string& inSymbol, const std::string& inMessage, const bool inBold = true);
 void warnBlankKey(const std::string& inKey, const std::string& inDefault = "");
 void warnBlankKeyInList(const std::string& inKey);

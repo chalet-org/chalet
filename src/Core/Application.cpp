@@ -123,7 +123,7 @@ void Application::testSignalHandling()
 {
 	// int* test = nullptr;
 	// chalet_assert(test != nullptr, ""); // SIGABRT / abort
-	// int test2 = *test;				// SIGSEGV / segmentation fault
+	// int test2 = *test;					// SIGSEGV / segmentation fault
 
 	// int a = 0;
 	// int test2 = 25 / a; // SIGFPE / arithmetic error

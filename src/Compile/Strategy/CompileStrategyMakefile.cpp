@@ -113,7 +113,7 @@ bool CompileStrategyMakefile::run()
 
 	// This is typically build time - 20 ms
 	// auto result = timer.stop();
-	// Output::print(Color::reset, fmt::format("   Make invocation time: {}ms", result));
+	// Output::print(Color::Reset, fmt::format("   Make invocation time: {}ms", result));
 
 	return true;
 }

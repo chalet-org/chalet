@@ -172,7 +172,7 @@ bool Router::cmdDebug()
 	std::cout << std::endl;
 
 	auto result = timer.stop();
-	Output::print(Color::reset, fmt::format("glob time: {}ms\n", result));
+	Output::print(Color::Reset, fmt::format("glob time: {}ms\n", result));
 
 	return true;
 }
@@ -193,7 +193,7 @@ bool Router::parseCacheJson()
 
 	auto result = timer.stop();
 	const auto& file = m_buildState->cache.environmentCache().filename();
-	Output::print(Color::reset, fmt::format("{} parsed in: {}ms", file, result));
+	Output::print(Color::Reset, fmt::format("{} parsed in: {}ms", file, result));
 
 	return true;
 }
@@ -212,7 +212,7 @@ bool Router::parseBuildJson(const std::string& inFile)
 	}
 
 	auto result = timer.stop();
-	Output::print(Color::reset, fmt::format("{} parsed in: {}ms\n", inFile, result));
+	Output::print(Color::Reset, fmt::format("{} parsed in: {}ms\n", inFile, result));
 
 	return true;
 }

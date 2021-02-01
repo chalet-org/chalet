@@ -41,7 +41,7 @@ bool ProjectInitializer::run()
 
 	Path::sanitize(m_rootPath);
 
-	Output::print(Color::yellow, "Path is empty. Let's do some stuff...");
+	Output::print(Color::Yellow, "Path is empty. Let's do some stuff...");
 
 	if (!makeBuildJson())
 		return false;

@@ -8,7 +8,7 @@
 	"files.trimTrailingWhitespace": true,
 	"files.eol": "\n",
 	"files.exclude": {
-		"vendor": true,
+		// "vendor": true,
 		// "build/": true,
 		// "dist/": true
 	},

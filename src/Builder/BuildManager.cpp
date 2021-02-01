@@ -83,7 +83,7 @@ bool BuildManager::run(const Route inRoute)
 
 				auto result = buildTimer.stop();
 
-				Output::print(Color::reset, fmt::format("   Build time: {}ms", result));
+				Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
 				Output::lineBreak();
 			}
 			else
@@ -105,7 +105,7 @@ bool BuildManager::run(const Route inRoute)
 			{
 				auto result = buildTimer.stop();
 
-				Output::print(Color::reset, fmt::format("   Build time: {}ms", result));
+				Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
 				Output::lineBreak();
 			}
 		}

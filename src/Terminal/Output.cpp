@@ -24,20 +24,6 @@ std::string getFormattedBuildTarget(const std::string& inBuildConfiguration, con
 }
 
 /*****************************************************************************/
-std::string getAnsiStyle(const Color inColor, const bool inBold = false)
-{
-	const auto style = inBold ? "1" : "0";
-	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
-	return fmt::format("\033[{style};{color}m", FMT_ARG(style), FMT_ARG(color));
-}
-
-/*****************************************************************************/
-std::string_view getAnsiReset()
-{
-	return "\033[0m";
-}
-
-/*****************************************************************************/
 // TODO: move this
 std::string getCleanGitPath(const std::string inPath)
 {
@@ -72,6 +58,29 @@ std::string getCleanGitPath(const std::string inPath)
 
 	return ret;
 }
+}
+
+/*****************************************************************************/
+std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
+{
+	const auto style = inBold ? "1" : "0";
+	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
+	return fmt::format("\033[{style};{color}m", FMT_ARG(style), FMT_ARG(color));
+}
+
+/*****************************************************************************/
+std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
+{
+	const auto style = inBold ? "1" : "0";
+	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
+	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
+	return fmt::format("\033[{style};{fgColor};{bgColor}m", FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
+}
+
+/*****************************************************************************/
+std::string_view Output::getAnsiReset()
+{
+	return "\033[0m";
 }
 
 /*****************************************************************************/
@@ -123,7 +132,7 @@ void Output::msgFetchingDependency(const std::string& inGitUrl, const std::strin
 	std::string path = getCleanGitPath(inGitUrl);
 	constexpr auto symbol = Unicode::heavyCurvedDownRightArrow();
 
-	displayStyledSymbol(Color::magenta, symbol, fmt::format("Fetching: {} ({})", path, inBranchOrTag));
+	displayStyledSymbol(Color::Magenta, symbol, fmt::format("Fetching: {} ({})", path, inBranchOrTag));
 }
 
 void Output::msgUpdatingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag)
@@ -131,13 +140,13 @@ void Output::msgUpdatingDependency(const std::string& inGitUrl, const std::strin
 	std::string path = getCleanGitPath(inGitUrl);
 	constexpr auto symbol = Unicode::heavyCurvedDownRightArrow();
 
-	displayStyledSymbol(Color::magenta, symbol, fmt::format("Updating: {} ({})", path, inBranchOrTag));
+	displayStyledSymbol(Color::Magenta, symbol, fmt::format("Updating: {} ({})", path, inBranchOrTag));
 }
 
 /*****************************************************************************/
 void Output::msgDisplayBlack(const std::string& inString)
 {
-	const auto color = getAnsiStyle(Color::black, true);
+	const auto color = getAnsiStyle(Color::Black, true);
 	const auto reset = getAnsiReset();
 	std::cout << color << fmt::format("   {}", inString) << reset << std::endl;
 }
@@ -146,7 +155,7 @@ void Output::msgDisplayBlack(const std::string& inString)
 void Output::msgBuildSuccess()
 {
 	constexpr auto symbol = Unicode::heavyCheckmark();
-	displayStyledSymbol(Color::green, symbol, "Succeeded!");
+	displayStyledSymbol(Color::Green, symbol, "Succeeded!");
 }
 
 /*****************************************************************************/
@@ -154,49 +163,49 @@ void Output::msgTargetUpToDate(const bool inMultiTarget, const std::string& inPr
 {
 	std::string successText = "Target is up to date.";
 	if (inMultiTarget)
-		print(Color::blue, fmt::format("   {}: {}", inProjectName, successText));
+		print(Color::Blue, fmt::format("   {}: {}", inProjectName, successText));
 	else
-		print(Color::blue, fmt::format("   {}", successText));
+		print(Color::Blue, fmt::format("   {}", successText));
 }
 
 /*****************************************************************************/
 void Output::msgLaunch(const std::string& inBuildDir, const std::string& inName)
 {
-	displayStyledSymbol(Color::green, " ", fmt::format("Launching {}/{}", inBuildDir, inName));
+	displayStyledSymbol(Color::Green, " ", fmt::format("Launching {}/{}", inBuildDir, inName));
 }
 
 /*****************************************************************************/
 void Output::msgBuildFail()
 {
 	constexpr auto symbol = Unicode::heavyBallotX();
-	displayStyledSymbol(Color::red, symbol, "Failed!");
-	displayStyledSymbol(Color::red, " ", "Review the compile errors above.");
+	displayStyledSymbol(Color::Red, symbol, "Failed!");
+	displayStyledSymbol(Color::Red, " ", "Review the compile errors above.");
 	// exit 1
 }
 
 /*****************************************************************************/
 void Output::msgCleaning()
 {
-	print(Color::blue, "   Removing build files & folders...");
+	print(Color::Blue, "   Removing build files & folders...");
 }
 
 /*****************************************************************************/
 void Output::msgNothingToClean()
 {
-	print(Color::blue, "   Nothing to clean...");
+	print(Color::Blue, "   Nothing to clean...");
 }
 
 /*****************************************************************************/
 void Output::msgCleaningRebuild()
 {
-	print(Color::blue, "   Removing previous build files & folders...");
+	print(Color::Blue, "   Removing previous build files & folders...");
 }
 
 /*****************************************************************************/
 void Output::msgBuildProdError(const std::string& inBuildConfiguration)
 {
 	constexpr auto symbol = Unicode::circledSaltire();
-	displayStyledSymbol(Color::red, symbol, fmt::format("Error: 'bundle' must be run on '{}' build.", inBuildConfiguration));
+	displayStyledSymbol(Color::Red, symbol, fmt::format("Error: 'bundle' must be run on '{}' build.", inBuildConfiguration));
 	// exit 1
 }
 
@@ -204,14 +213,14 @@ void Output::msgBuildProdError(const std::string& inBuildConfiguration)
 void Output::msgProfilerDone(const std::string& inProfileAnalysis)
 {
 	constexpr auto symbol = Unicode::diamond();
-	displayStyledSymbol(Color::magenta, symbol, fmt::format("Profiler Completed: View {} for details.", inProfileAnalysis));
+	displayStyledSymbol(Color::Magenta, symbol, fmt::format("Profiler Completed: View {} for details.", inProfileAnalysis));
 }
 
 /*****************************************************************************/
 void Output::msgProfilerError()
 {
 	constexpr auto symbol = Unicode::circledSaltire();
-	displayStyledSymbol(Color::red, symbol, "Error: Profiler must be run on 'Debug' build.");
+	displayStyledSymbol(Color::Red, symbol, "Error: Profiler must be run on 'Debug' build.");
 	// exit 1
 }
 
@@ -219,7 +228,7 @@ void Output::msgProfilerError()
 void Output::msgProfilerErrorMacOS()
 {
 	constexpr auto symbol = Unicode::circledSaltire();
-	displayStyledSymbol(Color::red, symbol, "Error: Profiling (with gprof) is not supported on MacOS.");
+	displayStyledSymbol(Color::Red, symbol, "Error: Profiling (with gprof) is not supported on MacOS.");
 	// exit 1
 }
 
@@ -231,51 +240,51 @@ void Output::msgClean(const std::string& inBuildConfiguration)
 {
 	constexpr auto symbol = Unicode::dot();
 	if (!inBuildConfiguration.empty())
-		displayStyledSymbol(Color::yellow, symbol, "Clean: " + inBuildConfiguration);
+		displayStyledSymbol(Color::Yellow, symbol, "Clean: " + inBuildConfiguration);
 	else
-		displayStyledSymbol(Color::yellow, symbol, "Clean: All");
+		displayStyledSymbol(Color::Yellow, symbol, "Clean: All");
 }
 
 /*****************************************************************************/
 void Output::msgBuildAndRun(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	constexpr auto symbol = Unicode::dot();
-	displayStyledSymbol(Color::yellow, symbol, "Build & Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(Color::Yellow, symbol, "Build & Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgBuild(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	constexpr auto symbol = Unicode::dot();
-	displayStyledSymbol(Color::yellow, symbol, "Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(Color::Yellow, symbol, "Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgRebuild(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	constexpr auto symbol = Unicode::dot();
-	displayStyledSymbol(Color::yellow, symbol, "Rebuild: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(Color::Yellow, symbol, "Rebuild: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgRun(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	constexpr auto symbol = Unicode::dot();
-	displayStyledSymbol(Color::yellow, symbol, "Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(Color::Yellow, symbol, "Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgBuildProd(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	constexpr auto symbol = Unicode::dot();
-	displayStyledSymbol(Color::yellow, symbol, "Production Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(Color::Yellow, symbol, "Production Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgProfile(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	constexpr auto symbol = Unicode::dot();
-	displayStyledSymbol(Color::yellow, symbol, "Profile: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(Color::Yellow, symbol, "Profile: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
@@ -284,7 +293,7 @@ void Output::msgCopying(const std::string& inFrom, const std::string& inTo)
 	constexpr auto symbol = Unicode::heavyCurvedUpRightArrow();
 	std::string message = fmt::format("Copying: '{}' to '{}'", inFrom, inTo);
 
-	displayStyledSymbol(Color::blue, symbol, message, false);
+	displayStyledSymbol(Color::Blue, symbol, message, false);
 }
 
 }

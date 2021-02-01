@@ -34,7 +34,7 @@ AppBundlerMacOS::AppBundlerMacOS(BuildState& inState) :
 	m_state(inState)
 {
 	// TODO: Generalized version of this in AppBundler
-	Output::print(Color::blue, "   Creating the MacOS application bundle...");
+	Output::print(Color::Blue, "   Creating the MacOS application bundle...");
 	Output::lineBreak();
 }
 
@@ -193,7 +193,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 
 		if (inCleanOutput)
 		{
-			Output::print(Color::blue, "   Creating the disk image for the application...");
+			Output::print(Color::Blue, "   Creating the disk image for the application...");
 		}
 
 		const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);
@@ -227,7 +227,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 
 		if (inCleanOutput)
 		{
-			Output::print(Color::blue, fmt::format("   Done. See '{}'", outDmgPath));
+			Output::print(Color::Blue, fmt::format("   Done. See '{}'", outDmgPath));
 		}
 
 		Output::lineBreak();

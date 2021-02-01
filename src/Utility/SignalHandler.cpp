@@ -11,8 +11,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Libraries/Rang.hpp"
+#include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/Reflect.hpp"
 #include "Utility/String.hpp"
@@ -43,8 +44,11 @@ void SignalHandler::handler(const int inSignal)
 	bool exceptionThrown = std::current_exception() != nullptr;
 	bool assertionFailure = Diagnostic::assertionFailure();
 
+	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
+	const auto reset = Output::getAnsiReset();
+
 	std::cerr << "\n"
-			  << rang::style::bold << rang::fg::red;
+			  << boldRed;
 	switch (inSignal)
 	{
 		case SIGABRT: {
@@ -83,8 +87,8 @@ void SignalHandler::handler(const int inSignal)
 			break;
 	}
 
-	std::cout << rang::style::reset << std::flush;
-	std::cerr << rang::style::reset << std::endl;
+	std::cout << reset << std::flush;
+	std::cerr << reset << std::endl;
 
 	if (sOnErrorCallback != nullptr)
 		sOnErrorCallback();
@@ -95,7 +99,8 @@ void SignalHandler::handler(const int inSignal)
 /*****************************************************************************/
 void SignalHandler::printError(const std::string& inType, const std::string& inDescription, const bool inPrintStackTrace)
 {
-	std::cerr << rang::style::bold << rang::fg::red << inType + "\n";
+	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
+	std::cerr << boldRed << inType + "\n";
 
 	if (!inDescription.empty())
 		std::cerr << inDescription + ":\n";
@@ -112,6 +117,12 @@ void SignalHandler::printStackTrace()
 		return;
 
 	Path::sanitize(workingDirectory);
+
+	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
+	const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
+	const auto redHighlight = Output::getAnsiStyle(Color::Reset, Color::Red, true);
+	const auto blue = Output::getAnsiStyle(Color::Blue);
+	const auto reset = Output::getAnsiReset();
 
 	auto thisClassName = CHALET_REFLECT(SignalHandler);
 	auto diagnosticClassName = CHALET_REFLECT(Diagnostic);
@@ -143,28 +154,28 @@ void SignalHandler::printStackTrace()
 			// at TestScene::init() src/main/Scenes/TestScene.cpp:42
 			if (highlight)
 			{
-				std::cerr << rang::style::bold << rang::bg::red << rang::fg::reset << "  at";
+				std::cerr << redHighlight << "  at";
 				highlight = false;
 			}
 			else
 			{
-				std::cerr << rang::style::bold << rang::fg::red << "  at";
+				std::cerr << boldRed << "  at";
 			}
 
-			std::cerr << rang::style::reset << " " << entry.functionName << " " << rang::fg::blue << sourceFile << ":" << entry.lineNumber << rang::style::reset << "\n";
+			std::cerr << reset << " " << entry.functionName << " " << blue << sourceFile << ":" << entry.lineNumber << reset << "\n";
 		}
 		// OS dynamic libs, etc
 		else if (entry.functionName.empty())
 		{
 			// at C:/Windows/System32/msvcrt.dll:0x7ff8f04e7c58
 			// Skip these, because they're just noise (until they're not)
-			// std::cout << rang::style::bold << rang::fg::red << "  at " << rang::fg::black << entry.binaryFileName << ":" << entry.address << rang::style::reset << "\n";
+			// std::cout << boldRed << "  at " << boldBlack << entry.binaryFileName << ":" << entry.address << reset << "\n";
 		}
 		// C++ runtime, libstdc++, libgcc, etc.
 		else
 		{
 			// at mainCRTStartup
-			std::cerr << rang::style::bold << rang::fg::red << "  at " << rang::fg::black << entry.functionName << " " << entry.lineNumber << rang::style::reset << "\n";
+			std::cerr << boldRed << "  at " << boldBlack << entry.functionName << " " << entry.lineNumber << reset << "\n";
 		}
 	}
 }
