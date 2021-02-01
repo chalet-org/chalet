@@ -9,12 +9,23 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
+namespace
+{
+/*****************************************************************************/
+constexpr Constant unicodeRightwardsTripleArrow()
+{
+#if defined(CHALET_WIN32)
+	return "printf '\\xE2\\x87\\x9B'";
+#else
+	return u8"\xE2\x87\x9B";
+#endif
+}
+}
 /*****************************************************************************/
 MakefileGenerator::MakefileGenerator(const BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain) :
 	m_state(inState),
@@ -77,7 +88,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 SHELL = {shell}
 
 makebuild: {target}
-	printf ''
+	@printf ''
 .DELETE_ON_ERROR: makebuild
 {dumpAsmRecipe}{makePchRecipe}{cppRecipes}{pchRecipe}{rcRecipe}{assemblyRecipe}{targetRecipe}
 
@@ -150,7 +161,7 @@ std::string MakefileGenerator::getCompileEchoLinker()
 {
 	if (m_cleanOutput)
 	{
-		const auto arrow = Unicode::rightwardsTripleArrow();
+		const auto arrow = unicodeRightwardsTripleArrow();
 		const auto blue = "\\033[0;34m";
 
 		return fmt::format(u8"@printf '{arrow}  {blue}Linking $@\\n'",
@@ -171,7 +182,7 @@ std::string MakefileGenerator::getDumpAsmRecipe()
 	{
 		ret = R"makefile(
 dumpasm: $(SOURCE_ASMS)
-	printf ''
+	@printf ''
 .PHONY: dumpasm
 )makefile";
 	}
@@ -222,7 +233,7 @@ std::string MakefileGenerator::getMakePchRecipe()
 
 		ret = fmt::format(R"makefile(
 makepch: {pchTarget}
-	printf ''
+	@printf ''
 .PHONY: makepch
 )makefile",
 			FMT_ARG(pchTarget));
