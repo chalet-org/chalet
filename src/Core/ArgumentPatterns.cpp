@@ -120,7 +120,7 @@ Route ArgumentPatterns::getRouteFromString(const std::string& inRouteString)
 	}
 	else if (String::equals(inRouteString, "rebuild"))
 	{
-		return Route::BuildRun;
+		return Route::Rebuild;
 	}
 	else if (String::equals(inRouteString, "clean"))
 	{
