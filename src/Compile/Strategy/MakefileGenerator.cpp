@@ -17,10 +17,10 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
-constexpr Constant unicodeRightwardsTripleArrow()
+Constant unicodeRightwardsTripleArrow()
 {
 #if defined(CHALET_WIN32)
-	return "\\xE2\\x87\\x9B";
+	return Environment::isBash() ? "\\xE2\\x87\\x9B" : u8"\xE2\x87\x9B";
 #else
 	return u8"\xE2\x87\x9B";
 #endif
@@ -75,7 +75,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 #else
 	const auto shell = "/bin/sh";
 #endif
-	const auto printer = getPrinter(true);
+	const auto printer = getPrinter();
 
 	//
 	//
@@ -121,73 +121,58 @@ include $(wildcard $(SOURCE_DEPS))
 }
 
 /*****************************************************************************/
-std::string MakefileGenerator::getQuietFlag()
-{
-	return m_cleanOutput ? "@" : "";
-}
-
-/*****************************************************************************/
-std::string MakefileGenerator::getMoveCommand(std::string inInput, std::string inOutput)
-{
-	if (Environment::isBash())
-		return fmt::format("mv -f {} {}", inInput, inOutput);
-	else
-	{
-		return fmt::format("rename \"$(subst /,\\\\,{})\" \"$(notdir {})\"", inInput, inOutput);
-	}
-}
-
-/*****************************************************************************/
 std::string MakefileGenerator::getCompileEchoAsm()
 {
 	const auto purple = getColorPurple();
-	const auto printer = getPrinter();
+	std::string printer;
+
 	if (m_cleanOutput)
 	{
-		return fmt::format("@{printer}'   {purple}$@\\n'", FMT_ARG(printer), FMT_ARG(purple));
+		printer = getPrinter(fmt::format("   {}$@", purple), true);
 	}
 	else
 	{
-		return fmt::format("@{printer}'{purple}'", FMT_ARG(printer), FMT_ARG(purple));
+		printer = getPrinter(std::string(purple));
 	}
+
+	return fmt::format("@{}", printer);
 }
 
 /*****************************************************************************/
 std::string MakefileGenerator::getCompileEchoSources()
 {
 	const auto blue = getColorBlue();
-	const auto printer = getPrinter();
+	std::string printer;
+
 	if (m_cleanOutput)
 	{
-		return fmt::format("@{printer}'   {blue}$<\\n'", FMT_ARG(printer), FMT_ARG(blue));
+		printer = getPrinter(fmt::format("   {}$<", blue), true);
 	}
 	else
 	{
-		return fmt::format("@{printer}'{blue}'", FMT_ARG(printer), FMT_ARG(blue));
+		printer = getPrinter(std::string(blue));
 	}
+
+	return fmt::format("@{}", printer);
 }
 
 /*****************************************************************************/
 std::string MakefileGenerator::getCompileEchoLinker()
 {
 	const auto blue = getColorBlue();
-	const auto printer = getPrinter();
+	std::string printer;
 
 	if (m_cleanOutput)
 	{
 		const auto arrow = unicodeRightwardsTripleArrow();
-
-		return fmt::format(u8"@{printer}'{blue}{arrow}  Linking $@\\n'",
-			FMT_ARG(printer),
-			FMT_ARG(arrow),
-			FMT_ARG(blue));
+		printer = getPrinter(fmt::format("{blue}{arrow}  Linking $@", FMT_ARG(blue), FMT_ARG(arrow)), true);
 	}
 	else
 	{
-		return fmt::format("@{printer}'{blue}'",
-			FMT_ARG(printer),
-			FMT_ARG(blue));
+		printer = getPrinter(std::string(blue));
 	}
+
+	return fmt::format("@{}", printer);
 }
 
 /*****************************************************************************/
@@ -196,7 +181,7 @@ std::string MakefileGenerator::getDumpAsmRecipe()
 	std::string ret;
 
 	const bool dumpAssembly = m_project.dumpAssembly();
-	const auto printer = getPrinter(true);
+	const auto printer = getPrinter();
 	if (dumpAssembly)
 	{
 		ret = fmt::format(R"makefile(
@@ -250,7 +235,7 @@ std::string MakefileGenerator::getMakePchRecipe()
 	{
 		const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
 		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
-		const auto printer = getPrinter(true);
+		const auto printer = getPrinter();
 
 		ret = fmt::format(R"makefile(
 makepch: {pchTarget}
@@ -432,13 +417,13 @@ std::string MakefileGenerator::getTargetRecipe()
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(m_project);
 	const auto linkerCommand = m_toolchain->getLinkerTargetCommand(linkerTarget, "$(SOURCE_OBJS)", linkerTargetBase);
 	const auto compileEcho = getCompileEchoLinker();
-	const auto printer = getPrinter();
+	const auto printer = getPrinter("\\n");
 
 	ret = fmt::format(R"makefile(
 {linkerTarget}: {preReqs}
 	{compileEcho}
 	{quietFlag}{linkerCommand}
-	@{printer} '\n'
+	@{printer}
 )makefile",
 		FMT_ARG(linkerTarget),
 		FMT_ARG(preReqs),
@@ -469,19 +454,50 @@ std::string MakefileGenerator::getLinkerPreReqs()
 }
 
 /*****************************************************************************/
-std::string_view MakefileGenerator::getPrinter(const bool isBlank)
+std::string MakefileGenerator::getQuietFlag()
 {
-	if (!isBlank)
-		return Environment::isBash() ? "printf " : "echo ";
+	return m_cleanOutput ? "@" : "";
+}
+
+/*****************************************************************************/
+std::string MakefileGenerator::getMoveCommand(std::string inInput, std::string inOutput)
+{
+	if (Environment::isBash())
+		return fmt::format("mv -f {} {}", inInput, inOutput);
 	else
-		return Environment::isBash() ? "printf ''" : "prompt";
+	{
+		return fmt::format("rename \"$(subst /,\\\\,{})\" \"$(notdir {})\"", inInput, inOutput);
+	}
+}
+
+/*****************************************************************************/
+std::string MakefileGenerator::getPrinter(const std::string& inPrint, const bool inNewLine)
+{
+	if (!Environment::isBash() && inPrint == "\\n")
+	{
+		return "echo.";
+	}
+
+	if (inPrint.empty())
+	{
+		return Environment::isBash() ? "printf ''" : "prompt"; // This just needs to be a noop
+	}
+
+	if (Environment::isBash())
+	{
+		return fmt::format("printf '{}{}'", inPrint, inNewLine ? "\\n" : "");
+	}
+	else
+	{
+		return fmt::format("echo {}", inPrint);
+	}
 }
 
 /*****************************************************************************/
 std::string_view MakefileGenerator::getColorBlue()
 {
 #if defined(CHALET_WIN32)
-	return Environment::isBash() ? "\\\\033[0;34m" : "\\x1b[0;34m";
+	return Environment::isBash() ? "\\\\033[0;34m" : "\x1b[34m";
 #else
 	return "\\033[0;34m";
 #endif
@@ -491,7 +507,7 @@ std::string_view MakefileGenerator::getColorBlue()
 std::string_view MakefileGenerator::getColorPurple()
 {
 #if defined(CHALET_WIN32)
-	return Environment::isBash() ? "\\\\033[0;35m" : "\\x1b[0;35m";
+	return Environment::isBash() ? "\\\\033[0;35m" : "\x1b[35m";
 #else
 	return "\\033[0;35m";
 #endif
