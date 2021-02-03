@@ -133,9 +133,7 @@ std::string MakefileGenerator::getMoveCommand(std::string inInput, std::string i
 		return fmt::format("mv -f {} {}", inInput, inOutput);
 	else
 	{
-		String::replaceAll(inInput, "/", "\\\\");
-		String::replaceAll(inOutput, "/", "\\\\");
-		return fmt::format("move \\{} \\{}", inInput, inOutput);
+		return fmt::format("rename \"$(subst /,\\\\,{})\" \"$(notdir {})\"", inInput, inOutput);
 	}
 }
 
@@ -293,8 +291,7 @@ std::string MakefileGenerator::getPchRecipe()
 {pchTarget}: {pch}
 {pchTarget}: {pch} {dependency}.d
 	{compileEcho}
-	{quietFlag}{pchCompile}
-	{quietFlag}{moveDependencies}
+	{quietFlag}{pchCompile} && {moveDependencies}
 )makefile",
 			FMT_ARG(pchTarget),
 			FMT_ARG(pch),
@@ -329,8 +326,7 @@ std::string MakefileGenerator::getRcRecipe()
 {objDir}/%.rc.res: %.rc
 {objDir}/%.rc.res: %.rc {depDir}/%.rc.d{pchPreReq}
 	{compileEcho}
-	{quietFlag}{rcCompile}
-	{quietFlag}{moveDependencies}
+	{quietFlag}{rcCompile} && {moveDependencies}
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
@@ -368,8 +364,7 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 {objDir}/%.{ext}.o: %.{ext}
 {objDir}/%.{ext}.o: %.{ext} {pchTarget} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
-	{quietFlag}{cppCompile}
-	{quietFlag}{moveDependencies}
+	{quietFlag}{cppCompile} && {moveDependencies}
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
@@ -409,8 +404,7 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 {objDir}/%.{ext}.o: %.{ext}
 {objDir}/%.{ext}.o: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
-	{quietFlag}{objcCompile}
-	{quietFlag}{moveDependencies}
+	{quietFlag}{objcCompile} && {moveDependencies}
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
