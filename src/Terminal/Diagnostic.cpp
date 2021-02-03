@@ -10,7 +10,6 @@
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/SignalHandler.hpp"
 
 namespace chalet
 {
@@ -87,10 +86,6 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 	{
 		const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
 		std::cerr << boldBlack;
-	}
-	else
-	{
-		priv::SignalHandler::printStackTrace();
 	}
 
 	sExceptionThrown = true;
