@@ -31,7 +31,6 @@ BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inStat
 		{ Route::Build, &BuildManager::cmdBuild },
 		{ Route::Rebuild, &BuildManager::cmdRebuild },
 		{ Route::Run, &BuildManager::cmdRun },
-		{ Route::Clean, &BuildManager::cmdClean },
 		// { Route::kProfile, &BuildManager::cmdProfile },
 		{ Route::Bundle, &BuildManager::cmdBuild },
 	})
@@ -41,27 +40,31 @@ BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inStat
 /*****************************************************************************/
 bool BuildManager::run(const Route inRoute)
 {
+	m_removeCache.clear();
+	m_cleanOutput = m_state.environment.cleanOutput();
+
+	if (inRoute == Route::Clean)
+	{
+		if (!cmdClean())
+			return false;
+
+		Output::msgBuildSuccess();
+		Output::lineBreak();
+		return true;
+	}
+
 	if (m_buildRoutes.find(inRoute) == m_buildRoutes.end())
 	{
 		Diagnostic::error("Build command not recognized.");
 		return false;
 	}
 
-	m_removeCache.clear();
-	m_cleanOutput = m_state.environment.cleanOutput();
-
-	m_runProjectName = getRunProject();
-
 	bool runCommand = inRoute == Route::Run;
-	bool cleanCommand = inRoute == Route::Clean;
+	m_runProjectName = getRunProject();
 
 	bool error = false;
 	for (auto& project : m_state.projects)
 	{
-		int i = &project - &m_state.projects[0];
-		if (cleanCommand && i > 0)
-			break;
-
 		if (!project->includeInBuild())
 			continue;
 
@@ -78,7 +81,7 @@ bool BuildManager::run(const Route inRoute)
 
 			if (compileCMakeProject())
 			{
-				if (runCommand || cleanCommand)
+				if (runCommand)
 					continue;
 
 				auto result = buildTimer.stop();
@@ -101,7 +104,7 @@ bool BuildManager::run(const Route inRoute)
 				break;
 			}
 
-			if (!runCommand && !cleanCommand)
+			if (!runCommand)
 			{
 				auto result = buildTimer.stop();
 
@@ -116,7 +119,7 @@ bool BuildManager::run(const Route inRoute)
 	if (error)
 		return false;
 
-	if (inRoute == Route::BuildRun || inRoute == Route::Build || inRoute == Route::Rebuild || cleanCommand)
+	if (inRoute == Route::BuildRun || inRoute == Route::Build || inRoute == Route::Rebuild)
 	{
 		Output::msgBuildSuccess();
 
@@ -319,8 +322,6 @@ bool BuildManager::doRun()
 /*****************************************************************************/
 bool BuildManager::doLazyClean()
 {
-	chalet_assert(m_project != nullptr, "");
-
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& buildDir = m_state.paths.buildDir();
 
@@ -459,8 +460,6 @@ bool BuildManager::cmdRun()
 /*****************************************************************************/
 bool BuildManager::cmdClean()
 {
-	chalet_assert(m_project != nullptr, "");
-
 	const auto& buildConfiguration = m_state.buildConfiguration();
 
 	Output::msgClean(buildConfiguration);
