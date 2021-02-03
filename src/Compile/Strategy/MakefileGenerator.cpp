@@ -135,41 +135,47 @@ std::string MakefileGenerator::getMoveCommand()
 /*****************************************************************************/
 std::string MakefileGenerator::getCompileEchoAsm()
 {
+	const auto purple = "\\033[0;35m";
 	if (m_cleanOutput)
 	{
-		const auto purple = "\\033[0;35m";
 		return fmt::format("@printf '   {purple}$@\\n'", FMT_ARG(purple));
 	}
-
-	return std::string();
+	else
+	{
+		return fmt::format("@printf '{}'", purple);
+	}
 }
 
 /*****************************************************************************/
 std::string MakefileGenerator::getCompileEchoSources()
 {
+	const auto blue = "\\033[0;34m";
 	if (m_cleanOutput)
 	{
-		const auto blue = "\\033[0;34m";
 		return fmt::format("@printf '   {blue}$<\\n'", FMT_ARG(blue));
 	}
-
-	return std::string();
+	else
+	{
+		return fmt::format("@printf '{}'", blue);
+	}
 }
 
 /*****************************************************************************/
 std::string MakefileGenerator::getCompileEchoLinker()
 {
+	const auto blue = "\\033[0;34m";
 	if (m_cleanOutput)
 	{
 		const auto arrow = unicodeRightwardsTripleArrow();
-		const auto blue = "\\033[0;34m";
 
 		return fmt::format(u8"@printf '{blue}{arrow}  Linking $@\\n'",
 			FMT_ARG(arrow),
 			FMT_ARG(blue));
 	}
-
-	return std::string();
+	else
+	{
+		return fmt::format("@printf '{}'", blue);
+	}
 }
 
 /*****************************************************************************/
