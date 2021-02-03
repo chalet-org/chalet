@@ -45,7 +45,7 @@ jobs:
     - name: 'Build: Debug'
       run: bash ./build.sh Debug
     - name: 'Build: Release'
-      run: build/Debug/chalet-debug build Release
+      run: build/Debug/chalet-debug --save-schema build Release
     - name: 'Run: Tests'
       run: build/Release/chalet run Release tests_chalet
     - name: 'Zip binary'
@@ -72,7 +72,7 @@ jobs:
     - name: 'Build: Debug'
       run: bash ./build.sh Debug
     - name: 'Build: Release'
-      run: build/Debug/chalet-debug build Release
+      run: build/Debug/chalet-debug --save-schema build Release
     - name: 'Run: Tests'
       run: build/Release/chalet run Release tests_chalet
     - name: 'Zip binary'
@@ -109,7 +109,7 @@ jobs:
     - name: 'Build: Debug'
       run: bash ./build.sh Debug
     - name: 'Build: Release'
-      run: build/Debug/chalet-debug build Release
+      run: build/Debug/chalet-debug --save-schema build Release
     - name: 'Run: Tests'
       run: build/Release/chalet run Release tests_chalet
     - name: 'Zip binary'

@@ -8,11 +8,20 @@
 
 #include "Libraries/WindowsApi.hpp" // first
 
+// #ifdef CHALET_WIN32
+// 	#define _MSC_VER 1
+// #endif
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-result"
+#pragma GCC diagnostic ignored "-Wshadow"
 
 #include <ust/ust.hpp>
 
 #pragma GCC diagnostic pop
+
+// #ifdef CHALET_WIN32
+// 	#undef _MSC_VER
+// #endif
 
 #endif // CHALET_STACK_TRACE_HPP

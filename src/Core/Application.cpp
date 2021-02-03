@@ -28,12 +28,6 @@ int Application::run(const int argc, const char* const argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (!Environment::isBash())
-	{
-		Diagnostic::error(fmt::format("This application was designed for use with bash on Windows. Command Prompt, PowerShell & MSVC are not yet supported."), "Critical Error");
-		return EXIT_SUCCESS;
-	}
-
 	{
 		ArgumentParser argParser{ m_inputs };
 		if (!argParser.run(argc, argv))
@@ -58,6 +52,9 @@ bool Application::initialize()
 {
 	if (m_initialized)
 		return false;
+
+		// Output::resetStdout();
+		// Output::resetStderr();
 
 #ifdef CHALET_DEBUG
 	priv::SignalHandler::start([]() noexcept {

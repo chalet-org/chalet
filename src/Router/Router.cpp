@@ -186,7 +186,7 @@ bool Router::parseCacheJson()
 	Timer timer;
 
 	{
-		CacheJsonParser parser(*m_buildState);
+		CacheJsonParser parser(m_inputs, *m_buildState);
 		if (!parser.serialize())
 			return false;
 	}

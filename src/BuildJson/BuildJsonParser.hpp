@@ -10,6 +10,7 @@
 
 #include "BuildJson/ProjectConfiguration.hpp"
 #include "State/BuildState.hpp"
+#include "State/CommandLineInputs.hpp"
 #include "Json/JsonParser.hpp"
 
 namespace chalet

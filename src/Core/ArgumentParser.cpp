@@ -60,50 +60,54 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	Route command = patterns.route();
 	m_inputs.setCommand(command);
 
-	for (auto& [key, value] : patterns.arguments())
+	for (auto& [key, rawValue] : patterns.arguments())
 	{
-		auto kind = value.kind();
+		auto kind = rawValue.kind();
 		switch (kind)
 		{
 			case Variant::Kind::String: {
+				auto value = rawValue.asString();
 				if (key == ArgumentPatterns::kArgConfiguration)
 				{
-					auto configuration = value.asString();
-					m_inputs.setBuildFromCommandLine(std::move(configuration));
+					m_inputs.setBuildFromCommandLine(std::move(value));
 				}
 				else if (key == ArgumentPatterns::kArgRunProject)
 				{
-					auto runProject = value.asString();
-					m_inputs.setRunProject(std::move(runProject));
+					m_inputs.setRunProject(std::move(value));
 				}
 				else if (String::equals(key, "-i") || String::equals(key, "--input"))
 				{
-					auto inputFile = value.asString();
-					if (!inputFile.empty())
-						CommandLineInputs::setFile(std::move(inputFile));
+					if (!value.empty())
+						CommandLineInputs::setFile(std::move(value));
 				}
 				else if (key == ArgumentPatterns::kArgInitName)
 				{
-					auto name = value.asString();
-					m_inputs.setInitProjectName(std::move(name));
+					m_inputs.setInitProjectName(std::move(value));
 				}
 				else if (key == ArgumentPatterns::kArgInitPath)
 				{
-					auto path = value.asString();
-					m_inputs.setInitPath(std::move(path));
+					m_inputs.setInitPath(std::move(value));
 				}
 				break;
 			}
+
 			case Variant::Kind::StringList: {
 				if (key == ArgumentPatterns::kArgRunArguments)
 				{
-					auto runArgs = String::join(value.asStringList());
+					auto runArgs = String::join(rawValue.asStringList());
 					m_inputs.setRunOptions(std::move(runArgs));
 				}
 				break;
 			}
 
-			case Variant::Kind::Boolean: // might do something with this in the future
+			case Variant::Kind::Boolean: {
+				bool value = rawValue.asBool();
+				if (String::equals(key, "--save-schema"))
+				{
+					m_inputs.setSaveSchemaToFile(value);
+				}
+				break;
+			}
 			default:
 				break;
 		}

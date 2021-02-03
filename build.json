@@ -57,6 +57,9 @@
 		"links": [
 			"stdc++fs"
 		],
+		"links.windows": [
+			"imagehlp"
+		],
 		"macosFrameworkPaths": [
 			"/Library/Frameworks"
 		],

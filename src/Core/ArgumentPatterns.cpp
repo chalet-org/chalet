@@ -74,9 +74,7 @@ bool ArgumentPatterns::parse(const StringList& inArguments)
 				continue;
 
 			if (String::startsWith("-", arg))
-			{
-				m_argumentMap.push_back({ arg, std::string() });
-			}
+				continue;
 
 			Route route = getRouteFromString(arg);
 
@@ -253,6 +251,9 @@ void ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		if (key == m_routeString)
 			continue;
 
+		if (String::startsWith("-", key) && !List::contains(inArguments, key))
+			continue;
+
 		switch (value.kind())
 		{
 			case Variant::Kind::Boolean:
@@ -330,18 +331,38 @@ void ArgumentPatterns::populateMainArguments()
 		.help(getHelpCommand());
 }
 
+/*****************************************************************************/
 void ArgumentPatterns::addInputFileArg()
 {
 	m_parser.add_argument("-i", "--input")
 		.help("input file")
 		.nargs(1)
 		.default_value("build.json");
+
+	m_argumentMap.push_back({ "-i", Variant::Kind::String });
+	m_argumentMap.push_back({ "--input", Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addSaveSchemaArg()
+{
+	// This option should only be in the debug executable
+#ifdef CHALET_DEBUG
+	m_parser.add_argument("--save-schema")
+		.help("save schema")
+		.nargs(1)
+		.default_value(false)
+		.implicit_value(true);
+
+	m_argumentMap.push_back({ "--save-schema", Variant::Kind::Boolean });
+#endif
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandBuildRun()
 {
 	addInputFileArg();
+	addSaveSchemaArg();
 
 	m_parser.add_argument(kArgConfiguration)
 		.help(kHelpBuildConfiguration)
@@ -364,6 +385,7 @@ void ArgumentPatterns::commandBuildRun()
 void ArgumentPatterns::commandRun()
 {
 	addInputFileArg();
+	addSaveSchemaArg();
 
 	m_parser.add_argument(kArgConfiguration)
 		.help(kHelpBuildConfiguration)
@@ -386,6 +408,7 @@ void ArgumentPatterns::commandRun()
 void ArgumentPatterns::commandBuild()
 {
 	addInputFileArg();
+	addSaveSchemaArg();
 
 	m_parser.add_argument(kArgConfiguration)
 		.help(kHelpBuildConfiguration)
@@ -398,6 +421,7 @@ void ArgumentPatterns::commandBuild()
 void ArgumentPatterns::commandRebuild()
 {
 	addInputFileArg();
+	addSaveSchemaArg();
 
 	m_parser.add_argument(kArgConfiguration)
 		.help(kHelpBuildConfiguration)
@@ -410,6 +434,7 @@ void ArgumentPatterns::commandRebuild()
 void ArgumentPatterns::commandClean()
 {
 	addInputFileArg();
+	addSaveSchemaArg();
 
 	m_parser.add_argument(kArgConfiguration)
 		.help(kHelpBuildConfiguration)
@@ -422,18 +447,21 @@ void ArgumentPatterns::commandClean()
 void ArgumentPatterns::commandBundle()
 {
 	addInputFileArg();
+	addSaveSchemaArg();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandInstall()
 {
 	addInputFileArg();
+	addSaveSchemaArg();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandConfigure()
 {
 	addInputFileArg();
+	addSaveSchemaArg();
 }
 
 /*****************************************************************************/

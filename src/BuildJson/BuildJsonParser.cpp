@@ -36,9 +36,11 @@ bool BuildJsonParser::serialize()
 
 	JsonFile buildJson(m_filename);
 	Json buildJsonSchema = Schema::getBuildJson();
-#ifdef CHALET_DEBUG
-	JsonFile::saveToFile(buildJsonSchema, "schema/chalet.schema.json");
-#endif
+
+	if (m_inputs.saveSchemaToFile())
+	{
+		JsonFile::saveToFile(buildJsonSchema, "schema/chalet.schema.json");
+	}
 
 	// TODO: schema versioning
 	if (!buildJson.validate(std::move(buildJsonSchema)))

@@ -53,9 +53,14 @@ if (UNIX)
 endif()
 
 find_package(Threads REQUIRED)
-target_link_libraries(${TARGET_NAME} PRIVATE Threads::Threads)
 
-if (!CLANG)
+# imagehlp
+
+if(WIN32)
+	target_link_libraries(${TARGET_NAME} Threads::Threads stdc++fs imagehlp)
+elseif (CLANG)
+	target_link_libraries(${TARGET_NAME} PRIVATE Threads::Threads)
+else()
 	target_link_libraries(${TARGET_NAME} stdc++fs)
 endif()
 

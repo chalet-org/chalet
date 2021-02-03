@@ -7,13 +7,14 @@
 #define CHALET_CACHE_JSON_PARSER_HPP
 
 #include "State/BuildState.hpp"
+#include "State/CommandLineInputs.hpp"
 #include "Json/JsonParser.hpp"
 
 namespace chalet
 {
 struct CacheJsonParser : public JsonParser
 {
-	explicit CacheJsonParser(BuildState& inState);
+	explicit CacheJsonParser(const CommandLineInputs& inInputs, BuildState& inState);
 
 	virtual bool serialize() final;
 
@@ -27,6 +28,7 @@ private:
 	bool parseTools(const Json& inNode);
 	bool parseCompilers(const Json& inNode);
 
+	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 	const std::string& m_filename;
 

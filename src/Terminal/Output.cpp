@@ -131,9 +131,15 @@ void Output::warnBlankKeyInList(const std::string& inKey)
 }
 
 /*****************************************************************************/
-void Output::reset()
+void Output::resetStdout()
 {
-	std::cout << getAnsiReset() << std::endl;
+	std::cout << getAnsiReset() << std::flush;
+}
+
+/*****************************************************************************/
+void Output::resetStderr()
+{
+	std::cerr << getAnsiReset() << std::flush;
 }
 
 /*****************************************************************************/

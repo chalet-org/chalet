@@ -19,7 +19,8 @@ std::string_view getAnsiReset();
 void displayStyledSymbol(const Color inColor, const std::string& inSymbol, const std::string& inMessage, const bool inBold = true);
 void warnBlankKey(const std::string& inKey, const std::string& inDefault = "");
 void warnBlankKeyInList(const std::string& inKey);
-void reset();
+void resetStdout();
+void resetStderr();
 void lineBreak();
 void print(const Color inColor, const std::string& inText);
 

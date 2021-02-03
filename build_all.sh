@@ -1,3 +1,3 @@
 #!/bin/bash
 
-bash ./build.sh Debug && build/Debug/chalet-debug buildrun Release
+bash ./build.sh Debug && build/Debug/chalet-debug --save-schema buildrun Release

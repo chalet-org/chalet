@@ -6,6 +6,7 @@
 #include "Json/JsonFile.hpp"
 
 #include "Terminal/Commands.hpp"
+#include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonValidator.hpp"
 
@@ -23,6 +24,9 @@ void JsonFile::saveToFile(const Json& inJson, const std::string& outFilename)
 {
 	if (outFilename.empty())
 		return;
+
+	const auto folder = String::getPathFolder(outFilename);
+	Commands::makeDirectories({ folder }, true);
 
 	std::ofstream(outFilename) << inJson.dump(1, '\t') << std::endl;
 }

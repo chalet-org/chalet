@@ -16,7 +16,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CacheJsonParser::CacheJsonParser(BuildState& inState) :
+CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, BuildState& inState) :
+	m_inputs(inInputs),
 	m_state(inState),
 	m_filename(m_state.cache.environmentCache().filename())
 {
@@ -28,9 +29,11 @@ bool CacheJsonParser::serialize()
 {
 	auto& environmentCache = m_state.cache.environmentCache();
 	Json cacheJsonSchema = Schema::getCacheJson();
-#ifdef CHALET_DEBUG
-	JsonFile::saveToFile(cacheJsonSchema, "schema/chalet-cache.schema.json");
-#endif
+
+	if (m_inputs.saveSchemaToFile())
+	{
+		JsonFile::saveToFile(cacheJsonSchema, "schema/chalet-cache.schema.json");
+	}
 
 	if (!makeCache())
 		return false;

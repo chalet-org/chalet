@@ -43,6 +43,9 @@ struct CommandLineInputs
 	const std::string& initPath() const noexcept;
 	void setInitPath(std::string&& inValue) noexcept;
 
+	bool saveSchemaToFile() const noexcept;
+	void setSaveSchemaToFile(const bool inValue) noexcept;
+
 private:
 	static std::string kFile;
 
@@ -58,7 +61,9 @@ private:
 	std::string m_initProjectName;
 	std::string m_initPath;
 
-	Route m_command;
+	Route m_command = Route::Unknown;
+
+	bool m_saveSchemaToFile = false;
 };
 }
 

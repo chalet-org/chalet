@@ -40,7 +40,7 @@
 	"tasks": [
 		{
 			"label": "Build & Run: Release",
-			"command": "${CHALET_DEBUG} buildrun Release",
+			"command": "${CHALET_DEBUG} --save-schema buildrun Release",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -52,7 +52,7 @@
 		},
 		{
 			"label": "Build: Release",
-			"command": "${CHALET_DEBUG} build Release",
+			"command": "${CHALET_DEBUG} --save-schema build Release",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -64,7 +64,7 @@
 		},
 		{
 			"label": "Run: Release",
-			"command": "${CHALET_DEBUG} run Release",
+			"command": "${CHALET_DEBUG} --save-schema run Release",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -76,7 +76,7 @@
 		},
 		{
 			"label": "Rebuild: Release",
-			"command": "${CHALET_DEBUG} rebuild Release",
+			"command": "${CHALET_DEBUG} --save-schema rebuild Release",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -88,7 +88,7 @@
 		},
 		{
 			"label": "Clean: Release",
-			"command": "${CHALET_DEBUG} clean Release",
+			"command": "${CHALET_DEBUG} --save-schema clean Release",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -100,7 +100,7 @@
 		},
 		{
 			"label": "Build & Run: Debug",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} buildrun Release",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema buildrun Release",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -136,7 +136,7 @@
 		},
 		{
 			"label": "Build & Run: Tests",
-			"command": "${CHALET_DEBUG} buildrun Release tests_chalet",
+			"command": "${CHALET_DEBUG} --save-schema buildrun Release tests_chalet",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -148,7 +148,7 @@
 		},
 		{
 			"label": "Run: Tests",
-			"command": "${CHALET_DEBUG} run Release tests_chalet",
+			"command": "${CHALET_DEBUG} --save-schema run Release tests_chalet",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -160,7 +160,7 @@
 		},
 		{
 			"label": "Bundle",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} bundle",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema bundle",
 			"type": "shell",
 			"group": {
 				"kind": "build",

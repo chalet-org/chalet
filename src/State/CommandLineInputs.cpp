@@ -132,6 +132,17 @@ void CommandLineInputs::setInitPath(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+bool CommandLineInputs::saveSchemaToFile() const noexcept
+{
+	return m_saveSchemaToFile;
+}
+
+void CommandLineInputs::setSaveSchemaToFile(const bool inValue) noexcept
+{
+	m_saveSchemaToFile = inValue;
+}
+
+/*****************************************************************************/
 std::string CommandLineInputs::getPlatform() noexcept
 {
 #if defined(CHALET_WIN32)

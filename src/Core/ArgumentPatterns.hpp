@@ -45,6 +45,7 @@ private:
 
 	void populateMainArguments();
 	void addInputFileArg();
+	void addSaveSchemaArg();
 
 	void commandBuildRun();
 	void commandRun();
