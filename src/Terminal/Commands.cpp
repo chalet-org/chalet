@@ -10,6 +10,7 @@
 #include "Libraries/Format.hpp"
 #include "Libraries/Glob.hpp"
 #include "State/CommandLineInputs.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
@@ -468,8 +469,30 @@ std::string Commands::which(const std::string_view& inExecutable, const bool inC
 #else
 	const std::string null = "2> /dev/null";
 #endif
-	std::string result = Commands::shellWithOutput(fmt::format("which {} {null}", inExecutable, FMT_ARG(null)), inCleanOutput);
-	String::replaceAll(result, "\n", "");
+	std::string command;
+	if (Environment::isBash())
+		command = fmt::format("which {} {null}", inExecutable, FMT_ARG(null));
+	else
+		command = fmt::format("where {}.exe {null}", inExecutable, FMT_ARG(null));
+
+	std::string result = Commands::shellWithOutput(command, inCleanOutput);
+	if (!Environment::isBash())
+	{
+		const auto splitResult = String::split(result, "\n");
+		if (splitResult.size() > 1)
+		{
+			result = splitResult[0];
+			String::replaceAll(result, "\\", "/");
+		}
+		else
+		{
+			result = "";
+		}
+	}
+	else
+	{
+		String::replaceAll(result, "\n", "");
+	}
 
 #if defined(CHALET_WIN32)
 	Path::msysDrivesToWindowsDrives(result);
