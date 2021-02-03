@@ -135,7 +135,11 @@ std::string MakefileGenerator::getMoveCommand()
 /*****************************************************************************/
 std::string MakefileGenerator::getCompileEchoAsm()
 {
+#if defined(CHALET_WIN32)
+	const auto purple = "\\\\033[0;35m";
+#else
 	const auto purple = "\\033[0;35m";
+#endif
 	if (m_cleanOutput)
 	{
 		return fmt::format("@printf '   {purple}$@\\n'", FMT_ARG(purple));
@@ -149,7 +153,11 @@ std::string MakefileGenerator::getCompileEchoAsm()
 /*****************************************************************************/
 std::string MakefileGenerator::getCompileEchoSources()
 {
+#if defined(CHALET_WIN32)
+	const auto blue = "\\\\033[0;34m";
+#else
 	const auto blue = "\\033[0;34m";
+#endif
 	if (m_cleanOutput)
 	{
 		return fmt::format("@printf '   {blue}$<\\n'", FMT_ARG(blue));
@@ -163,7 +171,11 @@ std::string MakefileGenerator::getCompileEchoSources()
 /*****************************************************************************/
 std::string MakefileGenerator::getCompileEchoLinker()
 {
+#if defined(CHALET_WIN32)
+	const auto blue = "\\\\033[0;34m";
+#else
 	const auto blue = "\\033[0;34m";
+#endif
 	if (m_cleanOutput)
 	{
 		const auto arrow = unicodeRightwardsTripleArrow();
