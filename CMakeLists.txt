@@ -57,7 +57,7 @@ find_package(Threads REQUIRED)
 # imagehlp
 
 if(WIN32)
-	target_link_libraries(${TARGET_NAME} Threads::Threads stdc++fs imagehlp)
+	target_link_libraries(${TARGET_NAME} -static Threads::Threads stdc++fs imagehlp)
 elseif (CLANG)
 	target_link_libraries(${TARGET_NAME} PRIVATE Threads::Threads)
 else()
