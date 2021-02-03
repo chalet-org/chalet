@@ -87,11 +87,11 @@ void SignalHandler::handler(const int inSignal)
 			break;
 	}
 
-	std::cout << reset << std::flush;
-	std::cerr << reset << std::endl;
-
 	if (sOnErrorCallback != nullptr)
 		sOnErrorCallback();
+
+	std::cout << reset << std::flush;
+	std::cerr << reset << std::endl;
 
 	std::exit(1);
 }

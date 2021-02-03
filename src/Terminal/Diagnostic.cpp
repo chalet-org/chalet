@@ -8,6 +8,7 @@
 #include <exception>
 
 #include "Libraries/Format.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 
 namespace chalet
@@ -81,9 +82,12 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 
 	Diagnostic::error(inMessage, inTitle);
 
-	const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
+	if (Environment::isBash())
+	{
+		const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
+		std::cerr << boldBlack;
+	}
 
-	std::cerr << boldBlack;
 	sExceptionThrown = true;
 
 	if (!inThrow)

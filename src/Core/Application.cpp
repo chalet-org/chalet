@@ -82,6 +82,18 @@ void Application::configureOsTerminal()
 		auto result = SetConsoleOutputCP(CP_UTF8);
 		chalet_assert(result, "Failed to set Console encoding.");
 		UNUSED(result);
+
+		// SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+		if (hOut != INVALID_HANDLE_VALUE)
+		{
+			DWORD dwMode = 0;
+			if (GetConsoleMode(hOut, &dwMode))
+			{
+				dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+				SetConsoleMode(hOut, dwMode);
+			}
+		}
 	}
 
 	{

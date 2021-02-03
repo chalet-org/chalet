@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "Libraries/Regex.hpp"
+#include "Libraries/WindowsApi.hpp"
 #include "State/CommandLineInputs.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -65,7 +66,15 @@ std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 {
 	const auto style = inBold ? "1" : "0";
 	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
-	return fmt::format("\033[{style};{color}m", FMT_ARG(style), FMT_ARG(color));
+
+	if (Environment::isBash())
+	{
+		return fmt::format("\033[{style};{color}m", FMT_ARG(style), FMT_ARG(color));
+	}
+	else
+	{
+		return fmt::format("\x1b[{style};{color}m", FMT_ARG(style), FMT_ARG(color));
+	}
 }
 
 /*****************************************************************************/
@@ -74,13 +83,28 @@ std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBa
 	const auto style = inBold ? "1" : "0";
 	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
 	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
-	return fmt::format("\033[{style};{fgColor};{bgColor}m", FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
+
+	if (Environment::isBash())
+	{
+		return fmt::format("\033[{style};{fgColor};{bgColor}m", FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
+	}
+	else
+	{
+		return fmt::format("\x1b[{style};{fgColor};{bgColor}m", FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
+	}
 }
 
 /*****************************************************************************/
 std::string_view Output::getAnsiReset()
 {
-	return "\033[0m";
+	if (Environment::isBash())
+	{
+		return "\033[0m";
+	}
+	else
+	{
+		return "\x1b[0m";
+	}
 }
 
 /*****************************************************************************/
