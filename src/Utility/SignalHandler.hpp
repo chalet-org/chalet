@@ -14,6 +14,7 @@ class SignalHandler
 
 public:
 	static void start(Callback inOnError = nullptr);
+	static void printStackTrace();
 
 private:
 	SignalHandler() = delete;
@@ -21,7 +22,6 @@ private:
 	static void handler(const int inSignal);
 
 	static void printError(const std::string& inType, const std::string& inDescription, const bool inPrintStackTrace = true);
-	static void printStackTrace();
 
 	static Callback sOnErrorCallback;
 };

@@ -18,19 +18,19 @@ void Path::sanitize(std::string& outValue, const bool inRemoveNewLine)
 	if (inRemoveNewLine)
 		String::replaceAll(outValue, "\n", " ");
 
-	if (Environment::isBash())
+	// if (Environment::isBash())
 	{
 		String::replaceAll(outValue, "\\\\", "/");
 		String::replaceAll(outValue, "\\", "/");
 	}
-	else
-	{
-#if defined(CHALET_WIN32)
-		String::replaceAll(outValue, "/", "\\\\");
-#else
-		chalet_assert(false, "Bad call to Path::sanitize");
-#endif
-	}
+	// 	else
+	// 	{
+	// #if defined(CHALET_WIN32)
+	// 		String::replaceAll(outValue, "/", "\\\\");
+	// #else
+	// 		chalet_assert(false, "Bad call to Path::sanitize");
+	// #endif
+	// 	}
 
 	if (outValue.back() == ' ')
 		outValue.pop_back();

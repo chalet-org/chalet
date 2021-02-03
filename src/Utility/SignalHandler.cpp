@@ -114,7 +114,10 @@ void SignalHandler::printStackTrace()
 {
 	std::string workingDirectory = Commands::getWorkingDirectory();
 	if (workingDirectory.empty())
+	{
+		std::cerr << "SignalHandler::printStackTrace: no workingDirectory" << std::endl;
 		return;
+	}
 
 	Path::sanitize(workingDirectory);
 

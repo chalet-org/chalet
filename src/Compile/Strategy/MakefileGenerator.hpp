@@ -23,7 +23,7 @@ private:
 	std::string getCompileFlags();
 
 	std::string getQuietFlag();
-	std::string getMoveCommand();
+	std::string getMoveCommand(std::string inInput, std::string inOutput);
 	std::string getCompileEchoAsm();
 	std::string getCompileEchoSources();
 	std::string getCompileEchoLinker();
@@ -39,6 +39,10 @@ private:
 
 	std::string getPchOrderOnlyPreReq();
 	std::string getLinkerPreReqs();
+
+	std::string_view getPrinter(const bool isBlank = false);
+	std::string_view getColorBlue();
+	std::string_view getColorPurple();
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

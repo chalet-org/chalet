@@ -191,17 +191,15 @@ std::string String::getPathBaseName(const std::string& inPath)
 	if (inPath.empty())
 		return inPath;
 
-	bool isBash = Environment::isBash();
 	const auto& pathNoExt = inPath.substr(0, inPath.find_last_of("."));
 
-	return pathNoExt.substr(pathNoExt.find_last_of(isBash ? "/" : "\\") + 1);
+	return pathNoExt.substr(pathNoExt.find_last_of("/") + 1);
 }
 
 /*****************************************************************************/
 std::string String::getPathFolder(const std::string& inPath)
 {
-	bool isBash = Environment::isBash();
-	auto end = inPath.find_last_of(isBash ? "/" : "\\");
+	auto end = inPath.find_last_of("/");
 
 	return end != std::string::npos ? inPath.substr(0, end) : "";
 }
@@ -209,9 +207,7 @@ std::string String::getPathFolder(const std::string& inPath)
 /*****************************************************************************/
 std::string String::getPathFilename(const std::string& inPath)
 {
-	bool isBash = Environment::isBash();
-
-	return inPath.substr(inPath.find_last_of(isBash ? "/" : "\\") + 1);
+	return inPath.substr(inPath.find_last_of("/") + 1);
 }
 
 /*****************************************************************************/
