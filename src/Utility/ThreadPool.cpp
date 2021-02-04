@@ -48,7 +48,7 @@ ThreadPool::ThreadPool(const std::size_t inThreads)
 #else
 		sched_param schedParams;
 		schedParams.sched_priority = 20;
-		::pthread_setschedparam(thread.native_handle(), SCHED_MAX, &schedParams);
+		::pthread_setschedparam(thread.native_handle(), 2, &schedParams);
 #endif
 		m_workers.emplace_back(std::move(thread));
 	}
