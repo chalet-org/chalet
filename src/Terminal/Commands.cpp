@@ -41,7 +41,7 @@ bool windowsCreateProcess(const std::string& inCmd)
 		NULL,						   // Process handle not inheritable
 		NULL,						   // Thread handle not inheritable
 		FALSE,						   // Set handle inheritance to FALSE
-		0,							   // No creation flags
+		HIGH_PRIORITY_CLASS,		   // No creation flags
 		NULL,						   // Use parent's environment block
 		NULL,						   // Use parent's starting directory
 		(LPSTARTUPINFOA)&si,		   // Pointer to STARTUPINFO structure

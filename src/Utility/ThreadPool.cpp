@@ -28,6 +28,13 @@
 
 #include "Utility/ThreadPool.hpp"
 
+#if defined(CHALET_WIN32)
+	#include "Libraries/WindowsApi.hpp"
+	#include <processthreadsapi.h>
+#else
+	#include <pthread.h>
+#endif
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -35,7 +42,15 @@ ThreadPool::ThreadPool(const std::size_t inThreads)
 {
 	for (std::size_t i = 0; i < inThreads; ++i)
 	{
-		m_workers.emplace_back(&ThreadPool::workerThread, this);
+		std::thread thread(&ThreadPool::workerThread, this);
+#if defined(CHALET_WIN32)
+		::SetThreadPriority((HANDLE)thread.native_handle(), THREAD_PRIORITY_HIGHEST);
+#else
+		sched_param schedParams;
+		schedParams.sched_priority = 20;
+		::pthread_setschedparam(thread.native_handle(), SCHED_MAX, &schedParams);
+#endif
+		m_workers.emplace_back(std::move(thread));
 	}
 }
 
