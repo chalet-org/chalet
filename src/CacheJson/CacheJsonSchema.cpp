@@ -74,11 +74,6 @@ Json Schema::getCacheJson()
 			"description": "The executable path to GNU make utility.",
 			"default": "/usr/bin/make"
 		},
-		"tools-makeicns": {
-			"type": "string",
-			"description": "The executable path to makeicns (MacOS / Homebrew)",
-			"default": "/usr/local/bin/makeicns"
-		},
 		"tools-ninja": {
 			"type": "string",
 			"description": "The path to ninja's executable."
@@ -97,6 +92,11 @@ Json Schema::getCacheJson()
 			"type": "string",
 			"description": "The executable path to ranlib.",
 			"default": "/usr/bin/ranlib"
+		},
+		"tools-sips": {
+			"type": "string",
+			"description": "The executable path to sips (MacOS / Homebrew)",
+			"default": "/usr/bin/sips"
 		},
 		"tools-strip": {
 			"type": "string",
@@ -169,11 +169,11 @@ Json Schema::getCacheJson()
 				"ldd",
 				"macosSdk",
 				"make",
-				"makeicns",
 				"ninja",
 				"otool",
 				"plutil",
 				"ranlib",
+				"sips",
 				"strip",
 				"tiffutil"
 			],
@@ -208,9 +208,6 @@ Json Schema::getCacheJson()
 				"make": {
 					"$ref": "#/definitions/tools-make"
 				},
-				"makeicns": {
-					"$ref": "#/definitions/tools-makeicns"
-				},
 				"ninja": {
 					"$ref": "#/definitions/tools-ninja"
 				},
@@ -222,6 +219,9 @@ Json Schema::getCacheJson()
 				},
 				"ranlib": {
 					"$ref": "#/definitions/tools-ranlib"
+				},
+				"sips": {
+					"$ref": "#/definitions/tools-sips"
 				},
 				"strip": {
 					"$ref": "#/definitions/tools-strip"

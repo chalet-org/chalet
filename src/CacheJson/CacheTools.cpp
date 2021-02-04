@@ -139,13 +139,13 @@ uint CacheTools::makeVersionMinor() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::makeIcns() const noexcept
+const std::string& CacheTools::sips() const noexcept
 {
-	return m_makeIcns;
+	return m_sips;
 }
-void CacheTools::setMakeIcns(const std::string& inValue) noexcept
+void CacheTools::setSips(const std::string& inValue) noexcept
 {
-	m_makeIcns = inValue;
+	m_sips = inValue;
 }
 
 /*****************************************************************************/
@@ -223,7 +223,6 @@ bool CacheTools::installHomebrewPackage(const std::string& inPackage, const bool
 			fmt::arg("brew", m_brew),
 			FMT_ARG(inPackage));
 
-		// brew install makeicns
 		if (!Commands::shell(command, inCleanOutput))
 			return false;
 	}

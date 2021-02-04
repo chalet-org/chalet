@@ -259,11 +259,11 @@ bool CacheJsonParser::makeCache()
 		m_state.cache.setDirty(true);
 	}
 
-	whichAdd(tools, kKeyMakeIcns);
 	whichAdd(tools, kKeyNinja);
 	whichAdd(tools, kKeyOtool);
 	whichAdd(tools, kKeyPlUtil);
 	whichAdd(tools, kKeyRanLib);
+	whichAdd(tools, kKeySips);
 	whichAdd(tools, kKeyStrip);
 	whichAdd(tools, kKeyTiffUtil);
 
@@ -352,9 +352,6 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 		m_make = std::move(val);
 	}
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyMakeIcns))
-		m_state.tools.setMakeIcns(val);
-
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyNinja))
 		m_state.tools.setNinja(val);
 
@@ -366,6 +363,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyRanLib))
 		m_state.tools.setRanlib(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeySips))
+		m_state.tools.setSips(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyStrip))
 		m_state.tools.setStrip(val);

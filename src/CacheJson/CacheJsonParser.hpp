@@ -54,11 +54,11 @@ private:
 	const std::string kKeyLdd = "ldd";
 	const std::string kKeyMacosSdk = "macosSdk";
 	const std::string kKeyMake = "make";
-	const std::string kKeyMakeIcns = "makeicns";
 	const std::string kKeyNinja = "ninja";
 	const std::string kKeyOtool = "otool";
 	const std::string kKeyPlUtil = "plutil";
 	const std::string kKeyRanLib = "ranlib";
+	const std::string kKeySips = "sips";
 	const std::string kKeyStrip = "strip";
 	const std::string kKeyTiffUtil = "tiffutil";
 

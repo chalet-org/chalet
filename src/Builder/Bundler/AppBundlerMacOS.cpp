@@ -69,20 +69,17 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 
 	Commands::makeDirectory(frameworkPath, inCleanOutput);
 
-	bool brewAvailable = !m_state.tools.brew().empty();
-	// TODO: Ask to install homebrew or ignore icon copy
+	const auto& sips = m_state.tools.sips();
+	bool sipsFound = !sips.empty();
 
 	std::string outIcon;
 	const std::string iconBaseName = String::getPathBaseName(icon);
 
-	if (String::endsWith(".png", icon) && brewAvailable)
+	if (String::endsWith(".png", icon) && sipsFound)
 	{
-		if (!m_state.tools.installHomebrewPackage("makeicns", inCleanOutput))
-			return false;
-
 		outIcon = fmt::format("{}/{}.icns", resourcePath, iconBaseName);
 
-		const std::string cmd = fmt::format("makeicns -in '{}' -out '{}' &> /dev/null", icon, outIcon);
+		const std::string cmd = fmt::format("\"{sips}\" -s format icns '{icon}' --out '{outIcon}' &> /dev/null", FMT_ARG(sips), FMT_ARG(icon), FMT_ARG(outIcon));
 		if (!Commands::shell(cmd))
 			return false;
 
@@ -98,8 +95,8 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	}
 	else
 	{
-		if (!icon.empty() && !brewAvailable)
-			Diagnostic::warn(fmt::format("{}: Icon conversion from '{}' to icns requires homebew.", CommandLineInputs::file(), icon));
+		if (!icon.empty() && !sipsFound)
+			Diagnostic::warn(fmt::format("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", CommandLineInputs::file(), icon));
 	}
 
 	const std::string outInfoPropertyList = fmt::format("{}/Info.plist", bundlePath);

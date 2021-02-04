@@ -44,8 +44,8 @@ struct CacheTools
 	uint makeVersionMajor() const noexcept;
 	uint makeVersionMinor() const noexcept;
 
-	const std::string& makeIcns() const noexcept;
-	void setMakeIcns(const std::string& inValue) noexcept;
+	const std::string& sips() const noexcept;
+	void setSips(const std::string& inValue) noexcept;
 
 	const std::string& ninja() const noexcept;
 	void setNinja(const std::string& inValue) noexcept;
@@ -90,11 +90,11 @@ private:
 	std::string m_ldd;
 	std::string m_macosSdk;
 	std::string m_make;
-	std::string m_makeIcns;
 	std::string m_ninja;
 	std::string m_otool;
 	std::string m_plUtil;
 	std::string m_ranlib;
+	std::string m_sips;
 	std::string m_strip;
 	std::string m_tiffUtil;
 
