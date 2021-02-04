@@ -112,6 +112,17 @@ void AppBundle::setConfiguration(const std::string& inValue)
 }
 
 /*****************************************************************************/
+bool AppBundle::exists() const noexcept
+{
+	return m_exists;
+}
+
+void AppBundle::setExists(const bool inValue) noexcept
+{
+	m_exists = inValue;
+}
+
+/*****************************************************************************/
 const StringList& AppBundle::projects() const noexcept
 {
 	return m_projects;

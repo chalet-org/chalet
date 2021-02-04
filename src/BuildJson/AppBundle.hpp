@@ -43,6 +43,9 @@ struct AppBundle
 	const std::string& configuration() const noexcept;
 	void setConfiguration(const std::string& inValue);
 
+	bool exists() const noexcept;
+	void setExists(const bool inValue) noexcept;
+
 	const StringList& projects() const noexcept;
 	void addProjects(StringList& inList);
 	void addProject(std::string& inValue);
@@ -75,6 +78,8 @@ private:
 	std::string m_longDescription;
 	std::string m_distDir{ "dist" };
 	std::string m_configuration;
+
+	bool m_exists = true;
 };
 }
 

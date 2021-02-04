@@ -134,6 +134,13 @@ bool Router::cmdBundle()
 {
 	chalet_assert(m_buildState != nullptr, "");
 
+	if (!m_buildState->bundle.exists())
+	{
+		const auto& file = CommandLineInputs::file();
+		Diagnostic::error(fmt::format("{}: 'bundle' object is required before creating a distribution bundle.", file));
+		return false;
+	}
+
 	if (!cmdBuild())
 		return false;
 

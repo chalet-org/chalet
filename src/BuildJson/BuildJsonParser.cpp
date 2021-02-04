@@ -777,7 +777,10 @@ bool BuildJsonParser::parseProjectLangStandard(ProjectConfiguration& outProject,
 bool BuildJsonParser::parseBundle(const Json& inNode)
 {
 	if (!inNode.contains(kKeyBundle))
+	{
+		m_state.bundle.setExists(false);
 		return true;
+	}
 
 	const Json& bundle = inNode.at(kKeyBundle);
 	if (!bundle.is_object())
