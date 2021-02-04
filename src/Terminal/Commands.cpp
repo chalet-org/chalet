@@ -7,6 +7,12 @@
 
 #include <array>
 
+#include "Libraries/WindowsApi.hpp"
+#if defined(CHALET_WIN32)
+	#include <shellapi.h>
+	#include <winuser.h>
+#endif
+
 #include "Libraries/Format.hpp"
 #include "Libraries/Glob.hpp"
 #include "State/CommandLineInputs.hpp"
@@ -21,6 +27,41 @@ namespace
 {
 #if defined(CHALET_WIN32)
 std::string kCygPath;
+
+bool windowsCreateProcess(const std::string& inCmd)
+{
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+
+	bool result = CreateProcessA(NULL, // No module name (use command line)
+		LPSTR(inCmd.c_str()),		   // Command line
+		NULL,						   // Process handle not inheritable
+		NULL,						   // Thread handle not inheritable
+		FALSE,						   // Set handle inheritance to FALSE
+		0,							   // No creation flags
+		NULL,						   // Use parent's environment block
+		NULL,						   // Use parent's starting directory
+		(LPSTARTUPINFOA)&si,		   // Pointer to STARTUPINFO structure
+		&pi							   // Pointer to PROCESS_INFORMATION structure
+	);
+	if (!result)
+	{
+		std::cout << inCmd << std::endl;
+		std::cout << fmt::format("CreateProcess failed ({}).", GetLastError()) << std::endl;
+	}
+
+	// Wait until child process exits.
+	WaitForSingleObject(pi.hProcess, INFINITE);
+
+	// Close process and thread handles.
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+
+	return result;
+}
 #elif defined(CHALET_MACOS)
 std::string kXcodePath;
 #endif
@@ -417,18 +458,35 @@ bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput
 		Output::print(Color::Blue, inCmd);
 
 #if defined(CHALET_WIN32)
-	bool result = std::system(inCmd.c_str()) == EXIT_SUCCESS;
-	return result;
-#else
-	// popen is about 4x faster than std::system
-	auto cmd = fmt::format("{} 2>&1", inCmd);
-	FILE* output = popen(cmd.c_str(), "r");
-	if (output == nullptr)
+	// const auto firstSpace = inCmd.find_first_of(" ");
+	// const auto executable = inCmd.substr(0, firstSpace);
+	// const auto params = inCmd.substr(firstSpace + 1);
+
+	// std::cout << executable << std::endl;
+	// std::cout << params << std::endl;
+
+	auto splitCmds = String::split(inCmd, " && ");
+	bool result = true;
+	for (auto& cmd : splitCmds)
 	{
-		throw std::runtime_error("popen() failed!");
+		result = windowsCreateProcess(cmd);
+		if (!result)
+			break;
 	}
 
-	return pclose(output) == 0;
+	return result;
+#else
+	{
+		// popen is about 4x faster than std::system
+		auto cmd = fmt::format("{} 2>&1", inCmd);
+		FILE* output = popen(cmd.c_str(), "r");
+		if (output == nullptr)
+		{
+			throw std::runtime_error("popen() failed!");
+		}
+
+		return pclose(output) == 0;
+	}
 #endif
 }
 

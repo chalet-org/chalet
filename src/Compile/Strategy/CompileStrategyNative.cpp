@@ -274,16 +274,14 @@ std::string CompileStrategyNative::getPchCompile(const std::string& source, cons
 		const auto& depDir = m_state.paths.depDir();
 
 		const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-		const auto tempDependency = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
+		auto tempDependency = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
 
 		const auto compile = m_toolchain->getPchCompileCommand(source, target, tempDependency);
-		const auto mv = getMoveCommand();
+		const auto moveCommand = getMoveCommand(std::move(tempDependency), dependency);
 
-		ret = fmt::format("{compile} && {mv} {tempDependency} {dependency}",
+		ret = fmt::format("{compile} && {moveCommand}",
 			FMT_ARG(compile),
-			FMT_ARG(mv),
-			FMT_ARG(tempDependency),
-			FMT_ARG(dependency));
+			FMT_ARG(moveCommand));
 	}
 
 	return ret;
@@ -297,16 +295,14 @@ std::string CompileStrategyNative::getCppCompile(const std::string& source, cons
 	const auto& depDir = m_state.paths.depDir();
 
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-	const auto tempDependency = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
+	auto tempDependency = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
 
 	const auto compile = m_toolchain->getCppCompileCommand(source, target, tempDependency);
-	const auto mv = getMoveCommand();
+	const auto moveCommand = getMoveCommand(std::move(tempDependency), dependency);
 
-	ret = fmt::format("{compile} && {mv} {tempDependency} {dependency}",
+	ret = fmt::format("{compile} && {moveCommand}",
 		FMT_ARG(compile),
-		FMT_ARG(mv),
-		FMT_ARG(tempDependency),
-		FMT_ARG(dependency));
+		FMT_ARG(moveCommand));
 
 	return ret;
 }
@@ -320,16 +316,14 @@ std::string CompileStrategyNative::getRcCompile(const std::string& source, const
 	const auto& depDir = m_state.paths.depDir();
 
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-	const auto tempDependency = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
+	auto tempDependency = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
 
 	const auto compile = m_toolchain->getRcCompileCommand(source, target, tempDependency);
-	const auto mv = getMoveCommand();
+	const auto moveCommand = getMoveCommand(std::move(tempDependency), dependency);
 
-	ret = fmt::format("{compile} && {mv} {tempDependency} {dependency}",
+	ret = fmt::format("{compile} && {moveCommand}",
 		FMT_ARG(compile),
-		FMT_ARG(mv),
-		FMT_ARG(tempDependency),
-		FMT_ARG(dependency));
+		FMT_ARG(moveCommand));
 #else
 	UNUSED(source, target);
 #endif
@@ -348,10 +342,16 @@ std::string CompileStrategyNative::getAsmGenerate(const std::string& object, con
 }
 
 /*****************************************************************************/
-std::string CompileStrategyNative::getMoveCommand() const
+std::string CompileStrategyNative::getMoveCommand(std::string input, const std::string& inOutput) const
 {
-	const bool isBash = Environment::isBash();
-
-	return isBash ? "mv -f" : "move";
+#if defined(CHALET_WIN32)
+	std::string delOutput = inOutput;
+	String::replaceAll(delOutput, "/", "\\");
+	String::replaceAll(input, "/", "\\");
+	std::string output = String::getPathFilename(inOutput);
+	return fmt::format("cmd /c del /f /q \"{delOutput}\" 2> nul && cmd /c rename \"{input}\" \"{output}\" 2> nul", FMT_ARG(delOutput), FMT_ARG(input), FMT_ARG(output));
+#else
+	return fmt::format("mv -f {} {} 2> /dev/null", input, inOutput);
+#endif
 }
 }

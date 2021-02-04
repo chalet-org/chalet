@@ -117,7 +117,7 @@ StringList String::split(std::string inString, const std::string_view& inSeparat
 		itr = inString.find(inSeparator);
 
 		std::string sub = inString.substr(0, itr);
-		inString = inString.substr(itr + 1);
+		inString = inString.substr(itr + inSeparator.size());
 		ret.push_back(sub);
 	}
 
