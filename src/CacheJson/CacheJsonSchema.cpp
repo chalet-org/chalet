@@ -95,7 +95,7 @@ Json Schema::getCacheJson()
 		},
 		"tools-sips": {
 			"type": "string",
-			"description": "The executable path to sips (MacOS / Homebrew)",
+			"description": "The executable path to Apple's sips utility (MacOS)",
 			"default": "/usr/bin/sips"
 		},
 		"tools-strip": {
