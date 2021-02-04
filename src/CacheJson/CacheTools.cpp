@@ -238,7 +238,7 @@ bool CacheTools::installHomebrewPackage(const std::string& inPackage, const bool
 /*****************************************************************************/
 std::string CacheTools::getCurrentGitRepositoryBranch(const std::string& inRepoPath, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("{git} -C {inRepoPath} rev-parse --abbrev-ref HEAD",
+	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} rev-parse --abbrev-ref HEAD",
 		fmt::arg("git", m_git),
 		FMT_ARG(inRepoPath));
 
@@ -258,7 +258,7 @@ std::string CacheTools::getCurrentGitRepositoryTag(const std::string& inRepoPath
 #else
 	const std::string null = "2> /dev/null";
 #endif
-	const std::string cmd = fmt::format("{git} -C {inRepoPath} describe --tags --exact-match --abbrev=0 {null}",
+	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} describe --tags --exact-match --abbrev=0 {null}",
 		fmt::arg("git", m_git),
 		FMT_ARG(inRepoPath),
 		FMT_ARG(null));
@@ -274,7 +274,7 @@ std::string CacheTools::getCurrentGitRepositoryTag(const std::string& inRepoPath
 /*****************************************************************************/
 std::string CacheTools::getCurrentGitRepositoryHash(const std::string& inRepoPath, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("{git} -C {inRepoPath} rev-parse --verify --quiet HEAD",
+	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} rev-parse --verify --quiet HEAD",
 		fmt::arg("git", m_git),
 		FMT_ARG(inRepoPath));
 
@@ -289,7 +289,7 @@ std::string CacheTools::getCurrentGitRepositoryHash(const std::string& inRepoPat
 /*****************************************************************************/
 std::string CacheTools::getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("{git} -C {inRepoPath} rev-parse --verify --quiet origin/{inBranch}",
+	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} rev-parse --verify --quiet origin/{inBranch}",
 		fmt::arg("git", m_git),
 		FMT_ARG(inRepoPath),
 		FMT_ARG(inBranch));
@@ -305,7 +305,7 @@ std::string CacheTools::getCurrentGitRepositoryHashFromRemote(const std::string&
 /*****************************************************************************/
 bool CacheTools::updateGitRepositoryShallow(const std::string& inRepoPath, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("{git} -C {inRepoPath} pull --quiet --update-shallow",
+	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} pull --quiet --update-shallow",
 		fmt::arg("git", m_git),
 		FMT_ARG(inRepoPath));
 
@@ -317,7 +317,7 @@ bool CacheTools::updateGitRepositoryShallow(const std::string& inRepoPath, const
 /*****************************************************************************/
 bool CacheTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("{git} -C {inRepoPath} reset --quiet --hard {inCommit}",
+	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} reset --quiet --hard {inCommit}",
 		fmt::arg("git", m_git),
 		FMT_ARG(inRepoPath),
 		FMT_ARG(inCommit));
@@ -361,19 +361,28 @@ bool CacheTools::plistReplaceProperty(const std::string& inPlistFile, const std:
 /*****************************************************************************/
 bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList& outList) const
 {
+#if defined(CHALET_MACOS)
+	if (m_otool.empty())
+		return false;
+#else
+	if (m_ldd.empty())
+		return false;
+#endif
+
 	try
 	{
+
 #if !defined(CHALET_MACOS)
 		// This block detects the dependencies of each target and adds them to a list
 		// The list resolves each path, favoring the paths supplied by build.json
 		// Note: this doesn't seem to work in standalone builds of GCC (tested 7.3.0)
 		//   but works fine w/ MSYS2
 	#if defined(CHALET_WIN32)
-		std::string cmd = fmt::format("{ldd} '{inPath}' | grep -v -e 'System32' -e 'SYSTEM32' -e 'SysWOW64' -e 'SYSWOW64'",
+		std::string cmd = fmt::format("\"{ldd}\" '{inPath}' | grep -v -e 'System32' -e 'SYSTEM32' -e 'SysWOW64' -e 'SYSWOW64'",
 			fmt::arg("ldd", m_ldd),
 			FMT_ARG(inPath));
 	#else
-		std::string cmd = fmt::format("{ldd} '{inPath}' | grep -v -e '/usr/lib'",
+		std::string cmd = fmt::format("\"{ldd}\" '{inPath}' | grep -v -e '/usr/lib'",
 			fmt::arg("ldd", m_ldd),
 			FMT_ARG(inPath));
 	#endif
