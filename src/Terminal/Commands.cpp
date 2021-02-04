@@ -458,13 +458,6 @@ bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput
 		Output::print(Color::Blue, inCmd);
 
 #if defined(CHALET_WIN32)
-	// const auto firstSpace = inCmd.find_first_of(" ");
-	// const auto executable = inCmd.substr(0, firstSpace);
-	// const auto params = inCmd.substr(firstSpace + 1);
-
-	// std::cout << executable << std::endl;
-	// std::cout << params << std::endl;
-
 	auto splitCmds = String::split(inCmd, " && ");
 	bool result = true;
 	for (auto& cmd : splitCmds)
@@ -476,17 +469,15 @@ bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput
 
 	return result;
 #else
+	// popen is about 4x faster than std::system
+	auto cmd = fmt::format("{} 2>&1", inCmd);
+	FILE* output = popen(cmd.c_str(), "r");
+	if (output == nullptr)
 	{
-		// popen is about 4x faster than std::system
-		auto cmd = fmt::format("{} 2>&1", inCmd);
-		FILE* output = popen(cmd.c_str(), "r");
-		if (output == nullptr)
-		{
-			throw std::runtime_error("popen() failed!");
-		}
-
-		return pclose(output) == 0;
+		throw std::runtime_error("popen() failed!");
 	}
+
+	return pclose(output) == 0;
 #endif
 }
 

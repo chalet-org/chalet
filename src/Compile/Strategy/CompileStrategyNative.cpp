@@ -13,7 +13,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
-// TODO: Finish. It's a bit crap, and slow
+// TODO: Finish. It's a bit crap
 
 namespace chalet
 {
@@ -29,7 +29,14 @@ bool printCommand(std::string output, std::string command, Color inColor, std::s
 	s_mutex.lock();
 	if (total > 0)
 	{
-		std::cout << Output::getAnsiStyle(inColor) << fmt::format("{}  ", symbol) << Output::getAnsiReset() << fmt::format("[{}/{}] ", index, total);
+		auto indexStr = std::to_string(index);
+		const auto totalStr = std::to_string(total);
+		while (indexStr.size() < totalStr.size())
+		{
+			indexStr = " " + indexStr;
+		}
+
+		std::cout << Output::getAnsiStyle(inColor) << fmt::format("{}  ", symbol) << Output::getAnsiReset() << fmt::format("[{}/{}] ", indexStr, total);
 	}
 	else
 	{
@@ -351,7 +358,7 @@ std::string CompileStrategyNative::getMoveCommand(std::string input, const std::
 	std::string output = String::getPathFilename(inOutput);
 	return fmt::format("cmd /c del /f /q \"{delOutput}\" 2> nul && cmd /c rename \"{input}\" \"{output}\" 2> nul", FMT_ARG(delOutput), FMT_ARG(input), FMT_ARG(output));
 #else
-	return fmt::format("mv -f {} {} 2> /dev/null", input, inOutput);
+	return fmt::format("mv -f {} {}", input, inOutput);
 #endif
 }
 }
