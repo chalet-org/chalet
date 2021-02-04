@@ -466,7 +466,7 @@ std::string MakefileGenerator::getMoveCommand(std::string inInput, std::string i
 		return fmt::format("mv -f {} {}", inInput, inOutput);
 	else
 	{
-		return fmt::format("del /f /q \"$(subst /,\\\\,{inOutput})\" && rename \"$(subst /,\\\\,{inInput})\" \"$(notdir {inOutput})\"", FMT_ARG(inInput), FMT_ARG(inOutput));
+		return fmt::format("del /f /q \"$(subst /,\\\\,{inOutput})\" 2> nul && rename \"$(subst /,\\\\,{inInput})\" \"$(notdir {inOutput})\"", FMT_ARG(inInput), FMT_ARG(inOutput));
 	}
 }
 
