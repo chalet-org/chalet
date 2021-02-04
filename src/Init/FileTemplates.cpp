@@ -15,22 +15,26 @@ namespace chalet
 Json FileTemplates::getBuildJson(const BuildJsonProps& inProps)
 {
 	const std::string language = inProps.language == CodeLanguage::CPlusPlus ?
-		"C++" :
-		"C";
+		  "C++" :
+		  "C";
 
 	const std::string langStandardKey = inProps.language == CodeLanguage::CPlusPlus ?
-		"cppStandard" :
-		"cStandard";
+		  "cppStandard" :
+		  "cStandard";
 
 	const std::string langStandardValue = inProps.language == CodeLanguage::CPlusPlus ?
-		"c++17" :
-		"c17";
+		  "c++17" :
+		  "c17";
 
 	const std::string kind = "consoleApplication";
 
 	std::string ret = R"json({
 	"version": "${version}",
 	"workspace": "${workspace}",
+	"environment": {
+		"showCommands": false,
+		"path": []
+	},
 	"allProjects": {
 		"language": "${language}",
 		"${langStandardKey}": "${langStandardValue}",
@@ -73,8 +77,6 @@ int main(const int argc, const char* const argv[])
 	{
 		std::cout << "  " << argv[i] << "\n";
 	}
-
-	std::cout << std::flush;
 
 	return 0;
 }

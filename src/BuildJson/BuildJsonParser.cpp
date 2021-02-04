@@ -201,11 +201,9 @@ void BuildJsonParser::parseBuildConfiguration(const Json& inNode)
 /*****************************************************************************/
 bool BuildJsonParser::parseEnvironment(const Json& inJson)
 {
+	// don't care
 	if (!inJson.contains(kKeyEnvironment))
-	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyEnvironment));
-		return false;
-	}
+		return true;
 
 	const Json& environment = inJson.at(kKeyEnvironment);
 	if (!environment.is_object())
