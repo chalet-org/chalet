@@ -102,46 +102,46 @@ bool ArgumentPatterns::parse(const StringList& inArguments)
 }
 
 /*****************************************************************************/
-Route ArgumentPatterns::getRouteFromString(const std::string& inRouteString)
+Route ArgumentPatterns::getRouteFromString(const std::string& inValue)
 {
-	if (String::equals(inRouteString, "buildrun"))
+	if (String::equals(inValue, "buildrun"))
 	{
 		return Route::BuildRun;
 	}
-	else if (String::equals(inRouteString, "run"))
+	else if (String::equals(inValue, "run"))
 	{
 		return Route::Run;
 	}
-	else if (String::equals(inRouteString, "build"))
+	else if (String::equals(inValue, "build"))
 	{
 		return Route::Build;
 	}
-	else if (String::equals(inRouteString, "rebuild"))
+	else if (String::equals(inValue, "rebuild"))
 	{
 		return Route::Rebuild;
 	}
-	else if (String::equals(inRouteString, "clean"))
+	else if (String::equals(inValue, "clean"))
 	{
 		return Route::Clean;
 	}
-	else if (String::equals(inRouteString, "bundle"))
+	else if (String::equals(inValue, "bundle"))
 	{
 		return Route::Bundle;
 	}
-	else if (String::equals(inRouteString, "install"))
+	else if (String::equals(inValue, "install"))
 	{
 		return Route::Install;
 	}
-	else if (String::equals(inRouteString, "configure"))
+	else if (String::equals(inValue, "configure"))
 	{
 		return Route::Configure;
 	}
-	else if (String::equals(inRouteString, "init"))
+	else if (String::equals(inValue, "init"))
 	{
 		return Route::Init;
 	}
 #if defined(CHALET_DEBUG)
-	else if (String::equals(inRouteString, "debug"))
+	else if (String::equals(inValue, "debug"))
 	{
 		return Route::Debug;
 	}
@@ -337,10 +337,22 @@ void ArgumentPatterns::addInputFileArg()
 	m_parser.add_argument("-i", "--input")
 		.help("input file")
 		.nargs(1)
-		.default_value("build.json");
+		.default_value(std::string("build.json"));
 
 	m_argumentMap.push_back({ "-i", Variant::Kind::String });
 	m_argumentMap.push_back({ "--input", Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addProjectGeneratorArg()
+{
+	m_parser.add_argument("-g", "--generator")
+		.help("project file generator")
+		.nargs(1)
+		.default_value(std::string());
+
+	m_argumentMap.push_back({ "-g", Variant::Kind::String });
+	m_argumentMap.push_back({ "--generator", Variant::Kind::String });
 }
 
 /*****************************************************************************/
@@ -359,94 +371,104 @@ void ArgumentPatterns::addSaveSchemaArg()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandBuildRun()
+void ArgumentPatterns::addBuildConfigurationArg(const bool inOptional)
 {
-	addInputFileArg();
-	addSaveSchemaArg();
+	if (inOptional)
+	{
+		m_parser.add_argument(kArgConfiguration)
+			.help(kHelpBuildConfiguration)
+			.default_value(std::string(""));
+	}
+	else
+	{
+		m_parser.add_argument(kArgConfiguration)
+			.help(kHelpBuildConfiguration)
+			.required();
+	}
 
-	m_parser.add_argument(kArgConfiguration)
-		.help(kHelpBuildConfiguration)
-		.required();
+	m_argumentMap.push_back({ kArgConfiguration, Variant::Kind::String });
+}
 
+/*****************************************************************************/
+void ArgumentPatterns::addRunProjectArg()
+{
 	m_parser.add_argument(kArgRunProject)
 		.help(kHelpRunProject)
 		.default_value(std::string(""));
 
+	m_argumentMap.push_back({ kArgRunProject, Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addRunArgumentsArg()
+{
 	m_parser.add_argument(kArgRunArguments)
 		.help(kHelpRunArguments)
 		.remaining();
 
-	m_argumentMap.push_back({ kArgConfiguration, Variant::Kind::String });
-	m_argumentMap.push_back({ kArgRunProject, Variant::Kind::String });
 	m_argumentMap.push_back({ kArgRunArguments, Variant::Kind::Remainder });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::commandBuildRun()
+{
+	addInputFileArg();
+	addProjectGeneratorArg();
+	addSaveSchemaArg();
+
+	addBuildConfigurationArg();
+	addRunProjectArg();
+	addRunArgumentsArg();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandRun()
 {
 	addInputFileArg();
+	addProjectGeneratorArg();
 	addSaveSchemaArg();
 
-	m_parser.add_argument(kArgConfiguration)
-		.help(kHelpBuildConfiguration)
-		.required();
-
-	m_parser.add_argument(kArgRunProject)
-		.help(kHelpRunProject)
-		.default_value(std::string(""));
-
-	m_parser.add_argument(kArgRunArguments)
-		.help(kHelpRunArguments)
-		.remaining();
-
-	m_argumentMap.push_back({ kArgConfiguration, Variant::Kind::String });
-	m_argumentMap.push_back({ kArgRunProject, Variant::Kind::String });
-	m_argumentMap.push_back({ kArgRunArguments, Variant::Kind::Remainder });
+	addBuildConfigurationArg();
+	addRunProjectArg();
+	addRunArgumentsArg();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandBuild()
 {
 	addInputFileArg();
+	addProjectGeneratorArg();
 	addSaveSchemaArg();
 
-	m_parser.add_argument(kArgConfiguration)
-		.help(kHelpBuildConfiguration)
-		.required();
-
-	m_argumentMap.push_back({ kArgConfiguration, Variant::Kind::String });
+	addBuildConfigurationArg();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandRebuild()
 {
 	addInputFileArg();
+	addProjectGeneratorArg();
 	addSaveSchemaArg();
 
-	m_parser.add_argument(kArgConfiguration)
-		.help(kHelpBuildConfiguration)
-		.required();
-
-	m_argumentMap.push_back({ kArgConfiguration, Variant::Kind::String });
+	addBuildConfigurationArg();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandClean()
 {
 	addInputFileArg();
+	addProjectGeneratorArg();
 	addSaveSchemaArg();
 
-	m_parser.add_argument(kArgConfiguration)
-		.help(kHelpBuildConfiguration)
-		.default_value(std::string(""));
-
-	m_argumentMap.push_back({ kArgConfiguration, Variant::Kind::String });
+	bool optional = true;
+	addBuildConfigurationArg(optional);
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandBundle()
 {
 	addInputFileArg();
+	addProjectGeneratorArg();
 	addSaveSchemaArg();
 }
 
@@ -454,6 +476,7 @@ void ArgumentPatterns::commandBundle()
 void ArgumentPatterns::commandInstall()
 {
 	addInputFileArg();
+	addProjectGeneratorArg();
 	addSaveSchemaArg();
 }
 
@@ -461,6 +484,7 @@ void ArgumentPatterns::commandInstall()
 void ArgumentPatterns::commandConfigure()
 {
 	addInputFileArg();
+	addProjectGeneratorArg();
 	addSaveSchemaArg();
 }
 
@@ -468,16 +492,20 @@ void ArgumentPatterns::commandConfigure()
 void ArgumentPatterns::commandInit()
 {
 	addInputFileArg();
+	addProjectGeneratorArg();
 
+	//
 	m_parser.add_argument(kArgInitName)
 		.help(kHelpInitName)
 		.required();
 
+	m_argumentMap.push_back({ kArgInitName, Variant::Kind::String });
+
+	//
 	m_parser.add_argument(kArgInitPath)
 		.help(kHelpInitPath)
 		.required();
 
-	m_argumentMap.push_back({ kArgInitName, Variant::Kind::String });
 	m_argumentMap.push_back({ kArgInitPath, Variant::Kind::String });
 }
 
@@ -486,6 +514,7 @@ void ArgumentPatterns::commandInit()
 void ArgumentPatterns::commandDebug()
 {
 	addInputFileArg();
+	addProjectGeneratorArg();
 }
 #endif
 

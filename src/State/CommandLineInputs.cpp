@@ -110,6 +110,24 @@ void CommandLineInputs::setAppPath(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+IdeType CommandLineInputs::generator() const noexcept
+{
+	return m_generator;
+}
+
+const std::string& CommandLineInputs::generatorRaw() const noexcept
+{
+	return m_generatorRaw;
+}
+
+void CommandLineInputs::setGenerator(std::string&& inValue) noexcept
+{
+	m_generatorRaw = std::move(inValue);
+
+	m_generator = getIdeTypeFromString(m_generatorRaw);
+}
+
+/*****************************************************************************/
 const std::string& CommandLineInputs::initProjectName() const noexcept
 {
 	return m_initProjectName;
@@ -154,5 +172,32 @@ std::string CommandLineInputs::getPlatform() noexcept
 #else
 	return "unknown";
 #endif
+}
+
+/*****************************************************************************/
+IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue)
+{
+	if (String::equals(inValue, "vscode"))
+	{
+		return IdeType::VisualStudioCode;
+	}
+	else if (String::equals(inValue, "vs2019"))
+	{
+		return IdeType::VisualStudio2019;
+	}
+	else if (String::equals(inValue, "xcode"))
+	{
+		return IdeType::XCode;
+	}
+	else if (String::equals(inValue, "codeblocks"))
+	{
+		return IdeType::CodeBlocks;
+	}
+	else if (!inValue.empty())
+	{
+		return IdeType::Unknown;
+	}
+
+	return IdeType::None;
 }
 }

@@ -32,6 +32,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	{
 		std::string arg(argv[i] ? argv[i] : "");
 		// LOG("\"", arg, "\"");
+		String::replaceAll(arg, "\"", "");
 
 		if (String::contains(" ", arg))
 		{
@@ -43,7 +44,18 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		}
 		else
 		{
-			arguments.push_back(std::move(arg));
+			if (String::startsWith("--", arg) && String::contains("=", arg))
+			{
+				auto list = String::split(arg, "=");
+				for (auto& it : list)
+				{
+					arguments.push_back(std::move(it));
+				}
+			}
+			else
+			{
+				arguments.push_back(std::move(arg));
+			}
 		}
 	}
 
@@ -79,6 +91,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					if (!value.empty())
 						CommandLineInputs::setFile(std::move(value));
+				}
+				else if (String::equals(key, "-g") || String::equals(key, "--generator"))
+				{
+					m_inputs.setGenerator(std::move(value));
 				}
 				else if (key == ArgumentPatterns::kArgInitName)
 				{

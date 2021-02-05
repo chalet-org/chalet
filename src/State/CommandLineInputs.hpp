@@ -6,6 +6,7 @@
 #ifndef CHALET_COMMAND_LINE_INPUTS_HPP
 #define CHALET_COMMAND_LINE_INPUTS_HPP
 
+#include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
 
 namespace chalet
@@ -37,6 +38,10 @@ struct CommandLineInputs
 	const std::string& appPath() const noexcept;
 	void setAppPath(const std::string& inValue) noexcept;
 
+	IdeType generator() const noexcept;
+	const std::string& generatorRaw() const noexcept;
+	void setGenerator(std::string&& inValue) noexcept;
+
 	const std::string& initProjectName() const noexcept;
 	void setInitProjectName(std::string&& inValue) noexcept;
 
@@ -50,6 +55,7 @@ private:
 	static std::string kFile;
 
 	std::string getPlatform() noexcept;
+	IdeType getIdeTypeFromString(const std::string& inValue);
 
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
@@ -57,11 +63,13 @@ private:
 	std::string m_runProject;
 	std::string m_runOptions;
 	std::string m_appPath;
+	std::string m_generatorRaw;
 
 	std::string m_initProjectName;
 	std::string m_initPath;
 
 	Route m_command = Route::Unknown;
+	IdeType m_generator = IdeType::None;
 
 	bool m_saveSchemaToFile = false;
 };

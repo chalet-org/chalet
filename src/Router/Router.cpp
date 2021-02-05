@@ -59,6 +59,12 @@ bool Router::run()
 		return false;
 	}
 
+	if (m_inputs.generator() == IdeType::Unknown)
+	{
+		Diagnostic::error(fmt::format("The requested IDE project generator '{}' was not recognized, or is not yet supported.", m_inputs.generatorRaw()));
+		return false;
+	}
+
 	if (command != Route::Init)
 	{
 		const auto& file = CommandLineInputs::file();
@@ -86,6 +92,8 @@ bool Router::run()
 		Diagnostic::error("There was an error setting environment variables.");
 		return false;
 	}
+
+	std::cout << fmt::format("generator: '{}'", m_inputs.generatorRaw()) << std::endl;
 
 	return m_routes[command](*this);
 }

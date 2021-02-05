@@ -35,7 +35,7 @@ public:
 private:
 	std::string getHelpCommand();
 
-	Route getRouteFromString(const std::string& inRouteString);
+	Route getRouteFromString(const std::string& inValue);
 
 	void makeParser();
 	bool doParse(const StringList& inArguments);
@@ -45,6 +45,10 @@ private:
 
 	void populateMainArguments();
 	void addInputFileArg();
+	void addProjectGeneratorArg();
+	void addBuildConfigurationArg(const bool inOptional = false);
+	void addRunProjectArg();
+	void addRunArgumentsArg();
 	void addSaveSchemaArg();
 
 	void commandBuildRun();
