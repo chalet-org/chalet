@@ -7,7 +7,7 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
-				"--generator=\"vscode\"",
+				"--generator=vscode",
 				"buildrun",
 				"Release"
 			],
