@@ -448,6 +448,21 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	else if (std::string val; assignStringAndValidate(val, inNode, "notInPlatform"))
 		outProject.setIncludeInBuild(val != platform);
 
+	if (std::string val; assignStringAndValidate(val, inNode, "runArguments"))
+		outProject.setRunArguments(val);
+
+	if (bool val = false; parseKeyFromConfig(val, inNode, "runProject"))
+		outProject.setRunProject(val);
+
+	if (StringList list; assignStringListFromConfig(list, inNode, "runDependencies"))
+		outProject.addRunDependencies(list);
+
+	if (!parseProjectBeforeBuildScripts(outProject, inNode))
+		return false;
+
+	if (!parseProjectAfterBuildScripts(outProject, inNode))
+		return false;
+
 	{
 		bool cmakeResult = parseProjectCmake(outProject, inNode);
 		if (cmakeResult && inAllProjects)
@@ -461,23 +476,61 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 			return true;
 	}
 
+	{
+		const auto compilerSettings = "compilerSettings";
+		const auto compilerSettingsCpp = fmt::format("{}:C++", compilerSettings);
+		if (inNode.contains(compilerSettingsCpp))
+		{
+			const Json& node = inNode.at(compilerSettingsCpp);
+			if (!parseCompilerSettingsCxx(outProject, node))
+				return false;
+		}
+
+		const auto compilerSettingsC = fmt::format("{}:C", compilerSettings);
+		if (inNode.contains(compilerSettingsC))
+		{
+			const Json& node = inNode.at(compilerSettingsC);
+			if (!parseCompilerSettingsCxx(outProject, node))
+				return false;
+		}
+	}
+
+	if (!inAllProjects)
+	{
+		outProject.parseOutputFilename();
+
+		auto language = outProject.language();
+		auto& compilerConfig = m_state.compilers.getConfig(language);
+		std::string libDir = compilerConfig.compilerPathLib();
+		std::string includeDir = compilerConfig.compilerPathInclude();
+		outProject.addLibDir(libDir);
+		outProject.addIncludeDir(includeDir);
+	}
+
+	// Resolve links from projects
+	auto& projects = m_state.projects;
+	for (auto& project : projects)
+	{
+		ProjectKind kind = project->kind();
+		bool staticLib = kind == ProjectKind::StaticLibrary;
+
+		outProject.resolveLinksFromProject(project->name(), staticLib);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::parseCompilerSettingsCxx(ProjectConfiguration& outProject, const Json& inNode)
+{
 	if (bool val = false; JsonNode::assignFromKey(val, inNode, "windowsPrefixOutputFilename"))
 		outProject.setWindowsPrefixOutputFilename(val);
 
 	if (bool val = false; JsonNode::assignFromKey(val, inNode, "windowsOutputDef"))
 		outProject.setWindowsOutputDef(val);
 
-	if (!inAllProjects)
-		outProject.parseOutputFilename();
-
 	if (std::string val; assignStringAndValidate(val, inNode, "pch"))
 		outProject.setPch(val);
-
-	if (std::string val; assignStringAndValidate(val, inNode, "runArguments"))
-		outProject.setRunArguments(val);
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "runProject"))
-		outProject.setRunProject(val);
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "objectiveCxx"))
 		outProject.setObjectiveCxx(val);
@@ -497,8 +550,11 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	if (bool val = false; JsonNode::assignFromKey(val, inNode, "posixThreads"))
 		outProject.setPosixThreads(val);
 
-	if (!parseProjectLangStandard(outProject, inNode)) // throws
-		return false;
+	if (std::string val; assignStringFromConfig(val, inNode, "cppStandard"))
+		outProject.setCppStandard(val);
+
+	if (std::string val; assignStringFromConfig(val, inNode, "cStandard"))
+		outProject.setCStandard(val);
 
 	if (StringList list; assignStringListAndValidate(list, inNode, "warnings"))
 		outProject.addWarnings(list);
@@ -536,35 +592,6 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "includeDirs"))
 		outProject.addIncludeDirs(list);
-
-	if (StringList list; assignStringListFromConfig(list, inNode, "runDependencies"))
-		outProject.addRunDependencies(list);
-
-	if (!parseProjectBeforeBuildScripts(outProject, inNode))
-		return false;
-
-	if (!parseProjectAfterBuildScripts(outProject, inNode))
-		return false;
-
-	if (!inAllProjects)
-	{
-		auto language = outProject.language();
-		auto& compilerConfig = m_state.compilers.getConfig(language);
-		std::string libDir = compilerConfig.compilerPathLib();
-		std::string includeDir = compilerConfig.compilerPathInclude();
-		outProject.addLibDir(libDir);
-		outProject.addIncludeDir(includeDir);
-	}
-
-	// Resolve links from projects
-	auto& projects = m_state.projects;
-	for (auto& project : projects)
-	{
-		ProjectKind kind = project->kind();
-		bool staticLib = kind == ProjectKind::StaticLibrary;
-
-		outProject.resolveLinksFromProject(project->name(), staticLib);
-	}
 
 	return true;
 }
@@ -742,35 +769,6 @@ bool BuildJsonParser::parseProjectCmake(ProjectConfiguration& outProject, const 
 		outProject.setCmake(val);
 
 	return outProject.cmake();
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseProjectLangStandard(ProjectConfiguration& outProject, const Json& inNode)
-{
-
-	if (std::string val; assignStringFromConfig(val, inNode, "cppStandard"))
-	{
-		if (String::contains("-std=", val))
-		{
-			Diagnostic::warn(fmt::format("{}: 'cppStandard' standard does not need to contain '-std=' (this will get added automatically)", m_filename));
-			String::replaceAll(val, "-std=", "");
-		}
-
-		outProject.setCppStandard(val);
-	}
-
-	if (std::string val; assignStringFromConfig(val, inNode, "cStandard"))
-	{
-		if (String::contains("-std=", val))
-		{
-			Diagnostic::warn(fmt::format("{}: 'cStandard' standard does not need to contain '-std=' (this will get added automatically)", m_filename));
-			String::replaceAll(val, "-std=", "");
-		}
-
-		outProject.setCStandard(val);
-	}
-
-	return true;
 }
 
 /*****************************************************************************/

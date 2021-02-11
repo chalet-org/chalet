@@ -28,6 +28,8 @@ bool copyRename(const std::string& inFrom, const std::string& inTo, const bool i
 bool rename(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 void forEachFileMatch(const std::string& inPath, const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
 void forEachFileMatch(const std::string& inPath, const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);
+void forEachFileMatch(const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
+void forEachFileMatch(const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);
 bool readFileAndReplace(const fs::path& inFile, const std::function<void(std::string&)>& onReplace);
 
 bool pathExists(const fs::path& inPath);

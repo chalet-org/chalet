@@ -37,12 +37,12 @@ private:
 
 	bool parseProjects(const Json& inNode);
 	bool parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAllProjects = false);
+	bool parseCompilerSettingsCxx(ProjectConfiguration& outProject, const Json& inNode);
 	bool parseFilesAndLocation(ProjectConfiguration& outProject, const Json& inNode, const bool inAllProjects);
 	bool parseProjectLocationOrFiles(ProjectConfiguration& outProject, const Json& inNode);
 	bool parseProjectBeforeBuildScripts(ProjectConfiguration& outProject, const Json& inNode);
 	bool parseProjectAfterBuildScripts(ProjectConfiguration& outProject, const Json& inNode);
 	bool parseProjectCmake(ProjectConfiguration& outProject, const Json& inNode);
-	bool parseProjectLangStandard(ProjectConfiguration& outProject, const Json& inNode);
 
 	bool parseBundle(const Json& inNode);
 	bool parseBundleLinux(const Json& inNode);

@@ -93,7 +93,10 @@ bool Router::run()
 		return false;
 	}
 
-	std::cout << fmt::format("generator: '{}'", m_inputs.generatorRaw()) << std::endl;
+	if (m_inputs.generator() != IdeType::None)
+	{
+		std::cout << fmt::format("generator: '{}'", m_inputs.generatorRaw()) << std::endl;
+	}
 
 	return m_routes[command](*this);
 }

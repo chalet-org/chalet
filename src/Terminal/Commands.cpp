@@ -409,6 +409,37 @@ void Commands::forEachFileMatch(const std::string& inPath, const StringList& inP
 }
 
 /*****************************************************************************/
+void Commands::forEachFileMatch(const std::string& inPattern, const std::function<void(const fs::path&)>& onFound)
+{
+	if (onFound == nullptr)
+		return;
+
+	for (auto& res : glob::rglob(inPattern))
+	{
+		onFound(res);
+	}
+
+	if (!String::contains("*", inPattern))
+		return;
+
+	std::string pattern = inPattern;
+	String::replaceAll(pattern, "*", "**/*");
+	for (auto& res : glob::rglob(pattern))
+	{
+		onFound(res);
+	}
+}
+
+/*****************************************************************************/
+void Commands::forEachFileMatch(const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound)
+{
+	for (auto& pattern : inPatterns)
+	{
+		forEachFileMatch(pattern, onFound);
+	}
+}
+
+/*****************************************************************************/
 // TODO: This doesn't quite fit here
 //
 bool Commands::readFileAndReplace(const fs::path& inFile, const std::function<void(std::string&)>& onReplace)

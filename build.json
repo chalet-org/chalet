@@ -38,33 +38,34 @@
 	],*/
 	"allProjects": {
 		"language": "C++",
-		"cppStandard": "c++17",
 		"dumpAssembly": false,
-		// "maxJobs": 8,
-		"rtti": false,
-		"staticLinking": true,
-		"posixThreads": true,
-		"warnings": "strict",
-		// "compileOptions": [],
-		// "linkerOptions": [],
-		"defines:Debug": [
-			"_DEBUG"
-		],
-		"includeDirs": [
-			"vendor/json-schema-validator",
-			"vendor"
-		],
-		"links": [
-			"stdc++fs"
-		],
-		"links.windows": [
-			"imagehlp"
-		],
-		"macosFrameworkPaths": [
-			"/Library/Frameworks"
-		],
-		"macosFrameworks": [],
-		"runDependencies": []
+		"runDependencies": [],
+		"compilerSettings:C++": {
+			"cppStandard": "c++17",
+			// "maxJobs": 8,
+			"rtti": false,
+			"staticLinking": true,
+			"posixThreads": true,
+			"warnings": "strict",
+			// "compileOptions": [],
+			// "linkerOptions": [],
+			"defines:Debug": [
+				"_DEBUG"
+			],
+			"includeDirs": [
+				"vendor"
+			],
+			"links": [
+				"stdc++fs"
+			],
+			"links.windows": [
+				"imagehlp"
+			],
+			"macosFrameworkPaths": [
+				"/Library/Frameworks"
+			],
+			"macosFrameworks": []
+		}
 	},
 	"projects": [
 		{
@@ -74,7 +75,9 @@
 				"src",
 				"vendor/json-schema-validator"
 			],
-			"pch": "src/PCH.hpp",
+			"compilerSettings:C++": {
+				"pch": "src/PCH.hpp"
+			},
 			"runProject": true
 			/*"preBuild": {
 				"alwaysRun": true,
@@ -96,7 +99,9 @@
 				],
 				"exclude": "src/Main.cpp"
 			},
-			"pch": "src/PCH.hpp",
+			"compilerSettings:C++": {
+				"pch": "src/PCH.hpp"
+			},
 			"runArguments": "-w NoTests -s",
 			"onlyInConfiguration": "Release"
 		}
