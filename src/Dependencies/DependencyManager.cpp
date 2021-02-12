@@ -152,7 +152,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			Output::msgFetchingDependency(repository, checkoutTo);
 
-			uint maxJobs = m_state.environment.processorCount();
+			uint maxJobs = m_state.environment.maxJobs();
 			const std::string submoduleArg = !submodules ? "" : fmt::format(" --recurse-submodules --shallow-submodules --no-remote-submodules -j {}", maxJobs);
 
 			const std::string method = commitValid ? "--single-branch" : "--depth 1";

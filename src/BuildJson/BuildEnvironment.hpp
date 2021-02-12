@@ -29,6 +29,9 @@ struct BuildEnvironment
 	const std::string& externalDepDir() const noexcept;
 	void setExternalDepDir(const std::string& inValue) noexcept;
 
+	uint maxJobs() const noexcept;
+	void setMaxJobs(const uint inValue) noexcept;
+
 	bool showCommands() const noexcept;
 	void setShowCommands(const bool inValue) noexcept;
 	bool cleanOutput() const noexcept;
@@ -49,6 +52,7 @@ private:
 	StringList m_pathInternal;
 
 	uint m_processorCount = 0;
+	uint m_maxJobs = 0;
 
 	StrategyType m_strategy = StrategyType::Makefile;
 

@@ -126,9 +126,6 @@ struct ProjectConfiguration
 	void setKind(const ProjectKind inValue) noexcept;
 	void setKind(const std::string& inValue);
 
-	uint maxJobs() const noexcept;
-	void setMaxJobs(const uint inValue) noexcept;
-
 	//
 	bool cmake() const noexcept;
 	void setCmake(const bool inValue) noexcept;
@@ -207,7 +204,6 @@ private:
 
 	ProjectKind m_kind = ProjectKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
-	uint m_maxJobs = 0;
 
 	bool m_alwaysRunPostBuildScript = false;
 	bool m_cmake = false;

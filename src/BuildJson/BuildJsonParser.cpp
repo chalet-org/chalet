@@ -221,6 +221,9 @@ bool BuildJsonParser::parseEnvironment(const Json& inJson)
 	if (bool val = false; JsonNode::assignFromKey(val, environment, "showCommands"))
 		m_state.environment.setShowCommands(val);
 
+	if (ushort val = 0; parseKeyFromConfig(val, environment, "maxJobs"))
+		m_state.environment.setMaxJobs(val);
+
 	return true;
 }
 
@@ -478,18 +481,21 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 	{
 		const auto compilerSettings = "compilerSettings";
-		const auto compilerSettingsCpp = fmt::format("{}:C++", compilerSettings);
+		/*if (inNode.contains(compilerSettings))
+		{
+			const Json& jCompilerSettings = inNode.at(compilerSettings);
+			if (jCompilerSettings.contains("Cxx"))
+			{
+				const Json& node = jCompilerSettings.at("Cxx");
+				if (!parseCompilerSettingsCxx(outProject, node))
+					return false;
+			}
+		}*/
+
+		const auto compilerSettingsCpp = fmt::format("{}:Cxx", compilerSettings);
 		if (inNode.contains(compilerSettingsCpp))
 		{
 			const Json& node = inNode.at(compilerSettingsCpp);
-			if (!parseCompilerSettingsCxx(outProject, node))
-				return false;
-		}
-
-		const auto compilerSettingsC = fmt::format("{}:C", compilerSettings);
-		if (inNode.contains(compilerSettingsC))
-		{
-			const Json& node = inNode.at(compilerSettingsC);
 			if (!parseCompilerSettingsCxx(outProject, node))
 				return false;
 		}
@@ -537,9 +543,6 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectConfiguration& outProject,
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "dumpAssembly"))
 		outProject.setDumpAssembly(val);
-
-	if (ushort val = 0; parseKeyFromConfig(val, inNode, "maxJobs"))
-		outProject.setMaxJobs(val);
 
 	if (bool val = false; JsonNode::assignFromKey(val, inNode, "rtti"))
 		outProject.setRtti(val);

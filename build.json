@@ -4,6 +4,7 @@
 	"environment": {
 		"showCommands": false,
 		"externalDepDir": "chalet_external",
+		// "maxJobs": 8,
 		"path": []
 	},
 	/*"configurations": [
@@ -40,9 +41,8 @@
 		"language": "C++",
 		"dumpAssembly": false,
 		"runDependencies": [],
-		"compilerSettings:C++": {
+		"compilerSettings:Cxx": {
 			"cppStandard": "c++17",
-			// "maxJobs": 8,
 			"rtti": false,
 			"staticLinking": true,
 			"posixThreads": true,
@@ -75,7 +75,7 @@
 				"src",
 				"vendor/json-schema-validator"
 			],
-			"compilerSettings:C++": {
+			"compilerSettings:Cxx": {
 				"pch": "src/PCH.hpp"
 			},
 			"runProject": true
@@ -99,7 +99,7 @@
 				],
 				"exclude": "src/Main.cpp"
 			},
-			"compilerSettings:C++": {
+			"compilerSettings:Cxx": {
 				"pch": "src/PCH.hpp"
 			},
 			"runArguments": "-w NoTests -s",

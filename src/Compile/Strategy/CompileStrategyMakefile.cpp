@@ -75,7 +75,7 @@ bool CompileStrategyMakefile::initialize()
 	// 	return false;
 	// }
 
-	const auto maxJobs = m_project.maxJobs();
+	const auto maxJobs = m_state.environment.maxJobs();
 
 	std::string jobs;
 	if (maxJobs > 0)

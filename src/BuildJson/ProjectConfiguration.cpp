@@ -17,8 +17,7 @@ namespace chalet
 ProjectConfiguration::ProjectConfiguration(const std::string& inBuildConfig, const BuildEnvironment& inEnvironment) :
 	m_buildConfiguration(inBuildConfig),
 	m_environment(inEnvironment),
-	m_cmakeDefines(getDefaultCmakeDefines()),
-	m_maxJobs(m_environment.processorCount())
+	m_cmakeDefines(getDefaultCmakeDefines())
 {
 	StringList exts = {
 		"cpp",
@@ -557,17 +556,6 @@ void ProjectConfiguration::setKind(const ProjectKind inValue) noexcept
 void ProjectConfiguration::setKind(const std::string& inValue)
 {
 	m_kind = parseProjectKind(inValue);
-}
-
-/*****************************************************************************/
-uint ProjectConfiguration::maxJobs() const noexcept
-{
-	return m_maxJobs;
-}
-
-void ProjectConfiguration::setMaxJobs(const uint inValue) noexcept
-{
-	m_maxJobs = std::min(inValue, m_environment.processorCount());
 }
 
 /*****************************************************************************/

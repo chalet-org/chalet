@@ -71,7 +71,7 @@ CompileStrategyNative::CompileStrategyNative(BuildState& inState, const ProjectC
 	m_state(inState),
 	m_project(inProject),
 	m_toolchain(inToolchain),
-	m_threadPool(m_project.maxJobs())
+	m_threadPool(m_state.environment.maxJobs())
 {
 }
 

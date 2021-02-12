@@ -279,6 +279,11 @@ Json Schema::getBuildJson()
 			"description": "The path to install external dependencies into (see externalDependencies).",
 			"default": "chalet_external"
 		},
+		"environment-maxJobs": {
+			"type": "integer",
+			"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
+			"minimum": 1
+		},
 		"environment-path": {
 			"type": "array",
 			"description": "Any additional paths to include.",
@@ -300,105 +305,7 @@ Json Schema::getBuildJson()
 				"linux"
 			]
 		},
-		"project-compilerSettings-c": {
-			"type": "object",
-			"additionalProperties": false,
-			"properties": {
-				"cStandard": {
-					"$ref": "#/definitions/project-cxx-cStandard"
-				},
-				"cmake": {
-					"$ref": "#/definitions/project-cxx-cmake"
-				},
-				"compileOptions": {
-					"$ref": "#/definitions/project-cxx-compileOptions"
-				},
-				"defines": {
-					"$ref": "#/definitions/project-cxx-defines"
-				},
-				"includePaths": {
-					"$ref": "#/definitions/project-cxx-includeDirs"
-				},
-				"libDirs": {
-					"$ref": "#/definitions/project-cxx-libDirs"
-				},
-				"linkerScript": {
-					"$ref": "#/definitions/project-cxx-linkerScript"
-				},
-				"linkerOptions": {
-					"$ref": "#/definitions/project-cxx-linkerOptions"
-				},
-				"links": {
-					"$ref": "#/definitions/project-cxx-links"
-				},
-				"macosFrameworkPaths": {
-					"$ref": "#/definitions/project-cxx-macosFrameworkPaths"
-				},
-				"macosFrameworks": {
-					"$ref": "#/definitions/project-cxx-macosFrameworks"
-				},
-				"objectiveCxx": {
-					"$ref": "#/definitions/project-cxx-objectiveCxx"
-				},
-				"pch": {
-					"$ref": "#/definitions/project-cxx-pch"
-				},
-				"posixThreads": {
-					"$ref": "#/definitions/project-cxx-posixThreads"
-				},
-				"staticLinking": {
-					"$ref": "#/definitions/project-cxx-staticLinking"
-				},
-				"staticLinks": {
-					"$ref": "#/definitions/project-cxx-staticLinks"
-				},
-				"warnings": {
-					"$ref": "#/definitions/project-cxx-warnings"
-				},
-				"windowsPrefixOutputFilename": {
-					"$ref": "#/definitions/project-cxx-windowsPrefixOutputFilename"
-				},
-				"windowsOutputDef": {
-					"$ref": "#/definitions/project-cxx-windowsOutputDef"
-				}
-			},
-			"patternProperties": {
-				"cmake(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-cmake"
-				},
-				"cStandard(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-cStandard"
-				},
-				"compileOptions(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-compileOptions"
-				},
-				"defines(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-defines"
-				},
-				"includeDirs(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-includeDirs"
-				},
-				"libDirs(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-libDirs"
-				},
-				"linkerScript(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-linkerScript"
-				},
-				"linkerOptions(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-linkerOptions"
-				},
-				"links(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-links"
-				},
-				"objectiveCxx(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-objectiveCxx"
-				},
-				"staticLinks(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-staticLinks"
-				}
-			}
-		},
-		"project-compilerSettings-cpp": {
+		"project-compilerSettings-cxx": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
@@ -509,11 +416,8 @@ Json Schema::getBuildJson()
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
-				"compilerSettings:C": {
-					"$ref": "#/definitions/project-compilerSettings-c"
-				},
-				"compilerSettings:C++": {
-					"$ref": "#/definitions/project-compilerSettings-cpp"
+				"compilerSettings:Cxx": {
+					"$ref": "#/definitions/project-compilerSettings-cxx"
 				},
 				"dumpAssembly": {
 					"$ref": "#/definitions/project-cxx-dumpAssembly"
@@ -824,11 +728,6 @@ Json Schema::getBuildJson()
 			"items": {
 				"type": "string"
 			}
-		},
-		"project-cxx-maxJobs": {
-			"type": "integer",
-			"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
-			"minimum": 1
 		},
 		"project-cxx-name": {
 			"type": "string",
@@ -1429,11 +1328,17 @@ Json Schema::getBuildJson()
 			"patternProperties": {
 				"path(\\.windows|\\.macos|\\.linux)": {
 					"$ref": "#/definitions/environment-path"
+				},
+				"maxJobs(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/environment-maxJobs"
 				}
 			},
 			"properties": {
 				"path": {
 					"$ref": "#/definitions/environment-path"
+				},
+				"maxJobs": {
+					"$ref": "#/definitions/environment-maxJobs"
 				},
 				"externalDepDir": {
 					"$ref": "#/definitions/environment-externalDepDir"

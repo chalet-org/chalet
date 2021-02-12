@@ -104,7 +104,7 @@ bool CmakeBuilder::run()
 		{
 			const auto& makeExec = m_state.tools.make();
 
-			const auto maxJobs = m_project.maxJobs();
+			const auto maxJobs = m_state.environment.maxJobs();
 			std::string jobs;
 			if (maxJobs > 0)
 				jobs = fmt::format(" -j{}", maxJobs);

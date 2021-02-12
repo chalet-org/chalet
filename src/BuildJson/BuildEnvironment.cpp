@@ -21,7 +21,8 @@ namespace chalet
 /*****************************************************************************/
 BuildEnvironment::BuildEnvironment(const std::string& inBuildConfig) :
 	m_buildConfiguration(inBuildConfig),
-	m_processorCount(std::thread::hardware_concurrency())
+	m_processorCount(std::thread::hardware_concurrency()),
+	m_maxJobs(m_processorCount)
 {
 	// LOG("Processor count: ", m_processorCount);
 }
@@ -84,6 +85,17 @@ void BuildEnvironment::setExternalDepDir(const std::string& inValue) noexcept
 
 	if (m_modulePath.back() == '/')
 		m_modulePath.pop_back();
+}
+
+/*****************************************************************************/
+uint BuildEnvironment::maxJobs() const noexcept
+{
+	return m_maxJobs;
+}
+
+void BuildEnvironment::setMaxJobs(const uint inValue) noexcept
+{
+	m_maxJobs = std::min(inValue, processorCount());
 }
 
 /*****************************************************************************/
