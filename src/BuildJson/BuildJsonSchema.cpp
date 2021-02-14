@@ -15,265 +15,270 @@ Json Schema::getBuildJson()
 {
 	// Note: By parsing json from a string instead of _json literal, we can use ordered_json
 
-	// clang-format off
-	std::string schema = R"json({
-	"$schema": "http://json-schema.org/draft-07/schema",
-	"type": "object",
-	"additionalProperties": false,
-	"required": [
+	Json ret;
+
+	ret["$schema"] = "http://json-schema.org/draft-07/schema";
+	ret["type"] = "object";
+	ret["additionalProperties"] = false;
+	ret["required"] = {
 		"version",
 		"workspace",
 		"projects"
-	],
-	"definitions": {
-		"bundle-appName": {
-			"type": "string",
-			"description": "The name of the app, if different from the workspace name"
-		},
-		"bundle-configuration": {
-			"type": "string",
-			"description": "The name of the build configuration to use for the distribution."
-		},
-		"bundle-dependencies": {
-			"type": "array",
-			"uniqueItems": true,
-			"items": {
-				"type": "string"
-			}
-		},
-		"bundle-exclude": {
-			"type": "array",
-			"uniqueItems": true,
-			"items": {
-				"type": "string"
-			}
-		},
-		"bundle-linux": {
-			"type": "object",
-			"description": "Variables to describe the linux application.",
-			"additionalProperties": false,
-			"required": [
-				"icon",
-				"desktopEntry"
-			],
-			"properties": {
-				"desktopEntry": {
-					"type": "string",
-					"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated."
-				},
-				"icon": {
-					"type": "string",
-					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
-				}
-			}
-		},
-		"bundle-longDescription": {
+	};
+
+	Json& definitions = ret["definitions"];
+	definitions["bundle-appName"] = R"json({
+		"type": "string",
+		"description": "The name of the app, if different from the workspace name"
+	})json";
+	definitions["bundle-configuration"] = R"json({
+		"type": "string",
+		"description": "The name of the build configuration to use for the distribution."
+	})json";
+	definitions["bundle-dependencies"] = R"json({
+		"type": "array",
+		"uniqueItems": true,
+		"items": {
 			"type": "string"
-		},
-		"bundle-macos": {
-			"type": "object",
-			"description": "Variables to describe the macos application bundle.",
-			"additionalProperties": false,
-			"required": [
-				"bundleName",
-				"bundleIdentifier",
-				"icon",
-				"infoPropertyList"
-			],
-			"properties": {
-				"bundleIdentifier": {
-					"type": "string"
-				},
-				"bundleName": {
-					"type": "string"
-				},
-				"dmgBackground": {
-					"anyOf": [
-						{
-							"type": "string"
-						},
-						{
-							"properties": {
-								"1x": {
-									"type": "string"
-								},
-								"2x": {
-									"type": "string"
-								}
-							},
-							"required": [
-								"1x"
-							],
-							"type": "object"
-						}
-					]
-				},
-				"dylibs": {
-					"items": {
+		}
+	})json";
+	definitions["bundle-exclude"] = R"json({
+		"type": "array",
+		"uniqueItems": true,
+		"items": {
+			"type": "string"
+		}
+	})json";
+	definitions["bundle-linux"] = R"json({
+		"type": "object",
+		"description": "Variables to describe the linux application.",
+		"additionalProperties": false,
+		"required": [
+			"icon",
+			"desktopEntry"
+		],
+		"properties": {
+			"desktopEntry": {
+				"type": "string",
+				"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated."
+			},
+			"icon": {
+				"type": "string",
+				"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
+			}
+		}
+	})json";
+	definitions["bundle-longDescription"] = R"json({
+		"type": "string"
+	})json";
+	definitions["bundle-macos"] = R"json({
+		"type": "object",
+		"description": "Variables to describe the macos application bundle.",
+		"additionalProperties": false,
+		"required": [
+			"bundleName",
+			"bundleIdentifier",
+			"icon",
+			"infoPropertyList"
+		],
+		"properties": {
+			"bundleIdentifier": {
+				"type": "string"
+			},
+			"bundleName": {
+				"type": "string"
+			},
+			"dmgBackground": {
+				"anyOf": [
+					{
 						"type": "string"
 					},
-					"uniqueItems": true,
-					"type": "array"
-				},
-				"icon": {
+					{
+						"properties": {
+							"1x": {
+								"type": "string"
+							},
+							"2x": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"1x"
+						],
+						"type": "object"
+					}
+				]
+			},
+			"dylibs": {
+				"items": {
 					"type": "string"
 				},
-				"infoPropertyList": {
-					"type": "string"
-				},
-				"makeDmg": {
-					"type": "boolean",
-					"description": "If true, a .dmg image will be built",
-					"default": false
-				}
+				"uniqueItems": true,
+				"type": "array"
+			},
+			"icon": {
+				"type": "string"
+			},
+			"infoPropertyList": {
+				"type": "string"
+			},
+			"makeDmg": {
+				"type": "boolean",
+				"description": "If true, a .dmg image will be built",
+				"default": false
 			}
-		},
-		"bundle-outDir": {
+		}
+	})json";
+	definitions["bundle-outDir"] = R"json({
+		"type": "string",
+		"description": "The output folder to place the final build along with all of its dependencies.",
+		"default": "dist"
+	})json";
+	definitions["bundle-projects"] = R"json({
+		"type": "array",
+		"uniqueItems": true,
+		"description": "An array of projects to include in the bundle",
+		"items": {
 			"type": "string",
-			"description": "The output folder to place the final build along with all of its dependencies.",
-			"default": "dist"
-		},
-		"bundle-projects": {
-			"type": "array",
-			"uniqueItems": true,
-			"description": "An array of projects to include in the bundle",
-			"items": {
+			"description": "The name of the project",
+			"pattern": "${pattern:projectName}"
+		}
+	})json";
+	definitions["bundle-shortDescription"] = R"json({
+		"type": "string"
+	})json";
+	definitions["bundle-windows"] = R"json({
+		"type": "object",
+		"description": "Variables to describe the windows application.",
+		"additionalProperties": false,
+		"required": [
+			"icon",
+			"manifest"
+		],
+		"properties": {
+			"icon": {
 				"type": "string",
-				"description": "The name of the project",
-				"pattern": "${pattern:projectName}"
+				"description": "The windows icon to use for the project"
+			},
+			"manifest": {
+				"type": "string"
 			}
-		},
-		"bundle-shortDescription": {
-			"type": "string"
-		},
-		"bundle-windows": {
-			"type": "object",
-			"description": "Variables to describe the windows application.",
-			"additionalProperties": false,
-			"required": [
-				"icon",
-				"manifest"
-			],
-			"properties": {
-				"icon": {
-					"type": "string",
-					"description": "The windows icon to use for the project"
-				},
-				"manifest": {
-					"type": "string"
-				}
-			}
-		},
-		"configurations-debugSymbols": {
-			"type": "boolean",
-			"description": "true to include debug symbols, false otherwise.",
-			"default": false
-		},
-		"configurations-linkTimeOptimization": {
-			"type": "boolean",
-			"description": "true to use link-time optimization, false otherwise.",
-			"default": false
-		},
-		"configurations-name": {
-			"type": "string",
-			"description": "The name of the build configuration."
-		},
-		"configurations-optimizations": {
-			"type": "string",
-			"description": "The optimization level of the build.",
-			"enum": [
-				"0",
-				"1",
-				"2",
-				"3",
-				"debug",
-				"size",
-				"fast"
-			]
-		},
-		"configurations-stripSymbols": {
-			"type": "boolean",
-			"description": "true to strip symbols from the build, false otherwise.",
-			"default": false
-		},
-		"externalDependency-repository": {
-			"type": "string",
-			"description": "The url of the git repository.",
-			"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
-		},
-		"externalDependency-branch": {
-			"type": "string",
-			"description": "The branch to checkout. Defaults to 'master'",
-			"default": "master"
-		},
-		"externalDependency-commit": {
-			"type": "string",
-			"description": "The SHA1 hash of the commit to checkout.",
-			"pattern": "^[0-9a-f]{7,40}$"
-		},
-		"externalDependency-name": {
-			"type": "string",
-			"description": "The destination directory name for the repository within 'externalDepDir'. If none is provided, defaults to the repository name",
-			"pattern": "^[\\w\\-\\+\\.]{3,100}$"
-		},
-		"externalDependency-tag": {
-			"type": "string",
-			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
-		},
-		"externalDependency-submodules": {
-			"type": "boolean",
-			"description": "Do submodules need to be cloned?",
-			"default": false
-		},
-		"externalDependency": {
-			"type": "object",
-			"oneOf": [
-				{
-					"additionalProperties": false,
-					"required": [
-						"repository",
-						"tag"
-					],
-					"properties": {
-						"repository": {
-							"$ref": "#/definitions/externalDependency-repository"
-						},
-						"name": {
-							"$ref": "#/definitions/externalDependency-name"
-						},
-						"submodules": {
-							"$ref": "#/definitions/externalDependency-submodules"
-						},
-						"tag": {
-							"$ref": "#/definitions/externalDependency-tag"
-						}
-					}
-				},
-				{
-					"additionalProperties": false,
-					"required": [
-						"repository"
-					],
-					"properties": {
-						"repository": {
-							"$ref": "#/definitions/externalDependency-repository"
-						},
-						"name": {
-							"$ref": "#/definitions/externalDependency-name"
-						},
-						"submodules": {
-							"$ref": "#/definitions/externalDependency-submodules"
-						},
-						"branch": {
-							"$ref": "#/definitions/externalDependency-branch"
-						},
-						"commit": {
-							"$ref": "#/definitions/externalDependency-commit"
-						}
+		}
+	})json";
+	definitions["configurations-debugSymbols"] = R"json({
+		"type": "boolean",
+		"description": "true to include debug symbols, false otherwise.",
+		"default": false
+	})json";
+	definitions["configurations-linkTimeOptimization"] = R"json({
+		"type": "boolean",
+		"description": "true to use link-time optimization, false otherwise.",
+		"default": false
+	})json";
+	definitions["configurations-name"] = R"json({
+		"type": "string",
+		"description": "The name of the build configuration."
+	})json";
+	definitions["configurations-optimizations"] = R"json({
+		"type": "string",
+		"description": "The optimization level of the build.",
+		"enum": [
+			"0",
+			"1",
+			"2",
+			"3",
+			"debug",
+			"size",
+			"fast"
+		]
+	})json";
+	definitions["configurations-stripSymbols"] = R"json({
+		"type": "boolean",
+		"description": "true to strip symbols from the build, false otherwise.",
+		"default": false
+	})json";
+	definitions["externalDependency-repository"] = R"json({
+		"type": "string",
+		"description": "The url of the git repository.",
+		"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
+	})json";
+	definitions["externalDependency-branch"] = R"json({
+		"type": "string",
+		"description": "The branch to checkout. Defaults to 'master'",
+		"default": "master"
+	})json";
+	definitions["externalDependency-commit"] = R"json({
+		"type": "string",
+		"description": "The SHA1 hash of the commit to checkout.",
+		"pattern": "^[0-9a-f]{7,40}$"
+	})json";
+	definitions["externalDependency-name"] = R"json({
+		"type": "string",
+		"description": "The destination directory name for the repository within 'externalDepDir'. If none is provided, defaults to the repository name",
+		"pattern": "^[\\w\\-\\+\\.]{3,100}$"
+	})json";
+	definitions["externalDependency-tag"] = R"json({
+		"type": "string",
+		"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
+	})json";
+	definitions["externalDependency-submodules"] = R"json({
+		"type": "boolean",
+		"description": "Do submodules need to be cloned?",
+		"default": false
+	})json";
+	definitions["externalDependency"] = R"json({
+		"type": "object",
+		"oneOf": [
+			{
+				"additionalProperties": false,
+				"required": [
+					"repository",
+					"tag"
+				],
+				"properties": {
+					"repository": {
+						"$ref": "#/definitions/externalDependency-repository"
+					},
+					"name": {
+						"$ref": "#/definitions/externalDependency-name"
+					},
+					"submodules": {
+						"$ref": "#/definitions/externalDependency-submodules"
+					},
+					"tag": {
+						"$ref": "#/definitions/externalDependency-tag"
 					}
 				}
-			]
-		},
+			},
+			{
+				"additionalProperties": false,
+				"required": [
+					"repository"
+				],
+				"properties": {
+					"repository": {
+						"$ref": "#/definitions/externalDependency-repository"
+					},
+					"name": {
+						"$ref": "#/definitions/externalDependency-name"
+					},
+					"submodules": {
+						"$ref": "#/definitions/externalDependency-submodules"
+					},
+					"branch": {
+						"$ref": "#/definitions/externalDependency-branch"
+					},
+					"commit": {
+						"$ref": "#/definitions/externalDependency-commit"
+					}
+				}
+			}
+		]
+	})json";
+
+	// clang-format off
+	std::string schema = R"json({
+	"definitions": {
 		"environment-externalDepDir": {
 			"type": "string",
 			"description": "The path to install external dependencies into (see externalDependencies).",
