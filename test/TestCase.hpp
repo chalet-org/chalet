@@ -3,12 +3,6 @@
 
 #include <catch2/catch.hpp>
 
-#ifndef __INTELLISENSE__
-	#define __INTELLISENSE__ 0
-#endif
-
-#if __INTELLISENSE__
-	#pragma diag_suppress 2486
-#endif
+#include "Utility/SuppressIntellisense.hpp"
 
 #endif // TESTS_TEST_CASE_HPP
