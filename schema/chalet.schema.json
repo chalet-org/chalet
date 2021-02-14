@@ -1,6 +1,12 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
 	"additionalProperties": false,
+	"required": [
+		"version",
+		"workspace",
+		"projects"
+	],
 	"definitions": {
 		"bundle-appName": {
 			"description": "The name of the app, if different from the workspace name",
@@ -113,8 +119,8 @@
 			"description": "An array of projects to include in the bundle",
 			"items": {
 				"description": "The name of the project",
-				"pattern": "^[\\w\\-\\+\\.]{3,}$",
-				"type": "string"
+				"type": "string",
+				"pattern": "^[\\w\\-\\+\\.]{3,}$"
 			},
 			"type": "array",
 			"uniqueItems": true
@@ -172,35 +178,33 @@
 			"description": "true to strip symbols from the build, false otherwise.",
 			"type": "boolean"
 		},
-		"enum-platform": {
-			"enum": [
-				"windows",
-				"macos",
-				"linux"
-			],
+		"externalDependency-repository": {
+			"description": "The url of the git repository.",
+			"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$",
 			"type": "string"
 		},
-		"environment-externalDepDir": {
-			"default": "chalet_external",
-			"description": "The path to install external dependencies into (see externalDependencies).",
+		"externalDependency-branch": {
+			"default": "master",
+			"description": "The branch to checkout. Defaults to 'master'",
 			"type": "string"
 		},
-		"environment-maxJobs": {
-			"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
-			"minimum": 1,
-			"type": "integer"
+		"externalDependency-commit": {
+			"description": "The SHA1 hash of the commit to checkout.",
+			"pattern": "^[0-9a-f]{7,40}$",
+			"type": "string"
 		},
-		"environment-path": {
-			"description": "Any additional paths to include.",
-			"items": {
-				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+		"externalDependency-name": {
+			"description": "The destination directory name for the repository within 'externalDepDir'. If none is provided, defaults to the repository name",
+			"pattern": "^[\\w\\-\\+\\.]{3,100}$",
+			"type": "string"
 		},
-		"environment-showCommands": {
+		"externalDependency-tag": {
+			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
+			"type": "string"
+		},
+		"externalDependency-submodules": {
 			"default": false,
-			"description": "true to show the commands run during the build, false to just show the source file.",
+			"description": "Do submodules need to be cloned?",
 			"type": "boolean"
 		},
 		"externalDependency": {
@@ -252,101 +256,36 @@
 			],
 			"type": "object"
 		},
-		"externalDependency-branch": {
-			"default": "master",
-			"description": "The branch to checkout. Defaults to 'master'",
+		"environment-externalDepDir": {
+			"default": "chalet_external",
+			"description": "The path to install external dependencies into (see externalDependencies).",
 			"type": "string"
 		},
-		"externalDependency-commit": {
-			"description": "The SHA1 hash of the commit to checkout.",
-			"pattern": "^[0-9a-f]{7,40}$",
-			"type": "string"
+		"environment-maxJobs": {
+			"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
+			"minimum": 1,
+			"type": "integer"
 		},
-		"externalDependency-name": {
-			"description": "The destination directory name for the repository within 'externalDepDir'. If none is provided, defaults to the repository name",
-			"pattern": "^[\\w\\-\\+\\.]{3,100}$",
-			"type": "string"
+		"environment-path": {
+			"description": "Any additional paths to include.",
+			"items": {
+				"type": "string"
+			},
+			"type": "array",
+			"uniqueItems": true
 		},
-		"externalDependency-repository": {
-			"description": "The url of the git repository.",
-			"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$",
-			"type": "string"
-		},
-		"externalDependency-submodules": {
+		"environment-showCommands": {
 			"default": false,
-			"description": "Do submodules need to be cloned?",
+			"description": "true to show the commands run during the build, false to just show the source file.",
 			"type": "boolean"
 		},
-		"externalDependency-tag": {
-			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
+		"enum-platform": {
+			"enum": [
+				"windows",
+				"macos",
+				"linux"
+			],
 			"type": "string"
-		},
-		"project": {
-			"additionalProperties": false,
-			"patternProperties": {
-				"dumpAssembly(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-dumpAssembly"
-				},
-				"runDependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-runDependencies"
-				},
-				"runProject(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-runProject"
-				}
-			},
-			"properties": {
-				"compilerSettings:Cxx": {
-					"$ref": "#/definitions/project-compilerSettings-cxx"
-				},
-				"dumpAssembly": {
-					"$ref": "#/definitions/project-cxx-dumpAssembly"
-				},
-				"files": {
-					"$ref": "#/definitions/project-cxx-files"
-				},
-				"kind": {
-					"$ref": "#/definitions/project-cxx-kind"
-				},
-				"language": {
-					"$ref": "#/definitions/project-cxx-language"
-				},
-				"location": {
-					"$ref": "#/definitions/project-cxx-location"
-				},
-				"name": {
-					"$ref": "#/definitions/project-cxx-name"
-				},
-				"notInConfiguration": {
-					"$ref": "#/definitions/project-cxx-notInConfiguration"
-				},
-				"notInPlatform": {
-					"$ref": "#/definitions/project-cxx-notInPlatform"
-				},
-				"onlyInConfiguration": {
-					"$ref": "#/definitions/project-cxx-onlyInConfiguration"
-				},
-				"onlyInPlatform": {
-					"$ref": "#/definitions/project-cxx-onlyInPlatform"
-				},
-				"postBuild": {
-					"$ref": "#/definitions/project-cxx-scripts",
-					"description": "Script(s) to run after the target's build"
-				},
-				"preBuild": {
-					"$ref": "#/definitions/project-cxx-scripts",
-					"description": "Script(s) to run before the target's build"
-				},
-				"runArguments": {
-					"$ref": "#/definitions/project-cxx-runArguments"
-				},
-				"runDependencies": {
-					"$ref": "#/definitions/project-cxx-runDependencies"
-				},
-				"runProject": {
-					"$ref": "#/definitions/project-cxx-runProject"
-				}
-			},
-			"type": "object"
 		},
 		"project-compilerSettings-cxx": {
 			"additionalProperties": false,
@@ -454,6 +393,78 @@
 				}
 			},
 			"type": "object"
+		},
+		"project": {
+			"additionalProperties": false,
+			"patternProperties": {
+				"dumpAssembly(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-dumpAssembly"
+				},
+				"runDependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-runDependencies"
+				},
+				"runProject(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-runProject"
+				}
+			},
+			"properties": {
+				"compilerSettings:Cxx": {
+					"$ref": "#/definitions/project-compilerSettings-cxx"
+				},
+				"dumpAssembly": {
+					"$ref": "#/definitions/project-cxx-dumpAssembly"
+				},
+				"files": {
+					"$ref": "#/definitions/project-cxx-files"
+				},
+				"kind": {
+					"$ref": "#/definitions/project-cxx-kind"
+				},
+				"language": {
+					"$ref": "#/definitions/project-cxx-language"
+				},
+				"location": {
+					"$ref": "#/definitions/project-cxx-location"
+				},
+				"name": {
+					"$ref": "#/definitions/project-cxx-name"
+				},
+				"notInConfiguration": {
+					"$ref": "#/definitions/project-cxx-notInConfiguration"
+				},
+				"notInPlatform": {
+					"$ref": "#/definitions/project-cxx-notInPlatform"
+				},
+				"onlyInConfiguration": {
+					"$ref": "#/definitions/project-cxx-onlyInConfiguration"
+				},
+				"onlyInPlatform": {
+					"$ref": "#/definitions/project-cxx-onlyInPlatform"
+				},
+				"postBuild": {
+					"$ref": "#/definitions/project-cxx-scripts",
+					"description": "Script(s) to run after the target's build"
+				},
+				"preBuild": {
+					"$ref": "#/definitions/project-cxx-scripts",
+					"description": "Script(s) to run before the target's build"
+				},
+				"runArguments": {
+					"$ref": "#/definitions/project-cxx-runArguments"
+				},
+				"runDependencies": {
+					"$ref": "#/definitions/project-cxx-runDependencies"
+				},
+				"runProject": {
+					"$ref": "#/definitions/project-cxx-runProject"
+				}
+			},
+			"type": "object"
+		},
+		"project-cxx-windowsPrefixOutputFilename": {
+			"default": true,
+			"description": "Only applies to dynamic library projects (kind=dynamicLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
+			"type": "boolean"
 		},
 		"project-cxx-cStandard": {
 			"default": "c11",
@@ -611,6 +622,10 @@
 			"type": "array",
 			"uniqueItems": true
 		},
+		"project-cxx-linkerScript": {
+			"description": "An LD linker script path (.ld file) to pass to the linker command",
+			"type": "string"
+		},
 		"project-cxx-linkerOptions": {
 			"description": "Options to add during the linking step.",
 			"items": {
@@ -619,15 +634,11 @@
 			"type": "array",
 			"uniqueItems": true
 		},
-		"project-cxx-linkerScript": {
-			"description": "An LD linker script path (.ld file) to pass to the linker command",
-			"type": "string"
-		},
 		"project-cxx-links": {
 			"description": "A list of dynamic links to use with the linker",
 			"items": {
-				"pattern": "^[\\w\\-\\+\\.]+$",
-				"type": "string"
+				"type": "string",
+				"pattern": "^[\\w\\-\\+\\.]+$"
 			},
 			"type": "array",
 			"uniqueItems": true
@@ -702,11 +713,16 @@
 		},
 		"project-cxx-name": {
 			"description": "The name of the project.",
-			"pattern": "^[\\w\\-\\+\\.]{3,}$",
-			"type": "string"
+			"type": "string",
+			"pattern": "^[\\w\\-\\+\\.]{3,}$"
 		},
-		"project-cxx-notInConfiguration": {
-			"description": "Don't compile this project in specific build configuration(s)",
+		"project-cxx-objectiveCxx": {
+			"default": false,
+			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
+			"type": "boolean"
+		},
+		"project-cxx-onlyInConfiguration": {
+			"description": "Only compile this project in specific build configuration(s)",
 			"oneOf": [
 				{
 					"type": "string"
@@ -720,28 +736,8 @@
 				}
 			]
 		},
-		"project-cxx-notInPlatform": {
-			"description": "Don't compile this project on specific platform(s)",
-			"oneOf": [
-				{
-					"$ref": "#/definitions/enum-platform"
-				},
-				{
-					"items": {
-						"$ref": "#/definitions/enum-platform"
-					},
-					"type": "array",
-					"uniqueItems": true
-				}
-			]
-		},
-		"project-cxx-objectiveCxx": {
-			"default": false,
-			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
-			"type": "boolean"
-		},
-		"project-cxx-onlyInConfiguration": {
-			"description": "Only compile this project in specific build configuration(s)",
+		"project-cxx-notInConfiguration": {
+			"description": "Don't compile this project in specific build configuration(s)",
 			"oneOf": [
 				{
 					"type": "string"
@@ -770,6 +766,21 @@
 				}
 			]
 		},
+		"project-cxx-notInPlatform": {
+			"description": "Don't compile this project on specific platform(s)",
+			"oneOf": [
+				{
+					"$ref": "#/definitions/enum-platform"
+				},
+				{
+					"items": {
+						"$ref": "#/definitions/enum-platform"
+					},
+					"type": "array",
+					"uniqueItems": true
+				}
+			]
+		},
 		"project-cxx-pch": {
 			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root.",
 			"type": "string"
@@ -784,6 +795,11 @@
 			"description": "true to include run-time type information (default), false to exclude.",
 			"type": "boolean"
 		},
+		"project-cxx-runProject": {
+			"default": false,
+			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple projects are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
+			"type": "boolean"
+		},
 		"project-cxx-runArguments": {
 			"description": "If the project is the run target, a string of arguments to pass to the run command.",
 			"type": "string"
@@ -795,11 +811,6 @@
 			},
 			"type": "array",
 			"uniqueItems": true
-		},
-		"project-cxx-runProject": {
-			"default": false,
-			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple projects are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
-			"type": "boolean"
 		},
 		"project-cxx-scripts": {
 			"anyOf": [
@@ -851,8 +862,8 @@
 		"project-cxx-staticLinks": {
 			"description": "A list of static links to use with the linker",
 			"items": {
-				"pattern": "^[\\w\\-\\+\\.]+$",
-				"type": "string"
+				"type": "string",
+				"pattern": "^[\\w\\-\\+\\.]+$"
 			},
 			"type": "array",
 			"uniqueItems": true
@@ -1180,11 +1191,6 @@
 			"default": false,
 			"description": "If true for a dynamic library (dll) target on Windows, a .def file will be created",
 			"type": "boolean"
-		},
-		"project-cxx-windowsPrefixOutputFilename": {
-			"default": true,
-			"description": "Only applies to dynamic library projects (kind=dynamicLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
-			"type": "boolean"
 		}
 	},
 	"properties": {
@@ -1286,6 +1292,14 @@
 			"type": "array",
 			"uniqueItems": true
 		},
+		"externalDependencies": {
+			"description": "A sequential list of externalDependencies to install prior to building or via the install command",
+			"items": {
+				"$ref": "#/definitions/externalDependency"
+			},
+			"type": "array",
+			"uniqueItems": true
+		},
 		"environment": {
 			"additionalProperties": false,
 			"description": "Variables to describe the typical environments built in",
@@ -1314,14 +1328,6 @@
 			"required": [],
 			"type": "object"
 		},
-		"externalDependencies": {
-			"description": "A sequential list of externalDependencies to install prior to building or via the install command",
-			"items": {
-				"$ref": "#/definitions/externalDependency"
-			},
-			"type": "array",
-			"uniqueItems": true
-		},
 		"projects": {
 			"description": "A sequential list of projects to build",
 			"items": {
@@ -1340,11 +1346,5 @@
 			"pattern": "^[\\w\\-\\+ ]+$",
 			"type": "string"
 		}
-	},
-	"required": [
-		"version",
-		"workspace",
-		"projects"
-	],
-	"type": "object"
+	}
 }
