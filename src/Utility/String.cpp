@@ -96,7 +96,7 @@ std::string String::join(const StringList& inList, const std::string_view& inSep
 		if (item.empty())
 			continue;
 
-		int i = &item - &inList.front();
+		std::ptrdiff_t i = &item - &inList.front();
 		if (i > 0)
 			ret += inSeparator;
 

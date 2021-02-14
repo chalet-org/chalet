@@ -15,6 +15,12 @@ Json Schema::getCacheJson()
 {
 	// Note: By parsing json from a string instead of _json literal, we can use ordered_json
 
+	// Json ret;
+
+	// ret["$schema"] = "http://json-schema.org/draft-07/schema";
+	// ret["type"] = "object";
+	// ret[""]
+
 	// clang-format off
 	std::string schema = R"json({
 	"$schema": "http://json-schema.org/draft-07/schema",

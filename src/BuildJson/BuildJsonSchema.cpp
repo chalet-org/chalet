@@ -6,6 +6,7 @@
 #include "BuildJson/BuildJsonSchema.hpp"
 
 #include "Utility/String.hpp"
+#include "Utility/SuppressIntellisense.hpp"
 #include "Json/JsonComments.hpp"
 
 namespace chalet
@@ -16,7 +17,8 @@ Json Schema::getBuildJson()
 	// Note: By parsing json from a string instead of _json literal, we can use ordered_json
 
 	// clang-format off
-	std::string schema = R"json({
+	Json schema = R"json(
+{
 	"$schema": "http://json-schema.org/draft-07/schema",
 	"type": "object",
 	"additionalProperties": false,
@@ -1368,15 +1370,18 @@ Json Schema::getBuildJson()
 		}
 	}
 }
-)json";
+)json"_json;
 	// clang-format on
 
 	// This regex is the same for both links & names because a link can be a project name
-	const std::string nameRegex = R"(^[\\w\\-\\+\\.]{3,}$)";
-	const std::string linkRegex = R"(^[\\w\\-\\+\\.]+$)";
-	String::replaceAll(schema, "${pattern:projectName}", nameRegex);
-	String::replaceAll(schema, "${pattern:projectLinks}", linkRegex);
+	const std::string patternProjectName = R"(^[\w\-\+\.]{3,}$)";
+	schema["definitions"]["bundle-projects"]["items"]["pattern"] = patternProjectName;
+	schema["definitions"]["project-cxx-name"]["pattern"] = patternProjectName;
 
-	return JsonComments::parseLiteral(schema);
+	const std::string patternProjectLinks = R"(^[\w\-\+\.]+$)";
+	schema["definitions"]["project-cxx-links"]["items"]["pattern"] = patternProjectLinks;
+	schema["definitions"]["project-cxx-staticLinks"]["items"]["pattern"] = patternProjectLinks;
+
+	return schema;
 }
 }
