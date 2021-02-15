@@ -37,15 +37,19 @@ Json FileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	},
 	"allProjects": {
 		"language": "${language}",
-		"${langStandardKey}": "${langStandardValue}",
-		"warnings": "pedantic"
+		"compilerSettings:Cxx": {
+			"${langStandardKey}": "${langStandardValue}",
+			"warnings": "pedantic"
+		}
 	},
 	"projects": [
 		{
 			"name": "${project}",
 			"kind": "${kind}",
 			"location": "src",
-			"pch": "src/PCH.hpp",
+			"compilerSettings:Cxx": {
+				"pch": "src/PCH.hpp"
+			},
 			"runProject": true
 		}
 	]
