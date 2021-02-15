@@ -10,8 +10,9 @@ namespace chalet
 {
 struct Environment
 {
-	static bool isBash() noexcept;
-	static bool hasTerm() noexcept;
+	static bool isBash();
+	static bool isMsvc();
+	static bool hasTerm();
 
 	static Constant get(const char* inName);
 	static void set(const char* inName, const std::string& inValue);
@@ -25,9 +26,12 @@ private:
 		Unset,
 		Bash,
 		CommandPrompt,
+		CommandPromptMsvc,
 		Powershell,
 		// WindowsTerminal
 	};
+
+	static void setTerminalType();
 
 	static TerminalType s_terminalType;
 	static short s_hasTerm;

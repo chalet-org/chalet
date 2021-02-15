@@ -100,9 +100,31 @@ void Application::configureOsTerminal()
 	}
 
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-#endif
 
-	Environment::set("GCC_COLORS", "error=01;31:warning=01;33:note=01;36:caret=01;32:locus=00;34:quote=01");
+	if (Environment::isMsvc())
+	{
+		// Save the current environment to a file
+		// std::system("SET > build/all_variables.txt");
+
+		// auto visualStudioPath = Environment::get("VSAPPIDDIR");
+		// LOG(visualStudioPath);
+		// if (visualStudioPath != nullptr)
+		// {
+		// 	// 32-bit arch would use vcvars32.bat
+		// 	std::system(fmt::format("\"{}..\\..\\VC\\Auxiliary\\Build\\vcvars64.bat\" > nul && SET > build/all_variables_msvc.txt", visualStudioPath).c_str());
+		// }
+	}
+	else
+#endif
+	{
+		// Save the current environment to a file
+		// std::system("printenv > build/all_variables.txt");
+
+		Environment::set("GCC_COLORS", "error=01;31:warning=01;33:note=01;36:caret=01;32:locus=00;34:quote=01");
+	}
+
+	// auto path = Environment::getPath();
+	// LOG(path);
 }
 
 /*****************************************************************************/

@@ -15,44 +15,25 @@ Environment::TerminalType Environment::s_terminalType = TerminalType::Unset;
 short Environment::s_hasTerm = -1;
 
 /*****************************************************************************/
-bool Environment::isBash() noexcept
+bool Environment::isBash()
 {
 	if (s_terminalType == TerminalType::Unset)
-	{
-#if defined(CHALET_WIN32)
-		// MSYSTEM: Non-nullptr in MSYS2, Git Bash & std::system calls
-		auto result = Environment::get("MSYSTEM");
-		if (result != nullptr)
-		{
-			s_terminalType = TerminalType::Bash;
-		}
-		else
-		{
-			// PROMPT: nullptr in MSYS2/Git Bash, but not in std::system calls
-			result = Environment::get("PROMPT"); // Command Prompt
-			if (result != nullptr)
-			{
-				s_terminalType = TerminalType::CommandPrompt;
-			}
-			else
-			{
-				// Assume it's Powershell. PSHOME will be defined if it is, but it won't technically be part of "Env:"
-				// aka 'echo $PSHOME' (PS path) vs 'echo $env:PSHOME' (blank) -- JOY
-				s_terminalType = TerminalType::Powershell;
-
-				// TODO: Windows Terminal
-			}
-		}
-#else
-		s_terminalType = TerminalType::Bash;
-#endif
-	}
+		setTerminalType();
 
 	return s_terminalType == TerminalType::Bash;
 }
 
 /*****************************************************************************/
-bool Environment::hasTerm() noexcept
+bool Environment::isMsvc()
+{
+	if (s_terminalType == TerminalType::Unset)
+		setTerminalType();
+
+	return s_terminalType == TerminalType::CommandPromptMsvc;
+}
+
+/*****************************************************************************/
+bool Environment::hasTerm()
 {
 	if (s_hasTerm == -1)
 	{
@@ -61,6 +42,44 @@ bool Environment::hasTerm() noexcept
 	}
 
 	return s_hasTerm == 1;
+}
+
+/*****************************************************************************/
+void Environment::setTerminalType()
+{
+#if defined(CHALET_WIN32)
+	// MSYSTEM: Non-nullptr in MSYS2, Git Bash & std::system calls
+	auto result = Environment::get("MSYSTEM");
+	if (result != nullptr)
+	{
+		s_terminalType = TerminalType::Bash;
+		return;
+	}
+
+	result = Environment::get("VSAPPIDDIR");
+	if (result != nullptr)
+	{
+		LOG("This is running through Visual Studio");
+		s_terminalType = TerminalType::CommandPromptMsvc;
+		return;
+	}
+
+	// PROMPT: nullptr in MSYS2/Git Bash, but not in std::system calls
+	result = Environment::get("PROMPT"); // Command Prompt
+	if (result != nullptr)
+	{
+		s_terminalType = TerminalType::CommandPrompt;
+		return;
+	}
+
+	// Assume it's Powershell. PSHOME will be defined if it is, but it won't technically be part of "Env:"
+	// aka 'echo $PSHOME' (PS path) vs 'echo $env:PSHOME' (blank) -- JOY
+	s_terminalType = TerminalType::Powershell;
+
+	// TODO: Windows Terminal
+#else
+	s_terminalType = TerminalType::Bash;
+#endif
 }
 
 /*****************************************************************************/

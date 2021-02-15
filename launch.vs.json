@@ -8,6 +8,9 @@
 			"projectTarget": "chalet-debug.exe",
 			"name": "chalet-debug.exe",
 			"currentDir": "${projectDir}",
+			"inheritEnvironments": [
+				"msvc_x64_x64"
+			],
 			"args": [
 				"build", "Release"
 			]
