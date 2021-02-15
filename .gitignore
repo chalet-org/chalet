@@ -9,3 +9,6 @@ chalet_external/
 
 # VS Code
 .vscode/ipch
+
+# Visual Studio
+.vs

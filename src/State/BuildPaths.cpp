@@ -5,8 +5,6 @@
 
 #include "State/BuildPaths.hpp"
 
-#include <unistd.h>
-
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -48,7 +46,9 @@ void BuildPaths::setWorkingDirectory(const std::string& inValue)
 
 		if (m_workingDirectory != workingDirectory)
 		{
-			if (chdir(m_workingDirectory.c_str()) != 0)
+			std::error_code ec;
+			fs::current_path(m_workingDirectory, ec);
+			if (ec)
 			{
 				Diagnostic::error(fmt::format("Error changing directory to '{}'", m_workingDirectory));
 			}

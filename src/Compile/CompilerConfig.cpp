@@ -39,30 +39,42 @@ const std::string& CompilerConfig::compilerExecutable() const noexcept
 /*****************************************************************************/
 bool CompilerConfig::configureCompilerPaths()
 {
+	static const std::unordered_map<std::string, std::string> kCompilerStructures{
+		{ "/bin/Hostx64/x64", "/lib/x64" },
+		{ "/bin/Hostx64/x86", "/lib/x86" },
+		{ "/bin/Hostx86/x86", "/lib/x86" },
+		{ "/bin/Hostx86/x64", "/lib/x64" },
+		{ "/bin/Hostx64/x64", "/lib/64" },
+		{ "/bin", "/lib" }
+	};
+
 	const auto& exec = compilerExecutable();
 	chalet_assert(!exec.empty(), "No compiler was found");
 	if (exec.empty())
 		return false;
 
 	std::string path = String::getPathFolder(exec);
-	if (!String::endsWith("/bin", path))
+	for (const auto& structure : kCompilerStructures)
 	{
-		auto language = m_language == CodeLanguage::CPlusPlus ? "C++" : "C";
-		Diagnostic::errorAbort(fmt::format("Invalid compiler structure found for language '{}' (no 'bin' folder).", language));
-		return false;
-	}
-	String::replaceAll(path, "/bin", "");
+		if (String::endsWith(structure.first, path))
+		{
+			String::replaceAll(path, structure.first, "");
 
 #if defined(CHALET_MACOS)
-	auto& xcodePath = Commands::getXcodePath();
-	String::replaceAll(path, xcodePath, "");
+			auto& xcodePath = Commands::getXcodePath();
+			String::replaceAll(path, xcodePath, "");
 #endif
+			m_compilerPathBin = path + structure.first;
+			m_compilerPathLib = path + structure.second;
+			m_compilerPathInclude = path + "/include";
 
-	m_compilerPathBin = path + "/bin";
-	m_compilerPathLib = path + "/lib";
-	m_compilerPathInclude = path + "/include";
+			return true;
+		}
+	}
 
-	return true;
+	auto language = m_language == CodeLanguage::CPlusPlus ? "C++" : "C";
+	Diagnostic::errorAbort(fmt::format("Invalid compiler structure found for language '{}' (no 'bin' folder).", language));
+	return false;
 }
 
 /*****************************************************************************/
@@ -71,6 +83,12 @@ bool CompilerConfig::testCompilerMacros()
 	const auto& exec = compilerExecutable();
 	if (exec.empty())
 		return false;
+
+	if (String::endsWith("/cl.exe", exec))
+	{
+		m_compilerType = CppCompilerType::VisualStudio;
+		return true;
+	}
 
 	const std::string macroResult = Commands::testCompilerFlags(exec);
 	// String::replaceAll(macroResult, "\n", " ");
@@ -85,8 +103,6 @@ bool CompilerConfig::testCompilerMacros()
 	// GCC in MinGW 32, MinGW-w64 32-bit will have both __GNUC__ and __MINGW32__
 	// GCC in MinGW-w64 64-bit will also have __MINGW64__
 	// Intel will have __INTEL_COMPILER (or at the very least __INTEL_COMPILER_BUILD_DATE) & __GNUC__ (Also GCC-based as far as I know)
-
-	// TODO: Visual Studio will need its own detection method to check for _MSC_VER
 
 	const bool clang = String::contains("__clang__", macroResult);
 	const bool gcc = String::contains("__GNUC__", macroResult);

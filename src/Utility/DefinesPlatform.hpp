@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DEFINES_HPP
-#define CHALET_DEFINES_HPP
+#ifndef CHALET_DEFINES_PLATFORM_HPP
+#define CHALET_DEFINES_PLATFORM_HPP
 
 #if defined(_DEBUG) || defined(DEBUG)
 	#ifndef CHALET_DEBUG
@@ -28,4 +28,4 @@
 static_assert(false, "Unknown platform");
 #endif
 
-#endif // CHALET_DEFINES_HPP
+#endif // CHALET_DEFINES_PLATFORM_HPP

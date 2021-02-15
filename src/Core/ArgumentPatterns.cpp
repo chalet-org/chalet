@@ -211,7 +211,7 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 			throw std::runtime_error("No sub-command given");
 		}
 	}
-	catch (const std::runtime_error& err)
+	catch (const std::runtime_error&)
 	{
 		std::string help = getHelp();
 		// std::cout << err.what() << std::endl;

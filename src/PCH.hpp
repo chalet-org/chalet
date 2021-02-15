@@ -17,10 +17,12 @@
 #include <cstdio>
 #include <deque>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <list>
 #include <map>
 #include <memory>
+#include <regex>
 #include <set>
 #include <string>
 #include <vector>
@@ -30,7 +32,8 @@
 #include <sstream>
 
 // Defines
-#include "Utility/Defines.hpp"
+#include "Utility/DefinesCompiler.hpp"
+#include "Utility/DefinesPlatform.hpp"
 
 // Utils
 #include "Utility/Types.hpp"

@@ -171,13 +171,12 @@ bool CacheJsonParser::makeCache()
 
 		if (cpp.empty())
 		{
-			cpp = Commands::which("clang++");
-			if (cpp.empty())
+			for (const auto& compiler : { "cl", "clang++", "g++", "c++" })
 			{
-				cpp = Commands::which("g++");
-				if (cpp.empty())
+				cpp = Commands::which(compiler);
+				if (!cpp.empty())
 				{
-					cpp = Commands::which("c++");
+					break;
 				}
 			}
 		}
@@ -195,13 +194,12 @@ bool CacheJsonParser::makeCache()
 
 		if (cc.empty())
 		{
-			cc = Commands::which("clang");
-			if (cc.empty())
+			for (const auto& compiler : { "cl", "clang", "gcc", "cc" })
 			{
-				cc = Commands::which("gcc");
-				if (cc.empty())
+				cc = Commands::which(compiler);
+				if (!cc.empty())
 				{
-					cc = Commands::which("cc");
+					break;
 				}
 			}
 		}
@@ -248,9 +246,15 @@ bool CacheJsonParser::makeCache()
 	if (!tools.contains(kKeyMake))
 	{
 #if defined(CHALET_WIN32)
-		std::string make = Commands::which("mingw32-make");
-		if (make.empty())
-			make = Commands::which(kKeyMake);
+		std::string make;
+		for (const auto& tool : { "nmake", "mingw32-make", "make" })
+		{
+			make = Commands::which(tool);
+			if (!make.empty())
+			{
+				break;
+			}
+		}
 #else
 		std::string make = Commands::which(kKeyMake);
 #endif

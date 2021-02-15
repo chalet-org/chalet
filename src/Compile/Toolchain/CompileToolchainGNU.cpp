@@ -126,12 +126,21 @@ std::string CompileToolchainGNU::getLangStandard(const bool treatAsC)
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
 	std::string ret = String::toLowerCase(langStandard);
 
+#ifndef CHALET_MSVC
 	static constexpr auto regex = ctll::fixed_string{ "^(((c|gnu)\\+\\+|gnu|c|iso9899:)(\\d[\\dzaxy]{1,3}|199409))$" };
 	if (auto m = ctre::match<regex>(ret))
 	{
 		ret = "-std=" + ret;
 		return ret;
 	}
+#else
+	static std::regex regex{ "^(((c|gnu)\\+\\+|gnu|c|iso9899:)(\\d[\\dzaxy]{1,3}|199409))$" };
+	if (std::regex_match(ret, regex))
+	{
+		ret = "-std=" + ret;
+		return ret;
+	}
+#endif
 
 	Diagnostic::errorAbort(fmt::format("Unrecognized or invalid value for langugage standard (cppStandard|cStandard): {}", langStandard));
 	return ret;

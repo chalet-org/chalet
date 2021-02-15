@@ -8,12 +8,22 @@
 
 #include "Libraries/FileSystem.hpp"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wshadow"
+#ifdef CHALET_MSVC
+	#pragma warning(push)
+	#pragma warning(disable : 4101)
+	#pragma warning(disable : 4456)
+#else
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wunused-parameter"
+	#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 
 #include <glob/glob.hpp>
 
-#pragma GCC diagnostic pop
+#ifdef CHALET_MSVC
+	#pragma warning(pop)
+#else
+	#pragma GCC diagnostic pop
+#endif
 
 #endif // CHALET_GLOB_HPP

@@ -8,8 +8,12 @@
 
 #include <any>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
+#ifdef CHALET_MSVC
+	#pragma warning(push)
+#else
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 
 namespace chalet
 {
@@ -53,6 +57,10 @@ private:
 
 #include "Utility/Variant.inl"
 
-#pragma GCC diagnostic pop
+#ifdef CHALET_MSVC
+	#pragma warning(pop)
+#else
+	#pragma GCC diagnostic pop
+#endif
 
 #endif // CHALET_ARGUMENT_HPP

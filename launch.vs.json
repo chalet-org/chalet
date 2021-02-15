@@ -1,0 +1,16 @@
+{
+	"version": "3.0.0",
+	"defaults": {},
+	"configurations": [
+		{
+			"type": "default",
+			"project": "CMakeLists.txt",
+			"projectTarget": "chalet-debug.exe",
+			"name": "chalet-debug.exe",
+			"currentDir": "${projectDir}",
+			"args": [
+				"build", "Release"
+			]
+		}
+	]
+}

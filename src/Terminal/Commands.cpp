@@ -21,6 +21,11 @@
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 
+#ifdef CHALET_MSVC
+	#define popen _popen
+	#define pclose _pclose
+#endif
+
 namespace chalet
 {
 namespace
@@ -504,9 +509,7 @@ bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput
 	auto cmd = fmt::format("{} 2>&1", inCmd);
 	FILE* output = popen(cmd.c_str(), "r");
 	if (output == nullptr)
-	{
 		throw std::runtime_error("popen() failed!");
-
 
 	return pclose(output) == 0;
 #endif
@@ -527,7 +530,7 @@ std::string Commands::shellWithOutput(const std::string& inCmd, const bool inCle
 		throw std::runtime_error("popen() failed!");
 	}
 
-	while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+	while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr)
 	{
 		result += buffer.data();
 	}

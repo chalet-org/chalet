@@ -1,0 +1,1 @@
+.\build.bat Debug && build\Debug\chalet-debug --save-schema buildrun Release

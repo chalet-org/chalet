@@ -15,6 +15,9 @@ namespace chalet
 /*****************************************************************************/
 void Path::sanitize(std::string& outValue, const bool inRemoveNewLine)
 {
+	if (outValue.empty())
+		return;
+
 	if (inRemoveNewLine)
 		String::replaceAll(outValue, "\n", " ");
 
@@ -50,6 +53,7 @@ void Path::sanitizeWithDrives(std::string& outPath)
 /*****************************************************************************/
 void Path::windowsDrivesToMsysDrives(std::string& outPath)
 {
+#ifndef CHALET_MSVC
 	static constexpr auto driveFwd = ctll::fixed_string{ "^([A-Za-z]):/.*" };
 	static constexpr auto driveBck = ctll::fixed_string{ "^([A-Za-z]):\\\\.*" };
 
@@ -64,11 +68,28 @@ void Path::windowsDrivesToMsysDrives(std::string& outPath)
 		auto capture = m.get<1>().to_string();
 		String::replaceAll(outPath, capture + ":/", "/" + String::toLowerCase(capture) + "/");
 	}
+#else
+	static std::regex driveFwd{ "^([A-Za-z]):/.*" };
+	static std::regex driveBck{ "^([A-Za-z]):\\\\.*" };
+
+	if (std::smatch m; std::regex_match(outPath, m, driveBck))
+	{
+		auto capture = m[1].str();
+		String::replaceAll(outPath, capture + ":\\", "/" + String::toLowerCase(capture) + "/");
+	}
+
+	if (std::smatch m; std::regex_match(outPath, m, driveFwd))
+	{
+		auto capture = m[1].str();
+		String::replaceAll(outPath, capture + ":/", "/" + String::toLowerCase(capture) + "/");
+	}
+#endif
 }
 
 /*****************************************************************************/
 void Path::msysDrivesToWindowsDrives(std::string& outPath)
 {
+#ifndef CHALET_MSVC
 	static constexpr auto driveFwd = ctll::fixed_string{ "^/([A-Za-z])/.*" };
 
 	if (auto m = ctre::match<driveFwd>(outPath))
@@ -76,6 +97,15 @@ void Path::msysDrivesToWindowsDrives(std::string& outPath)
 		auto capture = m.get<1>().to_string();
 		String::replaceAll(outPath, fmt::format("/{}/", capture), fmt::format("{}:/", String::toUpperCase(capture)));
 	}
+#else
+	static std::regex driveFwd{ "^/([A-Za-z])/.*" };
+
+	if (std::smatch m; std::regex_match(outPath, m, driveFwd))
+	{
+		auto capture = m[1].str();
+		String::replaceAll(outPath, fmt::format("/{}/", capture), fmt::format("{}:/", String::toUpperCase(capture)));
+	}
+#endif
 }
 
 /*****************************************************************************/

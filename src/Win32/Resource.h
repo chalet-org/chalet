@@ -6,7 +6,7 @@
 #ifndef CHALET_RESOURCE_H
 #define CHALET_RESOURCE_H
 
-#define MANIFEST_RESOURCE_ID 1
+#define MANIFEST_RESOURCE_ID 2
 
 #include "Icon.h"
 

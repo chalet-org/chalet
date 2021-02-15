@@ -94,7 +94,7 @@ void CommandLineInputs::setRunOptions(std::string&& inValue) noexcept
 {
 	m_runOptions = std::move(inValue);
 
-	if (m_runOptions.front() == '\'' && m_runOptions.back() == '\'')
+	if (!m_runOptions.empty() && m_runOptions.front() == '\'' && m_runOptions.back() == '\'')
 		m_runOptions = m_runOptions.substr(1, m_runOptions.size() - 2);
 }
 

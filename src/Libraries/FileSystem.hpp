@@ -6,7 +6,8 @@
 #ifndef CHALET_FILE_SYSTEM_HPP
 #define CHALET_FILE_SYSTEM_HPP
 
-#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
+#if defined(_MSC_VER) && _MSC_VER >= 1920
+#elif defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
 	#if __has_include(<filesystem>)
 		// Note: std::filesystem is broken in GCC 8.x (possibly just in MinGW?)
 		//  Use fallback in this instance just in case
