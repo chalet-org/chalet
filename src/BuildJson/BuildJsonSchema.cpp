@@ -15,7 +15,7 @@ namespace chalet
 /*****************************************************************************/
 Json Schema::getBuildJson()
 {
-	// Note: By parsing json from a string instead of _json literal, we can use ordered_json
+	// Note: By parsing json from a string instead of _ojson literal, we can use ordered_json
 
 	const std::string patternProjectName = R"(^[\w\-\+\.]{3,}$)";
 	const std::string patternProjectLinks = R"(^[\w\-\+\.]+$)";
@@ -30,17 +30,25 @@ Json Schema::getBuildJson()
 		"projects"
 	};
 
+	//
+	const auto kItems = "items";
+	const auto kPattern = "pattern";
+	const auto kEnum = "enum";
+	const auto kAnyOf = "anyOf";
+
+	//
 	const auto kDefinitions = "definitions";
 	ret[kDefinitions] = Json::object();
+
 	ret[kDefinitions]["bundle-appName"] = R"json({
 		"description": "The name of the app, if different from the workspace name",
 		"type": "string"
-	})json"_json;
+	})json"_ojson;
 
 	ret[kDefinitions]["bundle-configuration"] = R"json({
 		"description": "The name of the build configuration to use for the distribution.",
 		"type": "string"
-	})json"_json;
+	})json"_ojson;
 
 	ret[kDefinitions]["bundle-dependencies"] = R"json({
 		"items": {
@@ -48,7 +56,7 @@ Json Schema::getBuildJson()
 		},
 		"uniqueItems": true,
 		"type": "array"
-	})json"_json;
+	})json"_ojson;
 
 	ret[kDefinitions]["bundle-exclude"] = R"json({
 		"items": {
@@ -56,7 +64,7 @@ Json Schema::getBuildJson()
 		},
 		"uniqueItems": true,
 		"type": "array"
-	})json"_json;
+	})json"_ojson;
 
 	ret[kDefinitions]["bundle-linux"] = R"json({
 		"properties": {
@@ -76,11 +84,12 @@ Json Schema::getBuildJson()
 		"additionalProperties": false,
 		"description": "Variables to describe the linux application.",
 		"type": "object"
-	})json"_json;
+	})json"_ojson;
 
 	ret[kDefinitions]["bundle-longDescription"] = R"json({
 		"type": "string"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["bundle-macos"] = R"json({
 		"type": "object",
 		"description": "Variables to describe the macos application bundle.",
@@ -138,12 +147,13 @@ Json Schema::getBuildJson()
 				"default": false
 			}
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["bundle-outDir"] = R"json({
 		"type": "string",
 		"description": "The output folder to place the final build along with all of its dependencies.",
 		"default": "dist"
-	})json"_json;
+	})json"_ojson;
 
 	ret[kDefinitions]["bundle-projects"] = R"json({
 		"type": "array",
@@ -153,12 +163,13 @@ Json Schema::getBuildJson()
 			"type": "string",
 			"description": "The name of the project"
 		}
-	})json"_json;
-	ret[kDefinitions]["bundle-projects"]["items"]["pattern"] = patternProjectName;
+	})json"_ojson;
+	ret[kDefinitions]["bundle-projects"][kItems][kPattern] = patternProjectName;
 
 	ret[kDefinitions]["bundle-shortDescription"] = R"json({
 		"type": "string"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["bundle-windows"] = R"json({
 		"type": "object",
 		"description": "Variables to describe the windows application.",
@@ -176,21 +187,25 @@ Json Schema::getBuildJson()
 				"type": "string"
 			}
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["configurations-debugSymbols"] = R"json({
 		"type": "boolean",
 		"description": "true to include debug symbols, false otherwise.",
 		"default": false
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["configurations-linkTimeOptimization"] = R"json({
 		"type": "boolean",
 		"description": "true to use link-time optimization, false otherwise.",
 		"default": false
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["configurations-name"] = R"json({
 		"type": "string",
 		"description": "The name of the build configuration."
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["configurations-optimizations"] = R"json({
 		"type": "string",
 		"description": "The optimization level of the build.",
@@ -203,41 +218,49 @@ Json Schema::getBuildJson()
 			"size",
 			"fast"
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["configurations-stripSymbols"] = R"json({
 		"type": "boolean",
 		"description": "true to strip symbols from the build, false otherwise.",
 		"default": false
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["externalDependency-repository"] = R"json({
 		"type": "string",
 		"description": "The url of the git repository.",
 		"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["externalDependency-branch"] = R"json({
 		"type": "string",
 		"description": "The branch to checkout. Defaults to 'master'",
 		"default": "master"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["externalDependency-commit"] = R"json({
 		"type": "string",
 		"description": "The SHA1 hash of the commit to checkout.",
 		"pattern": "^[0-9a-f]{7,40}$"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["externalDependency-name"] = R"json({
 		"type": "string",
 		"description": "The destination directory name for the repository within 'externalDepDir'. If none is provided, defaults to the repository name",
 		"pattern": "^[\\w\\-\\+\\.]{3,100}$"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["externalDependency-tag"] = R"json({
 		"type": "string",
 		"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["externalDependency-submodules"] = R"json({
 		"type": "boolean",
 		"description": "Do submodules need to be cloned?",
 		"default": false
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["externalDependency"] = R"json({
 		"type": "object",
 		"oneOf": [
@@ -286,17 +309,20 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["environment-externalDepDir"] = R"json({
 		"type": "string",
 		"description": "The path to install external dependencies into (see externalDependencies).",
 		"default": "chalet_external"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["environment-maxJobs"] = R"json({
 		"type": "integer",
 		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
 		"minimum": 1
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["environment-path"] = R"json({
 		"type": "array",
 		"description": "Any additional paths to include.",
@@ -304,12 +330,14 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["environment-showCommands"] = R"json({
 		"description": "true to show the commands run during the build, false to just show the source file.",
 		"type": "boolean",
 		"default": false
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["enum-platform"] = R"json({
 		"type": "string",
 		"enum": [
@@ -317,7 +345,8 @@ Json Schema::getBuildJson()
 			"macos",
 			"linux"
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-compilerSettings-cxx"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
@@ -424,7 +453,8 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/project-cxx-staticLinks"
 			}
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
@@ -491,12 +521,14 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/project-cxx-runDependencies"
 			}
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-windowsPrefixOutputFilename"] = R"json({
 		"type": "boolean",
 		"description": "Only applies to dynamic library projects (kind=dynamicLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
 		"default": true
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-cStandard"] = R"json({
 		"type": "string",
 		"description": "The C standard to use in the compilation",
@@ -528,7 +560,8 @@ Json Schema::getBuildJson()
 			"gnu2x"
 		],
 		"default": "c11"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-cmake"] = R"json({
 		"description": "Build the location with cmake",
 		"anyOf": [
@@ -561,7 +594,8 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-compileOptions"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -569,7 +603,8 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-cppStandard"] = R"json({
 		"type": "string",
 		"description": "The C++ standard to use in the compilation",
@@ -596,7 +631,8 @@ Json Schema::getBuildJson()
 			"gnu++2a"
 		],
 		"default": "c++17"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-defines"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -604,12 +640,14 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-dumpAssembly"] = R"json({
 		"type": "boolean",
 		"description": "true to use include an asm dump of each file in the build, false otherwise.",
 		"default": false
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-files"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -617,7 +655,8 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-includeDirs"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -625,7 +664,8 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-kind"] = R"json({
 		"type": "string",
 		"description": "The type of the project's compiled binary.",
@@ -635,7 +675,8 @@ Json Schema::getBuildJson()
 			"consoleApplication",
 			"desktopApplication"
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-language"] = R"json({
 		"type": "string",
 		"description": "The target language of the project.",
@@ -644,7 +685,8 @@ Json Schema::getBuildJson()
 			"C++"
 		],
 		"default": "C++"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-libDirs"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -652,11 +694,13 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-linkerScript"] = R"json({
 		"type": "string",
 		"description": "An LD linker script path (.ld file) to pass to the linker command"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-linkerOptions"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -664,7 +708,7 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
 
 	ret[kDefinitions]["project-cxx-links"] = R"json({
 		"type": "array",
@@ -673,8 +717,8 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
-	ret[kDefinitions]["project-cxx-links"]["items"]["pattern"] = patternProjectLinks;
+	})json"_ojson;
+	ret[kDefinitions]["project-cxx-links"][kItems][kPattern] = patternProjectLinks;
 
 	ret[kDefinitions]["project-cxx-location"] = R"json({
 		"description": "The root path of the source files, relative to the working directory.",
@@ -727,7 +771,8 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-macosFrameworkPaths"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -735,7 +780,8 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-macosFrameworks"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -743,19 +789,20 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
 
 	ret[kDefinitions]["project-cxx-name"] = R"json({
 		"type": "string",
 		"description": "The name of the project."
-	})json"_json;
-	ret[kDefinitions]["project-cxx-name"]["pattern"] = patternProjectName;
+	})json"_ojson;
+	ret[kDefinitions]["project-cxx-name"][kPattern] = patternProjectName;
 
 	ret[kDefinitions]["project-cxx-objectiveCxx"] = R"json({
 		"type": "boolean",
 		"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 		"default": false
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-onlyInConfiguration"] = R"json({
 		"description": "Only compile this project in specific build configuration(s)",
 		"oneOf": [
@@ -770,7 +817,8 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-notInConfiguration"] = R"json({
 		"description": "Don't compile this project in specific build configuration(s)",
 		"oneOf": [
@@ -785,7 +833,8 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-onlyInPlatform"] = R"json({
 		"description": "Only compile this project on specific platform(s)",
 		"oneOf": [
@@ -800,7 +849,8 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-notInPlatform"] = R"json({
 		"description": "Don't compile this project on specific platform(s)",
 		"oneOf": [
@@ -815,30 +865,36 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-pch"] = R"json({
 		"type": "string",
 		"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-posixThreads"] = R"json({
 		"type": "boolean",
 		"description": "TODO: remove?",
 		"default": true
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-rtti"] = R"json({
 		"type": "boolean",
 		"description": "true to include run-time type information (default), false to exclude.",
 		"default": true
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-runProject"] = R"json({
 		"type": "boolean",
 		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple projects are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
 		"default": false
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-runArguments"] = R"json({
 		"type": "string",
 		"description": "If the project is the run target, a string of arguments to pass to the run command."
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-runDependencies"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -846,7 +902,8 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-scripts"] = R"json({
 		"anyOf": [
 			{
@@ -888,12 +945,14 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-staticLinking"] = R"json({
 		"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 		"type": "boolean",
 		"default": false
-	})json"_json;
+	})json"_ojson;
+
 	ret[kDefinitions]["project-cxx-staticLinks"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -901,8 +960,8 @@ Json Schema::getBuildJson()
 		"items": {
 			"type": "string"
 		}
-	})json"_json;
-	ret[kDefinitions]["project-cxx-staticLinks"]["items"]["pattern"] = patternProjectLinks;
+	})json"_ojson;
+	ret[kDefinitions]["project-cxx-staticLinks"][kItems][kPattern] = patternProjectLinks;
 
 	ret[kDefinitions]["project-cxx-warnings"] = R"json({
 		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
@@ -928,8 +987,9 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_json;
-	ret[kDefinitions]["project-cxx-warnings"]["anyOf"][1]["items"]["enum"] = {
+	})json"_ojson;
+
+	ret[kDefinitions]["project-cxx-warnings"][kAnyOf][1][kItems][kEnum] = {
 		"abi",
 		"absolute-value",
 		"address",
@@ -1229,13 +1289,16 @@ Json Schema::getBuildJson()
 		"type": "boolean",
 		"description": "If true for a dynamic library (dll) target on Windows, a .def file will be created",
 		"default": false
-	})json"_json;
+	})json"_ojson;
 
+	//
 	const auto kProperties = "properties";
 	ret[kProperties] = Json::object();
+
 	ret[kProperties]["allProjects"] = R"json({
 		"$ref": "#/definitions/project"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kProperties]["bundle"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
@@ -1287,7 +1350,8 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/bundle-windows"
 			}
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kProperties]["configurations"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -1330,7 +1394,8 @@ Json Schema::getBuildJson()
 				}
 			]
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -1338,7 +1403,8 @@ Json Schema::getBuildJson()
 		"items": {
 			"$ref": "#/definitions/externalDependency"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kProperties]["environment"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
@@ -1366,7 +1432,8 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/environment-showCommands"
 			}
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kProperties]["projects"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
@@ -1374,17 +1441,19 @@ Json Schema::getBuildJson()
 		"items": {
 			"$ref": "#/definitions/project"
 		}
-	})json"_json;
+	})json"_ojson;
+
 	ret[kProperties]["version"] = R"json({
 		"type": "string",
 		"description": "Version of the workspace project.",
 		"pattern": "^[\\w\\-\\+\\.]+$"
-	})json"_json;
+	})json"_ojson;
+
 	ret[kProperties]["workspace"] = R"json({
 		"type": "string",
 		"description": "The name of the workspace.",
 		"pattern": "^[\\w\\-\\+ ]+$"
-	})json"_json;
+	})json"_ojson;
 
 	return ret;
 }
