@@ -506,7 +506,7 @@ bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput
 	if (output == nullptr)
 	{
 		throw std::runtime_error("popen() failed!");
-
+	}
 
 	return pclose(output) == 0;
 #endif
