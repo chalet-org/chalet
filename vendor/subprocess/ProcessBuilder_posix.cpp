@@ -1,4 +1,8 @@
 #ifndef _WIN32
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+
 #include "ProcessBuilder.hpp"
 
 #include <spawn.h>
@@ -239,4 +243,7 @@ namespace subprocess {
 
 #endif
 }
+
+#pragma GCC diagnostic pop
+
 #endif
