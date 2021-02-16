@@ -18,6 +18,7 @@
 
 #include <cctype>
 #include <stdlib.h>
+#include <string.h>
 #include <map>
 #include <mutex>
 #include <filesystem>
