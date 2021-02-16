@@ -5,10 +5,7 @@
 
 #include "Utility/Subprocess.hpp"
 
-#include "Libraries/Format.hpp"
 #include "Libraries/SubprocessApi.hpp"
-#include "Terminal/Output.hpp"
-#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -38,24 +35,8 @@ int Subprocess::run(StringList inCmd, const PipeFunc& onStdout)
 		}
 	}
 
-	// this can take anywhere from 0ms to 20ms on windows
-	process.closePipes();
-
-	Timer timer;
-
-	if (process.pid)
-		process.waitTest();
-
-	auto result = timer.stop();
-	Output::print(Color::Reset, fmt::format("sp::Popen::closeProcessWait() time: {}ms", result));
-	timer.restart();
-
-	process.closeProcess();
-
-	result = timer.stop();
-	Output::print(Color::Reset, fmt::format("sp::Popen::closeProcess() time: {}ms", result));
-
-	process.closeCleanup();
+	// Note: On Windows, the underlying call to WaitForSingleObject takes the most time
+	process.close();
 
 	return process.returncode;
 }
