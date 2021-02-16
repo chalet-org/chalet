@@ -4,7 +4,6 @@
 #include <string>
 
 #include "utf8_to_utf16.hpp"
-using std::to_string;
 
 extern "C" char **environ;
 

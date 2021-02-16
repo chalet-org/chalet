@@ -119,10 +119,12 @@ namespace subprocess {
             envblock = create_env_block(this->env);
             localenv = (void*)envblock.data();
         }
+
         DWORD process_flags = HIGH_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
         if (this->new_process_group) {
             process_flags |= CREATE_NEW_PROCESS_GROUP;
         }
+
         // Create the child process.
         bSuccess = CreateProcess(program.c_str(),
             (char*)args.c_str(),            // command line
@@ -134,8 +136,10 @@ namespace subprocess {
             localcwd,                            // use parent's current directory
             &siStartInfo,                   // STARTUPINFO pointer
             &piProcInfo);                   // receives PROCESS_INFORMATION
+
         process.process_info = piProcInfo;
         process.pid = piProcInfo.dwProcessId;
+
         if (cin_pair)
             cin_pair.close_input();
         if (cout_pair)
@@ -158,6 +162,7 @@ namespace subprocess {
         // TODO: get error and add it to throw
         if (!bSuccess )
             throw SpawnError("CreateProcess failed");
+
         return process;
     }
 

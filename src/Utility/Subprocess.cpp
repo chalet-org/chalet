@@ -5,14 +5,17 @@
 
 #include "Utility/Subprocess.hpp"
 
+#include "Libraries/Format.hpp"
 #include "Libraries/SubprocessApi.hpp"
+#include "Terminal/Output.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
 int Subprocess::run(StringList inCmd, const PipeFunc& onStdout)
 {
-	auto process = sp::RunBuilder(std::move(inCmd))
+	auto process = sp::RunBuilder(inCmd)
 					   .cerr(sp::PipeOption::cout)
 					   .cout(sp::PipeOption::pipe)
 					   .popen();
@@ -24,7 +27,7 @@ int Subprocess::run(StringList inCmd, const PipeFunc& onStdout)
 	{
 		while (bytesRead > 0)
 		{
-			bytesRead = subprocess::pipe_read(process.cout, buffer.data(), buffer.size());
+			bytesRead = sp::pipe_read(process.cout, buffer.data(), buffer.size());
 			if (bytesRead <= 0)
 				break;
 
@@ -35,8 +38,25 @@ int Subprocess::run(StringList inCmd, const PipeFunc& onStdout)
 		}
 	}
 
-	int returnCode = process.wait();
-	process.close();
-	return returnCode;
+	// this can take anywhere from 0ms to 20ms on windows
+	process.closePipes();
+
+	Timer timer;
+
+	if (process.pid)
+		process.waitTest();
+
+	auto result = timer.stop();
+	Output::print(Color::Reset, fmt::format("sp::Popen::closeProcessWait() time: {}ms", result));
+	timer.restart();
+
+	process.closeProcess();
+
+	result = timer.stop();
+	Output::print(Color::Reset, fmt::format("sp::Popen::closeProcess() time: {}ms", result));
+
+	process.closeCleanup();
+
+	return process.returncode;
 }
 }

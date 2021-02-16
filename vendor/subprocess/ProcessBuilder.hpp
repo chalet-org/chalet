@@ -229,18 +229,16 @@ namespace subprocess {
 
         @return CompletedProcess containing details about execution.
     */
-    CompletedProcess run(CommandLine command, RunOptions options={});
+    CompletedProcess run(CommandLine& command, RunOptions options={});
 
     /** Helper class to construct RunOptions with minimal typing. */
     struct RunBuilder {
         RunOptions options;
-        CommandLine command;
+        CommandLine& command;
 
-        RunBuilder(){}
+        RunBuilder() = delete;
         /** Constructs builder with cmd as command to run */
-        RunBuilder(CommandLine inCommand) : command(std::move(inCommand)){}
-        /** Constructs builder with command to run */
-        RunBuilder(std::initializer_list<std::string> inCommand) : command(inCommand){}
+        RunBuilder(CommandLine& inCommand) : command(inCommand){}
         /** Only for run(), throws exception if command returns non-zero exit code */
         RunBuilder& check(bool ch) {options.check = ch; return *this;}
         /** Set the cin option. Could be PipeOption, input handle, std::string with data to pass. */

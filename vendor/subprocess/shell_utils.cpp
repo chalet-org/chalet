@@ -25,7 +25,6 @@
 #include <sstream>
 
 #include "ProcessBuilder.hpp"
-using std::isspace;
 
 namespace subprocess {
     std::string getcwd() {
@@ -146,11 +145,12 @@ namespace subprocess {
         return join_path(relativeTo, dir);
     }
 
-    std::string getenv(const std::string& var) {
-        const char* ptr = ::getenv(var.c_str());
+    std::string getenv(const char* var) {
+        const char* ptr = ::getenv(var);
         if(ptr == nullptr)
-            return "";
-        return ptr;
+            return std::string();
+
+        return std::string(ptr);
     }
     std::string try_exe(std::string path) {
 #ifdef _WIN32
@@ -159,7 +159,7 @@ namespace subprocess {
             path_ext = "exe";
         if(is_file(path))
             return path;
-        for(std::string ext : split(path_ext, kPathDelimiter)) {
+        for(auto& ext : split(path_ext, kPathDelimiter)) {
             if(ext.empty())
                 continue;
             std::string test_path = path + ext;
@@ -205,7 +205,7 @@ namespace subprocess {
             return it->second;
 
         std::string path_env = getenv("PATH");
-        for(std::string test : split(path_env, kPathDelimiter)) {
+        for(auto& test : split(path_env, kPathDelimiter)) {
             if(test.empty())
                 continue;
             test += '/';
@@ -220,7 +220,8 @@ namespace subprocess {
     }
 
     static bool is_python3(std::string path) {
-        CompletedProcess process = subprocess::run({path, "--version"}, RunBuilder()
+        CommandLine cmd{ std::move(path), "--version" };
+        CompletedProcess process = subprocess::run(cmd, RunBuilder(cmd)
             .cout(PipeOption::pipe)
             .cerr(PipeOption::cout)
         );
@@ -248,7 +249,7 @@ namespace subprocess {
         return false;
     }
     std::string find_program(const std::string& name) {
-        if (name != "python3") {
+        if (strcmp(name.c_str(), "python3") != 0) {
             return find_program_in_path(name);
         }
         std::string result = find_program_in_path(name);
@@ -256,7 +257,7 @@ namespace subprocess {
             return result;
 
         std::string path_env = getenv("PATH");
-        for(std::string test : split(path_env, kPathDelimiter)) {
+        for(auto& test : split(path_env, kPathDelimiter)) {
             if(test.empty())
                 continue;
             test += '/';
@@ -276,15 +277,14 @@ namespace subprocess {
     }
     std::string escape_shell_arg(std::string arg) {
         bool needs_quote = false;
-        for(std::size_t i = 0; i < arg.size(); ++i) {
-            // white list
-            if(isalpha(arg[i]))
+        for (auto& c : arg) {
+            if(isalpha(c))
                 continue;
-            if(isdigit(arg[i]))
+            if(isdigit(c))
                 continue;
-            if(arg[i] == '.')
+            if(c == '.')
                 continue;
-            if(arg[i] == '_' || arg[i] == '-' || arg[i] == '+' || arg[i] == '/')
+            if(c == '_' || c == '-' || c == '+' || c == '/')
                 continue;
 
             needs_quote = true;
@@ -292,11 +292,13 @@ namespace subprocess {
         }
         if(!needs_quote)
             return arg;
+
         std::string result = "\"";
-        for(unsigned int i = 0; i < arg.size(); ++i) {
-            if(arg[i] == '\"' || arg[i] == '\\')
+        for (auto& c : arg) {
+            if(c == '\"' || c == '\\')
                 result += '\\';
-            result += arg[i];
+
+            result += c;
         }
         result += "\"";
 

@@ -14,8 +14,6 @@
 
 extern "C" char **environ;
 
-using std::nullptr_t;
-
 using namespace subprocess::details;
 
 namespace {

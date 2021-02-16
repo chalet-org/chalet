@@ -23,8 +23,6 @@
 #include "utf8_to_utf16.hpp"
 
 
-using std::nullptr_t;
-
 // TODO: throw exceptions on various os errors.
 
 namespace subprocess {
@@ -250,13 +248,14 @@ namespace subprocess {
         other.cout = kBadPipeValue;
         other.cerr = kBadPipeValue;
         other.pid = 0;
-        other.returncode = -1000;
+        other.returncode = kBadReturnCode;
         return *this;
     }
 
     Popen::~Popen() {
         close();
     }
+
     void Popen::close() {
         if (cin != kBadPipeValue)
             pipe_close(cin);
@@ -275,10 +274,11 @@ namespace subprocess {
             CloseHandle(process_info.hThread);
 #endif
         }
+
         pid = 0;
-        returncode = kBadReturnCode;
         args.clear();
     }
+
 #ifdef _WIN32
     static std::string lastErrorString() {
         LPTSTR lpMsgBuf = nullptr;
@@ -297,39 +297,21 @@ namespace subprocess {
         LocalFree(lpMsgBuf);
         return message;
     }
+
     bool Popen::poll() {
-        if (returncode != kBadReturnCode)
-            return true;
-        DWORD ms = 0;
-        DWORD result = WaitForSingleObject(process_info.hProcess, ms);
-        if (result == WAIT_TIMEOUT) {
-            return false;
-        } else if (result == WAIT_ABANDONED) {
-            DWORD error = GetLastError();
-            throw OSError("WAIT_ABANDONED error:" + std::to_string(error));
-        } else if (result == WAIT_FAILED) {
-            DWORD error = GetLastError();
-            throw OSError("WAIT_FAILED error:" + std::to_string(error) + ":" + lastErrorString());
-        }
-        if (result != WAIT_OBJECT_0) {
-            throw OSError("WaitForSingleObject failed: " + std::to_string(result));
-        }
-        DWORD exit_code;
-        int ret = GetExitCodeProcess(process_info.hProcess, &exit_code);
-        if (ret == 0) {
-            DWORD error = GetLastError();
-            throw OSError("GetExitCodeProcess failed: " + std::to_string(error) + ":" + lastErrorString());
-        }
-        returncode = exit_code;
-        return true;
+        return this->wait(0.0);
     }
 
     int Popen::wait(double timeout) {
         if (returncode != kBadReturnCode)
             return returncode;
-        DWORD ms = timeout < 0? INFINITE : timeout*1000.0;
+
+        DWORD ms = timeout < 0 ? INFINITE : timeout * 1000.0;
         DWORD result = WaitForSingleObject(process_info.hProcess, ms);
         if (result == WAIT_TIMEOUT) {
+            if (timeout == 0.0)
+                return false;
+
             throw TimeoutExpired("timeout of " + std::to_string(ms) + " expired");
         } else if (result == WAIT_ABANDONED) {
             DWORD error = GetLastError();
@@ -338,15 +320,18 @@ namespace subprocess {
             DWORD error = GetLastError();
             throw OSError("WAIT_FAILED error:" + std::to_string(error) + ":" + lastErrorString());
         }
+
         if (result != WAIT_OBJECT_0) {
             throw OSError("WaitForSingleObject failed: " + std::to_string(result));
         }
+
         DWORD exit_code;
         int ret = GetExitCodeProcess(process_info.hProcess, &exit_code);
         if (ret == 0) {
             DWORD error = GetLastError();
             throw OSError("GetExitCodeProcess failed: " + std::to_string(error) + ":" + lastErrorString());
         }
+
         returncode = exit_code;
         return returncode;
     }
@@ -455,7 +440,7 @@ namespace subprocess {
     }
     std::string ProcessBuilder::windows_args(const CommandLine& inCommand) {
         std::string args;
-        for(unsigned int i = 0; i < inCommand.size(); ++i) {
+        for(std::size_t i = 0; i < inCommand.size(); ++i) {
             if (i > 0)
                 args += ' ';
             args += escape_shell_arg(inCommand[i]);
@@ -509,7 +494,7 @@ namespace subprocess {
         return completed;
     }
 
-    CompletedProcess run(CommandLine inCommand, RunOptions options) {
+    CompletedProcess run(CommandLine& inCommand, RunOptions options) {
         Popen popen(inCommand, options);
         CompletedProcess completed;
         std::thread cout_thread;

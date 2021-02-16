@@ -5,7 +5,7 @@
 
 namespace subprocess {
     /** Get the value of environment variable */
-    std::string getenv(const std::string& var);
+    std::string getenv(const char* var);
     /** Searches for program in PATH environment variable.
 
         on windows tries adding suffixes specified in PATHEXT environment
