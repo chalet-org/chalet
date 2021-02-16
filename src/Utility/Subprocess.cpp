@@ -20,7 +20,7 @@ int Subprocess::run(const StringList& inCmd, const PipeFunc& onStdout)
 	{
 		while (has_cout)
 		{
-			has_cout = subprocess::pipe_read(popen.cout, buffer_cout.data(), buffer_cout.size()) != 0;
+			has_cout = subprocess::pipe_read(popen.cout, buffer_cout.data(), buffer_cout.size()) > 0;
 			if (!has_cout)
 				break;
 

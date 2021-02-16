@@ -48,11 +48,15 @@ namespace subprocess {
         // saAttr.lpSecurityDescriptor = NULL;
 
 
-        PROCESS_INFORMATION piProcInfo  = {0, 0, 0, 0};
-        STARTUPINFO siStartInfo         = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        STARTUPINFO siStartInfo;
+	    ZeroMemory(&siStartInfo, sizeof(siStartInfo));
+
+        PROCESS_INFORMATION piProcInfo;
+	    ZeroMemory(&piProcInfo, sizeof(piProcInfo));
+
         BOOL bSuccess = FALSE;
 
-        siStartInfo.cb          = sizeof(STARTUPINFO);
+        siStartInfo.cb          = sizeof(siStartInfo);
         siStartInfo.hStdInput   = GetStdHandle(STD_INPUT_HANDLE);
         siStartInfo.hStdOutput  = GetStdHandle(STD_OUTPUT_HANDLE);
         siStartInfo.hStdError   = GetStdHandle(STD_ERROR_HANDLE);
@@ -126,12 +130,12 @@ namespace subprocess {
             envblock = create_env_block(this->env);
             localenv = (void*)envblock.data();
         }
-        DWORD process_flags = CREATE_UNICODE_ENVIRONMENT;
+        DWORD process_flags = HIGH_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
         if (this->new_process_group) {
             process_flags |= CREATE_NEW_PROCESS_GROUP;
         }
         // Create the child process.
-        bSuccess = CreateProcessA(program.c_str(),
+        bSuccess = CreateProcess(program.c_str(),
             (char*)args.c_str(),            // command line
             NULL,                           // process security attributes
             NULL,                           // primary thread security attributes

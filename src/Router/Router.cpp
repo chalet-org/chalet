@@ -217,7 +217,9 @@ bool Router::cmdDebug()
 
 		// std::cout << std::endl;
 
+	#if !defined(CHALET_WIN32)
 		Commands::subprocess({ "ping", "-c", "5", "www.google.com" }, false);
+	#endif
 
 		auto result = timer.stop();
 		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));

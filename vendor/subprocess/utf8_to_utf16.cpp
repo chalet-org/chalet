@@ -144,10 +144,11 @@ namespace subprocess {
         return result;
     }
 
-// #ifdef __MINGW32__
-//     // mingw doesn't define this
-//     constexpr int WC_ERR_INVALID_CHARS = 0;
-// #endif
+#ifdef __MINGW32__
+    #ifndef WC_ERR_INVALID_CHARS
+        #define WC_ERR_INVALID_CHARS 0;
+    #endif
+#endif
 
     std::string utf16_to_utf8(const std::u16string& wstring) {
         int size = wstring.size()+1;

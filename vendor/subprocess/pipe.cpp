@@ -51,8 +51,9 @@ namespace subprocess {
     }
     PipePair pipe_create(bool inheritable) {
         SECURITY_ATTRIBUTES security = {0, 0, 0};
-        security.nLength = sizeof(security);
+        security.nLength = sizeof(SECURITY_ATTRIBUTES);
         security.bInheritHandle = inheritable;
+        security.lpSecurityDescriptor = NULL;
         PipeHandle input, output;
         bool result = CreatePipe(&input, &output, &security, 0);
         if (!result) {
