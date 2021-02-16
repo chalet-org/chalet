@@ -23,6 +23,7 @@ void resetStdout();
 void resetStderr();
 void lineBreak();
 void print(const Color inColor, const std::string& inText);
+void print(const Color inColor, const StringList& inList);
 
 void msgFetchingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);
 void msgUpdatingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);

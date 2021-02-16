@@ -6,6 +6,7 @@
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/vendor/json-schema-validator",
+                "${workspaceFolder}/vendor/subprocess",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
                 "/usr/local/include/**",
@@ -32,6 +33,7 @@
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/vendor/json-schema-validator",
+                "${workspaceFolder}/vendor/subprocess",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
                 "/usr/local/include/"
@@ -53,6 +55,7 @@
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/vendor/json-schema-validator",
+                "${workspaceFolder}/vendor/subprocess",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test"
             ],

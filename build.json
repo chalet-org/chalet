@@ -73,7 +73,8 @@
 			"kind": "consoleApplication",
 			"location": [
 				"src",
-				"vendor/json-schema-validator"
+				"vendor/json-schema-validator",
+				"vendor/subprocess"
 			],
 			"compilerSettings:Cxx": {
 				"pch": "src/PCH.hpp"
@@ -95,6 +96,7 @@
 				"include": [
 					"src",
 					"vendor/json-schema-validator",
+					"vendor/subprocess",
 					"test"
 				],
 				"exclude": "src/Main.cpp"

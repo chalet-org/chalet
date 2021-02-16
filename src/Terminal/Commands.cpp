@@ -20,6 +20,7 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -469,6 +470,19 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 	std::ofstream(inFile) << inContents << std::endl;
 
 	return true;
+}
+
+/*****************************************************************************/
+bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput)
+{
+	if (!inCleanOutput)
+		Output::print(Color::Blue, inCmd);
+
+	static Subprocess::PipeFunc onOutput = [](auto inData) {
+		std::cout << inData << std::flush;
+	};
+
+	return Subprocess::run(inCmd, onOutput) == EXIT_SUCCESS;
 }
 
 /*****************************************************************************/
