@@ -10,27 +10,33 @@
 namespace chalet
 {
 /*****************************************************************************/
-int Subprocess::run(const StringList& inCmd, const PipeFunc& onStdout)
+int Subprocess::run(StringList inCmd, const PipeFunc& onStdout)
 {
-	auto popen = sp::RunBuilder(inCmd).cerr(sp::PipeOption::pipe).cout(sp::PipeOption::pipe).popen();
-	std::array<char, 256> buffer_cout = { 0 };
-	bool has_cout = true;
+	auto process = sp::RunBuilder(std::move(inCmd))
+					   .cerr(sp::PipeOption::cout)
+					   .cout(sp::PipeOption::pipe)
+					   .popen();
+
+	std::array<char, 256> buffer{ 0 };
+	sp::ssize_t bytesRead = 1;
 
 	if (onStdout != nullptr)
 	{
-		while (has_cout)
+		while (bytesRead > 0)
 		{
-			has_cout = subprocess::pipe_read(popen.cout, buffer_cout.data(), buffer_cout.size()) > 0;
-			if (!has_cout)
+			bytesRead = subprocess::pipe_read(process.cout, buffer.data(), buffer.size());
+			if (bytesRead <= 0)
 				break;
 
-			onStdout(buffer_cout.data());
-			std::fill(buffer_cout.begin(), buffer_cout.end(), 0);
+			onStdout(std::string(buffer.data(), bytesRead));
+
+			for (auto& c : buffer)
+				c = 0;
 		}
 	}
 
-	popen.close();
-
-	return popen.returncode == 0;
+	int returnCode = process.wait();
+	process.close();
+	return returnCode;
 }
 }

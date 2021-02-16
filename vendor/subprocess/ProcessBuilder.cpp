@@ -190,14 +190,11 @@ namespace subprocess {
         }
     }
     Popen::Popen(CommandLine inCommand, const RunOptions& optionsIn) {
-        // we have to make a copy because of const
-        RunOptions options = optionsIn;
-        init(inCommand, options);
+        init(inCommand, const_cast<RunOptions&>(optionsIn));
     }
 
     Popen::Popen(CommandLine inCommand, RunOptions&& optionsIn) {
-        RunOptions options = std::move(optionsIn);
-        init(inCommand, options);
+        init(inCommand, static_cast<RunOptions&>(optionsIn));
     }
     void Popen::init(CommandLine& inCommand, RunOptions& options) {
         ProcessBuilder builder;
@@ -249,7 +246,7 @@ namespace subprocess {
 
 #ifdef _WIN32
         process_info = other.process_info;
-        other.process_info = {0, 0, 0, 0};
+	    ZeroMemory(&other.process_info, sizeof(other.process_info));
 #endif
 
         other.cin = kBadPipeValue;

@@ -50,7 +50,8 @@ namespace subprocess {
         return !!CloseHandle(handle);
     }
     PipePair pipe_create(bool inheritable) {
-        SECURITY_ATTRIBUTES security = {0, 0, 0};
+        SECURITY_ATTRIBUTES security;
+	    ZeroMemory(&security, sizeof(security));
         security.nLength = sizeof(SECURITY_ATTRIBUTES);
         security.bInheritHandle = inheritable;
         security.lpSecurityDescriptor = NULL;

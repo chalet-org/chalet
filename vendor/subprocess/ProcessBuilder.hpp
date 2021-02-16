@@ -240,7 +240,7 @@ namespace subprocess {
 
         RunBuilder(){}
         /** Constructs builder with cmd as command to run */
-        RunBuilder(CommandLine inCommand) : command(inCommand){}
+        RunBuilder(CommandLine inCommand) : command(std::move(inCommand)){}
         /** Constructs builder with command to run */
         RunBuilder(std::initializer_list<std::string> inCommand) : command(inCommand){}
         /** Only for run(), throws exception if command returns non-zero exit code */

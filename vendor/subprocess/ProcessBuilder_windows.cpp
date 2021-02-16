@@ -10,16 +10,6 @@
 #include "shell_utils.hpp"
 #include "environ.hpp"
 
-static STARTUPINFO g_startupInfo;
-static bool g_startupInfoInit = false;
-
-
-static void init_startup_info() {
-    if(g_startupInfoInit)
-        return;
-    GetStartupInfo(&g_startupInfo);
-}
-
 static bool disable_inherit(subprocess::PipeHandle handle) {
     return !!SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0);
 }
@@ -31,7 +21,6 @@ namespace subprocess {
         if(program.empty()) {
             throw CommandNotFoundError("command not found " + inCommand[0]);
         }
-        init_startup_info();
 
         Popen process;
         PipePair cin_pair;
@@ -114,7 +103,7 @@ namespace subprocess {
             siStartInfo.hStdOutput = siStartInfo.hStdError;
         }
         const char* localcwd = this->cwd.empty()? nullptr : this->cwd.c_str();
-        std::string args = windows_args(command);
+        std::string args = windows_args(inCommand);
 
         void* localenv = nullptr;
         std::u16string envblock;
