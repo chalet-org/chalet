@@ -189,13 +189,10 @@ namespace subprocess {
             break;
         }
     }
-    Popen::Popen(CommandLine inCommand, const RunOptions& optionsIn) {
-        init(inCommand, const_cast<RunOptions&>(optionsIn));
+    Popen::Popen(CommandLine& inCommand, RunOptions& optionsIn) {
+        init(inCommand, optionsIn);
     }
 
-    Popen::Popen(CommandLine inCommand, RunOptions&& optionsIn) {
-        init(inCommand, static_cast<RunOptions&>(optionsIn));
-    }
     void Popen::init(CommandLine& inCommand, RunOptions& options) {
         ProcessBuilder builder;
 
@@ -513,7 +510,7 @@ namespace subprocess {
     }
 
     CompletedProcess run(CommandLine inCommand, RunOptions options) {
-        Popen popen(inCommand, std::move(options));
+        Popen popen(inCommand, options);
         CompletedProcess completed;
         std::thread cout_thread;
         std::thread cerr_thread;

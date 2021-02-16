@@ -69,9 +69,7 @@ namespace subprocess {
         /** Initialized as empty and invalid */
         Popen(){}
         /** Starts command with specified options */
-        Popen(CommandLine command, const RunOptions& options);
-        /** Starts command with specified options */
-        Popen(CommandLine command, RunOptions&& options);
+        Popen(CommandLine& inCommand, RunOptions& inOptions);
         Popen(const Popen&)=delete;
         Popen& operator=(const Popen&)=delete;
 
@@ -157,7 +155,7 @@ namespace subprocess {
         }
         friend ProcessBuilder;
     private:
-        void init(CommandLine& command, RunOptions& options);
+        void init(CommandLine& inCommand, RunOptions& inOptions);
 
 #ifdef _WIN32
         PROCESS_INFORMATION process_info;
@@ -246,15 +244,15 @@ namespace subprocess {
         /** Only for run(), throws exception if command returns non-zero exit code */
         RunBuilder& check(bool ch) {options.check = ch; return *this;}
         /** Set the cin option. Could be PipeOption, input handle, std::string with data to pass. */
-        RunBuilder& cin(const PipeVar& cin) {options.cin = cin; return *this;}
+        RunBuilder& cin(PipeVar cin) {options.cin = std::move(cin); return *this;}
         /** Sets the cout option. Could be a PipeOption, output handle */
-        RunBuilder& cout(const PipeVar& cout) {options.cout = cout; return *this;}
+        RunBuilder& cout(PipeVar cout) {options.cout = std::move(cout); return *this;}
         /** Sets the cerr option. Could be a PipeOption, output handle */
-        RunBuilder& cerr(const PipeVar& cerr) {options.cerr = cerr; return *this;}
+        RunBuilder& cerr(PipeVar cerr) {options.cerr = std::move(cerr); return *this;}
         /** Sets the current working directory to use for subprocess */
-        RunBuilder& cwd(std::string cwd) {options.cwd = cwd; return *this;}
+        RunBuilder& cwd(std::string cwd) {options.cwd = std::move(cwd); return *this;}
         /** Sets the environment to use. Default is current environment if unset */
-        RunBuilder& env(const EnvMap& env) {options.env = env; return *this;}
+        RunBuilder& env(EnvMap env) {options.env = std::move(env); return *this;}
         /** Timeout to use for run() invocation only. */
         RunBuilder& timeout(double timeout) {options.timeout = timeout; return *this;}
         /** Set to true to run as new process group. On windows the new process
