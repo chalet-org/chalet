@@ -8,6 +8,9 @@
 			"projectTarget": "chalet-debug.exe",
 			"name": "chalet-debug.exe",
 			"currentDir": "${projectDir}",
+			"env": {
+				"Path": "${env.Path}"
+			},
 			"inheritEnvironments": [
 				"msvc_x64_x64"
 			],

@@ -59,7 +59,7 @@ void Environment::setTerminalType()
 	result = Environment::get("VSAPPIDDIR");
 	if (result != nullptr)
 	{
-		LOG("This is running through Visual Studio");
+		// LOG("This is running through Visual Studio");
 		s_terminalType = TerminalType::CommandPromptMsvc;
 		return;
 	}
