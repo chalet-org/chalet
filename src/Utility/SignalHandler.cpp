@@ -119,7 +119,9 @@ void SignalHandler::printStackTrace()
 		return;
 	}
 
+#if !defined(CHALET_MSVC)
 	Path::sanitize(workingDirectory);
+#endif
 
 	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
 	const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
