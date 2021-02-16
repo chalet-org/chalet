@@ -41,4 +41,5 @@ namespace subprocess {
         @return the absolute path.
     */
     std::string abspath(std::string dir, std::string relativeTo="");
+    std::string try_exe(std::string path);
 }

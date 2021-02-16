@@ -81,7 +81,7 @@ namespace subprocess {
     private:
         PipeHandle mHandle;
     };
-    void pipe_thread(PipeHandle input, std::ostream* output) {
+    static void pipe_thread(PipeHandle input, std::ostream* output) {
         std::thread thread([=]() {
             std::vector<char> buffer(2048);
             while (true) {
@@ -94,7 +94,7 @@ namespace subprocess {
         thread.detach();
     }
 
-    void pipe_thread(PipeHandle input, FILE* output) {
+    static void pipe_thread(PipeHandle input, FILE* output) {
         std::thread thread([=]() {
             std::vector<char> buffer(2048);
             while (true) {
@@ -106,7 +106,7 @@ namespace subprocess {
         });
         thread.detach();
     }
-    void pipe_thread(FILE* input, PipeHandle output, bool bautoclose) {
+    static void pipe_thread(FILE* input, PipeHandle output, bool bautoclose) {
         std::thread thread([=]() {
             AutoClosePipe autoclose(output, bautoclose);
             std::vector<char> buffer(2048);
@@ -119,7 +119,7 @@ namespace subprocess {
         });
         thread.detach();
     }
-    void pipe_thread(std::string& input, PipeHandle output, bool bautoclose) {
+    static void pipe_thread(std::string& input, PipeHandle output, bool bautoclose) {
         std::thread thread([input(move(input)), output, bautoclose]() {
             AutoClosePipe autoclose(output, bautoclose);
 
@@ -133,7 +133,7 @@ namespace subprocess {
         });
         thread.detach();
     }
-    void pipe_thread(std::istream* input, PipeHandle output, bool bautoclose) {
+    static void pipe_thread(std::istream* input, PipeHandle output, bool bautoclose) {
         std::thread thread([=]() {
             AutoClosePipe autoclose(output, bautoclose);
             std::vector<char> buffer(2048);
@@ -152,7 +152,7 @@ namespace subprocess {
         });
         thread.detach();
     }
-    void setup_redirect_stream(PipeHandle input, PipeVar& output) {
+    static void setup_redirect_stream(PipeHandle input, PipeVar& output) {
         PipeVarIndex index = static_cast<PipeVarIndex>(output.index());
 
         switch (index) {
@@ -170,7 +170,7 @@ namespace subprocess {
         }
     }
 
-    void setup_redirect_stream(PipeVar& input, PipeHandle output) {
+    static void setup_redirect_stream(PipeVar& input, PipeHandle output) {
         PipeVarIndex index = static_cast<PipeVarIndex>(input.index());
 
         switch (index) {
@@ -249,7 +249,7 @@ namespace subprocess {
 
 #ifdef _WIN32
         process_info = other.process_info;
-        other.process_info = {0};
+        other.process_info = {0, 0, 0, 0};
 #endif
 
         other.cin = kBadPipeValue;
@@ -286,7 +286,7 @@ namespace subprocess {
         args.clear();
     }
 #ifdef _WIN32
-    std::string lastErrorString() {
+    static std::string lastErrorString() {
         LPTSTR lpMsgBuf = nullptr;
         DWORD dw        = GetLastError();
 

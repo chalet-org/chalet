@@ -11,7 +11,7 @@ namespace subprocess {
     */
     struct PipePair {
         PipePair(){};
-        PipePair(PipeHandle input, PipeHandle output) : input(input), output(output) {}
+        PipePair(PipeHandle inInput, PipeHandle inOutput) : input(inInput), output(inOutput) {}
         ~PipePair(){ close(); }
         // No copy, move only
         PipePair            (const PipePair&)=delete;

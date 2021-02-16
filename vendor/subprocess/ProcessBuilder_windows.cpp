@@ -20,16 +20,16 @@ static void init_startup_info() {
     GetStartupInfo(&g_startupInfo);
 }
 
-bool disable_inherit(subprocess::PipeHandle handle) {
+static bool disable_inherit(subprocess::PipeHandle handle) {
     return !!SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0);
 }
 
 namespace subprocess {
 
-    Popen ProcessBuilder::run_command(const CommandLine& command) {
-        std::string program = find_program(command[0]);
+    Popen ProcessBuilder::run_command(const CommandLine& inCommand) {
+        std::string program = find_program(inCommand[0]);
         if(program.empty()) {
-            throw CommandNotFoundError("command not found " + command[0]);
+            throw CommandNotFoundError("command not found " + inCommand[0]);
         }
         init_startup_info();
 
@@ -39,17 +39,17 @@ namespace subprocess {
         PipePair cerr_pair;
         PipePair closed_pair;
 
-        SECURITY_ATTRIBUTES saAttr = {0};
+        // SECURITY_ATTRIBUTES saAttr = {0};
 
         // Set the bInheritHandle flag so pipe handles are inherited.
 
-        saAttr.nLength              = sizeof(SECURITY_ATTRIBUTES);
-        saAttr.bInheritHandle       = TRUE;
-        saAttr.lpSecurityDescriptor = NULL;
+        // saAttr.nLength              = sizeof(SECURITY_ATTRIBUTES);
+        // saAttr.bInheritHandle       = TRUE;
+        // saAttr.lpSecurityDescriptor = NULL;
 
 
-        PROCESS_INFORMATION piProcInfo  = {0};
-        STARTUPINFO siStartInfo         = {0};
+        PROCESS_INFORMATION piProcInfo  = {0, 0, 0, 0};
+        STARTUPINFO siStartInfo         = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         BOOL bSuccess = FALSE;
 
         siStartInfo.cb          = sizeof(STARTUPINFO);
@@ -109,10 +109,10 @@ namespace subprocess {
         if (cout_option == PipeOption::cerr) {
             siStartInfo.hStdOutput = siStartInfo.hStdError;
         }
-        const char* cwd = this->cwd.empty()? nullptr : this->cwd.c_str();
+        const char* localcwd = this->cwd.empty()? nullptr : this->cwd.c_str();
         std::string args = windows_args(command);
 
-        void* env = nullptr;
+        void* localenv = nullptr;
         std::u16string envblock;
         if (!this->env.empty()) {
             /*  if you use ansi there is a 37K size limit. So we use unicode
@@ -124,21 +124,21 @@ namespace subprocess {
                 utf-16 char (4-bytes total).
             */
             envblock = create_env_block(this->env);
-            env = (void*)envblock.data();
+            localenv = (void*)envblock.data();
         }
         DWORD process_flags = CREATE_UNICODE_ENVIRONMENT;
         if (this->new_process_group) {
             process_flags |= CREATE_NEW_PROCESS_GROUP;
         }
         // Create the child process.
-        bSuccess = CreateProcess(program.c_str(),
+        bSuccess = CreateProcessA(program.c_str(),
             (char*)args.c_str(),            // command line
             NULL,                           // process security attributes
             NULL,                           // primary thread security attributes
             TRUE,                           // handles are inherited
             process_flags,                  // creation flags
-            env,                            // environment
-            cwd,                            // use parent's current directory
+            localenv,                            // environment
+            localcwd,                            // use parent's current directory
             &siStartInfo,                   // STARTUPINFO pointer
             &piProcInfo);                   // receives PROCESS_INFORMATION
         process.process_info = piProcInfo;

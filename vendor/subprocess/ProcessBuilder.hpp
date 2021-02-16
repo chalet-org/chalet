@@ -240,9 +240,9 @@ namespace subprocess {
 
         RunBuilder(){}
         /** Constructs builder with cmd as command to run */
-        RunBuilder(CommandLine cmd) : command(cmd){}
+        RunBuilder(CommandLine inCommand) : command(inCommand){}
         /** Constructs builder with command to run */
-        RunBuilder(std::initializer_list<std::string> command) : command(command){}
+        RunBuilder(std::initializer_list<std::string> inCommand) : command(inCommand){}
         /** Only for run(), throws exception if command returns non-zero exit code */
         RunBuilder& check(bool ch) {options.check = ch; return *this;}
         /** Set the cin option. Could be PipeOption, input handle, std::string with data to pass. */
