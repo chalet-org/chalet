@@ -621,7 +621,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 		command = { "where", fmt::format("{}.exe", inExecutable) };
 
 	std::string result = Commands::subprocessOutput(command, inCleanOutput);
-	if (!isBash && String::contains("which: no", result))
+	if (isBash && String::contains("which: no", result))
 		return std::string();
 
 #if defined(CHALET_WIN32)
