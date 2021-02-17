@@ -78,8 +78,8 @@ namespace subprocess {
     };
 
     struct SpawnAttr {
-        SpawnAttr(posix_spawnattr_t& attributes) {
-            this->attributes = &attributes;
+        SpawnAttr(posix_spawnattr_t& inAttributes) {
+            this->attributes = &inAttributes;
         }
         ~SpawnAttr() {
             int ret = posix_spawnattr_destroy(attributes);
