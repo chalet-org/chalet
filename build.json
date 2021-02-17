@@ -79,15 +79,15 @@
 			"compilerSettings:Cxx": {
 				"pch": "src/PCH.hpp"
 			},
-			"runProject": true,
-			"preBuild": {
+			"runProject": true
+			/*"preBuild": {
 				"alwaysRun": true,
 				"script": "env/prebuild.sh"
 			},
 			"postBuild": {
 				"alwaysRun": true,
 				"script": "env/postbuild.sh"
-			}
+			}*/
 		},
 		{
 			"name": "tests_chalet",

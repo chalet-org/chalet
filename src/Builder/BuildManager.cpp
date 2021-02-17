@@ -190,16 +190,16 @@ bool BuildManager::doBuild(const Route inRoute)
 		}
 	}
 
+	//
+	bool multiTarget = m_state.projects.size() > 1;
+	Output::msgTargetUpToDate(multiTarget, m_project->name());
+
 	// TODO: Always runs at the moment
 	if (!runExternalScripts(postBuildScripts))
 	{
 		Diagnostic::errorAbort(fmt::format("There was a problem running the post-build script for project: {}\n  Aborting...", m_project->name()));
 		return false;
 	}
-
-	//
-	bool multiTarget = m_state.projects.size() > 1;
-	Output::msgTargetUpToDate(multiTarget, m_project->name());
 
 	return true;
 }
@@ -566,7 +566,6 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 		command.push_back(std::move(outScriptPath));
 
 		result &= Commands::subprocess(command, m_cleanOutput);
-		Output::lineBreak();
 	}
 
 	return result;
