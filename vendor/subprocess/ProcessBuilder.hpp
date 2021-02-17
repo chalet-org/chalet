@@ -73,8 +73,8 @@ namespace subprocess {
         Popen(const Popen&)=delete;
         Popen& operator=(const Popen&)=delete;
 
-        Popen(Popen&&);
-        Popen& operator=(Popen&&);
+        Popen(Popen&&) noexcept;
+        Popen& operator=(Popen&&) noexcept;
 
         /** Waits for process, Closes pipes and destroys any handles.*/
         ~Popen();
@@ -158,7 +158,7 @@ namespace subprocess {
         void init(CommandLine& inCommand, RunOptions& inOptions);
 
 #ifdef _WIN32
-        PROCESS_INFORMATION process_info;
+        PROCESS_INFORMATION process_info{0, 0, 0, 0};
 #endif
     };
 

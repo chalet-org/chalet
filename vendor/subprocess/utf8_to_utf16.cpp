@@ -112,7 +112,8 @@ namespace subprocess {
     std::u16string utf8_to_utf16(const std::string& string) {
         static_assert(sizeof(wchar_t) == 2, "wchar_t must be of size 2");
         static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t must be of size 2");
-        int size = string.size()+1;
+
+        int size = static_cast<int>(string.size()) + 1;
         // Determine wstring size (`MultiByteToWideChar` returns the required size if
         // its last two arguments are `NULL` and 0).
         int r = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS,
@@ -137,9 +138,9 @@ namespace subprocess {
             wstring, r);
         if (r == 0) {
             delete [] wstring;
-            return NULL;
+            return std::u16string();
         }
-        std::u16string result((char16_t*)wstring, r-1);
+        std::u16string result((char16_t*)wstring, static_cast<std::size_t>(r) -1);
         delete [] wstring;
         return result;
     }
@@ -151,7 +152,7 @@ namespace subprocess {
 #endif
 
     std::string utf16_to_utf8(const std::u16string& wstring) {
-        int size = wstring.size()+1;
+        int size = static_cast<int>(wstring.size()) + 1;
         // Determine wstring size (`MultiByteToWideChar` returns the required size if
         // its last two arguments are `NULL` and 0).
         int r = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS,
@@ -177,15 +178,15 @@ namespace subprocess {
             string, r, NULL, NULL);
         if (r == 0) {
             delete [] string;
-            return NULL;
+            return std::string();
         }
-        std::string result(string, r-1);
+        std::string result(string, static_cast<std::size_t>(r) -1);
         delete [] string;
         return result;
     }
 
     std::string utf16_to_utf8(const std::wstring& wstring) {
-        int size = wstring.size()+1;
+        int size = static_cast<int>(wstring.size()) + 1;
         // Determine wstring size (`MultiByteToWideChar` returns the required size if
         // its last two arguments are `NULL` and 0).
         int r = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS,
@@ -211,9 +212,9 @@ namespace subprocess {
             string, r, NULL, NULL);
         if (r == 0) {
             delete [] string;
-            return NULL;
+            return std::string();
         }
-        std::string result(string, r-1);
+        std::string result(string, static_cast<std::size_t>(r) -1);
         delete [] string;
         return result;
     }

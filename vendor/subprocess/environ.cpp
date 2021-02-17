@@ -5,7 +5,9 @@
 
 #include "utf8_to_utf16.hpp"
 
+#ifndef _MSC_VER
 extern "C" char **environ;
+#endif
 
 namespace subprocess {
     Environ cenv;

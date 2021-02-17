@@ -2,6 +2,11 @@
 
 #include <thread>
 
+#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable : 26439)
+#endif
+
 #ifndef _WIN32
 #include <fcntl.h>
 #include <cerrno>
@@ -65,7 +70,7 @@ namespace subprocess {
     }
     ssize_t pipe_read(PipeHandle handle, void* buffer, std::size_t size) {
         DWORD bread = 0;
-        bool result = ReadFile(handle, buffer, size, &bread, nullptr);
+        bool result = ReadFile(handle, buffer, static_cast<DWORD>(size), &bread, nullptr);
         if (result)
             return bread;
         return -1;
@@ -73,7 +78,7 @@ namespace subprocess {
 
     ssize_t pipe_write(PipeHandle handle, const void* buffer, size_t size) {
         DWORD written = 0;
-        bool result = WriteFile(handle, buffer, size, &written, nullptr);
+        bool result = WriteFile(handle, buffer, static_cast<DWORD>(size), &written, nullptr);
         if (result)
             return written;
         return -1;
@@ -151,6 +156,9 @@ namespace subprocess {
         });
         thread.detach();
     }
-
-
 }
+
+
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif

@@ -16,7 +16,7 @@ namespace subprocess {
         // No copy, move only
         PipePair            (const PipePair&)=delete;
         PipePair& operator= (const PipePair&)=delete;
-        PipePair            (PipePair&& other) { *this = std::move(other); }
+        PipePair            (PipePair&& other) noexcept { *this = std::move(other); }
         PipePair& operator= (PipePair&& other);
         /*  we make it const as outside of code shouldn't modify these.
             this might not be a good design as users may assume it's truly const.

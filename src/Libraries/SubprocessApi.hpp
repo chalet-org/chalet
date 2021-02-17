@@ -6,12 +6,21 @@
 #ifndef CHALET_SUBPROCESS_API_HPP
 #define CHALET_SUBPROCESS_API_HPP
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
+#ifdef CHALET_MSVC
+	#pragma warning(push)
+	#pragma warning(disable : 4456)
+#else
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 
 #include <subprocess/subprocess.hpp>
 
-#pragma GCC diagnostic pop
+#ifdef CHALET_MSVC
+	#pragma warning(pop)
+#else
+	#pragma GCC diagnostic pop
+#endif
 
 namespace chalet
 {

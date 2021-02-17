@@ -225,11 +225,11 @@ namespace subprocess {
         setup_redirect_stream(cerr, options.cerr);
     }
 
-    Popen::Popen(Popen&& other) {
+    Popen::Popen(Popen&& other) noexcept {
         *this = std::move(other);
     }
 
-    Popen& Popen::operator=(Popen&& other) {
+    Popen& Popen::operator=(Popen&& other) noexcept {
         close();
         cin = other.cin;
         cout = other.cout;
@@ -306,7 +306,7 @@ namespace subprocess {
         if (returncode != kBadReturnCode)
             return returncode;
 
-        DWORD ms = timeout < 0 ? INFINITE : timeout * 1000.0;
+        DWORD ms = timeout < 0.0 ? INFINITE : static_cast<DWORD>(timeout * 1000.0);
         DWORD result = WaitForSingleObject(process_info.hProcess, ms);
         if (result == WAIT_TIMEOUT) {
             if (timeout == 0.0)
