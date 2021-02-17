@@ -29,7 +29,7 @@ namespace
 #if defined(CHALET_WIN32)
 std::string kCygPath;
 
-bool windowsCreateProcess(const std::string& inCmd)
+/*bool windowsCreateProcess(const std::string& inCmd)
 {
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
@@ -62,7 +62,7 @@ bool windowsCreateProcess(const std::string& inCmd)
 	CloseHandle(pi.hThread);
 
 	return result;
-}
+}*/
 #elif defined(CHALET_MACOS)
 std::string kXcodePath;
 #endif
@@ -500,7 +500,7 @@ bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, con
 }
 
 /*****************************************************************************/
-std::string Commands::subprocessWithOutput(const StringList& inCmd, const bool inCleanOutput, const bool inRedirectStdErr, std::string inCwd)
+std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCleanOutput, const bool inRedirectStdErr, std::string inCwd)
 {
 	if (!inCleanOutput)
 	{
@@ -513,10 +513,14 @@ std::string Commands::subprocessWithOutput(const StringList& inCmd, const bool i
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = sp::PipeOption::pipe;
-	options.stderrOption = inRedirectStdErr ? sp::PipeOption::cout : sp::PipeOption::close;
+	options.stderrOption = inRedirectStdErr ? sp::PipeOption::pipe : sp::PipeOption::close;
 	options.onStdout = [&ret](const std::string& inData) {
 		ret += inData;
 	};
+	if (inRedirectStdErr)
+	{
+		options.onStderr = options.onStdout;
+	}
 
 	UNUSED(Subprocess::run(inCmd, options));
 
@@ -535,7 +539,7 @@ bool Commands::shell(const std::string& inCmd, const bool inCleanOutput)
 }
 
 /*****************************************************************************/
-bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput)
+/*bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput)
 {
 	if (!inCleanOutput)
 		Output::print(Color::Blue, inCmd);
@@ -562,10 +566,10 @@ bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput
 
 	return pclose(output) == 0;
 #endif
-}
+}*/
 
 /*****************************************************************************/
-std::string Commands::shellWithOutput(const std::string& inCmd, const bool inCleanOutput)
+/*std::string Commands::shellWithOutput(const std::string& inCmd, const bool inCleanOutput)
 {
 	std::array<char, 128> buffer;
 	std::string result;
@@ -585,29 +589,24 @@ std::string Commands::shellWithOutput(const std::string& inCmd, const bool inCle
 	}
 
 	return result;
-}
+}*/
 
 /*****************************************************************************/
 bool Commands::shellRemove(const std::string& inPath, const bool inCleanOutput)
 {
-	return Commands::shell(fmt::format("rm -rf '{}'", inPath), inCleanOutput);
+	return Commands::subprocess({ "rm", "-rf", inPath }, inCleanOutput);
 }
 
 /*****************************************************************************/
-std::string Commands::which(const std::string_view& inExecutable, const bool inCleanOutput)
+std::string Commands::which(const std::string& inExecutable, const bool inCleanOutput)
 {
-#if defined(CHALET_WIN32)
-	const std::string null = "2> nul";
-#else
-	const std::string null = "2> /dev/null";
-#endif
-	std::string command;
+	StringList command;
 	if (Environment::isBash())
-		command = fmt::format("which {} {null}", inExecutable, FMT_ARG(null));
+		command = { "which", inExecutable };
 	else
-		command = fmt::format("where {}.exe {null}", inExecutable, FMT_ARG(null));
+		command = { "where", fmt::format("{}.exe", inExecutable) };
 
-	std::string result = Commands::shellWithOutput(command, inCleanOutput);
+	std::string result = Commands::subprocessOutput(command, inCleanOutput);
 	if (!Environment::isBash())
 	{
 		const auto splitResult = String::split(result, "\n");
@@ -669,13 +668,13 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec, const
 		return std::string();
 
 #if defined(CHALET_WIN32)
-	const std::string null = "nul";
+	std::string null = "nul";
 #else
-	const std::string null = "/dev/null";
+	std::string null = "/dev/null";
 #endif
 
-	auto command = fmt::format("{inCompilerExec} -x c {null} -dM -E", FMT_ARG(inCompilerExec), FMT_ARG(null));
-	auto result = Commands::shellWithOutput(command, inCleanOutput);
+	StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
+	auto result = Commands::subprocessOutput(command, inCleanOutput);
 
 	return result;
 }
@@ -686,7 +685,7 @@ const std::string& Commands::getCygPath()
 {
 	if (kCygPath.empty())
 	{
-		kCygPath = Commands::shellWithOutput("cygpath -m /", true);
+		kCygPath = Commands::subprocessOutput({ "cygpath", "-m", "/" }, true);
 		Path::sanitize(kCygPath, true);
 		kCygPath.pop_back();
 	}
@@ -701,7 +700,7 @@ const std::string& Commands::getXcodePath()
 {
 	if (kXcodePath.empty())
 	{
-		kXcodePath = Commands::shellWithOutput("xcode-select -p", true);
+		kXcodePath = Commands::subprocessOutput({ "xcode-select", "-p" }, true);
 		String::replaceAll(kXcodePath, "\n", "");
 	}
 

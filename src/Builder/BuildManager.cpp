@@ -544,6 +544,8 @@ std::string BuildManager::getRunOutputFile()
 /*****************************************************************************/
 bool BuildManager::runExternalScripts(const StringList& inScripts)
 {
+	std::cout << Output::getAnsiReset() << std::flush;
+
 	bool result = true;
 	for (auto& scriptPath : inScripts)
 	{
@@ -554,7 +556,8 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 		}
 
 		result &= Commands::setExecutableFlag(scriptPath, m_cleanOutput);
-		result &= Commands::shell(fmt::format("'{}'", scriptPath), m_cleanOutput);
+
+		result &= Commands::subprocess({ fs::absolute(scriptPath).string() }, m_cleanOutput);
 		Output::lineBreak();
 	}
 

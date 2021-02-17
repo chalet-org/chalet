@@ -14,6 +14,7 @@ int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
 					   .cerr(inOptions.stderrOption)
 					   .cout(inOptions.stderrOption)
 					   .cwd(inOptions.cwd)
+					   .check(true)
 					   .popen();
 
 	if (inOptions.onStdout != nullptr || inOptions.onStderr != nullptr)

@@ -236,7 +236,7 @@ bool CacheJsonParser::makeCache()
 	if (!tools.contains(kKeyMacosSdk))
 	{
 #if defined(CHALET_MACOS)
-		std::string sdkPath = Commands::shellWithOutput("xcrun --sdk macosx --show-sdk-path");
+		std::string sdkPath = Commands::subprocessOutput({ "xcrun", "--sdk", "macosx", "--show-sdk-path" });
 		String::replaceAll(sdkPath, "\n", "");
 		tools[kKeyMacosSdk] = std::move(sdkPath);
 #else

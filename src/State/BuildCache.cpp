@@ -352,7 +352,7 @@ std::string BuildCache::getBuildHash(std::string appPath)
 #if defined(CHALET_WIN32)
 	if (Environment::isBash())
 	{
-		const std::string md5Result = Commands::shellWithOutput(fmt::format("md5sum {}", appPath));
+		const std::string md5Result = Commands::subprocessOutput({ "md5sum", appPath });
 		auto list = String::split(md5Result, " ");
 
 		md5 = list.front();
@@ -360,7 +360,7 @@ std::string BuildCache::getBuildHash(std::string appPath)
 	}
 	else
 	{
-		const std::string md5Result = Commands::shellWithOutput(fmt::format("certutil -hashfile {} MD5", appPath));
+		const std::string md5Result = Commands::subprocessOutput({ "certutil", "-hashfile", appPath, "MD5" });
 		auto list = String::split(md5Result, "\n");
 		if (list.size() >= 2)
 		{
@@ -368,13 +368,13 @@ std::string BuildCache::getBuildHash(std::string appPath)
 		}
 	}
 #elif defined(CHALET_MACOS)
-	std::string md5Result = Commands::shellWithOutput(fmt::format("md5 {}", appPath));
+	std::string md5Result = Commands::subprocessOutput({ "md5", appPath });
 	String::replaceAll(md5Result, "\n", "");
 	auto list = String::split(md5Result, " ");
 
 	md5 = list.back();
 #else
-	const std::string md5Result = Commands::shellWithOutput(fmt::format("md5sum {}", appPath));
+	const std::string md5Result = Commands::subprocessOutput({ "md5sum", appPath });
 	auto list = String::split(md5Result, " ");
 
 	md5 = list.front();

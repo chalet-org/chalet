@@ -220,7 +220,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		const std::string outDmgPath = fmt::format("{}/{}.dmg", outDir, bundleName);
 		dmgResult &= Commands::shell(fmt::format("{} convert '{}' -format UDZO -o '{}' &> /dev/null", hdiUtil, tmpDmg, outDmgPath), inCleanOutput);
 
-		dmgResult &= Commands::remove(tmpDmg, inCleanOutput);
+		dmgResult &= Commands::removeRecursively(tmpDmg, inCleanOutput);
 
 		if (inCleanOutput)
 		{

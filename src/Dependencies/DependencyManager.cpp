@@ -90,7 +90,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 			if ((currentBranch != "HEAD" || commitValid) && currentBranch != branch)
 			{
 				// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-				result &= Commands::shellRemove(destination, m_cleanOutput);
+				result &= Commands::removeRecursively(destination, m_cleanOutput);
 				update = false;
 			}
 
@@ -102,7 +102,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 				if (!String::startsWith(commit, currentCommit))
 				{
 					// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-					result &= Commands::shellRemove(destination, m_cleanOutput);
+					result &= Commands::removeRecursively(destination, m_cleanOutput);
 					update = false;
 				}
 			}
@@ -115,7 +115,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 				if (currentTag != tag)
 				{
 					// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-					result &= Commands::shellRemove(destination, m_cleanOutput);
+					result &= Commands::removeRecursively(destination, m_cleanOutput);
 					update = false;
 				}
 			}
@@ -203,7 +203,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		}
 		else
 		{
-			result &= Commands::shellRemove(destination, m_cleanOutput);
+			result &= Commands::removeRecursively(destination, m_cleanOutput);
 		}
 
 		++count;
@@ -222,7 +222,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		{
 			if (Commands::pathExists(it))
 			{
-				const bool removed = Commands::shellRemove(it, m_cleanOutput);
+				const bool removed = Commands::removeRecursively(it, m_cleanOutput);
 				if (removed)
 				{
 					std::string name = it;

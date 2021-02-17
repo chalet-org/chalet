@@ -201,15 +201,6 @@ bool Router::cmdDebug()
 	{
 		Timer timer;
 
-		Commands::shellAlternate("echo \"Hello World!\"", false);
-
-		auto result = timer.stop();
-		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
-	}
-
-	{
-		Timer timer;
-
 		Commands::shell("which some_proc", false);
 
 		auto result = timer.stop();
@@ -228,7 +219,7 @@ bool Router::cmdDebug()
 
 		// Commands::subprocess({ "chalet", "build", "TestingStuff" }, false);
 		Commands::subprocess({ "cd", "build" }, false);
-		// auto output = Commands::subprocessWithOutput({ "which", "chalet" }, false);
+		// auto output = Commands::subprocessOutput({ "which", "chalet" }, false);
 		// LOG(output);
 
 		auto result = timer.stop();
