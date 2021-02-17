@@ -491,8 +491,8 @@ bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, con
 
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
-	options.stdoutOption = sp::PipeOption::inherit;
-	options.stderrOption = inRedirectStdErr ? sp::PipeOption::cout : sp::PipeOption::inherit;
+	options.stdoutOption = sp::PipeOption::cout;
+	options.stderrOption = inRedirectStdErr ? sp::PipeOption::cout : sp::PipeOption::cerr;
 	// options.onStdout = onStdout;
 	// options.onStderr = onStderr;
 

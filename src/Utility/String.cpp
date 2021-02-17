@@ -117,7 +117,16 @@ StringList String::split(std::string inString, const std::string_view& inSeparat
 		itr = inString.find(inSeparator);
 
 		std::string sub = inString.substr(0, itr);
-		inString = inString.substr(itr + inSeparator.size());
+		std::size_t nextNonChar = inString.find_first_not_of(inSeparator, itr);
+		if (nextNonChar != std::string::npos)
+		{
+			inString = inString.substr(nextNonChar);
+			itr = nextNonChar;
+		}
+
+		while (inSeparator.size() == 1 && sub.back() == inSeparator.front())
+			sub.pop_back();
+
 		ret.push_back(sub);
 	}
 
