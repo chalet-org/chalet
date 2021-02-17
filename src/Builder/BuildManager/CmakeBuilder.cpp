@@ -93,11 +93,8 @@ bool CmakeBuilder::run()
 		if (ninja)
 		{
 			const auto& ninjaExec = m_state.tools.ninja();
-			auto ninjaCommand = fmt::format("cd {outDir} && {ninjaExec}",
-				FMT_ARG(outDir),
-				FMT_ARG(ninjaExec));
 
-			if (!Commands::shell(ninjaCommand))
+			if (!Commands::subprocess({ ninjaExec }, true, true, outDir))
 				return false;
 		}
 		else
@@ -122,10 +119,6 @@ bool CmakeBuilder::run()
 			if (!Commands::shell(makeCommand))
 				return false;
 		}
-
-		// Don't think this is actually needed? system commands seem to stick to the working directory, even with calls to cd
-		if (!Commands::shell(fmt::format("cd {}", cwd.string())))
-			return false;
 
 		Output::lineBreak();
 	}

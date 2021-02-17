@@ -20,7 +20,7 @@ void replaceAll(std::string& outString, const char inFrom, const char inTo);
 std::string toLowerCase(std::string inString);
 std::string toUpperCase(std::string inString);
 std::string join(const StringList& inList, const std::string_view& inSeparator = " ");
-StringList split(std::string inString, const std::string_view& inSeparator);
+StringList split(std::string inString, const std::string_view& inSeparator = " ");
 std::string getPrefixed(const StringList& inList, const std::string& inPrefix);
 std::string getSuffixed(const StringList& inList, const std::string& inSuffix);
 std::string getPrefixedAndSuffixed(const StringList& inList, const std::string& inPrefix, const std::string& inSuffix);

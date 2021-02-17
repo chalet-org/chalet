@@ -180,17 +180,51 @@ bool Router::cmdInit()
 #if defined(CHALET_DEBUG)
 bool Router::cmdDebug()
 {
-	Timer timer;
+	{
+		Timer timer;
 
-	StringList patterns{ "*.cpp" };
-	Commands::forEachFileMatch("src", patterns, [](const fs::path& inPath) {
-		std::cout << inPath.string() << "\n";
-	});
+		Commands::subprocess({ "echo", "Hello World!" }, false);
 
-	std::cout << std::endl;
+		auto result = timer.stop();
+		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
+	}
 
-	auto result = timer.stop();
-	Output::print(Color::Reset, fmt::format("glob time: {}ms\n", result));
+	{
+		Timer timer;
+
+		Commands::shell("echo \"Hello World!\"", false);
+
+		auto result = timer.stop();
+		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
+	}
+
+	{
+		Timer timer;
+
+		Commands::shell("which some_proc", false);
+
+		auto result = timer.stop();
+		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
+	}
+
+	{
+		Timer timer;
+
+		// StringList patterns{ "*.cpp" };
+		// Commands::forEachFileMatch("src", patterns, [](const fs::path& inPath) {
+		// 	std::cout << inPath.string() << "\n";
+		// });
+
+		// std::cout << std::endl;
+
+		// Commands::subprocess({ "chalet", "build", "TestingStuff" }, false);
+		Commands::subprocess({ "cd", "build" }, false);
+		// auto output = Commands::subprocessOutput({ "which", "chalet" }, false);
+		// LOG(output);
+
+		auto result = timer.stop();
+		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
+	}
 
 	return true;
 }

@@ -190,16 +190,16 @@ bool BuildManager::doBuild(const Route inRoute)
 		}
 	}
 
+	//
+	bool multiTarget = m_state.projects.size() > 1;
+	Output::msgTargetUpToDate(multiTarget, m_project->name());
+
 	// TODO: Always runs at the moment
 	if (!runExternalScripts(postBuildScripts))
 	{
 		Diagnostic::errorAbort(fmt::format("There was a problem running the post-build script for project: {}\n  Aborting...", m_project->name()));
 		return false;
 	}
-
-	//
-	bool multiTarget = m_state.projects.size() > 1;
-	Output::msgTargetUpToDate(multiTarget, m_project->name());
 
 	return true;
 }
@@ -544,6 +544,8 @@ std::string BuildManager::getRunOutputFile()
 /*****************************************************************************/
 bool BuildManager::runExternalScripts(const StringList& inScripts)
 {
+	std::cout << Output::getAnsiReset() << std::flush;
+
 	bool result = true;
 	for (auto& scriptPath : inScripts)
 	{
@@ -554,8 +556,16 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 		}
 
 		result &= Commands::setExecutableFlag(scriptPath, m_cleanOutput);
-		result &= Commands::shell(fmt::format("'{}'", scriptPath), m_cleanOutput);
-		Output::lineBreak();
+
+		auto outScriptPath = fs::absolute(scriptPath).string();
+		StringList command;
+#if defined(CHALET_WIN32)
+		if (String::endsWith(".sh", outScriptPath))
+			command.push_back("bash");
+#endif
+		command.push_back(std::move(outScriptPath));
+
+		result &= Commands::subprocess(command, m_cleanOutput);
 	}
 
 	return result;

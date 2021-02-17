@@ -77,9 +77,10 @@ bool CompileStrategyNinja::initialize()
 		return false;
 	}
 
-	std::string ninjaParams = fmt::format("-f \"{}\"", m_cacheFile);
-
-	m_ninja = fmt::format("{ninjaExec} {ninjaParams}", FMT_ARG(ninjaExec), FMT_ARG(ninjaParams));
+	m_ninjaCmd.clear();
+	m_ninjaCmd.push_back(ninjaExec);
+	m_ninjaCmd.push_back("-f");
+	m_ninjaCmd.push_back(m_cacheFile);
 
 	return true;
 }
@@ -88,18 +89,17 @@ bool CompileStrategyNinja::initialize()
 bool CompileStrategyNinja::run()
 {
 	const bool hasTerm = Environment::hasTerm();
-
-	const std::string colorBlue = "printf '\\033[0;34m'";
-	const std::string colorMagenta = "printf '\\033[0;35m'";
+	const bool clean = true;
+	const bool redirectStdErr = true;
 
 	{
-		std::string command;
+		StringList command;
 		if (hasTerm)
-			command = fmt::format("{} && {}", colorBlue, m_ninja);
-		else
-			command = m_ninja;
+		{
+			std::cout << Output::getAnsiStyle(Color::Blue);
+		}
 
-		bool result = Commands::shell(command);
+		bool result = Commands::subprocess(m_ninjaCmd, clean, redirectStdErr);
 		Output::lineBreak();
 
 		if (!result)
@@ -108,13 +108,13 @@ bool CompileStrategyNinja::run()
 
 	if (m_project.dumpAssembly())
 	{
-		std::string command;
+		StringList command;
 		if (hasTerm)
-			command = fmt::format("{} && {}", colorMagenta, m_ninja);
-		else
-			command = m_ninja;
+		{
+			std::cout << Output::getAnsiStyle(Color::Magenta);
+		}
 
-		bool result = Commands::shell(command);
+		bool result = Commands::subprocess(m_ninjaCmd, clean, redirectStdErr);
 		Output::lineBreak();
 
 		if (!result)

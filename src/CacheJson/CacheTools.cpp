@@ -118,7 +118,13 @@ void CacheTools::setMake(const std::string& inValue) noexcept
 
 	if (Commands::pathExists(m_make))
 	{
-		std::string version = Commands::shellWithOutput(fmt::format("{} --version | grep -e 'GNU Make'", m_make));
+		std::string version = Commands::subprocessOutput({ m_make, "--version" });
+		auto firstEol = version.find('\n');
+		if (firstEol != std::string::npos)
+		{
+			version = version.substr(0, firstEol);
+		}
+
 		String::replaceAll(version, "GNU Make ", "");
 		auto vals = String::split(version, ".");
 		if (vals.size() == 2)
@@ -212,18 +218,10 @@ void CacheTools::setTiffUtil(const std::string& inValue) noexcept
 bool CacheTools::installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)
-	std::string command = fmt::format("{brew} ls --versions {inPackage}",
-		fmt::arg("brew", m_brew),
-		FMT_ARG(inPackage));
-
-	const std::string result = Commands::shellWithOutput(command, inCleanOutput);
+	const std::string result = Commands::subprocessOutput({ m_brew, "ls", "--versions", inPackage }, inCleanOutput);
 	if (result.empty())
 	{
-		command = fmt::format("{brew} install {inPackage}",
-			fmt::arg("brew", m_brew),
-			FMT_ARG(inPackage));
-
-		if (!Commands::shell(command, inCleanOutput))
+		if (!Commands::subprocess({ m_brew, "install", inPackage }, inCleanOutput))
 			return false;
 	}
 
@@ -237,13 +235,7 @@ bool CacheTools::installHomebrewPackage(const std::string& inPackage, const bool
 /*****************************************************************************/
 std::string CacheTools::getCurrentGitRepositoryBranch(const std::string& inRepoPath, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} rev-parse --abbrev-ref HEAD",
-		fmt::arg("git", m_git),
-		FMT_ARG(inRepoPath));
-
-	// LOG(cmd);
-
-	std::string branch = Commands::shellWithOutput(cmd, inCleanOutput);
+	std::string branch = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" }, inCleanOutput);
 	String::replaceAll(branch, "\n", "");
 
 	return branch;
@@ -252,19 +244,7 @@ std::string CacheTools::getCurrentGitRepositoryBranch(const std::string& inRepoP
 /*****************************************************************************/
 std::string CacheTools::getCurrentGitRepositoryTag(const std::string& inRepoPath, const bool inCleanOutput) const
 {
-#if defined(CHALET_WIN32)
-	const std::string null = "2> nul";
-#else
-	const std::string null = "2> /dev/null";
-#endif
-	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} describe --tags --exact-match --abbrev=0 {null}",
-		fmt::arg("git", m_git),
-		FMT_ARG(inRepoPath),
-		FMT_ARG(null));
-
-	// LOG(cmd);
-
-	std::string tag = Commands::shellWithOutput(cmd, inCleanOutput);
+	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "abbrev=0" }, inCleanOutput, false);
 	String::replaceAll(tag, "\n", "");
 
 	return tag;
@@ -273,13 +253,7 @@ std::string CacheTools::getCurrentGitRepositoryTag(const std::string& inRepoPath
 /*****************************************************************************/
 std::string CacheTools::getCurrentGitRepositoryHash(const std::string& inRepoPath, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} rev-parse --verify --quiet HEAD",
-		fmt::arg("git", m_git),
-		FMT_ARG(inRepoPath));
-
-	// LOG(cmd);
-
-	std::string hash = Commands::shellWithOutput(cmd, inCleanOutput);
+	std::string hash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" }, inCleanOutput);
 	String::replaceAll(hash, "\n", "");
 
 	return hash;
@@ -288,14 +262,7 @@ std::string CacheTools::getCurrentGitRepositoryHash(const std::string& inRepoPat
 /*****************************************************************************/
 std::string CacheTools::getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} rev-parse --verify --quiet origin/{inBranch}",
-		fmt::arg("git", m_git),
-		FMT_ARG(inRepoPath),
-		FMT_ARG(inBranch));
-
-	// LOG(cmd);
-
-	std::string originHash = Commands::shellWithOutput(cmd, inCleanOutput);
+	std::string originHash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) }, inCleanOutput);
 	String::replaceAll(originHash, "\n", "");
 
 	return originHash;
@@ -304,40 +271,23 @@ std::string CacheTools::getCurrentGitRepositoryHashFromRemote(const std::string&
 /*****************************************************************************/
 bool CacheTools::updateGitRepositoryShallow(const std::string& inRepoPath, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} pull --quiet --update-shallow",
-		fmt::arg("git", m_git),
-		FMT_ARG(inRepoPath));
-
-	// LOG(cmd);
-
-	return Commands::shell(cmd, inCleanOutput);
+	return Commands::subprocess({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" }, inCleanOutput);
 }
 
 /*****************************************************************************/
 bool CacheTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit, const bool inCleanOutput) const
 {
-	const std::string cmd = fmt::format("\"{git}\" -C {inRepoPath} reset --quiet --hard {inCommit}",
-		fmt::arg("git", m_git),
-		FMT_ARG(inRepoPath),
-		FMT_ARG(inCommit));
-
-	// LOG(cmd);
-
-	return Commands::shell(cmd, inCleanOutput);
+	return Commands::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit }, inCleanOutput);
 }
 
 /*****************************************************************************/
 bool CacheTools::plistConvertToBinary(const std::string& inInput, const std::string& inOutput, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)
-	const std::string cmd = fmt::format("{plutil} -convert binary1 '{inInput}' -o '{inOutput}'",
-		fmt::arg("plutil", m_plUtil),
-		FMT_ARG(inInput),
-		FMT_ARG(inOutput));
-	return Commands::shell(cmd, inCleanOutput);
+	return Commands::subprocess({ m_plUtil, "-convert", "binary1", inInput, "-o", inOutput }, inCleanOutput);
 #else
 	UNUSED(inInput, inOutput, inCleanOutput);
-	return true;
+	return false;
 #endif
 }
 
@@ -345,15 +295,10 @@ bool CacheTools::plistConvertToBinary(const std::string& inInput, const std::str
 bool CacheTools::plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)
-	const std::string cmd = fmt::format("{plutil} -replace '{inKey}' -string '{inValue}' '{inPlistFile}'",
-		fmt::arg("plutil", m_plUtil),
-		FMT_ARG(inKey),
-		FMT_ARG(inValue),
-		FMT_ARG(inPlistFile));
-	return Commands::shell(cmd, inCleanOutput);
+	return Commands::subprocess({ m_plUtil, "-replace", inKey, "-string", inValue, inPlistFile }, inCleanOutput);
 #else
 	UNUSED(inPlistFile, inKey, inValue, inCleanOutput);
-	return true;
+	return false;
 #endif
 }
 
@@ -370,27 +315,17 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 
 	try
 	{
-
-#if !defined(CHALET_MACOS)
+		StringList cmd;
+#if defined(CHALET_MACOS)
+		cmd = { m_otool, "-L", inPath };
+#else
 		// This block detects the dependencies of each target and adds them to a list
 		// The list resolves each path, favoring the paths supplied by build.json
 		// Note: this doesn't seem to work in standalone builds of GCC (tested 7.3.0)
 		//   but works fine w/ MSYS2
-	#if defined(CHALET_WIN32)
-		std::string cmd = fmt::format("\"{ldd}\" '{inPath}' | grep -v -e 'System32' -e 'SYSTEM32' -e 'SysWOW64' -e 'SYSWOW64'",
-			fmt::arg("ldd", m_ldd),
-			FMT_ARG(inPath));
-	#else
-		std::string cmd = fmt::format("\"{ldd}\" '{inPath}' | grep -v -e '/usr/lib'",
-			fmt::arg("ldd", m_ldd),
-			FMT_ARG(inPath));
-	#endif
-#else
-		std::string cmd = fmt::format("{otool} -L '{inPath}' | grep -e 'dylib'",
-			fmt::arg("otool", m_otool),
-			FMT_ARG(inPath));
+		cmd = { m_ldd, inPath };
 #endif
-		std::string targetDeps = Commands::shellWithOutput(cmd);
+		std::string targetDeps = Commands::subprocessOutput(cmd);
 
 		std::string line;
 		std::istringstream stream(targetDeps);
@@ -398,11 +333,20 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 		while (std::getline(stream, line))
 		{
 			std::size_t beg = 0;
-#if !defined(CHALET_MACOS)
-			std::size_t end = line.find(" => ");
-#else
+#if defined(CHALET_MACOS)
 			std::size_t end = line.find(".dylib") + 5;
+#else
+	#if defined(CHALET_WIN32)
+			if (String::contains("System32", line) || String::contains("SYSTEM32", line) || String::contains("SysWOW64", line) || String::contains("SYSWOW64", line))
+				continue;
+	#else
+			if (String::contains("/usr/lib", line))
+				continue;
+	#endif
+			std::size_t end = line.find(" => ");
 #endif
+			if (end == std::string::npos)
+				continue;
 
 			while (line[beg] == '\t')
 				beg++;

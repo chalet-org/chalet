@@ -79,14 +79,19 @@ bool CompileStrategyMakefile::initialize()
 
 	std::string jobs;
 	if (maxJobs > 0)
-		jobs = fmt::format(" -j{}", maxJobs);
+		jobs = fmt::format("-j{}", maxJobs);
 
-	std::string makeParams = fmt::format("-C \".\" -f \"{}\" --no-print-directory", m_cacheFile);
-
-	m_makeAsync = fmt::format("{makeExec}{jobs} {makeParams}",
-		FMT_ARG(makeExec),
-		FMT_ARG(jobs),
-		FMT_ARG(makeParams));
+	m_makeCmd.clear();
+	m_makeCmd.push_back(makeExec);
+	if (!jobs.empty())
+	{
+		m_makeCmd.push_back(jobs);
+	}
+	m_makeCmd.push_back("-C");
+	m_makeCmd.push_back(".");
+	m_makeCmd.push_back("-f");
+	m_makeCmd.push_back(m_cacheFile);
+	m_makeCmd.push_back("--no-print-directory");
 
 	return true;
 }
@@ -95,8 +100,19 @@ bool CompileStrategyMakefile::initialize()
 bool CompileStrategyMakefile::run()
 {
 	// Timer timer;
+	const bool clean = true;
+#if !defined(CHALET_WIN32)
+	const bool redirectStdErr = true;
+#endif
 
-	if (!Commands::shell(fmt::format("{} makebuild", m_makeAsync)))
+	// Note: If using subprocess, there's some weird color issues that show on MinGW & bash
+
+	m_makeCmd.push_back("makebuild");
+#if defined(CHALET_WIN32)
+	if (!Commands::shell(String::join(m_makeCmd), clean))
+#else
+	if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+#endif
 	{
 		Output::lineBreak();
 		return false;
@@ -104,7 +120,13 @@ bool CompileStrategyMakefile::run()
 
 	if (m_project.dumpAssembly())
 	{
-		if (!Commands::shell(fmt::format("{} dumpasm", m_makeAsync)))
+		m_makeCmd.pop_back();
+		m_makeCmd.push_back("dumpasm");
+#if defined(CHALET_WIN32)
+		if (!Commands::shell(String::join(m_makeCmd), clean))
+#else
+		if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+#endif
 		{
 			Output::lineBreak();
 			return false;

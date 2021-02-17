@@ -36,6 +36,7 @@ file(GLOB_RECURSE SOURCES
 	src/*.cpp
 	src/*.rc
 	vendor/json-schema-validator/*.cpp
+	vendor/subprocess/*.cpp
 )
 
 add_executable(${TARGET_NAME} ${SOURCES})
@@ -46,6 +47,7 @@ target_include_directories(${TARGET_NAME}
 	PRIVATE
 		src/
 		vendor/json-schema-validator/
+		vendor/subprocess/
 		vendor/
 )
 

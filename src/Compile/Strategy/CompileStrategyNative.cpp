@@ -55,7 +55,14 @@ bool printCommand(std::string output, std::string command, Color inColor, std::s
 /*****************************************************************************/
 bool executeCommand(std::string command)
 {
-	return Commands::shellAlternate(command);
+	StringList commands = String::split(command, " && ");
+	for (auto& cmd : commands)
+	{
+		if (!Commands::subprocess(String::split(cmd, " "), true))
+			return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -117,6 +124,9 @@ bool CompileStrategyNative::run()
 	bool result = true;
 	if (m_project.usesPch())
 	{
+		auto shitList = String::split(m_pch.command, " ");
+		UNUSED(shitList);
+
 		totalCompiles++;
 
 		result |= printCommand(m_pch.output, m_pch.command, Color::Blue, " ", cleanOutput, index, totalCompiles);
@@ -266,6 +276,8 @@ void CompileStrategyNative::getLinkCommand(const StringList& inObjects)
 	const auto target = m_state.paths.getTargetFilename(m_project);
 	const auto targetBasename = m_state.paths.getTargetBasename(m_project);
 	std::string command = m_toolchain->getLinkerTargetCommand(target, objects, targetBasename);
+	while (command.back() == ' ')
+		command.pop_back();
 
 	std::string output = fmt::format("Linking {}", target);
 	m_linker = { std::move(output), std::move(command) };

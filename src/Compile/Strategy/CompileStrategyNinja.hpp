@@ -29,7 +29,7 @@ private:
 	const ProjectConfiguration& m_project;
 	CompileToolchain& m_toolchain;
 
-	std::string m_ninja;
+	StringList m_ninjaCmd;
 
 	std::string m_cacheFile;
 };

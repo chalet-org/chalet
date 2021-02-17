@@ -10,6 +10,11 @@
 
 #include "json-schema-validator/nlohmann/json-schema.hpp"
 
+inline nlohmann::ordered_json operator"" _ojson(const char* s, std::size_t n)
+{
+	return nlohmann::ordered_json::parse(s, s + n);
+}
+
 namespace chalet
 {
 using Json = nlohmann::ordered_json;

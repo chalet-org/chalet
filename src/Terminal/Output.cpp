@@ -157,6 +157,22 @@ void Output::print(const Color inColor, const std::string& inText)
 }
 
 /*****************************************************************************/
+void Output::print(const Color inColor, const StringList& inList)
+{
+	const auto color = getAnsiStyle(inColor);
+	const auto reset = getAnsiReset();
+	std::cout << color;
+	for (auto& item : inList)
+	{
+		std::ptrdiff_t i = &item - &inList.front();
+		std::cout << item;
+		if (static_cast<std::size_t>(i) < inList.size() - 1)
+			std::cout << " ";
+	}
+	std::cout << reset << std::endl;
+}
+
+/*****************************************************************************/
 void Output::msgFetchingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag)
 {
 	std::string path = getCleanGitPath(inGitUrl);

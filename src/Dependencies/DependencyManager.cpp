@@ -79,7 +79,6 @@ bool DependencyManager::run(const bool inInstallCmd)
 		const bool tagValid = !tag.empty();
 		const bool commitValid = !commit.empty();
 
-		std::string cmd;
 		bool res = true;
 
 		if (update)
@@ -91,7 +90,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 			if ((currentBranch != "HEAD" || commitValid) && currentBranch != branch)
 			{
 				// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-				result &= Commands::shellRemove(destination, m_cleanOutput);
+				result &= Commands::removeRecursively(destination, m_cleanOutput);
 				update = false;
 			}
 
@@ -103,7 +102,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 				if (!String::startsWith(commit, currentCommit))
 				{
 					// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-					result &= Commands::shellRemove(destination, m_cleanOutput);
+					result &= Commands::removeRecursively(destination, m_cleanOutput);
 					update = false;
 				}
 			}
@@ -116,7 +115,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 				if (currentTag != tag)
 				{
 					// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-					result &= Commands::shellRemove(destination, m_cleanOutput);
+					result &= Commands::removeRecursively(destination, m_cleanOutput);
 					update = false;
 				}
 			}
@@ -153,19 +152,38 @@ bool DependencyManager::run(const bool inInstallCmd)
 			Output::msgFetchingDependency(repository, checkoutTo);
 
 			uint maxJobs = m_state.environment.maxJobs();
-			const std::string submoduleArg = !submodules ? "" : fmt::format(" --recurse-submodules --shallow-submodules --no-remote-submodules -j {}", maxJobs);
 
-			const std::string method = commitValid ? "--single-branch" : "--depth 1";
-			cmd = fmt::format("git clone --quiet -b {checkoutTo} {method}{submoduleArg} --config advice.detachedHead=false {repository} {destination}",
-				FMT_ARG(checkoutTo),
-				FMT_ARG(method),
-				FMT_ARG(submoduleArg),
-				FMT_ARG(repository),
-				FMT_ARG(destination));
+			StringList cmd;
+			cmd.push_back(m_state.tools.git());
+			cmd.push_back("clone");
+			cmd.push_back("--quiet");
+			cmd.push_back("-b");
+			cmd.push_back(checkoutTo);
+			if (commitValid)
+			{
+				cmd.push_back("--single-branch");
+			}
+			else
+			{
+				cmd.push_back("--depth");
+				cmd.push_back("1");
+			}
+			if (submodules)
+			{
+				cmd.push_back("--recurse-submodules");
+				cmd.push_back("--shallow-submodules");
+				cmd.push_back("--no-remote-submodules");
+				cmd.push_back("-j");
+				cmd.push_back(std::to_string(maxJobs));
+			}
+			cmd.push_back("--config");
+			cmd.push_back("advice.detachedHead=false");
+			cmd.push_back(repository);
+			cmd.push_back(destination);
 
 			// LOG(cmd);
 
-			res &= Commands::shell(cmd, m_cleanOutput);
+			res &= Commands::subprocess(cmd, m_cleanOutput);
 
 			if (commitValid)
 			{
@@ -185,7 +203,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		}
 		else
 		{
-			result &= Commands::shellRemove(destination, m_cleanOutput);
+			result &= Commands::removeRecursively(destination, m_cleanOutput);
 		}
 
 		++count;
@@ -204,7 +222,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		{
 			if (Commands::pathExists(it))
 			{
-				const bool removed = Commands::shellRemove(it, m_cleanOutput);
+				const bool removed = Commands::removeRecursively(it, m_cleanOutput);
 				if (removed)
 				{
 					std::string name = it;

@@ -20,41 +20,48 @@
 			"items": {
 				"type": "string"
 			},
-			"type": "array",
-			"uniqueItems": true
+			"uniqueItems": true,
+			"type": "array"
 		},
 		"bundle-exclude": {
 			"items": {
 				"type": "string"
 			},
-			"type": "array",
-			"uniqueItems": true
+			"uniqueItems": true,
+			"type": "array"
 		},
 		"bundle-linux": {
-			"additionalProperties": false,
-			"description": "Variables to describe the linux application.",
 			"properties": {
 				"desktopEntry": {
-					"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated.",
-					"type": "string"
+					"type": "string",
+					"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated."
 				},
 				"icon": {
-					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)",
-					"type": "string"
+					"type": "string",
+					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
 				}
 			},
 			"required": [
 				"icon",
 				"desktopEntry"
 			],
+			"additionalProperties": false,
+			"description": "Variables to describe the linux application.",
 			"type": "object"
 		},
 		"bundle-longDescription": {
 			"type": "string"
 		},
 		"bundle-macos": {
-			"additionalProperties": false,
+			"type": "object",
 			"description": "Variables to describe the macos application bundle.",
+			"additionalProperties": false,
+			"required": [
+				"bundleName",
+				"bundleIdentifier",
+				"icon",
+				"infoPropertyList"
+			],
 			"properties": {
 				"bundleIdentifier": {
 					"type": "string"
@@ -87,8 +94,8 @@
 					"items": {
 						"type": "string"
 					},
-					"type": "array",
-					"uniqueItems": true
+					"uniqueItems": true,
+					"type": "array"
 				},
 				"icon": {
 					"type": "string"
@@ -97,70 +104,64 @@
 					"type": "string"
 				},
 				"makeDmg": {
-					"default": false,
+					"type": "boolean",
 					"description": "If true, a .dmg image will be built",
-					"type": "boolean"
+					"default": false
 				}
-			},
-			"required": [
-				"bundleName",
-				"bundleIdentifier",
-				"icon",
-				"infoPropertyList"
-			],
-			"type": "object"
+			}
 		},
 		"bundle-outDir": {
-			"default": "dist",
+			"type": "string",
 			"description": "The output folder to place the final build along with all of its dependencies.",
-			"type": "string"
+			"default": "dist"
 		},
 		"bundle-projects": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "An array of projects to include in the bundle",
 			"items": {
-				"description": "The name of the project",
 				"type": "string",
+				"description": "The name of the project",
 				"pattern": "^[\\w\\-\\+\\.]{3,}$"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"bundle-shortDescription": {
 			"type": "string"
 		},
 		"bundle-windows": {
-			"additionalProperties": false,
+			"type": "object",
 			"description": "Variables to describe the windows application.",
-			"properties": {
-				"icon": {
-					"description": "The windows icon to use for the project",
-					"type": "string"
-				},
-				"manifest": {
-					"type": "string"
-				}
-			},
+			"additionalProperties": false,
 			"required": [
 				"icon",
 				"manifest"
 			],
-			"type": "object"
+			"properties": {
+				"icon": {
+					"type": "string",
+					"description": "The windows icon to use for the project"
+				},
+				"manifest": {
+					"type": "string"
+				}
+			}
 		},
 		"configurations-debugSymbols": {
-			"default": false,
+			"type": "boolean",
 			"description": "true to include debug symbols, false otherwise.",
-			"type": "boolean"
+			"default": false
 		},
 		"configurations-linkTimeOptimization": {
-			"default": false,
+			"type": "boolean",
 			"description": "true to use link-time optimization, false otherwise.",
-			"type": "boolean"
+			"default": false
 		},
 		"configurations-name": {
-			"description": "The name of the build configuration.",
-			"type": "string"
+			"type": "string",
+			"description": "The name of the build configuration."
 		},
 		"configurations-optimizations": {
+			"type": "string",
 			"description": "The optimization level of the build.",
 			"enum": [
 				"0",
@@ -170,53 +171,57 @@
 				"debug",
 				"size",
 				"fast"
-			],
-			"type": "string"
+			]
 		},
 		"configurations-stripSymbols": {
-			"default": false,
+			"type": "boolean",
 			"description": "true to strip symbols from the build, false otherwise.",
-			"type": "boolean"
+			"default": false
 		},
 		"externalDependency-repository": {
+			"type": "string",
 			"description": "The url of the git repository.",
-			"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$",
-			"type": "string"
+			"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
 		},
 		"externalDependency-branch": {
-			"default": "master",
+			"type": "string",
 			"description": "The branch to checkout. Defaults to 'master'",
-			"type": "string"
+			"default": "master"
 		},
 		"externalDependency-commit": {
+			"type": "string",
 			"description": "The SHA1 hash of the commit to checkout.",
-			"pattern": "^[0-9a-f]{7,40}$",
-			"type": "string"
+			"pattern": "^[0-9a-f]{7,40}$"
 		},
 		"externalDependency-name": {
+			"type": "string",
 			"description": "The destination directory name for the repository within 'externalDepDir'. If none is provided, defaults to the repository name",
-			"pattern": "^[\\w\\-\\+\\.]{3,100}$",
-			"type": "string"
+			"pattern": "^[\\w\\-\\+\\.]{3,100}$"
 		},
 		"externalDependency-tag": {
-			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
-			"type": "string"
+			"type": "string",
+			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
 		},
 		"externalDependency-submodules": {
-			"default": false,
+			"type": "boolean",
 			"description": "Do submodules need to be cloned?",
-			"type": "boolean"
+			"default": false
 		},
 		"externalDependency": {
+			"type": "object",
 			"oneOf": [
 				{
 					"additionalProperties": false,
+					"required": [
+						"repository",
+						"tag"
+					],
 					"properties": {
-						"name": {
-							"$ref": "#/definitions/externalDependency-name"
-						},
 						"repository": {
 							"$ref": "#/definitions/externalDependency-repository"
+						},
+						"name": {
+							"$ref": "#/definitions/externalDependency-name"
 						},
 						"submodules": {
 							"$ref": "#/definitions/externalDependency-submodules"
@@ -224,109 +229,67 @@
 						"tag": {
 							"$ref": "#/definitions/externalDependency-tag"
 						}
-					},
-					"required": [
-						"repository",
-						"tag"
-					]
+					}
 				},
 				{
 					"additionalProperties": false,
+					"required": [
+						"repository"
+					],
 					"properties": {
+						"repository": {
+							"$ref": "#/definitions/externalDependency-repository"
+						},
+						"name": {
+							"$ref": "#/definitions/externalDependency-name"
+						},
+						"submodules": {
+							"$ref": "#/definitions/externalDependency-submodules"
+						},
 						"branch": {
 							"$ref": "#/definitions/externalDependency-branch"
 						},
 						"commit": {
 							"$ref": "#/definitions/externalDependency-commit"
-						},
-						"name": {
-							"$ref": "#/definitions/externalDependency-name"
-						},
-						"repository": {
-							"$ref": "#/definitions/externalDependency-repository"
-						},
-						"submodules": {
-							"$ref": "#/definitions/externalDependency-submodules"
 						}
-					},
-					"required": [
-						"repository"
-					]
+					}
 				}
-			],
-			"type": "object"
+			]
 		},
 		"environment-externalDepDir": {
-			"default": "chalet_external",
+			"type": "string",
 			"description": "The path to install external dependencies into (see externalDependencies).",
-			"type": "string"
+			"default": "chalet_external"
 		},
 		"environment-maxJobs": {
+			"type": "integer",
 			"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
-			"minimum": 1,
-			"type": "integer"
+			"minimum": 1
 		},
 		"environment-path": {
+			"type": "array",
 			"description": "Any additional paths to include.",
+			"uniqueItems": true,
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"environment-showCommands": {
-			"default": false,
 			"description": "true to show the commands run during the build, false to just show the source file.",
-			"type": "boolean"
+			"type": "boolean",
+			"default": false
 		},
 		"enum-platform": {
+			"type": "string",
 			"enum": [
 				"windows",
 				"macos",
 				"linux"
-			],
-			"type": "string"
+			]
 		},
 		"project-compilerSettings-cxx": {
+			"type": "object",
 			"additionalProperties": false,
-			"patternProperties": {
-				"cStandard(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-cStandard"
-				},
-				"cmake(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-cmake"
-				},
-				"compileOptions(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-compileOptions"
-				},
-				"cppStandard(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-cppStandard"
-				},
-				"defines(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-defines"
-				},
-				"includeDirs(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-includeDirs"
-				},
-				"libDirs(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-libDirs"
-				},
-				"linkerOptions(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-linkerOptions"
-				},
-				"linkerScript(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-linkerScript"
-				},
-				"links(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-links"
-				},
-				"objectiveCxx(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-objectiveCxx"
-				},
-				"staticLinks(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-staticLinks"
-				}
-			},
 			"properties": {
 				"cStandard": {
 					"$ref": "#/definitions/project-cxx-cStandard"
@@ -349,11 +312,11 @@
 				"libDirs": {
 					"$ref": "#/definitions/project-cxx-libDirs"
 				},
-				"linkerOptions": {
-					"$ref": "#/definitions/project-cxx-linkerOptions"
-				},
 				"linkerScript": {
 					"$ref": "#/definitions/project-cxx-linkerScript"
+				},
+				"linkerOptions": {
+					"$ref": "#/definitions/project-cxx-linkerOptions"
 				},
 				"links": {
 					"$ref": "#/definitions/project-cxx-links"
@@ -385,89 +348,126 @@
 				"warnings": {
 					"$ref": "#/definitions/project-cxx-warnings"
 				},
-				"windowsOutputDef": {
-					"$ref": "#/definitions/project-cxx-windowsOutputDef"
-				},
 				"windowsPrefixOutputFilename": {
 					"$ref": "#/definitions/project-cxx-windowsPrefixOutputFilename"
+				},
+				"windowsOutputDef": {
+					"$ref": "#/definitions/project-cxx-windowsOutputDef"
 				}
 			},
-			"type": "object"
+			"patternProperties": {
+				"cmake(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-cmake"
+				},
+				"cStandard(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-cStandard"
+				},
+				"compileOptions(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-compileOptions"
+				},
+				"cppStandard(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-cppStandard"
+				},
+				"defines(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-defines"
+				},
+				"includeDirs(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-includeDirs"
+				},
+				"libDirs(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-libDirs"
+				},
+				"linkerScript(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-linkerScript"
+				},
+				"linkerOptions(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-linkerOptions"
+				},
+				"links(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-links"
+				},
+				"objectiveCxx(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-objectiveCxx"
+				},
+				"staticLinks(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-cxx-staticLinks"
+				}
+			}
 		},
 		"project": {
+			"type": "object",
 			"additionalProperties": false,
-			"patternProperties": {
-				"dumpAssembly(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-dumpAssembly"
-				},
-				"runDependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-runDependencies"
-				},
-				"runProject(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-runProject"
-				}
-			},
 			"properties": {
 				"compilerSettings:Cxx": {
 					"$ref": "#/definitions/project-compilerSettings-cxx"
 				},
 				"dumpAssembly": {
-					"$ref": "#/definitions/project-cxx-dumpAssembly"
+					"$ref": "#/definitions/project-dumpAssembly"
 				},
 				"files": {
-					"$ref": "#/definitions/project-cxx-files"
+					"$ref": "#/definitions/project-files"
 				},
 				"kind": {
-					"$ref": "#/definitions/project-cxx-kind"
+					"$ref": "#/definitions/project-kind"
 				},
 				"language": {
-					"$ref": "#/definitions/project-cxx-language"
+					"$ref": "#/definitions/project-language"
 				},
 				"location": {
-					"$ref": "#/definitions/project-cxx-location"
+					"$ref": "#/definitions/project-location"
 				},
 				"name": {
-					"$ref": "#/definitions/project-cxx-name"
-				},
-				"notInConfiguration": {
-					"$ref": "#/definitions/project-cxx-notInConfiguration"
-				},
-				"notInPlatform": {
-					"$ref": "#/definitions/project-cxx-notInPlatform"
+					"$ref": "#/definitions/project-name"
 				},
 				"onlyInConfiguration": {
-					"$ref": "#/definitions/project-cxx-onlyInConfiguration"
+					"$ref": "#/definitions/project-onlyInConfiguration"
+				},
+				"notInConfiguration": {
+					"$ref": "#/definitions/project-notInConfiguration"
 				},
 				"onlyInPlatform": {
-					"$ref": "#/definitions/project-cxx-onlyInPlatform"
+					"$ref": "#/definitions/project-onlyInPlatform"
 				},
-				"postBuild": {
-					"$ref": "#/definitions/project-cxx-scripts",
-					"description": "Script(s) to run after the target's build"
-				},
-				"preBuild": {
-					"$ref": "#/definitions/project-cxx-scripts",
-					"description": "Script(s) to run before the target's build"
-				},
-				"runArguments": {
-					"$ref": "#/definitions/project-cxx-runArguments"
-				},
-				"runDependencies": {
-					"$ref": "#/definitions/project-cxx-runDependencies"
+				"notInPlatform": {
+					"$ref": "#/definitions/project-notInPlatform"
 				},
 				"runProject": {
-					"$ref": "#/definitions/project-cxx-runProject"
+					"$ref": "#/definitions/project-runProject"
+				},
+				"runArguments": {
+					"$ref": "#/definitions/project-runArguments"
+				},
+				"runDependencies": {
+					"$ref": "#/definitions/project-runDependencies"
+				},
+				"preBuild": {
+					"$ref": "#/definitions/project-scripts",
+					"description": "Script(s) to run before the target's build"
+				},
+				"postBuild": {
+					"$ref": "#/definitions/project-scripts",
+					"description": "Script(s) to run after the target's build"
 				}
 			},
-			"type": "object"
+			"patternProperties": {
+				"dumpAssembly(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-dumpAssembly"
+				},
+				"runProject(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-runProject"
+				},
+				"runDependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/project-runDependencies"
+				}
+			}
 		},
 		"project-cxx-windowsPrefixOutputFilename": {
-			"default": true,
+			"type": "boolean",
 			"description": "Only applies to dynamic library projects (kind=dynamicLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
-			"type": "boolean"
+			"default": true
 		},
 		"project-cxx-cStandard": {
-			"default": "c11",
+			"type": "string",
 			"description": "The C standard to use in the compilation",
 			"enum": [
 				"c90",
@@ -496,51 +496,51 @@
 				"gnu18",
 				"gnu2x"
 			],
-			"type": "string"
+			"default": "c11"
 		},
 		"project-cxx-cmake": {
+			"description": "Build the location with cmake",
 			"anyOf": [
 				{
 					"type": "boolean"
 				},
 				{
+					"type": "object",
 					"additionalProperties": false,
-					"properties": {
-						"defines": {
-							"items": {
-								"type": "string"
-							},
-							"type": "array",
-							"uniqueItems": true
-						},
-						"enabled": {
-							"default": true,
-							"type": "boolean"
-						},
-						"recheck": {
-							"default": false,
-							"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
-							"type": "boolean"
-						}
-					},
 					"required": [
 						"enabled"
 					],
-					"type": "object"
+					"properties": {
+						"defines": {
+							"type": "array",
+							"uniqueItems": true,
+							"items": {
+								"type": "string"
+							}
+						},
+						"enabled": {
+							"type": "boolean",
+							"default": true
+						},
+						"recheck": {
+							"type": "boolean",
+							"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
+							"default": false
+						}
+					}
 				}
-			],
-			"description": "Build the location with cmake"
+			]
 		},
 		"project-cxx-compileOptions": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "Options to add during the compilation step.",
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"project-cxx-cppStandard": {
-			"default": "c++17",
+			"type": "string",
 			"description": "The C++ standard to use in the compilation",
 			"enum": [
 				"c++98",
@@ -564,100 +564,104 @@
 				"gnu++20",
 				"gnu++2a"
 			],
-			"type": "string"
+			"default": "c++17"
 		},
 		"project-cxx-defines": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "Macro definitions to be used by the preprocessor",
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
-		"project-cxx-dumpAssembly": {
-			"default": false,
+		"project-dumpAssembly": {
+			"type": "boolean",
 			"description": "true to use include an asm dump of each file in the build, false otherwise.",
-			"type": "boolean"
+			"default": false
 		},
-		"project-cxx-files": {
+		"project-files": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "Explicitly define the source files, relative to the working directory.",
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"project-cxx-includeDirs": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "A list of directories to include with the project.",
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
-		"project-cxx-kind": {
+		"project-kind": {
+			"type": "string",
 			"description": "The type of the project's compiled binary.",
 			"enum": [
 				"staticLibrary",
 				"dynamicLibrary",
 				"consoleApplication",
 				"desktopApplication"
-			],
-			"type": "string"
+			]
 		},
-		"project-cxx-language": {
-			"default": "C++",
+		"project-language": {
+			"type": "string",
 			"description": "The target language of the project.",
 			"enum": [
 				"C",
 				"C++"
 			],
-			"type": "string"
+			"default": "C++"
 		},
 		"project-cxx-libDirs": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"project-cxx-linkerScript": {
-			"description": "An LD linker script path (.ld file) to pass to the linker command",
-			"type": "string"
+			"type": "string",
+			"description": "An LD linker script path (.ld file) to pass to the linker command"
 		},
 		"project-cxx-linkerOptions": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "Options to add during the linking step.",
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"project-cxx-links": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "A list of dynamic links to use with the linker",
 			"items": {
 				"type": "string",
 				"pattern": "^[\\w\\-\\+\\.]+$"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
-		"project-cxx-location": {
+		"project-location": {
 			"description": "The root path of the source files, relative to the working directory.",
 			"oneOf": [
 				{
 					"type": "string"
 				},
 				{
+					"type": "array",
+					"uniqueItems": true,
 					"items": {
 						"type": "string"
-					},
-					"type": "array",
-					"uniqueItems": true
+					}
 				},
 				{
+					"type": "object",
 					"additionalProperties": false,
+					"required": [
+						"include"
+					],
 					"patternProperties": {
 						"exclude(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
 							"anyOf": [
@@ -665,11 +669,11 @@
 									"type": "string"
 								},
 								{
+									"type": "array",
+									"uniqueItems": true,
 									"items": {
 										"type": "string"
-									},
-									"type": "array",
-									"uniqueItems": true
+									}
 								}
 							]
 						},
@@ -679,159 +683,154 @@
 									"type": "string"
 								},
 								{
+									"type": "array",
+									"uniqueItems": true,
 									"items": {
 										"type": "string"
-									},
-									"type": "array",
-									"uniqueItems": true
+									}
 								}
 							]
 						}
-					},
-					"required": [
-						"include"
-					],
-					"type": "object"
+					}
 				}
 			]
 		},
 		"project-cxx-macosFrameworkPaths": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "A list of paths to search for MacOS Frameworks",
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"project-cxx-macosFrameworks": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "",
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
-		"project-cxx-name": {
-			"description": "The name of the project.",
+		"project-name": {
 			"type": "string",
+			"description": "The name of the project.",
 			"pattern": "^[\\w\\-\\+\\.]{3,}$"
 		},
 		"project-cxx-objectiveCxx": {
-			"default": false,
+			"type": "boolean",
 			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
-			"type": "boolean"
+			"default": false
 		},
-		"project-cxx-onlyInConfiguration": {
+		"project-onlyInConfiguration": {
 			"description": "Only compile this project in specific build configuration(s)",
 			"oneOf": [
 				{
 					"type": "string"
 				},
 				{
+					"type": "array",
+					"uniqueItems": true,
 					"items": {
 						"type": "string"
-					},
-					"type": "array",
-					"uniqueItems": true
+					}
 				}
 			]
 		},
-		"project-cxx-notInConfiguration": {
+		"project-notInConfiguration": {
 			"description": "Don't compile this project in specific build configuration(s)",
 			"oneOf": [
 				{
 					"type": "string"
 				},
 				{
+					"type": "array",
+					"uniqueItems": true,
 					"items": {
 						"type": "string"
-					},
-					"type": "array",
-					"uniqueItems": true
+					}
 				}
 			]
 		},
-		"project-cxx-onlyInPlatform": {
+		"project-onlyInPlatform": {
 			"description": "Only compile this project on specific platform(s)",
 			"oneOf": [
 				{
 					"$ref": "#/definitions/enum-platform"
 				},
 				{
+					"type": "array",
+					"uniqueItems": true,
 					"items": {
 						"$ref": "#/definitions/enum-platform"
-					},
-					"type": "array",
-					"uniqueItems": true
+					}
 				}
 			]
 		},
-		"project-cxx-notInPlatform": {
+		"project-notInPlatform": {
 			"description": "Don't compile this project on specific platform(s)",
 			"oneOf": [
 				{
 					"$ref": "#/definitions/enum-platform"
 				},
 				{
+					"type": "array",
+					"uniqueItems": true,
 					"items": {
 						"$ref": "#/definitions/enum-platform"
-					},
-					"type": "array",
-					"uniqueItems": true
+					}
 				}
 			]
 		},
 		"project-cxx-pch": {
-			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root.",
-			"type": "string"
+			"type": "string",
+			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
 		},
 		"project-cxx-posixThreads": {
-			"default": true,
+			"type": "boolean",
 			"description": "TODO: remove?",
-			"type": "boolean"
+			"default": true
 		},
 		"project-cxx-rtti": {
-			"default": true,
+			"type": "boolean",
 			"description": "true to include run-time type information (default), false to exclude.",
-			"type": "boolean"
+			"default": true
 		},
-		"project-cxx-runProject": {
-			"default": false,
+		"project-runProject": {
+			"type": "boolean",
 			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple projects are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
-			"type": "boolean"
+			"default": false
 		},
-		"project-cxx-runArguments": {
-			"description": "If the project is the run target, a string of arguments to pass to the run command.",
-			"type": "string"
+		"project-runArguments": {
+			"type": "string",
+			"description": "If the project is the run target, a string of arguments to pass to the run command."
 		},
-		"project-cxx-runDependencies": {
+		"project-runDependencies": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
 			"items": {
 				"type": "string"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
-		"project-cxx-scripts": {
+		"project-scripts": {
 			"anyOf": [
 				{
 					"type": "string"
 				},
 				{
+					"type": "array",
+					"uniqueItems": true,
 					"items": {
 						"type": "string"
-					},
-					"type": "array",
-					"uniqueItems": true
+					}
 				},
 				{
+					"type": "object",
 					"additionalProperties": false,
+					"required": [
+						"script"
+					],
 					"properties": {
-						"alwaysRun": {
-							"default": false,
-							"description": "Always run the script, regardless of whether the target is up to date.",
-							"type": "boolean"
-						},
 						"script": {
 							"anyOf": [
 								{
@@ -841,36 +840,39 @@
 									"items": {
 										"type": "string"
 									},
-									"type": "array",
-									"uniqueItems": true
+									"uniqueItems": true,
+									"type": "array"
 								}
 							]
+						},
+						"alwaysRun": {
+							"type": "boolean",
+							"description": "Always run the script, regardless of whether the target is up to date.",
+							"default": false
 						}
-					},
-					"required": [
-						"script"
-					],
-					"type": "object"
+					}
 				}
 			]
 		},
 		"project-cxx-staticLinking": {
-			"default": false,
 			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
-			"type": "boolean"
+			"type": "boolean",
+			"default": false
 		},
 		"project-cxx-staticLinks": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "A list of static links to use with the linker",
 			"items": {
 				"type": "string",
 				"pattern": "^[\\w\\-\\+\\.]+$"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"project-cxx-warnings": {
+			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
 			"anyOf": [
 				{
+					"type": "string",
 					"enum": [
 						"none",
 						"minimal",
@@ -879,11 +881,13 @@
 						"strict",
 						"strictPedantic",
 						"veryStrict"
-					],
-					"type": "string"
+					]
 				},
 				{
+					"type": "array",
 					"items": {
+						"type": "string",
+						"uniqueItems": true,
 						"enum": [
 							"abi",
 							"absolute-value",
@@ -1178,19 +1182,15 @@
 							"write-strings",
 							"zero-as-null-pointer-constant",
 							"zero-length-bounds"
-						],
-						"type": "string",
-						"uniqueItems": true
-					},
-					"type": "array"
+						]
+					}
 				}
-			],
-			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)"
+			]
 		},
 		"project-cxx-windowsOutputDef": {
-			"default": false,
+			"type": "boolean",
 			"description": "If true for a dynamic library (dll) target on Windows, a .def file will be created",
-			"type": "boolean"
+			"default": false
 		}
 	},
 	"properties": {
@@ -1198,8 +1198,13 @@
 			"$ref": "#/definitions/project"
 		},
 		"bundle": {
+			"type": "object",
 			"additionalProperties": false,
 			"description": "Variables to describe the final output build.",
+			"required": [
+				"configuration",
+				"projects"
+			],
 			"patternProperties": {
 				"dependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
 					"$ref": "#/definitions/bundle-dependencies"
@@ -1242,29 +1247,30 @@
 				"windows": {
 					"$ref": "#/definitions/bundle-windows"
 				}
-			},
-			"required": [
-				"configuration",
-				"projects"
-			],
-			"type": "object"
+			}
 		},
 		"configurations": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "An array of build configurations",
 			"items": {
 				"anyOf": [
 					{
+						"type": "string",
 						"description": "A configuration preset",
 						"enum": [
 							"Release",
 							"Debug",
 							"RelWithDebInfo",
 							"MinSizeRel"
-						],
-						"type": "string"
+						]
 					},
 					{
+						"type": "object",
 						"additionalProperties": false,
+						"required": [
+							"name"
+						],
 						"properties": {
 							"debugSymbols": {
 								"$ref": "#/definitions/configurations-debugSymbols"
@@ -1281,70 +1287,64 @@
 							"stripSymbols": {
 								"$ref": "#/definitions/configurations-stripSymbols"
 							}
-						},
-						"required": [
-							"name"
-						],
-						"type": "object"
+						}
 					}
 				]
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"externalDependencies": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "A sequential list of externalDependencies to install prior to building or via the install command",
 			"items": {
 				"$ref": "#/definitions/externalDependency"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"environment": {
+			"type": "object",
 			"additionalProperties": false,
 			"description": "Variables to describe the typical environments built in",
+			"required": [],
 			"patternProperties": {
-				"maxJobs(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/environment-maxJobs"
-				},
 				"path(\\.windows|\\.macos|\\.linux)": {
 					"$ref": "#/definitions/environment-path"
+				},
+				"maxJobs(\\.windows|\\.macos|\\.linux)": {
+					"$ref": "#/definitions/environment-maxJobs"
 				}
 			},
 			"properties": {
-				"externalDepDir": {
-					"$ref": "#/definitions/environment-externalDepDir"
+				"path": {
+					"$ref": "#/definitions/environment-path"
 				},
 				"maxJobs": {
 					"$ref": "#/definitions/environment-maxJobs"
 				},
-				"path": {
-					"$ref": "#/definitions/environment-path"
+				"externalDepDir": {
+					"$ref": "#/definitions/environment-externalDepDir"
 				},
 				"showCommands": {
 					"$ref": "#/definitions/environment-showCommands"
 				}
-			},
-			"required": [],
-			"type": "object"
+			}
 		},
 		"projects": {
+			"type": "array",
+			"uniqueItems": true,
 			"description": "A sequential list of projects to build",
 			"items": {
 				"$ref": "#/definitions/project"
-			},
-			"type": "array",
-			"uniqueItems": true
+			}
 		},
 		"version": {
+			"type": "string",
 			"description": "Version of the workspace project.",
-			"pattern": "^[\\w\\-\\+\\.]+$",
-			"type": "string"
+			"pattern": "^[\\w\\-\\+\\.]+$"
 		},
 		"workspace": {
+			"type": "string",
 			"description": "The name of the workspace.",
-			"pattern": "^[\\w\\-\\+ ]+$",
-			"type": "string"
+			"pattern": "^[\\w\\-\\+ ]+$"
 		}
 	}
 }
