@@ -82,6 +82,22 @@ namespace subprocess {
         posix_spawn_file_actions_t actions;
     };
 
+    struct SpawnAttr {
+        SpawnAttr(posix_spawnattr_t& attributes) {
+            this->attributes = &attributes;
+        }
+        ~SpawnAttr() {
+            int ret = posix_spawnattr_destroy(attributes);
+            throw_os_error("posix_spawnattr_destroy", ret);
+        }
+
+        void setflags(short flags) {
+            int ret = posix_spawnattr_setflags(attributes, flags);
+            throw_os_error("posix_spawnattr_setflags", ret);
+        }
+        posix_spawnattr_t* attributes;
+    };
+
 #ifndef _WIN32
     Popen ProcessBuilder::run_command(const CommandLine& inCommand) {
         if (inCommand.empty()) {
@@ -99,9 +115,9 @@ namespace subprocess {
 
         FileActions actions;
 
-        if (cin_option == PipeOption::close)
+        if (cin_option == PipeOption::close) {
             actions.addclose(kStdInValue);
-        else if (cin_option == PipeOption::specific) {
+        } else if (cin_option == PipeOption::specific) {
             if (this->cin_pipe == kBadPipeValue) {
                 throw std::invalid_argument("ProcessBuilder: bad pipe value for cin");
             }
@@ -118,9 +134,9 @@ namespace subprocess {
         }
 
 
-        if (cout_option == PipeOption::close)
+        if (cout_option == PipeOption::close) {
             actions.addclose(kStdOutValue);
-        else if (cout_option == PipeOption::pipe) {
+        } else if (cout_option == PipeOption::pipe) {
             cout_pair = pipe_create();
             actions.addclose(cout_pair.input);
             actions.adddup2(cout_pair.output, kStdOutValue);
@@ -137,9 +153,9 @@ namespace subprocess {
             actions.addclose(this->cout_pipe);
         }
 
-        if (cerr_option == PipeOption::close)
+        if (cerr_option == PipeOption::close) {
             actions.addclose(kStdErrValue);
-        else if (cerr_option == PipeOption::pipe) {
+        } else if (cerr_option == PipeOption::pipe) {
             cerr_pair = pipe_create();
             actions.addclose(cerr_pair.input);
             actions.adddup2(cerr_pair.output, kStdErrValue);
@@ -181,21 +197,8 @@ namespace subprocess {
 
         posix_spawnattr_t attributes;
         posix_spawnattr_init(&attributes);
-        struct SpawnAttr {
-            SpawnAttr(posix_spawnattr_t& attributes) {
-                this->attributes = &attributes;
-            }
-            ~SpawnAttr() {
-                int ret = posix_spawnattr_destroy(attributes);
-                throw_os_error("posix_spawnattr_destroy", ret);
-            }
 
-            void setflags(short flags) {
-                int ret = posix_spawnattr_setflags(attributes, flags);
-                throw_os_error("posix_spawnattr_setflags", ret);
-            }
-            posix_spawnattr_t* attributes;
-        } attributes_raii(attributes);
+        SpawnAttr attributes_raii(attributes);
 #if 0
         // I can't think of a nice way to make this configurable.
         posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSIGMASK);

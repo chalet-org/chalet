@@ -11,7 +11,7 @@ namespace chalet
 namespace Subprocess
 {
 using PipeFunc = std::function<void(const std::string&)>;
-int run(StringList inCmd, const PipeFunc& onStdout = nullptr);
+int run(const StringList& inCmd, const PipeFunc& onStdout, const PipeFunc& onStderr = nullptr);
 }
 }
 

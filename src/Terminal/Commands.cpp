@@ -476,13 +476,40 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput)
 {
 	if (!inCleanOutput)
+	{
+		std::cout << "Subprocess: ";
 		Output::print(Color::Blue, inCmd);
+	}
 
-	static Subprocess::PipeFunc onOutput = [](auto inData) {
+	static Subprocess::PipeFunc onStdout = [](const std::string& inData) {
 		std::cout << inData << std::flush;
 	};
 
-	return Subprocess::run(inCmd, onOutput) == EXIT_SUCCESS;
+	static Subprocess::PipeFunc onStderr = [](const std::string& inData) {
+		std::cerr << inData << std::flush;
+	};
+
+	return Subprocess::run(inCmd, onStdout, onStderr) == EXIT_SUCCESS;
+}
+
+/*****************************************************************************/
+std::string Commands::subprocessWithOutput(const StringList& inCmd, const bool inCleanOutput)
+{
+	if (!inCleanOutput)
+	{
+		std::cout << "Subprocess: ";
+		Output::print(Color::Blue, inCmd);
+	}
+
+	std::string ret;
+
+	Subprocess::PipeFunc onStdout = [&ret](const std::string& inData) {
+		ret += inData;
+	};
+
+	UNUSED(Subprocess::run(inCmd, onStdout, nullptr));
+
+	return ret;
 }
 
 /*****************************************************************************/

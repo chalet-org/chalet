@@ -210,6 +210,15 @@ bool Router::cmdDebug()
 	{
 		Timer timer;
 
+		Commands::shell("which some_proc", false);
+
+		auto result = timer.stop();
+		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
+	}
+
+	{
+		Timer timer;
+
 		// StringList patterns{ "*.cpp" };
 		// Commands::forEachFileMatch("src", patterns, [](const fs::path& inPath) {
 		// 	std::cout << inPath.string() << "\n";
@@ -217,9 +226,9 @@ bool Router::cmdDebug()
 
 		// std::cout << std::endl;
 
-	#if !defined(CHALET_WIN32)
-		Commands::subprocess({ "ping", "-c", "5", "www.google.com" }, false);
-	#endif
+		// Commands::subprocess({ "chalet", "build", "TestingStuff" }, false);
+		auto output = Commands::subprocessWithOutput({ "which", "chalet" }, false);
+		LOG(output);
 
 		auto result = timer.stop();
 		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
