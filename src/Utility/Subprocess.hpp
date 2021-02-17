@@ -8,11 +8,21 @@
 
 namespace chalet
 {
+struct SubprocessOptions;
+
 namespace Subprocess
 {
 using PipeFunc = std::function<void(const std::string&)>;
-int run(const StringList& inCmd, const PipeFunc& onStdout, const PipeFunc& onStderr = nullptr);
+int run(const StringList& inCmd, const SubprocessOptions& inOptions);
 }
+
+struct SubprocessOptions
+{
+	std::string cwd;
+	Subprocess::PipeFunc onStdout = nullptr;
+	Subprocess::PipeFunc onStderr = nullptr;
+};
+
 }
 
 #endif // CHALET_SUBPROCESS_HPP

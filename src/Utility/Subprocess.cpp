@@ -10,17 +10,18 @@
 namespace chalet
 {
 /*****************************************************************************/
-int Subprocess::run(const StringList& inCmd, const PipeFunc& onStdout, const PipeFunc& onStderr)
+int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
 {
 	auto process = sp::RunBuilder(const_cast<StringList&>(inCmd))
-					   .cerr(onStderr == nullptr ? sp::PipeOption::close : sp::PipeOption::pipe)
-					   .cout(onStdout == nullptr ? sp::PipeOption::close : sp::PipeOption::pipe)
+					   .cerr(inOptions.onStderr == nullptr ? sp::PipeOption::close : sp::PipeOption::pipe)
+					   .cout(inOptions.onStdout == nullptr ? sp::PipeOption::close : sp::PipeOption::pipe)
+					   .cwd(inOptions.cwd)
 					   .popen();
 
 	std::array<char, 128> buffer{ 0 };
 	sp::ssize_t bytesRead = 1;
 
-	if (onStdout != nullptr)
+	if (inOptions.onStdout != nullptr)
 	{
 		while (bytesRead > 0)
 		{
@@ -28,14 +29,14 @@ int Subprocess::run(const StringList& inCmd, const PipeFunc& onStdout, const Pip
 			if (bytesRead <= 0)
 				break;
 
-			onStdout(std::string(buffer.data(), bytesRead));
+			inOptions.onStdout(std::string(buffer.data(), bytesRead));
 
 			for (auto& c : buffer)
 				c = 0;
 		}
 	}
 
-	if (onStderr != nullptr)
+	if (inOptions.onStderr != nullptr)
 	{
 		bytesRead = 1;
 		while (bytesRead > 0)
@@ -44,7 +45,7 @@ int Subprocess::run(const StringList& inCmd, const PipeFunc& onStdout, const Pip
 			if (bytesRead <= 0)
 				break;
 
-			onStderr(std::string(buffer.data(), bytesRead));
+			inOptions.onStderr(std::string(buffer.data(), bytesRead));
 
 			for (auto& c : buffer)
 				c = 0;

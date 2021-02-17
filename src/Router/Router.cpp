@@ -227,8 +227,9 @@ bool Router::cmdDebug()
 		// std::cout << std::endl;
 
 		// Commands::subprocess({ "chalet", "build", "TestingStuff" }, false);
-		auto output = Commands::subprocessWithOutput({ "which", "chalet" }, false);
-		LOG(output);
+		Commands::subprocess({ "cd", "build" }, false);
+		// auto output = Commands::subprocessWithOutput({ "which", "chalet" }, false);
+		// LOG(output);
 
 		auto result = timer.stop();
 		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));

@@ -473,7 +473,7 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 }
 
 /*****************************************************************************/
-bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput)
+bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, std::string inCwd)
 {
 	if (!inCleanOutput)
 	{
@@ -489,11 +489,16 @@ bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput)
 		std::cerr << inData << std::flush;
 	};
 
-	return Subprocess::run(inCmd, onStdout, onStderr) == EXIT_SUCCESS;
+	SubprocessOptions options;
+	options.cwd = std::move(inCwd);
+	options.onStdout = onStdout;
+	options.onStderr = onStderr;
+
+	return Subprocess::run(inCmd, options) == EXIT_SUCCESS;
 }
 
 /*****************************************************************************/
-std::string Commands::subprocessWithOutput(const StringList& inCmd, const bool inCleanOutput)
+std::string Commands::subprocessWithOutput(const StringList& inCmd, const bool inCleanOutput, std::string inCwd)
 {
 	if (!inCleanOutput)
 	{
@@ -503,11 +508,13 @@ std::string Commands::subprocessWithOutput(const StringList& inCmd, const bool i
 
 	std::string ret;
 
-	Subprocess::PipeFunc onStdout = [&ret](const std::string& inData) {
+	SubprocessOptions options;
+	options.cwd = std::move(inCwd);
+	options.onStdout = [&ret](const std::string& inData) {
 		ret += inData;
 	};
 
-	UNUSED(Subprocess::run(inCmd, onStdout, nullptr));
+	UNUSED(Subprocess::run(inCmd, options));
 
 	return ret;
 }
