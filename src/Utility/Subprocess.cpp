@@ -19,33 +19,30 @@ int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
 					   .popen();
 
 	std::array<char, 128> buffer{ 0 };
-	sp::ssize_t bytesRead = 1;
+	sp::ssize_t stdoutBytesRead = 1;
+	sp::ssize_t stderrBytesRead = 1;
 
-	if (inOptions.onStdout != nullptr)
+	while (stdoutBytesRead > 0 || stderrBytesRead > 0)
 	{
-		while (bytesRead > 0)
+		if (inOptions.onStdout != nullptr)
 		{
-			bytesRead = sp::pipe_read(process.cout, buffer.data(), buffer.size());
-			if (bytesRead <= 0)
-				break;
+			stdoutBytesRead = sp::pipe_read(process.cout, buffer.data(), buffer.size());
+			if (stdoutBytesRead > 0)
+			{
+				inOptions.onStdout(std::string(buffer.data(), stdoutBytesRead));
 
-			inOptions.onStdout(std::string(buffer.data(), bytesRead));
-
-			for (auto& c : buffer)
-				c = 0;
+				for (auto& c : buffer)
+					c = 0;
+			}
 		}
-	}
 
-	if (inOptions.onStderr != nullptr)
-	{
-		bytesRead = 1;
-		while (bytesRead > 0)
+		if (inOptions.onStderr != nullptr)
 		{
-			bytesRead = sp::pipe_read(process.cerr, buffer.data(), buffer.size());
-			if (bytesRead <= 0)
+			stderrBytesRead = sp::pipe_read(process.cerr, buffer.data(), buffer.size());
+			if (stderrBytesRead <= 0)
 				break;
 
-			inOptions.onStderr(std::string(buffer.data(), bytesRead));
+			inOptions.onStderr(std::string(buffer.data(), stderrBytesRead));
 
 			for (auto& c : buffer)
 				c = 0;
