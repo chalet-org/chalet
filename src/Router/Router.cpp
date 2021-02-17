@@ -212,7 +212,7 @@ bool Router::cmdDebug()
 
 		// StringList patterns{ "*.cpp" };
 		// Commands::forEachFileMatch("src", patterns, [](const fs::path& inPath) {
-		// 	std::cout << inPath.string() << "\n";
+		// 	std::cout << inPath.string() << '\n';
 		// });
 
 		// std::cout << std::endl;

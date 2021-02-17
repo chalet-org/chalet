@@ -529,6 +529,15 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCle
 
 	UNUSED(Subprocess::run(inCmd, options));
 
+	if (!ret.empty() && ret.back() == '\n')
+	{
+		ret.pop_back();
+#ifdef CHALET_MSVC
+		if (!ret.empty() && ret.back() == '\r')
+			ret.pop_back();
+#endif
+	}
+
 	return ret;
 }
 
@@ -604,32 +613,37 @@ bool Commands::shellRemove(const std::string& inPath, const bool inCleanOutput)
 std::string Commands::which(const std::string& inExecutable, const bool inCleanOutput)
 {
 	StringList command;
-	if (Environment::isBash())
+	const bool isBash = Environment::isBash();
+
+	if (isBash)
 		command = { "which", inExecutable };
 	else
 		command = { "where", fmt::format("{}.exe", inExecutable) };
 
 	std::string result = Commands::subprocessOutput(command, inCleanOutput);
-	if (!Environment::isBash())
+
+#if defined(CHALET_WIN32)
+	if (!isBash)
 	{
-		const auto splitResult = String::split(result, "\n");
-		if (splitResult.size() > 1)
+	#if defined(CHALET_MSVC)
+		std::string_view eol = "\r\n";
+	#else
+		std::string_view eol = "\n";
+	#endif
+		if (String::contains(eol, result))
 		{
-			result = splitResult[0];
-			String::replaceAll(result, "\\", "/");
+			const auto splitResult = String::split(result, eol);
+			if (splitResult.size() > 1)
+				result = splitResult[0];
 		}
-		else
-		{
-			result = "";
-		}
+		String::replaceAll(result, "\\", "/");
+		if (String::startsWith("INFO:", result))
+			return std::string();
 	}
 	else
 	{
-		String::replaceAll(result, "\n", "");
+		Path::msysDrivesToWindowsDrives(result);
 	}
-
-#if defined(CHALET_WIN32)
-	Path::msysDrivesToWindowsDrives(result);
 
 	if (String::startsWith("/", result))
 	{
@@ -704,7 +718,6 @@ const std::string& Commands::getXcodePath()
 	if (kXcodePath.empty())
 	{
 		kXcodePath = Commands::subprocessOutput({ "xcode-select", "-p" }, true);
-		String::replaceAll(kXcodePath, "\n", "");
 	}
 
 	return kXcodePath;

@@ -361,7 +361,12 @@ std::string BuildCache::getBuildHash(std::string appPath)
 	else
 	{
 		const std::string md5Result = Commands::subprocessOutput({ "certutil", "-hashfile", appPath, "MD5" });
-		auto list = String::split(md5Result, "\n");
+	#ifdef CHALET_MSVC
+		std::string_view eol = "\r\n";
+	#else
+		std::string_view eol = "\n";
+	#endif
+		auto list = String::split(md5Result, eol);
 		if (list.size() >= 2)
 		{
 			md5 = list[1];
@@ -369,7 +374,6 @@ std::string BuildCache::getBuildHash(std::string appPath)
 	}
 #elif defined(CHALET_MACOS)
 	std::string md5Result = Commands::subprocessOutput({ "md5", appPath });
-	String::replaceAll(md5Result, "\n", "");
 	auto list = String::split(md5Result, " ");
 
 	md5 = list.back();

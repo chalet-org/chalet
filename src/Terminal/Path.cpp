@@ -19,7 +19,10 @@ void Path::sanitize(std::string& outValue, const bool inRemoveNewLine)
 		return;
 
 	if (inRemoveNewLine)
+	{
+		String::replaceAll(outValue, "\r\n", " ");
 		String::replaceAll(outValue, "\n", " ");
+	}
 
 	// if (Environment::isBash())
 	{

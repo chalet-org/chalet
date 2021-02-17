@@ -5,6 +5,8 @@
 
 #include "Utility/Subprocess.hpp"
 
+#include <array>
+
 namespace chalet
 {
 /*****************************************************************************/

@@ -235,7 +235,6 @@ bool CacheJsonParser::makeCache()
 	{
 #if defined(CHALET_MACOS)
 		std::string sdkPath = Commands::subprocessOutput({ "xcrun", "--sdk", "macosx", "--show-sdk-path" });
-		String::replaceAll(sdkPath, "\n", "");
 		tools[kKeyMacosSdk] = std::move(sdkPath);
 #else
 		tools[kKeyMacosSdk] = std::string();

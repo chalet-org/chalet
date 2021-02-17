@@ -101,10 +101,10 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 	const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
 	std::string rules = getPchBuildRule(pchTarget);
-	rules += "\n";
+	rules += '\n';
 
 	rules += getObjBuildRules(inOutputs.objectList, pchTarget);
-	rules += "\n";
+	rules += '\n';
 
 	rules += getAsmBuildRules(inOutputs.assemblyList); // Very broken
 

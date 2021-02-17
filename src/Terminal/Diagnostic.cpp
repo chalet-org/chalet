@@ -104,12 +104,12 @@ void Diagnostic::customAssertion(const std::string_view& inExpression, const std
 	const auto blue = Output::getAnsiStyle(Color::Blue);
 	const auto reset = Output::getAnsiReset();
 
-	std::cerr << "\n"
+	std::cerr << '\n'
 			  << boldRed << "Assertion Failed:\n  at " << reset
 			  << inExpression << " " << blue << inFile << ":" << inLineNumber << reset << std::endl;
 
 	if (!inMessage.empty())
-		std::cerr << "\n"
+		std::cerr << '\n'
 				  << boldBlack << inMessage << reset << std::endl;
 
 	sAssertionFailure = true;

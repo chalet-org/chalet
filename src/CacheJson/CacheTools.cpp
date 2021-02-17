@@ -236,8 +236,6 @@ bool CacheTools::installHomebrewPackage(const std::string& inPackage, const bool
 std::string CacheTools::getCurrentGitRepositoryBranch(const std::string& inRepoPath, const bool inCleanOutput) const
 {
 	std::string branch = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" }, inCleanOutput);
-	String::replaceAll(branch, "\n", "");
-
 	return branch;
 }
 
@@ -245,8 +243,6 @@ std::string CacheTools::getCurrentGitRepositoryBranch(const std::string& inRepoP
 std::string CacheTools::getCurrentGitRepositoryTag(const std::string& inRepoPath, const bool inCleanOutput) const
 {
 	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "abbrev=0" }, inCleanOutput, false);
-	String::replaceAll(tag, "\n", "");
-
 	return tag;
 }
 
@@ -254,8 +250,6 @@ std::string CacheTools::getCurrentGitRepositoryTag(const std::string& inRepoPath
 std::string CacheTools::getCurrentGitRepositoryHash(const std::string& inRepoPath, const bool inCleanOutput) const
 {
 	std::string hash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" }, inCleanOutput);
-	String::replaceAll(hash, "\n", "");
-
 	return hash;
 }
 
@@ -263,8 +257,6 @@ std::string CacheTools::getCurrentGitRepositoryHash(const std::string& inRepoPat
 std::string CacheTools::getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch, const bool inCleanOutput) const
 {
 	std::string originHash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) }, inCleanOutput);
-	String::replaceAll(originHash, "\n", "");
-
 	return originHash;
 }
 
