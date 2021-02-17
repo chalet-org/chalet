@@ -53,6 +53,8 @@ int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
 	// Note: On Windows, the underlying call to WaitForSingleObject takes the most time
 	process.close();
 
+	// std::cout << "Exit code of last subprocess: " << process.returncode << std::endl;
+
 	return process.returncode;
 }
 }

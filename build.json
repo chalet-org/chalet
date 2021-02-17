@@ -38,8 +38,8 @@
 		"MinSizeRel"
 	],*/
 	"allProjects": {
-		"language": "C++",
 		"dumpAssembly": false,
+		"language": "C++",
 		"runDependencies": [],
 		"compilerSettings:Cxx": {
 			"cppStandard": "c++17",

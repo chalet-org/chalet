@@ -463,62 +463,62 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/project-compilerSettings-cxx"
 			},
 			"dumpAssembly": {
-				"$ref": "#/definitions/project-cxx-dumpAssembly"
+				"$ref": "#/definitions/project-dumpAssembly"
 			},
 			"files": {
-				"$ref": "#/definitions/project-cxx-files"
+				"$ref": "#/definitions/project-files"
 			},
 			"kind": {
-				"$ref": "#/definitions/project-cxx-kind"
+				"$ref": "#/definitions/project-kind"
 			},
 			"language": {
-				"$ref": "#/definitions/project-cxx-language"
+				"$ref": "#/definitions/project-language"
 			},
 			"location": {
-				"$ref": "#/definitions/project-cxx-location"
+				"$ref": "#/definitions/project-location"
 			},
 			"name": {
-				"$ref": "#/definitions/project-cxx-name"
+				"$ref": "#/definitions/project-name"
 			},
 			"onlyInConfiguration": {
-				"$ref": "#/definitions/project-cxx-onlyInConfiguration"
+				"$ref": "#/definitions/project-onlyInConfiguration"
 			},
 			"notInConfiguration": {
-				"$ref": "#/definitions/project-cxx-notInConfiguration"
+				"$ref": "#/definitions/project-notInConfiguration"
 			},
 			"onlyInPlatform": {
-				"$ref": "#/definitions/project-cxx-onlyInPlatform"
+				"$ref": "#/definitions/project-onlyInPlatform"
 			},
 			"notInPlatform": {
-				"$ref": "#/definitions/project-cxx-notInPlatform"
+				"$ref": "#/definitions/project-notInPlatform"
 			},
 			"runProject": {
-				"$ref": "#/definitions/project-cxx-runProject"
+				"$ref": "#/definitions/project-runProject"
 			},
 			"runArguments": {
-				"$ref": "#/definitions/project-cxx-runArguments"
+				"$ref": "#/definitions/project-runArguments"
 			},
 			"runDependencies": {
-				"$ref": "#/definitions/project-cxx-runDependencies"
+				"$ref": "#/definitions/project-runDependencies"
 			},
 			"preBuild": {
-				"$ref": "#/definitions/project-cxx-scripts",
+				"$ref": "#/definitions/project-scripts",
 				"description": "Script(s) to run before the target's build"
 			},
 			"postBuild": {
-				"$ref": "#/definitions/project-cxx-scripts",
+				"$ref": "#/definitions/project-scripts",
 				"description": "Script(s) to run after the target's build"
 			}
 		},
 		"patternProperties": {
 			"dumpAssembly(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-				"$ref": "#/definitions/project-cxx-dumpAssembly"
+				"$ref": "#/definitions/project-dumpAssembly"
 			},
 			"runProject(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-				"$ref": "#/definitions/project-cxx-runProject"
+				"$ref": "#/definitions/project-runProject"
 			},
 			"runDependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-				"$ref": "#/definitions/project-cxx-runDependencies"
+				"$ref": "#/definitions/project-runDependencies"
 			}
 		}
 	})json"_ojson;
@@ -642,13 +642,13 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-dumpAssembly"] = R"json({
+	ret[kDefinitions]["project-dumpAssembly"] = R"json({
 		"type": "boolean",
 		"description": "true to use include an asm dump of each file in the build, false otherwise.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-files"] = R"json({
+	ret[kDefinitions]["project-files"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "Explicitly define the source files, relative to the working directory.",
@@ -666,7 +666,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-kind"] = R"json({
+	ret[kDefinitions]["project-kind"] = R"json({
 		"type": "string",
 		"description": "The type of the project's compiled binary.",
 		"enum": [
@@ -677,7 +677,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-language"] = R"json({
+	ret[kDefinitions]["project-language"] = R"json({
 		"type": "string",
 		"description": "The target language of the project.",
 		"enum": [
@@ -720,7 +720,7 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["project-cxx-links"][kItems][kPattern] = patternProjectLinks;
 
-	ret[kDefinitions]["project-cxx-location"] = R"json({
+	ret[kDefinitions]["project-location"] = R"json({
 		"description": "The root path of the source files, relative to the working directory.",
 		"oneOf": [
 			{
@@ -791,11 +791,11 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-name"] = R"json({
+	ret[kDefinitions]["project-name"] = R"json({
 		"type": "string",
 		"description": "The name of the project."
 	})json"_ojson;
-	ret[kDefinitions]["project-cxx-name"][kPattern] = patternProjectName;
+	ret[kDefinitions]["project-name"][kPattern] = patternProjectName;
 
 	ret[kDefinitions]["project-cxx-objectiveCxx"] = R"json({
 		"type": "boolean",
@@ -803,7 +803,7 @@ Json Schema::getBuildJson()
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-onlyInConfiguration"] = R"json({
+	ret[kDefinitions]["project-onlyInConfiguration"] = R"json({
 		"description": "Only compile this project in specific build configuration(s)",
 		"oneOf": [
 			{
@@ -819,7 +819,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-notInConfiguration"] = R"json({
+	ret[kDefinitions]["project-notInConfiguration"] = R"json({
 		"description": "Don't compile this project in specific build configuration(s)",
 		"oneOf": [
 			{
@@ -835,7 +835,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-onlyInPlatform"] = R"json({
+	ret[kDefinitions]["project-onlyInPlatform"] = R"json({
 		"description": "Only compile this project on specific platform(s)",
 		"oneOf": [
 			{
@@ -851,7 +851,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-notInPlatform"] = R"json({
+	ret[kDefinitions]["project-notInPlatform"] = R"json({
 		"description": "Don't compile this project on specific platform(s)",
 		"oneOf": [
 			{
@@ -884,18 +884,18 @@ Json Schema::getBuildJson()
 		"default": true
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-runProject"] = R"json({
+	ret[kDefinitions]["project-runProject"] = R"json({
 		"type": "boolean",
 		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple projects are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-runArguments"] = R"json({
+	ret[kDefinitions]["project-runArguments"] = R"json({
 		"type": "string",
 		"description": "If the project is the run target, a string of arguments to pass to the run command."
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-runDependencies"] = R"json({
+	ret[kDefinitions]["project-runDependencies"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
@@ -904,7 +904,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-scripts"] = R"json({
+	ret[kDefinitions]["project-scripts"] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
