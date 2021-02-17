@@ -481,20 +481,20 @@ bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, con
 		Output::print(Color::Blue, inCmd);
 	}
 
-	static Subprocess::PipeFunc onStdout = [](const std::string& inData) {
+	/*static Subprocess::PipeFunc onStdout = [](const std::string& inData) {
 		std::cout << inData << std::flush;
 	};
 
 	static Subprocess::PipeFunc onStderr = [](const std::string& inData) {
 		std::cerr << inData << std::flush;
-	};
+	};*/
 
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
-	options.stdoutOption = sp::PipeOption::pipe;
-	options.stderrOption = inRedirectStdErr ? sp::PipeOption::cout : sp::PipeOption::pipe;
-	options.onStdout = onStdout;
-	options.onStderr = onStderr;
+	options.stdoutOption = sp::PipeOption::cout;
+	options.stderrOption = inRedirectStdErr ? sp::PipeOption::cout : sp::PipeOption::cerr;
+	// options.onStdout = onStdout;
+	// options.onStderr = onStderr;
 
 	return Subprocess::run(inCmd, options) == EXIT_SUCCESS;
 }

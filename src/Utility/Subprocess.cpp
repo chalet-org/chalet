@@ -11,37 +11,40 @@ namespace chalet
 int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
 {
 	auto process = sp::RunBuilder(const_cast<StringList&>(inCmd))
-					   .cerr(inOptions.onStderr == nullptr ? sp::PipeOption::close : sp::PipeOption::pipe)
-					   .cout(inOptions.onStdout == nullptr ? sp::PipeOption::close : sp::PipeOption::pipe)
+					   .cerr(inOptions.stderrOption)
+					   .cout(inOptions.stderrOption)
 					   .cwd(inOptions.cwd)
 					   .popen();
 
-	std::array<char, 128> buffer{ 0 };
-	sp::ssize_t bytesRead = 1;
-
-	if (inOptions.onStdout != nullptr)
+	if (inOptions.onStdout != nullptr || inOptions.onStderr != nullptr)
 	{
-		while (bytesRead > 0)
+		std::array<char, 128> buffer{ 0 };
+		sp::ssize_t bytesRead = 1;
+
+		if (inOptions.onStdout != nullptr)
 		{
-			bytesRead = sp::pipe_read(process.cout, buffer.data(), buffer.size());
-			if (bytesRead > 0)
+			while (bytesRead > 0)
 			{
-				inOptions.onStdout(std::string(buffer.data(), bytesRead));
-				memset(buffer.data(), 0, sizeof(char) * buffer.size());
+				bytesRead = sp::pipe_read(process.cout, buffer.data(), buffer.size());
+				if (bytesRead > 0)
+				{
+					inOptions.onStdout(std::string(buffer.data(), bytesRead));
+					memset(buffer.data(), 0, sizeof(char) * buffer.size());
+				}
 			}
 		}
-	}
 
-	if (inOptions.onStderr != nullptr)
-	{
-		bytesRead = 1;
-		while (bytesRead > 0)
+		if (inOptions.onStderr != nullptr)
 		{
-			bytesRead = sp::pipe_read(process.cerr, buffer.data(), buffer.size());
-			if (bytesRead > 0)
+			bytesRead = 1;
+			while (bytesRead > 0)
 			{
-				inOptions.onStderr(std::string(buffer.data(), bytesRead));
-				memset(buffer.data(), 0, sizeof(char) * buffer.size());
+				bytesRead = sp::pipe_read(process.cerr, buffer.data(), buffer.size());
+				if (bytesRead > 0)
+				{
+					inOptions.onStderr(std::string(buffer.data(), bytesRead));
+					memset(buffer.data(), 0, sizeof(char) * buffer.size());
+				}
 			}
 		}
 	}
