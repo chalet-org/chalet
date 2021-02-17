@@ -212,18 +212,10 @@ void CacheTools::setTiffUtil(const std::string& inValue) noexcept
 bool CacheTools::installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)
-	std::string command = fmt::format("{brew} ls --versions {inPackage}",
-		fmt::arg("brew", m_brew),
-		FMT_ARG(inPackage));
-
-	const std::string result = Commands::shellWithOutput(command, inCleanOutput);
+	const std::string result = Commands::subprocessWithOutput({ m_brew, "ls", "--versions", inPackage }, inCleanOutput);
 	if (result.empty())
 	{
-		command = fmt::format("{brew} install {inPackage}",
-			fmt::arg("brew", m_brew),
-			FMT_ARG(inPackage));
-
-		if (!Commands::shell(command, inCleanOutput))
+		if (!Commands::subprocess({ m_brew, "install", inPackage }, inCleanOutput))
 			return false;
 	}
 

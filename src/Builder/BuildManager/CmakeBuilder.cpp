@@ -93,11 +93,8 @@ bool CmakeBuilder::run()
 		if (ninja)
 		{
 			const auto& ninjaExec = m_state.tools.ninja();
-			auto ninjaCommand = fmt::format("cd {outDir} && {ninjaExec}",
-				FMT_ARG(outDir),
-				FMT_ARG(ninjaExec));
 
-			if (!Commands::shell(ninjaCommand))
+			if (!Commands::subprocess({ ninjaExec }, true, outDir))
 				return false;
 		}
 		else
@@ -107,25 +104,15 @@ bool CmakeBuilder::run()
 			const auto maxJobs = m_state.environment.maxJobs();
 			std::string jobs;
 			if (maxJobs > 0)
-				jobs = fmt::format(" -j{}", maxJobs);
+				jobs = fmt::format("-j{}", maxJobs);
 
 			std::string syncTarget;
 			if (m_state.tools.makeVersionMajor() >= 4)
-				syncTarget = " --output-sync=target";
+				syncTarget = "--output-sync=target";
 
-			auto makeCommand = fmt::format("cd {outDir} && {makeExec}{jobs}{syncTarget}",
-				FMT_ARG(outDir),
-				FMT_ARG(makeExec),
-				FMT_ARG(jobs),
-				FMT_ARG(syncTarget));
-
-			if (!Commands::shell(makeCommand))
+			if (!Commands::subprocess({ makeExec, jobs, syncTarget }, true, outDir))
 				return false;
 		}
-
-		// Don't think this is actually needed? system commands seem to stick to the working directory, even with calls to cd
-		if (!Commands::shell(fmt::format("cd {}", cwd.string())))
-			return false;
 
 		Output::lineBreak();
 	}
