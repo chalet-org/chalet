@@ -1,8 +1,5 @@
 #ifndef _WIN32
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-
 #include "ProcessBuilder.hpp"
 
 #include <spawn.h>
@@ -13,8 +10,6 @@
 #include "environ.hpp"
 
 extern "C" char **environ;
-
-using namespace subprocess::details;
 
 namespace {
     struct cstring_vector {
@@ -244,7 +239,5 @@ namespace subprocess {
 
 #endif
 }
-
-#pragma GCC diagnostic pop
 
 #endif

@@ -12,8 +12,6 @@
 #include <cerrno>
 #endif
 
-using namespace subprocess::details;
-
 namespace subprocess {
     PipePair& PipePair::operator=(PipePair&& other) {
         close();
