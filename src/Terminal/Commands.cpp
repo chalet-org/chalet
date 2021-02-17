@@ -642,7 +642,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	}
 	else
 	{
-		if (String::startsWith("which: no", result))
+		if (String::contains("which: no", result))
 			return std::string();
 
 		Path::msysDrivesToWindowsDrives(result);
