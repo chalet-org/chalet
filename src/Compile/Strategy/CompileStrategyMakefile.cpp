@@ -84,7 +84,9 @@ bool CompileStrategyMakefile::initialize()
 	m_makeCmd.clear();
 	m_makeCmd.push_back(makeExec);
 	if (!jobs.empty())
+	{
 		m_makeCmd.push_back(jobs);
+	}
 	m_makeCmd.push_back("-C");
 	m_makeCmd.push_back(".");
 	m_makeCmd.push_back("-f");
@@ -99,13 +101,18 @@ bool CompileStrategyMakefile::run()
 {
 	// Timer timer;
 	const bool clean = true;
-	// const bool redirectStdErr = true;
+#if !defined(CHALET_WIN32)
+	const bool redirectStdErr = true;
+#endif
 
 	// Note: If using subprocess, there's some weird color issues that show on MinGW & bash
 
 	m_makeCmd.push_back("makebuild");
-	// if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+#if defined(CHALET_WIN32)
 	if (!Commands::shell(String::join(m_makeCmd), clean))
+#else
+	if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+#endif
 	{
 		Output::lineBreak();
 		return false;
@@ -115,8 +122,11 @@ bool CompileStrategyMakefile::run()
 	{
 		m_makeCmd.pop_back();
 		m_makeCmd.push_back("dumpasm");
-		// if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+#if defined(CHALET_WIN32)
 		if (!Commands::shell(String::join(m_makeCmd), clean))
+#else
+		if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+#endif
 		{
 			Output::lineBreak();
 			return false;
