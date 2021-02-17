@@ -473,7 +473,7 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 }
 
 /*****************************************************************************/
-bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, std::string inCwd)
+bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, const bool inRedirectStdErr, std::string inCwd)
 {
 	if (!inCleanOutput)
 	{
@@ -491,6 +491,8 @@ bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, std
 
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
+	options.stdoutOption = sp::PipeOption::pipe;
+	options.stderrOption = inRedirectStdErr ? sp::PipeOption::cout : sp::PipeOption::pipe;
 	options.onStdout = onStdout;
 	options.onStderr = onStderr;
 
@@ -498,7 +500,7 @@ bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, std
 }
 
 /*****************************************************************************/
-std::string Commands::subprocessWithOutput(const StringList& inCmd, const bool inCleanOutput, std::string inCwd)
+std::string Commands::subprocessWithOutput(const StringList& inCmd, const bool inCleanOutput, const bool inRedirectStdErr, std::string inCwd)
 {
 	if (!inCleanOutput)
 	{
@@ -510,6 +512,8 @@ std::string Commands::subprocessWithOutput(const StringList& inCmd, const bool i
 
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
+	options.stdoutOption = sp::PipeOption::pipe;
+	options.stderrOption = inRedirectStdErr ? sp::PipeOption::cout : sp::PipeOption::close;
 	options.onStdout = [&ret](const std::string& inData) {
 		ret += inData;
 	};

@@ -89,6 +89,8 @@ bool CompileStrategyNinja::initialize()
 bool CompileStrategyNinja::run()
 {
 	const bool hasTerm = Environment::hasTerm();
+	const bool clean = true;
+	const bool redirectStdErr = true;
 
 	{
 		StringList command;
@@ -97,7 +99,7 @@ bool CompileStrategyNinja::run()
 			std::cout << Output::getAnsiStyle(Color::Blue);
 		}
 
-		bool result = Commands::subprocess(m_ninjaCmd);
+		bool result = Commands::subprocess(m_ninjaCmd, clean, redirectStdErr);
 		Output::lineBreak();
 
 		if (!result)
@@ -112,7 +114,7 @@ bool CompileStrategyNinja::run()
 			std::cout << Output::getAnsiStyle(Color::Magenta);
 		}
 
-		bool result = Commands::subprocess(m_ninjaCmd);
+		bool result = Commands::subprocess(m_ninjaCmd, clean, redirectStdErr);
 		Output::lineBreak();
 
 		if (!result)

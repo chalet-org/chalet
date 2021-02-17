@@ -37,8 +37,8 @@ bool pathIsEmpty(const fs::path& inPath, const bool inCheckExists = false);
 
 bool createFileWithContents(const std::string& inFile, const std::string& inContents);
 
-bool subprocess(const StringList& inCmd, const bool inCleanOutput = true, std::string inCwd = std::string());
-std::string subprocessWithOutput(const StringList& inCmd, const bool inCleanOutput = true, std::string inCwd = std::string());
+bool subprocess(const StringList& inCmd, const bool inCleanOutput = true, const bool inRedirectStdErr = false, std::string inCwd = std::string());
+std::string subprocessWithOutput(const StringList& inCmd, const bool inCleanOutput = true, const bool inRedirectStdErr = false, std::string inCwd = std::string());
 bool shell(const std::string& inCmd, const bool inCleanOutput = true);
 bool shellAlternate(const std::string& inCmd, const bool inCleanOutput = true);
 std::string shellWithOutput(const std::string& inCmd, const bool inCleanOutput = true);

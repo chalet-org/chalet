@@ -6,6 +6,8 @@
 #ifndef CHALET_SUBPROCESS_HPP
 #define CHALET_SUBPROCESS_HPP
 
+#include "Libraries/SubprocessApi.hpp"
+
 namespace chalet
 {
 struct SubprocessOptions;
@@ -19,6 +21,8 @@ int run(const StringList& inCmd, const SubprocessOptions& inOptions);
 struct SubprocessOptions
 {
 	std::string cwd;
+	sp::PipeOption stdoutOption = sp::PipeOption::close;
+	sp::PipeOption stderrOption = sp::PipeOption::close;
 	Subprocess::PipeFunc onStdout = nullptr;
 	Subprocess::PipeFunc onStderr = nullptr;
 };

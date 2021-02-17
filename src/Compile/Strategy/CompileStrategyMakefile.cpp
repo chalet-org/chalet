@@ -98,9 +98,11 @@ bool CompileStrategyMakefile::initialize()
 bool CompileStrategyMakefile::run()
 {
 	// Timer timer;
+	const bool clean = true;
+	const bool redirectStdErr = true;
 
 	m_makeCmd.push_back("makebuild");
-	if (!Commands::subprocess(m_makeCmd))
+	if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
 	{
 		Output::lineBreak();
 		return false;
@@ -110,7 +112,7 @@ bool CompileStrategyMakefile::run()
 	{
 		m_makeCmd.pop_back();
 		m_makeCmd.push_back("dumpasm");
-		if (!Commands::subprocess(m_makeCmd))
+		if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
 		{
 			Output::lineBreak();
 			return false;

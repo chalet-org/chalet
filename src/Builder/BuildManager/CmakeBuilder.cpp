@@ -94,7 +94,7 @@ bool CmakeBuilder::run()
 		{
 			const auto& ninjaExec = m_state.tools.ninja();
 
-			if (!Commands::subprocess({ ninjaExec }, true, outDir))
+			if (!Commands::subprocess({ ninjaExec }, true, true, outDir))
 				return false;
 		}
 		else
@@ -110,7 +110,7 @@ bool CmakeBuilder::run()
 			if (m_state.tools.makeVersionMajor() >= 4)
 				syncTarget = "--output-sync=target";
 
-			if (!Commands::subprocess({ makeExec, jobs, syncTarget }, true, outDir))
+			if (!Commands::subprocess({ makeExec, jobs, syncTarget }, true, true, outDir))
 				return false;
 		}
 

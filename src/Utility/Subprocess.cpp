@@ -5,8 +5,6 @@
 
 #include "Utility/Subprocess.hpp"
 
-#include "Libraries/SubprocessApi.hpp"
-
 namespace chalet
 {
 /*****************************************************************************/
@@ -19,33 +17,32 @@ int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
 					   .popen();
 
 	std::array<char, 128> buffer{ 0 };
-	sp::ssize_t stdoutBytesRead = 1;
-	sp::ssize_t stderrBytesRead = 1;
+	sp::ssize_t bytesRead = 1;
 
-	while (stdoutBytesRead > 0 || stderrBytesRead > 0)
+	if (inOptions.onStdout != nullptr)
 	{
-		if (inOptions.onStdout != nullptr)
+		while (bytesRead > 0)
 		{
-			stdoutBytesRead = sp::pipe_read(process.cout, buffer.data(), buffer.size());
-			if (stdoutBytesRead > 0)
+			bytesRead = sp::pipe_read(process.cout, buffer.data(), buffer.size());
+			if (bytesRead > 0)
 			{
-				inOptions.onStdout(std::string(buffer.data(), stdoutBytesRead));
-
-				for (auto& c : buffer)
-					c = 0;
+				inOptions.onStdout(std::string(buffer.data(), bytesRead));
+				memset(buffer.data(), 0, sizeof(char) * buffer.size());
 			}
 		}
+	}
 
-		if (inOptions.onStderr != nullptr)
+	if (inOptions.onStderr != nullptr)
+	{
+		bytesRead = 1;
+		while (bytesRead > 0)
 		{
-			stderrBytesRead = sp::pipe_read(process.cerr, buffer.data(), buffer.size());
-			if (stderrBytesRead <= 0)
-				break;
-
-			inOptions.onStderr(std::string(buffer.data(), stderrBytesRead));
-
-			for (auto& c : buffer)
-				c = 0;
+			bytesRead = sp::pipe_read(process.cerr, buffer.data(), buffer.size());
+			if (bytesRead > 0)
+			{
+				inOptions.onStderr(std::string(buffer.data(), bytesRead));
+				memset(buffer.data(), 0, sizeof(char) * buffer.size());
+			}
 		}
 	}
 
