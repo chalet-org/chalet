@@ -557,7 +557,15 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 
 		result &= Commands::setExecutableFlag(scriptPath, m_cleanOutput);
 
-		result &= Commands::subprocess({ fs::absolute(scriptPath).string() }, m_cleanOutput);
+		auto outScriptPath = fs::absolute(scriptPath).string();
+		StringList command;
+#if defined(CHALET_WIN32)
+		if (String::endsWith(".sh", outScriptPath))
+			command.push_back("bash");
+#endif
+		command.push_back(std::move(outScriptPath));
+
+		result &= Commands::subprocess(command, m_cleanOutput);
 		Output::lineBreak();
 	}
 
