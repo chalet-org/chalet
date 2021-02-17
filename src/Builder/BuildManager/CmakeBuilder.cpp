@@ -104,13 +104,19 @@ bool CmakeBuilder::run()
 			const auto maxJobs = m_state.environment.maxJobs();
 			std::string jobs;
 			if (maxJobs > 0)
-				jobs = fmt::format("-j{}", maxJobs);
+				jobs = fmt::format(" -j{}", maxJobs);
 
 			std::string syncTarget;
 			if (m_state.tools.makeVersionMajor() >= 4)
-				syncTarget = "--output-sync=target";
+				syncTarget = " --output-sync=target";
 
-			if (!Commands::subprocess({ makeExec, jobs, syncTarget }, true, true, outDir))
+			auto makeCommand = fmt::format("cd {outDir} && {makeExec}{jobs}{syncTarget}",
+				FMT_ARG(outDir),
+				FMT_ARG(makeExec),
+				FMT_ARG(jobs),
+				FMT_ARG(syncTarget));
+
+			if (!Commands::shell(makeCommand))
 				return false;
 		}
 

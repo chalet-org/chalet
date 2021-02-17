@@ -99,10 +99,13 @@ bool CompileStrategyMakefile::run()
 {
 	// Timer timer;
 	const bool clean = true;
-	const bool redirectStdErr = true;
+	// const bool redirectStdErr = true;
+
+	// Note: If using subprocess, there's some weird color issues that show on MinGW & bash
 
 	m_makeCmd.push_back("makebuild");
-	if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+	// if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+	if (!Commands::shell(String::join(m_makeCmd), clean))
 	{
 		Output::lineBreak();
 		return false;
@@ -112,7 +115,8 @@ bool CompileStrategyMakefile::run()
 	{
 		m_makeCmd.pop_back();
 		m_makeCmd.push_back("dumpasm");
-		if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+		// if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+		if (!Commands::shell(String::join(m_makeCmd), clean))
 		{
 			Output::lineBreak();
 			return false;
