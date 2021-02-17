@@ -57,20 +57,20 @@ namespace subprocess {
     struct FileActions {
         FileActions() {
             int result = posix_spawn_file_actions_init(&actions);
-            throw_os_error("posix_spawn_file_actions_init", result);
+            details::throw_os_error("posix_spawn_file_actions_init", result);
         }
         ~FileActions() {
             int result = posix_spawn_file_actions_destroy(&actions);
-            throw_os_error("posix_spawn_file_actions_destroy", result);
+            details::throw_os_error("posix_spawn_file_actions_destroy", result);
         }
 
         void adddup2(int fd, int newfd) {
             int result = posix_spawn_file_actions_adddup2(&actions, fd, newfd);
-            throw_os_error("posix_spawn_file_actions_adddup2", result);
+            details::throw_os_error("posix_spawn_file_actions_adddup2", result);
         }
         void addclose(int fd) {
             int result = posix_spawn_file_actions_addclose(&actions, fd);
-            throw_os_error("posix_spawn_file_actions_addclose", result);
+            details::throw_os_error("posix_spawn_file_actions_addclose", result);
         }
 
         posix_spawn_file_actions_t* get() {return &actions;}
@@ -83,12 +83,12 @@ namespace subprocess {
         }
         ~SpawnAttr() {
             int ret = posix_spawnattr_destroy(attributes);
-            throw_os_error("posix_spawnattr_destroy", ret);
+            details::throw_os_error("posix_spawnattr_destroy", ret);
         }
 
         void setflags(short flags) {
             int ret = posix_spawnattr_setflags(attributes, flags);
-            throw_os_error("posix_spawnattr_setflags", ret);
+            details::throw_os_error("posix_spawnattr_setflags", ret);
         }
         posix_spawnattr_t* attributes;
     };

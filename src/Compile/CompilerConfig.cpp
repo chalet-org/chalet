@@ -5,6 +5,8 @@
 
 #include "Compile/CompilerConfig.hpp"
 
+#include <unordered_map>
+
 #include "Compile/CompilerCache.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"

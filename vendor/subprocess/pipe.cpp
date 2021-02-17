@@ -88,14 +88,14 @@ namespace subprocess {
             throw std::invalid_argument("pipe_set_inheritable: handle is invalid");
         int flags = fcntl(handle, F_GETFD);
         if (flags < 0)
-            throw_os_error("fcntl", errno);
+            details::throw_os_error("fcntl", errno);
         if (inherits)
             flags &= ~FD_CLOEXEC;
         else
             flags |= FD_CLOEXEC;
         int result = fcntl(handle, F_SETFD, flags);
         if (result < -1)
-            throw_os_error("fcntl", errno);
+            details::throw_os_error("fcntl", errno);
     }
     bool pipe_close(PipeHandle handle) {
         if (handle == kBadPipeValue)
@@ -107,7 +107,7 @@ namespace subprocess {
         int fd[2];
         bool success =!::pipe(fd);
         if (!success) {
-            throw_os_error("pipe", errno);
+            details::throw_os_error("pipe", errno);
             return {};
         }
         if (!inheritable) {
