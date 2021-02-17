@@ -621,6 +621,8 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 		command = { "where", fmt::format("{}.exe", inExecutable) };
 
 	std::string result = Commands::subprocessOutput(command, inCleanOutput);
+	if (!isBash && String::contains("which: no", result))
+		return std::string();
 
 #if defined(CHALET_WIN32)
 	if (!isBash)
@@ -642,9 +644,6 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	}
 	else
 	{
-		if (String::contains("which: no", result))
-			return std::string();
-
 		Path::msysDrivesToWindowsDrives(result);
 	}
 
