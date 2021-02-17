@@ -161,10 +161,17 @@ const std::string& CompileToolchainGNU::getLinks()
 		const auto staticLinks = String::getPrefixed(m_project.staticLinks(), "-l");
 		if (m_project.staticLinks().size() > 0)
 		{
-			if (m_project.links().size() > 0)
-				m_links = fmt::format("-Wl,--copy-dt-needed-entries -Wl,-Bstatic -Wl,--start-group {} -Wl,--end-group -Wl,-Bdynamic {}", staticLinks, m_links);
+			if (!m_config.isAppleClang())
+			{
+				if (m_project.links().size() > 0)
+					m_links = fmt::format("-Wl,--copy-dt-needed-entries -Wl,-Bstatic -Wl,--start-group {} -Wl,--end-group -Wl,-Bdynamic {}", staticLinks, m_links);
+				else
+					m_links = fmt::format("-Wl,--copy-dt-needed-entries -Wl,-Bstatic -Wl,--start-group {} -Wl,--end-group", staticLinks);
+			}
 			else
-				m_links = fmt::format("-Wl,--copy-dt-needed-entries -Wl,-Bstatic -Wl,--start-group {} -Wl,--end-group", staticLinks);
+			{
+				m_links += " " + staticLinks;
+			}
 		}
 	}
 

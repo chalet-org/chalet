@@ -69,15 +69,25 @@
 	},
 	"projects": [
 		{
+			"name": "json-schema-validator",
+			"kind": "staticLibrary",
+			"location": "vendor/json-schema-validator"
+		},
+		{
+			"name": "subprocess",
+			"kind": "staticLibrary",
+			"location": "vendor/subprocess"
+		},
+		{
 			"name": "chalet",
 			"kind": "consoleApplication",
-			"location": [
-				"src",
-				"vendor/json-schema-validator",
-				"vendor/subprocess"
-			],
+			"location": "src",
 			"compilerSettings:Cxx": {
-				"pch": "src/PCH.hpp"
+				"pch": "src/PCH.hpp",
+				"staticLinks": [
+					"json-schema-validator-s",
+					"subprocess-s"
+				]
 			},
 			"runProject": true
 			/*"preBuild": {
@@ -95,14 +105,16 @@
 			"location": {
 				"include": [
 					"src",
-					"vendor/json-schema-validator",
-					"vendor/subprocess",
 					"test"
 				],
 				"exclude": "src/Main.cpp"
 			},
 			"compilerSettings:Cxx": {
-				"pch": "src/PCH.hpp"
+				"pch": "src/PCH.hpp",
+				"staticLinks": [
+					"json-schema-validator-s",
+					"subprocess-s"
+				]
 			},
 			"runArguments": "-w NoTests -s",
 			"onlyInConfiguration": "Release"

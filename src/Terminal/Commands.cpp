@@ -668,7 +668,6 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 			result += ".exe";
 	}
 #elif defined(CHALET_MACOS)
-
 	if (String::startsWith("/usr/bin/", result))
 	{
 		auto& xcodePath = getXcodePath();
@@ -691,6 +690,8 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec, const
 #else
 	std::string null = "/dev/null";
 #endif
+
+	chalet_assert(Environment::isBash(), "MSVC not yet implemented");
 
 	StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
 	auto result = Commands::subprocessOutput(command, inCleanOutput);
