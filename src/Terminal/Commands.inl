@@ -48,4 +48,10 @@ inline bool Commands::subprocessNoOutput(const StringList& inCmd, const bool inC
 {
 	return Commands::subprocess(inCmd, std::string(), PipeOption::Close, PipeOption::Close, {}, inCleanOutput);
 }
+
+/*****************************************************************************/
+inline bool Commands::subprocessNoOutput(const StringList& inCmd, std::string inCwd, const bool inCleanOutput)
+{
+	return Commands::subprocess(inCmd, std::move(inCwd), PipeOption::Close, PipeOption::Close, {}, inCleanOutput);
+}
 }

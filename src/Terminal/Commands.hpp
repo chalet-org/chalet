@@ -46,6 +46,7 @@ inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOpt
 inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut, const bool inCleanOutput = true);
 inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr, const bool inCleanOutput = true);
 inline bool subprocessNoOutput(const StringList& inCmd, const bool inCleanOutput = true);
+inline bool subprocessNoOutput(const StringList& inCmd, std::string inCwd, const bool inCleanOutput = true);
 bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap, const bool inCleanOutput = true);
 std::string subprocessOutput(const StringList& inCmd, const bool inCleanOutput = true, const PipeOption inStdErr = PipeOption::Pipe);
 bool shellRemove(const std::string& inPath, const bool inCleanOutput = true);
