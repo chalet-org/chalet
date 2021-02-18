@@ -328,12 +328,16 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 	}
 }
 
+/*****************************************************************************/
 bool Commands::rename(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput)
 {
 	try
 	{
 		if (!inCleanOutput)
 			Output::print(Color::Blue, fmt::format("mv '{}' '{}'", inFrom, inTo));
+
+		if (fs::exists(inTo))
+			fs::remove(inTo);
 
 		fs::rename(inFrom, inTo);
 

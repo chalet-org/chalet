@@ -46,7 +46,7 @@ private:
 	std::string getRcCompile(const std::string& source, const std::string& target) const;
 	std::string getAsmGenerate(const std::string& object, const std::string& target) const;
 
-	std::string getMoveCommand(std::string inInput, const std::string& inOutput) const;
+	std::string getRenameCommand(const std::string& inInput, const std::string& inOutput) const;
 
 	BuildState& m_state;
 	const ProjectConfiguration& m_project;
