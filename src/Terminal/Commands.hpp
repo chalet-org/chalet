@@ -41,7 +41,7 @@ bool createFileWithContents(const std::string& inFile, const std::string& inCont
 
 bool subprocess(const StringList& inCmd, const bool inCleanOutput = true, const PipeOption inStdErr = PipeOption::StdErr, const PipeOption inStdOut = PipeOption::StdOut, EnvMap inEnvMap = EnvMap(), std::string inCwd = std::string());
 std::string subprocessOutput(const StringList& inCmd, const bool inCleanOutput = true, const PipeOption inStdErr = PipeOption::Pipe, std::string inCwd = std::string());
-bool shell(const std::string& inCmd, const bool inCleanOutput = true);
+// bool shell(const std::string& inCmd, const bool inCleanOutput = true);
 // bool shellAlternate(const std::string& inCmd, const bool inCleanOutput = true);
 // std::string shellWithOutput(const std::string& inCmd, const bool inCleanOutput = true);
 bool shellRemove(const std::string& inPath, const bool inCleanOutput = true);

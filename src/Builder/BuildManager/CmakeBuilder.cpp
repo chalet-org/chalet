@@ -64,7 +64,7 @@ bool CmakeBuilder::run()
 		if (outDirectoryDoesNotExist)
 			Commands::makeDirectory(outDir, false);
 
-		std::string defines = String::getPrefixed(m_project.cmakeDefines(), "-D");
+		// std::string defines = String::getPrefixed(m_project.cmakeDefines(), "-D");
 
 		const bool ninja = m_state.environment.strategy() == StrategyType::Ninja;
 		const auto& compileConfig = m_state.compilers.getConfig(m_project.language());
@@ -79,44 +79,37 @@ bool CmakeBuilder::run()
 
 		// TODO: -A arch, -T toolset
 
-		std::string cmakeCommand = fmt::format("cd {outDir} && {cmake} -G \"{generator}\" {location} {defines} -DCMAKE_BUILD_TYPE={cmakeBuild}",
-			FMT_ARG(outDir),
-			fmt::arg("cmake", m_state.tools.cmake()),
-			FMT_ARG(generator),
-			FMT_ARG(location),
-			FMT_ARG(defines),
-			FMT_ARG(cmakeBuild));
+		auto& cmake = m_state.tools.cmake();
+		StringList cmakeCommand{ cmake, "-G", generator, location };
+		for (auto& define : m_project.cmakeDefines())
+		{
+			cmakeCommand.push_back("-D" + define);
+		}
+		cmakeCommand.push_back("-DCMAKE_BUILD_TYPE=" + cmakeBuild);
 
-		if (!Commands::shell(cmakeCommand))
+		if (!Commands::subprocess(cmakeCommand, true, PipeOption::StdErr, PipeOption::StdOut, {}, outDir))
 			return false;
 
 		if (ninja)
 		{
 			const auto& ninjaExec = m_state.tools.ninja();
-
 			if (!Commands::subprocess({ ninjaExec }, true, PipeOption::StdOut, PipeOption::StdOut, {}, outDir))
 				return false;
 		}
 		else
 		{
 			const auto& makeExec = m_state.tools.make();
-
 			const auto maxJobs = m_state.environment.maxJobs();
-			std::string jobs;
+
+			StringList makeCommand{ makeExec };
+
 			if (maxJobs > 0)
-				jobs = fmt::format(" -j{}", maxJobs);
+				makeCommand.push_back(fmt::format("-j{}", maxJobs));
 
-			std::string syncTarget;
 			if (m_state.tools.makeVersionMajor() >= 4)
-				syncTarget = " --output-sync=target";
+				makeCommand.push_back("--output-sync=target");
 
-			auto makeCommand = fmt::format("cd {outDir} && {makeExec}{jobs}{syncTarget}",
-				FMT_ARG(outDir),
-				FMT_ARG(makeExec),
-				FMT_ARG(jobs),
-				FMT_ARG(syncTarget));
-
-			if (!Commands::shell(makeCommand))
+			if (!Commands::subprocess(makeCommand, true, PipeOption::StdErr, PipeOption::StdOut, {}, outDir))
 				return false;
 		}
 

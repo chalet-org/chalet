@@ -142,7 +142,7 @@ bool Commands::makeDirectory(const std::string& inPath, const bool inCleanOutput
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::Blue, fmt::format("mkdir -p '{}'", inPath));
+			Output::print(Color::Blue, fmt::format("make directory: {}", inPath));
 
 		fs::create_directories(inPath);
 
@@ -179,7 +179,7 @@ bool Commands::remove(const std::string& inPath, const bool inCleanOutput)
 			return true;
 
 		if (!inCleanOutput)
-			Output::print(Color::Blue, fmt::format("rm -rf '{}'", inPath));
+			Output::print(Color::Blue, fmt::format("remove file: {}", inPath));
 
 		bool result = fs::remove(inPath);
 		return result;
@@ -197,7 +197,7 @@ bool Commands::removeRecursively(const std::string& inPath, const bool inCleanOu
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::Blue, fmt::format("rm -rf '{}'", inPath));
+			Output::print(Color::Blue, fmt::format("remove recursively: {}", inPath));
 
 		bool result = fs::remove_all(inPath) > 0;
 		return result;
@@ -219,7 +219,7 @@ bool Commands::setExecutableFlag(const std::string& inPath, const bool inCleanOu
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::Blue, fmt::format("chmod +x '{}'", inPath));
+			Output::print(Color::Blue, fmt::format("set executable permission: {}", inPath));
 
 		fs::permissions(inPath,
 			fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
@@ -245,7 +245,7 @@ bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std:
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::Blue, fmt::format("ln -s '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("create directory symlink: {} {}", inFrom, inTo));
 
 		fs::create_directory_symlink(inFrom, inTo);
 
@@ -269,7 +269,7 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::Blue, fmt::format("ln -s '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("create symlink: {} {}", inFrom, inTo));
 
 		fs::create_symlink(inFrom, inTo);
 
@@ -294,7 +294,7 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const bo
 		if (inCleanOutput)
 			Output::msgCopying(inFrom, inTo);
 		else
-			Output::print(Color::Blue, fmt::format("cp -r '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("copy to path: {} {}", inFrom, inTo));
 
 		fs::copy(from, to, fs::copy_options::recursive);
 
@@ -315,7 +315,7 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 		if (inCleanOutput)
 			Output::msgCopying(inFrom, inTo);
 		else
-			Output::print(Color::Blue, fmt::format("cp -r '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("copy: {} {}", inFrom, inTo));
 
 		fs::copy(inFrom, inTo);
 
@@ -334,7 +334,7 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 	try
 	{
 		if (!inCleanOutput)
-			Output::print(Color::Blue, fmt::format("mv '{}' '{}'", inFrom, inTo));
+			Output::print(Color::Blue, fmt::format("rename: {} {}", inFrom, inTo));
 
 		if (fs::exists(inTo))
 			fs::remove(inTo);
@@ -537,14 +537,14 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCle
 }
 
 /*****************************************************************************/
-bool Commands::shell(const std::string& inCmd, const bool inCleanOutput)
+/*bool Commands::shell(const std::string& inCmd, const bool inCleanOutput)
 {
 	if (!inCleanOutput)
 		Output::print(Color::Blue, inCmd);
 
 	bool result = std::system(inCmd.c_str()) == EXIT_SUCCESS;
 	return result;
-}
+}*/
 
 /*****************************************************************************/
 /*bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput)
