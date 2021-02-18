@@ -31,9 +31,16 @@ inline bool Commands::subprocess(const StringList& inCmd, std::string inCwd, con
 	return Commands::subprocess(inCmd, std::move(inCwd), inStdOut, inStdErr, {}, inCleanOutput);
 }
 
+/*****************************************************************************/
 inline bool Commands::subprocess(const StringList& inCmd, const PipeOption inStdErr, const bool inCleanOutput)
 {
 	return Commands::subprocess(inCmd, std::string(), PipeOption::StdOut, inStdErr, {}, inCleanOutput);
+}
+
+/*****************************************************************************/
+inline bool Commands::subprocess(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr, const bool inCleanOutput)
+{
+	return Commands::subprocess(inCmd, std::string(), inStdOut, inStdErr, {}, inCleanOutput);
 }
 
 /*****************************************************************************/

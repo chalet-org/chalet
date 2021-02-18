@@ -44,6 +44,7 @@ inline bool subprocess(const StringList& inCmd, std::string inCwd, const bool in
 inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdErr, const bool inCleanOutput = true);
 inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, const bool inCleanOutput = true);
 inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut, const bool inCleanOutput = true);
+inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr, const bool inCleanOutput = true);
 inline bool subprocessNoOutput(const StringList& inCmd, const bool inCleanOutput = true);
 bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap, const bool inCleanOutput = true);
 std::string subprocessOutput(const StringList& inCmd, const bool inCleanOutput = true, const PipeOption inStdErr = PipeOption::Pipe);
