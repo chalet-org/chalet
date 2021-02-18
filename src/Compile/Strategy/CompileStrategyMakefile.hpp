@@ -25,6 +25,8 @@ struct CompileStrategyMakefile final : ICompileStrategy
 	virtual bool run() final;
 
 private:
+	bool subprocessMakefile(const StringList& inCmd, const bool inCleanOutput = true, std::string inCwd = std::string());
+
 	BuildState& m_state;
 	const ProjectConfiguration& m_project;
 	CompileToolchain& m_toolchain;

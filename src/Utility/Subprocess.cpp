@@ -14,7 +14,7 @@ int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
 {
 	auto process = sp::RunBuilder(const_cast<StringList&>(inCmd))
 					   .cerr(inOptions.stderrOption)
-					   .cout(inOptions.stderrOption)
+					   .cout(inOptions.stdoutOption)
 					   .cwd(inOptions.cwd)
 					   .popen();
 

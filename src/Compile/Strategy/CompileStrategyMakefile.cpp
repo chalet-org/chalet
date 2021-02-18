@@ -11,6 +11,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -101,9 +102,6 @@ bool CompileStrategyMakefile::run()
 {
 	// Timer timer;
 	const bool clean = true;
-#if !defined(CHALET_WIN32)
-	const bool redirectStdErr = true;
-#endif
 
 	// Note: If using subprocess, there's some weird color issues that show on MinGW & bash
 
@@ -111,7 +109,7 @@ bool CompileStrategyMakefile::run()
 #if defined(CHALET_WIN32)
 	if (!Commands::shell(String::join(m_makeCmd), clean))
 #else
-	if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+	if (!subprocessMakefile(m_makeCmd, clean))
 #endif
 	{
 		Output::lineBreak();
@@ -125,7 +123,7 @@ bool CompileStrategyMakefile::run()
 #if defined(CHALET_WIN32)
 		if (!Commands::shell(String::join(m_makeCmd), clean))
 #else
-		if (!Commands::subprocess(m_makeCmd, clean, redirectStdErr))
+		if (!subprocessMakefile(m_makeCmd, clean))
 #endif
 		{
 			Output::lineBreak();
@@ -138,6 +136,50 @@ bool CompileStrategyMakefile::run()
 	// Output::print(Color::Reset, fmt::format("   Make invocation time: {}ms", result));
 
 	return true;
+}
+
+/*****************************************************************************/
+bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const bool inCleanOutput, std::string inCwd)
+{
+	if (!inCleanOutput)
+	{
+		std::cout << "Subprocess: ";
+		Output::print(Color::Blue, inCmd);
+	}
+
+	std::string errorOutput;
+	static Subprocess::PipeFunc onStderr = [&errorOutput](const std::string& inData) {
+		errorOutput += inData;
+	};
+
+	SubprocessOptions options;
+	options.cwd = std::move(inCwd);
+	options.stdoutOption = sp::PipeOption::cout;
+	options.stderrOption = sp::PipeOption::pipe;
+	options.onStderr = onStderr;
+
+	int result = Subprocess::run(inCmd, options);
+	if (result != EXIT_SUCCESS)
+	{
+		std::size_t cutoff = 0;
+#if defined(CHALET_WIN32)
+		if (String::contains("mingw32-make", m_state.tools.make()))
+		{
+			cutoff = errorOutput.find("mingw32-make: ***");
+		}
+		else
+#endif
+		{
+			cutoff = errorOutput.find("make: ***");
+		}
+		if (cutoff != std::string::npos)
+		{
+			errorOutput = errorOutput.substr(0, cutoff);
+		}
+		std::cerr << errorOutput << std::flush;
+	}
+
+	return result == EXIT_SUCCESS;
 }
 
 }
