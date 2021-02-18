@@ -120,7 +120,7 @@ StringList String::split(std::string inString, const std::string_view& inSeparat
 		std::size_t nextNonChar = inString.find_first_not_of(inSeparator, itr);
 
 		const bool nonCharFound = nextNonChar != std::string::npos;
-		inString = inString.substr(nonCharFound ? nextNonChar : itr +1);
+		inString = inString.substr(nonCharFound ? nextNonChar : itr + 1);
 		if (nonCharFound)
 			itr = nextNonChar;
 

@@ -85,8 +85,8 @@
 			"compilerSettings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"staticLinks": [
-					"json-schema-validator-s",
-					"subprocess-s"
+					"json-schema-validator",
+					"subprocess"
 				]
 			},
 			"runProject": true
@@ -112,8 +112,8 @@
 			"compilerSettings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"staticLinks": [
-					"json-schema-validator-s",
-					"subprocess-s"
+					"json-schema-validator",
+					"subprocess"
 				]
 			},
 			"runArguments": "-w NoTests -s",

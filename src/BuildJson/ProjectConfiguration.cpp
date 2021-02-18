@@ -89,6 +89,7 @@ void ProjectConfiguration::addLinks(StringList& inList)
 void ProjectConfiguration::addLink(std::string& inValue)
 {
 #if defined(CHALET_MACOS)
+	// TODO: move this logic to toolchain
 	if (String::equals(inValue, "stdc++fs"))
 		return;
 #endif
@@ -104,11 +105,20 @@ void ProjectConfiguration::resolveLinksFromProject(const std::string& inProjectN
 		if (link != inProjectName)
 			continue;
 
-		std::string suffix;
 		if (inStaticLib)
-			suffix = "-s";
+		{
+			link += "-s";
+		}
+	}
+	for (auto& link : m_staticLinks)
+	{
+		if (link != inProjectName)
+			continue;
 
-		link += suffix;
+		if (inStaticLib)
+		{
+			link += "-s";
+		}
 	}
 }
 

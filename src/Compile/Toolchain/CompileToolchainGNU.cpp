@@ -435,7 +435,9 @@ std::string CompileToolchainGNU::getAsmGenerateCommand(const std::string& inputF
 {
 	// TODO: Customizations for these commands
 #if defined(CHALET_MACOS)
-	return fmt::format("otool -tvV {inputFile} | c++filt > {outputFile}",
+	const auto& otool = m_state.tools.otool();
+	return fmt::format("{otool} -tvV {inputFile} | c++filt > {outputFile}",
+		FMT_ARG(otool),
 		FMT_ARG(inputFile),
 		FMT_ARG(outputFile));
 #else
