@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -79,12 +80,8 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	{
 		outIcon = fmt::format("{}/{}.icns", resourcePath, iconBaseName);
 
-		const std::string cmd = fmt::format("\"{sips}\" -s format icns '{icon}' --out '{outIcon}' &> /dev/null", FMT_ARG(sips), FMT_ARG(icon), FMT_ARG(outIcon));
-		if (!Commands::shell(cmd))
+		if (!Commands::subprocess({ sips, "-s", "format", "icns", icon, "--out", outIcon }, true, PipeOption::Close, PipeOption::Close))
 			return false;
-
-		if (inCleanOutput)
-			Output::lineBreak();
 	}
 	else if (String::endsWith(".icns", icon))
 	{
@@ -134,10 +131,10 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	}
 
 	auto& installNameTool = m_state.tools.installNameUtil();
-	if (!Commands::shell(fmt::format("{} -add_rpath @executable_path/../Frameworks '{}/{}'", installNameTool, executablePath, mainExecutable), inCleanOutput))
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", fmt::format("{}/{}", executablePath, mainExecutable) }, inCleanOutput))
 		return false;
 
-	if (!Commands::shell(fmt::format("{} -add_rpath @loader_path/.. '{}/{}'", installNameTool, executablePath, mainExecutable), inCleanOutput))
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@loader_path/..", fmt::format("{}/{}", executablePath, mainExecutable) }, inCleanOutput))
 		return false;
 
 	{
@@ -151,9 +148,9 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 			result = Commands::copy(dep, executablePath, inCleanOutput);
 			if (result)
 			{
-				result &= Commands::shell(fmt::format("{} -change @rpath/{0} @rpath/MacOS/{0} '{1}'", installNameTool, filename, executablePath), inCleanOutput);
-				result &= Commands::shell(fmt::format("{} -change {0} @rpath/MacOS/{0} '{1}'", installNameTool, filename, executablePath), inCleanOutput);
-				// result &= Commands::shell(fmt::format("{} -change {0} @rpath/MacOS/{0} '{1}'", m_state.tools.installNameUtil(), dep, executablePath), inCleanOutput);
+				result &= Commands::subprocess({ installNameTool, "-change", fmt::format("@rpath/{}", filename), fmt::format("@rpath/MacOS/{}", filename), executablePath }, inCleanOutput);
+				result &= Commands::subprocess({ installNameTool, "-change", filename, fmt::format("@rpath/MacOS/{}", filename), executablePath }, inCleanOutput);
+				// result &= Commands::subprocess({ installNameTool, "-change", dep, fmt::format("@rpath/MacOS/{}", dep), executablePath }, inCleanOutput);
 			}
 			resCopies &= result;
 		}
@@ -186,7 +183,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		auto& tiffUtil = m_state.tools.tiffUtil();
 		bool dmgResult = true;
 		const std::string volumePath = fmt::format("/Volumes/{}", bundleName);
-		dmgResult &= Commands::shell(fmt::format("{} detach '{}/' &> /dev/null", hdiUtil, volumePath), inCleanOutput);
+		dmgResult &= Commands::subprocess({ hdiUtil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput, PipeOption::Close, PipeOption::Close);
 
 		if (inCleanOutput)
 		{
@@ -194,11 +191,11 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		}
 
 		const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);
-		dmgResult &= Commands::shell(fmt::format("{} create -megabytes 54 -fs HFS+ -volname '{}' '{}' &> /dev/null", hdiUtil, bundleName, tmpDmg), inCleanOutput);
-		dmgResult &= Commands::shell(fmt::format("{} attach '{}' &> /dev/null", hdiUtil, tmpDmg), inCleanOutput);
+		dmgResult &= Commands::subprocess({ hdiUtil, "create", "-megabytes", "54", "-fs", "HFS+", "-volname", bundleName, tmpDmg }, inCleanOutput, PipeOption::Close, PipeOption::Close);
+		dmgResult &= Commands::subprocess({ hdiUtil, "attach", tmpDmg }, inCleanOutput, PipeOption::Close, PipeOption::Close);
 
 		const std::string appPath = fmt::format("{}/{}.app", outDir, bundleName);
-		dmgResult &= Commands::shell(fmt::format("cp -r '{}' '{}'", appPath, volumePath), inCleanOutput);
+		dmgResult &= Commands::copy(appPath, volumePath, inCleanOutput);
 
 		const std::string backgroundPath = fmt::format("{}/.background", volumePath);
 		dmgResult &= Commands::makeDirectory(backgroundPath, inCleanOutput);
@@ -206,19 +203,43 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		const auto& background1x = macosBundle.dmgBackground1x();
 		const auto& background2x = macosBundle.dmgBackground2x();
 
-		dmgResult &= Commands::shell(fmt::format("{} -cathidpicheck '{}' '{}' -out '{}/background.tiff' &> /dev/null", tiffUtil, background1x, background2x, backgroundPath), inCleanOutput);
+		dmgResult &= Commands::subprocess({ tiffUtil, "-cathidpicheck", background1x, background2x, "-out", fmt::format("{}/background.tiff", backgroundPath) }, inCleanOutput, PipeOption::Close, PipeOption::Close);
 
 		dmgResult &= Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath), inCleanOutput);
 
-		// TODO: cache env/osx/dmg.applescript, pass more variable to it (size, etc)
-		const std::string applescriptPath = "env/osx/dmg.applescript";
-		dmgResult &= Commands::shell(fmt::format("appName='{}' osascript '{}'", bundleName, applescriptPath), inCleanOutput);
+		// const std::string applescriptPath = "env/osx/dmg.applescript";
+		// Environment::set("CHALET_MACOS_BUNDLE_NAME", bundleName);
+
+		const std::string applescriptText = fmt::format(R"applescript(set bundleName to "{bundleName}"
+set appNameExt to "{bundleName}.app"
+tell application "Finder"
+ tell disk bundleName
+  open
+  set current view of container window to icon view
+  set toolbar visible of container window to false
+  set statusbar visible of container window to false
+  set the bounds of container window to {{0, 0, 512, 342}}
+  set viewOptions to the icon view options of container window
+  set arrangement of viewOptions to not arranged
+  set icon size of viewOptions to 80
+  set background picture of viewOptions to file ".background:background.tiff"
+  set position of item appNameExt of container window to {{120, 188}}
+  set position of item "Applications" of container window to {{392, 188}}
+  set position of item ".background" of container window to {{120, 388}}
+  close
+  update without registering applications
+  delay 2
+ end tell
+end tell)applescript",
+			FMT_ARG(bundleName));
+
+		dmgResult &= Commands::subprocess({ "osascript", "-e", applescriptText }, inCleanOutput, PipeOption::StdErr, PipeOption::StdOut);
 		dmgResult &= Commands::shellRemove(fmt::format("{}/.fseventsd", volumePath), inCleanOutput);
 
-		dmgResult &= Commands::shell(fmt::format("{} detach '{}/' &> /dev/null", hdiUtil, volumePath), inCleanOutput);
+		dmgResult &= Commands::subprocess({ hdiUtil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput, PipeOption::Close, PipeOption::Close);
 
 		const std::string outDmgPath = fmt::format("{}/{}.dmg", outDir, bundleName);
-		dmgResult &= Commands::shell(fmt::format("{} convert '{}' -format UDZO -o '{}' &> /dev/null", hdiUtil, tmpDmg, outDmgPath), inCleanOutput);
+		dmgResult &= Commands::subprocess({ hdiUtil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }, inCleanOutput, PipeOption::Close, PipeOption::Close);
 
 		dmgResult &= Commands::removeRecursively(tmpDmg, inCleanOutput);
 

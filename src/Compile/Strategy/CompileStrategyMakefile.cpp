@@ -102,16 +102,14 @@ bool CompileStrategyMakefile::run()
 {
 	// Timer timer;
 	const bool clean = true;
+#if defined(CHALET_WIN32)
 	std::cout << Output::getAnsiStyle(Color::Blue);
+#endif
 
 	// Note: If using subprocess, there's some weird color issues that show on MinGW & bash
 
 	m_makeCmd.push_back("makebuild");
-	// #if defined(CHALET_WIN32)
-	// 	if (!Commands::shell(String::join(m_makeCmd), clean))
-	// #else
 	if (!subprocessMakefile(m_makeCmd, clean))
-	// #endif
 	{
 		Output::lineBreak();
 		return false;
@@ -121,11 +119,7 @@ bool CompileStrategyMakefile::run()
 	{
 		m_makeCmd.pop_back();
 		m_makeCmd.push_back("dumpasm");
-		// #if defined(CHALET_WIN32)
-		// 		if (!Commands::shell(String::join(m_makeCmd), clean))
-		// #else
 		if (!subprocessMakefile(m_makeCmd, clean))
-		// #endif
 		{
 			Output::lineBreak();
 			return false;
@@ -149,17 +143,17 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	}
 
 	std::string errorOutput;
-	static Subprocess::PipeFunc onStderr = [&errorOutput](const std::string& inData) {
-		errorOutput += inData;
+	Subprocess::PipeFunc onStdErr = [&errorOutput](std::string inData) {
+		errorOutput += std::move(inData);
 	};
 
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
-	options.stdoutOption = sp::PipeOption::cout;
-	options.stderrOption = sp::PipeOption::pipe;
-	options.onStderr = onStderr;
+	options.stdoutOption = PipeOption::StdOut;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdErr = onStdErr;
 
-	int result = Subprocess::run(inCmd, options);
+	int result = Subprocess::run(inCmd, std::move(options));
 	if (!errorOutput.empty())
 	{
 		std::size_t cutoff = 0;

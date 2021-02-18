@@ -7,37 +7,40 @@
 
 #include <array>
 
+#include "Libraries/SubprocessApi.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
 // TODO: Handle terminate/interrupt signals!
-int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
+int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 {
 	auto process = sp::RunBuilder(const_cast<StringList&>(inCmd))
-					   .cerr(inOptions.stderrOption)
-					   .cout(inOptions.stdoutOption)
-					   .cwd(inOptions.cwd)
+					   .cerr(static_cast<sp::PipeOption>(inOptions.stderrOption))
+					   .cout(static_cast<sp::PipeOption>(inOptions.stdoutOption))
+					   .env(std::move(inOptions.env))
+					   .cwd(std::move(inOptions.cwd))
 					   .popen();
 
-	if (inOptions.onStdout != nullptr || inOptions.onStderr != nullptr)
+	if (inOptions.onStdOut != nullptr || inOptions.onStdErr != nullptr)
 	{
 		std::array<char, 128> buffer{ 0 };
 		sp::ssize_t bytesRead = 1;
 
-		if (inOptions.onStdout != nullptr)
+		if (inOptions.onStdOut != nullptr)
 		{
 			while (bytesRead > 0)
 			{
 				bytesRead = sp::pipe_read(process.cout, buffer.data(), buffer.size());
 				if (bytesRead > 0)
 				{
-					inOptions.onStdout(std::string(buffer.data(), bytesRead));
+					inOptions.onStdOut(std::string(buffer.data(), bytesRead));
 					memset(buffer.data(), 0, sizeof(char) * buffer.size());
 				}
 			}
 		}
 
-		if (inOptions.onStderr != nullptr)
+		if (inOptions.onStdErr != nullptr)
 		{
 			bytesRead = 1;
 			while (bytesRead > 0)
@@ -45,7 +48,7 @@ int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
 				bytesRead = sp::pipe_read(process.cerr, buffer.data(), buffer.size());
 				if (bytesRead > 0)
 				{
-					inOptions.onStderr(std::string(buffer.data(), bytesRead));
+					inOptions.onStdErr(std::string(buffer.data(), bytesRead));
 					memset(buffer.data(), 0, sizeof(char) * buffer.size());
 				}
 			}

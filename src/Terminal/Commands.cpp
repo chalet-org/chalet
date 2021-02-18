@@ -482,37 +482,25 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 }
 
 /*****************************************************************************/
-bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, const bool inRedirectStdErr, std::string inCwd)
+bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, const PipeOption inStdErr, const PipeOption inStdOut, EnvMap inEnvMap, std::string inCwd)
 {
 	if (!inCleanOutput)
-	{
-		std::cout << "Subprocess: ";
 		Output::print(Color::Blue, inCmd);
-	}
 
-	/*static Subprocess::PipeFunc onStdout = [](const std::string& inData) {
-		std::cout << inData << std::flush;
-	};*/
-
-	static Subprocess::PipeFunc onStderr = [](const std::string& inData) {
-		// std::cerr << inData << std::flush;
-		UNUSED(inData);
-	};
+	chalet_assert(inStdOut != PipeOption::Pipe, "Commands::subprocess must implement onStdOut");
+	chalet_assert(inStdErr != PipeOption::Pipe, "Commands::subprocess must implement onStdErr");
 
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
-	options.stdoutOption = sp::PipeOption::cout;
-	UNUSED(inRedirectStdErr);
-	// options.stderrOption = inRedirectStdErr ? sp::PipeOption::cout : sp::PipeOption::cerr;
-	options.stderrOption = sp::PipeOption::pipe;
-	// options.onStdout = onStdout;
-	options.onStderr = onStderr;
+	options.env = std::move(inEnvMap);
+	options.stdoutOption = inStdOut;
+	options.stderrOption = inStdErr;
 
-	return Subprocess::run(inCmd, options) == EXIT_SUCCESS;
+	return Subprocess::run(inCmd, std::move(options)) == EXIT_SUCCESS;
 }
 
 /*****************************************************************************/
-std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCleanOutput, const bool inRedirectStdErr, std::string inCwd)
+std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCleanOutput, const PipeOption inStdErr, std::string inCwd)
 {
 	if (!inCleanOutput)
 	{
@@ -524,17 +512,17 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCle
 
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
-	options.stdoutOption = sp::PipeOption::pipe;
-	options.stderrOption = inRedirectStdErr ? sp::PipeOption::pipe : sp::PipeOption::close;
-	options.onStdout = [&ret](const std::string& inData) {
-		ret += inData;
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = inStdErr;
+	options.onStdOut = [&ret](std::string inData) {
+		ret += std::move(inData);
 	};
-	if (inRedirectStdErr)
+	if (options.stderrOption == PipeOption::Pipe)
 	{
-		options.onStderr = options.onStdout;
+		options.onStdErr = options.onStdOut;
 	}
 
-	UNUSED(Subprocess::run(inCmd, options));
+	UNUSED(Subprocess::run(inCmd, std::move(options)));
 
 	if (!ret.empty() && ret.back() == '\n')
 	{
@@ -551,7 +539,6 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCle
 /*****************************************************************************/
 bool Commands::shell(const std::string& inCmd, const bool inCleanOutput)
 {
-	// UNUSED(inCleanOutput);
 	if (!inCleanOutput)
 		Output::print(Color::Blue, inCmd);
 

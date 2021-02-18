@@ -94,7 +94,7 @@ bool CmakeBuilder::run()
 		{
 			const auto& ninjaExec = m_state.tools.ninja();
 
-			if (!Commands::subprocess({ ninjaExec }, true, true, outDir))
+			if (!Commands::subprocess({ ninjaExec }, true, PipeOption::StdOut, PipeOption::StdOut, {}, outDir))
 				return false;
 		}
 		else

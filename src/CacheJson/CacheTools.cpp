@@ -238,7 +238,7 @@ std::string CacheTools::getCurrentGitRepositoryBranch(const std::string& inRepoP
 /*****************************************************************************/
 std::string CacheTools::getCurrentGitRepositoryTag(const std::string& inRepoPath, const bool inCleanOutput) const
 {
-	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "abbrev=0" }, inCleanOutput, false);
+	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "abbrev=0" }, inCleanOutput, PipeOption::Close);
 	return tag;
 }
 

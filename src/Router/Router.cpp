@@ -192,24 +192,6 @@ bool Router::cmdDebug()
 	{
 		Timer timer;
 
-		Commands::shell("echo \"Hello World!\"", false);
-
-		auto result = timer.stop();
-		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
-	}
-
-	{
-		Timer timer;
-
-		Commands::shell("which some_proc", false);
-
-		auto result = timer.stop();
-		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
-	}
-
-	{
-		Timer timer;
-
 		// StringList patterns{ "*.cpp" };
 		// Commands::forEachFileMatch("src", patterns, [](const fs::path& inPath) {
 		// 	std::cout << inPath.string() << '\n';

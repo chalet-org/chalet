@@ -1,4 +1,4 @@
-set appName to system attribute "appName"
+set appName to system attribute "CHALET_MACOS_BUNDLE_NAME"
 set appNameExt to appName & ".app"
 
 tell application "Finder"
