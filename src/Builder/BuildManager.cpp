@@ -544,11 +544,16 @@ std::string BuildManager::getRunOutputFile()
 /*****************************************************************************/
 bool BuildManager::runExternalScripts(const StringList& inScripts)
 {
-	std::cout << Output::getAnsiReset() << std::flush;
 
 	bool result = true;
 	for (auto& scriptPath : inScripts)
 	{
+		std::ptrdiff_t i = &scriptPath - &inScripts.front();
+		if (i == 0)
+		{
+			std::cout << Output::getAnsiReset() << std::flush;
+		}
+
 		if (!Commands::pathExists(scriptPath))
 		{
 			Diagnostic::warn(fmt::format("{}: The script '{}' was not found. Skipping.", CommandLineInputs::file(), scriptPath));
