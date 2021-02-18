@@ -33,41 +33,6 @@ namespace
 {
 #if defined(CHALET_WIN32)
 std::string kCygPath;
-
-/*bool windowsCreateProcess(const std::string& inCmd)
-{
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
-	ZeroMemory(&pi, sizeof(pi));
-
-	bool result = CreateProcessA(NULL, // No module name (use command line)
-		LPSTR(inCmd.c_str()),		   // Command line
-		NULL,						   // Process handle not inheritable
-		NULL,						   // Thread handle not inheritable
-		FALSE,						   // Set handle inheritance to FALSE
-		HIGH_PRIORITY_CLASS,		   // No creation flags
-		NULL,						   // Use parent's environment block
-		NULL,						   // Use parent's starting directory
-		(LPSTARTUPINFOA)&si,		   // Pointer to STARTUPINFO structure
-		&pi							   // Pointer to PROCESS_INFORMATION structure
-	);
-	if (!result)
-	{
-		std::cout << inCmd << std::endl;
-		std::cout << fmt::format("CreateProcess failed ({}).", GetLastError()) << std::endl;
-	}
-
-	// Wait until child process exits.
-	WaitForSingleObject(pi.hProcess, INFINITE);
-
-	// Close process and thread handles.
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-
-	return result;
-}*/
 #elif defined(CHALET_MACOS)
 std::string kXcodePath;
 #endif
@@ -482,7 +447,7 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 }
 
 /*****************************************************************************/
-bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, const PipeOption inStdErr, const PipeOption inStdOut, EnvMap inEnvMap, std::string inCwd)
+bool Commands::subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap, const bool inCleanOutput)
 {
 	if (!inCleanOutput)
 		Output::print(Color::Blue, inCmd);
@@ -500,7 +465,7 @@ bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput, con
 }
 
 /*****************************************************************************/
-std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCleanOutput, const PipeOption inStdErr, std::string inCwd)
+std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCleanOutput, const PipeOption inStdErr)
 {
 	if (!inCleanOutput)
 	{
@@ -511,7 +476,6 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCle
 	std::string ret;
 
 	SubprocessOptions options;
-	options.cwd = std::move(inCwd);
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = inStdErr;
 	options.onStdOut = [&ret](std::string inData) {
@@ -535,67 +499,6 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCle
 
 	return ret;
 }
-
-/*****************************************************************************/
-/*bool Commands::shell(const std::string& inCmd, const bool inCleanOutput)
-{
-	if (!inCleanOutput)
-		Output::print(Color::Blue, inCmd);
-
-	bool result = std::system(inCmd.c_str()) == EXIT_SUCCESS;
-	return result;
-}*/
-
-/*****************************************************************************/
-/*bool Commands::shellAlternate(const std::string& inCmd, const bool inCleanOutput)
-{
-	if (!inCleanOutput)
-		Output::print(Color::Blue, inCmd);
-
-#if defined(CHALET_WIN32)
-	auto splitCmds = String::split(inCmd, " && ");
-	bool result = true;
-	for (auto& cmd : splitCmds)
-	{
-		result = windowsCreateProcess(cmd);
-		if (!result)
-			break;
-	}
-
-	return result;
-#else
-	// popen is about 4x faster than std::system
-	auto cmd = fmt::format("{} 2>&1", inCmd);
-	FILE* output = popen(cmd.c_str(), "r");
-	if (output == nullptr)
-		throw std::runtime_error("popen() failed!");
-
-	return pclose(output) == 0;
-#endif
-}*/
-
-/*****************************************************************************/
-/*std::string Commands::shellWithOutput(const std::string& inCmd, const bool inCleanOutput)
-{
-	std::array<char, 128> buffer;
-	std::string result;
-	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(inCmd.c_str(), "r"), pclose);
-
-	if (!inCleanOutput)
-		Output::print(Color::Blue, inCmd);
-
-	if (!pipe)
-	{
-		throw std::runtime_error("popen() failed!");
-	}
-
-	while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()) != nullptr)
-	{
-		result += buffer.data();
-	}
-
-	return result;
-}*/
 
 /*****************************************************************************/
 bool Commands::shellRemove(const std::string& inPath, const bool inCleanOutput)
@@ -693,7 +596,7 @@ const std::string& Commands::getCygPath()
 {
 	if (kCygPath.empty())
 	{
-		kCygPath = Commands::subprocessOutput({ "cygpath", "-m", "/" }, true);
+		kCygPath = Commands::subprocessOutput({ "cygpath", "-m", "/" });
 		Path::sanitize(kCygPath, true);
 		kCygPath.pop_back();
 	}
@@ -708,7 +611,7 @@ const std::string& Commands::getXcodePath()
 {
 	if (kXcodePath.empty())
 	{
-		kXcodePath = Commands::subprocessOutput({ "xcode-select", "-p" }, true);
+		kXcodePath = Commands::subprocessOutput({ "xcode-select", "-p" });
 	}
 
 	return kXcodePath;

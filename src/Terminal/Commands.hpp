@@ -39,11 +39,14 @@ bool pathIsEmpty(const fs::path& inPath, const bool inCheckExists = false);
 
 bool createFileWithContents(const std::string& inFile, const std::string& inContents);
 
-bool subprocess(const StringList& inCmd, const bool inCleanOutput = true, const PipeOption inStdErr = PipeOption::StdErr, const PipeOption inStdOut = PipeOption::StdOut, EnvMap inEnvMap = EnvMap(), std::string inCwd = std::string());
-std::string subprocessOutput(const StringList& inCmd, const bool inCleanOutput = true, const PipeOption inStdErr = PipeOption::Pipe, std::string inCwd = std::string());
-// bool shell(const std::string& inCmd, const bool inCleanOutput = true);
-// bool shellAlternate(const std::string& inCmd, const bool inCleanOutput = true);
-// std::string shellWithOutput(const std::string& inCmd, const bool inCleanOutput = true);
+inline bool subprocess(const StringList& inCmd, const bool inCleanOutput = true);
+inline bool subprocess(const StringList& inCmd, std::string inCwd, const bool inCleanOutput = true);
+inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdErr, const bool inCleanOutput = true);
+inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, const bool inCleanOutput = true);
+inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut, const bool inCleanOutput = true);
+inline bool subprocessNoOutput(const StringList& inCmd, const bool inCleanOutput = true);
+bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap, const bool inCleanOutput = true);
+std::string subprocessOutput(const StringList& inCmd, const bool inCleanOutput = true, const PipeOption inStdErr = PipeOption::Pipe);
 bool shellRemove(const std::string& inPath, const bool inCleanOutput = true);
 
 std::string which(const std::string& inExecutable, const bool inCleanOutput = true);
@@ -57,5 +60,7 @@ const std::string& getXcodePath();
 #endif
 }
 }
+
+#include "Terminal/Commands.inl"
 
 #endif // CHALET_COMMANDS_HPP

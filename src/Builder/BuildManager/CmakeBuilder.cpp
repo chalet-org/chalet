@@ -87,13 +87,13 @@ bool CmakeBuilder::run()
 		}
 		cmakeCommand.push_back("-DCMAKE_BUILD_TYPE=" + cmakeBuild);
 
-		if (!Commands::subprocess(cmakeCommand, true, PipeOption::StdErr, PipeOption::StdOut, {}, outDir))
+		if (!Commands::subprocess(cmakeCommand, outDir))
 			return false;
 
 		if (ninja)
 		{
 			const auto& ninjaExec = m_state.tools.ninja();
-			if (!Commands::subprocess({ ninjaExec }, true, PipeOption::StdOut, PipeOption::StdOut, {}, outDir))
+			if (!Commands::subprocess({ ninjaExec }, outDir, PipeOption::StdOut))
 				return false;
 		}
 		else
@@ -109,7 +109,7 @@ bool CmakeBuilder::run()
 			if (m_state.tools.makeVersionMajor() >= 4)
 				makeCommand.push_back("--output-sync=target");
 
-			if (!Commands::subprocess(makeCommand, true, PipeOption::StdErr, PipeOption::StdOut, {}, outDir))
+			if (!Commands::subprocess(makeCommand, outDir))
 				return false;
 		}
 

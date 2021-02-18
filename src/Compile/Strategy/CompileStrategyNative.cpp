@@ -75,7 +75,7 @@ bool executeCommand(std::string command)
 		}
 		else
 		{
-			if (!Commands::subprocess(cmdSplit, true))
+			if (!Commands::subprocess(cmdSplit))
 				return false;
 		}
 	}

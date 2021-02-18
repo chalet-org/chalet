@@ -80,7 +80,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	{
 		outIcon = fmt::format("{}/{}.icns", resourcePath, iconBaseName);
 
-		if (!Commands::subprocess({ sips, "-s", "format", "icns", icon, "--out", outIcon }, true, PipeOption::Close, PipeOption::Close))
+		if (!Commands::subprocessNoOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
 			return false;
 	}
 	else if (String::endsWith(".icns", icon))
@@ -183,7 +183,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		auto& tiffUtil = m_state.tools.tiffUtil();
 		bool dmgResult = true;
 		const std::string volumePath = fmt::format("/Volumes/{}", bundleName);
-		dmgResult &= Commands::subprocess({ hdiUtil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput, PipeOption::Close, PipeOption::Close);
+		dmgResult &= Commands::subprocessNoOutput({ hdiUtil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput);
 
 		if (inCleanOutput)
 		{
@@ -191,8 +191,8 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		}
 
 		const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);
-		dmgResult &= Commands::subprocess({ hdiUtil, "create", "-megabytes", "54", "-fs", "HFS+", "-volname", bundleName, tmpDmg }, inCleanOutput, PipeOption::Close, PipeOption::Close);
-		dmgResult &= Commands::subprocess({ hdiUtil, "attach", tmpDmg }, inCleanOutput, PipeOption::Close, PipeOption::Close);
+		dmgResult &= Commands::subprocessNoOutput({ hdiUtil, "create", "-megabytes", "54", "-fs", "HFS+", "-volname", bundleName, tmpDmg }, inCleanOutput);
+		dmgResult &= Commands::subprocessNoOutput({ hdiUtil, "attach", tmpDmg }, inCleanOutput);
 
 		const std::string appPath = fmt::format("{}/{}.app", outDir, bundleName);
 		dmgResult &= Commands::copy(appPath, volumePath, inCleanOutput);
@@ -203,7 +203,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		const auto& background1x = macosBundle.dmgBackground1x();
 		const auto& background2x = macosBundle.dmgBackground2x();
 
-		dmgResult &= Commands::subprocess({ tiffUtil, "-cathidpicheck", background1x, background2x, "-out", fmt::format("{}/background.tiff", backgroundPath) }, inCleanOutput, PipeOption::Close, PipeOption::Close);
+		dmgResult &= Commands::subprocessNoOutput({ tiffUtil, "-cathidpicheck", background1x, background2x, "-out", fmt::format("{}/background.tiff", backgroundPath) }, inCleanOutput);
 
 		dmgResult &= Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath), inCleanOutput);
 
@@ -233,13 +233,13 @@ tell application "Finder"
 end tell)applescript",
 			FMT_ARG(bundleName));
 
-		dmgResult &= Commands::subprocess({ "osascript", "-e", applescriptText }, inCleanOutput, PipeOption::StdErr, PipeOption::StdOut);
+		dmgResult &= Commands::subprocess({ "osascript", "-e", applescriptText }, inCleanOutput);
 		dmgResult &= Commands::shellRemove(fmt::format("{}/.fseventsd", volumePath), inCleanOutput);
 
-		dmgResult &= Commands::subprocess({ hdiUtil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput, PipeOption::Close, PipeOption::Close);
+		dmgResult &= Commands::subprocessNoOutput({ hdiUtil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput);
 
 		const std::string outDmgPath = fmt::format("{}/{}.dmg", outDir, bundleName);
-		dmgResult &= Commands::subprocess({ hdiUtil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }, inCleanOutput, PipeOption::Close, PipeOption::Close);
+		dmgResult &= Commands::subprocessNoOutput({ hdiUtil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }, inCleanOutput);
 
 		dmgResult &= Commands::removeRecursively(tmpDmg, inCleanOutput);
 
