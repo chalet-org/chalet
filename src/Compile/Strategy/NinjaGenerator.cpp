@@ -42,6 +42,14 @@ std::string NinjaGenerator::getContents(const SourceOutputs& inOutputs, const st
 	auto objects = String::join(inOutputs.objectList);
 	auto assemblies = String::join(inOutputs.assemblyList);
 
+	for (auto& project : m_state.projects)
+	{
+		if (List::contains(m_project.projectStaticLinks(), project->name()))
+		{
+			objects += " " + m_state.paths.getTargetFilename(*project);
+		}
+	}
+
 	//
 	//
 	//

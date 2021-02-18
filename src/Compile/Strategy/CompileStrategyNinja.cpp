@@ -88,14 +88,9 @@ bool CompileStrategyNinja::initialize()
 /*****************************************************************************/
 bool CompileStrategyNinja::run()
 {
-	const bool hasTerm = Environment::hasTerm();
-
 	{
 		StringList command;
-		if (hasTerm)
-		{
-			std::cout << Output::getAnsiStyle(Color::Blue);
-		}
+		std::cout << Output::getAnsiStyle(Color::Blue);
 
 		bool result = Commands::subprocess(m_ninjaCmd, PipeOption::StdOut);
 		Output::lineBreak();
@@ -107,10 +102,7 @@ bool CompileStrategyNinja::run()
 	if (m_project.dumpAssembly())
 	{
 		StringList command;
-		if (hasTerm)
-		{
-			std::cout << Output::getAnsiStyle(Color::Magenta);
-		}
+		std::cout << Output::getAnsiStyle(Color::Magenta);
 
 		bool result = Commands::subprocess(m_ninjaCmd, PipeOption::StdOut);
 		Output::lineBreak();
