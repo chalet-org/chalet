@@ -32,6 +32,8 @@ struct ProjectConfiguration
 	void addLink(std::string& inValue);
 	void resolveLinksFromProject(const std::string& inProjectName, const bool inStaticLib);
 
+	const StringList& projectStaticLinks() const noexcept;
+
 	const StringList& staticLinks() const noexcept;
 	void addStaticLinks(StringList& inList);
 	void addStaticLink(std::string& inValue);
@@ -176,6 +178,7 @@ private:
 	StringList m_fileExtensions;
 	StringList m_defines;
 	StringList m_links;
+	StringList m_projectStaticLinks;
 	StringList m_staticLinks;
 	StringList m_libDirs;
 	StringList m_includeDirs;

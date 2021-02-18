@@ -105,6 +105,7 @@ void ProjectConfiguration::resolveLinksFromProject(const std::string& inProjectN
 		if (link != inProjectName)
 			continue;
 
+		List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
 		if (inStaticLib)
 		{
 			link += "-s";
@@ -115,11 +116,18 @@ void ProjectConfiguration::resolveLinksFromProject(const std::string& inProjectN
 		if (link != inProjectName)
 			continue;
 
+		List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
 		if (inStaticLib)
 		{
 			link += "-s";
 		}
 	}
+}
+
+/*****************************************************************************/
+const StringList& ProjectConfiguration::projectStaticLinks() const noexcept
+{
+	return m_projectStaticLinks;
 }
 
 /*****************************************************************************/

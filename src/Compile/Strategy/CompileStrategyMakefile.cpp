@@ -10,9 +10,12 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Subprocess.hpp"
 #include "Utility/Timer.hpp"
+
+// #define CHALET_KEEP_OLD_CACHE 1
 
 namespace chalet
 {
@@ -49,6 +52,9 @@ bool CompileStrategyMakefile::createCache(const SourceOutputs& inOutputs)
 		existingHash = buildCache.at(key);
 	}
 
+#if defined(CHALET_KEEP_OLD_CACHE)
+	UNUSED(m_toolchain);
+#else
 	const bool cacheExists = Commands::pathExists(m_cacheFile);
 	const bool appBuildChanged = m_state.cache.appBuildChanged();
 	const auto hash = String::getPathFilename(m_cacheFile);
@@ -62,6 +68,7 @@ bool CompileStrategyMakefile::createCache(const SourceOutputs& inOutputs)
 		buildCache[key] = String::getPathFilename(m_cacheFile);
 		m_state.cache.setDirty(true);
 	}
+#endif
 
 	return true;
 }

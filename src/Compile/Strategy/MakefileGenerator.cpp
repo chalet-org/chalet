@@ -450,6 +450,14 @@ std::string MakefileGenerator::getLinkerPreReqs()
 {
 	std::string ret = "$(SOURCE_OBJS)";
 
+	for (auto& project : m_state.projects)
+	{
+		if (List::contains(m_project.projectStaticLinks(), project->name()))
+		{
+			ret += " " + m_state.paths.getTargetFilename(*project);
+		}
+	}
+
 	return ret;
 }
 
