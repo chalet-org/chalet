@@ -102,15 +102,16 @@ bool CompileStrategyMakefile::run()
 {
 	// Timer timer;
 	const bool clean = true;
+	std::cout << Output::getAnsiStyle(Color::Blue);
 
 	// Note: If using subprocess, there's some weird color issues that show on MinGW & bash
 
 	m_makeCmd.push_back("makebuild");
-#if defined(CHALET_WIN32)
-	if (!Commands::shell(String::join(m_makeCmd), clean))
-#else
+	// #if defined(CHALET_WIN32)
+	// 	if (!Commands::shell(String::join(m_makeCmd), clean))
+	// #else
 	if (!subprocessMakefile(m_makeCmd, clean))
-#endif
+	// #endif
 	{
 		Output::lineBreak();
 		return false;
@@ -120,11 +121,11 @@ bool CompileStrategyMakefile::run()
 	{
 		m_makeCmd.pop_back();
 		m_makeCmd.push_back("dumpasm");
-#if defined(CHALET_WIN32)
-		if (!Commands::shell(String::join(m_makeCmd), clean))
-#else
+		// #if defined(CHALET_WIN32)
+		// 		if (!Commands::shell(String::join(m_makeCmd), clean))
+		// #else
 		if (!subprocessMakefile(m_makeCmd, clean))
-#endif
+		// #endif
 		{
 			Output::lineBreak();
 			return false;
@@ -159,7 +160,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	options.onStderr = onStderr;
 
 	int result = Subprocess::run(inCmd, options);
-	if (result != EXIT_SUCCESS)
+	if (!errorOutput.empty())
 	{
 		std::size_t cutoff = 0;
 #if defined(CHALET_WIN32)
@@ -176,7 +177,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 		{
 			errorOutput = errorOutput.substr(0, cutoff);
 		}
-		std::cerr << errorOutput << std::flush;
+		std::cerr << errorOutput << std::endl;
 	}
 
 	return result == EXIT_SUCCESS;
