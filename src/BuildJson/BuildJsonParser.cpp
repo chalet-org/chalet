@@ -451,8 +451,8 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	else if (std::string val; assignStringAndValidate(val, inNode, "notInPlatform"))
 		outProject.setIncludeInBuild(val != platform);
 
-	if (std::string val; assignStringAndValidate(val, inNode, "runArguments"))
-		outProject.setRunArguments(val);
+	if (StringList list; assignStringListFromConfig(list, inNode, "runArguments"))
+		outProject.addRunArguments(list);
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "runProject"))
 		outProject.setRunProject(val);

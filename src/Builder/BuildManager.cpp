@@ -312,11 +312,14 @@ bool BuildManager::doRun()
 		return false;
 
 	const auto& args = !runOptions.empty() ? runOptions : runArguments;
-	auto cmd = fmt::format("{} {}", file, args);
 
-	// LOG(cmd);
+	StringList cmd = { file };
+	for (auto& arg : args)
+	{
+		cmd.push_back(arg);
+	}
 
-	return Commands::shell(cmd);
+	return Commands::subprocess(cmd);
 }
 
 /*****************************************************************************/

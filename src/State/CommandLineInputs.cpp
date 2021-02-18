@@ -85,17 +85,18 @@ void CommandLineInputs::setRunProject(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::runOptions() const noexcept
+const StringList& CommandLineInputs::runOptions() const noexcept
 {
 	return m_runOptions;
 }
 
 void CommandLineInputs::setRunOptions(std::string&& inValue) noexcept
 {
-	m_runOptions = std::move(inValue);
+	if (!inValue.empty() && inValue.front() == '\'' && inValue.back() == '\'')
+		inValue = inValue.substr(1, inValue.size() - 2);
 
-	if (!m_runOptions.empty() && m_runOptions.front() == '\'' && m_runOptions.back() == '\'')
-		m_runOptions = m_runOptions.substr(1, m_runOptions.size() - 2);
+	// TODO: skip '\ '
+	m_runOptions = String::split(inValue, " ");
 }
 
 /*****************************************************************************/

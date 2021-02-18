@@ -10,6 +10,7 @@
 namespace chalet
 {
 /*****************************************************************************/
+// TODO: Handle terminate/interrupt signals!
 int Subprocess::run(const StringList& inCmd, const SubprocessOptions& inOptions)
 {
 	auto process = sp::RunBuilder(const_cast<StringList&>(inCmd))

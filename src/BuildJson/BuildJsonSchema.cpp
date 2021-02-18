@@ -891,8 +891,11 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 
 	ret[kDefinitions]["project-runArguments"] = R"json({
-		"type": "string",
-		"description": "If the project is the run target, a string of arguments to pass to the run command."
+		"type": "array",
+		"description": "If the project is the run target, a string of arguments to pass to the run command.",
+		"items": {
+			"type": "string"
+		}
 	})json"_ojson;
 
 	ret[kDefinitions]["project-runDependencies"] = R"json({

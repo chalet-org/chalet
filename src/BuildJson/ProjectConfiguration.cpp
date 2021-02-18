@@ -531,14 +531,19 @@ bool ProjectConfiguration::usesPch() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& ProjectConfiguration::runArguments() const noexcept
+const StringList& ProjectConfiguration::runArguments() const noexcept
 {
 	return m_runArguments;
 }
 
-void ProjectConfiguration::setRunArguments(const std::string& inValue) noexcept
+void ProjectConfiguration::addRunArguments(StringList& inList)
 {
-	m_runArguments = inValue;
+	List::forEach(inList, this, &ProjectConfiguration::addRunArgument);
+}
+
+void ProjectConfiguration::addRunArgument(std::string& inValue)
+{
+	m_runArguments.push_back(std::move(inValue));
 }
 
 /*****************************************************************************/

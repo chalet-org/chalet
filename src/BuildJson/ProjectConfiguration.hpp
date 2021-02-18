@@ -115,8 +115,9 @@ struct ProjectConfiguration
 	void setPch(const std::string& inValue) noexcept;
 	bool usesPch() const noexcept;
 
-	const std::string& runArguments() const noexcept;
-	void setRunArguments(const std::string& inValue) noexcept;
+	const StringList& runArguments() const noexcept;
+	void addRunArguments(StringList& inList);
+	void addRunArgument(std::string& inValue);
 
 	const std::string& linkerScript() const noexcept;
 	void setLinkerScript(const std::string& inValue) noexcept;
@@ -199,7 +200,7 @@ private:
 	StringList m_locations;
 	StringList m_locationExcludes;
 	std::string m_pch;
-	std::string m_runArguments;
+	StringList m_runArguments;
 	std::string m_linkerScript;
 
 	ProjectKind m_kind = ProjectKind::None;

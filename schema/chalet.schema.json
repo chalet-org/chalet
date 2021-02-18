@@ -801,8 +801,11 @@
 			"default": false
 		},
 		"project-runArguments": {
-			"type": "string",
-			"description": "If the project is the run target, a string of arguments to pass to the run command."
+			"type": "array",
+			"description": "If the project is the run target, a string of arguments to pass to the run command.",
+			"items": {
+				"type": "string"
+			}
 		},
 		"project-runDependencies": {
 			"type": "array",

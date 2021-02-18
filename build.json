@@ -116,7 +116,11 @@
 					"subprocess"
 				]
 			},
-			"runArguments": "-w NoTests -s",
+			"runArguments": [
+				"-w",
+				"NoTests",
+				"-s"
+			],
 			"onlyInConfiguration": "Release"
 		}
 	],
