@@ -38,7 +38,7 @@ private:
 	std::string getPchOrderOnlyPreReq();
 	std::string getLinkerPreReqs();
 
-	std::string getQuietFlag();
+	char getQuietFlag();
 	std::string getMoveCommand(std::string inInput, std::string inOutput);
 	std::string getPrinter(const std::string& inPrint = "", const bool inNewLine = false);
 

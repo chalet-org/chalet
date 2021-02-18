@@ -106,7 +106,7 @@ void Diagnostic::customAssertion(const std::string_view& inExpression, const std
 
 	std::cerr << '\n'
 			  << boldRed << "Assertion Failed:\n  at " << reset
-			  << inExpression << " " << blue << inFile << ":" << inLineNumber << reset << std::endl;
+			  << inExpression << ' ' << blue << inFile << ':' << inLineNumber << reset << std::endl;
 
 	if (!inMessage.empty())
 		std::cerr << '\n'
@@ -130,7 +130,7 @@ void Diagnostic::showHeader(const Type inType, const std::string& inTitle)
 	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
 	const auto reset = Output::getAnsiReset();
 
-	out << color << inTitle << ":" << reset << std::endl;
+	out << color << inTitle << ':' << reset << std::endl;
 }
 
 /*****************************************************************************/

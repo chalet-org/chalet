@@ -40,9 +40,9 @@ std::string getCleanGitPath(const std::string inPath)
 	// String::replaceAll(ret, "file://", "");
 
 	// strip the domain
-	std::string searchChar = "/";
-	if (String::contains(":", ret))
-		searchChar = ":";
+	char searchChar = '/';
+	if (String::contains(':', ret))
+		searchChar = ':';
 
 	std::size_t beg = ret.find_first_of(searchChar);
 	if (beg != std::string::npos)
@@ -51,7 +51,7 @@ std::string getCleanGitPath(const std::string inPath)
 	}
 
 	// strip .git
-	std::size_t end = ret.find_last_of(".");
+	std::size_t end = ret.find_last_of('.');
 	if (end != std::string::npos)
 	{
 		ret = ret.substr(0, end);
@@ -64,7 +64,7 @@ std::string getCleanGitPath(const std::string inPath)
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 {
-	const auto style = inBold ? "1" : "0";
+	const char style = inBold ? '1' : '0';
 	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
 
 	if (Environment::isBash())
@@ -80,7 +80,7 @@ std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
 {
-	const auto style = inBold ? "1" : "0";
+	const char style = inBold ? '1' : '0';
 	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
 	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
 
@@ -167,7 +167,7 @@ void Output::print(const Color inColor, const StringList& inList)
 		std::ptrdiff_t i = &item - &inList.front();
 		std::cout << item;
 		if (static_cast<std::size_t>(i) < inList.size() - 1)
-			std::cout << " ";
+			std::cout << ' ';
 	}
 	std::cout << reset << std::endl;
 }

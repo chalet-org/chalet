@@ -394,7 +394,7 @@ void Commands::forEachFileMatch(const std::string& inPattern, const std::functio
 		onFound(res);
 	}
 
-	if (!String::contains("*", inPattern))
+	if (!String::contains('*', inPattern))
 		return;
 
 	std::string pattern = inPattern;
@@ -524,14 +524,14 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 #if defined(CHALET_WIN32)
 	if (!isBash)
 	{
-		std::string_view eol = "\r";
+		char eol = '\r';
 		if (String::contains(eol, result))
 		{
 			const auto splitResult = String::split(result, eol);
 			if (splitResult.size() > 1)
 				result = splitResult[0];
 		}
-		String::replaceAll(result, "\\", "/");
+		String::replaceAll(result, '\\', '/');
 		if (String::startsWith("INFO:", result))
 			return std::string();
 	}
@@ -540,7 +540,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 		Path::msysDrivesToWindowsDrives(result);
 	}
 
-	if (String::startsWith("/", result))
+	if (String::startsWith('/', result))
 	{
 		auto& cygPath = getCygPath();
 		std::string withCygPath = cygPath + result + ".exe";

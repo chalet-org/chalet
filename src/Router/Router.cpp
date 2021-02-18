@@ -300,7 +300,7 @@ bool Router::managePathVariables()
 		constexpr Constant kLibraryPath = "LIBRARY_PATH";
 
 		{
-			std::string libraryPath = String::join(outPaths, ":");
+			std::string libraryPath = String::join(outPaths, ':');
 			std::string ldLibraryPath = libraryPath;
 
 			auto oldLd = Environment::get(kLdLibraryPath);

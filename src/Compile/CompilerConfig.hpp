@@ -6,6 +6,8 @@
 #ifndef CHALET_COMPILER_CONFIG_HPP
 #define CHALET_COMPILER_CONFIG_HPP
 
+#include <unordered_map>
+
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
 
@@ -35,6 +37,8 @@ struct CompilerConfig
 	bool isMingwGcc() const noexcept;
 
 private:
+	const std::unordered_map<std::string, std::string> kCompilerStructures;
+
 	const CompilerCache& m_compilers;
 
 	std::string m_compilerPath{ "/usr" };

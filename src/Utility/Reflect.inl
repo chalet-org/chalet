@@ -18,9 +18,9 @@ std::string Reflect::className()
 
 	temp = temp.substr(start + 4);
 
-	auto end = temp.find(";");
+	auto end = temp.find(';');
 	if (end == std::string::npos)
-		end = temp.find("]");
+		end = temp.find(']');
 
 	return temp.substr(0, end);
 }

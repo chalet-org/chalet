@@ -167,20 +167,20 @@ void SignalHandler::printStackTrace()
 				std::cerr << boldRed << "  at";
 			}
 
-			std::cerr << reset << " " << entry.functionName << " " << blue << sourceFile << ":" << entry.lineNumber << reset << '\n';
+			std::cerr << reset << ' ' << entry.functionName << ' ' << blue << sourceFile << ':' << entry.lineNumber << reset << '\n';
 		}
 		// OS dynamic libs, etc
 		else if (entry.functionName.empty())
 		{
 			// at C:/Windows/System32/msvcrt.dll:0x7ff8f04e7c58
 			// Skip these, because they're just noise (until they're not)
-			// std::cout << boldRed << "  at " << boldBlack << entry.binaryFileName << ":" << entry.address << reset << '\n';
+			// std::cout << boldRed << "  at " << boldBlack << entry.binaryFileName << ':' << entry.address << reset << '\n';
 		}
 		// C++ runtime, libstdc++, libgcc, etc.
 		else
 		{
 			// at mainCRTStartup
-			std::cerr << boldRed << "  at " << boldBlack << entry.functionName << " " << entry.lineNumber << reset << '\n';
+			std::cerr << boldRed << "  at " << boldBlack << entry.functionName << ' ' << entry.lineNumber << reset << '\n';
 		}
 	}
 }

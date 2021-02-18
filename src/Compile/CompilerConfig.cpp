@@ -5,8 +5,6 @@
 
 #include "Compile/CompilerConfig.hpp"
 
-#include <unordered_map>
-
 #include "Compile/CompilerCache.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
@@ -18,6 +16,14 @@ namespace chalet
 {
 /*****************************************************************************/
 CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const CompilerCache& inCompilers) :
+	kCompilerStructures({
+		{ "/bin/Hostx64/x64", "/lib/x64" },
+		{ "/bin/Hostx64/x86", "/lib/x86" },
+		{ "/bin/Hostx86/x86", "/lib/x86" },
+		{ "/bin/Hostx86/x64", "/lib/x64" },
+		{ "/bin/Hostx64/x64", "/lib/64" },
+		{ "/bin", "/lib" },
+	}),
 	m_compilers(inCompilers),
 	m_language(inLanguage)
 {
@@ -41,15 +47,6 @@ const std::string& CompilerConfig::compilerExecutable() const noexcept
 /*****************************************************************************/
 bool CompilerConfig::configureCompilerPaths()
 {
-	static const std::unordered_map<std::string, std::string> kCompilerStructures{
-		{ "/bin/Hostx64/x64", "/lib/x64" },
-		{ "/bin/Hostx64/x86", "/lib/x86" },
-		{ "/bin/Hostx86/x86", "/lib/x86" },
-		{ "/bin/Hostx86/x64", "/lib/x64" },
-		{ "/bin/Hostx64/x64", "/lib/64" },
-		{ "/bin", "/lib" }
-	};
-
 	const auto& exec = compilerExecutable();
 	chalet_assert(!exec.empty(), "No compiler was found");
 	if (exec.empty())
@@ -93,7 +90,7 @@ bool CompilerConfig::testCompilerMacros()
 	}
 
 	const std::string macroResult = Commands::testCompilerFlags(exec);
-	// String::replaceAll(macroResult, "\n", " ");
+	// String::replaceAll(macroResult, '\n', ' ');
 	// String::replaceAll(macroResult, "#include ", "");
 
 	// Notes:

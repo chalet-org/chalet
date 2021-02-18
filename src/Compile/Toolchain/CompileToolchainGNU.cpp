@@ -38,9 +38,9 @@ const std::string& CompileToolchainGNU::getIncludes()
 		for (auto loc : m_project.locations())
 		{
 			if (loc.back() != '/')
-				loc += "/";
+				loc += '/';
 
-			includes.push_back(loc);
+			includes.push_back(std::move(loc));
 		}
 
 #if !defined(CHALET_WIN32)

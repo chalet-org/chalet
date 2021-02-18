@@ -454,9 +454,9 @@ std::string MakefileGenerator::getLinkerPreReqs()
 }
 
 /*****************************************************************************/
-std::string MakefileGenerator::getQuietFlag()
+char MakefileGenerator::getQuietFlag()
 {
-	return m_cleanOutput ? "@" : "";
+	return m_cleanOutput ? '@' : 0;
 }
 
 /*****************************************************************************/

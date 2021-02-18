@@ -31,13 +31,13 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	for (int i = 0; i < argc; ++i)
 	{
 		std::string arg(argv[i] ? argv[i] : "");
-		// LOG("\"", arg, "\"");
-		String::replaceAll(arg, "\"", "");
-		String::replaceAll(arg, "'", "");
+		// LOG('"', arg, '"');
+		String::replaceAll(arg, '"', 0);
+		String::replaceAll(arg, '\'', 0);
 
-		if (String::contains(" ", arg))
+		if (String::contains(' ', arg))
 		{
-			auto list = String::split(arg, " ");
+			auto list = String::split(arg);
 			for (auto& it : list)
 			{
 				arguments.push_back(std::move(it));
@@ -45,9 +45,9 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		}
 		else
 		{
-			if (String::startsWith("--", arg) && String::contains("=", arg))
+			if (String::startsWith("--", arg) && String::contains('=', arg))
 			{
-				auto list = String::split(arg, "=");
+				auto list = String::split(arg, '=');
 				for (auto& it : list)
 				{
 					arguments.push_back(std::move(it));
@@ -130,7 +130,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		}
 	}
 
-	// LOG(CommandLineInputs::file(), " ", inputFile);
+	// LOG(CommandLineInputs::file(), ' ', inputFile);
 
 	return true;
 }

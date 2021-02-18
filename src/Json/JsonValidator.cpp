@@ -158,7 +158,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 
 		case JsonSchemaError::string_content_checker_not_provided: {
 			auto sub_data = std::any_cast<std::pair<std::string, std::string>>(data);
-			return "a content checker was not provided but a contentEncoding or contentMediaType for this string have been present: '" + sub_data.first + "' '" + sub_data.second + "'";
+			return "a content checker was not provided but a contentEncoding or contentMediaType for this string have been present: '" + sub_data.first + "' '" + sub_data.second + '\'';
 		}
 
 		case JsonSchemaError::string_content_checker_failed:

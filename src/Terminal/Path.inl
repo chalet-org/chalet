@@ -8,12 +8,12 @@
 namespace chalet
 {
 /*****************************************************************************/
-constexpr Constant Path::getSeparator()
+constexpr char Path::getSeparator()
 {
 #if defined(CHALET_WIN32)
-	return ";";
+	return ';';
 #else
-	return ":";
+	return ':';
 #endif
 }
 }

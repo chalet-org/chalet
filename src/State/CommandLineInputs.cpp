@@ -96,7 +96,7 @@ void CommandLineInputs::setRunOptions(std::string&& inValue) noexcept
 		inValue = inValue.substr(1, inValue.size() - 2);
 
 	// TODO: skip '\ '
-	m_runOptions = String::split(inValue, " ");
+	m_runOptions = String::split(inValue);
 }
 
 /*****************************************************************************/

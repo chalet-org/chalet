@@ -173,7 +173,7 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 	for (auto it = buildCache.begin(); it != buildCache.end();)
 	{
 		const auto& key = it.key();
-		const auto& splitKey = String::split(key, ":");
+		const auto& splitKey = String::split(key, ':');
 		const auto& keyBuildConfig = splitKey.front();
 
 		const auto& name = splitKey.back();
@@ -353,10 +353,10 @@ std::string BuildCache::getBuildHash(std::string appPath)
 	if (Environment::isBash())
 	{
 		const std::string md5Result = Commands::subprocessOutput({ "md5sum", appPath });
-		auto list = String::split(md5Result, " ");
+		auto list = String::split(md5Result);
 
 		md5 = list.front();
-		String::replaceAll(md5, "\\", "");
+		String::replaceAll(md5, '\\', 0);
 	}
 	else
 	{
@@ -364,7 +364,7 @@ std::string BuildCache::getBuildHash(std::string appPath)
 	#ifdef CHALET_MSVC
 		std::string_view eol = "\r\n";
 	#else
-		std::string_view eol = "\n";
+		char eol = '\n';
 	#endif
 		auto list = String::split(md5Result, eol);
 		if (list.size() >= 2)
@@ -374,15 +374,15 @@ std::string BuildCache::getBuildHash(std::string appPath)
 	}
 #elif defined(CHALET_MACOS)
 	std::string md5Result = Commands::subprocessOutput({ "md5", appPath });
-	auto list = String::split(md5Result, " ");
+	auto list = String::split(md5Result);
 
 	md5 = list.back();
 #else
 	const std::string md5Result = Commands::subprocessOutput({ "md5sum", appPath });
-	auto list = String::split(md5Result, " ");
+	auto list = String::split(md5Result);
 
 	md5 = list.front();
-	String::replaceAll(md5, "\\", "");
+	String::replaceAll(md5, '\\', 0);
 #endif
 
 	// LOG(md5);

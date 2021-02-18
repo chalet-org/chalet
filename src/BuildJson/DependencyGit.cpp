@@ -68,7 +68,7 @@ const std::string& DependencyGit::name() const noexcept
 }
 void DependencyGit::setName(const std::string& inValue) noexcept
 {
-	if (String::startsWith(".", inValue) || String::startsWith("_", inValue) || String::startsWith("-", inValue) || String::startsWith("+", inValue))
+	if (String::startsWith('.', inValue) || String::startsWith('_', inValue) || String::startsWith('-', inValue) || String::startsWith('+', inValue))
 		return;
 
 	m_name = inValue;

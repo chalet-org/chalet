@@ -58,7 +58,7 @@ bool executeCommand(std::string command)
 	StringList commands = String::split(command, " && ");
 	for (auto& cmd : commands)
 	{
-		const auto& cmdSplit = String::split(cmd, " ");
+		const auto& cmdSplit = String::split(cmd);
 		if (cmdSplit.size() == 0)
 			continue;
 
@@ -142,7 +142,7 @@ bool CompileStrategyNative::run()
 	bool result = true;
 	if (m_project.usesPch())
 	{
-		auto shitList = String::split(m_pch.command, " ");
+		auto shitList = String::split(m_pch.command);
 		UNUSED(shitList);
 
 		totalCompiles++;

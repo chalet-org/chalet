@@ -199,7 +199,7 @@ void AppBundle::addDependency(std::string& inValue)
 			return;
 		}
 
-		// LOG(resolved, " ", project->outputFile());
+		// LOG(resolved, ' ', project->outputFile());
 		if (String::contains(project->outputFile(), resolved))
 		{
 			add(resolved);

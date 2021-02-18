@@ -17,12 +17,27 @@ bool String::contains(const std::string_view& inFind, const std::string& inStrin
 }
 
 /*****************************************************************************/
+bool String::contains(const char inFind, const std::string& inString)
+{
+	return inString.find(inFind) != std::string::npos;
+}
+
+/*****************************************************************************/
 bool String::startsWith(const std::string_view& inStart, const std::string& inString)
 {
-	if (inStart.size() > inString.size())
+	if (inString.size() < inStart.size())
 		return false;
 
 	return std::equal(inStart.begin(), inStart.end(), inString.begin());
+}
+
+/*****************************************************************************/
+bool String::startsWith(const char inStart, const std::string& inString)
+{
+	if (inString.size() == 0)
+		return false;
+
+	return inString.front() == inStart;
 }
 
 /*****************************************************************************/
@@ -32,6 +47,15 @@ bool String::endsWith(const std::string_view& inEnd, const std::string& inString
 		return false;
 
 	return std::equal(inEnd.rbegin(), inEnd.rend(), inString.rbegin());
+}
+
+/*****************************************************************************/
+bool String::endsWith(const char inEnd, const std::string& inString)
+{
+	if (inString.size() == 0)
+		return false;
+
+	return inString.back() == inEnd;
 }
 
 /*****************************************************************************/
@@ -87,6 +111,26 @@ std::string String::toUpperCase(std::string inString)
 }
 
 /*****************************************************************************/
+std::string String::join(const StringList& inList, const char inSeparator)
+{
+	std::string ret;
+
+	for (auto& item : inList)
+	{
+		if (item.empty())
+			continue;
+
+		std::ptrdiff_t i = &item - &inList.front();
+		if (i > 0)
+			ret += inSeparator;
+
+		ret += item;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 std::string String::join(const StringList& inList, const std::string_view& inSeparator)
 {
 	std::string ret;
@@ -101,6 +145,36 @@ std::string String::join(const StringList& inList, const std::string_view& inSep
 			ret += inSeparator;
 
 		ret += item;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList String::split(std::string inString, const char inSeparator)
+{
+	StringList ret;
+
+	std::size_t itr = 0;
+	while (itr != std::string::npos)
+	{
+		itr = inString.find(inSeparator);
+
+		std::string sub = inString.substr(0, itr);
+		std::size_t nextNonChar = inString.find_first_not_of(inSeparator, itr);
+
+		const bool nonCharFound = nextNonChar != std::string::npos;
+		inString = inString.substr(nonCharFound ? nextNonChar : itr + 1);
+		if (nonCharFound)
+			itr = nextNonChar;
+
+		if (!sub.empty())
+		{
+			while (sub.back() == inSeparator)
+				sub.pop_back();
+		}
+
+		ret.push_back(sub);
 	}
 
 	return ret;
@@ -153,7 +227,7 @@ std::string String::getPrefixed(const StringList& inList, const std::string& inP
 /*****************************************************************************/
 std::string String::getSuffixed(const StringList& inList, const std::string& inSuffix)
 {
-	std::string ret = String::join(inList, inSuffix + " ");
+	std::string ret = String::join(inList, inSuffix + ' ');
 
 	if (inList.size() > 0)
 		ret += inSuffix;
@@ -194,7 +268,7 @@ StringList String::filterIf(const std::vector<std::string>& inFind, const String
 /*****************************************************************************/
 std::string String::getPathSuffix(const std::string& inPath)
 {
-	return inPath.substr(inPath.find_last_of(".") + 1);
+	return inPath.substr(inPath.find_last_of('.') + 1);
 }
 
 /*****************************************************************************/
@@ -203,15 +277,15 @@ std::string String::getPathBaseName(const std::string& inPath)
 	if (inPath.empty())
 		return inPath;
 
-	const auto& pathNoExt = inPath.substr(0, inPath.find_last_of("."));
+	const auto& pathNoExt = inPath.substr(0, inPath.find_last_of('.'));
 
-	return pathNoExt.substr(pathNoExt.find_last_of("/") + 1);
+	return pathNoExt.substr(pathNoExt.find_last_of('/') + 1);
 }
 
 /*****************************************************************************/
 std::string String::getPathFolder(const std::string& inPath)
 {
-	auto end = inPath.find_last_of("/");
+	auto end = inPath.find_last_of('/');
 
 	return end != std::string::npos ? inPath.substr(0, end) : "";
 }
@@ -219,13 +293,13 @@ std::string String::getPathFolder(const std::string& inPath)
 /*****************************************************************************/
 std::string String::getPathFilename(const std::string& inPath)
 {
-	return inPath.substr(inPath.find_last_of("/") + 1);
+	return inPath.substr(inPath.find_last_of('/') + 1);
 }
 
 /*****************************************************************************/
 std::string String::getPathFolderBaseName(const std::string& inPath)
 {
-	auto end = inPath.find_last_of(".");
+	auto end = inPath.find_last_of('.');
 
 	return end != std::string::npos ? inPath.substr(0, end) : inPath;
 }

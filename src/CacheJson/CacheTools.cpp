@@ -122,7 +122,7 @@ void CacheTools::setMake(const std::string& inValue) noexcept
 		}
 
 		String::replaceAll(version, "GNU Make ", "");
-		auto vals = String::split(version, ".");
+		auto vals = String::split(version, '.');
 		if (vals.size() == 2)
 		{
 			m_makeVersionMajor = std::stoi(vals[0]);

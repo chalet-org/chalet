@@ -154,7 +154,7 @@ void ProjectConfiguration::addLibDirs(StringList& inList)
 void ProjectConfiguration::addLibDir(std::string& inValue)
 {
 	if (inValue.back() != '/')
-		inValue += "/";
+		inValue += '/';
 
 	// TODO: check other places this can be done
 	parseStringVariables(inValue);
@@ -178,7 +178,7 @@ void ProjectConfiguration::addIncludeDirs(StringList& inList)
 void ProjectConfiguration::addIncludeDir(std::string& inValue)
 {
 	if (inValue.back() != '/')
-		inValue += "/";
+		inValue += '/';
 
 	parseStringVariables(inValue);
 	Path::sanitize(inValue);
@@ -200,7 +200,7 @@ void ProjectConfiguration::addRunDependencies(StringList& inList)
 void ProjectConfiguration::addRunDependency(std::string& inValue)
 {
 	if (inValue.back() != '/')
-		inValue += "/";
+		inValue += '/';
 
 	parseStringVariables(inValue);
 	Path::sanitize(inValue);

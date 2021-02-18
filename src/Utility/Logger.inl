@@ -17,7 +17,7 @@ Logger::Logger(const char* const inFile, const std::string& inFunction, Args&&..
 	Logger(inFile, inFunction)
 {
 	stream.precision(std::numeric_limits<double>::digits);
-	((stream << std::forward<Args>(args) << " "), ...);
+	((stream << std::forward<Args>(args) << ' '), ...);
 }
 }
 }

@@ -68,7 +68,7 @@ std::string CompilerCache::getRootPathVariable()
 			outList.push_back(std::move(path));
 	}
 
-	auto separator = Path::getSeparator();
+	char separator = Path::getSeparator();
 	for (auto& path : String::split(originalPath, separator))
 	{
 		if (!List::contains(outList, path))

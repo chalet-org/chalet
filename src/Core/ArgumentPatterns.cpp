@@ -73,7 +73,7 @@ bool ArgumentPatterns::parse(const StringList& inArguments)
 			if (i == 0)
 				continue;
 
-			if (String::startsWith("-", arg))
+			if (String::startsWith('-', arg))
 				continue;
 
 			Route route = getRouteFromString(arg);
@@ -251,7 +251,7 @@ void ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		if (key == m_routeString)
 			continue;
 
-		if (String::startsWith("-", key) && !List::contains(inArguments, key))
+		if (String::startsWith('-', key) && !List::contains(inArguments, key))
 			continue;
 
 		switch (value.kind())

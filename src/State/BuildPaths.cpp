@@ -157,15 +157,15 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject) cons
 /*****************************************************************************/
 void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const bool inDumpAssembly) const
 {
-	auto objects = String::join(inOutput.objectList, " ");
+	auto objects = String::join(inOutput.objectList);
 	Environment::set("SOURCE_OBJS", objects);
 
-	auto depdendencies = String::join(inOutput.dependencyList, " ");
+	auto depdendencies = String::join(inOutput.dependencyList);
 	Environment::set("SOURCE_DEPS", depdendencies);
 
 	if (inDumpAssembly)
 	{
-		auto assemblies = String::join(inOutput.assemblyList, " ");
+		auto assemblies = String::join(inOutput.assemblyList);
 		Environment::set("SOURCE_ASMS", assemblies);
 	}
 }
@@ -330,11 +330,11 @@ StringList BuildPaths::getFileList(const ProjectConfiguration& inProject) const
 
 	const auto& locations = inProject.locations();
 
-	auto searchString = String::join(inProject.fileExtensions(), " ");
+	auto searchString = String::join(inProject.fileExtensions());
 	searchString += " " + String::toUpperCase(searchString);
 
 	const auto& excludesList = inProject.locationExcludes();
-	std::string excludes = String::join(excludesList, " ");
+	std::string excludes = String::join(excludesList);
 	Path::sanitize(excludes);
 
 	StringList ret;
@@ -428,7 +428,7 @@ StringList BuildPaths::getDirectoryList(const ProjectConfiguration& inProject) c
 	const auto& locations = inProject.locations();
 	const auto& locationExcludes = inProject.locationExcludes();
 
-	std::string excludes = String::join(locationExcludes, " ");
+	std::string excludes = String::join(locationExcludes);
 	Path::sanitize(excludes);
 
 	for (auto& locRaw : locations)
