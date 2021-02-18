@@ -360,7 +360,7 @@ std::string BuildCache::getBuildHash(std::string appPath)
 	}
 	else
 	{
-		const std::string md5Result = Commands::subprocessOutput({ "certutil", "-hashfile", appPath, "MD5" });
+		const std::string md5Result = Commands::subprocessOutput({ "cmd.exe", "/c", "certutil", "-hashfile", appPath, "MD5" });
 	#ifdef CHALET_MSVC
 		std::string_view eol = "\r\n";
 	#else

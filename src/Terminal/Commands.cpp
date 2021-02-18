@@ -625,7 +625,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	if (isBash)
 		command = { "which", inExecutable };
 	else
-		command = { "where", fmt::format("{}.exe", inExecutable) };
+		command = { "cmd.exe", "/c", "where", fmt::format("{}.exe", inExecutable) };
 
 	std::string result = Commands::subprocessOutput(command, inCleanOutput);
 	if (isBash && String::contains("which: no", result))
@@ -634,11 +634,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 #if defined(CHALET_WIN32)
 	if (!isBash)
 	{
-	#if defined(CHALET_MSVC)
-		std::string_view eol = "\r\n";
-	#else
-		std::string_view eol = "\n";
-	#endif
+		std::string_view eol = "\r";
 		if (String::contains(eol, result))
 		{
 			const auto splitResult = String::split(result, eol);
@@ -697,8 +693,6 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec, const
 #else
 	std::string null = "/dev/null";
 #endif
-
-	chalet_assert(Environment::isBash(), "MSVC not yet implemented");
 
 	StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
 	auto result = Commands::subprocessOutput(command, inCleanOutput);

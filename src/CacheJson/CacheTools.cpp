@@ -110,11 +110,7 @@ const std::string& CacheTools::make() const noexcept
 }
 void CacheTools::setMake(const std::string& inValue) noexcept
 {
-#if defined(CHALET_WIN32)
-	m_make = String::getPathBaseName(inValue);
-#else
 	m_make = inValue;
-#endif
 
 	if (Commands::pathExists(m_make))
 	{

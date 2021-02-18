@@ -177,7 +177,12 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 		{
 			errorOutput = errorOutput.substr(0, cutoff);
 		}
-		std::cerr << errorOutput << std::endl;
+
+		// Note: std::cerr outputs after std::cout on windows (which we don't want)
+		if (result == EXIT_SUCCESS)
+			std::cout << errorOutput << std::endl;
+		else
+			std::cout << errorOutput << std::flush;
 	}
 
 	return result == EXIT_SUCCESS;
