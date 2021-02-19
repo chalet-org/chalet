@@ -155,16 +155,13 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	if (!errorOutput.empty())
 	{
 		std::size_t cutoff = 0;
-#if defined(CHALET_WIN32)
-		if (String::contains("mingw32-make", m_state.tools.make()))
-		{
-			cutoff = errorOutput.find("mingw32-make: ***");
-		}
-		else
-#endif
-		{
-			cutoff = errorOutput.find("make: ***");
-		}
+		const auto make = String::getPathBaseName(m_state.tools.make());
+
+		const char eol = '\n';
+		String::replaceAll(errorOutput, fmt::format("{}: *** Waiting for unfinished jobs....{}", make, eol), "");
+		String::replaceAll(errorOutput, fmt::format("{}: *** No rule", make), "No rule");
+		cutoff = errorOutput.find(fmt::format("{}: *** [", make));
+
 		if (cutoff != std::string::npos)
 		{
 			errorOutput = errorOutput.substr(0, cutoff);
