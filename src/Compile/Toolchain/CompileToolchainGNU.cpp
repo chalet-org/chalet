@@ -244,14 +244,6 @@ const std::string& CompileToolchainGNU::getCompileOptions()
 				m_compileOptions += " -pthread";
 		}
 		// #endif
-
-#if defined(CHALET_MACOS)
-		// TODO: Test Homebrew LLVM/GCC with this
-		const auto macosFrameworkPaths = String::getPrefixed(m_project.macosFrameworkPaths(), "-F");
-		const auto macosFrameworks = String::getPrefixedAndSuffixed(m_project.macosFrameworks(), "-framework ", ".framework");
-
-		m_compileOptions = fmt::format("{} {} {}", m_compileOptions, macosFrameworkPaths, macosFrameworks);
-#endif
 	}
 
 	return m_compileOptions;
