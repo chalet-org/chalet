@@ -51,7 +51,7 @@ void ProjectConfiguration::addFileExtensions(StringList& inList)
 
 void ProjectConfiguration::addFileExtension(std::string& inValue)
 {
-	if (inValue.front() != '.')
+	if (!inValue.empty() && inValue.front() != '.')
 		inValue = "." + inValue;
 
 	List::addIfDoesNotExist(m_fileExtensions, std::move(inValue));
@@ -273,7 +273,7 @@ void ProjectConfiguration::addCompileOption(std::string& inValue)
 		return;
 	}
 
-	if (inValue.front() != '-')
+	if (!inValue.empty() && inValue.front() != '-')
 	{
 		Diagnostic::errorAbort("Contents of 'compileOptions' list must begin with '-'");
 		return;
@@ -299,7 +299,7 @@ void ProjectConfiguration::addLinkerOption(std::string& inValue)
 		return;
 	}
 
-	if (inValue.front() != '-')
+	if (!inValue.empty() && inValue.front() != '-')
 	{
 		Diagnostic::errorAbort("Contents of 'linkerOptions' list must begin with '-'");
 		return;

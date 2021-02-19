@@ -34,7 +34,7 @@ bool String::startsWith(const std::string_view& inStart, const std::string& inSt
 /*****************************************************************************/
 bool String::startsWith(const char inStart, const std::string& inString)
 {
-	if (inString.size() == 0)
+	if (inString.empty())
 		return false;
 
 	return inString.front() == inStart;
@@ -52,7 +52,7 @@ bool String::endsWith(const std::string_view& inEnd, const std::string& inString
 /*****************************************************************************/
 bool String::endsWith(const char inEnd, const std::string& inString)
 {
-	if (inString.size() == 0)
+	if (inString.empty())
 		return false;
 
 	return inString.back() == inEnd;
@@ -213,9 +213,11 @@ StringList String::split(std::string inString, const std::string_view& inSeparat
 /*****************************************************************************/
 std::string String::getPrefixed(const StringList& inList, const std::string& inPrefix)
 {
-	std::string ret = String::join(inList, " " + inPrefix);
+	if (inList.empty())
+		return std::string();
 
-	if (inList.size() > 0)
+	std::string ret = String::join(inList, " " + inPrefix);
+	if (!ret.empty())
 		ret = inPrefix + ret;
 
 	if (ret.front() == ' ')
@@ -238,9 +240,11 @@ std::string String::getSuffixed(const StringList& inList, const std::string& inS
 /*****************************************************************************/
 std::string String::getPrefixedAndSuffixed(const StringList& inList, const std::string& inPrefix, const std::string& inSuffix)
 {
-	std::string ret = String::join(inList, inSuffix + " " + inPrefix);
+	if (inList.empty())
+		return std::string();
 
-	if (inList.size() > 0)
+	std::string ret = String::join(inList, inSuffix + " " + inPrefix);
+	if (!ret.empty())
 	{
 		ret = inPrefix + ret;
 		ret += inSuffix;
