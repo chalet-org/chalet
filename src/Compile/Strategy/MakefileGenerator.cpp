@@ -54,18 +54,15 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 		rcRecipe = getRcRecipe();
 #endif
 
-	std::string cppRecipes;
+	std::string fileRecipes;
 	for (auto ext : String::filterIf({ "cpp", "CPP", "cc", "CC", "cxx", "CXX", "c++", "C++", "c", "C" }, inOutputs.fileExtensions))
 	{
-		cppRecipes += getCppRecipe(ext);
+		fileRecipes += getCppRecipe(ext);
 	}
 
-	if (m_project.objectiveCxx())
+	for (auto ext : String::filterIf({ "m", "M", "mm" }, inOutputs.fileExtensions))
 	{
-		for (auto ext : String::filterIf({ "m", "M", "mm" }, inOutputs.fileExtensions))
-		{
-			cppRecipes += getObjcRecipe(ext);
-		}
+		fileRecipes += getObjcRecipe(ext);
 	}
 
 	const auto suffixes = String::getPrefixed(inOutputs.fileExtensions, ".");
@@ -91,7 +88,7 @@ SHELL = {shell}
 makebuild: {target}
 	@{printer}
 .DELETE_ON_ERROR: makebuild
-{dumpAsmRecipe}{makePchRecipe}{cppRecipes}{pchRecipe}{rcRecipe}{assemblyRecipe}{targetRecipe}
+{dumpAsmRecipe}{makePchRecipe}{fileRecipes}{pchRecipe}{rcRecipe}{assemblyRecipe}{targetRecipe}
 
 {depDir}/%.d: ;
 .PRECIOUS: {depDir}/%.d
@@ -104,7 +101,7 @@ include $(wildcard $(SOURCE_DEPS))
 		FMT_ARG(printer),
 		FMT_ARG(dumpAsmRecipe),
 		FMT_ARG(makePchRecipe),
-		FMT_ARG(cppRecipes),
+		FMT_ARG(fileRecipes),
 		FMT_ARG(pchRecipe),
 		FMT_ARG(rcRecipe),
 		FMT_ARG(assemblyRecipe),
@@ -462,9 +459,9 @@ std::string MakefileGenerator::getLinkerPreReqs()
 }
 
 /*****************************************************************************/
-char MakefileGenerator::getQuietFlag()
+std::string_view MakefileGenerator::getQuietFlag()
 {
-	return m_cleanOutput ? '@' : 0;
+	return m_cleanOutput ? "@" : "";
 }
 
 /*****************************************************************************/
