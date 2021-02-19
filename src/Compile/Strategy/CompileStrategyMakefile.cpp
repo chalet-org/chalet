@@ -77,12 +77,6 @@ bool CompileStrategyMakefile::createCache(const SourceOutputs& inOutputs)
 bool CompileStrategyMakefile::initialize()
 {
 	const auto& makeExec = m_state.tools.make();
-	// if (!Commands::pathExists(makeExec))
-	// {
-	// 	Diagnostic::error(fmt::format("{} was not found in compiler path. Aborting.", makeExec));
-	// 	return false;
-	// }
-
 	const auto maxJobs = m_state.environment.maxJobs();
 
 	std::string jobs;
@@ -144,10 +138,7 @@ bool CompileStrategyMakefile::run()
 bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const bool inCleanOutput, std::string inCwd)
 {
 	if (!inCleanOutput)
-	{
-		std::cout << "Subprocess: ";
 		Output::print(Color::Blue, inCmd);
-	}
 
 	std::string errorOutput;
 	Subprocess::PipeFunc onStdErr = [&errorOutput](std::string inData) {
@@ -181,9 +172,9 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 
 		// Note: std::cerr outputs after std::cout on windows (which we don't want)
 		if (result == EXIT_SUCCESS)
-			std::cout << errorOutput << std::endl;
+			std::cout << Output::getAnsiReset() << errorOutput << std::endl;
 		else
-			std::cout << errorOutput << std::flush;
+			std::cout << Output::getAnsiReset() << errorOutput << std::flush;
 	}
 
 	return result == EXIT_SUCCESS;

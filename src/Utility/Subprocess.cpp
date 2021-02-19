@@ -11,6 +11,46 @@
 
 namespace chalet
 {
+namespace
+{
+std::vector<sp::Popen*> s_procesess;
+bool s_initialized = false;
+
+/*****************************************************************************/
+void removeProcess(const sp::Popen& inProcess)
+{
+	auto it = s_procesess.end();
+	while (it != s_procesess.begin())
+	{
+		--it;
+		sp::Popen* process = (*it);
+		if (process->pid == inProcess.pid)
+		{
+			it = s_procesess.erase(it);
+			return;
+		}
+	}
+}
+
+/*****************************************************************************/
+void signalHandler(int inSignal)
+{
+	auto it = s_procesess.end();
+	while (it != s_procesess.begin())
+	{
+		--it;
+		sp::Popen* process = (*it);
+
+		if (inSignal == SIGTERM)
+			process->terminate();
+		else
+			process->send_signal(inSignal);
+
+		it = s_procesess.erase(it);
+	}
+}
+}
+
 /*****************************************************************************/
 // TODO: Handle terminate/interrupt signals!
 int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
@@ -22,14 +62,24 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 					   .cwd(std::move(inOptions.cwd))
 					   .popen();
 
+	s_procesess.push_back(&process);
+
+	if (!s_initialized)
+	{
+		std::signal(SIGINT, signalHandler);
+		std::signal(SIGTERM, signalHandler);
+		std::signal(SIGABRT, signalHandler);
+		s_initialized = true;
+	}
+
 	if (inOptions.onStdOut != nullptr || inOptions.onStdErr != nullptr)
 	{
 		std::array<char, 128> buffer{ 0 };
-		sp::ssize_t bytesRead = 1;
+		sp::ssize_t bytesRead = 0;
 
 		if (inOptions.onStdOut != nullptr)
 		{
-			while (bytesRead > 0)
+			do
 			{
 				bytesRead = sp::pipe_read(process.cout, buffer.data(), buffer.size());
 				if (bytesRead > 0)
@@ -37,13 +87,12 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 					inOptions.onStdOut(std::string(buffer.data(), bytesRead));
 					memset(buffer.data(), 0, sizeof(char) * buffer.size());
 				}
-			}
+			} while (bytesRead > 0);
 		}
 
 		if (inOptions.onStdErr != nullptr)
 		{
-			bytesRead = 1;
-			while (bytesRead > 0)
+			do
 			{
 				bytesRead = sp::pipe_read(process.cerr, buffer.data(), buffer.size());
 				if (bytesRead > 0)
@@ -51,9 +100,11 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 					inOptions.onStdErr(std::string(buffer.data(), bytesRead));
 					memset(buffer.data(), 0, sizeof(char) * buffer.size());
 				}
-			}
+			} while (bytesRead > 0);
 		}
 	}
+
+	removeProcess(process);
 
 	// Note: On Windows, the underlying call to WaitForSingleObject takes the most time
 	process.close();

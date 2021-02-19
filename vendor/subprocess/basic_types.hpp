@@ -12,7 +12,7 @@
 #include <csignal>
 
 
-// Fucking stdout, stderr, stdin are macros. So instead of stdout,...
+// stdout, stderr, stdin are macros. So instead of stdout,...
 // we will use cin, cout, cerr as variable names
 
 

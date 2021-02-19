@@ -12,7 +12,7 @@
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
 
-// TODO: Buckaroo integration?
+// TODO: vcpkg, conan, buckaroo integration?
 // TODO: Implement ThreadPool
 
 namespace chalet
