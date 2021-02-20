@@ -90,7 +90,7 @@ bool CompileStrategyNinja::run()
 {
 	{
 		StringList command;
-		std::cout << Output::getAnsiStyle(Color::Blue);
+		std::cout << Output::getAnsiStyle(Color::Blue) << std::flush;
 
 		bool result = Commands::subprocess(m_ninjaCmd, PipeOption::StdOut);
 		Output::lineBreak();
@@ -102,7 +102,7 @@ bool CompileStrategyNinja::run()
 	if (m_project.dumpAssembly())
 	{
 		StringList command;
-		std::cout << Output::getAnsiStyle(Color::Magenta);
+		std::cout << Output::getAnsiStyle(Color::Magenta) << std::flush;
 
 		bool result = Commands::subprocess(m_ninjaCmd, PipeOption::StdOut);
 		Output::lineBreak();

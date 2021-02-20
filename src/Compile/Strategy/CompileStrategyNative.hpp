@@ -22,7 +22,15 @@ class CompileStrategyNative final : public ICompileStrategy
 	struct Command
 	{
 		std::string output;
-		std::string command;
+		StringList command;
+		std::string renameFrom;
+		std::string renameTo;
+	};
+	struct CommandTemp
+	{
+		StringList command;
+		std::string renameFrom;
+		std::string renameTo;
 	};
 
 	using CommandList = std::vector<Command>;
@@ -41,12 +49,10 @@ private:
 	void getAsmCommands(const StringList& inAssemblies);
 	void getLinkCommand(const StringList& inObjects);
 
-	std::string getPchCompile(const std::string& source, const std::string& target) const;
-	std::string getCppCompile(const std::string& source, const std::string& target) const;
-	std::string getRcCompile(const std::string& source, const std::string& target) const;
+	CommandTemp getPchCompile(const std::string& source, const std::string& target) const;
+	CommandTemp getCppCompile(const std::string& source, const std::string& target) const;
+	CommandTemp getRcCompile(const std::string& source, const std::string& target) const;
 	std::string getAsmGenerate(const std::string& object, const std::string& target) const;
-
-	std::string getRenameCommand(const std::string& inInput, const std::string& inOutput) const;
 
 	BuildState& m_state;
 	const ProjectConfiguration& m_project;

@@ -129,7 +129,7 @@ std::string NinjaGenerator::getPchRule()
 		const auto& depDir = m_state.paths.depDir();
 		const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
-		const auto pchCompile = m_toolchain->getPchCompileCommand("$in", "$out", dependency);
+		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", "$out", dependency));
 
 		ret = fmt::format(R"ninja(
 rule pch
@@ -153,7 +153,7 @@ std::string NinjaGenerator::getRcRule()
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
-	const auto rcCompile = m_toolchain->getRcCompileCommand("$in", "$out", dependency);
+	const auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$in", "$out", dependency));
 
 	ret = fmt::format(R"ninja(
 rule rc
@@ -202,7 +202,7 @@ std::string NinjaGenerator::getCppRule()
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
-	const auto cppCompile = m_toolchain->getCppCompileCommand("$in", "$out", dependency);
+	const auto cppCompile = String::join(m_toolchain->getCppCompileCommand("$in", "$out", dependency));
 
 	ret = fmt::format(R"ninja(
 rule cxx
@@ -226,7 +226,7 @@ std::string NinjaGenerator::getLinkRule()
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
 	const auto targetBasename = m_state.paths.getTargetBasename(m_project);
 
-	const auto linkerCommand = m_toolchain->getLinkerTargetCommand("$out", "$in", targetBasename);
+	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand("$out", { "$in" }, targetBasename));
 
 	ret = fmt::format(R"ninja(
 rule link

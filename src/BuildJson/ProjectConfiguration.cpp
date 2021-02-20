@@ -822,7 +822,7 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 		return ret;
 
 	ret.push_back("pedantic");
-	ret.push_back("pedantic-errors");
+	// ret.push_back("pedantic-errors"); // Not on OSX?
 
 	if (String::equals(inValue, "pedantic"))
 		return ret;

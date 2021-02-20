@@ -24,7 +24,7 @@ std::mutex s_mutex;
 std::function<void()> s_shutdownHandler;
 
 /*****************************************************************************/
-bool printCommand(std::string output, std::string command, Color inColor, std::string symbol, bool cleanOutput, uint index = 0, uint total = 0)
+bool printCommand(std::string output, StringList command, Color inColor, std::string symbol, bool cleanOutput, uint index = 0, uint total = 0)
 {
 	s_mutex.lock();
 	if (total > 0)
@@ -53,31 +53,17 @@ bool printCommand(std::string output, std::string command, Color inColor, std::s
 }
 
 /*****************************************************************************/
-bool executeCommand(std::string command)
+bool executeCommand(StringList command, std::string renameFrom, std::string renameTo)
 {
-	StringList commands = String::split(command, " && ");
-	for (auto& cmd : commands)
+	if (!Commands::subprocess(command))
+		return false;
+
+	if (!renameFrom.empty() && !renameTo.empty())
 	{
-		const auto& cmdSplit = String::split(cmd);
-		if (cmdSplit.size() == 0)
-			continue;
-
-		if (String::equals(cmdSplit.front(), "rename"))
-		{
-			if (cmdSplit.size() != 3)
-				continue;
-
-			s_mutex.lock();
-			const bool result = Commands::rename(cmdSplit[1], cmdSplit[2]);
-			s_mutex.unlock();
-			if (!result)
-				return false;
-		}
-		else
-		{
-			if (!Commands::subprocess(cmdSplit))
-				return false;
-		}
+		s_mutex.lock();
+		const bool result = Commands::rename(renameFrom, renameTo);
+		s_mutex.unlock();
+		return result;
 	}
 
 	return true;
@@ -142,13 +128,10 @@ bool CompileStrategyNative::run()
 	bool result = true;
 	if (m_project.usesPch())
 	{
-		auto shitList = String::split(m_pch.command);
-		UNUSED(shitList);
-
 		totalCompiles++;
 
 		result |= printCommand(m_pch.output, m_pch.command, Color::Blue, " ", cleanOutput, index, totalCompiles);
-		result |= executeCommand(m_pch.command);
+		result |= executeCommand(m_pch.command, m_pch.renameFrom, m_pch.renameTo);
 		index++;
 	}
 
@@ -158,7 +141,7 @@ bool CompileStrategyNative::run()
 		for (auto& it : m_compiles)
 		{
 			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Blue, " ", cleanOutput, index, totalCompiles));
-			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command));
+			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo));
 			index++;
 		}
 
@@ -180,7 +163,7 @@ bool CompileStrategyNative::run()
 			Output::lineBreak();
 
 			result |= printCommand(m_linker.output, m_linker.command, Color::Blue, u8"\xE2\x87\x9B", cleanOutput);
-			result |= executeCommand(m_linker.command);
+			result |= executeCommand(m_linker.command, m_linker.renameFrom, m_linker.renameTo);
 		}
 	}
 
@@ -193,7 +176,7 @@ bool CompileStrategyNative::run()
 		for (auto& it : m_assemblies)
 		{
 			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Magenta, " ", cleanOutput, index, totalCompiles));
-			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command));
+			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo));
 			index++;
 		}
 
@@ -225,8 +208,12 @@ void CompileStrategyNative::getCompileCommands(const StringList& inObjects)
 	if (m_project.usesPch())
 	{
 		std::string source = m_project.pch();
-		std::string command = getPchCompile(source, pchTarget);
-		m_pch = { std::move(source), std::move(command) };
+
+		auto tmp = getPchCompile(source, pchTarget);
+		m_pch.output = std::move(source);
+		m_pch.command = std::move(tmp.command);
+		m_pch.renameFrom = std::move(tmp.renameFrom);
+		m_pch.renameTo = std::move(tmp.renameTo);
 	}
 
 	const auto& objDir = fmt::format("{}/", m_state.paths.objDir());
@@ -246,17 +233,28 @@ void CompileStrategyNative::getCompileCommands(const StringList& inObjects)
 
 		if (String::endsWith(".rc", source))
 		{
+
 #if defined(CHALET_WIN32)
-			auto command = getRcCompile(source, target);
-			m_compiles.push_back({ std::move(source), std::move(command) });
+			auto tmp = getRcCompile(source, target);
+			Command out;
+			out.output = std::move(source);
+			out.command = std::move(tmp.command);
+			out.renameFrom = std::move(tmp.renameFrom);
+			out.renameTo = std::move(tmp.renameTo);
+			m_compiles.push_back(std::move(out));
 #else
 			continue;
 #endif
 		}
 		else
 		{
-			auto command = getCppCompile(source, target);
-			m_compiles.push_back({ std::move(source), std::move(command) });
+			auto tmp = getCppCompile(source, target);
+			Command out;
+			out.output = std::move(source);
+			out.command = std::move(tmp.command);
+			out.renameFrom = std::move(tmp.renameFrom);
+			out.renameTo = std::move(tmp.renameTo);
+			m_compiles.push_back(std::move(out));
 		}
 	}
 }
@@ -282,85 +280,65 @@ void CompileStrategyNative::getAsmCommands(const StringList& inAssemblies)
 			object = object.substr(0, object.size() - 4);
 
 		std::string command = getAsmGenerate(object, asmFile);
-		m_assemblies.push_back({ asmFile, std::move(command) });
+		m_assemblies.push_back({ asmFile, String::split(command), std::string(), std::string() });
 	}
 }
 
 /*****************************************************************************/
 void CompileStrategyNative::getLinkCommand(const StringList& inObjects)
 {
-	auto objects = String::join(inObjects);
-
 	const auto target = m_state.paths.getTargetFilename(m_project);
 	const auto targetBasename = m_state.paths.getTargetBasename(m_project);
-	std::string command = m_toolchain->getLinkerTargetCommand(target, objects, targetBasename);
-	while (command.back() == ' ')
-		command.pop_back();
 
-	std::string output = fmt::format("Linking {}", target);
-	m_linker = { std::move(output), std::move(command) };
+	m_linker.command = m_toolchain->getLinkerTargetCommand(target, inObjects, targetBasename);
+	m_linker.output = fmt::format("Linking {}", target);
 }
 
 /*****************************************************************************/
-std::string CompileStrategyNative::getPchCompile(const std::string& source, const std::string& target) const
+CompileStrategyNative::CommandTemp CompileStrategyNative::getPchCompile(const std::string& source, const std::string& target) const
 {
-	std::string ret;
+	CommandTemp ret;
 
 	if (m_project.usesPch())
 	{
 		const auto& depDir = m_state.paths.depDir();
 
-		const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-		const auto tempDependency = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
+		ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
+		ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-		const auto compile = m_toolchain->getPchCompileCommand(source, target, tempDependency);
-		const auto moveCommand = getRenameCommand(tempDependency, dependency);
-
-		ret = fmt::format("{compile} && {moveCommand}",
-			FMT_ARG(compile),
-			FMT_ARG(moveCommand));
+		ret.command = m_toolchain->getPchCompileCommand(source, target, ret.renameFrom);
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string CompileStrategyNative::getCppCompile(const std::string& source, const std::string& target) const
+CompileStrategyNative::CommandTemp CompileStrategyNative::getCppCompile(const std::string& source, const std::string& target) const
 {
-	std::string ret;
+	CommandTemp ret;
 
 	const auto& depDir = m_state.paths.depDir();
 
-	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-	const auto tempDependency = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
+	ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
+	ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	const auto compile = m_toolchain->getCppCompileCommand(source, target, tempDependency);
-	const auto moveCommand = getRenameCommand(tempDependency, dependency);
-
-	ret = fmt::format("{compile} && {moveCommand}",
-		FMT_ARG(compile),
-		FMT_ARG(moveCommand));
+	ret.command = m_toolchain->getCppCompileCommand(source, target, ret.renameFrom);
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string CompileStrategyNative::getRcCompile(const std::string& source, const std::string& target) const
+CompileStrategyNative::CommandTemp CompileStrategyNative::getRcCompile(const std::string& source, const std::string& target) const
 {
-	std::string ret;
+	CommandTemp ret;
 
 #if defined(CHALET_WIN32)
 	const auto& depDir = m_state.paths.depDir();
 
-	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-	const auto tempDependency = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
+	ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
+	ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	const auto compile = m_toolchain->getRcCompileCommand(source, target, tempDependency);
-	const auto moveCommand = getRenameCommand(tempDependency, dependency);
-
-	ret = fmt::format("{compile} && {moveCommand}",
-		FMT_ARG(compile),
-		FMT_ARG(moveCommand));
+	ret.command = m_toolchain->getRcCompileCommand(source, target, ret.renameFrom);
 #else
 	UNUSED(source, target);
 #endif
@@ -378,9 +356,4 @@ std::string CompileStrategyNative::getAsmGenerate(const std::string& object, con
 	return ret;
 }
 
-/*****************************************************************************/
-std::string CompileStrategyNative::getRenameCommand(const std::string& inInput, const std::string& inOutput) const
-{
-	return fmt::format("rename {} {}", inInput, inOutput);
-}
 }

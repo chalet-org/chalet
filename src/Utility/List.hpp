@@ -20,6 +20,9 @@ template <typename VectorType>
 inline void addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue);
 
 template <typename VectorType>
+inline void removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue);
+
+template <typename VectorType>
 inline bool contains(const std::vector<VectorType>& inList, const VectorType& inValue);
 }
 }

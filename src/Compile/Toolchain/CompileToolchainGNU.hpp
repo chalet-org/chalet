@@ -21,46 +21,40 @@ struct CompileToolchainGNU : ICompileToolchain
 	virtual ToolchainType type() const override;
 
 	virtual std::string getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) override;
-	virtual std::string getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
-	virtual std::string getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
-	virtual std::string getCppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
-	virtual std::string getObjcppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const bool treatAsC = false) override;
-	virtual std::string getLinkerTargetCommand(const std::string& outputFile, const std::string& sourceObjs, const std::string& outputFileBase) override;
+	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
+	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
+	virtual StringList getCppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const bool treatAsC = false) override;
+	virtual StringList getObjcppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const bool treatAsC = false) override;
+	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 
 protected:
-	const std::string& getIncludes();
-	const std::string& getLibDirs();
-	const std::string& getWarnings();
-	const std::string& getDefines();
-	std::string getLangStandard(const bool objectiveC = false);
-	const std::string& getLinks();
-	std::string getCompileFlags(const bool objectiveC = false);
-	const std::string& getCompileOptions();
-	const std::string& getLinkerOptions();
-	const std::string& getStripSymbols();
-	const std::string& getRunPathFlag();
-	const std::string& getOptimizations();
+	void addIncludes(StringList& inArgList);
+	void addLibDirs(StringList& inArgList);
+	void addWarnings(StringList& inArgList);
+	void addDefines(StringList& inArgList);
+	void addLinks(StringList& inArgList);
+	void addPchInclude(StringList& inArgList);
+	void addOptimizationFlag(StringList& inArgList);
+	void addStripSymbols(StringList& inArgList);
+	void addRunPath(StringList& inArgList);
+	void addLanguageStandard(StringList& inArgList, const bool objectiveC);
+	void addCompileFlags(StringList& inArgList, const bool objectiveC = false);
+	void addOtherCompileOptions(StringList& inArgList, const bool objectiveC);
+	void addLinkerOptions(StringList& inArgList);
 
-	const std::string& getPchInclude();
+	StringList getMingwDllTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
+	StringList getDylibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+	StringList getDynamicLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+
+	void addSourceObjects(StringList& inArgList, const StringList& sourceObjs);
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;
 	const CompilerConfig& m_config;
 
 	const CppCompilerType m_compilerType;
-
-	std::string m_includes;
-	std::string m_libDirs;
-	std::string m_warnings;
-	std::string m_defines;
-	std::string m_links;
-
-	std::string m_compileOptions;
-	std::string m_linkerOptions;
-	std::string m_stripSymbols;
-	std::string m_runPathFlag;
-	std::string m_optimizations;
-	std::string m_pchInclude;
 };
 }
 

@@ -31,6 +31,13 @@ inline void List::addIfDoesNotExist(std::vector<VectorType>& outList, VectorType
 
 /*****************************************************************************/
 template <typename VectorType>
+inline void List::removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue)
+{
+	outList.erase(std::remove(outList.begin(), outList.end(), inValue), outList.end());
+}
+
+/*****************************************************************************/
+template <typename VectorType>
 inline bool List::contains(const std::vector<VectorType>& inList, const VectorType& inValue)
 {
 	return std::find(inList.begin(), inList.end(), inValue) != inList.end();

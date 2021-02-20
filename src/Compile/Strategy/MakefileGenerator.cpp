@@ -266,7 +266,7 @@ std::string MakefileGenerator::getPchRecipe()
 			FMT_ARG(pch));
 		const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
-		const auto pchCompile = m_toolchain->getPchCompileCommand(pch, pchTarget, fmt::format("{}.Td", dependency));
+		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand(pch, pchTarget, fmt::format("{}.Td", dependency)));
 		const auto compileEcho = getCompileEchoSources();
 
 		ret = fmt::format(R"makefile(
@@ -302,7 +302,7 @@ std::string MakefileGenerator::getRcRecipe()
 		FMT_ARG(depDir));
 	const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
-	const auto rcCompile = m_toolchain->getRcCompileCommand("$<", "$@", fmt::format("{}.Td", dependency));
+	const auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", fmt::format("{}.Td", dependency)));
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.rc.res: %.rc
@@ -340,7 +340,7 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 		FMT_ARG(ext));
 	const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
-	const auto cppCompile = m_toolchain->getCppCompileCommand("$<", "$@", fmt::format("{}.Td", dependency));
+	const auto cppCompile = String::join(m_toolchain->getCppCompileCommand("$<", "$@", fmt::format("{}.Td", dependency)));
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}
@@ -380,7 +380,7 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 		FMT_ARG(ext));
 	const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
-	const std::string objcCompile = m_toolchain->getObjcppCompileCommand("$<", "$@", fmt::format("{}.Td", dependency), objectiveC);
+	const auto objcCompile = String::join(m_toolchain->getObjcppCompileCommand("$<", "$@", fmt::format("{}.Td", dependency), objectiveC));
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}
@@ -412,7 +412,7 @@ std::string MakefileGenerator::getTargetRecipe()
 
 	const auto linkerTarget = m_state.paths.getTargetFilename(m_project);
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(m_project);
-	const auto linkerCommand = m_toolchain->getLinkerTargetCommand(linkerTarget, "$(SOURCE_OBJS)", linkerTargetBase);
+	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, { "$(SOURCE_OBJS)" }, linkerTargetBase));
 	const auto compileEcho = getCompileEchoLinker();
 	const auto printer = getPrinter("\\n");
 
