@@ -33,6 +33,8 @@ private:
 	std::string getRcRule();
 	std::string getAsmRule();
 	std::string getCppRule();
+	std::string getObjcRule();
+	std::string getObjcppRule();
 
 	std::string getLinkRule();
 

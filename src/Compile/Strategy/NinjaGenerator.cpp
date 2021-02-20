@@ -21,13 +21,20 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState, const ProjectConfigura
 {
 	m_rules = {
 		{ "cpp", &NinjaGenerator::getCppRule },
+		{ "CPP", &NinjaGenerator::getCppRule },
 		{ "cc", &NinjaGenerator::getCppRule },
+		{ "CC", &NinjaGenerator::getCppRule },
 		{ "cxx", &NinjaGenerator::getCppRule },
+		{ "CXX", &NinjaGenerator::getCppRule },
 		{ "c++", &NinjaGenerator::getCppRule },
+		{ "C++", &NinjaGenerator::getCppRule },
 		{ "c", &NinjaGenerator::getCppRule },
-		{ "mm", &NinjaGenerator::getCppRule },
-		{ "m", &NinjaGenerator::getCppRule },
+		{ "C", &NinjaGenerator::getCppRule },
+		{ "mm", &NinjaGenerator::getObjcppRule },
+		{ "m", &NinjaGenerator::getObjcRule },
+		{ "M", &NinjaGenerator::getObjcRule },
 		{ "rc", &NinjaGenerator::getRcRule },
+		{ "RC", &NinjaGenerator::getRcRule },
 	};
 }
 
@@ -202,10 +209,65 @@ std::string NinjaGenerator::getCppRule()
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
-	const auto cppCompile = String::join(m_toolchain->getCppCompileCommand("$in", "$out", dependency));
+	// TODO: recipes for c, cpp, objective-c, objective-c++
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", dependency, CxxSpecialization::Cpp));
 
 	ret = fmt::format(R"ninja(
 rule cxx
+  deps = gcc
+  depfile = {dependency}
+  description = $in
+  command = {cppCompile}
+)ninja",
+		FMT_ARG(dependency),
+		FMT_ARG(cppCompile));
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string NinjaGenerator::getObjcRule()
+{
+	std::string ret;
+
+	const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
+
+	const auto& depDir = m_state.paths.depDir();
+	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+
+	// TODO: recipes for c, cpp, objective-c, objective-c++
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", dependency, CxxSpecialization::ObjectiveC));
+
+	ret = fmt::format(R"ninja(
+rule objc
+  deps = gcc
+  depfile = {dependency}
+  description = $in
+  command = {cppCompile}
+)ninja",
+		FMT_ARG(dependency),
+		FMT_ARG(cppCompile));
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string NinjaGenerator::getObjcppRule()
+{
+	std::string ret;
+
+	const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
+
+	const auto& depDir = m_state.paths.depDir();
+	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+
+	// TODO: recipes for c, cpp, objective-c, objective-c++
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", dependency, CxxSpecialization::ObjectiveCpp));
+
+	ret = fmt::format(R"ninja(
+rule objcpp
   deps = gcc
   depfile = {dependency}
   description = $in
@@ -286,6 +348,10 @@ std::string NinjaGenerator::getObjBuildRules(const StringList& inObjects, const 
 		std::string rule = "cxx";
 		if (String::endsWith(".rc", source) || String::endsWith(".RC", source))
 			rule = "rc";
+		else if (String::endsWith(".m", source) || String::endsWith(".M", source))
+			rule = "objc";
+		else if (String::endsWith(".mm", source))
+			rule = "objcpp";
 
 		ret += fmt::format("build {obj}: {rule} {source}{pchImplicitDep}\n",
 			FMT_ARG(obj),

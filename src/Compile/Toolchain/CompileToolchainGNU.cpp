@@ -63,7 +63,8 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 		ret.push_back(dependency);
 	}
 
-	addCompileFlags(ret);
+	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
+	addCompileFlags(ret, true, specialization);
 	addDefines(ret);
 	addIncludes(ret);
 
@@ -113,7 +114,7 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 }
 
 /*****************************************************************************/
-StringList CompileToolchainGNU::getCppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const bool treatAsC)
+StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const CxxSpecialization specialization)
 {
 	StringList ret;
 
@@ -129,10 +130,12 @@ StringList CompileToolchainGNU::getCppCompileCommand(const std::string& inputFil
 		ret.push_back(dependency);
 	}
 
-	addCompileFlags(ret, treatAsC);
+	addCompileFlags(ret, false, specialization);
 	addDefines(ret);
 	addIncludes(ret);
-	addPchInclude(ret);
+
+	if (specialization == CxxSpecialization::C || specialization == CxxSpecialization::Cpp)
+		addPchInclude(ret);
 
 	ret.push_back("-o");
 	ret.push_back(outputFile);
@@ -140,12 +143,6 @@ StringList CompileToolchainGNU::getCppCompileCommand(const std::string& inputFil
 	ret.push_back(inputFile);
 
 	return ret;
-}
-
-/*****************************************************************************/
-StringList CompileToolchainGNU::getObjcppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const bool treatAsC)
-{
-	return CompileToolchainGNU::getCppCompileCommand(inputFile, outputFile, dependency, treatAsC);
 }
 
 /*****************************************************************************/
@@ -362,6 +359,11 @@ void CompileToolchainGNU::addWarnings(StringList& inArgList)
 	const std::string prefix = "-W";
 	for (auto& warning : m_project.warnings())
 	{
+		if (String::equals(warning, "pedantic-errors"))
+		{
+			inArgList.push_back("-" + warning);
+			continue;
+		}
 		inArgList.push_back(prefix + warning);
 	}
 
@@ -370,9 +372,6 @@ void CompileToolchainGNU::addWarnings(StringList& inArgList)
 		std::string invalidPch = prefix + "invalid-pch";
 		List::addIfDoesNotExist<std::string>(inArgList, std::move(invalidPch));
 	}
-
-	// Special
-	// String::replaceAll(m_warnings, "-Wpedantic-errors", "-pedantic-errors");
 }
 
 /*****************************************************************************/
@@ -480,9 +479,9 @@ void CompileToolchainGNU::addRunPath(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLanguageStandard(StringList& inArgList, const bool objectiveC)
+void CompileToolchainGNU::addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization)
 {
-	const bool useC = m_project.language() == CodeLanguage::C || objectiveC;
+	const bool useC = m_project.language() == CodeLanguage::C || specialization == CxxSpecialization::ObjectiveC;
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
 	std::string ret = String::toLowerCase(langStandard);
 
@@ -504,7 +503,7 @@ void CompileToolchainGNU::addLanguageStandard(StringList& inArgList, const bool 
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addCompileFlags(StringList& inArgList, const bool objectiveC)
+void CompileToolchainGNU::addCompileFlags(StringList& inArgList, const bool forPch, const CxxSpecialization specialization)
 {
 	addOptimizationFlag(inArgList);
 
@@ -514,9 +513,12 @@ void CompileToolchainGNU::addCompileFlags(StringList& inArgList, const bool obje
 		inArgList.push_back("-g3");
 	}
 
-	addLanguageStandard(inArgList, objectiveC);
+	addLanguageStandard(inArgList, specialization);
 	addWarnings(inArgList);
-	addOtherCompileOptions(inArgList, objectiveC);
+	if (!forPch)
+		addObjectiveCxxCompileFlag(inArgList, specialization);
+
+	addOtherCompileOptions(inArgList, specialization);
 
 	if (debugSymbols)
 	{
@@ -531,7 +533,23 @@ void CompileToolchainGNU::addCompileFlags(StringList& inArgList, const bool obje
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addOtherCompileOptions(StringList& inArgList, const bool objectiveC)
+void CompileToolchainGNU::addObjectiveCxxCompileFlag(StringList& inArgList, const CxxSpecialization specialization)
+{
+	const bool isObjCpp = specialization == CxxSpecialization::ObjectiveCpp;
+	const bool isObjC = specialization == CxxSpecialization::ObjectiveC;
+	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
+	if (m_project.objectiveCxx() && m_config.isAppleClang() && isObjCxx)
+	{
+		inArgList.push_back("-x");
+		if (isObjCpp)
+			inArgList.push_back("objective-c++");
+		else if (isObjC)
+			inArgList.push_back("objective-c");
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainGNU::addOtherCompileOptions(StringList& inArgList, const CxxSpecialization specialization)
 {
 	if (m_config.isGcc())
 		List::addIfDoesNotExist<std::string>(inArgList, "-fPIC");
@@ -544,7 +562,8 @@ void CompileToolchainGNU::addOtherCompileOptions(StringList& inArgList, const bo
 		inArgList.push_back(option);
 	}
 
-	if (objectiveC && !m_config.isAppleClang())
+	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
+	if (isObjCxx && !m_config.isAppleClang())
 	{
 #if defined(CHALET_MACOS)
 		List::addIfDoesNotExist<std::string>(inArgList, "-fnext-runtime");
@@ -555,7 +574,7 @@ void CompileToolchainGNU::addOtherCompileOptions(StringList& inArgList, const bo
 
 	List::addIfDoesNotExist<std::string>(inArgList, "-fdiagnostics-color=always");
 
-	if (!m_project.rtti() && !objectiveC)
+	if (!m_project.rtti() && !isObjCxx)
 	{
 		List::addIfDoesNotExist<std::string>(inArgList, "-fno-rtti");
 	}
@@ -685,8 +704,5 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 		}
 	}
 #endif
-	///
-	///
-	///
 }
 }

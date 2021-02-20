@@ -231,9 +231,14 @@ void CompileStrategyNative::getCompileCommands(const StringList& inObjects)
 		else if (String::endsWith(".res", source))
 			source = source.substr(0, source.size() - 4);
 
+		CxxSpecialization specialization = CxxSpecialization::Cpp;
+		if (String::endsWith(".m", source) || String::endsWith(".M", source))
+			specialization = CxxSpecialization::ObjectiveC;
+		else if (String::endsWith(".mm", source))
+			specialization = CxxSpecialization::ObjectiveCpp;
+
 		if (String::endsWith(".rc", source))
 		{
-
 #if defined(CHALET_WIN32)
 			auto tmp = getRcCompile(source, target);
 			Command out;
@@ -248,7 +253,7 @@ void CompileStrategyNative::getCompileCommands(const StringList& inObjects)
 		}
 		else
 		{
-			auto tmp = getCppCompile(source, target);
+			auto tmp = getCxxCompile(source, target, specialization);
 			Command out;
 			out.output = std::move(source);
 			out.command = std::move(tmp.command);
@@ -313,7 +318,7 @@ CompileStrategyNative::CommandTemp CompileStrategyNative::getPchCompile(const st
 }
 
 /*****************************************************************************/
-CompileStrategyNative::CommandTemp CompileStrategyNative::getCppCompile(const std::string& source, const std::string& target) const
+CompileStrategyNative::CommandTemp CompileStrategyNative::getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const
 {
 	CommandTemp ret;
 
@@ -322,7 +327,8 @@ CompileStrategyNative::CommandTemp CompileStrategyNative::getCppCompile(const st
 	ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
 	ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	ret.command = m_toolchain->getCppCompileCommand(source, target, ret.renameFrom);
+	// TODO: Split between C, C++ Objective-C, Objective-C++
+	ret.command = m_toolchain->getCxxCompileCommand(source, target, ret.renameFrom, specialization);
 
 	return ret;
 }

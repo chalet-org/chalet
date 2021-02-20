@@ -340,7 +340,8 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 		FMT_ARG(ext));
 	const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
-	const auto cppCompile = String::join(m_toolchain->getCppCompileCommand("$<", "$@", fmt::format("{}.Td", dependency)));
+	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", fmt::format("{}.Td", dependency), specialization));
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}
@@ -367,7 +368,7 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 {
 	std::string ret;
 
-	const bool objectiveC = String::equals(ext, "m"); // mm & M imply C++
+	const bool objectiveC = String::equals(ext, "m") || String::equals(ext, "M"); // mm & M imply C++
 
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();
@@ -380,7 +381,8 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 		FMT_ARG(ext));
 	const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
-	const auto objcCompile = String::join(m_toolchain->getObjcppCompileCommand("$<", "$@", fmt::format("{}.Td", dependency), objectiveC));
+	const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCpp;
+	const auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", fmt::format("{}.Td", dependency), specialization));
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}

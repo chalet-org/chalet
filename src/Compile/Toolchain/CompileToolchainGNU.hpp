@@ -23,8 +23,7 @@ struct CompileToolchainGNU : ICompileToolchain
 	virtual std::string getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) override;
 	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
 	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
-	virtual StringList getCppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const bool treatAsC = false) override;
-	virtual StringList getObjcppCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const bool treatAsC = false) override;
+	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const CxxSpecialization specialization) override;
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 
 protected:
@@ -37,9 +36,10 @@ protected:
 	void addOptimizationFlag(StringList& inArgList);
 	void addStripSymbols(StringList& inArgList);
 	void addRunPath(StringList& inArgList);
-	void addLanguageStandard(StringList& inArgList, const bool objectiveC);
-	void addCompileFlags(StringList& inArgList, const bool objectiveC = false);
-	void addOtherCompileOptions(StringList& inArgList, const bool objectiveC);
+	void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization);
+	void addCompileFlags(StringList& inArgList, const bool forPch, const CxxSpecialization specialization);
+	void addObjectiveCxxCompileFlag(StringList& inArgList, const CxxSpecialization specialization);
+	void addOtherCompileOptions(StringList& inArgList, const CxxSpecialization specialization);
 	void addLinkerOptions(StringList& inArgList);
 
 	StringList getMingwDllTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);

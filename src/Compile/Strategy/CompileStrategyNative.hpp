@@ -50,7 +50,7 @@ private:
 	void getLinkCommand(const StringList& inObjects);
 
 	CommandTemp getPchCompile(const std::string& source, const std::string& target) const;
-	CommandTemp getCppCompile(const std::string& source, const std::string& target) const;
+	CommandTemp getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
 	CommandTemp getRcCompile(const std::string& source, const std::string& target) const;
 	std::string getAsmGenerate(const std::string& object, const std::string& target) const;
 
