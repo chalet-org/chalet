@@ -87,6 +87,7 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 
 	ret.push_back("-J");
 	ret.push_back("rc");
+	ret.push_back("-O");
 	ret.push_back("coff");
 
 	if (generateDependency)
