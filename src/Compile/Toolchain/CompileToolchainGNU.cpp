@@ -191,9 +191,9 @@ StringList CompileToolchainGNU::getMingwDllTargetCommand(const std::string& outp
 		std::string mingwLinkerOptions;
 		if (m_project.windowsOutputDef())
 		{
-			mingwLinkerOptions = fmt::format("-Wl,--output-def=\"{}.def\"", outputFileBase);
+			mingwLinkerOptions = fmt::format("-Wl,--output-def={}.def", outputFileBase);
 		}
-		mingwLinkerOptions += fmt::format("-Wl,--out-implib=\"{}.a\"", outputFileBase);
+		mingwLinkerOptions += fmt::format("-Wl,--out-implib={}.a", outputFileBase);
 		ret.push_back(std::move(mingwLinkerOptions));
 	}
 	ret.push_back("-Wl,--dll");
