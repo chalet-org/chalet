@@ -22,15 +22,16 @@ namespace chalet
 namespace
 {
 std::mutex s_mutex;
+std::atomic<uint> s_compileIndex = 0;
 std::function<void()> s_shutdownHandler;
 
 /*****************************************************************************/
-bool printCommand(std::string output, StringList command, Color inColor, std::string symbol, bool cleanOutput, uint index = 0, uint total = 0)
+bool printCommand(std::string output, StringList command, Color inColor, std::string symbol, bool cleanOutput, uint total = 0)
 {
 	std::unique_lock<std::mutex> lock(s_mutex);
 	if (total > 0)
 	{
-		auto indexStr = std::to_string(index);
+		auto indexStr = std::to_string(s_compileIndex);
 		const auto totalStr = std::to_string(total);
 		while (indexStr.size() < totalStr.size())
 		{
@@ -48,6 +49,8 @@ bool printCommand(std::string output, StringList command, Color inColor, std::st
 		Output::print(inColor, output);
 	else
 		Output::print(inColor, command);
+
+	s_compileIndex++;
 
 	return true;
 }
@@ -120,29 +123,26 @@ bool CompileStrategyNative::run()
 
 	bool cleanOutput = m_state.environment.cleanOutput();
 
-	uint index = 1;
+	s_compileIndex = 1;
 	uint totalCompiles = static_cast<uint>(m_compiles.size());
 
 	if (m_project.usesPch())
 	{
 		totalCompiles++;
 
-		if (!printCommand(m_pch.output, m_pch.command, Color::Blue, " ", cleanOutput, index, totalCompiles))
+		if (!printCommand(m_pch.output, m_pch.command, Color::Blue, " ", cleanOutput, totalCompiles))
 			return false;
 
 		if (!executeCommand(m_pch.command, m_pch.renameFrom, m_pch.renameTo))
 			return false;
-
-		index++;
 	}
 
 	bool buildFailed = false;
 	std::vector<std::future<bool>> threadResults;
 	for (auto& it : m_compiles)
 	{
-		threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Blue, " ", cleanOutput, index, totalCompiles));
+		threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Blue, " ", cleanOutput, totalCompiles));
 		threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo));
-		index++;
 	}
 
 	for (auto& tr : threadResults)
@@ -180,15 +180,14 @@ bool CompileStrategyNative::run()
 
 	if (m_project.dumpAssembly())
 	{
-		index = 1;
+		s_compileIndex = 1;
 		totalCompiles = static_cast<uint>(m_assemblies.size());
 
 		threadResults.clear();
 		for (auto& it : m_assemblies)
 		{
-			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Magenta, " ", cleanOutput, index, totalCompiles));
+			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Magenta, " ", cleanOutput, totalCompiles));
 			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo));
-			index++;
 		}
 
 		for (auto& tr : threadResults)
