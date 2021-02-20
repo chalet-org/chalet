@@ -320,7 +320,7 @@ bool BuildManager::doRun()
 	}
 
 	bool result = Commands::subprocess(cmd, m_cleanOutput);
-	if (!runProfiler(file, outputFolder))
+	if (!runProfiler(file, m_state.paths.buildOutputDir()))
 		return false;
 
 	return result;
@@ -334,18 +334,25 @@ bool BuildManager::runProfiler(const std::string& inExecutable, const std::strin
 		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
 		if (compilerConfig.isGcc() && !m_state.tools.gprof().empty())
 		{
+			Output::print(Color::Gray, "   Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
 			const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
+			Output::msgProfilerStarted(profStatsFile);
+
 			if (!Commands::subprocessOutputToFile({ m_state.tools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut, m_cleanOutput))
 			{
 				Diagnostic::errorAbort(fmt::format("{} failed to save.", profStatsFile));
 				return false;
 			}
+
+			Output::msgProfilerDone(profStatsFile);
 		}
 		else
 		{
 			Diagnostic::errorAbort("Profiling is not been implemented on this compiler yet");
 			return false;
 		}
+
+		Output::lineBreak();
 	}
 
 	return true;
@@ -623,8 +630,6 @@ void BuildManager::testTerminalMessages()
 	Output::msgBuildFail();
 	Output::msgBuildProdError(distConfig);
 	Output::msgProfilerDone(profAnalysis);
-	Output::msgProfilerError();
-	Output::msgProfilerErrorMacOS();
 	Output::msgBuildAndRun(buildConfiguration, name);
 	Output::msgBuild(buildConfiguration, name);
 	Output::msgRebuild(buildConfiguration, name);

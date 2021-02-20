@@ -43,7 +43,7 @@ void stripLastEndLine(std::string& inString)
 	if (!inString.empty() && inString.back() == '\n')
 	{
 		inString.pop_back();
-#ifdef CHALET_MSVC
+#if defined(CHALET_WIN32)
 		if (!inString.empty() && inString.back() == '\r')
 			inString.pop_back();
 #endif
@@ -516,7 +516,9 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = inStdErr;
 	options.onStdOut = [&outputStream](std::string inData) {
-		stripLastEndLine(inData);
+#if defined(CHALET_WIN32)
+		String::replaceAll(inData, "\r\n", "\n");
+#endif
 		outputStream << std::move(inData);
 	};
 	if (options.stderrOption == PipeOption::Pipe)

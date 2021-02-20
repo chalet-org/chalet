@@ -256,26 +256,16 @@ void Output::msgBuildProdError(const std::string& inBuildConfiguration)
 }
 
 /*****************************************************************************/
+void Output::msgProfilerStarted(const std::string& inProfileAnalysis)
+{
+	print(Color::Gray, fmt::format("   Writing profiling analysis to {}. This may take a while...\n", inProfileAnalysis));
+}
+
+/*****************************************************************************/
 void Output::msgProfilerDone(const std::string& inProfileAnalysis)
 {
 	constexpr auto symbol = Unicode::diamond();
-	displayStyledSymbol(Color::Magenta, symbol, fmt::format("Profiler Completed: View {} for details.", inProfileAnalysis));
-}
-
-/*****************************************************************************/
-void Output::msgProfilerError()
-{
-	constexpr auto symbol = Unicode::circledSaltire();
-	displayStyledSymbol(Color::Red, symbol, "Error: Profiler must be run on 'Debug' build.");
-	// exit 1
-}
-
-/*****************************************************************************/
-void Output::msgProfilerErrorMacOS()
-{
-	constexpr auto symbol = Unicode::circledSaltire();
-	displayStyledSymbol(Color::Red, symbol, "Error: Profiling (with gprof) is not supported on MacOS.");
-	// exit 1
+	displayStyledSymbol(Color::Magenta, symbol, fmt::format("Profiler Completed! View {} for details.", inProfileAnalysis));
 }
 
 // Leave the commands as separate functions in case symbols and things change
