@@ -615,8 +615,8 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 		if (m_config.isMingw() && m_project.staticLinking())
 		{
 			inArgList.push_back("-Wl,-Bstatic");
-			inArgList.push_back("lstdc++");
-			inArgList.push_back("lpthread");
+			inArgList.push_back("-lstdc++");
+			inArgList.push_back("-lpthread");
 		}
 		else
 		{
