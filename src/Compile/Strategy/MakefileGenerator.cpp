@@ -33,6 +33,7 @@ MakefileGenerator::MakefileGenerator(const BuildState& inState, const ProjectCon
 	m_toolchain(inToolchain)
 {
 	m_cleanOutput = m_state.environment.cleanOutput();
+	m_generateDependencies = true;
 }
 
 /*****************************************************************************/
@@ -264,23 +265,27 @@ std::string MakefileGenerator::getPchRecipe()
 		const auto dependency = fmt::format("{depDir}/{pch}",
 			FMT_ARG(depDir),
 			FMT_ARG(pch));
-		const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
-		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand(pch, pchTarget, fmt::format("{}.Td", dependency)));
+		const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 		const auto compileEcho = getCompileEchoSources();
+
+		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(pch, pchTarget, m_generateDependencies, fmt::format("{}.Td", dependency)));
+		if (m_generateDependencies)
+		{
+			pchCompile += fmt::format(" && {}", moveDependencies);
+		}
 
 		ret = fmt::format(R"makefile(
 {pchTarget}: {pch}
 {pchTarget}: {pch} {dependency}.d
 	{compileEcho}
-	{quietFlag}{pchCompile} && {moveDependencies}
+	{quietFlag}{pchCompile}
 )makefile",
 			FMT_ARG(pchTarget),
 			FMT_ARG(pch),
 			FMT_ARG(compileEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(pchCompile),
-			FMT_ARG(moveDependencies),
 			FMT_ARG(dependency));
 	}
 
@@ -302,13 +307,17 @@ std::string MakefileGenerator::getRcRecipe()
 		FMT_ARG(depDir));
 	const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
-	const auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", fmt::format("{}.Td", dependency)));
+	auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", m_generateDependencies, fmt::format("{}.Td", dependency)));
+	if (m_generateDependencies)
+	{
+		rcCompile += fmt::format(" && {}", moveDependencies);
+	}
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.rc.res: %.rc
 {objDir}/%.rc.res: %.rc {depDir}/%.rc.d{pchPreReq}
 	{compileEcho}
-	{quietFlag}{rcCompile} && {moveDependencies}
+	{quietFlag}{rcCompile}
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
@@ -316,7 +325,6 @@ std::string MakefileGenerator::getRcRecipe()
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),
 		FMT_ARG(rcCompile),
-		FMT_ARG(moveDependencies),
 		FMT_ARG(dependency));
 
 	return ret;
@@ -341,13 +349,17 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 	const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", fmt::format("{}.Td", dependency), specialization));
+	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, fmt::format("{}.Td", dependency), specialization));
+	if (m_generateDependencies)
+	{
+		cppCompile += fmt::format(" && {}", moveDependencies);
+	}
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}
 {objDir}/%.{ext}.o: %.{ext} {pchTarget} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
-	{quietFlag}{cppCompile} && {moveDependencies}
+	{quietFlag}{cppCompile}
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
@@ -357,7 +369,6 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),
 		FMT_ARG(cppCompile),
-		FMT_ARG(moveDependencies),
 		FMT_ARG(dependency));
 
 	return ret;
@@ -382,13 +393,17 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 	const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
 	const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCpp;
-	const auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", fmt::format("{}.Td", dependency), specialization));
+	auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, fmt::format("{}.Td", dependency), specialization));
+	if (m_generateDependencies)
+	{
+		objcCompile += fmt::format(" && {}", moveDependencies);
+	}
 
 	ret = fmt::format(R"makefile(
 {objDir}/%.{ext}.o: %.{ext}
 {objDir}/%.{ext}.o: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
-	{quietFlag}{objcCompile} && {moveDependencies}
+	{quietFlag}{objcCompile}
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
@@ -397,7 +412,6 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 		FMT_ARG(compileEcho),
 		FMT_ARG(quietFlag),
 		FMT_ARG(objcCompile),
-		FMT_ARG(moveDependencies),
 		FMT_ARG(dependency));
 
 	return ret;

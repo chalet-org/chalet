@@ -36,6 +36,7 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState, const ProjectConfigura
 		{ "rc", &NinjaGenerator::getRcRule },
 		{ "RC", &NinjaGenerator::getRcRule },
 	};
+	m_generateDependencies = true;
 }
 
 /*****************************************************************************/
@@ -136,7 +137,7 @@ std::string NinjaGenerator::getPchRule()
 		const auto& depDir = m_state.paths.depDir();
 		const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
-		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", "$out", dependency));
+		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", "$out", m_generateDependencies, dependency));
 
 		ret = fmt::format(R"ninja(
 rule pch
@@ -160,7 +161,7 @@ std::string NinjaGenerator::getRcRule()
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
-	const auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$in", "$out", dependency));
+	const auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$in", "$out", m_generateDependencies, dependency));
 
 	ret = fmt::format(R"ninja(
 rule rc
@@ -210,7 +211,7 @@ std::string NinjaGenerator::getCppRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
 	// TODO: recipes for c, cpp, objective-c, objective-c++
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", dependency, CxxSpecialization::Cpp));
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::Cpp));
 
 	ret = fmt::format(R"ninja(
 rule cxx
@@ -237,7 +238,7 @@ std::string NinjaGenerator::getObjcRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
 	// TODO: recipes for c, cpp, objective-c, objective-c++
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", dependency, CxxSpecialization::ObjectiveC));
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveC));
 
 	ret = fmt::format(R"ninja(
 rule objc
@@ -264,7 +265,7 @@ std::string NinjaGenerator::getObjcppRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
 	// TODO: recipes for c, cpp, objective-c, objective-c++
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", dependency, CxxSpecialization::ObjectiveCpp));
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveCpp));
 
 	ret = fmt::format(R"ninja(
 rule objcpp

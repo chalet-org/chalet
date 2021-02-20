@@ -46,7 +46,7 @@ std::string CompileToolchainGNU::getAsmGenerateCommand(const std::string& inputF
 }
 
 /*****************************************************************************/
-StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency)
+StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
 {
 	StringList ret;
 
@@ -54,6 +54,7 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 	ret.push_back(cc);
 
 	// TODO: no need for this during CI build
+	if (generateDependency)
 	{
 		ret.push_back("-MT");
 		ret.push_back(outputFile);
@@ -77,7 +78,7 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 }
 
 /*****************************************************************************/
-StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency)
+StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
 {
 	StringList ret;
 
@@ -88,6 +89,7 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 	ret.push_back("rc");
 	ret.push_back("coff");
 
+	if (generateDependency)
 	{
 		// Note: The dependency generation args have to be passed into the preprocessor
 		//   The underlying preprocessor command is "gcc -E -xc-header -DRC_INVOKED"
@@ -114,13 +116,14 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 }
 
 /*****************************************************************************/
-StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const CxxSpecialization specialization)
+StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization)
 {
 	StringList ret;
 
 	const auto& cc = m_config.compilerExecutable();
 	ret.push_back(cc);
 
+	if (generateDependency)
 	{
 		ret.push_back("-MT");
 		ret.push_back(outputFile);

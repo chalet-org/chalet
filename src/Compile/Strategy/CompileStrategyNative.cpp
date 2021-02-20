@@ -56,10 +56,13 @@ bool printCommand(std::string output, StringList command, Color inColor, std::st
 }
 
 /*****************************************************************************/
-bool executeCommand(StringList command, std::string renameFrom, std::string renameTo)
+bool executeCommand(StringList command, std::string renameFrom, std::string renameTo, bool generateDependencies)
 {
 	if (!Commands::subprocess(command))
 		return false;
+
+	if (!generateDependencies)
+		return true;
 
 	if (!renameFrom.empty() && !renameTo.empty())
 	{
@@ -73,7 +76,7 @@ bool executeCommand(StringList command, std::string renameFrom, std::string rena
 /*****************************************************************************/
 void signalHandler(int inSignal)
 {
-	UNUSED(inSignal);
+	Subprocess::haltAllProcesses(inSignal);
 	s_shutdownHandler();
 }
 }
@@ -85,6 +88,7 @@ CompileStrategyNative::CompileStrategyNative(BuildState& inState, const ProjectC
 	m_toolchain(inToolchain),
 	m_threadPool(m_state.environment.maxJobs())
 {
+	m_generateDependencies = true;
 }
 
 /*****************************************************************************/
@@ -133,7 +137,7 @@ bool CompileStrategyNative::run()
 		if (!printCommand(m_pch.output, m_pch.command, Color::Blue, " ", cleanOutput, totalCompiles))
 			return false;
 
-		if (!executeCommand(m_pch.command, m_pch.renameFrom, m_pch.renameTo))
+		if (!executeCommand(m_pch.command, m_pch.renameFrom, m_pch.renameTo, m_generateDependencies))
 			return false;
 	}
 
@@ -142,7 +146,7 @@ bool CompileStrategyNative::run()
 	for (auto& it : m_compiles)
 	{
 		threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Blue, " ", cleanOutput, totalCompiles));
-		threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo));
+		threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo, m_generateDependencies));
 	}
 
 	for (auto& tr : threadResults)
@@ -151,8 +155,7 @@ bool CompileStrategyNative::run()
 		{
 			if (!tr.get())
 			{
-				m_threadPool.stop();
-				Subprocess::haltAllProcesses();
+				signalHandler(SIGTERM);
 				buildFailed = true;
 				break;
 			}
@@ -175,7 +178,7 @@ bool CompileStrategyNative::run()
 	if (!printCommand(m_linker.output, m_linker.command, Color::Blue, u8"\xE2\x87\x9B", cleanOutput))
 		return false;
 
-	if (!executeCommand(m_linker.command, m_linker.renameFrom, m_linker.renameTo))
+	if (!executeCommand(m_linker.command, m_linker.renameFrom, m_linker.renameTo, m_generateDependencies))
 		return false;
 
 	if (m_project.dumpAssembly())
@@ -187,7 +190,7 @@ bool CompileStrategyNative::run()
 		for (auto& it : m_assemblies)
 		{
 			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Magenta, " ", cleanOutput, totalCompiles));
-			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo));
+			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo, m_generateDependencies));
 		}
 
 		for (auto& tr : threadResults)
@@ -196,8 +199,7 @@ bool CompileStrategyNative::run()
 			{
 				if (!tr.get())
 				{
-					m_threadPool.stop();
-					Subprocess::haltAllProcesses();
+					signalHandler(SIGTERM);
 					buildFailed = true;
 					break;
 				}
@@ -333,7 +335,7 @@ CompileStrategyNative::CommandTemp CompileStrategyNative::getPchCompile(const st
 		ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
 		ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-		ret.command = m_toolchain->getPchCompileCommand(source, target, ret.renameFrom);
+		ret.command = m_toolchain->getPchCompileCommand(source, target, m_generateDependencies, ret.renameFrom);
 	}
 
 	return ret;
@@ -350,7 +352,7 @@ CompileStrategyNative::CommandTemp CompileStrategyNative::getCxxCompile(const st
 	ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
 	// TODO: Split between C, C++ Objective-C, Objective-C++
-	ret.command = m_toolchain->getCxxCompileCommand(source, target, ret.renameFrom, specialization);
+	ret.command = m_toolchain->getCxxCompileCommand(source, target, m_generateDependencies, ret.renameFrom, specialization);
 
 	return ret;
 }
@@ -366,7 +368,7 @@ CompileStrategyNative::CommandTemp CompileStrategyNative::getRcCompile(const std
 	ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
 	ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	ret.command = m_toolchain->getRcCompileCommand(source, target, ret.renameFrom);
+	ret.command = m_toolchain->getRcCompileCommand(source, target, m_generateDependencies, ret.renameFrom);
 #else
 	UNUSED(source, target);
 #endif

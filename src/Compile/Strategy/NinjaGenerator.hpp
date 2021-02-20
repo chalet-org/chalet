@@ -47,6 +47,8 @@ private:
 	CompileToolchain& m_toolchain;
 
 	NinjaRuleList m_rules;
+
+	bool m_generateDependencies = false;
 };
 }
 

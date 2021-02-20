@@ -50,6 +50,7 @@ private:
 	CompileToolchain& m_toolchain;
 
 	bool m_cleanOutput = false;
+	bool m_generateDependencies = false;
 };
 }
 

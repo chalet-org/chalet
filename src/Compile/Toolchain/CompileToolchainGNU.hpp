@@ -21,9 +21,9 @@ struct CompileToolchainGNU : ICompileToolchain
 	virtual ToolchainType type() const override;
 
 	virtual std::string getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) override;
-	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
-	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
-	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const CxxSpecialization specialization) override;
+	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
+	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
+	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 
 protected:

@@ -115,8 +115,8 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 }
 
 /*****************************************************************************/
-void Subprocess::haltAllProcesses()
+void Subprocess::haltAllProcesses(const int inSignal)
 {
-	signalHandler(SIGTERM);
+	signalHandler(inSignal);
 }
 }

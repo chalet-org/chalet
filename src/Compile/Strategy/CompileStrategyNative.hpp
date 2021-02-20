@@ -65,6 +65,7 @@ private:
 
 	ThreadPool m_threadPool;
 
+	bool m_generateDependencies = false;
 	bool m_canceled = false;
 };
 }

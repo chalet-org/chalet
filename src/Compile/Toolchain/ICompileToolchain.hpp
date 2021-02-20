@@ -18,9 +18,9 @@ struct ICompileToolchain
 	virtual ToolchainType type() const = 0;
 
 	virtual std::string getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) = 0;
-	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) = 0;
-	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) = 0;
-	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const CxxSpecialization specialization) = 0;
+	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) = 0;
+	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) = 0;
+	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) = 0;
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;
 };
 
