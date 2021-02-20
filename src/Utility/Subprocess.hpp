@@ -16,6 +16,7 @@ namespace Subprocess
 {
 using PipeFunc = std::function<void(std::string)>;
 int run(const StringList& inCmd, SubprocessOptions&& inOptions);
+void haltAllProcesses();
 }
 
 struct SubprocessOptions

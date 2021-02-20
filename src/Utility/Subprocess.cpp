@@ -113,4 +113,10 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 
 	return process.returncode;
 }
+
+/*****************************************************************************/
+void Subprocess::haltAllProcesses()
+{
+	signalHandler(SIGTERM);
+}
 }

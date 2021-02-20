@@ -58,7 +58,7 @@ private:
 	std::mutex m_queueMutex;
 	std::condition_variable m_condition;
 
-	bool m_stop = false;
+	std::atomic_bool m_stop = false;
 };
 }
 

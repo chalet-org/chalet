@@ -12,6 +12,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
 
 // TODO: Finish. It's a bit crap
 
@@ -26,7 +27,7 @@ std::function<void()> s_shutdownHandler;
 /*****************************************************************************/
 bool printCommand(std::string output, StringList command, Color inColor, std::string symbol, bool cleanOutput, uint index = 0, uint total = 0)
 {
-	s_mutex.lock();
+	std::unique_lock<std::mutex> lock(s_mutex);
 	if (total > 0)
 	{
 		auto indexStr = std::to_string(index);
@@ -47,7 +48,6 @@ bool printCommand(std::string output, StringList command, Color inColor, std::st
 		Output::print(inColor, output);
 	else
 		Output::print(inColor, command);
-	s_mutex.unlock();
 
 	return true;
 }
@@ -60,10 +60,8 @@ bool executeCommand(StringList command, std::string renameFrom, std::string rena
 
 	if (!renameFrom.empty() && !renameTo.empty())
 	{
-		s_mutex.lock();
-		const bool result = Commands::rename(renameFrom, renameTo);
-		s_mutex.unlock();
-		return result;
+		std::unique_lock<std::mutex> lock(s_mutex);
+		return Commands::rename(renameFrom, renameTo);
 	}
 
 	return true;
@@ -125,54 +123,67 @@ bool CompileStrategyNative::run()
 	uint index = 1;
 	uint totalCompiles = static_cast<uint>(m_compiles.size());
 
-	bool result = true;
 	if (m_project.usesPch())
 	{
 		totalCompiles++;
 
-		result |= printCommand(m_pch.output, m_pch.command, Color::Blue, " ", cleanOutput, index, totalCompiles);
-		result |= executeCommand(m_pch.command, m_pch.renameFrom, m_pch.renameTo);
+		if (!printCommand(m_pch.output, m_pch.command, Color::Blue, " ", cleanOutput, index, totalCompiles))
+			return false;
+
+		if (!executeCommand(m_pch.command, m_pch.renameFrom, m_pch.renameTo))
+			return false;
+
 		index++;
 	}
 
-	if (result)
+	bool buildFailed = false;
+	std::vector<std::future<bool>> threadResults;
+	for (auto& it : m_compiles)
 	{
-		std::vector<std::future<bool>> threadResults;
-		for (auto& it : m_compiles)
-		{
-			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Blue, " ", cleanOutput, index, totalCompiles));
-			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo));
-			index++;
-		}
+		threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Blue, " ", cleanOutput, index, totalCompiles));
+		threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo));
+		index++;
+	}
 
-		for (auto& tr : threadResults)
+	for (auto& tr : threadResults)
+	{
+		try
 		{
-			try
+			if (!tr.get())
 			{
-				result |= tr.get();
-			}
-			catch (std::future_error&)
-			{
-				result = false;
+				m_threadPool.stop();
+				Subprocess::haltAllProcesses();
+				buildFailed = true;
 				break;
 			}
 		}
-
-		if (result)
+		catch (std::future_error& err)
 		{
-			Output::lineBreak();
-
-			result |= printCommand(m_linker.output, m_linker.command, Color::Blue, u8"\xE2\x87\x9B", cleanOutput);
-			result |= executeCommand(m_linker.command, m_linker.renameFrom, m_linker.renameTo);
+			std::cerr << err.what() << std::endl;
+			return false;
 		}
 	}
 
-	if (result && m_project.dumpAssembly())
+	if (buildFailed)
+	{
+		threadResults.clear();
+		return false;
+	}
+
+	Output::lineBreak();
+
+	if (!printCommand(m_linker.output, m_linker.command, Color::Blue, u8"\xE2\x87\x9B", cleanOutput))
+		return false;
+
+	if (!executeCommand(m_linker.command, m_linker.renameFrom, m_linker.renameTo))
+		return false;
+
+	if (m_project.dumpAssembly())
 	{
 		index = 1;
 		totalCompiles = static_cast<uint>(m_assemblies.size());
 
-		std::vector<std::future<bool>> threadResults;
+		threadResults.clear();
 		for (auto& it : m_assemblies)
 		{
 			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Magenta, " ", cleanOutput, index, totalCompiles));
@@ -184,20 +195,32 @@ bool CompileStrategyNative::run()
 		{
 			try
 			{
-				result |= tr.get();
+				if (!tr.get())
+				{
+					m_threadPool.stop();
+					Subprocess::haltAllProcesses();
+					buildFailed = true;
+					break;
+				}
 			}
-			catch (std::future_error&)
+			catch (std::future_error& err)
 			{
-				result = false;
-				break;
+				std::cerr << err.what() << std::endl;
+				return false;
 			}
 		}
 	}
 
+	if (buildFailed)
+	{
+		threadResults.clear();
+		return false;
+	}
+
 	Output::lineBreak();
 
-	const bool error = !result || m_canceled;
-	return !error;
+	const bool completed = !m_canceled;
+	return completed;
 }
 
 /*****************************************************************************/
