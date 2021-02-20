@@ -39,6 +39,12 @@ bool ProjectConfiguration::isExecutable() const noexcept
 }
 
 /*****************************************************************************/
+bool ProjectConfiguration::isSharedLibrary() const noexcept
+{
+	return m_kind == ProjectKind::SharedLibrary;
+}
+
+/*****************************************************************************/
 const StringList& ProjectConfiguration::fileExtensions() const noexcept
 {
 	return m_fileExtensions;
@@ -729,8 +735,8 @@ ProjectKind ProjectConfiguration::parseProjectKind(const std::string& inValue)
 	if (String::equals(inValue, "staticLibrary"))
 		return ProjectKind::StaticLibrary;
 
-	if (String::equals(inValue, "dynamicLibrary"))
-		return ProjectKind::DynamicLibrary;
+	if (String::equals(inValue, "sharedLibrary"))
+		return ProjectKind::SharedLibrary;
 
 	if (String::equals(inValue, "consoleApplication"))
 		return ProjectKind::ConsoleApplication;
@@ -775,7 +781,7 @@ void ProjectConfiguration::parseOutputFilename() noexcept
 			m_outputFile = m_name + extExec;
 			break;
 		}
-		case ProjectKind::DynamicLibrary:
+		case ProjectKind::SharedLibrary:
 		case ProjectKind::StaticLibrary: {
 			if (!windowsPrefixOutputFilename())
 			{

@@ -25,6 +25,9 @@ struct ConfigurationOptions
 	bool debugSymbols() const noexcept;
 	void setDebugSymbols(const bool inValue) noexcept;
 
+	bool enableProfiling() const noexcept;
+	void setEnableProfiling(const bool inValue) noexcept;
+
 private:
 	std::string parseOptimizations(const std::string& inValue) noexcept;
 
@@ -33,6 +36,7 @@ private:
 	bool m_linkTimeOptimization = false;
 	bool m_stripSymbols = false;
 	bool m_debugSymbols = false;
+	bool m_enableProfiling = false;
 };
 }
 

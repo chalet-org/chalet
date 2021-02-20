@@ -29,11 +29,21 @@ inline void List::addIfDoesNotExist(std::vector<VectorType>& outList, VectorType
 		outList.push_back(std::forward<VectorType>(inValue));
 }
 
+inline void List::addIfDoesNotExist(std::vector<std::string>& outList, const char* inValue)
+{
+	List::addIfDoesNotExist(outList, std::string(inValue));
+}
+
 /*****************************************************************************/
 template <typename VectorType>
 inline void List::removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue)
 {
 	outList.erase(std::remove(outList.begin(), outList.end(), inValue), outList.end());
+}
+
+inline void List::removeIfExists(std::vector<std::string>& outList, const char* inValue)
+{
+	List::removeIfExists(outList, std::string(inValue));
 }
 
 /*****************************************************************************/

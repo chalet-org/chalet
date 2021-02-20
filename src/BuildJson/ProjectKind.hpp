@@ -12,7 +12,7 @@ enum class ProjectKind : ushort
 {
 	None,
 	StaticLibrary,
-	DynamicLibrary,
+	SharedLibrary,
 	ConsoleApplication,
 	DesktopApplication
 };

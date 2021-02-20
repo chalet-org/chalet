@@ -319,7 +319,36 @@ bool BuildManager::doRun()
 		cmd.push_back(arg);
 	}
 
-	return Commands::subprocess(cmd);
+	bool result = Commands::subprocess(cmd, m_cleanOutput);
+	if (!runProfiler(file, outputFolder))
+		return false;
+
+	return result;
+}
+
+/*****************************************************************************/
+bool BuildManager::runProfiler(const std::string& inExecutable, const std::string& inOutputFolder)
+{
+	if (m_state.configuration.enableProfiling())
+	{
+		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+		if (compilerConfig.isGcc() && !m_state.tools.gprof().empty())
+		{
+			const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
+			if (!Commands::subprocessOutputToFile({ m_state.tools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut, m_cleanOutput))
+			{
+				Diagnostic::errorAbort(fmt::format("{} failed to save.", profStatsFile));
+				return false;
+			}
+		}
+		else
+		{
+			Diagnostic::errorAbort("Profiling is not been implemented on this compiler yet");
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /*****************************************************************************/

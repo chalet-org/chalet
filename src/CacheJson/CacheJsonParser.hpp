@@ -49,12 +49,14 @@ private:
 	const std::string kKeyCmake = "cmake";
 	const std::string kKeyCodeSign = "codesign";
 	const std::string kKeyGit = "git";
+	const std::string kKeyGprof = "gprof";
 	const std::string kKeyHdiUtil = "hdiutil";
 	const std::string kKeyInstallNameTool = "install_name_tool";
 	const std::string kKeyLdd = "ldd";
 	const std::string kKeyMacosSdk = "macosSdk";
 	const std::string kKeyMake = "make";
 	const std::string kKeyNinja = "ninja";
+	const std::string kKeyOsaScript = "osascript";
 	const std::string kKeyOtool = "otool";
 	const std::string kKeyPlUtil = "plutil";
 	const std::string kKeyRanLib = "ranlib";

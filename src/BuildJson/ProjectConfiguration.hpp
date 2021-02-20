@@ -18,6 +18,7 @@ struct ProjectConfiguration
 	explicit ProjectConfiguration(const std::string& inBuildConfig, const BuildEnvironment& inEnvironment);
 
 	bool isExecutable() const noexcept;
+	bool isSharedLibrary() const noexcept;
 
 	const StringList& fileExtensions() const noexcept;
 	void addFileExtensions(StringList& inList);

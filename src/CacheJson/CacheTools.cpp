@@ -64,6 +64,16 @@ void CacheTools::setGit(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::gprof() const noexcept
+{
+	return m_gprof;
+}
+void CacheTools::setGprof(const std::string& inValue) noexcept
+{
+	m_gprof = inValue;
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::hdiUtil() const noexcept
 {
 	return m_hdiUtil;
@@ -141,16 +151,6 @@ uint CacheTools::makeVersionMinor() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::sips() const noexcept
-{
-	return m_sips;
-}
-void CacheTools::setSips(const std::string& inValue) noexcept
-{
-	m_sips = inValue;
-}
-
-/*****************************************************************************/
 const std::string& CacheTools::ninja() const noexcept
 {
 	return m_ninja;
@@ -158,6 +158,17 @@ const std::string& CacheTools::ninja() const noexcept
 void CacheTools::setNinja(const std::string& inValue) noexcept
 {
 	m_ninja = inValue;
+}
+
+/*****************************************************************************/
+const std::string CacheTools::osascript() const noexcept
+{
+	return m_osascript;
+}
+
+void CacheTools::setOsaScript(const std::string& inValue) noexcept
+{
+	m_osascript = inValue;
 }
 
 /*****************************************************************************/
@@ -188,6 +199,16 @@ const std::string& CacheTools::ranlib() const noexcept
 void CacheTools::setRanlib(const std::string& inValue) noexcept
 {
 	m_ranlib = inValue;
+}
+
+/*****************************************************************************/
+const std::string& CacheTools::sips() const noexcept
+{
+	return m_sips;
+}
+void CacheTools::setSips(const std::string& inValue) noexcept
+{
+	m_sips = inValue;
 }
 
 /*****************************************************************************/

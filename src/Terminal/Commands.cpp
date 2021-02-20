@@ -36,6 +36,20 @@ std::string kCygPath;
 #elif defined(CHALET_MACOS)
 std::string kXcodePath;
 #endif
+
+/*****************************************************************************/
+void stripLastEndLine(std::string& inString)
+{
+	if (!inString.empty() && inString.back() == '\n')
+	{
+		inString.pop_back();
+#ifdef CHALET_MSVC
+		if (!inString.empty() && inString.back() == '\r')
+			inString.pop_back();
+#endif
+	}
+}
+
 }
 /*****************************************************************************/
 std::string Commands::getWorkingDirectory()
@@ -468,10 +482,7 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, const Pipe
 std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCleanOutput, const PipeOption inStdErr)
 {
 	if (!inCleanOutput)
-	{
-		std::cout << "Subprocess: ";
 		Output::print(Color::Blue, inCmd);
-	}
 
 	std::string ret;
 
@@ -488,22 +499,34 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCle
 
 	UNUSED(Subprocess::run(inCmd, std::move(options)));
 
-	if (!ret.empty() && ret.back() == '\n')
-	{
-		ret.pop_back();
-#ifdef CHALET_MSVC
-		if (!ret.empty() && ret.back() == '\r')
-			ret.pop_back();
-#endif
-	}
+	stripLastEndLine(ret);
 
 	return ret;
 }
 
 /*****************************************************************************/
-bool Commands::shellRemove(const std::string& inPath, const bool inCleanOutput)
+bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr, const bool inCleanOutput)
 {
-	return Commands::subprocess({ "rm", "-rf", inPath }, inCleanOutput);
+	if (!inCleanOutput)
+		Output::print(Color::Blue, inCmd);
+
+	std::ofstream outputStream(inOutputFile);
+
+	SubprocessOptions options;
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = inStdErr;
+	options.onStdOut = [&outputStream](std::string inData) {
+		stripLastEndLine(inData);
+		outputStream << std::move(inData);
+	};
+	if (options.stderrOption == PipeOption::Pipe)
+	{
+		options.onStdErr = options.onStdOut;
+	}
+
+	bool result = Subprocess::run(inCmd, std::move(options)) == EXIT_SUCCESS;
+	outputStream << std::endl;
+	return result;
 }
 
 /*****************************************************************************/

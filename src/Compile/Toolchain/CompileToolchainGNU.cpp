@@ -155,7 +155,7 @@ StringList CompileToolchainGNU::getLinkerTargetCommand(const std::string& output
 {
 	switch (m_project.kind())
 	{
-		case ProjectKind::DynamicLibrary: {
+		case ProjectKind::SharedLibrary: {
 			// TODO: any difference in MinGW Clang vs GCC
 			if (m_config.isMingw())
 				return getMingwDllTargetCommand(outputFile, sourceObjs, outputFileBase);
@@ -326,7 +326,7 @@ void CompileToolchainGNU::addIncludes(StringList& inArgList)
 	{
 		// must be last
 		std::string localInclude = prefix + "/usr/local/include";
-		List::addIfDoesNotExist<std::string>(inArgList, std::move(localInclude));
+		List::addIfDoesNotExist(inArgList, std::move(localInclude));
 	}
 #endif
 
@@ -352,7 +352,7 @@ void CompileToolchainGNU::addLibDirs(StringList& inArgList)
 	{
 		// must be last
 		std::string localLib = prefix + "/usr/local/lib";
-		List::addIfDoesNotExist<std::string>(inArgList, std::move(localLib));
+		List::addIfDoesNotExist(inArgList, std::move(localLib));
 	}
 #endif
 }
@@ -374,7 +374,7 @@ void CompileToolchainGNU::addWarnings(StringList& inArgList)
 	if (m_project.usesPch())
 	{
 		std::string invalidPch = prefix + "invalid-pch";
-		List::addIfDoesNotExist<std::string>(inArgList, std::move(invalidPch));
+		List::addIfDoesNotExist(inArgList, std::move(invalidPch));
 	}
 }
 
@@ -427,7 +427,7 @@ void CompileToolchainGNU::addLinks(StringList& inArgList)
 	if (m_project.objectiveCxx() && !m_config.isAppleClang())
 	{
 		std::string objc = prefix + "objc";
-		List::addIfDoesNotExist<std::string>(inArgList, std::move(objc));
+		List::addIfDoesNotExist(inArgList, std::move(objc));
 	}
 }
 
@@ -512,6 +512,8 @@ void CompileToolchainGNU::addCompileFlags(StringList& inArgList, const bool forP
 	addOptimizationFlag(inArgList);
 
 	const bool debugSymbols = m_state.configuration.debugSymbols();
+	const bool enableProfiling = m_state.configuration.enableProfiling();
+
 	if (debugSymbols)
 	{
 		inArgList.push_back("-g3");
@@ -524,14 +526,15 @@ void CompileToolchainGNU::addCompileFlags(StringList& inArgList, const bool forP
 
 	addOtherCompileOptions(inArgList, specialization);
 
-	if (debugSymbols)
+	if (enableProfiling)
 	{
 		// Add -pg here-ish
 #if defined(CHALET_MACOS)
 		// -pg not supported in apple clang
 		// TODO: gcc/clang distinction on mac?
 #else
-		// inArgList.push_back("-pg");
+		if (!m_project.isSharedLibrary())
+			inArgList.push_back("-pg");
 #endif
 	}
 }
@@ -556,7 +559,7 @@ void CompileToolchainGNU::addObjectiveCxxCompileFlag(StringList& inArgList, cons
 void CompileToolchainGNU::addOtherCompileOptions(StringList& inArgList, const CxxSpecialization specialization)
 {
 	if (m_config.isGcc())
-		List::addIfDoesNotExist<std::string>(inArgList, "-fPIC");
+		List::addIfDoesNotExist(inArgList, "-fPIC");
 
 	for (auto& option : m_project.compileOptions())
 	{
@@ -570,24 +573,24 @@ void CompileToolchainGNU::addOtherCompileOptions(StringList& inArgList, const Cx
 	if (isObjCxx && !m_config.isAppleClang())
 	{
 #if defined(CHALET_MACOS)
-		List::addIfDoesNotExist<std::string>(inArgList, "-fnext-runtime");
+		List::addIfDoesNotExist(inArgList, "-fnext-runtime");
 #else
-		List::addIfDoesNotExist<std::string>(inArgList, "-fgnu-runtime");
+		List::addIfDoesNotExist(inArgList, "-fgnu-runtime");
 #endif
 	}
 
-	List::addIfDoesNotExist<std::string>(inArgList, "-fdiagnostics-color=always");
+	List::addIfDoesNotExist(inArgList, "-fdiagnostics-color=always");
 
 	if (!m_project.rtti() && !isObjCxx)
 	{
-		List::addIfDoesNotExist<std::string>(inArgList, "-fno-rtti");
+		List::addIfDoesNotExist(inArgList, "-fno-rtti");
 	}
 
 	// #if defined(CHALET_LINUX)
 	if (m_config.isGcc())
 	{
 		if (m_project.posixThreads())
-			List::addIfDoesNotExist<std::string>(inArgList, "-pthread");
+			List::addIfDoesNotExist(inArgList, "-pthread");
 	}
 	// #endif
 }
@@ -597,6 +600,7 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 {
 	auto& configuration = m_state.configuration;
 	const bool debugSymbols = configuration.debugSymbols();
+	const bool enableProfiling = m_state.configuration.enableProfiling();
 
 	addStripSymbols(inArgList);
 
@@ -611,24 +615,25 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 	inArgList.push_back(m_state.tools.macosSdk());
 #endif
 
-	if (debugSymbols)
+	if (enableProfiling)
 	{
 		if (m_config.isClang())
 		{
 			// -pg not supported in apple clang
 			// TODO: gcc/clang distinction on mac?
-			List::removeIfExists<std::string>(inArgList, "-pg");
+			List::removeIfExists(inArgList, "-pg");
 		}
-		else
+		else if (m_project.isExecutable())
 		{
-			List::addIfDoesNotExist<std::string>(inArgList, "-pg");
+			inArgList.push_back("-Wl,--allow-multiple-definition");
+			List::addIfDoesNotExist(inArgList, "-pg");
 		}
 	}
-	else if (!m_config.isAppleClang())
+	else if (!debugSymbols && !m_config.isAppleClang())
 	{
 		if (configuration.linkTimeOptimization())
 		{
-			List::addIfDoesNotExist<std::string>(inArgList, "-flto");
+			List::addIfDoesNotExist(inArgList, "-flto");
 		}
 	}
 
@@ -643,7 +648,7 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 		}
 		else
 		{
-			List::addIfDoesNotExist<std::string>(inArgList, "-pthread");
+			List::addIfDoesNotExist(inArgList, "-pthread");
 		}
 	}
 	// #endif
@@ -661,22 +666,22 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 
 	if (m_project.staticLinking())
 	{
-		// List::addIfDoesNotExist<std::string>(inArgList, "-libstdc++");
+		// List::addIfDoesNotExist(inArgList, "-libstdc++");
 
 		if (m_config.isClang())
 		{
-			List::addIfDoesNotExist<std::string>(inArgList, "-static-libsan");
+			List::addIfDoesNotExist(inArgList, "-static-libsan");
 
 			// TODO: Investigate for other -static candidates on clang/mac
 		}
 		else
 		{
-			List::addIfDoesNotExist<std::string>(inArgList, "-static-libgcc");
-			List::addIfDoesNotExist<std::string>(inArgList, "-static-libasan");
-			List::addIfDoesNotExist<std::string>(inArgList, "-static-libtsan");
-			List::addIfDoesNotExist<std::string>(inArgList, "-static-liblsan");
-			List::addIfDoesNotExist<std::string>(inArgList, "-static-libubsan");
-			List::addIfDoesNotExist<std::string>(inArgList, "-static-libstdc++");
+			List::addIfDoesNotExist(inArgList, "-static-libgcc");
+			List::addIfDoesNotExist(inArgList, "-static-libasan");
+			List::addIfDoesNotExist(inArgList, "-static-libtsan");
+			List::addIfDoesNotExist(inArgList, "-static-liblsan");
+			List::addIfDoesNotExist(inArgList, "-static-libubsan");
+			List::addIfDoesNotExist(inArgList, "-static-libstdc++");
 		}
 	}
 
@@ -686,7 +691,7 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 		if (kind == ProjectKind::DesktopApplication && !debugSymbols)
 		{
 			// TODO: check other windows specific options
-			List::addIfDoesNotExist<std::string>(inArgList, "-mwindows");
+			List::addIfDoesNotExist(inArgList, "-mwindows");
 		}
 	}
 

@@ -195,6 +195,12 @@ Json Schema::getBuildJson()
 		"default": false
 	})json"_ojson;
 
+	ret[kDefinitions]["configurations-enableProfiling"] = R"json({
+		"type": "boolean",
+		"description": "true to enable profiling for this configuration, false otherwise.",
+		"default": false
+	})json"_ojson;
+
 	ret[kDefinitions]["configurations-linkTimeOptimization"] = R"json({
 		"type": "boolean",
 		"description": "true to use link-time optimization, false otherwise.",
@@ -525,7 +531,7 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["project-cxx-windowsPrefixOutputFilename"] = R"json({
 		"type": "boolean",
-		"description": "Only applies to dynamic library projects (kind=dynamicLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
+		"description": "Only applies to dynamic library projects (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
 		"default": true
 	})json"_ojson;
 
@@ -671,7 +677,7 @@ Json Schema::getBuildJson()
 		"description": "The type of the project's compiled binary.",
 		"enum": [
 			"staticLibrary",
-			"dynamicLibrary",
+			"sharedLibrary",
 			"consoleApplication",
 			"desktopApplication"
 		]
@@ -1380,6 +1386,9 @@ Json Schema::getBuildJson()
 					"properties": {
 						"debugSymbols": {
 							"$ref": "#/definitions/configurations-debugSymbols"
+						},
+						"enableProfiling": {
+							"$ref": "#/definitions/configurations-enableProfiling"
 						},
 						"linkTimeOptimization": {
 							"$ref": "#/definitions/configurations-linkTimeOptimization"

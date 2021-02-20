@@ -227,6 +227,7 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyCmake);
 	whichAdd(tools, kKeyCodeSign);
 	whichAdd(tools, kKeyGit);
+	whichAdd(tools, kKeyGprof);
 	whichAdd(tools, kKeyHdiUtil);
 	whichAdd(tools, kKeyInstallNameTool);
 	whichAdd(tools, kKeyLdd);
@@ -263,6 +264,7 @@ bool CacheJsonParser::makeCache()
 	}
 
 	whichAdd(tools, kKeyNinja);
+	whichAdd(tools, kKeyOsaScript);
 	whichAdd(tools, kKeyOtool);
 	whichAdd(tools, kKeyPlUtil);
 	whichAdd(tools, kKeyRanLib);
@@ -337,6 +339,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyGit))
 		m_state.tools.setGit(val);
 
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyGprof))
+		m_state.tools.setGprof(val);
+
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyHdiUtil))
 		m_state.tools.setHdiUtil(val);
 
@@ -357,6 +362,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyNinja))
 		m_state.tools.setNinja(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyOsaScript))
+		m_state.tools.setOsaScript(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyOtool))
 		m_state.tools.setOtool(val);

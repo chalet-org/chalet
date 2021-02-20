@@ -65,6 +65,16 @@ void ConfigurationOptions::setDebugSymbols(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+bool ConfigurationOptions::enableProfiling() const noexcept
+{
+	return m_enableProfiling;
+}
+void ConfigurationOptions::setEnableProfiling(const bool inValue) noexcept
+{
+	m_enableProfiling = inValue;
+}
+
+/*****************************************************************************/
 std::string ConfigurationOptions::parseOptimizations(const std::string& inValue) noexcept
 {
 	if (String::equals(inValue, "debug"))

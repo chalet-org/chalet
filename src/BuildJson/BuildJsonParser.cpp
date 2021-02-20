@@ -66,6 +66,8 @@ bool BuildJsonParser::serialize()
 		return false;
 	}
 
+	// TODO: Check custom configurations - if both lto & debug info / profiling are enabled, throw error (lto wipes out debug/profiling symbols)
+
 	std::string jsonDump = jRoot.dump();
 
 	std::string toHash = fmt::format("{jsonDump}_{buildConfiguration}",
@@ -291,6 +293,9 @@ bool BuildJsonParser::parseConfiguration(const Json& inNode)
 
 			if (bool val = false; JsonNode::assignFromKey(val, config, "debugSymbols"))
 				m_state.configuration.setDebugSymbols(val);
+
+			if (bool val = false; JsonNode::assignFromKey(val, config, "enableProfiling"))
+				m_state.configuration.setEnableProfiling(val);
 
 			configFound = true;
 		}
@@ -1023,9 +1028,16 @@ bool BuildJsonParser::setDefaultConfigurations(const std::string& inConfig)
 		m_state.configuration.setLinkTimeOptimization(true);
 		m_state.configuration.setStripSymbols(true);
 	}
+	else if (String::equals(inConfig, "Profile"))
+	{
+		m_state.configuration.setName(inConfig);
+		m_state.configuration.setOptimizations("2");
+		m_state.configuration.setDebugSymbols(true);
+		m_state.configuration.setEnableProfiling(true);
+	}
 	else
 	{
-		Diagnostic::errorAbort(fmt::format("{}: An invalid build configuration ({}) was requested. Expected Release or Debug", m_filename, inConfig));
+		Diagnostic::errorAbort(fmt::format("{}: An invalid build configuration ({}) was requested. Expected: Release, Debug, RelWithDebInfo, MinSizeRel, Profile", m_filename, inConfig));
 		return false;
 	}
 

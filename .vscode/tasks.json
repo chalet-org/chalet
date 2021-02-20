@@ -135,6 +135,18 @@
 			]
 		},
 		{
+			"label": "Build & Run: Profile",
+			"command": "${CHALET_DEBUG} --save-schema buildrun Profile chalet 'build MinSizeRel'",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
 			"label": "Build & Run: Tests",
 			"command": "${CHALET_DEBUG} --save-schema buildrun Release tests_chalet",
 			"type": "shell",

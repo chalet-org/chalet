@@ -27,6 +27,9 @@ struct CacheTools
 	const std::string& git() const noexcept;
 	void setGit(const std::string& inValue) noexcept;
 
+	const std::string& gprof() const noexcept;
+	void setGprof(const std::string& inValue) noexcept;
+
 	const std::string& hdiUtil() const noexcept;
 	void setHdiUtil(const std::string& inValue) noexcept;
 
@@ -44,11 +47,11 @@ struct CacheTools
 	uint makeVersionMajor() const noexcept;
 	uint makeVersionMinor() const noexcept;
 
-	const std::string& sips() const noexcept;
-	void setSips(const std::string& inValue) noexcept;
-
 	const std::string& ninja() const noexcept;
 	void setNinja(const std::string& inValue) noexcept;
+
+	const std::string osascript() const noexcept;
+	void setOsaScript(const std::string& inValue) noexcept;
 
 	const std::string& otool() const noexcept;
 	void setOtool(const std::string& inValue) noexcept;
@@ -58,6 +61,9 @@ struct CacheTools
 
 	const std::string& ranlib() const noexcept;
 	void setRanlib(const std::string& inValue) noexcept;
+
+	const std::string& sips() const noexcept;
+	void setSips(const std::string& inValue) noexcept;
 
 	const std::string& strip() const noexcept;
 	void setStrip(const std::string& inValue) noexcept;
@@ -85,12 +91,14 @@ private:
 	std::string m_cmake;
 	std::string m_codeSign;
 	std::string m_git;
+	std::string m_gprof;
 	std::string m_hdiUtil;
 	std::string m_installNameUtil;
 	std::string m_ldd;
 	std::string m_macosSdk;
 	std::string m_make;
 	std::string m_ninja;
+	std::string m_osascript;
 	std::string m_otool;
 	std::string m_plUtil;
 	std::string m_ranlib;

@@ -32,6 +32,11 @@
 			"description": "The executable path to git.",
 			"default": "/usr/bin/git"
 		},
+		"tools-gprof": {
+			"type": "string",
+			"description": "The executable path to gprof.",
+			"default": "/usr/bin/gprof"
+		},
 		"tools-hdiutil": {
 			"type": "string",
 			"description": "The executable path to Apple's hdiutil (MacOS)",
@@ -59,6 +64,11 @@
 		"tools-ninja": {
 			"type": "string",
 			"description": "The path to ninja's executable."
+		},
+		"tools-osascript": {
+			"type": "string",
+			"description": "The executable path to Apple's osascript (MacOS)",
+			"default": "/usr/bin/osascript"
 		},
 		"tools-otool": {
 			"type": "string",
@@ -146,12 +156,14 @@
 				"cmake",
 				"codesign",
 				"git",
+				"gprof",
 				"hdiutil",
 				"install_name_tool",
 				"ldd",
 				"macosSdk",
 				"make",
 				"ninja",
+				"osascript",
 				"otool",
 				"plutil",
 				"ranlib",
@@ -175,6 +187,9 @@
 				"git": {
 					"$ref": "#/definitions/tools-git"
 				},
+				"gprof": {
+					"$ref": "#/definitions/tools-gprof"
+				},
 				"hdiutil": {
 					"$ref": "#/definitions/tools-hdiutil"
 				},
@@ -192,6 +207,9 @@
 				},
 				"ninja": {
 					"$ref": "#/definitions/tools-ninja"
+				},
+				"osascript": {
+					"$ref": "#/definitions/tools-osascript"
 				},
 				"otool": {
 					"$ref": "#/definitions/tools-otool"

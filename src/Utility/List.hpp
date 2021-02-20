@@ -19,8 +19,12 @@ inline void sort(Container& inList);
 template <typename VectorType>
 inline void addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue);
 
+inline void addIfDoesNotExist(std::vector<std::string>& outList, const char* inValue);
+
 template <typename VectorType>
 inline void removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue);
+
+inline void removeIfExists(std::vector<std::string>& outList, const char* inValue);
 
 template <typename VectorType>
 inline bool contains(const std::vector<VectorType>& inList, const VectorType& inValue);

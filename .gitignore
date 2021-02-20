@@ -7,6 +7,10 @@ build
 dist
 chalet_external/
 
+# Profiling
+gmon.out
+profiler_analysis.stats
+
 # VS Code
 .vscode/ipch
 

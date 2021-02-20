@@ -59,6 +59,12 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/git"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-gprof"] = R"json({
+		"type": "string",
+		"description": "The executable path to gprof.",
+		"default": "/usr/bin/gprof"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-hdiutil"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's hdiutil (MacOS)",
@@ -91,6 +97,12 @@ Json Schema::getCacheJson()
 	ret[kDefinitions]["tools-ninja"] = R"json({
 		"type": "string",
 		"description": "The path to ninja's executable."
+	})json"_ojson;
+
+	ret[kDefinitions]["tools-osascript"] = R"json({
+		"type": "string",
+		"description": "The executable path to Apple's osascript (MacOS)",
+		"default": "/usr/bin/osascript"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-otool"] = R"json({
@@ -193,12 +205,14 @@ Json Schema::getCacheJson()
 			"cmake",
 			"codesign",
 			"git",
+			"gprof",
 			"hdiutil",
 			"install_name_tool",
 			"ldd",
 			"macosSdk",
 			"make",
 			"ninja",
+			"osascript",
 			"otool",
 			"plutil",
 			"ranlib",
@@ -222,6 +236,9 @@ Json Schema::getCacheJson()
 			"git": {
 				"$ref": "#/definitions/tools-git"
 			},
+			"gprof": {
+				"$ref": "#/definitions/tools-gprof"
+			},
 			"hdiutil": {
 				"$ref": "#/definitions/tools-hdiutil"
 			},
@@ -239,6 +256,9 @@ Json Schema::getCacheJson()
 			},
 			"ninja": {
 				"$ref": "#/definitions/tools-ninja"
+			},
+			"osascript": {
+				"$ref": "#/definitions/tools-osascript"
 			},
 			"otool": {
 				"$ref": "#/definitions/tools-otool"
