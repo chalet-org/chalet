@@ -28,6 +28,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 	{
 		return ProfilerRunner::runWithGprof(inCommand, inExecutable, inOutputFolder);
 	}
+#if defined(CHALET_MACOS)
 	else if (compilerConfig.isAppleClang())
 	{
 		/*
@@ -65,6 +66,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 			return runWithSample(inCommand, inExecutable, inOutputFolder);
 		}
 	}
+#endif
 	else
 	{
 		Diagnostic::errorAbort("Profiling is not been implemented on this compiler yet");
