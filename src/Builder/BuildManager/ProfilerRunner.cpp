@@ -164,11 +164,13 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 /*****************************************************************************/
 bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
+	uint sampleDuration = 300;
+	uint samplingInterval = 1;
+
 	auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
+
 	bool sampleResult = false;
 	auto onCreate = [&](int pid) -> void {
-		uint sampleDuration = 300;
-		uint samplingInterval = 1;
 		Output::msgProfilerStartedSample(inExecutable, sampleDuration, samplingInterval);
 
 		sampleResult = Commands::subprocess({ m_state.tools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close, m_cleanOutput);
