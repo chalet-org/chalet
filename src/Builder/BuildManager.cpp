@@ -332,6 +332,8 @@ bool BuildManager::runProfiler(const std::string& inExecutable, const std::strin
 	if (m_state.configuration.enableProfiling())
 	{
 		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+#if defined(CHALET_LINUX) || defined(CHALET_WIN32)
+		// at the moment, don't even try to run gprof on mac
 		if (compilerConfig.isGcc() && !m_state.tools.gprof().empty())
 		{
 			Output::print(Color::Gray, "   Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
@@ -345,14 +347,39 @@ bool BuildManager::runProfiler(const std::string& inExecutable, const std::strin
 			}
 
 			Output::msgProfilerDone(profStatsFile);
+			Output::lineBreak();
 		}
 		else
+#elif defined(CHALET_MACOS)
+		UNUSED(inExecutable, inOutputFolder);
+		if (compilerConfig.isAppleClang())
+		{
+			// Notes:
+			/*
+				Nice resource on the topic of profiling in mac:
+				https://gist.github.com/loderunner/36724cc9ee8db66db305
+
+				sudo xcode-select -s /Library/Developer/CommandLineTools
+				sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+				'xcrun xctrace' should be the standard (from which Xcode version?)
+				'instruments' was deprecated in favor of 'xcrun xctrace'
+
+				CommandLineTools does not have access to instruments,
+				'sample' will need to be used instead if only CommandLineTools is selected
+				both instruments and sample require the PID (get from subprocess somehow)
+
+				... 🤡
+			*/
+			Diagnostic::errorAbort("Profiling is not been implemented on MacOS yet");
+			return false;
+		}
+		else
+#endif
 		{
 			Diagnostic::errorAbort("Profiling is not been implemented on this compiler yet");
 			return false;
 		}
-
-		Output::lineBreak();
 	}
 
 	return true;
