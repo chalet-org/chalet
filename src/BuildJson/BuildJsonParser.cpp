@@ -1031,7 +1031,7 @@ bool BuildJsonParser::setDefaultConfigurations(const std::string& inConfig)
 	else if (String::equals(inConfig, "Profile"))
 	{
 		m_state.configuration.setName(inConfig);
-		m_state.configuration.setOptimizations("2");
+		// m_state.configuration.setOptimizations("2");
 		m_state.configuration.setDebugSymbols(true);
 		m_state.configuration.setEnableProfiling(true);
 	}

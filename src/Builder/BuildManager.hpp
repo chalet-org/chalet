@@ -44,7 +44,7 @@ private:
 	std::string getRunOutputFile();
 	bool createAppBundle();
 	bool runExternalScripts(const StringList& inScripts);
-	bool runProfiler(const std::string& inExecutable, const std::string& inOutputFolder, const int inPid = -1);
+	bool runProfiler(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 
 	void testTerminalMessages();
 

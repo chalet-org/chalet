@@ -320,31 +320,19 @@ bool BuildManager::doRun()
 		cmd.push_back(arg);
 	}
 
-	bool profileResult = true;
-#if defined(CHALET_MACOS)
-	auto onCreate = [&](int pid) -> void {
-		profileResult = runProfiler(file, m_state.paths.buildOutputDir(), pid);
-	};
-	bool result = Commands::subprocess(cmd, std::move(onCreate), m_cleanOutput);
-#else
-	bool result = Commands::subprocess(cmd, m_cleanOutput);
-	if (!runProfiler(file, m_state.paths.buildOutputDir()))
-		return false;
-#endif
+	if (!m_state.configuration.enableProfiling())
+		return Commands::subprocess(cmd, m_cleanOutput);
 
-	return result && profileResult;
+	return runProfiler(cmd, file, m_state.paths.buildOutputDir());
 }
 
 /*****************************************************************************/
-bool BuildManager::runProfiler(const std::string& inExecutable, const std::string& inOutputFolder, const int inPid)
+bool BuildManager::runProfiler(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
 	chalet_assert(m_project != nullptr, "");
 
-	if (!m_state.configuration.enableProfiling())
-		return true;
-
 	ProfilerRunner profiler(m_state, *m_project, m_cleanOutput);
-	return profiler.run(inExecutable, inOutputFolder, inPid);
+	return profiler.run(inCommand, inExecutable, inOutputFolder);
 }
 
 /*****************************************************************************/

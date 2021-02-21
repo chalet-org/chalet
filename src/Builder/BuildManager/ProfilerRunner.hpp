@@ -16,9 +16,15 @@ class ProfilerRunner
 public:
 	explicit ProfilerRunner(const BuildState& inState, const ProjectConfiguration& inProject, const bool inCleanOutput);
 
-	bool run(const std::string& inExecutable, const std::string& inOutputFolder, const int inPid);
+	bool run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 
 private:
+	bool runWithGprof(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
+#if defined(CHALET_MACOS)
+	bool runWithInstruments(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder, const bool inUseXcTrace);
+	bool runWithSample(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
+#endif
+
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;
 

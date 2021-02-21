@@ -264,7 +264,7 @@ void Output::msgProfilerStartedGprof(const std::string& inProfileAnalysis)
 /*****************************************************************************/
 void Output::msgProfilerStartedSample(const std::string& inExecutable, const uint inDuration, const uint inSamplingInterval)
 {
-	print(Color::Gray, fmt::format("   Sampling {} for {} seconds with {} millisecond of run time between samples\n", inExecutable, inDuration, inSamplingInterval));
+	print(Color::Gray, fmt::format("   Sampling {} for {} seconds with {} millisecond of run time between samples", inExecutable, inDuration, inSamplingInterval));
 }
 
 /*****************************************************************************/

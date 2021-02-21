@@ -528,14 +528,14 @@ void CompileToolchainGNU::addCompileFlags(StringList& inArgList, const bool forP
 
 	if (enableProfiling)
 	{
-		// Add -pg here-ish
-#if defined(CHALET_MACOS)
-		// -pg not supported in apple clang
-		// TODO: gcc/clang distinction on mac?
-#else
-		if (!m_project.isSharedLibrary())
-			inArgList.push_back("-pg");
-#endif
+		if (!m_config.isAppleClang())
+		{
+			// -pg not supported in apple clang
+			// TODO: gcc/clang distinction on mac?
+
+			if (!m_project.isSharedLibrary())
+				inArgList.push_back("-pg");
+		}
 	}
 }
 
@@ -617,13 +617,7 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 
 	if (enableProfiling)
 	{
-		if (m_config.isClang())
-		{
-			// -pg not supported in apple clang
-			// TODO: gcc/clang distinction on mac?
-			List::removeIfExists(inArgList, "-pg");
-		}
-		else if (m_project.isExecutable())
+		if (!m_config.isAppleClang() && m_project.isExecutable())
 		{
 			inArgList.push_back("-Wl,--allow-multiple-definition");
 			List::addIfDoesNotExist(inArgList, "-pg");
