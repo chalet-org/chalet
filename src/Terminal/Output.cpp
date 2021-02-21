@@ -108,7 +108,7 @@ std::string_view Output::getAnsiReset()
 }
 
 /*****************************************************************************/
-void Output::displayStyledSymbol(const Color inColor, const std::string& inSymbol, const std::string& inMessage, const bool inBold)
+void Output::displayStyledSymbol(const Color inColor, const std::string_view& inSymbol, const std::string& inMessage, const bool inBold)
 {
 	const auto color = getAnsiStyle(inColor, inBold);
 	const auto reset = getAnsiReset();
@@ -256,9 +256,15 @@ void Output::msgBuildProdError(const std::string& inBuildConfiguration)
 }
 
 /*****************************************************************************/
-void Output::msgProfilerStarted(const std::string& inProfileAnalysis)
+void Output::msgProfilerStartedGprof(const std::string& inProfileAnalysis)
 {
 	print(Color::Gray, fmt::format("   Writing profiling analysis to {}. This may take a while...\n", inProfileAnalysis));
+}
+
+/*****************************************************************************/
+void Output::msgProfilerStartedSample(const std::string& inExecutable, const uint inDuration, const uint inSamplingInterval)
+{
+	print(Color::Gray, fmt::format("   Sampling {} for {} seconds with {} millisecond of run time between samples\n", inExecutable, inDuration, inSamplingInterval));
 }
 
 /*****************************************************************************/
@@ -266,6 +272,13 @@ void Output::msgProfilerDone(const std::string& inProfileAnalysis)
 {
 	constexpr auto symbol = Unicode::diamond();
 	displayStyledSymbol(Color::Magenta, symbol, fmt::format("Profiler Completed! View {} for details.", inProfileAnalysis));
+}
+
+/*****************************************************************************/
+void Output::msgProfilerDoneInstruments(const std::string& inProfileAnalysis)
+{
+	constexpr auto symbol = Unicode::diamond();
+	displayStyledSymbol(Color::Magenta, symbol, fmt::format("Profiler Completed! Launching {} in Instruments.", inProfileAnalysis));
 }
 
 // Leave the commands as separate functions in case symbols and things change

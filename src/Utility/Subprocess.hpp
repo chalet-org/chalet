@@ -14,7 +14,9 @@ struct SubprocessOptions;
 
 namespace Subprocess
 {
-using PipeFunc = std::function<void(std::string)>;
+using PipeFunc = std::function<void(std::string /* output */)>;
+using CreateFunc = std::function<void(int /* pid */)>;
+
 int run(const StringList& inCmd, SubprocessOptions&& inOptions);
 void haltAllProcesses(const int inSignal = SIGTERM);
 }
@@ -26,6 +28,7 @@ struct SubprocessOptions
 	PipeOption stderrOption = PipeOption::Close;
 	Subprocess::PipeFunc onStdOut = nullptr;
 	Subprocess::PipeFunc onStdErr = nullptr;
+	Subprocess::CreateFunc onCreate = nullptr;
 	EnvMap env;
 };
 

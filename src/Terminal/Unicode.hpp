@@ -10,14 +10,14 @@ namespace chalet
 {
 namespace Unicode
 {
-constexpr Constant dot();
-constexpr Constant diamond();
-constexpr Constant heavyCheckmark();
-constexpr Constant heavyBallotX();
-constexpr Constant boldSaltire();
-constexpr Constant circledSaltire();
-constexpr Constant heavyCurvedDownRightArrow();
-constexpr Constant heavyCurvedUpRightArrow();
+constexpr std::string_view dot();
+constexpr std::string_view diamond();
+constexpr std::string_view heavyCheckmark();
+constexpr std::string_view heavyBallotX();
+constexpr std::string_view boldSaltire();
+constexpr std::string_view circledSaltire();
+constexpr std::string_view heavyCurvedDownRightArrow();
+constexpr std::string_view heavyCurvedUpRightArrow();
 }
 }
 

@@ -139,7 +139,7 @@ int Application::onExit(const Status inStatus)
 	else
 	{
 		// This exit method just means we've handled the error elsewhere and displayed it
-		// std::this_thread::sleep_for(std::chrono::seconds(3));
+		// Commands::sleep(3.0);
 		return EXIT_FAILURE;
 	}
 }

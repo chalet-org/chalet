@@ -8,7 +8,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-constexpr Constant PlatformFile::linuxDesktopEntry()
+constexpr std::string_view PlatformFile::linuxDesktopEntry()
 {
 	return R"([Desktop Entry]
 Version=1.0
@@ -24,7 +24,7 @@ Icon=${icon}
 }
 
 /*****************************************************************************/
-constexpr Constant PlatformFile::macosInfoPlist()
+constexpr std::string_view PlatformFile::macosInfoPlist()
 {
 	return R"({
 	"CFBundleName": "${bundleName}",
@@ -43,7 +43,7 @@ constexpr Constant PlatformFile::macosInfoPlist()
 }
 
 /*****************************************************************************/
-constexpr Constant PlatformFile::macosDmgApplescript()
+constexpr std::string_view PlatformFile::macosDmgApplescript()
 {
 	return R"(set appName to system attribute "appName"
 set appNameExt to appName & ".app"
@@ -72,7 +72,7 @@ end tell
 }
 
 /*****************************************************************************/
-constexpr Constant PlatformFile::windowsAppManifest()
+constexpr std::string_view PlatformFile::windowsAppManifest()
 {
 	return R"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">

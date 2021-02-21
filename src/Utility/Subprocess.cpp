@@ -64,6 +64,11 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 
 	s_procesess.push_back(&process);
 
+	if (inOptions.onCreate != nullptr)
+	{
+		inOptions.onCreate(static_cast<int>(process.pid));
+	}
+
 	if (!s_initialized)
 	{
 		std::signal(SIGINT, signalHandler);

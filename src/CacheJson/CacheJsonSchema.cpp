@@ -37,7 +37,7 @@ Json Schema::getCacheJson()
 
 	ret[kDefinitions]["tools-brew"] = R"json({
 		"type": "string",
-		"description": "The executable path to brew (MacOS)",
+		"description": "The executable path to brew command-line utility (MacOS)",
 		"default": "/usr/local/bin/brew"
 	})json"_ojson;
 
@@ -49,7 +49,7 @@ Json Schema::getCacheJson()
 
 	ret[kDefinitions]["tools-codesign"] = R"json({
 		"type": "string",
-		"description": "The executable path to codesign (MacOS",
+		"description": "The executable path to codesign command-line utility (MacOS)",
 		"default": "/usr/bin/codesign"
 	})json"_ojson;
 
@@ -67,14 +67,20 @@ Json Schema::getCacheJson()
 
 	ret[kDefinitions]["tools-hdiutil"] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's hdiutil (MacOS)",
+		"description": "The executable path to Apple's hdiutil command-line utility (MacOS)",
 		"default": "/usr/bin/hdiutil"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-install_name_tool"] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's install_name_tool (MacOS)",
+		"description": "The executable path to Apple's install_name_tool command-line utility (MacOS)",
 		"default": "/usr/bin/install_name_tool"
+	})json"_ojson;
+
+	ret[kDefinitions]["tools-instruments"] = R"json({
+		"type": "string",
+		"description": "The executable path to Apple's instruments command-line utility (MacOS)",
+		"default": "/usr/bin/instruments"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-ldd"] = R"json({
@@ -101,19 +107,19 @@ Json Schema::getCacheJson()
 
 	ret[kDefinitions]["tools-osascript"] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's osascript (MacOS)",
+		"description": "The executable path to Apple's osascript command-line utility (MacOS)",
 		"default": "/usr/bin/osascript"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-otool"] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's otool (MacOS)",
+		"description": "The executable path to Apple's otool command-line utility (MacOS)",
 		"default": "/usr/bin/otool"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-plutil"] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's plutil (MacOS)",
+		"description": "The executable path to Apple's plutil command-line utility (MacOS)",
 		"default": "/usr/bin/plutil"
 	})json"_ojson;
 
@@ -123,9 +129,15 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/ranlib"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-sample"] = R"json({
+		"type": "string",
+		"description": "The executable path to Apple's sample command-line utility (MacOS)",
+		"default": "/usr/bin/sample"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-sips"] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's sips utility (MacOS)",
+		"description": "The executable path to Apple's sips command-line utility (MacOS)",
 		"default": "/usr/bin/sips"
 	})json"_ojson;
 
@@ -139,6 +151,18 @@ Json Schema::getCacheJson()
 		"type": "string",
 		"description": "The executable path to tiffutil",
 		"default": "/usr/bin/tiffutil"
+	})json"_ojson;
+
+	ret[kDefinitions]["tools-xcodebuild"] = R"json({
+		"type": "string",
+		"description": "The executable path to Apple's xcodebuild command-line utility (MacOS)",
+		"default": "/usr/bin/xcodebuild"
+	})json"_ojson;
+
+	ret[kDefinitions]["tools-xcrun"] = R"json({
+		"type": "string",
+		"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
+		"default": "/usr/bin/xcrun"
 	})json"_ojson;
 
 	ret[kDefinitions]["compilers-cpp"] = R"json({
@@ -245,6 +269,9 @@ Json Schema::getCacheJson()
 			"install_name_tool": {
 				"$ref": "#/definitions/tools-install_name_tool"
 			},
+			"instruments": {
+				"$ref": "#/definitions/tools-instruments"
+			},
 			"ldd": {
 				"$ref": "#/definitions/tools-ldd"
 			},
@@ -269,6 +296,9 @@ Json Schema::getCacheJson()
 			"ranlib": {
 				"$ref": "#/definitions/tools-ranlib"
 			},
+			"sample": {
+				"$ref": "#/definitions/tools-sample"
+			},
 			"sips": {
 				"$ref": "#/definitions/tools-sips"
 			},
@@ -277,6 +307,12 @@ Json Schema::getCacheJson()
 			},
 			"tiffutil": {
 				"$ref": "#/definitions/tools-tiffutil"
+			},
+			"xcodebuild": {
+				"$ref": "#/definitions/tools-xcodebuild"
+			},
+			"xcrun": {
+				"$ref": "#/definitions/tools-xcrun"
 			}
 		}
 	})json"_ojson;

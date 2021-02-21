@@ -6,6 +6,7 @@
 #include "Builder/BuildManager.hpp"
 
 #include "Builder/BuildManager/CmakeBuilder.hpp"
+#include "Builder/BuildManager/ProfilerRunner.hpp"
 #include "Router/Route.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -319,70 +320,31 @@ bool BuildManager::doRun()
 		cmd.push_back(arg);
 	}
 
+	bool profileResult = true;
+#if defined(CHALET_MACOS)
+	auto onCreate = [&](int pid) -> void {
+		profileResult = runProfiler(file, m_state.paths.buildOutputDir(), pid);
+	};
+	bool result = Commands::subprocess(cmd, std::move(onCreate), m_cleanOutput);
+#else
 	bool result = Commands::subprocess(cmd, m_cleanOutput);
 	if (!runProfiler(file, m_state.paths.buildOutputDir()))
 		return false;
+#endif
 
-	return result;
+	return result && profileResult;
 }
 
 /*****************************************************************************/
-bool BuildManager::runProfiler(const std::string& inExecutable, const std::string& inOutputFolder)
+bool BuildManager::runProfiler(const std::string& inExecutable, const std::string& inOutputFolder, const int inPid)
 {
-	if (m_state.configuration.enableProfiling())
-	{
-		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-#if defined(CHALET_LINUX) || defined(CHALET_WIN32)
-		// at the moment, don't even try to run gprof on mac
-		if (compilerConfig.isGcc() && !m_state.tools.gprof().empty())
-		{
-			Output::print(Color::Gray, "   Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
-			const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
-			Output::msgProfilerStarted(profStatsFile);
+	chalet_assert(m_project != nullptr, "");
 
-			if (!Commands::subprocessOutputToFile({ m_state.tools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut, m_cleanOutput))
-			{
-				Diagnostic::errorAbort(fmt::format("{} failed to save.", profStatsFile));
-				return false;
-			}
+	if (!m_state.configuration.enableProfiling())
+		return true;
 
-			Output::msgProfilerDone(profStatsFile);
-			Output::lineBreak();
-		}
-		else
-#elif defined(CHALET_MACOS)
-		UNUSED(inExecutable, inOutputFolder);
-		if (compilerConfig.isAppleClang())
-		{
-			// Notes:
-			/*
-				Nice resource on the topic of profiling in mac:
-				https://gist.github.com/loderunner/36724cc9ee8db66db305
-
-				sudo xcode-select -s /Library/Developer/CommandLineTools
-				sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-
-				'xcrun xctrace' should be the standard (from which Xcode version?)
-				'instruments' was deprecated in favor of 'xcrun xctrace'
-
-				CommandLineTools does not have access to instruments,
-				'sample' will need to be used instead if only CommandLineTools is selected
-				both instruments and sample require the PID (get from subprocess somehow)
-
-				... 🤡
-			*/
-			Diagnostic::errorAbort("Profiling is not been implemented on MacOS yet");
-			return false;
-		}
-		else
-#endif
-		{
-			Diagnostic::errorAbort("Profiling is not been implemented on this compiler yet");
-			return false;
-		}
-	}
-
-	return true;
+	ProfilerRunner profiler(m_state, *m_project, m_cleanOutput);
+	return profiler.run(inExecutable, inOutputFolder, inPid);
 }
 
 /*****************************************************************************/

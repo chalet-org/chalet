@@ -14,7 +14,7 @@
 		},
 		"tools-brew": {
 			"type": "string",
-			"description": "The executable path to brew (MacOS)",
+			"description": "The executable path to brew command-line utility (MacOS)",
 			"default": "/usr/local/bin/brew"
 		},
 		"tools-cmake": {
@@ -24,7 +24,7 @@
 		},
 		"tools-codesign": {
 			"type": "string",
-			"description": "The executable path to codesign (MacOS",
+			"description": "The executable path to codesign command-line utility (MacOS)",
 			"default": "/usr/bin/codesign"
 		},
 		"tools-git": {
@@ -39,13 +39,18 @@
 		},
 		"tools-hdiutil": {
 			"type": "string",
-			"description": "The executable path to Apple's hdiutil (MacOS)",
+			"description": "The executable path to Apple's hdiutil command-line utility (MacOS)",
 			"default": "/usr/bin/hdiutil"
 		},
 		"tools-install_name_tool": {
 			"type": "string",
-			"description": "The executable path to Apple's install_name_tool (MacOS)",
+			"description": "The executable path to Apple's install_name_tool command-line utility (MacOS)",
 			"default": "/usr/bin/install_name_tool"
+		},
+		"tools-instruments": {
+			"type": "string",
+			"description": "The executable path to Apple's instruments command-line utility (MacOS)",
+			"default": "/usr/bin/instruments"
 		},
 		"tools-ldd": {
 			"type": "string",
@@ -67,17 +72,17 @@
 		},
 		"tools-osascript": {
 			"type": "string",
-			"description": "The executable path to Apple's osascript (MacOS)",
+			"description": "The executable path to Apple's osascript command-line utility (MacOS)",
 			"default": "/usr/bin/osascript"
 		},
 		"tools-otool": {
 			"type": "string",
-			"description": "The executable path to Apple's otool (MacOS)",
+			"description": "The executable path to Apple's otool command-line utility (MacOS)",
 			"default": "/usr/bin/otool"
 		},
 		"tools-plutil": {
 			"type": "string",
-			"description": "The executable path to Apple's plutil (MacOS)",
+			"description": "The executable path to Apple's plutil command-line utility (MacOS)",
 			"default": "/usr/bin/plutil"
 		},
 		"tools-ranlib": {
@@ -85,9 +90,14 @@
 			"description": "The executable path to ranlib.",
 			"default": "/usr/bin/ranlib"
 		},
+		"tools-sample": {
+			"type": "string",
+			"description": "The executable path to Apple's sample command-line utility (MacOS)",
+			"default": "/usr/bin/sample"
+		},
 		"tools-sips": {
 			"type": "string",
-			"description": "The executable path to Apple's sips utility (MacOS)",
+			"description": "The executable path to Apple's sips command-line utility (MacOS)",
 			"default": "/usr/bin/sips"
 		},
 		"tools-strip": {
@@ -99,6 +109,16 @@
 			"type": "string",
 			"description": "The executable path to tiffutil",
 			"default": "/usr/bin/tiffutil"
+		},
+		"tools-xcodebuild": {
+			"type": "string",
+			"description": "The executable path to Apple's xcodebuild command-line utility (MacOS)",
+			"default": "/usr/bin/xcodebuild"
+		},
+		"tools-xcrun": {
+			"type": "string",
+			"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
+			"default": "/usr/bin/xcrun"
 		},
 		"compilers-cpp": {
 			"type": "string",
@@ -196,6 +216,9 @@
 				"install_name_tool": {
 					"$ref": "#/definitions/tools-install_name_tool"
 				},
+				"instruments": {
+					"$ref": "#/definitions/tools-instruments"
+				},
 				"ldd": {
 					"$ref": "#/definitions/tools-ldd"
 				},
@@ -220,6 +243,9 @@
 				"ranlib": {
 					"$ref": "#/definitions/tools-ranlib"
 				},
+				"sample": {
+					"$ref": "#/definitions/tools-sample"
+				},
 				"sips": {
 					"$ref": "#/definitions/tools-sips"
 				},
@@ -228,6 +254,12 @@
 				},
 				"tiffutil": {
 					"$ref": "#/definitions/tools-tiffutil"
+				},
+				"xcodebuild": {
+					"$ref": "#/definitions/tools-xcodebuild"
+				},
+				"xcrun": {
+					"$ref": "#/definitions/tools-xcrun"
 				}
 			}
 		},

@@ -12,6 +12,8 @@ namespace chalet
 {
 namespace Commands
 {
+using CreateSubprocessFunc = std::function<void(int /* pid */)>;
+
 std::string getWorkingDirectory();
 fs::path getWorkingDirectoryPath();
 
@@ -33,6 +35,7 @@ void forEachFileMatch(const std::string& inPath, const StringList& inPatterns, c
 void forEachFileMatch(const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
 void forEachFileMatch(const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);
 bool readFileAndReplace(const fs::path& inFile, const std::function<void(std::string&)>& onReplace);
+void sleep(const double inSeconds);
 
 bool pathExists(const fs::path& inPath);
 bool pathIsEmpty(const fs::path& inPath, const bool inCheckExists = false);
@@ -40,6 +43,7 @@ bool pathIsEmpty(const fs::path& inPath, const bool inCheckExists = false);
 bool createFileWithContents(const std::string& inFile, const std::string& inContents);
 
 inline bool subprocess(const StringList& inCmd, const bool inCleanOutput = true);
+inline bool subprocess(const StringList& inCmd, CreateSubprocessFunc inOnCreate, const bool inCleanOutput = true);
 inline bool subprocess(const StringList& inCmd, std::string inCwd, const bool inCleanOutput = true);
 inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdErr, const bool inCleanOutput = true);
 inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, const bool inCleanOutput = true);
@@ -47,7 +51,7 @@ inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut, const
 inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr, const bool inCleanOutput = true);
 inline bool subprocessNoOutput(const StringList& inCmd, const bool inCleanOutput = true);
 inline bool subprocessNoOutput(const StringList& inCmd, std::string inCwd, const bool inCleanOutput = true);
-bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap, const bool inCleanOutput = true);
+bool subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap, const bool inCleanOutput = true);
 std::string subprocessOutput(const StringList& inCmd, const bool inCleanOutput = true, const PipeOption inStdErr = PipeOption::Pipe);
 inline bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const bool inCleanOutput = true);
 bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr, const bool inCleanOutput = true);

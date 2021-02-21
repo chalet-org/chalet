@@ -22,7 +22,7 @@ bool sAssertionFailure = false;
 }
 
 /*****************************************************************************/
-Constant Diagnostic::CriticalException::what() const throw()
+const char* Diagnostic::CriticalException::what() const throw()
 {
 	return "A critical error occurred. Review output above";
 }

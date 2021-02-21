@@ -94,6 +94,16 @@ void CacheTools::setInstallNameUtil(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::instruments() const noexcept
+{
+	return m_instruments;
+}
+void CacheTools::setInstruments(const std::string& inValue) noexcept
+{
+	m_instruments = inValue;
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::ldd() const noexcept
 {
 	return m_ldd;
@@ -202,6 +212,16 @@ void CacheTools::setRanlib(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::sample() const noexcept
+{
+	return m_sample;
+}
+void CacheTools::setSample(const std::string& inValue) noexcept
+{
+	m_sample = inValue;
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::sips() const noexcept
 {
 	return m_sips;
@@ -229,6 +249,55 @@ const std::string& CacheTools::tiffUtil() const noexcept
 void CacheTools::setTiffUtil(const std::string& inValue) noexcept
 {
 	m_tiffUtil = inValue;
+}
+
+/*****************************************************************************/
+const std::string& CacheTools::xcodebuild() const noexcept
+{
+	return m_xcodebuild;
+}
+void CacheTools::setXcodeBuild(const std::string& inValue) noexcept
+{
+	m_xcodebuild = inValue;
+
+	if (Commands::pathExists(m_xcodebuild))
+	{
+		std::string version = Commands::subprocessOutput({ m_xcodebuild, "-version" });
+		if (String::contains("requires Xcode", version))
+			return;
+
+		auto firstEol = version.find('\n');
+		if (firstEol != std::string::npos)
+		{
+			version = version.substr(0, firstEol);
+		}
+
+		String::replaceAll(version, "Xcode ", "");
+		auto vals = String::split(version, '.');
+		if (vals.size() == 2)
+		{
+			m_xcodeVersionMajor = std::stoi(vals[0]);
+			m_xcodeVersionMinor = std::stoi(vals[1]);
+		}
+	}
+}
+uint CacheTools::xcodeVersionMajor() const noexcept
+{
+	return m_xcodeVersionMajor;
+}
+uint CacheTools::xcodeVersionMinor() const noexcept
+{
+	return m_xcodeVersionMinor;
+}
+
+/*****************************************************************************/
+const std::string& CacheTools::xcrun() const noexcept
+{
+	return m_xcrun;
+}
+void CacheTools::setXcrun(const std::string& inValue) noexcept
+{
+	m_xcrun = inValue;
 }
 
 /*****************************************************************************/

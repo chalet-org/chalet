@@ -17,7 +17,7 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
-Constant unicodeRightwardsTripleArrow()
+std::string_view unicodeRightwardsTripleArrow()
 {
 #if defined(CHALET_WIN32)
 	return Environment::isBash() ? "\\xE2\\x87\\x9B" : u8"\xE2\x87\x9B";

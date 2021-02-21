@@ -83,9 +83,9 @@ void Environment::setTerminalType()
 }
 
 /*****************************************************************************/
-Constant Environment::get(const char* inName)
+const char* Environment::get(const char* inName)
 {
-	Constant result = std::getenv(inName);
+	const char* result = std::getenv(inName);
 	return result;
 }
 
@@ -112,7 +112,7 @@ void Environment::set(const char* inName, const std::string& inValue)
 /*****************************************************************************/
 std::string Environment::getPath()
 {
-	Constant path = Environment::get("PATH");
+	auto path = Environment::get("PATH");
 #if defined(CHALET_WIN32)
 	if (path == nullptr)
 		path = Environment::get("Path");
@@ -129,7 +129,7 @@ std::string Environment::getPath()
 std::string Environment::getUserDirectory()
 {
 #ifdef CHALET_WIN32
-	Constant user = Environment::get("USERPROFILE");
+	auto user = Environment::get("USERPROFILE");
 	if (user == nullptr)
 	{
 		Diagnostic::errorAbort("Could not resolve user directory");
@@ -142,7 +142,7 @@ std::string Environment::getUserDirectory()
 	return ret;
 
 #else
-	Constant user = Environment::get("HOME");
+	auto user = Environment::get("HOME");
 	if (user == nullptr)
 	{
 		Diagnostic::errorAbort("Could not resolve user directory");

@@ -10,10 +10,10 @@ namespace chalet
 {
 namespace PlatformFile
 {
-constexpr Constant linuxDesktopEntry();
-constexpr Constant macosInfoPlist();
-constexpr Constant macosDmgApplescript();
-constexpr Constant windowsAppManifest();
+constexpr std::string_view linuxDesktopEntry();
+constexpr std::string_view macosInfoPlist();
+constexpr std::string_view macosDmgApplescript();
+constexpr std::string_view windowsAppManifest();
 }
 }
 

@@ -52,6 +52,7 @@ private:
 	const std::string kKeyGprof = "gprof";
 	const std::string kKeyHdiUtil = "hdiutil";
 	const std::string kKeyInstallNameTool = "install_name_tool";
+	const std::string kKeyInstruments = "instruments";
 	const std::string kKeyLdd = "ldd";
 	const std::string kKeyMacosSdk = "macosSdk";
 	const std::string kKeyMake = "make";
@@ -60,9 +61,12 @@ private:
 	const std::string kKeyOtool = "otool";
 	const std::string kKeyPlUtil = "plutil";
 	const std::string kKeyRanLib = "ranlib";
+	const std::string kKeySample = "sample";
 	const std::string kKeySips = "sips";
 	const std::string kKeyStrip = "strip";
 	const std::string kKeyTiffUtil = "tiffutil";
+	const std::string kKeyXcodeBuild = "xcodebuild";
+	const std::string kKeyXcrun = "xcrun";
 
 	std::string m_make;
 };

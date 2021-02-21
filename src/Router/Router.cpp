@@ -296,8 +296,8 @@ bool Router::managePathVariables()
 		// LD_LIBRARY_PATH - dynamic link paths
 		// LIBRARY_PATH - static link paths
 		// For now, just use the same paths for both
-		constexpr Constant kLdLibraryPath = "LD_LIBRARY_PATH";
-		constexpr Constant kLibraryPath = "LIBRARY_PATH";
+		constexpr std::string_view kLdLibraryPath = "LD_LIBRARY_PATH";
+		constexpr std::string_view kLibraryPath = "LIBRARY_PATH";
 
 		{
 			std::string libraryPath = String::join(outPaths, ':');

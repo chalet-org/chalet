@@ -18,8 +18,6 @@ typedef std::uint32_t uint;
 typedef std::uint64_t ullong;
 
 typedef long double ldouble;
-
-using Constant = const char*;
 }
 
 #endif // CHALET_UTIL_TYPES_HPP

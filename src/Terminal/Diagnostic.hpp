@@ -40,7 +40,7 @@ private:
 
 	struct CriticalException : std::exception
 	{
-		Constant what() const throw() final;
+		const char* what() const throw() final;
 	};
 
 	static CriticalException kCriticalError;

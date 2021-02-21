@@ -8,48 +8,48 @@
 namespace chalet
 {
 /*****************************************************************************/
-constexpr Constant Unicode::dot()
+constexpr std::string_view Unicode::dot()
 {
 	return u8"\xE2\xAC\xA4";
 }
 
 /*****************************************************************************/
-constexpr Constant Unicode::diamond()
+constexpr std::string_view Unicode::diamond()
 {
-	return u8"\xE2\xAF\x8C";
+	return u8"\xE2\x99\xA6";
 }
 
 /*****************************************************************************/
-constexpr Constant Unicode::heavyCheckmark()
+constexpr std::string_view Unicode::heavyCheckmark()
 {
 	return u8"\xE2\x9C\x94";
 }
 
 /*****************************************************************************/
-constexpr Constant Unicode::heavyBallotX()
+constexpr std::string_view Unicode::heavyBallotX()
 {
 	return u8"\xE2\x9C\x98";
 }
 
-constexpr Constant Unicode::boldSaltire()
+constexpr std::string_view Unicode::boldSaltire()
 {
 	return u8"\xF0\x9F\x9E\xAB";
 }
 
 /*****************************************************************************/
-constexpr Constant Unicode::circledSaltire()
+constexpr std::string_view Unicode::circledSaltire()
 {
 	return u8"\xE2\xAD\x99";
 }
 
 /*****************************************************************************/
-constexpr Constant Unicode::heavyCurvedDownRightArrow()
+constexpr std::string_view Unicode::heavyCurvedDownRightArrow()
 {
 	return u8"\xE2\x9E\xA5";
 }
 
 /*****************************************************************************/
-constexpr Constant Unicode::heavyCurvedUpRightArrow()
+constexpr std::string_view Unicode::heavyCurvedUpRightArrow()
 {
 	return u8"\xE2\x9E\xA6";
 }

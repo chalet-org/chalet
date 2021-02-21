@@ -14,7 +14,7 @@ struct Environment
 	static bool isMsvc();
 	static bool hasTerm();
 
-	static Constant get(const char* inName);
+	static const char* get(const char* inName);
 	static void set(const char* inName, const std::string& inValue);
 
 	static std::string getPath();

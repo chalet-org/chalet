@@ -36,6 +36,9 @@ struct CacheTools
 	const std::string& installNameUtil() const noexcept;
 	void setInstallNameUtil(const std::string& inValue) noexcept;
 
+	const std::string& instruments() const noexcept;
+	void setInstruments(const std::string& inValue) noexcept;
+
 	const std::string& ldd() const noexcept;
 	void setLdd(const std::string& inValue) noexcept;
 
@@ -62,6 +65,9 @@ struct CacheTools
 	const std::string& ranlib() const noexcept;
 	void setRanlib(const std::string& inValue) noexcept;
 
+	const std::string& sample() const noexcept;
+	void setSample(const std::string& inValue) noexcept;
+
 	const std::string& sips() const noexcept;
 	void setSips(const std::string& inValue) noexcept;
 
@@ -70,6 +76,14 @@ struct CacheTools
 
 	const std::string& tiffUtil() const noexcept;
 	void setTiffUtil(const std::string& inValue) noexcept;
+
+	const std::string& xcodebuild() const noexcept;
+	void setXcodeBuild(const std::string& inValue) noexcept;
+	uint xcodeVersionMajor() const noexcept;
+	uint xcodeVersionMinor() const noexcept;
+
+	const std::string& xcrun() const noexcept;
+	void setXcrun(const std::string& inValue) noexcept;
 
 	// Commands
 	bool installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput = true) const;
@@ -94,6 +108,7 @@ private:
 	std::string m_gprof;
 	std::string m_hdiUtil;
 	std::string m_installNameUtil;
+	std::string m_instruments;
 	std::string m_ldd;
 	std::string m_macosSdk;
 	std::string m_make;
@@ -102,12 +117,18 @@ private:
 	std::string m_otool;
 	std::string m_plUtil;
 	std::string m_ranlib;
+	std::string m_sample;
 	std::string m_sips;
 	std::string m_strip;
 	std::string m_tiffUtil;
+	std::string m_xcodebuild;
+	std::string m_xcrun;
 
-	uint m_makeVersionMajor;
-	uint m_makeVersionMinor;
+	uint m_makeVersionMajor = 0;
+	uint m_makeVersionMinor = 0;
+
+	uint m_xcodeVersionMajor = 0;
+	uint m_xcodeVersionMinor = 0;
 };
 }
 

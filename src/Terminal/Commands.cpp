@@ -6,6 +6,7 @@
 #include "Terminal/Commands.hpp"
 
 #include <array>
+#include <thread>
 
 #include "Libraries/WindowsApi.hpp"
 #if defined(CHALET_WIN32)
@@ -453,6 +454,12 @@ bool Commands::readFileAndReplace(const fs::path& inFile, const std::function<vo
 }
 
 /*****************************************************************************/
+void Commands::sleep(const double inSeconds)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(inSeconds * 1000.0)));
+}
+
+/*****************************************************************************/
 bool Commands::createFileWithContents(const std::string& inFile, const std::string& inContents)
 {
 	std::ofstream(inFile) << inContents << std::endl;
@@ -461,7 +468,7 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 }
 
 /*****************************************************************************/
-bool Commands::subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap, const bool inCleanOutput)
+bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap, const bool inCleanOutput)
 {
 	if (!inCleanOutput)
 		Output::print(Color::Blue, inCmd);
@@ -474,6 +481,7 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, const Pipe
 	options.env = std::move(inEnvMap);
 	options.stdoutOption = inStdOut;
 	options.stderrOption = inStdErr;
+	options.onCreate = std::move(inOnCreate);
 
 	return Subprocess::run(inCmd, std::move(options)) == EXIT_SUCCESS;
 }

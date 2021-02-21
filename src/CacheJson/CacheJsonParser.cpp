@@ -230,6 +230,7 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyGprof);
 	whichAdd(tools, kKeyHdiUtil);
 	whichAdd(tools, kKeyInstallNameTool);
+	whichAdd(tools, kKeyInstruments);
 	whichAdd(tools, kKeyLdd);
 
 	if (!tools.contains(kKeyMacosSdk))
@@ -268,9 +269,12 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyOtool);
 	whichAdd(tools, kKeyPlUtil);
 	whichAdd(tools, kKeyRanLib);
+	whichAdd(tools, kKeySample);
 	whichAdd(tools, kKeySips);
 	whichAdd(tools, kKeyStrip);
 	whichAdd(tools, kKeyTiffUtil);
+	whichAdd(tools, kKeyXcodeBuild);
+	whichAdd(tools, kKeyXcrun);
 
 	return true;
 }
@@ -348,6 +352,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyInstallNameTool))
 		m_state.tools.setInstallNameUtil(val);
 
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyInstruments))
+		m_state.tools.setInstruments(val);
+
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyMacosSdk))
 		m_state.tools.setMacosSdk(val);
 
@@ -375,6 +382,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyRanLib))
 		m_state.tools.setRanlib(val);
 
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeySample))
+		m_state.tools.setSample(val);
+
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeySips))
 		m_state.tools.setSips(val);
 
@@ -383,6 +393,12 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyTiffUtil))
 		m_state.tools.setTiffUtil(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyXcodeBuild))
+		m_state.tools.setXcodeBuild(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyXcrun))
+		m_state.tools.setXcrun(val);
 
 	return true;
 }
