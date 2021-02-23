@@ -593,6 +593,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 		if (!result.empty() && !String::endsWith(".exe", result))
 			result += ".exe";
 	}
+
 #elif defined(CHALET_MACOS)
 	if (String::startsWith("/usr/bin/", result))
 	{

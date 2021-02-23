@@ -1,0 +1,88 @@
+{
+	"name": "Chalet",
+	"configs": {
+		"Debug": "debug",
+		"Release": "release"
+	},
+	"options": {
+		"minimumXcodeGenVersion": "2.18.0",
+		"developmentLanguage": "en",
+		"bundleIdPrefix": "com.myapp"
+	},
+	"targetTemplates": {
+		"AllTargets": {
+			"platform": "macOS",
+			"buildRules": [
+				{
+					"filePattern": "*.cpp",
+					"outputFilesCompilerFlags": "-std=c++17 -Ivendor -Wall -Wextra -Werror -Wpedantic -Wunused -Wcast-align -Wdouble-promotion -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wnon-virtual-dtor -Wredundant-decls -Wodr"
+				}
+			]
+		}
+	},
+	"targets": {
+		"json-schema-validator": {
+			"type": "library.static",
+			"templates": [
+				"AllTargets"
+			],
+			"sources": [
+				{
+					"path": "vendor/json-schema-validator"
+				}
+			]
+		},
+		"subprocess": {
+			"type": "library.static",
+			"templates": [
+				"AllTargets"
+			],
+			"sources": [
+				{
+					"path": "vendor/subprocess"
+				}
+			]
+		},
+		"chalet": {
+			"type": "application",
+			"templates": [
+				"AllTargets"
+			],
+			"sources": [
+				{
+					"path": "src"
+				}
+			],
+			"dependencies": [
+				{
+					"target": "json-schema-validator"
+				},
+				{
+					"target": "subprocess"
+				}
+			]
+		},
+		"tests_chalet": {
+			"type": "application",
+			"templates": [
+				"AllTargets"
+			],
+			"sources": [
+				{
+					"path": "src"
+				},
+				{
+					"path": "test"
+				}
+			],
+			"dependencies": [
+				{
+					"target": "json-schema-validator"
+				},
+				{
+					"target": "subprocess"
+				}
+			]
+		}
+	}
+}

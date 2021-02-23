@@ -98,6 +98,9 @@ bool Router::run()
 		std::cout << fmt::format("generator: '{}'", m_inputs.generatorRaw()) << std::endl;
 	}
 
+	if (m_inputs.generator() == IdeType::XCode)
+		return xcodebuildRoute();
+
 	return m_routes[command](*this);
 }
 
@@ -267,6 +270,26 @@ bool Router::installDependencies()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool Router::xcodebuildRoute()
+{
+#if defined(CHALET_MACOS)
+	chalet_assert(m_buildState != nullptr, "");
+	// Generate an XcodeGen spec in json based on the build state
+	// Run xcodebuild from the command line if possible
+	// This would be a lightweight BuildManager
+
+	std::cout << "brew available: " << m_buildState->tools.brewAvailable() << "\n";
+
+	// rm -rf build/Chalet.xcodeproj && xcodegen -s xcode-project.json -p build --use-cache
+
+	return true;
+#else
+	Diagnostic::error("Xcode project generation (-g xcode) is only available on MacOS");
+	return false;
+#endif
 }
 
 /*****************************************************************************/

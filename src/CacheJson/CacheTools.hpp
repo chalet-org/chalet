@@ -17,12 +17,13 @@ struct CacheTools
 
 	const std::string& brew() const noexcept;
 	void setBrew(const std::string& inValue) noexcept;
+	bool brewAvailable() noexcept;
 
 	const std::string& cmake() const noexcept;
 	void setCmake(const std::string& inValue) noexcept;
 
-	const std::string& codeSign() const noexcept;
-	void setCodeSign(const std::string& inValue) noexcept;
+	const std::string& codesign() const noexcept;
+	void setCodesign(const std::string& inValue) noexcept;
 
 	const std::string& git() const noexcept;
 	void setGit(const std::string& inValue) noexcept;
@@ -30,8 +31,8 @@ struct CacheTools
 	const std::string& gprof() const noexcept;
 	void setGprof(const std::string& inValue) noexcept;
 
-	const std::string& hdiUtil() const noexcept;
-	void setHdiUtil(const std::string& inValue) noexcept;
+	const std::string& hdiutil() const noexcept;
+	void setHdiutil(const std::string& inValue) noexcept;
 
 	const std::string& installNameUtil() const noexcept;
 	void setInstallNameUtil(const std::string& inValue) noexcept;
@@ -54,13 +55,13 @@ struct CacheTools
 	void setNinja(const std::string& inValue) noexcept;
 
 	const std::string osascript() const noexcept;
-	void setOsaScript(const std::string& inValue) noexcept;
+	void setOsascript(const std::string& inValue) noexcept;
 
 	const std::string& otool() const noexcept;
 	void setOtool(const std::string& inValue) noexcept;
 
-	const std::string& plUtil() const noexcept;
-	void setPlUtil(const std::string& inValue) noexcept;
+	const std::string& plutil() const noexcept;
+	void setPlutil(const std::string& inValue) noexcept;
 
 	const std::string& ranlib() const noexcept;
 	void setRanlib(const std::string& inValue) noexcept;
@@ -74,13 +75,20 @@ struct CacheTools
 	const std::string& strip() const noexcept;
 	void setStrip(const std::string& inValue) noexcept;
 
-	const std::string& tiffUtil() const noexcept;
-	void setTiffUtil(const std::string& inValue) noexcept;
+	const std::string& tiffutil() const noexcept;
+	void setTiffutil(const std::string& inValue) noexcept;
 
 	const std::string& xcodebuild() const noexcept;
-	void setXcodeBuild(const std::string& inValue) noexcept;
+	void setXcodebuild(const std::string& inValue) noexcept;
 	uint xcodeVersionMajor() const noexcept;
 	uint xcodeVersionMinor() const noexcept;
+
+	// xcodegen
+	const std::string& xcodegen() const noexcept;
+	void setXcodegen(const std::string& inValue) noexcept;
+	uint xcodegenVersionMajor() const noexcept;
+	uint xcodegenVersionMinor() const noexcept;
+	uint xcodegenVersionPatch() const noexcept;
 
 	const std::string& xcrun() const noexcept;
 	void setXcrun(const std::string& inValue) noexcept;
@@ -100,13 +108,15 @@ struct CacheTools
 	bool getExecutableDependencies(const std::string& inPath, StringList& outList) const;
 
 private:
+	void isolateVersion(std::string& outString);
+
 	std::string m_ar;
 	std::string m_brew;
 	std::string m_cmake;
-	std::string m_codeSign;
+	std::string m_codesign;
 	std::string m_git;
 	std::string m_gprof;
-	std::string m_hdiUtil;
+	std::string m_hdiutil;
 	std::string m_installNameUtil;
 	std::string m_instruments;
 	std::string m_ldd;
@@ -115,13 +125,14 @@ private:
 	std::string m_ninja;
 	std::string m_osascript;
 	std::string m_otool;
-	std::string m_plUtil;
+	std::string m_plutil;
 	std::string m_ranlib;
 	std::string m_sample;
 	std::string m_sips;
 	std::string m_strip;
-	std::string m_tiffUtil;
+	std::string m_tiffutil;
 	std::string m_xcodebuild;
+	std::string m_xcodegen;
 	std::string m_xcrun;
 
 	uint m_makeVersionMajor = 0;
@@ -129,6 +140,12 @@ private:
 
 	uint m_xcodeVersionMajor = 0;
 	uint m_xcodeVersionMinor = 0;
+
+	uint m_xcodegenVersionMajor = 0;
+	uint m_xcodegenVersionMinor = 0;
+	uint m_xcodegenVersionPatch = 0;
+
+	bool m_brewAvailable = false;
 };
 }
 

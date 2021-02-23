@@ -171,6 +171,18 @@
 			]
 		},
 		{
+			"label": "Build: Release (Xcode)",
+			"command": "${CHALET_DEBUG} --generator=xcode --save-schema build Release",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			]
+		},
+		{
 			"label": "Bundle",
 			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema bundle",
 			"type": "shell",

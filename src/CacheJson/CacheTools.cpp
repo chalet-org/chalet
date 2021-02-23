@@ -31,6 +31,24 @@ const std::string& CacheTools::brew() const noexcept
 void CacheTools::setBrew(const std::string& inValue) noexcept
 {
 	m_brew = inValue;
+
+#if defined(CHALET_MACOS)
+	if (Commands::pathExists(m_brew))
+	{
+		std::string version = Commands::subprocessOutput({ m_brew, "--version" });
+		auto firstEol = version.find('\n');
+		if (firstEol != std::string::npos)
+		{
+			version = version.substr(0, firstEol);
+		}
+
+		m_brewAvailable = String::startsWith("Homebrew ", version);
+	}
+#endif
+}
+bool CacheTools::brewAvailable() noexcept
+{
+	return m_brewAvailable;
 }
 
 /*****************************************************************************/
@@ -44,13 +62,13 @@ void CacheTools::setCmake(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::codeSign() const noexcept
+const std::string& CacheTools::codesign() const noexcept
 {
-	return m_codeSign;
+	return m_codesign;
 }
-void CacheTools::setCodeSign(const std::string& inValue) noexcept
+void CacheTools::setCodesign(const std::string& inValue) noexcept
 {
-	m_codeSign = inValue;
+	m_codesign = inValue;
 }
 
 /*****************************************************************************/
@@ -74,13 +92,13 @@ void CacheTools::setGprof(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::hdiUtil() const noexcept
+const std::string& CacheTools::hdiutil() const noexcept
 {
-	return m_hdiUtil;
+	return m_hdiutil;
 }
-void CacheTools::setHdiUtil(const std::string& inValue) noexcept
+void CacheTools::setHdiutil(const std::string& inValue) noexcept
 {
-	m_hdiUtil = inValue;
+	m_hdiutil = inValue;
 }
 
 /*****************************************************************************/
@@ -135,13 +153,8 @@ void CacheTools::setMake(const std::string& inValue) noexcept
 	if (Commands::pathExists(m_make))
 	{
 		std::string version = Commands::subprocessOutput({ m_make, "--version" });
-		auto firstEol = version.find('\n');
-		if (firstEol != std::string::npos)
-		{
-			version = version.substr(0, firstEol);
-		}
+		isolateVersion(version);
 
-		String::replaceAll(version, "GNU Make ", "");
 		auto vals = String::split(version, '.');
 		if (vals.size() == 2)
 		{
@@ -176,7 +189,7 @@ const std::string CacheTools::osascript() const noexcept
 	return m_osascript;
 }
 
-void CacheTools::setOsaScript(const std::string& inValue) noexcept
+void CacheTools::setOsascript(const std::string& inValue) noexcept
 {
 	m_osascript = inValue;
 }
@@ -192,13 +205,13 @@ void CacheTools::setOtool(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::plUtil() const noexcept
+const std::string& CacheTools::plutil() const noexcept
 {
-	return m_plUtil;
+	return m_plutil;
 }
-void CacheTools::setPlUtil(const std::string& inValue) noexcept
+void CacheTools::setPlutil(const std::string& inValue) noexcept
 {
-	m_plUtil = inValue;
+	m_plutil = inValue;
 }
 
 /*****************************************************************************/
@@ -242,13 +255,13 @@ void CacheTools::setStrip(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::tiffUtil() const noexcept
+const std::string& CacheTools::tiffutil() const noexcept
 {
-	return m_tiffUtil;
+	return m_tiffutil;
 }
-void CacheTools::setTiffUtil(const std::string& inValue) noexcept
+void CacheTools::setTiffutil(const std::string& inValue) noexcept
 {
-	m_tiffUtil = inValue;
+	m_tiffutil = inValue;
 }
 
 /*****************************************************************************/
@@ -256,23 +269,19 @@ const std::string& CacheTools::xcodebuild() const noexcept
 {
 	return m_xcodebuild;
 }
-void CacheTools::setXcodeBuild(const std::string& inValue) noexcept
+void CacheTools::setXcodebuild(const std::string& inValue) noexcept
 {
 	m_xcodebuild = inValue;
 
+#if defined(CHALET_MACOS)
 	if (Commands::pathExists(m_xcodebuild))
 	{
 		std::string version = Commands::subprocessOutput({ m_xcodebuild, "-version" });
 		if (String::contains("requires Xcode", version))
 			return;
 
-		auto firstEol = version.find('\n');
-		if (firstEol != std::string::npos)
-		{
-			version = version.substr(0, firstEol);
-		}
+		isolateVersion(version);
 
-		String::replaceAll(version, "Xcode ", "");
 		auto vals = String::split(version, '.');
 		if (vals.size() == 2)
 		{
@@ -280,6 +289,7 @@ void CacheTools::setXcodeBuild(const std::string& inValue) noexcept
 			m_xcodeVersionMinor = std::stoi(vals[1]);
 		}
 	}
+#endif
 }
 uint CacheTools::xcodeVersionMajor() const noexcept
 {
@@ -288,6 +298,44 @@ uint CacheTools::xcodeVersionMajor() const noexcept
 uint CacheTools::xcodeVersionMinor() const noexcept
 {
 	return m_xcodeVersionMinor;
+}
+
+/*****************************************************************************/
+const std::string& CacheTools::xcodegen() const noexcept
+{
+	return m_xcodegen;
+}
+void CacheTools::setXcodegen(const std::string& inValue) noexcept
+{
+	m_xcodegen = inValue;
+
+#if defined(CHALET_MACOS)
+	if (Commands::pathExists(m_xcodegen))
+	{
+		std::string version = Commands::subprocessOutput({ m_xcodegen, "--version" });
+		isolateVersion(version);
+
+		auto vals = String::split(version, '.');
+		if (vals.size() == 3)
+		{
+			m_xcodegenVersionMajor = std::stoi(vals[0]);
+			m_xcodegenVersionMinor = std::stoi(vals[1]);
+			m_xcodegenVersionPatch = std::stoi(vals[2]);
+		}
+	}
+#endif
+}
+uint CacheTools::xcodegenVersionMajor() const noexcept
+{
+	return m_xcodegenVersionMajor;
+}
+uint CacheTools::xcodegenVersionMinor() const noexcept
+{
+	return m_xcodegenVersionMinor;
+}
+uint CacheTools::xcodegenVersionPatch() const noexcept
+{
+	return m_xcodegenVersionPatch;
 }
 
 /*****************************************************************************/
@@ -314,7 +362,7 @@ bool CacheTools::installHomebrewPackage(const std::string& inPackage, const bool
 	return true;
 #else
 	UNUSED(inPackage, inCleanOutput);
-	return true;
+	return false;
 #endif
 }
 
@@ -362,7 +410,7 @@ bool CacheTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const
 bool CacheTools::plistConvertToBinary(const std::string& inInput, const std::string& inOutput, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_plUtil, "-convert", "binary1", inInput, "-o", inOutput }, inCleanOutput);
+	return Commands::subprocess({ m_plutil, "-convert", "binary1", inInput, "-o", inOutput }, inCleanOutput);
 #else
 	UNUSED(inInput, inOutput, inCleanOutput);
 	return false;
@@ -373,7 +421,7 @@ bool CacheTools::plistConvertToBinary(const std::string& inInput, const std::str
 bool CacheTools::plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_plUtil, "-replace", inKey, "-string", inValue, inPlistFile }, inCleanOutput);
+	return Commands::subprocess({ m_plutil, "-replace", inKey, "-string", inValue, inPlistFile }, inCleanOutput);
 #else
 	UNUSED(inPlistFile, inKey, inValue, inCleanOutput);
 	return false;
@@ -439,6 +487,22 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 	{
 		std::cout << err.what() << std::endl;
 		return false;
+	}
+}
+
+/*****************************************************************************/
+void CacheTools::isolateVersion(std::string& outString)
+{
+	auto firstEol = outString.find('\n');
+	if (firstEol != std::string::npos)
+	{
+		outString = outString.substr(0, firstEol);
+	}
+
+	auto lastSpace = outString.find_last_of(' ');
+	if (lastSpace != std::string::npos)
+	{
+		outString = outString.substr(lastSpace + 1);
 	}
 }
 

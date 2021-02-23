@@ -115,6 +115,11 @@
 			"description": "The executable path to Apple's xcodebuild command-line utility (MacOS)",
 			"default": "/usr/bin/xcodebuild"
 		},
+		"tools-xcodegen": {
+			"type": "string",
+			"description": "The executable path to the xcodegen Homebrew application (MacOS)",
+			"default": "/usr/local/bin/xcodegen"
+		},
 		"tools-xcrun": {
 			"type": "string",
 			"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
@@ -179,6 +184,7 @@
 				"gprof",
 				"hdiutil",
 				"install_name_tool",
+				"instruments",
 				"ldd",
 				"macosSdk",
 				"make",
@@ -187,9 +193,13 @@
 				"otool",
 				"plutil",
 				"ranlib",
+				"sample",
 				"sips",
 				"strip",
-				"tiffutil"
+				"tiffutil",
+				"xcodebuild",
+				"xcodegen",
+				"xcrun"
 			],
 			"properties": {
 				"ar": {
@@ -257,6 +267,9 @@
 				},
 				"xcodebuild": {
 					"$ref": "#/definitions/tools-xcodebuild"
+				},
+				"xcodegen": {
+					"$ref": "#/definitions/tools-xcodegen"
 				},
 				"xcrun": {
 					"$ref": "#/definitions/tools-xcrun"

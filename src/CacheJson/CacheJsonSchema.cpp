@@ -159,6 +159,12 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/xcodebuild"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-xcodegen"] = R"json({
+		"type": "string",
+		"description": "The executable path to the xcodegen Homebrew application (MacOS)",
+		"default": "/usr/local/bin/xcodegen"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-xcrun"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
@@ -232,6 +238,7 @@ Json Schema::getCacheJson()
 			"gprof",
 			"hdiutil",
 			"install_name_tool",
+			"instruments",
 			"ldd",
 			"macosSdk",
 			"make",
@@ -240,9 +247,13 @@ Json Schema::getCacheJson()
 			"otool",
 			"plutil",
 			"ranlib",
+			"sample",
 			"sips",
 			"strip",
-			"tiffutil"
+			"tiffutil",
+			"xcodebuild",
+			"xcodegen",
+			"xcrun"
 		],
 		"properties": {
 			"ar": {
@@ -310,6 +321,9 @@ Json Schema::getCacheJson()
 			},
 			"xcodebuild": {
 				"$ref": "#/definitions/tools-xcodebuild"
+			},
+			"xcodegen": {
+				"$ref": "#/definitions/tools-xcodegen"
 			},
 			"xcrun": {
 				"$ref": "#/definitions/tools-xcrun"
