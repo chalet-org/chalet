@@ -72,8 +72,6 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 		Diagnostic::errorAbort("Profiling is not been implemented on this compiler yet");
 		return false;
 	}
-
-	return true;
 }
 
 /*****************************************************************************/
