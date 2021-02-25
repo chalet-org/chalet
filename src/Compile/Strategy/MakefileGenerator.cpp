@@ -84,7 +84,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 .SUFFIXES:
 .SUFFIXES: {suffixes}
 
-SHELL = {shell}
+SHELL := {shell}
 
 makebuild: {target}
 	@{printer}

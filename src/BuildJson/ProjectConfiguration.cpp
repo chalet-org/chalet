@@ -849,11 +849,11 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 
 	ret.push_back("unreachable-code");
 	ret.push_back("shadow");
-	ret.push_back("noexcept");
 
 	if (String::equals(inValue, "strictPedantic"))
 		return ret;
 
+	ret.push_back("noexcept");
 	ret.push_back("undef");
 	ret.push_back("conversion");
 	ret.push_back("cast-qual");
