@@ -1004,7 +1004,7 @@ bool BuildJsonParser::setDefaultConfigurations(const std::string& inConfig)
 	{
 		m_state.configuration.setName(inConfig);
 		m_state.configuration.setOptimizations("3");
-		m_state.configuration.setLinkTimeOptimization(true);
+		// m_state.configuration.setLinkTimeOptimization(true);
 		m_state.configuration.setStripSymbols(true);
 	}
 	else if (String::equals(inConfig, "Debug"))
@@ -1025,7 +1025,7 @@ bool BuildJsonParser::setDefaultConfigurations(const std::string& inConfig)
 	{
 		m_state.configuration.setName(inConfig);
 		m_state.configuration.setOptimizations("size");
-		m_state.configuration.setLinkTimeOptimization(true);
+		// m_state.configuration.setLinkTimeOptimization(true);
 		m_state.configuration.setStripSymbols(true);
 	}
 	else if (String::equals(inConfig, "Profile"))
