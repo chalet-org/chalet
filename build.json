@@ -11,6 +11,7 @@
 		{
 			"name": "Release",
 			"optimizations": "3",
+			"linkTimeOptimization": true,
 			"stripSymbols": true
 		},
 		{
@@ -26,6 +27,7 @@
 		{
 			"name": "MinSizeRel",
 			"optimizations": "size",
+			"linkTimeOptimization": true,
 			"stripSymbols": true
 		}
 	],*/
