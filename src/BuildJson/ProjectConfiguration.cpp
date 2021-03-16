@@ -328,6 +328,12 @@ void ProjectConfiguration::addMacosFrameworkPaths(StringList& inList)
 
 void ProjectConfiguration::addMacosFrameworkPath(std::string& inValue)
 {
+	if (inValue.back() != '/')
+		inValue += '/';
+
+	parseStringVariables(inValue);
+	Path::sanitize(inValue);
+
 	List::addIfDoesNotExist(m_macosFrameworkPaths, std::move(inValue));
 }
 
@@ -424,7 +430,6 @@ void ProjectConfiguration::addFiles(StringList& inList)
 void ProjectConfiguration::addFile(std::string& inValue)
 {
 	parseStringVariables(inValue);
-
 	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_files, std::move(inValue));
 }
@@ -462,8 +467,8 @@ void ProjectConfiguration::addLocationExcludes(StringList& inList)
 void ProjectConfiguration::addLocationExclude(std::string& inValue)
 {
 	parseStringVariables(inValue);
-
 	Path::sanitize(inValue);
+
 	List::addIfDoesNotExist(m_locationExcludes, std::move(inValue));
 }
 
@@ -481,8 +486,8 @@ void ProjectConfiguration::addPreBuildScripts(StringList& inList)
 void ProjectConfiguration::addPreBuildScript(std::string& inValue)
 {
 	parseStringVariables(inValue);
-
 	Path::sanitize(inValue);
+
 	List::addIfDoesNotExist(m_preBuildScripts, std::move(inValue));
 }
 
@@ -500,8 +505,8 @@ void ProjectConfiguration::addPostBuildScripts(StringList& inList)
 void ProjectConfiguration::addPostBuildScript(std::string& inValue)
 {
 	parseStringVariables(inValue);
-
 	Path::sanitize(inValue);
+
 	List::addIfDoesNotExist(m_postBuildScripts, std::move(inValue));
 }
 
@@ -531,8 +536,8 @@ void ProjectConfiguration::setPch(const std::string& inValue) noexcept
 	}
 
 	m_pch = inValue;
-	parseStringVariables(m_pch);
 
+	parseStringVariables(m_pch);
 	Path::sanitize(m_pch);
 
 	std::string path = String::getPathFolder(m_pch);

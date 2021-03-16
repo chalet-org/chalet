@@ -472,19 +472,6 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 		return false;
 
 	{
-		bool cmakeResult = parseProjectCmake(outProject, inNode);
-		if (cmakeResult && inAllProjects)
-		{
-			Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a cmake configuration.", m_filename, kKeyAllProjects));
-			return false;
-		}
-
-		// If it's a cmake project, ignore everything else and return
-		if (cmakeResult)
-			return true;
-	}
-
-	{
 		const auto compilerSettings = "compilerSettings";
 		/*if (inNode.contains(compilerSettings))
 		{
@@ -501,6 +488,20 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 		if (inNode.contains(compilerSettingsCpp))
 		{
 			const Json& node = inNode.at(compilerSettingsCpp);
+
+			{
+				bool cmakeResult = parseProjectCmake(outProject, node);
+				if (cmakeResult && inAllProjects)
+				{
+					Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a cmake configuration.", m_filename, kKeyAllProjects));
+					return false;
+				}
+
+				// If it's a cmake project, ignore everything else and return
+				if (cmakeResult)
+					return true;
+			}
+
 			if (!parseCompilerSettingsCxx(outProject, node))
 				return false;
 		}
