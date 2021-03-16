@@ -73,7 +73,7 @@ void BuildEnvironment::setPlatform(const std::string& inValue) noexcept
 /*****************************************************************************/
 const std::string& BuildEnvironment::externalDepDir() const noexcept
 {
-	return m_modulePath;
+	return m_externalDepDir;
 }
 
 void BuildEnvironment::setExternalDepDir(const std::string& inValue) noexcept
@@ -81,10 +81,10 @@ void BuildEnvironment::setExternalDepDir(const std::string& inValue) noexcept
 	if (inValue.empty())
 		return;
 
-	m_modulePath = inValue;
+	m_externalDepDir = inValue;
 
-	if (m_modulePath.back() == '/')
-		m_modulePath.pop_back();
+	if (m_externalDepDir.back() == '/')
+		m_externalDepDir.pop_back();
 }
 
 /*****************************************************************************/
@@ -131,6 +131,7 @@ void BuildEnvironment::addPath(std::string& inValue)
 		inValue.pop_back();
 
 	String::replaceAll(inValue, "${configuration}", m_buildConfiguration);
+	String::replaceAll(inValue, "${externalDepDir}", m_externalDepDir);
 	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_path, std::move(inValue));
 }

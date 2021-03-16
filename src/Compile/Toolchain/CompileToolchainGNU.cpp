@@ -699,11 +699,12 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 		}
 	}
 	{
-		const std::string suffix = ".framework";
+		// const std::string suffix = ".framework";
 		for (auto& framework : m_project.macosFrameworks())
 		{
 			inArgList.push_back("-framework");
-			inArgList.push_back(framework + suffix);
+			inArgList.push_back(framework);
+			// inArgList.push_back(framework + suffix);
 		}
 	}
 #endif

@@ -112,8 +112,15 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		if (!project->isExecutable())
 			continue;
 
+		LOG("Main exec:", project->name());
 		mainExecutable = project->outputFile();
 		break;
+	}
+
+	if (mainExecutable.empty())
+	{
+		Diagnostic::error("No projects defined for bundle");
+		return false;
 	}
 
 	{

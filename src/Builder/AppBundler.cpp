@@ -95,6 +95,9 @@ bool AppBundler::run()
 	uint copyCount = 0;
 	for (auto& dep : bundle.dependencies())
 	{
+		if (!Commands::pathExists(dep))
+			continue;
+
 		result &= Commands::copy(dep, executablePath, m_cleanOutput);
 		++copyCount;
 
