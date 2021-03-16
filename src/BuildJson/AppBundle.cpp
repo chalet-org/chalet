@@ -180,13 +180,14 @@ void AppBundle::addDependency(std::string& inValue)
 		return;
 	}
 
-	std::string resolved = fmt::format("{}/{}", m_paths.buildOutputDir(), inValue);
+	/*std::string resolved = fmt::format("{}/{}", m_paths.buildOutputDir(), inValue);
 	if (Commands::pathExists(resolved))
 	{
 		add(resolved);
 		return;
-	}
+	}*/
 
+	std::string resolved;
 	for (auto& project : m_projectConfigs)
 	{
 		const auto& compilerConfig = m_compilers.getConfig(project->language());

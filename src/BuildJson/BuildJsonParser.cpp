@@ -499,7 +499,10 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 				// If it's a cmake project, ignore everything else and return
 				if (cmakeResult)
+				{
+					outProject.parseOutputFilename();
 					return true;
+				}
 			}
 
 			if (!parseCompilerSettingsCxx(outProject, node))

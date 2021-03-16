@@ -53,8 +53,10 @@ bool Application::initialize()
 	if (m_initialized)
 		return false;
 
-		// Output::resetStdout();
-		// Output::resetStderr();
+	// Output::resetStdout();
+	// Output::resetStderr();
+
+	configureOsTerminal();
 
 #ifdef CHALET_DEBUG
 	priv::SignalHandler::start([]() noexcept {
@@ -62,8 +64,6 @@ bool Application::initialize()
 	});
 	testSignalHandling();
 #endif // _DEBUG
-
-	configureOsTerminal();
 
 	m_initialized = true;
 
