@@ -29,13 +29,20 @@
 			"optimizations": "size",
 			"linkTimeOptimization": true,
 			"stripSymbols": true
+		},
+		{
+			"name": "Profile",
+			"optimizations": "0",
+			"debugSymbols": true,
+			"enableProfiling": true
 		}
 	],*/
 	/*"configurations": [
 		"Release",
 		"Debug",
 		"RelWithDebInfo",
-		"MinSizeRel"
+		"MinSizeRel",
+		"Profile"
 	],*/
 	"allProjects": {
 		"dumpAssembly": false,
