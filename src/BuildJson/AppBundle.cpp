@@ -20,6 +20,7 @@ AppBundle::AppBundle(const BuildEnvironment& inEnvironment, const ProjectConfigu
 	m_paths(inPaths),
 	m_compilers(inCompilers)
 {
+	UNUSED(m_paths);
 }
 
 /*****************************************************************************/
