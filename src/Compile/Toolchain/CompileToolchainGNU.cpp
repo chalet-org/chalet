@@ -312,13 +312,13 @@ void CompileToolchainGNU::addSourceObjects(StringList& inArgList, const StringLi
 void CompileToolchainGNU::addIncludes(StringList& inArgList)
 {
 	const std::string prefix = "-I";
-	for (auto& dir : m_project.includeDirs())
+	for (const auto& dir : m_project.includeDirs())
 	{
-		inArgList.push_back(prefix + dir);
+		inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
 	}
-	for (auto& dir : m_project.locations())
+	for (const auto& dir : m_project.locations())
 	{
-		inArgList.push_back(prefix + dir);
+		inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
 	}
 
 #if !defined(CHALET_WIN32)
@@ -340,9 +340,9 @@ void CompileToolchainGNU::addIncludes(StringList& inArgList)
 void CompileToolchainGNU::addLibDirs(StringList& inArgList)
 {
 	const std::string prefix = "-L";
-	for (auto& dir : m_project.libDirs())
+	for (const auto& dir : m_project.libDirs())
 	{
-		inArgList.push_back(prefix + dir);
+		inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
 	}
 
 	inArgList.push_back(prefix + m_state.paths.buildOutputDir());
@@ -438,8 +438,9 @@ void CompileToolchainGNU::addPchInclude(StringList& inArgList)
 	if (m_project.usesPch())
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
+
 		inArgList.push_back("-include");
-		inArgList.push_back(objDirPch);
+		inArgList.push_back(fmt::format("\"{}\"", objDirPch));
 	}
 }
 
