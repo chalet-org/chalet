@@ -24,6 +24,32 @@ void CacheTools::setAr(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::bash() const noexcept
+{
+	return m_bash;
+}
+
+void CacheTools::setBash(const std::string& inValue) noexcept
+{
+	m_bash = inValue;
+
+#if defined(CHALET_WIN32)
+	if (Commands::pathExists(m_bash))
+	{
+		std::string version = Commands::subprocessOutput({ m_bash, "--version" });
+		m_bashAvailable = String::contains("GNU bash", version);
+	}
+#else
+	m_bashAvailable = true;
+#endif
+}
+
+bool CacheTools::bashAvailable() noexcept
+{
+	return m_bashAvailable;
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::brew() const noexcept
 {
 	return m_brew;

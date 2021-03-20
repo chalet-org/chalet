@@ -35,6 +35,12 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/ar"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-bash"] = R"json({
+		"type": "string",
+		"description": "The executable path to GNU bash",
+		"default": "/usr/bin/bash"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-brew"] = R"json({
 		"type": "string",
 		"description": "The executable path to brew command-line utility (MacOS)",
@@ -231,6 +237,7 @@ Json Schema::getCacheJson()
 		"description": "The list of tools for the platform",
 		"required": [
 			"ar",
+			"bash",
 			"brew",
 			"cmake",
 			"codesign",
@@ -258,6 +265,9 @@ Json Schema::getCacheJson()
 		"properties": {
 			"ar": {
 				"$ref": "#/definitions/tools-ar"
+			},
+			"bash": {
+				"$ref": "#/definitions/tools-bash"
 			},
 			"brew": {
 				"$ref": "#/definitions/tools-brew"

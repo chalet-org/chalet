@@ -223,6 +223,7 @@ bool CacheJsonParser::makeCache()
 	Json& tools = environmentCache.json[kKeyTools];
 
 	whichAdd(tools, kKeyAr);
+	whichAdd(tools, kKeyBash);
 	whichAdd(tools, kKeyBrew);
 	whichAdd(tools, kKeyCmake);
 	whichAdd(tools, kKeyCodesign);
@@ -331,6 +332,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyAr))
 		m_state.tools.setAr(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyBash))
+		m_state.tools.setBash(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyBrew))
 		m_state.tools.setBrew(val);

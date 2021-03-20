@@ -15,6 +15,10 @@ struct CacheTools
 	const std::string& ar() const noexcept;
 	void setAr(const std::string& inValue) noexcept;
 
+	const std::string& bash() const noexcept;
+	void setBash(const std::string& inValue) noexcept;
+	bool bashAvailable() noexcept;
+
 	const std::string& brew() const noexcept;
 	void setBrew(const std::string& inValue) noexcept;
 	bool brewAvailable() noexcept;
@@ -111,6 +115,7 @@ private:
 	void isolateVersion(std::string& outString);
 
 	std::string m_ar;
+	std::string m_bash;
 	std::string m_brew;
 	std::string m_cmake;
 	std::string m_codesign;
@@ -146,6 +151,7 @@ private:
 	uint m_xcodegenVersionPatch = 0;
 
 	bool m_brewAvailable = false;
+	bool m_bashAvailable = false;
 };
 }
 

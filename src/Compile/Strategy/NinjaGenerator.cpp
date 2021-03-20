@@ -184,8 +184,9 @@ std::string NinjaGenerator::getAsmRule()
 	if (m_project.dumpAssembly())
 	{
 		std::string asmCompile = m_toolchain->getAsmGenerateCommand("$in", "$out");
+
 #if defined(CHALET_WIN32)
-		asmCompile = fmt::format("bash -c \"{}\"", asmCompile);
+		asmCompile = fmt::format("{} -c \"{}\"", m_state.tools.bash(), asmCompile);
 #endif
 
 		ret = fmt::format(R"ninja(

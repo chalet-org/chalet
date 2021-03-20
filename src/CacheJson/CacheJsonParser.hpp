@@ -45,6 +45,7 @@ private:
 
 	// should match executables
 	const std::string kKeyAr = "ar";
+	const std::string kKeyBash = "bash";
 	const std::string kKeyBrew = "brew";
 	const std::string kKeyCmake = "cmake";
 	const std::string kKeyCodesign = "codesign";

@@ -588,10 +588,15 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 
 		auto outScriptPath = fs::absolute(scriptPath).string();
 		StringList command;
+
+		if (m_state.tools.bashAvailable())
+		{
 #if defined(CHALET_WIN32)
-		if (String::endsWith(".sh", outScriptPath))
-			command.push_back("bash");
+			if (String::endsWith(".sh", outScriptPath))
+				command.push_back(m_state.tools.bash());
 #endif
+		}
+
 		command.push_back(std::move(outScriptPath));
 
 		result &= Commands::subprocess(command, m_cleanOutput);

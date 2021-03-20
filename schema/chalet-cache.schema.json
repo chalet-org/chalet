@@ -12,6 +12,11 @@
 			"description": "The executable path to GNU ar",
 			"default": "/usr/bin/ar"
 		},
+		"tools-bash": {
+			"type": "string",
+			"description": "The executable path to GNU bash",
+			"default": "/usr/bin/bash"
+		},
 		"tools-brew": {
 			"type": "string",
 			"description": "The executable path to brew command-line utility (MacOS)",
@@ -177,6 +182,7 @@
 			"description": "The list of tools for the platform",
 			"required": [
 				"ar",
+				"bash",
 				"brew",
 				"cmake",
 				"codesign",
@@ -204,6 +210,9 @@
 			"properties": {
 				"ar": {
 					"$ref": "#/definitions/tools-ar"
+				},
+				"bash": {
+					"$ref": "#/definitions/tools-bash"
 				},
 				"brew": {
 					"$ref": "#/definitions/tools-brew"
