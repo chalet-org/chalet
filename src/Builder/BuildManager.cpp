@@ -578,16 +578,29 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 			std::cout << Output::getAnsiReset() << std::flush;
 		}
 
-		if (!Commands::pathExists(scriptPath))
+#if defined(CHALET_WIN32)
+		std::string parsedScriptPath = scriptPath;
+		if (String::endsWith(".exe", parsedScriptPath))
+			parsedScriptPath = parsedScriptPath.substr(0, parsedScriptPath.size() - 4);
+
+		auto outScriptPath = Commands::which(parsedScriptPath);
+#else
+		auto outScriptPath = Commands::which(scriptPath);
+#endif
+		if (outScriptPath.empty())
+			outScriptPath = fs::absolute(scriptPath).string();
+
+		if (!Commands::pathExists(outScriptPath))
 		{
-			Diagnostic::warn(fmt::format("{}: The script '{}' was not found. Skipping.", CommandLineInputs::file(), scriptPath));
-			continue;
+			Diagnostic::error(fmt::format("{}: The script '{}' was not found. Skipping.", CommandLineInputs::file(), scriptPath));
+			return false;
 		}
 
-		result &= Commands::setExecutableFlag(scriptPath, m_cleanOutput);
+		if (String::endsWith(".sh", outScriptPath))
+		{
+			result &= Commands::setExecutableFlag(scriptPath, m_cleanOutput);
+		}
 
-		auto outScriptPath = fs::absolute(scriptPath).string();
-		LOG(outScriptPath);
 		StringList command;
 
 		if (m_state.tools.bashAvailable())
