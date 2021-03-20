@@ -20,8 +20,8 @@ Json Schema::getBuildJson()
 	const std::string patternProjectName = R"(^[\w\-\+\.]{3,}$)";
 	const std::string patternProjectLinks = R"(^[\w\-\+\.]+$)";
 
-	const std::string patternConfigurations = R"((|:debug|:!debug))";
-	const std::string patternPlatforms = R"((|\\.windows|\\.macos|\\.linux|\\.!windows|\\.!macos|\\.!linux))";
+	const std::string patternConfigurations = R"((:debug|:!debug|))";
+	const std::string patternPlatforms = R"((\.windows|\.macos|\.linux|\.\!windows|\.\!macos|\.\!linux|))";
 
 	Json ret;
 	ret["$schema"] = "http://json-schema.org/draft-07/schema";
