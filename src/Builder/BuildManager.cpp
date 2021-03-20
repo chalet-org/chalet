@@ -144,7 +144,7 @@ bool BuildManager::doBuild(const Route inRoute)
 
 	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
 	{
-		Diagnostic::errorAbort(fmt::format("Error creating paths for project: {}\n  Aborting...", m_project->name()));
+		Diagnostic::errorAbort(fmt::format("Error creating paths for project: {}\n   Aborting...", m_project->name()));
 		return false;
 	}
 
@@ -157,7 +157,7 @@ bool BuildManager::doBuild(const Route inRoute)
 	// TODO: Check placement
 	if (!runExternalScripts(preBuildScripts))
 	{
-		Diagnostic::errorAbort(fmt::format("There was a problem running the pre-build script for project: {}\n  Aborting...", m_project->name()));
+		Diagnostic::error(fmt::format("There was a problem running the pre-build script for: {}", m_project->name()));
 		return false;
 	}
 
@@ -171,7 +171,7 @@ bool BuildManager::doBuild(const Route inRoute)
 
 		if (!buildStrategy->createCache(outputs))
 		{
-			Diagnostic::errorAbort(fmt::format("Cache could not be created for project: {}\n  Aborting...", m_project->name()));
+			Diagnostic::errorAbort(fmt::format("Project cache could not be created for: {}", m_project->name()));
 			return false;
 		}
 
@@ -206,7 +206,7 @@ bool BuildManager::doBuild(const Route inRoute)
 	// TODO: Always runs at the moment
 	if (!runExternalScripts(postBuildScripts))
 	{
-		Diagnostic::errorAbort(fmt::format("There was a problem running the post-build script for project: {}\n  Aborting...", m_project->name()));
+		Diagnostic::error(fmt::format("There was a problem running the post-build script for: {}", m_project->name()));
 		return false;
 	}
 
@@ -592,14 +592,11 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 
 		if (!Commands::pathExists(outScriptPath))
 		{
-			Diagnostic::error(fmt::format("{}: The script '{}' was not found. Skipping.", CommandLineInputs::file(), scriptPath));
+			Diagnostic::error(fmt::format("{}: The script '{}' was not found. Aborting.", CommandLineInputs::file(), scriptPath));
 			return false;
 		}
 
-		if (String::endsWith(".sh", outScriptPath))
-		{
-			result &= Commands::setExecutableFlag(scriptPath, m_cleanOutput);
-		}
+		result &= Commands::setExecutableFlag(outScriptPath, m_cleanOutput);
 
 		StringList command;
 

@@ -545,10 +545,14 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	StringList command;
 	const bool isBash = Environment::isBash();
 
+#if defined(CHALET_WIN32)
 	if (isBash)
+#endif
 		command = { "which", inExecutable };
+#if defined(CHALET_WIN32)
 	else
 		command = { "cmd.exe", "/c", "where", fmt::format("{}.exe", inExecutable) };
+#endif
 
 	std::string result = Commands::subprocessOutput(command, inCleanOutput);
 	if (isBash && String::contains("which: no", result))
