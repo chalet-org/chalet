@@ -427,40 +427,40 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("cmake{}", patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("cmake{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-cmake"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("cStandard{}", patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("cStandard{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-cStandard"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("cppStandard{}", patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("cppStandard{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-cppStandard"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("compileOptions{}", patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("compileOptions{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-compileOptions"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("defines{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("defines{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-defines"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("includeDirs{}", patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("includeDirs{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-includeDirs"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("libDirs{}", patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("libDirs{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-libDirs"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("linkerScript{}", patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("linkerScript{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-linkerScript"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("linkerOptions{}", patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("linkerOptions{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-linkerOptions"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("links{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("links{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-links"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("objectiveCxx{}", patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("objectiveCxx{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-objectiveCxx"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("staticLinks{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("staticLinks{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-staticLinks"
 	})json"_ojson;
 
@@ -520,13 +520,13 @@ Json Schema::getBuildJson()
 			}
 		}
 	})json"_ojson;
-	ret[kDefinitions]["project"][kPatternProperties][fmt::format("dumpAssembly{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["project"][kPatternProperties][fmt::format("dumpAssembly{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-dumpAssembly"
 	})json"_ojson;
-	ret[kDefinitions]["project"][kPatternProperties][fmt::format("runProject{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["project"][kPatternProperties][fmt::format("runProject{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-runProject"
 	})json"_ojson;
-	ret[kDefinitions]["project"][kPatternProperties][fmt::format("runDependencies{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["project"][kPatternProperties][fmt::format("runDependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-runDependencies"
 	})json"_ojson;
 
@@ -749,7 +749,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	ret[kDefinitions]["project-location"]["oneOf"][2][kPatternProperties][fmt::format("exclude{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-location"]["oneOf"][2][kPatternProperties][fmt::format("exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -763,7 +763,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	ret[kDefinitions]["project-location"]["oneOf"][2][kPatternProperties][fmt::format("include{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["project-location"]["oneOf"][2][kPatternProperties][fmt::format("include{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -1351,10 +1351,10 @@ Json Schema::getBuildJson()
 			}
 		}
 	})json"_ojson;
-	ret[kProperties]["bundle"][kPatternProperties][fmt::format("dependencies{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kProperties]["bundle"][kPatternProperties][fmt::format("dependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/bundle-dependencies"
 	})json"_ojson;
-	ret[kProperties]["bundle"][kPatternProperties][fmt::format("exclude{}{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kProperties]["bundle"][kPatternProperties][fmt::format("exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/bundle-exclude"
 	})json"_ojson;
 
@@ -1434,10 +1434,10 @@ Json Schema::getBuildJson()
 			}
 		}
 	})json"_ojson;
-	ret[kProperties]["environment"][kPatternProperties][fmt::format("path{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kProperties]["environment"][kPatternProperties][fmt::format("path{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/environment-path"
 	})json"_ojson;
-	ret[kProperties]["environment"][kPatternProperties][fmt::format("maxJobs{}", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kProperties]["environment"][kPatternProperties][fmt::format("maxJobs{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/environment-maxJobs"
 	})json"_ojson;
 
