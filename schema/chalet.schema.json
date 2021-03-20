@@ -1331,10 +1331,10 @@
 				}
 			},
 			"patternProperties": {
-				"^path(:debug|:!debug|)$": {
+				"^path(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/environment-path"
 				},
-				"^maxJobs(:debug|:!debug|)$": {
+				"^maxJobs(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/environment-maxJobs"
 				}
 			}

@@ -1434,10 +1434,10 @@ Json Schema::getBuildJson()
 			}
 		}
 	})json"_ojson;
-	ret[kProperties]["environment"][kPatternProperties][fmt::format("^path{}$", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kProperties]["environment"][kPatternProperties][fmt::format("^path{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/environment-path"
 	})json"_ojson;
-	ret[kProperties]["environment"][kPatternProperties][fmt::format("^maxJobs{}$", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kProperties]["environment"][kPatternProperties][fmt::format("^maxJobs{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/environment-maxJobs"
 	})json"_ojson;
 
