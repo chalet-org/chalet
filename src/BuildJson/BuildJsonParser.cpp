@@ -653,16 +653,16 @@ bool BuildJsonParser::parseProjectBeforeBuildScripts(ProjectConfiguration& outPr
 	if (node.is_object())
 	{
 		// required
-		if (StringList list; assignStringListFromConfig(list, node, "script"))
+		if (StringList list; assignStringListAndValidate(list, node, "script"))
 			outProject.addPreBuildScripts(list);
-		else if (std::string val; assignStringFromConfig(val, node, "script"))
+		else if (std::string val; assignStringAndValidate(val, node, "script"))
 			outProject.addPreBuildScript(val);
 		else
 			return false;
 	}
-	else if (StringList list; assignStringListAndValidate(list, inNode, key))
+	else if (StringList list; assignStringListFromConfig(list, inNode, key))
 		outProject.addPreBuildScripts(list);
-	else if (std::string val; assignStringAndValidate(val, inNode, key))
+	else if (std::string val; assignStringFromConfig(val, inNode, key))
 		outProject.addPreBuildScript(val);
 	else
 		return false;
@@ -682,9 +682,9 @@ bool BuildJsonParser::parseProjectAfterBuildScripts(ProjectConfiguration& outPro
 	if (node.is_object())
 	{
 		// required
-		if (StringList list; assignStringListFromConfig(list, node, "script"))
+		if (StringList list; assignStringListAndValidate(list, node, "script"))
 			outProject.addPostBuildScripts(list);
-		else if (std::string val; assignStringFromConfig(val, node, "script"))
+		else if (std::string val; assignStringAndValidate(val, node, "script"))
 			outProject.addPostBuildScript(val);
 		else
 			return false;
@@ -692,9 +692,9 @@ bool BuildJsonParser::parseProjectAfterBuildScripts(ProjectConfiguration& outPro
 		if (bool val = false; JsonNode::assignFromKey(val, node, "alwaysRun"))
 			outProject.setAlwaysRunPostBuildScripts(val);
 	}
-	else if (StringList list; assignStringListAndValidate(list, inNode, key))
+	else if (StringList list; assignStringListFromConfig(list, inNode, key))
 		outProject.addPostBuildScripts(list);
-	else if (std::string val; assignStringAndValidate(val, inNode, key))
+	else if (std::string val; assignStringFromConfig(val, inNode, key))
 		outProject.addPostBuildScript(val);
 	else
 		return false;

@@ -512,11 +512,11 @@ Json Schema::getBuildJson()
 			},
 			"preBuild": {
 				"$ref": "#/definitions/project-scripts",
-				"description": "Script(s) to run before the target's build"
+				"description": "Script(s) to run before the target is built"
 			},
 			"postBuild": {
 				"$ref": "#/definitions/project-scripts",
-				"description": "Script(s) to run after the target's build"
+				"description": "Script(s) to run after the target is built"
 			}
 		}
 	})json"_ojson;
@@ -528,6 +528,14 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["project"][kPatternProperties][fmt::format("^runDependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-runDependencies"
+	})json"_ojson;
+	ret[kDefinitions]["project"][kPatternProperties][fmt::format("^preBuild{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/project-scripts",
+		"description": "Script(s) to run before the target is built"
+	})json"_ojson;
+	ret[kDefinitions]["project"][kPatternProperties][fmt::format("^postBuild{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/project-scripts",
+		"description": "Script(s) to run after the target is built"
 	})json"_ojson;
 
 	ret[kDefinitions]["project-cxx-windowsPrefixOutputFilename"] = R"json({
