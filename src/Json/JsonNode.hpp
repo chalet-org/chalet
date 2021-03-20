@@ -14,6 +14,9 @@ namespace JsonNode
 {
 template <typename T>
 bool assignFromKey(T& outVariable, const Json& inNode, const std::string& inKey);
+
+template <typename T>
+bool containsKeyForType(const Json& inNode, const std::string& inKey);
 }
 }
 

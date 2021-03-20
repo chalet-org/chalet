@@ -22,6 +22,7 @@ struct JsonParser
 protected:
 	bool assignStringAndValidate(std::string& outString, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
 	bool assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey);
+	bool containsStringList(const Json& inNode, const std::string& inKey);
 };
 }
 

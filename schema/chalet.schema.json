@@ -361,40 +361,40 @@
 				}
 			},
 			"patternProperties": {
-				"cmake(\\.windows|\\.macos|\\.linux)": {
+				"cmake(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-cmake"
 				},
-				"cStandard(\\.windows|\\.macos|\\.linux)": {
+				"cStandard(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-cStandard"
 				},
-				"compileOptions(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/project-cxx-compileOptions"
-				},
-				"cppStandard(\\.windows|\\.macos|\\.linux)": {
+				"cppStandard(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-cppStandard"
 				},
-				"defines(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+				"compileOptions(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
+					"$ref": "#/definitions/project-cxx-compileOptions"
+				},
+				"defines(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-defines"
 				},
-				"includeDirs(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+				"includeDirs(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-includeDirs"
 				},
-				"libDirs(\\.windows|\\.macos|\\.linux)": {
+				"libDirs(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-libDirs"
 				},
-				"linkerScript(\\.windows|\\.macos|\\.linux)": {
+				"linkerScript(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-linkerScript"
 				},
-				"linkerOptions(\\.windows|\\.macos|\\.linux)": {
+				"linkerOptions(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-linkerOptions"
 				},
-				"links(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+				"links(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-links"
 				},
-				"objectiveCxx(\\.windows|\\.macos|\\.linux)": {
+				"objectiveCxx(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-objectiveCxx"
 				},
-				"staticLinks(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+				"staticLinks(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-cxx-staticLinks"
 				}
 			}
@@ -455,13 +455,13 @@
 				}
 			},
 			"patternProperties": {
-				"dumpAssembly(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+				"dumpAssembly(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-dumpAssembly"
 				},
-				"runProject(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+				"runProject(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-runProject"
 				},
-				"runDependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+				"runDependencies(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 					"$ref": "#/definitions/project-runDependencies"
 				}
 			}
@@ -668,7 +668,7 @@
 						"include"
 					],
 					"patternProperties": {
-						"exclude(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+						"exclude(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 							"anyOf": [
 								{
 									"type": "string"
@@ -682,7 +682,7 @@
 								}
 							]
 						},
-						"include(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
+						"include(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
 							"anyOf": [
 								{
 									"type": "string"
@@ -1213,14 +1213,6 @@
 				"configuration",
 				"projects"
 			],
-			"patternProperties": {
-				"dependencies(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/bundle-dependencies"
-				},
-				"exclude(|:Debug|:Release)(|\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/bundle-exclude"
-				}
-			},
 			"properties": {
 				"appName": {
 					"$ref": "#/definitions/bundle-appName"
@@ -1254,6 +1246,14 @@
 				},
 				"windows": {
 					"$ref": "#/definitions/bundle-windows"
+				}
+			},
+			"patternProperties": {
+				"dependencies(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
+					"$ref": "#/definitions/bundle-dependencies"
+				},
+				"exclude(|:debug|:!debug)(|\\\\.windows|\\\\.macos|\\\\.linux|\\\\.!windows|\\\\.!macos|\\\\.!linux)": {
+					"$ref": "#/definitions/bundle-exclude"
 				}
 			}
 		},
@@ -1316,14 +1316,6 @@
 			"additionalProperties": false,
 			"description": "Variables to describe the typical environments built in",
 			"required": [],
-			"patternProperties": {
-				"path(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/environment-path"
-				},
-				"maxJobs(\\.windows|\\.macos|\\.linux)": {
-					"$ref": "#/definitions/environment-maxJobs"
-				}
-			},
 			"properties": {
 				"path": {
 					"$ref": "#/definitions/environment-path"
@@ -1336,6 +1328,14 @@
 				},
 				"showCommands": {
 					"$ref": "#/definitions/environment-showCommands"
+				}
+			},
+			"patternProperties": {
+				"path(|:debug|:!debug)": {
+					"$ref": "#/definitions/environment-path"
+				},
+				"maxJobs(|:debug|:!debug)": {
+					"$ref": "#/definitions/environment-maxJobs"
 				}
 			}
 		},

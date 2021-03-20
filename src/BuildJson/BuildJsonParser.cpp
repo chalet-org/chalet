@@ -1054,12 +1054,30 @@ bool BuildJsonParser::assignStringFromConfig(std::string& outVariable, const Jso
 {
 	bool res = assignStringAndValidate(outVariable, inNode, inKey, inDefault);
 
-	const auto& buildConfiguration = m_state.buildConfiguration();
 	const auto& platform = m_state.platform();
 
-	res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}", inKey, buildConfiguration), inDefault);
 	res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}.{}", inKey, platform), inDefault);
-	res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}.{}", inKey, buildConfiguration, platform), inDefault);
+
+	if (m_state.configuration.debugSymbols())
+	{
+		res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}", inKey, m_debugIdentifier), inDefault);
+		res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}.{}", inKey, m_debugIdentifier, platform), inDefault);
+	}
+	else
+	{
+		res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:!{}", inKey, m_debugIdentifier), inDefault);
+		res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform), inDefault);
+	}
+
+	for (auto& notPlatform : m_state.notPlatforms())
+	{
+		res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform), inDefault);
+
+		if (m_state.configuration.debugSymbols())
+			res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, platform), inDefault);
+		else
+			res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, platform), inDefault);
+	}
 
 	return res;
 }
@@ -1069,12 +1087,30 @@ bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json
 {
 	bool res = assignStringListAndValidate(outList, inNode, inKey);
 
-	const auto& buildConfiguration = m_state.buildConfiguration();
 	const auto& platform = m_state.platform();
 
-	res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:{}", inKey, buildConfiguration));
 	res |= assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
-	res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:{}.{}", inKey, buildConfiguration, platform));
+
+	if (m_state.configuration.debugSymbols())
+	{
+		res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:{}", inKey, m_debugIdentifier));
+		res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:{}.{}", inKey, m_debugIdentifier, platform));
+	}
+	else
+	{
+		res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:!{}", inKey, m_debugIdentifier));
+		res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform));
+	}
+
+	for (auto& notPlatform : m_state.notPlatforms())
+	{
+		res |= assignStringListAndValidate(outList, inNode, fmt::format("{}!{}", inKey, notPlatform));
+
+		if (m_state.configuration.debugSymbols())
+			res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, notPlatform));
+		else
+			res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, notPlatform));
+	}
 
 	return res;
 }

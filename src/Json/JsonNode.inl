@@ -14,6 +14,18 @@ namespace chalet
 template <typename T>
 bool JsonNode::assignFromKey(T& outVariable, const Json& inNode, const std::string& inKey)
 {
+	if (!containsKeyForType<T>(inNode, inKey))
+		return false;
+
+	using Type = std::decay_t<T>;
+	outVariable = inNode.at(inKey).template get<Type>();
+	return true;
+}
+
+/*****************************************************************************/
+template <typename T>
+bool JsonNode::containsKeyForType(const Json& inNode, const std::string& inKey)
+{
 	if (!inNode.contains(inKey))
 		return false;
 
@@ -75,7 +87,6 @@ bool JsonNode::assignFromKey(T& outVariable, const Json& inNode, const std::stri
 		}
 	}
 
-	outVariable = inNode.at(inKey).template get<Type>();
 	return true;
 }
 }

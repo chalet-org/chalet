@@ -56,7 +56,7 @@
 			"warnings": "strict",
 			// "compileOptions": [],
 			// "linkerOptions": [],
-			"defines:Debug": [
+			"defines:debug": [
 				"_DEBUG"
 			],
 			"includeDirs": [

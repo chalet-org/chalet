@@ -19,6 +19,7 @@ std::string CommandLineInputs::kFile = "build.json";
 
 /*****************************************************************************/
 CommandLineInputs::CommandLineInputs() :
+	m_notPlatforms(getNotPlatforms()),
 	m_platform(getPlatform())
 {
 }
@@ -71,6 +72,10 @@ void CommandLineInputs::setBuildFromCommandLine(std::string&& inValue) noexcept
 const std::string& CommandLineInputs::platform() const noexcept
 {
 	return m_platform;
+}
+const StringList& CommandLineInputs::notPlatforms() const noexcept
+{
+	return m_notPlatforms;
 }
 
 /*****************************************************************************/
@@ -172,6 +177,28 @@ std::string CommandLineInputs::getPlatform() noexcept
 	return "linux";
 #else
 	return "unknown";
+#endif
+}
+
+/*****************************************************************************/
+StringList CommandLineInputs::getNotPlatforms() noexcept
+{
+#if defined(CHALET_WIN32)
+	return {
+		"macos", "linux"
+	};
+#elif defined(CHALET_MACOS)
+	return {
+		"windows", "linux"
+	};
+#elif defined(CHALET_LINUX)
+	return {
+		"windows", "macos"
+	};
+#else
+	return {
+		"windows", "macos", "linux"
+	};
 #endif
 }
 

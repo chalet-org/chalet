@@ -22,8 +22,8 @@ namespace chalet
 {
 class BuildState
 {
+	const CommandLineInputs& m_inputs;
 	std::string m_buildConfiguration;
-	const std::string& m_platform;
 
 public:
 	explicit BuildState(const CommandLineInputs& inInputs);
@@ -43,13 +43,14 @@ public:
 	void setBuildConfiguration(const std::string& inValue) noexcept;
 
 	const std::string& platform() const noexcept;
+	const StringList& notPlatforms() const noexcept;
 
 private:
 	friend class Application;
 	friend class Router;
 
-	void initializeBuild(const CommandLineInputs& inInputs);
-	void initializeCache(const CommandLineInputs& inInputs);
+	void initializeBuild();
+	void initializeCache();
 };
 }
 

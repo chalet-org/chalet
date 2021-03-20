@@ -84,7 +84,7 @@ bool Router::run()
 		if (!parseBuildJson(file))
 			return false;
 
-		m_buildState->initializeBuild(m_inputs);
+		m_buildState->initializeBuild();
 	}
 
 	if (!managePathVariables())

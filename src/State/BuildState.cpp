@@ -13,7 +13,7 @@ namespace chalet
 {
 /*****************************************************************************/
 BuildState::BuildState(const CommandLineInputs& inInputs) :
-	m_platform(inInputs.platform()),
+	m_inputs(inInputs),
 	environment(m_buildConfiguration),
 	bundle(environment, projects, paths, compilers),
 	cache(info, paths)
@@ -21,17 +21,17 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-void BuildState::initializeBuild(const CommandLineInputs& inInputs)
+void BuildState::initializeBuild()
 {
 	paths.initialize(buildConfiguration());
 
-	initializeCache(inInputs);
+	initializeCache();
 }
 
 /*****************************************************************************/
-void BuildState::initializeCache(const CommandLineInputs& inInputs)
+void BuildState::initializeCache()
 {
-	cache.initialize(inInputs.appPath());
+	cache.initialize(m_inputs.appPath());
 
 	StringList projectNames;
 	for (auto& project : projects)
@@ -62,8 +62,12 @@ void BuildState::setBuildConfiguration(const std::string& inValue) noexcept
 /*****************************************************************************/
 const std::string& BuildState::platform() const noexcept
 {
-	chalet_assert(!m_platform.empty(), "Platform was empty");
-	return m_platform;
+	return m_inputs.platform();
+}
+
+const StringList& BuildState::notPlatforms() const noexcept
+{
+	return m_inputs.notPlatforms();
 }
 
 }

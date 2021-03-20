@@ -72,6 +72,7 @@ private:
 	const std::string kKeyAllProjects = "allProjects";
 
 	std::string m_filename;
+	std::string m_debugIdentifier{ "debug" };
 };
 }
 

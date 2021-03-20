@@ -28,6 +28,7 @@ struct CommandLineInputs
 	void setBuildFromCommandLine(std::string&& inValue) noexcept;
 
 	const std::string& platform() const noexcept;
+	const StringList& notPlatforms() const noexcept;
 
 	const std::string& runProject() const noexcept;
 	void setRunProject(std::string&& inValue) noexcept;
@@ -55,13 +56,17 @@ private:
 	static std::string kFile;
 
 	std::string getPlatform() noexcept;
+	StringList getNotPlatforms() noexcept;
+
 	IdeType getIdeTypeFromString(const std::string& inValue);
+
+	StringList m_runOptions;
+	StringList m_notPlatforms;
 
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
 	std::string m_platform;
 	std::string m_runProject;
-	StringList m_runOptions;
 	std::string m_appPath;
 	std::string m_generatorRaw;
 
