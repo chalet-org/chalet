@@ -144,7 +144,7 @@ bool BuildManager::doBuild(const Route inRoute)
 
 	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
 	{
-		Diagnostic::errorAbort(fmt::format("Error creating paths for project: {}\n   Aborting...", m_project->name()));
+		Diagnostic::errorAbort(fmt::format("Error creating paths for project: {}", m_project->name()));
 		return false;
 	}
 
@@ -194,7 +194,7 @@ bool BuildManager::doBuild(const Route inRoute)
 #endif
 		if (!copyRunDependencies())
 		{
-			Diagnostic::errorAbort(fmt::format("There was an error copying run dependencies for project: {}\n  Aborting...", m_project->name()));
+			Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", m_project->name()));
 			return false;
 		}
 	}

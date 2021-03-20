@@ -31,17 +31,17 @@ bool JsonNode::containsKeyForType(const Json& inNode, const std::string& inKey)
 
 	if (inNode.at(inKey).is_null())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: An invalid value (null) was found in '{}'.", CommandLineInputs::file(), inKey));
+		Diagnostic::error(fmt::format("{}: An invalid value (null) was found in '{}'.", CommandLineInputs::file(), inKey));
 		return false;
 	}
 	else if (inNode.at(inKey).is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: An invalid value (object) was found in '{}'.", CommandLineInputs::file(), inKey));
+		Diagnostic::error(fmt::format("{}: An invalid value (object) was found in '{}'.", CommandLineInputs::file(), inKey));
 		return false;
 	}
 	else if (inNode.at(inKey).is_array())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: An invalid value (array) was found in '{}'.", CommandLineInputs::file(), inKey));
+		Diagnostic::error(fmt::format("{}: An invalid value (array) was found in '{}'.", CommandLineInputs::file(), inKey));
 		return false;
 	}
 
@@ -50,7 +50,7 @@ bool JsonNode::containsKeyForType(const Json& inNode, const std::string& inKey)
 	{
 		if (!inNode.at(inKey).is_string())
 		{
-			Diagnostic::errorAbort(fmt::format("{}: An invalid value was found in '{}'. Expected string", CommandLineInputs::file(), inKey));
+			Diagnostic::error(fmt::format("{}: An invalid value was found in '{}'. Expected string", CommandLineInputs::file(), inKey));
 			return false;
 		}
 	}
@@ -58,7 +58,7 @@ bool JsonNode::containsKeyForType(const Json& inNode, const std::string& inKey)
 	{
 		if (!inNode.at(inKey).is_boolean())
 		{
-			Diagnostic::errorAbort(fmt::format("{}: An invalid value was found in '{}'. Expected true|false", CommandLineInputs::file(), inKey));
+			Diagnostic::error(fmt::format("{}: An invalid value was found in '{}'. Expected true|false", CommandLineInputs::file(), inKey));
 			return false;
 		}
 	}
@@ -66,7 +66,7 @@ bool JsonNode::containsKeyForType(const Json& inNode, const std::string& inKey)
 	{
 		if (!inNode.at(inKey).is_number_unsigned())
 		{
-			Diagnostic::errorAbort(fmt::format("{}: An invalid value was found in '{}'. Expected unsigned integer", CommandLineInputs::file(), inKey));
+			Diagnostic::error(fmt::format("{}: An invalid value was found in '{}'. Expected unsigned integer", CommandLineInputs::file(), inKey));
 			return false;
 		}
 	}
@@ -74,7 +74,7 @@ bool JsonNode::containsKeyForType(const Json& inNode, const std::string& inKey)
 	{
 		if (!inNode.at(inKey).is_number_float())
 		{
-			Diagnostic::errorAbort(fmt::format("{}: An invalid value was found in '{}'. Expected floating point", CommandLineInputs::file(), inKey));
+			Diagnostic::error(fmt::format("{}: An invalid value was found in '{}'. Expected floating point", CommandLineInputs::file(), inKey));
 			return false;
 		}
 	}
@@ -82,7 +82,7 @@ bool JsonNode::containsKeyForType(const Json& inNode, const std::string& inKey)
 	{
 		if (!inNode.at(inKey).is_number_integer())
 		{
-			Diagnostic::errorAbort(fmt::format("{}: An invalid value was found in '{}'. Expected integer", CommandLineInputs::file(), inKey));
+			Diagnostic::error(fmt::format("{}: An invalid value was found in '{}'. Expected integer", CommandLineInputs::file(), inKey));
 			return false;
 		}
 	}
