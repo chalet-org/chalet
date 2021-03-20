@@ -587,6 +587,7 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 		result &= Commands::setExecutableFlag(scriptPath, m_cleanOutput);
 
 		auto outScriptPath = fs::absolute(scriptPath).string();
+		LOG(outScriptPath);
 		StringList command;
 
 		if (m_state.tools.bashAvailable())

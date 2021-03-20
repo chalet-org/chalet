@@ -511,17 +511,6 @@ void ProjectConfiguration::addPostBuildScript(std::string& inValue)
 }
 
 /*****************************************************************************/
-bool ProjectConfiguration::alwaysRunPostBuildScripts() const noexcept
-{
-	return m_alwaysRunPostBuildScript;
-}
-
-void ProjectConfiguration::setAlwaysRunPostBuildScripts(const bool inValue) noexcept
-{
-	m_alwaysRunPostBuildScript = inValue;
-}
-
-/*****************************************************************************/
 const std::string& ProjectConfiguration::pch() const noexcept
 {
 	return m_pch;

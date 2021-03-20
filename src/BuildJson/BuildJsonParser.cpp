@@ -646,26 +646,10 @@ bool BuildJsonParser::parseProjectBeforeBuildScripts(ProjectConfiguration& outPr
 {
 	const std::string key = "preBuild";
 
-	if (!inNode.contains(key))
-		return true;
-
-	const Json& node = inNode.at(key);
-	if (node.is_object())
-	{
-		// required
-		if (StringList list; assignStringListAndValidate(list, node, "script"))
-			outProject.addPreBuildScripts(list);
-		else if (std::string val; assignStringAndValidate(val, node, "script"))
-			outProject.addPreBuildScript(val);
-		else
-			return false;
-	}
-	else if (StringList list; assignStringListFromConfig(list, inNode, key))
+	if (StringList list; assignStringListFromConfig(list, inNode, key))
 		outProject.addPreBuildScripts(list);
 	else if (std::string val; assignStringFromConfig(val, inNode, key))
 		outProject.addPreBuildScript(val);
-	else
-		return false;
 
 	return true;
 }
@@ -675,29 +659,10 @@ bool BuildJsonParser::parseProjectAfterBuildScripts(ProjectConfiguration& outPro
 {
 	const std::string key = "postBuild";
 
-	if (!inNode.contains(key))
-		return true;
-
-	const Json& node = inNode.at(key);
-	if (node.is_object())
-	{
-		// required
-		if (StringList list; assignStringListAndValidate(list, node, "script"))
-			outProject.addPostBuildScripts(list);
-		else if (std::string val; assignStringAndValidate(val, node, "script"))
-			outProject.addPostBuildScript(val);
-		else
-			return false;
-
-		if (bool val = false; JsonNode::assignFromKey(val, node, "alwaysRun"))
-			outProject.setAlwaysRunPostBuildScripts(val);
-	}
-	else if (StringList list; assignStringListFromConfig(list, inNode, key))
+	if (StringList list; assignStringListFromConfig(list, inNode, key))
 		outProject.addPostBuildScripts(list);
 	else if (std::string val; assignStringFromConfig(val, inNode, key))
 		outProject.addPostBuildScript(val);
-	else
-		return false;
 
 	return true;
 }

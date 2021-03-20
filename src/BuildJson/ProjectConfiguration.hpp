@@ -111,9 +111,6 @@ struct ProjectConfiguration
 	void addPostBuildScripts(StringList& inList);
 	void addPostBuildScript(std::string& inValue);
 
-	bool alwaysRunPostBuildScripts() const noexcept;
-	void setAlwaysRunPostBuildScripts(const bool inValue) noexcept;
-
 	const std::string& pch() const noexcept;
 	void setPch(const std::string& inValue) noexcept;
 	bool usesPch() const noexcept;
@@ -210,7 +207,6 @@ private:
 	ProjectKind m_kind = ProjectKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
 
-	bool m_alwaysRunPostBuildScript = false;
 	bool m_cmake = false;
 	bool m_cmakeRecheck = false;
 	bool m_dumpAssembly = false;

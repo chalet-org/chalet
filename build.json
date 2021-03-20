@@ -97,14 +97,8 @@
 				]
 			},
 			"runProject": true
-			/*"preBuild": {
-				"alwaysRun": true,
-				"script": "env/prebuild.sh"
-			},
-			"postBuild": {
-				"alwaysRun": true,
-				"script": "env/postbuild.sh"
-			}*/
+			/*"preBuild": "env/prebuild.sh",
+			"postBuild": "env/postbuild.sh"*/
 		},
 		{
 			"name": "tests_chalet",

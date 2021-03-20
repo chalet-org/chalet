@@ -931,34 +931,6 @@ Json Schema::getBuildJson()
 				"items": {
 					"type": "string"
 				}
-			},
-			{
-				"type": "object",
-				"additionalProperties": false,
-				"required": [
-					"script"
-				],
-				"properties": {
-					"script": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"uniqueItems": true,
-								"type": "array"
-							}
-						]
-					},
-					"alwaysRun": {
-						"type": "boolean",
-						"description": "Always run the script, regardless of whether the target is up to date.",
-						"default": false
-					}
-				}
 			}
 		]
 	})json"_ojson;
