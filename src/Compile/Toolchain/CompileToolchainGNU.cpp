@@ -20,6 +20,7 @@ CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const Projec
 	m_config(inConfig),
 	m_compilerType(m_config.compilerType())
 {
+	m_quotePaths = m_state.environment.strategy() != StrategyType::Native;
 }
 
 /*****************************************************************************/
@@ -314,11 +315,17 @@ void CompileToolchainGNU::addIncludes(StringList& inArgList)
 	const std::string prefix = "-I";
 	for (const auto& dir : m_project.includeDirs())
 	{
-		inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
+		if (m_quotePaths)
+			inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
+		else
+			inArgList.push_back(prefix + dir);
 	}
 	for (const auto& dir : m_project.locations())
 	{
-		inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
+		if (m_quotePaths)
+			inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
+		else
+			inArgList.push_back(prefix + dir);
 	}
 
 #if !defined(CHALET_WIN32)
@@ -342,7 +349,10 @@ void CompileToolchainGNU::addLibDirs(StringList& inArgList)
 	const std::string prefix = "-L";
 	for (const auto& dir : m_project.libDirs())
 	{
-		inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
+		if (m_quotePaths)
+			inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
+		else
+			inArgList.push_back(prefix + dir);
 	}
 
 	inArgList.push_back(prefix + m_state.paths.buildOutputDir());
@@ -440,7 +450,10 @@ void CompileToolchainGNU::addPchInclude(StringList& inArgList)
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
 
 		inArgList.push_back("-include");
-		inArgList.push_back(fmt::format("\"{}\"", objDirPch));
+		if (m_quotePaths)
+			inArgList.push_back(fmt::format("\"{}\"", objDirPch));
+		else
+			inArgList.push_back(objDirPch);
 	}
 }
 

@@ -5,7 +5,6 @@
 
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 
-#include "Compile/Strategy/NinjaGenerator.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
@@ -116,9 +115,9 @@ bool CompileStrategyNative::initialize()
 /*****************************************************************************/
 bool CompileStrategyNative::run()
 {
-	std::signal(SIGINT, signalHandler);
-	std::signal(SIGTERM, signalHandler);
-	std::signal(SIGABRT, signalHandler);
+	::signal(SIGINT, signalHandler);
+	::signal(SIGTERM, signalHandler);
+	::signal(SIGABRT, signalHandler);
 
 	s_shutdownHandler = [this]() {
 		this->m_threadPool.stop();

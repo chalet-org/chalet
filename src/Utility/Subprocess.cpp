@@ -71,9 +71,9 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 
 	if (!s_initialized)
 	{
-		std::signal(SIGINT, signalHandler);
-		std::signal(SIGTERM, signalHandler);
-		std::signal(SIGABRT, signalHandler);
+		::signal(SIGINT, signalHandler);
+		::signal(SIGTERM, signalHandler);
+		::signal(SIGABRT, signalHandler);
 		s_initialized = true;
 	}
 

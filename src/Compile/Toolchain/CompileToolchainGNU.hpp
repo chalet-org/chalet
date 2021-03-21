@@ -55,6 +55,8 @@ protected:
 	const CompilerConfig& m_config;
 
 	const CppCompilerType m_compilerType;
+
+	bool m_quotePaths = true;
 };
 }
 

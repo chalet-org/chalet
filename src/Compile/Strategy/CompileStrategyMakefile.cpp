@@ -19,6 +19,16 @@
 
 namespace chalet
 {
+/*****************************************************************************/
+namespace
+{
+/*****************************************************************************/
+void signalHandler(int inSignal)
+{
+	Subprocess::haltAllProcesses(inSignal);
+}
+}
+
 /***********************4******************************************************/
 CompileStrategyMakefile::CompileStrategyMakefile(BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain) :
 	m_state(inState),
@@ -101,6 +111,10 @@ bool CompileStrategyMakefile::initialize()
 /*****************************************************************************/
 bool CompileStrategyMakefile::run()
 {
+	::signal(SIGINT, signalHandler);
+	::signal(SIGTERM, signalHandler);
+	::signal(SIGABRT, signalHandler);
+
 	// Timer timer;
 	const bool clean = true;
 #if defined(CHALET_WIN32)

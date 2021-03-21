@@ -30,12 +30,12 @@ void SignalHandler::start(Callback inOnError)
 {
 	sOnErrorCallback = inOnError;
 
-	std::signal(SIGABRT, SignalHandler::handler);
-	std::signal(SIGFPE, SignalHandler::handler);
-	std::signal(SIGILL, SignalHandler::handler);
-	std::signal(SIGINT, SignalHandler::handler);
-	std::signal(SIGSEGV, SignalHandler::handler);
-	std::signal(SIGTERM, SignalHandler::handler);
+	::signal(SIGABRT, SignalHandler::handler);
+	::signal(SIGFPE, SignalHandler::handler);
+	::signal(SIGILL, SignalHandler::handler);
+	::signal(SIGINT, SignalHandler::handler);
+	::signal(SIGSEGV, SignalHandler::handler);
+	::signal(SIGTERM, SignalHandler::handler);
 }
 
 /*****************************************************************************/
