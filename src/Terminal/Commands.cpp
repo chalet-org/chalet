@@ -198,11 +198,11 @@ bool Commands::setExecutableFlag(const std::string& inPath, const bool inCleanOu
 #else
 	try
 	{
-		if (!inCleanOutput)
-			Output::print(Color::Blue, fmt::format("set executable permission: {}", inPath));
-
 		if (inPath.front() == '/')
 			return false;
+
+		if (!inCleanOutput)
+			Output::print(Color::Blue, fmt::format("set executable permission: {}", inPath));
 
 		fs::permissions(inPath,
 			fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
