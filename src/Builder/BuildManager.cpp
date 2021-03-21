@@ -596,7 +596,7 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 			return false;
 		}
 
-		result &= Commands::setExecutableFlag(outScriptPath, m_cleanOutput);
+		Commands::setExecutableFlag(outScriptPath, m_cleanOutput);
 
 		StringList command;
 
