@@ -299,7 +299,7 @@ bool Router::managePathVariables()
 
 	if (m_buildState != nullptr)
 	{
-#if defined(CHALET_LINUX)
+#if !defined(CHALET_WIN32)
 		// This is needed on linux to look for additional libraries at runtime
 		// TODO: This might actually vary between distros. Figure out if any of this is needed?
 
@@ -319,8 +319,8 @@ bool Router::managePathVariables()
 		// LD_LIBRARY_PATH - dynamic link paths
 		// LIBRARY_PATH - static link paths
 		// For now, just use the same paths for both
-		constexpr std::string_view kLdLibraryPath = "LD_LIBRARY_PATH";
-		constexpr std::string_view kLibraryPath = "LIBRARY_PATH";
+		static const char* kLdLibraryPath = "LD_LIBRARY_PATH";
+		static const char* kLibraryPath = "LIBRARY_PATH";
 
 		{
 			std::string libraryPath = String::join(outPaths, ':');

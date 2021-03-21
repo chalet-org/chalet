@@ -184,14 +184,6 @@ bool BuildManager::doBuild(const Route inRoute)
 
 	if (inRoute == Route::BuildRun)
 	{
-#ifdef CHALET_MACOS
-		auto& installNameTool = m_state.tools.installNameUtil();
-		for (auto& path : m_state.environment.path())
-		{
-			if (!Commands::subprocess({ installNameTool, "-add_rpath", fmt::format("@rpath/{}", fs::absolute(path).string()), m_state.paths.getTargetFilename(*m_project) }, m_cleanOutput))
-				return false;
-		}
-#endif
 		if (!copyRunDependencies())
 		{
 			Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", m_project->name()));
