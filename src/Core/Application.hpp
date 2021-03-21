@@ -7,6 +7,7 @@
 #define CHALET_APPLICATION_HPP
 
 #include "State/CommandLineInputs.hpp"
+#include "Terminal/OSTerminal.hpp"
 
 namespace chalet
 {
@@ -27,14 +28,14 @@ public:
 
 private:
 	bool initialize();
-	void configureOsTerminal();
 	std::string getMakeExecutable(const std::string& inCompilerPath);
 
 	int onExit(const Status inStatus);
-	// void cleanup();
+	void cleanup();
 
 	void testSignalHandling();
 
+	OSTerminal m_osTerminal;
 	CommandLineInputs m_inputs;
 
 	bool m_initialized = false;

@@ -28,7 +28,7 @@ struct Diagnostic
 
 	static void errorAbort(const std::string& inMessage, const std::string& inTitle = "Critical Error", const bool inThrow = true);
 
-	static void customAssertion(const std::string_view& inExpression, const std::string_view& inMessage, const std::string_view& inFile, const uint inLineNumber);
+	static void customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber);
 	static bool assertionFailure() noexcept;
 
 private:

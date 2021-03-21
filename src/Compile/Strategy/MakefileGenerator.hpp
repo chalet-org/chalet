@@ -30,7 +30,7 @@ private:
 	std::string getAsmRecipe();
 	std::string getMakePchRecipe();
 	std::string getPchRecipe();
-	std::string getRcRecipe();
+	std::string getRcRecipe(const std::string& ext);
 	std::string getCppRecipe(const std::string& ext);
 	std::string getObjcRecipe(const std::string& ext);
 	std::string getTargetRecipe();
@@ -38,12 +38,12 @@ private:
 	std::string getPchOrderOnlyPreReq();
 	std::string getLinkerPreReqs();
 
-	std::string_view getQuietFlag();
+	std::string getQuietFlag();
 	std::string getMoveCommand(std::string inInput, std::string inOutput);
 	std::string getPrinter(const std::string& inPrint = "", const bool inNewLine = false);
 
-	std::string_view getColorBlue();
-	std::string_view getColorPurple();
+	std::string getColorBlue();
+	std::string getColorPurple();
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

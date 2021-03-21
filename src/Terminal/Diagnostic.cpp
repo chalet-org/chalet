@@ -97,7 +97,7 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 }
 
 /*****************************************************************************/
-void Diagnostic::customAssertion(const std::string_view& inExpression, const std::string_view& inMessage, const std::string_view& inFile, const uint inLineNumber)
+void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber)
 {
 	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
 	const auto boldBlack = Output::getAnsiStyle(Color::Black, true);

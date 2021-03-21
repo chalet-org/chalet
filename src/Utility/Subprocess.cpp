@@ -8,6 +8,7 @@
 #include <array>
 
 #include "Libraries/SubprocessApi.hpp"
+#include "Terminal/OSTerminal.hpp"
 
 namespace chalet
 {
@@ -115,6 +116,8 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 	process.close();
 
 	// std::cout << "Exit code of last subprocess: " << process.returncode << std::endl;
+
+	OSTerminal::reset();
 
 	return process.returncode;
 }

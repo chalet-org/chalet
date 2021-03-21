@@ -17,7 +17,7 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
-std::string_view unicodeRightwardsTripleArrow()
+std::string unicodeRightwardsTripleArrow()
 {
 #if defined(CHALET_WIN32)
 	return Environment::isBash() ? "\\xE2\\x87\\x9B" : u8"\xE2\x87\x9B";
@@ -51,17 +51,19 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 
 	std::string rcRecipe;
 #if defined(CHALET_WIN32)
-	for (auto ext : String::filterIf({ "rc", "RC" }, inOutputs.fileExtensions))
-		rcRecipe = getRcRecipe();
+	for (auto& ext : String::filterIf({ "rc", "RC" }, inOutputs.fileExtensions))
+	{
+		rcRecipe += getRcRecipe(ext);
+	}
 #endif
 
 	std::string fileRecipes;
-	for (auto ext : String::filterIf({ "cpp", "CPP", "cc", "CC", "cxx", "CXX", "c++", "C++", "c", "C" }, inOutputs.fileExtensions))
+	for (auto& ext : String::filterIf({ "cpp", "CPP", "cc", "CC", "cxx", "CXX", "c++", "C++", "c", "C" }, inOutputs.fileExtensions))
 	{
 		fileRecipes += getCppRecipe(ext);
 	}
 
-	for (auto ext : String::filterIf({ "m", "M", "mm" }, inOutputs.fileExtensions))
+	for (auto& ext : String::filterIf({ "m", "M", "mm" }, inOutputs.fileExtensions))
 	{
 		fileRecipes += getObjcRecipe(ext);
 	}
@@ -293,7 +295,7 @@ std::string MakefileGenerator::getPchRecipe()
 }
 
 /*****************************************************************************/
-std::string MakefileGenerator::getRcRecipe()
+std::string MakefileGenerator::getRcRecipe(const std::string& ext)
 {
 	std::string ret;
 
@@ -303,7 +305,8 @@ std::string MakefileGenerator::getRcRecipe()
 	const auto compileEcho = getCompileEchoSources();
 	const auto pchPreReq = getPchOrderOnlyPreReq();
 
-	const auto dependency = fmt::format("{depDir}/$*.rc",
+	const auto dependency = fmt::format("{depDir}/$*.{ext}",
+		FMT_ARG(ext),
 		FMT_ARG(depDir));
 	const auto moveDependencies = getMoveCommand(dependency + ".Td", dependency + ".d");
 
@@ -314,12 +317,13 @@ std::string MakefileGenerator::getRcRecipe()
 	}
 
 	ret = fmt::format(R"makefile(
-{objDir}/%.rc.res: %.rc
-{objDir}/%.rc.res: %.rc {depDir}/%.rc.d{pchPreReq}
+{objDir}/%.{ext}.res: %.{ext}
+{objDir}/%.{ext}.res: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{rcCompile}
 )makefile",
 		FMT_ARG(objDir),
+		FMT_ARG(ext),
 		FMT_ARG(depDir),
 		FMT_ARG(pchPreReq),
 		FMT_ARG(compileEcho),
@@ -475,7 +479,7 @@ std::string MakefileGenerator::getLinkerPreReqs()
 }
 
 /*****************************************************************************/
-std::string_view MakefileGenerator::getQuietFlag()
+std::string MakefileGenerator::getQuietFlag()
 {
 	return m_cleanOutput ? "@" : "";
 }
@@ -515,7 +519,7 @@ std::string MakefileGenerator::getPrinter(const std::string& inPrint, const bool
 }
 
 /*****************************************************************************/
-std::string_view MakefileGenerator::getColorBlue()
+std::string MakefileGenerator::getColorBlue()
 {
 #if defined(CHALET_WIN32)
 	return Environment::isBash() ? "\\033[0;34m" : "\x1b[0;34m";
@@ -526,7 +530,7 @@ std::string_view MakefileGenerator::getColorBlue()
 }
 
 /*****************************************************************************/
-std::string_view MakefileGenerator::getColorPurple()
+std::string MakefileGenerator::getColorPurple()
 {
 #if defined(CHALET_WIN32)
 	return Environment::isBash() ? "\\033[0;35m" : "\x1b[0;35m";

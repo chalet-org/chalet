@@ -11,7 +11,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-bool String::contains(const std::string_view& inFind, const std::string& inString)
+bool String::contains(const std::string_view inFind, const std::string& inString)
 {
 	return inString.find(inFind) != std::string::npos;
 }
@@ -23,7 +23,7 @@ bool String::contains(const char inFind, const std::string& inString)
 }
 
 /*****************************************************************************/
-bool String::startsWith(const std::string_view& inStart, const std::string& inString)
+bool String::startsWith(const std::string_view inStart, const std::string& inString)
 {
 	if (inString.size() < inStart.size())
 		return false;
@@ -41,7 +41,7 @@ bool String::startsWith(const char inStart, const std::string& inString)
 }
 
 /*****************************************************************************/
-bool String::endsWith(const std::string_view& inEnd, const std::string& inString)
+bool String::endsWith(const std::string_view inEnd, const std::string& inString)
 {
 	if (inEnd.size() > inString.size())
 		return false;
@@ -71,7 +71,7 @@ std::string String::fromBoolean(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-void String::replaceAll(std::string& outString, const std::string_view& inFrom, const std::string_view& inTo)
+void String::replaceAll(std::string& outString, const std::string_view inFrom, const std::string_view inTo)
 {
 	if (inFrom.empty())
 		return;
@@ -131,7 +131,7 @@ std::string String::join(const StringList& inList, const char inSeparator)
 }
 
 /*****************************************************************************/
-std::string String::join(const StringList& inList, const std::string_view& inSeparator)
+std::string String::join(const StringList& inList, const std::string_view inSeparator)
 {
 	std::string ret;
 
@@ -181,7 +181,7 @@ StringList String::split(std::string inString, const char inSeparator)
 }
 
 /*****************************************************************************/
-StringList String::split(std::string inString, const std::string_view& inSeparator)
+StringList String::split(std::string inString, const std::string_view inSeparator)
 {
 	StringList ret;
 
@@ -309,7 +309,7 @@ std::string String::getPathFolderBaseName(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool String::isWrapped(const std::string& inString, const std::string_view& inStart, const std::string_view& inEnd)
+bool String::isWrapped(const std::string& inString, const std::string_view inStart, const std::string_view inEnd)
 {
 	if (!String::startsWith(inStart, inString))
 		return false;

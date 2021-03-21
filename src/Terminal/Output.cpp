@@ -59,56 +59,47 @@ std::string getCleanGitPath(const std::string inPath)
 
 	return ret;
 }
+
+/*****************************************************************************/
+char getEscapeChar()
+{
+	if (Environment::isBash())
+		return '\033';
+	else
+		return '\x1b';
+}
 }
 
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 {
+	const auto esc = getEscapeChar();
 	const char style = inBold ? '1' : '0';
 	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
 
-	if (Environment::isBash())
-	{
-		return fmt::format("\033[{style};{color}m", FMT_ARG(style), FMT_ARG(color));
-	}
-	else
-	{
-		return fmt::format("\x1b[{style};{color}m", FMT_ARG(style), FMT_ARG(color));
-	}
+	return fmt::format("{esc}[{style};{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
 }
 
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
 {
+	const auto esc = getEscapeChar();
 	const char style = inBold ? '1' : '0';
 	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
 	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
 
-	if (Environment::isBash())
-	{
-		return fmt::format("\033[{style};{fgColor};{bgColor}m", FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
-	}
-	else
-	{
-		return fmt::format("\x1b[{style};{fgColor};{bgColor}m", FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
-	}
+	return fmt::format("{esc}[{style};{fgColor};{bgColor}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
 }
 
 /*****************************************************************************/
-std::string_view Output::getAnsiReset()
+std::string Output::getAnsiReset()
 {
-	if (Environment::isBash())
-	{
-		return "\033[0m";
-	}
-	else
-	{
-		return "\x1b[0m";
-	}
+	const auto esc = getEscapeChar();
+	return fmt::format("{esc}[0m", FMT_ARG(esc));
 }
 
 /*****************************************************************************/
-void Output::displayStyledSymbol(const Color inColor, const std::string_view& inSymbol, const std::string& inMessage, const bool inBold)
+void Output::displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage, const bool inBold)
 {
 	const auto color = getAnsiStyle(inColor, inBold);
 	const auto reset = getAnsiReset();

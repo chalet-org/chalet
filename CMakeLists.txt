@@ -87,7 +87,7 @@ if(MSVC)
 
 	target_compile_options(${TARGET_NAME}
 		PRIVATE
-			/W4 /WX
+			/W4 /WX /utf-8
 	)
 else()
 	target_compile_options(${TARGET_NAME}
