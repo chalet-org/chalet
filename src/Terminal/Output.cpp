@@ -225,7 +225,7 @@ void Output::msgBuildFail()
 {
 	constexpr auto symbol = Unicode::heavyBallotX();
 	displayStyledSymbol(Color::Red, symbol, "Failed!");
-	displayStyledSymbol(Color::Red, " ", "Review the compile errors above.");
+	displayStyledSymbol(Color::Red, " ", "Review the errors above.");
 	// exit 1
 }
 

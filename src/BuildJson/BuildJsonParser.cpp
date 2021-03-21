@@ -1039,9 +1039,9 @@ bool BuildJsonParser::assignStringFromConfig(std::string& outVariable, const Jso
 		res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform), inDefault);
 
 		if (m_state.configuration.debugSymbols())
-			res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, platform), inDefault);
+			res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, notPlatform), inDefault);
 		else
-			res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, platform), inDefault);
+			res |= assignStringAndValidate(outVariable, inNode, fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, notPlatform), inDefault);
 	}
 
 	return res;
