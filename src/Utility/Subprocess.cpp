@@ -31,6 +31,9 @@ void removeProcess(const sp::Popen& inProcess)
 			return;
 		}
 	}
+
+	if (s_procesess.empty())
+		OSTerminal::reset();
 }
 
 /*****************************************************************************/
@@ -49,6 +52,8 @@ void signalHandler(int inSignal)
 
 		it = s_procesess.erase(it);
 	}
+
+	OSTerminal::reset();
 }
 }
 
@@ -116,8 +121,6 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 	process.close();
 
 	// std::cout << "Exit code of last subprocess: " << process.returncode << std::endl;
-
-	OSTerminal::reset();
 
 	return process.returncode;
 }
