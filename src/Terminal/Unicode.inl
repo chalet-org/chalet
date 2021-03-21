@@ -8,50 +8,55 @@
 namespace chalet
 {
 /*****************************************************************************/
-constexpr std::string_view Unicode::dot()
+inline const char* Unicode::dot()
 {
-	return u8"\xE2\xAC\xA4";
+	return u8"\u2B24";
 }
 
 /*****************************************************************************/
-constexpr std::string_view Unicode::diamond()
+inline const char* Unicode::diamond()
 {
-	return u8"\xE2\x99\xA6";
+	return u8"\u2666";
 }
 
 /*****************************************************************************/
-constexpr std::string_view Unicode::heavyCheckmark()
+inline const char* Unicode::heavyCheckmark()
 {
-	return u8"\xE2\x9C\x94";
+	return u8"\u2714";
 }
 
 /*****************************************************************************/
-constexpr std::string_view Unicode::heavyBallotX()
+inline const char* Unicode::heavyBallotX()
 {
-	return u8"\xE2\x9C\x98";
+	return u8"\u2718";
 }
 
-constexpr std::string_view Unicode::boldSaltire()
+inline const char* Unicode::boldSaltire()
 {
 	return u8"\xF0\x9F\x9E\xAB";
 }
 
 /*****************************************************************************/
-constexpr std::string_view Unicode::circledSaltire()
+inline const char* Unicode::circledSaltire()
 {
-	return u8"\xE2\xAD\x99";
+	return u8"\u2B59";
 }
 
 /*****************************************************************************/
-constexpr std::string_view Unicode::heavyCurvedDownRightArrow()
+inline const char* Unicode::heavyCurvedDownRightArrow()
 {
-	return u8"\xE2\x9E\xA5";
+	return u8"\u27A5";
 }
 
 /*****************************************************************************/
-constexpr std::string_view Unicode::heavyCurvedUpRightArrow()
+inline const char* Unicode::heavyCurvedUpRightArrow()
 {
-	return u8"\xE2\x9E\xA6";
+	return u8"\u27A6";
+}
+
+inline const char* Unicode::rightwardsTripleArrow()
+{
+	return u8"\u21DB";
 }
 
 }

@@ -22,6 +22,10 @@
 
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
+
+	#ifdef CHALET_MSVC
+		#pragma execution_character_set("utf-8")
+	#endif
 #endif
 
 #endif // CHALET_WINDOWS_API_HPP

@@ -10,6 +10,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Subprocess.hpp"
 
@@ -174,7 +175,7 @@ bool CompileStrategyNative::run()
 
 	Output::lineBreak();
 
-	if (!printCommand(m_linker.output, m_linker.command, Color::Blue, u8"\xE2\x87\x9B", cleanOutput))
+	if (!printCommand(m_linker.output, m_linker.command, Color::Blue, Unicode::rightwardsTripleArrow(), cleanOutput))
 		return false;
 
 	if (!executeCommand(m_linker.command, m_linker.renameFrom, m_linker.renameTo, m_generateDependencies))

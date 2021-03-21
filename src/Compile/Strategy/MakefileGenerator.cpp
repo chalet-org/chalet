@@ -9,6 +9,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -17,13 +18,14 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
-std::string unicodeRightwardsTripleArrow()
+const char* unicodeRightwardsTripleArrow()
 {
 #if defined(CHALET_WIN32)
-	return Environment::isBash() ? "\\xE2\\x87\\x9B" : u8"\xE2\x87\x9B";
-#else
-	return u8"\xE2\x87\x9B";
+	if (Environment::isBash())
+		return "\\xE2\\x87\\x9B";
 #endif
+
+	return Unicode::rightwardsTripleArrow();
 }
 }
 /*****************************************************************************/
