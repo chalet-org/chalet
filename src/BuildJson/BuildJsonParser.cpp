@@ -1069,7 +1069,7 @@ bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json
 
 	for (auto& notPlatform : m_state.notPlatforms())
 	{
-		res |= assignStringListAndValidate(outList, inNode, fmt::format("{}!{}", inKey, notPlatform));
+		res |= assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
 
 		if (m_state.configuration.debugSymbols())
 			res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, notPlatform));
