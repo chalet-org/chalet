@@ -35,7 +35,7 @@ MakefileGenerator::MakefileGenerator(const BuildState& inState, const ProjectCon
 	m_toolchain(inToolchain)
 {
 	m_cleanOutput = m_state.environment.cleanOutput();
-	m_generateDependencies = true;
+	m_generateDependencies = inToolchain->type() != ToolchainType::MSVC;
 }
 
 /*****************************************************************************/
@@ -208,7 +208,7 @@ std::string MakefileGenerator::getAsmRecipe()
 		const auto quietFlag = getQuietFlag();
 		const auto& asmDir = m_state.paths.asmDir();
 		const auto& objDir = m_state.paths.objDir();
-		const auto asmCompile = m_toolchain->getAsmGenerateCommand("'$<'", "'$@'");
+		const auto asmCompile = m_state.tools.getAsmGenerateCommand("'$<'", "'$@'");
 		const auto compileEcho = getCompileEchoAsm();
 
 		ret = fmt::format(R"makefile(

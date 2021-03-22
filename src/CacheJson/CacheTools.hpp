@@ -98,6 +98,8 @@ struct CacheTools
 	void setXcrun(const std::string& inValue) noexcept;
 
 	// Commands
+	std::string getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) const;
+
 	bool installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput = true) const;
 
 	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath, const bool inCleanOutput = true) const;

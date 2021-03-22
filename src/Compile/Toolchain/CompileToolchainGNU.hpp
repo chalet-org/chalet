@@ -6,10 +6,10 @@
 #ifndef CHALET_COMPILE_TOOLCHAIN_GNU_HPP
 #define CHALET_COMPILE_TOOLCHAIN_GNU_HPP
 
-#include "Compile/CompilerConfig.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
 #include "BuildJson/ProjectConfiguration.hpp"
+#include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
 
 namespace chalet
@@ -20,7 +20,6 @@ struct CompileToolchainGNU : ICompileToolchain
 
 	virtual ToolchainType type() const override;
 
-	virtual std::string getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) override;
 	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
 	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
 	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;

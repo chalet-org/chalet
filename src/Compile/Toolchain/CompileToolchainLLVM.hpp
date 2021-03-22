@@ -6,10 +6,10 @@
 #ifndef CHALET_COMPILE_TOOLCHAIN_LLVM_HPP
 #define CHALET_COMPILE_TOOLCHAIN_LLVM_HPP
 
-#include "Compile/CompilerConfig.hpp"
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
 
 #include "BuildJson/ProjectConfiguration.hpp"
+#include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
 
 namespace chalet

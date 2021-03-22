@@ -30,23 +30,6 @@ ToolchainType CompileToolchainGNU::type() const
 }
 
 /*****************************************************************************/
-std::string CompileToolchainGNU::getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile)
-{
-	// TODO: Customizations for these commands
-#if defined(CHALET_MACOS)
-	const auto& otool = m_state.tools.otool();
-	return fmt::format("{otool} -tvV {inputFile} | c++filt > {outputFile}",
-		FMT_ARG(otool),
-		FMT_ARG(inputFile),
-		FMT_ARG(outputFile));
-#else
-	return fmt::format("objdump -d -C -Mintel {inputFile} > {outputFile}",
-		FMT_ARG(inputFile),
-		FMT_ARG(outputFile));
-#endif
-}
-
-/*****************************************************************************/
 StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
 {
 	StringList ret;

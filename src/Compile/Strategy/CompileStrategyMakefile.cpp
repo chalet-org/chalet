@@ -121,6 +121,12 @@ bool CompileStrategyMakefile::run()
 	std::cout << Output::getAnsiStyle(Color::Blue);
 #endif
 
+	if (m_toolchain->type() == ToolchainType::MSVC)
+	{
+		LOG("Remove me when CompileToolchainMSVC is done!");
+		return false;
+	}
+
 	// Note: If using subprocess, there's some weird color issues that show on MinGW & bash
 
 	m_makeCmd.push_back("makebuild");

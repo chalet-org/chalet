@@ -381,7 +381,7 @@ std::string CompileStrategyNative::getAsmGenerate(const std::string& object, con
 {
 	std::string ret;
 
-	ret = m_toolchain->getAsmGenerateCommand(object, target);
+	ret = m_state.tools.getAsmGenerateCommand(object, target);
 
 	return ret;
 }

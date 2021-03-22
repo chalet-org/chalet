@@ -14,6 +14,7 @@
 
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
 #include "Compile/Toolchain/CompileToolchainLLVM.hpp"
+#include "Compile/Toolchain/CompileToolchainMSVC.hpp"
 
 namespace chalet
 {
@@ -45,6 +46,8 @@ namespace chalet
 			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
 		case ToolchainType::LLVM:
 			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
+		case ToolchainType::MSVC:
+			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
 		default:
 			break;
 	}
@@ -68,6 +71,7 @@ namespace chalet
 		case CppCompilerType::Gcc:
 			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
 		case CppCompilerType::VisualStudio:
+			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
 		case CppCompilerType::Unknown:
 		default:
 			break;

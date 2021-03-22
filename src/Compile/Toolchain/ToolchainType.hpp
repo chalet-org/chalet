@@ -12,6 +12,7 @@ enum class ToolchainType : ushort
 {
 	GNU,
 	LLVM,
+	MSVC
 };
 
 enum class CppCompilerType : ushort

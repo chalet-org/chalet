@@ -83,11 +83,13 @@ bool CompilerConfig::testCompilerMacros()
 	if (exec.empty())
 		return false;
 
+#if defined(CHALET_WIN32)
 	if (String::endsWith("/cl.exe", exec))
 	{
 		m_compilerType = CppCompilerType::VisualStudio;
 		return true;
 	}
+#endif
 
 	const std::string macroResult = Commands::testCompilerFlags(exec);
 	// String::replaceAll(macroResult, '\n', ' ');
