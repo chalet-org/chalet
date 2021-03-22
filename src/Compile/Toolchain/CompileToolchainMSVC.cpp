@@ -15,6 +15,7 @@ CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const Proj
 	m_compilerType(m_config.compilerType())
 {
 	m_quotePaths = m_state.environment.strategy() != StrategyType::Native; // might not be needed
+	UNUSED(m_project);
 }
 
 /*****************************************************************************/
