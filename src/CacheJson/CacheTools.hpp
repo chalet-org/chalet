@@ -54,6 +54,7 @@ struct CacheTools
 	void setMake(const std::string& inValue) noexcept;
 	uint makeVersionMajor() const noexcept;
 	uint makeVersionMinor() const noexcept;
+	bool isNMake() noexcept;
 
 	const std::string& ninja() const noexcept;
 	void setNinja(const std::string& inValue) noexcept;
@@ -154,6 +155,7 @@ private:
 
 	bool m_brewAvailable = false;
 	bool m_bashAvailable = false;
+	bool m_makeIsNMake = false;
 };
 }
 

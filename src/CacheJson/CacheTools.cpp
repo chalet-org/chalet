@@ -187,6 +187,8 @@ void CacheTools::setMake(const std::string& inValue) noexcept
 			m_makeVersionMajor = std::stoi(vals[0]);
 			m_makeVersionMinor = std::stoi(vals[1]);
 		}
+
+		m_makeIsNMake = String::endsWith("nmake.exe", m_make);
 	}
 }
 
@@ -197,6 +199,11 @@ uint CacheTools::makeVersionMajor() const noexcept
 uint CacheTools::makeVersionMinor() const noexcept
 {
 	return m_makeVersionMinor;
+}
+
+bool CacheTools::isNMake() noexcept
+{
+	return m_makeIsNMake;
 }
 
 /*****************************************************************************/

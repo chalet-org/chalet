@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MAKEFILE_GENERATOR_HPP
-#define CHALET_MAKEFILE_GENERATOR_HPP
+#ifndef CHALET_MAKEFILE_GENERATOR_NMAKE_HPP
+#define CHALET_MAKEFILE_GENERATOR_NMAKE_HPP
 
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/BuildState.hpp"
@@ -12,9 +12,10 @@
 
 namespace chalet
 {
-struct MakefileGenerator
+struct MakefileGeneratorNMake
 {
-	explicit MakefileGenerator(const BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain);
+#if defined(CHALET_WIN32)
+	explicit MakefileGeneratorNMake(const BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain);
 
 	std::string getContents(const SourceOutputs& inOutputs);
 
@@ -30,7 +31,6 @@ private:
 	std::string getPchRecipe();
 	std::string getRcRecipe(const std::string& ext);
 	std::string getCppRecipe(const std::string& ext);
-	std::string getObjcRecipe(const std::string& ext);
 	std::string getTargetRecipe();
 
 	std::string getPchOrderOnlyPreReq();
@@ -38,7 +38,7 @@ private:
 
 	std::string getQuietFlag();
 	std::string getMoveCommand(std::string inInput, std::string inOutput);
-	std::string getPrinter(const std::string& inPrint = "", const bool inNewLine = false);
+	std::string getPrinter(const std::string& inPrint = "");
 
 	std::string getColorBlue();
 	std::string getColorPurple();
@@ -49,7 +49,10 @@ private:
 
 	bool m_cleanOutput = false;
 	bool m_generateDependencies = false;
+#else
+	MakefileGeneratorNMake();
+#endif
 };
 }
 
-#endif // CHALET_MAKEFILE_GENERATOR_HPP
+#endif // CHALET_MAKEFILE_GENERATOR_NMAKE_HPP

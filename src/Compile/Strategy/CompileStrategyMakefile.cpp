@@ -6,6 +6,7 @@
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 
 #include "Compile/Strategy/MakefileGenerator.hpp"
+#include "Compile/Strategy/MakefileGeneratorNMake.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -71,9 +72,21 @@ bool CompileStrategyMakefile::createCache(const SourceOutputs& inOutputs)
 
 	if (existingHash != hash || !cacheExists || appBuildChanged)
 	{
-		MakefileGenerator generator(m_state, m_project, m_toolchain);
-		std::ofstream(m_cacheFile) << generator.getContents(inOutputs)
-								   << std::endl;
+	#if defined(CHALET_WIN32)
+		const bool isNMake = m_state.tools.isNMake();
+		if (isNMake)
+		{
+			MakefileGeneratorNMake generator(m_state, m_project, m_toolchain);
+			std::ofstream(m_cacheFile) << generator.getContents(inOutputs)
+									   << std::endl;
+		}
+		else
+	#endif
+		{
+			MakefileGenerator generator(m_state, m_project, m_toolchain);
+			std::ofstream(m_cacheFile) << generator.getContents(inOutputs)
+									   << std::endl;
+		}
 
 		buildCache[key] = String::getPathFilename(m_cacheFile);
 		m_state.cache.setDirty(true);
@@ -89,21 +102,35 @@ bool CompileStrategyMakefile::initialize()
 	const auto& makeExec = m_state.tools.make();
 	const auto maxJobs = m_state.environment.maxJobs();
 
-	std::string jobs;
-	if (maxJobs > 0)
-		jobs = fmt::format("-j{}", maxJobs);
-
-	m_makeCmd.clear();
-	m_makeCmd.push_back(makeExec);
-	if (!jobs.empty())
+#if defined(CHALET_WIN32)
+	const bool isNMake = m_state.tools.isNMake();
+	if (isNMake)
 	{
-		m_makeCmd.push_back(jobs);
+		m_makeCmd.clear();
+		m_makeCmd.push_back(makeExec);
+		m_makeCmd.push_back("/NOLOGO");
+		m_makeCmd.push_back("/F");
+		m_makeCmd.push_back(m_cacheFile);
 	}
-	m_makeCmd.push_back("-C");
-	m_makeCmd.push_back(".");
-	m_makeCmd.push_back("-f");
-	m_makeCmd.push_back(m_cacheFile);
-	m_makeCmd.push_back("--no-print-directory");
+	else
+#endif
+	{
+		std::string jobs;
+		if (maxJobs > 0)
+			jobs = fmt::format("-j{}", maxJobs);
+
+		m_makeCmd.clear();
+		m_makeCmd.push_back(makeExec);
+		if (!jobs.empty())
+		{
+			m_makeCmd.push_back(jobs);
+		}
+		m_makeCmd.push_back("-C");
+		m_makeCmd.push_back(".");
+		m_makeCmd.push_back("-f");
+		m_makeCmd.push_back(m_cacheFile);
+		m_makeCmd.push_back("--no-print-directory");
+	}
 
 	return true;
 }
@@ -121,11 +148,11 @@ bool CompileStrategyMakefile::run()
 	std::cout << Output::getAnsiStyle(Color::Blue);
 #endif
 
-	if (m_toolchain->type() == ToolchainType::MSVC)
+	/*if (m_toolchain->type() == ToolchainType::MSVC)
 	{
 		LOG("Remove me when CompileToolchainMSVC is done!");
 		return false;
-	}
+	}*/
 
 	// Note: If using subprocess, there's some weird color issues that show on MinGW & bash
 
