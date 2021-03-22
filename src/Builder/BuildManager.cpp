@@ -140,7 +140,10 @@ bool BuildManager::doBuild(const Route inRoute)
 	chalet_assert(m_project != nullptr, "");
 
 	//
-	auto outputs = m_state.paths.getOutputs(*m_project);
+	auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+	auto compilerType = compilerConfig.compilerType();
+	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
+	auto outputs = m_state.paths.getOutputs(*m_project, objExtension);
 
 	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
 	{
@@ -162,8 +165,6 @@ bool BuildManager::doBuild(const Route inRoute)
 	}
 
 	{
-		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-		auto compilerType = compilerConfig.compilerType();
 		auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, *m_project, compilerConfig);
 
 		auto strategyType = m_state.environment.strategy();

@@ -34,7 +34,6 @@ private:
 	std::string getTargetRecipe();
 
 	std::string getPchOrderOnlyPreReq();
-	std::string getLinkerPreReqs();
 
 	std::string getQuietFlag();
 	std::string getMoveCommand(std::string inInput, std::string inOutput);

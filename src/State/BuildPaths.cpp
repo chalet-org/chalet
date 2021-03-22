@@ -104,7 +104,7 @@ const std::string& BuildPaths::asmDir() const noexcept
 }
 
 /*****************************************************************************/
-SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject) const
+SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, const bool inObjExtension) const
 {
 	SourceOutputs ret;
 
@@ -119,7 +119,11 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject) cons
 		List::addIfDoesNotExist(ret.fileExtensions, std::move(ext));
 	}
 
-	ret.objectList = getObjectFilesList(files);
+	if (inObjExtension)
+		ret.objectList = getObjectFilesListObj(files);
+	else
+		ret.objectList = getObjectFilesList(files);
+
 	StringList objSubDirs = getOutputDirectoryList(directories, m_objDir);
 
 	ret.dependencyList = getDependencyFilesList(files);
@@ -128,7 +132,11 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject) cons
 	StringList asmSubDirs;
 	if (dumpAssembly)
 	{
-		ret.assemblyList = getAssemblyFilesList(files);
+		if (inObjExtension)
+			ret.assemblyList = getAssemblyFilesListObj(files);
+		else
+			ret.assemblyList = getAssemblyFilesList(files);
+
 		asmSubDirs = getOutputDirectoryList(directories, m_asmDir);
 
 		ret.directories.reserve(4 + objSubDirs.size() + depSubDirs.size() + asmSubDirs.size());
@@ -265,6 +273,28 @@ StringList BuildPaths::getObjectFilesList(const SourceGroup& inFiles) const
 }
 
 /*****************************************************************************/
+StringList BuildPaths::getObjectFilesListObj(const SourceGroup& inFiles) const
+{
+	StringList ret = inFiles.list;
+	std::for_each(ret.begin(), ret.end(), [this](std::string& str) {
+		if (!String::endsWith(".rc", str))
+		{
+			str = fmt::format("{}/{}.obj", m_objDir, str);
+		}
+		else
+		{
+#if defined(CHALET_WIN32)
+			str = fmt::format("{}/{}.res", m_objDir, str);
+#else
+			str = "";
+#endif
+		}
+	});
+
+	return ret;
+}
+
+/*****************************************************************************/
 StringList BuildPaths::getDependencyFilesList(const SourceGroup& inFiles) const
 {
 	StringList ret = inFiles.list;
@@ -285,6 +315,24 @@ StringList BuildPaths::getAssemblyFilesList(const SourceGroup& inFiles) const
 		if (!String::endsWith(".rc", str))
 		{
 			str = fmt::format("{}/{}.o.asm", m_asmDir, str);
+		}
+		else
+		{
+			str = "";
+		}
+	});
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList BuildPaths::getAssemblyFilesListObj(const SourceGroup& inFiles) const
+{
+	StringList ret = inFiles.list;
+	std::for_each(ret.begin(), ret.end(), [this](std::string& str) {
+		if (!String::endsWith(".rc", str))
+		{
+			str = fmt::format("{}/{}.obj.asm", m_asmDir, str);
 		}
 		else
 		{

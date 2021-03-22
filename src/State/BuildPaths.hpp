@@ -28,7 +28,7 @@ struct BuildPaths
 	std::string getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inIsClang) const;
 	std::string getPrecompiledHeaderInclude(const ProjectConfiguration& inProject) const;
 
-	SourceOutputs getOutputs(const ProjectConfiguration& inProject) const;
+	SourceOutputs getOutputs(const ProjectConfiguration& inProject, const bool inObjExtension = false) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const bool inDumpAssembly) const;
 
 private:
@@ -45,8 +45,10 @@ private:
 	};
 
 	StringList getObjectFilesList(const SourceGroup& inFiles) const;
+	StringList getObjectFilesListObj(const SourceGroup& inFiles) const;
 	StringList getDependencyFilesList(const SourceGroup& inFiles) const;
 	StringList getAssemblyFilesList(const SourceGroup& inFiles) const;
+	StringList getAssemblyFilesListObj(const SourceGroup& inFiles) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
 	std::string getPrecompiledHeaderDirectory(const ProjectConfiguration& inProject) const;
 	SourceGroup getFiles(const ProjectConfiguration& inProject) const;
