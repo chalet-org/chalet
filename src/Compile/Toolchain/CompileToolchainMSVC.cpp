@@ -5,6 +5,8 @@
 
 #include "Compile/Toolchain/CompileToolchainMSVC.hpp"
 
+// https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically?view=msvc-160
+
 namespace chalet
 {
 /*****************************************************************************/

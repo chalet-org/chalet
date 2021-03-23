@@ -21,22 +21,19 @@ struct MakefileGeneratorNMake
 
 private:
 	//
-	std::string getCompileEchoAsm();
-	std::string getCompileEchoSources();
-	std::string getCompileEchoLinker();
+	std::string getCompileEchoAsm(const std::string& file);
+	std::string getCompileEchoSources(const std::string& file);
+	std::string getCompileEchoLinker(const std::string& file);
 
-	std::string getDumpAsmRecipe();
-	std::string getAsmRecipe();
-	std::string getMakePchRecipe();
-	std::string getPchRecipe();
-	std::string getRcRecipe(const std::string& ext);
-	std::string getCppRecipe(const std::string& ext);
-	std::string getTargetRecipe();
+	std::string getBuildRecipes(const SourceOutputs& inOutputs);
 
-	std::string getPchOrderOnlyPreReq();
+	std::string getPchBuildRecipe(const std::string& pchTarget);
+	std::string getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget);
+
+	std::string getRcRecipe(const std::string& source, const std::string& object, const std::string& pchTarget);
+	std::string getCppRecipe(const std::string& source, const std::string& object, const std::string& pchTarget);
 
 	std::string getQuietFlag();
-	std::string getMoveCommand(std::string inInput, std::string inOutput);
 	std::string getPrinter(const std::string& inPrint = "");
 
 	std::string getColorBlue();

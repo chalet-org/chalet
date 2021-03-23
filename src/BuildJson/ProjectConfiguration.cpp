@@ -828,7 +828,6 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 		return ret;
 
 	ret.push_back("unused");
-	// ret.push_back("ignored-qualifiers"); // in -Wextra
 	ret.push_back("cast-align");
 	ret.push_back("double-promotion");
 	ret.push_back("format=2");
@@ -841,7 +840,7 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 	if (String::equals(inValue, "strict"))
 		return ret;
 
-	ret.push_back("unreachable-code");
+	ret.push_back("unreachable-code"); // clang only
 	ret.push_back("shadow");
 
 	if (String::equals(inValue, "strictPedantic"))
