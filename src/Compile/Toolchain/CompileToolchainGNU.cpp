@@ -555,8 +555,15 @@ void CompileToolchainGNU::addObjectiveCxxCompileFlag(StringList& inArgList, cons
 /*****************************************************************************/
 void CompileToolchainGNU::addOtherCompileOptions(StringList& inArgList, const CxxSpecialization specialization)
 {
+	if (m_config.isAppleClang())
+	{
+		List::addIfDoesNotExist(inArgList, "-stdlib=libc++");
+	}
+
 	if (m_config.isGcc())
+	{
 		List::addIfDoesNotExist(inArgList, "-fPIC");
+	}
 
 	for (auto& option : m_project.compileOptions())
 	{
@@ -653,6 +660,11 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 			inArgList.push_back("-T");
 			inArgList.push_back(linkerScript);
 		}
+	}
+
+	if (m_config.isAppleClang())
+	{
+		List::addIfDoesNotExist(inArgList, "-stdlib=libc++");
 	}
 
 	if (m_project.staticLinking())
