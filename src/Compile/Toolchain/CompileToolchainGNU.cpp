@@ -555,7 +555,7 @@ void CompileToolchainGNU::addObjectiveCxxCompileFlag(StringList& inArgList, cons
 /*****************************************************************************/
 void CompileToolchainGNU::addOtherCompileOptions(StringList& inArgList, const CxxSpecialization specialization)
 {
-	if (m_config.isAppleClang())
+	if (m_config.isAppleClang() && specialization != CxxSpecialization::ObjectiveC)
 	{
 		List::addIfDoesNotExist(inArgList, "-stdlib=libc++");
 	}
