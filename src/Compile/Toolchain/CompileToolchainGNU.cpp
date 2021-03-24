@@ -204,9 +204,7 @@ StringList CompileToolchainGNU::getDylibTargetCommand(const std::string& outputF
 
 	ret.push_back("-dynamiclib");
 	// ret.push_back("-fPIC");
-	ret.push_back("-undefined");
-	ret.push_back("suppress");
-	ret.push_back("-flat_namespace");
+	// ret.push_back("-flat_namespace");
 
 	addLinkerOptions(ret);
 	addLibDirs(ret);
@@ -585,7 +583,7 @@ void CompileToolchainGNU::addOtherCompileOptions(StringList& inArgList, const Cx
 
 	List::addIfDoesNotExist(inArgList, "-fdiagnostics-color=always");
 
-	if (!m_project.rtti() && !isObjCxx)
+	if (!m_project.rtti())
 	{
 		List::addIfDoesNotExist(inArgList, "-fno-rtti");
 	}

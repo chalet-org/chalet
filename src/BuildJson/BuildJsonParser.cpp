@@ -568,18 +568,18 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectConfiguration& outProject,
 	if (std::string val; assignStringFromConfig(val, inNode, "cStandard"))
 		outProject.setCStandard(val);
 
-	if (StringList list; assignStringListAndValidate(list, inNode, "warnings"))
+	if (StringList list; assignStringListFromConfig(list, inNode, "warnings"))
 		outProject.addWarnings(list);
 	else if (std::string val; assignStringFromConfig(val, inNode, "warnings"))
 		outProject.setWarningPreset(val);
 
-	if (StringList list; assignStringListAndValidate(list, inNode, "compileOptions"))
+	if (StringList list; assignStringListFromConfig(list, inNode, "compileOptions"))
 		outProject.addCompileOptions(list);
 
 	if (std::string list; assignStringFromConfig(list, inNode, "linkerScript"))
 		outProject.setLinkerScript(list);
 
-	if (StringList list; assignStringListAndValidate(list, inNode, "linkerOptions"))
+	if (StringList list; assignStringListFromConfig(list, inNode, "linkerOptions"))
 		outProject.addLinkerOptions(list);
 
 #if defined(CHALET_MACOS)
