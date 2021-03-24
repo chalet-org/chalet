@@ -218,16 +218,18 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	std::string ret;
 
 	const auto quietFlag = getQuietFlag();
-	const auto compileEcho = getCompileEchoSources(source);
+
+	std::string dependency;
+	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
+	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, dependency, specialization));
 
 	ret = fmt::format(R"makefile(
 {object}: {source}
-	{compileEcho}
-	{quietFlag}cl /c /nologo /Fo {object} {source} 1>nul
+	{quietFlag}{cppCompile}
 )makefile",
 		FMT_ARG(source),
 		FMT_ARG(quietFlag),
-		FMT_ARG(compileEcho),
+		FMT_ARG(cppCompile),
 		FMT_ARG(object));
 
 	return ret;

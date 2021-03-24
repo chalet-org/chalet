@@ -5,8 +5,10 @@
 
 #include "Terminal/OSTerminal.hpp"
 
+#include "Libraries/Format.hpp"
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/MsvcEnvironment.hpp"
 
 #if defined(CHALET_WIN32)
 	#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -43,16 +45,8 @@ void OSTerminal::initialize()
 
 	if (Environment::isMsvc())
 	{
-		// Save the current environment to a file
-		// std::system("SET > build/all_variables.txt");
-
-		// auto visualStudioPath = Environment::get("VSAPPIDDIR");
-		// LOG(visualStudioPath);
-		// if (visualStudioPath != nullptr)
-		// {
-		// 	// 32-bit arch would use vcvars32.bat
-		// 	std::system(fmt::format("\"{}..\\..\\VC\\Auxiliary\\Build\\vcvars64.bat\" > nul && SET > build/all_variables_msvc.txt", visualStudioPath).c_str());
-		// }
+		MsvcEnvironment msvcEnvironment;
+		msvcEnvironment.readCompilerVariables();
 	}
 	else
 #endif

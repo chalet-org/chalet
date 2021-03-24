@@ -204,6 +204,13 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 		std::size_t cutoff = 0;
 		const auto make = String::getPathBaseName(m_state.tools.make());
 
+#if defined(CHALET_WIN32)
+		if (Environment::isMsvc())
+		{
+			String::replaceAll(errorOutput, "\r", "\r\n");
+		}
+#endif
+
 		const char eol = '\n';
 		String::replaceAll(errorOutput, fmt::format("{}: *** Waiting for unfinished jobs....{}", make, eol), "");
 		String::replaceAll(errorOutput, fmt::format("{}: *** No rule", make), "No rule");

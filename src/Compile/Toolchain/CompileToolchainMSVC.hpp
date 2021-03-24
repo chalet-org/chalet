@@ -26,6 +26,11 @@ struct CompileToolchainMSVC : ICompileToolchain
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
 
 private:
+	void addIncludes(StringList& inArgList);
+	// void addLibDirs(StringList& inArgList);
+	// void addWarnings(StringList& inArgList);
+	void addDefines(StringList& inArgList);
+
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;
 	const CompilerConfig& m_config;
