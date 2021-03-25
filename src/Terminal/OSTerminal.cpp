@@ -8,7 +8,6 @@
 #include "Libraries/Format.hpp"
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Environment.hpp"
-#include "Terminal/MsvcEnvironment.hpp"
 
 #if defined(CHALET_WIN32)
 	#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -43,12 +42,6 @@ void OSTerminal::initialize()
 
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
-	if (Environment::isMsvc())
-	{
-		MsvcEnvironment msvcEnvironment;
-		msvcEnvironment.readCompilerVariables();
-	}
-	else
 #endif
 	{
 		// Save the current environment to a file

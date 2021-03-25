@@ -34,7 +34,13 @@ std::string MakefileGeneratorNMake::getContents(const SourceOutputs& inOutputs)
 	const auto& depDir = m_state.paths.depDir();
 
 	const auto buildRecipes = getBuildRecipes(inOutputs);
-	const auto objects = String::join(inOutputs.objectList);
+
+	const auto objectList = getMsvcObjectFileList(inOutputs.objectList);
+	auto objects = String::join(objectList);
+	for (auto& ext : inOutputs.fileExtensions)
+	{
+		String::replaceAll(objects, "." + ext, "");
+	}
 
 	const auto suffixes = String::getPrefixed(inOutputs.fileExtensions, ".");
 
@@ -52,7 +58,8 @@ std::string MakefileGeneratorNMake::getContents(const SourceOutputs& inOutputs)
 
 SHELL = {shell}
 
-{buildRecipes}{target}: {objects}
+{target}: {objects}
+{buildRecipes}
 
 makebuild: {target}
 
@@ -75,6 +82,22 @@ makebuild: {target}
 	// }
 
 	return makefileTemplate;
+}
+
+/*****************************************************************************/
+StringList MakefileGeneratorNMake::getMsvcObjectFileList(const StringList& inObjects)
+{
+	StringList ret;
+
+	const auto& objDir = m_state.paths.objDir();
+
+	for (auto& obj : inObjects)
+	{
+		auto file = String::getPathFilename(obj);
+		ret.push_back(fmt::format("{}/{}", objDir, file));
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -137,15 +160,12 @@ std::string MakefileGeneratorNMake::getBuildRecipes(const SourceOutputs& inOutpu
 {
 	const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
-	std::string rules = getPchBuildRecipe(pchTarget);
-	rules += '\n';
 
-	rules += getObjBuildRecipes(inOutputs.objectList, pchTarget);
-	rules += '\n';
+	std::string ret = getPchBuildRecipe(pchTarget);
+	ret += getObjBuildRecipes(inOutputs.objectList, pchTarget);
+	// ret += '\n';
 
-	// rules += getAsmBuildRules(inOutputs.assemblyList); // Very broken
-
-	return rules;
+	return ret;
 }
 
 /*****************************************************************************/
@@ -162,6 +182,7 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const StringList& inObjec
 
 	const auto& objDir = fmt::format("{}/", m_state.paths.objDir());
 
+	StringList outSources;
 	for (auto& obj : inObjects)
 	{
 		if (obj.empty())
@@ -175,16 +196,10 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const StringList& inObjec
 			source = source.substr(0, source.size() - 4);
 		}
 
-		std::string rule = "cxx";
-		if (String::endsWith(".rc", source) || String::endsWith(".RC", source))
-		{
-			ret += getRcRecipe(source, obj, pchTarget);
-		}
-		else
-		{
-			ret += getCppRecipe(source, obj, pchTarget);
-		}
+		outSources.push_back(std::move(source));
 	}
+
+	ret += getCppRecipe(String::join(outSources), std::string(), pchTarget);
 
 	return ret;
 }
@@ -223,14 +238,7 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
 	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, dependency, specialization));
 
-	ret = fmt::format(R"makefile(
-{object}: {source}
-	{quietFlag}{cppCompile}
-)makefile",
-		FMT_ARG(source),
-		FMT_ARG(quietFlag),
-		FMT_ARG(cppCompile),
-		FMT_ARG(object));
+	ret = fmt::format("\t{}{}", quietFlag, cppCompile);
 
 	return ret;
 }
@@ -260,7 +268,7 @@ std::string MakefileGeneratorNMake::getPrinter(const std::string& inPrint)
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getColorBlue()
 {
-	return "\x1b[0;34m";
+	return "\x1b[0;36m";
 }
 
 /*****************************************************************************/

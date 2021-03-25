@@ -30,6 +30,7 @@ private:
 	// void addLibDirs(StringList& inArgList);
 	// void addWarnings(StringList& inArgList);
 	void addDefines(StringList& inArgList);
+	void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization);
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

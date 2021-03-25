@@ -198,6 +198,20 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	options.stderrOption = PipeOption::Pipe;
 	options.onStdErr = onStdErr;
 
+#if defined(CHALET_WIN32)
+	static Subprocess::PipeFunc onStdOut = [](std::string inData) {
+		String::replaceAll(inData, "\r\n", "\n");
+		std::cout << inData;
+	};
+
+	// NMAKE
+	if (Environment::isMsvc())
+	{
+		options.stdoutOption = PipeOption::Pipe;
+		options.onStdOut = onStdOut;
+	}
+#endif
+
 	int result = Subprocess::run(inCmd, std::move(options));
 	if (!errorOutput.empty())
 	{
@@ -208,13 +222,18 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 		if (Environment::isMsvc())
 		{
 			String::replaceAll(errorOutput, "\r", "\r\n");
-		}
-#endif
 
-		const char eol = '\n';
-		String::replaceAll(errorOutput, fmt::format("{}: *** Waiting for unfinished jobs....{}", make, eol), "");
-		String::replaceAll(errorOutput, fmt::format("{}: *** No rule", make), "No rule");
-		cutoff = errorOutput.find(fmt::format("{}: *** [", make));
+			// const char eol = '\r\n';
+			cutoff = errorOutput.find("NMAKE : fatal error");
+		}
+		else
+#endif
+		{
+			const char eol = '\n';
+			String::replaceAll(errorOutput, fmt::format("{}: *** Waiting for unfinished jobs....{}", make, eol), "");
+			String::replaceAll(errorOutput, fmt::format("{}: *** No rule", make), "No rule");
+			cutoff = errorOutput.find(fmt::format("{}: *** [", make));
+		}
 
 		if (cutoff != std::string::npos)
 		{

@@ -85,6 +85,7 @@ bool MsvcEnvironment::setVariableToPath(const char* inName)
 /*****************************************************************************/
 bool MsvcEnvironment::saveOriginalEnvironment()
 {
+#if defined(CHALET_WIN32)
 	if (!Commands::pathExists(m_varsFileOriginal))
 	{
 		StringList cmd{
@@ -95,6 +96,7 @@ bool MsvcEnvironment::saveOriginalEnvironment()
 		std::system(String::join(cmd).c_str());
 		return true;
 	}
+#endif
 
 	return false;
 }
@@ -102,6 +104,7 @@ bool MsvcEnvironment::saveOriginalEnvironment()
 /*****************************************************************************/
 bool MsvcEnvironment::saveMsvcEnvironment()
 {
+#if defined(CHALET_WIN32)
 	if (!Commands::pathExists(m_varsFileMsvc))
 	{
 		// TODO: 32-bit arch would use vcvars32.bat
@@ -117,6 +120,7 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 		std::system(String::join(cmd).c_str());
 		return true;
 	}
+#endif
 
 	return false;
 }

@@ -14,6 +14,7 @@
 #include "Compile/CompileFactory.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/MsvcEnvironment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -149,6 +150,12 @@ bool BuildManager::doBuild(const Route inRoute)
 	{
 		Diagnostic::errorAbort(fmt::format("Error creating paths for project: {}", m_project->name()));
 		return false;
+	}
+
+	if (Environment::isMsvc())
+	{
+		MsvcEnvironment msvcEnvironment;
+		msvcEnvironment.readCompilerVariables();
 	}
 
 	if (inRoute == Route::Rebuild)
