@@ -6,6 +6,10 @@
 #ifndef CHALET_MSVC_ENVIRONMENT_HPP
 #define CHALET_MSVC_ENVIRONMENT_HPP
 
+#if defined(CHALET_WIN32)
+	#include <unordered_map>
+#endif
+
 namespace chalet
 {
 class MsvcEnvironment
@@ -20,6 +24,7 @@ private:
 	bool saveOriginalEnvironment();
 	bool saveMsvcEnvironment();
 
+#if defined(CHALET_WIN32)
 	std::unordered_map<std::string, std::string> m_variables;
 
 	std::string m_varsFileOriginal{ "build/variables_original.txt" };
@@ -27,6 +32,7 @@ private:
 	std::string m_varsFileMsvcDelta{ "build/variables_msvc_delta.txt" };
 
 	std::string m_vsAppIdDir;
+#endif
 };
 }
 

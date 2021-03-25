@@ -72,12 +72,16 @@ bool MsvcEnvironment::readCompilerVariables()
 /*****************************************************************************/
 bool MsvcEnvironment::setVariableToPath(const char* inName)
 {
+#if defined(CHALET_WIN32)
 	auto it = m_variables.find(inName);
 	if (it != m_variables.end())
 	{
 		Environment::set(it->first.c_str(), it->second);
 		return true;
 	}
+#else
+	UNUSED(inName);
+#endif
 
 	return false;
 }
