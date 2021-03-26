@@ -96,7 +96,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 				if (bytesRead > 0)
 				{
 					inOptions.onStdOut(std::string(buffer.data(), bytesRead));
-					memset(buffer.data(), 0, sizeof(char) * buffer.size());
+					buffer.fill(0);
 				}
 			} while (bytesRead > 0);
 		}
@@ -109,7 +109,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 				if (bytesRead > 0)
 				{
 					inOptions.onStdErr(std::string(buffer.data(), bytesRead));
-					memset(buffer.data(), 0, sizeof(char) * buffer.size());
+					buffer.fill(0);
 				}
 			} while (bytesRead > 0);
 		}
