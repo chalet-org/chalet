@@ -176,7 +176,15 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		const auto dylibBuild = fmt::format("{}/{}", executablePath, filename);
 		if (!Commands::pathExists(dylibBuild))
 		{
-			const auto d = Commands::which(dylib, inCleanOutput);
+			auto d = Commands::which(dylib, inCleanOutput);
+			if (d.empty())
+			{
+				d = dylib;
+				if (!Commands::pathExists(d))
+					return false;
+
+				dylib = filename;
+			}
 
 			if (!Commands::copy(d, executablePath, inCleanOutput))
 				return false;
