@@ -63,6 +63,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	const auto& bundleName = macosBundle.bundleName();
 	const auto& infoPropertyList = macosBundle.infoPropertyList();
 
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto bundlePath = getBundlePath();
 	const auto frameworkPath = fmt::format("{}/Frameworks", bundlePath);
 	const auto resourcePath = getResourcePath();
@@ -103,16 +104,13 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	std::string mainExecutable;
 	for (auto& project : m_state.projects)
 	{
-		if (!project->includeInBuild())
+		if (!project->includeInBuild() || !project->isExecutable())
 			continue;
 
 		if (!List::contains(bundleProjects, project->name()))
 			continue;
 
-		if (!project->isExecutable())
-			continue;
-
-		LOG("Main exec:", project->name());
+		// LOG("Main exec:", project->name());
 		mainExecutable = project->outputFile();
 		break;
 	}
@@ -123,65 +121,115 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		return false;
 	}
 
-	{
-		bool resPlist = true;
-		resPlist &= m_state.tools.plistConvertToBinary(infoPropertyList, outInfoPropertyList, inCleanOutput);
-		resPlist &= m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, inCleanOutput);
-		resPlist &= m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", iconBaseName, inCleanOutput);
-		resPlist &= m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", appName, inCleanOutput);
-		resPlist &= m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, inCleanOutput);
-		resPlist &= m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version, inCleanOutput);
-		resPlist &= m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", mainExecutable, inCleanOutput);
+	// PList
+	if (!m_state.tools.plistConvertToBinary(infoPropertyList, outInfoPropertyList, inCleanOutput))
+		return false;
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, inCleanOutput))
+		return false;
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", iconBaseName, inCleanOutput))
+		return false;
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", appName, inCleanOutput))
+		return false;
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, inCleanOutput))
+		return false;
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version, inCleanOutput))
+		return false;
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", mainExecutable, inCleanOutput))
+		return false;
 
-		if (!resPlist)
+	// install_name_tool
+	auto& installNameTool = m_state.tools.installNameUtil();
+	const auto executableOutputPath = fmt::format("{}/{}", executablePath, mainExecutable);
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@loader_path/../MacOS", executableOutputPath }, inCleanOutput))
+		return false;
+
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@loader_path/../Frameworks", executableOutputPath }, inCleanOutput))
+		return false;
+
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@loader_path/../Resources", executableOutputPath }, inCleanOutput))
+		return false;
+
+	StringList dylibs = macosBundle.dylibs();
+	for (auto& project : m_state.projects)
+	{
+		if (project->includeInBuild() && !project->cmake())
+		{
+			if (project->isSharedLibrary())
+			{
+				const auto target = fmt::format("{}/{}", buildOutputDir, project->outputFile());
+				if (!Commands::pathExists(target))
+					return false;
+
+				// if (!Commands::copy(target, frameworkPath, inCleanOutput))
+				// 	return false;
+
+				dylibs.push_back(target);
+			}
+		}
+	}
+
+	for (auto& dylib : dylibs)
+	{
+		// TODO: At the moment, this expects the full path
+		const std::string filename = String::getPathFilename(dylib);
+
+		const auto dylibBuild = fmt::format("{}/{}", executablePath, filename);
+		if (!Commands::pathExists(dylibBuild))
+		{
+			const auto d = Commands::which(dylib, inCleanOutput);
+
+			if (!Commands::copy(d, executablePath, inCleanOutput))
+				return false;
+
+			dylib = fmt::format("{}/{}", executablePath, dylib);
+		}
+
+		if (!Commands::subprocess({ installNameTool, "-change", dylib, fmt::format("@rpath/{}", filename), executableOutputPath }, inCleanOutput))
 			return false;
 	}
 
-	auto& installNameTool = m_state.tools.installNameUtil();
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", fmt::format("{}/{}", executablePath, mainExecutable) }, inCleanOutput))
-		return false;
-
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@loader_path/..", fmt::format("{}/{}", executablePath, mainExecutable) }, inCleanOutput))
-		return false;
-
+	// all should be copied by this point
+	for (auto& dylib : dylibs)
 	{
-		bool resCopies = true;
-		for (auto& dep : macosBundle.dylibs())
+		for (auto& d : dylibs)
 		{
-			// TODO: At the moment, this expects the full path
-			const std::string filename = String::getPathFilename(dep);
-
-			bool result = true;
-			result = Commands::copy(dep, executablePath, inCleanOutput);
-			if (result)
-			{
-				result &= Commands::subprocess({ installNameTool, "-change", fmt::format("@rpath/{}", filename), fmt::format("@rpath/MacOS/{}", filename), executablePath }, inCleanOutput);
-				result &= Commands::subprocess({ installNameTool, "-change", filename, fmt::format("@rpath/MacOS/{}", filename), executablePath }, inCleanOutput);
-				// result &= Commands::subprocess({ installNameTool, "-change", dep, fmt::format("@rpath/MacOS/{}", dep), executablePath }, inCleanOutput);
-			}
-			resCopies &= result;
-		}
-
-		for (auto& project : m_state.projects)
-		{
-			if (!project->includeInBuild())
+			if (d == dylib)
 				continue;
 
-			for (auto& dep : project->macosFrameworks())
+			const std::string fn = String::getPathFilename(d);
+			Commands::subprocess({ installNameTool, "-change", d, fmt::format("@rpath/{}", fn), dylib }, inCleanOutput);
+		}
+	}
+
+	for (auto& project : m_state.projects)
+	{
+		if (project->includeInBuild())
+		{
+			for (auto& framework : project->macosFrameworks())
 			{
+				// Don't include System frameworks
+				// TODO: maybe make an option for this? Not sure what scenarios this is needed
+				if (Commands::pathExists(fmt::format("/System/Library/Frameworks/{}.framework", framework)))
+					continue;
+
 				for (auto& path : project->macosFrameworkPaths())
 				{
-					const std::string filename = fmt::format("{}/{}.framework", path, dep);
+					const std::string filename = fmt::format("{}{}.framework", path, framework);
 					if (!Commands::pathExists(filename))
 						continue;
 
-					resCopies &= Commands::copy(filename, frameworkPath, inCleanOutput);
+					if (!Commands::copySkipExisting(filename, frameworkPath, inCleanOutput))
+						return false;
+
+					const auto resolvedFramework = fmt::format("{}/{}.framework", frameworkPath, framework);
+
+					if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executableOutputPath }, inCleanOutput))
+						return false;
+
+					break;
 				}
 			}
 		}
-
-		if (!resCopies)
-			return false;
 	}
 
 	if (macosBundle.makeDmg())
@@ -189,8 +237,9 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		auto& hdiutil = m_state.tools.hdiutil();
 		auto& tiffutil = m_state.tools.tiffutil();
 		const std::string volumePath = fmt::format("/Volumes/{}", bundleName);
-		if (!Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput))
-			return false;
+		const std::string appPath = fmt::format("{}/{}.app", outDir, bundleName);
+
+		Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput);
 
 		if (inCleanOutput)
 		{
@@ -198,13 +247,26 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		}
 
 		const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);
-		if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", "54", "-fs", "HFS+", "-volname", bundleName, tmpDmg }, inCleanOutput))
+
+		std::uintmax_t appSize = Commands::getPathSize(appPath);
+		std::uintmax_t mb = 1000000;
+		std::uintmax_t dmgSize = appSize > mb ? appSize / mb : 10;
+		// if (dmgSize > 10)
+		{
+			std::uintmax_t temp = 16;
+			while (temp < dmgSize)
+			{
+				temp += temp;
+			}
+			dmgSize = temp;
+		}
+
+		if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", fmt::format("{}", dmgSize), "-fs", "HFS+", "-volname", bundleName, tmpDmg }, inCleanOutput))
 			return false;
 
 		if (!Commands::subprocessNoOutput({ hdiutil, "attach", tmpDmg }, inCleanOutput))
 			return false;
 
-		const std::string appPath = fmt::format("{}/{}.app", outDir, bundleName);
 		if (!Commands::copy(appPath, volumePath, inCleanOutput))
 			return false;
 
@@ -291,5 +353,4 @@ std::string AppBundlerMacOS::getResourcePath() const
 {
 	return fmt::format("{}/Resources", getBundlePath());
 }
-
 }

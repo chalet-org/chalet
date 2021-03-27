@@ -59,10 +59,23 @@ bool AppBundler::run()
 	// auto path = Environment::getPath();
 	// LOG(path);
 
-	bool result = true;
-
 	StringList dependencies;
 	StringList executables;
+#if defined(CHALET_MACOS)
+	StringList sharedLibraries;
+#endif
+
+	StringList depsFromJson;
+	for (auto& dep : bundle.dependencies())
+	{
+		if (!Commands::pathExists(dep))
+			continue;
+
+		if (!Commands::copy(dep, resourcePath, m_cleanOutput))
+			return false;
+
+		depsFromJson.push_back(dep);
+	}
 
 	for (auto& project : m_state.projects)
 	{
@@ -82,7 +95,6 @@ bool AppBundler::run()
 			std::string outTarget = target;
 			List::addIfDoesNotExist(executables, std::move(outTarget));
 		}
-
 		dependencies.push_back(target);
 
 		if (!m_state.tools.getExecutableDependencies(target, dependencies))
@@ -95,10 +107,15 @@ bool AppBundler::run()
 	uint copyCount = 0;
 	for (auto& dep : bundle.dependencies())
 	{
+		if (List::contains(depsFromJson, dep))
+			continue;
+
 		if (!Commands::pathExists(dep))
 			continue;
 
-		result &= Commands::copy(dep, executablePath, m_cleanOutput);
+		if (!Commands::copy(dep, executablePath, m_cleanOutput))
+			return false;
+
 		++copyCount;
 
 #if !defined(CHALET_WIN32)
@@ -106,7 +123,9 @@ bool AppBundler::run()
 		{
 			const auto filename = String::getPathFilename(dep);
 			const auto executable = fmt::format("{}/{}", executablePath, filename);
-			result &= Commands::setExecutableFlag(executable, m_cleanOutput);
+
+			if (!Commands::setExecutableFlag(executable, m_cleanOutput))
+				return false;
 		}
 #endif
 	}
@@ -120,34 +139,41 @@ bool AppBundler::run()
 		Output::lineBreak();
 	}
 
-	m_impl->bundleForPlatform(m_cleanOutput);
+	if (!m_impl->bundleForPlatform(m_cleanOutput))
+		return false;
 
-	return result;
+	return true;
 }
 
 /*****************************************************************************/
 bool AppBundler::removeOldFiles()
 {
 	const auto& outDir = m_state.bundle.outDir();
-	bool result = Commands::removeRecursively(outDir, m_cleanOutput);
+	if (!Commands::removeRecursively(outDir, m_cleanOutput))
+		return false;
 
-	result &= m_impl->removeOldFiles(m_cleanOutput);
+	if (!m_impl->removeOldFiles(m_cleanOutput))
+		return false;
 
-	return result;
+	return true;
 }
 
 /*****************************************************************************/
 bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath)
 {
 	// make prod dir
-	bool result = true;
-	result &= Commands::makeDirectory(inBundlePath, m_cleanOutput);
+	if (!Commands::makeDirectory(inBundlePath, m_cleanOutput))
+		return false;
+
 #if defined(CHALET_MACOS)
-	result &= Commands::makeDirectory(inExecutablePath, m_cleanOutput);
-	result &= Commands::makeDirectory(inResourcePath, m_cleanOutput);
+	if (!Commands::makeDirectory(inExecutablePath, m_cleanOutput))
+		return false;
+
+	if (!Commands::makeDirectory(inResourcePath, m_cleanOutput))
+		return false;
 #else
 	UNUSED(inExecutablePath, inResourcePath);
 #endif
-	return result;
+	return true;
 }
 }

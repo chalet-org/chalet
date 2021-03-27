@@ -117,6 +117,33 @@ std::string Commands::getAbsolutePath(const std::string& inPath)
 }
 
 /*****************************************************************************/
+std::uintmax_t Commands::getPathSize(const std::string& inPath, const bool inCleanOutput)
+{
+	try
+	{
+		if (!inCleanOutput)
+			Output::print(Color::Blue, fmt::format("get directory size: {}", inPath));
+
+		const auto path = fs::path{ inPath };
+		std::uintmax_t ret = 0;
+		for (const fs::directory_entry& entry : fs::recursive_directory_iterator(path))
+		{
+			if (entry.is_regular_file())
+			{
+				ret += entry.file_size();
+			}
+		}
+
+		return ret;
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		std::cout << err.what() << std::endl;
+		return 0;
+	}
+}
+
+/*****************************************************************************/
 bool Commands::makeDirectory(const std::string& inPath, const bool inCleanOutput)
 {
 	try
@@ -280,6 +307,30 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const bo
 			Output::print(Color::Blue, fmt::format("copy to path: {} {}", inFrom, inTo));
 
 		fs::copy(from, to, fs::copy_options::recursive);
+
+		return true;
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		std::cout << err.what() << std::endl;
+		return false;
+	}
+}
+
+/*****************************************************************************/
+bool Commands::copySkipExisting(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput)
+{
+	try
+	{
+		fs::path from{ inFrom };
+		fs::path to{ inTo / from.filename() };
+
+		if (inCleanOutput)
+			Output::msgCopying(inFrom, inTo);
+		else
+			Output::print(Color::Blue, fmt::format("copy to path: {} {}", inFrom, inTo));
+
+		fs::copy(from, to, fs::copy_options::recursive | fs::copy_options::skip_existing);
 
 		return true;
 	}

@@ -20,6 +20,8 @@ fs::path getWorkingDirectoryPath();
 std::string getCanonicalPath(const std::string& inPath);
 std::string getAbsolutePath(const std::string& inPath);
 
+std::uintmax_t getPathSize(const std::string& inPath, const bool inCleanOutput = true);
+
 bool makeDirectory(const std::string& inPath, const bool inCleanOutput = true);
 bool makeDirectories(const StringList& inPaths, const bool inCleanOutput = true);
 bool remove(const std::string& inPath, const bool inCleanOutput = true);
@@ -28,6 +30,7 @@ bool setExecutableFlag(const std::string& inPath, const bool inCleanOutput = tru
 bool createDirectorySymbolicLink(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 bool createSymbolicLink(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 bool copy(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
+bool copySkipExisting(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 bool copyRename(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 bool rename(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 void forEachFileMatch(const std::string& inPath, const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
