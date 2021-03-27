@@ -140,13 +140,13 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	// install_name_tool
 	auto& installNameTool = m_state.tools.installNameUtil();
 	const auto executableOutputPath = fmt::format("{}/{}", executablePath, mainExecutable);
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@loader_path/../MacOS", executableOutputPath }, inCleanOutput))
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../MacOS", executableOutputPath }, inCleanOutput))
 		return false;
 
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@loader_path/../Frameworks", executableOutputPath }, inCleanOutput))
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", executableOutputPath }, inCleanOutput))
 		return false;
 
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@loader_path/../Resources", executableOutputPath }, inCleanOutput))
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Resources", executableOutputPath }, inCleanOutput))
 		return false;
 
 	StringList dylibs = macosBundle.dylibs();
