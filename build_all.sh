@@ -2,4 +2,4 @@
 
 bash ./build.sh Debug && build/Debug/chalet-debug --save-schema buildrun Release
 
-exit $?
+echo "exited with code $?"
