@@ -553,13 +553,13 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectConfiguration& outProject,
 	if (bool val = false; parseKeyFromConfig(val, inNode, "dumpAssembly"))
 		outProject.setDumpAssembly(val);
 
-	if (bool val = false; JsonNode::assignFromKey(val, inNode, "rtti"))
+	if (bool val = false; parseKeyFromConfig(val, inNode, "rtti"))
 		outProject.setRtti(val);
 
-	if (bool val = false; JsonNode::assignFromKey(val, inNode, "staticLinking"))
+	if (bool val = false; parseKeyFromConfig(val, inNode, "staticLinking"))
 		outProject.setStaticLinking(val);
 
-	if (bool val = false; JsonNode::assignFromKey(val, inNode, "posixThreads"))
+	if (bool val = false; parseKeyFromConfig(val, inNode, "posixThreads"))
 		outProject.setPosixThreads(val);
 
 	if (std::string val; assignStringFromConfig(val, inNode, "cppStandard"))
