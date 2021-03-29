@@ -471,7 +471,7 @@ void CompileToolchainGNU::addStripSymbols(StringList& inArgList)
 void CompileToolchainGNU::addRunPath(StringList& inArgList)
 {
 #if defined(CHALET_LINUX)
-	inArgList.push_back("-Wl,-R$$ORIGIN"); // TODO: This originally had single quotes around it... might be necessary
+	inArgList.push_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
 #else
 	UNUSED(inArgList);
 #endif

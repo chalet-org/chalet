@@ -6,6 +6,7 @@
 #include "Utility/Subprocess.hpp"
 
 #include <array>
+#include <atomic>
 
 #include "Libraries/SubprocessApi.hpp"
 #include "Terminal/OSTerminal.hpp"
@@ -15,6 +16,7 @@ namespace chalet
 namespace
 {
 std::vector<sp::Popen*> s_procesess;
+std::atomic<int> s_lastErrorCode = 0;
 bool s_initialized = false;
 
 /*****************************************************************************/
@@ -58,6 +60,12 @@ void signalHandler(int inSignal)
 }
 
 /*****************************************************************************/
+int Subprocess::getLastExitCode()
+{
+	return s_lastErrorCode;
+}
+
+/*****************************************************************************/
 // TODO: Handle terminate/interrupt signals!
 int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 {
@@ -81,6 +89,15 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 		::signal(SIGTERM, signalHandler);
 		::signal(SIGABRT, signalHandler);
 		s_initialized = true;
+	}
+
+	static auto onDefaultStdErr = [](std::string inString) {
+		std::cerr << inString;
+	};
+
+	if (inOptions.stderrOption == PipeOption::StdErr)
+	{
+		inOptions.onStdErr = onDefaultStdErr;
 	}
 
 	if (inOptions.onStdOut != nullptr || inOptions.onStdErr != nullptr)
@@ -121,6 +138,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 	process.close();
 
 	// std::cout << "Exit code of last subprocess: " << process.returncode << std::endl;
+	s_lastErrorCode = process.returncode;
 
 	return process.returncode;
 }

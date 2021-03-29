@@ -463,6 +463,15 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^staticLinks{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-staticLinks"
 	})json"_ojson;
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^posixThreads{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/project-cxx-posixThreads"
+	})json"_ojson;
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^rtti{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/project-cxx-rtti"
+	})json"_ojson;
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^staticLinking{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/project-cxx-staticLinking"
+	})json"_ojson;
 
 	ret[kDefinitions]["project"] = R"json({
 		"type": "object",

@@ -18,6 +18,7 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
 #include "Utility/Timer.hpp"
 
 #include "Json/JsonComments.hpp"
@@ -329,7 +330,15 @@ bool BuildManager::doRun()
 	}
 
 	if (!m_state.configuration.enableProfiling())
-		return Commands::subprocess(cmd, m_cleanOutput);
+	{
+		if (!Commands::subprocess(cmd, m_cleanOutput))
+		{
+			Diagnostic::error(fmt::format("{} exited with code: {}", file, Subprocess::getLastExitCode()));
+			return false;
+		}
+
+		return true;
+	}
 
 	return runProfiler(cmd, file, m_state.paths.buildOutputDir());
 }

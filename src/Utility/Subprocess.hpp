@@ -19,6 +19,8 @@ namespace Subprocess
 using PipeFunc = std::function<void(std::string /* output */)>;
 using CreateFunc = std::function<void(int /* pid */)>;
 
+int getLastExitCode();
+
 int run(const StringList& inCmd, SubprocessOptions&& inOptions);
 void haltAllProcesses(const int inSignal = SIGTERM);
 }
