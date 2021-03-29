@@ -24,7 +24,6 @@ public:
 	bool run();
 
 private:
-	bool cmdInstall();
 	bool cmdConfigure();
 	bool cmdBuild();
 	bool cmdBundle();

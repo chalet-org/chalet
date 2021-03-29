@@ -31,7 +31,6 @@ std::string ArgumentPatterns::getHelpCommand()
    rebuild {config}
    clean [{config}]
    bundle
-   install
    configure
    init {name} {path})",
 		fmt::arg("config", ArgumentPatterns::kArgConfiguration),
@@ -50,7 +49,6 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ Route::Rebuild, &ArgumentPatterns::commandRebuild },
 		{ Route::Clean, &ArgumentPatterns::commandClean },
 		{ Route::Bundle, &ArgumentPatterns::commandBundle },
-		{ Route::Install, &ArgumentPatterns::commandInstall },
 		{ Route::Configure, &ArgumentPatterns::commandConfigure },
 		{ Route::Init, &ArgumentPatterns::commandInit },
 	})
@@ -127,10 +125,6 @@ Route ArgumentPatterns::getRouteFromString(const std::string& inValue)
 	else if (String::equals(inValue, "bundle"))
 	{
 		return Route::Bundle;
-	}
-	else if (String::equals(inValue, "install"))
-	{
-		return Route::Install;
 	}
 	else if (String::equals(inValue, "configure"))
 	{
@@ -309,21 +303,6 @@ std::string ArgumentPatterns::getHelp()
 }
 
 /*****************************************************************************/
-
-/*
-	Sub-Commands:
-		chalet buildrun <configuration> [<runProject>] [ARG...]
-		chalet run <configuration> [<runProject>] [ARG...]
-		chalet build <configuration>
-		chalet rebuild <configuration>
-		chalet clean [<configuration>]
-		chalet bundle
-		chalet install
-
-	chalet -h,--help
-	chalet -v,--version
-*/
-
 /*****************************************************************************/
 void ArgumentPatterns::populateMainArguments()
 {
@@ -466,14 +445,6 @@ void ArgumentPatterns::commandClean()
 
 /*****************************************************************************/
 void ArgumentPatterns::commandBundle()
-{
-	addInputFileArg();
-	addProjectGeneratorArg();
-	addSaveSchemaArg();
-}
-
-/*****************************************************************************/
-void ArgumentPatterns::commandInstall()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();

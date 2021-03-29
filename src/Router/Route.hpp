@@ -17,9 +17,7 @@ enum class Route : ushort
 	Run,
 	Bundle,
 	Clean,
-	// Profile,
-	Install,
-	Configure, // maybe redundant - Install could serve the same purpose
+	Configure,
 	Init,
 #if defined(CHALET_DEBUG)
 	Debug,

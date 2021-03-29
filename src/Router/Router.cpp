@@ -31,8 +31,6 @@ Router::Router(const CommandLineInputs& inInputs) :
 		{ Route::Run, &Router::cmdBuild },
 		{ Route::Bundle, &Router::cmdBundle },
 		{ Route::Clean, &Router::cmdBuild },
-		// { Routes::Profile, &Router::cmdBuild },
-		{ Route::Install, &Router::cmdInstall },
 		{ Route::Configure, &Router::cmdConfigure },
 		{ Route::Init, &Router::cmdInit },
 	})
@@ -105,21 +103,13 @@ bool Router::run()
 }
 
 /*****************************************************************************/
-bool Router::cmdInstall()
+bool Router::cmdConfigure()
 {
 	if (!installDependencies())
 		return false;
 
 	// TODO: pass command to installDependencies & recheck them
 	Output::msgBuildSuccess();
-	return true;
-}
-
-/*****************************************************************************/
-bool Router::cmdConfigure()
-{
-	// TODO: Compare cache.json & build.json and make any adjustments to cache,
-	//   but ultimately, we don't want to fetch external dependencies, nor build of course
 	return true;
 }
 
@@ -263,7 +253,7 @@ bool Router::installDependencies()
 	const bool cleanOutput = true;
 
 	DependencyManager depMgr(*m_buildState, cleanOutput);
-	if (!depMgr.run(command == Route::Install))
+	if (!depMgr.run(command == Route::Configure))
 	{
 		Diagnostic::error("There was an error creating the dependencies.");
 		return false;

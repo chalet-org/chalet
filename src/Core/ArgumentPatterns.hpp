@@ -57,7 +57,7 @@ private:
 	void commandRebuild();
 	void commandClean();
 	void commandBundle();
-	void commandInstall();
+	// void commandInstall();
 	void commandConfigure();
 	void commandInit();
 
