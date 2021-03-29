@@ -199,13 +199,18 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	// all should be copied by this point
 	for (auto& dylib : dylibs)
 	{
+		const std::string filename = String::getPathFilename(dylib);
+		const auto thisDylib = fmt::format("{}/{}", executablePath, filename);
+		Commands::subprocess({ installNameTool, "-id", fmt::format("@rpath/{}", filename), thisDylib }, inCleanOutput);
+
 		for (auto& d : dylibs)
 		{
 			if (d == dylib)
 				continue;
 
 			const std::string fn = String::getPathFilename(d);
-			Commands::subprocess({ installNameTool, "-change", d, fmt::format("@rpath/{}", fn), dylib }, inCleanOutput);
+			const auto dylibBuild = fmt::format("{}/{}", executablePath, fn);
+			Commands::subprocess({ installNameTool, "-change", d, fmt::format("@rpath/{}", fn), thisDylib }, inCleanOutput);
 		}
 	}
 

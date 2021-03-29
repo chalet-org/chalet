@@ -97,7 +97,10 @@ const StringList& CommandLineInputs::runOptions() const noexcept
 
 void CommandLineInputs::setRunOptions(std::string&& inValue) noexcept
 {
-	if (!inValue.empty() && inValue.front() == '\'' && inValue.back() == '\'')
+	if (inValue.empty())
+		return;
+
+	if (inValue.front() == '\'' && inValue.back() == '\'')
 		inValue = inValue.substr(1, inValue.size() - 2);
 
 	// TODO: skip '\ '
