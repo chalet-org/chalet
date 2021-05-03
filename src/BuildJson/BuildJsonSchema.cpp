@@ -376,7 +376,7 @@ Json Schema::getBuildJson()
 			"defines": {
 				"$ref": "#/definitions/project-cxx-defines"
 			},
-			"includePaths": {
+			"includeDirs": {
 				"$ref": "#/definitions/project-cxx-includeDirs"
 			},
 			"libDirs": {
