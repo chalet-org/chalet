@@ -161,10 +161,6 @@
 			"description": "true to use link-time optimization, false otherwise.",
 			"default": false
 		},
-		"configurations-name": {
-			"type": "string",
-			"description": "The name of the build configuration."
-		},
 		"configurations-optimizations": {
 			"type": "string",
 			"description": "The optimization level of the build.",
@@ -429,9 +425,6 @@
 				},
 				"location": {
 					"$ref": "#/definitions/project-location"
-				},
-				"name": {
-					"$ref": "#/definitions/project-name"
 				},
 				"onlyInConfiguration": {
 					"$ref": "#/definitions/project-onlyInConfiguration"
@@ -732,11 +725,6 @@
 			"items": {
 				"type": "string"
 			}
-		},
-		"project-name": {
-			"type": "string",
-			"description": "The name of the project.",
-			"pattern": "^[\\w\\-\\+\\.]{3,}$"
 		},
 		"project-cxx-objectiveCxx": {
 			"type": "boolean",
@@ -1191,8 +1179,16 @@
 		}
 	},
 	"properties": {
-		"allProjects": {
-			"$ref": "#/definitions/project"
+		"templates": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "A list of abstract build projects",
+			"patternProperties": {
+				"^[A-Za-z_-]+$": {
+					"description": "An abstract build project. 'all' is implicitely added to each project.",
+					"$ref": "#/definitions/project"
+				}
+			}
 		},
 		"bundle": {
 			"type": "object",
@@ -1247,50 +1243,52 @@
 			}
 		},
 		"configurations": {
-			"type": "array",
-			"uniqueItems": true,
-			"description": "An array of build configurations",
-			"items": {
-				"anyOf": [
-					{
+			"anyOf": [
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"description": "A list of allowed build configurations",
+					"patternProperties": {
+						"^[\\w\\-\\+\\.]{3,}$": {
+							"type": "object",
+							"additionalProperties": false,
+							"properties": {
+								"debugSymbols": {
+									"$ref": "#/definitions/configurations-debugSymbols"
+								},
+								"enableProfiling": {
+									"$ref": "#/definitions/configurations-enableProfiling"
+								},
+								"linkTimeOptimization": {
+									"$ref": "#/definitions/configurations-linkTimeOptimization"
+								},
+								"optimizations": {
+									"$ref": "#/definitions/configurations-optimizations"
+								},
+								"stripSymbols": {
+									"$ref": "#/definitions/configurations-stripSymbols"
+								}
+							}
+						}
+					}
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"description": "An array of allowed build configuration presets",
+					"items": {
 						"type": "string",
 						"description": "A configuration preset",
 						"enum": [
 							"Release",
 							"Debug",
 							"RelWithDebInfo",
-							"MinSizeRel"
+							"MinSizeRel",
+							"Profile"
 						]
-					},
-					{
-						"type": "object",
-						"additionalProperties": false,
-						"required": [
-							"name"
-						],
-						"properties": {
-							"debugSymbols": {
-								"$ref": "#/definitions/configurations-debugSymbols"
-							},
-							"enableProfiling": {
-								"$ref": "#/definitions/configurations-enableProfiling"
-							},
-							"linkTimeOptimization": {
-								"$ref": "#/definitions/configurations-linkTimeOptimization"
-							},
-							"name": {
-								"$ref": "#/definitions/configurations-name"
-							},
-							"optimizations": {
-								"$ref": "#/definitions/configurations-optimizations"
-							},
-							"stripSymbols": {
-								"$ref": "#/definitions/configurations-stripSymbols"
-							}
-						}
 					}
-				]
-			}
+				}
+			]
 		},
 		"externalDependencies": {
 			"type": "array",
@@ -1329,11 +1327,14 @@
 			}
 		},
 		"projects": {
-			"type": "array",
-			"uniqueItems": true,
+			"type": "object",
+			"additionalProperties": false,
 			"description": "A sequential list of projects to build",
-			"items": {
-				"$ref": "#/definitions/project"
+			"patternProperties": {
+				"^[\\w\\-\\+\\.]{3,}$": {
+					"description": "A single build target.",
+					"$ref": "#/definitions/project"
+				}
 			}
 		},
 		"version": {
@@ -1345,6 +1346,12 @@
 			"type": "string",
 			"description": "The name of the workspace.",
 			"pattern": "^[\\w\\-\\+ ]+$"
+		}
+	},
+	"patternProperties": {
+		"^templates:[a-z]+$": {
+			"description": "An abstract build project. 'templates:all' is implicitely added to each project",
+			"$ref": "#/definitions/project"
 		}
 	}
 }

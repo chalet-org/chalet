@@ -28,6 +28,7 @@ const char* unicodeRightwardsTripleArrow()
 	return Unicode::rightwardsTripleArrow();
 }
 }
+
 /*****************************************************************************/
 MakefileGenerator::MakefileGenerator(const BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain) :
 	m_state(inState),

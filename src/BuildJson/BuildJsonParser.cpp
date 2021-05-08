@@ -25,7 +25,8 @@ namespace chalet
 BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, BuildState& inState, std::string inFilename) :
 	m_inputs(inInputs),
 	m_state(inState),
-	m_filename(std::move(inFilename))
+	m_filename(std::move(inFilename)),
+	m_allProjects(fmt::format("{}:all", kKeyTemplates))
 {
 }
 
@@ -253,29 +254,26 @@ bool BuildJsonParser::parseConfiguration(const Json& inNode)
 	if (!inNode.contains(kKeyConfigurations))
 		return setDefaultConfigurations(buildConfiguration);
 
-	std::string typeError = fmt::format("{}: '{}' must be either an array of presets, or an array of objects", m_filename, kKeyConfigurations);
-
-	const Json& configurations = inNode.at(kKeyConfigurations);
-	if (!configurations.is_array())
-	{
-		Diagnostic::errorAbort(typeError);
-		return false;
-	}
+	std::string typeError = fmt::format("{}: '{}' must be either an array of presets, or an object where key is name", m_filename, kKeyConfigurations);
 
 	bool configFound = false;
 
-	for (auto& config : configurations)
+	const Json& configurations = inNode.at(kKeyConfigurations);
+	if (configurations.is_object())
 	{
-		if (config.is_string())
+		for (auto& [name, config] : configurations.items())
 		{
-			if (config == buildConfiguration)
-				return setDefaultConfigurations(config);
-		}
-		else if (config.is_object())
-		{
-			std::string name;
-			if (!assignStringAndValidate(name, config, "name"))
-				continue;
+			if (!config.is_object())
+			{
+				Diagnostic::error(fmt::format("{}: configuration '{}' must be an object.", m_filename, name));
+				return false;
+			}
+
+			if (name.empty())
+			{
+				Diagnostic::error(fmt::format("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations));
+				return false;
+			}
 
 			if (name != buildConfiguration)
 				continue;
@@ -298,17 +296,34 @@ bool BuildJsonParser::parseConfiguration(const Json& inNode)
 				m_state.configuration.setEnableProfiling(val);
 
 			configFound = true;
+			break;
 		}
-		else
+	}
+	else if (configurations.is_array())
+	{
+		for (auto& config : configurations)
 		{
-			Diagnostic::errorAbort(typeError);
-			return false;
+			if (config.is_string())
+			{
+				if (config == buildConfiguration)
+					return setDefaultConfigurations(config);
+			}
+			else
+			{
+				Diagnostic::error(typeError);
+				return false;
+			}
 		}
+	}
+	else
+	{
+		Diagnostic::error(typeError);
+		return false;
 	}
 
 	if (!configFound)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: The configuration '{}' was not found.", m_filename, buildConfiguration));
+		Diagnostic::error(fmt::format("{}: The configuration '{}' was not found.", m_filename, buildConfiguration));
 		return false;
 	}
 
@@ -391,7 +406,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 	}
 
 	const Json& projects = inNode.at(kKeyProjects);
-	if (!projects.is_array() || projects.size() == 0)
+	if (!projects.is_object() || projects.size() == 0)
 	{
 		Diagnostic::errorAbort(fmt::format("{}: '{}' must contain at least one project.", m_filename, kKeyProjects));
 		return false;
@@ -399,15 +414,16 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 
 	ProjectConfiguration allProjects(m_state.buildConfiguration(), m_state.environment);
 
-	if (inNode.contains(kKeyAllProjects))
+	if (inNode.contains(m_allProjects))
 	{
-		if (!parseProject(allProjects, inNode.at(kKeyAllProjects), true))
+		if (!parseProject(allProjects, inNode.at(m_allProjects), true))
 			return false;
 	}
 
-	for (auto& projectJson : projects)
+	for (auto& [name, projectJson] : projects.items())
 	{
 		auto project = std::make_unique<ProjectConfiguration>(allProjects); // note: copy ctor
+		project->setName(name);
 
 		if (!parseProject(*project, projectJson))
 			return false;
@@ -427,8 +443,8 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	if (std::string val; assignStringAndValidate(val, inNode, "kind"))
 		outProject.setKind(val);
 
-	if (std::string val; assignStringAndValidate(val, inNode, "name"))
-		outProject.setName(val);
+	// if (std::string val; assignStringAndValidate(val, inNode, "name"))
+	// 	outProject.setName(val);
 
 	if (std::string val; assignStringAndValidate(val, inNode, "language"))
 		outProject.setLanguage(val);
@@ -493,7 +509,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 				bool cmakeResult = parseProjectCmake(outProject, node);
 				if (cmakeResult && inAllProjects)
 				{
-					Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a cmake configuration.", m_filename, kKeyAllProjects));
+					Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a cmake configuration.", m_filename, m_allProjects));
 					return false;
 				}
 
@@ -614,7 +630,7 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, co
 	bool locResult = parseProjectLocationOrFiles(outProject, inNode);
 	if (locResult && inAllProjects)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, kKeyAllProjects));
+		Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, kKeyTemplates));
 		return false;
 	}
 

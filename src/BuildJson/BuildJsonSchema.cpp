@@ -211,11 +211,6 @@ Json Schema::getBuildJson()
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["configurations-name"] = R"json({
-		"type": "string",
-		"description": "The name of the build configuration."
-	})json"_ojson;
-
 	ret[kDefinitions]["configurations-optimizations"] = R"json({
 		"type": "string",
 		"description": "The optimization level of the build.",
@@ -494,9 +489,6 @@ Json Schema::getBuildJson()
 			},
 			"location": {
 				"$ref": "#/definitions/project-location"
-			},
-			"name": {
-				"$ref": "#/definitions/project-name"
 			},
 			"onlyInConfiguration": {
 				"$ref": "#/definitions/project-onlyInConfiguration"
@@ -813,11 +805,11 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-name"] = R"json({
-		"type": "string",
-		"description": "The name of the project."
-	})json"_ojson;
-	ret[kDefinitions]["project-name"][kPattern] = patternProjectName;
+	// ret[kDefinitions]["project-name"] = R"json({
+	// 	"type": "string",
+	// 	"description": "The name of the project."
+	// })json"_ojson;
+	// ret[kDefinitions]["project-name"][kPattern] = patternProjectName;
 
 	ret[kDefinitions]["project-cxx-objectiveCxx"] = R"json({
 		"type": "boolean",
@@ -1291,9 +1283,23 @@ Json Schema::getBuildJson()
 	//
 	const auto kProperties = "properties";
 	ret[kProperties] = Json::object();
+	ret[kPatternProperties] = Json::object();
 
-	ret[kProperties]["allProjects"] = R"json({
+	ret[kPatternProperties]["^templates:[a-z]+$"] = R"json({
+		"description": "An abstract build project. 'templates:all' is implicitely added to each project",
 		"$ref": "#/definitions/project"
+	})json"_ojson;
+
+	ret[kProperties]["templates"] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"description": "A list of abstract build projects",
+		"patternProperties": {
+			"^[A-Za-z_-]+$": {
+				"description": "An abstract build project. 'all' is implicitely added to each project.",
+				"$ref": "#/definitions/project"
+			}
+		}
 	})json"_ojson;
 
 	ret[kProperties]["bundle"] = R"json({
@@ -1348,50 +1354,52 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 
 	ret[kProperties]["configurations"] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"description": "An array of build configurations",
-		"items": {
-			"anyOf": [
-				{
+		"anyOf": [
+			{
+				"type": "object",
+				"additionalProperties": false,
+				"description": "A list of allowed build configurations",
+				"patternProperties": {
+					"^[\\w\\-\\+\\.]{3,}$": {
+						"type": "object",
+						"additionalProperties": false,
+						"properties": {
+							"debugSymbols": {
+								"$ref": "#/definitions/configurations-debugSymbols"
+							},
+							"enableProfiling": {
+								"$ref": "#/definitions/configurations-enableProfiling"
+							},
+							"linkTimeOptimization": {
+								"$ref": "#/definitions/configurations-linkTimeOptimization"
+							},
+							"optimizations": {
+								"$ref": "#/definitions/configurations-optimizations"
+							},
+							"stripSymbols": {
+								"$ref": "#/definitions/configurations-stripSymbols"
+							}
+						}
+					}
+				}
+			},
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"description": "An array of allowed build configuration presets",
+				"items": {
 					"type": "string",
 					"description": "A configuration preset",
 					"enum": [
 						"Release",
 						"Debug",
 						"RelWithDebInfo",
-						"MinSizeRel"
+						"MinSizeRel",
+						"Profile"
 					]
-				},
-				{
-					"type": "object",
-					"additionalProperties": false,
-					"required": [
-						"name"
-					],
-					"properties": {
-						"debugSymbols": {
-							"$ref": "#/definitions/configurations-debugSymbols"
-						},
-						"enableProfiling": {
-							"$ref": "#/definitions/configurations-enableProfiling"
-						},
-						"linkTimeOptimization": {
-							"$ref": "#/definitions/configurations-linkTimeOptimization"
-						},
-						"name": {
-							"$ref": "#/definitions/configurations-name"
-						},
-						"optimizations": {
-							"$ref": "#/definitions/configurations-optimizations"
-						},
-						"stripSymbols": {
-							"$ref": "#/definitions/configurations-stripSymbols"
-						}
-					}
 				}
-			]
-		}
+			}
+		]
 	})json"_ojson;
 
 	ret[kProperties]["externalDependencies"] = R"json({
@@ -1431,12 +1439,13 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 
 	ret[kProperties]["projects"] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"description": "A sequential list of projects to build",
-		"items": {
-			"$ref": "#/definitions/project"
-		}
+		"type": "object",
+		"additionalProperties": false,
+		"description": "A sequential list of projects to build"
+	})json"_ojson;
+	ret[kProperties]["projects"][kPatternProperties][patternProjectName] = R"json({
+		"description": "A single build target.",
+		"$ref": "#/definitions/project"
 	})json"_ojson;
 
 	ret[kProperties]["version"] = R"json({

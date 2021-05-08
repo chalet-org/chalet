@@ -69,10 +69,11 @@ private:
 	const std::string kKeyExternalDependencies = "externalDependencies";
 	const std::string kKeyProjects = "projects";
 
-	const std::string kKeyAllProjects = "allProjects";
+	const std::string kKeyTemplates = "templates";
 
 	std::string m_filename;
 	std::string m_debugIdentifier{ "debug" };
+	std::string m_allProjects;
 };
 }
 

@@ -7,36 +7,31 @@
 		// "maxJobs": 8,
 		"path": []
 	},
-	/*"configurations": [
-		{
-			"name": "Release",
+	/*"configurations": {
+		"Release": {
 			"optimizations": "3",
 			"linkTimeOptimization": true,
 			"stripSymbols": true
 		},
-		{
-			"name": "Debug",
+		"Debug": {
 			"optimizations": "0",
 			"debugSymbols": true
 		},
-		{
-			"name": "RelWithDebInfo",
+		"RelWithDebInfo": {
 			"optimizations": "2",
 			"debugSymbols": true
 		},
-		{
-			"name": "MinSizeRel",
+		"MinSizeRel": {
 			"optimizations": "size",
 			"linkTimeOptimization": true,
 			"stripSymbols": true
 		},
-		{
-			"name": "Profile",
+		"Profile": {
 			"optimizations": "0",
 			"debugSymbols": true,
 			"enableProfiling": true
 		}
-	],*/
+	},*/
 	/*"configurations": [
 		"Release",
 		"Debug",
@@ -44,7 +39,18 @@
 		"MinSizeRel",
 		"Profile"
 	],*/
-	"allProjects": {
+	"configurations": {
+		"Release": {
+			"optimizations": "3",
+			"linkTimeOptimization": true,
+			"stripSymbols": true
+		},
+		"RelWithDebInfo": {
+			"optimizations": "2",
+			"debugSymbols": true
+		}
+	},
+	"templates:all": {
 		"dumpAssembly": false,
 		"language": "C++",
 		"runDependencies": [],
@@ -74,19 +80,16 @@
 			"macosFrameworks": []
 		}
 	},
-	"projects": [
-		{
-			"name": "json-schema-validator",
+	"projects": {
+		"json-schema-validator": {
 			"kind": "staticLibrary",
 			"location": "vendor/json-schema-validator"
 		},
-		{
-			"name": "subprocess",
+		"subprocess": {
 			"kind": "staticLibrary",
 			"location": "vendor/subprocess"
 		},
-		{
-			"name": "chalet",
+		"chalet": {
 			"kind": "consoleApplication",
 			"location": "src",
 			"compilerSettings:Cxx": {
@@ -100,8 +103,7 @@
 			/*"preBuild": "env/prebuild.sh",
 			"postBuild": "env/postbuild.sh"*/
 		},
-		{
-			"name": "tests_chalet",
+		"tests_chalet": {
 			"kind": "consoleApplication",
 			"location": {
 				"include": [
@@ -124,7 +126,7 @@
 			],
 			"onlyInConfiguration": "Release"
 		}
-	],
+	},
 	"bundle": {
 		"appName": "Chalet",
 		"shortDescription": "Chalet Build System",
