@@ -36,9 +36,9 @@ private:
 	bool parseExternalDependency(DependencyGit& outDependency, const Json& inNode);
 
 	bool parseProjects(const Json& inNode);
-	bool parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAllProjects = false);
+	bool parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract = false);
 	bool parseCompilerSettingsCxx(ProjectConfiguration& outProject, const Json& inNode);
-	bool parseFilesAndLocation(ProjectConfiguration& outProject, const Json& inNode, const bool inAllProjects);
+	bool parseFilesAndLocation(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract);
 	bool parseProjectLocationOrFiles(ProjectConfiguration& outProject, const Json& inNode);
 	bool parseProjectBeforeBuildScripts(ProjectConfiguration& outProject, const Json& inNode);
 	bool parseProjectAfterBuildScripts(ProjectConfiguration& outProject, const Json& inNode);
@@ -70,6 +70,8 @@ private:
 	const std::string kKeyProjects = "projects";
 
 	const std::string kKeyTemplates = "templates";
+
+	std::unordered_map<std::string, std::unique_ptr<ProjectConfiguration>> m_abstractProjects;
 
 	std::string m_filename;
 	std::string m_debugIdentifier{ "debug" };

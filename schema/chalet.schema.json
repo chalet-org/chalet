@@ -403,6 +403,9 @@
 				"dumpAssembly": {
 					"$ref": "#/definitions/project-dumpAssembly"
 				},
+				"extends": {
+					"$ref": "#/definitions/project-extends"
+				},
 				"files": {
 					"$ref": "#/definitions/project-files"
 				},
@@ -578,23 +581,29 @@
 				"type": "string"
 			}
 		},
+		"project-cxx-includeDirs": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "A list of directories to include with the project.",
+			"items": {
+				"type": "string"
+			}
+		},
 		"project-dumpAssembly": {
 			"type": "boolean",
 			"description": "true to use include an asm dump of each file in the build, false otherwise.",
 			"default": false
 		},
+		"project-extends": {
+			"type": "string",
+			"description": "A project template to extend. Defaults to 'all' implicitly.",
+			"pattern": "^[A-Za-z_-]+$",
+			"default": "all"
+		},
 		"project-files": {
 			"type": "array",
 			"uniqueItems": true,
 			"description": "Explicitly define the source files, relative to the working directory.",
-			"items": {
-				"type": "string"
-			}
-		},
-		"project-cxx-includeDirs": {
-			"type": "array",
-			"uniqueItems": true,
-			"description": "A list of directories to include with the project.",
 			"items": {
 				"type": "string"
 			}

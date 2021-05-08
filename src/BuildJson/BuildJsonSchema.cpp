@@ -466,6 +466,9 @@ Json Schema::getBuildJson()
 			"dumpAssembly": {
 				"$ref": "#/definitions/project-dumpAssembly"
 			},
+			"extends": {
+				"$ref": "#/definitions/project-extends"
+			},
 			"files": {
 				"$ref": "#/definitions/project-files"
 			},
@@ -646,25 +649,32 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
+	ret[kDefinitions]["project-cxx-includeDirs"] = R"json({
+		"type": "array",
+		"uniqueItems": true,
+		"description": "A list of directories to include with the project.",
+		"items": {
+			"type": "string"
+		}
+	})json"_ojson;
+
 	ret[kDefinitions]["project-dumpAssembly"] = R"json({
 		"type": "boolean",
 		"description": "true to use include an asm dump of each file in the build, false otherwise.",
 		"default": false
 	})json"_ojson;
 
+	ret[kDefinitions]["project-extends"] = R"json({
+		"type": "string",
+		"description": "A project template to extend. Defaults to 'all' implicitly.",
+		"pattern": "^[A-Za-z_-]+$",
+		"default": "all"
+	})json"_ojson;
+
 	ret[kDefinitions]["project-files"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "Explicitly define the source files, relative to the working directory.",
-		"items": {
-			"type": "string"
-		}
-	})json"_ojson;
-
-	ret[kDefinitions]["project-cxx-includeDirs"] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"description": "A list of directories to include with the project.",
 		"items": {
 			"type": "string"
 		}

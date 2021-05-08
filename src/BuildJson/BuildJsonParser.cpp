@@ -399,28 +399,94 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 {
 	if (!inNode.contains(kKeyProjects))
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyProjects));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyProjects));
 		return false;
 	}
 
 	const Json& projects = inNode.at(kKeyProjects);
 	if (!projects.is_object() || projects.size() == 0)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' must contain at least one project.", m_filename, kKeyProjects));
+		Diagnostic::error(fmt::format("{}: '{}' must contain at least one project.", m_filename, kKeyProjects));
 		return false;
 	}
 
-	ProjectConfiguration allProjects(m_state.buildConfiguration(), m_state.environment);
+	// ProjectConfiguration allProjects(m_state.buildConfiguration(), m_state.environment);
+
+	bool templatesKeyFound = false;
+	if (inNode.contains(kKeyTemplates))
+	{
+		const Json& templates = inNode.at(kKeyTemplates);
+		for (auto& [name, templateJson] : templates.items())
+		{
+			if (m_abstractProjects.find(name) == m_abstractProjects.end())
+			{
+				auto abstractProject = std::make_unique<ProjectConfiguration>(m_state.buildConfiguration(), m_state.environment);
+				if (!parseProject(*abstractProject, templateJson, true))
+					return false;
+
+				m_abstractProjects.emplace(name, std::move(abstractProject));
+			}
+			else
+			{
+				// not sure if this would actually get triggered?
+				Diagnostic::error(fmt::format("{}: project template '{}' already exists.", m_filename, name));
+				return false;
+			}
+		}
+		templatesKeyFound = true;
+	}
+
+	// TODO: Iterate through keys and parse ones that start with "templates:" including "all"
+
+	const std::string keyAll{ "all" };
 
 	if (inNode.contains(m_allProjects))
 	{
-		if (!parseProject(allProjects, inNode.at(m_allProjects), true))
+		const Json& allProjectsJson = inNode.at(m_allProjects);
+		if (templatesKeyFound)
+		{
+			Diagnostic::error(fmt::format("{}: Combine redundant '{}' with '{}' object", m_filename, m_allProjects, kKeyTemplates));
 			return false;
+		}
+
+		if (m_abstractProjects.find(keyAll) == m_abstractProjects.end())
+		{
+			auto abstractProject = std::make_unique<ProjectConfiguration>(m_state.buildConfiguration(), m_state.environment);
+			if (!parseProject(*abstractProject, allProjectsJson, true))
+				return false;
+
+			m_abstractProjects.emplace(keyAll, std::move(abstractProject));
+		}
+		else
+		{
+			// not sure if this would actually get triggered?
+			Diagnostic::error(fmt::format("{}: project template '{}' already exists.", m_filename, keyAll));
+			return false;
+		}
 	}
 
 	for (auto& [name, projectJson] : projects.items())
 	{
-		auto project = std::make_unique<ProjectConfiguration>(allProjects); // note: copy ctor
+		std::string extends{ "all" };
+		if (projectJson.is_object())
+		{
+			JsonNode::assignFromKey(extends, projectJson, "extends");
+		}
+
+		std::unique_ptr<ProjectConfiguration> project;
+		if (m_abstractProjects.find(extends) != m_abstractProjects.end())
+		{
+			project = std::make_unique<ProjectConfiguration>(*m_abstractProjects.at(extends)); // note: copy ctor
+		}
+		else
+		{
+			if (!String::equals(extends, "all"))
+			{
+				Diagnostic::error(fmt::format("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name));
+				return false;
+			}
+			project = std::make_unique<ProjectConfiguration>(m_state.buildConfiguration(), m_state.environment);
+		}
 		project->setName(name);
 
 		if (!parseProject(*project, projectJson))
@@ -433,7 +499,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAllProjects)
+bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract)
 {
 	const auto& buildConfiguration = m_state.buildConfiguration();
 	const auto& platform = m_state.platform();
@@ -447,7 +513,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	if (std::string val; assignStringAndValidate(val, inNode, "language"))
 		outProject.setLanguage(val);
 
-	if (!parseFilesAndLocation(outProject, inNode, inAllProjects))
+	if (!parseFilesAndLocation(outProject, inNode, inAbstract))
 		return false;
 
 	if (StringList list; assignStringListAndValidate(list, inNode, "onlyInConfiguration"))
@@ -505,7 +571,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 			{
 				bool cmakeResult = parseProjectCmake(outProject, node);
-				if (cmakeResult && inAllProjects)
+				if (cmakeResult && inAbstract)
 				{
 					Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a cmake configuration.", m_filename, m_allProjects));
 					return false;
@@ -524,7 +590,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 		}
 	}
 
-	if (!inAllProjects)
+	if (!inAbstract)
 	{
 		outProject.parseOutputFilename();
 
@@ -623,16 +689,16 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectConfiguration& outProject,
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, const Json& inNode, const bool inAllProjects)
+bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract)
 {
 	bool locResult = parseProjectLocationOrFiles(outProject, inNode);
-	if (locResult && inAllProjects)
+	if (locResult && inAbstract)
 	{
 		Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, kKeyTemplates));
 		return false;
 	}
 
-	if (!locResult && !inAllProjects)
+	if (!locResult && !inAbstract)
 	{
 		Diagnostic::errorAbort(fmt::format("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outProject.name()));
 		return false;
@@ -641,13 +707,13 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, co
 	// if (StringList list; assignStringListFromConfig(list, inNode, "fileExtensions"))
 	// 	outProject.addFileExtensions(list);
 
-	if (!inAllProjects && (outProject.fileExtensions().size() == 0 && outProject.files().size() == 0))
+	if (!inAbstract && (outProject.fileExtensions().size() == 0 && outProject.files().size() == 0))
 	{
 		Diagnostic::errorAbort(fmt::format("{}: No file extensions set for project: {}\n  Aborting...", m_filename, outProject.name()));
 		return false;
 	}
 
-	if (!inAllProjects && (outProject.files().size() > 0 && outProject.fileExtensions().size() > 0))
+	if (!inAbstract && (outProject.files().size() > 0 && outProject.fileExtensions().size() > 0))
 	{
 		Diagnostic::warn(fmt::format("{}: 'fileExtensions' ignored since 'files' are explicitely declared in project: {}", m_filename, outProject.name()));
 	}
