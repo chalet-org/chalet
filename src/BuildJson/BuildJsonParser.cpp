@@ -25,8 +25,7 @@ namespace chalet
 BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, BuildState& inState, std::string inFilename) :
 	m_inputs(inInputs),
 	m_state(inState),
-	m_filename(std::move(inFilename)),
-	m_allProjects(fmt::format("{}:all", kKeyTemplates))
+	m_filename(std::move(inFilename))
 {
 }
 
@@ -412,7 +411,6 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 
 	// ProjectConfiguration allProjects(m_state.buildConfiguration(), m_state.environment);
 
-	bool templatesKeyFound = false;
 	if (inNode.contains(kKeyTemplates))
 	{
 		const Json& templates = inNode.at(kKeyTemplates);
@@ -433,34 +431,29 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 				return false;
 			}
 		}
-		templatesKeyFound = true;
 	}
 
-	// TODO: Iterate through keys and parse ones that start with "templates:" including "all"
-
-	const std::string keyAll{ "all" };
-
-	if (inNode.contains(m_allProjects))
+	for (auto& [prefixedName, templateJson] : inNode.items())
 	{
-		const Json& allProjectsJson = inNode.at(m_allProjects);
-		if (templatesKeyFound)
-		{
-			Diagnostic::error(fmt::format("{}: Combine redundant '{}' with '{}' object", m_filename, m_allProjects, kKeyTemplates));
-			return false;
-		}
+		std::string prefix{ fmt::format("{}:", kKeyTemplates) };
+		if (!String::startsWith(prefix, prefixedName))
+			continue;
 
-		if (m_abstractProjects.find(keyAll) == m_abstractProjects.end())
+		std::string name = prefixedName.substr(prefix.size());
+		String::replaceAll(name, prefix, "");
+
+		if (m_abstractProjects.find(name) == m_abstractProjects.end())
 		{
 			auto abstractProject = std::make_unique<ProjectConfiguration>(m_state.buildConfiguration(), m_state.environment);
-			if (!parseProject(*abstractProject, allProjectsJson, true))
+			if (!parseProject(*abstractProject, templateJson, true))
 				return false;
 
-			m_abstractProjects.emplace(keyAll, std::move(abstractProject));
+			m_abstractProjects.emplace(name, std::move(abstractProject));
 		}
 		else
 		{
 			// not sure if this would actually get triggered?
-			Diagnostic::error(fmt::format("{}: project template '{}' already exists.", m_filename, keyAll));
+			Diagnostic::error(fmt::format("{}: project template '{}' already exists.", m_filename, name));
 			return false;
 		}
 	}
@@ -573,7 +566,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 				bool cmakeResult = parseProjectCmake(outProject, node);
 				if (cmakeResult && inAbstract)
 				{
-					Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a cmake configuration.", m_filename, m_allProjects));
+					Diagnostic::errorAbort(fmt::format("{}: project template for '{}' cannot contain a cmake configuration.", m_filename, outProject.name()));
 					return false;
 				}
 

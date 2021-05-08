@@ -75,7 +75,6 @@ private:
 
 	std::string m_filename;
 	std::string m_debugIdentifier{ "debug" };
-	std::string m_allProjects;
 };
 }
 
