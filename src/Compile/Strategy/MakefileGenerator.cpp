@@ -85,13 +85,18 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 	//
 	// ==============================================================================
 	std::string makefileTemplate = fmt::format(R"makefile(
+
 .SUFFIXES:
 .SUFFIXES: {suffixes}
 
+.ONESHELL:
+
 SHELL := {shell}
 
+NOOP := @{printer}
+
 makebuild: {target}
-	@{printer}
+	$(NOOP)
 .DELETE_ON_ERROR: makebuild
 {dumpAsmRecipe}{makePchRecipe}{fileRecipes}{pchRecipe}{rcRecipe}{assemblyRecipe}{targetRecipe}
 
@@ -183,15 +188,13 @@ std::string MakefileGenerator::getDumpAsmRecipe()
 	std::string ret;
 
 	const bool dumpAssembly = m_project.dumpAssembly();
-	const auto printer = getPrinter();
 	if (dumpAssembly)
 	{
-		ret = fmt::format(R"makefile(
+		ret = R"makefile(
 dumpasm: $(SOURCE_ASMS)
-	@{printer}
+	$(NOOP)
 .PHONY: dumpasm
-)makefile",
-			FMT_ARG(printer));
+)makefile";
 	}
 
 	return ret;
@@ -237,15 +240,13 @@ std::string MakefileGenerator::getMakePchRecipe()
 	{
 		const auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
 		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig.isClang());
-		const auto printer = getPrinter();
 
 		ret = fmt::format(R"makefile(
 makepch: {pchTarget}
-	@{printer}
+	$(NOOP)
 .PHONY: makepch
 )makefile",
-			FMT_ARG(pchTarget),
-			FMT_ARG(printer));
+			FMT_ARG(pchTarget));
 	}
 
 	return ret;
@@ -284,6 +285,8 @@ std::string MakefileGenerator::getPchRecipe()
 {pchTarget}: {pch} {dependency}.d
 	{compileEcho}
 	{quietFlag}{pchCompile}
+{pch}:
+	$(NOOP)
 )makefile",
 			FMT_ARG(pchTarget),
 			FMT_ARG(pch),
@@ -323,6 +326,8 @@ std::string MakefileGenerator::getRcRecipe(const std::string& ext)
 {objDir}/%.{ext}.res: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{rcCompile}
+%.{ext}:
+	$(NOOP)
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(ext),
@@ -366,6 +371,8 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 {objDir}/%.{ext}.o: %.{ext} {pchTarget} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{cppCompile}
+%.{ext}:
+	$(NOOP)
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
@@ -410,6 +417,8 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 {objDir}/%.{ext}.o: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{objcCompile}
+%.{ext}:
+	$(NOOP)
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),

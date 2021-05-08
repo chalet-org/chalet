@@ -278,7 +278,7 @@ void Output::msgProfilerDoneInstruments(const std::string& inProfileAnalysis)
 
 void Output::msgClean(const std::string& inBuildConfiguration)
 {
-	auto symbol = Unicode::dot();
+	auto symbol = Unicode::triangle();
 	if (!inBuildConfiguration.empty())
 		displayStyledSymbol(Color::Yellow, symbol, "Clean: " + inBuildConfiguration);
 	else
@@ -288,42 +288,42 @@ void Output::msgClean(const std::string& inBuildConfiguration)
 /*****************************************************************************/
 void Output::msgBuildAndRun(const std::string& inBuildConfiguration, const std::string& inName)
 {
-	auto symbol = Unicode::dot();
+	auto symbol = Unicode::triangle();
 	displayStyledSymbol(Color::Yellow, symbol, "Build & Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgBuild(const std::string& inBuildConfiguration, const std::string& inName)
 {
-	auto symbol = Unicode::dot();
+	auto symbol = Unicode::triangle();
 	displayStyledSymbol(Color::Yellow, symbol, "Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgRebuild(const std::string& inBuildConfiguration, const std::string& inName)
 {
-	auto symbol = Unicode::dot();
+	auto symbol = Unicode::triangle();
 	displayStyledSymbol(Color::Yellow, symbol, "Rebuild: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgRun(const std::string& inBuildConfiguration, const std::string& inName)
 {
-	auto symbol = Unicode::dot();
+	auto symbol = Unicode::triangle();
 	displayStyledSymbol(Color::Yellow, symbol, "Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgBuildProd(const std::string& inBuildConfiguration, const std::string& inName)
 {
-	auto symbol = Unicode::dot();
+	auto symbol = Unicode::triangle();
 	displayStyledSymbol(Color::Yellow, symbol, "Production Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgProfile(const std::string& inBuildConfiguration, const std::string& inName)
 {
-	auto symbol = Unicode::dot();
+	auto symbol = Unicode::triangle();
 	displayStyledSymbol(Color::Yellow, symbol, "Profile: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 

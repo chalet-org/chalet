@@ -8,9 +8,16 @@
 namespace chalet
 {
 /*****************************************************************************/
+// Looks funky on Mac & Linux with default fonts
 inline const char* Unicode::dot()
 {
-	return u8"\u2B24";
+	return u8"\u25BC"; // triangle
+}
+
+/*****************************************************************************/
+inline const char* Unicode::triangle()
+{
+	return u8"\u25BC"; // triangle
 }
 
 /*****************************************************************************/

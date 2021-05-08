@@ -11,6 +11,7 @@ namespace chalet
 namespace Unicode
 {
 inline const char* dot();
+inline const char* triangle();
 inline const char* diamond();
 inline const char* heavyCheckmark();
 inline const char* heavyBallotX();
