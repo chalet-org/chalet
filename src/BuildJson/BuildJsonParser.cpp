@@ -338,15 +338,16 @@ bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 		return true;
 
 	const Json& externalDependencies = inNode.at(kKeyExternalDependencies);
-	if (!externalDependencies.is_array() || externalDependencies.size() == 0)
+	if (!externalDependencies.is_object() || externalDependencies.size() == 0)
 	{
 		Diagnostic::errorAbort(fmt::format("{}: '{}' must contain at least one external dependency.", m_filename, kKeyExternalDependencies));
 		return false;
 	}
 
-	for (auto& dependencyJson : externalDependencies)
+	for (auto& [name, dependencyJson] : externalDependencies.items())
 	{
 		auto dependency = std::make_unique<DependencyGit>(m_state.environment);
+		dependency->setName(name);
 
 		if (!parseExternalDependency(*dependency, dependencyJson))
 			return false;
@@ -383,9 +384,6 @@ bool BuildJsonParser::parseExternalDependency(DependencyGit& outDependency, cons
 
 		outDependency.setCommit(val);
 	}
-
-	if (std::string val; assignStringAndValidate(val, inNode, "name"))
-		outDependency.setName(val);
 
 	if (bool val = false; JsonNode::assignFromKey(val, inNode, "submodules"))
 		outDependency.setSubmodules(val);

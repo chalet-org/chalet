@@ -39,17 +39,6 @@
 		"MinSizeRel",
 		"Profile"
 	],*/
-	"configurations": {
-		"Release": {
-			"optimizations": "3",
-			"linkTimeOptimization": true,
-			"stripSymbols": true
-		},
-		"RelWithDebInfo": {
-			"optimizations": "2",
-			"debugSymbols": true
-		}
-	},
 	"templates:all": {
 		"dumpAssembly": false,
 		"language": "C++",
@@ -165,30 +154,25 @@
 			"manifest": "env/windows/app.manifest"
 		}
 	} /*,
-	"externalDependencies": [
-		{
-			"name": "catch2",
+	"externalDependencies": {
+		"catch2": {
 			"repository": "git@github.com:catchorg/Catch2.git",
 			"branch": "v2.x"
 		},
-		{
-			"name": "ctre",
+		"ctre": {
 			"repository": "git@github.com:hanickadot/compile-time-regular-expressions.git"
 		},
-		{
+		"fmt": {
 			"repository": "git@github.com:fmtlib/fmt.git"
 		},
-		{
-			"name": "ghc_fs",
+		"ghc_fs": {
 			"repository": "git@github.com:gulrak/filesystem.git"
 		},
-		{
-			"name": "nlohmann_json",
+		"nlohmann_json": {
 			"repository": "git@github.com:nlohmann/json.git"
 		},
-		{
-			"name": "ust",
+		"ust": {
 			"repository": "git@github.com:MisterTea/UniversalStacktrace.git"
 		}
-	]*/
+	}*/
 }

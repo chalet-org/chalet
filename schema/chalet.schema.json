@@ -194,11 +194,6 @@
 			"description": "The SHA1 hash of the commit to checkout.",
 			"pattern": "^[0-9a-f]{7,40}$"
 		},
-		"externalDependency-name": {
-			"type": "string",
-			"description": "The destination directory name for the repository within 'externalDepDir'. If none is provided, defaults to the repository name",
-			"pattern": "^[\\w\\-\\+\\.]{3,100}$"
-		},
 		"externalDependency-tag": {
 			"type": "string",
 			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
@@ -221,9 +216,6 @@
 						"repository": {
 							"$ref": "#/definitions/externalDependency-repository"
 						},
-						"name": {
-							"$ref": "#/definitions/externalDependency-name"
-						},
 						"submodules": {
 							"$ref": "#/definitions/externalDependency-submodules"
 						},
@@ -240,9 +232,6 @@
 					"properties": {
 						"repository": {
 							"$ref": "#/definitions/externalDependency-repository"
-						},
-						"name": {
-							"$ref": "#/definitions/externalDependency-name"
 						},
 						"submodules": {
 							"$ref": "#/definitions/externalDependency-submodules"
@@ -1291,11 +1280,14 @@
 			]
 		},
 		"externalDependencies": {
-			"type": "array",
-			"uniqueItems": true,
-			"description": "A sequential list of externalDependencies to install prior to building or via the install command",
-			"items": {
-				"$ref": "#/definitions/externalDependency"
+			"type": "object",
+			"additionalProperties": false,
+			"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined in 'externalDepDir'.",
+			"patternProperties": {
+				"^[\\w\\-\\+\\.]{3,100}$": {
+					"description": "A single external dependency.",
+					"$ref": "#/definitions/externalDependency"
+				}
 			}
 		},
 		"environment": {

@@ -249,12 +249,6 @@ Json Schema::getBuildJson()
 		"pattern": "^[0-9a-f]{7,40}$"
 	})json"_ojson;
 
-	ret[kDefinitions]["externalDependency-name"] = R"json({
-		"type": "string",
-		"description": "The destination directory name for the repository within 'externalDepDir'. If none is provided, defaults to the repository name",
-		"pattern": "^[\\w\\-\\+\\.]{3,100}$"
-	})json"_ojson;
-
 	ret[kDefinitions]["externalDependency-tag"] = R"json({
 		"type": "string",
 		"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
@@ -279,9 +273,6 @@ Json Schema::getBuildJson()
 					"repository": {
 						"$ref": "#/definitions/externalDependency-repository"
 					},
-					"name": {
-						"$ref": "#/definitions/externalDependency-name"
-					},
 					"submodules": {
 						"$ref": "#/definitions/externalDependency-submodules"
 					},
@@ -298,9 +289,6 @@ Json Schema::getBuildJson()
 				"properties": {
 					"repository": {
 						"$ref": "#/definitions/externalDependency-repository"
-					},
-					"name": {
-						"$ref": "#/definitions/externalDependency-name"
 					},
 					"submodules": {
 						"$ref": "#/definitions/externalDependency-submodules"
@@ -1403,12 +1391,13 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 
 	ret[kProperties]["externalDependencies"] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"description": "A sequential list of externalDependencies to install prior to building or via the install command",
-		"items": {
-			"$ref": "#/definitions/externalDependency"
-		}
+		"type": "object",
+		"additionalProperties": false,
+		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined in 'externalDepDir'."
+	})json"_ojson;
+	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-\\+\\.]{3,100}$"] = R"json({
+		"description": "A single external dependency.",
+		"$ref": "#/definitions/externalDependency"
 	})json"_ojson;
 
 	ret[kProperties]["environment"] = R"json({
