@@ -257,12 +257,15 @@ std::string String::getPrefixedAndSuffixed(const StringList& inList, const std::
 }
 
 /*****************************************************************************/
-StringList String::filterIf(const std::vector<std::string>& inFind, const StringList& inList)
+StringList String::filterIf(const StringList& inFind, const StringList& inList)
 {
 	// TODO: copy_if? Some other algorithm?
 	StringList ret;
 	for (auto& item : inFind)
 	{
+		if (item.empty())
+			continue;
+
 		if (List::contains(inList, item))
 			ret.push_back(item);
 	}
@@ -275,6 +278,9 @@ StringList String::excludeIf(const StringList& inFind, const StringList& inList)
 	StringList ret;
 	for (auto& item : inList)
 	{
+		if (item.empty())
+			continue;
+
 		if (!List::contains(inFind, item))
 			ret.push_back(item);
 	}
