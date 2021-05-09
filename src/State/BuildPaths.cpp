@@ -251,22 +251,23 @@ std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectConfiguration& 
 /*****************************************************************************/
 StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const bool inObjExtension) const
 {
-	StringList ret = inFiles;
+	StringList ret;
 	auto ext = inObjExtension ? "obj" : "o";
-	std::for_each(ret.begin(), ret.end(), [this, &ext](std::string& str) {
-		if (!String::endsWith(".rc", str))
+	for (const auto& file : inFiles)
+	{
+		if (!String::endsWith(".rc", file))
 		{
-			str = fmt::format("{}/{}.{}", m_objDir, str, ext);
+			ret.push_back(fmt::format("{}/{}.{}", m_objDir, file, ext));
 		}
 		else
 		{
 #if defined(CHALET_WIN32)
-			str = fmt::format("{}/{}.res", m_objDir, str);
+			ret.push_back(fmt::format("{}/{}.res", m_objDir, file));
 #else
-			str = "";
+			continue;
 #endif
 		}
-	});
+	}
 
 	return ret;
 }
@@ -287,18 +288,15 @@ StringList BuildPaths::getDependencyFilesList(const SourceGroup& inFiles) const
 /*****************************************************************************/
 StringList BuildPaths::getAssemblyFilesList(const SourceGroup& inFiles, const bool inObjExtension) const
 {
-	StringList ret = inFiles.list;
+	StringList ret;
 	auto ext = inObjExtension ? "obj" : "o";
-	std::for_each(ret.begin(), ret.end(), [this, &ext](std::string& str) {
-		if (!String::endsWith(".rc", str))
+	for (auto& file : inFiles.list)
+	{
+		if (!String::endsWith(".rc", file))
 		{
-			str = fmt::format("{}/{}.{}.asm", m_asmDir, str, ext);
+			ret.push_back(fmt::format("{}/{}.{}.asm", m_asmDir, file, ext));
 		}
-		else
-		{
-			str = "";
-		}
-	});
+	}
 
 	return ret;
 }
