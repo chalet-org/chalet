@@ -88,7 +88,7 @@ CompileStrategyNative::CompileStrategyNative(BuildState& inState, const ProjectC
 	m_toolchain(inToolchain),
 	m_threadPool(m_state.environment.maxJobs())
 {
-	m_generateDependencies = true;
+	m_generateDependencies = !Environment::isContinuousIntegrationServer();
 }
 
 /*****************************************************************************/

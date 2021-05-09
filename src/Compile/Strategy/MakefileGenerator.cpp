@@ -36,7 +36,7 @@ MakefileGenerator::MakefileGenerator(const BuildState& inState, const ProjectCon
 	m_toolchain(inToolchain)
 {
 	m_cleanOutput = m_state.environment.cleanOutput();
-	m_generateDependencies = inToolchain->type() != ToolchainType::MSVC;
+	m_generateDependencies = inToolchain->type() != ToolchainType::MSVC && !Environment::isContinuousIntegrationServer();
 }
 
 /*****************************************************************************/

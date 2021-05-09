@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -36,7 +37,7 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState, const ProjectConfigura
 		{ "rc", &NinjaGenerator::getRcRule },
 		{ "RC", &NinjaGenerator::getRcRule },
 	};
-	m_generateDependencies = true;
+	m_generateDependencies = !Environment::isContinuousIntegrationServer();
 }
 
 /*****************************************************************************/
