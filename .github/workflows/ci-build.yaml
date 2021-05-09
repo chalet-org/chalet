@@ -3,7 +3,7 @@ name: Chalet Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   release:
     types: [created]
 
@@ -12,18 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash
+        shell: zsh
     steps:
-    - name: 'Create Release'
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Chalet ${{ github.ref }}
-        draft: false
-        prerelease: true
+      - name: "Create Release"
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Chalet ${{ github.ref }}
+          draft: false
+          prerelease: true
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
   linux:
@@ -31,62 +31,55 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash
-    env:
-      CC: gcc-10
-      CXX: g++-10
+        shell: zsh
     steps:
-    - name: 'Checkout'
-      uses: actions/checkout@v2
-    - name: 'Get GCC 10'
-      run: |
-        sudo apt update
-        sudo apt install gcc-10 g++-10 zip
-    - name: 'Build: Debug'
-      run: bash ./build.sh Debug
-    - name: 'Build: Release'
-      run: build/Debug/chalet-debug --save-schema build Release
-    - name: 'Run: Tests'
-      run: build/Release/chalet run Release tests_chalet
-    - name: 'Zip binary'
-      run: zip -j build/chalet-linux.zip build/Release/chalet LICENSE.txt
-    - name: 'Upload binary'
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.release.outputs.upload_url }}
-        asset_path: ./build/chalet-linux.zip
-        asset_name: chalet-linux.zip
-        asset_content_type: application/zip
+      - name: "Checkout"
+        uses: actions/checkout@v2
+      - name: "Build: Debug"
+        run: bash ./build.sh Debug
+      - name: "Build: Release"
+        run: build/Debug/chalet-debug --save-schema build Release
+      - name: "Run: Tests"
+        run: build/Release/chalet run Release tests_chalet
+      - name: "Zip binary"
+        run: zip -j build/chalet-linux.zip build/Release/chalet LICENSE.txt
+      - name: "Upload binary"
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./build/chalet-linux.zip
+          asset_name: chalet-linux.zip
+          asset_content_type: application/zip
   macos:
     needs: release
     runs-on: macos-latest
     defaults:
       run:
-        shell: bash
+        shell: zsh
     steps:
-    - name: 'Checkout'
-      uses: actions/checkout@v2
-    - name: 'Build: Debug'
-      run: bash ./build.sh Debug
-    - name: 'Build: Release'
-      run: build/Debug/chalet-debug --save-schema build Release
-    - name: 'Run: Tests'
-      run: build/Release/chalet run Release tests_chalet
-    - name: 'Zip binary'
-      run: zip -j build/chalet-macos.zip build/Release/chalet LICENSE.txt
-    - name: 'Upload binary'
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.release.outputs.upload_url }}
-        asset_path: ./build/chalet-macos.zip
-        asset_name: chalet-macos.zip
-        asset_content_type: application/zip
+      - name: "Checkout"
+        uses: actions/checkout@v2
+      - name: "Build: Debug"
+        run: bash ./build.sh Debug
+      - name: "Build: Release"
+        run: build/Debug/chalet-debug --save-schema build Release
+      - name: "Run: Tests"
+        run: build/Release/chalet run Release tests_chalet
+      - name: "Zip binary"
+        run: zip -j build/chalet-macos.zip build/Release/chalet LICENSE.txt
+      - name: "Upload binary"
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./build/chalet-macos.zip
+          asset_name: chalet-macos.zip
+          asset_content_type: application/zip
   windows:
     needs: release
     runs-on: windows-latest
@@ -94,33 +87,33 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-    - name: 'Get MSYS2'
-      uses: msys2/setup-msys2@v2
-      with:
-        update: true
-        install: >-
-          base-devel
-          git
-          zip
-          mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-cmake
-    - name: 'Checkout'
-      uses: actions/checkout@v2
-    - name: 'Build: Debug'
-      run: bash ./build.sh Debug
-    - name: 'Build: Release'
-      run: build/Debug/chalet-debug --save-schema build Release
-    - name: 'Run: Tests'
-      run: build/Release/chalet run Release tests_chalet
-    - name: 'Zip binary'
-      run: zip -j build/chalet-win32.zip build/Release/chalet.exe LICENSE.txt
-    - name: 'Upload binary'
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.release.outputs.upload_url }}
-        asset_path: ./build/chalet-win32.zip
-        asset_name: chalet-win32.zip
-        asset_content_type: application/zip
+      - name: "Get MSYS2"
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            base-devel
+            git
+            zip
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+      - name: "Checkout"
+        uses: actions/checkout@v2
+      - name: "Build: Debug"
+        run: bash ./build.sh Debug
+      - name: "Build: Release"
+        run: build/Debug/chalet-debug --save-schema build Release
+      - name: "Run: Tests"
+        run: build/Release/chalet run Release tests_chalet
+      - name: "Zip binary"
+        run: zip -j build/chalet-win32.zip build/Release/chalet.exe LICENSE.txt
+      - name: "Upload binary"
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./build/chalet-win32.zip
+          asset_name: chalet-win32.zip
+          asset_content_type: application/zip
