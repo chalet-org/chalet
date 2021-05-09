@@ -2,7 +2,7 @@
 	"version": "0.0.1",
 	"workspace": "Chalet",
 	"environment": {
-		"showCommands": true,
+		"showCommands": false,
 		"externalDepDir": "chalet_external",
 		// "maxJobs": 8,
 		"path": []
