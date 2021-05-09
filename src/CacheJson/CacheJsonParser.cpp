@@ -144,7 +144,12 @@ bool CacheJsonParser::makeCache()
 		const auto strategy = strategyJson.get<std::string>();
 
 		if (strategy.empty())
-			strategyJson = "makefile";
+		{
+			if (Environment::isContinuousIntegrationServer())
+				strategyJson = "native-experimental";
+			else
+				strategyJson = "makefile";
+		}
 	}
 
 	Json& compilers = environmentCache.json[kKeyCompilers];
