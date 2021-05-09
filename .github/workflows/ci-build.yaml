@@ -32,9 +32,16 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+      CC: gcc-10
+      CXX: g++-10
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
+      - name: "Get GCC 10"
+        run: |
+          sudo apt update
+          sudo apt install gcc-10 g++-10 zip
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Build: Release"
