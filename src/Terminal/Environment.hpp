@@ -13,6 +13,7 @@ struct Environment
 	static bool isBash();
 	static bool isMsvc();
 	static bool hasTerm();
+	static bool isContinuousIntegrationServer();
 
 	static const char* get(const char* inName);
 	static void set(const char* inName, const std::string& inValue);
@@ -35,6 +36,7 @@ private:
 
 	static TerminalType s_terminalType;
 	static short s_hasTerm;
+	static short s_isContinuousIntegrationServer;
 };
 }
 

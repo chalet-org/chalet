@@ -13,6 +13,7 @@ namespace chalet
 /*****************************************************************************/
 Environment::TerminalType Environment::s_terminalType = TerminalType::Unset;
 short Environment::s_hasTerm = -1;
+short Environment::s_isContinuousIntegrationServer = -1;
 
 /*****************************************************************************/
 bool Environment::isBash()
@@ -39,6 +40,18 @@ bool Environment::hasTerm()
 	{
 		auto varTERM = Environment::get("TERM");
 		s_hasTerm = varTERM == nullptr ? 0 : 1;
+	}
+
+	return s_hasTerm == 1;
+}
+
+/*****************************************************************************/
+bool Environment::isContinuousIntegrationServer()
+{
+	if (s_hasTerm == -1)
+	{
+		auto varCI = Environment::get("CI");
+		s_hasTerm = varCI == nullptr ? 0 : (String::equals(String::toLowerCase(varCI), "true") || String::equals(varCI, "1"));
 	}
 
 	return s_hasTerm == 1;

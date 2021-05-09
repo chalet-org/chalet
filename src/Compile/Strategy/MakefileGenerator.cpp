@@ -78,6 +78,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 #else
 	const auto shell = "/bin/sh";
 #endif
+
 	const auto printer = getPrinter();
 
 	//

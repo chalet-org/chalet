@@ -8,6 +8,7 @@
 #include "Libraries/Format.hpp"
 #include "Libraries/Regex.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -37,8 +38,7 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 	const auto& cc = m_config.compilerExecutable();
 	ret.push_back(cc);
 
-	// TODO: no need for this during CI build
-	if (generateDependency)
+	if (generateDependency && !Environment::isContinuousIntegrationServer())
 	{
 		ret.push_back("-MT");
 		ret.push_back(outputFile);
@@ -89,7 +89,7 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 	ret.push_back("-O");
 	ret.push_back("coff");
 
-	if (generateDependency)
+	if (generateDependency && !Environment::isContinuousIntegrationServer())
 	{
 		// Note: The dependency generation args have to be passed into the preprocessor
 		//   The underlying preprocessor command is "gcc -E -xc-header -DRC_INVOKED"
@@ -124,7 +124,7 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 	const auto& cc = m_config.compilerExecutable();
 	ret.push_back(cc);
 
-	if (generateDependency)
+	if (generateDependency && !Environment::isContinuousIntegrationServer())
 	{
 		ret.push_back("-MT");
 		ret.push_back(outputFile);
