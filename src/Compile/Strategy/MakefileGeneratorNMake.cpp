@@ -23,6 +23,7 @@ MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState, const 
 	m_toolchain(inToolchain)
 {
 	m_cleanOutput = m_state.environment.cleanOutput();
+	// m_generateDependencies = !Environment::isContinuousIntegrationServer();
 	m_generateDependencies = false;
 }
 
