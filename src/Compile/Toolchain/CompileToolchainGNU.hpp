@@ -26,20 +26,49 @@ struct CompileToolchainGNU : ICompileToolchain
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 
 protected:
-	void addIncludes(StringList& inArgList);
-	void addLibDirs(StringList& inArgList);
-	void addWarnings(StringList& inArgList);
-	void addDefines(StringList& inArgList);
-	void addLinks(StringList& inArgList);
-	void addPchInclude(StringList& inArgList);
-	void addOptimizationFlag(StringList& inArgList);
-	void addStripSymbols(StringList& inArgList);
-	void addRunPath(StringList& inArgList);
-	void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization);
-	void addCompileFlags(StringList& inArgList, const bool forPch, const CxxSpecialization specialization);
-	void addObjectiveCxxCompileFlag(StringList& inArgList, const CxxSpecialization specialization);
-	void addOtherCompileOptions(StringList& inArgList, const CxxSpecialization specialization);
-	void addLinkerOptions(StringList& inArgList);
+	// Compile
+	virtual void addIncludes(StringList& inArgList) override;
+	virtual void addWarnings(StringList& inArgList) override;
+	virtual void addDefines(StringList& inArgList) override;
+	virtual void addPchInclude(StringList& inArgList) override;
+	virtual void addOptimizationOption(StringList& inArgList) override;
+	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) override;
+	virtual void addDebuggingInformationOption(StringList& inArgList) override;
+	virtual void addProfileInformationCompileOption(StringList& inArgList) override;
+	virtual void addCompileOptions(StringList& inArgList) override;
+	virtual void addDiagnosticColorOption(StringList& inArgList) override;
+	virtual void addLibCppOption(StringList& inArgList, const CxxSpecialization specialization) override;
+	virtual void addPositionIndependentCodeOption(StringList& inArgList) override;
+	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList) override;
+	virtual void addThreadModelCompileOption(StringList& inArgList) override;
+
+	// Linking
+	virtual void addLibDirs(StringList& inArgList) override;
+	virtual void addLinks(StringList& inArgList) override;
+	virtual void addRunPath(StringList& inArgList) override;
+	virtual void addStripSymbolsOption(StringList& inArgList) override;
+	virtual void addLinkerOptions(StringList& inArgList) override;
+	virtual void addProfileInformationLinkerOption(StringList& inArgList) override;
+	virtual void addLinkTimeOptimizationOption(StringList& inArgList) override;
+	virtual void addThreadModelLinkerOption(StringList& inArgList) override;
+	virtual void addLinkerScripts(StringList& inArgList) override;
+	virtual void addLibStdCppOption(StringList& inArgList) override;
+	virtual void addStaticCompilerLibraryOptions(StringList& inArgList) override;
+	virtual void addPlatformGuiApplicationFlag(StringList& inArgList) override;
+
+	// Linking (Misc)
+	virtual void startStaticLinkGroup(StringList& inArgList);
+	virtual void endStaticLinkGroup(StringList& inArgList);
+	virtual void startExplicitDynamicLinkGroup(StringList& inArgList);
+
+	// Objective-C / Objective-C++
+	virtual void addObjectiveCxxLink(StringList& inArgList);
+	virtual void addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization);
+	virtual void addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization);
+
+	// MacOS
+	virtual void addMacosSysRootOption(StringList& inArgList);
+	virtual void addMacosFrameworkOptions(StringList& inArgList);
 
 	StringList getMingwDllTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 	StringList getDylibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);

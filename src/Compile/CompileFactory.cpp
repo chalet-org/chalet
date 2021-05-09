@@ -12,6 +12,7 @@
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
 
+#include "Compile/Toolchain/CompileToolchainApple.hpp"
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
 #include "Compile/Toolchain/CompileToolchainLLVM.hpp"
 #include "Compile/Toolchain/CompileToolchainMSVC.hpp"
@@ -42,10 +43,12 @@ namespace chalet
 {
 	switch (inType)
 	{
-		case ToolchainType::GNU:
-			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
+		case ToolchainType::Apple:
+			return std::make_unique<CompileToolchainApple>(inState, inProject, inConfig);
 		case ToolchainType::LLVM:
 			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
+		case ToolchainType::GNU:
+			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
 		case ToolchainType::MSVC:
 			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
 		default:
@@ -62,6 +65,7 @@ namespace chalet
 	switch (inCompilerType)
 	{
 		case CppCompilerType::AppleClang:
+			return std::make_unique<CompileToolchainApple>(inState, inProject, inConfig);
 		case CppCompilerType::Clang:
 		case CppCompilerType::MingwClang:
 		case CppCompilerType::EmScripten:

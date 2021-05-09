@@ -12,6 +12,7 @@ enum class ToolchainType : ushort
 {
 	GNU,
 	LLVM,
+	Apple,
 	MSVC
 };
 

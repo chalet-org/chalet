@@ -20,6 +20,7 @@ template <typename VectorType>
 inline void addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue);
 
 inline void addIfDoesNotExist(std::vector<std::string>& outList, const char* inValue);
+inline void addIfDoesNotExist(std::vector<std::string>& outList, const std::string& inValue);
 
 template <typename VectorType>
 inline void removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue);

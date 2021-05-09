@@ -14,11 +14,11 @@
 
 namespace chalet
 {
-struct CompileToolchainLLVM final : CompileToolchainGNU
+struct CompileToolchainLLVM : CompileToolchainGNU
 {
 	explicit CompileToolchainLLVM(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
 
-	virtual ToolchainType type() const final;
+	virtual ToolchainType type() const override;
 };
 }
 

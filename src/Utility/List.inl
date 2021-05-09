@@ -34,6 +34,12 @@ inline void List::addIfDoesNotExist(std::vector<std::string>& outList, const cha
 	List::addIfDoesNotExist(outList, std::string(inValue));
 }
 
+inline void List::addIfDoesNotExist(std::vector<std::string>& outList, const std::string& inValue)
+{
+	if (!contains(outList, inValue))
+		outList.push_back(inValue);
+}
+
 /*****************************************************************************/
 template <typename VectorType>
 inline void List::removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue)
