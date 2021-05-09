@@ -68,7 +68,7 @@ void ICompileToolchain::addDiagnosticColorOption(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void ICompileToolchain::addLibCppOption(StringList& inArgList, const CxxSpecialization specialization)
+void ICompileToolchain::addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization)
 {
 	UNUSED(inArgList, specialization);
 }
@@ -148,7 +148,7 @@ void ICompileToolchain::addLinkerScripts(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void ICompileToolchain::addLibStdCppOption(StringList& inArgList)
+void ICompileToolchain::addLibStdCppLinkerOption(StringList& inArgList)
 {
 	UNUSED(inArgList);
 }

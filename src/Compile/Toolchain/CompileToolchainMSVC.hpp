@@ -26,11 +26,11 @@ struct CompileToolchainMSVC : ICompileToolchain
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
 
 private:
-	void addIncludes(StringList& inArgList);
+	virtual void addIncludes(StringList& inArgList) override;
 	// void addLibDirs(StringList& inArgList);
 	// void addWarnings(StringList& inArgList);
-	void addDefines(StringList& inArgList);
-	void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization);
+	virtual void addDefines(StringList& inArgList) override;
+	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) override;
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

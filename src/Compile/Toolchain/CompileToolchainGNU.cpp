@@ -53,7 +53,7 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 	addLanguageStandard(ret, specialization);
 	addWarnings(ret);
 
-	addLibCppOption(ret, specialization);
+	addLibStdCppCompileOption(ret, specialization);
 	addPositionIndependentCodeOption(ret);
 	addCompileOptions(ret);
 	addObjectiveCxxRuntimeOption(ret, specialization);
@@ -139,7 +139,7 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 	addWarnings(ret);
 	addObjectiveCxxCompileOption(ret, specialization);
 
-	addLibCppOption(ret, specialization);
+	addLibStdCppCompileOption(ret, specialization);
 	addPositionIndependentCodeOption(ret);
 	addCompileOptions(ret);
 	addObjectiveCxxRuntimeOption(ret, specialization);
@@ -166,7 +166,7 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 }
 
 /*****************************************************************************/
-// TODO: sourceObs needs to be a list
+// TODO: This treats clang as a dylib target which is wrong... (only on apple)
 StringList CompileToolchainGNU::getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	switch (m_project.kind())
@@ -221,7 +221,7 @@ StringList CompileToolchainGNU::getMingwDllTargetCommand(const std::string& outp
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
 	addLinkerScripts(ret);
-	addLibStdCppOption(ret);
+	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
 	addPlatformGuiApplicationFlag(ret);
 	addMacosFrameworkOptions(ret);
@@ -257,7 +257,7 @@ StringList CompileToolchainGNU::getDylibTargetCommand(const std::string& outputF
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
 	addLinkerScripts(ret);
-	addLibStdCppOption(ret);
+	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
 	addPlatformGuiApplicationFlag(ret);
 	addMacosFrameworkOptions(ret);
@@ -292,7 +292,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
 	addLinkerScripts(ret);
-	addLibStdCppOption(ret);
+	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
 	addPlatformGuiApplicationFlag(ret);
 	addMacosFrameworkOptions(ret);
@@ -352,7 +352,7 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
 	addLinkerScripts(ret);
-	addLibStdCppOption(ret);
+	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
 	addPlatformGuiApplicationFlag(ret);
 	addMacosFrameworkOptions(ret);
@@ -390,7 +390,11 @@ void CompileToolchainGNU::addIncludes(StringList& inArgList)
 
 #if !defined(CHALET_WIN32)
 	// must be last
-	std::string localInclude = prefix + "/usr/local/include";
+	std::string localInclude = prefix;
+	if (m_quotePaths)
+		localInclude += "\"/usr/local/include/\"";
+	else
+		localInclude += "/usr/local/include/";
 	List::addIfDoesNotExist(inArgList, std::move(localInclude));
 #endif
 }
@@ -411,7 +415,11 @@ void CompileToolchainGNU::addLibDirs(StringList& inArgList)
 
 #if !defined(CHALET_WIN32)
 	// must be last
-	std::string localLib = prefix + "/usr/local/lib";
+	std::string localLib = prefix;
+	if (m_quotePaths)
+		localLib += "\"/usr/local/lib/\"";
+	else
+		localLib += "/usr/local/lib/";
 	List::addIfDoesNotExist(inArgList, std::move(localLib));
 #endif
 }
@@ -475,33 +483,6 @@ void CompileToolchainGNU::addLinks(StringList& inArgList)
 		{
 			inArgList.push_back(prefix + link);
 		}
-	}
-}
-
-/*****************************************************************************/
-void CompileToolchainGNU::startStaticLinkGroup(StringList& inArgList)
-{
-	if (!m_config.isAppleClang())
-	{
-		inArgList.push_back("-Wl,--copy-dt-needed-entries");
-		inArgList.push_back("-Wl,-Bstatic");
-		inArgList.push_back("-Wl,--start-group");
-	}
-}
-
-void CompileToolchainGNU::endStaticLinkGroup(StringList& inArgList)
-{
-	if (!m_config.isAppleClang())
-	{
-		inArgList.push_back("-Wl,--end-group");
-	}
-}
-
-void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& inArgList)
-{
-	if (!m_config.isAppleClang())
-	{
-		inArgList.push_back("-Wl,-Bdynamic");
 	}
 }
 
@@ -587,60 +568,12 @@ void CompileToolchainGNU::addDebuggingInformationOption(StringList& inArgList)
 /*****************************************************************************/
 void CompileToolchainGNU::addProfileInformationCompileOption(StringList& inArgList)
 {
-	if (!m_config.isAppleClang())
-	{
-		// -pg not supported in apple clang
-		// TODO: gcc/clang distinction on mac?
+	// TODO: gcc/clang distinction on mac?
 
-		if (m_state.configuration.enableProfiling())
-		{
-			if (!m_project.isSharedLibrary())
-				inArgList.push_back("-pg");
-		}
-	}
-}
-
-/*****************************************************************************/
-void CompileToolchainGNU::addObjectiveCxxLink(StringList& inArgList)
-{
-	const std::string prefix{ "-l" };
-	if (m_project.objectiveCxx() && !m_config.isAppleClang())
+	if (m_state.configuration.enableProfiling())
 	{
-		std::string objc = prefix + "objc";
-		List::addIfDoesNotExist(inArgList, std::move(objc));
-	}
-}
-
-/*****************************************************************************/
-void CompileToolchainGNU::addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization)
-{
-	const bool isObjCpp = specialization == CxxSpecialization::ObjectiveCpp;
-	const bool isObjC = specialization == CxxSpecialization::ObjectiveC;
-	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
-	if (m_project.objectiveCxx() && m_config.isAppleClang() && isObjCxx)
-	{
-		inArgList.push_back("-x");
-		if (isObjCpp)
-			inArgList.push_back("objective-c++");
-		else if (isObjC)
-			inArgList.push_back("objective-c");
-	}
-}
-
-/*****************************************************************************/
-void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization)
-{
-	if (!m_config.isAppleClang())
-	{
-		const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
-		if (isObjCxx)
-		{
-#if defined(CHALET_MACOS)
-			List::addIfDoesNotExist(inArgList, "-fnext-runtime");
-#else
-			List::addIfDoesNotExist(inArgList, "-fgnu-runtime");
-#endif
-		}
+		if (!m_project.isSharedLibrary())
+			inArgList.push_back("-pg");
 	}
 }
 
@@ -660,24 +593,15 @@ void CompileToolchainGNU::addDiagnosticColorOption(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLibCppOption(StringList& inArgList, const CxxSpecialization specialization)
+void CompileToolchainGNU::addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization)
 {
-	if (m_config.isAppleClang())
-	{
-		if (specialization != CxxSpecialization::ObjectiveC)
-		{
-			List::addIfDoesNotExist(inArgList, "-stdlib=libc++");
-		}
-	}
+	UNUSED(inArgList, specialization);
 }
 
 /*****************************************************************************/
 void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& inArgList)
 {
-	if (m_config.isGcc())
-	{
-		List::addIfDoesNotExist(inArgList, "-fPIC");
-	}
+	List::addIfDoesNotExist(inArgList, "-fPIC");
 }
 
 /*****************************************************************************/
@@ -692,34 +616,18 @@ void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& inArgLis
 /*****************************************************************************/
 void CompileToolchainGNU::addThreadModelCompileOption(StringList& inArgList)
 {
-	// #if defined(CHALET_LINUX)
-	if (m_config.isGcc())
+	if (m_project.posixThreads())
 	{
-		if (m_project.posixThreads())
-			List::addIfDoesNotExist(inArgList, "-pthread");
+		List::addIfDoesNotExist(inArgList, "-pthread");
 	}
-	// #endif
-}
-
-/*****************************************************************************/
-void CompileToolchainGNU::addMacosSysRootOption(StringList& inArgList)
-{
-#if defined(CHALET_MACOS)
-	// TODO: Test Homebrew LLVM/GCC with this
-	inArgList.push_back("-isysroot");
-	inArgList.push_back(m_state.tools.macosSdk());
-#endif
 }
 
 /*****************************************************************************/
 void CompileToolchainGNU::addStripSymbolsOption(StringList& inArgList)
 {
-	if (!m_config.isClang())
+	if (m_state.configuration.stripSymbols())
 	{
-		if (m_state.configuration.stripSymbols())
-		{
-			inArgList.push_back("-s");
-		}
+		inArgList.push_back("-s");
 	}
 }
 
@@ -735,30 +643,24 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 /*****************************************************************************/
 void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& inArgList)
 {
-	if (!m_config.isAppleClang())
+	const bool enableProfiling = m_state.configuration.enableProfiling();
+	if (enableProfiling && m_project.isExecutable())
 	{
-		const bool enableProfiling = m_state.configuration.enableProfiling();
-		if (enableProfiling && m_project.isExecutable())
-		{
-			inArgList.push_back("-Wl,--allow-multiple-definition");
-			inArgList.push_back("-pg");
-		}
+		inArgList.push_back("-Wl,--allow-multiple-definition");
+		inArgList.push_back("-pg");
 	}
 }
 
 /*****************************************************************************/
 void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& inArgList)
 {
-	if (!m_config.isAppleClang())
-	{
-		const bool enableProfiling = m_state.configuration.enableProfiling();
-		auto& configuration = m_state.configuration;
-		const bool debugSymbols = configuration.debugSymbols();
+	auto& configuration = m_state.configuration;
+	const bool enableProfiling = configuration.enableProfiling();
+	const bool debugSymbols = configuration.debugSymbols();
 
-		if (!enableProfiling && !debugSymbols && configuration.linkTimeOptimization())
-		{
-			List::addIfDoesNotExist(inArgList, "-flto");
-		}
+	if (!enableProfiling && !debugSymbols && configuration.linkTimeOptimization())
+	{
+		List::addIfDoesNotExist(inArgList, "-flto");
 	}
 }
 
@@ -783,51 +685,34 @@ void CompileToolchainGNU::addThreadModelLinkerOption(StringList& inArgList)
 /*****************************************************************************/
 void CompileToolchainGNU::addLinkerScripts(StringList& inArgList)
 {
-	// TODO: Check if there's a clang/apple clang version of this
-	if (!m_config.isClang())
+	const auto& linkerScript = m_project.linkerScript();
+	if (!linkerScript.empty())
 	{
-		const auto& linkerScript = m_project.linkerScript();
-		if (!linkerScript.empty())
-		{
-			inArgList.push_back("-T");
-			inArgList.push_back(linkerScript);
-		}
+		inArgList.push_back("-T");
+		inArgList.push_back(linkerScript);
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLibStdCppOption(StringList& inArgList)
+void CompileToolchainGNU::addLibStdCppLinkerOption(StringList& inArgList)
 {
-	if (m_config.isAppleClang())
-	{
-		List::addIfDoesNotExist(inArgList, "-stdlib=libc++");
-
-		// TODO: Apple has a "-stdlib=libstdc++" flag that is pre-C++11 for compatibility
-	}
+	// Not used in GCC
+	UNUSED(inArgList);
 }
 
 /*****************************************************************************/
 void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& inArgList)
 {
+	// List::addIfDoesNotExist(inArgList, "-libstdc++");
+
 	if (m_project.staticLinking())
 	{
-		// List::addIfDoesNotExist(inArgList, "-libstdc++");
-
-		if (m_config.isClang())
-		{
-			List::addIfDoesNotExist(inArgList, "-static-libsan");
-
-			// TODO: Investigate for other -static candidates on clang/mac
-		}
-		else
-		{
-			List::addIfDoesNotExist(inArgList, "-static-libgcc");
-			List::addIfDoesNotExist(inArgList, "-static-libasan");
-			List::addIfDoesNotExist(inArgList, "-static-libtsan");
-			List::addIfDoesNotExist(inArgList, "-static-liblsan");
-			List::addIfDoesNotExist(inArgList, "-static-libubsan");
-			List::addIfDoesNotExist(inArgList, "-static-libstdc++");
-		}
+		List::addIfDoesNotExist(inArgList, "-static-libgcc");
+		List::addIfDoesNotExist(inArgList, "-static-libasan");
+		List::addIfDoesNotExist(inArgList, "-static-libtsan");
+		List::addIfDoesNotExist(inArgList, "-static-liblsan");
+		List::addIfDoesNotExist(inArgList, "-static-libubsan");
+		List::addIfDoesNotExist(inArgList, "-static-libstdc++");
 	}
 }
 
@@ -844,6 +729,77 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& inArgList)
 			List::addIfDoesNotExist(inArgList, "-mwindows");
 		}
 	}
+}
+
+/*****************************************************************************/
+// Linking (Misc)
+/*****************************************************************************/
+/*****************************************************************************/
+void CompileToolchainGNU::startStaticLinkGroup(StringList& inArgList)
+{
+	inArgList.push_back("-Wl,--copy-dt-needed-entries");
+	inArgList.push_back("-Wl,-Bstatic");
+	inArgList.push_back("-Wl,--start-group");
+}
+
+void CompileToolchainGNU::endStaticLinkGroup(StringList& inArgList)
+{
+	inArgList.push_back("-Wl,--end-group");
+}
+
+void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& inArgList)
+{
+	inArgList.push_back("-Wl,-Bdynamic");
+}
+
+/*****************************************************************************/
+// Objective-C / Objective-C++
+/*****************************************************************************/
+/*****************************************************************************/
+void CompileToolchainGNU::addObjectiveCxxLink(StringList& inArgList)
+{
+	const std::string prefix{ "-l" };
+	if (m_project.objectiveCxx())
+	{
+		std::string objc = prefix + "objc";
+		List::addIfDoesNotExist(inArgList, std::move(objc));
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainGNU::addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization)
+{
+	// Used by AppleClang
+	UNUSED(inArgList, specialization);
+}
+
+/*****************************************************************************/
+void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization)
+{
+	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
+	if (isObjCxx)
+	{
+#if defined(CHALET_MACOS)
+		List::addIfDoesNotExist(inArgList, "-fnext-runtime");
+#else
+		List::addIfDoesNotExist(inArgList, "-fgnu-runtime");
+#endif
+	}
+}
+
+/*****************************************************************************/
+// MacOS
+/*****************************************************************************/
+/*****************************************************************************/
+void CompileToolchainGNU::addMacosSysRootOption(StringList& inArgList)
+{
+#if defined(CHALET_MACOS)
+	// TODO: Test Homebrew LLVM/GCC with this
+	inArgList.push_back("-isysroot");
+	inArgList.push_back(m_state.tools.macosSdk());
+#else
+	UNUSED(inArgList);
+#endif
 }
 
 /*****************************************************************************/
@@ -867,6 +823,8 @@ void CompileToolchainGNU::addMacosFrameworkOptions(StringList& inArgList)
 			// inArgList.push_back(framework + suffix);
 		}
 	}
+#else
+	UNUSED(inArgList);
 #endif
 }
 }

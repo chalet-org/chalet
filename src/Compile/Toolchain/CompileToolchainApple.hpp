@@ -19,6 +19,15 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 	explicit CompileToolchainApple(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
 
 	virtual ToolchainType type() const final;
+
+	// Linking
+	virtual void addProfileInformationLinkerOption(StringList& inArgList) override;
+	virtual void addLibStdCppLinkerOption(StringList& inArgList) override;
+
+	// Objective-C / Objective-C++
+	virtual void addObjectiveCxxLink(StringList& inArgList) final;
+	virtual void addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization) final;
+	virtual void addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization) final;
 };
 }
 

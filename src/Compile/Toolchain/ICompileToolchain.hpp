@@ -33,7 +33,7 @@ struct ICompileToolchain
 	virtual void addProfileInformationCompileOption(StringList& inArgList);
 	virtual void addCompileOptions(StringList& inArgList);
 	virtual void addDiagnosticColorOption(StringList& inArgList);
-	virtual void addLibCppOption(StringList& inArgList, const CxxSpecialization specialization);
+	virtual void addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization);
 	virtual void addPositionIndependentCodeOption(StringList& inArgList);
 	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList);
 	virtual void addThreadModelCompileOption(StringList& inArgList);
@@ -48,7 +48,7 @@ struct ICompileToolchain
 	virtual void addLinkTimeOptimizationOption(StringList& inArgList);
 	virtual void addThreadModelLinkerOption(StringList& inArgList);
 	virtual void addLinkerScripts(StringList& inArgList);
-	virtual void addLibStdCppOption(StringList& inArgList);
+	virtual void addLibStdCppLinkerOption(StringList& inArgList);
 	virtual void addStaticCompilerLibraryOptions(StringList& inArgList);
 	virtual void addPlatformGuiApplicationFlag(StringList& inArgList);
 };

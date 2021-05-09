@@ -37,7 +37,7 @@ protected:
 	virtual void addProfileInformationCompileOption(StringList& inArgList) override;
 	virtual void addCompileOptions(StringList& inArgList) override;
 	virtual void addDiagnosticColorOption(StringList& inArgList) override;
-	virtual void addLibCppOption(StringList& inArgList, const CxxSpecialization specialization) override;
+	virtual void addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) override;
 	virtual void addPositionIndependentCodeOption(StringList& inArgList) override;
 	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList) override;
 	virtual void addThreadModelCompileOption(StringList& inArgList) override;
@@ -52,7 +52,7 @@ protected:
 	virtual void addLinkTimeOptimizationOption(StringList& inArgList) override;
 	virtual void addThreadModelLinkerOption(StringList& inArgList) override;
 	virtual void addLinkerScripts(StringList& inArgList) override;
-	virtual void addLibStdCppOption(StringList& inArgList) override;
+	virtual void addLibStdCppLinkerOption(StringList& inArgList) override;
 	virtual void addStaticCompilerLibraryOptions(StringList& inArgList) override;
 	virtual void addPlatformGuiApplicationFlag(StringList& inArgList) override;
 
