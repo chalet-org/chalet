@@ -48,7 +48,7 @@ std::string NinjaGenerator::getContents(const SourceOutputs& inOutputs, const st
 	const std::string rules = getRules(inOutputs.fileExtensions);
 	const std::string buildRules = getBuildRules(inOutputs);
 
-	auto objects = String::join(inOutputs.objectList);
+	auto objects = String::join(inOutputs.objectListLinker);
 	auto assemblies = String::join(inOutputs.assemblyList);
 
 	for (auto& project : m_state.projects)

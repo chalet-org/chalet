@@ -270,6 +270,18 @@ StringList String::filterIf(const std::vector<std::string>& inFind, const String
 }
 
 /*****************************************************************************/
+StringList String::excludeIf(const StringList& inFind, const StringList& inList)
+{
+	StringList ret;
+	for (auto& item : inList)
+	{
+		if (!List::contains(inFind, item))
+			ret.push_back(item);
+	}
+	return ret;
+}
+
+/*****************************************************************************/
 std::string String::getPathSuffix(const std::string& inPath)
 {
 	return inPath.substr(inPath.find_last_of('.') + 1);

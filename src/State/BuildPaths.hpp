@@ -44,17 +44,18 @@ private:
 		StringList list;
 	};
 
-	StringList getObjectFilesList(const SourceGroup& inFiles) const;
-	StringList getObjectFilesListObj(const SourceGroup& inFiles) const;
+	StringList getObjectFilesList(const StringList& inFiles, const bool inObjExtension) const;
 	StringList getDependencyFilesList(const SourceGroup& inFiles) const;
-	StringList getAssemblyFilesList(const SourceGroup& inFiles) const;
-	StringList getAssemblyFilesListObj(const SourceGroup& inFiles) const;
+	StringList getAssemblyFilesList(const SourceGroup& inFiles, const bool inObjExtension) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
 	std::string getPrecompiledHeaderDirectory(const ProjectConfiguration& inProject) const;
 	SourceGroup getFiles(const ProjectConfiguration& inProject) const;
 	SourceGroup getDirectories(const ProjectConfiguration& inProject) const;
 	StringList getFileList(const ProjectConfiguration& inProject) const;
 	StringList getDirectoryList(const ProjectConfiguration& inProject) const;
+
+	mutable StringList m_fileListCache;
+	// mutable StringList m_directoryCache;
 
 	std::string m_workingDirectory;
 	mutable std::string m_buildDir{ "build" };
@@ -65,6 +66,7 @@ private:
 
 	bool m_initialized = false;
 	mutable bool m_binDirMade = false;
+	bool m_useCache = true;
 };
 }
 

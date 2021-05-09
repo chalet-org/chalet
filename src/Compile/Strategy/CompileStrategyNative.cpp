@@ -103,7 +103,7 @@ bool CompileStrategyNative::createCache(const SourceOutputs& inOutputs)
 {
 	getCompileCommands(inOutputs.objectList);
 	getAsmCommands(inOutputs.assemblyList);
-	getLinkCommand(inOutputs.objectList);
+	getLinkCommand(inOutputs.objectListLinker);
 
 	return true;
 }

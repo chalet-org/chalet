@@ -11,6 +11,7 @@ namespace chalet
 struct SourceOutputs
 {
 	StringList objectList;
+	StringList objectListLinker;
 	StringList dependencyList;
 	StringList assemblyList;
 

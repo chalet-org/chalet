@@ -113,16 +113,17 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, cons
 	SourceGroup files = getFiles(inProject);
 	SourceGroup directories = getDirectories(inProject);
 
-	for (auto& file : files.list)
+	ret.objectListLinker = getObjectFilesList(files.list, inObjExtension);
+	ret.objectList = getObjectFilesList(String::excludeIf(m_fileListCache, files.list), inObjExtension);
+
+	for (const auto& file : files.list)
 	{
 		auto ext = String::getPathSuffix(file);
 		List::addIfDoesNotExist(ret.fileExtensions, std::move(ext));
-	}
 
-	if (inObjExtension)
-		ret.objectList = getObjectFilesListObj(files);
-	else
-		ret.objectList = getObjectFilesList(files);
+		if (m_useCache && !List::contains(m_fileListCache, file))
+			m_fileListCache.push_back(file);
+	}
 
 	StringList objSubDirs = getOutputDirectoryList(directories, m_objDir);
 
@@ -132,10 +133,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, cons
 	StringList asmSubDirs;
 	if (dumpAssembly)
 	{
-		if (inObjExtension)
-			ret.assemblyList = getAssemblyFilesListObj(files);
-		else
-			ret.assemblyList = getAssemblyFilesList(files);
+		ret.assemblyList = getAssemblyFilesList(files, inObjExtension);
 
 		asmSubDirs = getOutputDirectoryList(directories, m_asmDir);
 
@@ -251,35 +249,14 @@ std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectConfiguration& 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-StringList BuildPaths::getObjectFilesList(const SourceGroup& inFiles) const
+StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const bool inObjExtension) const
 {
-	StringList ret = inFiles.list;
-	std::for_each(ret.begin(), ret.end(), [this](std::string& str) {
+	StringList ret = inFiles;
+	auto ext = inObjExtension ? "obj" : "o";
+	std::for_each(ret.begin(), ret.end(), [this, &ext](std::string& str) {
 		if (!String::endsWith(".rc", str))
 		{
-			str = fmt::format("{}/{}.o", m_objDir, str);
-		}
-		else
-		{
-#if defined(CHALET_WIN32)
-			str = fmt::format("{}/{}.res", m_objDir, str);
-#else
-			str = "";
-#endif
-		}
-	});
-
-	return ret;
-}
-
-/*****************************************************************************/
-StringList BuildPaths::getObjectFilesListObj(const SourceGroup& inFiles) const
-{
-	StringList ret = inFiles.list;
-	std::for_each(ret.begin(), ret.end(), [this](std::string& str) {
-		if (!String::endsWith(".rc", str))
-		{
-			str = fmt::format("{}/{}.obj", m_objDir, str);
+			str = fmt::format("{}/{}.{}", m_objDir, str, ext);
 		}
 		else
 		{
@@ -308,31 +285,14 @@ StringList BuildPaths::getDependencyFilesList(const SourceGroup& inFiles) const
 }
 
 /*****************************************************************************/
-StringList BuildPaths::getAssemblyFilesList(const SourceGroup& inFiles) const
+StringList BuildPaths::getAssemblyFilesList(const SourceGroup& inFiles, const bool inObjExtension) const
 {
 	StringList ret = inFiles.list;
-	std::for_each(ret.begin(), ret.end(), [this](std::string& str) {
+	auto ext = inObjExtension ? "obj" : "o";
+	std::for_each(ret.begin(), ret.end(), [this, &ext](std::string& str) {
 		if (!String::endsWith(".rc", str))
 		{
-			str = fmt::format("{}/{}.o.asm", m_asmDir, str);
-		}
-		else
-		{
-			str = "";
-		}
-	});
-
-	return ret;
-}
-
-/*****************************************************************************/
-StringList BuildPaths::getAssemblyFilesListObj(const SourceGroup& inFiles) const
-{
-	StringList ret = inFiles.list;
-	std::for_each(ret.begin(), ret.end(), [this](std::string& str) {
-		if (!String::endsWith(".rc", str))
-		{
-			str = fmt::format("{}/{}.obj.asm", m_asmDir, str);
+			str = fmt::format("{}/{}.{}.asm", m_asmDir, str, ext);
 		}
 		else
 		{
@@ -391,7 +351,7 @@ StringList BuildPaths::getFileList(const ProjectConfiguration& inProject) const
 		std::string loc = locRaw;
 		Path::sanitize(loc);
 
-		// if (inCheckExisting && List::contains(outCache, loc))
+		// if (m_useCache && List::contains(m_fileListCache, loc))
 		// 	continue;
 
 		int j = 0;
@@ -431,8 +391,8 @@ StringList BuildPaths::getFileList(const ProjectConfiguration& inProject) const
 			j++;
 		}
 
-		// if (inCheckExisting && !List::contains(outCache, loc))
-		// 	outCache.push_back(loc);
+		// if (m_useCache && !List::contains(m_fileListCache, source))
+		// 	m_fileListCache.push_back(source);
 	}
 
 	return ret;
@@ -484,7 +444,7 @@ StringList BuildPaths::getDirectoryList(const ProjectConfiguration& inProject) c
 		std::string loc = locRaw;
 		Path::sanitize(loc);
 
-		// if (inCheckExisting && List::contains(outCache, loc))
+		// if (m_useCache && List::contains(m_directoryCache, loc))
 		// 	continue;
 
 		ret.push_back(loc);
@@ -515,8 +475,8 @@ StringList BuildPaths::getDirectoryList(const ProjectConfiguration& inProject) c
 			ret.push_back(path);
 		}
 
-		// if (inCheckExisting && !List::contains(outCache, loc))
-		// 	outCache.push_back(loc);
+		// if (m_useCache && !List::contains(m_directoryCache, loc))
+		// 	m_directoryCache.push_back(loc);
 	}
 
 	return ret;

@@ -36,7 +36,7 @@ std::string MakefileGeneratorNMake::getContents(const SourceOutputs& inOutputs)
 
 	const auto buildRecipes = getBuildRecipes(inOutputs);
 
-	const auto objectList = getMsvcObjectFileList(inOutputs.objectList);
+	const auto objectList = getMsvcObjectFileList(inOutputs.objectListLinker);
 	auto objects = String::join(objectList);
 	for (auto& ext : inOutputs.fileExtensions)
 	{
