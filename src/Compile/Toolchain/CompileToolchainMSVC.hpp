@@ -14,7 +14,7 @@
 
 namespace chalet
 {
-struct CompileToolchainMSVC : ICompileToolchain
+struct CompileToolchainMSVC final : ICompileToolchain
 {
 	explicit CompileToolchainMSVC(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
 
@@ -26,11 +26,11 @@ struct CompileToolchainMSVC : ICompileToolchain
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
 
 private:
-	virtual void addIncludes(StringList& inArgList) override;
-	// void addLibDirs(StringList& inArgList);
-	// void addWarnings(StringList& inArgList);
-	virtual void addDefines(StringList& inArgList) override;
-	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) override;
+	virtual void addIncludes(StringList& inArgList) const final;
+	// virtual void addLibDirs(StringList& inArgList) final;
+	// virtual void addWarnings(StringList& inArgList) final;
+	virtual void addDefines(StringList& inArgList) const final;
+	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const final;
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

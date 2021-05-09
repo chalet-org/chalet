@@ -27,48 +27,48 @@ struct CompileToolchainGNU : ICompileToolchain
 
 protected:
 	// Compile
-	virtual void addIncludes(StringList& inArgList) override;
-	virtual void addWarnings(StringList& inArgList) override;
-	virtual void addDefines(StringList& inArgList) override;
-	virtual void addPchInclude(StringList& inArgList) override;
-	virtual void addOptimizationOption(StringList& inArgList) override;
-	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) override;
-	virtual void addDebuggingInformationOption(StringList& inArgList) override;
-	virtual void addProfileInformationCompileOption(StringList& inArgList) override;
-	virtual void addCompileOptions(StringList& inArgList) override;
-	virtual void addDiagnosticColorOption(StringList& inArgList) override;
-	virtual void addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) override;
-	virtual void addPositionIndependentCodeOption(StringList& inArgList) override;
-	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList) override;
-	virtual void addThreadModelCompileOption(StringList& inArgList) override;
+	virtual void addIncludes(StringList& inArgList) const override;
+	virtual void addWarnings(StringList& inArgList) const override;
+	virtual void addDefines(StringList& inArgList) const override;
+	virtual void addPchInclude(StringList& inArgList) const override;
+	virtual void addOptimizationOption(StringList& inArgList) const override;
+	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const override;
+	virtual void addDebuggingInformationOption(StringList& inArgList) const override;
+	virtual void addProfileInformationCompileOption(StringList& inArgList) const override;
+	virtual void addCompileOptions(StringList& inArgList) const override;
+	virtual void addDiagnosticColorOption(StringList& inArgList) const override;
+	virtual void addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) const override;
+	virtual void addPositionIndependentCodeOption(StringList& inArgList) const override;
+	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList) const override;
+	virtual void addThreadModelCompileOption(StringList& inArgList) const override;
 
 	// Linking
-	virtual void addLibDirs(StringList& inArgList) override;
-	virtual void addLinks(StringList& inArgList) override;
-	virtual void addRunPath(StringList& inArgList) override;
-	virtual void addStripSymbolsOption(StringList& inArgList) override;
-	virtual void addLinkerOptions(StringList& inArgList) override;
-	virtual void addProfileInformationLinkerOption(StringList& inArgList) override;
-	virtual void addLinkTimeOptimizationOption(StringList& inArgList) override;
-	virtual void addThreadModelLinkerOption(StringList& inArgList) override;
-	virtual void addLinkerScripts(StringList& inArgList) override;
-	virtual void addLibStdCppLinkerOption(StringList& inArgList) override;
-	virtual void addStaticCompilerLibraryOptions(StringList& inArgList) override;
-	virtual void addPlatformGuiApplicationFlag(StringList& inArgList) override;
+	virtual void addLibDirs(StringList& inArgList) const override;
+	virtual void addLinks(StringList& inArgList) const override;
+	virtual void addRunPath(StringList& inArgList) const override;
+	virtual void addStripSymbolsOption(StringList& inArgList) const override;
+	virtual void addLinkerOptions(StringList& inArgList) const override;
+	virtual void addProfileInformationLinkerOption(StringList& inArgList) const override;
+	virtual void addLinkTimeOptimizationOption(StringList& inArgList) const override;
+	virtual void addThreadModelLinkerOption(StringList& inArgList) const override;
+	virtual void addLinkerScripts(StringList& inArgList) const override;
+	virtual void addLibStdCppLinkerOption(StringList& inArgList) const override;
+	virtual void addStaticCompilerLibraryOptions(StringList& inArgList) const override;
+	virtual void addPlatformGuiApplicationFlag(StringList& inArgList) const override;
 
 	// Linking (Misc)
-	virtual void startStaticLinkGroup(StringList& inArgList);
-	virtual void endStaticLinkGroup(StringList& inArgList);
-	virtual void startExplicitDynamicLinkGroup(StringList& inArgList);
+	virtual void startStaticLinkGroup(StringList& inArgList) const;
+	virtual void endStaticLinkGroup(StringList& inArgList) const;
+	virtual void startExplicitDynamicLinkGroup(StringList& inArgList) const;
 
 	// Objective-C / Objective-C++
-	virtual void addObjectiveCxxLink(StringList& inArgList);
-	virtual void addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization);
-	virtual void addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization);
+	virtual void addObjectiveCxxLink(StringList& inArgList) const;
+	virtual void addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization) const;
+	virtual void addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization) const;
 
 	// MacOS
-	virtual void addMacosSysRootOption(StringList& inArgList);
-	virtual void addMacosFrameworkOptions(StringList& inArgList);
+	virtual void addMacosSysRootOption(StringList& inArgList) const;
+	virtual void addMacosFrameworkOptions(StringList& inArgList) const;
 
 	StringList getMingwDllTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 	StringList getDylibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
@@ -76,7 +76,7 @@ protected:
 	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 
-	void addSourceObjects(StringList& inArgList, const StringList& sourceObjs);
+	void addSourceObjects(StringList& inArgList, const StringList& sourceObjs) const;
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

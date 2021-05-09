@@ -361,7 +361,7 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addSourceObjects(StringList& inArgList, const StringList& sourceObjs)
+void CompileToolchainGNU::addSourceObjects(StringList& inArgList, const StringList& sourceObjs) const
 {
 	for (auto& source : sourceObjs)
 	{
@@ -370,7 +370,7 @@ void CompileToolchainGNU::addSourceObjects(StringList& inArgList, const StringLi
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addIncludes(StringList& inArgList)
+void CompileToolchainGNU::addIncludes(StringList& inArgList) const
 {
 	const std::string prefix{ "-I" };
 	for (const auto& dir : m_project.includeDirs())
@@ -400,7 +400,7 @@ void CompileToolchainGNU::addIncludes(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLibDirs(StringList& inArgList)
+void CompileToolchainGNU::addLibDirs(StringList& inArgList) const
 {
 	const std::string prefix{ "-L" };
 	for (const auto& dir : m_project.libDirs())
@@ -425,7 +425,7 @@ void CompileToolchainGNU::addLibDirs(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addWarnings(StringList& inArgList)
+void CompileToolchainGNU::addWarnings(StringList& inArgList) const
 {
 	const std::string prefix{ "-W" };
 	for (auto& warning : m_project.warnings())
@@ -446,7 +446,7 @@ void CompileToolchainGNU::addWarnings(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addDefines(StringList& inArgList)
+void CompileToolchainGNU::addDefines(StringList& inArgList) const
 {
 	const std::string prefix{ "-D" };
 	for (auto& define : m_project.defines())
@@ -456,7 +456,7 @@ void CompileToolchainGNU::addDefines(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLinks(StringList& inArgList)
+void CompileToolchainGNU::addLinks(StringList& inArgList) const
 {
 	const std::string prefix{ "-l" };
 	const bool hasStaticLinks = m_project.staticLinks().size() > 0;
@@ -487,7 +487,7 @@ void CompileToolchainGNU::addLinks(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addPchInclude(StringList& inArgList)
+void CompileToolchainGNU::addPchInclude(StringList& inArgList) const
 {
 	// TODO: Potential for more than one pch?
 	if (m_project.usesPch())
@@ -503,7 +503,7 @@ void CompileToolchainGNU::addPchInclude(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addOptimizationOption(StringList& inArgList)
+void CompileToolchainGNU::addOptimizationOption(StringList& inArgList) const
 {
 	std::string opt;
 	auto& configuration = m_state.configuration;
@@ -520,7 +520,7 @@ void CompileToolchainGNU::addOptimizationOption(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addRunPath(StringList& inArgList)
+void CompileToolchainGNU::addRunPath(StringList& inArgList) const
 {
 #if defined(CHALET_LINUX)
 	inArgList.push_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
@@ -530,7 +530,7 @@ void CompileToolchainGNU::addRunPath(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization)
+void CompileToolchainGNU::addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const
 {
 	const bool useC = m_project.language() == CodeLanguage::C || specialization == CxxSpecialization::ObjectiveC;
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
@@ -556,7 +556,7 @@ void CompileToolchainGNU::addLanguageStandard(StringList& inArgList, const CxxSp
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addDebuggingInformationOption(StringList& inArgList)
+void CompileToolchainGNU::addDebuggingInformationOption(StringList& inArgList) const
 {
 	// TODO: Control debugging information level (g, g0-g3) from configurations
 	if (m_state.configuration.debugSymbols())
@@ -566,7 +566,7 @@ void CompileToolchainGNU::addDebuggingInformationOption(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addProfileInformationCompileOption(StringList& inArgList)
+void CompileToolchainGNU::addProfileInformationCompileOption(StringList& inArgList) const
 {
 	// TODO: gcc/clang distinction on mac?
 
@@ -578,7 +578,7 @@ void CompileToolchainGNU::addProfileInformationCompileOption(StringList& inArgLi
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addCompileOptions(StringList& inArgList)
+void CompileToolchainGNU::addCompileOptions(StringList& inArgList) const
 {
 	for (auto& option : m_project.compileOptions())
 	{
@@ -587,25 +587,25 @@ void CompileToolchainGNU::addCompileOptions(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addDiagnosticColorOption(StringList& inArgList)
+void CompileToolchainGNU::addDiagnosticColorOption(StringList& inArgList) const
 {
 	List::addIfDoesNotExist(inArgList, "-fdiagnostics-color=always");
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization)
+void CompileToolchainGNU::addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) const
 {
 	UNUSED(inArgList, specialization);
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& inArgList)
+void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& inArgList) const
 {
 	List::addIfDoesNotExist(inArgList, "-fPIC");
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& inArgList)
+void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& inArgList) const
 {
 	if (!m_project.rtti())
 	{
@@ -614,7 +614,7 @@ void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& inArgLis
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addThreadModelCompileOption(StringList& inArgList)
+void CompileToolchainGNU::addThreadModelCompileOption(StringList& inArgList) const
 {
 	if (m_project.posixThreads())
 	{
@@ -623,7 +623,7 @@ void CompileToolchainGNU::addThreadModelCompileOption(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addStripSymbolsOption(StringList& inArgList)
+void CompileToolchainGNU::addStripSymbolsOption(StringList& inArgList) const
 {
 	if (m_state.configuration.stripSymbols())
 	{
@@ -632,7 +632,7 @@ void CompileToolchainGNU::addStripSymbolsOption(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
+void CompileToolchainGNU::addLinkerOptions(StringList& inArgList) const
 {
 	for (auto& option : m_project.linkerOptions())
 	{
@@ -641,7 +641,7 @@ void CompileToolchainGNU::addLinkerOptions(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& inArgList)
+void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& inArgList) const
 {
 	const bool enableProfiling = m_state.configuration.enableProfiling();
 	if (enableProfiling && m_project.isExecutable())
@@ -652,7 +652,7 @@ void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& inArgLis
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& inArgList)
+void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& inArgList) const
 {
 	auto& configuration = m_state.configuration;
 	const bool enableProfiling = configuration.enableProfiling();
@@ -665,7 +665,7 @@ void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addThreadModelLinkerOption(StringList& inArgList)
+void CompileToolchainGNU::addThreadModelLinkerOption(StringList& inArgList) const
 {
 	if (m_project.posixThreads())
 	{
@@ -683,7 +683,7 @@ void CompileToolchainGNU::addThreadModelLinkerOption(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLinkerScripts(StringList& inArgList)
+void CompileToolchainGNU::addLinkerScripts(StringList& inArgList) const
 {
 	const auto& linkerScript = m_project.linkerScript();
 	if (!linkerScript.empty())
@@ -694,14 +694,14 @@ void CompileToolchainGNU::addLinkerScripts(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLibStdCppLinkerOption(StringList& inArgList)
+void CompileToolchainGNU::addLibStdCppLinkerOption(StringList& inArgList) const
 {
 	// Not used in GCC
 	UNUSED(inArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& inArgList)
+void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& inArgList) const
 {
 	// List::addIfDoesNotExist(inArgList, "-libstdc++");
 
@@ -717,7 +717,7 @@ void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& inArgList)
+void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& inArgList) const
 {
 	if (m_config.isMingwGcc())
 	{
@@ -735,19 +735,19 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& inArgList)
 // Linking (Misc)
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainGNU::startStaticLinkGroup(StringList& inArgList)
+void CompileToolchainGNU::startStaticLinkGroup(StringList& inArgList) const
 {
 	inArgList.push_back("-Wl,--copy-dt-needed-entries");
 	inArgList.push_back("-Wl,-Bstatic");
 	inArgList.push_back("-Wl,--start-group");
 }
 
-void CompileToolchainGNU::endStaticLinkGroup(StringList& inArgList)
+void CompileToolchainGNU::endStaticLinkGroup(StringList& inArgList) const
 {
 	inArgList.push_back("-Wl,--end-group");
 }
 
-void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& inArgList)
+void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& inArgList) const
 {
 	inArgList.push_back("-Wl,-Bdynamic");
 }
@@ -756,7 +756,7 @@ void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& inArgList)
 // Objective-C / Objective-C++
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainGNU::addObjectiveCxxLink(StringList& inArgList)
+void CompileToolchainGNU::addObjectiveCxxLink(StringList& inArgList) const
 {
 	const std::string prefix{ "-l" };
 	if (m_project.objectiveCxx())
@@ -767,14 +767,14 @@ void CompileToolchainGNU::addObjectiveCxxLink(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization)
+void CompileToolchainGNU::addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization) const
 {
 	// Used by AppleClang
 	UNUSED(inArgList, specialization);
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization)
+void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization) const
 {
 	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
 	if (isObjCxx)
@@ -791,7 +791,7 @@ void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& inArgList, co
 // MacOS
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainGNU::addMacosSysRootOption(StringList& inArgList)
+void CompileToolchainGNU::addMacosSysRootOption(StringList& inArgList) const
 {
 #if defined(CHALET_MACOS)
 	// TODO: Test Homebrew LLVM/GCC with this
@@ -803,7 +803,7 @@ void CompileToolchainGNU::addMacosSysRootOption(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addMacosFrameworkOptions(StringList& inArgList)
+void CompileToolchainGNU::addMacosFrameworkOptions(StringList& inArgList) const
 {
 #if defined(CHALET_MACOS)
 	// TODO: Test Homebrew LLVM/GCC with this

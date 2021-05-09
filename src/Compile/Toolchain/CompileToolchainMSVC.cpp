@@ -85,7 +85,7 @@ StringList CompileToolchainMSVC::getLinkerTargetCommand(const std::string& outpu
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addIncludes(StringList& inArgList)
+void CompileToolchainMSVC::addIncludes(StringList& inArgList) const
 {
 	// inArgList.push_back("/X"); // ignore "Path"
 
@@ -115,7 +115,7 @@ void CompileToolchainMSVC::addIncludes(StringList& inArgList)
 // void addWarnings(StringList& inArgList);
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addDefines(StringList& inArgList)
+void CompileToolchainMSVC::addDefines(StringList& inArgList) const
 {
 	const std::string prefix = "/D";
 	for (auto& define : m_project.defines())
@@ -125,7 +125,7 @@ void CompileToolchainMSVC::addDefines(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization)
+void CompileToolchainMSVC::addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const
 {
 	if (m_project.language() == CodeLanguage::C || specialization == CxxSpecialization::ObjectiveC)
 	{

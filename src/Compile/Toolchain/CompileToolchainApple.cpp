@@ -28,13 +28,13 @@ ToolchainType CompileToolchainApple::type() const
 // Linking
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainApple::addProfileInformationLinkerOption(StringList& inArgList)
+void CompileToolchainApple::addProfileInformationLinkerOption(StringList& inArgList) const
 {
 	UNUSED(inArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainApple::addLibStdCppLinkerOption(StringList& inArgList)
+void CompileToolchainApple::addLibStdCppLinkerOption(StringList& inArgList) const
 {
 	CompileToolchainLLVM::addLibStdCppLinkerOption(inArgList);
 
@@ -45,14 +45,14 @@ void CompileToolchainApple::addLibStdCppLinkerOption(StringList& inArgList)
 // Objective-C / Objective-C++
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainApple::addObjectiveCxxLink(StringList& inArgList)
+void CompileToolchainApple::addObjectiveCxxLink(StringList& inArgList) const
 {
 	// Unused in AppleClang
 	UNUSED(inArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainApple::addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization)
+void CompileToolchainApple::addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization) const
 {
 	const bool isObjCpp = specialization == CxxSpecialization::ObjectiveCpp;
 	const bool isObjC = specialization == CxxSpecialization::ObjectiveC;
@@ -68,7 +68,7 @@ void CompileToolchainApple::addObjectiveCxxCompileOption(StringList& inArgList, 
 }
 
 /*****************************************************************************/
-void CompileToolchainApple::addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization)
+void CompileToolchainApple::addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization) const
 {
 	// Unused in AppleClang
 	UNUSED(inArgList, specialization);

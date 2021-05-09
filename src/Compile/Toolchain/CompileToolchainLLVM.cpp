@@ -30,14 +30,14 @@ ToolchainType CompileToolchainLLVM::type() const
 // Compile
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainLLVM::addProfileInformationCompileOption(StringList& inArgList)
+void CompileToolchainLLVM::addProfileInformationCompileOption(StringList& inArgList) const
 {
 	// TODO: "-pg" was added in a recent version of Clang (12 or 13 maybe?)
 	UNUSED(inArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainLLVM::addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization)
+void CompileToolchainLLVM::addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) const
 {
 	if (specialization != CxxSpecialization::ObjectiveC)
 	{
@@ -46,13 +46,13 @@ void CompileToolchainLLVM::addLibStdCppCompileOption(StringList& inArgList, cons
 }
 
 /*****************************************************************************/
-void CompileToolchainLLVM::addPositionIndependentCodeOption(StringList& inArgList)
+void CompileToolchainLLVM::addPositionIndependentCodeOption(StringList& inArgList) const
 {
 	UNUSED(inArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainLLVM::addThreadModelCompileOption(StringList& inArgList)
+void CompileToolchainLLVM::addThreadModelCompileOption(StringList& inArgList) const
 {
 	UNUSED(inArgList);
 }
@@ -61,14 +61,14 @@ void CompileToolchainLLVM::addThreadModelCompileOption(StringList& inArgList)
 // Linking
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainLLVM::addStripSymbolsOption(StringList& inArgList)
+void CompileToolchainLLVM::addStripSymbolsOption(StringList& inArgList) const
 {
 	// TODO: The "-s" flag might just not exist in AppleClang
 	UNUSED(inArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainLLVM::addLinkerScripts(StringList& inArgList)
+void CompileToolchainLLVM::addLinkerScripts(StringList& inArgList) const
 {
 	// TODO: Check if there's a clang/apple clang version of this
 	// If using LD with "-fuse-ld=lld-link", you can pass linkerscripts supposedly
@@ -76,13 +76,13 @@ void CompileToolchainLLVM::addLinkerScripts(StringList& inArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainLLVM::addLibStdCppLinkerOption(StringList& inArgList)
+void CompileToolchainLLVM::addLibStdCppLinkerOption(StringList& inArgList) const
 {
 	List::addIfDoesNotExist(inArgList, "-stdlib=libc++");
 }
 
 /*****************************************************************************/
-void CompileToolchainLLVM::addStaticCompilerLibraryOptions(StringList& inArgList)
+void CompileToolchainLLVM::addStaticCompilerLibraryOptions(StringList& inArgList) const
 {
 	if (m_project.staticLinking())
 	{
@@ -93,7 +93,7 @@ void CompileToolchainLLVM::addStaticCompilerLibraryOptions(StringList& inArgList
 }
 
 /*****************************************************************************/
-void CompileToolchainLLVM::addPlatformGuiApplicationFlag(StringList& inArgList)
+void CompileToolchainLLVM::addPlatformGuiApplicationFlag(StringList& inArgList) const
 {
 	// Noop in clang for now
 	UNUSED(inArgList);
@@ -105,17 +105,17 @@ void CompileToolchainLLVM::addPlatformGuiApplicationFlag(StringList& inArgList)
 /*****************************************************************************/
 // TOOD: I think Clang on Linux could still use the system linker (LD), in which case,
 //   These flags could be used
-void CompileToolchainLLVM::startStaticLinkGroup(StringList& inArgList)
+void CompileToolchainLLVM::startStaticLinkGroup(StringList& inArgList) const
 {
 	UNUSED(inArgList);
 }
 
-void CompileToolchainLLVM::endStaticLinkGroup(StringList& inArgList)
+void CompileToolchainLLVM::endStaticLinkGroup(StringList& inArgList) const
 {
 	UNUSED(inArgList);
 }
 
-void CompileToolchainLLVM::startExplicitDynamicLinkGroup(StringList& inArgList)
+void CompileToolchainLLVM::startExplicitDynamicLinkGroup(StringList& inArgList) const
 {
 	UNUSED(inArgList);
 }

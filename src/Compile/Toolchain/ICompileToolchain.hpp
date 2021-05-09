@@ -23,34 +23,34 @@ struct ICompileToolchain
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;
 
 	// Compile
-	virtual void addIncludes(StringList& inArgList);
-	virtual void addWarnings(StringList& inArgList);
-	virtual void addDefines(StringList& inArgList);
-	virtual void addPchInclude(StringList& inArgList);
-	virtual void addOptimizationOption(StringList& inArgList);
-	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization);
-	virtual void addDebuggingInformationOption(StringList& inArgList);
-	virtual void addProfileInformationCompileOption(StringList& inArgList);
-	virtual void addCompileOptions(StringList& inArgList);
-	virtual void addDiagnosticColorOption(StringList& inArgList);
-	virtual void addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization);
-	virtual void addPositionIndependentCodeOption(StringList& inArgList);
-	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList);
-	virtual void addThreadModelCompileOption(StringList& inArgList);
+	virtual void addIncludes(StringList& inArgList) const;
+	virtual void addWarnings(StringList& inArgList) const;
+	virtual void addDefines(StringList& inArgList) const;
+	virtual void addPchInclude(StringList& inArgList) const;
+	virtual void addOptimizationOption(StringList& inArgList) const;
+	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const;
+	virtual void addDebuggingInformationOption(StringList& inArgList) const;
+	virtual void addProfileInformationCompileOption(StringList& inArgList) const;
+	virtual void addCompileOptions(StringList& inArgList) const;
+	virtual void addDiagnosticColorOption(StringList& inArgList) const;
+	virtual void addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) const;
+	virtual void addPositionIndependentCodeOption(StringList& inArgList) const;
+	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList) const;
+	virtual void addThreadModelCompileOption(StringList& inArgList) const;
 
 	// Linking
-	virtual void addLibDirs(StringList& inArgList);
-	virtual void addLinks(StringList& inArgList);
-	virtual void addRunPath(StringList& inArgList);
-	virtual void addStripSymbolsOption(StringList& inArgList);
-	virtual void addLinkerOptions(StringList& inArgList);
-	virtual void addProfileInformationLinkerOption(StringList& inArgList);
-	virtual void addLinkTimeOptimizationOption(StringList& inArgList);
-	virtual void addThreadModelLinkerOption(StringList& inArgList);
-	virtual void addLinkerScripts(StringList& inArgList);
-	virtual void addLibStdCppLinkerOption(StringList& inArgList);
-	virtual void addStaticCompilerLibraryOptions(StringList& inArgList);
-	virtual void addPlatformGuiApplicationFlag(StringList& inArgList);
+	virtual void addLibDirs(StringList& inArgList) const;
+	virtual void addLinks(StringList& inArgList) const;
+	virtual void addRunPath(StringList& inArgList) const;
+	virtual void addStripSymbolsOption(StringList& inArgList) const;
+	virtual void addLinkerOptions(StringList& inArgList) const;
+	virtual void addProfileInformationLinkerOption(StringList& inArgList) const;
+	virtual void addLinkTimeOptimizationOption(StringList& inArgList) const;
+	virtual void addThreadModelLinkerOption(StringList& inArgList) const;
+	virtual void addLinkerScripts(StringList& inArgList) const;
+	virtual void addLibStdCppLinkerOption(StringList& inArgList) const;
+	virtual void addStaticCompilerLibraryOptions(StringList& inArgList) const;
+	virtual void addPlatformGuiApplicationFlag(StringList& inArgList) const;
 };
 
 using CompileToolchain = std::unique_ptr<ICompileToolchain>;
