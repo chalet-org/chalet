@@ -20,9 +20,6 @@ struct MakefileGeneratorNMake
 	std::string getContents(const SourceOutputs& inOutputs);
 
 private:
-	//
-	// StringList getMsvcObjectFileList(const StringList& inObjects);
-
 	std::string getCompileEchoAsm(const std::string& file);
 	std::string getCompileEchoSources(const std::string& file);
 	std::string getCompileEchoLinker(const std::string& file);

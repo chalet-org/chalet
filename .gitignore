@@ -1,6 +1,7 @@
 # General
 Thumbs.db
 .DS_Store
+*.exe.stackdump
 
 # Chalet
 build

@@ -36,14 +36,9 @@ std::string MakefileGeneratorNMake::getContents(const SourceOutputs& inOutputs)
 
 	const auto buildRecipes = getBuildRecipes(inOutputs);
 
-	// const auto objectList = getMsvcObjectFileList(inOutputs.objectListLinker);
 	const auto& objectList = inOutputs.objectListLinker;
 
 	auto objects = String::join(objectList);
-	// for (auto& ext : inOutputs.fileExtensions)
-	// {
-	// 	String::replaceAll(objects, "." + ext, "");
-	// }
 
 	const auto suffixes = String::getPrefixed(inOutputs.fileExtensions, ".");
 
@@ -86,22 +81,6 @@ makebuild: {target}
 
 	return makefileTemplate;
 }
-
-/*****************************************************************************/
-/*StringList MakefileGeneratorNMake::getMsvcObjectFileList(const StringList& inObjects)
-{
-	StringList ret;
-
-	const auto& objDir = m_state.paths.objDir();
-
-	for (auto& obj : inObjects)
-	{
-		auto file = String::getPathFilename(obj);
-		ret.push_back(fmt::format("{}/{}", objDir, file));
-	}
-
-	return ret;
-}*/
 
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoAsm(const std::string& file)
@@ -205,6 +184,7 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const StringList& inObjec
 		outSources.push_back(std::move(source));
 	}
 
+	// Link command here
 	const auto blue = getColorBlue();
 	ret += "\t" + getPrinter(fmt::format("   {}Stuff", blue)) + "\n";
 

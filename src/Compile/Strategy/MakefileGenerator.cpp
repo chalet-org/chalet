@@ -92,8 +92,6 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 .SUFFIXES:
 .SUFFIXES: {suffixes}
 
-.ONESHELL:
-
 SHELL := {shell}
 
 NOOP := @{printer}
@@ -536,8 +534,8 @@ std::string MakefileGenerator::getPrinter(const std::string& inPrint, const bool
 std::string MakefileGenerator::getColorBlue()
 {
 #if defined(CHALET_WIN32)
-	return Environment::isBash() ? "\\033[0;34m" : "\x1b[0;34m";
-	// return u8"\033[0;34m";
+	// return Environment::isBash() ? "\033[0;34m" : "\x1b[0;34m";
+	return "\x1b[0;34m";
 #else
 	return "\\033[0;34m";
 #endif
@@ -547,8 +545,8 @@ std::string MakefileGenerator::getColorBlue()
 std::string MakefileGenerator::getColorPurple()
 {
 #if defined(CHALET_WIN32)
-	return Environment::isBash() ? "\\033[0;35m" : "\x1b[0;35m";
-	// return u8"\x1b[0;35m";
+	// return Environment::isBash() ? "\033[0;35m" : "\x1b[0;35m";
+	return "\x1b[0;35m";
 #else
 	return "\\033[0;35m";
 #endif

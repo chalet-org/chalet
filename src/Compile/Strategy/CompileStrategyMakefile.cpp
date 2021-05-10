@@ -205,7 +205,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	};
 
 	// NMAKE
-	if (Environment::isMsvc())
+	// if (Environment::isMsvc())
 	{
 		options.stdoutOption = PipeOption::Pipe;
 		options.onStdOut = onStdOut;
