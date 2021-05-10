@@ -483,7 +483,7 @@ void CompileToolchainGNU::addLinks(StringList& inArgList) const
 #if defined(CHALET_MACOS)
 			// TODO: Some kind of exclusion list?
 			if (String::equals(link, "stdc++fs"))
-				return;
+				continue;
 #endif
 
 			inArgList.push_back(prefix + link);
