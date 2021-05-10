@@ -14,6 +14,95 @@
 namespace chalet
 {
 /*****************************************************************************/
+void CacheTools::fetchVersions()
+{
+	if (!m_bash.empty())
+	{
+#if defined(CHALET_WIN32)
+		if (Commands::pathExists(m_bash))
+		{
+			std::string version = Commands::subprocessOutput({ m_bash, "--version" });
+			m_bashAvailable = String::contains("GNU bash", version);
+		}
+#else
+		m_bashAvailable = true;
+#endif
+	}
+
+#if defined(CHALET_MACOS)
+	if (!m_brew.empty())
+	{
+		if (Commands::pathExists(m_brew))
+		{
+			std::string version = Commands::subprocessOutput({ m_brew, "--version" });
+			auto firstEol = version.find('\n');
+			if (firstEol != std::string::npos)
+			{
+				version = version.substr(0, firstEol);
+			}
+
+			m_brewAvailable = String::startsWith("Homebrew ", version);
+		}
+	}
+#endif
+
+	if (!m_make.empty())
+	{
+		if (Commands::pathExists(m_make))
+		{
+			std::string version = Commands::subprocessOutput({ m_make, "--version" });
+			isolateVersion(version);
+
+			auto vals = String::split(version, '.');
+			if (vals.size() == 2)
+			{
+				m_makeVersionMajor = std::stoi(vals[0]);
+				m_makeVersionMinor = std::stoi(vals[1]);
+			}
+
+			m_makeIsNMake = String::endsWith("nmake.exe", m_make);
+		}
+	}
+
+#if defined(CHALET_MACOS)
+	if (!m_xcodebuild.empty())
+	{
+		if (Commands::pathExists(m_xcodebuild))
+		{
+			std::string version = Commands::subprocessOutput({ m_xcodebuild, "-version" });
+			if (String::contains("requires Xcode", version))
+				return;
+
+			isolateVersion(version);
+
+			auto vals = String::split(version, '.');
+			if (vals.size() == 2)
+			{
+				m_xcodeVersionMajor = std::stoi(vals[0]);
+				m_xcodeVersionMinor = std::stoi(vals[1]);
+			}
+		}
+	}
+	if (!m_xcodegen.empty())
+	{
+		if (Commands::pathExists(m_xcodegen))
+		{
+			std::string version = Commands::subprocessOutput({ m_xcodegen, "--version" });
+			isolateVersion(version);
+
+			auto vals = String::split(version, '.');
+			if (vals.size() == 3)
+			{
+				m_xcodegenVersionMajor = std::stoi(vals[0]);
+				m_xcodegenVersionMinor = std::stoi(vals[1]);
+				m_xcodegenVersionPatch = std::stoi(vals[2]);
+			}
+		}
+	}
+#endif
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::ar() const noexcept
 {
 	return m_ar;
@@ -32,16 +121,6 @@ const std::string& CacheTools::bash() const noexcept
 void CacheTools::setBash(const std::string& inValue) noexcept
 {
 	m_bash = inValue;
-
-#if defined(CHALET_WIN32)
-	if (Commands::pathExists(m_bash))
-	{
-		std::string version = Commands::subprocessOutput({ m_bash, "--version" });
-		m_bashAvailable = String::contains("GNU bash", version);
-	}
-#else
-	m_bashAvailable = true;
-#endif
 }
 
 bool CacheTools::bashAvailable() noexcept
@@ -57,20 +136,6 @@ const std::string& CacheTools::brew() const noexcept
 void CacheTools::setBrew(const std::string& inValue) noexcept
 {
 	m_brew = inValue;
-
-#if defined(CHALET_MACOS)
-	if (Commands::pathExists(m_brew))
-	{
-		std::string version = Commands::subprocessOutput({ m_brew, "--version" });
-		auto firstEol = version.find('\n');
-		if (firstEol != std::string::npos)
-		{
-			version = version.substr(0, firstEol);
-		}
-
-		m_brewAvailable = String::startsWith("Homebrew ", version);
-	}
-#endif
 }
 bool CacheTools::brewAvailable() noexcept
 {
@@ -158,6 +223,16 @@ void CacheTools::setLdd(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::libtool() const noexcept
+{
+	return m_libtool;
+}
+void CacheTools::setLibtool(const std::string& inValue) noexcept
+{
+	m_libtool = inValue;
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::macosSdk() const noexcept
 {
 	return m_macosSdk;
@@ -175,21 +250,6 @@ const std::string& CacheTools::make() const noexcept
 void CacheTools::setMake(const std::string& inValue) noexcept
 {
 	m_make = inValue;
-
-	if (Commands::pathExists(m_make))
-	{
-		std::string version = Commands::subprocessOutput({ m_make, "--version" });
-		isolateVersion(version);
-
-		auto vals = String::split(version, '.');
-		if (vals.size() == 2)
-		{
-			m_makeVersionMajor = std::stoi(vals[0]);
-			m_makeVersionMinor = std::stoi(vals[1]);
-		}
-
-		m_makeIsNMake = String::endsWith("nmake.exe", m_make);
-	}
 }
 
 uint CacheTools::makeVersionMajor() const noexcept
@@ -305,24 +365,6 @@ const std::string& CacheTools::xcodebuild() const noexcept
 void CacheTools::setXcodebuild(const std::string& inValue) noexcept
 {
 	m_xcodebuild = inValue;
-
-#if defined(CHALET_MACOS)
-	if (Commands::pathExists(m_xcodebuild))
-	{
-		std::string version = Commands::subprocessOutput({ m_xcodebuild, "-version" });
-		if (String::contains("requires Xcode", version))
-			return;
-
-		isolateVersion(version);
-
-		auto vals = String::split(version, '.');
-		if (vals.size() == 2)
-		{
-			m_xcodeVersionMajor = std::stoi(vals[0]);
-			m_xcodeVersionMinor = std::stoi(vals[1]);
-		}
-	}
-#endif
 }
 uint CacheTools::xcodeVersionMajor() const noexcept
 {
@@ -341,22 +383,6 @@ const std::string& CacheTools::xcodegen() const noexcept
 void CacheTools::setXcodegen(const std::string& inValue) noexcept
 {
 	m_xcodegen = inValue;
-
-#if defined(CHALET_MACOS)
-	if (Commands::pathExists(m_xcodegen))
-	{
-		std::string version = Commands::subprocessOutput({ m_xcodegen, "--version" });
-		isolateVersion(version);
-
-		auto vals = String::split(version, '.');
-		if (vals.size() == 3)
-		{
-			m_xcodegenVersionMajor = std::stoi(vals[0]);
-			m_xcodegenVersionMinor = std::stoi(vals[1]);
-			m_xcodegenVersionPatch = std::stoi(vals[2]);
-		}
-	}
-#endif
 }
 uint CacheTools::xcodegenVersionMajor() const noexcept
 {

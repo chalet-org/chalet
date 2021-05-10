@@ -82,6 +82,8 @@ bool Router::run()
 		if (!parseBuildJson(file))
 			return false;
 
+		fetchToolVersions();
+
 		m_buildState->initializeBuild();
 	}
 
@@ -210,7 +212,7 @@ bool Router::parseCacheJson()
 {
 	chalet_assert(m_buildState != nullptr, "");
 
-	Timer timer;
+	// Timer timer;
 
 	{
 		CacheJsonParser parser(m_inputs, *m_buildState);
@@ -218,9 +220,9 @@ bool Router::parseCacheJson()
 			return false;
 	}
 
-	auto result = timer.stop();
-	const auto& file = m_buildState->cache.environmentCache().filename();
-	Output::print(Color::Reset, fmt::format("{} parsed in: {}ms", file, result));
+	// auto result = timer.stop();
+	// const auto& file = m_buildState->cache.environmentCache().filename();
+	// Output::print(Color::Reset, fmt::format("{} parsed in: {}ms", file, result));
 
 	return true;
 }
@@ -230,7 +232,7 @@ bool Router::parseBuildJson(const std::string& inFile)
 {
 	chalet_assert(m_buildState != nullptr, "");
 
-	Timer timer;
+	// Timer timer;
 
 	{
 		BuildJsonParser parser(m_inputs, *m_buildState, inFile);
@@ -238,10 +240,23 @@ bool Router::parseBuildJson(const std::string& inFile)
 			return false;
 	}
 
-	auto result = timer.stop();
-	Output::print(Color::Reset, fmt::format("{} parsed in: {}ms\n", inFile, result));
+	// auto result = timer.stop();
+	// Output::print(Color::Reset, fmt::format("{} parsed in: {}ms\n", inFile, result));
 
 	return true;
+}
+
+/*****************************************************************************/
+void Router::fetchToolVersions()
+{
+	Timer timer;
+
+	{
+		m_buildState->tools.fetchVersions();
+	}
+
+	auto result = timer.stop();
+	Output::print(Color::Reset, fmt::format("Tool versions fetched in: {}ms\n", result));
 }
 
 /*****************************************************************************/

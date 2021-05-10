@@ -21,6 +21,8 @@ ToolchainType CompileToolchainApple::type() const
 	return ToolchainType::Apple;
 }
 
+// ="-Wl,-flat_namespace,-undefined,suppress
+
 /*****************************************************************************/
 // Note: Noops mean a flag/feature isn't supported
 

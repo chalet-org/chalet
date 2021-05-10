@@ -382,6 +382,7 @@ bool BuildManager::doLazyClean()
 
 	// TODO: Clean CMake projects
 	// TODO: Flag to clean externalDependencies
+	// TODO: Also clean cache files specific to build configuration
 
 	if (!m_cleanOutput)
 		Output::lineBreak();

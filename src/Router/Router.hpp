@@ -35,6 +35,7 @@ private:
 
 	bool parseCacheJson();
 	bool parseBuildJson(const std::string& inFile);
+	void fetchToolVersions();
 	bool installDependencies();
 	bool xcodebuildRoute();
 

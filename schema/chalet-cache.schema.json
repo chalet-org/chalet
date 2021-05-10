@@ -62,6 +62,11 @@
 			"description": "The executable path to ldd.",
 			"default": "/usr/bin/ldd"
 		},
+		"tools-libtool": {
+			"type": "string",
+			"description": "The executable path to libtool.",
+			"default": "/usr/bin/libtool"
+		},
 		"tools-macosSdk": {
 			"type": "string",
 			"description": "The path to the current MacOS SDK (MacOS)"
@@ -192,6 +197,7 @@
 				"install_name_tool",
 				"instruments",
 				"ldd",
+				"libtool",
 				"macosSdk",
 				"make",
 				"ninja",
@@ -240,6 +246,9 @@
 				},
 				"ldd": {
 					"$ref": "#/definitions/tools-ldd"
+				},
+				"libtool": {
+					"$ref": "#/definitions/tools-libtool"
 				},
 				"macosSdk": {
 					"$ref": "#/definitions/tools-macosSdk"

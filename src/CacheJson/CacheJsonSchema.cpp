@@ -95,6 +95,12 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/ldd"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-libtool"] = R"json({
+		"type": "string",
+		"description": "The executable path to libtool.",
+		"default": "/usr/bin/libtool"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-macosSdk"] = R"json({
 		"type": "string",
 		"description": "The path to the current MacOS SDK (MacOS)"
@@ -247,6 +253,7 @@ Json Schema::getCacheJson()
 			"install_name_tool",
 			"instruments",
 			"ldd",
+			"libtool",
 			"macosSdk",
 			"make",
 			"ninja",
@@ -295,6 +302,9 @@ Json Schema::getCacheJson()
 			},
 			"ldd": {
 				"$ref": "#/definitions/tools-ldd"
+			},
+			"libtool": {
+				"$ref": "#/definitions/tools-libtool"
 			},
 			"macosSdk": {
 				"$ref": "#/definitions/tools-macosSdk"

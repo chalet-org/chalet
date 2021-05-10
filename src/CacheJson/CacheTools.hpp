@@ -12,6 +12,8 @@ struct CacheTools
 {
 	CacheTools() = default;
 
+	void fetchVersions();
+
 	const std::string& ar() const noexcept;
 	void setAr(const std::string& inValue) noexcept;
 
@@ -46,6 +48,9 @@ struct CacheTools
 
 	const std::string& ldd() const noexcept;
 	void setLdd(const std::string& inValue) noexcept;
+
+	const std::string& libtool() const noexcept;
+	void setLibtool(const std::string& inValue) noexcept;
 
 	const std::string& macosSdk() const noexcept;
 	void setMacosSdk(const std::string& inValue) noexcept;
@@ -128,6 +133,7 @@ private:
 	std::string m_installNameUtil;
 	std::string m_instruments;
 	std::string m_ldd;
+	std::string m_libtool;
 	std::string m_macosSdk;
 	std::string m_make;
 	std::string m_ninja;

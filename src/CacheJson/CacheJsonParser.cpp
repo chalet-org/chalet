@@ -246,6 +246,7 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyInstallNameTool);
 	whichAdd(tools, kKeyInstruments);
 	whichAdd(tools, kKeyLdd);
+	whichAdd(tools, kKeyLibTool);
 
 	if (!tools.contains(kKeyMacosSdk))
 	{
@@ -378,6 +379,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyLdd))
 		m_state.tools.setLdd(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyLibTool))
+		m_state.tools.setLibtool(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyMake))
 	{
