@@ -41,6 +41,17 @@ bool String::startsWith(const char inStart, const std::string& inString)
 }
 
 /*****************************************************************************/
+bool String::startsWith(const StringList& inFind, const std::string& inString)
+{
+	bool result = false;
+	for (auto& item : inFind)
+	{
+		result |= startsWith(item, inString);
+	}
+	return result;
+}
+
+/*****************************************************************************/
 bool String::endsWith(const std::string_view inEnd, const std::string& inString)
 {
 	if (inEnd.size() > inString.size())
