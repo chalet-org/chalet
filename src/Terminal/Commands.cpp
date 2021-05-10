@@ -225,8 +225,8 @@ bool Commands::setExecutableFlag(const std::string& inPath, const bool inCleanOu
 #else
 	try
 	{
-		if (inPath.front() == '/')
-			return false;
+		// if (inPath.front() == '/')
+		// 	return false;
 
 		if (!inCleanOutput)
 			Output::print(Color::Blue, fmt::format("set executable permission: {}", inPath));
@@ -237,9 +237,9 @@ bool Commands::setExecutableFlag(const std::string& inPath, const bool inCleanOu
 
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	catch (const fs::filesystem_error&)
 	{
-		std::cout << err.what() << std::endl;
+		// std::cout << err.what() << std::endl;
 		return false;
 	}
 #endif
