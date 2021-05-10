@@ -20,6 +20,8 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 
 	virtual ToolchainType type() const override;
 
+	virtual StringList getLinkExclusions() const override;
+
 	// Compile
 	virtual void addProfileInformationCompileOption(StringList& inArgList) const override;
 	virtual void addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) const override;

@@ -24,6 +24,12 @@ ToolchainType CompileToolchainLLVM::type() const
 }
 
 /*****************************************************************************/
+StringList CompileToolchainLLVM::getLinkExclusions() const
+{
+	return { "stdc++fs" };
+}
+
+/*****************************************************************************/
 // Note: Noops mean a flag/feature isn't supported
 
 /*****************************************************************************/

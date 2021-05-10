@@ -26,6 +26,8 @@ struct CompileToolchainGNU : ICompileToolchain
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 
 protected:
+	virtual StringList getLinkExclusions() const;
+
 	// Compile
 	virtual void addIncludes(StringList& inArgList) const override;
 	virtual void addWarnings(StringList& inArgList) const override;

@@ -177,11 +177,9 @@ bool CacheJsonParser::makeCache()
 		if (cpp.empty())
 		{
 #if defined(CHALET_WIN32)
-			for (const auto& compiler : { "cl", "g++", "clang++", "c++" })
-#elif defined(CHALET_MACOS)
-			for (const auto& compiler : { "clang++", "g++", "c++" })
+			for (const auto& compiler : { "cl", "clang++", "g++", "c++" })
 #else
-			for (const auto& compiler : { "g++", "clang++", "c++" })
+			for (const auto& compiler : { "clang++", "g++", "c++" })
 #endif
 			{
 				cpp = Commands::which(compiler);
@@ -206,11 +204,9 @@ bool CacheJsonParser::makeCache()
 		if (cc.empty())
 		{
 #if defined(CHALET_WIN32)
-			for (const auto& compiler : { "cl", "gcc", "clang", "cc" })
-#elif defined(CHALET_MACOS)
-			for (const auto& compiler : { "clang", "gcc", "cc" })
+			for (const auto& compiler : { "cl", "clang", "gcc", "cc" })
 #else
-			for (const auto& compiler : { "gcc", "clang", "cc" })
+			for (const auto& compiler : { "clang", "gcc", "cc" })
 #endif
 			{
 				cc = Commands::which(compiler);

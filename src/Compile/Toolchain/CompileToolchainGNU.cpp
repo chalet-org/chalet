@@ -360,6 +360,12 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 }
 
 /*****************************************************************************/
+StringList CompileToolchainGNU::getLinkExclusions() const
+{
+	return {};
+}
+
+/*****************************************************************************/
 void CompileToolchainGNU::addSourceObjects(StringList& inArgList, const StringList& sourceObjs) const
 {
 	for (auto& source : sourceObjs)
@@ -478,13 +484,12 @@ void CompileToolchainGNU::addLinks(StringList& inArgList) const
 		if (hasStaticLinks)
 			startExplicitDynamicLinkGroup(inArgList);
 
+		auto excludes = getLinkExclusions();
+
 		for (auto& link : m_project.links())
 		{
-#if defined(CHALET_MACOS)
-			// TODO: Some kind of exclusion list?
-			if (String::equals(link, "stdc++fs"))
+			if (List::contains(excludes, link))
 				continue;
-#endif
 
 			inArgList.push_back(prefix + link);
 		}
