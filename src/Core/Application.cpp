@@ -8,6 +8,7 @@
 #include "Router/Router.hpp"
 
 #include "Core/ArgumentParser.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/SignalHandler.hpp"
 

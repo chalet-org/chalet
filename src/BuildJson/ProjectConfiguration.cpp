@@ -94,12 +94,6 @@ void ProjectConfiguration::addLinks(StringList& inList)
 
 void ProjectConfiguration::addLink(std::string& inValue)
 {
-#if defined(CHALET_MACOS)
-	// TODO: move this logic to toolchain
-	if (String::equals(inValue, "stdc++fs"))
-		return;
-#endif
-
 	List::addIfDoesNotExist(m_links, std::move(inValue));
 }
 

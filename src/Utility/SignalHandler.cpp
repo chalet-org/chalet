@@ -13,6 +13,7 @@
 
 #include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/Reflect.hpp"
@@ -132,6 +133,8 @@ void SignalHandler::printStackTrace()
 	auto thisClassName = CHALET_REFLECT(SignalHandler);
 	auto diagnosticClassName = CHALET_REFLECT(Diagnostic);
 
+	std::size_t cols = 100;
+
 	bool highlight = true;
 	ust::StackTrace stacktrace = ust::generate();
 	for (auto& entry : stacktrace.entries)
@@ -140,9 +143,8 @@ void SignalHandler::printStackTrace()
 		if (String::contains(thisClassName, entry.functionName) || String::contains(diagnosticClassName, entry.functionName))
 			continue;
 
-		// TODO: Is there a way to get the terminal width?
-		if (entry.functionName.size() > 100)
-			entry.functionName = entry.functionName.substr(0, 100) + "...";
+		if (entry.functionName.size() > cols)
+			entry.functionName = entry.functionName.substr(0, cols) + "...";
 
 #if !defined(CHALET_MACOS)
 		// note: entry.sourceFileName will be blank if there are no debugging symbols!

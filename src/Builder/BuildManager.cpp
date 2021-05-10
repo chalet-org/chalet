@@ -358,7 +358,16 @@ bool BuildManager::doLazyClean()
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& buildDir = m_state.paths.buildDir();
 
-	if (!Commands::pathExists(buildOutputDir))
+	const auto& inputBuild = m_inputs.buildConfiguration();
+	// const auto& build = m_state.buildConfiguration();
+
+	std::string dirToClean;
+	if (inputBuild.empty())
+		dirToClean = buildDir;
+	else
+		dirToClean = buildOutputDir;
+
+	if (!Commands::pathExists(dirToClean))
 	{
 		Output::msgNothingToClean();
 		Output::lineBreak();
@@ -371,12 +380,7 @@ bool BuildManager::doLazyClean()
 		Output::lineBreak();
 	}
 
-	const auto& build = m_state.buildConfiguration();
-
-	if (build.empty())
-		Commands::removeRecursively(buildDir, m_cleanOutput);
-	else
-		Commands::removeRecursively(buildOutputDir, m_cleanOutput);
+	Commands::removeRecursively(dirToClean, m_cleanOutput);
 
 	// TODO: Clean CMake projects
 	// TODO: Flag to clean externalDependencies
@@ -493,9 +497,10 @@ bool BuildManager::cmdRun()
 /*****************************************************************************/
 bool BuildManager::cmdClean()
 {
+	const auto& inputBuild = m_inputs.buildConfiguration();
 	const auto& buildConfiguration = m_state.buildConfiguration();
 
-	Output::msgClean(buildConfiguration);
+	Output::msgClean(inputBuild.empty() ? inputBuild : buildConfiguration);
 	Output::lineBreak();
 
 	if (!doLazyClean())

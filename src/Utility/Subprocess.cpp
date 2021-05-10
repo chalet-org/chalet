@@ -39,7 +39,7 @@ void removeProcess(const sp::Popen& inProcess)
 }
 
 /*****************************************************************************/
-void signalHandler(int inSignal)
+void subProcessSignalHandler(int inSignal)
 {
 	auto it = s_procesess.end();
 	while (it != s_procesess.begin())
@@ -66,7 +66,6 @@ int Subprocess::getLastExitCode()
 }
 
 /*****************************************************************************/
-// TODO: Handle terminate/interrupt signals!
 int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 {
 	auto process = sp::RunBuilder(const_cast<StringList&>(inCmd))
@@ -85,9 +84,9 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 
 	if (!s_initialized)
 	{
-		::signal(SIGINT, signalHandler);
-		::signal(SIGTERM, signalHandler);
-		::signal(SIGABRT, signalHandler);
+		::signal(SIGINT, subProcessSignalHandler);
+		::signal(SIGTERM, subProcessSignalHandler);
+		::signal(SIGABRT, subProcessSignalHandler);
 		s_initialized = true;
 	}
 
@@ -146,6 +145,6 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 /*****************************************************************************/
 void Subprocess::haltAllProcesses(const int inSignal)
 {
-	signalHandler(inSignal);
+	subProcessSignalHandler(inSignal);
 }
 }
