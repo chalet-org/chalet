@@ -99,8 +99,6 @@ bool BuildManager::run(const Route inRoute)
 		{
 			Timer buildTimer;
 
-			// TODO: The original logic for this is weird because you could in theory
-			//  build, then run, then build again. Separate out the "run" part
 			if (!m_buildRoutes[inRoute](*this))
 			{
 				error = true;

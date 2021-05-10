@@ -352,7 +352,6 @@ CompileStrategyNative::CommandTemp CompileStrategyNative::getCxxCompile(const st
 	ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
 	ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	// TODO: Split between C, C++ Objective-C, Objective-C++
 	ret.command = m_toolchain->getCxxCompileCommand(source, target, m_generateDependencies, ret.renameFrom, specialization);
 
 	return ret;
