@@ -36,12 +36,14 @@ std::string MakefileGeneratorNMake::getContents(const SourceOutputs& inOutputs)
 
 	const auto buildRecipes = getBuildRecipes(inOutputs);
 
-	const auto objectList = getMsvcObjectFileList(inOutputs.objectListLinker);
+	// const auto objectList = getMsvcObjectFileList(inOutputs.objectListLinker);
+	const auto& objectList = inOutputs.objectListLinker;
+
 	auto objects = String::join(objectList);
-	for (auto& ext : inOutputs.fileExtensions)
-	{
-		String::replaceAll(objects, "." + ext, "");
-	}
+	// for (auto& ext : inOutputs.fileExtensions)
+	// {
+	// 	String::replaceAll(objects, "." + ext, "");
+	// }
 
 	const auto suffixes = String::getPrefixed(inOutputs.fileExtensions, ".");
 
@@ -86,7 +88,7 @@ makebuild: {target}
 }
 
 /*****************************************************************************/
-StringList MakefileGeneratorNMake::getMsvcObjectFileList(const StringList& inObjects)
+/*StringList MakefileGeneratorNMake::getMsvcObjectFileList(const StringList& inObjects)
 {
 	StringList ret;
 
@@ -99,7 +101,7 @@ StringList MakefileGeneratorNMake::getMsvcObjectFileList(const StringList& inObj
 	}
 
 	return ret;
-}
+}*/
 
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoAsm(const std::string& file)
@@ -184,7 +186,8 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const StringList& inObjec
 	const auto& objDir = fmt::format("{}/", m_state.paths.objDir());
 
 	StringList outSources;
-	for (auto& obj : inObjects)
+	std::string recipes;
+	for (const auto& obj : inObjects)
 	{
 		if (obj.empty())
 			continue;
@@ -197,10 +200,15 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const StringList& inObjec
 			source = source.substr(0, source.size() - 4);
 		}
 
+		recipes += getCppRecipe(source, obj, pchTarget);
+
 		outSources.push_back(std::move(source));
 	}
 
-	ret += getCppRecipe(String::join(outSources), std::string(), pchTarget);
+	const auto blue = getColorBlue();
+	ret += "\t" + getPrinter(fmt::format("   {}Stuff", blue)) + "\n";
+
+	ret += std::move(recipes);
 
 	return ret;
 }
@@ -239,7 +247,14 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
 	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, dependency, specialization));
 
-	ret = fmt::format("\t{}{}", quietFlag, cppCompile);
+	ret = fmt::format(R"makefile(
+{object}: {source}
+	{quietFlag}{cppCompile}
+)makefile",
+		FMT_ARG(source),
+		FMT_ARG(quietFlag),
+		FMT_ARG(cppCompile),
+		FMT_ARG(object));
 
 	return ret;
 }

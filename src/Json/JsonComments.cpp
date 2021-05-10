@@ -27,9 +27,14 @@ Json JsonComments::parse(const std::string& inFilename)
 
 		return Json::parse(fileStream, cb, allow_exceptions, ignore_comments);
 	}
+	catch (Json::out_of_range& e)
+	{
+		Diagnostic::errorAbort(e.what(), "JsonComments::parse: Error parsing " + inFilename);
+		return Json();
+	}
 	catch (Json::parse_error& e)
 	{
-		Diagnostic::errorAbort(e.what(), "JsonComments::parseLiteral: Error parsing " + inFilename);
+		Diagnostic::errorAbort(e.what(), "JsonComments::parse: Error parsing " + inFilename);
 		return Json();
 	}
 }
@@ -44,6 +49,11 @@ Json JsonComments::parseLiteral(const std::string& inJsonContent)
 		bool ignore_comments = true;
 
 		return Json::parse(inJsonContent, cb, allow_exceptions, ignore_comments);
+	}
+	catch (Json::out_of_range& e)
+	{
+		Diagnostic::errorAbort(e.what(), "JsonComments::parseLiteral: Error parsing provided content");
+		return Json();
 	}
 	catch (Json::parse_error& e)
 	{

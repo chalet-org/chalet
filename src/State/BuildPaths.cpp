@@ -275,12 +275,17 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const bool 
 /*****************************************************************************/
 StringList BuildPaths::getDependencyFilesList(const SourceGroup& inFiles) const
 {
-	StringList ret = inFiles.list;
-	std::for_each(ret.begin(), ret.end(), [this](std::string& str) {
-		str = fmt::format("{}/{}.d", m_depDir, str);
-	});
+	StringList ret;
+	for (const auto& file : inFiles.list)
+	{
+		if (file.empty())
+			continue;
 
-	ret.push_back(fmt::format("{}/{}.d", m_depDir, inFiles.pch));
+		ret.push_back(fmt::format("{}/{}.d", m_depDir, file));
+	}
+
+	if (!inFiles.pch.empty())
+		ret.push_back(fmt::format("{}/{}.d", m_depDir, inFiles.pch));
 
 	return ret;
 }
