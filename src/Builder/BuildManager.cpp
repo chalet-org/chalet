@@ -622,11 +622,6 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 
 		command.push_back(std::move(outScriptPath));
 
-		for (auto& arg : command)
-		{
-			LOG(arg);
-		}
-
 		result &= Commands::subprocess(command, m_cleanOutput);
 	}
 
