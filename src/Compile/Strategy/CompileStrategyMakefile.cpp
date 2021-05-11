@@ -125,6 +125,7 @@ bool CompileStrategyMakefile::initialize()
 		{
 			m_makeCmd.push_back(jobs);
 		}
+		// m_makeCmd.push_back("-d");
 		m_makeCmd.push_back("-C");
 		m_makeCmd.push_back(".");
 		m_makeCmd.push_back("-f");
@@ -191,6 +192,9 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	Subprocess::PipeFunc onStdErr = [&errorOutput](std::string inData) {
 		errorOutput += std::move(inData);
 	};
+	// static Subprocess::PipeFunc onStdErr = [](std::string inData) {
+	// 	std::cerr << inData << std::flush;
+	// };
 
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);

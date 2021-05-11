@@ -73,62 +73,62 @@ char getEscapeChar()
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 {
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
-	{
-		return std::string();
-	}
-	else
-	{
-#endif
-		const auto esc = getEscapeChar();
-		const char style = inBold ? '1' : '0';
-		const int color = static_cast<std::underlying_type_t<Color>>(inColor);
+	// #if defined(CHALET_WIN32)
+	// 	if (Environment::isCommandPromptOrPowerShell())
+	// 	{
+	// 		return std::string();
+	// 	}
+	// 	else
+	// 	{
+	// #endif
+	const auto esc = getEscapeChar();
+	const char style = inBold ? '1' : '0';
+	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
 
-		return fmt::format("{esc}[{style};{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
-#if defined(CHALET_WIN32)
-	}
-#endif
+	return fmt::format("{esc}[{style};{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
+	// #if defined(CHALET_WIN32)
+	// 	}
+	// #endif
 }
 
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
 {
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
-	{
-		return std::string();
-	}
-	else
-	{
-#endif
-		const auto esc = getEscapeChar();
-		const char style = inBold ? '1' : '0';
-		const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
-		const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
+	// #if defined(CHALET_WIN32)
+	// 	if (Environment::isCommandPromptOrPowerShell())
+	// 	{
+	// 		return std::string();
+	// 	}
+	// 	else
+	// 	{
+	// #endif
+	const auto esc = getEscapeChar();
+	const char style = inBold ? '1' : '0';
+	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
+	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
 
-		return fmt::format("{esc}[{style};{fgColor};{bgColor}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
-#if defined(CHALET_WIN32)
-	}
-#endif
+	return fmt::format("{esc}[{style};{fgColor};{bgColor}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
+	// #if defined(CHALET_WIN32)
+	// 	}
+	// #endif
 }
 
 /*****************************************************************************/
 std::string Output::getAnsiReset()
 {
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
-	{
-		return std::string();
-	}
-	else
-	{
-#endif
-		const auto esc = getEscapeChar();
-		return fmt::format("{esc}[0m", FMT_ARG(esc));
-#if defined(CHALET_WIN32)
-	}
-#endif
+	// #if defined(CHALET_WIN32)
+	// 	if (Environment::isCommandPromptOrPowerShell())
+	// 	{
+	// 		return std::string();
+	// 	}
+	// 	else
+	// 	{
+	// #endif
+	const auto esc = getEscapeChar();
+	return fmt::format("{esc}[0m", FMT_ARG(esc));
+	// #if defined(CHALET_WIN32)
+	// 	}
+	// #endif
 }
 
 /*****************************************************************************/

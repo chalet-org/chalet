@@ -286,6 +286,7 @@ std::string MakefileGenerator::getPchRecipe()
 {pchTarget}: {pch} {dependency}.d
 	{compileEcho}
 	{quietFlag}{pchCompile}
+
 {pch}:
 	$(NOOP)
 )makefile",
@@ -327,6 +328,7 @@ std::string MakefileGenerator::getRcRecipe(const std::string& ext)
 {objDir}/%.{ext}.res: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{rcCompile}
+
 %.{ext}:
 	$(NOOP)
 )makefile",
@@ -372,6 +374,7 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 {objDir}/%.{ext}.o: %.{ext} {pchTarget} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{cppCompile}
+
 %.{ext}:
 	$(NOOP)
 )makefile",
@@ -517,7 +520,7 @@ std::string MakefileGenerator::getPrinter(const std::string& inPrint, const bool
 
 	if (inPrint.empty())
 	{
-		return Environment::isBash() ? "printf ''" : "prompt"; // This just needs to be a noop
+		return Environment::isBash() ? ":" : "rem"; // This just needs to be a noop
 	}
 
 	if (Environment::isBash())
