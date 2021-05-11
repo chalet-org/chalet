@@ -501,14 +501,6 @@ Json Schema::getBuildJson()
 			},
 			"runDependencies": {
 				"$ref": "#/definitions/project-runDependencies"
-			},
-			"preBuild": {
-				"$ref": "#/definitions/project-scripts",
-				"description": "Script(s) to run before the target is built"
-			},
-			"postBuild": {
-				"$ref": "#/definitions/project-scripts",
-				"description": "Script(s) to run after the target is built"
 			}
 		}
 	})json"_ojson;
@@ -520,14 +512,6 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["project"][kPatternProperties][fmt::format("^runDependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-runDependencies"
-	})json"_ojson;
-	ret[kDefinitions]["project"][kPatternProperties][fmt::format("^preBuild{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-scripts",
-		"description": "Script(s) to run before the target is built"
-	})json"_ojson;
-	ret[kDefinitions]["project"][kPatternProperties][fmt::format("^postBuild{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-scripts",
-		"description": "Script(s) to run after the target is built"
 	})json"_ojson;
 
 	ret[kDefinitions]["project-cxx-windowsPrefixOutputFilename"] = R"json({
@@ -919,7 +903,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-scripts"] = R"json({
+	ret[kDefinitions]["project-script"] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -932,6 +916,11 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
+	})json"_ojson;
+
+	ret[kDefinitions]["project-script-description"] = R"json({
+		"type": "string",
+		"description": "A description of the script to display during the build."
 	})json"_ojson;
 
 	ret[kDefinitions]["project-cxx-staticLinking"] = R"json({
@@ -1278,6 +1267,27 @@ Json Schema::getBuildJson()
 		"default": false
 	})json"_ojson;
 
+	ret[kDefinitions]["script"] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"properties": {
+			"script": {
+				"description": "Script(s) to run during this build step.",
+				"$ref": "#/definitions/project-script"
+			},
+			"description": {
+				"$ref": "#/definitions/project-script-description"
+			}
+		}
+	})json"_ojson;
+	ret[kDefinitions]["script"][kPatternProperties][fmt::format("^script{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"description": "Script(s) to run during this build step.",
+		"$ref": "#/definitions/project-script"
+	})json"_ojson;
+	ret[kDefinitions]["script"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/project-script-description"
+	})json"_ojson;
+
 	//
 	const auto kProperties = "properties";
 	ret[kProperties] = Json::object();
@@ -1443,8 +1453,15 @@ Json Schema::getBuildJson()
 		"description": "A sequential list of projects to build"
 	})json"_ojson;
 	ret[kProperties]["projects"][kPatternProperties][patternProjectName] = R"json({
-		"description": "A single build target.",
-		"$ref": "#/definitions/project"
+		"description": "A single build target or script.",
+		"oneOf": [
+			{
+				"$ref": "#/definitions/project"
+			},
+			{
+				"$ref": "#/definitions/script"
+			}
+		]
 	})json"_ojson;
 
 	ret[kProperties]["version"] = R"json({

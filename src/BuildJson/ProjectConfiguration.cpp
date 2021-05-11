@@ -467,41 +467,33 @@ void ProjectConfiguration::addLocationExclude(std::string& inValue)
 }
 
 /*****************************************************************************/
-const StringList& ProjectConfiguration::preBuildScripts() const noexcept
+const StringList& ProjectConfiguration::scripts() const noexcept
 {
-	return m_preBuildScripts;
+	return m_scripts;
 }
 
-void ProjectConfiguration::addPreBuildScripts(StringList& inList)
+void ProjectConfiguration::addScripts(StringList& inList)
 {
-	List::forEach(inList, this, &ProjectConfiguration::addPreBuildScript);
+	List::forEach(inList, this, &ProjectConfiguration::addScript);
 }
 
-void ProjectConfiguration::addPreBuildScript(std::string& inValue)
+void ProjectConfiguration::addScript(std::string& inValue)
 {
 	parseStringVariables(inValue);
 	Path::sanitize(inValue);
 
-	List::addIfDoesNotExist(m_preBuildScripts, std::move(inValue));
+	List::addIfDoesNotExist(m_scripts, std::move(inValue));
 }
 
 /*****************************************************************************/
-const StringList& ProjectConfiguration::postBuildScripts() const noexcept
+const std::string& ProjectConfiguration::description() const noexcept
 {
-	return m_postBuildScripts;
+	return m_description;
 }
 
-void ProjectConfiguration::addPostBuildScripts(StringList& inList)
+void ProjectConfiguration::setDescription(const std::string& inValue) noexcept
 {
-	List::forEach(inList, this, &ProjectConfiguration::addPostBuildScript);
-}
-
-void ProjectConfiguration::addPostBuildScript(std::string& inValue)
-{
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
-	List::addIfDoesNotExist(m_postBuildScripts, std::move(inValue));
+	m_description = inValue;
 }
 
 /*****************************************************************************/

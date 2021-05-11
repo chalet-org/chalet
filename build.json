@@ -78,6 +78,9 @@
 			"kind": "staticLibrary",
 			"location": "vendor/subprocess"
 		},
+		"pre-build": {
+			"script": "env/prebuild.sh"
+		},
 		"chalet": {
 			"kind": "consoleApplication",
 			"location": "src",
@@ -89,8 +92,9 @@
 				]
 			},
 			"runProject": true
-			/*"preBuild": "env/prebuild.sh",
-			"postBuild": "env/postbuild.sh"*/
+		},
+		"post-build": {
+			"script": "env/postbuild.sh"
 		},
 		"tests_chalet": {
 			"kind": "consoleApplication",

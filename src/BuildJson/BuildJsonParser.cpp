@@ -120,6 +120,9 @@ bool BuildJsonParser::validBuildRequested()
 		if (project->includeInBuild())
 			count++;
 
+		if (!project->scripts().empty())
+			continue;
+
 		if (project->language() == CodeLanguage::None)
 		{
 			Diagnostic::errorAbort(fmt::format("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project->name()), "Error parsing file");
@@ -466,14 +469,16 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 			JsonNode::assignFromKey(extends, projectJson, "extends");
 		}
 
+		const bool isScript = containsKeyThatStartsWith(projectJson, "script");
+
 		std::unique_ptr<ProjectConfiguration> project;
-		if (m_abstractProjects.find(extends) != m_abstractProjects.end())
+		if (!isScript && m_abstractProjects.find(extends) != m_abstractProjects.end())
 		{
 			project = std::make_unique<ProjectConfiguration>(*m_abstractProjects.at(extends)); // note: copy ctor
 		}
 		else
 		{
-			if (!String::equals(extends, "all"))
+			if (!isScript && !String::equals(extends, "all"))
 			{
 				Diagnostic::error(fmt::format("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name));
 				return false;
@@ -482,8 +487,16 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		}
 		project->setName(name);
 
-		if (!parseProject(*project, projectJson))
-			return false;
+		if (isScript)
+		{
+			if (!parseScript(*project, projectJson))
+				continue;
+		}
+		else
+		{
+			if (!parseProject(*project, projectJson))
+				return false;
+		}
 
 		m_state.projects.push_back(std::move(project));
 	}
@@ -494,8 +507,6 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 /*****************************************************************************/
 bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract)
 {
-	const auto& buildConfiguration = m_state.buildConfiguration();
-	const auto& platform = m_state.platform();
 
 	if (std::string val; assignStringAndValidate(val, inNode, "kind"))
 		outProject.setKind(val);
@@ -509,25 +520,8 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	if (!parseFilesAndLocation(outProject, inNode, inAbstract))
 		return false;
 
-	if (StringList list; assignStringListAndValidate(list, inNode, "onlyInConfiguration"))
-		outProject.setIncludeInBuild(List::contains(list, buildConfiguration));
-	else if (std::string val; assignStringAndValidate(val, inNode, "onlyInConfiguration"))
-		outProject.setIncludeInBuild(val == buildConfiguration);
-
-	if (StringList list; assignStringListAndValidate(list, inNode, "notInConfiguration"))
-		outProject.setIncludeInBuild(!List::contains(list, buildConfiguration));
-	else if (std::string val; assignStringAndValidate(val, inNode, "notInConfiguration"))
-		outProject.setIncludeInBuild(val != buildConfiguration);
-
-	if (StringList list; assignStringListAndValidate(list, inNode, "onlyInPlatform"))
-		outProject.setIncludeInBuild(List::contains(list, platform));
-	else if (std::string val; assignStringAndValidate(val, inNode, "onlyInPlatform"))
-		outProject.setIncludeInBuild(val == platform);
-
-	if (StringList list; assignStringListAndValidate(list, inNode, "notInPlatform"))
-		outProject.setIncludeInBuild(!List::contains(list, platform));
-	else if (std::string val; assignStringAndValidate(val, inNode, "notInPlatform"))
-		outProject.setIncludeInBuild(val != platform);
+	if (!parsePlatformConfigExclusions(outProject, inNode))
+		return false;
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "runArguments"))
 		outProject.addRunArguments(list);
@@ -538,14 +532,8 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	if (StringList list; assignStringListFromConfig(list, inNode, "runDependencies"))
 		outProject.addRunDependencies(list);
 
-	if (!parseProjectBeforeBuildScripts(outProject, inNode))
-		return false;
-
-	if (!parseProjectAfterBuildScripts(outProject, inNode))
-		return false;
-
 	{
-		const auto compilerSettings = "compilerSettings";
+		const auto compilerSettings{ "compilerSettings" };
 		/*if (inNode.contains(compilerSettings))
 		{
 			const Json& jCompilerSettings = inNode.at(compilerSettings);
@@ -604,6 +592,50 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 		outProject.resolveLinksFromProject(project->name(), staticLib);
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::parseScript(ProjectConfiguration& outProject, const Json& inNode)
+{
+	if (!parseProjectScripts(outProject, inNode))
+		return false;
+
+	if (std::string val; assignStringFromConfig(val, inNode, "description"))
+		outProject.setDescription(val);
+
+	// if (!parsePlatformConfigExclusions(outProject, inNode))
+	// 	return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::parsePlatformConfigExclusions(ProjectConfiguration& outProject, const Json& inNode)
+{
+	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& platform = m_state.platform();
+
+	if (StringList list; assignStringListAndValidate(list, inNode, "onlyInConfiguration"))
+		outProject.setIncludeInBuild(List::contains(list, buildConfiguration));
+	else if (std::string val; assignStringAndValidate(val, inNode, "onlyInConfiguration"))
+		outProject.setIncludeInBuild(val == buildConfiguration);
+
+	if (StringList list; assignStringListAndValidate(list, inNode, "notInConfiguration"))
+		outProject.setIncludeInBuild(!List::contains(list, buildConfiguration));
+	else if (std::string val; assignStringAndValidate(val, inNode, "notInConfiguration"))
+		outProject.setIncludeInBuild(val != buildConfiguration);
+
+	if (StringList list; assignStringListAndValidate(list, inNode, "onlyInPlatform"))
+		outProject.setIncludeInBuild(List::contains(list, platform));
+	else if (std::string val; assignStringAndValidate(val, inNode, "onlyInPlatform"))
+		outProject.setIncludeInBuild(val == platform);
+
+	if (StringList list; assignStringListAndValidate(list, inNode, "notInPlatform"))
+		outProject.setIncludeInBuild(!List::contains(list, platform));
+	else if (std::string val; assignStringAndValidate(val, inNode, "notInPlatform"))
+		outProject.setIncludeInBuild(val != platform);
 
 	return true;
 }
@@ -715,27 +747,16 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, co
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProjectBeforeBuildScripts(ProjectConfiguration& outProject, const Json& inNode)
+bool BuildJsonParser::parseProjectScripts(ProjectConfiguration& outProject, const Json& inNode)
 {
-	const std::string key = "preBuild";
+	const std::string key{ "script" };
 
 	if (StringList list; assignStringListFromConfig(list, inNode, key))
-		outProject.addPreBuildScripts(list);
+		outProject.addScripts(list);
 	else if (std::string val; assignStringFromConfig(val, inNode, key))
-		outProject.addPreBuildScript(val);
-
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseProjectAfterBuildScripts(ProjectConfiguration& outProject, const Json& inNode)
-{
-	const std::string key = "postBuild";
-
-	if (StringList list; assignStringListFromConfig(list, inNode, key))
-		outProject.addPostBuildScripts(list);
-	else if (std::string val; assignStringFromConfig(val, inNode, key))
-		outProject.addPostBuildScript(val);
+		outProject.addScript(val);
+	else
+		return false;
 
 	return true;
 }
@@ -743,7 +764,7 @@ bool BuildJsonParser::parseProjectAfterBuildScripts(ProjectConfiguration& outPro
 /*****************************************************************************/
 bool BuildJsonParser::parseProjectLocationOrFiles(ProjectConfiguration& outProject, const Json& inNode)
 {
-	const std::string loc = "location";
+	const std::string loc{ "location" };
 
 	bool hasFiles = inNode.contains("files");
 
@@ -796,7 +817,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(ProjectConfiguration& outProje
 /*****************************************************************************/
 bool BuildJsonParser::parseProjectCmake(ProjectConfiguration& outProject, const Json& inNode)
 {
-	const std::string key = "cmake";
+	const std::string key{ "cmake" };
 
 	if (!inNode.contains(key))
 		return false;
@@ -960,7 +981,7 @@ bool BuildJsonParser::parseBundleMacOS(const Json& inNode)
 	if (StringList list; assignStringListAndValidate(list, macosNode, "dylibs"))
 		macosBundle.addDylibs(list);
 
-	const std::string kDmgBackground = "dmgBackground";
+	const std::string kDmgBackground{ "dmgBackground" };
 	if (macosNode.contains(kDmgBackground))
 	{
 		const Json& dmgBackground = macosNode[kDmgBackground];
@@ -1148,6 +1169,52 @@ bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json
 			res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, notPlatform));
 		else
 			res |= assignStringListAndValidate(outList, inNode, fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, notPlatform));
+	}
+
+	return res;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& inKey)
+{
+	bool res = inNode.contains(inKey);
+
+	const auto& platform = m_state.platform();
+
+	res |= inNode.contains(fmt::format("{}.{}", inKey, platform));
+
+	if (m_state.configuration.debugSymbols())
+	{
+		res |= inNode.contains(fmt::format("{}:{}", inKey, m_debugIdentifier));
+		res |= inNode.contains(fmt::format("{}:{}.{}", inKey, m_debugIdentifier, platform));
+	}
+	else
+	{
+		res |= inNode.contains(fmt::format("{}:!{}", inKey, m_debugIdentifier));
+		res |= inNode.contains(fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform));
+	}
+
+	for (auto& notPlatform : m_state.notPlatforms())
+	{
+		res |= inNode.contains(fmt::format("{}.!{}", inKey, notPlatform));
+
+		if (m_state.configuration.debugSymbols())
+			res |= inNode.contains(fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, notPlatform));
+		else
+			res |= inNode.contains(fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, notPlatform));
+	}
+
+	return res;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::containsKeyThatStartsWith(const Json& inNode, const std::string& inFind)
+{
+	bool res = false;
+
+	for (auto& [key, value] : inNode.items())
+	{
+		res |= String::startsWith(inFind, key);
 	}
 
 	return res;

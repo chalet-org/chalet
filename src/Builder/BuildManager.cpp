@@ -105,7 +105,14 @@ bool BuildManager::run(const Route inRoute)
 				break;
 			}
 
-			if (!runCommand)
+			if (!project->scripts().empty())
+			{
+				auto result = buildTimer.stop();
+
+				Output::print(Color::Reset, fmt::format("   Script time: {}ms", result));
+				Output::lineBreak();
+			}
+			else if (!runCommand)
 			{
 				auto result = buildTimer.stop();
 
@@ -160,16 +167,6 @@ bool BuildManager::doBuild(const Route inRoute)
 	if (inRoute == Route::Rebuild)
 		doClean(outputs.objectList, outputs.dependencyList);
 
-	const auto& preBuildScripts = m_project->preBuildScripts();
-	const auto& postBuildScripts = m_project->postBuildScripts();
-
-	// TODO: Check placement
-	if (!runExternalScripts(preBuildScripts))
-	{
-		Diagnostic::error(fmt::format("There was a problem running the pre-build script for: {}", m_project->name()));
-		return false;
-	}
-
 	{
 		auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, *m_project, compilerConfig);
 
@@ -202,10 +199,21 @@ bool BuildManager::doBuild(const Route inRoute)
 	bool multiTarget = m_state.projects.size() > 1;
 	Output::msgTargetUpToDate(multiTarget, m_project->name());
 
-	// TODO: Always runs at the moment
-	if (!runExternalScripts(postBuildScripts))
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::doScript()
+{
+	chalet_assert(m_project != nullptr, "");
+
+	const auto& scripts = m_project->scripts();
+	if (scripts.empty())
+		return false;
+
+	if (!runExternalScripts(scripts))
 	{
-		Diagnostic::error(fmt::format("There was a problem running the post-build script for: {}", m_project->name()));
+		Diagnostic::error(fmt::format("There was a problem running the script(s) for the build step: {}", m_project->name()));
 		return false;
 	}
 
@@ -440,15 +448,36 @@ bool BuildManager::cmdBuild()
 	const auto& buildConfiguration = m_state.buildConfiguration();
 	const auto& command = m_inputs.command();
 	const auto& outputFile = m_project->outputFile();
+	const bool isScript = !m_project->scripts().empty();
 
-	if (m_project->name() == m_runProjectName && command == Route::BuildRun)
-		Output::msgBuildAndRun(buildConfiguration, outputFile);
+	if (isScript)
+	{
+		if (!m_project->description().empty())
+			Output::msgScript(m_project->description());
+		else
+			Output::msgScript(m_project->name());
+	}
 	else
-		Output::msgBuild(buildConfiguration, outputFile);
+	{
+		if (m_project->name() == m_runProjectName && command == Route::BuildRun)
+			Output::msgBuildAndRun(buildConfiguration, outputFile);
+		else
+			Output::msgBuild(buildConfiguration, outputFile);
+	}
 
 	Output::lineBreak();
 
-	if (!doBuild(command))
+	bool result = false;
+	if (!m_project->scripts().empty())
+	{
+		result = doScript();
+	}
+	else
+	{
+		result = doBuild(command);
+	}
+
+	if (!result)
 	{
 		Output::msgBuildFail();
 		Output::lineBreak();
@@ -613,12 +642,10 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 
 		StringList command;
 
-		if (m_state.tools.bashAvailable())
+		const bool isBashScript = String::endsWith(".sh", outScriptPath);
+		if (isBashScript && m_state.tools.bashAvailable())
 		{
-#if defined(CHALET_WIN32)
-			if (String::endsWith(".sh", outScriptPath))
-				command.push_back(m_state.tools.bash());
-#endif
+			command.push_back(m_state.tools.bash());
 		}
 
 		command.push_back(std::move(outScriptPath));

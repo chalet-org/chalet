@@ -19,7 +19,7 @@ struct CacheTools
 
 	const std::string& bash() const noexcept;
 	void setBash(const std::string& inValue) noexcept;
-	bool bashAvailable() noexcept;
+	bool bashAvailable() const noexcept;
 
 	const std::string& brew() const noexcept;
 	void setBrew(const std::string& inValue) noexcept;
@@ -27,6 +27,10 @@ struct CacheTools
 
 	const std::string& cmake() const noexcept;
 	void setCmake(const std::string& inValue) noexcept;
+	uint cmakeVersionMajor() const noexcept;
+	uint cmakeVersionMinor() const noexcept;
+	uint cmakeVersionPatch() const noexcept;
+	bool cmakeAvailable() const noexcept;
 
 	const std::string& codesign() const noexcept;
 	void setCodesign(const std::string& inValue) noexcept;
@@ -59,7 +63,7 @@ struct CacheTools
 	void setMake(const std::string& inValue) noexcept;
 	uint makeVersionMajor() const noexcept;
 	uint makeVersionMinor() const noexcept;
-	bool isNMake() noexcept;
+	bool isNMake() const noexcept;
 
 	const std::string& ninja() const noexcept;
 	void setNinja(const std::string& inValue) noexcept;
@@ -149,6 +153,10 @@ private:
 	std::string m_xcodegen;
 	std::string m_xcrun;
 
+	uint m_cmakeVersionMajor = 0;
+	uint m_cmakeVersionMinor = 0;
+	uint m_cmakeVersionPatch = 0;
+
 	uint m_makeVersionMajor = 0;
 	uint m_makeVersionMinor = 0;
 
@@ -161,6 +169,7 @@ private:
 
 	bool m_brewAvailable = false;
 	bool m_bashAvailable = false;
+	bool m_cmakeAvailable = false;
 	bool m_makeIsNMake = false;
 };
 }

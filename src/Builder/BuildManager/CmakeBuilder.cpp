@@ -9,6 +9,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -25,17 +26,21 @@ CmakeBuilder::CmakeBuilder(const BuildState& inState, const ProjectConfiguration
 /*****************************************************************************/
 bool CmakeBuilder::run()
 {
-	// TODO: check for cmake executable
+	const auto& name = m_project.name();
+	if (!m_state.tools.cmakeAvailable())
+	{
+		Diagnostic::error(fmt::format("CMake was requsted for the project '{}' but was not found.", name));
+		return false;
+	}
+
 	// TODO: add doxygen to path?
 
 	const auto& buildConfiguration = m_state.buildConfiguration();
-	const auto& name = m_project.name();
 
 	Output::msgBuild(buildConfiguration, name);
 	Output::lineBreak();
 
-	std::string cmakeBuild = buildConfiguration;
-	if (cmakeBuild != "Release" && cmakeBuild != "Debug" && cmakeBuild != "RelWithDebInfo" && cmakeBuild != "MinSizeRel")
+	if (!List::contains({ "Release", "Debug", "RelWithDebInfo", "MinSizeRel" }, buildConfiguration))
 	{
 		// https://cmake.org/cmake/help/v3.0/variable/CMAKE_BUILD_TYPE.html
 		Diagnostic::error(fmt::format("Build '{}' not recognized by CMAKE.", buildConfiguration));
@@ -64,33 +69,16 @@ bool CmakeBuilder::run()
 		if (outDirectoryDoesNotExist)
 			Commands::makeDirectory(outDir, false);
 
-		// std::string defines = String::getPrefixed(m_project.cmakeDefines(), "-D");
-
-		const bool ninja = m_state.environment.strategy() == StrategyType::Ninja;
-		const auto& compileConfig = m_state.compilers.getConfig(m_project.language());
-
-		std::string generator;
-		if (ninja)
-			generator = "Ninja";
-		else if (compileConfig.isMingw())
-			generator = "MinGW Makefiles";
-		else
-			generator = "Unix Makefiles";
+		const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
 
 		// TODO: -A arch, -T toolset
 
-		auto& cmake = m_state.tools.cmake();
-		StringList cmakeCommand{ cmake, "-G", generator, location };
-		for (auto& define : m_project.cmakeDefines())
-		{
-			cmakeCommand.push_back("-D" + define);
-		}
-		cmakeCommand.push_back("-DCMAKE_BUILD_TYPE=" + cmakeBuild);
+		StringList cmakeCommand = getCmakeCommand(location);
 
 		if (!Commands::subprocess(cmakeCommand, outDir))
 			return false;
 
-		if (ninja)
+		if (isNinja)
 		{
 			const auto& ninjaExec = m_state.tools.ninja();
 			if (!Commands::subprocess({ ninjaExec }, outDir, PipeOption::StdOut))
@@ -122,4 +110,36 @@ bool CmakeBuilder::run()
 	return true;
 }
 
+/*****************************************************************************/
+std::string CmakeBuilder::getGenerator() const
+{
+	const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
+	const auto& compileConfig = m_state.compilers.getConfig(m_project.language());
+
+	std::string ret;
+	if (isNinja)
+		ret = "Ninja";
+	else if (compileConfig.isMingw())
+		ret = "MinGW Makefiles";
+	else
+		ret = "Unix Makefiles";
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList CmakeBuilder::getCmakeCommand(const std::string& inLocation) const
+{
+	const auto& buildConfiguration = m_state.buildConfiguration();
+	auto& cmake = m_state.tools.cmake();
+
+	StringList ret{ cmake, "-G", getGenerator(), inLocation };
+	for (auto& define : m_project.cmakeDefines())
+	{
+		ret.push_back("-D" + define);
+	}
+	ret.push_back("-DCMAKE_BUILD_TYPE=" + buildConfiguration);
+
+	return ret;
+}
 }

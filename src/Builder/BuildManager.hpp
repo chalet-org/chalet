@@ -17,7 +17,7 @@ namespace chalet
 class BuildManager
 {
 	using BuildAction = std::function<bool(BuildManager&)>;
-	using BuildRouteList = std::map<Route, BuildAction>;
+	using BuildRouteList = std::unordered_map<Route, BuildAction>;
 
 public:
 	explicit BuildManager(const CommandLineInputs& inInputs, BuildState& inState);
@@ -26,6 +26,7 @@ public:
 
 private:
 	bool doBuild(const Route inRoute = Route::Unknown);
+	bool doScript();
 	bool copyRunDependencies();
 	StringList getResolvedRunDependenciesList(const CompilerConfig& inConfig);
 	bool doRun();

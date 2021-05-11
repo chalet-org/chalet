@@ -15,7 +15,7 @@ namespace chalet
 class ArgumentPatterns
 {
 	using ParserAction = std::function<void(ArgumentPatterns&)>;
-	using ParserList = std::map<Route, ParserAction>;
+	using ParserList = std::unordered_map<Route, ParserAction>;
 	using ArgumentMap = std::vector<std::pair<std::string, Variant>>;
 
 public:

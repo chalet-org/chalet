@@ -15,6 +15,12 @@ inline const char* Unicode::dot()
 }
 
 /*****************************************************************************/
+inline const char* Unicode::degree()
+{
+	return u8"\u2218";
+}
+
+/*****************************************************************************/
 inline const char* Unicode::triangle()
 {
 	return u8"\u25BC"; // triangle

@@ -140,17 +140,17 @@ void Output::lineBreak()
 }
 
 /*****************************************************************************/
-void Output::print(const Color inColor, const std::string& inText)
+void Output::print(const Color inColor, const std::string& inText, const bool inBold)
 {
-	const auto color = getAnsiStyle(inColor);
+	const auto color = getAnsiStyle(inColor, inBold);
 	const auto reset = getAnsiReset();
 	std::cout << color << inText << reset << std::endl;
 }
 
 /*****************************************************************************/
-void Output::print(const Color inColor, const StringList& inList)
+void Output::print(const Color inColor, const StringList& inList, const bool inBold)
 {
-	const auto color = getAnsiStyle(inColor);
+	const auto color = getAnsiStyle(inColor, inBold);
 	const auto reset = getAnsiReset();
 	std::cout << color;
 	for (auto& item : inList)
@@ -304,6 +304,20 @@ void Output::msgRebuild(const std::string& inBuildConfiguration, const std::stri
 {
 	auto symbol = Unicode::triangle();
 	displayStyledSymbol(Color::Yellow, symbol, "Rebuild: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+}
+
+/*****************************************************************************/
+void Output::msgScript(const std::string& inName)
+{
+	auto symbol = Unicode::triangle();
+	displayStyledSymbol(Color::Yellow, symbol, fmt::format("Script: {}", inName));
+}
+
+/*****************************************************************************/
+void Output::msgScriptDescription(const std::string& inDescription)
+{
+	auto symbol = Unicode::triangle();
+	displayStyledSymbol(Color::Yellow, symbol, inDescription);
 }
 
 /*****************************************************************************/

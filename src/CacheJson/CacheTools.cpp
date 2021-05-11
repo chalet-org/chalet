@@ -64,6 +64,25 @@ void CacheTools::fetchVersions()
 		}
 	}
 
+	if (!m_cmake.empty())
+	{
+		if (Commands::pathExists(m_cmake))
+		{
+			std::string version = Commands::subprocessOutput({ m_cmake, "--version" });
+			m_cmakeAvailable = String::startsWith("cmake version ", version);
+
+			isolateVersion(version);
+
+			auto vals = String::split(version, '.');
+			if (vals.size() == 3)
+			{
+				m_cmakeVersionMajor = std::stoi(vals[0]);
+				m_cmakeVersionMinor = std::stoi(vals[1]);
+				m_cmakeVersionPatch = std::stoi(vals[2]);
+			}
+		}
+	}
+
 #if defined(CHALET_MACOS)
 	if (!m_xcodebuild.empty())
 	{
@@ -123,7 +142,7 @@ void CacheTools::setBash(const std::string& inValue) noexcept
 	m_bash = inValue;
 }
 
-bool CacheTools::bashAvailable() noexcept
+bool CacheTools::bashAvailable() const noexcept
 {
 	return m_bashAvailable;
 }
@@ -150,6 +169,22 @@ const std::string& CacheTools::cmake() const noexcept
 void CacheTools::setCmake(const std::string& inValue) noexcept
 {
 	m_cmake = inValue;
+}
+uint CacheTools::cmakeVersionMajor() const noexcept
+{
+	return m_cmakeVersionMajor;
+}
+uint CacheTools::cmakeVersionMinor() const noexcept
+{
+	return m_cmakeVersionMinor;
+}
+uint CacheTools::cmakeVersionPatch() const noexcept
+{
+	return m_cmakeVersionPatch;
+}
+bool CacheTools::cmakeAvailable() const noexcept
+{
+	return m_cmakeAvailable;
 }
 
 /*****************************************************************************/
@@ -261,7 +296,7 @@ uint CacheTools::makeVersionMinor() const noexcept
 	return m_makeVersionMinor;
 }
 
-bool CacheTools::isNMake() noexcept
+bool CacheTools::isNMake() const noexcept
 {
 	return m_makeIsNMake;
 }

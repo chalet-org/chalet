@@ -37,11 +37,12 @@ private:
 
 	bool parseProjects(const Json& inNode);
 	bool parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract = false);
+	bool parseScript(ProjectConfiguration& outProject, const Json& inNode);
+	bool parsePlatformConfigExclusions(ProjectConfiguration& outProject, const Json& inNode);
 	bool parseCompilerSettingsCxx(ProjectConfiguration& outProject, const Json& inNode);
 	bool parseFilesAndLocation(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract);
 	bool parseProjectLocationOrFiles(ProjectConfiguration& outProject, const Json& inNode);
-	bool parseProjectBeforeBuildScripts(ProjectConfiguration& outProject, const Json& inNode);
-	bool parseProjectAfterBuildScripts(ProjectConfiguration& outProject, const Json& inNode);
+	bool parseProjectScripts(ProjectConfiguration& outProject, const Json& inNode);
 	bool parseProjectCmake(ProjectConfiguration& outProject, const Json& inNode);
 
 	bool parseBundle(const Json& inNode);
@@ -59,6 +60,9 @@ private:
 
 	bool assignStringFromConfig(std::string& outVariable, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
 	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey);
+
+	bool containsComplexKey(const Json& inNode, const std::string& inKey);
+	bool containsKeyThatStartsWith(const Json& inNode, const std::string& inFind);
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;

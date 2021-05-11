@@ -15,7 +15,7 @@ namespace chalet
 class Router
 {
 	using RouteAction = std::function<bool(Router&)>;
-	using RouteList = std::map<Route, RouteAction>;
+	using RouteList = std::unordered_map<Route, RouteAction>;
 
 public:
 	explicit Router(const CommandLineInputs& inInputs);

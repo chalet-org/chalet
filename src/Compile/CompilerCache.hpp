@@ -29,7 +29,7 @@ struct CompilerCache
 	CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
 
 private:
-	mutable std::map<CodeLanguage, CompilerConfig> m_configs;
+	mutable std::unordered_map<CodeLanguage, CompilerConfig> m_configs;
 
 	std::string m_cpp;
 	std::string m_cc;

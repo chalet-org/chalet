@@ -103,13 +103,12 @@ struct ProjectConfiguration
 	void addLocationExcludes(StringList& inList);
 	void addLocationExclude(std::string& inValue);
 
-	const StringList& preBuildScripts() const noexcept;
-	void addPreBuildScripts(StringList& inList);
-	void addPreBuildScript(std::string& inValue);
+	const StringList& scripts() const noexcept;
+	void addScripts(StringList& inList);
+	void addScript(std::string& inValue);
 
-	const StringList& postBuildScripts() const noexcept;
-	void addPostBuildScripts(StringList& inList);
-	void addPostBuildScript(std::string& inValue);
+	const std::string& description() const noexcept;
+	void setDescription(const std::string& inValue) noexcept;
 
 	const std::string& pch() const noexcept;
 	void setPch(const std::string& inValue) noexcept;
@@ -190,10 +189,10 @@ private:
 	StringList m_macosFrameworkPaths;
 	StringList m_macosFrameworks;
 
-	StringList m_preBuildScripts;
-	StringList m_postBuildScripts;
+	StringList m_scripts;
 
 	std::string m_name;
+	std::string m_description;
 	std::string m_outputFile;
 	std::string m_cStandard;
 	std::string m_cppStandard;

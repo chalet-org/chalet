@@ -15,7 +15,7 @@ namespace chalet
 class NinjaGenerator
 {
 	using NinjaRule = std::function<std::string(NinjaGenerator&)>;
-	using NinjaRuleList = std::map<std::string, NinjaRule>;
+	using NinjaRuleList = std::unordered_map<std::string, NinjaRule>;
 
 public:
 	explicit NinjaGenerator(const BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain);

@@ -19,6 +19,9 @@ public:
 	bool run();
 
 private:
+	std::string getGenerator() const;
+	StringList getCmakeCommand(const std::string& inLocation) const;
+
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;
 

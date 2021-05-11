@@ -438,14 +438,6 @@
 				},
 				"runDependencies": {
 					"$ref": "#/definitions/project-runDependencies"
-				},
-				"preBuild": {
-					"$ref": "#/definitions/project-scripts",
-					"description": "Script(s) to run before the target is built"
-				},
-				"postBuild": {
-					"$ref": "#/definitions/project-scripts",
-					"description": "Script(s) to run after the target is built"
 				}
 			},
 			"patternProperties": {
@@ -457,14 +449,6 @@
 				},
 				"^runDependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/project-runDependencies"
-				},
-				"^preBuild(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/project-scripts",
-					"description": "Script(s) to run before the target is built"
-				},
-				"^postBuild(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/project-scripts",
-					"description": "Script(s) to run after the target is built"
 				}
 			}
 		},
@@ -823,7 +807,7 @@
 				"type": "string"
 			}
 		},
-		"project-scripts": {
+		"project-script": {
 			"anyOf": [
 				{
 					"type": "string"
@@ -836,6 +820,10 @@
 					}
 				}
 			]
+		},
+		"project-script-description": {
+			"type": "string",
+			"description": "A description of the script to display during the build."
 		},
 		"project-cxx-staticLinking": {
 			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
@@ -1174,6 +1162,28 @@
 			"type": "boolean",
 			"description": "If true for a dynamic library (dll) target on Windows, a .def file will be created",
 			"default": false
+		},
+		"script": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"script": {
+					"description": "Script(s) to run during this build step.",
+					"$ref": "#/definitions/project-script"
+				},
+				"description": {
+					"$ref": "#/definitions/project-script-description"
+				}
+			},
+			"patternProperties": {
+				"^script(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"description": "Script(s) to run during this build step.",
+					"$ref": "#/definitions/project-script"
+				},
+				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/project-script-description"
+				}
+			}
 		}
 	},
 	"properties": {
@@ -1333,8 +1343,15 @@
 			"description": "A sequential list of projects to build",
 			"patternProperties": {
 				"^[\\w\\-\\+\\.]{3,}$": {
-					"description": "A single build target.",
-					"$ref": "#/definitions/project"
+					"description": "A single build target or script.",
+					"oneOf": [
+						{
+							"$ref": "#/definitions/project"
+						},
+						{
+							"$ref": "#/definitions/script"
+						}
+					]
 				}
 			}
 		},
