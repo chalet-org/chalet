@@ -11,6 +11,7 @@ namespace chalet
 struct Environment
 {
 	static bool isBash();
+	static bool isCommandPromptOrPowerShell();
 	static bool isMsvc();
 	static bool hasTerm();
 	static bool isContinuousIntegrationServer();

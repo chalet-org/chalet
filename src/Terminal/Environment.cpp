@@ -25,6 +25,15 @@ bool Environment::isBash()
 }
 
 /*****************************************************************************/
+bool Environment::isCommandPromptOrPowerShell()
+{
+	if (s_terminalType == TerminalType::Unset)
+		setTerminalType();
+
+	return s_terminalType == TerminalType::CommandPrompt || s_terminalType == TerminalType::Powershell;
+}
+
+/*****************************************************************************/
 bool Environment::isMsvc()
 {
 	if (s_terminalType == TerminalType::Unset)
