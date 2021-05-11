@@ -453,7 +453,7 @@ bool BuildManager::cmdBuild()
 	if (isScript)
 	{
 		if (!m_project->description().empty())
-			Output::msgScript(m_project->description());
+			Output::msgScriptDescription(m_project->description());
 		else
 			Output::msgScript(m_project->name());
 	}
