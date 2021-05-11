@@ -648,8 +648,11 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	}
 	else
 	{
-		if (!result.empty() && !String::endsWith(".exe", result))
-			result += ".exe";
+		if (!String::contains('.', result))
+		{
+			if (!result.empty() && !String::endsWith(".exe", result))
+				result += ".exe";
+		}
 	}
 
 #elif defined(CHALET_MACOS)

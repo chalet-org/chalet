@@ -201,7 +201,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 #if defined(CHALET_WIN32)
 	static Subprocess::PipeFunc onStdOut = [](std::string inData) {
 		String::replaceAll(inData, "\r\n", "\n");
-		std::cout << inData;
+		std::cout << inData << std::flush;
 	};
 
 	// NMAKE
