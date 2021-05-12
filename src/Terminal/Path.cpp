@@ -32,6 +32,29 @@ void Path::sanitize(std::string& outValue, const bool inRemoveNewLine)
 }
 
 /*****************************************************************************/
+void Path::sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine)
+{
+#if defined(CHALET_WIN32)
+	if (outValue.empty())
+		return;
+
+	if (inRemoveNewLine)
+	{
+		String::replaceAll(outValue, '\r', ' ');
+		String::replaceAll(outValue, '\n', ' ');
+	}
+
+	String::replaceAll(outValue, "\\\\", "\\");
+	String::replaceAll(outValue, '/', '\\');
+
+	if (outValue.back() == ' ')
+		outValue.pop_back();
+#else
+	sanitize(outValue, inRemoveNewLine);
+#endif
+}
+
+/*****************************************************************************/
 // In theory, give this any path (including full PATH variable)
 //
 void Path::sanitizeWithDrives(std::string& outPath)

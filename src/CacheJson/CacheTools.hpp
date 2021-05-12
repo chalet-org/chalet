@@ -35,6 +35,9 @@ struct CacheTools
 	const std::string& codesign() const noexcept;
 	void setCodesign(const std::string& inValue) noexcept;
 
+	const std::string& commandPrompt() const noexcept;
+	void setCommandPrompt(const std::string& inValue) noexcept;
+
 	const std::string& git() const noexcept;
 	void setGit(const std::string& inValue) noexcept;
 
@@ -76,6 +79,9 @@ struct CacheTools
 
 	const std::string& plutil() const noexcept;
 	void setPlutil(const std::string& inValue) noexcept;
+
+	const std::string& powershell() const noexcept;
+	void setPowershell(const std::string& inValue) noexcept;
 
 	const std::string& ranlib() const noexcept;
 	void setRanlib(const std::string& inValue) noexcept;
@@ -131,6 +137,7 @@ private:
 	std::string m_brew;
 	std::string m_cmake;
 	std::string m_codesign;
+	std::string m_commandPrompt;
 	std::string m_git;
 	std::string m_gprof;
 	std::string m_hdiutil;
@@ -144,6 +151,7 @@ private:
 	std::string m_osascript;
 	std::string m_otool;
 	std::string m_plutil;
+	std::string m_powershell;
 	std::string m_ranlib;
 	std::string m_sample;
 	std::string m_sips;

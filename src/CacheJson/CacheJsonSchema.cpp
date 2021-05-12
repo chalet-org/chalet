@@ -53,6 +53,12 @@ Json Schema::getCacheJson()
 		"default": "/usr/local/bin/cmake"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-command_prompt"] = R"json({
+		"type": "string",
+		"description": "The executable path to Command Prompt (Windows)",
+		"default": "C:/Windows/System32/cmd.exe"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-codesign"] = R"json({
 		"type": "string",
 		"description": "The executable path to codesign command-line utility (MacOS)",
@@ -133,6 +139,12 @@ Json Schema::getCacheJson()
 		"type": "string",
 		"description": "The executable path to Apple's plutil command-line utility (MacOS)",
 		"default": "/usr/bin/plutil"
+	})json"_ojson;
+
+	ret[kDefinitions]["tools-powershell"] = R"json({
+		"type": "string",
+		"description": "The executable path to Powershell (Windows)",
+		"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-ranlib"] = R"json({
@@ -245,6 +257,7 @@ Json Schema::getCacheJson()
 			"ar",
 			"bash",
 			"brew",
+			"command_prompt",
 			"cmake",
 			"codesign",
 			"git",
@@ -259,6 +272,7 @@ Json Schema::getCacheJson()
 			"ninja",
 			"osascript",
 			"otool",
+			"powershell",
 			"plutil",
 			"ranlib",
 			"sample",
@@ -281,6 +295,9 @@ Json Schema::getCacheJson()
 			},
 			"cmake": {
 				"$ref": "#/definitions/tools-cmake"
+			},
+			"command_prompt": {
+				"$ref": "#/definitions/tools-command_prompt"
 			},
 			"codesign": {
 				"$ref": "#/definitions/tools-codesign"
@@ -323,6 +340,9 @@ Json Schema::getCacheJson()
 			},
 			"plutil": {
 				"$ref": "#/definitions/tools-plutil"
+			},
+			"powershell": {
+				"$ref": "#/definitions/tools-powershell"
 			},
 			"ranlib": {
 				"$ref": "#/definitions/tools-ranlib"

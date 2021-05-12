@@ -240,6 +240,18 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyBrew);
 	whichAdd(tools, kKeyCmake);
 	whichAdd(tools, kKeyCodesign);
+
+	if (!tools.contains(kKeyCommandPrompt))
+	{
+#if defined(CHALET_WIN32)
+		auto res = Commands::which("cmd");
+		tools[kKeyCommandPrompt] = std::move(res);
+#else
+		tools[kKeyCommandPrompt] = std::string();
+#endif
+		m_state.cache.setDirty(true);
+	}
+
 	whichAdd(tools, kKeyGit);
 	whichAdd(tools, kKeyGprof);
 	whichAdd(tools, kKeyHdiutil);
@@ -283,6 +295,18 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyOsascript);
 	whichAdd(tools, kKeyOtool);
 	whichAdd(tools, kKeyPlutil);
+
+	if (!tools.contains(kKeyPowershell))
+	{
+#if defined(CHALET_WIN32)
+		auto res = Commands::which(kKeyPowershell);
+		tools[kKeyPowershell] = std::move(res);
+#else
+		tools[kKeyPowershell] = std::string();
+#endif
+		m_state.cache.setDirty(true);
+	}
+
 	whichAdd(tools, kKeyRanlib);
 	whichAdd(tools, kKeySample);
 	whichAdd(tools, kKeySips);
@@ -359,6 +383,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyCodesign))
 		m_state.tools.setCodesign(val);
 
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyCommandPrompt))
+		m_state.tools.setCommandPrompt(val);
+
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyGit))
 		m_state.tools.setGit(val);
 
@@ -400,6 +427,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPlutil))
 		m_state.tools.setPlutil(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPowershell))
+		m_state.tools.setPowershell(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyRanlib))
 		m_state.tools.setRanlib(val);

@@ -648,7 +648,8 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	}
 	else
 	{
-		if (!String::contains('.', result))
+		auto file = String::getPathFilename(result);
+		if (!String::contains('.', file))
 		{
 			if (!result.empty() && !String::endsWith(".exe", result))
 				result += ".exe";

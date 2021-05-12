@@ -198,6 +198,17 @@ void CacheTools::setCodesign(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::commandPrompt() const noexcept
+{
+	return m_commandPrompt;
+}
+void CacheTools::setCommandPrompt(const std::string& inValue) noexcept
+{
+	m_commandPrompt = inValue;
+	Path::sanitizeForWindows(m_commandPrompt);
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::git() const noexcept
 {
 	return m_git;
@@ -340,6 +351,16 @@ const std::string& CacheTools::plutil() const noexcept
 void CacheTools::setPlutil(const std::string& inValue) noexcept
 {
 	m_plutil = inValue;
+}
+
+/*****************************************************************************/
+const std::string& CacheTools::powershell() const noexcept
+{
+	return m_powershell;
+}
+void CacheTools::setPowershell(const std::string& inValue) noexcept
+{
+	m_powershell = inValue;
 }
 
 /*****************************************************************************/

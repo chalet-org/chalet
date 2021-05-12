@@ -49,6 +49,7 @@ private:
 	const std::string kKeyBrew = "brew";
 	const std::string kKeyCmake = "cmake";
 	const std::string kKeyCodesign = "codesign";
+	const std::string kKeyCommandPrompt = "command_prompt";
 	const std::string kKeyGit = "git";
 	const std::string kKeyGprof = "gprof";
 	const std::string kKeyHdiutil = "hdiutil";
@@ -62,6 +63,7 @@ private:
 	const std::string kKeyOsascript = "osascript";
 	const std::string kKeyOtool = "otool";
 	const std::string kKeyPlutil = "plutil";
+	const std::string kKeyPowershell = "powershell";
 	const std::string kKeyRanlib = "ranlib";
 	const std::string kKeySample = "sample";
 	const std::string kKeySips = "sips";

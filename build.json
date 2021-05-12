@@ -79,7 +79,8 @@
 			"location": "vendor/subprocess"
 		},
 		"pre-build": {
-			"script": "env/prebuild.sh"
+			"script.!windows": "env/prebuild.sh",
+			"script.windows": "env/prebuild.bat"
 		},
 		"chalet": {
 			"kind": "consoleApplication",
@@ -94,7 +95,8 @@
 			"runProject": true
 		},
 		"post-build": {
-			"script": "env/postbuild.sh"
+			"script.!windows": "env/postbuild.sh",
+			"script.windows": "env/postbuild.bat"
 		},
 		"tests_chalet": {
 			"kind": "consoleApplication",
