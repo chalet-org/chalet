@@ -18,9 +18,9 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
+#if defined(CHALET_WIN32)
 std::string getParentProcessPath()
 {
-#if defined(CHALET_WIN32)
 	HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (handle)
 	{
@@ -57,10 +57,8 @@ std::string getParentProcessPath()
 		}
 	}
 	return std::string();
-#else
-	return std::string();
-#endif
 }
+#endif
 
 }
 /*****************************************************************************/
