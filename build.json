@@ -78,10 +78,6 @@
 			"kind": "staticLibrary",
 			"location": "vendor/subprocess"
 		},
-		"pre-build": {
-			"script.!windows": "env/prebuild.sh",
-			"script.windows": "env/prebuild.bat"
-		},
 		"chalet": {
 			"kind": "consoleApplication",
 			"location": "src",
@@ -94,9 +90,14 @@
 			},
 			"runProject": true
 		},
-		"post-build": {
-			"script.!windows": "env/postbuild.sh",
-			"script.windows": "env/postbuild.bat"
+		"script-bash": {
+			"script": "env/script_bash.sh"
+		},
+		"script-batch": {
+			"script.windows": "env/script_batch.bat"
+		},
+		"script-powershell": {
+			"script.windows": "env/script_powershell.ps1"
 		},
 		"tests_chalet": {
 			"kind": "consoleApplication",

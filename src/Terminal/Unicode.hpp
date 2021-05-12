@@ -10,20 +10,18 @@ namespace chalet
 {
 namespace Unicode
 {
-inline const char* dot();
-inline const char* degree();
-inline const char* triangle();
-inline const char* diamond();
-inline const char* heavyCheckmark();
-inline const char* heavyBallotX();
-inline const char* boldSaltire();
-inline const char* circledSaltire();
-inline const char* heavyCurvedDownRightArrow();
-inline const char* heavyCurvedUpRightArrow();
-inline const char* rightwardsTripleArrow();
+const char* dot();
+const char* degree();
+const char* triangle();
+const char* diamond();
+const char* heavyCheckmark();
+const char* heavyBallotX();
+const char* boldSaltire();
+const char* circledSaltire();
+const char* heavyCurvedDownRightArrow();
+const char* heavyCurvedUpRightArrow();
+const char* rightwardsTripleArrow();
 }
 }
-
-#include "Terminal/Unicode.inl"
 
 #endif // CHALET_UNICODE_HPP

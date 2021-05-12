@@ -70,6 +70,17 @@ bool String::endsWith(const char inEnd, const std::string& inString)
 }
 
 /*****************************************************************************/
+bool String::endsWith(const StringList& inFind, const std::string& inString)
+{
+	bool result = false;
+	for (auto& item : inFind)
+	{
+		result |= endsWith(item, inString);
+	}
+	return result;
+}
+
+/*****************************************************************************/
 bool String::onlyContainsCharacters(const std::string& inChars, const std::string& inString)
 {
 	return inString.find_first_not_of(inChars) != std::string::npos;

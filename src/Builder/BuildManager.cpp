@@ -648,7 +648,7 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 			command.push_back(m_state.tools.bash());
 		}
 #if defined(CHALET_WIN32)
-		const bool isBatchScript = String::endsWith(".bat", outScriptPath);
+		const bool isBatchScript = String::endsWith(".bat", outScriptPath) || String::endsWith(".cmd", outScriptPath);
 		const bool isPowershellScript = String::endsWith(".ps1", outScriptPath);
 		if (isBatchScript || isPowershellScript)
 		{
@@ -657,23 +657,23 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 			auto& powershell = m_state.tools.powershell();
 			auto& cmd = m_state.tools.commandPrompt();
 
-			if (!powershell.empty())
-			{
-				command.push_back(powershell);
-			}
-			else if (isPowershellScript)
-			{
-				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell, but it was not found in 'Path'.", CommandLineInputs::file(), scriptPath));
-				return false;
-			}
-			else if (!cmd.empty())
+			if (isBatchScript && !cmd.empty())
 			{
 				command.push_back(cmd);
 				command.push_back("/c");
 			}
-			else
+			else if (!powershell.empty())
+			{
+				command.push_back(powershell);
+			}
+			else if (isBatchScript)
 			{
 				Diagnostic::error(fmt::format("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", CommandLineInputs::file(), scriptPath));
+				return false;
+			}
+			else
+			{
+				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell, but it was not found in 'Path'.", CommandLineInputs::file(), scriptPath));
 				return false;
 			}
 		}

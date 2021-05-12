@@ -23,19 +23,24 @@ struct Environment
 	static std::string getUserDirectory();
 
 private:
-	enum class TerminalType
+	enum class ShellType
 	{
 		Unset,
+		Subprocess,
 		Bash,
 		CommandPrompt,
 		CommandPromptMsvc,
 		Powershell,
-		// WindowsTerminal
+		PowershellIse,
+		PowershellOpenSource, // 6+
+		PowershellOpenSourceNonWindows,
+		// WindowsTerminal,
 	};
 
 	static void setTerminalType();
+	static void printTermType();
 
-	static TerminalType s_terminalType;
+	static ShellType s_terminalType;
 	static short s_hasTerm;
 	static short s_isContinuousIntegrationServer;
 };

@@ -82,6 +82,8 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 
 	const auto printer = getPrinter();
 
+	// TODO: function to generate misc header extensions
+
 	//
 	//
 	//
@@ -104,7 +106,10 @@ makebuild: {target}
 {depDir}/%.d: ;
 .PRECIOUS: {depDir}/%.d
 
-include $(wildcard $(SOURCE_DEPS))
+-include $(wildcard $(SOURCE_DEPS))
+
+.DEFAULT:
+	$(NOOP)
 )makefile",
 		FMT_ARG(suffixes),
 		FMT_ARG(shell),
@@ -286,9 +291,6 @@ std::string MakefileGenerator::getPchRecipe()
 {pchTarget}: {pch} {dependency}.d
 	{compileEcho}
 	{quietFlag}{pchCompile}
-
-{pch}:
-	$(NOOP)
 )makefile",
 			FMT_ARG(pchTarget),
 			FMT_ARG(pch),
@@ -328,9 +330,6 @@ std::string MakefileGenerator::getRcRecipe(const std::string& ext)
 {objDir}/%.{ext}.res: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{rcCompile}
-
-%.{ext}:
-	$(NOOP)
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(ext),
@@ -374,9 +373,6 @@ std::string MakefileGenerator::getCppRecipe(const std::string& ext)
 {objDir}/%.{ext}.o: %.{ext} {pchTarget} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{cppCompile}
-
-%.{ext}:
-	$(NOOP)
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),
@@ -421,8 +417,6 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 {objDir}/%.{ext}.o: %.{ext} {depDir}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{objcCompile}
-%.{ext}:
-	$(NOOP)
 )makefile",
 		FMT_ARG(objDir),
 		FMT_ARG(depDir),

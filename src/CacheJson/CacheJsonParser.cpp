@@ -299,8 +299,11 @@ bool CacheJsonParser::makeCache()
 	if (!tools.contains(kKeyPowershell))
 	{
 #if defined(CHALET_WIN32)
-		auto res = Commands::which(kKeyPowershell);
-		tools[kKeyPowershell] = std::move(res);
+		auto powershell = Commands::which("pwsh"); // Powershell 6+ (ex: C:/Program Files/Powershell/6)
+		if (powershell.empty())
+			powershell = Commands::which(kKeyPowershell);
+
+		tools[kKeyPowershell] = std::move(powershell);
 #else
 		tools[kKeyPowershell] = std::string();
 #endif

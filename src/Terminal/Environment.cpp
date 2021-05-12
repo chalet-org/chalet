@@ -6,40 +6,96 @@
 #include "Terminal/Environment.hpp"
 
 #include "Libraries/Format.hpp"
+#include "Libraries/WindowsApi.hpp"
 #include "Utility/String.hpp"
+
+#ifdef CHALET_WIN32
+	#include <tlhelp32.h>
+#endif
 
 namespace chalet
 {
+namespace
+{
 /*****************************************************************************/
-Environment::TerminalType Environment::s_terminalType = TerminalType::Unset;
+std::string getParentProcessPath()
+{
+#if defined(CHALET_WIN32)
+	HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (handle)
+	{
+		DWORD pid = GetCurrentProcessId();
+		PROCESSENTRY32 pe;
+		pe.dwSize = sizeof(PROCESSENTRY32);
+
+		if (Process32First(handle, &pe))
+		{
+			do
+			{
+				if (pe.th32ProcessID == pid)
+				{
+					HANDLE parentHandle = OpenProcess(
+						PROCESS_QUERY_LIMITED_INFORMATION,
+						FALSE,
+						pe.th32ParentProcessID);
+
+					if (parentHandle)
+					{
+						std::string processPath;
+						DWORD buffSize = 1024;
+						CHAR buffer[1024];
+						if (QueryFullProcessImageNameA(parentHandle, 0, buffer, &buffSize))
+						{
+							processPath = std::string(buffer);
+						}
+						CloseHandle(parentHandle);
+
+						return processPath;
+					}
+				}
+			} while (Process32Next(handle, &pe));
+		}
+	}
+	return std::string();
+#else
+	return std::string();
+#endif
+}
+
+}
+/*****************************************************************************/
+Environment::ShellType Environment::s_terminalType = ShellType::Unset;
 short Environment::s_hasTerm = -1;
 short Environment::s_isContinuousIntegrationServer = -1;
 
 /*****************************************************************************/
 bool Environment::isBash()
 {
-	if (s_terminalType == TerminalType::Unset)
+	if (s_terminalType == ShellType::Unset)
 		setTerminalType();
 
-	return s_terminalType == TerminalType::Bash;
+	return s_terminalType == ShellType::Bash;
 }
 
 /*****************************************************************************/
 bool Environment::isCommandPromptOrPowerShell()
 {
-	if (s_terminalType == TerminalType::Unset)
+	if (s_terminalType == ShellType::Unset)
 		setTerminalType();
 
-	return s_terminalType == TerminalType::CommandPrompt || s_terminalType == TerminalType::Powershell;
+	return s_terminalType == ShellType::CommandPrompt
+		|| s_terminalType == ShellType::Powershell
+		|| s_terminalType == ShellType::PowershellOpenSource
+		|| s_terminalType == ShellType::PowershellIse;
 }
 
 /*****************************************************************************/
 bool Environment::isMsvc()
 {
-	if (s_terminalType == TerminalType::Unset)
+	if (s_terminalType == ShellType::Unset)
 		setTerminalType();
 
-	return s_terminalType == TerminalType::CommandPromptMsvc;
+	return s_terminalType == ShellType::CommandPromptMsvc;
 }
 
 /*****************************************************************************/
@@ -74,34 +130,103 @@ void Environment::setTerminalType()
 	auto result = Environment::get("MSYSTEM");
 	if (result != nullptr)
 	{
-		s_terminalType = TerminalType::Bash;
-		return;
+		s_terminalType = ShellType::Bash;
+		return printTermType();
 	}
 
 	result = Environment::get("VSAPPIDDIR");
 	if (result != nullptr)
 	{
 		// LOG("This is running through Visual Studio");
-		s_terminalType = TerminalType::CommandPromptMsvc;
-		return;
+		s_terminalType = ShellType::CommandPromptMsvc;
+		return printTermType();
 	}
 
-	// PROMPT: nullptr in MSYS2/Git Bash, but not in std::system calls
-	result = Environment::get("PROMPT"); // Command Prompt
+	// Powershell needs to be detected from the parent PID
+	// Note: env is identical to command prompt. It uses its own env for things like $PSHOME
+	{
+		auto parentPath = getParentProcessPath();
+		if (String::endsWith("pwsh.exe", parentPath))
+		{
+			s_terminalType = ShellType::PowershellOpenSource;
+			return printTermType();
+		}
+		else if (String::endsWith("powershell_ise.exe", parentPath))
+		{
+			s_terminalType = ShellType::PowershellIse;
+			return printTermType();
+		}
+		else if (String::endsWith("powershell.exe", parentPath))
+		{
+			s_terminalType = ShellType::Powershell;
+			return printTermType();
+		}
+	}
+
+	// Detect Command prompt from PROMPT
+	result = Environment::get("PROMPT");
 	if (result != nullptr)
 	{
-		s_terminalType = TerminalType::CommandPrompt;
-		return;
+		s_terminalType = ShellType::CommandPrompt;
+		return printTermType();
 	}
 
-	// Assume it's Powershell. PSHOME will be defined if it is, but it won't technically be part of "Env:"
-	// aka 'echo $PSHOME' (PS path) vs 'echo $env:PSHOME' (blank) -- JOY
-	s_terminalType = TerminalType::Powershell;
+	s_terminalType = ShellType::Subprocess;
 
 	// TODO: Windows Terminal
 #else
-	s_terminalType = TerminalType::Bash;
+	// TODO: Powershell Open Source (barf), zsh, fish distinctions
+	s_terminalType = ShellType::Bash;
 #endif
+	printTermType();
+}
+
+/*****************************************************************************/
+void Environment::printTermType()
+{
+	std::string term;
+	switch (s_terminalType)
+	{
+		case ShellType::Bash:
+			term = "Bash";
+			break;
+
+		case ShellType::Subprocess:
+			term = "Subprocess";
+			break;
+
+		case ShellType::CommandPrompt:
+			term = "Command Prompt";
+			break;
+
+		case ShellType::CommandPromptMsvc:
+			term = "Command Prompt (Visual Studio)";
+			break;
+
+		case ShellType::Powershell:
+			term = "Powershell (Windows built-in)";
+			break;
+
+		case ShellType::PowershellIse:
+			term = "Powershell ISE";
+			break;
+
+		case ShellType::PowershellOpenSource:
+			term = "Powershell (Open Source)";
+			break;
+
+		case ShellType::PowershellOpenSourceNonWindows:
+			term = "Powershell (Open Source)";
+			break;
+
+		case ShellType::Unset:
+		default:
+			term = "Unset";
+			break;
+	}
+
+	// LOG("Terminal:", term);
+	UNUSED(term);
 }
 
 /*****************************************************************************/

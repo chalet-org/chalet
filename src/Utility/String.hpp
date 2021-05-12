@@ -17,6 +17,7 @@ bool startsWith(const char inFind, const std::string& inString);
 bool startsWith(const StringList& inFind, const std::string& inString);
 bool endsWith(const std::string_view inFind, const std::string& inString);
 bool endsWith(const char inFind, const std::string& inString);
+bool endsWith(const StringList& inFind, const std::string& inString);
 bool onlyContainsCharacters(const std::string& inChars, const std::string& inString);
 std::string fromBoolean(const bool inValue) noexcept;
 void replaceAll(std::string& outString, const std::string_view inFrom, const std::string_view inTo);
