@@ -48,6 +48,9 @@ bool AppBundlerLinux::removeOldFiles(const bool inCleanOutput)
 
 	for (auto& project : m_state.projects)
 	{
+		if (project->hasScripts())
+			continue;
+
 		if (!project->includeInBuild())
 			continue;
 
@@ -91,6 +94,9 @@ bool AppBundlerLinux::bundleForPlatform(const bool inCleanOutput)
 	//  (or just use the runProject, but that might not be desireable)
 	for (auto& project : m_state.projects)
 	{
+		if (project->hasScripts())
+			continue;
+
 		if (!project->includeInBuild())
 			continue;
 

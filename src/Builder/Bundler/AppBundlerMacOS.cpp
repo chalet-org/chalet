@@ -104,6 +104,9 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	std::string mainExecutable;
 	for (auto& project : m_state.projects)
 	{
+		if (project->hasScripts())
+			continue;
+
 		if (!project->includeInBuild() || !project->isExecutable())
 			continue;
 
@@ -152,6 +155,9 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	StringList dylibs = macosBundle.dylibs();
 	for (auto& project : m_state.projects)
 	{
+		if (project->hasScripts())
+			continue;
+
 		if (project->includeInBuild() && !project->cmake())
 		{
 			if (project->isSharedLibrary())
@@ -216,6 +222,9 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 
 	for (auto& project : m_state.projects)
 	{
+		if (project->hasScripts())
+			continue;
+
 		if (project->includeInBuild())
 		{
 			for (auto& framework : project->macosFrameworks())
