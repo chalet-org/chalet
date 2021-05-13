@@ -106,6 +106,7 @@ struct ProjectConfiguration
 	const StringList& scripts() const noexcept;
 	void addScripts(StringList& inList);
 	void addScript(std::string& inValue);
+	bool hasScripts() const noexcept;
 
 	const std::string& description() const noexcept;
 	void setDescription(const std::string& inValue) noexcept;

@@ -256,7 +256,6 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 
 		if (inCleanOutput)
 		{
-			Output::lineBreak();
 			Output::print(Color::Blue, "   Creating the disk image for the application...");
 			Output::lineBreak();
 		}

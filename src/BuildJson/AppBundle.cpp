@@ -191,6 +191,9 @@ void AppBundle::addDependency(std::string& inValue)
 	std::string resolved;
 	for (auto& project : m_projectConfigs)
 	{
+		if (project->hasScripts())
+			continue;
+
 		const auto& compilerConfig = m_compilers.getConfig(project->language());
 		const auto& compilerPathBin = compilerConfig.compilerPathBin();
 

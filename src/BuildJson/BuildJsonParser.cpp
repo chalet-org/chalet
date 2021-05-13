@@ -120,7 +120,7 @@ bool BuildJsonParser::validBuildRequested()
 		if (project->includeInBuild())
 			count++;
 
-		if (!project->scripts().empty())
+		if (project->hasScripts())
 			continue;
 
 		if (project->language() == CodeLanguage::None)

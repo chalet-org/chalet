@@ -485,6 +485,11 @@ void ProjectConfiguration::addScript(std::string& inValue)
 	List::addIfDoesNotExist(m_scripts, std::move(inValue));
 }
 
+bool ProjectConfiguration::hasScripts() const noexcept
+{
+	return !m_scripts.empty();
+}
+
 /*****************************************************************************/
 const std::string& ProjectConfiguration::description() const noexcept
 {

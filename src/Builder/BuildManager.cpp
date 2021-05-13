@@ -105,7 +105,7 @@ bool BuildManager::run(const Route inRoute)
 				break;
 			}
 
-			if (!project->scripts().empty())
+			if (project->hasScripts())
 			{
 				auto result = buildTimer.stop();
 
@@ -207,10 +207,10 @@ bool BuildManager::doScript()
 {
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& scripts = m_project->scripts();
-	if (scripts.empty())
+	if (!m_project->hasScripts())
 		return false;
 
+	const auto& scripts = m_project->scripts();
 	if (!runExternalScripts(scripts))
 	{
 		Diagnostic::error(fmt::format("There was a problem running the script(s) for the build step: {}", m_project->name()));
@@ -448,9 +448,9 @@ bool BuildManager::cmdBuild()
 	const auto& buildConfiguration = m_state.buildConfiguration();
 	const auto& command = m_inputs.command();
 	const auto& outputFile = m_project->outputFile();
-	const bool isScript = !m_project->scripts().empty();
+	const bool hasScripts = m_project->hasScripts();
 
-	if (isScript)
+	if (hasScripts)
 	{
 		if (!m_project->description().empty())
 			Output::msgScriptDescription(m_project->description());
@@ -468,7 +468,7 @@ bool BuildManager::cmdBuild()
 	Output::lineBreak();
 
 	bool result = false;
-	if (!m_project->scripts().empty())
+	if (hasScripts)
 	{
 		result = doScript();
 	}
