@@ -42,11 +42,7 @@
 #include "Libraries/FileSystem.hpp"
 #include "Terminal/Diagnostic.hpp"
 #include "Utility/Logger.hpp"
+#include "Utility/StringList.hpp"
 #include "Utility/Unused.hpp"
-
-namespace chalet
-{
-using StringList = std::vector<std::string>;
-}
 
 #endif // CHALET_PRECOMPILED_HEADER_HPP

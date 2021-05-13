@@ -314,10 +314,8 @@ bool Router::managePathVariables()
 		for (auto& p : outPaths)
 		{
 			if (!Commands::pathExists(p))
-			{
-				std::cout << "Not found: " << p << std::endl;
 				continue;
-			}
+
 			p = Commands::getCanonicalPath(p);
 		}
 

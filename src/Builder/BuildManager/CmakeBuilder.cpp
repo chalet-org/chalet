@@ -47,6 +47,7 @@ bool CmakeBuilder::run()
 		return false;
 	}
 
+	// TODO: This should come from a single location
 	const auto& loc = m_project.locations().front();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
@@ -69,35 +70,17 @@ bool CmakeBuilder::run()
 		if (outDirectoryDoesNotExist)
 			Commands::makeDirectory(outDir, false);
 
-		const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
-
 		// TODO: -A arch, -T toolset
 
-		StringList cmakeCommand = getCmakeCommand(location);
-
-		if (!Commands::subprocess(cmakeCommand, outDir))
-			return false;
-
-		if (isNinja)
 		{
-			const auto& ninjaExec = m_state.tools.ninja();
-			if (!Commands::subprocess({ ninjaExec }, outDir, PipeOption::StdOut))
+			StringList generatorCommand = getGeneratorCommand(location);
+			if (!Commands::subprocess(generatorCommand, outDir))
 				return false;
 		}
-		else
+
 		{
-			const auto& makeExec = m_state.tools.make();
-			const auto maxJobs = m_state.environment.maxJobs();
-
-			StringList makeCommand{ makeExec };
-
-			if (maxJobs > 0)
-				makeCommand.push_back(fmt::format("-j{}", maxJobs));
-
-			if (m_state.tools.makeVersionMajor() >= 4)
-				makeCommand.push_back("--output-sync=target");
-
-			if (!Commands::subprocess(makeCommand, outDir))
+			StringList buildCommand = getBuildCommand(".");
+			if (!Commands::subprocess(buildCommand, outDir, PipeOption::StdOut))
 				return false;
 		}
 
@@ -128,7 +111,7 @@ std::string CmakeBuilder::getGenerator() const
 }
 
 /*****************************************************************************/
-StringList CmakeBuilder::getCmakeCommand(const std::string& inLocation) const
+StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) const
 {
 	const auto& buildConfiguration = m_state.buildConfiguration();
 	auto& cmake = m_state.tools.cmake();
@@ -142,4 +125,26 @@ StringList CmakeBuilder::getCmakeCommand(const std::string& inLocation) const
 
 	return ret;
 }
+
+/*****************************************************************************/
+StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
+{
+	auto& cmake = m_state.tools.cmake();
+	const auto maxJobs = m_state.environment.maxJobs();
+
+	const bool isMake = m_state.environment.strategy() == StrategyType::Makefile;
+
+	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };
+
+	if (isMake && m_state.tools.makeVersionMajor() >= 4)
+	{
+		ret.push_back("--");
+		ret.push_back("--output-sync=target");
+	}
+
+	LOG(String::join(ret));
+
+	return ret;
+}
+
 }

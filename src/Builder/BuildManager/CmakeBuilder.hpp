@@ -20,7 +20,8 @@ public:
 
 private:
 	std::string getGenerator() const;
-	StringList getCmakeCommand(const std::string& inLocation) const;
+	StringList getGeneratorCommand(const std::string& inLocation) const;
+	StringList getBuildCommand(const std::string& inLocation) const;
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;
