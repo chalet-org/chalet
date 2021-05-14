@@ -298,15 +298,12 @@ bool CacheJsonParser::makeCache()
 
 	if (!tools.contains(kKeyPowershell))
 	{
+		auto powershell = Commands::which("pwsh"); // Powershell OS 6+ (ex: C:/Program Files/Powershell/6)
 #if defined(CHALET_WIN32)
-		auto powershell = Commands::which("pwsh"); // Powershell 6+ (ex: C:/Program Files/Powershell/6)
 		if (powershell.empty())
 			powershell = Commands::which(kKeyPowershell);
-
-		tools[kKeyPowershell] = std::move(powershell);
-#else
-		tools[kKeyPowershell] = std::string();
 #endif
+		tools[kKeyPowershell] = std::move(powershell);
 		m_state.cache.setDirty(true);
 	}
 

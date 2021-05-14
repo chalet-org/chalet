@@ -201,7 +201,7 @@ void Environment::setTerminalType()
 	s_terminalType = ShellType::Subprocess;
 #else
 	auto parentPath = getParentProcessPath();
-	LOG("parentPath:", parentPath);
+	// LOG("parentPath:", parentPath);
 
 	if (String::equals("/bin/bash", parentPath))
 	{
@@ -317,7 +317,7 @@ void Environment::printTermType()
 			break;
 	}
 
-	LOG("Terminal:", term);
+	// LOG("Terminal:", term);
 	UNUSED(term);
 }
 

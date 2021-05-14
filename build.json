@@ -98,6 +98,7 @@
 		},
 		"script-powershell": {
 			"script.windows": "env/script_powershell.ps1"
+			// "script.macos": "env/script_powershell.ps1"
 		},
 		"tests_chalet": {
 			"kind": "consoleApplication",

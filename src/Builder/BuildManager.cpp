@@ -647,9 +647,9 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 		{
 			command.push_back(m_state.tools.bash());
 		}
+		const bool isPowershellScript = String::endsWith(".ps1", outScriptPath);
 #if defined(CHALET_WIN32)
 		const bool isBatchScript = String::endsWith(".bat", outScriptPath) || String::endsWith(".cmd", outScriptPath);
-		const bool isPowershellScript = String::endsWith(".ps1", outScriptPath);
 		if (isBatchScript || isPowershellScript)
 		{
 			Path::sanitizeForWindows(outScriptPath);
@@ -674,6 +674,20 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 			else
 			{
 				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell, but it was not found in 'Path'.", CommandLineInputs::file(), scriptPath));
+				return false;
+			}
+		}
+#else
+		if (isPowershellScript)
+		{
+			auto& powershell = m_state.tools.powershell();
+			if (!powershell.empty())
+			{
+				command.push_back(powershell);
+			}
+			else
+			{
+				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell open source, but it was not found in 'Path'.", CommandLineInputs::file(), scriptPath));
 				return false;
 			}
 		}
