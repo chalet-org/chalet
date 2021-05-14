@@ -27,7 +27,13 @@ private:
 	{
 		Unset,
 		Subprocess,
-		Bash,
+		Bourne, // /bin/sh or /sbin/sh
+		Bash,	// /bin/bash
+		CShell, // /bin/csh
+		TShell, // /bin/tcsh
+		Korn,	// /bin/ksh
+		Zsh,	// /bin/zsh
+		Fish,	// /usr/bin/fish, /usr/local/bin/fish
 		CommandPrompt,
 		CommandPromptMsvc,
 		Powershell,

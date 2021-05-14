@@ -478,7 +478,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		}
 		else
 		{
-			if (!isScript && !String::equals(extends, "all"))
+			if (!isScript && !String::equals("all", extends))
 			{
 				Diagnostic::error(fmt::format("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name));
 				return false;
@@ -1063,35 +1063,35 @@ bool BuildJsonParser::parseBundleWindows(const Json& inNode)
 /*****************************************************************************/
 bool BuildJsonParser::setDefaultConfigurations(const std::string& inConfig)
 {
-	if (String::equals(inConfig, "Release"))
+	if (String::equals("Release", inConfig))
 	{
 		m_state.configuration.setName(inConfig);
 		m_state.configuration.setOptimizations("3");
 		m_state.configuration.setLinkTimeOptimization(true);
 		m_state.configuration.setStripSymbols(true);
 	}
-	else if (String::equals(inConfig, "Debug"))
+	else if (String::equals("Debug", inConfig))
 	{
 		m_state.configuration.setName(inConfig);
 		m_state.configuration.setOptimizations("0");
 		m_state.configuration.setDebugSymbols(true);
 	}
 	// these two are the same as cmake
-	else if (String::equals(inConfig, "RelWithDebInfo"))
+	else if (String::equals("RelWithDebInfo", inConfig))
 	{
 		m_state.configuration.setName(inConfig);
 		m_state.configuration.setOptimizations("2");
 		m_state.configuration.setDebugSymbols(true);
 		m_state.configuration.setLinkTimeOptimization(true);
 	}
-	else if (String::equals(inConfig, "MinSizeRel"))
+	else if (String::equals("MinSizeRel", inConfig))
 	{
 		m_state.configuration.setName(inConfig);
 		m_state.configuration.setOptimizations("size");
 		// m_state.configuration.setLinkTimeOptimization(true);
 		m_state.configuration.setStripSymbols(true);
 	}
-	else if (String::equals(inConfig, "Profile"))
+	else if (String::equals("Profile", inConfig))
 	{
 		m_state.configuration.setName(inConfig);
 		m_state.configuration.setOptimizations("0");

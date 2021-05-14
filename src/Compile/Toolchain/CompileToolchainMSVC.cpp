@@ -130,12 +130,12 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& inArgList, const CxxS
 	if (m_project.language() == CodeLanguage::C || specialization == CxxSpecialization::ObjectiveC)
 	{
 		std::string langStandard = String::toLowerCase(m_project.cStandard());
-		if (String::equals(langStandard, "gnu2x")
-			|| String::equals(langStandard, "gnu18")
-			|| String::equals(langStandard, "gnu17")
-			|| String::equals(langStandard, "c2x")
-			|| String::equals(langStandard, "c18")
-			|| String::equals(langStandard, "c17")
+		if (String::equals("gnu2x", langStandard)
+			|| String::equals("gnu18", langStandard)
+			|| String::equals("gnu17", langStandard)
+			|| String::equals("c2x", langStandard)
+			|| String::equals("c18", langStandard)
+			|| String::equals("c17", langStandard)
 			|| String::equals(langStandard, "iso9899:2018")
 			|| String::equals(langStandard, "iso9899:2017"))
 		{

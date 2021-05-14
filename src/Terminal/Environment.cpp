@@ -11,6 +11,12 @@
 
 #ifdef CHALET_WIN32
 	#include <tlhelp32.h>
+#else
+	#include <sys/types.h>
+	#include <unistd.h>
+	#include <sys/proc_info.h>
+	#include <libproc.h>
+	#include <array>
 #endif
 
 namespace chalet
@@ -18,9 +24,9 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
-#if defined(CHALET_WIN32)
 std::string getParentProcessPath()
 {
+#if defined(CHALET_WIN32)
 	HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (handle)
 	{
@@ -57,10 +63,27 @@ std::string getParentProcessPath()
 		}
 	}
 	return std::string();
-}
-#endif
+#else
+	// pid_t pid = getpid();
+	pid_t pid = getppid();
 
+	std::string name;
+	if (pid > 0)
+	{
+		std::array<char, PROC_PIDPATHINFO_MAXSIZE> pathBuffer;
+		pathBuffer.fill(0);
+		proc_pidpath(pid, pathBuffer.data(), pathBuffer.size());
+		if (pathBuffer.size() > 0)
+		{
+			name = std::string(pathBuffer.data());
+		}
+	}
+
+	return name;
+#endif
 }
+}
+
 /*****************************************************************************/
 Environment::ShellType Environment::s_terminalType = ShellType::Unset;
 short Environment::s_hasTerm = -1;
@@ -72,7 +95,11 @@ bool Environment::isBash()
 	if (s_terminalType == ShellType::Unset)
 		setTerminalType();
 
+#if defined(CHALET_WIN32)
 	return s_terminalType == ShellType::Bash;
+#else
+	return s_terminalType != ShellType::Unset; // isBash() just looks for a bash-like
+#endif
 }
 
 /*****************************************************************************/
@@ -114,7 +141,7 @@ bool Environment::isContinuousIntegrationServer()
 	if (s_hasTerm == -1)
 	{
 		auto varCI = Environment::get("CI");
-		s_hasTerm = varCI == nullptr ? 0 : (String::equals(String::toLowerCase(varCI), "true") || String::equals(varCI, "1"));
+		s_hasTerm = varCI == nullptr ? 0 : (String::equals(String::toLowerCase(varCI), "true") || String::equals("1", varCI));
 	}
 
 	return s_hasTerm == 1;
@@ -124,6 +151,8 @@ bool Environment::isContinuousIntegrationServer()
 void Environment::setTerminalType()
 {
 #if defined(CHALET_WIN32)
+	// TOOD: Cygwin, Windows Terminal
+
 	// MSYSTEM: Non-nullptr in MSYS2, Git Bash & std::system calls
 	auto result = Environment::get("MSYSTEM");
 	if (result != nullptr)
@@ -170,11 +199,52 @@ void Environment::setTerminalType()
 	}
 
 	s_terminalType = ShellType::Subprocess;
-
-	// TODO: Windows Terminal
 #else
-	// TODO: Powershell Open Source (barf), zsh, fish distinctions
-	s_terminalType = ShellType::Bash;
+	auto parentPath = getParentProcessPath();
+	LOG("parentPath:", parentPath);
+
+	if (String::equals("/bin/bash", parentPath))
+	{
+		s_terminalType = ShellType::Bash;
+		return printTermType();
+	}
+	else if (String::equals({ "/bin/sh", "/sbin/sh" }, parentPath))
+	{
+		s_terminalType = ShellType::Bourne;
+		return printTermType();
+	}
+	else if (String::equals("/bin/zsh", parentPath))
+	{
+		s_terminalType = ShellType::Zsh;
+		return printTermType();
+	}
+	else if (String::contains({ "pwsh", "powershell" }, parentPath))
+	{
+		s_terminalType = ShellType::PowershellOpenSourceNonWindows;
+		return printTermType();
+	}
+	else if (String::equals("/bin/csh", parentPath))
+	{
+		s_terminalType = ShellType::CShell;
+		return printTermType();
+	}
+	else if (String::equals("/bin/tcsh", parentPath))
+	{
+		s_terminalType = ShellType::TShell;
+		return printTermType();
+	}
+	else if (String::equals("/bin/ksh", parentPath))
+	{
+		s_terminalType = ShellType::Korn;
+		return printTermType();
+	}
+	else if (String::endsWith({ "/usr/bin/fish", "/usr/local/bin/fish", "/fish" }, parentPath))
+	{
+		s_terminalType = ShellType::Fish;
+		return printTermType();
+	}
+
+	s_terminalType = ShellType::Subprocess;
 #endif
 	printTermType();
 }
@@ -185,8 +255,32 @@ void Environment::printTermType()
 	std::string term;
 	switch (s_terminalType)
 	{
+		case ShellType::Bourne:
+			term = "Bourne Shell";
+			break;
+
 		case ShellType::Bash:
 			term = "Bash";
+			break;
+
+		case ShellType::CShell:
+			term = "C Shell";
+			break;
+
+		case ShellType::TShell:
+			term = "TENEX C Shell";
+			break;
+
+		case ShellType::Korn:
+			term = "Korn Shell";
+			break;
+
+		case ShellType::Zsh:
+			term = "Z Shell";
+			break;
+
+		case ShellType::Fish:
+			term = "Fish";
 			break;
 
 		case ShellType::Subprocess:
@@ -223,7 +317,7 @@ void Environment::printTermType()
 			break;
 	}
 
-	// LOG("Terminal:", term);
+	LOG("Terminal:", term);
 	UNUSED(term);
 }
 

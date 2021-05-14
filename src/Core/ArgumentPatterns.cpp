@@ -102,40 +102,40 @@ bool ArgumentPatterns::parse(const StringList& inArguments)
 /*****************************************************************************/
 Route ArgumentPatterns::getRouteFromString(const std::string& inValue)
 {
-	if (String::equals(inValue, "buildrun"))
+	if (String::equals("buildrun", inValue))
 	{
 		return Route::BuildRun;
 	}
-	else if (String::equals(inValue, "run"))
+	else if (String::equals("run", inValue))
 	{
 		return Route::Run;
 	}
-	else if (String::equals(inValue, "build"))
+	else if (String::equals("build", inValue))
 	{
 		return Route::Build;
 	}
-	else if (String::equals(inValue, "rebuild"))
+	else if (String::equals("rebuild", inValue))
 	{
 		return Route::Rebuild;
 	}
-	else if (String::equals(inValue, "clean"))
+	else if (String::equals("clean", inValue))
 	{
 		return Route::Clean;
 	}
-	else if (String::equals(inValue, "bundle"))
+	else if (String::equals("bundle", inValue))
 	{
 		return Route::Bundle;
 	}
-	else if (String::equals(inValue, "configure"))
+	else if (String::equals("configure", inValue))
 	{
 		return Route::Configure;
 	}
-	else if (String::equals(inValue, "init"))
+	else if (String::equals("init", inValue))
 	{
 		return Route::Init;
 	}
 #if defined(CHALET_DEBUG)
-	else if (String::equals(inValue, "debug"))
+	else if (String::equals("debug", inValue))
 	{
 		return Route::Debug;
 	}

@@ -11,6 +11,23 @@
 namespace chalet
 {
 /*****************************************************************************/
+bool String::equals(const std::string_view inCompare, const std::string& inString)
+{
+	return ::strcmp(inString.c_str(), inCompare.data()) == 0;
+}
+
+/*****************************************************************************/
+bool String::equals(const StringList& inFind, const std::string& inString)
+{
+	for (auto& item : inFind)
+	{
+		if (equals(item, inString))
+			return true;
+	}
+	return false;
+}
+
+/*****************************************************************************/
 bool String::contains(const std::string_view inFind, const std::string& inString)
 {
 	return inString.find(inFind) != std::string::npos;
@@ -20,6 +37,17 @@ bool String::contains(const std::string_view inFind, const std::string& inString
 bool String::contains(const char inFind, const std::string& inString)
 {
 	return inString.find(inFind) != std::string::npos;
+}
+
+/*****************************************************************************/
+bool String::contains(const StringList& inFind, const std::string& inString)
+{
+	for (auto& item : inFind)
+	{
+		if (contains(item, inString))
+			return true;
+	}
+	return false;
 }
 
 /*****************************************************************************/
@@ -43,12 +71,12 @@ bool String::startsWith(const char inStart, const std::string& inString)
 /*****************************************************************************/
 bool String::startsWith(const StringList& inFind, const std::string& inString)
 {
-	bool result = false;
 	for (auto& item : inFind)
 	{
-		result |= startsWith(item, inString);
+		if (startsWith(item, inString))
+			return true;
 	}
-	return result;
+	return false;
 }
 
 /*****************************************************************************/
@@ -72,12 +100,12 @@ bool String::endsWith(const char inEnd, const std::string& inString)
 /*****************************************************************************/
 bool String::endsWith(const StringList& inFind, const std::string& inString)
 {
-	bool result = false;
 	for (auto& item : inFind)
 	{
-		result |= endsWith(item, inString);
+		if (endsWith(item, inString))
+			return true;
 	}
-	return result;
+	return false;
 }
 
 /*****************************************************************************/

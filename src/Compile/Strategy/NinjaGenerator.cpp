@@ -100,7 +100,7 @@ std::string NinjaGenerator::getRules(const StringList& inExtensions)
 		}
 
 #if !defined(CHALET_WIN32)
-		if (String::equals(ext, "rc"))
+		if (String::equals("rc", ext))
 			continue;
 #endif
 

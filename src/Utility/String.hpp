@@ -10,14 +10,21 @@ namespace chalet
 {
 namespace String
 {
+bool equals(const std::string_view inCompare, const std::string& inString);
+bool equals(const StringList& inFind, const std::string& inString);
+
 bool contains(const std::string_view inFind, const std::string& inString);
 bool contains(const char inFind, const std::string& inString);
+bool contains(const StringList& inFind, const std::string& inString);
+
 bool startsWith(const std::string_view inFind, const std::string& inString);
 bool startsWith(const char inFind, const std::string& inString);
 bool startsWith(const StringList& inFind, const std::string& inString);
+
 bool endsWith(const std::string_view inFind, const std::string& inString);
 bool endsWith(const char inFind, const std::string& inString);
 bool endsWith(const StringList& inFind, const std::string& inString);
+
 bool onlyContainsCharacters(const std::string& inChars, const std::string& inString);
 std::string fromBoolean(const bool inValue) noexcept;
 void replaceAll(std::string& outString, const std::string_view inFrom, const std::string_view inTo);
@@ -40,10 +47,7 @@ std::string getPathFilename(const std::string& inPath);
 std::string getPathFolderBaseName(const std::string& inPath);
 bool isWrapped(const std::string& inString, const std::string_view inStart, const std::string_view inEnd);
 
-inline bool equals(const std::string& inString, const char* inCompare);
 }
 }
-
-#include "Utility/String.inl"
 
 #endif // CHALET_STRING_HPP

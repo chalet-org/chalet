@@ -77,25 +77,25 @@ void ConfigurationOptions::setEnableProfiling(const bool inValue) noexcept
 /*****************************************************************************/
 std::string ConfigurationOptions::parseOptimizations(const std::string& inValue) noexcept
 {
-	if (String::equals(inValue, "debug"))
+	if (String::equals("debug", inValue))
 		return "-Og";
 
-	if (String::equals(inValue, "3"))
+	if (String::equals("3", inValue))
 		return "-O3";
 
-	if (String::equals(inValue, "2"))
+	if (String::equals("2", inValue))
 		return "-O2";
 
-	if (String::equals(inValue, "1"))
+	if (String::equals("1", inValue))
 		return "-O1";
 
-	if (String::equals(inValue, "0"))
+	if (String::equals("0", inValue))
 		return "-O0";
 
-	if (String::equals(inValue, "size"))
+	if (String::equals("size", inValue))
 		return "-Os";
 
-	if (String::equals(inValue, "fast"))
+	if (String::equals("fast", inValue))
 		return "-Ofast";
 
 	return std::string();

@@ -399,7 +399,7 @@ void ProjectConfiguration::setLanguage(const std::string& inValue) noexcept
 	{
 		m_language = CodeLanguage::CPlusPlus;
 	}
-	else if (String::equals(inValue, "C"))
+	else if (String::equals("C", inValue))
 	{
 		m_language = CodeLanguage::C;
 	}
@@ -717,16 +717,16 @@ void ProjectConfiguration::parseStringVariables(std::string& outString)
 /*****************************************************************************/
 ProjectKind ProjectConfiguration::parseProjectKind(const std::string& inValue)
 {
-	if (String::equals(inValue, "staticLibrary"))
+	if (String::equals("staticLibrary", inValue))
 		return ProjectKind::StaticLibrary;
 
-	if (String::equals(inValue, "sharedLibrary"))
+	if (String::equals("sharedLibrary", inValue))
 		return ProjectKind::SharedLibrary;
 
-	if (String::equals(inValue, "consoleApplication"))
+	if (String::equals("consoleApplication", inValue))
 		return ProjectKind::ConsoleApplication;
 
-	if (String::equals(inValue, "desktopApplication"))
+	if (String::equals("desktopApplication", inValue))
 		return ProjectKind::DesktopApplication;
 
 	return ProjectKind::None;
@@ -797,25 +797,25 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 {
 	StringList ret;
 
-	if (String::equals(inValue, "none"))
+	if (String::equals("none", inValue))
 		return ret;
 
 	ret.push_back("all");
-	if (String::equals(inValue, "minimal"))
+	if (String::equals("minimal", inValue))
 		return ret;
 
 	ret.push_back("extra");
-	if (String::equals(inValue, "extra"))
+	if (String::equals("extra", inValue))
 		return ret;
 
 	ret.push_back("error");
-	if (String::equals(inValue, "error"))
+	if (String::equals("error", inValue))
 		return ret;
 
 	ret.push_back("pedantic");
 	// ret.push_back("pedantic-errors"); // Not on OSX?
 
-	if (String::equals(inValue, "pedantic"))
+	if (String::equals("pedantic", inValue))
 		return ret;
 
 	ret.push_back("unused");
@@ -828,13 +828,13 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 	ret.push_back("redundant-decls");
 	ret.push_back("odr");
 
-	if (String::equals(inValue, "strict"))
+	if (String::equals("strict", inValue))
 		return ret;
 
 	ret.push_back("unreachable-code"); // clang only
 	ret.push_back("shadow");
 
-	if (String::equals(inValue, "strictPedantic"))
+	if (String::equals("strictPedantic", inValue))
 		return ret;
 
 	ret.push_back("noexcept");
@@ -849,7 +849,7 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 	ret.push_back("sign-conversion");
 	ret.push_back("sign-promo");
 
-	if (String::equals(inValue, "veryStrict"))
+	if (String::equals("veryStrict", inValue))
 		return ret;
 
 	// More?

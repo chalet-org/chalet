@@ -41,7 +41,7 @@ StrategyType BuildEnvironment::strategy() const noexcept
 
 void BuildEnvironment::setStrategy(const std::string& inValue) noexcept
 {
-	if (String::equals(inValue, "makefile"))
+	if (String::equals("makefile", inValue))
 	{
 		m_strategy = StrategyType::Makefile;
 	}

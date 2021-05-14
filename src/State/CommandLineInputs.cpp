@@ -208,19 +208,19 @@ StringList CommandLineInputs::getNotPlatforms() noexcept
 /*****************************************************************************/
 IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue)
 {
-	if (String::equals(inValue, "vscode"))
+	if (String::equals("vscode", inValue))
 	{
 		return IdeType::VisualStudioCode;
 	}
-	else if (String::equals(inValue, "vs2019"))
+	else if (String::equals("vs2019", inValue))
 	{
 		return IdeType::VisualStudio2019;
 	}
-	else if (String::equals(inValue, "xcode"))
+	else if (String::equals("xcode", inValue))
 	{
 		return IdeType::XCode;
 	}
-	else if (String::equals(inValue, "codeblocks"))
+	else if (String::equals("codeblocks", inValue))
 	{
 		return IdeType::CodeBlocks;
 	}
