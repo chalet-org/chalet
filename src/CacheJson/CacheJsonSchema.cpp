@@ -107,6 +107,12 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/libtool"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-lua"] = R"json({
+		"type": "string",
+		"description": "The executable path to Lua",
+		"default": "/usr/local/bin/lua"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-macosSdk"] = R"json({
 		"type": "string",
 		"description": "The path to the current MacOS SDK (MacOS)"
@@ -140,6 +146,12 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/otool"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-perl"] = R"json({
+		"type": "string",
+		"description": "The executable path to Perl",
+		"default": "/usr/local/bin/perl"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-plutil"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's plutil command-line utility (MacOS)",
@@ -152,10 +164,28 @@ Json Schema::getCacheJson()
 		"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-python"] = R"json({
+		"type": "string",
+		"description": "The executable path to Python 2",
+		"default": "/usr/bin/python"
+	})json"_ojson;
+
+	ret[kDefinitions]["tools-python3"] = R"json({
+		"type": "string",
+		"description": "The executable path to Python 3",
+		"default": "/usr/local/bin/python3"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-ranlib"] = R"json({
 		"type": "string",
 		"description": "The executable path to ranlib.",
 		"default": "/usr/bin/ranlib"
+	})json"_ojson;
+
+	ret[kDefinitions]["tools-ruby"] = R"json({
+		"type": "string",
+		"description": "The executable path to ruby.",
+		"default": "/usr/bin/ruby"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-sample"] = R"json({
@@ -272,15 +302,20 @@ Json Schema::getCacheJson()
 			"instruments",
 			"ldd",
 			"libtool",
+			"lua",
 			"macosSdk",
 			"make",
 			"ninja",
 			"objdump",
 			"osascript",
 			"otool",
-			"powershell",
+			"perl",
 			"plutil",
+			"powershell",
+			"python",
+			"python3",
 			"ranlib",
+			"ruby",
 			"sample",
 			"sips",
 			"strip",
@@ -329,6 +364,9 @@ Json Schema::getCacheJson()
 			"libtool": {
 				"$ref": "#/definitions/tools-libtool"
 			},
+			"lua": {
+				"$ref": "#/definitions/tools-lua"
+			},
 			"macosSdk": {
 				"$ref": "#/definitions/tools-macosSdk"
 			},
@@ -347,14 +385,26 @@ Json Schema::getCacheJson()
 			"otool": {
 				"$ref": "#/definitions/tools-otool"
 			},
+			"perl": {
+				"$ref": "#/definitions/tools-perl"
+			},
 			"plutil": {
 				"$ref": "#/definitions/tools-plutil"
 			},
 			"powershell": {
 				"$ref": "#/definitions/tools-powershell"
 			},
+			"python": {
+				"$ref": "#/definitions/tools-python"
+			},
+			"python3": {
+				"$ref": "#/definitions/tools-python3"
+			},
 			"ranlib": {
 				"$ref": "#/definitions/tools-ranlib"
+			},
+			"ruby": {
+				"$ref": "#/definitions/tools-ruby"
 			},
 			"sample": {
 				"$ref": "#/definitions/tools-sample"

@@ -279,6 +279,16 @@ void CacheTools::setLibtool(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::lua() const noexcept
+{
+	return m_lua;
+}
+void CacheTools::setLua(const std::string& inValue) noexcept
+{
+	m_lua = inValue;
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::macosSdk() const noexcept
 {
 	return m_macosSdk;
@@ -354,6 +364,16 @@ void CacheTools::setOtool(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::perl() const noexcept
+{
+	return m_perl;
+}
+void CacheTools::setPerl(const std::string& inValue) noexcept
+{
+	m_perl = inValue;
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::plutil() const noexcept
 {
 	return m_plutil;
@@ -374,6 +394,26 @@ void CacheTools::setPowershell(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::python() const noexcept
+{
+	return m_python;
+}
+void CacheTools::setPython(const std::string& inValue) noexcept
+{
+	m_python = inValue;
+}
+
+/*****************************************************************************/
+const std::string& CacheTools::python3() const noexcept
+{
+	return m_python3;
+}
+void CacheTools::setPython3(const std::string& inValue) noexcept
+{
+	m_python3 = inValue;
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::ranlib() const noexcept
 {
 	return m_ranlib;
@@ -381,6 +421,16 @@ const std::string& CacheTools::ranlib() const noexcept
 void CacheTools::setRanlib(const std::string& inValue) noexcept
 {
 	m_ranlib = inValue;
+}
+
+/*****************************************************************************/
+const std::string& CacheTools::ruby() const noexcept
+{
+	return m_ruby;
+}
+void CacheTools::setRuby(const std::string& inValue) noexcept
+{
+	m_ruby = inValue;
 }
 
 /*****************************************************************************/

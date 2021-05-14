@@ -72,6 +72,11 @@
 			"description": "The executable path to libtool.",
 			"default": "/usr/bin/libtool"
 		},
+		"tools-lua": {
+			"type": "string",
+			"description": "The executable path to Lua",
+			"default": "/usr/local/bin/lua"
+		},
 		"tools-macosSdk": {
 			"type": "string",
 			"description": "The path to the current MacOS SDK (MacOS)"
@@ -99,6 +104,11 @@
 			"description": "The executable path to Apple's otool command-line utility (MacOS)",
 			"default": "/usr/bin/otool"
 		},
+		"tools-perl": {
+			"type": "string",
+			"description": "The executable path to Perl",
+			"default": "/usr/local/bin/perl"
+		},
 		"tools-plutil": {
 			"type": "string",
 			"description": "The executable path to Apple's plutil command-line utility (MacOS)",
@@ -109,10 +119,25 @@
 			"description": "The executable path to Powershell (Windows)",
 			"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 		},
+		"tools-python": {
+			"type": "string",
+			"description": "The executable path to Python 2",
+			"default": "/usr/bin/python"
+		},
+		"tools-python3": {
+			"type": "string",
+			"description": "The executable path to Python 3",
+			"default": "/usr/local/bin/python3"
+		},
 		"tools-ranlib": {
 			"type": "string",
 			"description": "The executable path to ranlib.",
 			"default": "/usr/bin/ranlib"
+		},
+		"tools-ruby": {
+			"type": "string",
+			"description": "The executable path to ruby.",
+			"default": "/usr/bin/ruby"
 		},
 		"tools-sample": {
 			"type": "string",
@@ -213,15 +238,20 @@
 				"instruments",
 				"ldd",
 				"libtool",
+				"lua",
 				"macosSdk",
 				"make",
 				"ninja",
 				"objdump",
 				"osascript",
 				"otool",
-				"powershell",
+				"perl",
 				"plutil",
+				"powershell",
+				"python",
+				"python3",
 				"ranlib",
+				"ruby",
 				"sample",
 				"sips",
 				"strip",
@@ -270,6 +300,9 @@
 				"libtool": {
 					"$ref": "#/definitions/tools-libtool"
 				},
+				"lua": {
+					"$ref": "#/definitions/tools-lua"
+				},
 				"macosSdk": {
 					"$ref": "#/definitions/tools-macosSdk"
 				},
@@ -288,14 +321,26 @@
 				"otool": {
 					"$ref": "#/definitions/tools-otool"
 				},
+				"perl": {
+					"$ref": "#/definitions/tools-perl"
+				},
 				"plutil": {
 					"$ref": "#/definitions/tools-plutil"
 				},
 				"powershell": {
 					"$ref": "#/definitions/tools-powershell"
 				},
+				"python": {
+					"$ref": "#/definitions/tools-python"
+				},
+				"python3": {
+					"$ref": "#/definitions/tools-python3"
+				},
 				"ranlib": {
 					"$ref": "#/definitions/tools-ranlib"
+				},
+				"ruby": {
+					"$ref": "#/definitions/tools-ruby"
 				},
 				"sample": {
 					"$ref": "#/definitions/tools-sample"

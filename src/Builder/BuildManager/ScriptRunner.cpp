@@ -108,6 +108,43 @@ bool ScriptRunner::run(const std::string& inScript)
 				shellFound = !shell.empty();
 			}
 		}
+		else if (String::endsWith(".py", outScriptPath))
+		{
+			if (!m_tools.python3().empty())
+			{
+				shell = m_tools.python3();
+				shellFound = true;
+			}
+			else if (!m_tools.python().empty())
+			{
+				shell = m_tools.python();
+				shellFound = true;
+			}
+		}
+		else if (String::endsWith(".rb", outScriptPath))
+		{
+			if (!m_tools.ruby().empty())
+			{
+				shell = m_tools.ruby();
+				shellFound = true;
+			}
+		}
+		else if (String::endsWith(".pl", outScriptPath))
+		{
+			if (!m_tools.perl().empty())
+			{
+				shell = m_tools.perl();
+				shellFound = true;
+			}
+		}
+		else if (String::endsWith(".lua", outScriptPath))
+		{
+			if (!m_tools.lua().empty())
+			{
+				shell = m_tools.lua();
+				shellFound = true;
+			}
+		}
 
 		if (shellFound)
 		{
@@ -171,7 +208,10 @@ bool ScriptRunner::run(const std::string& inScript)
 
 	if (!shellFound)
 	{
-		Diagnostic::error(fmt::format("{}: The script '{}' requires the shell '{}', but it was not found.", CommandLineInputs::file(), inScript, shebang));
+		if (shebang.empty())
+			Diagnostic::error(fmt::format("{}: The script '{}' was not recognized.", CommandLineInputs::file(), inScript));
+		else
+			Diagnostic::error(fmt::format("{}: The script '{}' requires the shell '{}', but it was not found.", CommandLineInputs::file(), inScript, shebang));
 		return false;
 	}
 

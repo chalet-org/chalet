@@ -259,6 +259,7 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyInstruments);
 	whichAdd(tools, kKeyLdd);
 	whichAdd(tools, kKeyLibTool);
+	whichAdd(tools, kKeyLua);
 
 	if (!tools.contains(kKeyMacosSdk))
 	{
@@ -295,7 +296,10 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyObjdump);
 	whichAdd(tools, kKeyOsascript);
 	whichAdd(tools, kKeyOtool);
+	whichAdd(tools, kKeyPerl);
 	whichAdd(tools, kKeyPlutil);
+	whichAdd(tools, kKeyPython);
+	whichAdd(tools, kKeyPython3);
 
 	if (!tools.contains(kKeyPowershell))
 	{
@@ -309,6 +313,7 @@ bool CacheJsonParser::makeCache()
 	}
 
 	whichAdd(tools, kKeyRanlib);
+	whichAdd(tools, kKeyRuby);
 	whichAdd(tools, kKeySample);
 	whichAdd(tools, kKeySips);
 	whichAdd(tools, kKeyStrip);
@@ -411,6 +416,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyLibTool))
 		m_state.tools.setLibtool(val);
 
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyLua))
+		m_state.tools.setLua(val);
+
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyMake))
 	{
 		m_state.tools.setMake(val);
@@ -429,14 +437,26 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyOtool))
 		m_state.tools.setOtool(val);
 
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPerl))
+		m_state.tools.setPerl(val);
+
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPlutil))
 		m_state.tools.setPlutil(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPowershell))
 		m_state.tools.setPowershell(val);
 
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPython))
+		m_state.tools.setPython(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPython3))
+		m_state.tools.setPython3(val);
+
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyRanlib))
 		m_state.tools.setRanlib(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyRuby))
+		m_state.tools.setRuby(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeySample))
 		m_state.tools.setSample(val);

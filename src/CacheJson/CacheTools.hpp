@@ -59,6 +59,9 @@ struct CacheTools
 	const std::string& libtool() const noexcept;
 	void setLibtool(const std::string& inValue) noexcept;
 
+	const std::string& lua() const noexcept;
+	void setLua(const std::string& inValue) noexcept;
+
 	const std::string& macosSdk() const noexcept;
 	void setMacosSdk(const std::string& inValue) noexcept;
 
@@ -80,14 +83,26 @@ struct CacheTools
 	const std::string& otool() const noexcept;
 	void setOtool(const std::string& inValue) noexcept;
 
+	const std::string& perl() const noexcept;
+	void setPerl(const std::string& inValue) noexcept;
+
 	const std::string& plutil() const noexcept;
 	void setPlutil(const std::string& inValue) noexcept;
 
 	const std::string& powershell() const noexcept;
 	void setPowershell(const std::string& inValue) noexcept;
 
+	const std::string& python() const noexcept;
+	void setPython(const std::string& inValue) noexcept;
+
+	const std::string& python3() const noexcept;
+	void setPython3(const std::string& inValue) noexcept;
+
 	const std::string& ranlib() const noexcept;
 	void setRanlib(const std::string& inValue) noexcept;
+
+	const std::string& ruby() const noexcept;
+	void setRuby(const std::string& inValue) noexcept;
 
 	const std::string& sample() const noexcept;
 	void setSample(const std::string& inValue) noexcept;
@@ -148,15 +163,20 @@ private:
 	std::string m_instruments;
 	std::string m_ldd;
 	std::string m_libtool;
+	std::string m_lua;
 	std::string m_macosSdk;
 	std::string m_make;
 	std::string m_ninja;
 	std::string m_objdump;
 	std::string m_osascript;
 	std::string m_otool;
+	std::string m_perl;
 	std::string m_plutil;
 	std::string m_powershell;
+	std::string m_python;
+	std::string m_python3;
 	std::string m_ranlib;
+	std::string m_ruby;
 	std::string m_sample;
 	std::string m_sips;
 	std::string m_strip;

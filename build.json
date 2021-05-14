@@ -103,6 +103,18 @@
 			"script.windows": "env/script_powershell.ps1"
 			// "script.macos": "env/script_powershell.ps1"
 		},
+		/*"script-python": {
+			"script": "env/script_python.py"
+		},
+		"script-ruby": {
+			"script": "env/script_ruby.rb"
+		},
+		"script-perl": {
+			"script": "env/script_perl.pl"
+		},
+		"script-lua": {
+			"script": "env/script_lua.lua"
+		},*/
 		"tests_chalet": {
 			"kind": "consoleApplication",
 			"location": {

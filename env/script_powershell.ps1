@@ -1,1 +1,1 @@
-Write-Host "✨ This is a powershell script"
+Write-Host "🐚 This is a powershell script"
