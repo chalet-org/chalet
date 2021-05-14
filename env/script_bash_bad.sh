@@ -1,2 +1,2 @@
 
-echo "✨ This is a bash script"
+echo "✨ This is a bad script without a shebang"
