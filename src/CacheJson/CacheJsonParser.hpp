@@ -60,6 +60,7 @@ private:
 	const std::string kKeyMacosSdk = "macosSdk";
 	const std::string kKeyMake = "make";
 	const std::string kKeyNinja = "ninja";
+	const std::string kKeyObjdump = "objdump";
 	const std::string kKeyOsascript = "osascript";
 	const std::string kKeyOtool = "otool";
 	const std::string kKeyPlutil = "plutil";

@@ -292,6 +292,7 @@ bool CacheJsonParser::makeCache()
 	}
 
 	whichAdd(tools, kKeyNinja);
+	whichAdd(tools, kKeyObjdump);
 	whichAdd(tools, kKeyOsascript);
 	whichAdd(tools, kKeyOtool);
 	whichAdd(tools, kKeyPlutil);
@@ -418,6 +419,9 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyNinja))
 		m_state.tools.setNinja(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyObjdump))
+		m_state.tools.setObjdump(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyOsascript))
 		m_state.tools.setOsascript(val);

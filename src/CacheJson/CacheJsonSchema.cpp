@@ -120,7 +120,12 @@ Json Schema::getCacheJson()
 
 	ret[kDefinitions]["tools-ninja"] = R"json({
 		"type": "string",
-		"description": "The path to ninja's executable."
+		"description": "The executable path to ninja."
+	})json"_ojson;
+
+	ret[kDefinitions]["tools-objdump"] = R"json({
+		"type": "string",
+		"description": "The executable path to objdump."
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-osascript"] = R"json({
@@ -270,6 +275,7 @@ Json Schema::getCacheJson()
 			"macosSdk",
 			"make",
 			"ninja",
+			"objdump",
 			"osascript",
 			"otool",
 			"powershell",
@@ -331,6 +337,9 @@ Json Schema::getCacheJson()
 			},
 			"ninja": {
 				"$ref": "#/definitions/tools-ninja"
+			},
+			"objdump": {
+				"$ref": "#/definitions/tools-objdump"
 			},
 			"osascript": {
 				"$ref": "#/definitions/tools-osascript"

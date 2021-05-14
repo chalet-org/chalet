@@ -71,6 +71,9 @@ struct CacheTools
 	const std::string& ninja() const noexcept;
 	void setNinja(const std::string& inValue) noexcept;
 
+	const std::string& objdump() const noexcept;
+	void setObjdump(const std::string& inValue) noexcept;
+
 	const std::string osascript() const noexcept;
 	void setOsascript(const std::string& inValue) noexcept;
 
@@ -148,6 +151,7 @@ private:
 	std::string m_macosSdk;
 	std::string m_make;
 	std::string m_ninja;
+	std::string m_objdump;
 	std::string m_osascript;
 	std::string m_otool;
 	std::string m_plutil;

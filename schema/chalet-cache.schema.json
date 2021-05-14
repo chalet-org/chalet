@@ -83,7 +83,11 @@
 		},
 		"tools-ninja": {
 			"type": "string",
-			"description": "The path to ninja's executable."
+			"description": "The executable path to ninja."
+		},
+		"tools-objdump": {
+			"type": "string",
+			"description": "The executable path to objdump."
 		},
 		"tools-osascript": {
 			"type": "string",
@@ -212,6 +216,7 @@
 				"macosSdk",
 				"make",
 				"ninja",
+				"objdump",
 				"osascript",
 				"otool",
 				"powershell",
@@ -273,6 +278,9 @@
 				},
 				"ninja": {
 					"$ref": "#/definitions/tools-ninja"
+				},
+				"objdump": {
+					"$ref": "#/definitions/tools-objdump"
 				},
 				"osascript": {
 					"$ref": "#/definitions/tools-osascript"

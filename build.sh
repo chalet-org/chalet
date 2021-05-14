@@ -27,14 +27,13 @@ if [[ $PLATFORM == "windows" ]]; then
 	PATH="/c/msys64/mingw64/bin:$PATH"
 	cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	# cmake -E time mingw32-make -j8
-	# mingw32-make -j8
+	mingw32-make -j8
 else
 	cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	# cmake -E time make -j8
 	# make -j8
+	cmake --build . -j 16
 fi
-
-cmake --build . -j 16
 
 EXIT_CODE=$?
 

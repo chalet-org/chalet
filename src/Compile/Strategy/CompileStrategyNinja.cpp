@@ -104,6 +104,8 @@ bool CompileStrategyNinja::run()
 		StringList command;
 		std::cout << Output::getAnsiStyle(Color::Magenta) << std::flush;
 
+		m_ninjaCmd.push_back("dumpasm");
+
 		bool result = Commands::subprocess(m_ninjaCmd, PipeOption::StdOut);
 		Output::lineBreak();
 

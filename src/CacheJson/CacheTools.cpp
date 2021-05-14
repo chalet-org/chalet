@@ -323,6 +323,16 @@ void CacheTools::setNinja(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::objdump() const noexcept
+{
+	return m_objdump;
+}
+void CacheTools::setObjdump(const std::string& inValue) noexcept
+{
+	m_objdump = inValue;
+}
+
+/*****************************************************************************/
 const std::string CacheTools::osascript() const noexcept
 {
 	return m_osascript;
@@ -473,7 +483,8 @@ std::string CacheTools::getAsmGenerateCommand(const std::string& inputFile, cons
 		FMT_ARG(inputFile),
 		FMT_ARG(outputFile));
 #else
-	return fmt::format("objdump -d -C -Mintel {inputFile} > {outputFile}",
+	return fmt::format("{objdump} -d -C -Mintel {inputFile} > {outputFile}",
+		fmt::arg("objdump", m_objdump),
 		FMT_ARG(inputFile),
 		FMT_ARG(outputFile));
 #endif

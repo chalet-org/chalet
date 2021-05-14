@@ -529,6 +529,9 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	if (bool val = false; parseKeyFromConfig(val, inNode, "runProject"))
 		outProject.setRunProject(val);
 
+	if (bool val = false; parseKeyFromConfig(val, inNode, "dumpAssembly"))
+		outProject.setDumpAssembly(val);
+
 	if (StringList list; assignStringListFromConfig(list, inNode, "runDependencies"))
 		outProject.addRunDependencies(list);
 
@@ -654,9 +657,6 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectConfiguration& outProject,
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "objectiveCxx"))
 		outProject.setObjectiveCxx(val);
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "dumpAssembly"))
-		outProject.setDumpAssembly(val);
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "rtti"))
 		outProject.setRtti(val);
