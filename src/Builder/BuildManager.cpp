@@ -610,7 +610,6 @@ std::string BuildManager::getRunOutputFile()
 /*****************************************************************************/
 bool BuildManager::runExternalScripts(const StringList& inScripts)
 {
-
 	bool result = true;
 	for (auto& scriptPath : inScripts)
 	{
@@ -642,15 +641,14 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 
 		StringList command;
 
-		const bool isBashScript = String::endsWith(".sh", outScriptPath);
-		if (isBashScript)
+		std::string shebang;
+		bool shellFound = false;
+		if (m_state.tools.bashAvailable())
 		{
-			std::string shebang;
-			bool shellFound = false;
-			if (m_state.tools.bashAvailable())
+			std::string shell;
+			shebang = Commands::readShebangFromFile(outScriptPath);
+			if (!shebang.empty())
 			{
-				std::string shell;
-				shebang = Commands::readShebangFromFile(outScriptPath);
 				shell = shebang;
 				shellFound = Commands::pathExists(shell);
 
@@ -674,62 +672,73 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 					}
 				}
 
-				// LOG(shell);
-				command.push_back(std::move(shell));
-			}
-
-			if (!shellFound)
-			{
-				Diagnostic::error(fmt::format("{}: The script '{}' requires the shell '{}', but it was not found.", CommandLineInputs::file(), scriptPath, shebang));
-				return false;
+				if (shellFound)
+				{
+					// LOG(shell);
+					command.push_back(std::move(shell));
+				}
 			}
 		}
 
-		const bool isPowershellScript = String::endsWith(".ps1", outScriptPath);
+		if (!shellFound)
+		{
+			const bool isPowershellScript = String::endsWith(".ps1", outScriptPath);
 #if defined(CHALET_WIN32)
-		const bool isBatchScript = String::endsWith(".bat", outScriptPath) || String::endsWith(".cmd", outScriptPath);
-		if (isBatchScript || isPowershellScript)
-		{
-			Path::sanitizeForWindows(outScriptPath);
+			const bool isBatchScript = String::endsWith(".bat", outScriptPath) || String::endsWith(".cmd", outScriptPath);
+			if (isBatchScript || isPowershellScript)
+			{
+				Path::sanitizeForWindows(outScriptPath);
 
-			auto& powershell = m_state.tools.powershell();
-			auto& cmd = m_state.tools.commandPrompt();
+				auto& powershell = m_state.tools.powershell();
+				auto& cmd = m_state.tools.commandPrompt();
 
-			if (isBatchScript && !cmd.empty())
-			{
-				command.push_back(cmd);
-				command.push_back("/c");
+				if (isBatchScript && !cmd.empty())
+				{
+					command.push_back(cmd);
+					command.push_back("/c");
+				}
+				else if (!powershell.empty())
+				{
+					command.push_back(powershell);
+				}
+				else if (isBatchScript)
+				{
+					Diagnostic::error(fmt::format("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", CommandLineInputs::file(), scriptPath));
+					return false;
+				}
+				else
+				{
+					Diagnostic::error(fmt::format("{}: The script '{}' requires powershell, but it was not found in 'Path'.", CommandLineInputs::file(), scriptPath));
+					return false;
+				}
+
+				shellFound = true;
 			}
-			else if (!powershell.empty())
-			{
-				command.push_back(powershell);
-			}
-			else if (isBatchScript)
-			{
-				Diagnostic::error(fmt::format("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", CommandLineInputs::file(), scriptPath));
-				return false;
-			}
-			else
-			{
-				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell, but it was not found in 'Path'.", CommandLineInputs::file(), scriptPath));
-				return false;
-			}
-		}
 #else
-		if (isPowershellScript)
-		{
-			auto& powershell = m_state.tools.powershell();
-			if (!powershell.empty())
+			if (isPowershellScript)
 			{
-				command.push_back(powershell);
+				auto& powershell = m_state.tools.powershell();
+				if (!powershell.empty())
+				{
+					command.push_back(powershell);
+				}
+				else
+				{
+					Diagnostic::error(fmt::format("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", CommandLineInputs::file(), scriptPath));
+					return false;
+				}
+
+				shellFound = true;
 			}
-			else
-			{
-				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", CommandLineInputs::file(), scriptPath));
-				return false;
-			}
-		}
 #endif
+		}
+
+		if (!shellFound)
+		{
+			Diagnostic::error(fmt::format("{}: The script '{}' requires the shell '{}', but it was not found.", CommandLineInputs::file(), scriptPath, shebang));
+			return false;
+		}
+
 		command.push_back(std::move(outScriptPath));
 
 		result &= Commands::subprocess(command, m_cleanOutput);
