@@ -66,6 +66,11 @@ bool BuildManager::run(const Route inRoute)
 	bool runCommand = inRoute == Route::Run;
 	m_runProjectName = getRunProject();
 
+	if (m_state.environment.strategy() == StrategyType::Ninja)
+	{
+		m_ninjaStrategy = std::make_unique<MetaStrategyNinja>(m_state);
+	}
+
 	bool error = false;
 	for (auto& project : m_state.projects)
 	{
@@ -79,21 +84,7 @@ bool BuildManager::run(const Route inRoute)
 
 		if (project->cmake())
 		{
-			// TODO: refactor this and compileCMakeProject()
-
-			Timer buildTimer;
-
-			if (compileCMakeProject())
-			{
-				if (runCommand)
-					continue;
-
-				auto result = buildTimer.stop();
-
-				Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
-				Output::lineBreak();
-			}
-			else
+			if (!compileCMakeProject())
 				return false;
 		}
 		else
@@ -171,7 +162,7 @@ bool BuildManager::doBuild(const Route inRoute)
 	{
 		auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, *m_project, compilerConfig);
 
-		auto strategyType = m_state.environment.strategy();
+		StrategyType strategyType = m_state.environment.strategy();
 		auto buildStrategy = CompileFactory::makeStrategy(strategyType, m_state, *m_project, buildToolchain);
 
 		if (!buildStrategy->createCache(outputs))
@@ -563,8 +554,18 @@ bool BuildManager::compileCMakeProject()
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_project->cmake(), "");
 
+	Timer buildTimer;
+
 	CmakeBuilder cmake{ m_state, *m_project, m_cleanOutput };
-	return cmake.run();
+	if (!cmake.run())
+		return false;
+
+	auto result = buildTimer.stop();
+
+	Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
+	Output::lineBreak();
+
+	return true;
 }
 
 /*****************************************************************************/
