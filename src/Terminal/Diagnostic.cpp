@@ -34,22 +34,24 @@ Diagnostic::CriticalException Diagnostic::kCriticalError;
 void Diagnostic::warn(const std::string& inMessage, const std::string& inTitle)
 {
 	auto type = Type::Warning;
-	Diagnostic::showHeader(type, inTitle);
-	Diagnostic::showMessage(type, inMessage);
+	// Diagnostic::showHeader(type, inTitle);
+	// Diagnostic::showMessage(type, inMessage);
+	Diagnostic::showAsOneLine(type, inTitle, inMessage);
 
-	const auto reset = Output::getAnsiReset();
-	std::cout << reset << std::endl;
+	// const auto reset = Output::getAnsiReset();
+	// std::cout << reset << std::endl;
 }
 
 /*****************************************************************************/
 void Diagnostic::error(const std::string& inMessage, const std::string& inTitle)
 {
 	auto type = Type::Error;
-	Diagnostic::showHeader(type, inTitle);
-	Diagnostic::showMessage(type, inMessage);
+	// Diagnostic::showHeader(type, inTitle);
+	// Diagnostic::showMessage(type, inMessage);
+	Diagnostic::showAsOneLine(type, inTitle, inMessage);
 
-	const auto reset = Output::getAnsiReset();
-	std::cerr << reset << std::endl;
+	// const auto reset = Output::getAnsiReset();
+	// std::cerr << reset << std::endl;
 }
 
 /*****************************************************************************/
@@ -138,6 +140,16 @@ void Diagnostic::showMessage(const Type inType, const std::string& inMessage)
 {
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	out << fmt::format("   {}", inMessage) << std::endl;
+}
+
+/*****************************************************************************/
+void Diagnostic::showAsOneLine(const Type inType, const std::string& inTitle, const std::string& inMessage)
+{
+	auto& out = inType == Type::Error ? std::cerr : std::cout;
+	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
+	const auto reset = Output::getAnsiReset();
+
+	out << fmt::format("{}{}| {}{}", color, inTitle, reset, inMessage) << std::endl;
 }
 
 }

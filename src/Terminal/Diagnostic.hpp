@@ -47,6 +47,7 @@ private:
 
 	static void showHeader(const Type inType, const std::string& inTitle);
 	static void showMessage(const Type inType, const std::string& inMessage);
+	static void showAsOneLine(const Type inType, const std::string& inTitle, const std::string& inMessage);
 };
 }
 

@@ -482,6 +482,7 @@ bool BuildManager::cmdBuild()
 
 	if (!result)
 	{
+		Output::lineBreak();
 		Output::msgBuildFail();
 		Output::lineBreak();
 		return false;

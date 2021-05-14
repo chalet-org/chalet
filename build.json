@@ -93,6 +93,9 @@
 		"script-bash": {
 			"script": "env/script_bash.sh"
 		},
+		"script-bash-bad": {
+			"script": "env/script_bash_bad.sh"
+		},
 		"script-batch": {
 			"script.windows": "env/script_batch.bat"
 		},

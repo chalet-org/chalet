@@ -12,6 +12,7 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -95,12 +96,23 @@ bool ScriptRunner::run(const std::string& inScript)
 					shellFound = !shell.empty();
 				}
 			}
+		}
+		else if (String::endsWith(".sh", outScriptPath))
+		{
+			shell = Environment::getShell();
+			shellFound = !shell.empty();
 
-			if (shellFound)
+			if (!shellFound && !m_tools.bash().empty())
 			{
-				// LOG(shell);
-				command.push_back(std::move(shell));
+				shell = m_tools.bash();
+				shellFound = !shell.empty();
 			}
+		}
+
+		if (shellFound)
+		{
+			// LOG(shell);
+			command.push_back(std::move(shell));
 		}
 	}
 
@@ -165,7 +177,14 @@ bool ScriptRunner::run(const std::string& inScript)
 
 	command.push_back(std::move(outScriptPath));
 
-	bool result = Commands::subprocess(command, m_cleanOutput);
-	return result;
+	if (!Commands::subprocess(command, m_cleanOutput))
+	{
+		Output::lineBreak();
+		auto exitCode = Subprocess::getLastExitCode();
+		Diagnostic::error(fmt::format("{}: The script '{}' exited with code {}.", CommandLineInputs::file(), inScript, exitCode));
+		return false;
+	}
+
+	return true;
 }
 }
