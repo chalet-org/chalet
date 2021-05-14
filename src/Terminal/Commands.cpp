@@ -508,6 +508,25 @@ bool Commands::readFileAndReplace(const fs::path& inFile, const std::function<vo
 }
 
 /*****************************************************************************/
+std::string Commands::readShebangFromFile(const fs::path& inFile)
+{
+	std::string ret;
+
+	if (Commands::pathExists(inFile))
+	{
+		std::ifstream file{ inFile };
+		std::getline(file, ret);
+
+		if (String::startsWith("#!", ret))
+			ret = ret.substr(2);
+		else
+			ret = std::string();
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 void Commands::sleep(const double inSeconds)
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(inSeconds * 1000.0)));

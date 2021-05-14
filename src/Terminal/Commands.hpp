@@ -37,7 +37,9 @@ void forEachFileMatch(const std::string& inPath, const std::string& inPattern, c
 void forEachFileMatch(const std::string& inPath, const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);
 void forEachFileMatch(const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
 void forEachFileMatch(const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);
+
 bool readFileAndReplace(const fs::path& inFile, const std::function<void(std::string&)>& onReplace);
+std::string readShebangFromFile(const fs::path& inFile);
 void sleep(const double inSeconds);
 
 bool pathExists(const fs::path& inPath);

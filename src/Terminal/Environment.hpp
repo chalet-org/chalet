@@ -21,6 +21,7 @@ struct Environment
 
 	static std::string getPath();
 	static std::string getUserDirectory();
+	static std::string getShell();
 
 private:
 	enum class ShellType

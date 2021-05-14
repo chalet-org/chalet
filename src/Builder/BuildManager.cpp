@@ -643,10 +643,48 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 		StringList command;
 
 		const bool isBashScript = String::endsWith(".sh", outScriptPath);
-		if (isBashScript && m_state.tools.bashAvailable())
+		if (isBashScript)
 		{
-			command.push_back(m_state.tools.bash());
+			std::string shebang;
+			bool shellFound = false;
+			if (m_state.tools.bashAvailable())
+			{
+				std::string shell;
+				shebang = Commands::readShebangFromFile(outScriptPath);
+				shell = shebang;
+				shellFound = Commands::pathExists(shell);
+
+				if (!shellFound)
+				{
+					if (String::startsWith("/bin", shell))
+					{
+						shell = fmt::format("/usr{}", shell);
+						shellFound = Commands::pathExists(shell);
+
+						if (!shellFound)
+						{
+							shell = fmt::format("/usr/local{}", shebang);
+							shellFound = Commands::pathExists(shell);
+						}
+					}
+					else
+					{
+						shell = Environment::getShell();
+						shellFound = !shell.empty();
+					}
+				}
+
+				// LOG(shell);
+				command.push_back(std::move(shell));
+			}
+
+			if (!shellFound)
+			{
+				Diagnostic::error(fmt::format("{}: The script '{}' requires the shell '{}', but it was not found.", CommandLineInputs::file(), scriptPath, shebang));
+				return false;
+			}
 		}
+
 		const bool isPowershellScript = String::endsWith(".ps1", outScriptPath);
 #if defined(CHALET_WIN32)
 		const bool isBatchScript = String::endsWith(".bat", outScriptPath) || String::endsWith(".cmd", outScriptPath);
@@ -687,7 +725,7 @@ bool BuildManager::runExternalScripts(const StringList& inScripts)
 			}
 			else
 			{
-				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell open source, but it was not found in 'Path'.", CommandLineInputs::file(), scriptPath));
+				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", CommandLineInputs::file(), scriptPath));
 				return false;
 			}
 		}
