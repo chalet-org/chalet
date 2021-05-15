@@ -97,52 +97,55 @@ bool ScriptRunner::run(const std::string& inScript)
 				}
 			}
 		}
-		else if (String::endsWith(".sh", outScriptPath))
+		if (!shellFound)
 		{
-			shell = Environment::getShell();
-			shellFound = !shell.empty();
-
-			if (!shellFound && !m_tools.bash().empty())
+			if (String::endsWith(".sh", outScriptPath))
 			{
-				shell = m_tools.bash();
+				shell = Environment::getShell();
 				shellFound = !shell.empty();
+
+				if (!shellFound && !m_tools.bash().empty())
+				{
+					shell = m_tools.bash();
+					shellFound = true;
+				}
 			}
-		}
-		else if (String::endsWith(".py", outScriptPath))
-		{
-			if (!m_tools.python3().empty())
+			else if (String::endsWith(".py", outScriptPath))
 			{
-				shell = m_tools.python3();
-				shellFound = true;
+				if (!m_tools.python3().empty())
+				{
+					shell = m_tools.python3();
+					shellFound = true;
+				}
+				else if (!m_tools.python().empty())
+				{
+					shell = m_tools.python();
+					shellFound = true;
+				}
 			}
-			else if (!m_tools.python().empty())
+			else if (String::endsWith(".rb", outScriptPath))
 			{
-				shell = m_tools.python();
-				shellFound = true;
+				if (!m_tools.ruby().empty())
+				{
+					shell = m_tools.ruby();
+					shellFound = true;
+				}
 			}
-		}
-		else if (String::endsWith(".rb", outScriptPath))
-		{
-			if (!m_tools.ruby().empty())
+			else if (String::endsWith(".pl", outScriptPath))
 			{
-				shell = m_tools.ruby();
-				shellFound = true;
+				if (!m_tools.perl().empty())
+				{
+					shell = m_tools.perl();
+					shellFound = true;
+				}
 			}
-		}
-		else if (String::endsWith(".pl", outScriptPath))
-		{
-			if (!m_tools.perl().empty())
+			else if (String::endsWith(".lua", outScriptPath))
 			{
-				shell = m_tools.perl();
-				shellFound = true;
-			}
-		}
-		else if (String::endsWith(".lua", outScriptPath))
-		{
-			if (!m_tools.lua().empty())
-			{
-				shell = m_tools.lua();
-				shellFound = true;
+				if (!m_tools.lua().empty())
+				{
+					shell = m_tools.lua();
+					shellFound = true;
+				}
 			}
 		}
 

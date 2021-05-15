@@ -397,10 +397,7 @@ std::string Environment::getShell()
 {
 	auto shell = Environment::get("SHELL");
 	if (shell == nullptr)
-	{
-		Diagnostic::errorAbort("Could not retrieve SHELL");
 		return std::string();
-	}
 
 	return std::string(shell);
 }
