@@ -90,31 +90,6 @@
 			},
 			"runProject": true
 		},
-		"script-bash": {
-			"script": "env/script_bash.sh"
-		},
-		"script-bash-bad": {
-			"script": "env/script_bash_bad.sh"
-		},
-		"script-batch": {
-			"script.windows": "env/script_batch.bat"
-		},
-		"script-powershell": {
-			"script.windows": "env/script_powershell.ps1"
-			// "script.macos": "env/script_powershell.ps1"
-		},
-		/*"script-python": {
-			"script": "env/script_python.py"
-		},
-		"script-ruby": {
-			"script": "env/script_ruby.rb"
-		},
-		"script-perl": {
-			"script": "env/script_perl.pl"
-		},
-		"script-lua": {
-			"script": "env/script_lua.lua"
-		},*/
 		"tests_chalet": {
 			"kind": "consoleApplication",
 			"location": {
@@ -137,7 +112,32 @@
 				"-s"
 			],
 			"onlyInConfiguration": "Release"
+		},
+		"script-bash": {
+			"script": "env/script_shell.sh"
 		}
+		/*"script-batch": {
+			"script.windows": "env/script_batch.bat"
+		},
+		"script-powershell": {
+			"script.windows": "env/script_powershell.ps1"
+			// "script.macos": "env/script_powershell.ps1"
+		},
+		"script-bash-bad": {
+			"script": "env/script_shell_bad.sh"
+		},
+		"script-python": {
+			"script": "env/script_python.py"
+		},
+		"script-ruby": {
+			"script": "env/script_ruby.rb"
+		},
+		"script-perl": {
+			"script": "env/script_perl.pl"
+		},
+		"script-lua": {
+			"script": "env/script_lua.lua"
+		}*/
 	},
 	"bundle": {
 		"appName": "Chalet",
