@@ -6,22 +6,23 @@
 #ifndef CHALET_META_STRATEGY_NINJA_HPP
 #define CHALET_META_STRATEGY_NINJA_HPP
 
+#include "Compile/Strategy/IMetaStrategy.hpp"
 #include "Compile/Strategy/NinjaGenerator.hpp"
 #include "State/BuildState.hpp"
 
 namespace chalet
 {
-class MetaStrategyNinja
+struct MetaStrategyNinja final : IMetaStrategy
 {
-public:
 	explicit MetaStrategyNinja(BuildState& inState);
 
-	bool initialize();
+	virtual StrategyType type() const noexcept final;
 
-	bool addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain);
-	bool saveBuildFile() const;
+	virtual bool initialize() final;
+	virtual bool addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain) final;
 
-	bool buildProject(const ProjectConfiguration& inProject);
+	virtual bool saveBuildFile() const final;
+	virtual bool buildProject(const ProjectConfiguration& inProject) const final;
 
 private:
 	BuildState& m_state;

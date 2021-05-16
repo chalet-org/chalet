@@ -21,6 +21,12 @@ MetaStrategyNinja::MetaStrategyNinja(BuildState& inState) :
 }
 
 /*****************************************************************************/
+StrategyType MetaStrategyNinja::type() const noexcept
+{
+	return StrategyType::Ninja;
+}
+
+/*****************************************************************************/
 bool MetaStrategyNinja::initialize()
 {
 	if (m_initialized)
@@ -98,7 +104,7 @@ bool MetaStrategyNinja::saveBuildFile() const
 }
 
 /*****************************************************************************/
-bool MetaStrategyNinja::buildProject(const ProjectConfiguration& inProject)
+bool MetaStrategyNinja::buildProject(const ProjectConfiguration& inProject) const
 {
 	auto& ninjaExec = m_state.tools.ninja();
 	if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))

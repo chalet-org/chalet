@@ -72,22 +72,23 @@ bool BuildManager::run(const Route inRoute)
 		msvcEnvironment.readCompilerVariables();
 	}
 
-	if (!runCommand && m_state.environment.strategy() == StrategyType::Ninja)
+	auto strategy = m_state.environment.strategy();
+	if (!runCommand && strategy == StrategyType::Ninja)
 	{
-		m_ninjaStrategy = std::make_unique<MetaStrategyNinja>(m_state);
-		if (!m_ninjaStrategy->initialize())
+		m_strategy = CompileFactory::makeMetaStrategy(strategy, m_state);
+		if (!m_strategy->initialize())
 			return false;
 
 		for (auto& project : m_state.projects)
 		{
-			if (!project->includeInBuild() || project->cmake() || project->hasScripts())
+			if (project->cmake() || project->hasScripts())
 				continue;
 
 			if (!cacheRecipe(*project, inRoute))
 				return false;
 		}
 
-		m_ninjaStrategy->saveBuildFile();
+		m_strategy->saveBuildFile();
 	}
 
 	bool multiTarget = m_state.projects.size() > 1;
@@ -95,9 +96,6 @@ bool BuildManager::run(const Route inRoute)
 	bool error = false;
 	for (auto& project : m_state.projects)
 	{
-		if (!project->includeInBuild())
-			continue;
-
 		if (runCommand && !project->runProject())
 			continue;
 
@@ -118,8 +116,6 @@ bool BuildManager::run(const Route inRoute)
 				break;
 			}
 
-			Output::msgTargetUpToDate(multiTarget, project->name());
-
 			if (project->hasScripts())
 			{
 				auto result = buildTimer.stop();
@@ -131,6 +127,7 @@ bool BuildManager::run(const Route inRoute)
 			{
 				auto result = buildTimer.stop();
 
+				Output::msgTargetUpToDate(multiTarget, project->name());
 				Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
 				Output::lineBreak();
 			}
@@ -186,7 +183,7 @@ bool BuildManager::cacheRecipe(const ProjectConfiguration& inProject, const Rout
 		}
 	}
 
-	return m_ninjaStrategy->addProject(inProject, outputs, buildToolchain);
+	return m_strategy->addProject(inProject, outputs, buildToolchain);
 }
 
 /*****************************************************************************/
@@ -196,7 +193,7 @@ bool BuildManager::doBuild(const Route inRoute)
 
 	if (m_state.environment.strategy() == StrategyType::Ninja)
 	{
-		return m_ninjaStrategy->buildProject(*m_project);
+		return m_strategy->buildProject(*m_project);
 	}
 
 	auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
@@ -276,9 +273,7 @@ bool BuildManager::copyRunDependencies(const ProjectConfiguration& inProject)
 		auto& compilerConfig = m_state.compilers.getConfig(inProject.language());
 		auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
 
-		auto outputFolder = fmt::format("{workingDirectory}/{buildOutputDir}",
-			FMT_ARG(workingDirectory),
-			FMT_ARG(buildOutputDir));
+		auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);
 
 		int copied = 0;
 		for (auto& dep : runDependencies)
@@ -348,9 +343,7 @@ bool BuildManager::doRun()
 
 	// LOG(workingDirectory);
 
-	auto outputFolder = fmt::format("{workingDirectory}/{buildOutputDir}",
-		FMT_ARG(workingDirectory),
-		FMT_ARG(buildOutputDir));
+	auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);
 
 	Output::msgLaunch(buildOutputDir, outputFile);
 	Output::lineBreak();
@@ -358,9 +351,7 @@ bool BuildManager::doRun()
 	// LOG(runOptions);
 	// LOG(runArguments);
 
-	auto file = fmt::format("{outputFolder}/{outputFile}",
-		FMT_ARG(outputFolder),
-		FMT_ARG(outputFile));
+	auto file = fmt::format("{}/{}", outputFolder, outputFile);
 
 	// LOG(file);
 
@@ -635,9 +626,6 @@ std::string BuildManager::getRunOutputFile()
 	std::string outputFile;
 	for (auto& project : m_state.projects)
 	{
-		if (!project->includeInBuild())
-			continue;
-
 		if (project->name() == m_runProjectName)
 		{
 			outputFile = project->outputFile();

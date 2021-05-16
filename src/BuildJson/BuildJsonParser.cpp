@@ -117,8 +117,7 @@ bool BuildJsonParser::validBuildRequested()
 	int count = 0;
 	for (auto& project : m_state.projects)
 	{
-		if (project->includeInBuild())
-			count++;
+		count++;
 
 		if (project->hasScripts())
 			continue;
@@ -141,9 +140,6 @@ bool BuildJsonParser::validRunProjectRequestedFromInput()
 
 	for (auto& project : m_state.projects)
 	{
-		if (!project->includeInBuild())
-			continue;
-
 		if (!inputRunProject.empty() && project->name() == inputRunProject)
 			return project->isExecutable();
 	}
@@ -497,6 +493,8 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 			if (!parseProject(*project, projectJson))
 				return false;
 		}
+		if (!project->includeInBuild())
+			continue;
 
 		m_state.projects.push_back(std::move(project));
 	}
@@ -507,6 +505,8 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 /*****************************************************************************/
 bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract)
 {
+	if (!parsePlatformConfigExclusions(outProject, inNode))
+		return true; // true to skip project
 
 	if (std::string val; assignStringAndValidate(val, inNode, "kind"))
 		outProject.setKind(val);
@@ -518,9 +518,6 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 		outProject.setLanguage(val);
 
 	if (!parseFilesAndLocation(outProject, inNode, inAbstract))
-		return false;
-
-	if (!parsePlatformConfigExclusions(outProject, inNode))
 		return false;
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "runArguments"))
@@ -640,7 +637,7 @@ bool BuildJsonParser::parsePlatformConfigExclusions(ProjectConfiguration& outPro
 	else if (std::string val; assignStringAndValidate(val, inNode, "notInPlatform"))
 		outProject.setIncludeInBuild(val != platform);
 
-	return true;
+	return outProject.includeInBuild();
 }
 
 /*****************************************************************************/

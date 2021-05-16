@@ -79,9 +79,6 @@ bool AppBundler::run()
 
 	for (auto& project : m_state.projects)
 	{
-		if (!project->includeInBuild())
-			continue;
-
 		if (!List::contains(bundleProjects, project->name()))
 			continue;
 

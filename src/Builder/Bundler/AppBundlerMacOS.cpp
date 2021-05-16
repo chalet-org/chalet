@@ -107,7 +107,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		if (project->hasScripts())
 			continue;
 
-		if (!project->includeInBuild() || !project->isExecutable())
+		if (!project->isExecutable())
 			continue;
 
 		if (!List::contains(bundleProjects, project->name()))
@@ -158,7 +158,7 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		if (project->hasScripts())
 			continue;
 
-		if (project->includeInBuild() && !project->cmake())
+		if (!project->cmake())
 		{
 			if (project->isSharedLibrary())
 			{
@@ -225,31 +225,28 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		if (project->hasScripts())
 			continue;
 
-		if (project->includeInBuild())
+		for (auto& framework : project->macosFrameworks())
 		{
-			for (auto& framework : project->macosFrameworks())
+			// Don't include System frameworks
+			// TODO: maybe make an option for this? Not sure what scenarios this is needed
+			if (Commands::pathExists(fmt::format("/System/Library/Frameworks/{}.framework", framework)))
+				continue;
+
+			for (auto& path : project->macosFrameworkPaths())
 			{
-				// Don't include System frameworks
-				// TODO: maybe make an option for this? Not sure what scenarios this is needed
-				if (Commands::pathExists(fmt::format("/System/Library/Frameworks/{}.framework", framework)))
+				const std::string filename = fmt::format("{}{}.framework", path, framework);
+				if (!Commands::pathExists(filename))
 					continue;
 
-				for (auto& path : project->macosFrameworkPaths())
-				{
-					const std::string filename = fmt::format("{}{}.framework", path, framework);
-					if (!Commands::pathExists(filename))
-						continue;
+				if (!Commands::copySkipExisting(filename, frameworkPath, inCleanOutput))
+					return false;
 
-					if (!Commands::copySkipExisting(filename, frameworkPath, inCleanOutput))
-						return false;
+				const auto resolvedFramework = fmt::format("{}/{}.framework", frameworkPath, framework);
 
-					const auto resolvedFramework = fmt::format("{}/{}.framework", frameworkPath, framework);
+				if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executableOutputPath }, inCleanOutput))
+					return false;
 
-					if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executableOutputPath }, inCleanOutput))
-						return false;
-
-					break;
-				}
+				break;
 			}
 		}
 	}

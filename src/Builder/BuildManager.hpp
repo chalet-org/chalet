@@ -8,7 +8,7 @@
 
 #include "BuildJson/ProjectConfiguration.hpp"
 #include "Compile/CompilerConfig.hpp"
-#include "Compile/Strategy/MetaStrategyNinja.hpp"
+#include "Compile/Strategy/IMetaStrategy.hpp"
 #include "Router/Route.hpp"
 #include "State/BuildState.hpp"
 #include "Utility/Timer.hpp"
@@ -57,7 +57,7 @@ private:
 	BuildRouteList m_buildRoutes;
 	StringList m_removeCache;
 
-	std::unique_ptr<MetaStrategyNinja> m_ninjaStrategy;
+	MetaStrategy m_strategy;
 
 	ProjectConfiguration* m_project = nullptr;
 
