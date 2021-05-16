@@ -31,7 +31,7 @@ private:
 	std::string getRcRecipe(const std::string& ext);
 	std::string getCppRecipe(const std::string& ext);
 	std::string getObjcRecipe(const std::string& ext);
-	std::string getTargetRecipe();
+	std::string getTargetRecipe(const std::string& linkerTarget);
 
 	std::string getPchOrderOnlyPreReq();
 	std::string getLinkerPreReqs();

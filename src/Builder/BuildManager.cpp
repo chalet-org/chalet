@@ -66,10 +66,31 @@ bool BuildManager::run(const Route inRoute)
 	bool runCommand = inRoute == Route::Run;
 	m_runProjectName = getRunProject();
 
-	if (m_state.environment.strategy() == StrategyType::Ninja)
+	if (Environment::isMsvc())
+	{
+		MsvcEnvironment msvcEnvironment;
+		msvcEnvironment.readCompilerVariables();
+	}
+
+	if (!runCommand && m_state.environment.strategy() == StrategyType::Ninja)
 	{
 		m_ninjaStrategy = std::make_unique<MetaStrategyNinja>(m_state);
+		if (!m_ninjaStrategy->initialize())
+			return false;
+
+		for (auto& project : m_state.projects)
+		{
+			if (!project->includeInBuild() || project->cmake() || project->hasScripts())
+				continue;
+
+			if (!cacheRecipe(*project, inRoute))
+				return false;
+		}
+
+		m_ninjaStrategy->saveBuildFile();
 	}
+
+	bool multiTarget = m_state.projects.size() > 1;
 
 	bool error = false;
 	for (auto& project : m_state.projects)
@@ -96,6 +117,8 @@ bool BuildManager::run(const Route inRoute)
 				error = true;
 				break;
 			}
+
+			Output::msgTargetUpToDate(multiTarget, project->name());
 
 			if (project->hasScripts())
 			{
@@ -134,13 +157,52 @@ bool BuildManager::run(const Route inRoute)
 }
 
 /*****************************************************************************/
+bool BuildManager::cacheRecipe(const ProjectConfiguration& inProject, const Route inRoute)
+{
+	auto& compilerConfig = m_state.compilers.getConfig(inProject.language());
+	auto compilerType = compilerConfig.compilerType();
+
+	auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, inProject, compilerConfig);
+
+	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
+	auto outputs = m_state.paths.getOutputs(inProject, objExtension);
+
+	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
+	{
+		Diagnostic::errorAbort(fmt::format("Error creating paths for project: {}", inProject.name()));
+		return false;
+	}
+
+	if (inRoute == Route::Rebuild)
+	{
+		doClean(inProject, outputs.target, outputs.objectList, outputs.dependencyList);
+	}
+	else if (inRoute == Route::BuildRun)
+	{
+		if (!copyRunDependencies(inProject))
+		{
+			Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", inProject.name()));
+			return false;
+		}
+	}
+
+	return m_ninjaStrategy->addProject(inProject, outputs, buildToolchain);
+}
+
+/*****************************************************************************/
 bool BuildManager::doBuild(const Route inRoute)
 {
 	chalet_assert(m_project != nullptr, "");
 
-	//
+	if (m_state.environment.strategy() == StrategyType::Ninja)
+	{
+		return m_ninjaStrategy->buildProject(*m_project);
+	}
+
 	auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
 	auto compilerType = compilerConfig.compilerType();
+	StrategyType strategyType = m_state.environment.strategy();
+
 	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
 	auto outputs = m_state.paths.getOutputs(*m_project, objExtension);
 
@@ -150,19 +212,11 @@ bool BuildManager::doBuild(const Route inRoute)
 		return false;
 	}
 
-	if (Environment::isMsvc())
-	{
-		MsvcEnvironment msvcEnvironment;
-		msvcEnvironment.readCompilerVariables();
-	}
-
 	if (inRoute == Route::Rebuild)
-		doClean(outputs.objectList, outputs.dependencyList);
+		doClean(*m_project, outputs.target, outputs.objectList, outputs.dependencyList);
 
 	{
 		auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, *m_project, compilerConfig);
-
-		StrategyType strategyType = m_state.environment.strategy();
 		auto buildStrategy = CompileFactory::makeStrategy(strategyType, m_state, *m_project, buildToolchain);
 
 		if (!buildStrategy->createCache(outputs))
@@ -180,16 +234,12 @@ bool BuildManager::doBuild(const Route inRoute)
 
 	if (inRoute == Route::BuildRun)
 	{
-		if (!copyRunDependencies())
+		if (!copyRunDependencies(*m_project))
 		{
 			Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", m_project->name()));
 			return false;
 		}
 	}
-
-	//
-	bool multiTarget = m_state.projects.size() > 1;
-	Output::msgTargetUpToDate(multiTarget, m_project->name());
 
 	return true;
 }
@@ -215,18 +265,16 @@ bool BuildManager::doScript()
 }
 
 /*****************************************************************************/
-bool BuildManager::copyRunDependencies()
+bool BuildManager::copyRunDependencies(const ProjectConfiguration& inProject)
 {
-	chalet_assert(m_project != nullptr, "");
-
 	bool result = true;
 
-	if (m_project->name() == m_runProjectName)
+	if (inProject.name() == m_runProjectName)
 	{
 		const auto& workingDirectory = m_state.paths.workingDirectory();
 		const auto& buildOutputDir = m_state.paths.buildOutputDir();
-		auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-		auto runDependencies = getResolvedRunDependenciesList(compilerConfig);
+		auto& compilerConfig = m_state.compilers.getConfig(inProject.language());
+		auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
 
 		auto outputFolder = fmt::format("{workingDirectory}/{buildOutputDir}",
 			FMT_ARG(workingDirectory),
@@ -251,14 +299,12 @@ bool BuildManager::copyRunDependencies()
 }
 
 /*****************************************************************************/
-StringList BuildManager::getResolvedRunDependenciesList(const CompilerConfig& inConfig)
+StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig)
 {
-	chalet_assert(m_project != nullptr, "");
-
 	StringList ret;
 	const auto& compilerPathBin = inConfig.compilerPathBin();
 
-	for (auto& dep : m_project->runDependencies())
+	for (auto& dep : inRunDependencies)
 	{
 		if (Commands::pathExists(dep))
 		{
@@ -393,10 +439,8 @@ bool BuildManager::doLazyClean()
 }
 
 /*****************************************************************************/
-bool BuildManager::doClean(const StringList& inObjectList, const StringList& inDepList, const bool inFullClean)
+bool BuildManager::doClean(const ProjectConfiguration& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean)
 {
-	chalet_assert(m_project != nullptr, "");
-
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	if (m_cleanOutput && Commands::pathExists(buildOutputDir))
@@ -405,12 +449,12 @@ bool BuildManager::doClean(const StringList& inObjectList, const StringList& inD
 		Output::lineBreak();
 	}
 
-	auto pch = m_state.paths.getPrecompiledHeader(*m_project);
+	auto pch = m_state.paths.getPrecompiledHeader(inProject);
 
 	auto cacheAndRemove = [=](const StringList& inList, StringList& outCache) -> void {
 		for (auto& item : inList)
 		{
-			if (!inFullClean && (m_project->usesPch() && String::contains(pch, item)))
+			if (!inFullClean && (inProject.usesPch() && String::contains(pch, item)))
 				continue;
 
 			if (List::contains(outCache, item))
@@ -421,11 +465,10 @@ bool BuildManager::doClean(const StringList& inObjectList, const StringList& inD
 		}
 	};
 
-	std::string target = m_state.paths.getTargetFilename(*m_project);
-	if (!List::contains(m_removeCache, target))
+	if (!List::contains(m_removeCache, inTarget))
 	{
-		m_removeCache.push_back(target);
-		Commands::remove(target, m_cleanOutput);
+		m_removeCache.push_back(inTarget);
+		Commands::remove(inTarget, m_cleanOutput);
 	}
 
 	cacheAndRemove(inObjectList, m_removeCache);

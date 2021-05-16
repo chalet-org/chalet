@@ -47,7 +47,7 @@ public:
 private:
 	void getCompileCommands(const StringList& inObjects);
 	void getAsmCommands(const StringList& inAssemblies);
-	void getLinkCommand(const StringList& inObjects);
+	void getLinkCommand(const std::string& inTarget, const StringList& inObjects);
 
 	CommandTemp getPchCompile(const std::string& source, const std::string& target) const;
 	CommandTemp getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;

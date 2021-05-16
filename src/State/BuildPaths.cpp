@@ -157,6 +157,8 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, cons
 		ret.directories.insert(ret.directories.end(), asmSubDirs.begin(), asmSubDirs.end());
 	}
 
+	ret.target = getTargetFilename(inProject);
+
 	return ret;
 }
 

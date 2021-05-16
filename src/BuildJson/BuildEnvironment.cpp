@@ -49,7 +49,7 @@ void BuildEnvironment::setStrategy(const std::string& inValue) noexcept
 	{
 		m_strategy = StrategyType::Native;
 	}
-	else if (String::equals(inValue, "ninja-experimental"))
+	else if (String::equals(inValue, "ninja"))
 	{
 		m_strategy = StrategyType::Ninja;
 	}

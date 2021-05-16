@@ -30,7 +30,7 @@ MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState, const 
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getContents(const SourceOutputs& inOutputs)
 {
-	const auto target = m_state.paths.getTargetFilename(m_project);
+	const auto& target = inOutputs.target;
 
 	const auto& depDir = m_state.paths.depDir();
 

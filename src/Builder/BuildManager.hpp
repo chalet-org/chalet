@@ -28,11 +28,13 @@ public:
 private:
 	bool doBuild(const Route inRoute = Route::Unknown);
 	bool doScript();
-	bool copyRunDependencies();
-	StringList getResolvedRunDependenciesList(const CompilerConfig& inConfig);
+	bool copyRunDependencies(const ProjectConfiguration& inProject);
+	StringList getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig);
 	bool doRun();
-	bool doClean(const StringList& inObjectList, const StringList& inDepList, const bool inFullClean = false);
+	bool doClean(const ProjectConfiguration& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean = false);
 	bool doLazyClean();
+
+	bool cacheRecipe(const ProjectConfiguration& inProject, const Route inRoute);
 
 	// commands
 	bool cmdBuild();

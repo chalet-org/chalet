@@ -275,7 +275,7 @@ Json Schema::getCacheJson()
 		"enum": [
 			"makefile",
 			"native-experimental",
-			"ninja-experimental"
+			"ninja"
 		],
 		"default": "makefile"
 	})json"_ojson;

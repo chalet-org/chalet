@@ -214,7 +214,7 @@
 			"enum": [
 				"makefile",
 				"native-experimental",
-				"ninja-experimental"
+				"ninja"
 			],
 			"default": "makefile"
 		}

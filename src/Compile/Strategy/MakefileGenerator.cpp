@@ -43,7 +43,7 @@ MakefileGenerator::MakefileGenerator(const BuildState& inState, const ProjectCon
 /*****************************************************************************/
 std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 {
-	const auto target = m_state.paths.getTargetFilename(m_project);
+	const auto& target = inOutputs.target;
 
 	const auto& depDir = m_state.paths.depDir();
 
@@ -51,7 +51,7 @@ std::string MakefileGenerator::getContents(const SourceOutputs& inOutputs)
 	const auto assemblyRecipe = getAsmRecipe();
 	const auto pchRecipe = getPchRecipe();
 	const auto makePchRecipe = getMakePchRecipe();
-	const auto targetRecipe = getTargetRecipe();
+	const auto targetRecipe = getTargetRecipe(target);
 
 	std::string rcRecipe;
 #if defined(CHALET_WIN32)
@@ -431,7 +431,7 @@ std::string MakefileGenerator::getObjcRecipe(const std::string& ext)
 }
 
 /*****************************************************************************/
-std::string MakefileGenerator::getTargetRecipe()
+std::string MakefileGenerator::getTargetRecipe(const std::string& linkerTarget)
 {
 	std::string ret;
 
@@ -439,7 +439,6 @@ std::string MakefileGenerator::getTargetRecipe()
 
 	const auto preReqs = getLinkerPreReqs();
 
-	const auto linkerTarget = m_state.paths.getTargetFilename(m_project);
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(m_project);
 	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, { "$(SOURCE_OBJS)" }, linkerTargetBase));
 	const auto compileEcho = getCompileEchoLinker();

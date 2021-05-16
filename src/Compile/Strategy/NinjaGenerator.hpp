@@ -18,9 +18,13 @@ class NinjaGenerator
 	using NinjaRuleList = std::unordered_map<std::string, NinjaRule>;
 
 public:
-	explicit NinjaGenerator(const BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain);
+	explicit NinjaGenerator(const BuildState& inState);
 
-	std::string getContents(const SourceOutputs& inOutputs, const std::string& cacheDir);
+	void addProjectRecipes(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash);
+
+	bool hasProjectRecipes() const;
+
+	std::string getContents(const std::string& cacheDir) const;
 
 private:
 	std::string getMoveCommand();
@@ -43,10 +47,15 @@ private:
 	std::string getAsmBuildRules(const StringList& inAssemblies);
 
 	const BuildState& m_state;
-	const ProjectConfiguration& m_project;
-	CompileToolchain& m_toolchain;
+	ICompileToolchain* m_toolchain = nullptr;
+	const ProjectConfiguration* m_project = nullptr;
+
+	StringList m_targetRecipes;
+	StringList m_precompiledHeaders;
 
 	NinjaRuleList m_rules;
+
+	std::string m_hash;
 
 	bool m_generateDependencies = false;
 };

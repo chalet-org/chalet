@@ -103,7 +103,7 @@ bool CompileStrategyNative::createCache(const SourceOutputs& inOutputs)
 {
 	getCompileCommands(inOutputs.objectList);
 	getAsmCommands(inOutputs.assemblyList);
-	getLinkCommand(inOutputs.objectListLinker);
+	getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
 
 	return true;
 }
@@ -315,13 +315,12 @@ void CompileStrategyNative::getAsmCommands(const StringList& inAssemblies)
 }
 
 /*****************************************************************************/
-void CompileStrategyNative::getLinkCommand(const StringList& inObjects)
+void CompileStrategyNative::getLinkCommand(const std::string& inTarget, const StringList& inObjects)
 {
-	const auto target = m_state.paths.getTargetFilename(m_project);
 	const auto targetBasename = m_state.paths.getTargetBasename(m_project);
 
-	m_linker.command = m_toolchain->getLinkerTargetCommand(target, inObjects, targetBasename);
-	m_linker.output = fmt::format("Linking {}", target);
+	m_linker.command = m_toolchain->getLinkerTargetCommand(inTarget, inObjects, targetBasename);
+	m_linker.output = fmt::format("Linking {}", inTarget);
 }
 
 /*****************************************************************************/

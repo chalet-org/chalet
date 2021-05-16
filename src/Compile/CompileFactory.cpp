@@ -10,7 +10,7 @@
 
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 #include "Compile/Strategy/CompileStrategyNative.hpp"
-#include "Compile/Strategy/CompileStrategyNinja.hpp"
+// #include "Compile/Strategy/CompileStrategyNinja.hpp"
 
 #include "Compile/Toolchain/CompileToolchainApple.hpp"
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
@@ -26,10 +26,11 @@ namespace chalet
 	{
 		case StrategyType::Makefile:
 			return std::make_unique<CompileStrategyMakefile>(inState, inProject, inToolchain);
-		case StrategyType::Ninja:
-			return std::make_unique<CompileStrategyNinja>(inState, inProject, inToolchain);
+		// case StrategyType::Ninja:
+		// 	return std::make_unique<CompileStrategyNinja>(inState, inProject, inToolchain);
 		case StrategyType::Native:
 			return std::make_unique<CompileStrategyNative>(inState, inProject, inToolchain);
+		case StrategyType::Ninja:
 		default:
 			break;
 	}
