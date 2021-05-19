@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
