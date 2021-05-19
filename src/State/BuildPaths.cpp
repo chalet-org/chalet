@@ -219,12 +219,12 @@ std::string BuildPaths::getPrecompiledHeader(const ProjectConfiguration& inProje
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inIsClang) const
+std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inPchExtension) const
 {
 	std::string ret;
 	if (inProject.usesPch())
 	{
-		auto ext = inIsClang ? "pch" : "gch";
+		auto ext = inPchExtension ? "pch" : "gch";
 
 		const std::string base = getPrecompiledHeaderInclude(inProject);
 		ret = fmt::format("{base}.{ext}",

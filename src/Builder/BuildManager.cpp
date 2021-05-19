@@ -170,6 +170,12 @@ bool BuildManager::cacheRecipe(const ProjectConfiguration& inProject, const Rout
 		return false;
 	}
 
+	if (!buildToolchain->preBuild())
+	{
+		Diagnostic::errorAbort(fmt::format("Error preparing the build for project: {}", inProject.name()));
+		return false;
+	}
+
 	if (inRoute == Route::Rebuild)
 	{
 		doClean(inProject, outputs.target, outputs.objectList, outputs.dependencyList);

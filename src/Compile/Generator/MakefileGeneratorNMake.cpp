@@ -98,61 +98,6 @@ SHELL = {shell}
 }
 
 /*****************************************************************************/
-/*std::string MakefileGeneratorNMake::getContents(const SourceOutputs& inOutputs) const
-{
-	const auto& target = inOutputs.target;
-
-	const auto& depDir = m_state.paths.depDir();
-
-	const auto buildRecipes = getBuildRecipes(inOutputs);
-
-	const auto& objectList = inOutputs.objectListLinker;
-
-	auto objects = String::join(objectList);
-
-	const auto suffixes = String::getPrefixed(inOutputs.fileExtensions, ".");
-
-	const auto shell = "cmd.exe";
-	const auto printer = getPrinter();
-
-	//
-	//
-	//
-	//
-	// ==============================================================================
-	std::string makefileTemplate = fmt::format(R"makefile(
-.SUFFIXES:
-.SUFFIXES: {suffixes}
-
-SHELL = {shell}
-
-{target}: {objects}
-{buildRecipes}
-
-makebuild: {target}
-
-{depDir}/%.d: ;
-.PRECIOUS: {depDir}/%.d
-
-)makefile",
-		FMT_ARG(suffixes),
-		FMT_ARG(shell),
-		FMT_ARG(target),
-		FMT_ARG(buildRecipes),
-		FMT_ARG(objects),
-		FMT_ARG(printer),
-		FMT_ARG(depDir));
-
-	// if (!isBash)
-	// {
-	// 	String::replaceAll(makefileTemplate, "/%)", "\\\\\\\\%)");
-	// 	String::replaceAll(makefileTemplate, "/", "\\\\");
-	// }
-
-	return makefileTemplate;
-}*/
-
-/*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoAsm(const std::string& file) const
 {
 	const auto purple = getColorPurple();
@@ -196,8 +141,11 @@ std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& file
 
 	if (m_cleanOutput)
 	{
-		const auto arrow = Unicode::rightwardsTripleArrow();
-		printer = getPrinter(fmt::format("{blue}{arrow}   Linking {file}", FMT_ARG(blue), FMT_ARG(arrow), FMT_ARG(file)));
+		// Note: If trying to echo "=   Linking (file)", nmake will eat up the additional spaces,
+		//   so both them and the symbol are taken out since
+
+		// const auto arrow = Unicode::rightwardsTripleArrow();
+		printer = getPrinter(fmt::format("{blue}Linking {file}", FMT_ARG(blue), FMT_ARG(file)));
 	}
 	else
 	{
@@ -217,10 +165,11 @@ std::string MakefileGeneratorNMake::getBuildRecipes(const SourceOutputs& inOutpu
 		List::addIfDoesNotExist(m_fileExtensions, ext);
 	}
 
-	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 
 	std::string recipes = getPchRecipe(pchTarget);
+
+	recipes += getPchBuildRecipe(pchTarget);
 
 	recipes += getObjBuildRecipes(inOutputs.objectList, pchTarget);
 
@@ -251,8 +200,22 @@ std::string MakefileGeneratorNMake::getBuildRecipes(const SourceOutputs& inOutpu
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getPchBuildRecipe(const std::string& pchTarget) const
 {
-	UNUSED(pchTarget);
-	return std::string();
+	chalet_assert(m_project != nullptr, "");
+
+	std::string ret;
+
+	const bool usesPch = m_project->usesPch();
+	if (usesPch)
+	{
+		const std::string targets = pchTarget;
+		ret = fmt::format(R"makefile(
+pch_{hash}: {targets}
+)makefile",
+			fmt::arg("hash", m_hash),
+			FMT_ARG(targets));
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -429,18 +392,14 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& pchTarget)
 			FMT_ARG(depDir),
 			FMT_ARG(pch));
 
-		const auto compileEcho = getCompileEchoSources(pch);
-
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(pch, pchTarget, m_generateDependencies, fmt::format("{}.Td", dependency)));
 
 		ret = fmt::format(R"makefile(
 {pchTarget}: {pch}
-	{compileEcho}
 	{quietFlag}{pchCompile}
 )makefile",
 			FMT_ARG(pchTarget),
 			FMT_ARG(pch),
-			FMT_ARG(compileEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(pchCompile));
 	}
@@ -454,16 +413,13 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 	std::string ret;
 
 	const auto quietFlag = getQuietFlag();
-	const auto compileEcho = getCompileEchoSources(source);
 
 	ret = fmt::format(R"makefile(
 {object}: {source}
-	{compileEcho}
 	{quietFlag}rc /fo {object} {source} 1>nul
 )makefile",
 		FMT_ARG(source),
 		FMT_ARG(quietFlag),
-		FMT_ARG(compileEcho),
 		FMT_ARG(object));
 
 	return ret;
@@ -474,7 +430,7 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 {
 	chalet_assert(m_project != nullptr, "");
 
-	UNUSED(pchTarget);
+	// UNUSED(pchTarget);
 	std::string ret;
 
 	const auto quietFlag = getQuietFlag();
@@ -488,6 +444,7 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	{quietFlag}{cppCompile}
 )makefile",
 		FMT_ARG(source),
+		FMT_ARG(pchTarget),
 		FMT_ARG(quietFlag),
 		FMT_ARG(cppCompile),
 		FMT_ARG(object));

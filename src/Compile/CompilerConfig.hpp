@@ -35,6 +35,8 @@ struct CompilerConfig
 	bool isGcc() const noexcept;
 	bool isMingw() const noexcept;
 	bool isMingwGcc() const noexcept;
+	bool isMsvc() const noexcept;
+	bool isClangOrMsvc() const noexcept;
 
 private:
 	const std::unordered_map<std::string, std::string> kCompilerStructures;

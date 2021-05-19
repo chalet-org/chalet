@@ -22,7 +22,7 @@ void ConfigurationOptions::setName(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& ConfigurationOptions::optimizations() const noexcept
+OptimizationLevel ConfigurationOptions::optimizations() const noexcept
 {
 	return m_optimizations;
 }
@@ -75,29 +75,29 @@ void ConfigurationOptions::setEnableProfiling(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-std::string ConfigurationOptions::parseOptimizations(const std::string& inValue) noexcept
+OptimizationLevel ConfigurationOptions::parseOptimizations(const std::string& inValue) noexcept
 {
 	if (String::equals("debug", inValue))
-		return "-Og";
+		return OptimizationLevel::Debug;
 
 	if (String::equals("3", inValue))
-		return "-O3";
+		return OptimizationLevel::L3;
 
 	if (String::equals("2", inValue))
-		return "-O2";
+		return OptimizationLevel::L2;
 
 	if (String::equals("1", inValue))
-		return "-O1";
+		return OptimizationLevel::L1;
 
 	if (String::equals("0", inValue))
-		return "-O0";
+		return OptimizationLevel::None;
 
 	if (String::equals("size", inValue))
-		return "-Os";
+		return OptimizationLevel::Size;
 
 	if (String::equals("fast", inValue))
-		return "-Ofast";
+		return OptimizationLevel::Fast;
 
-	return std::string();
+	return OptimizationLevel::CompilerDefault;
 }
 }

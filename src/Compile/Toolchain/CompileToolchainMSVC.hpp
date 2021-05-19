@@ -20,23 +20,35 @@ struct CompileToolchainMSVC final : ICompileToolchain
 
 	virtual ToolchainType type() const final;
 
+	virtual bool preBuild() final;
+
 	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) final;
 	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) final;
 	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) final;
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
 
 private:
+	// Compile
 	virtual void addIncludes(StringList& inArgList) const final;
-	// virtual void addLibDirs(StringList& inArgList) final;
 	// virtual void addWarnings(StringList& inArgList) final;
 	virtual void addDefines(StringList& inArgList) const final;
+	virtual void addPchInclude(StringList& inArgList) const final;
+	virtual void addOptimizationOption(StringList& inArgList) const final;
 	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const final;
+
+	// Linking
+	// virtual void addLibDirs(StringList& inArgList) final;
+
+	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;
 	const CompilerConfig& m_config;
 
 	const CppCompilerType m_compilerType;
+
+	std::string m_pchSource;
+	std::string m_pchMinusLocation;
 
 	bool m_quotePaths = true;
 };

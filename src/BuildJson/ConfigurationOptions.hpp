@@ -6,6 +6,8 @@
 #ifndef CHALET_CONFIGURATION_OPTIONS_HPP
 #define CHALET_CONFIGURATION_OPTIONS_HPP
 
+#include "BuildJson/OptimizationLevel.hpp"
+
 namespace chalet
 {
 struct ConfigurationOptions
@@ -13,7 +15,7 @@ struct ConfigurationOptions
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
 
-	const std::string& optimizations() const noexcept;
+	OptimizationLevel optimizations() const noexcept;
 	void setOptimizations(const std::string& inValue) noexcept;
 
 	bool linkTimeOptimization() const noexcept;
@@ -29,10 +31,10 @@ struct ConfigurationOptions
 	void setEnableProfiling(const bool inValue) noexcept;
 
 private:
-	std::string parseOptimizations(const std::string& inValue) noexcept;
+	OptimizationLevel parseOptimizations(const std::string& inValue) noexcept;
 
 	std::string m_name;
-	std::string m_optimizations;
+	OptimizationLevel m_optimizations;
 	bool m_linkTimeOptimization = false;
 	bool m_stripSymbols = false;
 	bool m_debugSymbols = false;

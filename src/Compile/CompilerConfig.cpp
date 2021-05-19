@@ -172,6 +172,18 @@ bool CompilerConfig::isMingwGcc() const noexcept
 }
 
 /*****************************************************************************/
+bool CompilerConfig::isMsvc() const noexcept
+{
+	return m_compilerType == CppCompilerType::VisualStudio;
+}
+
+/*****************************************************************************/
+bool CompilerConfig::isClangOrMsvc() const noexcept
+{
+	return isClang() || isMsvc();
+}
+
+/*****************************************************************************/
 const std::string& CompilerConfig::compilerPathBin() const noexcept
 {
 	return m_compilerPathBin;

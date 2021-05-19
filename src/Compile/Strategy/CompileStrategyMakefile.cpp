@@ -115,18 +115,26 @@ bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject
 
 #if defined(CHALET_WIN32)
 	const bool isNMake = m_state.tools.isNMake();
-	if (isNMake)
+	if (m_state.tools.isNMake())
 	{
-		command.clear();
-		command.push_back(makeExec);
-		command.push_back("/NOLOGO");
-		command.push_back("/F");
-		command.push_back(m_cacheFile);
+		return buildNMake(inProject);
 	}
 	else
 #endif
 	{
+		return buildMake(inProject);
+	}
+}
+
+/*****************************************************************************/
+bool CompileStrategyMakefile::buildMake(const ProjectConfiguration& inProject) const
+{
+	const auto& makeExec = m_state.tools.make();
+	StringList command;
+
+	{
 		std::string jobs;
+		const auto maxJobs = m_state.environment.maxJobs();
 		if (maxJobs > 0)
 			jobs = fmt::format("-j{}", maxJobs);
 
@@ -152,6 +160,7 @@ bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject
 #endif
 
 	{
+
 		command.push_back(fmt::format("build_{}", hash));
 		bool result = subprocessMakefile(command, clean);
 
@@ -170,6 +179,67 @@ bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject
 
 	return true;
 }
+
+#if defined(CHALET_WIN32)
+/*****************************************************************************/
+bool CompileStrategyMakefile::buildNMake(const ProjectConfiguration& inProject) const
+{
+	const auto& makeExec = m_state.tools.make();
+
+	StringList command;
+	const auto maxJobs = m_state.environment.maxJobs();
+
+	const bool isNMake = m_state.tools.isNMake();
+	if (isNMake)
+	{
+		command.clear();
+		command.push_back(makeExec);
+		command.push_back("/NOLOGO");
+		command.push_back("/F");
+		command.push_back(m_cacheFile);
+	}
+
+	auto& hash = m_hashes.at(inProject.name());
+
+	const bool clean = true;
+	#if defined(CHALET_WIN32)
+	std::cout << Output::getAnsiStyle(Color::Blue);
+	#endif
+
+	command.push_back(std::string());
+
+	if (inProject.usesPch())
+	{
+		command.back() = fmt::format("pch_{}", hash);
+		// Environment::set("CL", "");
+
+		bool result = subprocessMakefile(command, clean);
+		if (!result)
+			return false;
+	}
+
+	{
+
+		command.back() = fmt::format("build_{}", hash);
+		// Environment::set("CL", "/MP"); // doesn't work
+
+		bool result = subprocessMakefile(command, clean);
+		if (!result)
+			return false;
+	}
+
+	if (inProject.dumpAssembly())
+	{
+		command.back() = fmt::format("asm_{}", hash);
+
+		bool result = subprocessMakefile(command, clean);
+		if (!result)
+			return false;
+	}
+
+	return true;
+}
+#endif
 
 /*****************************************************************************/
 bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const bool inCleanOutput, std::string inCwd) const
@@ -208,7 +278,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	int result = Subprocess::run(inCmd, std::move(options));
 	if (!errorOutput.empty())
 	{
-		std::size_t cutoff = 0;
+		std::size_t cutoff = std::string::npos;
 		const auto make = String::getPathBaseName(m_state.tools.make());
 
 #if defined(CHALET_WIN32)
@@ -217,7 +287,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 			String::replaceAll(errorOutput, "\r", "\r\n");
 
 			// const char eol = '\r\n';
-			cutoff = errorOutput.find("NMAKE : fatal error");
+			// cutoff = errorOutput.find("NMAKE : fatal error");
 		}
 		else
 #endif

@@ -529,14 +529,57 @@ void CompileToolchainGNU::addOptimizationOption(StringList& inArgList) const
 {
 	std::string opt;
 	auto& configuration = m_state.configuration;
-	opt = configuration.optimizations();
 
-	if (configuration.debugSymbols())
+	OptimizationLevel level = configuration.optimizations();
+
+	if (configuration.debugSymbols()
+		&& level != OptimizationLevel::Debug
+		&& level != OptimizationLevel::None
+		&& level != OptimizationLevel::CompilerDefault)
 	{
-		// force -O0 (set to anything else here would be in error)
-		if (opt != "-Og" && opt != "-O0")
-			opt = "-O0";
+		// force -O0 (anything else would be in error)
+		opt = "-O0";
 	}
+	else
+	{
+		switch (level)
+		{
+			case OptimizationLevel::L1:
+				opt = "-O1";
+				break;
+
+			case OptimizationLevel::L2:
+				opt = "-O2";
+				break;
+
+			case OptimizationLevel::L3:
+				opt = "-O3";
+				break;
+
+			case OptimizationLevel::Debug:
+				opt = "-Og";
+				break;
+
+			case OptimizationLevel::Size:
+				opt = "-Os";
+				break;
+
+			case OptimizationLevel::Fast:
+				opt = "-Ofast";
+				break;
+
+			case OptimizationLevel::None:
+				opt = "-O0";
+				break;
+
+			case OptimizationLevel::CompilerDefault:
+			default:
+				break;
+		}
+	}
+
+	if (opt.empty())
+		return;
 
 	inArgList.push_back(std::move(opt));
 }

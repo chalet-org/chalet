@@ -149,7 +149,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 	chalet_assert(m_project != nullptr, "");
 
 	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 	std::string rules = getPchBuildRule(pchTarget);
 	rules += '\n';
 
@@ -259,7 +259,7 @@ std::string NinjaGenerator::getCppRule()
 	std::string ret;
 
 	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
@@ -289,7 +289,7 @@ std::string NinjaGenerator::getObjcRule()
 	std::string ret;
 
 	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
@@ -319,7 +319,7 @@ std::string NinjaGenerator::getObjcppRule()
 	std::string ret;
 
 	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
@@ -349,7 +349,7 @@ std::string NinjaGenerator::getLinkRule()
 	std::string ret;
 
 	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 
 	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand("$out", { "$in" }, targetBasename));
@@ -409,7 +409,7 @@ std::string NinjaGenerator::getObjBuildRules(const StringList& inObjects, const 
 
 		if (String::endsWith(".o", source))
 			source = source.substr(0, source.size() - 2);
-		else if (String::endsWith(".res", source))
+		else if (String::endsWith({ ".res", ".obj" }, source))
 			source = source.substr(0, source.size() - 4);
 
 		std::string rule = "cxx";

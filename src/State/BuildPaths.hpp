@@ -25,7 +25,7 @@ struct BuildPaths
 	std::string getTargetFilename(const ProjectConfiguration& inProject) const;
 	std::string getTargetBasename(const ProjectConfiguration& inProject) const;
 	std::string getPrecompiledHeader(const ProjectConfiguration& inProject) const;
-	std::string getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inIsClang) const;
+	std::string getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inPchExtension = true) const;
 	std::string getPrecompiledHeaderInclude(const ProjectConfiguration& inProject) const;
 
 	SourceOutputs getOutputs(const ProjectConfiguration& inProject, const bool inObjExtension = false) const;

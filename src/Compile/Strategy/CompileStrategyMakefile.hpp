@@ -23,6 +23,11 @@ struct CompileStrategyMakefile final : ICompileStrategy
 	virtual bool buildProject(const ProjectConfiguration& inProject) const final;
 
 private:
+	bool buildMake(const ProjectConfiguration& inProject) const;
+#if defined(CHALET_WIN32)
+	bool buildNMake(const ProjectConfiguration& inProject) const;
+#endif
+
 	bool subprocessMakefile(const StringList& inCmd, const bool inCleanOutput, std::string inCwd = std::string()) const;
 
 	std::string m_cacheFile;

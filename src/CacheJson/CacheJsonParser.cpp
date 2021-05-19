@@ -147,6 +147,8 @@ bool CacheJsonParser::makeCache()
 		{
 			if (Environment::isContinuousIntegrationServer())
 				strategyJson = "native-experimental";
+			else if (Environment::isMsvc())
+				strategyJson = "ninja";
 			else
 				strategyJson = "makefile";
 		}
