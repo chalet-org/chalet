@@ -6,9 +6,9 @@
 
 Start with the clean msys2 install. The below version includes GCC 10.2.0.
 
-- [MSYS2 (64-bit, 11/9/2020 stable)](https://repo.msys2.org/distrib/x86_64/msys2-x86_64-20201109.exe)
+- [MSYS2 (64-bit, 4/19/2021 stable)](https://repo.msys2.org/distrib/x86_64/msys2-x86_64-20210419.exe)
 
-1. Update all with `pacman -Syu`
+1. Don't update, for stability
 2. Install the current stable GCC toolchain via:
 
 ```

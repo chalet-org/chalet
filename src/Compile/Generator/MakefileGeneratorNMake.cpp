@@ -197,7 +197,7 @@ std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& file
 	if (m_cleanOutput)
 	{
 		const auto arrow = Unicode::rightwardsTripleArrow();
-		printer = getPrinter(fmt::format("{blue}{arrow}  Linking {file}", FMT_ARG(blue), FMT_ARG(arrow), FMT_ARG(file)));
+		printer = getPrinter(fmt::format("{blue}{arrow}   Linking {file}", FMT_ARG(blue), FMT_ARG(arrow), FMT_ARG(file)));
 	}
 	else
 	{
@@ -270,9 +270,10 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const StringList& inObjec
 		std::string source = obj;
 		String::replaceAll(source, objDir, "");
 
-		if (String::endsWith(".o", source))
-			source = source.substr(0, source.size() - 2);
-		else if (String::endsWith(".res", source))
+		// if (String::endsWith(".o", source))
+		// 	source = source.substr(0, source.size() - 2);
+		// else
+		if (String::endsWith({ ".res", ".obj" }, source))
 			source = source.substr(0, source.size() - 4);
 
 		if (String::endsWith({ ".rc", ".RC" }, source))
@@ -537,7 +538,7 @@ std::string MakefileGeneratorNMake::getPrinter(const std::string& inPrint) const
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getColorBlue() const
 {
-	return "\x1b[0;36m";
+	return "\x1b[0;34m";
 }
 
 /*****************************************************************************/
