@@ -371,6 +371,7 @@ std::string MakefileGeneratorNMake::getAsmRecipe(const std::string& object, cons
 	return ret;
 }
 
+/*****************************************************************************/
 std::string MakefileGeneratorNMake::getPchRecipe(const std::string& pchTarget)
 {
 	chalet_assert(m_project != nullptr, "");
@@ -414,13 +415,21 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 
 	const auto quietFlag = getQuietFlag();
 
+	std::string dependency;
+	auto rcCompile = String::join(m_toolchain->getRcCompileCommand(source, object, m_generateDependencies, dependency));
+
+	const auto compilerEcho = getCompileEchoSources(source);
+
 	ret = fmt::format(R"makefile(
 {object}: {source}
-	{quietFlag}rc /fo {object} {source} 1>nul
+	{compilerEcho}
+	{quietFlag}{rcCompile} 1>nul
 )makefile",
+		FMT_ARG(object),
 		FMT_ARG(source),
+		FMT_ARG(compilerEcho),
 		FMT_ARG(quietFlag),
-		FMT_ARG(object));
+		FMT_ARG(rcCompile));
 
 	return ret;
 }

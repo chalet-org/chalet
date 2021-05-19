@@ -32,6 +32,7 @@ private:
 	virtual void addIncludes(StringList& inArgList) const final;
 	// virtual void addWarnings(StringList& inArgList) final;
 	virtual void addDefines(StringList& inArgList) const final;
+	void addResourceDefines(StringList& inArgList) const;
 	virtual void addPchInclude(StringList& inArgList) const final;
 	virtual void addOptimizationOption(StringList& inArgList) const final;
 	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const final;

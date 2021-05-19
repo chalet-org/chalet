@@ -99,11 +99,21 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 /*****************************************************************************/
 StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
 {
-	UNUSED(inputFile, outputFile, generateDependency, dependency);
-	return {
-		"echo",
-		outputFile
-	};
+	UNUSED(generateDependency, dependency);
+
+	StringList ret;
+
+	const auto& rc = m_state.compilers.rc();
+	ret.push_back(fmt::format("\"{}\"", rc));
+
+	addResourceDefines(ret);
+	addIncludes(ret);
+
+	ret.push_back(getPathCommand("/fo", outputFile));
+
+	ret.push_back(inputFile);
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -180,6 +190,16 @@ void CompileToolchainMSVC::addIncludes(StringList& inArgList) const
 void CompileToolchainMSVC::addDefines(StringList& inArgList) const
 {
 	const std::string prefix = "/D";
+	for (auto& define : m_project.defines())
+	{
+		inArgList.push_back(prefix + define);
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addResourceDefines(StringList& inArgList) const
+{
+	const std::string prefix = "/d";
 	for (auto& define : m_project.defines())
 	{
 		inArgList.push_back(prefix + define);
