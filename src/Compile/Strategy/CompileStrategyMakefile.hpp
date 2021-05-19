@@ -23,6 +23,8 @@ struct CompileStrategyMakefile final : ICompileStrategy
 	virtual bool buildProject(const ProjectConfiguration& inProject) const final;
 
 private:
+	bool subprocessMakefile(const StringList& inCmd, const bool inCleanOutput, std::string inCwd = std::string()) const;
+
 	std::string m_cacheFile;
 
 	std::unordered_map<std::string, std::string> m_hashes;

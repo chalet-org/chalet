@@ -16,6 +16,13 @@ namespace chalet
 /*****************************************************************************/
 void CacheTools::fetchVersions()
 {
+	fetchBashVersion();
+	fetchBrewVersion();
+}
+
+/*****************************************************************************/
+void CacheTools::fetchBashVersion()
+{
 	if (!m_bash.empty())
 	{
 #if defined(CHALET_WIN32)
@@ -28,7 +35,11 @@ void CacheTools::fetchVersions()
 		m_bashAvailable = true;
 #endif
 	}
+}
 
+/*****************************************************************************/
+void CacheTools::fetchBrewVersion()
+{
 #if defined(CHALET_MACOS)
 	if (!m_brew.empty())
 	{
@@ -45,8 +56,12 @@ void CacheTools::fetchVersions()
 		}
 	}
 #endif
+}
 
-	if (!m_make.empty())
+/*****************************************************************************/
+void CacheTools::fetchMakeVersion()
+{
+	if (!m_make.empty() && m_makeVersionMajor == 0 && m_makeVersionMinor == 0)
 	{
 		if (Commands::pathExists(m_make))
 		{
@@ -63,8 +78,12 @@ void CacheTools::fetchVersions()
 			m_makeIsNMake = String::endsWith("nmake.exe", m_make);
 		}
 	}
+}
 
-	if (!m_cmake.empty())
+/*****************************************************************************/
+void CacheTools::fetchCmakeVersion()
+{
+	if (!m_cmake.empty() && m_cmakeVersionMajor == 0 && m_cmakeVersionMinor == 0)
 	{
 		if (Commands::pathExists(m_cmake))
 		{
@@ -82,9 +101,36 @@ void CacheTools::fetchVersions()
 			}
 		}
 	}
+}
 
+/*****************************************************************************/
+void CacheTools::fetchNinjaVersion()
+{
+	if (!m_ninja.empty() && m_ninjaVersionMajor == 0 && m_ninjaVersionMinor == 0)
+	{
+		if (Commands::pathExists(m_ninja))
+		{
+			std::string version = Commands::subprocessOutput({ m_ninja, "--version" });
+			isolateVersion(version);
+
+			auto vals = String::split(version, '.');
+			if (vals.size() == 3)
+			{
+				m_ninjaVersionMajor = std::stoi(vals[0]);
+				m_ninjaVersionMinor = std::stoi(vals[1]);
+				m_ninjaVersionPatch = std::stoi(vals[2]);
+			}
+
+			m_ninjaAvailable = m_ninjaVersionMajor > 0 && m_ninjaVersionMinor > 0;
+		}
+	}
+}
+
+/*****************************************************************************/
+void CacheTools::fetchXcodeVersion()
+{
 #if defined(CHALET_MACOS)
-	if (!m_xcodebuild.empty())
+	if (!m_xcodebuild.empty() && m_xcodeVersionMajor == 0 && m_xcodeVersionMinor == 0)
 	{
 		if (Commands::pathExists(m_xcodebuild))
 		{
@@ -102,7 +148,14 @@ void CacheTools::fetchVersions()
 			}
 		}
 	}
-	if (!m_xcodegen.empty())
+#endif
+}
+
+/*****************************************************************************/
+void CacheTools::fetchXcodeGenVersion()
+{
+#if defined(CHALET_MACOS)
+	if (!m_xcodegen.empty() && m_xcodegenVersionMajor == 0 && m_xcodegenVersionMinor == 0)
 	{
 		if (Commands::pathExists(m_xcodegen))
 		{
@@ -330,6 +383,22 @@ const std::string& CacheTools::ninja() const noexcept
 void CacheTools::setNinja(const std::string& inValue) noexcept
 {
 	m_ninja = inValue;
+}
+uint CacheTools::ninjaVersionMajor() const noexcept
+{
+	return m_ninjaVersionMajor;
+}
+uint CacheTools::ninjaVersionMinor() const noexcept
+{
+	return m_ninjaVersionMinor;
+}
+uint CacheTools::ninjaVersionPatch() const noexcept
+{
+	return m_ninjaVersionPatch;
+}
+bool CacheTools::ninjaAvailable() const noexcept
+{
+	return m_ninjaAvailable;
 }
 
 /*****************************************************************************/

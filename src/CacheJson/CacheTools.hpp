@@ -14,6 +14,14 @@ struct CacheTools
 
 	void fetchVersions();
 
+	void fetchBashVersion();
+	void fetchBrewVersion();
+	void fetchMakeVersion();
+	void fetchCmakeVersion();
+	void fetchNinjaVersion();
+	void fetchXcodeVersion();
+	void fetchXcodeGenVersion();
+
 	const std::string& ar() const noexcept;
 	void setAr(const std::string& inValue) noexcept;
 
@@ -73,6 +81,10 @@ struct CacheTools
 
 	const std::string& ninja() const noexcept;
 	void setNinja(const std::string& inValue) noexcept;
+	uint ninjaVersionMajor() const noexcept;
+	uint ninjaVersionMinor() const noexcept;
+	uint ninjaVersionPatch() const noexcept;
+	bool ninjaAvailable() const noexcept;
 
 	const std::string& objdump() const noexcept;
 	void setObjdump(const std::string& inValue) noexcept;
@@ -192,6 +204,10 @@ private:
 	uint m_makeVersionMajor = 0;
 	uint m_makeVersionMinor = 0;
 
+	uint m_ninjaVersionMajor = 0;
+	uint m_ninjaVersionMinor = 0;
+	uint m_ninjaVersionPatch = 0;
+
 	uint m_xcodeVersionMajor = 0;
 	uint m_xcodeVersionMinor = 0;
 
@@ -201,6 +217,7 @@ private:
 
 	bool m_brewAvailable = false;
 	bool m_bashAvailable = false;
+	bool m_ninjaAvailable = false;
 	bool m_cmakeAvailable = false;
 	bool m_makeIsNMake = false;
 };

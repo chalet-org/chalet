@@ -10,6 +10,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
 
 // #define CHALET_KEEP_OLD_CACHE 1
 
@@ -144,11 +145,14 @@ bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject
 
 	auto& hash = m_hashes.at(inProject.name());
 
-	{
-		// std::cout << Output::getAnsiStyle(Color::Blue) << std::flush;
+	const bool clean = true;
+#if defined(CHALET_WIN32)
+	std::cout << Output::getAnsiStyle(Color::Blue);
+#endif
 
+	{
 		command.push_back(fmt::format("build_{}", hash));
-		bool result = Commands::subprocess(command, PipeOption::StdOut);
+		bool result = subprocessMakefile(command, clean);
 
 		if (!result)
 			return false;
@@ -156,16 +160,85 @@ bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject
 
 	if (inProject.dumpAssembly())
 	{
-		// std::cout << Output::getAnsiStyle(Color::Magenta) << std::flush;
-
 		command.back() = fmt::format("asm_{}", hash);
-
-		bool result = Commands::subprocess(command, PipeOption::StdOut);
+		bool result = subprocessMakefile(command, clean);
 
 		if (!result)
 			return false;
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const bool inCleanOutput, std::string inCwd) const
+{
+	if (!inCleanOutput)
+		Output::print(Color::Blue, inCmd);
+
+	std::string errorOutput;
+	Subprocess::PipeFunc onStdErr = [&errorOutput](std::string inData) {
+		errorOutput += std::move(inData);
+	};
+	// static Subprocess::PipeFunc onStdErr = [](std::string inData) {
+	// 	std::cerr << inData << std::flush;
+	// };
+
+	SubprocessOptions options;
+	options.cwd = std::move(inCwd);
+	options.stdoutOption = PipeOption::StdOut;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdErr = onStdErr;
+
+#if defined(CHALET_WIN32)
+	static Subprocess::PipeFunc onStdOut = [](std::string inData) {
+		String::replaceAll(inData, "\r\n", "\n");
+		std::cout << inData << std::flush;
+	};
+
+	// NMAKE
+	// if (Environment::isMsvc())
+	{
+		options.stdoutOption = PipeOption::Pipe;
+		options.onStdOut = onStdOut;
+	}
+#endif
+
+	int result = Subprocess::run(inCmd, std::move(options));
+	if (!errorOutput.empty())
+	{
+		std::size_t cutoff = 0;
+		const auto make = String::getPathBaseName(m_state.tools.make());
+
+#if defined(CHALET_WIN32)
+		if (Environment::isMsvc())
+		{
+			String::replaceAll(errorOutput, "\r", "\r\n");
+
+			// const char eol = '\r\n';
+			cutoff = errorOutput.find("NMAKE : fatal error");
+		}
+		else
+#endif
+		{
+			const char eol = '\n';
+			String::replaceAll(errorOutput, fmt::format("{}: *** Waiting for unfinished jobs....{}", make, eol), "");
+			String::replaceAll(errorOutput, fmt::format("{}: *** No rule", make), "No rule");
+			cutoff = errorOutput.find(fmt::format("{}: *** [", make));
+		}
+
+		if (cutoff != std::string::npos)
+		{
+			errorOutput = errorOutput.substr(0, cutoff);
+		}
+
+		// Note: std::cerr outputs after std::cout on windows (which we don't want)
+		if (result == EXIT_SUCCESS)
+			std::cout << Output::getAnsiReset() << errorOutput << std::endl;
+		else
+			std::cout << Output::getAnsiReset() << errorOutput << std::flush;
+	}
+
+	return result == EXIT_SUCCESS;
 }
 }

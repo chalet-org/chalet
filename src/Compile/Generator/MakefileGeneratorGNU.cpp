@@ -395,7 +395,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& source, const s
 	const auto compileEcho = getCompileEchoSources(source);
 	const auto pchPreReq = getPchOrderOnlyPreReq();
 
-	auto dependency = object;
+	auto dependency = String::getPathFolderBaseName(object);
 	String::replaceAll(dependency, objDir, depDir);
 
 	const auto tempDependency = dependency + ".Td";
@@ -440,7 +440,7 @@ std::string MakefileGeneratorGNU::getCppRecipe(const std::string& source, const 
 	const auto compileEcho = getCompileEchoSources(source);
 	const auto pchPreReq = getPchOrderOnlyPreReq();
 
-	auto dependency = object;
+	auto dependency = String::getPathFolderBaseName(object);
 	String::replaceAll(dependency, objDir, depDir);
 
 	const auto tempDependency = dependency + ".Td";
@@ -486,7 +486,7 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& source, const
 	const auto compileEcho = getCompileEchoSources(source);
 	const auto pchPreReq = getPchOrderOnlyPreReq();
 
-	auto dependency = object;
+	auto dependency = String::getPathFolderBaseName(object);
 	String::replaceAll(dependency, objDir, depDir);
 
 	const auto tempDependency = dependency + ".Td";

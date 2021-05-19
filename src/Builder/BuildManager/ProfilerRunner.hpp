@@ -14,7 +14,7 @@ namespace chalet
 class ProfilerRunner
 {
 public:
-	explicit ProfilerRunner(const BuildState& inState, const ProjectConfiguration& inProject, const bool inCleanOutput);
+	explicit ProfilerRunner(BuildState& inState, const ProjectConfiguration& inProject, const bool inCleanOutput);
 
 	bool run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 

@@ -13,16 +13,19 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProfilerRunner::ProfilerRunner(const BuildState& inState, const ProjectConfiguration& inProject, const bool inCleanOutput) :
+ProfilerRunner::ProfilerRunner(BuildState& inState, const ProjectConfiguration& inProject, const bool inCleanOutput) :
 	m_state(inState),
 	m_project(inProject),
 	m_cleanOutput(inCleanOutput)
 {
+	// inState.tools.fetchXcodeVersion();
+	// m_state.tools.fetchXcodeGenVersion();
 }
 
 /*****************************************************************************/
 bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
+
 	auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
 	if (compilerConfig.isGcc() && !m_state.tools.gprof().empty())
 	{

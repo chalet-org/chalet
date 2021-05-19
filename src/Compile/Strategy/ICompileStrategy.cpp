@@ -16,17 +16,21 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
-[[nodiscard]] StrategyGenerator makeGenerator(const StrategyType inType, const BuildState& inState)
+[[nodiscard]] StrategyGenerator makeGenerator(const StrategyType inType, BuildState& inState)
 {
+
 	switch (inType)
 	{
 		case StrategyType::Native:
 			return nullptr;
 
-		case StrategyType::Ninja:
+		case StrategyType::Ninja: {
+			inState.tools.fetchNinjaVersion();
 			return std::make_unique<NinjaGenerator>(inState);
+		}
 
 		case StrategyType::Makefile: {
+			inState.tools.fetchMakeVersion();
 #if defined(CHALET_WIN32)
 			if (inState.tools.isNMake())
 				return std::make_unique<MakefileGeneratorNMake>(inState);
