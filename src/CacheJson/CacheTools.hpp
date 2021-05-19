@@ -77,7 +77,8 @@ struct CacheTools
 	void setMake(const std::string& inValue) noexcept;
 	uint makeVersionMajor() const noexcept;
 	uint makeVersionMinor() const noexcept;
-	bool isNMake() const noexcept;
+	bool makeIsNMake() const noexcept;
+	bool makeIsJom() const noexcept;
 
 	const std::string& ninja() const noexcept;
 	void setNinja(const std::string& inValue) noexcept;
@@ -220,6 +221,7 @@ private:
 	bool m_ninjaAvailable = false;
 	bool m_cmakeAvailable = false;
 	bool m_makeIsNMake = false;
+	bool m_makeIsJom = false;
 };
 }
 

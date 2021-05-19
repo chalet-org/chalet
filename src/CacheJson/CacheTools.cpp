@@ -75,7 +75,8 @@ void CacheTools::fetchMakeVersion()
 				m_makeVersionMinor = std::stoi(vals[1]);
 			}
 
-			m_makeIsNMake = String::endsWith("nmake.exe", m_make);
+			m_makeIsJom = String::endsWith("jom.exe", m_make);
+			m_makeIsNMake = String::endsWith("nmake.exe", m_make) || m_makeIsJom;
 		}
 	}
 }
@@ -370,9 +371,14 @@ uint CacheTools::makeVersionMinor() const noexcept
 	return m_makeVersionMinor;
 }
 
-bool CacheTools::isNMake() const noexcept
+bool CacheTools::makeIsNMake() const noexcept
 {
 	return m_makeIsNMake;
+}
+
+bool CacheTools::makeIsJom() const noexcept
+{
+	return m_makeIsJom;
 }
 
 /*****************************************************************************/

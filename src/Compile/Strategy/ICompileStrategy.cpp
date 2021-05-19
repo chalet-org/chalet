@@ -32,7 +32,7 @@ namespace
 		case StrategyType::Makefile: {
 			inState.tools.fetchMakeVersion();
 #if defined(CHALET_WIN32)
-			if (inState.tools.isNMake())
+			if (inState.tools.makeIsNMake())
 				return std::make_unique<MakefileGeneratorNMake>(inState);
 			else
 #endif

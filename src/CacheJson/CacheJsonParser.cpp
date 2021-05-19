@@ -278,7 +278,18 @@ bool CacheJsonParser::makeCache()
 	{
 #if defined(CHALET_WIN32)
 		std::string make;
-		for (const auto& tool : { "nmake", "mingw32-make", "make" })
+		StringList makeSearches;
+		if (Environment::isMsvc())
+		{
+			makeSearches.push_back("jom"); // Qt's parallel NMAKE
+			makeSearches.push_back("nmake");
+		}
+		else
+		{
+			makeSearches.push_back("mingw32-make");
+		}
+		makeSearches.push_back(kKeyMake);
+		for (const auto& tool : makeSearches)
 		{
 			make = Commands::which(tool);
 			if (!make.empty())

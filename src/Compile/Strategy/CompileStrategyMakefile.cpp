@@ -114,8 +114,8 @@ bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject
 	const auto maxJobs = m_state.environment.maxJobs();
 
 #if defined(CHALET_WIN32)
-	const bool isNMake = m_state.tools.isNMake();
-	if (m_state.tools.isNMake())
+	const bool makeIsNMake = m_state.tools.makeIsNMake();
+	if (m_state.tools.makeIsNMake())
 	{
 		return buildNMake(inProject);
 	}
@@ -187,16 +187,24 @@ bool CompileStrategyMakefile::buildNMake(const ProjectConfiguration& inProject) 
 	const auto& makeExec = m_state.tools.make();
 
 	StringList command;
-	const auto maxJobs = m_state.environment.maxJobs();
 
-	const bool isNMake = m_state.tools.isNMake();
-	if (isNMake)
+	const bool makeIsNMake = m_state.tools.makeIsNMake();
+	const bool makeIsJom = m_state.tools.makeIsJom();
+	if (makeIsNMake)
 	{
 		command.clear();
 		command.push_back(makeExec);
 		command.push_back("/NOLOGO");
 		command.push_back("/F");
 		command.push_back(m_cacheFile);
+	}
+
+	if (makeIsJom)
+	{
+		const auto maxJobs = m_state.environment.maxJobs();
+
+		command.push_back("/J" + std::to_string(maxJobs));
+		// command.push_back(std::to_string(maxJobs));
 	}
 
 	auto& hash = m_hashes.at(inProject.name());
@@ -211,7 +219,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectConfiguration& inProject) 
 	if (inProject.usesPch())
 	{
 		command.back() = fmt::format("pch_{}", hash);
-		// Environment::set("CL", "");
+		Environment::set("CL", "");
 
 		bool result = subprocessMakefile(command, clean);
 		if (!result)
@@ -221,7 +229,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectConfiguration& inProject) 
 	{
 
 		command.back() = fmt::format("build_{}", hash);
-		// Environment::set("CL", "/MP"); // doesn't work
+		Environment::set("CL", "/MP"); // doesn't work
 
 		bool result = subprocessMakefile(command, clean);
 		if (!result)
