@@ -162,7 +162,47 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 /*****************************************************************************/
 StringList CompileToolchainMSVC::getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
-	UNUSED(outputFile, sourceObjs, outputFileBase);
+	UNUSED(outputFileBase);
+
+	ProjectKind kind = m_project.kind();
+	if (kind == ProjectKind::SharedLibrary)
+	{
+		return getSharedLibTargetCommand(outputFile, sourceObjs);
+	}
+	else if (kind == ProjectKind::StaticLibrary)
+	{
+		return getStaticLibTargetCommand(outputFile, sourceObjs);
+	}
+	else
+	{
+		return getExecutableTargetCommand(outputFile, sourceObjs);
+	}
+}
+
+/*****************************************************************************/
+StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
+{
+	UNUSED(outputFile, sourceObjs);
+	return {
+		"echo",
+		outputFile
+	};
+}
+
+/*****************************************************************************/
+StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
+{
+	UNUSED(outputFile, sourceObjs);
+	return {
+		"echo",
+		outputFile
+	};
+}
+
+/*****************************************************************************/
+StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
+{
+	UNUSED(outputFile, sourceObjs);
 	return {
 		"echo",
 		outputFile

@@ -46,6 +46,10 @@ private:
 	// Linking
 	// virtual void addLibDirs(StringList& inArgList) final;
 
+	StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+
 	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;
 
 	const BuildState& m_state;
