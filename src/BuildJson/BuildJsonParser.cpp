@@ -493,6 +493,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 			if (!parseProject(*project, projectJson))
 				return false;
 		}
+
 		if (!project->includeInBuild())
 			continue;
 

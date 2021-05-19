@@ -10,7 +10,7 @@
 
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 #include "Compile/Strategy/CompileStrategyNative.hpp"
-#include "Compile/Strategy/MetaStrategyNinja.hpp"
+#include "Compile/Strategy/CompileStrategyNinja.hpp"
 
 #include "Compile/Toolchain/CompileToolchainApple.hpp"
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
@@ -20,38 +20,16 @@
 namespace chalet
 {
 /*****************************************************************************/
-[[nodiscard]] CompileStrategy CompileFactory::makeStrategy(const StrategyType inType, BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain)
+[[nodiscard]] CompileStrategy CompileFactory::makeStrategy(const StrategyType inType, BuildState& inState)
 {
 	switch (inType)
 	{
 		case StrategyType::Makefile:
-			return std::make_unique<CompileStrategyMakefile>(inState, inProject, inToolchain);
-		// case StrategyType::Ninja:
-		// 	return std::make_unique<CompileStrategyNinja>(inState, inProject, inToolchain);
-		case StrategyType::Native:
-			return std::make_unique<CompileStrategyNative>(inState, inProject, inToolchain);
+			return std::make_unique<CompileStrategyMakefile>(inState);
 		case StrategyType::Ninja:
-		default:
-			break;
-	}
-
-	Diagnostic::errorAbort(fmt::format("Unimplemented StrategyType requested: ", static_cast<int>(inType)));
-	return nullptr;
-}
-
-/*****************************************************************************/
-[[nodiscard]] MetaStrategy CompileFactory::makeMetaStrategy(const StrategyType inType, BuildState& inState)
-{
-	switch (inType)
-	{
-		case StrategyType::Makefile:
-			break;
-			// return std::make_unique<CompileStrategyMakefile>(inState, inProject, inToolchain);
-		case StrategyType::Ninja:
-			return std::make_unique<MetaStrategyNinja>(inState);
+			return std::make_unique<CompileStrategyNinja>(inState);
 		case StrategyType::Native:
-			break;
-			// return std::make_unique<CompileStrategyNative>(inState, inProject, inToolchain);
+			return std::make_unique<CompileStrategyNative>(inState);
 		default:
 			break;
 	}

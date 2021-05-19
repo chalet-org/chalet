@@ -6,13 +6,14 @@
 #ifndef CHALET_NINJA_GENERATOR_HPP
 #define CHALET_NINJA_GENERATOR_HPP
 
+#include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 
 namespace chalet
 {
-class NinjaGenerator
+class NinjaGenerator final : public IStrategyGenerator
 {
 	using NinjaRule = std::function<std::string(NinjaGenerator&)>;
 	using NinjaRuleList = std::unordered_map<std::string, NinjaRule>;
@@ -20,11 +21,8 @@ class NinjaGenerator
 public:
 	explicit NinjaGenerator(const BuildState& inState);
 
-	void addProjectRecipes(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash);
-
-	bool hasProjectRecipes() const;
-
-	std::string getContents(const std::string& cacheDir) const;
+	virtual void addProjectRecipes(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) final;
+	virtual std::string getContents(const std::string& inPath) const final;
 
 private:
 	std::string getMoveCommand();
@@ -46,18 +44,8 @@ private:
 	std::string getObjBuildRules(const StringList& inObjects, const std::string& pchTarget);
 	std::string getAsmBuildRules(const StringList& inAssemblies);
 
-	const BuildState& m_state;
-	ICompileToolchain* m_toolchain = nullptr;
-	const ProjectConfiguration* m_project = nullptr;
-
-	StringList m_targetRecipes;
-	StringList m_precompiledHeaders;
-
 	NinjaRuleList m_rules;
-
-	std::string m_hash;
-
-	bool m_generateDependencies = false;
+	StringList m_assemblies;
 };
 }
 

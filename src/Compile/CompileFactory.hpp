@@ -8,7 +8,6 @@
 
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
-#include "Compile/Strategy/IMetaStrategy.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
@@ -23,9 +22,7 @@ namespace chalet
 {
 namespace CompileFactory
 {
-[[nodiscard]] CompileStrategy makeStrategy(const StrategyType inType, BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain);
-
-[[nodiscard]] MetaStrategy makeMetaStrategy(const StrategyType inType, BuildState& inState);
+[[nodiscard]] CompileStrategy makeStrategy(const StrategyType inType, BuildState& inState);
 
 [[nodiscard]] CompileToolchain makeToolchain(const ToolchainType inType, const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
 

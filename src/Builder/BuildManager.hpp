@@ -8,7 +8,7 @@
 
 #include "BuildJson/ProjectConfiguration.hpp"
 #include "Compile/CompilerConfig.hpp"
-#include "Compile/Strategy/IMetaStrategy.hpp"
+#include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Router/Route.hpp"
 #include "State/BuildState.hpp"
 #include "Utility/Timer.hpp"
@@ -26,7 +26,6 @@ public:
 	bool run(const Route inRoute);
 
 private:
-	bool doBuild(const Route inRoute = Route::Unknown);
 	bool doScript();
 	bool copyRunDependencies(const ProjectConfiguration& inProject);
 	StringList getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig);
@@ -57,7 +56,7 @@ private:
 	BuildRouteList m_buildRoutes;
 	StringList m_removeCache;
 
-	MetaStrategy m_strategy;
+	CompileStrategy m_strategy;
 
 	ProjectConfiguration* m_project = nullptr;
 

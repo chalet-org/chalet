@@ -3,20 +3,18 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_META_STRATEGY_NINJA_HPP
-#define CHALET_META_STRATEGY_NINJA_HPP
+#ifndef CHALET_COMPILE_STRATEGY_NINJA_HPP
+#define CHALET_COMPILE_STRATEGY_NINJA_HPP
 
-#include "Compile/Strategy/IMetaStrategy.hpp"
-#include "Compile/Strategy/NinjaGenerator.hpp"
+#include "Compile/Generator/NinjaGenerator.hpp"
+#include "Compile/Strategy/ICompileStrategy.hpp"
 #include "State/BuildState.hpp"
 
 namespace chalet
 {
-struct MetaStrategyNinja final : IMetaStrategy
+struct CompileStrategyNinja final : ICompileStrategy
 {
-	explicit MetaStrategyNinja(BuildState& inState);
-
-	virtual StrategyType type() const noexcept final;
+	explicit CompileStrategyNinja(BuildState& inState);
 
 	virtual bool initialize() final;
 	virtual bool addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain) final;
@@ -25,10 +23,6 @@ struct MetaStrategyNinja final : IMetaStrategy
 	virtual bool buildProject(const ProjectConfiguration& inProject) const final;
 
 private:
-	BuildState& m_state;
-
-	NinjaGenerator m_generator;
-
 	std::string m_cacheFile;
 	std::string m_cacheFolder;
 
@@ -39,4 +33,4 @@ private:
 };
 }
 
-#endif // CHALET_META_STRATEGY_NINJA_HPP
+#endif // CHALET_COMPILE_STRATEGY_NINJA_HPP

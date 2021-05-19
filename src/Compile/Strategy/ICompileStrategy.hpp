@@ -6,20 +6,34 @@
 #ifndef CHALET_ICOMPILE_STRATEGY_HPP
 #define CHALET_ICOMPILE_STRATEGY_HPP
 
+#include "BuildJson/ProjectConfiguration.hpp"
+#include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
+#include "Compile/Toolchain/ICompileToolchain.hpp"
+#include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 
 namespace chalet
 {
 struct ICompileStrategy
 {
+	explicit ICompileStrategy(const StrategyType inType, BuildState& inState);
 	virtual ~ICompileStrategy() = default;
 
-	virtual StrategyType type() const = 0;
+	StrategyType type() const noexcept;
 
-	virtual bool createCache(const SourceOutputs& inOutputs) = 0;
 	virtual bool initialize() = 0;
-	virtual bool run() = 0;
+	virtual bool addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain) = 0;
+
+	virtual bool saveBuildFile() const = 0;
+	virtual bool buildProject(const ProjectConfiguration& inProject) const = 0;
+
+protected:
+	BuildState& m_state;
+
+	StrategyGenerator m_generator;
+
+	StrategyType m_type;
 };
 
 using CompileStrategy = std::unique_ptr<ICompileStrategy>;

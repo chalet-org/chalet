@@ -6,34 +6,29 @@
 #ifndef CHALET_COMPILE_STRATEGY_MAKEFILE_HPP
 #define CHALET_COMPILE_STRATEGY_MAKEFILE_HPP
 
+#include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
-#include "Compile/Toolchain/ICompileToolchain.hpp"
-
-#include "BuildJson/ProjectConfiguration.hpp"
 #include "State/BuildState.hpp"
 
 namespace chalet
 {
 struct CompileStrategyMakefile final : ICompileStrategy
 {
-	explicit CompileStrategyMakefile(BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain);
+	explicit CompileStrategyMakefile(BuildState& inState);
 
-	virtual StrategyType type() const final;
-
-	virtual bool createCache(const SourceOutputs& inOutputs) final;
 	virtual bool initialize() final;
-	virtual bool run() final;
+	virtual bool addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain) final;
+
+	virtual bool saveBuildFile() const final;
+	virtual bool buildProject(const ProjectConfiguration& inProject) const final;
 
 private:
-	bool subprocessMakefile(const StringList& inCmd, const bool inCleanOutput = true, std::string inCwd = std::string());
-
-	BuildState& m_state;
-	const ProjectConfiguration& m_project;
-	CompileToolchain& m_toolchain;
-
-	StringList m_makeCmd;
-
 	std::string m_cacheFile;
+
+	std::unordered_map<std::string, std::string> m_hashes;
+
+	bool m_initialized = false;
+	bool m_cacheNeedsUpdate = false;
 };
 }
 

@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Strategy/MetaStrategyNinja.hpp"
+#include "Compile/Strategy/CompileStrategyNinja.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
@@ -14,20 +14,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-MetaStrategyNinja::MetaStrategyNinja(BuildState& inState) :
-	m_state(inState),
-	m_generator(inState)
+CompileStrategyNinja::CompileStrategyNinja(BuildState& inState) :
+	ICompileStrategy(StrategyType::Ninja, inState)
 {
 }
 
 /*****************************************************************************/
-StrategyType MetaStrategyNinja::type() const noexcept
-{
-	return StrategyType::Ninja;
-}
-
-/*****************************************************************************/
-bool MetaStrategyNinja::initialize()
+bool CompileStrategyNinja::initialize()
 {
 	if (m_initialized)
 		return false;
@@ -69,34 +62,34 @@ bool MetaStrategyNinja::initialize()
 }
 
 /*****************************************************************************/
-bool MetaStrategyNinja::addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain)
+bool CompileStrategyNinja::addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain)
 {
 	if (!m_initialized)
 		return false;
 
+	if (m_hashes.find(inProject.name()) == m_hashes.end())
+	{
+		m_hashes.emplace(inProject.name(), Hash::string(inOutputs.target));
+	}
+
 	if (m_cacheNeedsUpdate)
 	{
-		if (m_hashes.find(inProject.name()) == m_hashes.end())
-		{
-			m_hashes.emplace(inProject.name(), Hash::string(inOutputs.target));
-		}
-
 		auto& hash = m_hashes.at(inProject.name());
-		m_generator.addProjectRecipes(inProject, inOutputs, inToolchain, hash);
+		m_generator->addProjectRecipes(inProject, inOutputs, inToolchain, hash);
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool MetaStrategyNinja::saveBuildFile() const
+bool CompileStrategyNinja::saveBuildFile() const
 {
-	if (!m_initialized || !m_generator.hasProjectRecipes())
+	if (!m_initialized || !m_generator->hasProjectRecipes())
 		return false;
 
 	if (m_cacheNeedsUpdate)
 	{
-		std::ofstream(m_cacheFile) << m_generator.getContents(m_cacheFolder)
+		std::ofstream(m_cacheFile) << m_generator->getContents(m_cacheFolder)
 								   << std::endl;
 	}
 
@@ -104,7 +97,7 @@ bool MetaStrategyNinja::saveBuildFile() const
 }
 
 /*****************************************************************************/
-bool MetaStrategyNinja::buildProject(const ProjectConfiguration& inProject) const
+bool CompileStrategyNinja::buildProject(const ProjectConfiguration& inProject) const
 {
 	auto& ninjaExec = m_state.tools.ninja();
 	if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
@@ -115,7 +108,7 @@ bool MetaStrategyNinja::buildProject(const ProjectConfiguration& inProject) cons
 
 	if (m_hashes.find(inProject.name()) == m_hashes.end())
 	{
-		Diagnostic::error(fmt::format("{} was not found added to the ninja build file. Aborting.", inProject.name()));
+		Diagnostic::error(fmt::format("{} was not previously cached. Aborting.", inProject.name()));
 		return false;
 	}
 
@@ -131,10 +124,12 @@ bool MetaStrategyNinja::buildProject(const ProjectConfiguration& inProject) cons
 
 		command.push_back(fmt::format("build_{}", hash));
 		bool result = Commands::subprocess(command, PipeOption::StdOut);
-		Output::lineBreak();
 
 		if (!result)
+		{
+			Output::lineBreak();
 			return false;
+		}
 	}
 
 	if (inProject.dumpAssembly())
@@ -148,6 +143,10 @@ bool MetaStrategyNinja::buildProject(const ProjectConfiguration& inProject) cons
 
 		if (!result)
 			return false;
+	}
+	else
+	{
+		Output::lineBreak();
 	}
 
 	return true;

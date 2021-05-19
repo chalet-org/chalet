@@ -42,6 +42,7 @@
 #include "Libraries/FileSystem.hpp"
 #include "Terminal/Diagnostic.hpp"
 #include "Utility/Logger.hpp"
+#include "Utility/Macros.hpp"
 #include "Utility/StringList.hpp"
 #include "Utility/Unused.hpp"
 

@@ -73,9 +73,9 @@ bool BuildManager::run(const Route inRoute)
 	}
 
 	auto strategy = m_state.environment.strategy();
-	if (!runCommand && strategy == StrategyType::Ninja)
+	if (!runCommand)
 	{
-		m_strategy = CompileFactory::makeMetaStrategy(strategy, m_state);
+		m_strategy = CompileFactory::makeStrategy(strategy, m_state);
 		if (!m_strategy->initialize())
 			return false;
 
@@ -184,61 +184,6 @@ bool BuildManager::cacheRecipe(const ProjectConfiguration& inProject, const Rout
 	}
 
 	return m_strategy->addProject(inProject, outputs, buildToolchain);
-}
-
-/*****************************************************************************/
-bool BuildManager::doBuild(const Route inRoute)
-{
-	chalet_assert(m_project != nullptr, "");
-
-	if (m_state.environment.strategy() == StrategyType::Ninja)
-	{
-		return m_strategy->buildProject(*m_project);
-	}
-
-	auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
-	auto compilerType = compilerConfig.compilerType();
-	StrategyType strategyType = m_state.environment.strategy();
-
-	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
-	auto outputs = m_state.paths.getOutputs(*m_project, objExtension);
-
-	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
-	{
-		Diagnostic::errorAbort(fmt::format("Error creating paths for project: {}", m_project->name()));
-		return false;
-	}
-
-	if (inRoute == Route::Rebuild)
-		doClean(*m_project, outputs.target, outputs.objectList, outputs.dependencyList);
-
-	{
-		auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, *m_project, compilerConfig);
-		auto buildStrategy = CompileFactory::makeStrategy(strategyType, m_state, *m_project, buildToolchain);
-
-		if (!buildStrategy->createCache(outputs))
-		{
-			Diagnostic::errorAbort(fmt::format("Project cache could not be created for: {}", m_project->name()));
-			return false;
-		}
-
-		if (!buildStrategy->initialize())
-			return false;
-
-		if (!buildStrategy->run())
-			return false;
-	}
-
-	if (inRoute == Route::BuildRun)
-	{
-		if (!copyRunDependencies(*m_project))
-		{
-			Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", m_project->name()));
-			return false;
-		}
-	}
-
-	return true;
 }
 
 /*****************************************************************************/
@@ -502,7 +447,7 @@ bool BuildManager::cmdBuild()
 	}
 	else
 	{
-		result = doBuild(command);
+		result = m_strategy->buildProject(*m_project);
 	}
 
 	if (!result)
@@ -527,7 +472,7 @@ bool BuildManager::cmdRebuild()
 	Output::msgRebuild(buildConfiguration, outputFile);
 	Output::lineBreak();
 
-	if (!doBuild(Route::Rebuild))
+	if (!m_strategy->buildProject(*m_project))
 	{
 		Output::msgBuildFail();
 		Output::lineBreak();

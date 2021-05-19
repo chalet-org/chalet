@@ -35,38 +35,43 @@ class CompileStrategyNative final : public ICompileStrategy
 
 	using CommandList = std::vector<Command>;
 
+	struct NativeTarget
+	{
+		Command pch;
+		Command linkTarget;
+		CommandList compiles;
+		CommandList assemblies;
+	};
+
 public:
-	explicit CompileStrategyNative(BuildState& inState, const ProjectConfiguration& inProject, CompileToolchain& inToolchain);
+	explicit CompileStrategyNative(BuildState& inState);
 
-	virtual StrategyType type() const final;
-
-	virtual bool createCache(const SourceOutputs& inOutputs) final;
 	virtual bool initialize() final;
-	virtual bool run() final;
+	virtual bool addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain) final;
+
+	virtual bool saveBuildFile() const final;
+	virtual bool buildProject(const ProjectConfiguration& inProject) const final;
 
 private:
-	void getCompileCommands(const StringList& inObjects);
-	void getAsmCommands(const StringList& inAssemblies);
-	void getLinkCommand(const std::string& inTarget, const StringList& inObjects);
+	Command getPchCommand(const std::string& pchTarget);
+	CommandList getCompileCommands(const StringList& inObjects);
+	CommandList getAsmCommands(const StringList& inAssemblies);
+	Command getLinkCommand(const std::string& inTarget, const StringList& inObjects);
 
 	CommandTemp getPchCompile(const std::string& source, const std::string& target) const;
 	CommandTemp getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
 	CommandTemp getRcCompile(const std::string& source, const std::string& target) const;
-	std::string getAsmGenerate(const std::string& object, const std::string& target) const;
+	StringList getAsmGenerate(const std::string& object, const std::string& target) const;
 
-	BuildState& m_state;
-	const ProjectConfiguration& m_project;
-	CompileToolchain& m_toolchain;
+	const ProjectConfiguration* m_project = nullptr;
+	ICompileToolchain* m_toolchain = nullptr;
 
-	Command m_pch;
-	Command m_linker;
-	CommandList m_compiles;
-	CommandList m_assemblies;
+	std::unordered_map<std::string, std::unique_ptr<NativeTarget>> m_targets;
 
-	ThreadPool m_threadPool;
+	mutable ThreadPool m_threadPool;
 
 	bool m_generateDependencies = false;
-	bool m_canceled = false;
+	mutable bool m_canceled = false;
 };
 }
 

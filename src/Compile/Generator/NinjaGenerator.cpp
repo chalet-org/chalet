@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Strategy/NinjaGenerator.hpp"
+#include "Compile/Generator/NinjaGenerator.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
@@ -15,7 +15,7 @@ namespace chalet
 {
 /*****************************************************************************/
 NinjaGenerator::NinjaGenerator(const BuildState& inState) :
-	m_state(inState)
+	IStrategyGenerator(inState)
 {
 	m_rules = {
 		{ "cpp", &NinjaGenerator::getCppRule },
@@ -91,16 +91,13 @@ build asm_{hash}: phony | {assemblies}
 	}
 
 	m_targetRecipes.push_back(std::move(ninjaTemplate));
+
+	m_toolchain = nullptr;
+	m_project = nullptr;
 }
 
 /*****************************************************************************/
-bool NinjaGenerator::hasProjectRecipes() const
-{
-	return m_targetRecipes.size() > 0;
-}
-
-/*****************************************************************************/
-std::string NinjaGenerator::getContents(const std::string& cacheDir) const
+std::string NinjaGenerator::getContents(const std::string& inPath) const
 {
 
 	auto recipes = String::join(m_targetRecipes);
@@ -113,7 +110,7 @@ build makebuild: phony
 
 default makebuild
 )ninja",
-		FMT_ARG(cacheDir),
+		fmt::arg("cacheDir", inPath),
 		FMT_ARG(recipes));
 
 	return ninjaTemplate;
@@ -149,6 +146,8 @@ std::string NinjaGenerator::getRules(const StringList& inExtensions)
 /*****************************************************************************/
 std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 {
+	chalet_assert(m_project != nullptr, "");
+
 	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
 	std::string rules = getPchBuildRule(pchTarget);
@@ -157,7 +156,19 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 	rules += getObjBuildRules(inOutputs.objectList, pchTarget);
 	rules += '\n';
 
-	rules += getAsmBuildRules(inOutputs.assemblyList); // Very broken
+	if (m_project->dumpAssembly())
+	{
+		auto assemblies = String::excludeIf(m_assemblies, inOutputs.assemblyList);
+		if (!assemblies.empty())
+		{
+			rules += getAsmBuildRules(assemblies);
+
+			for (auto& assem : assemblies)
+			{
+				List::addIfDoesNotExist(m_assemblies, assem);
+			}
+		}
+	}
 
 	return rules;
 }
@@ -402,9 +413,9 @@ std::string NinjaGenerator::getObjBuildRules(const StringList& inObjects, const 
 			source = source.substr(0, source.size() - 4);
 
 		std::string rule = "cxx";
-		if (String::endsWith(".rc", source) || String::endsWith(".RC", source))
+		if (String::endsWith({ ".rc", ".RC" }, source))
 			rule = "rc";
-		else if (String::endsWith(".m", source) || String::endsWith(".M", source))
+		else if (String::endsWith({ ".m", ".M" }, source))
 			rule = "objc";
 		else if (String::endsWith(".mm", source))
 			rule = "objcpp";

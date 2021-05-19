@@ -29,7 +29,7 @@ struct BuildPaths
 	std::string getPrecompiledHeaderInclude(const ProjectConfiguration& inProject) const;
 
 	SourceOutputs getOutputs(const ProjectConfiguration& inProject, const bool inObjExtension = false) const;
-	void setBuildEnvironment(const SourceOutputs& inOutput, const bool inDumpAssembly) const;
+	// void setBuildEnvironment(const SourceOutputs& inOutput, const bool inDumpAssembly) const;
 
 private:
 	friend class BuildState;
