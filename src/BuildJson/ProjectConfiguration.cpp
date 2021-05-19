@@ -225,6 +225,7 @@ const StringList& ProjectConfiguration::warnings() const noexcept
 void ProjectConfiguration::addWarnings(StringList& inList)
 {
 	List::forEach(inList, this, &ProjectConfiguration::addWarning);
+	m_warningsPreset = ProjectWarnings::Custom;
 }
 
 void ProjectConfiguration::addWarning(std::string& inValue)
@@ -241,6 +242,11 @@ void ProjectConfiguration::addWarning(std::string& inValue)
 void ProjectConfiguration::setWarningPreset(const std::string& inValue)
 {
 	m_warnings = parseWarnings(inValue);
+}
+
+ProjectWarnings ProjectConfiguration::warningsPreset() const noexcept
+{
+	return m_warningsPreset;
 }
 
 /*****************************************************************************/
@@ -798,25 +804,40 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 	StringList ret;
 
 	if (String::equals("none", inValue))
+	{
+		m_warningsPreset = ProjectWarnings::None;
 		return ret;
+	}
 
 	ret.push_back("all");
 	if (String::equals("minimal", inValue))
+	{
+		m_warningsPreset = ProjectWarnings::Minimal;
 		return ret;
+	}
 
 	ret.push_back("extra");
 	if (String::equals("extra", inValue))
+	{
+		m_warningsPreset = ProjectWarnings::Extra;
 		return ret;
+	}
 
 	ret.push_back("error");
 	if (String::equals("error", inValue))
+	{
+		m_warningsPreset = ProjectWarnings::Error;
 		return ret;
+	}
 
 	ret.push_back("pedantic");
 	// ret.push_back("pedantic-errors"); // Not on OSX?
 
 	if (String::equals("pedantic", inValue))
+	{
+		m_warningsPreset = ProjectWarnings::Pedantic;
 		return ret;
+	}
 
 	ret.push_back("unused");
 	ret.push_back("cast-align");
@@ -829,13 +850,19 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 	ret.push_back("odr");
 
 	if (String::equals("strict", inValue))
+	{
+		m_warningsPreset = ProjectWarnings::Strict;
 		return ret;
+	}
 
 	ret.push_back("unreachable-code"); // clang only
 	ret.push_back("shadow");
 
 	if (String::equals("strictPedantic", inValue))
+	{
+		m_warningsPreset = ProjectWarnings::StrictPedantic;
 		return ret;
+	}
 
 	ret.push_back("noexcept");
 	ret.push_back("undef");
@@ -850,7 +877,10 @@ StringList ProjectConfiguration::parseWarnings(const std::string& inValue)
 	ret.push_back("sign-promo");
 
 	if (String::equals("veryStrict", inValue))
+	{
+		m_warningsPreset = ProjectWarnings::VeryStrict;
 		return ret;
+	}
 
 	// More?
 	// can't be ignored in GCC 10.2.0, so best not to use it at all

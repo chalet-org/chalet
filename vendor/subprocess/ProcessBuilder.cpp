@@ -23,6 +23,11 @@
 #include "utf8_to_utf16.hpp"
 
 
+#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable : 4996)
+#endif
+
 // TODO: throw exceptions on various os errors.
 
 namespace subprocess {
@@ -542,3 +547,7 @@ namespace subprocess {
     }
 
 }
+
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif

@@ -8,6 +8,7 @@
 #include "Libraries/Format.hpp"
 #include "Libraries/Regex.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 // https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically?view=msvc-160
@@ -63,23 +64,27 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 {
 	UNUSED(generateDependency, dependency);
 
+	chalet_assert(!outputFile.empty(), "");
+
 	StringList ret;
 
 	const auto& cc = m_config.compilerExecutable();
 	ret.push_back(fmt::format("\"{}\"", cc));
 	ret.push_back("/nologo");
 
-	// Optimization level
+	addThreadModelCompileOption(ret);
 	addOptimizationOption(ret);
 
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
 	addLanguageStandard(ret, specialization);
-	ret.push_back("/EHsc");
+	addExceptionHandlingModel(ret);
+	addWarnings(ret);
+
+	addCompileOptions(ret);
+	addNoRunTimeTypeInformationOption(ret);
 
 	addDefines(ret);
 	addIncludes(ret);
-
-	chalet_assert(!outputFile.empty(), "");
 
 	auto pchObject = outputFile;
 	String::replaceAll(pchObject, ".pch", ".obj");
@@ -121,6 +126,8 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 {
 	UNUSED(generateDependency, dependency);
 
+	chalet_assert(!outputFile.empty(), "");
+
 	StringList ret;
 
 	const auto& cc = m_config.compilerExecutable();
@@ -128,16 +135,21 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	ret.push_back("/nologo");
 	ret.push_back("/MP");
 
+	addThreadModelCompileOption(ret);
 	addOptimizationOption(ret);
-	addPchInclude(ret);
-
 	addLanguageStandard(ret, specialization);
-	ret.push_back("/EHsc");
+	addExceptionHandlingModel(ret);
+	addWarnings(ret);
+
+	addCompileOptions(ret);
+	addNoRunTimeTypeInformationOption(ret);
+
+	addDebuggingInformationOption(ret);
 
 	addDefines(ret);
 	addIncludes(ret);
 
-	chalet_assert(!outputFile.empty(), "");
+	addPchInclude(ret);
 
 	ret.push_back(getPathCommand("/Fo", outputFile));
 
@@ -184,7 +196,49 @@ void CompileToolchainMSVC::addIncludes(StringList& inArgList) const
 }
 
 /*****************************************************************************/
-// void addWarnings(StringList& inArgList);
+void CompileToolchainMSVC::addWarnings(StringList& inArgList) const
+{
+	// TODO: ProjectWarnings::Custom would need to convert GNU warnings to MSVC warning codes
+
+	switch (m_project.warningsPreset())
+	{
+		case ProjectWarnings::Minimal:
+			inArgList.push_back("/W1");
+			break;
+
+		case ProjectWarnings::Extra:
+			inArgList.push_back("/W2");
+			break;
+
+		case ProjectWarnings::Error: {
+			inArgList.push_back("/W2");
+			inArgList.push_back("/WX");
+			break;
+		}
+		case ProjectWarnings::Pedantic: {
+			inArgList.push_back("/W3");
+			inArgList.push_back("/WX");
+			break;
+		}
+		case ProjectWarnings::Strict:
+		case ProjectWarnings::StrictPedantic: {
+			inArgList.push_back("/W4");
+			inArgList.push_back("/WX");
+			break;
+		}
+		case ProjectWarnings::VeryStrict: {
+			inArgList.push_back("/Wall");
+			inArgList.push_back("/WX");
+			break;
+		}
+
+		case ProjectWarnings::Custom:
+		case ProjectWarnings::None:
+		default:
+			inArgList.push_back("/W3");
+			break;
+	}
+}
 
 /*****************************************************************************/
 void CompileToolchainMSVC::addDefines(StringList& inArgList) const
@@ -204,6 +258,16 @@ void CompileToolchainMSVC::addResourceDefines(StringList& inArgList) const
 	{
 		inArgList.push_back(prefix + define);
 	}
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addExceptionHandlingModel(StringList& inArgList) const
+{
+	// /EH - Exception handling model
+	// s - standard C++ stack unwinding
+	// c - functions declared as extern "C" never throw
+
+	inArgList.push_back("/EHsc");
 }
 
 /*****************************************************************************/
@@ -329,6 +393,55 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& inArgList, const CxxS
 		{
 			inArgList.push_back("/std:c++14");
 		}
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addDebuggingInformationOption(StringList& inArgList) const
+{
+	// TODO! - pdb files etc
+	// /Zi /ZI /debug
+	UNUSED(inArgList);
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addCompileOptions(StringList& inArgList) const
+{
+	UNUSED(inArgList);
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addNoRunTimeTypeInformationOption(StringList& inArgList) const
+{
+	if (!m_project.rtti())
+	{
+		List::addIfDoesNotExist(inArgList, "/GR-");
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addThreadModelCompileOption(StringList& inArgList) const
+{
+	// /MD - multithreaded dll
+	// /MDd - debug multithreaded dll
+	// /MT - multithreaded executable
+	// /MTd - debug multithreaded executable
+
+	// TODO: at the moment, assumes threaded
+
+	if (m_project.isExecutable())
+	{
+		if (m_state.configuration.debugSymbols())
+			inArgList.push_back("/MTd");
+		else
+			inArgList.push_back("/MT");
+	}
+	else
+	{
+		if (m_state.configuration.debugSymbols())
+			inArgList.push_back("/MDd");
+		else
+			inArgList.push_back("/MD");
 	}
 }
 

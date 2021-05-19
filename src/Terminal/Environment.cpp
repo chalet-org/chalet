@@ -19,6 +19,11 @@
 	#include <array>
 #endif
 
+#ifdef CHALET_MSVC
+	#pragma warning(push)
+	#pragma warning(disable : 4996)
+#endif
+
 namespace chalet
 {
 namespace
@@ -402,3 +407,7 @@ std::string Environment::getShell()
 	return std::string(shell);
 }
 }
+
+#ifdef CHALET_MSVC
+	#pragma warning(pop)
+#endif

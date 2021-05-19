@@ -27,6 +27,11 @@
 
 #include "ProcessBuilder.hpp"
 
+#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable : 4996)
+#endif
+
 namespace subprocess {
     std::string getcwd() {
         return std::filesystem::current_path().string();
@@ -307,3 +312,7 @@ namespace subprocess {
     }
 
 }
+
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif

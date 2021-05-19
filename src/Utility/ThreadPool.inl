@@ -34,9 +34,9 @@ namespace chalet
 {
 /*****************************************************************************/
 template <class T, class... Args>
-std::future<typename std::result_of_t<T(Args...)>> ThreadPool::enqueue(T&& f, Args&&... args)
+std::future<typename std::invoke_result_t<T, Args...>> ThreadPool::enqueue(T&& f, Args&&... args)
 {
-	using return_type = typename std::result_of_t<T(Args...)>;
+	using return_type = typename std::invoke_result_t<T, Args...>;
 
 	auto task = std::make_shared<std::packaged_task<return_type()>>(
 		std::bind(std::forward<T>(f), std::forward<Args>(args)...));

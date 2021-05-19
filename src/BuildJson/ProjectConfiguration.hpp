@@ -8,6 +8,7 @@
 
 #include "BuildJson/BuildEnvironment.hpp"
 #include "BuildJson/ProjectKind.hpp"
+#include "BuildJson/ProjectWarnings.hpp"
 #include "Compile/CodeLanguage.hpp"
 #include "State/CommandLineInputs.hpp"
 
@@ -55,6 +56,7 @@ struct ProjectConfiguration
 	void addWarnings(StringList& inList);
 	void addWarning(std::string& inValue);
 	void setWarningPreset(const std::string& inValue);
+	ProjectWarnings warningsPreset() const noexcept;
 
 	bool includeInBuild() const noexcept;
 	void setIncludeInBuild(const bool inValue);
@@ -206,6 +208,7 @@ private:
 
 	ProjectKind m_kind = ProjectKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
+	ProjectWarnings m_warningsPreset = ProjectWarnings::None;
 
 	bool m_cmake = false;
 	bool m_cmakeRecheck = false;

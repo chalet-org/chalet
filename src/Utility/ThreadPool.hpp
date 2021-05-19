@@ -45,7 +45,7 @@ public:
 	~ThreadPool();
 
 	template <class T, class... Args>
-	std::future<typename std::result_of_t<T(Args...)>> enqueue(T&& f, Args&&... args);
+	std::future<typename std::invoke_result_t<T, Args...>> enqueue(T&& f, Args&&... args);
 
 	void stop();
 

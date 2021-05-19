@@ -10,8 +10,10 @@
 
 #ifdef CHALET_MSVC
 	#pragma warning(push)
+	#pragma warning(disable : 4100)
 	#pragma warning(disable : 4101)
 	#pragma warning(disable : 4456)
+	#pragma warning(disable : 4996)
 #else
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wunused-parameter"

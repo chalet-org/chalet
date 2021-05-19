@@ -30,12 +30,18 @@ struct CompileToolchainMSVC final : ICompileToolchain
 private:
 	// Compile
 	virtual void addIncludes(StringList& inArgList) const final;
-	// virtual void addWarnings(StringList& inArgList) final;
+	virtual void addWarnings(StringList& inArgList) const final;
 	virtual void addDefines(StringList& inArgList) const final;
 	void addResourceDefines(StringList& inArgList) const;
+	void addExceptionHandlingModel(StringList& inArgList) const;
 	virtual void addPchInclude(StringList& inArgList) const final;
 	virtual void addOptimizationOption(StringList& inArgList) const final;
 	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const final;
+	virtual void addDebuggingInformationOption(StringList& inArgList) const final;
+	//
+	virtual void addCompileOptions(StringList& inArgList) const final;
+	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList) const final;
+	virtual void addThreadModelCompileOption(StringList& inArgList) const final;
 
 	// Linking
 	// virtual void addLibDirs(StringList& inArgList) final;
