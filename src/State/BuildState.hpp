@@ -29,7 +29,7 @@ public:
 	explicit BuildState(const CommandLineInputs& inInputs);
 
 	CacheTools tools;
-	CompilerTools compilers;
+	CompilerTools compilerTools;
 	WorkspaceInfo info;
 	BuildEnvironment environment;
 	BuildPaths paths;

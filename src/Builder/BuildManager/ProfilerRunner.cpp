@@ -27,7 +27,7 @@ ProfilerRunner::ProfilerRunner(BuildState& inState, const ProjectConfiguration& 
 bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
 
-	auto& compilerConfig = m_state.compilers.getConfig(m_project.language());
+	auto& compilerConfig = m_state.compilerTools.getConfig(m_project.language());
 	if (compilerConfig.isGcc() && !m_state.tools.gprof().empty())
 	{
 		return ProfilerRunner::runWithGprof(inCommand, inExecutable, inOutputFolder);

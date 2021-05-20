@@ -60,7 +60,7 @@ bool CacheJsonParser::serialize()
 /*****************************************************************************/
 bool CacheJsonParser::validatePaths()
 {
-	auto& compilers = m_state.compilers;
+	auto& compilers = m_state.compilerTools;
 #if defined(CHALET_DEBUG)
 	auto& cacheJson = m_state.cache.environmentCache();
 #endif
@@ -569,19 +569,19 @@ bool CacheJsonParser::parseCompilers(const Json& inNode)
 	}
 
 	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyArchiver))
-		m_state.compilers.setArchiver(val);
+		m_state.compilerTools.setArchiver(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyCpp))
-		m_state.compilers.setCpp(val);
+		m_state.compilerTools.setCpp(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyCc))
-		m_state.compilers.setCc(val);
+		m_state.compilerTools.setCc(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyLinker))
-		m_state.compilers.setLinker(val);
+		m_state.compilerTools.setLinker(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyWindowsResource))
-		m_state.compilers.setRc(val);
+		m_state.compilerTools.setRc(val);
 
 	return true;
 }

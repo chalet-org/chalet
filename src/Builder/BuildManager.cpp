@@ -156,7 +156,7 @@ bool BuildManager::run(const Route inRoute)
 /*****************************************************************************/
 bool BuildManager::cacheRecipe(const ProjectConfiguration& inProject, const Route inRoute)
 {
-	auto& compilerConfig = m_state.compilers.getConfig(inProject.language());
+	auto& compilerConfig = m_state.compilerTools.getConfig(inProject.language());
 	auto compilerType = compilerConfig.compilerType();
 
 	auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, inProject, compilerConfig);
@@ -221,7 +221,7 @@ bool BuildManager::copyRunDependencies(const ProjectConfiguration& inProject)
 	{
 		const auto& workingDirectory = m_state.paths.workingDirectory();
 		const auto& buildOutputDir = m_state.paths.buildOutputDir();
-		auto& compilerConfig = m_state.compilers.getConfig(inProject.language());
+		auto& compilerConfig = m_state.compilerTools.getConfig(inProject.language());
 		auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
 
 		auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);

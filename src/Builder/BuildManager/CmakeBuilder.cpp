@@ -97,7 +97,7 @@ bool CmakeBuilder::run()
 std::string CmakeBuilder::getGenerator() const
 {
 	const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
-	const auto& compileConfig = m_state.compilers.getConfig(m_project.language());
+	const auto& compileConfig = m_state.compilerTools.getConfig(m_project.language());
 
 	std::string ret;
 	if (isNinja)

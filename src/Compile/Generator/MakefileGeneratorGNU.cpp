@@ -123,7 +123,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 		List::addIfDoesNotExist(m_fileExtensions, ext);
 	}
 
-	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
 
 	std::string recipes = getPchRecipe(pchTarget);

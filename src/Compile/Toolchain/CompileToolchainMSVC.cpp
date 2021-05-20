@@ -108,7 +108,7 @@ StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFil
 
 	StringList ret;
 
-	const auto& rc = m_state.compilers.rc();
+	const auto& rc = m_state.compilerTools.rc();
 	ret.push_back(fmt::format("\"{}\"", rc));
 
 	addResourceDefines(ret);
@@ -193,6 +193,7 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	UNUSED(outputFile, sourceObjs);
+
 	return {
 		"echo",
 		outputFile

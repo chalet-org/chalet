@@ -80,7 +80,7 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 {
 	StringList ret;
 
-	const auto& rc = m_state.compilers.rc();
+	const auto& rc = m_state.compilerTools.rc();
 	ret.push_back(rc);
 
 	ret.push_back("-J");
@@ -313,10 +313,10 @@ StringList CompileToolchainGNU::getStaticLibTargetCommand(const std::string& out
 {
 	StringList ret;
 
-	auto& archiver = m_state.compilers.archiver();
+	auto& archiver = m_state.compilerTools.archiver();
 	ret.push_back(archiver);
 
-	if (m_state.compilers.isArchiverLibTool())
+	if (m_state.compilerTools.isArchiverLibTool())
 	{
 		ret.push_back("-static");
 		ret.push_back("-no_warning_for_no_symbols");

@@ -387,7 +387,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& pchTarget)
 		const auto& depDir = m_state.paths.depDir();
 		const auto& pch = m_project->pch();
 		m_precompiledHeaders.push_back(pch);
-		// const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+		// const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 
 		const auto dependency = fmt::format("{depDir}/{pch}",
 			FMT_ARG(depDir),

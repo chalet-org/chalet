@@ -231,7 +231,7 @@ bool BuildJsonParser::parseEnvironment(const Json& inJson)
 /*****************************************************************************/
 bool BuildJsonParser::makePathVariable()
 {
-	auto rootPath = m_state.compilers.getRootPathVariable();
+	auto rootPath = m_state.compilerTools.getRootPathVariable();
 	auto pathVariable = m_state.environment.makePathVariable(rootPath);
 
 	// LOG(pathVariable);
@@ -577,7 +577,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 		outProject.parseOutputFilename();
 
 		auto language = outProject.language();
-		auto& compilerConfig = m_state.compilers.getConfig(language);
+		auto& compilerConfig = m_state.compilerTools.getConfig(language);
 		std::string libDir = compilerConfig.compilerPathLib();
 		std::string includeDir = compilerConfig.compilerPathInclude();
 		outProject.addLibDir(libDir);

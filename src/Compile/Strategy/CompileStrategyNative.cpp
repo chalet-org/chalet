@@ -104,7 +104,7 @@ bool CompileStrategyNative::addProject(const ProjectConfiguration& inProject, So
 
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	auto target = std::make_unique<NativeTarget>();

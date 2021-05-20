@@ -148,7 +148,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 {
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 	std::string rules = getPchBuildRule(pchTarget);
 	rules += '\n';
@@ -258,7 +258,7 @@ std::string NinjaGenerator::getCppRule()
 
 	std::string ret;
 
-	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
@@ -288,7 +288,7 @@ std::string NinjaGenerator::getObjcRule()
 
 	std::string ret;
 
-	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
@@ -318,7 +318,7 @@ std::string NinjaGenerator::getObjcppRule()
 
 	std::string ret;
 
-	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
@@ -348,7 +348,7 @@ std::string NinjaGenerator::getLinkRule()
 
 	std::string ret;
 
-	const auto& compilerConfig = m_state.compilers.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 
