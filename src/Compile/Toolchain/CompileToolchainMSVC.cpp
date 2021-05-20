@@ -268,6 +268,13 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 		// OPT:LBR - relates to arm binaries
 	}
 
+	uint maxJobs = m_state.environment.maxJobs();
+	if (maxJobs > 4)
+	{
+		maxJobs = std::min<uint>(maxJobs, 8);
+		ret.push_back(fmt::format("/CGTHREADS:{}", maxJobs));
+	}
+
 	addLibDirs(ret);
 
 	if (debugSymbols)
@@ -318,6 +325,12 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 	{
 		outArgList.push_back(getPathCommand(option, dir));
 	}
+}
+
+/*****************************************************************************/
+StringList CompileToolchainMSVC::getLinkExclusions() const
+{
+	return { "stdc++fs" };
 }
 
 /*****************************************************************************/
@@ -617,12 +630,18 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 		}
 	}
 
-	// if (hasDynamicLinks)
-	// {
-	// 	for (auto& link : m_project.links())
-	// 	{
-	// 	}
-	// }
+	if (hasDynamicLinks)
+	{
+		auto excludes = getLinkExclusions();
+
+		for (auto& link : m_project.links())
+		{
+			if (List::contains(excludes, link))
+				continue;
+
+			outArgList.push_back(fmt::format("{}.lib", link));
+		}
+	}
 }
 
 /*****************************************************************************/

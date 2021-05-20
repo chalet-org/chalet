@@ -28,6 +28,8 @@ struct CompileToolchainMSVC final : ICompileToolchain
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
 
 private:
+	StringList getLinkExclusions() const;
+
 	// Compile
 	virtual void addIncludes(StringList& outArgList) const final;
 	virtual void addWarnings(StringList& outArgList) const final;
