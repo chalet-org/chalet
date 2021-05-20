@@ -114,6 +114,20 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, cons
 	SourceGroup directories = getDirectories(inProject);
 
 	ret.objectListLinker = getObjectFilesList(files.list, inObjExtension);
+
+#if defined(CHALET_WIN32)
+	if (Environment::isMsvc())
+	{
+		if (inProject.usesPch())
+		{
+			auto pchTarget = getPrecompiledHeaderTarget(inProject, true);
+			String::replaceAll(pchTarget, ".pch", ".obj");
+
+			ret.objectListLinker.push_back(std::move(pchTarget));
+		}
+	}
+#endif
+
 	ret.objectList = getObjectFilesList(String::excludeIf(m_fileListCache, files.list), inObjExtension);
 
 	for (const auto& file : files.list)

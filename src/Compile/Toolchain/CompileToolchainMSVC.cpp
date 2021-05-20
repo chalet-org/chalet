@@ -94,10 +94,6 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 	addDefines(ret);
 	addIncludes(ret);
 
-	ret.push_back("/c");
-	ret.push_back(getPathCommand("/Yc", m_pchMinusLocation));
-	ret.push_back(m_pchSource);
-
 	auto pchObject = outputFile;
 	String::replaceAll(pchObject, ".pch", ".obj");
 
@@ -105,6 +101,10 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 
 	ret.push_back(getPathCommand("/Fo", pchObject));
 	UNUSED(inputFile);
+
+	ret.push_back("/c");
+	ret.push_back(getPathCommand("/Yc", m_pchMinusLocation));
+	ret.push_back(m_pchSource);
 
 	return ret;
 }
@@ -165,12 +165,11 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	addDefines(ret);
 	addIncludes(ret);
 
-	addPchInclude(ret);
+	ret.push_back(getPathCommand("/Fo", outputFile));
 
 	ret.push_back("/c");
+	addPchInclude(ret);
 	ret.push_back(inputFile);
-
-	ret.push_back(getPathCommand("/Fo", outputFile));
 
 	return ret;
 }

@@ -104,10 +104,12 @@ std::string NinjaGenerator::getContents(const std::string& inPath) const
 	auto recipes = String::join(m_targetRecipes);
 
 	std::string msvcDepsPrefix;
+#if defined(CHALET_WIN32)
 	if (Environment::isMsvc())
 	{
 		msvcDepsPrefix = "msvc_deps_prefix = Note: including file:";
 	}
+#endif
 
 	std::string ninjaTemplate = fmt::format(R"ninja(
 builddir = {cacheDir}
@@ -494,6 +496,10 @@ std::string NinjaGenerator::getAsmBuildRules(const StringList& inAssemblies)
 /*****************************************************************************/
 std::string NinjaGenerator::getRuleDeps() const
 {
+#if defined(CHALET_WIN32)
 	return Environment::isMsvc() ? "msvc" : "gcc";
+#else
+	return "gcc";
+#endif
 }
 }
