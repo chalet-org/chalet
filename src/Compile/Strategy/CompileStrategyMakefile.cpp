@@ -111,7 +111,6 @@ bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject
 	}
 
 	StringList command;
-	const auto maxJobs = m_state.environment.maxJobs();
 
 #if defined(CHALET_WIN32)
 	const bool makeIsNMake = m_state.tools.makeIsNMake();

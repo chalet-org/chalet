@@ -11,11 +11,17 @@
 
 #ifdef CHALET_WIN32
 	#include <tlhelp32.h>
-#else
+#elif CHALET_MACOS
 	#include <sys/types.h>
 	#include <unistd.h>
 	#include <sys/proc_info.h>
 	#include <libproc.h>
+	#include <array>
+#else
+	#include "Terminal/Commands.hpp"
+
+	#include <sys/types.h>
+	#include <unistd.h>
 	#include <array>
 #endif
 
@@ -75,6 +81,7 @@ std::string getParentProcessPath()
 	std::string name;
 	if (pid > 0)
 	{
+	#if CHALET_MACOS
 		std::array<char, PROC_PIDPATHINFO_MAXSIZE> pathBuffer;
 		pathBuffer.fill(0);
 		proc_pidpath(pid, pathBuffer.data(), pathBuffer.size());
@@ -82,6 +89,14 @@ std::string getParentProcessPath()
 		{
 			name = std::string(pathBuffer.data());
 		}
+	#else
+		// TODO: Better solution than this
+		std::string procLoc = "/proc/" + std::to_string(static_cast<int>(pid)) + "/exe";
+		name = Commands::subprocessOutput({ "ls", "-lt", procLoc }, true);
+		auto list = String::split(name, " -> ");
+		name = list.back();
+		LOG(name);
+	#endif
 	}
 
 	return name;
