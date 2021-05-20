@@ -412,6 +412,20 @@ build {pchTarget}: pch_{hash} {pch}
 			fmt::arg("hash", m_hash),
 			FMT_ARG(pchTarget),
 			FMT_ARG(pch));
+
+#if defined(CHALET_WIN32)
+		if (Environment::isMsvc())
+		{
+			std::string pchObj = pchTarget;
+			String::replaceAll(pchObj, ".pch", ".obj");
+
+			ret += fmt::format(R"ninja(
+build {pchObj}: phony {pchTarget}
+)ninja",
+				FMT_ARG(pchObj),
+				FMT_ARG(pchTarget));
+		}
+#endif
 	}
 
 	return ret;

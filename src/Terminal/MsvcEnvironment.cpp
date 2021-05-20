@@ -76,7 +76,7 @@ bool MsvcEnvironment::readCompilerVariables()
 		auto lib = m_variables.find("LIB");
 		if (lib != m_variables.end())
 		{
-			String::replaceAll(include->second, "\\", "/");
+			String::replaceAll(lib->second, "\\", "/");
 			m_lib = String::split(lib->second, ";");
 		}
 	}
