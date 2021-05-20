@@ -95,7 +95,6 @@ std::string getParentProcessPath()
 		name = Commands::subprocessOutput({ "ls", "-lt", procLoc }, true);
 		auto list = String::split(name, " -> ");
 		name = list.back();
-		LOG(name);
 	#endif
 	}
 
