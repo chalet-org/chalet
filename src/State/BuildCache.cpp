@@ -169,6 +169,14 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 	if (buildCache.type() != JsonDataType::object)
 		return;
 
+	auto& strategyJson = m_environmentCache.json.at(kKeyStrategy);
+	if (strategyJson.type() != JsonDataType::string)
+		return;
+
+	const auto strategy = strategyJson.get<std::string>();
+
+	UNUSED(inProjectNames);
+
 	StringList hashes;
 	for (auto it = buildCache.begin(); it != buildCache.end();)
 	{
@@ -178,7 +186,8 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 
 		const auto& name = splitKey.back();
 
-		const bool validForBuild = splitKey.size() > 1 && (inBuildConfig == keyBuildConfig || List::contains<std::string>(inProjectNames, name));
+		// const bool validForBuild = splitKey.size() > 1 && (inBuildConfig == keyBuildConfig || List::contains<std::string>(inProjectNames, name));
+		const bool validForBuild = splitKey.size() > 1 && (inBuildConfig == keyBuildConfig || strategy == name);
 
 		const bool internalKey = key == kKeyDataVersion || key == kKeyDataVersionDebug || key == kKeyDataStrategy || key == kKeyDataWorkingDirectory;
 		if (internalKey)

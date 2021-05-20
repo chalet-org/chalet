@@ -11,6 +11,8 @@
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 
+#include <unordered_map>
+
 namespace chalet
 {
 struct MakefileGeneratorGNU final : IStrategyGenerator
@@ -22,35 +24,37 @@ struct MakefileGeneratorGNU final : IStrategyGenerator
 
 private:
 	std::string getBuildRecipes(const SourceOutputs& inOutputs);
-	std::string getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget);
-	std::string getAsmBuildRecipes(const StringList& inAssemblies);
+	// std::string getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget);
+	// std::string getAsmBuildRecipes(const StringList& inAssemblies);
 
-	std::string getCompileEchoAsm(const std::string& assembly) const;
-	std::string getCompileEchoSources(const std::string& source) const;
-	std::string getCompileEchoLinker(const std::string& target) const;
+	std::string getCompileEchoAsm() const;
+	std::string getCompileEchoSources() const;
+	std::string getCompileEchoLinker() const;
 
-	std::string getAsmRecipe(const std::string& object, const std::string& assembly) const;
+	std::string getAsmRecipe() const;
 	std::string getPchRecipe(const std::string& pchTarget);
-	std::string getRcRecipe(const std::string& source, const std::string& object) const;
-	std::string getCppRecipe(const std::string& source, const std::string& object, const std::string& pchTarget) const;
-	std::string getObjcRecipe(const std::string& source, const std::string& object) const;
+	std::string getRcRecipe(const std::string& ext) const;
+	std::string getCppRecipe(const std::string& ext, const std::string& pchTarget) const;
+	std::string getObjcRecipe(const std::string& ext) const;
 
-	std::string getTargetRecipe(const std::string& linkerTarget, const StringList& objects) const;
-	std::string getDumpAsmRecipe(const StringList& inAssemblies) const;
+	std::string getTargetRecipe(const std::string& linkerTarget) const;
+	std::string getDumpAsmRecipe() const;
 
 	std::string getPchOrderOnlyPreReq() const;
-	std::string getLinkerPreReqs(const StringList& objects) const;
+	std::string getLinkerPreReqs() const;
 
 	std::string getQuietFlag() const;
 	std::string getMoveCommand(std::string inInput, std::string inOutput) const;
 	std::string getPrinter(const std::string& inPrint = "", const bool inNewLine = false) const;
 
+	bool locationExists(const std::string& location, const std::string& ext) const;
+
 	std::string getColorBlue() const;
 	std::string getColorPurple() const;
 
 	StringList m_fileExtensions;
-	StringList m_dependencies;
-	StringList m_assemblies;
+
+	mutable std::unordered_map<std::string, StringList> m_locationCache;
 };
 }
 

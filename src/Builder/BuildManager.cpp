@@ -189,7 +189,7 @@ bool BuildManager::cacheRecipe(const ProjectConfiguration& inProject, const Rout
 		}
 	}
 
-	return m_strategy->addProject(inProject, outputs, buildToolchain);
+	return m_strategy->addProject(inProject, std::move(outputs), buildToolchain);
 }
 
 /*****************************************************************************/

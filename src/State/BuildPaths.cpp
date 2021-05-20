@@ -163,22 +163,22 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, cons
 }
 
 /*****************************************************************************/
-/*void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const bool inDumpAssembly) const
+void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const
 {
-	// auto objects = String::join(inOutput.objectList);
-	// Environment::set("SOURCE_OBJS", objects);
+	auto objects = String::join(inOutput.objectList);
+	Environment::set(fmt::format("SOURCE_OBJS_{}", inHash).c_str(), objects);
 
-	// auto depdendencies = String::join(inOutput.dependencyList);
-	// Environment::set("SOURCE_DEPS", depdendencies);
+	auto depdendencies = String::join(inOutput.dependencyList);
+	Environment::set(fmt::format("SOURCE_DEPS", inHash).c_str(), depdendencies);
 
-	// if (inDumpAssembly)
-	// {
-	// 	auto assemblies = String::join(inOutput.assemblyList);
-	// 	Environment::set("SOURCE_ASMS", assemblies);
-	// }
+	if (inDumpAssembly)
+	{
+		auto assemblies = String::join(inOutput.assemblyList);
+		Environment::set(fmt::format("SOURCE_ASMS", inHash).c_str(), assemblies);
+	}
 
-	UNUSED(inOutput, inDumpAssembly);
-}*/
+	// UNUSED(inOutput, inDumpAssembly);
+}
 
 /*****************************************************************************/
 std::string BuildPaths::getTargetFilename(const ProjectConfiguration& inProject) const

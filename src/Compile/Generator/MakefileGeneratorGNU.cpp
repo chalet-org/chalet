@@ -86,11 +86,9 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 	const auto shell = "/bin/sh";
 #endif
 
-	const auto deps = String::join(m_dependencies);
-
 	auto recipes = String::join(m_targetRecipes);
 
-	std::string ninjaTemplate = fmt::format(R"makefile(
+	std::string makeTemplate = fmt::format(R"makefile(
 .SUFFIXES:
 .SUFFIXES: {suffixes}
 
@@ -101,7 +99,7 @@ NOOP := @{printer}
 {depDir}/%.d: ;
 .PRECIOUS: {depDir}/%.d
 
--include $(wildcard {deps})
+-include $(wildcard $(SOURCE_DEPS))
 
 .DEFAULT:
 	$(NOOP)
@@ -110,10 +108,9 @@ NOOP := @{printer}
 		FMT_ARG(shell),
 		FMT_ARG(printer),
 		FMT_ARG(recipes),
-		FMT_ARG(depDir),
-		FMT_ARG(deps));
+		FMT_ARG(depDir));
 
-	return ninjaTemplate;
+	return makeTemplate;
 }
 
 /*****************************************************************************/
@@ -131,34 +128,36 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 
 	std::string recipes = getPchRecipe(pchTarget);
 
-	recipes += getObjBuildRecipes(inOutputs.objectList, pchTarget);
-
-	for (auto& dep : inOutputs.dependencyList)
+#if defined(CHALET_WIN32)
+	for (auto& ext : String::filterIf({ "rc", "RC" }, inOutputs.fileExtensions))
 	{
-		List::addIfDoesNotExist(m_dependencies, dep);
+		recipes += getRcRecipe(ext);
+	}
+#endif
+
+	for (auto& ext : String::filterIf({ "cpp", "CPP", "cc", "CC", "cxx", "CXX", "c++", "C++", "c", "C" }, inOutputs.fileExtensions))
+	{
+		recipes += getCppRecipe(ext, pchTarget);
+	}
+
+	for (auto& ext : String::filterIf({ "m", "M", "mm" }, inOutputs.fileExtensions))
+	{
+		recipes += getObjcRecipe(ext);
 	}
 
 	if (m_project->dumpAssembly())
 	{
-		auto assemblies = String::excludeIf(m_assemblies, inOutputs.assemblyList);
-		if (!assemblies.empty())
-		{
-			recipes += getAsmBuildRecipes(assemblies);
-
-			for (auto& assem : assemblies)
-			{
-				List::addIfDoesNotExist(m_assemblies, assem);
-			}
-		}
+		recipes += getAsmRecipe();
+		recipes += getDumpAsmRecipe();
 	}
 
-	recipes += getTargetRecipe(inOutputs.target, inOutputs.objectListLinker);
+	recipes += getTargetRecipe(inOutputs.target);
 
 	return recipes;
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget)
+/*std::string MakefileGeneratorGNU::getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget)
 {
 	const auto objDir = fmt::format("{}/", m_state.paths.objDir());
 
@@ -192,10 +191,10 @@ std::string MakefileGeneratorGNU::getObjBuildRecipes(const StringList& inObjects
 	}
 
 	return ret;
-}
+}*/
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getAsmBuildRecipes(const StringList& inAssemblies)
+/*std::string MakefileGeneratorGNU::getAsmBuildRecipes(const StringList& inAssemblies)
 {
 	std::string ret;
 
@@ -224,17 +223,17 @@ std::string MakefileGeneratorGNU::getAsmBuildRecipes(const StringList& inAssembl
 	}
 
 	return ret;
-}
+}*/
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCompileEchoAsm(const std::string& assembly) const
+std::string MakefileGeneratorGNU::getCompileEchoAsm() const
 {
 	const auto purple = getColorPurple();
 	std::string printer;
 
 	if (m_cleanOutput)
 	{
-		printer = getPrinter(fmt::format("   {}{}", purple, assembly), true);
+		printer = getPrinter(fmt::format("   {}$@", purple), true);
 	}
 	else
 	{
@@ -245,14 +244,14 @@ std::string MakefileGeneratorGNU::getCompileEchoAsm(const std::string& assembly)
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& source) const
+std::string MakefileGeneratorGNU::getCompileEchoSources() const
 {
 	const auto blue = getColorBlue();
 	std::string printer;
 
 	if (m_cleanOutput)
 	{
-		printer = getPrinter(fmt::format("   {}{}", blue, source), true);
+		printer = getPrinter(fmt::format("   {}$<", blue), true);
 	}
 	else
 	{
@@ -263,7 +262,7 @@ std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& sourc
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCompileEchoLinker(const std::string& target) const
+std::string MakefileGeneratorGNU::getCompileEchoLinker() const
 {
 	const auto blue = getColorBlue();
 	std::string printer;
@@ -271,7 +270,7 @@ std::string MakefileGeneratorGNU::getCompileEchoLinker(const std::string& target
 	if (m_cleanOutput)
 	{
 		const auto arrow = unicodeRightwardsTripleArrow();
-		printer = getPrinter(fmt::format("{blue}{arrow}  Linking {target}", FMT_ARG(blue), FMT_ARG(arrow), FMT_ARG(target)), true);
+		printer = getPrinter(fmt::format("{blue}{arrow}  Linking $@", FMT_ARG(blue), FMT_ARG(arrow)), true);
 	}
 	else
 	{
@@ -282,7 +281,7 @@ std::string MakefileGeneratorGNU::getCompileEchoLinker(const std::string& target
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getDumpAsmRecipe(const StringList& inAssemblies) const
+std::string MakefileGeneratorGNU::getDumpAsmRecipe() const
 {
 	chalet_assert(m_project != nullptr, "");
 
@@ -291,43 +290,54 @@ std::string MakefileGeneratorGNU::getDumpAsmRecipe(const StringList& inAssemblie
 	const bool dumpAssembly = m_project->dumpAssembly();
 	if (dumpAssembly)
 	{
-		const auto assemblies = String::join(inAssemblies);
 		ret = fmt::format(R"makefile(
-asm_{hash}: {assemblies}
+asm_{hash}: $(SOURCE_ASMS)
 	$(NOOP)
 .PHONY: dumpasm
 )makefile",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(assemblies));
+			fmt::arg("hash", m_hash));
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getAsmRecipe(const std::string& object, const std::string& assembly) const
+std::string MakefileGeneratorGNU::getAsmRecipe() const
 {
 	chalet_assert(m_project != nullptr, "");
 
 	std::string ret;
 
+	std::string ext("asm");
+
 	const bool dumpAssembly = m_project->dumpAssembly();
 	if (dumpAssembly)
 	{
-		const auto quietFlag = getQuietFlag();
-		const auto asmCompile = m_state.tools.getAsmGenerateCommand(fmt::format("'{}'", object), fmt::format("'{}'", assembly));
-		const auto compileEcho = getCompileEchoAsm(assembly);
+		for (auto& location : m_project->locations())
+		{
+			if (locationExists(location, ext))
+				continue;
 
-		ret = fmt::format(R"makefile(
-{assembly}: {object}
+			const auto& asmDir = m_state.paths.asmDir();
+			const auto& objDir = m_state.paths.objDir();
+			const auto quietFlag = getQuietFlag();
+			const auto asmCompile = m_state.tools.getAsmGenerateCommand("'$<'", "'$@'");
+			const auto compileEcho = getCompileEchoAsm();
+
+			ret += fmt::format(R"makefile(
+{asmDir}/{location}/%.o.asm: {objDir}/{location}/%.o
 	{compileEcho}
 	{quietFlag}{asmCompile}
 )makefile",
-			FMT_ARG(assembly),
-			FMT_ARG(object),
-			FMT_ARG(compileEcho),
-			FMT_ARG(quietFlag),
-			FMT_ARG(asmCompile));
+				FMT_ARG(asmDir),
+				FMT_ARG(objDir),
+				FMT_ARG(location),
+				FMT_ARG(compileEcho),
+				FMT_ARG(quietFlag),
+				FMT_ARG(asmCompile));
+
+			m_locationCache[location].push_back(ext);
+		}
 	}
 
 	return ret;
@@ -356,7 +366,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& pchTarget)
 		dependency += ".d";
 
 		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-		const auto compileEcho = getCompileEchoSources(pch);
+		const auto compileEcho = getCompileEchoSources();
 
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(pch, pchTarget, m_generateDependencies, tempDependency));
 		if (m_generateDependencies)
@@ -382,9 +392,9 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& pchTarget)
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getRcRecipe(const std::string& source, const std::string& object) const
+std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext) const
 {
-	// chalet_assert(m_project != nullptr, "");
+	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
 
 	std::string ret;
@@ -392,42 +402,51 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& source, const s
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
-	const auto compileEcho = getCompileEchoSources(source);
+	const auto compileEcho = getCompileEchoSources();
 	const auto pchPreReq = getPchOrderOnlyPreReq();
 
-	auto dependency = String::getPathFolderBaseName(object);
-	String::replaceAll(dependency, objDir, depDir);
-
-	const auto tempDependency = dependency + ".Td";
-	dependency += ".d";
-
-	const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-
-	auto rcCompile = String::join(m_toolchain->getRcCompileCommand(source, object, m_generateDependencies, tempDependency));
-	if (m_generateDependencies)
+	for (auto& location : m_project->locations())
 	{
-		rcCompile += fmt::format(" && {}", moveDependencies);
-	}
+		if (locationExists(location, ext))
+			continue;
 
-	ret = fmt::format(R"makefile(
-{object}: {source}
-{object}: {source} {dependency}{pchPreReq}
+		auto dependency = fmt::format("{}/{}/$*.{}", depDir, location, ext);
+
+		const auto tempDependency = dependency + ".Td";
+		dependency += ".d";
+
+		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
+
+		auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
+		if (m_generateDependencies)
+		{
+			rcCompile += fmt::format(" && {}", moveDependencies);
+		}
+
+		ret += fmt::format(R"makefile(
+{objDir}/{location}/%.{ext}.res: {location}/%.{ext}
+{objDir}/{location}/%.{ext}.res: {location}/%.{ext} {depDir}/{location}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{rcCompile}
 )makefile",
-		FMT_ARG(object),
-		FMT_ARG(source),
-		FMT_ARG(dependency),
-		FMT_ARG(pchPreReq),
-		FMT_ARG(compileEcho),
-		FMT_ARG(quietFlag),
-		FMT_ARG(rcCompile));
+			FMT_ARG(objDir),
+			FMT_ARG(depDir),
+			FMT_ARG(ext),
+			FMT_ARG(location),
+			FMT_ARG(dependency),
+			FMT_ARG(pchPreReq),
+			FMT_ARG(compileEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(rcCompile));
+
+		m_locationCache[location].push_back(ext);
+	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCppRecipe(const std::string& source, const std::string& object, const std::string& pchTarget) const
+std::string MakefileGeneratorGNU::getCppRecipe(const std::string& ext, const std::string& pchTarget) const
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -437,89 +456,126 @@ std::string MakefileGeneratorGNU::getCppRecipe(const std::string& source, const 
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
-	const auto compileEcho = getCompileEchoSources(source);
+	const auto compileEcho = getCompileEchoSources();
 	const auto pchPreReq = getPchOrderOnlyPreReq();
 
-	auto dependency = String::getPathFolderBaseName(object);
-	String::replaceAll(dependency, objDir, depDir);
-
-	const auto tempDependency = dependency + ".Td";
-	dependency += ".d";
-
-	const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-
-	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
-	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, tempDependency, specialization));
-	if (m_generateDependencies)
+	for (auto& location : m_project->locations())
 	{
-		cppCompile += fmt::format(" && {}", moveDependencies);
-	}
+		if (locationExists(location, ext))
+			continue;
 
-	ret = fmt::format(R"makefile(
-{object}: {source}
-{object}: {source} {pchTarget} {dependency}{pchPreReq}
+		auto dependency = fmt::format("{}/{}/$*.{}", depDir, location, ext);
+
+		const auto tempDependency = dependency + ".Td";
+		dependency += ".d";
+
+		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
+
+		const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
+		auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
+		if (m_generateDependencies)
+		{
+			cppCompile += fmt::format(" && {}", moveDependencies);
+		}
+
+		ret += fmt::format(R"makefile(
+{objDir}/{location}/%.{ext}.o: {location}/%.{ext}
+{objDir}/{location}/%.{ext}.o: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{cppCompile}
 )makefile",
-		FMT_ARG(object),
-		FMT_ARG(source),
-		FMT_ARG(pchTarget),
-		FMT_ARG(dependency),
-		FMT_ARG(pchPreReq),
-		FMT_ARG(compileEcho),
-		FMT_ARG(quietFlag),
-		FMT_ARG(cppCompile));
+			FMT_ARG(objDir),
+			FMT_ARG(depDir),
+			FMT_ARG(ext),
+			FMT_ARG(location),
+			FMT_ARG(pchTarget),
+			FMT_ARG(dependency),
+			FMT_ARG(pchPreReq),
+			FMT_ARG(compileEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(cppCompile));
+
+		m_locationCache[location].push_back(ext);
+	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& source, const std::string& object) const
+std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
 {
+	chalet_assert(m_project != nullptr, "");
+	chalet_assert(m_toolchain != nullptr, "");
+
 	std::string ret;
 
-	const bool objectiveC = String::endsWith({ ".m", ".M" }, source); // mm & M imply C++
+	const bool objectiveC = String::equals({ "m", "M" }, ext); // mm & M imply C++
 
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
-	const auto compileEcho = getCompileEchoSources(source);
+	const auto compileEcho = getCompileEchoSources();
 	const auto pchPreReq = getPchOrderOnlyPreReq();
 
-	auto dependency = String::getPathFolderBaseName(object);
-	String::replaceAll(dependency, objDir, depDir);
-
-	const auto tempDependency = dependency + ".Td";
-	dependency += ".d";
-
-	const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-
-	const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCpp;
-	auto objcCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, tempDependency, specialization));
-	if (m_generateDependencies)
+	for (auto& location : m_project->locations())
 	{
-		objcCompile += fmt::format(" && {}", moveDependencies);
-	}
+		if (locationExists(location, ext))
+			continue;
 
-	ret = fmt::format(R"makefile(
-{object}: {source}
-{object}: {source} {dependency}{pchPreReq}
+		auto dependency = fmt::format("{}/{}/$*.{}", depDir, location, ext);
+
+		const auto tempDependency = dependency + ".Td";
+		dependency += ".d";
+
+		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
+
+		const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCpp;
+		auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
+		if (m_generateDependencies)
+		{
+			objcCompile += fmt::format(" && {}", moveDependencies);
+		}
+
+		ret += fmt::format(R"makefile(
+{objDir}/{location}/%.{ext}.o: {location}/%.{ext}
+{objDir}/{location}/%.{ext}.o: {location}/%.{ext} {depDir}/{location}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{objcCompile}
 )makefile",
-		FMT_ARG(object),
-		FMT_ARG(source),
-		FMT_ARG(dependency),
-		FMT_ARG(pchPreReq),
-		FMT_ARG(compileEcho),
-		FMT_ARG(quietFlag),
-		FMT_ARG(objcCompile));
+			FMT_ARG(objDir),
+			FMT_ARG(depDir),
+			FMT_ARG(ext),
+			FMT_ARG(location),
+			FMT_ARG(dependency),
+			FMT_ARG(pchPreReq),
+			FMT_ARG(compileEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(objcCompile));
+
+		m_locationCache[location].push_back(ext);
+	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarget, const StringList& objects) const
+bool MakefileGeneratorGNU::locationExists(const std::string& location, const std::string& ext) const
+{
+	bool found = false;
+	for (auto& e : m_locationCache[location])
+	{
+		if (e == ext)
+		{
+			found = true;
+			break;
+		}
+	}
+
+	return found;
+}
+
+/*****************************************************************************/
+std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarget) const
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -528,11 +584,11 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 
 	const auto quietFlag = getQuietFlag();
 
-	const auto preReqs = getLinkerPreReqs(objects);
+	const auto preReqs = getLinkerPreReqs();
 
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(*m_project);
-	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, objects, linkerTargetBase));
-	const auto compileEcho = getCompileEchoLinker(linkerTarget);
+	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, { fmt::format("$(SOURCE_OBJS_{})", m_hash) }, linkerTargetBase));
+	const auto compileEcho = getCompileEchoLinker();
 	const auto printer = getPrinter("\\n");
 
 	ret = fmt::format(R"makefile(
@@ -564,17 +620,21 @@ std::string MakefileGeneratorGNU::getPchOrderOnlyPreReq() const
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getLinkerPreReqs(const StringList& objects) const
+std::string MakefileGeneratorGNU::getLinkerPreReqs() const
 {
 	chalet_assert(m_project != nullptr, "");
 
-	std::string ret = String::join(objects);
+	std::string ret = fmt::format("$(SOURCE_OBJS_{})", m_hash);
 
+	uint count = 0;
 	for (auto& project : m_state.projects)
 	{
 		if (List::contains(m_project->projectStaticLinks(), project->name()))
 		{
+			if (count == 0)
+				ret += " |";
 			ret += " " + m_state.paths.getTargetFilename(*project);
+			++count;
 		}
 	}
 

@@ -17,7 +17,7 @@ struct CompileStrategyNinja final : ICompileStrategy
 	explicit CompileStrategyNinja(BuildState& inState);
 
 	virtual bool initialize() final;
-	virtual bool addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain) final;
+	virtual bool addProject(const ProjectConfiguration& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
 
 	virtual bool saveBuildFile() const final;
 	virtual bool buildProject(const ProjectConfiguration& inProject) const final;

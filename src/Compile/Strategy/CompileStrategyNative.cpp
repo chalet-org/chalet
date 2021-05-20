@@ -97,7 +97,7 @@ bool CompileStrategyNative::initialize()
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain)
+bool CompileStrategyNative::addProject(const ProjectConfiguration& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
 {
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
@@ -113,10 +113,14 @@ bool CompileStrategyNative::addProject(const ProjectConfiguration& inProject, co
 	target->assemblies = getAsmCommands(inOutputs.assemblyList);
 	target->linkTarget = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
 
-	if (m_targets.find(inProject.name()) == m_targets.end())
+	auto& name = inProject.name();
+
+	if (m_targets.find(name) == m_targets.end())
 	{
-		m_targets.emplace(inProject.name(), std::move(target));
+		m_targets.emplace(name, std::move(target));
 	}
+
+	m_outputs[name] = std::move(inOutputs);
 
 	m_toolchain = nullptr;
 	m_project = nullptr;

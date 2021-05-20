@@ -23,13 +23,15 @@ struct ICompileStrategy
 	StrategyType type() const noexcept;
 
 	virtual bool initialize() = 0;
-	virtual bool addProject(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain) = 0;
+	virtual bool addProject(const ProjectConfiguration& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
 
 	virtual bool saveBuildFile() const = 0;
 	virtual bool buildProject(const ProjectConfiguration& inProject) const = 0;
 
 protected:
 	BuildState& m_state;
+
+	std::unordered_map<std::string, SourceOutputs> m_outputs;
 
 	StrategyGenerator m_generator;
 
