@@ -299,8 +299,14 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 		{
 			String::replaceAll(errorOutput, "\r", "\r\n");
 
-			// const char eol = '\r\n';
-			// cutoff = errorOutput.find("NMAKE : fatal error");
+			if (m_state.tools.makeIsJom())
+			{
+				cutoff = errorOutput.find("jom: ");
+			}
+			else
+			{
+				cutoff = errorOutput.find("NMAKE : fatal error");
+			}
 		}
 		else
 #endif

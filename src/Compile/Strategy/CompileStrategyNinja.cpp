@@ -118,6 +118,10 @@ bool CompileStrategyNinja::buildProject(const ProjectConfiguration& inProject) c
 
 	StringList command;
 	command.push_back(ninjaExec);
+
+	if (m_state.environment.showCommands())
+		command.push_back("-v");
+
 	command.push_back("-f");
 	command.push_back(m_cacheFile);
 

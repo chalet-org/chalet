@@ -44,6 +44,8 @@ private:
 	std::string getObjBuildRules(const StringList& inObjects, const std::string& pchTarget);
 	std::string getAsmBuildRules(const StringList& inAssemblies);
 
+	std::string getRuleDeps() const;
+
 	NinjaRuleList m_rules;
 	StringList m_assemblies;
 };

@@ -398,12 +398,15 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& pchTarget)
 
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(pch, pchTarget, m_generateDependencies, fmt::format("{}.Td", dependency)));
 
+		const auto compilerEcho = getCompileEchoSources(pchTarget);
+
 		ret = fmt::format(R"makefile(
 {pchTarget}: {pch}
 	{quietFlag}{pchCompile}
 )makefile",
 			FMT_ARG(pchTarget),
 			FMT_ARG(pch),
+			FMT_ARG(compilerEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(pchCompile));
 	}
@@ -442,7 +445,8 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 {
 	chalet_assert(m_project != nullptr, "");
 
-	// UNUSED(pchTarget);
+	UNUSED(pchTarget);
+
 	std::string ret;
 
 	const auto quietFlag = getQuietFlag();
@@ -451,12 +455,14 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
 	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, dependency, specialization));
 
+	const auto compilerEcho = getCompileEchoSources(source);
+
 	ret = fmt::format(R"makefile(
 {object}: {source}
 	{quietFlag}{cppCompile}
 )makefile",
 		FMT_ARG(source),
-		FMT_ARG(pchTarget),
+		FMT_ARG(compilerEcho),
 		FMT_ARG(quietFlag),
 		FMT_ARG(cppCompile),
 		FMT_ARG(object));

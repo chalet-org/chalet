@@ -71,6 +71,7 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 	const auto& cc = m_config.compilerExecutable();
 	ret.push_back(fmt::format("\"{}\"", cc));
 	ret.push_back("/nologo");
+	ret.push_back("/diagnostics:caret");
 
 	addThreadModelCompileOption(ret);
 	addOptimizationOption(ret);
@@ -134,6 +135,7 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	const auto& cc = m_config.compilerExecutable();
 	ret.push_back(fmt::format("\"{}\"", cc));
 	ret.push_back("/nologo");
+	ret.push_back("/diagnostics:caret");
 	ret.push_back("/MP");
 
 	addThreadModelCompileOption(ret);

@@ -24,6 +24,7 @@ struct ICompileToolchain
 	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) = 0;
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;
 
+protected:
 	// Compile
 	virtual void addIncludes(StringList& outArgList) const;
 	virtual void addWarnings(StringList& outArgList) const;

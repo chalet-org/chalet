@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -180,6 +181,7 @@ std::string NinjaGenerator::getPchRule()
 
 	if (m_project->usesPch() && !List::contains(m_precompiledHeaders, m_project->pch()))
 	{
+		const auto deps = getRuleDeps();
 		const auto& depDir = m_state.paths.depDir();
 		const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
@@ -187,12 +189,13 @@ std::string NinjaGenerator::getPchRule()
 
 		ret = fmt::format(R"ninja(
 rule pch_{hash}
-  deps = gcc
+  deps = {deps}
   depfile = {dependency}
   description = $in
   command = {pchCompile}
 )ninja",
 			fmt::arg("hash", m_hash),
+			FMT_ARG(deps),
 			FMT_ARG(dependency),
 			FMT_ARG(pchCompile));
 	}
@@ -205,6 +208,7 @@ std::string NinjaGenerator::getRcRule()
 {
 	std::string ret;
 
+	const auto deps = getRuleDeps();
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 
@@ -212,12 +216,13 @@ std::string NinjaGenerator::getRcRule()
 
 	ret = fmt::format(R"ninja(
 rule rc_{hash}
-  deps = gcc
+  deps = {deps}
   depfile = {dependency}
   description = $in
   command = {rcCompile}
 )ninja",
 		fmt::arg("hash", m_hash),
+		FMT_ARG(deps),
 		FMT_ARG(dependency),
 		FMT_ARG(rcCompile));
 
@@ -258,6 +263,7 @@ std::string NinjaGenerator::getCppRule()
 
 	std::string ret;
 
+	const auto deps = getRuleDeps();
 	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
@@ -268,12 +274,13 @@ std::string NinjaGenerator::getCppRule()
 
 	ret = fmt::format(R"ninja(
 rule cxx_{hash}
-  deps = gcc
+  deps = {deps}
   depfile = {dependency}
   description = $in
   command = {cppCompile}
 )ninja",
 		fmt::arg("hash", m_hash),
+		FMT_ARG(deps),
 		FMT_ARG(dependency),
 		FMT_ARG(cppCompile));
 
@@ -288,6 +295,7 @@ std::string NinjaGenerator::getObjcRule()
 
 	std::string ret;
 
+	const auto deps = getRuleDeps();
 	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
@@ -298,12 +306,13 @@ std::string NinjaGenerator::getObjcRule()
 
 	ret = fmt::format(R"ninja(
 rule objc_{hash}
-  deps = gcc
+  deps = {deps}
   depfile = {dependency}
   description = $in
   command = {cppCompile}
 )ninja",
 		fmt::arg("hash", m_hash),
+		FMT_ARG(deps),
 		FMT_ARG(dependency),
 		FMT_ARG(cppCompile));
 
@@ -318,6 +327,7 @@ std::string NinjaGenerator::getObjcppRule()
 
 	std::string ret;
 
+	const auto deps = getRuleDeps();
 	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
@@ -328,12 +338,13 @@ std::string NinjaGenerator::getObjcppRule()
 
 	ret = fmt::format(R"ninja(
 rule objcpp_{hash}
-  deps = gcc
+  deps = {deps}
   depfile = {dependency}
   description = $in
   command = {cppCompile}
 )ninja",
 		fmt::arg("hash", m_hash),
+		FMT_ARG(deps),
 		FMT_ARG(dependency),
 		FMT_ARG(cppCompile));
 
@@ -463,5 +474,11 @@ std::string NinjaGenerator::getAsmBuildRules(const StringList& inAssemblies)
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+std::string NinjaGenerator::getRuleDeps() const
+{
+	return Environment::isMsvc() ? "msvc" : "gcc";
 }
 }
