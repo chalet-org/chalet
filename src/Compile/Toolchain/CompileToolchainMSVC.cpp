@@ -73,6 +73,12 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 	ret.push_back("/nologo");
 	ret.push_back("/diagnostics:caret");
 
+	const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
+	if (generateDependency && isNinja)
+	{
+		ret.push_back("/showIncludes");
+	}
+
 	addThreadModelCompileOption(ret);
 	addOptimizationOption(ret);
 
@@ -88,17 +94,17 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 	addDefines(ret);
 	addIncludes(ret);
 
-	auto pchObject = outputFile;
-	String::replaceAll(pchObject, ".pch", ".obj");
-
-	ret.push_back(getPathCommand("/Fo", pchObject));
-	ret.push_back(getPathCommand("/Fp", outputFile));
-
-	UNUSED(inputFile);
-
 	ret.push_back("/c");
 	ret.push_back(getPathCommand("/Yc", m_pchMinusLocation));
 	ret.push_back(m_pchSource);
+
+	auto pchObject = outputFile;
+	String::replaceAll(pchObject, ".pch", ".obj");
+
+	ret.push_back(getPathCommand("/Fp", outputFile));
+
+	ret.push_back(getPathCommand("/Fo", pchObject));
+	UNUSED(inputFile);
 
 	return ret;
 }
@@ -112,11 +118,12 @@ StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFil
 
 	const auto& rc = m_state.compilerTools.rc();
 	ret.push_back(fmt::format("\"{}\"", rc));
+	ret.push_back("/nologo");
 
 	addResourceDefines(ret);
 	addIncludes(ret);
 
-	ret.push_back(getPathCommand("/fo", outputFile));
+	ret.push_back(getPathCommand("/Fo", outputFile));
 
 	ret.push_back(inputFile);
 
@@ -138,6 +145,11 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	ret.push_back("/diagnostics:caret");
 	ret.push_back("/MP");
 
+	if (generateDependency && m_state.environment.strategy() == StrategyType::Ninja)
+	{
+		ret.push_back("/showIncludes");
+	}
+
 	addThreadModelCompileOption(ret);
 	addOptimizationOption(ret);
 	addLanguageStandard(ret, specialization);
@@ -155,10 +167,10 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 
 	addPchInclude(ret);
 
-	ret.push_back(getPathCommand("/Fo", outputFile));
-
 	ret.push_back("/c");
 	ret.push_back(inputFile);
+
+	ret.push_back(getPathCommand("/Fo", outputFile));
 
 	return ret;
 }

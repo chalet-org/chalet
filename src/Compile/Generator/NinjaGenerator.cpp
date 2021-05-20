@@ -103,8 +103,15 @@ std::string NinjaGenerator::getContents(const std::string& inPath) const
 
 	auto recipes = String::join(m_targetRecipes);
 
+	std::string msvcDepsPrefix;
+	if (Environment::isMsvc())
+	{
+		msvcDepsPrefix = "msvc_deps_prefix = Note: including file:";
+	}
+
 	std::string ninjaTemplate = fmt::format(R"ninja(
 builddir = {cacheDir}
+{msvcDepsPrefix}
 {recipes}
 
 build makebuild: phony
@@ -112,6 +119,7 @@ build makebuild: phony
 default makebuild
 )ninja",
 		fmt::arg("cacheDir", inPath),
+		FMT_ARG(msvcDepsPrefix),
 		FMT_ARG(recipes));
 
 	return ninjaTemplate;
@@ -151,6 +159,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 
 	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+
 	std::string rules = getPchBuildRule(pchTarget);
 	rules += '\n';
 
@@ -183,9 +192,15 @@ std::string NinjaGenerator::getPchRule()
 	{
 		const auto deps = getRuleDeps();
 		const auto& depDir = m_state.paths.depDir();
-		const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+		const auto dependency = fmt::format("{}/$in.d", depDir);
 
-		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", "$out", m_generateDependencies, dependency));
+		const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+
+		// Have to pass in pchTarget here because MSVC's PCH compile command is wack
+		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", pchTarget, m_generateDependencies, dependency));
+
+		// TODO: Unique to each PCH
 
 		ret = fmt::format(R"ninja(
 rule pch_{hash}
@@ -264,8 +279,8 @@ std::string NinjaGenerator::getCppRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+	// const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
@@ -296,8 +311,8 @@ std::string NinjaGenerator::getObjcRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+	// const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
@@ -328,8 +343,8 @@ std::string NinjaGenerator::getObjcppRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+	// const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
