@@ -32,7 +32,7 @@ else
 	cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	# cmake -E time make -j8
 	# make -j8
-	cmake --build . -j 16
+	cmake --build . -j 16 -- --no-print-directory
 fi
 
 EXIT_CODE=$?
