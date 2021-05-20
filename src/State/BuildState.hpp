@@ -17,6 +17,9 @@
 #include "State/BuildCache.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CommandLineInputs.hpp"
+#if defined(CHALET_WIN32)
+	#include "Terminal/MsvcEnvironment.hpp"
+#endif
 
 namespace chalet
 {
@@ -32,6 +35,9 @@ public:
 	CompilerTools compilerTools;
 	WorkspaceInfo info;
 	BuildEnvironment environment;
+#if defined(CHALET_WIN32)
+	MsvcEnvironment msvcEnvironment;
+#endif
 	BuildPaths paths;
 	ConfigurationOptions configuration;
 	ProjectConfigurationList projects;

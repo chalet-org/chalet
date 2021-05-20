@@ -65,8 +65,36 @@ bool MsvcEnvironment::readCompilerVariables()
 		Environment::set(name.c_str(), var);
 	}
 
+	{
+		auto include = m_variables.find("INCLUDE");
+		if (include != m_variables.end())
+		{
+			String::replaceAll(include->second, "\\", "/");
+			m_include = String::split(include->second, ";");
+		}
+
+		auto lib = m_variables.find("LIB");
+		if (lib != m_variables.end())
+		{
+			String::replaceAll(include->second, "\\", "/");
+			m_lib = String::split(lib->second, ";");
+		}
+	}
+
 #endif
 	return true;
+}
+
+/*****************************************************************************/
+const StringList& MsvcEnvironment::include() const noexcept
+{
+	return m_include;
+}
+
+/*****************************************************************************/
+const StringList& MsvcEnvironment::lib() const noexcept
+{
+	return m_lib;
 }
 
 /*****************************************************************************/

@@ -19,6 +19,9 @@ public:
 
 	bool readCompilerVariables();
 
+	const StringList& include() const noexcept;
+	const StringList& lib() const noexcept;
+
 private:
 	bool setVariableToPath(const char* inName);
 	bool saveOriginalEnvironment();
@@ -32,7 +35,10 @@ private:
 	std::string m_varsFileMsvcDelta{ "build/variables_msvc_delta.txt" };
 
 	std::string m_vsAppIdDir;
+
 #endif
+	StringList m_include;
+	StringList m_lib;
 };
 }
 

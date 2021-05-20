@@ -574,14 +574,20 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 	if (!inAbstract)
 	{
-		outProject.parseOutputFilename(Environment::isMsvc());
+		const bool isMsvc = Environment::isMsvc();
+		outProject.parseOutputFilename(isMsvc);
 
 		auto language = outProject.language();
 		auto& compilerConfig = m_state.compilerTools.getConfig(language);
-		std::string libDir = compilerConfig.compilerPathLib();
-		std::string includeDir = compilerConfig.compilerPathInclude();
-		outProject.addLibDir(libDir);
-		outProject.addIncludeDir(includeDir);
+
+		if (!isMsvc)
+		{
+			std::string libDir = compilerConfig.compilerPathLib();
+			outProject.addLibDir(libDir);
+
+			std::string includeDir = compilerConfig.compilerPathInclude();
+			outProject.addIncludeDir(includeDir);
+		}
 	}
 
 	// Resolve links from projects

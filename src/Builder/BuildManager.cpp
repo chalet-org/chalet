@@ -66,11 +66,10 @@ bool BuildManager::run(const Route inRoute)
 	bool runCommand = inRoute == Route::Run;
 	m_runProjectName = getRunProject();
 
+#if defined(CHALET_WIN32)
 	if (Environment::isMsvc())
-	{
-		MsvcEnvironment msvcEnvironment;
-		msvcEnvironment.readCompilerVariables();
-	}
+		m_state.msvcEnvironment.readCompilerVariables();
+#endif
 
 	auto strategy = m_state.environment.strategy();
 	if (!runCommand)

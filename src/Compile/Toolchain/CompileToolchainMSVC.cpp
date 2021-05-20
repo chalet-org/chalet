@@ -295,7 +295,7 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 {
 	// outArgList.push_back("/X"); // ignore "Path"
 
-	const std::string prefix = "/I";
+	const std::string option{ "/I" };
 
 	for (const auto& dir : m_project.includeDirs())
 	{
@@ -303,7 +303,7 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 		if (String::endsWith('/', outDir))
 			outDir.pop_back();
 
-		outArgList.push_back(fmt::format("{}\"{}\"", prefix, outDir));
+		outArgList.push_back(getPathCommand(option, outDir));
 	}
 
 	for (const auto& dir : m_project.locations())
@@ -312,7 +312,12 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 		if (String::endsWith('/', outDir))
 			outDir.pop_back();
 
-		outArgList.push_back(fmt::format("{}\"{}\"", prefix, outDir));
+		outArgList.push_back(getPathCommand(option, outDir));
+	}
+
+	for (const auto& dir : m_state.msvcEnvironment.include())
+	{
+		outArgList.push_back(getPathCommand(option, dir));
 	}
 }
 
@@ -578,12 +583,18 @@ void CompileToolchainMSVC::addWholeProgramOptimization(StringList& outArgList) c
 /*****************************************************************************/
 void CompileToolchainMSVC::addLibDirs(StringList& outArgList) const
 {
+	std::string option{ "/LIBPATH:" };
 	for (const auto& dir : m_project.libDirs())
 	{
-		outArgList.push_back(getPathCommand("/LIBPATH:", dir));
+		outArgList.push_back(getPathCommand(option, dir));
 	}
 
-	outArgList.push_back(getPathCommand("/LIBPATH:", m_state.paths.buildOutputDir()));
+	outArgList.push_back(getPathCommand(option, m_state.paths.buildOutputDir()));
+
+	for (const auto& dir : m_state.msvcEnvironment.lib())
+	{
+		outArgList.push_back(getPathCommand(option, dir));
+	}
 }
 
 /*****************************************************************************/
