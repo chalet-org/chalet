@@ -18,8 +18,9 @@ ProfilerRunner::ProfilerRunner(BuildState& inState, const ProjectConfiguration& 
 	m_project(inProject),
 	m_cleanOutput(inCleanOutput)
 {
-	// inState.tools.fetchXcodeVersion();
-	// m_state.tools.fetchXcodeGenVersion();
+#if defined(CHALET_MACOS)
+	inState.tools.fetchXcodeVersion();
+#endif
 }
 
 /*****************************************************************************/

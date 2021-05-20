@@ -9,9 +9,9 @@
 #include "Libraries/WindowsApi.hpp"
 #include "Utility/String.hpp"
 
-#ifdef CHALET_WIN32
+#if defined(CHALET_WIN32)
 	#include <tlhelp32.h>
-#elif CHALET_MACOS
+#elif defined(CHALET_MACOS)
 	#include <sys/types.h>
 	#include <unistd.h>
 	#include <sys/proc_info.h>
@@ -81,7 +81,7 @@ std::string getParentProcessPath()
 	std::string name;
 	if (pid > 0)
 	{
-	#if CHALET_MACOS
+	#if defined(CHALET_MACOS)
 		std::array<char, PROC_PIDPATHINFO_MAXSIZE> pathBuffer;
 		pathBuffer.fill(0);
 		proc_pidpath(pid, pathBuffer.data(), pathBuffer.size());
