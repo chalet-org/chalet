@@ -20,6 +20,7 @@ struct ProjectConfiguration
 
 	bool isExecutable() const noexcept;
 	bool isSharedLibrary() const noexcept;
+	bool isStaticLibrary() const noexcept;
 
 	const StringList& fileExtensions() const noexcept;
 	void addFileExtensions(StringList& inList);
@@ -57,6 +58,7 @@ struct ProjectConfiguration
 	void addWarning(std::string& inValue);
 	void setWarningPreset(const std::string& inValue);
 	ProjectWarnings warningsPreset() const noexcept;
+	bool warningsTreatedAsErrors() const noexcept;
 
 	bool includeInBuild() const noexcept;
 	void setIncludeInBuild(const bool inValue);
@@ -80,7 +82,7 @@ struct ProjectConfiguration
 	//
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
-	void parseOutputFilename() noexcept;
+	void parseOutputFilename(const bool inWindowsMsvc = false) noexcept;
 
 	const std::string& outputFile() const noexcept;
 

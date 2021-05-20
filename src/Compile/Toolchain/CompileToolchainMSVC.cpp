@@ -82,6 +82,7 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
+	addWholeProgramOptimization(ret);
 
 	addDefines(ret);
 	addIncludes(ret);
@@ -143,6 +144,7 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
+	addWholeProgramOptimization(ret);
 
 	addDebuggingInformationOption(ret);
 
@@ -171,7 +173,7 @@ StringList CompileToolchainMSVC::getLinkerTargetCommand(const std::string& outpu
 	}
 	else if (kind == ProjectKind::StaticLibrary)
 	{
-		return getStaticLibTargetCommand(outputFile, sourceObjs);
+		return getStaticLibTargetCommand(outputFile, sourceObjs, outputFileBase);
 	}
 	else
 	{
@@ -190,14 +192,40 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
+StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFile, sourceObjs);
 
-	return {
-		"echo",
-		outputFile
-	};
+	chalet_assert(!outputFile.empty(), "");
+
+	StringList ret;
+
+	auto& lib = m_state.compilerTools.archiver();
+	ret.push_back(fmt::format("\"{}\"", lib));
+	ret.push_back("/NOLOGO");
+
+	if (m_state.configuration.linkTimeOptimization())
+	{
+		// combines w/ /GL - I think this is basically part of MS's link-time optimization
+		ret.push_back("/LTCG");
+	}
+
+	if (m_project.warningsTreatedAsErrors())
+		ret.push_back("/WX");
+
+	// const auto& objDir = m_state.paths.objDir();
+	// ret.push_back(fmt::format("/DEF:{}/{}.def", objDir, outputFileBase));
+	UNUSED(outputFileBase);
+
+	// TODO: /SUBSYSTEM
+	// TODO: /MACHINE - target platform arch
+	ret.push_back("/MACHINE:x64");
+
+	ret.push_back(fmt::format("/OUT:{}", outputFile));
+
+	addSourceObjects(ret, sourceObjs);
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -487,6 +515,15 @@ void CompileToolchainMSVC::addThreadModelCompileOption(StringList& inArgList) co
 }
 
 /*****************************************************************************/
+void CompileToolchainMSVC::addWholeProgramOptimization(StringList& inArgList) const
+{
+	if (m_state.configuration.linkTimeOptimization())
+	{
+		inArgList.push_back("/GL");
+	}
+}
+
+/*****************************************************************************/
 // void addLibDirs(StringList& inArgList);
 
 std::string CompileToolchainMSVC::getPathCommand(std::string_view inCmd, const std::string& inPath) const
@@ -495,6 +532,15 @@ std::string CompileToolchainMSVC::getPathCommand(std::string_view inCmd, const s
 		return fmt::format("{}\"{}\"", inCmd, inPath);
 	else
 		return fmt::format("{}{}", inCmd, inPath);
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addSourceObjects(StringList& inArgList, const StringList& sourceObjs) const
+{
+	for (auto& source : sourceObjs)
+	{
+		inArgList.push_back(source);
+	}
 }
 
 }

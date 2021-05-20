@@ -354,12 +354,15 @@ std::string NinjaGenerator::getLinkRule()
 
 	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand("$out", { "$in" }, targetBasename));
 
+	const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+
 	ret = fmt::format(R"ninja(
 rule link_{hash}
-  description = Linking $out
+  description = {description} $out
   command = {linkerCommand}
 )ninja",
 		fmt::arg("hash", m_hash),
+		FMT_ARG(description),
 		FMT_ARG(linkerCommand));
 
 	return ret;

@@ -270,7 +270,9 @@ std::string MakefileGeneratorGNU::getCompileEchoLinker() const
 	if (m_cleanOutput)
 	{
 		const auto arrow = unicodeRightwardsTripleArrow();
-		printer = getPrinter(fmt::format("{blue}{arrow}  Linking $@", FMT_ARG(blue), FMT_ARG(arrow)), true);
+		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+
+		printer = getPrinter(fmt::format("{blue}{arrow}  {description} $@", FMT_ARG(blue), FMT_ARG(arrow), FMT_ARG(description)), true);
 	}
 	else
 	{

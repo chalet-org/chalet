@@ -42,15 +42,18 @@ private:
 	virtual void addCompileOptions(StringList& inArgList) const final;
 	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList) const final;
 	virtual void addThreadModelCompileOption(StringList& inArgList) const final;
+	void addWholeProgramOptimization(StringList& inArgList) const;
 
 	// Linking
 	// virtual void addLibDirs(StringList& inArgList) final;
 
 	StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
-	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 
 	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;
+
+	void addSourceObjects(StringList& inArgList, const StringList& sourceObjs) const;
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

@@ -11,15 +11,14 @@ namespace chalet
 enum class ProjectWarnings : ushort
 {
 	None,
+	Custom,
 	Minimal,
 	Extra,
 	Error,
 	Pedantic,
 	Strict,
 	StrictPedantic,
-	VeryStrict,
-	//
-	Custom
+	VeryStrict
 };
 }
 

@@ -145,7 +145,10 @@ std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& file
 		//   so both them and the symbol are taken out since
 
 		// const auto arrow = Unicode::rightwardsTripleArrow();
-		printer = getPrinter(fmt::format("{blue}Linking {file}", FMT_ARG(blue), FMT_ARG(file)));
+
+		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+
+		printer = getPrinter(fmt::format("{blue}{description} {file}", FMT_ARG(blue), FMT_ARG(description), FMT_ARG(file)));
 	}
 	else
 	{

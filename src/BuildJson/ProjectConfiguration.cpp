@@ -38,10 +38,14 @@ bool ProjectConfiguration::isExecutable() const noexcept
 	return m_kind == ProjectKind::ConsoleApplication || m_kind == ProjectKind::DesktopApplication;
 }
 
-/*****************************************************************************/
 bool ProjectConfiguration::isSharedLibrary() const noexcept
 {
 	return m_kind == ProjectKind::SharedLibrary;
+}
+
+bool ProjectConfiguration::isStaticLibrary() const noexcept
+{
+	return m_kind == ProjectKind::StaticLibrary;
 }
 
 /*****************************************************************************/
@@ -247,6 +251,12 @@ void ProjectConfiguration::setWarningPreset(const std::string& inValue)
 ProjectWarnings ProjectConfiguration::warningsPreset() const noexcept
 {
 	return m_warningsPreset;
+}
+
+/*****************************************************************************/
+bool ProjectConfiguration::warningsTreatedAsErrors() const noexcept
+{
+	return static_cast<int>(m_warningsPreset) >= static_cast<int>(ProjectWarnings::Error);
 }
 
 /*****************************************************************************/
@@ -739,7 +749,7 @@ ProjectKind ProjectConfiguration::parseProjectKind(const std::string& inValue)
 }
 
 /*****************************************************************************/
-void ProjectConfiguration::parseOutputFilename() noexcept
+void ProjectConfiguration::parseOutputFilename(const bool inWindowsMsvc) noexcept
 {
 	chalet_assert(!m_name.empty(), "m_name is blank");
 
@@ -762,8 +772,19 @@ void ProjectConfiguration::parseOutputFilename() noexcept
 	std::string execLib = ".so";
 #endif
 
+#if !defined(CHALET_WIN32)
+	UNUSED(inWindowsMsvc);
+#endif
+
 	if (staticLib)
-		execLib = "-s.a";
+	{
+#if defined(CHALET_WIN32)
+		if (inWindowsMsvc)
+			execLib = ".lib";
+		else
+#endif
+			execLib = "-s.a";
+	}
 
 	switch (m_kind)
 	{

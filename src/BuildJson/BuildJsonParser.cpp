@@ -562,7 +562,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 				// If it's a cmake project, ignore everything else and return
 				if (cmakeResult)
 				{
-					outProject.parseOutputFilename();
+					outProject.parseOutputFilename(Environment::isMsvc());
 					return true;
 				}
 			}
@@ -574,7 +574,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 	if (!inAbstract)
 	{
-		outProject.parseOutputFilename();
+		outProject.parseOutputFilename(Environment::isMsvc());
 
 		auto language = outProject.language();
 		auto& compilerConfig = m_state.compilerTools.getConfig(language);

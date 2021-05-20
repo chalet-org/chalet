@@ -372,9 +372,11 @@ CompileStrategyNative::Command CompileStrategyNative::getLinkCommand(const std::
 
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 
+	const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+
 	Command ret;
 	ret.command = m_toolchain->getLinkerTargetCommand(inTarget, inObjects, targetBasename);
-	ret.output = fmt::format("Linking {}", inTarget);
+	ret.output = fmt::format("{} {}", description, inTarget);
 
 	return ret;
 }
