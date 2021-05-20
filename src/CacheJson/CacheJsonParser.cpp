@@ -143,7 +143,7 @@ bool CacheJsonParser::setDefaultBuildStrategy()
 	Json& strategyJson = environmentCache.json[kKeyStrategy];
 	const auto strategy = strategyJson.get<std::string>();
 
-	if (strategy.empty())
+	if (strategy.empty() || m_changeStrategy)
 	{
 		if (Environment::isContinuousIntegrationServer())
 		{
@@ -199,6 +199,7 @@ bool CacheJsonParser::makeCache()
 		{
 			// Note: this is only for validation. it gets changed later
 			strategyJson = "makefile";
+			m_changeStrategy = true;
 		}
 	}
 

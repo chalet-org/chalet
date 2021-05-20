@@ -79,6 +79,8 @@ private:
 	const std::string kKeyXcrun = "xcrun";
 
 	std::string m_make;
+
+	bool m_changeStrategy = false;
 };
 }
 
