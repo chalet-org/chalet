@@ -177,7 +177,7 @@ StringList CompileToolchainMSVC::getLinkerTargetCommand(const std::string& outpu
 	}
 	else
 	{
-		return getExecutableTargetCommand(outputFile, sourceObjs);
+		return getExecutableTargetCommand(outputFile, sourceObjs, outputFileBase);
 	}
 }
 
@@ -186,8 +186,7 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 {
 	UNUSED(outputFile, sourceObjs);
 	return {
-		"echo",
-		outputFile
+		"prompt"
 	};
 }
 
@@ -196,7 +195,7 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 {
 	UNUSED(outputFile, sourceObjs);
 
-	chalet_assert(!outputFile.empty(), "");
+	chalet_assert(!outputFile.empty() && sourceObjs.size() > 0, "");
 
 	StringList ret;
 
@@ -229,19 +228,58 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
+StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFile, sourceObjs);
-	return {
-		"echo",
-		outputFile
-	};
+
+	chalet_assert(!outputFile.empty() && sourceObjs.size() > 0, "");
+
+	StringList ret;
+
+	auto& link = m_state.compilerTools.linker();
+	ret.push_back(fmt::format("\"{}\"", link));
+	ret.push_back("/NOLOGO");
+
+	const bool debugSymbols = m_state.configuration.debugSymbols();
+
+	if (m_state.configuration.linkTimeOptimization())
+	{
+		// combines w/ /GL - I think this is basically part of MS's link-time optimization
+		ret.push_back("/LTCG");
+
+		if (debugSymbols)
+			ret.push_back("/OPT:NOREF,NOICF,NOLBR");
+		else
+			ret.push_back("/OPT:REF,ICF,LBR");
+
+		// OPT:LBR - relates to arm binaries
+	}
+
+	addLibDirs(ret);
+
+	if (debugSymbols)
+	{
+		const auto& objDir = m_state.paths.objDir();
+		ret.push_back(fmt::format("/PDB:{}/{}.pdb", objDir, outputFileBase));
+	}
+
+	// TODO: /SUBSYSTEM
+	// TODO: /MACHINE - target platform arch
+	ret.push_back("/MACHINE:x64");
+
+	ret.push_back(fmt::format("/OUT:{}", outputFile));
+
+	addPrecompiledHeaderLink(ret);
+	addSourceObjects(ret, sourceObjs);
+	addLinks(ret);
+
+	return ret;
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addIncludes(StringList& inArgList) const
+void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 {
-	// inArgList.push_back("/X"); // ignore "Path"
+	// outArgList.push_back("/X"); // ignore "Path"
 
 	const std::string prefix = "/I";
 
@@ -251,7 +289,7 @@ void CompileToolchainMSVC::addIncludes(StringList& inArgList) const
 		if (String::endsWith('/', outDir))
 			outDir.pop_back();
 
-		inArgList.push_back(fmt::format("{}\"{}\"", prefix, outDir));
+		outArgList.push_back(fmt::format("{}\"{}\"", prefix, outDir));
 	}
 
 	for (const auto& dir : m_project.locations())
@@ -260,105 +298,105 @@ void CompileToolchainMSVC::addIncludes(StringList& inArgList) const
 		if (String::endsWith('/', outDir))
 			outDir.pop_back();
 
-		inArgList.push_back(fmt::format("{}\"{}\"", prefix, outDir));
+		outArgList.push_back(fmt::format("{}\"{}\"", prefix, outDir));
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addWarnings(StringList& inArgList) const
+void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
 {
 	// TODO: ProjectWarnings::Custom would need to convert GNU warnings to MSVC warning codes
 
 	switch (m_project.warningsPreset())
 	{
 		case ProjectWarnings::Minimal:
-			inArgList.push_back("/W1");
+			outArgList.push_back("/W1");
 			break;
 
 		case ProjectWarnings::Extra:
-			inArgList.push_back("/W2");
+			outArgList.push_back("/W2");
 			break;
 
 		case ProjectWarnings::Error: {
-			inArgList.push_back("/W2");
-			inArgList.push_back("/WX");
+			outArgList.push_back("/W2");
+			outArgList.push_back("/WX");
 			break;
 		}
 		case ProjectWarnings::Pedantic: {
-			inArgList.push_back("/W3");
-			inArgList.push_back("/WX");
+			outArgList.push_back("/W3");
+			outArgList.push_back("/WX");
 			break;
 		}
 		case ProjectWarnings::Strict:
 		case ProjectWarnings::StrictPedantic: {
-			inArgList.push_back("/W4");
-			inArgList.push_back("/WX");
+			outArgList.push_back("/W4");
+			outArgList.push_back("/WX");
 			break;
 		}
 		case ProjectWarnings::VeryStrict: {
-			inArgList.push_back("/Wall");
-			inArgList.push_back("/WX");
+			outArgList.push_back("/Wall");
+			outArgList.push_back("/WX");
 			break;
 		}
 
 		case ProjectWarnings::Custom:
 		case ProjectWarnings::None:
 		default:
-			inArgList.push_back("/W3");
+			outArgList.push_back("/W3");
 			break;
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addDefines(StringList& inArgList) const
+void CompileToolchainMSVC::addDefines(StringList& outArgList) const
 {
 	const std::string prefix = "/D";
 	for (auto& define : m_project.defines())
 	{
-		inArgList.push_back(prefix + define);
+		outArgList.push_back(prefix + define);
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addResourceDefines(StringList& inArgList) const
+void CompileToolchainMSVC::addResourceDefines(StringList& outArgList) const
 {
 	const std::string prefix = "/d";
 	for (auto& define : m_project.defines())
 	{
-		inArgList.push_back(prefix + define);
+		outArgList.push_back(prefix + define);
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addExceptionHandlingModel(StringList& inArgList) const
+void CompileToolchainMSVC::addExceptionHandlingModel(StringList& outArgList) const
 {
 	// /EH - Exception handling model
 	// s - standard C++ stack unwinding
 	// c - functions declared as extern "C" never throw
 
-	inArgList.push_back("/EHsc");
+	outArgList.push_back("/EHsc");
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addPchInclude(StringList& inArgList) const
+void CompileToolchainMSVC::addPchInclude(StringList& outArgList) const
 {
 	// TODO: Potential for more than one pch?
 	if (m_project.usesPch())
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project);
 
-		inArgList.push_back(getPathCommand("/Yu", m_pchMinusLocation));
+		outArgList.push_back(getPathCommand("/Yu", m_pchMinusLocation));
 
 		// /Fp specifies the location of the PCH object file
-		inArgList.push_back(getPathCommand("/Fp", objDirPch));
+		outArgList.push_back(getPathCommand("/Fp", objDirPch));
 
 		// /FI force-includes the PCH source file so one doesn't need to use the #include directive in every file
-		inArgList.push_back(getPathCommand("/FI", m_pchMinusLocation));
+		outArgList.push_back(getPathCommand("/FI", m_pchMinusLocation));
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addOptimizationOption(StringList& inArgList) const
+void CompileToolchainMSVC::addOptimizationOption(StringList& outArgList) const
 {
 	std::string opt;
 	auto& configuration = m_state.configuration;
@@ -416,11 +454,11 @@ void CompileToolchainMSVC::addOptimizationOption(StringList& inArgList) const
 	if (opt.empty())
 		return;
 
-	inArgList.push_back(std::move(opt));
+	outArgList.push_back(std::move(opt));
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const
+void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
 {
 	if (specialization == CxxSpecialization::C)
 	{
@@ -434,11 +472,11 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& inArgList, const CxxS
 			|| String::equals(langStandard, "iso9899:2018")
 			|| String::equals(langStandard, "iso9899:2017"))
 		{
-			inArgList.push_back("/std:c17");
+			outArgList.push_back("/std:c17");
 		}
 		else
 		{
-			inArgList.push_back("/std:c11");
+			outArgList.push_back("/std:c11");
 		}
 	}
 	else if (specialization == CxxSpecialization::Cpp)
@@ -449,47 +487,47 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& inArgList, const CxxS
 			|| String::equals(langStandard, "gnu++20")
 			|| String::equals(langStandard, "gnu++2a"))
 		{
-			inArgList.push_back("/std:c++latest");
+			outArgList.push_back("/std:c++latest");
 		}
 		else if (String::equals(langStandard, "c++17")
 			|| String::equals(langStandard, "c++1z")
 			|| String::equals(langStandard, "gnu++17")
 			|| String::equals(langStandard, "gnu++1z"))
 		{
-			inArgList.push_back("/std:c++17");
+			outArgList.push_back("/std:c++17");
 		}
 		else
 		{
-			inArgList.push_back("/std:c++14");
+			outArgList.push_back("/std:c++14");
 		}
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addDebuggingInformationOption(StringList& inArgList) const
+void CompileToolchainMSVC::addDebuggingInformationOption(StringList& outArgList) const
 {
 	// TODO! - pdb files etc
 	// /Zi /ZI /debug
-	UNUSED(inArgList);
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addCompileOptions(StringList& inArgList) const
+void CompileToolchainMSVC::addCompileOptions(StringList& outArgList) const
 {
-	UNUSED(inArgList);
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addNoRunTimeTypeInformationOption(StringList& inArgList) const
+void CompileToolchainMSVC::addNoRunTimeTypeInformationOption(StringList& outArgList) const
 {
 	if (!m_project.rtti())
 	{
-		List::addIfDoesNotExist(inArgList, "/GR-");
+		List::addIfDoesNotExist(outArgList, "/GR-");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addThreadModelCompileOption(StringList& inArgList) const
+void CompileToolchainMSVC::addThreadModelCompileOption(StringList& outArgList) const
 {
 	// /MD - multithreaded dll
 	// /MDd - debug multithreaded dll
@@ -498,34 +536,72 @@ void CompileToolchainMSVC::addThreadModelCompileOption(StringList& inArgList) co
 
 	// TODO: at the moment, assumes threaded
 
-	if (m_project.isExecutable())
+	if (m_project.isSharedLibrary())
 	{
 		if (m_state.configuration.debugSymbols())
-			inArgList.push_back("/MTd");
+			outArgList.push_back("/MDd");
 		else
-			inArgList.push_back("/MT");
+			outArgList.push_back("/MD");
 	}
 	else
 	{
 		if (m_state.configuration.debugSymbols())
-			inArgList.push_back("/MDd");
+			outArgList.push_back("/MTd");
 		else
-			inArgList.push_back("/MD");
+			outArgList.push_back("/MT");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addWholeProgramOptimization(StringList& inArgList) const
+void CompileToolchainMSVC::addWholeProgramOptimization(StringList& outArgList) const
 {
 	if (m_state.configuration.linkTimeOptimization())
 	{
-		inArgList.push_back("/GL");
+		outArgList.push_back("/GL");
 	}
 }
 
 /*****************************************************************************/
-// void addLibDirs(StringList& inArgList);
+void CompileToolchainMSVC::addLibDirs(StringList& outArgList) const
+{
+	for (const auto& dir : m_project.libDirs())
+	{
+		outArgList.push_back(getPathCommand("/LIBPATH:", dir));
+	}
 
+	outArgList.push_back(getPathCommand("/LIBPATH:", m_state.paths.buildOutputDir()));
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addLinks(StringList& outArgList) const
+{
+	const std::string suffix{ ".lib" };
+	const bool hasStaticLinks = m_project.staticLinks().size() > 0;
+	const bool hasDynamicLinks = m_project.links().size() > 0;
+
+	UNUSED(hasDynamicLinks);
+
+	if (hasStaticLinks)
+	{
+		for (auto& project : m_state.projects)
+		{
+			auto& name = project->name();
+			if (List::contains(m_project.projectStaticLinks(), name))
+			{
+				outArgList.push_back(fmt::format("lib{}-s.lib", name));
+			}
+		}
+	}
+
+	// if (hasDynamicLinks)
+	// {
+	// 	for (auto& link : m_project.links())
+	// 	{
+	// 	}
+	// }
+}
+
+/*****************************************************************************/
 std::string CompileToolchainMSVC::getPathCommand(std::string_view inCmd, const std::string& inPath) const
 {
 	if (m_quotePaths)
@@ -535,11 +611,26 @@ std::string CompileToolchainMSVC::getPathCommand(std::string_view inCmd, const s
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addSourceObjects(StringList& inArgList, const StringList& sourceObjs) const
+void CompileToolchainMSVC::addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const
 {
 	for (auto& source : sourceObjs)
 	{
-		inArgList.push_back(source);
+		outArgList.push_back(source);
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addPrecompiledHeaderLink(StringList outArgList) const
+{
+	if (m_project.usesPch())
+	{
+		const auto& objDir = m_state.paths.objDir();
+		const auto& pch = m_project.pch();
+		std::string pchObject = fmt::format("{}/{}.obj", objDir, pch);
+		std::string pchInclude = fmt::format("{}/{}.pch", objDir, pch);
+
+		outArgList.push_back(std::move(pchObject));
+		outArgList.push_back(std::move(pchInclude));
 	}
 }
 

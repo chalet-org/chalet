@@ -23,22 +23,22 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 	virtual StringList getLinkExclusions() const override;
 
 	// Compile
-	virtual void addProfileInformationCompileOption(StringList& inArgList) const override;
-	virtual void addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) const override;
-	virtual void addPositionIndependentCodeOption(StringList& inArgList) const override;
-	virtual void addThreadModelCompileOption(StringList& inArgList) const override;
+	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;
+	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const override;
+	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
+	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 
 	// Linking
-	virtual void addStripSymbolsOption(StringList& inArgList) const override;
-	virtual void addLinkerScripts(StringList& inArgList) const override;
-	virtual void addLibStdCppLinkerOption(StringList& inArgList) const override;
-	virtual void addStaticCompilerLibraryOptions(StringList& inArgList) const override;
-	virtual void addPlatformGuiApplicationFlag(StringList& inArgList) const override;
+	virtual void addStripSymbolsOption(StringList& outArgList) const override;
+	virtual void addLinkerScripts(StringList& outArgList) const override;
+	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;
+	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const override;
+	virtual void addPlatformGuiApplicationFlag(StringList& outArgList) const override;
 
 	// Linking (Misc)
-	virtual void startStaticLinkGroup(StringList& inArgList) const override;
-	virtual void endStaticLinkGroup(StringList& inArgList) const override;
-	virtual void startExplicitDynamicLinkGroup(StringList& inArgList) const override;
+	virtual void startStaticLinkGroup(StringList& outArgList) const override;
+	virtual void endStaticLinkGroup(StringList& outArgList) const override;
+	virtual void startExplicitDynamicLinkGroup(StringList& outArgList) const override;
 };
 }
 

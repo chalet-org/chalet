@@ -375,31 +375,31 @@ StringList CompileToolchainGNU::getLinkExclusions() const
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addSourceObjects(StringList& inArgList, const StringList& sourceObjs) const
+void CompileToolchainGNU::addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const
 {
 	for (auto& source : sourceObjs)
 	{
-		inArgList.push_back(source);
+		outArgList.push_back(source);
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addIncludes(StringList& inArgList) const
+void CompileToolchainGNU::addIncludes(StringList& outArgList) const
 {
 	const std::string prefix{ "-I" };
 	for (const auto& dir : m_project.includeDirs())
 	{
 		if (m_quotePaths)
-			inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
+			outArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
 		else
-			inArgList.push_back(prefix + dir);
+			outArgList.push_back(prefix + dir);
 	}
 	for (const auto& dir : m_project.locations())
 	{
 		if (m_quotePaths)
-			inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
+			outArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
 		else
-			inArgList.push_back(prefix + dir);
+			outArgList.push_back(prefix + dir);
 	}
 
 #if !defined(CHALET_WIN32)
@@ -409,23 +409,23 @@ void CompileToolchainGNU::addIncludes(StringList& inArgList) const
 		localInclude += "\"/usr/local/include/\"";
 	else
 		localInclude += "/usr/local/include/";
-	List::addIfDoesNotExist(inArgList, std::move(localInclude));
+	List::addIfDoesNotExist(outArgList, std::move(localInclude));
 #endif
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLibDirs(StringList& inArgList) const
+void CompileToolchainGNU::addLibDirs(StringList& outArgList) const
 {
 	const std::string prefix{ "-L" };
 	for (const auto& dir : m_project.libDirs())
 	{
 		if (m_quotePaths)
-			inArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
+			outArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
 		else
-			inArgList.push_back(prefix + dir);
+			outArgList.push_back(prefix + dir);
 	}
 
-	inArgList.push_back(prefix + m_state.paths.buildOutputDir());
+	outArgList.push_back(prefix + m_state.paths.buildOutputDir());
 
 #if !defined(CHALET_WIN32)
 	// must be last
@@ -434,43 +434,43 @@ void CompileToolchainGNU::addLibDirs(StringList& inArgList) const
 		localLib += "\"/usr/local/lib/\"";
 	else
 		localLib += "/usr/local/lib/";
-	List::addIfDoesNotExist(inArgList, std::move(localLib));
+	List::addIfDoesNotExist(outArgList, std::move(localLib));
 #endif
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addWarnings(StringList& inArgList) const
+void CompileToolchainGNU::addWarnings(StringList& outArgList) const
 {
 	const std::string prefix{ "-W" };
 	for (auto& warning : m_project.warnings())
 	{
 		if (String::equals(warning, "pedantic-errors"))
 		{
-			inArgList.push_back("-" + warning);
+			outArgList.push_back("-" + warning);
 			continue;
 		}
-		inArgList.push_back(prefix + warning);
+		outArgList.push_back(prefix + warning);
 	}
 
 	if (m_project.usesPch())
 	{
 		std::string invalidPch = prefix + "invalid-pch";
-		List::addIfDoesNotExist(inArgList, std::move(invalidPch));
+		List::addIfDoesNotExist(outArgList, std::move(invalidPch));
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addDefines(StringList& inArgList) const
+void CompileToolchainGNU::addDefines(StringList& outArgList) const
 {
 	const std::string prefix{ "-D" };
 	for (auto& define : m_project.defines())
 	{
-		inArgList.push_back(prefix + define);
+		outArgList.push_back(prefix + define);
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLinks(StringList& inArgList) const
+void CompileToolchainGNU::addLinks(StringList& outArgList) const
 {
 	const std::string prefix{ "-l" };
 	const bool hasStaticLinks = m_project.staticLinks().size() > 0;
@@ -478,20 +478,20 @@ void CompileToolchainGNU::addLinks(StringList& inArgList) const
 
 	if (hasStaticLinks)
 	{
-		startStaticLinkGroup(inArgList);
+		startStaticLinkGroup(outArgList);
 
 		for (auto& staticLink : m_project.staticLinks())
 		{
-			inArgList.push_back(prefix + staticLink);
+			outArgList.push_back(prefix + staticLink);
 		}
 
-		endStaticLinkGroup(inArgList);
+		endStaticLinkGroup(outArgList);
 	}
 
 	if (hasDynamicLinks)
 	{
 		if (hasStaticLinks)
-			startExplicitDynamicLinkGroup(inArgList);
+			startExplicitDynamicLinkGroup(outArgList);
 
 		auto excludes = getLinkExclusions();
 
@@ -500,29 +500,29 @@ void CompileToolchainGNU::addLinks(StringList& inArgList) const
 			if (List::contains(excludes, link))
 				continue;
 
-			inArgList.push_back(prefix + link);
+			outArgList.push_back(prefix + link);
 		}
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addPchInclude(StringList& inArgList) const
+void CompileToolchainGNU::addPchInclude(StringList& outArgList) const
 {
 	// TODO: Potential for more than one pch?
 	if (m_project.usesPch())
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
 
-		inArgList.push_back("-include");
+		outArgList.push_back("-include");
 		if (m_quotePaths)
-			inArgList.push_back(fmt::format("\"{}\"", objDirPch));
+			outArgList.push_back(fmt::format("\"{}\"", objDirPch));
 		else
-			inArgList.push_back(objDirPch);
+			outArgList.push_back(objDirPch);
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addOptimizationOption(StringList& inArgList) const
+void CompileToolchainGNU::addOptimizationOption(StringList& outArgList) const
 {
 	std::string opt;
 	auto& configuration = m_state.configuration;
@@ -578,21 +578,21 @@ void CompileToolchainGNU::addOptimizationOption(StringList& inArgList) const
 	if (opt.empty())
 		return;
 
-	inArgList.push_back(std::move(opt));
+	outArgList.push_back(std::move(opt));
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addRunPath(StringList& inArgList) const
+void CompileToolchainGNU::addRunPath(StringList& outArgList) const
 {
 #if defined(CHALET_LINUX)
-	inArgList.push_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
+	outArgList.push_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
 #else
-	UNUSED(inArgList);
+	UNUSED(outArgList);
 #endif
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const
+void CompileToolchainGNU::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
 {
 	const bool useC = m_project.language() == CodeLanguage::C || specialization == CxxSpecialization::ObjectiveC;
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
@@ -605,116 +605,116 @@ void CompileToolchainGNU::addLanguageStandard(StringList& inArgList, const CxxSp
 	if (auto m = ctre::match<regex>(ret))
 	{
 		ret = "-std=" + ret;
-		inArgList.push_back(std::move(ret));
+		outArgList.push_back(std::move(ret));
 	}
 #else
 	static std::regex regex{ "^(((c|gnu)\\+\\+|gnu|c|iso9899:)(\\d[\\dzaxy]{1,3}|199409))$" };
 	if (std::regex_match(ret, regex))
 	{
 		ret = "-std=" + ret;
-		inArgList.push_back(std::move(ret));
+		outArgList.push_back(std::move(ret));
 	}
 #endif
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addDebuggingInformationOption(StringList& inArgList) const
+void CompileToolchainGNU::addDebuggingInformationOption(StringList& outArgList) const
 {
 	// TODO: Control debugging information level (g, g0-g3) from configurations
 	if (m_state.configuration.debugSymbols())
 	{
-		inArgList.push_back("-g3");
+		outArgList.push_back("-g3");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addProfileInformationCompileOption(StringList& inArgList) const
+void CompileToolchainGNU::addProfileInformationCompileOption(StringList& outArgList) const
 {
 	// TODO: gcc/clang distinction on mac?
 
 	if (m_state.configuration.enableProfiling())
 	{
 		if (!m_project.isSharedLibrary())
-			inArgList.push_back("-pg");
+			outArgList.push_back("-pg");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addCompileOptions(StringList& inArgList) const
+void CompileToolchainGNU::addCompileOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.compileOptions())
 	{
-		List::addIfDoesNotExist(inArgList, option);
+		List::addIfDoesNotExist(outArgList, option);
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addDiagnosticColorOption(StringList& inArgList) const
+void CompileToolchainGNU::addDiagnosticColorOption(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(inArgList, "-fdiagnostics-color=always");
+	List::addIfDoesNotExist(outArgList, "-fdiagnostics-color=always");
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) const
+void CompileToolchainGNU::addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
 {
-	UNUSED(inArgList, specialization);
+	UNUSED(outArgList, specialization);
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& inArgList) const
+void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(inArgList, "-fPIC");
+	List::addIfDoesNotExist(outArgList, "-fPIC");
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& inArgList) const
+void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& outArgList) const
 {
 	if (!m_project.rtti())
 	{
-		List::addIfDoesNotExist(inArgList, "-fno-rtti");
+		List::addIfDoesNotExist(outArgList, "-fno-rtti");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addThreadModelCompileOption(StringList& inArgList) const
+void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) const
 {
 	if (m_project.posixThreads())
 	{
-		List::addIfDoesNotExist(inArgList, "-pthread");
+		List::addIfDoesNotExist(outArgList, "-pthread");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addStripSymbolsOption(StringList& inArgList) const
+void CompileToolchainGNU::addStripSymbolsOption(StringList& outArgList) const
 {
 	if (m_state.configuration.stripSymbols())
 	{
-		inArgList.push_back("-s");
+		outArgList.push_back("-s");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLinkerOptions(StringList& inArgList) const
+void CompileToolchainGNU::addLinkerOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.linkerOptions())
 	{
-		inArgList.push_back(option);
+		outArgList.push_back(option);
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& inArgList) const
+void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& outArgList) const
 {
 	const bool enableProfiling = m_state.configuration.enableProfiling();
 	if (enableProfiling && m_project.isExecutable())
 	{
-		inArgList.push_back("-Wl,--allow-multiple-definition");
-		inArgList.push_back("-pg");
+		outArgList.push_back("-Wl,--allow-multiple-definition");
+		outArgList.push_back("-pg");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& inArgList) const
+void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& outArgList) const
 {
 	auto& configuration = m_state.configuration;
 	const bool enableProfiling = configuration.enableProfiling();
@@ -722,64 +722,64 @@ void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& inArgList) c
 
 	if (!enableProfiling && !debugSymbols && configuration.linkTimeOptimization())
 	{
-		List::addIfDoesNotExist(inArgList, "-flto");
+		List::addIfDoesNotExist(outArgList, "-flto");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addThreadModelLinkerOption(StringList& inArgList) const
+void CompileToolchainGNU::addThreadModelLinkerOption(StringList& outArgList) const
 {
 	if (m_project.posixThreads())
 	{
 		if (m_config.isMingw() && m_project.staticLinking())
 		{
-			inArgList.push_back("-Wl,-Bstatic");
-			inArgList.push_back("-lstdc++");
-			inArgList.push_back("-lpthread");
+			outArgList.push_back("-Wl,-Bstatic");
+			outArgList.push_back("-lstdc++");
+			outArgList.push_back("-lpthread");
 		}
 		else
 		{
-			List::addIfDoesNotExist(inArgList, "-pthread");
+			List::addIfDoesNotExist(outArgList, "-pthread");
 		}
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLinkerScripts(StringList& inArgList) const
+void CompileToolchainGNU::addLinkerScripts(StringList& outArgList) const
 {
 	const auto& linkerScript = m_project.linkerScript();
 	if (!linkerScript.empty())
 	{
-		inArgList.push_back("-T");
-		inArgList.push_back(linkerScript);
+		outArgList.push_back("-T");
+		outArgList.push_back(linkerScript);
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addLibStdCppLinkerOption(StringList& inArgList) const
+void CompileToolchainGNU::addLibStdCppLinkerOption(StringList& outArgList) const
 {
 	// Not used in GCC
-	UNUSED(inArgList);
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& inArgList) const
+void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& outArgList) const
 {
-	// List::addIfDoesNotExist(inArgList, "-libstdc++");
+	// List::addIfDoesNotExist(outArgList, "-libstdc++");
 
 	if (m_project.staticLinking())
 	{
-		List::addIfDoesNotExist(inArgList, "-static-libgcc");
-		List::addIfDoesNotExist(inArgList, "-static-libasan");
-		List::addIfDoesNotExist(inArgList, "-static-libtsan");
-		List::addIfDoesNotExist(inArgList, "-static-liblsan");
-		List::addIfDoesNotExist(inArgList, "-static-libubsan");
-		List::addIfDoesNotExist(inArgList, "-static-libstdc++");
+		List::addIfDoesNotExist(outArgList, "-static-libgcc");
+		List::addIfDoesNotExist(outArgList, "-static-libasan");
+		List::addIfDoesNotExist(outArgList, "-static-libtsan");
+		List::addIfDoesNotExist(outArgList, "-static-liblsan");
+		List::addIfDoesNotExist(outArgList, "-static-libubsan");
+		List::addIfDoesNotExist(outArgList, "-static-libstdc++");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& inArgList) const
+void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& outArgList) const
 {
 	if (m_config.isMingwGcc())
 	{
@@ -788,7 +788,7 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& inArgList) c
 		if (kind == ProjectKind::DesktopApplication && !debugSymbols)
 		{
 			// TODO: check other windows specific options
-			List::addIfDoesNotExist(inArgList, "-mwindows");
+			List::addIfDoesNotExist(outArgList, "-mwindows");
 		}
 	}
 }
@@ -797,54 +797,54 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& inArgList) c
 // Linking (Misc)
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainGNU::startStaticLinkGroup(StringList& inArgList) const
+void CompileToolchainGNU::startStaticLinkGroup(StringList& outArgList) const
 {
-	inArgList.push_back("-Wl,--copy-dt-needed-entries");
-	inArgList.push_back("-Wl,-Bstatic");
-	inArgList.push_back("-Wl,--start-group");
+	outArgList.push_back("-Wl,--copy-dt-needed-entries");
+	outArgList.push_back("-Wl,-Bstatic");
+	outArgList.push_back("-Wl,--start-group");
 }
 
-void CompileToolchainGNU::endStaticLinkGroup(StringList& inArgList) const
+void CompileToolchainGNU::endStaticLinkGroup(StringList& outArgList) const
 {
-	inArgList.push_back("-Wl,--end-group");
+	outArgList.push_back("-Wl,--end-group");
 }
 
-void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& inArgList) const
+void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& outArgList) const
 {
-	inArgList.push_back("-Wl,-Bdynamic");
+	outArgList.push_back("-Wl,-Bdynamic");
 }
 
 /*****************************************************************************/
 // Objective-C / Objective-C++
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainGNU::addObjectiveCxxLink(StringList& inArgList) const
+void CompileToolchainGNU::addObjectiveCxxLink(StringList& outArgList) const
 {
 	const std::string prefix{ "-l" };
 	if (m_project.objectiveCxx())
 	{
 		std::string objc = prefix + "objc";
-		List::addIfDoesNotExist(inArgList, std::move(objc));
+		List::addIfDoesNotExist(outArgList, std::move(objc));
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization) const
+void CompileToolchainGNU::addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
 {
 	// Used by AppleClang
-	UNUSED(inArgList, specialization);
+	UNUSED(outArgList, specialization);
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization) const
+void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const
 {
 	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
 	if (isObjCxx)
 	{
 #if defined(CHALET_MACOS)
-		List::addIfDoesNotExist(inArgList, "-fnext-runtime");
+		List::addIfDoesNotExist(outArgList, "-fnext-runtime");
 #else
-		List::addIfDoesNotExist(inArgList, "-fgnu-runtime");
+		List::addIfDoesNotExist(outArgList, "-fgnu-runtime");
 #endif
 	}
 }
@@ -853,19 +853,19 @@ void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& inArgList, co
 // MacOS
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainGNU::addMacosSysRootOption(StringList& inArgList) const
+void CompileToolchainGNU::addMacosSysRootOption(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
 	// TODO: Test Homebrew LLVM/GCC with this
-	inArgList.push_back("-isysroot");
-	inArgList.push_back(m_state.tools.macosSdk());
+	outArgList.push_back("-isysroot");
+	outArgList.push_back(m_state.tools.macosSdk());
 #else
-	UNUSED(inArgList);
+	UNUSED(outArgList);
 #endif
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addMacosFrameworkOptions(StringList& inArgList) const
+void CompileToolchainGNU::addMacosFrameworkOptions(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
 	// TODO: Test Homebrew LLVM/GCC with this
@@ -873,20 +873,20 @@ void CompileToolchainGNU::addMacosFrameworkOptions(StringList& inArgList) const
 		const std::string prefix = "-F";
 		for (auto& path : m_project.macosFrameworkPaths())
 		{
-			inArgList.push_back(prefix + path);
+			outArgList.push_back(prefix + path);
 		}
 	}
 	{
 		// const std::string suffix = ".framework";
 		for (auto& framework : m_project.macosFrameworks())
 		{
-			inArgList.push_back("-framework");
-			inArgList.push_back(framework);
-			// inArgList.push_back(framework + suffix);
+			outArgList.push_back("-framework");
+			outArgList.push_back(framework);
+			// outArgList.push_back(framework + suffix);
 		}
 	}
 #else
-	UNUSED(inArgList);
+	UNUSED(outArgList);
 #endif
 }
 }

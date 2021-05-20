@@ -780,7 +780,7 @@ void ProjectConfiguration::parseOutputFilename(const bool inWindowsMsvc) noexcep
 	{
 #if defined(CHALET_WIN32)
 		if (inWindowsMsvc)
-			execLib = ".lib";
+			execLib = "-s.lib";
 		else
 #endif
 			execLib = "-s.a";

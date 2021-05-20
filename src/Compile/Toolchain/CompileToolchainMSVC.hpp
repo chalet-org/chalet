@@ -29,31 +29,33 @@ struct CompileToolchainMSVC final : ICompileToolchain
 
 private:
 	// Compile
-	virtual void addIncludes(StringList& inArgList) const final;
-	virtual void addWarnings(StringList& inArgList) const final;
-	virtual void addDefines(StringList& inArgList) const final;
-	void addResourceDefines(StringList& inArgList) const;
-	void addExceptionHandlingModel(StringList& inArgList) const;
-	virtual void addPchInclude(StringList& inArgList) const final;
-	virtual void addOptimizationOption(StringList& inArgList) const final;
-	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const final;
-	virtual void addDebuggingInformationOption(StringList& inArgList) const final;
+	virtual void addIncludes(StringList& outArgList) const final;
+	virtual void addWarnings(StringList& outArgList) const final;
+	virtual void addDefines(StringList& outArgList) const final;
+	void addResourceDefines(StringList& outArgList) const;
+	void addExceptionHandlingModel(StringList& outArgList) const;
+	virtual void addPchInclude(StringList& outArgList) const final;
+	virtual void addOptimizationOption(StringList& outArgList) const final;
+	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const final;
+	virtual void addDebuggingInformationOption(StringList& outArgList) const final;
 	//
-	virtual void addCompileOptions(StringList& inArgList) const final;
-	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList) const final;
-	virtual void addThreadModelCompileOption(StringList& inArgList) const final;
-	void addWholeProgramOptimization(StringList& inArgList) const;
+	virtual void addCompileOptions(StringList& outArgList) const final;
+	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const final;
+	virtual void addThreadModelCompileOption(StringList& outArgList) const final;
+	void addWholeProgramOptimization(StringList& outArgList) const;
 
 	// Linking
-	// virtual void addLibDirs(StringList& inArgList) final;
+	virtual void addLibDirs(StringList& outArgList) const final;
+	virtual void addLinks(StringList& outArgList) const final;
 
 	StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
-	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 
 	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;
 
-	void addSourceObjects(StringList& inArgList, const StringList& sourceObjs) const;
+	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
+	void addPrecompiledHeaderLink(StringList outArgList) const;
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

@@ -21,13 +21,13 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 	virtual ToolchainType type() const final;
 
 	// Linking
-	virtual void addProfileInformationLinkerOption(StringList& inArgList) const final;
-	virtual void addLibStdCppLinkerOption(StringList& inArgList) const final;
+	virtual void addProfileInformationLinkerOption(StringList& outArgList) const final;
+	virtual void addLibStdCppLinkerOption(StringList& outArgList) const final;
 
 	// Objective-C / Objective-C++
-	virtual void addObjectiveCxxLink(StringList& inArgList) const final;
-	virtual void addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization) const final;
-	virtual void addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization) const final;
+	virtual void addObjectiveCxxLink(StringList& outArgList) const final;
+	virtual void addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const final;
+	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const final;
 };
 }
 

@@ -29,48 +29,48 @@ protected:
 	virtual StringList getLinkExclusions() const;
 
 	// Compile
-	virtual void addIncludes(StringList& inArgList) const override;
-	virtual void addWarnings(StringList& inArgList) const override;
-	virtual void addDefines(StringList& inArgList) const override;
-	virtual void addPchInclude(StringList& inArgList) const override;
-	virtual void addOptimizationOption(StringList& inArgList) const override;
-	virtual void addLanguageStandard(StringList& inArgList, const CxxSpecialization specialization) const override;
-	virtual void addDebuggingInformationOption(StringList& inArgList) const override;
-	virtual void addProfileInformationCompileOption(StringList& inArgList) const override;
-	virtual void addCompileOptions(StringList& inArgList) const override;
-	virtual void addDiagnosticColorOption(StringList& inArgList) const override;
-	virtual void addLibStdCppCompileOption(StringList& inArgList, const CxxSpecialization specialization) const override;
-	virtual void addPositionIndependentCodeOption(StringList& inArgList) const override;
-	virtual void addNoRunTimeTypeInformationOption(StringList& inArgList) const override;
-	virtual void addThreadModelCompileOption(StringList& inArgList) const override;
+	virtual void addIncludes(StringList& outArgList) const override;
+	virtual void addWarnings(StringList& outArgList) const override;
+	virtual void addDefines(StringList& outArgList) const override;
+	virtual void addPchInclude(StringList& outArgList) const override;
+	virtual void addOptimizationOption(StringList& outArgList) const override;
+	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
+	virtual void addDebuggingInformationOption(StringList& outArgList) const override;
+	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;
+	virtual void addCompileOptions(StringList& outArgList) const override;
+	virtual void addDiagnosticColorOption(StringList& outArgList) const override;
+	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const override;
+	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
+	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;
+	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 
 	// Linking
-	virtual void addLibDirs(StringList& inArgList) const override;
-	virtual void addLinks(StringList& inArgList) const override;
-	virtual void addRunPath(StringList& inArgList) const override;
-	virtual void addStripSymbolsOption(StringList& inArgList) const override;
-	virtual void addLinkerOptions(StringList& inArgList) const override;
-	virtual void addProfileInformationLinkerOption(StringList& inArgList) const override;
-	virtual void addLinkTimeOptimizationOption(StringList& inArgList) const override;
-	virtual void addThreadModelLinkerOption(StringList& inArgList) const override;
-	virtual void addLinkerScripts(StringList& inArgList) const override;
-	virtual void addLibStdCppLinkerOption(StringList& inArgList) const override;
-	virtual void addStaticCompilerLibraryOptions(StringList& inArgList) const override;
-	virtual void addPlatformGuiApplicationFlag(StringList& inArgList) const override;
+	virtual void addLibDirs(StringList& outArgList) const override;
+	virtual void addLinks(StringList& outArgList) const override;
+	virtual void addRunPath(StringList& outArgList) const override;
+	virtual void addStripSymbolsOption(StringList& outArgList) const override;
+	virtual void addLinkerOptions(StringList& outArgList) const override;
+	virtual void addProfileInformationLinkerOption(StringList& outArgList) const override;
+	virtual void addLinkTimeOptimizationOption(StringList& outArgList) const override;
+	virtual void addThreadModelLinkerOption(StringList& outArgList) const override;
+	virtual void addLinkerScripts(StringList& outArgList) const override;
+	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;
+	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const override;
+	virtual void addPlatformGuiApplicationFlag(StringList& outArgList) const override;
 
 	// Linking (Misc)
-	virtual void startStaticLinkGroup(StringList& inArgList) const;
-	virtual void endStaticLinkGroup(StringList& inArgList) const;
-	virtual void startExplicitDynamicLinkGroup(StringList& inArgList) const;
+	virtual void startStaticLinkGroup(StringList& outArgList) const;
+	virtual void endStaticLinkGroup(StringList& outArgList) const;
+	virtual void startExplicitDynamicLinkGroup(StringList& outArgList) const;
 
 	// Objective-C / Objective-C++
-	virtual void addObjectiveCxxLink(StringList& inArgList) const;
-	virtual void addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization) const;
-	virtual void addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization) const;
+	virtual void addObjectiveCxxLink(StringList& outArgList) const;
+	virtual void addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const;
+	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const;
 
 	// MacOS
-	virtual void addMacosSysRootOption(StringList& inArgList) const;
-	virtual void addMacosFrameworkOptions(StringList& inArgList) const;
+	virtual void addMacosSysRootOption(StringList& outArgList) const;
+	virtual void addMacosFrameworkOptions(StringList& outArgList) const;
 
 	StringList getMingwDllTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 	StringList getDylibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
@@ -78,7 +78,7 @@ protected:
 	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 
-	void addSourceObjects(StringList& inArgList, const StringList& sourceObjs) const;
+	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
 
 	const BuildState& m_state;
 	const ProjectConfiguration& m_project;

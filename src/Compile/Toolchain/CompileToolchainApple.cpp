@@ -30,15 +30,15 @@ ToolchainType CompileToolchainApple::type() const
 // Linking
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainApple::addProfileInformationLinkerOption(StringList& inArgList) const
+void CompileToolchainApple::addProfileInformationLinkerOption(StringList& outArgList) const
 {
-	UNUSED(inArgList);
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainApple::addLibStdCppLinkerOption(StringList& inArgList) const
+void CompileToolchainApple::addLibStdCppLinkerOption(StringList& outArgList) const
 {
-	CompileToolchainLLVM::addLibStdCppLinkerOption(inArgList);
+	CompileToolchainLLVM::addLibStdCppLinkerOption(outArgList);
 
 	// TODO: Apple has a "-stdlib=libstdc++" flag that is pre-C++11 for compatibility
 }
@@ -47,33 +47,33 @@ void CompileToolchainApple::addLibStdCppLinkerOption(StringList& inArgList) cons
 // Objective-C / Objective-C++
 /*****************************************************************************/
 /*****************************************************************************/
-void CompileToolchainApple::addObjectiveCxxLink(StringList& inArgList) const
+void CompileToolchainApple::addObjectiveCxxLink(StringList& outArgList) const
 {
 	// Unused in AppleClang
-	UNUSED(inArgList);
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void CompileToolchainApple::addObjectiveCxxCompileOption(StringList& inArgList, const CxxSpecialization specialization) const
+void CompileToolchainApple::addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
 {
 	const bool isObjCpp = specialization == CxxSpecialization::ObjectiveCpp;
 	const bool isObjC = specialization == CxxSpecialization::ObjectiveC;
 	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
 	if (m_project.objectiveCxx() && isObjCxx)
 	{
-		inArgList.push_back("-x");
+		outArgList.push_back("-x");
 		if (isObjCpp)
-			inArgList.push_back("objective-c++");
+			outArgList.push_back("objective-c++");
 		else if (isObjC)
-			inArgList.push_back("objective-c");
+			outArgList.push_back("objective-c");
 	}
 }
 
 /*****************************************************************************/
-void CompileToolchainApple::addObjectiveCxxRuntimeOption(StringList& inArgList, const CxxSpecialization specialization) const
+void CompileToolchainApple::addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const
 {
 	// Unused in AppleClang
-	UNUSED(inArgList, specialization);
+	UNUSED(outArgList, specialization);
 }
 
 }
