@@ -191,6 +191,17 @@ bool CacheJsonParser::makeCache()
 		}
 	}
 
+	{
+		Json& strategyJson = environmentCache.json[kKeyStrategy];
+		const auto strategy = strategyJson.get<std::string>();
+
+		if (strategy.empty())
+		{
+			// Note: this is only for validation. it gets changed later
+			strategyJson = "makefile";
+		}
+	}
+
 	//
 
 	Json& compilers = environmentCache.json[kKeyCompilers];
