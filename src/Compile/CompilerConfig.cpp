@@ -5,7 +5,7 @@
 
 #include "Compile/CompilerConfig.hpp"
 
-#include "Compile/CompilerCache.hpp"
+#include "Compile/CompilerTools.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -15,7 +15,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const CompilerCache& inCompilers) :
+CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const CompilerTools& inCompilers) :
 	kCompilerStructures({
 		{ "/bin/Hostx64/x64", "/lib/x64" },
 		{ "/bin/Hostx64/x86", "/lib/x86" },

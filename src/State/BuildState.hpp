@@ -13,7 +13,7 @@
 #include "BuildJson/ProjectConfiguration.hpp"
 #include "BuildJson/WorkspaceInfo.hpp"
 #include "CacheJson/CacheTools.hpp"
-#include "Compile/CompilerCache.hpp"
+#include "Compile/CompilerTools.hpp"
 #include "State/BuildCache.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CommandLineInputs.hpp"
@@ -29,7 +29,7 @@ public:
 	explicit BuildState(const CommandLineInputs& inInputs);
 
 	CacheTools tools;
-	CompilerCache compilers;
+	CompilerTools compilers;
 	WorkspaceInfo info;
 	BuildEnvironment environment;
 	BuildPaths paths;

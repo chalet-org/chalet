@@ -51,6 +51,9 @@ bool CacheJsonParser::serialize()
 	if (!validatePaths())
 		return false;
 
+	if (!setDefaultBuildStrategy())
+		return false;
+
 	return true;
 }
 
@@ -67,7 +70,7 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
 #endif
-		Diagnostic::errorAbort(fmt::format("{}: C++ compiler could not be found.", m_filename));
+		Diagnostic::errorAbort(fmt::format("{}: The toolchain's C++ compiler was blank or could not be found.", m_filename));
 		return false;
 	}
 
@@ -76,7 +79,25 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
 #endif
-		Diagnostic::errorAbort(fmt::format("{}: C compiler could not be found.", m_filename));
+		Diagnostic::errorAbort(fmt::format("{}: The toolchain's C compiler was blank or could not be found.", m_filename));
+		return false;
+	}
+
+	if (!Commands::pathExists(compilers.archiver()))
+	{
+#if defined(CHALET_DEBUG)
+		cacheJson.dumpToTerminal();
+#endif
+		Diagnostic::errorAbort(fmt::format("{}: The toolchain's archive utility was blank or could not be found.", m_filename));
+		return false;
+	}
+
+	if (!Commands::pathExists(compilers.linker()))
+	{
+#if defined(CHALET_DEBUG)
+		cacheJson.dumpToTerminal();
+#endif
+		Diagnostic::errorAbort(fmt::format("{}: The toolchain's linker was blank or could not be found.", m_filename));
 		return false;
 	}
 
@@ -86,10 +107,12 @@ bool CacheJsonParser::validatePaths()
 	#if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
 	#endif
-		Diagnostic::warn(fmt::format("{}: Windows Resource compiler could not be found.", m_filename));
+		Diagnostic::warn(fmt::format("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_filename));
 	}
 #endif
 
+	UNUSED(m_make);
+	/*
 	if (!Commands::pathExists(m_make))
 	{
 #if defined(CHALET_DEBUG)
@@ -98,6 +121,7 @@ bool CacheJsonParser::validatePaths()
 		Diagnostic::errorAbort(fmt::format("{}: 'make' could not be found.", m_filename));
 		return false;
 	}
+	*/
 
 #if defined(CHALET_MACOS)
 	if (!Commands::pathExists(m_state.tools.macosSdk()))
@@ -108,6 +132,34 @@ bool CacheJsonParser::validatePaths()
 		Diagnostic::errorAbort(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
 	}
 #endif
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CacheJsonParser::setDefaultBuildStrategy()
+{
+	auto& environmentCache = m_state.cache.environmentCache();
+	Json& strategyJson = environmentCache.json[kKeyStrategy];
+	const auto strategy = strategyJson.get<std::string>();
+
+	if (strategy.empty())
+	{
+		if (Environment::isContinuousIntegrationServer())
+		{
+			strategyJson = "native-experimental";
+		}
+		else if (Environment::isMsvc() && m_state.tools.ninjaAvailable())
+		{
+			strategyJson = "ninja";
+		}
+		else
+		{
+			strategyJson = "makefile";
+		}
+
+		m_state.cache.setDirty(true);
+	}
 
 	return true;
 }
@@ -139,20 +191,7 @@ bool CacheJsonParser::makeCache()
 		}
 	}
 
-	{
-		Json& strategyJson = environmentCache.json[kKeyStrategy];
-		const auto strategy = strategyJson.get<std::string>();
-
-		if (strategy.empty())
-		{
-			if (Environment::isContinuousIntegrationServer())
-				strategyJson = "native-experimental";
-			else if (Environment::isMsvc())
-				strategyJson = "ninja";
-			else
-				strategyJson = "makefile";
-		}
-	}
+	//
 
 	Json& compilers = environmentCache.json[kKeyCompilers];
 
@@ -186,9 +225,7 @@ bool CacheJsonParser::makeCache()
 			{
 				cpp = Commands::which(compiler);
 				if (!cpp.empty())
-				{
 					break;
-				}
 			}
 		}
 
@@ -213,13 +250,47 @@ bool CacheJsonParser::makeCache()
 			{
 				cc = Commands::which(compiler);
 				if (!cc.empty())
-				{
 					break;
-				}
 			}
 		}
 
 		compilers[kKeyCc] = std::move(cc);
+		m_state.cache.setDirty(true);
+	}
+
+	if (!compilers.contains(kKeyLinker))
+	{
+		std::string link;
+#if defined(CHALET_WIN32)
+		for (const auto& linker : { "link", "lld", "ld" })
+#else
+		for (const auto& linker : { "lld", "ld" })
+#endif
+		{
+			link = Commands::which(linker);
+			if (!link.empty())
+				break;
+		}
+
+		compilers[kKeyLinker] = std::move(link);
+		m_state.cache.setDirty(true);
+	}
+
+	if (!compilers.contains(kKeyArchiver))
+	{
+		std::string ar;
+#if defined(CHALET_WIN32)
+		for (const auto& archiver : { "lib", "ar" })
+#else
+		for (const auto& archiver : { "libtool", "ar" })
+#endif
+		{
+			ar = Commands::which(archiver);
+			if (!ar.empty())
+				break;
+		}
+
+		compilers[kKeyArchiver] = std::move(ar);
 		m_state.cache.setDirty(true);
 	}
 
@@ -235,9 +306,10 @@ bool CacheJsonParser::makeCache()
 		m_state.cache.setDirty(true);
 	}
 
+	//
+
 	Json& tools = environmentCache.json[kKeyTools];
 
-	whichAdd(tools, kKeyAr);
 	whichAdd(tools, kKeyBash);
 	whichAdd(tools, kKeyBrew);
 	whichAdd(tools, kKeyCmake);
@@ -260,7 +332,6 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyInstallNameTool);
 	whichAdd(tools, kKeyInstruments);
 	whichAdd(tools, kKeyLdd);
-	whichAdd(tools, kKeyLibTool);
 	whichAdd(tools, kKeyLua);
 
 	if (!tools.contains(kKeyMacosSdk))
@@ -325,11 +396,9 @@ bool CacheJsonParser::makeCache()
 		m_state.cache.setDirty(true);
 	}
 
-	whichAdd(tools, kKeyRanlib);
 	whichAdd(tools, kKeyRuby);
 	whichAdd(tools, kKeySample);
 	whichAdd(tools, kKeySips);
-	whichAdd(tools, kKeyStrip);
 	whichAdd(tools, kKeyTiffutil);
 	whichAdd(tools, kKeyXcodebuild);
 	whichAdd(tools, kKeyXcodegen);
@@ -387,9 +456,6 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 		return false;
 	}
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyAr))
-		m_state.tools.setAr(val);
-
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyBash))
 		m_state.tools.setBash(val);
 
@@ -425,9 +491,6 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyLdd))
 		m_state.tools.setLdd(val);
-
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyLibTool))
-		m_state.tools.setLibtool(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyLua))
 		m_state.tools.setLua(val);
@@ -465,9 +528,6 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPython3))
 		m_state.tools.setPython3(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyRanlib))
-		m_state.tools.setRanlib(val);
-
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyRuby))
 		m_state.tools.setRuby(val);
 
@@ -476,9 +536,6 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeySips))
 		m_state.tools.setSips(val);
-
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyStrip))
-		m_state.tools.setStrip(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyTiffutil))
 		m_state.tools.setTiffutil(val);
@@ -511,11 +568,17 @@ bool CacheJsonParser::parseCompilers(const Json& inNode)
 		return false;
 	}
 
+	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyArchiver))
+		m_state.compilers.setArchiver(val);
+
 	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyCpp))
 		m_state.compilers.setCpp(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyCc))
 		m_state.compilers.setCc(val);
+
+	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyLinker))
+		m_state.compilers.setLinker(val);
 
 	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyWindowsResource))
 		m_state.compilers.setRc(val);

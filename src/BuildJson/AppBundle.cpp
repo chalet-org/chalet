@@ -14,7 +14,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-AppBundle::AppBundle(const BuildEnvironment& inEnvironment, const ProjectConfigurationList& inProjectList, const BuildPaths& inPaths, const CompilerCache& inCompilers) :
+AppBundle::AppBundle(const BuildEnvironment& inEnvironment, const ProjectConfigurationList& inProjectList, const BuildPaths& inPaths, const CompilerTools& inCompilers) :
 	m_environment(inEnvironment),
 	m_projectConfigs(inProjectList),
 	m_paths(inPaths),

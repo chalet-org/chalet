@@ -4,14 +4,9 @@
 	"additionalProperties": false,
 	"required": [
 		"tools",
-		"compilers"
+		"compilerTools"
 	],
 	"definitions": {
-		"tools-ar": {
-			"type": "string",
-			"description": "The executable path to GNU ar",
-			"default": "/usr/bin/ar"
-		},
 		"tools-bash": {
 			"type": "string",
 			"description": "The executable path to GNU bash",
@@ -66,11 +61,6 @@
 			"type": "string",
 			"description": "The executable path to ldd.",
 			"default": "/usr/bin/ldd"
-		},
-		"tools-libtool": {
-			"type": "string",
-			"description": "The executable path to libtool.",
-			"default": "/usr/bin/libtool"
 		},
 		"tools-lua": {
 			"type": "string",
@@ -129,11 +119,6 @@
 			"description": "The executable path to Python 3",
 			"default": "/usr/local/bin/python3"
 		},
-		"tools-ranlib": {
-			"type": "string",
-			"description": "The executable path to ranlib.",
-			"default": "/usr/bin/ranlib"
-		},
 		"tools-ruby": {
 			"type": "string",
 			"description": "The executable path to ruby.",
@@ -148,11 +133,6 @@
 			"type": "string",
 			"description": "The executable path to Apple's sips command-line utility (MacOS)",
 			"default": "/usr/bin/sips"
-		},
-		"tools-strip": {
-			"type": "string",
-			"description": "The executable path to strip.",
-			"default": "/usr/bin/strip"
 		},
 		"tools-tiffutil": {
 			"type": "string",
@@ -174,17 +154,27 @@
 			"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
 			"default": "/usr/bin/xcrun"
 		},
-		"compilers-cpp": {
+		"compilerTools-archiver": {
 			"type": "string",
-			"description": "The executable path to the C++ compiler",
+			"description": "The executable path to the toolchain's static library archive utility",
+			"default": "/usr/bin/ar"
+		},
+		"compilerTools-cpp": {
+			"type": "string",
+			"description": "The executable path to the toolchain's C++ compiler",
 			"default": "/usr/bin/c++"
 		},
-		"compilers-c": {
+		"compilerTools-c": {
 			"type": "string",
-			"description": "The executable path to the C compiler",
+			"description": "The executable path to the toolchain's C compiler",
 			"default": "/usr/bin/cc"
 		},
-		"compilers-windowsResource": {
+		"compilerTools-linker": {
+			"type": "string",
+			"description": "The executable path to the toolchain's linker",
+			"default": "/usr/bin/ld"
+		},
+		"compilerTools-windowsResource": {
 			"type": "string",
 			"description": "The executable path to the resource compiler (Windows)"
 		},
@@ -225,7 +215,6 @@
 			"additionalProperties": false,
 			"description": "The list of tools for the platform",
 			"required": [
-				"ar",
 				"bash",
 				"brew",
 				"command_prompt",
@@ -237,7 +226,6 @@
 				"install_name_tool",
 				"instruments",
 				"ldd",
-				"libtool",
 				"lua",
 				"macosSdk",
 				"make",
@@ -250,20 +238,15 @@
 				"powershell",
 				"python",
 				"python3",
-				"ranlib",
 				"ruby",
 				"sample",
 				"sips",
-				"strip",
 				"tiffutil",
 				"xcodebuild",
 				"xcodegen",
 				"xcrun"
 			],
 			"properties": {
-				"ar": {
-					"$ref": "#/definitions/tools-ar"
-				},
 				"bash": {
 					"$ref": "#/definitions/tools-bash"
 				},
@@ -296,9 +279,6 @@
 				},
 				"ldd": {
 					"$ref": "#/definitions/tools-ldd"
-				},
-				"libtool": {
-					"$ref": "#/definitions/tools-libtool"
 				},
 				"lua": {
 					"$ref": "#/definitions/tools-lua"
@@ -336,9 +316,6 @@
 				"python3": {
 					"$ref": "#/definitions/tools-python3"
 				},
-				"ranlib": {
-					"$ref": "#/definitions/tools-ranlib"
-				},
 				"ruby": {
 					"$ref": "#/definitions/tools-ruby"
 				},
@@ -347,9 +324,6 @@
 				},
 				"sips": {
 					"$ref": "#/definitions/tools-sips"
-				},
-				"strip": {
-					"$ref": "#/definitions/tools-strip"
 				},
 				"tiffutil": {
 					"$ref": "#/definitions/tools-tiffutil"
@@ -365,24 +339,32 @@
 				}
 			}
 		},
-		"compilers": {
+		"compilerTools": {
 			"type": "object",
 			"additionalProperties": false,
 			"description": "The list of compilers for the platform",
 			"required": [
+				"archiver",
 				"C++",
 				"C",
+				"linker",
 				"windowsResource"
 			],
 			"properties": {
+				"archiver": {
+					"$ref": "#/definitions/compilerTools-archiver"
+				},
 				"C++": {
-					"$ref": "#/definitions/compilers-cpp"
+					"$ref": "#/definitions/compilerTools-cpp"
 				},
 				"C": {
-					"$ref": "#/definitions/compilers-c"
+					"$ref": "#/definitions/compilerTools-c"
+				},
+				"linker": {
+					"$ref": "#/definitions/compilerTools-linker"
 				},
 				"windowsResource": {
-					"$ref": "#/definitions/compilers-windowsResource"
+					"$ref": "#/definitions/compilerTools-windowsResource"
 				}
 			}
 		},

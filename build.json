@@ -114,7 +114,8 @@
 			"onlyInConfiguration": "Release"
 		},
 		"script-bash": {
-			"script": "env/script_shell.sh"
+			"script.!windows": "env/script_shell.sh",
+			"script.windows": "env/script_batch.bat"
 		}
 		/*"script-batch": {
 			"script.windows": "env/script_batch.bat"

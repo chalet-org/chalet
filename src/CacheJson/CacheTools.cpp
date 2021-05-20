@@ -176,16 +176,6 @@ void CacheTools::fetchXcodeGenVersion()
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::ar() const noexcept
-{
-	return m_ar;
-}
-void CacheTools::setAr(const std::string& inValue) noexcept
-{
-	m_ar = inValue;
-}
-
-/*****************************************************************************/
 const std::string& CacheTools::bash() const noexcept
 {
 	return m_bash;
@@ -320,16 +310,6 @@ const std::string& CacheTools::ldd() const noexcept
 void CacheTools::setLdd(const std::string& inValue) noexcept
 {
 	m_ldd = inValue;
-}
-
-/*****************************************************************************/
-const std::string& CacheTools::libtool() const noexcept
-{
-	return m_libtool;
-}
-void CacheTools::setLibtool(const std::string& inValue) noexcept
-{
-	m_libtool = inValue;
 }
 
 /*****************************************************************************/
@@ -489,16 +469,6 @@ void CacheTools::setPython3(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::ranlib() const noexcept
-{
-	return m_ranlib;
-}
-void CacheTools::setRanlib(const std::string& inValue) noexcept
-{
-	m_ranlib = inValue;
-}
-
-/*****************************************************************************/
 const std::string& CacheTools::ruby() const noexcept
 {
 	return m_ruby;
@@ -526,16 +496,6 @@ const std::string& CacheTools::sips() const noexcept
 void CacheTools::setSips(const std::string& inValue) noexcept
 {
 	m_sips = inValue;
-}
-
-/*****************************************************************************/
-const std::string& CacheTools::strip() const noexcept
-{
-	return m_strip;
-}
-void CacheTools::setStrip(const std::string& inValue) noexcept
-{
-	m_strip = inValue;
 }
 
 /*****************************************************************************/

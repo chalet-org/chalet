@@ -22,18 +22,12 @@ Json Schema::getCacheJson()
 	ret["additionalProperties"] = false;
 	ret["required"] = {
 		"tools",
-		"compilers"
+		"compilerTools"
 	};
 
 	//
 	const auto kDefinitions = "definitions";
 	ret[kDefinitions] = Json::object();
-
-	ret[kDefinitions]["tools-ar"] = R"json({
-		"type": "string",
-		"description": "The executable path to GNU ar",
-		"default": "/usr/bin/ar"
-	})json"_ojson;
 
 	ret[kDefinitions]["tools-bash"] = R"json({
 		"type": "string",
@@ -99,12 +93,6 @@ Json Schema::getCacheJson()
 		"type": "string",
 		"description": "The executable path to ldd.",
 		"default": "/usr/bin/ldd"
-	})json"_ojson;
-
-	ret[kDefinitions]["tools-libtool"] = R"json({
-		"type": "string",
-		"description": "The executable path to libtool.",
-		"default": "/usr/bin/libtool"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-lua"] = R"json({
@@ -176,12 +164,6 @@ Json Schema::getCacheJson()
 		"default": "/usr/local/bin/python3"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-ranlib"] = R"json({
-		"type": "string",
-		"description": "The executable path to ranlib.",
-		"default": "/usr/bin/ranlib"
-	})json"_ojson;
-
 	ret[kDefinitions]["tools-ruby"] = R"json({
 		"type": "string",
 		"description": "The executable path to ruby.",
@@ -198,12 +180,6 @@ Json Schema::getCacheJson()
 		"type": "string",
 		"description": "The executable path to Apple's sips command-line utility (MacOS)",
 		"default": "/usr/bin/sips"
-	})json"_ojson;
-
-	ret[kDefinitions]["tools-strip"] = R"json({
-		"type": "string",
-		"description": "The executable path to strip.",
-		"default": "/usr/bin/strip"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-tiffutil"] = R"json({
@@ -230,19 +206,47 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/xcrun"
 	})json"_ojson;
 
-	ret[kDefinitions]["compilers-cpp"] = R"json({
+	// libtool (macOS), ar (Linux / macOS / MinGW), lib.exe (Win)
+	ret[kDefinitions]["compilerTools-archiver"] = R"json({
 		"type": "string",
-		"description": "The executable path to the C++ compiler",
+		"description": "The executable path to the toolchain's static library archive utility",
+		"default": "/usr/bin/ar"
+	})json"_ojson;
+
+	ret[kDefinitions]["compilerTools-cpp"] = R"json({
+		"type": "string",
+		"description": "The executable path to the toolchain's C++ compiler",
 		"default": "/usr/bin/c++"
 	})json"_ojson;
 
-	ret[kDefinitions]["compilers-c"] = R"json({
+	ret[kDefinitions]["compilerTools-c"] = R"json({
 		"type": "string",
-		"description": "The executable path to the C compiler",
+		"description": "The executable path to the toolchain's C compiler",
 		"default": "/usr/bin/cc"
 	})json"_ojson;
 
-	ret[kDefinitions]["compilers-windowsResource"] = R"json({
+	ret[kDefinitions]["compilerTools-linker"] = R"json({
+		"type": "string",
+		"description": "The executable path to the toolchain's linker",
+		"default": "/usr/bin/ld"
+	})json"_ojson;
+
+	/*
+	// These tools don't get called directly (yet), but might be useful to look into
+	ret[kDefinitions]["compilerTools-ranlib"] = R"json({
+		"type": "string",
+		"description": "The executable path to ranlib.",
+		"default": "/usr/bin/ranlib"
+	})json"_ojson;
+
+	ret[kDefinitions]["compilerTools-strip"] = R"json({
+		"type": "string",
+		"description": "The executable path to strip.",
+		"default": "/usr/bin/strip"
+	})json"_ojson;
+	*/
+
+	ret[kDefinitions]["compilerTools-windowsResource"] = R"json({
 		"type": "string",
 		"description": "The executable path to the resource compiler (Windows)"
 	})json"_ojson;
@@ -289,7 +293,6 @@ Json Schema::getCacheJson()
 		"additionalProperties": false,
 		"description": "The list of tools for the platform",
 		"required": [
-			"ar",
 			"bash",
 			"brew",
 			"command_prompt",
@@ -301,7 +304,6 @@ Json Schema::getCacheJson()
 			"install_name_tool",
 			"instruments",
 			"ldd",
-			"libtool",
 			"lua",
 			"macosSdk",
 			"make",
@@ -314,20 +316,15 @@ Json Schema::getCacheJson()
 			"powershell",
 			"python",
 			"python3",
-			"ranlib",
 			"ruby",
 			"sample",
 			"sips",
-			"strip",
 			"tiffutil",
 			"xcodebuild",
 			"xcodegen",
 			"xcrun"
 		],
 		"properties": {
-			"ar": {
-				"$ref": "#/definitions/tools-ar"
-			},
 			"bash": {
 				"$ref": "#/definitions/tools-bash"
 			},
@@ -360,9 +357,6 @@ Json Schema::getCacheJson()
 			},
 			"ldd": {
 				"$ref": "#/definitions/tools-ldd"
-			},
-			"libtool": {
-				"$ref": "#/definitions/tools-libtool"
 			},
 			"lua": {
 				"$ref": "#/definitions/tools-lua"
@@ -400,9 +394,6 @@ Json Schema::getCacheJson()
 			"python3": {
 				"$ref": "#/definitions/tools-python3"
 			},
-			"ranlib": {
-				"$ref": "#/definitions/tools-ranlib"
-			},
 			"ruby": {
 				"$ref": "#/definitions/tools-ruby"
 			},
@@ -411,9 +402,6 @@ Json Schema::getCacheJson()
 			},
 			"sips": {
 				"$ref": "#/definitions/tools-sips"
-			},
-			"strip": {
-				"$ref": "#/definitions/tools-strip"
 			},
 			"tiffutil": {
 				"$ref": "#/definitions/tools-tiffutil"
@@ -430,24 +418,32 @@ Json Schema::getCacheJson()
 		}
 	})json"_ojson;
 
-	ret[kProperties]["compilers"] = R"json({
+	ret[kProperties]["compilerTools"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "The list of compilers for the platform",
 		"required": [
+			"archiver",
 			"C++",
 			"C",
+			"linker",
 			"windowsResource"
 		],
 		"properties": {
+			"archiver": {
+				"$ref": "#/definitions/compilerTools-archiver"
+			},
 			"C++": {
-				"$ref": "#/definitions/compilers-cpp"
+				"$ref": "#/definitions/compilerTools-cpp"
 			},
 			"C": {
-				"$ref": "#/definitions/compilers-c"
+				"$ref": "#/definitions/compilerTools-c"
+			},
+			"linker": {
+				"$ref": "#/definitions/compilerTools-linker"
 			},
 			"windowsResource": {
-				"$ref": "#/definitions/compilers-windowsResource"
+				"$ref": "#/definitions/compilerTools-windowsResource"
 			}
 		}
 	})json"_ojson;

@@ -313,20 +313,17 @@ StringList CompileToolchainGNU::getStaticLibTargetCommand(const std::string& out
 {
 	StringList ret;
 
-	auto& libtool = m_state.tools.libtool();
+	auto& archiver = m_state.compilers.archiver();
+	ret.push_back(archiver);
 
-	if (!libtool.empty())
+	if (m_state.compilers.isArchiverLibTool())
 	{
-		ret.push_back(libtool);
 		ret.push_back("-static");
 		ret.push_back("-no_warning_for_no_symbols");
 		ret.push_back("-o");
 	}
 	else
 	{
-		const auto& ar = m_state.tools.ar();
-		ret.push_back(ar);
-
 		ret.push_back("-c");
 		ret.push_back("-r");
 		ret.push_back("-s");

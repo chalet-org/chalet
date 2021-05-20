@@ -13,11 +13,11 @@
 
 namespace chalet
 {
-struct CompilerCache;
+struct CompilerTools;
 
 struct CompilerConfig
 {
-	explicit CompilerConfig(const CodeLanguage inLanguage, const CompilerCache& inCompilers);
+	explicit CompilerConfig(const CodeLanguage inLanguage, const CompilerTools& inCompilers);
 
 	CodeLanguage language() const noexcept;
 
@@ -41,7 +41,7 @@ struct CompilerConfig
 private:
 	const std::unordered_map<std::string, std::string> kCompilerStructures;
 
-	const CompilerCache& m_compilers;
+	const CompilerTools& m_compilers;
 
 	std::string m_compilerPath{ "/usr" };
 	std::string m_compilerPathBin{ "/usr/bin" };

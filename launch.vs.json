@@ -15,7 +15,7 @@
 				"msvc_x64_x64"
 			],
 			"args": [
-				"build", "Release"
+				"--save-schema", "build", "Release"
 			]
 		}
 	]

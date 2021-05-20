@@ -22,9 +22,6 @@ struct CacheTools
 	void fetchXcodeVersion();
 	void fetchXcodeGenVersion();
 
-	const std::string& ar() const noexcept;
-	void setAr(const std::string& inValue) noexcept;
-
 	const std::string& bash() const noexcept;
 	void setBash(const std::string& inValue) noexcept;
 	bool bashAvailable() const noexcept;
@@ -63,9 +60,6 @@ struct CacheTools
 
 	const std::string& ldd() const noexcept;
 	void setLdd(const std::string& inValue) noexcept;
-
-	const std::string& libtool() const noexcept;
-	void setLibtool(const std::string& inValue) noexcept;
 
 	const std::string& lua() const noexcept;
 	void setLua(const std::string& inValue) noexcept;
@@ -111,9 +105,6 @@ struct CacheTools
 	const std::string& python3() const noexcept;
 	void setPython3(const std::string& inValue) noexcept;
 
-	const std::string& ranlib() const noexcept;
-	void setRanlib(const std::string& inValue) noexcept;
-
 	const std::string& ruby() const noexcept;
 	void setRuby(const std::string& inValue) noexcept;
 
@@ -122,9 +113,6 @@ struct CacheTools
 
 	const std::string& sips() const noexcept;
 	void setSips(const std::string& inValue) noexcept;
-
-	const std::string& strip() const noexcept;
-	void setStrip(const std::string& inValue) noexcept;
 
 	const std::string& tiffutil() const noexcept;
 	void setTiffutil(const std::string& inValue) noexcept;
@@ -163,7 +151,6 @@ struct CacheTools
 private:
 	void isolateVersion(std::string& outString);
 
-	std::string m_ar;
 	std::string m_bash;
 	std::string m_brew;
 	std::string m_cmake;
@@ -175,7 +162,6 @@ private:
 	std::string m_installNameUtil;
 	std::string m_instruments;
 	std::string m_ldd;
-	std::string m_libtool;
 	std::string m_lua;
 	std::string m_macosSdk;
 	std::string m_make;
@@ -188,11 +174,9 @@ private:
 	std::string m_powershell;
 	std::string m_python;
 	std::string m_python3;
-	std::string m_ranlib;
 	std::string m_ruby;
 	std::string m_sample;
 	std::string m_sips;
-	std::string m_strip;
 	std::string m_tiffutil;
 	std::string m_xcodebuild;
 	std::string m_xcodegen;

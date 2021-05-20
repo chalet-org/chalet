@@ -20,6 +20,7 @@ struct CacheJsonParser : public JsonParser
 
 private:
 	bool validatePaths();
+	bool setDefaultBuildStrategy();
 	bool makeCache();
 	bool serializeFromJsonRoot(const Json& inJson);
 
@@ -33,18 +34,19 @@ private:
 	const std::string& m_filename;
 
 	const std::string kKeyTools = "tools";
-	const std::string kKeyCompilers = "compilers";
+	const std::string kKeyCompilers = "compilerTools";
 	const std::string kKeyStrategy = "strategy";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
 	const std::string kKeyExternalDependencies = "externalDependencies";
 	const std::string kKeyData = "data";
 
+	const std::string kKeyArchiver = "archiver";
 	const std::string kKeyCpp = "C++";
 	const std::string kKeyCc = "C";
+	const std::string kKeyLinker = "linker";
 	const std::string kKeyWindowsResource = "windowsResource";
 
 	// should match executables
-	const std::string kKeyAr = "ar";
 	const std::string kKeyBash = "bash";
 	const std::string kKeyBrew = "brew";
 	const std::string kKeyCmake = "cmake";
@@ -56,7 +58,6 @@ private:
 	const std::string kKeyInstallNameTool = "install_name_tool";
 	const std::string kKeyInstruments = "instruments";
 	const std::string kKeyLdd = "ldd";
-	const std::string kKeyLibTool = "libtool";
 	const std::string kKeyLua = "lua";
 	const std::string kKeyMacosSdk = "macosSdk";
 	const std::string kKeyMake = "make";
@@ -69,11 +70,9 @@ private:
 	const std::string kKeyPowershell = "powershell";
 	const std::string kKeyPython = "python";
 	const std::string kKeyPython3 = "python3";
-	const std::string kKeyRanlib = "ranlib";
 	const std::string kKeyRuby = "ruby";
 	const std::string kKeySample = "sample";
 	const std::string kKeySips = "sips";
-	const std::string kKeyStrip = "strip";
 	const std::string kKeyTiffutil = "tiffutil";
 	const std::string kKeyXcodebuild = "xcodebuild";
 	const std::string kKeyXcodegen = "xcodegen";

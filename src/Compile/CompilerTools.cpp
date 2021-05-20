@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/CompilerCache.hpp"
+#include "Compile/CompilerTools.hpp"
 
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -14,37 +14,63 @@
 namespace chalet
 {
 /*****************************************************************************/
-const std::string& CompilerCache::cpp() const noexcept
+const std::string& CompilerTools::archiver() const noexcept
+{
+	return m_archiver;
+}
+void CompilerTools::setArchiver(const std::string& inValue) noexcept
+{
+	m_archiver = inValue;
+
+	m_isArchiverLibTool = String::endsWith("libtool", inValue);
+}
+bool CompilerTools::isArchiverLibTool() const noexcept
+{
+	return m_isArchiverLibTool;
+}
+
+/*****************************************************************************/
+const std::string& CompilerTools::cpp() const noexcept
 {
 	return m_cpp;
 }
-void CompilerCache::setCpp(const std::string& inValue) noexcept
+void CompilerTools::setCpp(const std::string& inValue) noexcept
 {
 	m_cpp = inValue;
 }
 
 /*****************************************************************************/
-const std::string& CompilerCache::cc() const noexcept
+const std::string& CompilerTools::cc() const noexcept
 {
 	return m_cc;
 }
-void CompilerCache::setCc(const std::string& inValue) noexcept
+void CompilerTools::setCc(const std::string& inValue) noexcept
 {
 	m_cc = inValue;
 }
 
 /*****************************************************************************/
-const std::string& CompilerCache::rc() const noexcept
+const std::string& CompilerTools::linker() const noexcept
+{
+	return m_linker;
+}
+void CompilerTools::setLinker(const std::string& inValue) noexcept
+{
+	m_linker = inValue;
+}
+
+/*****************************************************************************/
+const std::string& CompilerTools::rc() const noexcept
 {
 	return m_rc;
 }
-void CompilerCache::setRc(const std::string& inValue) noexcept
+void CompilerTools::setRc(const std::string& inValue) noexcept
 {
 	m_rc = inValue;
 }
 
 /*****************************************************************************/
-std::string CompilerCache::getRootPathVariable()
+std::string CompilerTools::getRootPathVariable()
 {
 	auto originalPath = Environment::getPath();
 	Path::sanitize(originalPath);
@@ -82,7 +108,7 @@ std::string CompilerCache::getRootPathVariable()
 }
 
 /*****************************************************************************/
-CompilerConfig& CompilerCache::getConfig(const CodeLanguage inLanguage) const
+CompilerConfig& CompilerTools::getConfig(const CodeLanguage inLanguage) const
 {
 	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
 	if (m_configs.find(inLanguage) != m_configs.end())
