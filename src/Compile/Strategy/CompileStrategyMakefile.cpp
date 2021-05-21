@@ -117,7 +117,7 @@ bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject
 
 #if defined(CHALET_WIN32)
 	const bool makeIsNMake = m_state.tools.makeIsNMake();
-	if (m_state.tools.makeIsNMake())
+	if (makeIsNMake)
 	{
 		return buildNMake(inProject);
 	}
@@ -281,7 +281,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	};
 
 	// NMAKE
-	// if (Environment::isMsvc())
+	// if (m_state.tools.makeIsNMake())
 	{
 		options.stdoutOption = PipeOption::Pipe;
 		options.onStdOut = onStdOut;
@@ -295,7 +295,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 		const auto make = String::getPathBaseName(m_state.tools.make());
 
 #if defined(CHALET_WIN32)
-		if (Environment::isMsvc())
+		if (m_state.tools.makeIsNMake())
 		{
 			String::replaceAll(errorOutput, "\r", "\r\n");
 

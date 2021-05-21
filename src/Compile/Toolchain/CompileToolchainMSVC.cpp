@@ -42,7 +42,7 @@ bool CompileToolchainMSVC::preBuild()
 		m_pchSource = fmt::format("{}/{}.cpp", objDir, pch);
 
 		m_pchMinusLocation = pch;
-		for (auto loc : m_project.locations())
+		for (std::string loc : m_project.locations())
 		{
 			if (loc.back() != '/')
 				loc.push_back('/');
@@ -89,12 +89,12 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
-	addWholeProgramOptimization(ret);
+	// addWholeProgramOptimization(ret);
 
 	addDefines(ret);
 	addIncludes(ret);
 
-	auto pchObject = outputFile;
+	std::string pchObject = outputFile;
 	String::replaceAll(pchObject, ".pch", ".obj");
 
 	ret.push_back(getPathCommand("/Fp", outputFile));
@@ -158,7 +158,7 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
-	addWholeProgramOptimization(ret);
+	// addWholeProgramOptimization(ret);
 
 	addDebuggingInformationOption(ret);
 
@@ -216,11 +216,11 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 	ret.push_back(fmt::format("\"{}\"", lib));
 	ret.push_back("/NOLOGO");
 
-	if (m_state.configuration.linkTimeOptimization())
+	/*if (m_state.configuration.linkTimeOptimization())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
 		ret.push_back("/LTCG");
-	}
+	}*/
 
 	if (m_project.warningsTreatedAsErrors())
 		ret.push_back("/WX");
@@ -258,7 +258,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 	if (m_state.configuration.linkTimeOptimization())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
-		ret.push_back("/LTCG");
+		// ret.push_back("/LTCG");
 
 		if (debugSymbols)
 			ret.push_back("/OPT:NOREF,NOICF,NOLBR");

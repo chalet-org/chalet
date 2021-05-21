@@ -28,7 +28,7 @@ struct BuildPaths
 	std::string getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inPchExtension = true) const;
 	std::string getPrecompiledHeaderInclude(const ProjectConfiguration& inProject) const;
 
-	SourceOutputs getOutputs(const ProjectConfiguration& inProject, const bool inObjExtension = false) const;
+	SourceOutputs getOutputs(const ProjectConfiguration& inProject, const bool inIsMsvc, const bool inObjExtension = false) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const;
 
 private:

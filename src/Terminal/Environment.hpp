@@ -12,7 +12,7 @@ struct Environment
 {
 	static bool isBash();
 	static bool isCommandPromptOrPowerShell();
-	static bool isMsvc();
+	static bool isVisualStudioCommandPrompt();
 	static bool hasTerm();
 	static bool isContinuousIntegrationServer();
 

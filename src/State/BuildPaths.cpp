@@ -104,7 +104,7 @@ const std::string& BuildPaths::asmDir() const noexcept
 }
 
 /*****************************************************************************/
-SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, const bool inObjExtension) const
+SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, const bool inIsMsvc, const bool inObjExtension) const
 {
 	SourceOutputs ret;
 
@@ -116,7 +116,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, cons
 	ret.objectListLinker = getObjectFilesList(files.list, inObjExtension);
 
 #if defined(CHALET_WIN32)
-	if (Environment::isMsvc())
+	if (inIsMsvc)
 	{
 		if (inProject.usesPch())
 		{
@@ -126,6 +126,8 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, cons
 			ret.objectListLinker.push_back(std::move(pchTarget));
 		}
 	}
+#else
+	UNUSED(inIsMsvc);
 #endif
 
 	ret.objectList = getObjectFilesList(String::excludeIf(m_fileListCache, files.list), inObjExtension);

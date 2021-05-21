@@ -15,7 +15,6 @@
 #include "Compile/CompileFactory.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
-#include "Terminal/MsvcEnvironment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -65,11 +64,6 @@ bool BuildManager::run(const Route inRoute)
 
 	bool runCommand = inRoute == Route::Run;
 	m_runProjectName = getRunProject();
-
-#if defined(CHALET_WIN32)
-	if (Environment::isMsvc())
-		m_state.msvcEnvironment.readCompilerVariables();
-#endif
 
 	auto strategy = m_state.environment.strategy();
 	if (!runCommand)
@@ -161,7 +155,7 @@ bool BuildManager::cacheRecipe(const ProjectConfiguration& inProject, const Rout
 	auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, inProject, compilerConfig);
 
 	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
-	auto outputs = m_state.paths.getOutputs(inProject, objExtension);
+	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), objExtension);
 
 	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
 	{

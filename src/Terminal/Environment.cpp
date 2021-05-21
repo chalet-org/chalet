@@ -127,6 +127,7 @@ bool Environment::isCommandPromptOrPowerShell()
 	if (s_terminalType == ShellType::Unset)
 		setTerminalType();
 
+	// Note: intentionally not using ShellType::CommandPromptMsvc
 	return s_terminalType == ShellType::CommandPrompt
 		|| s_terminalType == ShellType::Powershell
 		|| s_terminalType == ShellType::PowershellOpenSource
@@ -134,7 +135,7 @@ bool Environment::isCommandPromptOrPowerShell()
 }
 
 /*****************************************************************************/
-bool Environment::isMsvc()
+bool Environment::isVisualStudioCommandPrompt()
 {
 	if (s_terminalType == ShellType::Unset)
 		setTerminalType();

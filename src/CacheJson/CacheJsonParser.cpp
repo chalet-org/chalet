@@ -27,6 +27,10 @@ CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, BuildState& 
 /*****************************************************************************/
 bool CacheJsonParser::serialize()
 {
+#if defined(CHALET_WIN32)
+	m_state.msvcEnvironment.readCompilerVariables();
+#endif
+
 	auto& environmentCache = m_state.cache.environmentCache();
 	Json cacheJsonSchema = Schema::getCacheJson();
 
@@ -141,22 +145,26 @@ bool CacheJsonParser::setDefaultBuildStrategy()
 {
 	auto& environmentCache = m_state.cache.environmentCache();
 	Json& strategyJson = environmentCache.json[kKeyStrategy];
-	const auto strategy = strategyJson.get<std::string>();
 
-	if (strategy.empty() || m_changeStrategy)
+	if (strategyJson.get<std::string>().empty() || m_changeStrategy)
 	{
 		if (Environment::isContinuousIntegrationServer())
 		{
 			strategyJson = "native-experimental";
 		}
-		else if (Environment::isMsvc() && m_state.tools.ninjaAvailable())
+#if defined(CHALET_WIN32)
+		else if (!m_state.tools.ninja().empty())
 		{
 			strategyJson = "ninja";
 		}
+#endif
 		else
 		{
 			strategyJson = "makefile";
 		}
+
+		const auto strategy = strategyJson.get<std::string>();
+		m_state.environment.setStrategy(strategy);
 
 		m_state.cache.setDirty(true);
 	}
@@ -230,7 +238,7 @@ bool CacheJsonParser::makeCache()
 		if (cpp.empty())
 		{
 #if defined(CHALET_WIN32)
-			for (const auto& compiler : { "cl", "clang++", "g++", "c++" })
+			for (const auto& compiler : { "clang++", "g++", "c++", "cl" })
 #else
 			for (const auto& compiler : { "clang++", "g++", "c++" })
 #endif
@@ -255,7 +263,7 @@ bool CacheJsonParser::makeCache()
 		if (cc.empty())
 		{
 #if defined(CHALET_WIN32)
-			for (const auto& compiler : { "cl", "clang", "gcc", "cc" })
+			for (const auto& compiler : { "clang", "gcc", "cc", "cl" })
 #else
 			for (const auto& compiler : { "clang", "gcc", "cc" })
 #endif
@@ -274,7 +282,7 @@ bool CacheJsonParser::makeCache()
 	{
 		std::string link;
 #if defined(CHALET_WIN32)
-		for (const auto& linker : { "link", "lld", "ld" })
+		for (const auto& linker : { "lld", "ld", "link" })
 #else
 		for (const auto& linker : { "lld", "ld" })
 #endif
@@ -292,7 +300,7 @@ bool CacheJsonParser::makeCache()
 	{
 		std::string ar;
 #if defined(CHALET_WIN32)
-		for (const auto& archiver : { "lib", "ar" })
+		for (const auto& archiver : { "ar", "lib" })
 #else
 		for (const auto& archiver : { "libtool", "ar" })
 #endif
@@ -361,16 +369,10 @@ bool CacheJsonParser::makeCache()
 	{
 #if defined(CHALET_WIN32)
 		std::string make;
-		StringList makeSearches;
-		if (Environment::isMsvc())
-		{
-			makeSearches.push_back("jom"); // Qt's parallel NMAKE
-			makeSearches.push_back("nmake");
-		}
-		else
-		{
-			makeSearches.push_back("mingw32-make");
-		}
+
+		// jom.exe - Qt's parallel NMAKE
+		// nmake.exe - MSVC's make-ish build tool, alternative to MSBuild
+		StringList makeSearches{ "mingw32-make", "jom", "nmake" };
 		makeSearches.push_back(kKeyMake);
 		for (const auto& tool : makeSearches)
 		{

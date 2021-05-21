@@ -18,7 +18,6 @@ namespace
 /*****************************************************************************/
 [[nodiscard]] StrategyGenerator makeGenerator(const StrategyType inType, BuildState& inState)
 {
-
 	switch (inType)
 	{
 		case StrategyType::Native:

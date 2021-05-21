@@ -48,6 +48,8 @@ private:
 
 	NinjaRuleList m_rules;
 	StringList m_assemblies;
+
+	bool m_needsMsvcDepsPrefix = false;
 };
 }
 

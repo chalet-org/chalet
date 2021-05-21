@@ -16,15 +16,29 @@ namespace chalet
 bool MsvcEnvironment::readCompilerVariables()
 {
 #if defined(CHALET_WIN32)
-	if (!Environment::isMsvc())
+	if (m_initialized)
+		return true;
+
+	m_initialized = true;
+
+	std::string progFiles;
+	{
+		auto envProgFiles = Environment::get("ProgramFiles(x86)");
+		if (envProgFiles != nullptr)
+			progFiles = std::string(envProgFiles);
+	}
+
+	if (progFiles.empty())
 		return false;
 
-	auto visualStudioPath = Environment::get("VSAPPIDDIR");
-	// LOG(visualStudioPath);
-	if (visualStudioPath == nullptr)
+	std::string vswhere = progFiles + "/Microsoft Visual Studio/Installer/vswhere.exe";
+	if (!Commands::pathExists(vswhere))
 		return false;
 
-	m_vsAppIdDir = std::string(visualStudioPath);
+	m_vsAppIdDir = Commands::subprocessOutput({ progFiles + "/Microsoft Visual Studio/Installer/vswhere.exe", "-latest", "-property", "installationPath" });
+
+	if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
+		return false;
 
 	if (!Commands::pathExists(m_varsFileMsvcDelta))
 	{
@@ -35,15 +49,22 @@ bool MsvcEnvironment::readCompilerVariables()
 		saveMsvcEnvironment();
 
 		// Get the delta between the two and save it to a file
-		std::ifstream msvcVarsInput(m_varsFileMsvc);
-		std::string msvcVars((std::istreambuf_iterator<char>(msvcVarsInput)), std::istreambuf_iterator<char>());
-
-		std::ifstream inputOrig(m_varsFileOriginal);
-		for (std::string line; std::getline(inputOrig, line);)
 		{
-			String::replaceAll(msvcVars, line, "");
+			std::ifstream msvcVarsInput(m_varsFileMsvc);
+			std::string msvcVars((std::istreambuf_iterator<char>(msvcVarsInput)), std::istreambuf_iterator<char>());
+
+			std::ifstream inputOrig(m_varsFileOriginal);
+			for (std::string line; std::getline(inputOrig, line);)
+			{
+				String::replaceAll(msvcVars, line, "");
+			}
+			std::ofstream(m_varsFileMsvcDelta) << msvcVars;
+			msvcVarsInput.close();
+			inputOrig.close();
 		}
-		std::ofstream(m_varsFileMsvcDelta) << msvcVars;
+
+		Commands::remove(m_varsFileOriginal);
+		Commands::remove(m_varsFileMsvc);
 	}
 
 	// Read delta to cache
@@ -80,7 +101,6 @@ bool MsvcEnvironment::readCompilerVariables()
 			m_lib = String::split(lib->second, ";");
 		}
 	}
-
 #endif
 	return true;
 }
@@ -141,7 +161,7 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 	{
 		// TODO: 32-bit arch would use vcvars32.bat
 		StringList cmd{
-			fmt::format("\"{}..\\..\\VC\\Auxiliary\\Build\\vcvars64.bat\"", m_vsAppIdDir),
+			fmt::format("\"{}\\VC\\Auxiliary\\Build\\vcvars64.bat\"", m_vsAppIdDir),
 			">",
 			"nul",
 			"&&",

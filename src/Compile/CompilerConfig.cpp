@@ -17,11 +17,11 @@ namespace chalet
 /*****************************************************************************/
 CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const CompilerTools& inCompilers) :
 	kCompilerStructures({
-		{ "/bin/Hostx64/x64", "/lib/x64" },
-		{ "/bin/Hostx64/x86", "/lib/x86" },
-		{ "/bin/Hostx86/x86", "/lib/x86" },
-		{ "/bin/Hostx86/x64", "/lib/x64" },
-		{ "/bin/Hostx64/x64", "/lib/64" },
+		{ "/bin/hostx64/x64", "/lib/x64" },
+		{ "/bin/hostx64/x86", "/lib/x86" },
+		{ "/bin/hostx86/x86", "/lib/x86" },
+		{ "/bin/hostx86/x64", "/lib/x64" },
+		{ "/bin/hostx64/x64", "/lib/64" },
 		{ "/bin", "/lib" },
 	}),
 	m_compilers(inCompilers),
@@ -53,18 +53,20 @@ bool CompilerConfig::configureCompilerPaths()
 		return false;
 
 	std::string path = String::getPathFolder(exec);
-	for (const auto& structure : kCompilerStructures)
+	const std::string lowercasePath = String::toLowerCase(path);
+
+	for (const auto& [binDir, libDir] : kCompilerStructures)
 	{
-		if (String::endsWith(structure.first, path))
+		if (String::endsWith(binDir, lowercasePath))
 		{
-			String::replaceAll(path, structure.first, "");
+			path = path.substr(0, path.size() - binDir.size());
 
 #if defined(CHALET_MACOS)
 			auto& xcodePath = Commands::getXcodePath();
 			String::replaceAll(path, xcodePath, "");
 #endif
-			m_compilerPathBin = path + structure.first;
-			m_compilerPathLib = path + structure.second;
+			m_compilerPathBin = path + binDir;
+			m_compilerPathLib = path + libDir;
 			m_compilerPathInclude = path + "/include";
 
 			return true;

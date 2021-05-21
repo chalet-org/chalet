@@ -46,6 +46,9 @@ void NinjaGenerator::addProjectRecipes(const ProjectConfiguration& inProject, co
 	m_toolchain = inToolchain.get();
 	m_hash = inTargetHash;
 
+	const auto& config = m_state.compilerTools.getConfig(m_project->language());
+	m_needsMsvcDepsPrefix |= config.isMsvc();
+
 	const auto& target = inOutputs.target;
 
 	const std::string rules = getRules(inOutputs.fileExtensions);
@@ -105,7 +108,7 @@ std::string NinjaGenerator::getContents(const std::string& inPath) const
 
 	std::string msvcDepsPrefix;
 #if defined(CHALET_WIN32)
-	if (Environment::isMsvc())
+	if (m_needsMsvcDepsPrefix)
 	{
 		msvcDepsPrefix = "msvc_deps_prefix = Note: including file:";
 	}
@@ -414,7 +417,8 @@ build {pchTarget}: pch_{hash} {pch}
 			FMT_ARG(pch));
 
 #if defined(CHALET_WIN32)
-		if (Environment::isMsvc())
+		const auto& config = m_state.compilerTools.getConfig(m_project->language());
+		if (config.isMsvc())
 		{
 			std::string pchObj = pchTarget;
 			String::replaceAll(pchObj, ".pch", ".obj");
@@ -511,7 +515,8 @@ std::string NinjaGenerator::getAsmBuildRules(const StringList& inAssemblies)
 std::string NinjaGenerator::getRuleDeps() const
 {
 #if defined(CHALET_WIN32)
-	return Environment::isMsvc() ? "msvc" : "gcc";
+	const auto& config = m_state.compilerTools.getConfig(m_project->language());
+	return config.isMsvc() ? "msvc" : "gcc";
 #else
 	return "gcc";
 #endif

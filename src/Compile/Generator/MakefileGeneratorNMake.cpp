@@ -43,9 +43,7 @@ void MakefileGeneratorNMake::addProjectRecipes(const ProjectConfiguration& inPro
 	// ==============================================================================
 	std::string makeTemplate = fmt::format(R"makefile(
 {buildRecipes}
-
 build_{hash}: {target}
-
 )makefile",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(buildRecipes),
