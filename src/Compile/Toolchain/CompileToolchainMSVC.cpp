@@ -281,8 +281,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 	{
 		ret.push_back("/debug");
 
-		const auto& objDir = m_state.paths.objDir();
-		ret.push_back(fmt::format("/pdb:{}/{}.pdb", objDir, outputFileBase));
+		ret.push_back(fmt::format("/pdb:{}.pdb", outputFileBase));
 	}
 
 	// TODO /version
