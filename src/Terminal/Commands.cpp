@@ -20,6 +20,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Subprocess.hpp"
 
@@ -402,7 +403,7 @@ bool Commands::pathExists(const fs::path& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::pathIsEmpty(const fs::path& inPath, const bool inCheckExists)
+bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& inExceptions, const bool inCheckExists)
 {
 	try
 	{
@@ -414,7 +415,41 @@ bool Commands::pathIsEmpty(const fs::path& inPath, const bool inCheckExists)
 			throw std::runtime_error("Not a directory");
 		}
 
-		bool result = fs::is_empty(inPath);
+		bool result = fs::is_directory(inPath);
+		if (!result)
+			return false;
+
+		auto dirEnd = fs::directory_iterator();
+		for (auto it = fs::directory_iterator(inPath); it != dirEnd; ++it)
+		{
+			auto item = *it;
+			if (item.is_directory() || item.is_regular_file())
+			{
+				const auto& path = item.path();
+				const auto stem = path.stem().string();
+
+				bool foundException = false;
+				for (auto& excep : inExceptions)
+				{
+					if (excep.stem().string() == stem)
+					{
+						foundException = true;
+						break;
+					}
+				}
+				if (!foundException)
+				{
+					result = false;
+					break;
+				}
+			}
+			else
+			{
+				result = false;
+				break;
+			}
+		}
+
 		return result;
 	}
 	catch (const fs::filesystem_error& err)

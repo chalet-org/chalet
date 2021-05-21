@@ -742,10 +742,10 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, co
 		return false;
 	}
 
-	if (!inAbstract && (outProject.files().size() > 0 && outProject.fileExtensions().size() > 0))
+	/*if (!inAbstract && (outProject.files().size() > 0 && outProject.fileExtensions().size() > 0))
 	{
 		Diagnostic::warn(fmt::format("{}: 'fileExtensions' ignored since 'files' are explicitely declared in project: {}", m_filename, outProject.name()));
-	}
+	}*/
 
 	return true;
 }

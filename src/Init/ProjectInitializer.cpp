@@ -11,6 +11,7 @@
 #include "Terminal/Diagnostic.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Terminal/Unicode.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -33,7 +34,7 @@ bool ProjectInitializer::run()
 
 	// At the moment, only initialize an empty path
 	m_rootPath = Commands::getCanonicalPath(path);
-	if (!Commands::pathIsEmpty(m_rootPath))
+	if (!Commands::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))
 	{
 		Diagnostic::error(fmt::format("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath));
 		return false;
@@ -41,7 +42,7 @@ bool ProjectInitializer::run()
 
 	Path::sanitize(m_rootPath);
 
-	Output::print(Color::Yellow, "Path is empty. Let's do some stuff...");
+	Output::print(Color::Yellow, fmt::format("Initializing a project called '{}'. This'll only take a moment...", m_inputs.initProjectName()));
 
 	if (!makeBuildJson())
 		return false;
@@ -49,14 +50,27 @@ bool ProjectInitializer::run()
 	bool cleanOutput = true;
 	Commands::makeDirectory(fmt::format("{}/src/", m_rootPath), cleanOutput);
 
+	bool result = true;
+
 	if (!makeMainCpp())
-		return false;
+		result = false;
 
 	if (!makePch())
-		return false;
+		result = false;
 
 	if (!makeGitIgnore())
-		return false;
+		result = false;
+
+	if (result)
+	{
+		auto symbol = Unicode::heavyCheckmark();
+		Output::displayStyledSymbol(Color::Green, symbol, "Done! Happy coding!");
+	}
+	else
+	{
+		auto symbol = Unicode::heavyBallotX();
+		Output::displayStyledSymbol(Color::Red, symbol, "There was an error creating the project files.");
+	}
 
 	return true;
 }

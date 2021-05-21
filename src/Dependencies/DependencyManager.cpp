@@ -239,7 +239,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 			m_state.cache.setDirty(true);
 		}
 
-		if (Commands::pathIsEmpty(externalDepDir, true))
+		if (Commands::pathIsEmpty(externalDepDir, {}, true))
 			result &= Commands::remove(externalDepDir);
 	}
 

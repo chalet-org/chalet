@@ -43,7 +43,7 @@ std::string readShebangFromFile(const fs::path& inFile);
 void sleep(const double inSeconds);
 
 bool pathExists(const fs::path& inPath);
-bool pathIsEmpty(const fs::path& inPath, const bool inCheckExists = false);
+bool pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& inExceptions = {}, const bool inCheckExists = false);
 
 bool createFileWithContents(const std::string& inFile, const std::string& inContents);
 

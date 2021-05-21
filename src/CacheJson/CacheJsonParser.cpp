@@ -65,42 +65,31 @@ bool CacheJsonParser::serialize()
 bool CacheJsonParser::validatePaths()
 {
 	auto& compilers = m_state.compilerTools;
-#if defined(CHALET_DEBUG)
-	auto& cacheJson = m_state.cache.environmentCache();
-#endif
 
 	if (!Commands::pathExists(compilers.cpp()))
 	{
-#if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
-#endif
+		m_state.cache.saveEnvironmentCache();
 		Diagnostic::errorAbort(fmt::format("{}: The toolchain's C++ compiler was blank or could not be found.", m_filename));
 		return false;
 	}
 
 	if (!Commands::pathExists(compilers.cc()))
 	{
-#if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
-#endif
+		m_state.cache.saveEnvironmentCache();
 		Diagnostic::errorAbort(fmt::format("{}: The toolchain's C compiler was blank or could not be found.", m_filename));
 		return false;
 	}
 
 	if (!Commands::pathExists(compilers.archiver()))
 	{
-#if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
-#endif
+		m_state.cache.saveEnvironmentCache();
 		Diagnostic::errorAbort(fmt::format("{}: The toolchain's archive utility was blank or could not be found.", m_filename));
 		return false;
 	}
 
 	if (!Commands::pathExists(compilers.linker()))
 	{
-#if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
-#endif
+		m_state.cache.saveEnvironmentCache();
 		Diagnostic::errorAbort(fmt::format("{}: The toolchain's linker was blank or could not be found.", m_filename));
 		return false;
 	}
@@ -108,9 +97,7 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_WIN32)
 	if (!Commands::pathExists(compilers.rc()))
 	{
-	#if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
-	#endif
+		m_state.cache.saveEnvironmentCache();
 		Diagnostic::warn(fmt::format("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_filename));
 	}
 #endif
@@ -119,9 +106,7 @@ bool CacheJsonParser::validatePaths()
 	/*
 	if (!Commands::pathExists(m_make))
 	{
-#if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
-#endif
+		m_state.cache.saveEnvironmentCache();
 		Diagnostic::errorAbort(fmt::format("{}: 'make' could not be found.", m_filename));
 		return false;
 	}
@@ -130,10 +115,9 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_MACOS)
 	if (!Commands::pathExists(m_state.tools.macosSdk()))
 	{
-	#if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
-	#endif
+		m_state.cache.saveEnvironmentCache();
 		Diagnostic::errorAbort(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
+		return false;
 	}
 #endif
 

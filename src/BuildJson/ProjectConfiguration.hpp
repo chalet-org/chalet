@@ -221,7 +221,7 @@ private:
 	bool m_staticLinking = false;
 	bool m_posixThreads = true;
 	bool m_includeInBuild = true;
-	bool m_windowsAffixOutputFilename = true;
+	bool m_windowsPrefixOutputFilename = true;
 	bool m_windowsOutputDef = false;
 };
 

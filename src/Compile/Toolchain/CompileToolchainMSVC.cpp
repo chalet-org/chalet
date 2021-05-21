@@ -87,6 +87,8 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 	addExceptionHandlingModel(ret);
 	addWarnings(ret);
 
+	ret.push_back("/utf-8");
+
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	// addWholeProgramOptimization(ret);
@@ -155,6 +157,8 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	addLanguageStandard(ret, specialization);
 	addExceptionHandlingModel(ret);
 	addWarnings(ret);
+
+	ret.push_back("/utf-8");
 
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);

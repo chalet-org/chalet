@@ -695,12 +695,12 @@ void ProjectConfiguration::setPosixThreads(const bool inValue) noexcept
 bool ProjectConfiguration::windowsPrefixOutputFilename() const noexcept
 {
 	bool staticLib = m_kind == ProjectKind::StaticLibrary;
-	return m_windowsAffixOutputFilename || staticLib;
+	return m_windowsPrefixOutputFilename || staticLib;
 }
 
 void ProjectConfiguration::setWindowsPrefixOutputFilename(const bool inValue) noexcept
 {
-	m_windowsAffixOutputFilename = inValue;
+	m_windowsPrefixOutputFilename = inValue;
 }
 
 /*****************************************************************************/
@@ -762,14 +762,14 @@ void ProjectConfiguration::parseOutputFilename(const bool inWindowsMsvc) noexcep
 	bool staticLib = m_kind == ProjectKind::StaticLibrary;
 
 #if defined(CHALET_WIN32)
-	std::string extExec = ".exe";
-	std::string execLib = ".dll";
+	std::string executableExtension{ ".exe" };
+	std::string libraryExtension{ ".dll" };
 #elif defined(CHALET_MACOS)
-	std::string extExec;
-	std::string execLib = ".dylib";
+	std::string executableExtension;
+	std::string libraryExtension{ ".dylib" };
 #else
-	std::string extExec;
-	std::string execLib = ".so";
+	std::string executableExtension;
+	std::string libraryExtension{ ".so" };
 #endif
 
 #if !defined(CHALET_WIN32)
@@ -780,28 +780,28 @@ void ProjectConfiguration::parseOutputFilename(const bool inWindowsMsvc) noexcep
 	{
 #if defined(CHALET_WIN32)
 		if (inWindowsMsvc)
-			execLib = "-s.lib";
+			libraryExtension = "-s.lib";
 		else
 #endif
-			execLib = "-s.a";
+			libraryExtension = "-s.a";
 	}
 
 	switch (m_kind)
 	{
 		case ProjectKind::ConsoleApplication:
 		case ProjectKind::DesktopApplication: {
-			m_outputFile = m_name + extExec;
+			m_outputFile = m_name + executableExtension;
 			break;
 		}
 		case ProjectKind::SharedLibrary:
 		case ProjectKind::StaticLibrary: {
 			if (!windowsPrefixOutputFilename())
 			{
-				m_outputFile = m_name + execLib;
+				m_outputFile = m_name + libraryExtension;
 			}
 			else
 			{
-				m_outputFile = "lib" + m_name + execLib;
+				m_outputFile = "lib" + m_name + libraryExtension;
 			}
 			break;
 		}
