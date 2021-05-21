@@ -13,7 +13,6 @@ struct Environment
 	static bool isBash();
 	static bool isCommandPromptOrPowerShell();
 	static bool isVisualStudioCommandPrompt();
-	static bool hasTerm();
 	static bool isContinuousIntegrationServer();
 
 	static const char* get(const char* inName);
@@ -35,8 +34,9 @@ private:
 		Korn,	// /bin/ksh
 		Zsh,	// /bin/zsh
 		Fish,	// /usr/bin/fish, /usr/local/bin/fish
+		WindowsColorTerm,
 		CommandPrompt,
-		CommandPromptMsvc,
+		CommandPromptVisualStudio,
 		Powershell,
 		PowershellIse,
 		PowershellOpenSource, // 6+

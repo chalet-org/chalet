@@ -115,7 +115,7 @@ bool Environment::isBash()
 		setTerminalType();
 
 #if defined(CHALET_WIN32)
-	return s_terminalType == ShellType::Bash;
+	return s_terminalType == ShellType::Bash || s_terminalType == ShellType::WindowsColorTerm;
 #else
 	return s_terminalType != ShellType::Unset; // isBash() just looks for a bash-like
 #endif
@@ -127,7 +127,7 @@ bool Environment::isCommandPromptOrPowerShell()
 	if (s_terminalType == ShellType::Unset)
 		setTerminalType();
 
-	// Note: intentionally not using ShellType::CommandPromptMsvc
+	// Note: intentionally not using ShellType::CommandPromptVisualStudio
 	return s_terminalType == ShellType::CommandPrompt
 		|| s_terminalType == ShellType::Powershell
 		|| s_terminalType == ShellType::PowershellOpenSource
@@ -140,19 +140,7 @@ bool Environment::isVisualStudioCommandPrompt()
 	if (s_terminalType == ShellType::Unset)
 		setTerminalType();
 
-	return s_terminalType == ShellType::CommandPromptMsvc;
-}
-
-/*****************************************************************************/
-bool Environment::hasTerm()
-{
-	if (s_hasTerm == -1)
-	{
-		auto varTERM = Environment::get("TERM");
-		s_hasTerm = varTERM == nullptr ? 0 : 1;
-	}
-
-	return s_hasTerm == 1;
+	return s_terminalType == ShellType::CommandPromptVisualStudio;
 }
 
 /*****************************************************************************/
@@ -184,8 +172,14 @@ void Environment::setTerminalType()
 	result = Environment::get("VSAPPIDDIR");
 	if (result != nullptr)
 	{
-		// LOG("This is running through Visual Studio");
-		s_terminalType = ShellType::CommandPromptMsvc;
+		s_terminalType = ShellType::CommandPromptVisualStudio;
+		return printTermType();
+	}
+
+	result = Environment::get("COLORTERM");
+	if (result != nullptr)
+	{
+		s_terminalType = ShellType::WindowsColorTerm;
 		return printTermType();
 	}
 
@@ -307,11 +301,15 @@ void Environment::printTermType()
 			term = "Subprocess";
 			break;
 
+		case ShellType::WindowsColorTerm:
+			term = "Generic (w/ COLORTERM set)";
+			break;
+
 		case ShellType::CommandPrompt:
 			term = "Command Prompt";
 			break;
 
-		case ShellType::CommandPromptMsvc:
+		case ShellType::CommandPromptVisualStudio:
 			term = "Command Prompt (Visual Studio)";
 			break;
 

@@ -80,10 +80,11 @@ void BuildCache::removeCacheFolder(const Type inCacheType)
 /*****************************************************************************/
 std::string BuildCache::getHash(const std::string& inIdentifier, const Type inCacheType) const
 {
-	bool isBash = Environment::isBash();
+	// bool isBash = Environment::isBash();
 	std::size_t infoHash = m_info.hash();
 
-	std::string toHash = fmt::format("{}_{}_{}", infoHash, inIdentifier, isBash ? "bash" : "cmd");
+	// std::string toHash = fmt::format("{}_{}_{}", infoHash, inIdentifier, isBash ? "bash" : "cmd");
+	std::string toHash = fmt::format("{}_{}", infoHash, inIdentifier);
 	std::string hash = Hash::string(toHash);
 
 	const auto& cacheRef = getCacheRef(inCacheType);
@@ -359,7 +360,7 @@ std::string BuildCache::getBuildHash(std::string appPath)
 
 	std::string md5;
 #if defined(CHALET_WIN32)
-	if (Environment::isBash())
+	/*if (Environment::isBash())
 	{
 		const std::string md5Result = Commands::subprocessOutput({ "md5sum", appPath });
 		auto list = String::split(md5Result);
@@ -367,7 +368,7 @@ std::string BuildCache::getBuildHash(std::string appPath)
 		md5 = list.front();
 		String::replaceAll(md5, '\\', 0);
 	}
-	else
+	else*/
 	{
 		const std::string md5Result = Commands::subprocessOutput({ "cmd.exe", "/c", "certutil", "-hashfile", appPath, "MD5" });
 	#ifdef CHALET_MSVC
