@@ -166,14 +166,6 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, const bool i
 	if (!inCleanOutput)
 		Output::print(Color::Blue, inCmd);
 
-	std::string errorOutput;
-	Subprocess::PipeFunc onStdErr = [&errorOutput](std::string inData) {
-		errorOutput += std::move(inData);
-	};
-	// static Subprocess::PipeFunc onStdErr = [](std::string inData) {
-	// 	std::cerr << inData << std::flush;
-	// };
-
 	bool skipOutput = false;
 	std::string noWork{ "ninja: no work to do.\n" };
 	Subprocess::PipeFunc onStdOut = [&skipOutput, &noWork](std::string inData) {
@@ -182,6 +174,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, const bool i
 #endif
 
 #if defined(CHALET_WIN32)
+		// the n & inja split is a weird MinGW thing, although it seems consistent?
 		if (skipOutput || String::endsWith(noWork, inData) || String::equals('n', inData))
 #else
 		if (skipOutput || String::endsWith(noWork, inData))
@@ -197,29 +190,10 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, const bool i
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::Pipe;
-	options.onStdErr = onStdErr;
+	options.stderrOption = PipeOption::StdErr;
 	options.onStdOut = onStdOut;
 
-	// std::size_t cutoff = std::string::npos;
-	// cutoff = errorOutput.find("ninja: no work to do.");
-
-	// if (cutoff != std::string::npos)
-	// {
-	// 	errorOutput = errorOutput.substr(0, cutoff);
-	// }
-
 	int result = Subprocess::run(inCmd, std::move(options));
-	if (!errorOutput.empty())
-	{
-		// std::size_t cutoff = std::string::npos;
-
-		// Note: std::cerr outputs after std::cout on windows (which we don't want)
-		if (result == EXIT_SUCCESS)
-			std::cout << Output::getAnsiReset() << errorOutput << std::endl;
-		else
-			std::cout << Output::getAnsiReset() << errorOutput << std::flush;
-	}
 
 	if (!skipOutput)
 		Output::lineBreak();
