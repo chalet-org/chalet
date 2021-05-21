@@ -26,6 +26,13 @@ bool CompileStrategyNinja::initialize()
 	if (m_initialized)
 		return false;
 
+	auto& ninjaExec = m_state.tools.ninja();
+	if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
+	{
+		Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found. Aborting.", ninjaExec.empty() ? "ninja" : ninjaExec));
+		return false;
+	}
+
 	auto& name = "ninja";
 	m_cacheFolder = m_state.cache.getHash(name, BuildCache::Type::Local);
 
@@ -105,15 +112,9 @@ bool CompileStrategyNinja::saveBuildFile() const
 bool CompileStrategyNinja::buildProject(const ProjectConfiguration& inProject) const
 {
 	auto& ninjaExec = m_state.tools.ninja();
-	if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
-	{
-		Diagnostic::error(fmt::format("{} was not found in compiler path. Aborting.", ninjaExec));
-		return false;
-	}
-
 	if (m_hashes.find(inProject.name()) == m_hashes.end())
 	{
-		Diagnostic::error(fmt::format("{} was not previously cached. Aborting.", inProject.name()));
+		Diagnostic::error(fmt::format("Project: {} was not previously cached. Aborting.", inProject.name()));
 		return false;
 	}
 

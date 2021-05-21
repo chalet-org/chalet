@@ -29,6 +29,13 @@ bool CompileStrategyMakefile::initialize()
 	if (m_initialized)
 		return false;
 
+	const auto& makeExec = m_state.tools.make();
+	if (makeExec.empty() || !Commands::pathExists(makeExec))
+	{
+		Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found. Aborting.", makeExec.empty() ? "make" : makeExec));
+		return false;
+	}
+
 	auto& name = "makefile";
 	m_cacheFile = m_state.cache.getHash(name, BuildCache::Type::Local);
 
@@ -100,13 +107,6 @@ bool CompileStrategyMakefile::saveBuildFile() const
 /*****************************************************************************/
 bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject) const
 {
-	const auto& makeExec = m_state.tools.make();
-	if (makeExec.empty() || !Commands::pathExists(makeExec))
-	{
-		Diagnostic::error(fmt::format("{} was not found in compiler path. Aborting.", makeExec));
-		return false;
-	}
-
 	if (m_hashes.find(inProject.name()) == m_hashes.end())
 	{
 		Diagnostic::error(fmt::format("{} was not previously cached. Aborting.", inProject.name()));
