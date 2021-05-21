@@ -11,6 +11,7 @@ namespace chalet
 namespace String
 {
 bool equals(const std::string_view inCompare, const std::string& inString);
+bool equals(const char inCompare, const std::string& inString);
 bool equals(const StringList& inFind, const std::string& inString);
 
 bool contains(const std::string_view inFind, const std::string& inString);

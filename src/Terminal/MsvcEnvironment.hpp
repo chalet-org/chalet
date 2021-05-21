@@ -32,9 +32,9 @@ private:
 
 	std::unordered_map<std::string, std::string> m_variables;
 
-	std::string m_varsFileOriginal{ "build/variables_original.txt" };
-	std::string m_varsFileMsvc{ "build/variables_msvc.txt" };
-	std::string m_varsFileMsvcDelta{ "build/variables_msvc_delta.txt" };
+	std::string m_varsFileOriginal{ "build/original.env" };
+	std::string m_varsFileMsvc{ "build/msvc_all.env" };
+	std::string m_varsFileMsvcDelta{ "build/msvc.env" };
 
 	std::string m_vsAppIdDir;
 

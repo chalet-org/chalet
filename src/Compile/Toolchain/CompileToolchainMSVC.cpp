@@ -214,7 +214,9 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 
 	auto& lib = m_state.compilerTools.archiver();
 	ret.push_back(fmt::format("\"{}\"", lib));
-	ret.push_back("/NOLOGO");
+	ret.push_back("/nologo");
+
+	addTargetPlatformArch(ret);
 
 	/*if (m_state.configuration.linkTimeOptimization())
 	{
@@ -230,10 +232,8 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 	UNUSED(outputFileBase);
 
 	// TODO: /SUBSYSTEM
-	// TODO: /MACHINE - target platform arch
-	ret.push_back("/MACHINE:x64");
 
-	ret.push_back(fmt::format("/OUT:{}", outputFile));
+	ret.push_back(fmt::format("/out:{}", outputFile));
 
 	addSourceObjects(ret, sourceObjs);
 
@@ -251,43 +251,40 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 
 	auto& link = m_state.compilerTools.linker();
 	ret.push_back(fmt::format("\"{}\"", link));
-	ret.push_back("/NOLOGO");
+	ret.push_back("/nologo");
+
+	addTargetPlatformArch(ret);
+	addSubSystem(ret);
+	addCgThreads(ret);
+	addLibDirs(ret);
 
 	const bool debugSymbols = m_state.configuration.debugSymbols();
-
 	if (m_state.configuration.linkTimeOptimization())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
 		// ret.push_back("/LTCG");
 
+		// Note: These are also tied to /INCREMENTAL (implied with /debug)
 		if (debugSymbols)
-			ret.push_back("/OPT:NOREF,NOICF,NOLBR");
+			ret.push_back("/opt:NOREF,NOICF,NOLBR");
 		else
-			ret.push_back("/OPT:REF,ICF,LBR");
+			ret.push_back("/opt:REF,ICF,LBR");
 
 		// OPT:LBR - relates to arm binaries
 	}
 
-	uint maxJobs = m_state.environment.maxJobs();
-	if (maxJobs > 4)
-	{
-		maxJobs = std::min<uint>(maxJobs, 8);
-		ret.push_back(fmt::format("/CGTHREADS:{}", maxJobs));
-	}
-
-	addLibDirs(ret);
-
 	if (debugSymbols)
 	{
+		ret.push_back("/debug");
+
 		const auto& objDir = m_state.paths.objDir();
-		ret.push_back(fmt::format("/PDB:{}/{}.pdb", objDir, outputFileBase));
+		ret.push_back(fmt::format("/pdb:{}/{}.pdb", objDir, outputFileBase));
 	}
 
-	// TODO: /SUBSYSTEM
-	// TODO: /MACHINE - target platform arch
-	ret.push_back("/MACHINE:x64");
+	// TODO /version
+	ret.push_back("/version:0.0");
 
-	ret.push_back(fmt::format("/OUT:{}", outputFile));
+	ret.push_back(fmt::format("/out:{}", outputFile));
 
 	addPrecompiledHeaderLink(ret);
 	addSourceObjects(ret, sourceObjs);
@@ -642,6 +639,57 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 			outArgList.push_back(fmt::format("{}.lib", link));
 		}
 	}
+
+	// TODO: Dynamic way of determining this list
+	// would they differ between console app & windows app?
+	for (auto& link : { "DbgHelp", "kernel32", "user32", "gdi32", "winspool", "shell32", "ole32", "oleaut32", "uuid", "comdlg32", "advapi32" })
+	{
+		List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addCgThreads(StringList& outArgList) const
+{
+	uint maxJobs = m_state.environment.maxJobs();
+	if (maxJobs > 4)
+	{
+		maxJobs = std::min<uint>(maxJobs, 8);
+		outArgList.push_back(fmt::format("/cgthreads:{}", maxJobs));
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
+{
+	std::string subsystem;
+	switch (m_project.kind())
+	{
+		case ProjectKind::ConsoleApplication:
+			subsystem = "console";
+			break;
+
+		case ProjectKind::DesktopApplication:
+			subsystem = "windows";
+			break;
+
+		default: break;
+	}
+
+	// TODO:
+	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
+
+	if (subsystem.empty())
+		return;
+
+	outArgList.push_back(fmt::format("/subsystem:{}", subsystem));
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addTargetPlatformArch(StringList& outArgList) const
+{
+	// TODO: /MACHINE - target platform arch
+	outArgList.push_back("/machine:x64");
 }
 
 /*****************************************************************************/

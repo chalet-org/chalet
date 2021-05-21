@@ -10,6 +10,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -131,19 +132,17 @@ bool CompileStrategyNinja::buildProject(const ProjectConfiguration& inProject) c
 		command.push_back("--quiet"); // forthcoming (in ninja's master branch currently)
 	}
 
+	const bool clean = true;
 	auto& hash = m_hashes.at(inProject.name());
 
 	{
 		std::cout << Output::getAnsiStyle(Color::Blue) << std::flush;
 
 		command.push_back(fmt::format("build_{}", hash));
-		bool result = Commands::subprocess(command, PipeOption::StdOut);
+		bool result = subprocessNinja(command, clean);
 
 		if (!result)
-		{
-			Output::lineBreak();
 			return false;
-		}
 	}
 
 	if (inProject.dumpAssembly())
@@ -152,17 +151,75 @@ bool CompileStrategyNinja::buildProject(const ProjectConfiguration& inProject) c
 
 		command.back() = fmt::format("asm_{}", hash);
 
-		bool result = Commands::subprocess(command, PipeOption::StdOut);
-		Output::lineBreak();
+		bool result = subprocessNinja(command, clean);
 
 		if (!result)
 			return false;
 	}
-	else
-	{
-		Output::lineBreak();
-	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, const bool inCleanOutput, std::string inCwd) const
+{
+	if (!inCleanOutput)
+		Output::print(Color::Blue, inCmd);
+
+	std::string errorOutput;
+	Subprocess::PipeFunc onStdErr = [&errorOutput](std::string inData) {
+		errorOutput += std::move(inData);
+	};
+	// static Subprocess::PipeFunc onStdErr = [](std::string inData) {
+	// 	std::cerr << inData << std::flush;
+	// };
+
+	bool skipOutput = false;
+	std::string noWork{ "inja: no work to do.\n" };
+	Subprocess::PipeFunc onStdOut = [&skipOutput, &noWork](std::string inData) {
+#if defined(CHALET_WIN32)
+		String::replaceAll(inData, "\r\n", "\n");
+#endif
+
+		if (skipOutput || String::equals('n', inData) || String::equals(noWork, inData))
+		{
+			skipOutput = true;
+			return;
+		}
+
+		std::cout << inData << std::flush;
+	};
+
+	SubprocessOptions options;
+	options.cwd = std::move(inCwd);
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdErr = onStdErr;
+	options.onStdOut = onStdOut;
+
+	// std::size_t cutoff = std::string::npos;
+	// cutoff = errorOutput.find("ninja: no work to do.");
+
+	// if (cutoff != std::string::npos)
+	// {
+	// 	errorOutput = errorOutput.substr(0, cutoff);
+	// }
+
+	int result = Subprocess::run(inCmd, std::move(options));
+	if (!errorOutput.empty())
+	{
+		// std::size_t cutoff = std::string::npos;
+
+		// Note: std::cerr outputs after std::cout on windows (which we don't want)
+		if (result == EXIT_SUCCESS)
+			std::cout << Output::getAnsiReset() << errorOutput << std::endl;
+		else
+			std::cout << Output::getAnsiReset() << errorOutput << std::flush;
+	}
+
+	if (!skipOutput)
+		Output::lineBreak();
+
+	return result == EXIT_SUCCESS;
 }
 }

@@ -49,6 +49,11 @@ private:
 	// Linking
 	virtual void addLibDirs(StringList& outArgList) const final;
 	virtual void addLinks(StringList& outArgList) const final;
+	void addCgThreads(StringList& outArgList) const;
+	void addSubSystem(StringList& outArgList) const;
+
+	// General
+	void addTargetPlatformArch(StringList& outArgList) const;
 
 	StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);

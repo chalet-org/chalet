@@ -50,8 +50,10 @@ void stripLastEndLine(std::string& inString)
 #endif
 	}
 }
-
 }
+
+// TODO: std::filesystem::last_write_time as a starting point for deps w/ "native" strategy
+
 /*****************************************************************************/
 std::string Commands::getWorkingDirectory()
 {

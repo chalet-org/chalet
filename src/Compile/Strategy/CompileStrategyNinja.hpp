@@ -23,6 +23,8 @@ struct CompileStrategyNinja final : ICompileStrategy
 	virtual bool buildProject(const ProjectConfiguration& inProject) const final;
 
 private:
+	bool subprocessNinja(const StringList& inCmd, const bool inCleanOutput, std::string inCwd = std::string()) const;
+
 	std::string m_cacheFile;
 	std::string m_cacheFolder;
 

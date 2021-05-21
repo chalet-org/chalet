@@ -17,6 +17,12 @@ bool String::equals(const std::string_view inCompare, const std::string& inStrin
 }
 
 /*****************************************************************************/
+bool String::equals(const char inCompare, const std::string& inString)
+{
+	return inString.size() == 1 && inString.front() == inCompare;
+}
+
+/*****************************************************************************/
 bool String::equals(const StringList& inFind, const std::string& inString)
 {
 	for (auto& item : inFind)
