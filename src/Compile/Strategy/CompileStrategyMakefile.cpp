@@ -43,15 +43,15 @@ bool CompileStrategyMakefile::initialize()
 	Json& buildCache = environmentCache.json["data"];
 	std::string key = fmt::format("{}:{}", m_state.buildConfiguration(), name);
 
+	const bool cacheExists = Commands::pathExists(m_cacheFile);
+	const bool appBuildChanged = m_state.cache.appBuildChanged();
+	const auto hash = String::getPathFilename(m_cacheFile);
+
 	std::string existingHash;
 	if (buildCache.contains(key))
 	{
 		existingHash = buildCache.at(key);
 	}
-
-	const bool cacheExists = Commands::pathExists(m_cacheFile);
-	const bool appBuildChanged = m_state.cache.appBuildChanged();
-	const auto hash = String::getPathFilename(m_cacheFile);
 
 	m_cacheNeedsUpdate = existingHash != hash || !cacheExists || appBuildChanged;
 

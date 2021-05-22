@@ -25,6 +25,7 @@ struct BuildCache
 
 	bool createCacheFolder(const Type inCacheType);
 	std::string getHash(const std::string& inIdentifier, const Type inCacheType) const;
+	std::string getPath(const std::string& inFolder, const Type inCacheType) const;
 
 	JsonFile& environmentCache() noexcept;
 	void saveEnvironmentCache();

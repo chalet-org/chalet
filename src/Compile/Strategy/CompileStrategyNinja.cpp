@@ -34,11 +34,18 @@ bool CompileStrategyNinja::initialize()
 	}
 
 	auto& name = "ninja";
-	m_cacheFolder = m_state.cache.getHash(name, BuildCache::Type::Local);
+	m_cacheFile = m_state.cache.getHash(name, BuildCache::Type::Local);
 
 	auto& environmentCache = m_state.cache.environmentCache();
 	Json& buildCache = environmentCache.json["data"];
 	std::string key = fmt::format("{}:{}", m_state.buildConfiguration(), name);
+
+	// Note: The ninja cache folder must not change between build.json changes
+	m_cacheFolder = m_state.cache.getPath(m_state.buildConfiguration(), BuildCache::Type::Local);
+
+	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
+	const bool appBuildChanged = m_state.cache.appBuildChanged();
+	const auto hash = String::getPathFilename(m_cacheFile);
 
 	std::string existingHash;
 	if (buildCache.contains(key))
@@ -46,23 +53,16 @@ bool CompileStrategyNinja::initialize()
 		existingHash = buildCache.at(key);
 	}
 
-	m_cacheFile = fmt::format("{}/build.ninja", m_cacheFolder);
-	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
-	const bool appBuildChanged = m_state.cache.appBuildChanged();
-	const auto hash = String::getPathFilename(m_cacheFolder);
-
 	m_cacheNeedsUpdate = existingHash != hash || !cacheExists || appBuildChanged;
 
 	if (m_cacheNeedsUpdate)
 	{
-		if (!cacheExists)
-		{
-			Commands::makeDirectory(m_cacheFolder);
-		}
-
-		buildCache[key] = String::getPathFilename(m_cacheFolder);
+		buildCache[key] = String::getPathFilename(m_cacheFile);
 		m_state.cache.setDirty(true);
 	}
+
+	if (!Commands::pathExists(m_cacheFolder))
+		Commands::makeDirectory(m_cacheFolder);
 
 	m_initialized = true;
 

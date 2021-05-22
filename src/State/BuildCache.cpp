@@ -88,8 +88,18 @@ std::string BuildCache::getHash(const std::string& inIdentifier, const Type inCa
 	std::string hash = Hash::string(toHash);
 
 	const auto& cacheRef = getCacheRef(inCacheType);
-
 	std::string ret = fmt::format("{}/{}", cacheRef, hash);
+
+	// LOG(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string BuildCache::getPath(const std::string& inFolder, const Type inCacheType) const
+{
+	const auto& cacheRef = getCacheRef(inCacheType);
+	std::string ret = fmt::format("{}/{}", cacheRef, inFolder);
 
 	// LOG(ret);
 
@@ -201,6 +211,7 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 		{
 			std::string hash = it.value().get<std::string>();
 			hashes.push_back(std::move(hash));
+			hashes.push_back(keyBuildConfig);
 
 			std::string path = fmt::format("{}/{}", cacheRef, hash);
 			if (!validForBuild && Commands::pathExists(path))
