@@ -343,10 +343,18 @@ StringList BuildPaths::getFileList(const ProjectConfiguration& inProject) const
 	const auto& files = inProject.files();
 	if (files.size() > 0)
 	{
+		auto& pch = inProject.pch();
+		bool usesPch = inProject.usesPch();
 		StringList fileList;
 
 		for (auto& file : files)
 		{
+			if (usesPch && String::equals(pch, file))
+			{
+				Diagnostic::warn(fmt::format("Precompiled header explicitly included as file: {} (ignored)", file));
+				continue;
+			}
+
 			if (!Commands::pathExists(file))
 			{
 				Diagnostic::warn(fmt::format("File not found: {}", file));
