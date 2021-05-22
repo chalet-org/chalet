@@ -335,6 +335,18 @@ void ArgumentPatterns::addProjectGeneratorArg()
 }
 
 /*****************************************************************************/
+void ArgumentPatterns::addEnvFileArg()
+{
+	m_parser.add_argument("-e", "--env")
+		.help("file to load environment variables from")
+		.nargs(1)
+		.default_value(std::string());
+
+	m_argumentMap.push_back({ "-e", Variant::Kind::String });
+	m_argumentMap.push_back({ "--env", Variant::Kind::String });
+}
+
+/*****************************************************************************/
 void ArgumentPatterns::addSaveSchemaArg()
 {
 	// This option should only be in the debug executable
@@ -393,6 +405,7 @@ void ArgumentPatterns::commandBuildRun()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();
+	addEnvFileArg();
 	addSaveSchemaArg();
 
 	addBuildConfigurationArg();
@@ -405,6 +418,7 @@ void ArgumentPatterns::commandRun()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();
+	addEnvFileArg();
 	addSaveSchemaArg();
 
 	addBuildConfigurationArg();
@@ -417,6 +431,7 @@ void ArgumentPatterns::commandBuild()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();
+	addEnvFileArg();
 	addSaveSchemaArg();
 
 	addBuildConfigurationArg();
@@ -427,6 +442,7 @@ void ArgumentPatterns::commandRebuild()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();
+	addEnvFileArg();
 	addSaveSchemaArg();
 
 	addBuildConfigurationArg();
@@ -437,6 +453,7 @@ void ArgumentPatterns::commandClean()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();
+	addEnvFileArg();
 	addSaveSchemaArg();
 
 	bool optional = true;
@@ -448,6 +465,7 @@ void ArgumentPatterns::commandBundle()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();
+	addEnvFileArg();
 	addSaveSchemaArg();
 }
 
@@ -456,6 +474,7 @@ void ArgumentPatterns::commandConfigure()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();
+	addEnvFileArg();
 	addSaveSchemaArg();
 }
 
@@ -464,6 +483,7 @@ void ArgumentPatterns::commandInit()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();
+	addEnvFileArg();
 
 	//
 	m_parser.add_argument(kArgInitName)
@@ -486,6 +506,7 @@ void ArgumentPatterns::commandDebug()
 {
 	addInputFileArg();
 	addProjectGeneratorArg();
+	addEnvFileArg();
 }
 #endif
 

@@ -603,18 +603,14 @@ void CompileToolchainGNU::addLanguageStandard(StringList& outArgList, const CxxS
 #ifndef CHALET_MSVC
 	static constexpr auto regex = ctll::fixed_string{ "^(((c|gnu)\\+\\+|gnu|c|iso9899:)(\\d[\\dzaxy]{1,3}|199409))$" };
 	if (auto m = ctre::match<regex>(ret))
-	{
-		ret = "-std=" + ret;
-		outArgList.push_back(std::move(ret));
-	}
 #else
 	static std::regex regex{ "^(((c|gnu)\\+\\+|gnu|c|iso9899:)(\\d[\\dzaxy]{1,3}|199409))$" };
 	if (std::regex_match(ret, regex))
+#endif
 	{
 		ret = "-std=" + ret;
 		outArgList.push_back(std::move(ret));
 	}
-#endif
 }
 
 /*****************************************************************************/

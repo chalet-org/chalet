@@ -49,6 +49,9 @@ struct CommandLineInputs
 	const std::string& initPath() const noexcept;
 	void setInitPath(std::string&& inValue) noexcept;
 
+	const std::string& envFile() const noexcept;
+	void setEnvFile(std::string&& inValue) noexcept;
+
 	bool saveSchemaToFile() const noexcept;
 	void setSaveSchemaToFile(const bool inValue) noexcept;
 
@@ -72,6 +75,7 @@ private:
 
 	std::string m_initProjectName;
 	std::string m_initPath;
+	std::string m_envFile{ ".env" };
 
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;

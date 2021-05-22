@@ -18,6 +18,8 @@ struct Environment
 	static const char* get(const char* inName);
 	static void set(const char* inName, const std::string& inValue);
 
+	static bool parseVariablesFromFile(const std::string& inFile);
+
 	static std::string getPath();
 	static std::string getUserDirectory();
 	static std::string getShell();

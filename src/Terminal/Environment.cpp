@@ -6,6 +6,7 @@
 #include "Terminal/Environment.hpp"
 
 #include "Libraries/Format.hpp"
+#include "Libraries/Regex.hpp"
 #include "Libraries/WindowsApi.hpp"
 #include "Utility/String.hpp"
 
@@ -364,6 +365,92 @@ void Environment::set(const char* inName, const std::string& inValue)
 	{
 		Diagnostic::errorAbort(fmt::format("Could not set {}", inName));
 	}
+}
+
+/*****************************************************************************/
+bool Environment::parseVariablesFromFile(const std::string& inFile)
+{
+	std::ifstream input(inFile);
+	for (std::string line; std::getline(input, line);)
+	{
+		if (line.empty())
+			continue;
+
+		if (!String::contains('=', line))
+			continue;
+
+		auto splitVar = String::split(line, '=');
+		if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
+		{
+			auto& key = splitVar.front();
+			auto& value = splitVar.back();
+
+#ifndef CHALET_MSVC
+			{
+				static constexpr auto regexA = ctll::fixed_string{ ".*(%(\\w+)%).*" };
+				if (auto m = ctre::match<regexA>(value))
+				{
+					auto capture = m.get<1>().to_string();
+					auto replaceKey = m.get<2>().to_string();
+
+					auto replaceValue = Environment::get(replaceKey.c_str());
+					if (replaceValue != nullptr)
+					{
+						String::replaceAll(value, capture, std::string(replaceValue));
+					}
+					else
+					{
+						String::replaceAll(value, capture, std::string());
+					}
+				}
+			}
+#else
+			{
+				static std::regex regexA{ ".*(%(\\w+)%).*" };
+				if (std::smatch m; std::regex_match(value, regexA))
+				{
+					auto capture = m[1].str();
+					auto replaceKey = m[2].str();
+
+					auto replaceValue = Environment::get(replaceKey.c_str());
+					if (replaceValue != nullptr)
+					{
+						String::replaceAll(value, capture, std::string(replaceValue));
+					}
+					else
+					{
+						String::replaceAll(value, capture, std::string());
+					}
+				}
+			}
+
+#endif
+			// CTRE doesn't like this one (maybe related to the \$ ? not sure...)
+			{
+				static std::regex regexB{ ".*(\\$(\\w+)).*" };
+				if (std::smatch m; std::regex_match(value, regexB))
+				{
+					auto capture = m[1].str();
+					auto replaceKey = m[2].str();
+
+					auto replaceValue = Environment::get(replaceKey.c_str());
+					if (replaceValue != nullptr)
+					{
+						String::replaceAll(value, capture, std::string(replaceValue));
+					}
+					else
+					{
+						String::replaceAll(value, capture, std::string());
+					}
+				}
+			}
+
+			Environment::set(key.c_str(), value);
+		}
+	}
+	input.close();
+
+	return true;
 }
 
 /*****************************************************************************/

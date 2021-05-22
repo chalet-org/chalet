@@ -46,6 +46,7 @@ private:
 	void populateMainArguments();
 	void addInputFileArg();
 	void addProjectGeneratorArg();
+	void addEnvFileArg();
 	void addBuildConfigurationArg(const bool inOptional = false);
 	void addRunProjectArg();
 	void addRunArgumentsArg();

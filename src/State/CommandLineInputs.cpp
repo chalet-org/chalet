@@ -159,6 +159,16 @@ void CommandLineInputs::setInitPath(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CommandLineInputs::envFile() const noexcept
+{
+	return m_envFile;
+}
+void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
+{
+	m_envFile = std::move(inValue);
+}
+
+/*****************************************************************************/
 bool CommandLineInputs::saveSchemaToFile() const noexcept
 {
 	return m_saveSchemaToFile;

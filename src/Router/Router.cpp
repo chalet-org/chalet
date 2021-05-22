@@ -63,6 +63,12 @@ bool Router::run()
 		return false;
 	}
 
+	if (Commands::pathExists(m_inputs.envFile()))
+	{
+		if (!Environment::parseVariablesFromFile(m_inputs.envFile()))
+			return false;
+	}
+
 	if (command != Route::Init)
 	{
 		const auto& file = CommandLineInputs::file();
