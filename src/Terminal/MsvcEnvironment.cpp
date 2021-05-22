@@ -6,6 +6,7 @@
 #include "Terminal/MsvcEnvironment.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/BuildPaths.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Utility/String.hpp"
@@ -13,40 +14,71 @@
 namespace chalet
 {
 /*****************************************************************************/
+MsvcEnvironment::MsvcEnvironment(BuildPaths& inPath) :
+	m_path(inPath)
+{
+#if !defined(CHALET_WIN32)
+	UNUSED(m_path);
+#endif
+}
+
+/*****************************************************************************/
 bool MsvcEnvironment::readCompilerVariables()
 {
 #if defined(CHALET_WIN32)
 	if (m_initialized)
 		return true;
 
+	auto& buildDir = m_path.buildDir();
+
+	m_varsFileOriginal = buildDir + "/original.env";
+	m_varsFileMsvc = buildDir + "/msvc_all.env";
+	m_varsFileMsvcDelta = buildDir + "/msvc.env";
+
 	m_initialized = true;
-
-	std::string progFiles;
-	{
-		auto envProgFiles = Environment::get("ProgramFiles(x86)");
-		if (envProgFiles != nullptr)
-			progFiles = std::string(envProgFiles);
-	}
-
-	if (progFiles.empty())
-		return false;
-
-	std::string vswhere = progFiles + "/Microsoft Visual Studio/Installer/vswhere.exe";
-	if (!Commands::pathExists(vswhere))
-		return false;
-
-	m_vsAppIdDir = Commands::subprocessOutput({ progFiles + "/Microsoft Visual Studio/Installer/vswhere.exe", "-latest", "-property", "installationPath" });
-
-	if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
-		return false;
 
 	if (!Commands::pathExists(m_varsFileMsvcDelta))
 	{
+		std::string progFiles;
+		{
+			auto envProgFiles = Environment::get("ProgramFiles(x86)");
+			if (envProgFiles != nullptr)
+				progFiles = std::string(envProgFiles);
+		}
+
+		if (progFiles.empty())
+		{
+			Diagnostic::error("MSVC Environment could not be fetched: Error reading %ProgramFiles(x86%)");
+			return false;
+		}
+
+		std::string vswhere = fmt::format("{}\\Microsoft Visual Studio\\Installer\\vswhere.exe", progFiles);
+		if (!Commands::pathExists(vswhere))
+		{
+			Diagnostic::error("MSVC Environment could not be fetched: vswhere.exe could not be found");
+			return false;
+		}
+
+		m_vsAppIdDir = Commands::subprocessOutput({ vswhere, "-latest", "-property", "installationPath" });
+		if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
+		{
+			Diagnostic::error("MSVC Environment could not be fetched: Error running vswhere.exe");
+			return false;
+		}
+
 		// Read the current environment and save it to a file
-		saveOriginalEnvironment();
+		if (!saveOriginalEnvironment())
+		{
+			Diagnostic::error("MSVC Environment could not be fetched: Error reading from the inherited environment.");
+			return false;
+		}
 
 		// Read the MSVC environment and save it to a file
-		saveMsvcEnvironment();
+		if (!saveMsvcEnvironment())
+		{
+			Diagnostic::error("MSVC Environment could not be fetched: Error saving the full MSVC environment.");
+			return false;
+		}
 
 		// Get the delta between the two and save it to a file
 		{
@@ -58,13 +90,27 @@ bool MsvcEnvironment::readCompilerVariables()
 			{
 				String::replaceAll(msvcVars, line, "");
 			}
+
 			std::ofstream(m_varsFileMsvcDelta) << msvcVars;
+
 			msvcVarsInput.close();
 			inputOrig.close();
 		}
 
 		Commands::remove(m_varsFileOriginal);
 		Commands::remove(m_varsFileMsvc);
+
+		{
+			std::string outContents;
+			std::ifstream input(m_varsFileMsvcDelta);
+			for (std::string line; std::getline(input, line);)
+			{
+				if (!line.empty())
+					outContents += line + "\n";
+			}
+			input.close();
+			std::ofstream(m_varsFileMsvcDelta) << outContents;
+		}
 	}
 
 	// Read delta to cache
@@ -87,6 +133,15 @@ bool MsvcEnvironment::readCompilerVariables()
 	}
 
 	{
+		if (m_vsAppIdDir.empty())
+		{
+			auto vsappDir = m_variables.find("VSINSTALLDIR");
+			if (vsappDir != m_variables.end())
+			{
+				m_vsAppIdDir = vsappDir->second;
+			}
+		}
+
 		auto include = m_variables.find("INCLUDE");
 		if (include != m_variables.end())
 		{
@@ -138,42 +193,43 @@ bool MsvcEnvironment::setVariableToPath(const char* inName)
 bool MsvcEnvironment::saveOriginalEnvironment()
 {
 #if defined(CHALET_WIN32)
-	if (!Commands::pathExists(m_varsFileOriginal))
-	{
-		StringList cmd{
-			"SET",
-			">",
-			m_varsFileOriginal
-		};
-		std::system(String::join(cmd).c_str());
-		return true;
-	}
-#endif
+	StringList cmd{
+		"cmd.exe",
+		"/c",
+		"SET"
+	};
+	bool result = Commands::subprocessOutputToFile(cmd, m_varsFileOriginal);
 
+	return result;
+#else
 	return false;
+#endif
 }
 
 /*****************************************************************************/
 bool MsvcEnvironment::saveMsvcEnvironment()
 {
 #if defined(CHALET_WIN32)
-	if (!Commands::pathExists(m_varsFileMsvc))
-	{
-		// TODO: 32-bit arch would use vcvars32.bat
-		StringList cmd{
-			fmt::format("\"{}\\VC\\Auxiliary\\Build\\vcvars64.bat\"", m_vsAppIdDir),
-			">",
-			"nul",
-			"&&",
-			"SET",
-			">",
-			m_varsFileMsvc
-		};
-		std::system(String::join(cmd).c_str());
-		return true;
-	}
-#endif
 
+	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\vcvarsall.bat\"", m_vsAppIdDir);
+
+	// TODO: arch-related stuff
+	std::string arch{ "x64" };
+
+	StringList cmd{
+		vcVarsAll,
+		arch,
+		">",
+		"nul",
+		"&&",
+		"SET",
+		">",
+		m_varsFileMsvc
+	};
+	bool result = std::system(String::join(cmd).c_str()) == EXIT_SUCCESS;
+	return result;
+#else
 	return false;
+#endif
 }
 }

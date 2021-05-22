@@ -419,6 +419,17 @@ std::string Environment::getShell()
 
 	return std::string(shell);
 }
+
+/*****************************************************************************/
+std::string Environment::getComSpec()
+{
+	auto shell = Environment::get("COMSPEC");
+	if (shell == nullptr)
+		return std::string("cmd.exe");
+
+	return std::string(shell);
+}
+
 }
 
 #ifdef CHALET_MSVC

@@ -605,6 +605,7 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCle
 	std::string ret;
 
 	SubprocessOptions options;
+	options.cwd = getWorkingDirectory();
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = inStdErr;
 	options.onStdOut = [&ret](std::string inData) {
@@ -631,6 +632,7 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 	std::ofstream outputStream(inOutputFile);
 
 	SubprocessOptions options;
+	options.cwd = getWorkingDirectory();
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = inStdErr;
 	options.onStdOut = [&outputStream](std::string inData) {
@@ -661,7 +663,9 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 		command = { "which", inExecutable };
 #if defined(CHALET_WIN32)
 	else
+	{
 		command = { "cmd.exe", "/c", "where", fmt::format("{}.exe", inExecutable) };
+	}
 #endif
 
 	std::string result = Commands::subprocessOutput(command, inCleanOutput);
@@ -671,6 +675,9 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 #if defined(CHALET_WIN32)
 	if (!isBash)
 	{
+		if (String::startsWith("'where' is not", result))
+			return std::string();
+
 		char eol = '\r';
 		if (String::contains(eol, result))
 		{

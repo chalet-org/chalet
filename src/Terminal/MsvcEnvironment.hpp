@@ -12,10 +12,12 @@
 
 namespace chalet
 {
+struct BuildPaths;
+
 class MsvcEnvironment
 {
 public:
-	MsvcEnvironment() = default;
+	explicit MsvcEnvironment(BuildPaths& inPath);
 
 	bool readCompilerVariables();
 
@@ -26,6 +28,8 @@ private:
 	bool setVariableToPath(const char* inName);
 	bool saveOriginalEnvironment();
 	bool saveMsvcEnvironment();
+
+	BuildPaths& m_path;
 
 #if defined(CHALET_WIN32)
 	bool m_initialized = false;

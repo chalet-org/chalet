@@ -33,8 +33,8 @@ public:
 	CompilerTools compilerTools;
 	WorkspaceInfo info;
 	BuildEnvironment environment;
-	MsvcEnvironment msvcEnvironment;
 	BuildPaths paths;
+	MsvcEnvironment msvcEnvironment;
 	ConfigurationOptions configuration;
 	ProjectConfigurationList projects;
 	DependencyList externalDependencies;
