@@ -373,74 +373,77 @@ bool Environment::parseVariablesFromFile(const std::string& inFile)
 	std::ifstream input(inFile);
 	for (std::string line; std::getline(input, line);)
 	{
-		if (line.empty())
+		if (line.empty() || String::startsWith('#', line))
 			continue;
 
 		if (!String::contains('=', line))
 			continue;
 
 		auto splitVar = String::split(line, '=');
-		if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
+		if (splitVar.size() == 2 && !splitVar.front().empty())
 		{
 			auto& key = splitVar.front();
 			auto& value = splitVar.back();
 
+			if (!value.empty())
+			{
 #ifndef CHALET_MSVC
-			{
-				static constexpr auto regexA = ctll::fixed_string{ ".*(%(\\w+)%).*" };
-				if (auto m = ctre::match<regexA>(value))
 				{
-					auto capture = m.get<1>().to_string();
-					auto replaceKey = m.get<2>().to_string();
+					static constexpr auto regexA = ctll::fixed_string{ ".*(%(\\w+)%).*" };
+					if (auto m = ctre::match<regexA>(value))
+					{
+						auto capture = m.get<1>().to_string();
+						auto replaceKey = m.get<2>().to_string();
 
-					auto replaceValue = Environment::get(replaceKey.c_str());
-					if (replaceValue != nullptr)
-					{
-						String::replaceAll(value, capture, std::string(replaceValue));
-					}
-					else
-					{
-						String::replaceAll(value, capture, std::string());
+						auto replaceValue = Environment::get(replaceKey.c_str());
+						if (replaceValue != nullptr)
+						{
+							String::replaceAll(value, capture, std::string(replaceValue));
+						}
+						else
+						{
+							String::replaceAll(value, capture, std::string());
+						}
 					}
 				}
-			}
 #else
-			{
-				static std::regex regexA{ ".*(%(\\w+)%).*" };
-				if (std::smatch m; std::regex_match(value, regexA))
 				{
-					auto capture = m[1].str();
-					auto replaceKey = m[2].str();
+					static std::regex regexA{ ".*(%(\\w+)%).*" };
+					if (std::smatch m; std::regex_match(value, regexA))
+					{
+						auto capture = m[1].str();
+						auto replaceKey = m[2].str();
 
-					auto replaceValue = Environment::get(replaceKey.c_str());
-					if (replaceValue != nullptr)
-					{
-						String::replaceAll(value, capture, std::string(replaceValue));
-					}
-					else
-					{
-						String::replaceAll(value, capture, std::string());
+						auto replaceValue = Environment::get(replaceKey.c_str());
+						if (replaceValue != nullptr)
+						{
+							String::replaceAll(value, capture, std::string(replaceValue));
+						}
+						else
+						{
+							String::replaceAll(value, capture, std::string());
+						}
 					}
 				}
-			}
 
 #endif
-			// CTRE doesn't like this one (maybe related to the \$ ? not sure...)
-			{
-				static std::regex regexB{ ".*(\\$(\\w+)).*" };
-				if (std::smatch m; std::regex_match(value, regexB))
+				// CTRE doesn't like this one (maybe related to the \$ ? not sure...)
 				{
-					auto capture = m[1].str();
-					auto replaceKey = m[2].str();
+					static std::regex regexB{ ".*(\\$(\\w+)).*" };
+					if (std::smatch m; std::regex_match(value, regexB))
+					{
+						auto capture = m[1].str();
+						auto replaceKey = m[2].str();
 
-					auto replaceValue = Environment::get(replaceKey.c_str());
-					if (replaceValue != nullptr)
-					{
-						String::replaceAll(value, capture, std::string(replaceValue));
-					}
-					else
-					{
-						String::replaceAll(value, capture, std::string());
+						auto replaceValue = Environment::get(replaceKey.c_str());
+						if (replaceValue != nullptr)
+						{
+							String::replaceAll(value, capture, std::string(replaceValue));
+						}
+						else
+						{
+							String::replaceAll(value, capture, std::string());
+						}
 					}
 				}
 			}
@@ -463,7 +466,11 @@ std::string Environment::getPath()
 #endif
 	if (path == nullptr)
 	{
+#if defined(CHALET_WIN32)
+		Diagnostic::errorAbort("Could not retrieve Path");
+#else
 		Diagnostic::errorAbort("Could not retrieve PATH");
+#endif
 		return std::string();
 	}
 	return std::string(path);
