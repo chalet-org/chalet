@@ -575,6 +575,20 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 
 	if (!inAbstract)
 	{
+		// Do some final error checking here
+
+		if (outProject.kind() == ProjectKind::None)
+		{
+			Diagnostic::error(fmt::format("{}: project '{}' must contain 'kind'.", m_filename, outProject.name()));
+			return false;
+		}
+
+		if (!outProject.pch().empty() && !Commands::pathExists(outProject.pch()))
+		{
+			Diagnostic::error(fmt::format("{}: Precompiled header '{}' was not found.", m_filename, outProject.pch()));
+			return false;
+		}
+
 		auto& compilerConfig = m_state.compilerTools.getConfig(outProject.language());
 
 		const bool isMsvc = compilerConfig.isMsvc();
@@ -723,13 +737,13 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, co
 	bool locResult = parseProjectLocationOrFiles(outProject, inNode);
 	if (locResult && inAbstract)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, kKeyTemplates));
+		Diagnostic::error(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, kKeyTemplates));
 		return false;
 	}
 
 	if (!locResult && !inAbstract)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outProject.name()));
+		Diagnostic::error(fmt::format("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outProject.name()));
 		return false;
 	}
 
@@ -738,7 +752,7 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, co
 
 	if (!inAbstract && (outProject.fileExtensions().size() == 0 && outProject.files().size() == 0))
 	{
-		Diagnostic::errorAbort(fmt::format("{}: No file extensions set for project: {}\n  Aborting...", m_filename, outProject.name()));
+		Diagnostic::error(fmt::format("{}: No file extensions set for project: {}\n  Aborting...", m_filename, outProject.name()));
 		return false;
 	}
 
@@ -787,7 +801,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(ProjectConfiguration& outProje
 
 	if (hasFiles)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: Define either 'files' or 'location', not both.", m_filename));
+		Diagnostic::error(fmt::format("{}: Define either 'files' or 'location', not both.", m_filename));
 		return false;
 	}
 
@@ -858,7 +872,7 @@ bool BuildJsonParser::parseBundle(const Json& inNode)
 	const Json& bundle = inNode.at(kKeyBundle);
 	if (!bundle.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' must be an object.", m_filename, kKeyBundle));
+		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeyBundle));
 		return false;
 	}
 
@@ -904,7 +918,7 @@ bool BuildJsonParser::parseBundleLinux(const Json& inNode)
 	const Json& linuxNode = inNode.at("linux");
 	if (!linuxNode.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}.linux' must be an object.", m_filename, kKeyBundle));
+		Diagnostic::error(fmt::format("{}: '{}.linux' must be an object.", m_filename, kKeyBundle));
 		return false;
 	}
 
@@ -928,7 +942,7 @@ bool BuildJsonParser::parseBundleLinux(const Json& inNode)
 
 	if (assigned == 1)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{bundle}.linux.icon' & '{bundle}.linux.desktopEntry' are both required.",
+		Diagnostic::error(fmt::format("{}: '{bundle}.linux.icon' & '{bundle}.linux.desktopEntry' are both required.",
 			m_filename,
 			fmt::arg("bundle", kKeyBundle)));
 		return false;
@@ -948,7 +962,7 @@ bool BuildJsonParser::parseBundleMacOS(const Json& inNode)
 	const Json& macosNode = inNode.at("macos");
 	if (!macosNode.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}.macos' must be an object.", m_filename, kKeyBundle));
+		Diagnostic::error(fmt::format("{}: '{}.macos' must be an object.", m_filename, kKeyBundle));
 		return false;
 	}
 
@@ -1009,7 +1023,7 @@ bool BuildJsonParser::parseBundleMacOS(const Json& inNode)
 
 	if (assigned >= 1 && assigned < 4)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{bundle}.macos.bundleName', '{bundle}.macos.bundleIdentifier' & '{bundle}.macos.icon' are required.",
+		Diagnostic::error(fmt::format("{}: '{bundle}.macos.bundleName', '{bundle}.macos.bundleIdentifier' & '{bundle}.macos.icon' are required.",
 			m_filename,
 			fmt::arg("bundle", kKeyBundle)));
 		return false;
@@ -1029,7 +1043,7 @@ bool BuildJsonParser::parseBundleWindows(const Json& inNode)
 	const Json& windowsNode = inNode.at("windows");
 	if (!windowsNode.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}.windows' must be an object.", m_filename, kKeyBundle));
+		Diagnostic::error(fmt::format("{}: '{}.windows' must be an object.", m_filename, kKeyBundle));
 		return false;
 	}
 
@@ -1053,7 +1067,7 @@ bool BuildJsonParser::parseBundleWindows(const Json& inNode)
 
 	if (assigned == 1)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{bundle}.windows.icon' & '{bundle}.windows.manifest' are both required.",
+		Diagnostic::error(fmt::format("{}: '{bundle}.windows.icon' & '{bundle}.windows.manifest' are both required.",
 			m_filename,
 			fmt::arg("bundle", kKeyBundle)));
 		return false;
@@ -1104,7 +1118,7 @@ bool BuildJsonParser::setDefaultConfigurations(const std::string& inConfig)
 	}
 	else
 	{
-		Diagnostic::errorAbort(fmt::format("{}: An invalid build configuration ({}) was requested. Expected: Release, Debug, RelWithDebInfo, MinSizeRel, Profile", m_filename, inConfig));
+		Diagnostic::error(fmt::format("{}: An invalid build configuration ({}) was requested. Expected: Release, Debug, RelWithDebInfo, MinSizeRel, Profile", m_filename, inConfig));
 		return false;
 	}
 

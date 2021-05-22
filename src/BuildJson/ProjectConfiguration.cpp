@@ -525,12 +525,6 @@ const std::string& ProjectConfiguration::pch() const noexcept
 
 void ProjectConfiguration::setPch(const std::string& inValue) noexcept
 {
-	if (!Commands::pathExists(inValue))
-	{
-		Diagnostic::errorAbort(fmt::format("Precompiled header does not exists: {}", inValue));
-		return;
-	}
-
 	m_pch = inValue;
 
 	parseStringVariables(m_pch);
@@ -752,12 +746,6 @@ ProjectKind ProjectConfiguration::parseProjectKind(const std::string& inValue)
 void ProjectConfiguration::parseOutputFilename(const bool inWindowsMsvc) noexcept
 {
 	chalet_assert(!m_name.empty(), "m_name is blank");
-
-	if (m_kind == ProjectKind::None)
-	{
-		Diagnostic::errorAbort("Project Kind must be defined");
-		return;
-	}
 
 	bool staticLib = m_kind == ProjectKind::StaticLibrary;
 

@@ -410,7 +410,7 @@ StringList BuildPaths::getFileList(const ProjectConfiguration& inProject) const
 			if (excluded)
 				continue;
 
-			ret.push_back(source);
+			List::addIfDoesNotExist(ret, std::move(source));
 			j++;
 		}
 

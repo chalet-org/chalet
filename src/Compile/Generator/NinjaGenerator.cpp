@@ -69,9 +69,7 @@ void NinjaGenerator::addProjectRecipes(const ProjectConfiguration& inProject, co
 	//
 	//
 	// ==============================================================================
-	std::string ninjaTemplate = fmt::format(R"ninja(
-{rules}{buildRules}
-
+	std::string ninjaTemplate = fmt::format(R"ninja({rules}{buildRules}
 build {target}: link_{hash} {objects}
 
 build build_{hash}: phony | {target}
@@ -118,7 +116,6 @@ std::string NinjaGenerator::getContents(const std::string& inPath) const
 builddir = {cacheDir}
 {msvcDepsPrefix}
 {recipes}
-
 build makebuild: phony
 
 default makebuild
@@ -169,7 +166,6 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 	rules += '\n';
 
 	rules += getObjBuildRules(inOutputs.objectList, pchTarget);
-	rules += '\n';
 
 	if (m_project->dumpAssembly())
 	{
