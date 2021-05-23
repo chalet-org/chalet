@@ -6,7 +6,7 @@
 #include "Json/JsonValidator.hpp"
 
 #include "Libraries/Format.hpp"
-#include "Libraries/Regex.hpp"
+// #include "Libraries/Regex.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
@@ -47,13 +47,14 @@ void ErrorHandler::error(const nlohmann::json_pointer<nlohmann::json>& pointer, 
 	// check if we're in an array
 	if (!pointer.empty())
 	{
-#ifdef CHALET_MSVC
-		const std::regex regex{ "^([0-9]+)$" };
-		if (std::regex_match(pointer.back(), regex))
-#else
-		static constexpr auto regex = ctll::fixed_string{ "^([0-9]+)$" };
-		if (auto m = ctre::match<regex>(pointer.back()))
-#endif
+		// #ifdef CHALET_MSVC
+		// 		const std::regex regex{ "^([0-9]+)$" };
+		// 		if (std::regex_match(pointer.back(), regex))
+		// #else
+		// 		static constexpr auto regex = ctll::fixed_string{ "^([0-9]+)$" };
+		// 		if (auto m = ctre::match<regex>(pointer.back()))
+		// #endif
+		if (pointer.back().find_first_not_of("0123456789") == std::string::npos)
 		{
 			// use the key of the array instead of the index
 			error.key = pointer.parent_pointer().back();

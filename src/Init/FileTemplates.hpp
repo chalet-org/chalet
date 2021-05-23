@@ -19,6 +19,7 @@ struct FileTemplates
 	static std::string getMainCpp();
 	static std::string getPch();
 	static std::string getGitIgnore();
+	static std::string getDotEnv();
 };
 }
 

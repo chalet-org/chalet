@@ -61,6 +61,9 @@ bool ProjectInitializer::run()
 	if (!makeGitIgnore())
 		result = false;
 
+	if (!makeDotEnv())
+		result = false;
+
 	if (result)
 	{
 		auto symbol = Unicode::heavyCheckmark();
@@ -116,6 +119,15 @@ bool ProjectInitializer::makeGitIgnore()
 {
 	const auto outFile = fmt::format("{}/.gitignore", m_rootPath);
 	const auto contents = FileTemplates::getGitIgnore();
+
+	return Commands::createFileWithContents(outFile, contents);
+}
+
+/*****************************************************************************/
+bool ProjectInitializer::makeDotEnv()
+{
+	const auto outFile = fmt::format("{}/.env", m_rootPath);
+	const auto contents = FileTemplates::getDotEnv();
 
 	return Commands::createFileWithContents(outFile, contents);
 }

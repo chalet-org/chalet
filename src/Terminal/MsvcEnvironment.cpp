@@ -37,6 +37,8 @@ bool MsvcEnvironment::readCompilerVariables()
 
 	m_initialized = true;
 
+	auto path = Environment::getPath();
+
 	if (!Commands::pathExists(m_varsFileMsvcDelta))
 	{
 		std::string progFiles;
@@ -106,7 +108,13 @@ bool MsvcEnvironment::readCompilerVariables()
 			for (std::string line; std::getline(input, line);)
 			{
 				if (!line.empty())
+				{
+					if (String::startsWith("PATH=", line) || String::startsWith("Path=", line))
+					{
+						String::replaceAll(line, path, "");
+					}
 					outContents += line + "\n";
+				}
 			}
 			input.close();
 			std::ofstream(m_varsFileMsvcDelta) << outContents;
@@ -129,7 +137,14 @@ bool MsvcEnvironment::readCompilerVariables()
 
 	for (auto& [name, var] : m_variables)
 	{
-		Environment::set(name.c_str(), var);
+		if (String::equals("PATH", name) || String::equals("Path", name))
+		{
+			Environment::set(name.c_str(), var + ";" + path);
+		}
+		else
+		{
+			Environment::set(name.c_str(), var);
+		}
 	}
 
 	if (m_vsAppIdDir.empty())

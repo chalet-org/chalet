@@ -66,7 +66,10 @@ bool Router::run()
 	if (Commands::pathExists(m_inputs.envFile()))
 	{
 		if (!Environment::parseVariablesFromFile(m_inputs.envFile()))
+		{
+			Diagnostic::error(fmt::format("There was an error parsing the env file: {}", m_inputs.envFile()));
 			return false;
+		}
 	}
 
 	if (command != Route::Init)

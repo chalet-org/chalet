@@ -84,7 +84,7 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 
 	Diagnostic::error(inMessage, inTitle);
 
-	if (Environment::isBash())
+	if (Environment::isBashOrWindowsConPTY())
 	{
 		const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
 		std::cerr << boldBlack;

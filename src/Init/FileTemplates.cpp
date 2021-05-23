@@ -6,6 +6,9 @@
 #include "Init/FileTemplates.hpp"
 
 #include "Libraries/Format.hpp"
+#include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
 
@@ -119,6 +122,34 @@ build
 dist
 chalet_external/
 )";
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string FileTemplates::getDotEnv()
+{
+#if defined(CHALET_WIN32)
+	std::string ret;
+	const auto programFiles = Environment::getAsString("ProgramFiles");
+	std::string gitPath = fmt::format("{}/Git/bin", programFiles);
+	const bool gitExists = !programFiles.empty() && Commands::pathExists(gitPath);
+
+	auto paths = String::split(Environment::getPath(), ";");
+	if (gitExists && !List::contains(paths, gitPath))
+	{
+		ret = R"(Path=%ProgramFiles%\Git\bin\;%Path%
+)";
+	}
+	else
+	{
+		ret = R"(Path=%Path%
+)";
+	}
+#else
+	std::string ret = R"(PATH=$PATH
+)";
+#endif
 
 	return ret;
 }

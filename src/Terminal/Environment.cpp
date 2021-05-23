@@ -6,7 +6,6 @@
 #include "Terminal/Environment.hpp"
 
 #include "Libraries/Format.hpp"
-#include "Libraries/Regex.hpp"
 #include "Libraries/WindowsApi.hpp"
 #include "Utility/String.hpp"
 
@@ -116,9 +115,21 @@ bool Environment::isBash()
 		setTerminalType();
 
 #if defined(CHALET_WIN32)
-	return s_terminalType == ShellType::Bash || s_terminalType == ShellType::WindowsColorTerm;
+	return s_terminalType == ShellType::Bash;
 #else
 	return s_terminalType != ShellType::Unset; // isBash() just looks for a bash-like
+#endif
+}
+
+/*****************************************************************************/
+bool Environment::isBashOrWindowsConPTY()
+{
+#if defined(CHALET_WIN32)
+	if (s_terminalType == ShellType::Unset)
+		setTerminalType();
+	return s_terminalType == ShellType::Bash || s_terminalType == ShellType::WindowsConPTY;
+#else
+	return isBash();
 #endif
 }
 
@@ -177,10 +188,12 @@ void Environment::setTerminalType()
 		return printTermType();
 	}
 
+	// TODO: Proper check for Windows ConPTY
+	//   https://github.com/microsoft/vscode/issues/124427
 	result = Environment::get("COLORTERM");
 	if (result != nullptr)
 	{
-		s_terminalType = ShellType::WindowsColorTerm;
+		s_terminalType = ShellType::WindowsConPTY;
 		return printTermType();
 	}
 
@@ -302,7 +315,7 @@ void Environment::printTermType()
 			term = "Subprocess";
 			break;
 
-		case ShellType::WindowsColorTerm:
+		case ShellType::WindowsConPTY:
 			term = "Generic (w/ COLORTERM set)";
 			break;
 
@@ -348,6 +361,16 @@ const char* Environment::get(const char* inName)
 }
 
 /*****************************************************************************/
+const std::string Environment::getAsString(const char* inName, const std::string& inFallback)
+{
+	const char* result = std::getenv(inName);
+	if (result != nullptr)
+		return std::string(result);
+
+	return inFallback;
+}
+
+/*****************************************************************************/
 void Environment::set(const char* inName, const std::string& inValue)
 {
 #ifdef CHALET_WIN32
@@ -370,11 +393,6 @@ void Environment::set(const char* inName, const std::string& inValue)
 /*****************************************************************************/
 bool Environment::parseVariablesFromFile(const std::string& inFile)
 {
-#ifdef CHALET_MSVC
-	const std::regex regexA{ "^.*(%(\\w+)%).*$" };
-#endif
-	const std::regex regexB{ "^.*(\\$(\\w+)).*$" };
-
 	std::ifstream input(inFile);
 	for (std::string line; std::getline(input, line);)
 	{
@@ -398,63 +416,44 @@ bool Environment::parseVariablesFromFile(const std::string& inFile)
 
 			if (!value.empty())
 			{
-#ifndef CHALET_MSVC
+#if defined(CHALET_WIN32)
+				for (std::size_t end = value.find_last_of('%'); end != std::string::npos;)
 				{
-					static constexpr auto regexA = ctll::fixed_string{ ".*(%(\\w+)%).*" };
-					if (auto m = ctre::match<regexA>(value))
-					{
-						auto capture = m.get<1>().to_string();
-						auto replaceKey = m.get<2>().to_string();
+					std::size_t beg = value.substr(0, end).find_last_of('%');
+					if (beg == std::string::npos)
+						break;
 
-						auto replaceValue = Environment::get(replaceKey.c_str());
-						if (replaceValue != nullptr)
-						{
-							String::replaceAll(value, capture, std::string(replaceValue));
-						}
-						else
-						{
-							String::replaceAll(value, capture, std::string());
-						}
-					}
+					std::size_t length = (end + 1) - beg;
+
+					std::string capture = value.substr(beg, length);
+					std::string replaceKey = value.substr(beg + 1, length - 2);
+
+					auto replaceValue = Environment::getAsString(replaceKey.c_str());
+					value.replace(beg, length, replaceValue);
+
+					end = value.find_last_of("%");
 				}
 #else
-				if (std::smatch m; std::regex_match(value, m, regexA))
+				for (std::size_t beg = value.find_last_of('$'); beg != std::string::npos;)
 				{
-					auto capture = m[1].str();
-					auto replaceKey = m[2].str();
+					std::size_t end = value.find_first_of(':', beg);
+					if (end == std::string::npos)
+						end = value.size();
 
-					auto replaceValue = Environment::get(replaceKey.c_str());
-					if (replaceValue != nullptr)
-					{
-						String::replaceAll(value, capture, std::string(replaceValue));
-					}
-					else
-					{
-						String::replaceAll(value, capture, std::string());
-					}
+					std::size_t length = end - beg;
+
+					std::string capture = value.substr(beg, length);
+					std::string replaceKey = value.substr(beg + 1, length - 1);
+
+					auto replaceValue = Environment::getAsString(replaceKey.c_str());
+					value.replace(beg, length, replaceValue);
+
+					beg = value.find_last_of('$');
 				}
-
 #endif
-				// CTRE doesn't like this one (maybe related to the \$ ? not sure...)
 
-				if (std::smatch m; std::regex_match(value, m, regexB))
-				{
-					auto capture = m[1].str();
-					auto replaceKey = m[2].str();
-
-					auto replaceValue = Environment::get(replaceKey.c_str());
-					if (replaceValue != nullptr)
-					{
-						String::replaceAll(value, capture, std::string(replaceValue));
-					}
-					else
-					{
-						String::replaceAll(value, capture, std::string());
-					}
-				}
+				Environment::set(key.c_str(), value);
 			}
-
-			Environment::set(key.c_str(), value);
 		}
 	}
 	input.close();
@@ -513,23 +512,14 @@ std::string Environment::getUserDirectory()
 /*****************************************************************************/
 std::string Environment::getShell()
 {
-	auto shell = Environment::get("SHELL");
-	if (shell == nullptr)
-		return std::string();
-
-	return std::string(shell);
+	return getAsString("SHELL");
 }
 
 /*****************************************************************************/
 std::string Environment::getComSpec()
 {
-	auto shell = Environment::get("COMSPEC");
-	if (shell == nullptr)
-		return std::string("cmd.exe");
-
-	return std::string(shell);
+	return getAsString("COMSPEC", "cmd.exe");
 }
-
 }
 
 #ifdef CHALET_MSVC

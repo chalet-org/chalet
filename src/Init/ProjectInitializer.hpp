@@ -23,6 +23,7 @@ private:
 	bool makePch();
 	bool makeGitIgnore();
 	bool makeReadme();
+	bool makeDotEnv();
 
 	const CommandLineInputs& m_inputs;
 

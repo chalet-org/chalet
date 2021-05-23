@@ -80,10 +80,8 @@ void BuildCache::removeCacheFolder(const Type inCacheType)
 /*****************************************************************************/
 std::string BuildCache::getHash(const std::string& inIdentifier, const Type inCacheType) const
 {
-	// bool isBash = Environment::isBash();
 	std::size_t infoHash = m_info.hash();
 
-	// std::string toHash = fmt::format("{}_{}_{}", infoHash, inIdentifier, isBash ? "bash" : "cmd");
 	std::string toHash = fmt::format("{}_{}", infoHash, inIdentifier);
 	std::string hash = Hash::string(toHash);
 

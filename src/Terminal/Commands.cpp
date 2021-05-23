@@ -655,7 +655,7 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 std::string Commands::which(const std::string& inExecutable, const bool inCleanOutput)
 {
 	StringList command;
-	const bool isBash = Environment::isBash();
+	const bool isBash = Environment::isBashOrWindowsConPTY();
 
 #if defined(CHALET_WIN32)
 	if (isBash)

@@ -11,11 +11,13 @@ namespace chalet
 struct Environment
 {
 	static bool isBash();
+	static bool isBashOrWindowsConPTY();
 	static bool isCommandPromptOrPowerShell();
 	static bool isVisualStudioCommandPrompt();
 	static bool isContinuousIntegrationServer();
 
 	static const char* get(const char* inName);
+	static const std::string getAsString(const char* inName, const std::string& inFallback = std::string());
 	static void set(const char* inName, const std::string& inValue);
 
 	static bool parseVariablesFromFile(const std::string& inFile);
@@ -37,7 +39,7 @@ private:
 		Korn,	// /bin/ksh
 		Zsh,	// /bin/zsh
 		Fish,	// /usr/bin/fish, /usr/local/bin/fish
-		WindowsColorTerm,
+		WindowsConPTY,
 		CommandPrompt,
 		CommandPromptVisualStudio,
 		Powershell,

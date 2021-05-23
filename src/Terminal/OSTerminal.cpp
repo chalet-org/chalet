@@ -62,7 +62,7 @@ void OSTerminal::initialize()
 void OSTerminal::reset()
 {
 #if defined(CHALET_WIN32)
-	if (!Environment::isBash())
+	if (!Environment::isBashOrWindowsConPTY())
 	{
 		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (hOut != INVALID_HANDLE_VALUE)
