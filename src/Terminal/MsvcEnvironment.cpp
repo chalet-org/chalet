@@ -13,6 +13,43 @@
 
 namespace chalet
 {
+#if defined(CHALET_WIN32)
+int MsvcEnvironment::s_exists = -1;
+std::string MsvcEnvironment::s_vswhere = std::string();
+#endif
+
+/*****************************************************************************/
+bool MsvcEnvironment::exists()
+{
+#if defined(CHALET_WIN32)
+	if (s_exists == -1)
+	{
+		// TODO:
+		//   Note that if you install vswhere using Chocolatey (instead of the VS/MSBuild installer),
+		//   it will be located at %ProgramData%\chocolatey\lib\vswhere\tools\vswhere.exe
+		//   https://stackoverflow.com/questions/54305638/how-to-find-vswhere-exe-path
+
+		std::string progFiles = Environment::getAsString("ProgramFiles(x86)");
+		s_vswhere = fmt::format("{}\\Microsoft Visual Studio\\Installer\\vswhere.exe", progFiles);
+
+		bool vswhereFound = Commands::pathExists(s_vswhere);
+		if (!vswhereFound)
+		{
+			std::string progFiles64 = Environment::getAsString("ProgramFiles");
+			String::replaceAll(s_vswhere, progFiles, progFiles64);
+
+			vswhereFound = Commands::pathExists(s_vswhere);
+		}
+
+		s_exists = vswhereFound ? 1 : 0;
+	}
+
+	return s_exists == 1;
+#else
+	return false;
+#endif
+}
+
 /*****************************************************************************/
 MsvcEnvironment::MsvcEnvironment(BuildPaths& inPath) :
 	m_path(inPath)
@@ -37,31 +74,17 @@ bool MsvcEnvironment::readCompilerVariables()
 
 	m_initialized = true;
 
+	// This sets s_vswhere
+	if (!MsvcEnvironment::exists())
+		return true;
+
+	// TODO: Check if Visual Studio is even installed
+
 	auto path = Environment::getPath();
 
 	if (!Commands::pathExists(m_varsFileMsvcDelta))
 	{
-		std::string progFiles;
-		{
-			auto envProgFiles = Environment::get("ProgramFiles(x86)");
-			if (envProgFiles != nullptr)
-				progFiles = std::string(envProgFiles);
-		}
-
-		if (progFiles.empty())
-		{
-			Diagnostic::error("MSVC Environment could not be fetched: Error reading %ProgramFiles(x86%)");
-			return false;
-		}
-
-		std::string vswhere = fmt::format("{}\\Microsoft Visual Studio\\Installer\\vswhere.exe", progFiles);
-		if (!Commands::pathExists(vswhere))
-		{
-			Diagnostic::error("MSVC Environment could not be fetched: vswhere.exe could not be found");
-			return false;
-		}
-
-		m_vsAppIdDir = Commands::subprocessOutput({ vswhere, "-latest", "-property", "installationPath" });
+		m_vsAppIdDir = Commands::subprocessOutput({ s_vswhere, "-latest", "-property", "installationPath" });
 		if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: Error running vswhere.exe");
@@ -135,11 +158,23 @@ bool MsvcEnvironment::readCompilerVariables()
 		}
 	}
 
+	// Note: See Note about __CHALET_MSVC_INJECT__ in Environment.cpp
+	auto appDataPath = Environment::getAsString("APPDATA");
+	std::string msvcInject = fmt::format("{}\\__CHALET_MSVC_INJECT__", appDataPath);
+	StringList pathSearch{ "Path", "PATH" };
 	for (auto& [name, var] : m_variables)
 	{
-		if (String::equals("PATH", name) || String::equals("Path", name))
+		if (String::equals(pathSearch, name))
 		{
-			Environment::set(name.c_str(), var + ";" + path);
+			if (String::contains(msvcInject, path))
+			{
+				String::replaceAll(path, msvcInject, var);
+				Environment::set(name.c_str(), path);
+			}
+			else
+			{
+				Environment::set(name.c_str(), path + ";" + var);
+			}
 		}
 		else
 		{

@@ -19,6 +19,8 @@ class MsvcEnvironment
 public:
 	explicit MsvcEnvironment(BuildPaths& inPath);
 
+	static bool exists();
+
 	bool readCompilerVariables();
 	void cleanup();
 
@@ -26,6 +28,11 @@ public:
 	const StringList& lib() const noexcept;
 
 private:
+#if defined(CHALET_WIN32)
+	static int s_exists;
+	static std::string s_vswhere;
+#endif
+
 	bool setVariableToPath(const char* inName);
 	bool saveOriginalEnvironment();
 	bool saveMsvcEnvironment();

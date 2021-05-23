@@ -7,7 +7,7 @@ Thumbs.db
 build
 dist
 chalet_external/
-.env
+.env*
 
 # Profiling
 gmon.out

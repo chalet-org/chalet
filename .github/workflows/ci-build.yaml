@@ -8,7 +8,7 @@ on:
     types: [created]
 
 jobs:
-  release:
+  Release:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,8 +26,8 @@ jobs:
           prerelease: true
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
-  linux:
-    needs: release
+  Linux-Ubuntu:
+    needs: Release
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -56,12 +56,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
+          upload_url: ${{ needs.Release.outputs.upload_url }}
           asset_path: ./build/chalet-linux.zip
           asset_name: chalet-linux.zip
           asset_content_type: application/zip
-  macos:
-    needs: release
+  MacOS:
+    needs: Release
     runs-on: macos-latest
     defaults:
       run:
@@ -83,12 +83,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
+          upload_url: ${{ needs.Release.outputs.upload_url }}
           asset_path: ./build/chalet-macos.zip
           asset_name: chalet-macos.zip
           asset_content_type: application/zip
-  windows:
-    needs: release
+  Windows-MSYS2:
+    needs: Release
     runs-on: windows-latest
     defaults:
       run:
@@ -120,7 +120,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
+          upload_url: ${{ needs.Release.outputs.upload_url }}
           asset_path: ./build/chalet-win32.zip
           asset_name: chalet-win32.zip
           asset_content_type: application/zip

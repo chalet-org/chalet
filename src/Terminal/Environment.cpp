@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "Libraries/WindowsApi.hpp"
+#include "Terminal/MsvcEnvironment.hpp"
 #include "Utility/String.hpp"
 
 #if defined(CHALET_WIN32)
@@ -393,6 +394,13 @@ void Environment::set(const char* inName, const std::string& inValue)
 /*****************************************************************************/
 bool Environment::parseVariablesFromFile(const std::string& inFile)
 {
+	auto appDataPath = Environment::getAsString("APPDATA");
+	StringList pathSearch{ "Path", "PATH" };
+
+#if defined(CHALET_WIN32)
+	const bool msvcExists = MsvcEnvironment::exists();
+#endif
+
 	std::ifstream input(inFile);
 	for (std::string line; std::getline(input, line);)
 	{
@@ -412,6 +420,8 @@ bool Environment::parseVariablesFromFile(const std::string& inFile)
 				key = key.substr(afterSpaces);
 			}
 
+			const bool isPath = String::equals(pathSearch, key);
+
 			auto& value = splitVar.back();
 
 			if (!value.empty())
@@ -428,8 +438,21 @@ bool Environment::parseVariablesFromFile(const std::string& inFile)
 					std::string capture = value.substr(beg, length);
 					std::string replaceKey = value.substr(beg + 1, length - 2);
 
+					// Note: If someone writes "Path=C:\MyPath;%Path%", MSVC Path variables would be placed before C:\MyPath.
+					//   This would be a problem is someone is using MinGW and wants to detect the MinGW version of Cmake, Ninja,
+					//   or anything else that is also bundled with Visual Studio
+					//   To get around this, and have MSVC Path vars before %Path% as expected,
+					//   we add a fake path (with valid syntax) to inject it into later (See MsvcEnvironment.cpp)
+					//
 					auto replaceValue = Environment::getAsString(replaceKey.c_str());
-					value.replace(beg, length, replaceValue);
+					if (msvcExists && isPath && String::equals(pathSearch, replaceKey))
+					{
+						value.replace(beg, length, fmt::format("{}\\__CHALET_MSVC_INJECT__;{}", appDataPath, replaceValue));
+					}
+					else
+					{
+						value.replace(beg, length, replaceValue);
+					}
 
 					end = value.find_last_of("%");
 				}
