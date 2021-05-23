@@ -176,7 +176,9 @@ bool MsvcEnvironment::readCompilerVariables()
 /*****************************************************************************/
 void MsvcEnvironment::cleanup()
 {
+#if defined(CHALET_WIN32)
 	Commands::remove(m_varsFileMsvcDelta);
+#endif
 }
 
 /*****************************************************************************/
