@@ -388,6 +388,12 @@ bool Environment::parseVariablesFromFile(const std::string& inFile)
 		if (splitVar.size() == 2 && !splitVar.front().empty())
 		{
 			auto& key = splitVar.front();
+			if (String::startsWith(' ', key))
+			{
+				std::size_t afterSpaces = key.find_first_not_of(' ');
+				key = key.substr(afterSpaces);
+			}
+
 			auto& value = splitVar.back();
 
 			if (!value.empty())

@@ -132,32 +132,36 @@ bool MsvcEnvironment::readCompilerVariables()
 		Environment::set(name.c_str(), var);
 	}
 
+	if (m_vsAppIdDir.empty())
 	{
-		if (m_vsAppIdDir.empty())
+		auto vsappDir = m_variables.find("VSINSTALLDIR");
+		if (vsappDir != m_variables.end())
 		{
-			auto vsappDir = m_variables.find("VSINSTALLDIR");
-			if (vsappDir != m_variables.end())
-			{
-				m_vsAppIdDir = vsappDir->second;
-			}
+			m_vsAppIdDir = vsappDir->second;
 		}
+	}
 
-		auto include = m_variables.find("INCLUDE");
-		if (include != m_variables.end())
-		{
-			String::replaceAll(include->second, "\\", "/");
-			m_include = String::split(include->second, ";");
-		}
+	auto include = m_variables.find("INCLUDE");
+	if (include != m_variables.end())
+	{
+		String::replaceAll(include->second, "\\", "/");
+		m_include = String::split(include->second, ";");
+	}
 
-		auto lib = m_variables.find("LIB");
-		if (lib != m_variables.end())
-		{
-			String::replaceAll(lib->second, "\\", "/");
-			m_lib = String::split(lib->second, ";");
-		}
+	auto lib = m_variables.find("LIB");
+	if (lib != m_variables.end())
+	{
+		String::replaceAll(lib->second, "\\", "/");
+		m_lib = String::split(lib->second, ";");
 	}
 #endif
 	return true;
+}
+
+/*****************************************************************************/
+void MsvcEnvironment::cleanup()
+{
+	Commands::remove(m_varsFileMsvcDelta);
 }
 
 /*****************************************************************************/

@@ -19,6 +19,7 @@ struct CacheJsonParser : public JsonParser
 	virtual bool serialize() final;
 
 private:
+	bool createMsvcEnvironment();
 	bool validatePaths();
 	bool setDefaultBuildStrategy();
 	bool makeCache();
@@ -34,7 +35,7 @@ private:
 	const std::string& m_filename;
 
 	const std::string kKeyTools = "tools";
-	const std::string kKeyCompilers = "compilerTools";
+	const std::string kKeyCompilerTools = "compilerTools";
 	const std::string kKeyStrategy = "strategy";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
 	const std::string kKeyExternalDependencies = "externalDependencies";

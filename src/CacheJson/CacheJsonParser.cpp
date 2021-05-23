@@ -28,7 +28,8 @@ CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, BuildState& 
 bool CacheJsonParser::serialize()
 {
 #if defined(CHALET_WIN32)
-	m_state.msvcEnvironment.readCompilerVariables();
+	if (!createMsvcEnvironment())
+		return false;
 #endif
 
 	auto& environmentCache = m_state.cache.environmentCache();
@@ -62,14 +63,60 @@ bool CacheJsonParser::serialize()
 }
 
 /*****************************************************************************/
+bool CacheJsonParser::createMsvcEnvironment()
+{
+#if defined(CHALET_WIN32)
+	bool readVariables = true;
+
+	auto& environmentCache = m_state.cache.environmentCache();
+	const auto& jRoot = environmentCache.json;
+	if (jRoot.is_object())
+	{
+		if (jRoot.contains(kKeyCompilerTools))
+		{
+			auto& compilerTools = jRoot[kKeyCompilerTools];
+			if (compilerTools.is_object())
+			{
+				auto keyEndsWith = [&compilerTools](const std::string& inKey, std::string_view inExt) {
+					if (compilerTools.contains(inKey))
+					{
+						const Json& j = compilerTools[inKey];
+						const auto str = j.get<std::string>();
+						return String::endsWith(inExt, str);
+					}
+
+					return false;
+				};
+
+				bool result = false;
+				result |= keyEndsWith(kKeyCpp, "cl.exe");
+				result |= keyEndsWith(kKeyCc, "cl.exe");
+				result |= keyEndsWith(kKeyLinker, "link.exe");
+				result |= keyEndsWith(kKeyArchiver, "lib.exe");
+				result |= keyEndsWith(kKeyWindowsResource, "rc.exe");
+				readVariables = result;
+			}
+		}
+	}
+
+	if (readVariables)
+	{
+		m_state.msvcEnvironment.readCompilerVariables();
+	}
+#endif
+
+	return true;
+}
+
+/*****************************************************************************/
 bool CacheJsonParser::validatePaths()
 {
-	auto& compilers = m_state.compilerTools;
+	auto& compilerTools = m_state.compilerTools;
 #if defined(CHALET_DEBUG)
 	auto& cacheJson = m_state.cache.environmentCache();
 #endif
 
-	if (!Commands::pathExists(compilers.cpp()))
+	if (!Commands::pathExists(compilerTools.cpp()))
 	{
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
@@ -78,7 +125,7 @@ bool CacheJsonParser::validatePaths()
 		return false;
 	}
 
-	if (!Commands::pathExists(compilers.cc()))
+	if (!Commands::pathExists(compilerTools.cc()))
 	{
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
@@ -87,7 +134,7 @@ bool CacheJsonParser::validatePaths()
 		return false;
 	}
 
-	if (!Commands::pathExists(compilers.archiver()))
+	if (!Commands::pathExists(compilerTools.archiver()))
 	{
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
@@ -96,7 +143,7 @@ bool CacheJsonParser::validatePaths()
 		return false;
 	}
 
-	if (!Commands::pathExists(compilers.linker()))
+	if (!Commands::pathExists(compilerTools.linker()))
 	{
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
@@ -106,7 +153,7 @@ bool CacheJsonParser::validatePaths()
 	}
 
 #if defined(CHALET_WIN32)
-	if (!Commands::pathExists(compilers.rc()))
+	if (!Commands::pathExists(compilerTools.rc()))
 	{
 	#if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
@@ -144,6 +191,20 @@ bool CacheJsonParser::validatePaths()
 /*****************************************************************************/
 bool CacheJsonParser::setDefaultBuildStrategy()
 {
+	bool usingMsvc = false;
+	{
+		usingMsvc |= String::endsWith("cl.exe", m_state.compilerTools.cc());
+		usingMsvc |= String::endsWith("cl.exe", m_state.compilerTools.cpp());
+		usingMsvc |= String::endsWith("link.exe", m_state.compilerTools.linker());
+		usingMsvc |= String::endsWith("lib.exe", m_state.compilerTools.archiver());
+		usingMsvc |= String::endsWith("rc.exe", m_state.compilerTools.rc());
+
+		if (!usingMsvc)
+		{
+			m_state.msvcEnvironment.cleanup();
+		}
+	}
+
 	auto& environmentCache = m_state.cache.environmentCache();
 	Json& strategyJson = environmentCache.json[kKeyStrategy];
 
@@ -154,7 +215,7 @@ bool CacheJsonParser::setDefaultBuildStrategy()
 			strategyJson = "native-experimental";
 		}
 #if defined(CHALET_WIN32)
-		else if (!m_state.tools.ninja().empty())
+		else if (usingMsvc && !m_state.tools.ninja().empty())
 		{
 			strategyJson = "ninja";
 		}
@@ -183,7 +244,7 @@ bool CacheJsonParser::makeCache()
 
 	environmentCache.makeNode(kKeyStrategy, JsonDataType::string);
 	environmentCache.makeNode(kKeyWorkingDirectory, JsonDataType::string);
-	environmentCache.makeNode(kKeyCompilers, JsonDataType::object);
+	environmentCache.makeNode(kKeyCompilerTools, JsonDataType::object);
 	environmentCache.makeNode(kKeyTools, JsonDataType::object);
 	environmentCache.makeNode(kKeyExternalDependencies, JsonDataType::object);
 	environmentCache.makeNode(kKeyData, JsonDataType::object);
@@ -214,7 +275,7 @@ bool CacheJsonParser::makeCache()
 
 	//
 
-	Json& compilers = environmentCache.json[kKeyCompilers];
+	Json& compilerTools = environmentCache.json[kKeyCompilerTools];
 
 	auto whichAdd = [&](Json& inNode, const std::string& inKey) -> bool {
 		if (!inNode.contains(inKey))
@@ -229,7 +290,7 @@ bool CacheJsonParser::makeCache()
 		return true;
 	};
 
-	if (!compilers.contains(kKeyCpp))
+	if (!compilerTools.contains(kKeyCpp))
 	{
 		auto varCXX = Environment::get("CXX");
 		std::string cpp;
@@ -250,11 +311,11 @@ bool CacheJsonParser::makeCache()
 			}
 		}
 
-		compilers[kKeyCpp] = std::move(cpp);
+		compilerTools[kKeyCpp] = std::move(cpp);
 		m_state.cache.setDirty(true);
 	}
 
-	if (!compilers.contains(kKeyCc))
+	if (!compilerTools.contains(kKeyCc))
 	{
 		auto varCC = Environment::get("CC");
 		std::string cc;
@@ -275,11 +336,11 @@ bool CacheJsonParser::makeCache()
 			}
 		}
 
-		compilers[kKeyCc] = std::move(cc);
+		compilerTools[kKeyCc] = std::move(cc);
 		m_state.cache.setDirty(true);
 	}
 
-	if (!compilers.contains(kKeyLinker))
+	if (!compilerTools.contains(kKeyLinker))
 	{
 		std::string link;
 #if defined(CHALET_WIN32)
@@ -293,11 +354,11 @@ bool CacheJsonParser::makeCache()
 				break;
 		}
 
-		compilers[kKeyLinker] = std::move(link);
+		compilerTools[kKeyLinker] = std::move(link);
 		m_state.cache.setDirty(true);
 	}
 
-	if (!compilers.contains(kKeyArchiver))
+	if (!compilerTools.contains(kKeyArchiver))
 	{
 		std::string ar;
 #if defined(CHALET_WIN32)
@@ -311,11 +372,11 @@ bool CacheJsonParser::makeCache()
 				break;
 		}
 
-		compilers[kKeyArchiver] = std::move(ar);
+		compilerTools[kKeyArchiver] = std::move(ar);
 		m_state.cache.setDirty(true);
 	}
 
-	if (!compilers.contains(kKeyWindowsResource))
+	if (!compilerTools.contains(kKeyWindowsResource))
 	{
 		auto rc = Commands::which("windres");
 #if defined(CHALET_WIN32)
@@ -323,7 +384,7 @@ bool CacheJsonParser::makeCache()
 			rc = Commands::which("rc");
 #endif
 
-		compilers[kKeyWindowsResource] = std::move(rc);
+		compilerTools[kKeyWindowsResource] = std::move(rc);
 		m_state.cache.setDirty(true);
 	}
 
@@ -570,35 +631,34 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 /*****************************************************************************/
 bool CacheJsonParser::parseCompilers(const Json& inNode)
 {
-	if (!inNode.contains(kKeyCompilers))
+	if (!inNode.contains(kKeyCompilerTools))
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyCompilers));
+		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyCompilerTools));
 		return false;
 	}
 
-	const Json& compilers = inNode.at(kKeyCompilers);
-	if (!compilers.is_object())
+	const Json& compilerTools = inNode.at(kKeyCompilerTools);
+	if (!compilerTools.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' must be an object.", m_filename, kKeyCompilers));
+		Diagnostic::errorAbort(fmt::format("{}: '{}' must be an object.", m_filename, kKeyCompilerTools));
 		return false;
 	}
 
-	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyArchiver))
+	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyArchiver))
 		m_state.compilerTools.setArchiver(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyCpp))
+	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyCpp))
 		m_state.compilerTools.setCpp(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyCc))
+	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyCc))
 		m_state.compilerTools.setCc(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyLinker))
+	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyLinker))
 		m_state.compilerTools.setLinker(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, compilers, kKeyWindowsResource))
+	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyWindowsResource))
 		m_state.compilerTools.setRc(val);
 
 	return true;
 }
-
 }
