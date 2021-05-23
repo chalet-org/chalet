@@ -48,7 +48,7 @@ void ErrorHandler::error(const nlohmann::json_pointer<nlohmann::json>& pointer, 
 	if (!pointer.empty())
 	{
 #ifdef CHALET_MSVC
-		static std::regex regex{ "^([0-9]+)$" };
+		const std::regex regex{ "^([0-9]+)$" };
 		if (std::regex_match(pointer.back(), regex))
 #else
 		static constexpr auto regex = ctll::fixed_string{ "^([0-9]+)$" };

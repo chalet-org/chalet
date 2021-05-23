@@ -84,8 +84,8 @@ void Path::windowsDrivesToMsysDrives(std::string& outPath)
 		String::replaceAll(outPath, capture + ":/", "/" + String::toLowerCase(capture) + '/');
 	}
 #else
-	static std::regex driveFwd{ "^([A-Za-z]):/.*" };
-	static std::regex driveBck{ "^([A-Za-z]):\\\\.*" };
+	const std::regex driveFwd{ "^([A-Za-z]):/.*" };
+	const std::regex driveBck{ "^([A-Za-z]):\\\\.*" };
 
 	if (std::smatch m; std::regex_match(outPath, m, driveBck))
 	{
@@ -113,7 +113,7 @@ void Path::msysDrivesToWindowsDrives(std::string& outPath)
 		String::replaceAll(outPath, fmt::format("/{}/", capture), fmt::format("{}:/", String::toUpperCase(capture)));
 	}
 #else
-	static std::regex driveFwd{ "^/([A-Za-z])/.*" };
+	const std::regex driveFwd{ "^/([A-Za-z])/.*" };
 
 	if (std::smatch m; std::regex_match(outPath, m, driveFwd))
 	{

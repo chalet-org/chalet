@@ -20,6 +20,19 @@
 #include <ctre/ctre.hpp>
 
 #ifdef CHALET_MSVC
+template <auto& ptn>
+constexpr bool re()
+{
+	#if CTRE_CNTTP_COMPILER_CHECK
+	constexpr auto _ptn = ptn;
+	#else
+	constexpr auto& _ptn = ptn;
+	#endif
+	return ctll::parser<ctre::pcre, _ptn, ctre::pcre_actions>::template correct_with<ctre::pcre_context<>>;
+}
+#endif
+
+#ifdef CHALET_MSVC
 	#pragma warning(pop)
 #else
 	#pragma GCC diagnostic pop

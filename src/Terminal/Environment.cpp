@@ -370,6 +370,11 @@ void Environment::set(const char* inName, const std::string& inValue)
 /*****************************************************************************/
 bool Environment::parseVariablesFromFile(const std::string& inFile)
 {
+#ifdef CHALET_MSVC
+	const std::regex regexA{ "^.*(%(\\w+)%).*$" };
+#endif
+	const std::regex regexB{ "^.*(\\$(\\w+)).*$" };
+
 	std::ifstream input(inFile);
 	for (std::string line; std::getline(input, line);)
 	{
@@ -407,43 +412,38 @@ bool Environment::parseVariablesFromFile(const std::string& inFile)
 					}
 				}
 #else
+				if (std::smatch m; std::regex_match(value, m, regexA))
 				{
-					static std::regex regexA{ ".*(%(\\w+)%).*" };
-					if (std::smatch m; std::regex_match(value, regexA))
-					{
-						auto capture = m[1].str();
-						auto replaceKey = m[2].str();
+					auto capture = m[1].str();
+					auto replaceKey = m[2].str();
 
-						auto replaceValue = Environment::get(replaceKey.c_str());
-						if (replaceValue != nullptr)
-						{
-							String::replaceAll(value, capture, std::string(replaceValue));
-						}
-						else
-						{
-							String::replaceAll(value, capture, std::string());
-						}
+					auto replaceValue = Environment::get(replaceKey.c_str());
+					if (replaceValue != nullptr)
+					{
+						String::replaceAll(value, capture, std::string(replaceValue));
+					}
+					else
+					{
+						String::replaceAll(value, capture, std::string());
 					}
 				}
 
 #endif
 				// CTRE doesn't like this one (maybe related to the \$ ? not sure...)
-				{
-					static std::regex regexB{ ".*(\\$(\\w+)).*" };
-					if (std::smatch m; std::regex_match(value, regexB))
-					{
-						auto capture = m[1].str();
-						auto replaceKey = m[2].str();
 
-						auto replaceValue = Environment::get(replaceKey.c_str());
-						if (replaceValue != nullptr)
-						{
-							String::replaceAll(value, capture, std::string(replaceValue));
-						}
-						else
-						{
-							String::replaceAll(value, capture, std::string());
-						}
+				if (std::smatch m; std::regex_match(value, m, regexB))
+				{
+					auto capture = m[1].str();
+					auto replaceKey = m[2].str();
+
+					auto replaceValue = Environment::get(replaceKey.c_str());
+					if (replaceValue != nullptr)
+					{
+						String::replaceAll(value, capture, std::string(replaceValue));
+					}
+					else
+					{
+						String::replaceAll(value, capture, std::string());
 					}
 				}
 			}
