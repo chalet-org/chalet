@@ -18,6 +18,8 @@ struct CommandLineInputs
 	static const std::string& file() noexcept;
 	static void setFile(std::string&& inValue) noexcept;
 
+	static const std::string& defaultEnvFile() noexcept;
+
 	Route command() const noexcept;
 	void setCommand(const Route inValue) noexcept;
 
@@ -57,6 +59,7 @@ struct CommandLineInputs
 
 private:
 	static std::string kFile;
+	static const std::string kDefaultEnvFile;
 
 	std::string getPlatform() noexcept;
 	StringList getNotPlatforms() noexcept;
@@ -75,7 +78,7 @@ private:
 
 	std::string m_initProjectName;
 	std::string m_initPath;
-	std::string m_envFile{ ".env" };
+	std::string m_envFile;
 
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;

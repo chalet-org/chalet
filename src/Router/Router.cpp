@@ -63,14 +63,8 @@ bool Router::run()
 		return false;
 	}
 
-	if (Commands::pathExists(m_inputs.envFile()))
-	{
-		if (!Environment::parseVariablesFromFile(m_inputs.envFile()))
-		{
-			Diagnostic::error(fmt::format("There was an error parsing the env file: {}", m_inputs.envFile()));
-			return false;
-		}
-	}
+	if (!parseEnvFile())
+		return false;
 
 	if (command != Route::Init)
 	{
@@ -215,6 +209,35 @@ bool Router::cmdDebug()
 	return true;
 }
 #endif
+
+/*****************************************************************************/
+bool Router::parseEnvFile()
+{
+	std::string envFile = m_inputs.envFile();
+	if (String::equals(CommandLineInputs::defaultEnvFile(), envFile))
+	{
+#if defined(CHALET_WIN32)
+		std::string toSearch{ ".env.windows" };
+#elif defined(CHALET_MACOS)
+		std::string toSearch{ ".env.macos" };
+#else
+		std::string toSearch{ ".env.linux" };
+#endif
+		if (Commands::pathExists(toSearch))
+			envFile = std::move(toSearch);
+	}
+
+	if (Commands::pathExists(envFile))
+	{
+		if (!Environment::parseVariablesFromFile(envFile))
+		{
+			Diagnostic::error(fmt::format("There was an error parsing the env file: {}", envFile));
+			return false;
+		}
+	}
+
+	return true;
+}
 
 /*****************************************************************************/
 bool Router::parseCacheJson()

@@ -33,6 +33,7 @@ private:
 	bool cmdDebug();
 #endif
 
+	bool parseEnvFile();
 	bool parseCacheJson();
 	bool parseBuildJson(const std::string& inFile);
 	void fetchToolVersions();
