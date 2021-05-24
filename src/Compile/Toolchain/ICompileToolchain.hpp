@@ -11,8 +11,11 @@
 
 namespace chalet
 {
+class BuildState;
+
 struct ICompileToolchain
 {
+	explicit ICompileToolchain(const BuildState& inState);
 	virtual ~ICompileToolchain() = default;
 
 	virtual ToolchainType type() const = 0;
@@ -25,6 +28,8 @@ struct ICompileToolchain
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;
 
 protected:
+	virtual void addExectuable(StringList& outArgList, const std::string& inExecutable) const final;
+
 	// Compile
 	virtual void addIncludes(StringList& outArgList) const;
 	virtual void addWarnings(StringList& outArgList) const;
@@ -54,6 +59,14 @@ protected:
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const;
 	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const;
 	virtual void addPlatformGuiApplicationFlag(StringList& outArgList) const;
+
+	const BuildState& m_state;
+
+	bool m_quotePaths = true;
+
+	bool m_isMakefile = false;
+	bool m_isNinja = false;
+	bool m_isNative = false;
 };
 
 using CompileToolchain = std::unique_ptr<ICompileToolchain>;

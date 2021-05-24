@@ -15,12 +15,11 @@ namespace chalet
 {
 /*****************************************************************************/
 CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig) :
-	m_state(inState),
+	ICompileToolchain(inState),
 	m_project(inProject),
 	m_config(inConfig),
 	m_compilerType(m_config.compilerType())
 {
-	m_quotePaths = m_state.environment.strategy() != StrategyType::Native;
 }
 
 /*****************************************************************************/
@@ -34,8 +33,7 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 {
 	StringList ret;
 
-	const auto& cc = m_config.compilerExecutable();
-	ret.push_back(cc);
+	addExectuable(ret, m_config.compilerExecutable());
 
 	if (generateDependency)
 	{
@@ -80,8 +78,7 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 {
 	StringList ret;
 
-	const auto& rc = m_state.compilerTools.rc();
-	ret.push_back(rc);
+	addExectuable(ret, m_state.compilerTools.rc());
 
 	ret.push_back("-J");
 	ret.push_back("rc");
@@ -120,8 +117,7 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 {
 	StringList ret;
 
-	const auto& cc = m_config.compilerExecutable();
-	ret.push_back(cc);
+	addExectuable(ret, m_config.compilerExecutable());
 
 	if (generateDependency)
 	{
@@ -198,8 +194,7 @@ StringList CompileToolchainGNU::getMingwDllTargetCommand(const std::string& outp
 {
 	StringList ret;
 
-	const auto& cc = m_config.compilerExecutable();
-	ret.push_back(cc);
+	addExectuable(ret, m_config.compilerExecutable());
 
 	ret.push_back("-shared");
 	{
@@ -242,8 +237,7 @@ StringList CompileToolchainGNU::getDylibTargetCommand(const std::string& outputF
 {
 	StringList ret;
 
-	const auto& cc = m_config.compilerExecutable();
-	ret.push_back(cc);
+	addExectuable(ret, m_config.compilerExecutable());
 
 	ret.push_back("-dynamiclib");
 	// ret.push_back("-fPIC");
@@ -278,8 +272,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 {
 	StringList ret;
 
-	const auto& cc = m_config.compilerExecutable();
-	ret.push_back(cc);
+	addExectuable(ret, m_config.compilerExecutable());
 
 	ret.push_back("-shared");
 	ret.push_back("-fPIC");
@@ -313,8 +306,7 @@ StringList CompileToolchainGNU::getStaticLibTargetCommand(const std::string& out
 {
 	StringList ret;
 
-	auto& archiver = m_state.compilerTools.archiver();
-	ret.push_back(archiver);
+	addExectuable(ret, m_state.compilerTools.archiver());
 
 	if (m_state.compilerTools.isArchiverLibTool())
 	{
@@ -340,8 +332,7 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 {
 	StringList ret;
 
-	const auto& cc = m_config.compilerExecutable();
-	ret.push_back(cc);
+	addExectuable(ret, m_config.compilerExecutable());
 
 	addLibDirs(ret);
 

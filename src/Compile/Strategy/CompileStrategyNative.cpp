@@ -56,6 +56,41 @@ bool printCommand(std::string output, StringList command, Color inColor, std::st
 }
 
 /*****************************************************************************/
+bool executeCommandMsvc(StringList command, std::string renameFrom, std::string renameTo, bool generateDependencies)
+{
+	std::string srcFile;
+	{
+		auto start = renameFrom.find_last_of('/') + 1;
+		auto end = renameFrom.find_last_of('.');
+		srcFile = renameFrom.substr(start, end - start);
+	}
+
+	SubprocessOptions options;
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::StdErr;
+	options.onStdOut = [&srcFile](std::string inData) {
+		if (String::startsWith(srcFile, inData))
+			return;
+
+		std::cout << inData << std::flush;
+	};
+
+	if (Subprocess::run(command, std::move(options)) != EXIT_SUCCESS)
+		return false;
+
+	if (!generateDependencies)
+		return true;
+
+	if (!renameFrom.empty() && !renameTo.empty())
+	{
+		std::unique_lock<std::mutex> lock(s_mutex);
+		return Commands::rename(renameFrom, renameTo);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 bool executeCommand(StringList command, std::string renameFrom, std::string renameTo, bool generateDependencies)
 {
 	if (!Commands::subprocess(command))
@@ -86,8 +121,6 @@ CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
 	ICompileStrategy(StrategyType::Native, inState),
 	m_threadPool(m_state.environment.maxJobs())
 {
-	m_generateDependencies = !Environment::isContinuousIntegrationServer();
-	// m_generateDependencies = true;
 }
 
 /*****************************************************************************/
@@ -106,6 +139,8 @@ bool CompileStrategyNative::addProject(const ProjectConfiguration& inProject, So
 
 	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+
+	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !compilerConfig.isMsvc();
 
 	auto target = std::make_unique<NativeTarget>();
 	target->pch = getPchCommand(pchTarget);
@@ -158,6 +193,9 @@ bool CompileStrategyNative::buildProject(const ProjectConfiguration& inProject) 
 		this->m_canceled = true;
 	};
 
+	const auto& config = m_state.compilerTools.getConfig(inProject.language());
+	auto executeCommandFunc = config.isMsvc() ? executeCommandMsvc : executeCommand;
+
 	bool cleanOutput = m_state.environment.cleanOutput();
 
 	s_compileIndex = 1;
@@ -170,7 +208,7 @@ bool CompileStrategyNative::buildProject(const ProjectConfiguration& inProject) 
 		if (!printCommand(pch.output, pch.command, Color::Blue, " ", cleanOutput, totalCompiles))
 			return false;
 
-		if (!executeCommand(pch.command, pch.renameFrom, pch.renameTo, m_generateDependencies))
+		if (!executeCommandFunc(pch.command, pch.renameFrom, pch.renameTo, m_generateDependencies))
 			return false;
 	}
 
@@ -179,7 +217,7 @@ bool CompileStrategyNative::buildProject(const ProjectConfiguration& inProject) 
 	for (auto& it : compiles)
 	{
 		threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Blue, " ", cleanOutput, totalCompiles));
-		threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo, m_generateDependencies));
+		threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, m_generateDependencies));
 	}
 
 	for (auto& tr : threadResults)
@@ -211,7 +249,7 @@ bool CompileStrategyNative::buildProject(const ProjectConfiguration& inProject) 
 	if (!printCommand(linkTarget.output, linkTarget.command, Color::Blue, Unicode::rightwardsTripleArrow(), cleanOutput))
 		return false;
 
-	if (!executeCommand(linkTarget.command, linkTarget.renameFrom, linkTarget.renameTo, m_generateDependencies))
+	if (!executeCommandFunc(linkTarget.command, linkTarget.renameFrom, linkTarget.renameTo, m_generateDependencies))
 		return false;
 
 	if (!assemblies.empty())
@@ -225,7 +263,7 @@ bool CompileStrategyNative::buildProject(const ProjectConfiguration& inProject) 
 		for (auto& it : assemblies)
 		{
 			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Magenta, " ", cleanOutput, totalCompiles));
-			threadResults.emplace_back(m_threadPool.enqueue(executeCommand, it.command, it.renameFrom, it.renameTo, m_generateDependencies));
+			threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, m_generateDependencies));
 		}
 
 		for (auto& tr : threadResults)
@@ -296,16 +334,16 @@ CompileStrategyNative::CommandList CompileStrategyNative::getCompileCommands(con
 
 		if (String::endsWith(".o", source))
 			source = source.substr(0, source.size() - 2);
-		else if (String::endsWith(".res", source))
+		else if (String::endsWith({ ".res", ".obj" }, source))
 			source = source.substr(0, source.size() - 4);
 
 		CxxSpecialization specialization = CxxSpecialization::Cpp;
-		if (String::endsWith(".m", source) || String::endsWith(".M", source))
+		if (String::endsWith({ ".m", ".M" }, source))
 			specialization = CxxSpecialization::ObjectiveC;
 		else if (String::endsWith(".mm", source))
 			specialization = CxxSpecialization::ObjectiveCpp;
 
-		if (String::endsWith(".rc", source))
+		if (String::endsWith({ ".rc", ".RC" }, source))
 		{
 #if defined(CHALET_WIN32)
 			auto tmp = getRcCompile(source, target);

@@ -64,7 +64,6 @@ private:
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
 	void addPrecompiledHeaderLink(StringList outArgList) const;
 
-	const BuildState& m_state;
 	const ProjectConfiguration& m_project;
 	const CompilerConfig& m_config;
 
@@ -72,8 +71,6 @@ private:
 
 	std::string m_pchSource;
 	std::string m_pchMinusLocation;
-
-	bool m_quotePaths = true;
 };
 }
 

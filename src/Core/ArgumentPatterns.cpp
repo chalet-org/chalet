@@ -337,13 +337,13 @@ void ArgumentPatterns::addProjectGeneratorArg()
 /*****************************************************************************/
 void ArgumentPatterns::addEnvFileArg()
 {
-	m_parser.add_argument("-e", "--env")
+	m_parser.add_argument("-e", "--envfile")
 		.help("file to load environment variables from")
 		.nargs(1)
 		.default_value(std::string());
 
 	m_argumentMap.push_back({ "-e", Variant::Kind::String });
-	m_argumentMap.push_back({ "--env", Variant::Kind::String });
+	m_argumentMap.push_back({ "--envfile", Variant::Kind::String });
 }
 
 /*****************************************************************************/

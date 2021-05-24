@@ -17,12 +17,11 @@ namespace chalet
 {
 /*****************************************************************************/
 CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig) :
-	m_state(inState),
+	ICompileToolchain(inState),
 	m_project(inProject),
 	m_config(inConfig),
 	m_compilerType(m_config.compilerType())
 {
-	m_quotePaths = m_state.environment.strategy() != StrategyType::Native; // might not be needed
 	UNUSED(m_project);
 }
 
@@ -68,13 +67,11 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 
 	StringList ret;
 
-	const auto& cc = m_config.compilerExecutable();
-	ret.push_back(fmt::format("\"{}\"", cc));
+	addExectuable(ret, m_config.compilerExecutable());
 	ret.push_back("/nologo");
 	ret.push_back("/diagnostics:caret");
 
-	const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
-	if (generateDependency && isNinja)
+	if (generateDependency && m_isNinja)
 	{
 		ret.push_back("/showIncludes");
 	}
@@ -118,8 +115,7 @@ StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFil
 
 	StringList ret;
 
-	const auto& rc = m_state.compilerTools.rc();
-	ret.push_back(fmt::format("\"{}\"", rc));
+	addExectuable(ret, m_state.compilerTools.rc());
 	ret.push_back("/nologo");
 
 	addResourceDefines(ret);
@@ -141,13 +137,12 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 
 	StringList ret;
 
-	const auto& cc = m_config.compilerExecutable();
-	ret.push_back(fmt::format("\"{}\"", cc));
+	addExectuable(ret, m_config.compilerExecutable());
 	ret.push_back("/nologo");
 	ret.push_back("/diagnostics:caret");
 	ret.push_back("/MP");
 
-	if (generateDependency && m_state.environment.strategy() == StrategyType::Ninja)
+	if (generateDependency && m_isNinja)
 	{
 		ret.push_back("/showIncludes");
 	}
@@ -216,8 +211,7 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 
 	StringList ret;
 
-	auto& lib = m_state.compilerTools.archiver();
-	ret.push_back(fmt::format("\"{}\"", lib));
+	addExectuable(ret, m_state.compilerTools.archiver());
 	ret.push_back("/nologo");
 
 	addTargetPlatformArch(ret);
@@ -253,8 +247,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 
 	StringList ret;
 
-	auto& link = m_state.compilerTools.linker();
-	ret.push_back(fmt::format("\"{}\"", link));
+	addExectuable(ret, m_state.compilerTools.linker());
 	ret.push_back("/nologo");
 
 	addTargetPlatformArch(ret);

@@ -5,12 +5,35 @@
 
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
+#include "Libraries/Format.hpp"
+#include "State/BuildState.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
 bool ICompileToolchain::preBuild()
 {
 	return true;
+}
+
+/*****************************************************************************/
+ICompileToolchain::ICompileToolchain(const BuildState& inState) :
+	m_state(inState)
+{
+	m_quotePaths = m_state.environment.strategy() != StrategyType::Native;
+
+	m_isNinja = m_state.environment.strategy() == StrategyType::Makefile;
+	m_isNinja = m_state.environment.strategy() == StrategyType::Ninja;
+	m_isNative = m_state.environment.strategy() == StrategyType::Native;
+}
+
+/*****************************************************************************/
+void ICompileToolchain::addExectuable(StringList& outArgList, const std::string& inExecutable) const
+{
+	if (m_isNative)
+		outArgList.push_back(inExecutable);
+	else
+		outArgList.push_back(fmt::format("\"{}\"", inExecutable));
 }
 
 /*****************************************************************************/

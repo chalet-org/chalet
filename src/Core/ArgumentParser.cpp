@@ -97,7 +97,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					m_inputs.setGenerator(std::move(value));
 				}
-				else if (String::equals(key, "-e") || String::equals(key, "--env"))
+				else if (String::equals(key, "-e") || String::equals(key, "--envfile"))
 				{
 					if (!value.empty())
 						m_inputs.setEnvFile(std::move(value));

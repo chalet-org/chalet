@@ -80,13 +80,10 @@ protected:
 
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
 
-	const BuildState& m_state;
 	const ProjectConfiguration& m_project;
 	const CompilerConfig& m_config;
 
 	const CppCompilerType m_compilerType;
-
-	bool m_quotePaths = true;
 };
 }
 
