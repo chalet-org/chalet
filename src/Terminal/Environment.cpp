@@ -443,13 +443,12 @@ bool Environment::parseVariablesFromFile(const std::string& inFile)
 				key = key.substr(afterSpaces);
 			}
 
-			const bool isPath = String::equals(pathSearch, key);
-
 			auto& value = splitVar.back();
 
 			if (!value.empty())
 			{
 #if defined(CHALET_WIN32)
+				const bool isPath = String::equals(pathSearch, key);
 				for (std::size_t end = value.find_last_of('%'); end != std::string::npos;)
 				{
 					std::size_t beg = value.substr(0, end).find_last_of('%');

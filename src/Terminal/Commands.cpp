@@ -679,7 +679,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	command = { "which", inExecutable };
 
 	result = Commands::subprocessOutput(command, inCleanOutput);
-	if (isBash && String::contains("which: no", result))
+	if (String::contains("which: no", result))
 		return std::string();
 
 	if (String::startsWith("/usr/bin/", result))
