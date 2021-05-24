@@ -12,6 +12,7 @@
 
 #if defined(CHALET_WIN32)
 	#include <tlhelp32.h>
+
 #elif defined(CHALET_MACOS)
 	#include <sys/types.h>
 	#include <unistd.h>
@@ -35,12 +36,11 @@ namespace chalet
 {
 namespace
 {
-/*****************************************************************************/
-std::string getParentProcessPath()
-{
 #if defined(CHALET_WIN32)
+DWORD getParentProcessId()
+{
 	HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (handle)
+	if (handle != INVALID_HANDLE_VALUE)
 	{
 		DWORD pid = GetCurrentProcessId();
 		PROCESSENTRY32 pe;
@@ -52,32 +52,57 @@ std::string getParentProcessPath()
 			{
 				if (pe.th32ProcessID == pid)
 				{
-					HANDLE parentHandle = OpenProcess(
-						PROCESS_QUERY_LIMITED_INFORMATION,
-						FALSE,
-						pe.th32ParentProcessID);
-
-					if (parentHandle)
-					{
-						std::string processPath;
-						DWORD buffSize = 1024;
-						CHAR buffer[1024];
-						if (QueryFullProcessImageNameA(parentHandle, 0, buffer, &buffSize))
-						{
-							processPath = std::string(buffer);
-						}
-						CloseHandle(parentHandle);
-
-						return processPath;
-					}
+					return pe.th32ParentProcessID;
 				}
 			} while (Process32Next(handle, &pe));
 		}
 	}
+
+	return 0;
+}
+#else
+pid_t getParentProcessId()
+{
+	return getppid();
+}
+#endif
+#if defined(CHALET_WIN32)
+/*****************************************************************************/
+std::string getProcessPath(DWORD inPid)
+{
+	if (inPid != 0)
+	{
+		HANDLE parentHandle = OpenProcess(
+			PROCESS_QUERY_LIMITED_INFORMATION,
+			FALSE,
+			inPid);
+
+		if (parentHandle)
+		{
+			std::string processPath;
+			DWORD buffSize = 1024;
+			CHAR buffer[1024];
+			if (QueryFullProcessImageNameA(parentHandle, 0, buffer, &buffSize))
+			{
+				processPath = std::string(buffer);
+			}
+			CloseHandle(parentHandle);
+
+			return processPath;
+		}
+	}
 	return std::string();
+}
+#endif
+
+std::string getParentProcessPath()
+{
+#if defined(CHALET_WIN32)
+	DWORD pid = getParentProcessId();
+	return getProcessPath(pid);
 #else
 	// pid_t pid = getpid();
-	pid_t pid = getppid();
+	pid_t pid = getParentProcessId();
 
 	std::string name;
 	if (pid > 0)
@@ -189,8 +214,6 @@ void Environment::setTerminalType()
 		return printTermType();
 	}
 
-	// TODO: Proper check for Windows ConPTY
-	//   https://github.com/microsoft/vscode/issues/124427
 	result = Environment::get("COLORTERM");
 	if (result != nullptr)
 	{
@@ -317,7 +340,7 @@ void Environment::printTermType()
 			break;
 
 		case ShellType::WindowsConPTY:
-			term = "Generic (w/ COLORTERM set)";
+			term = "Generic (w/ COLORTERM)";
 			break;
 
 		case ShellType::CommandPrompt:
