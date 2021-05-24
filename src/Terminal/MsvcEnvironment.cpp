@@ -82,6 +82,10 @@ bool MsvcEnvironment::readCompilerVariables()
 
 	auto path = Environment::getPath();
 
+	// Note: See Note about __CHALET_MSVC_INJECT__ in Environment.cpp
+	auto appDataPath = Environment::getAsString("APPDATA");
+	std::string msvcInject = fmt::format("{}\\__CHALET_MSVC_INJECT__", appDataPath);
+
 	if (!Commands::pathExists(m_varsFileMsvcDelta))
 	{
 		m_vsAppIdDir = Commands::subprocessOutput({ s_vswhere, "-latest", "-property", "installationPath" });
@@ -132,7 +136,12 @@ bool MsvcEnvironment::readCompilerVariables()
 			{
 				if (!line.empty())
 				{
-					if (String::startsWith("PATH=", line) || String::startsWith("Path=", line))
+					if (String::startsWith("__VSCMD_PREINIT_PATH=", line))
+					{
+						if (String::contains(msvcInject, line))
+							String::replaceAll(line, msvcInject + ";", "");
+					}
+					else if (String::startsWith({ "PATH=", "Path=" }, line))
 					{
 						String::replaceAll(line, path, "");
 					}
@@ -158,9 +167,6 @@ bool MsvcEnvironment::readCompilerVariables()
 		}
 	}
 
-	// Note: See Note about __CHALET_MSVC_INJECT__ in Environment.cpp
-	auto appDataPath = Environment::getAsString("APPDATA");
-	std::string msvcInject = fmt::format("{}\\__CHALET_MSVC_INJECT__", appDataPath);
 	StringList pathSearch{ "Path", "PATH" };
 	for (auto& [name, var] : m_variables)
 	{
