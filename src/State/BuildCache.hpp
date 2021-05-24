@@ -24,6 +24,7 @@ struct BuildCache
 	explicit BuildCache(const WorkspaceInfo& inInfo, const BuildPaths& inPaths);
 
 	bool createCacheFolder(const Type inCacheType);
+	bool exists(const Type inCacheType = Type::Local) const;
 	std::string getHash(const std::string& inIdentifier, const Type inCacheType) const;
 	std::string getPath(const std::string& inFolder, const Type inCacheType) const;
 

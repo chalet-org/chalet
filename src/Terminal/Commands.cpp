@@ -654,72 +654,34 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 /*****************************************************************************/
 std::string Commands::which(const std::string& inExecutable, const bool inCleanOutput)
 {
-	StringList command;
-	const bool isBash = Environment::isBashOrWindowsConPTY();
+	std::string result;
+#if defined(CHALET_WIN32)
+	if (!inCleanOutput)
+		Output::print(Color::Blue, fmt::format("executable search: {}", inExecutable));
 
-#if defined(CHALET_WIN32)
-	if (isBash)
-#endif
-		command = { "which", inExecutable };
-#if defined(CHALET_WIN32)
-	else
+	LPSTR lpFilePart;
+	char filename[MAX_PATH];
+
+	std::string extension{ ".exe" };
+	if (String::contains('.', inExecutable))
 	{
-		command = { "cmd.exe", "/c", "where", fmt::format("{}.exe", inExecutable) };
+		auto pos = inExecutable.find_last_of('.');
+		extension = inExecutable.substr(pos);
 	}
-#endif
 
-	std::string result = Commands::subprocessOutput(command, inCleanOutput);
+	if (SearchPathA(NULL, inExecutable.c_str(), extension.c_str(), MAX_PATH, filename, &lpFilePart))
+	{
+		result = std::string(filename);
+		String::replaceAll(result, '\\', '/');
+	}
+#elif defined(CHALET_MACOS)
+	StringList command;
+	command = { "which", inExecutable };
+
+	result = Commands::subprocessOutput(command, inCleanOutput);
 	if (isBash && String::contains("which: no", result))
 		return std::string();
 
-#if defined(CHALET_WIN32)
-	if (!isBash)
-	{
-		if (String::startsWith("'where' is not", result))
-			return std::string();
-
-		char eol = '\r';
-		if (String::contains(eol, result))
-		{
-			const auto splitResult = String::split(result, eol);
-			if (splitResult.size() > 1)
-				result = splitResult[0];
-		}
-		String::replaceAll(result, '\\', '/');
-		if (String::startsWith("INFO:", result))
-			return std::string();
-	}
-	else
-	{
-		Path::msysDrivesToWindowsDrives(result);
-	}
-
-	if (String::startsWith('/', result))
-	{
-		auto& cygPath = getCygPath();
-		std::string withCygPath = cygPath + result + ".exe";
-		if (Commands::pathExists(withCygPath))
-		{
-			result = std::move(withCygPath);
-		}
-		else
-		{
-			String::replaceAll(withCygPath, ".exe", "");
-			if (Commands::pathExists(withCygPath))
-				result = std::move(withCygPath);
-		}
-	}
-	else
-	{
-		auto file = String::getPathFilename(result);
-		if (!String::contains('.', file))
-		{
-			if (!result.empty() && !String::endsWith(".exe", result))
-				result += ".exe";
-		}
-	}
-
-#elif defined(CHALET_MACOS)
 	if (String::startsWith("/usr/bin/", result))
 	{
 		auto& xcodePath = getXcodePath();

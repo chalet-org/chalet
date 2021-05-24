@@ -31,6 +31,35 @@ const char* Diagnostic::CriticalException::what() const throw()
 Diagnostic::CriticalException Diagnostic::kCriticalError;
 
 /*****************************************************************************/
+void Diagnostic::info(const std::string& inMessage, const bool inLineBreak)
+{
+	const auto color = Output::getAnsiStyle(Color::Black);
+	const auto reset = Output::getAnsiReset();
+	const auto symbol = '>';
+
+	std::cout << fmt::format("{}{}  {}{}", color, symbol, reset, inMessage);
+	if (inLineBreak)
+		std::cout << std::endl;
+	else
+		std::cout << fmt::format("{} ... {}", color, reset) << std::flush;
+}
+
+/*****************************************************************************/
+void Diagnostic::printDone(const std::string& inExtra)
+{
+	const auto color = Output::getAnsiStyle(Color::Black);
+	const auto reset = Output::getAnsiReset();
+	if (!inExtra.empty())
+	{
+		std::cout << fmt::format("{}done ({}){}", color, inExtra, reset) << std::endl;
+	}
+	else
+	{
+		std::cout << fmt::format("{}done{}", color, reset) << std::endl;
+	}
+}
+
+/*****************************************************************************/
 void Diagnostic::warn(const std::string& inMessage, const std::string& inTitle)
 {
 	auto type = Type::Warning;

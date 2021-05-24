@@ -5,6 +5,8 @@
 
 #include "Utility/Timer.hpp"
 
+#include "Libraries/Format.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -27,5 +29,19 @@ std::int64_t Timer::stop()
 	auto executionTime = m_end - m_start;
 
 	return std::chrono::duration_cast<std::chrono::milliseconds>(executionTime).count();
+}
+
+/*****************************************************************************/
+std::string Timer::asString()
+{
+	auto end = clock::now();
+	auto executionTime = end - m_start;
+
+	auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(executionTime).count();
+
+	if (milliseconds == 0)
+		return std::string();
+
+	return fmt::format("{}ms", milliseconds);
 }
 }

@@ -69,6 +69,13 @@ bool BuildCache::createCacheFolder(const Type inCacheType)
 }
 
 /*****************************************************************************/
+bool BuildCache::exists(const Type inCacheType) const
+{
+	const auto& cacheRef = getCacheRef(inCacheType);
+	return Commands::pathExists(cacheRef) || Commands::pathExists(m_environmentCache.filename());
+}
+
+/*****************************************************************************/
 void BuildCache::removeCacheFolder(const Type inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);

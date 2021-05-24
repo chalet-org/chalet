@@ -10,6 +10,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -78,6 +79,8 @@ bool MsvcEnvironment::readCompilerVariables()
 	if (!MsvcEnvironment::exists())
 		return true;
 
+	Timer timer;
+
 	// TODO: Check if Visual Studio is even installed
 
 	auto path = Environment::getPath();
@@ -88,13 +91,33 @@ bool MsvcEnvironment::readCompilerVariables()
 
 	if (!Commands::pathExists(m_varsFileMsvcDelta))
 	{
+		bool notUsingMsvc = false;
+		for (const auto& search : {
+				 "clang++",
+				 "clang",
+				 "g++",
+				 "gcc",
+				 "c++",
+				 "cc",
+				 "lld",
+				 "ld",
+				 "ar",
+				 "windres",
+			 })
+		{
+			notUsingMsvc |= !Commands::which(search).empty();
+		}
+		if (notUsingMsvc)
+			return true;
+
+		Diagnostic::info(fmt::format("Creating Microsoft Visual C++ Environment Cache ({})", m_varsFileMsvcDelta), false);
+
 		m_vsAppIdDir = Commands::subprocessOutput({ s_vswhere, "-latest", "-property", "installationPath" });
 		if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: Error running vswhere.exe");
 			return false;
 		}
-
 		// Read the current environment and save it to a file
 		if (!saveOriginalEnvironment())
 		{
@@ -151,6 +174,10 @@ bool MsvcEnvironment::readCompilerVariables()
 			input.close();
 			std::ofstream(m_varsFileMsvcDelta) << outContents;
 		}
+	}
+	else
+	{
+		Diagnostic::info(fmt::format("Reading Microsoft Visual C++ Environment Cache ({})", m_varsFileMsvcDelta), false);
 	}
 
 	// Read delta to cache
@@ -210,6 +237,8 @@ bool MsvcEnvironment::readCompilerVariables()
 		String::replaceAll(lib->second, "\\", "/");
 		m_lib = String::split(lib->second, ";");
 	}
+
+	Diagnostic::printDone(timer.asString());
 #endif
 	return true;
 }

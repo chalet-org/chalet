@@ -63,10 +63,15 @@ std::string getCleanGitPath(const std::string inPath)
 /*****************************************************************************/
 char getEscapeChar()
 {
-	if (Environment::isBash())
-		return '\033';
-	else
-		return '\x1b';
+#if defined(CHALET_WIN32)
+	return '\x1b';
+#else
+	return '\033';
+#endif
+	// if (Environment::isBash())
+	// 	return '\033';
+	// else
+	// 	return '\x1b';
 }
 }
 

@@ -6,11 +6,13 @@
 #include "CacheJson/CacheJsonParser.hpp"
 
 #include "CacheJson/CacheJsonSchema.hpp"
+#include "Core/HostPlatform.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 #include "Json/JsonComments.hpp"
 
 namespace chalet
@@ -40,6 +42,17 @@ bool CacheJsonParser::serialize()
 		JsonFile::saveToFile(cacheJsonSchema, "schema/chalet-cache.schema.json");
 	}
 
+	Timer timer;
+	bool cacheExists = m_state.cache.exists();
+	if (cacheExists)
+	{
+		Diagnostic::info(fmt::format("Reading Chalet Cache ({})", m_state.cache.environmentCache().filename()), false);
+	}
+	else
+	{
+		Diagnostic::info(fmt::format("Creating Chalet Cache ({})", m_state.cache.environmentCache().filename()), false);
+	}
+
 	if (!makeCache())
 		return false;
 
@@ -52,6 +65,8 @@ bool CacheJsonParser::serialize()
 		Diagnostic::error(fmt::format("There was an error parsing {}", m_filename));
 		return false;
 	}
+
+	Diagnostic::printDone(timer.asString());
 
 	if (!validatePaths())
 		return false;
@@ -101,7 +116,7 @@ bool CacheJsonParser::createMsvcEnvironment()
 
 	if (readVariables)
 	{
-		m_state.msvcEnvironment.readCompilerVariables();
+		return m_state.msvcEnvironment.readCompilerVariables();
 	}
 #endif
 
@@ -231,6 +246,8 @@ bool CacheJsonParser::setDefaultBuildStrategy()
 		m_state.cache.setDirty(true);
 	}
 
+	Diagnostic::info(fmt::format("Using Build Strategy: {}", m_state.environment.strategyName()));
+
 	return true;
 }
 
@@ -277,14 +294,31 @@ bool CacheJsonParser::makeCache()
 
 	Json& compilerTools = environmentCache.json[kKeyCompilerTools];
 
-	auto whichAdd = [&](Json& inNode, const std::string& inKey) -> bool {
+#if defined(CHALET_WIN32)
+	HostPlatform platform = HostPlatform::Windows;
+#elif defined(CHALET_MACOS)
+	HostPlatform platform = HostPlatform::MacOS;
+#else
+	HostPlatform platform = HostPlatform::Linux;
+#endif
+
+	auto whichAdd = [&](Json& inNode, const std::string& inKey, const HostPlatform inPlatform = HostPlatform::Any) -> bool {
 		if (!inNode.contains(inKey))
 		{
-			auto path = Commands::which(inKey);
-			bool res = !path.empty();
-			inNode[inKey] = std::move(path);
-			m_state.cache.setDirty(true);
-			return res;
+			if (inPlatform == HostPlatform::Any || inPlatform == platform)
+			{
+				auto path = Commands::which(inKey);
+				bool res = !path.empty();
+				inNode[inKey] = std::move(path);
+				m_state.cache.setDirty(true);
+				return res;
+			}
+			else
+			{
+				inNode[inKey] = std::string();
+				m_state.cache.setDirty(true);
+				return true;
+			}
 		}
 
 		return true;
@@ -393,9 +427,9 @@ bool CacheJsonParser::makeCache()
 	Json& tools = environmentCache.json[kKeyTools];
 
 	whichAdd(tools, kKeyBash);
-	whichAdd(tools, kKeyBrew);
+	whichAdd(tools, kKeyBrew, HostPlatform::MacOS);
 	whichAdd(tools, kKeyCmake);
-	whichAdd(tools, kKeyCodesign);
+	whichAdd(tools, kKeyCodesign, HostPlatform::MacOS);
 
 	if (!tools.contains(kKeyCommandPrompt))
 	{
@@ -410,9 +444,9 @@ bool CacheJsonParser::makeCache()
 
 	whichAdd(tools, kKeyGit);
 	whichAdd(tools, kKeyGprof);
-	whichAdd(tools, kKeyHdiutil);
-	whichAdd(tools, kKeyInstallNameTool);
-	whichAdd(tools, kKeyInstruments);
+	whichAdd(tools, kKeyHdiutil, HostPlatform::MacOS);
+	whichAdd(tools, kKeyInstallNameTool, HostPlatform::MacOS);
+	whichAdd(tools, kKeyInstruments, HostPlatform::MacOS);
 	whichAdd(tools, kKeyLdd);
 	whichAdd(tools, kKeyLua);
 
@@ -454,10 +488,10 @@ bool CacheJsonParser::makeCache()
 
 	whichAdd(tools, kKeyNinja);
 	whichAdd(tools, kKeyObjdump);
-	whichAdd(tools, kKeyOsascript);
-	whichAdd(tools, kKeyOtool);
+	whichAdd(tools, kKeyOsascript, HostPlatform::MacOS);
+	whichAdd(tools, kKeyOtool, HostPlatform::MacOS);
 	whichAdd(tools, kKeyPerl);
-	whichAdd(tools, kKeyPlutil);
+	whichAdd(tools, kKeyPlutil, HostPlatform::MacOS);
 	whichAdd(tools, kKeyPython);
 	whichAdd(tools, kKeyPython3);
 
@@ -473,12 +507,12 @@ bool CacheJsonParser::makeCache()
 	}
 
 	whichAdd(tools, kKeyRuby);
-	whichAdd(tools, kKeySample);
-	whichAdd(tools, kKeySips);
-	whichAdd(tools, kKeyTiffutil);
-	whichAdd(tools, kKeyXcodebuild);
-	whichAdd(tools, kKeyXcodegen);
-	whichAdd(tools, kKeyXcrun);
+	whichAdd(tools, kKeySample, HostPlatform::MacOS);
+	whichAdd(tools, kKeySips, HostPlatform::MacOS);
+	whichAdd(tools, kKeyTiffutil, HostPlatform::MacOS);
+	whichAdd(tools, kKeyXcodebuild, HostPlatform::MacOS);
+	whichAdd(tools, kKeyXcodegen, HostPlatform::MacOS);
+	whichAdd(tools, kKeyXcrun, HostPlatform::MacOS);
 
 	return true;
 }

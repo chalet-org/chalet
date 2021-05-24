@@ -75,8 +75,6 @@ bool Router::run()
 			return false;
 		}
 
-		Output::lineBreak();
-
 		m_buildState = std::make_unique<BuildState>(m_inputs);
 
 		if (!parseCacheJson())
@@ -88,6 +86,8 @@ bool Router::run()
 		fetchToolVersions();
 
 		m_buildState->initializeBuild();
+
+		Output::lineBreak();
 	}
 
 	if (!managePathVariables())
@@ -229,11 +229,16 @@ bool Router::parseEnvFile()
 
 	if (Commands::pathExists(envFile))
 	{
+		Timer timer;
+		Diagnostic::info(fmt::format("Reading Environment ({})", envFile), false);
+
 		if (!Environment::parseVariablesFromFile(envFile))
 		{
 			Diagnostic::error(fmt::format("There was an error parsing the env file: {}", envFile));
 			return false;
 		}
+
+		Diagnostic::printDone(timer.asString());
 	}
 
 	return true;
@@ -283,12 +288,13 @@ void Router::fetchToolVersions()
 {
 	Timer timer;
 
+	Diagnostic::info("Verifying required tools", false);
+
 	{
 		m_buildState->tools.fetchVersions();
 	}
 
-	auto result = timer.stop();
-	Output::print(Color::Reset, fmt::format("Tool versions fetched in: {}ms\n", result));
+	Diagnostic::printDone(timer.asString());
 }
 
 /*****************************************************************************/

@@ -12,9 +12,6 @@ namespace Path
 {
 void sanitize(std::string& outValue, const bool inRemoveNewLine = false);
 void sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine = false);
-void sanitizeWithDrives(std::string& outPath);
-void windowsDrivesToMsysDrives(std::string& outPath);
-void msysDrivesToWindowsDrives(std::string& outPath);
 StringList getOSPaths();
 constexpr char getSeparator();
 }

@@ -6,7 +6,6 @@
 #include "Terminal/Path.hpp"
 
 #include "Libraries/Format.hpp"
-#include "Libraries/Regex.hpp"
 #include "Terminal/Environment.hpp"
 #include "Utility/String.hpp"
 
@@ -51,75 +50,6 @@ void Path::sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine)
 		outValue.pop_back();
 #else
 	sanitize(outValue, inRemoveNewLine);
-#endif
-}
-
-/*****************************************************************************/
-// In theory, give this any path (including full PATH variable)
-//
-void Path::sanitizeWithDrives(std::string& outPath)
-{
-	Path::windowsDrivesToMsysDrives(outPath);
-	Path::sanitize(outPath, true);
-
-	String::replaceAll(outPath, ';', ':');
-}
-
-/*****************************************************************************/
-void Path::windowsDrivesToMsysDrives(std::string& outPath)
-{
-#ifndef CHALET_MSVC
-	static constexpr auto driveFwd = ctll::fixed_string{ "^([A-Za-z]):/.*" };
-	static constexpr auto driveBck = ctll::fixed_string{ "^([A-Za-z]):\\\\.*" };
-
-	if (auto m = ctre::match<driveBck>(outPath))
-	{
-		auto capture = m.get<1>().to_string();
-		String::replaceAll(outPath, capture + ":\\", "/" + String::toLowerCase(capture) + '/');
-	}
-
-	if (auto m = ctre::match<driveFwd>(outPath))
-	{
-		auto capture = m.get<1>().to_string();
-		String::replaceAll(outPath, capture + ":/", "/" + String::toLowerCase(capture) + '/');
-	}
-#else
-	const std::regex driveFwd{ "^([A-Za-z]):/.*" };
-	const std::regex driveBck{ "^([A-Za-z]):\\\\.*" };
-
-	if (std::smatch m; std::regex_match(outPath, m, driveBck))
-	{
-		auto capture = m[1].str();
-		String::replaceAll(outPath, capture + ":\\", "/" + String::toLowerCase(capture) + '/');
-	}
-
-	if (std::smatch m; std::regex_match(outPath, m, driveFwd))
-	{
-		auto capture = m[1].str();
-		String::replaceAll(outPath, capture + ":/", "/" + String::toLowerCase(capture) + '/');
-	}
-#endif
-}
-
-/*****************************************************************************/
-void Path::msysDrivesToWindowsDrives(std::string& outPath)
-{
-#ifndef CHALET_MSVC
-	static constexpr auto driveFwd = ctll::fixed_string{ "^/([A-Za-z])/.*" };
-
-	if (auto m = ctre::match<driveFwd>(outPath))
-	{
-		auto capture = m.get<1>().to_string();
-		String::replaceAll(outPath, fmt::format("/{}/", capture), fmt::format("{}:/", String::toUpperCase(capture)));
-	}
-#else
-	const std::regex driveFwd{ "^/([A-Za-z])/.*" };
-
-	if (std::smatch m; std::regex_match(outPath, m, driveFwd))
-	{
-		auto capture = m[1].str();
-		String::replaceAll(outPath, fmt::format("/{}/", capture), fmt::format("{}:/", String::toUpperCase(capture)));
-	}
 #endif
 }
 

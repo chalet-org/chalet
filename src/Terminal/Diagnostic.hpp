@@ -17,6 +17,9 @@ struct Diagnostic
 {
 	Diagnostic() = delete;
 
+	static void info(const std::string& inMessage, const bool inLineBreak = true);
+	static void printDone(const std::string& inExtra = std::string());
+
 	static void warn(const std::string& inMessage, const std::string& inTitle = kDefaultWarning);
 	static void error(const std::string& inMessage, const std::string& inTitle = kDefaultError);
 
