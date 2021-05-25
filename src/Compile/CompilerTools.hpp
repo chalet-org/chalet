@@ -42,7 +42,7 @@ struct CompilerTools
 
 private:
 	std::string parseVersionMSVC(const std::string& inExecutable) const;
-	std::string parseVersionGCC(const std::string& inExecutable, const std::string_view inEol = "\n") const;
+	std::string parseVersionGNU(const std::string& inExecutable, const std::string_view inEol = "\n") const;
 
 	mutable std::unordered_map<CodeLanguage, CompilerConfig> m_configs;
 

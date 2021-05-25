@@ -30,9 +30,10 @@ void CompilerTools::fetchCompilerVersions()
 			}
 			else
 			{
-				version = parseVersionGCC(m_cpp, "\r\n");
+				version = parseVersionGNU(m_cpp, "\r\n");
 			}
 #else
+			version = parseVersionGNU(m_cpp);
 #endif
 			m_compilerVersionStringCpp = std::move(version);
 		}
@@ -50,9 +51,10 @@ void CompilerTools::fetchCompilerVersions()
 			}
 			else
 			{
-				version = parseVersionGCC(m_cc, "\r\n");
+				version = parseVersionGNU(m_cc, "\r\n");
 			}
 #else
+			version = parseVersionGNU(m_cc);
 #endif
 			m_compilerVersionStringC = std::move(version);
 		}
@@ -75,7 +77,7 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) con
 		{
 			const auto versionString = splitOutput[1].substr(start, end - start);
 			const auto arch = splitOutput[1].substr(end + 5);
-			ret = fmt::format("Microsoft{} Visual C/C++ {} ({})", Unicode::registered(), versionString, arch);
+			ret = fmt::format("Microsoft{} Visual C/C++ {} [{}]", Unicode::registered(), versionString, arch);
 		}
 	}
 
@@ -83,31 +85,38 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) con
 }
 
 /*****************************************************************************/
-std::string CompilerTools::parseVersionGCC(const std::string& inExecutable, const std::string_view inEol) const
+std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, const std::string_view inEol) const
 {
 	std::string ret;
 
 	// gcc version 10.2.0 (Ubuntu 10.2.0-13ubuntu1)
 	// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
+	// Apple clang version 12.0.5 (clang-1205.0.22.9)
 	const auto exec = String::getPathBaseName(inExecutable);
-	const bool isCpp = String::startsWith({ "g++", "c++" }, exec);
+	const bool isCpp = String::contains("++", exec);
 	// const bool isC = String::startsWith({ "gcc", "cc" }, exec);
 	std::string rawOutput = Commands::subprocessOutput({ inExecutable, "-v" });
 	auto splitOutput = String::split(rawOutput, inEol);
 	if (splitOutput.size() >= 2)
 	{
-		auto start = splitOutput.back().find("version");
-		auto versionString = splitOutput.back().substr(start + 8);
-		while (versionString.back() == ' ')
-			versionString.pop_back();
+		std::string versionString;
+		std::string compilerRaw;
 		std::string arch;
 		std::string threadModel;
 		for (auto& line : splitOutput)
 		{
-			if (String::startsWith("Target:", line))
+			if (String::contains("version", line))
+			{
+				auto start = line.find("version");
+				compilerRaw = line.substr(0, start - 1);
+				versionString = line.substr(start + 8);
+
+				while (versionString.back() == ' ')
+					versionString.pop_back();
+			}
+			else if (String::startsWith("Target:", line))
 			{
 				arch = line.substr(8);
-				break;
 			}
 			/*else if (String::startsWith("Thread model:", line))
 			{
@@ -116,7 +125,22 @@ std::string CompilerTools::parseVersionGCC(const std::string& inExecutable, cons
 			// Supported LTO compression algorithms:
 		}
 		UNUSED(threadModel);
-		ret = fmt::format("GNU Compiler Collection {} Version {} ({})", isCpp ? "C++" : "C", versionString, arch);
+
+		if (!compilerRaw.empty())
+		{
+			if (String::startsWith("gcc", compilerRaw))
+			{
+				ret = fmt::format("GNU Compiler Collection {} Version {} [{}]", isCpp ? "C++" : "C", versionString, arch);
+			}
+			else if (String::startsWith("Apple clang", compilerRaw))
+			{
+				ret = fmt::format("Apple Clang {} Version {} [{}]", isCpp ? "C++" : "C", versionString, arch);
+			}
+		}
+		else
+		{
+			ret = "Unrecognized";
+		}
 	}
 
 	return ret;
