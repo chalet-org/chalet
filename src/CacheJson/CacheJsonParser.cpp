@@ -432,6 +432,7 @@ bool CacheJsonParser::makeCache()
 	{
 #if defined(CHALET_WIN32)
 		auto res = Commands::which("cmd");
+		String::replaceAll(res, "WINDOWS/SYSTEM32", "Windows/System32");
 		tools[kKeyCommandPrompt] = std::move(res);
 #else
 		tools[kKeyCommandPrompt] = std::string();
