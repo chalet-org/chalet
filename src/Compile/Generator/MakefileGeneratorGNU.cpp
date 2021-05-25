@@ -21,8 +21,8 @@ namespace
 const char* unicodeRightwardsTripleArrow()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isBashOrWindowsConPTY())
-		return "\\xE2\\x87\\x9B";
+	if (Environment::isBash())
+		return "\\u21DB";
 #endif
 
 	return Unicode::rightwardsTripleArrow();
