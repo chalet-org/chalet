@@ -211,7 +211,7 @@ std::string BuildManager::getBuildStrategyName() const
 			else
 			{
 
-				ret = "Makefile";
+				ret = "GNU Make";
 			}
 			break;
 		}
