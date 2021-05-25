@@ -116,7 +116,7 @@ std::string CompilerTools::parseVersionGCC(const std::string& inExecutable, cons
 			// Supported LTO compression algorithms:
 		}
 		UNUSED(threadModel);
-		ret = fmt::format("GNU GCC {} Version {} ({})", isCpp ? "C++" : "C", versionString, arch);
+		ret = fmt::format("GNU Compiler Collection {} Version {} ({})", isCpp ? "C++" : "C", versionString, arch);
 	}
 
 	return ret;
