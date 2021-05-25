@@ -19,7 +19,7 @@ struct JsonFile;
 struct BuildJsonParser
 {
 	explicit BuildJsonParser(const CommandLineInputs& inInputs, BuildState& inState, std::string inFilename);
-	CHALET_DEFAULT_COPY_MOVE(BuildJsonParser);
+	CHALET_DISALLOW_COPY_MOVE(BuildJsonParser);
 	~BuildJsonParser();
 
 	virtual bool serialize() final;
