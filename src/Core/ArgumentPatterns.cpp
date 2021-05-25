@@ -15,13 +15,6 @@
 namespace chalet
 {
 /*****************************************************************************/
-const std::string ArgumentPatterns::kArgConfiguration = "<configuration>";
-const std::string ArgumentPatterns::kArgRunProject = "[<runProject>]";
-const std::string ArgumentPatterns::kArgRunArguments = "[ARG...]";
-const std::string ArgumentPatterns::kArgInitName = "<name>";
-const std::string ArgumentPatterns::kArgInitPath = "<path>";
-
-/*****************************************************************************/
 std::string ArgumentPatterns::getHelpCommand()
 {
 	return fmt::format(R"(
@@ -56,6 +49,28 @@ ArgumentPatterns::ArgumentPatterns() :
 #if defined(CHALET_DEBUG)
 	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::commandDebug);
 #endif
+}
+
+/*****************************************************************************/
+const std::string& ArgumentPatterns::argConfiguration() const noexcept
+{
+	return kArgConfiguration;
+}
+const std::string& ArgumentPatterns::argRunProject() const noexcept
+{
+	return kArgRunProject;
+}
+const std::string& ArgumentPatterns::argRunArguments() const noexcept
+{
+	return kArgRunArguments;
+}
+const std::string& ArgumentPatterns::argInitName() const noexcept
+{
+	return kArgInitName;
+}
+const std::string& ArgumentPatterns::argInitPath() const noexcept
+{
+	return kArgInitPath;
 }
 
 /*****************************************************************************/

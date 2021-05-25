@@ -80,11 +80,11 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		{
 			case Variant::Kind::String: {
 				auto value = rawValue.asString();
-				if (key == ArgumentPatterns::kArgConfiguration)
+				if (key == patterns.argConfiguration())
 				{
 					m_inputs.setBuildFromCommandLine(std::move(value));
 				}
-				else if (key == ArgumentPatterns::kArgRunProject)
+				else if (key == patterns.argRunProject())
 				{
 					m_inputs.setRunProject(std::move(value));
 				}
@@ -107,11 +107,11 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 					if (!value.empty())
 						m_inputs.setEnvFile(std::move(value));
 				}
-				else if (key == ArgumentPatterns::kArgInitName)
+				else if (key == patterns.argInitName())
 				{
 					m_inputs.setInitProjectName(std::move(value));
 				}
-				else if (key == ArgumentPatterns::kArgInitPath)
+				else if (key == patterns.argInitPath())
 				{
 					m_inputs.setInitPath(std::move(value));
 				}
@@ -119,7 +119,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 			}
 
 			case Variant::Kind::StringList: {
-				if (key == ArgumentPatterns::kArgRunArguments)
+				if (key == patterns.argRunArguments())
 				{
 					auto runArgs = String::join(rawValue.asStringList());
 					m_inputs.setRunOptions(std::move(runArgs));

@@ -15,7 +15,7 @@ struct CommandLineInputs
 {
 	CommandLineInputs();
 
-	static const std::string& defaultEnvFile() noexcept;
+	const std::string& defaultEnvFile() const noexcept;
 
 	const std::string& buildFile() const noexcept;
 	void setBuildFile(std::string&& inValue) noexcept;
@@ -61,8 +61,6 @@ struct CommandLineInputs
 	void setSaveSchemaToFile(const bool inValue) noexcept;
 
 private:
-	static const std::string kDefaultEnvFile;
-
 	std::string getPlatform() noexcept;
 	StringList getNotPlatforms() noexcept;
 
@@ -71,6 +69,7 @@ private:
 	StringList m_runOptions;
 	StringList m_notPlatforms;
 
+	const std::string kDefaultEnvFile;
 	std::string m_buildFile;
 	std::string m_buildPath;
 	std::string m_buildConfiguration;

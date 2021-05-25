@@ -21,16 +21,16 @@ class ArgumentPatterns
 public:
 	ArgumentPatterns();
 
+	const std::string& argConfiguration() const noexcept;
+	const std::string& argRunProject() const noexcept;
+	const std::string& argRunArguments() const noexcept;
+	const std::string& argInitName() const noexcept;
+	const std::string& argInitPath() const noexcept;
+
 	bool parse(const StringList& inArguments);
 	const ArgumentMap& arguments() const noexcept;
 
 	Route route() const noexcept;
-
-	static const std::string kArgConfiguration;
-	static const std::string kArgRunProject;
-	static const std::string kArgRunArguments;
-	static const std::string kArgInitName;
-	static const std::string kArgInitPath;
 
 private:
 	std::string getHelpCommand();
@@ -77,6 +77,12 @@ private:
 	std::string m_routeString;
 
 	const std::string kCommand = "<command>";
+
+	const std::string kArgConfiguration = "<configuration>";
+	const std::string kArgRunProject = "[<runProject>]";
+	const std::string kArgRunArguments = "[ARG...]";
+	const std::string kArgInitName = "<name>";
+	const std::string kArgInitPath = "<path>";
 
 	const std::string kHelpBuildConfiguration = "The build configuration";
 	const std::string kHelpRunProject = "A project to run";

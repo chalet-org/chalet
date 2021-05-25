@@ -214,7 +214,7 @@ bool Router::cmdDebug()
 bool Router::parseEnvFile()
 {
 	std::string envFile = m_inputs.envFile();
-	if (String::equals(CommandLineInputs::defaultEnvFile(), envFile))
+	if (String::equals(m_inputs.defaultEnvFile(), envFile))
 	{
 #if defined(CHALET_WIN32)
 		std::string toSearch{ ".env.windows" };
@@ -337,8 +337,8 @@ bool Router::managePathVariables()
 		// LD_LIBRARY_PATH - dynamic link paths
 		// LIBRARY_PATH - static link paths
 		// For now, just use the same paths for both
-		static const char* kLdLibraryPath = "LD_LIBRARY_PATH";
-		static const char* kLibraryPath = "LIBRARY_PATH";
+		const auto kLdLibraryPath = "LD_LIBRARY_PATH";
+		const auto kLibraryPath = "LIBRARY_PATH";
 
 		{
 			std::string libraryPath = String::join(outPaths, ':');
