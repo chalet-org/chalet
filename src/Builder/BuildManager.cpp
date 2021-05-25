@@ -116,19 +116,12 @@ bool BuildManager::run(const Route inRoute)
 				break;
 			}
 
-			if (project->hasScripts())
+			if (!runCommand || project->hasScripts())
 			{
-				auto result = buildTimer.stop();
+				if (!project->hasScripts())
+					Output::msgTargetUpToDate(multiTarget, project->name());
 
-				Output::print(Color::Reset, fmt::format("   Script time: {}ms", result));
-				Output::lineBreak();
-			}
-			else if (!runCommand)
-			{
-				auto result = buildTimer.stop();
-
-				Output::msgTargetUpToDate(multiTarget, project->name());
-				Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
+				Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
 				Output::lineBreak();
 			}
 		}
@@ -160,7 +153,7 @@ void BuildManager::printBuildInformation()
 
 	{
 		const auto strategy = getBuildStrategyName();
-		Diagnostic::info(fmt::format("Using Build Strategy: {}", strategy));
+		Diagnostic::info(fmt::format("Build Strategy: {}", strategy));
 	}
 
 	bool usingCpp = false;

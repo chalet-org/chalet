@@ -40,20 +40,23 @@ void Diagnostic::info(const std::string& inMessage, const bool inLineBreak)
 
 	std::cout << fmt::format("{}{}  {}{}", color, symbol, reset, inMessage);
 	if (inLineBreak)
+	{
 		std::cout << std::endl;
+	}
 	else
+	{
 		std::cout << fmt::format("{} ... {}", color, reset) << std::flush;
-
-	sStartedInfo = true;
+		sStartedInfo = true;
+	}
 }
 
 /*****************************************************************************/
 void Diagnostic::printDone(const std::string& inExtra)
 {
-	sStartedInfo = false;
-
 	const auto color = Output::getAnsiStyle(Color::Black);
 	const auto reset = Output::getAnsiReset();
+
+	sStartedInfo = false;
 	if (!inExtra.empty())
 	{
 		std::cout << fmt::format("{}done ({}){}", color, inExtra, reset) << std::endl;
