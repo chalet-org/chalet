@@ -14,7 +14,7 @@ namespace chalet
 class AppBundler
 {
 public:
-	explicit AppBundler(BuildState& inState);
+	explicit AppBundler(BuildState& inState, const std::string& inBuildFile);
 
 	bool run();
 

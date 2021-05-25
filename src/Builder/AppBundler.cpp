@@ -25,14 +25,16 @@
 namespace chalet
 {
 /*****************************************************************************/
-AppBundler::AppBundler(BuildState& inState) :
+AppBundler::AppBundler(BuildState& inState, const std::string& inBuildFile) :
 	m_state(inState)
 {
 #if defined(CHALET_WIN32)
+	UNUSED(inBuildFile);
 	m_impl = std::make_unique<AppBundlerWindows>(inState);
 #elif defined(CHALET_MACOS)
-	m_impl = std::make_unique<AppBundlerMacOS>(inState);
+	m_impl = std::make_unique<AppBundlerMacOS>(inState, inBuildFile);
 #elif defined(CHALET_LINUX)
+	UNUSED(inBuildFile);
 	m_impl = std::make_unique<AppBundlerLinux>(inState);
 #else
 	#error "Unknown platform"

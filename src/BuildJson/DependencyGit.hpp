@@ -12,7 +12,7 @@ namespace chalet
 {
 struct DependencyGit
 {
-	explicit DependencyGit(const BuildEnvironment& inEnvironment);
+	explicit DependencyGit(const BuildEnvironment& inEnvironment, const std::string& inBuildFile);
 
 	const std::string& repository() const noexcept;
 	void setRepository(const std::string& inValue) noexcept;
@@ -38,6 +38,7 @@ struct DependencyGit
 
 private:
 	const BuildEnvironment& m_environment;
+	const std::string& m_buildFile;
 
 	std::string m_repository;
 	std::string m_branch{ "master" };

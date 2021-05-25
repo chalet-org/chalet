@@ -8,11 +8,10 @@
 
 #include "State/BuildState.hpp"
 #include "State/CommandLineInputs.hpp"
-#include "Json/JsonParser.hpp"
 
 namespace chalet
 {
-struct CacheJsonParser : public JsonParser
+struct CacheJsonParser
 {
 	explicit CacheJsonParser(const CommandLineInputs& inInputs, BuildState& inState);
 

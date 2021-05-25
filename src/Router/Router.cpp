@@ -63,15 +63,17 @@ bool Router::run()
 		return false;
 	}
 
+	Output::lineBreak();
+
 	if (!parseEnvFile())
 		return false;
 
 	if (command != Route::Init)
 	{
-		const auto& file = CommandLineInputs::file();
-		if (!Commands::pathExists(file))
+		const auto& buildFile = m_inputs.buildFile();
+		if (!Commands::pathExists(buildFile))
 		{
-			Diagnostic::error(fmt::format("Not a chalet project. '{}' was not found.", file));
+			Diagnostic::error(fmt::format("Not a chalet project. '{}' was not found.", buildFile));
 			return false;
 		}
 
@@ -80,7 +82,7 @@ bool Router::run()
 		if (!parseCacheJson())
 			return false;
 
-		if (!parseBuildJson(file))
+		if (!parseBuildJson(buildFile))
 			return false;
 
 		fetchToolVersions();
@@ -141,17 +143,17 @@ bool Router::cmdBundle()
 {
 	chalet_assert(m_buildState != nullptr, "");
 
+	const auto& buildFile = m_inputs.buildFile();
 	if (!m_buildState->bundle.exists())
 	{
-		const auto& file = CommandLineInputs::file();
-		Diagnostic::error(fmt::format("{}: 'bundle' object is required before creating a distribution bundle.", file));
+		Diagnostic::error(fmt::format("{}: 'bundle' object is required before creating a distribution bundle.", buildFile));
 		return false;
 	}
 
 	if (!cmdBuild())
 		return false;
 
-	AppBundler bundler(*m_buildState);
+	AppBundler bundler(*m_buildState, buildFile);
 
 	bool result = bundler.run();
 	if (result)
@@ -247,19 +249,8 @@ bool Router::parseCacheJson()
 {
 	chalet_assert(m_buildState != nullptr, "");
 
-	// Timer timer;
-
-	{
-		CacheJsonParser parser(m_inputs, *m_buildState);
-		if (!parser.serialize())
-			return false;
-	}
-
-	// auto result = timer.stop();
-	// const auto& file = m_buildState->cache.environmentCache().filename();
-	// Output::print(Color::Reset, fmt::format("{} parsed in: {}ms", file, result));
-
-	return true;
+	CacheJsonParser parser(m_inputs, *m_buildState);
+	return parser.serialize();
 }
 
 /*****************************************************************************/
@@ -267,18 +258,8 @@ bool Router::parseBuildJson(const std::string& inFile)
 {
 	chalet_assert(m_buildState != nullptr, "");
 
-	// Timer timer;
-
-	{
-		BuildJsonParser parser(m_inputs, *m_buildState, inFile);
-		if (!parser.serialize())
-			return false;
-	}
-
-	// auto result = timer.stop();
-	// Output::print(Color::Reset, fmt::format("{} parsed in: {}ms\n", inFile, result));
-
-	return true;
+	BuildJsonParser parser(m_inputs, *m_buildState, inFile);
+	return parser.serialize();
 }
 
 /*****************************************************************************/
@@ -288,9 +269,7 @@ void Router::fetchToolVersions()
 
 	Diagnostic::info("Verifying Ancillary Tools", false);
 
-	{
-		m_buildState->tools.fetchVersions();
-	}
+	m_buildState->tools.fetchVersions();
 
 	Diagnostic::printDone(timer.asString());
 }

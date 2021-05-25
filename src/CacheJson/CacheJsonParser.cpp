@@ -13,7 +13,6 @@
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
-#include "Json/JsonComments.hpp"
 
 namespace chalet
 {
@@ -539,10 +538,11 @@ bool CacheJsonParser::serializeFromJsonRoot(const Json& inJson)
 /*****************************************************************************/
 bool CacheJsonParser::parseRoot(const Json& inNode)
 {
-	if (std::string val; JsonNode::assignFromKey(val, inNode, kKeyStrategy))
+	auto& environmentCache = m_state.cache.environmentCache();
+	if (std::string val; environmentCache.assignFromKey(val, inNode, kKeyStrategy))
 		m_state.environment.setStrategy(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, inNode, kKeyWorkingDirectory))
+	if (std::string val; environmentCache.assignFromKey(val, inNode, kKeyWorkingDirectory))
 		m_state.paths.setWorkingDirectory(val);
 
 	return true;
@@ -564,97 +564,98 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 		return false;
 	}
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyBash))
+	auto& environmentCache = m_state.cache.environmentCache();
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyBash))
 		m_state.tools.setBash(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyBrew))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyBrew))
 		m_state.tools.setBrew(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyCmake))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCmake))
 		m_state.tools.setCmake(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyCodesign))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCodesign))
 		m_state.tools.setCodesign(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyCommandPrompt))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCommandPrompt))
 		m_state.tools.setCommandPrompt(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyGit))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyGit))
 		m_state.tools.setGit(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyGprof))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyGprof))
 		m_state.tools.setGprof(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyHdiutil))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyHdiutil))
 		m_state.tools.setHdiutil(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyInstallNameTool))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstallNameTool))
 		m_state.tools.setInstallNameUtil(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyInstruments))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstruments))
 		m_state.tools.setInstruments(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyMacosSdk))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyMacosSdk))
 		m_state.tools.setMacosSdk(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyLdd))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLdd))
 		m_state.tools.setLdd(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyLua))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLua))
 		m_state.tools.setLua(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyMake))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyMake))
 	{
 		m_state.tools.setMake(val);
 		m_make = std::move(val);
 	}
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyNinja))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyNinja))
 		m_state.tools.setNinja(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyObjdump))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyObjdump))
 		m_state.tools.setObjdump(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyOsascript))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyOsascript))
 		m_state.tools.setOsascript(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyOtool))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyOtool))
 		m_state.tools.setOtool(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPerl))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPerl))
 		m_state.tools.setPerl(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPlutil))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPlutil))
 		m_state.tools.setPlutil(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPowershell))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPowershell))
 		m_state.tools.setPowershell(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPython))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPython))
 		m_state.tools.setPython(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyPython3))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPython3))
 		m_state.tools.setPython3(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyRuby))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyRuby))
 		m_state.tools.setRuby(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeySample))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeySample))
 		m_state.tools.setSample(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeySips))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeySips))
 		m_state.tools.setSips(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyTiffutil))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyTiffutil))
 		m_state.tools.setTiffutil(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyXcodebuild))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyXcodebuild))
 		m_state.tools.setXcodebuild(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyXcodegen))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyXcodegen))
 		m_state.tools.setXcodegen(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, tools, kKeyXcrun))
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyXcrun))
 		m_state.tools.setXcrun(val);
 
 	return true;
@@ -676,19 +677,20 @@ bool CacheJsonParser::parseCompilers(const Json& inNode)
 		return false;
 	}
 
-	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyArchiver))
+	auto& environmentCache = m_state.cache.environmentCache();
+	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyArchiver))
 		m_state.compilerTools.setArchiver(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyCpp))
+	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyCpp))
 		m_state.compilerTools.setCpp(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyCc))
+	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyCc))
 		m_state.compilerTools.setCc(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyLinker))
+	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyLinker))
 		m_state.compilerTools.setLinker(val);
 
-	if (std::string val; JsonNode::assignFromKey(val, compilerTools, kKeyWindowsResource))
+	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyWindowsResource))
 		m_state.compilerTools.setRc(val);
 
 	return true;

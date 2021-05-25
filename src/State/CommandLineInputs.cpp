@@ -15,26 +15,26 @@
 namespace chalet
 {
 /*****************************************************************************/
-std::string CommandLineInputs::kFile = "build.json";
 const std::string CommandLineInputs::kDefaultEnvFile = ".env";
 
 /*****************************************************************************/
 CommandLineInputs::CommandLineInputs() :
 	m_notPlatforms(getNotPlatforms()),
+	m_buildFile("build.json"),
 	m_platform(getPlatform())
 {
 	m_envFile = kDefaultEnvFile;
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::file() noexcept
+const std::string& CommandLineInputs::buildFile() const noexcept
 {
-	return kFile;
+	return m_buildFile;
 }
 
-void CommandLineInputs::setFile(std::string&& inValue) noexcept
+void CommandLineInputs::setBuildFile(std::string&& inValue) noexcept
 {
-	kFile = std::move(inValue);
+	m_buildFile = std::move(inValue);
 }
 
 /*****************************************************************************/

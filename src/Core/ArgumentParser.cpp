@@ -88,16 +88,16 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					m_inputs.setRunProject(std::move(value));
 				}
-				else if (String::equals(key, "-i") || String::equals(key, "--input"))
+				else if (String::equals({ "-i", "--input" }, key))
 				{
 					if (!value.empty())
-						CommandLineInputs::setFile(std::move(value));
+						m_inputs.setBuildFile(std::move(value));
 				}
-				else if (String::equals(key, "-g") || String::equals(key, "--generator"))
+				else if (String::equals({ "-g", "--generator" }, key))
 				{
 					m_inputs.setGenerator(std::move(value));
 				}
-				else if (String::equals(key, "-e") || String::equals(key, "--envfile"))
+				else if (String::equals({ "-e", "--envfile" }, key))
 				{
 					if (!value.empty())
 						m_inputs.setEnvFile(std::move(value));
@@ -124,7 +124,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 			case Variant::Kind::Boolean: {
 				bool value = rawValue.asBool();
-				if (String::equals(key, "--save-schema"))
+				if (String::equals("--save-schema", key))
 				{
 					m_inputs.setSaveSchemaToFile(value);
 				}
@@ -134,8 +134,6 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				break;
 		}
 	}
-
-	// LOG(CommandLineInputs::file(), ' ', inputFile);
 
 	return true;
 }

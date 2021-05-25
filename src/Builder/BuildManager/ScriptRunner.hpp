@@ -13,13 +13,14 @@ namespace chalet
 class ScriptRunner
 {
 public:
-	explicit ScriptRunner(const CacheTools& inTools, const bool inCleanOutput);
+	explicit ScriptRunner(const CacheTools& inTools, const std::string& inBuildFile, const bool inCleanOutput);
 
 	bool run(const StringList& inScripts);
 	bool run(const std::string& inScript);
 
 private:
 	const CacheTools& m_tools;
+	const std::string& m_buildFile;
 
 	const bool m_cleanOutput;
 };

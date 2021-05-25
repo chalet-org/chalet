@@ -11,13 +11,16 @@
 #include "BuildJson/ProjectConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/CommandLineInputs.hpp"
-#include "Json/JsonParser.hpp"
 
 namespace chalet
 {
-struct BuildJsonParser : public JsonParser
+struct JsonFile;
+
+struct BuildJsonParser
 {
 	explicit BuildJsonParser(const CommandLineInputs& inInputs, BuildState& inState, std::string inFilename);
+	CHALET_DEFAULT_COPY_MOVE(BuildJsonParser);
+	~BuildJsonParser();
 
 	virtual bool serialize() final;
 
@@ -79,6 +82,8 @@ private:
 
 	std::string m_filename;
 	std::string m_debugIdentifier{ "debug" };
+
+	std::unique_ptr<JsonFile> m_buildJson;
 };
 }
 

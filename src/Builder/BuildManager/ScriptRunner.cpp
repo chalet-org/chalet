@@ -17,8 +17,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-ScriptRunner::ScriptRunner(const CacheTools& inTools, const bool inCleanOutput) :
+ScriptRunner::ScriptRunner(const CacheTools& inTools, const std::string& inBuildFile, const bool inCleanOutput) :
 	m_tools(inTools),
+	m_buildFile(inBuildFile),
 	m_cleanOutput(inCleanOutput)
 {
 }
@@ -58,7 +59,7 @@ bool ScriptRunner::run(const std::string& inScript)
 
 	if (!Commands::pathExists(outScriptPath))
 	{
-		Diagnostic::error(fmt::format("{}: The script '{}' was not found. Aborting.", CommandLineInputs::file(), inScript));
+		Diagnostic::error(fmt::format("{}: The script '{}' was not found. Aborting.", m_buildFile, inScript));
 		return false;
 	}
 
@@ -179,12 +180,12 @@ bool ScriptRunner::run(const std::string& inScript)
 			}
 			else if (isBatchScript)
 			{
-				Diagnostic::error(fmt::format("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", CommandLineInputs::file(), inScript));
+				Diagnostic::error(fmt::format("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", m_buildFile, inScript));
 				return false;
 			}
 			else
 			{
-				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell, but it was not found in 'Path'.", CommandLineInputs::file(), inScript));
+				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell, but it was not found in 'Path'.", m_buildFile, inScript));
 				return false;
 			}
 
@@ -200,7 +201,7 @@ bool ScriptRunner::run(const std::string& inScript)
 			}
 			else
 			{
-				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", CommandLineInputs::file(), inScript));
+				Diagnostic::error(fmt::format("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", m_buildFile, inScript));
 				return false;
 			}
 
@@ -212,9 +213,9 @@ bool ScriptRunner::run(const std::string& inScript)
 	if (!shellFound)
 	{
 		if (shebang.empty())
-			Diagnostic::error(fmt::format("{}: The script '{}' was not recognized.", CommandLineInputs::file(), inScript));
+			Diagnostic::error(fmt::format("{}: The script '{}' was not recognized.", m_buildFile, inScript));
 		else
-			Diagnostic::error(fmt::format("{}: The script '{}' requires the shell '{}', but it was not found.", CommandLineInputs::file(), inScript, shebang));
+			Diagnostic::error(fmt::format("{}: The script '{}' requires the shell '{}', but it was not found.", m_buildFile, inScript, shebang));
 		return false;
 	}
 
@@ -224,7 +225,7 @@ bool ScriptRunner::run(const std::string& inScript)
 	{
 		Output::lineBreak();
 		auto exitCode = Subprocess::getLastExitCode();
-		Diagnostic::error(fmt::format("{}: The script '{}' exited with code {}.", CommandLineInputs::file(), inScript, exitCode));
+		Diagnostic::error(fmt::format("{}: The script '{}' exited with code {}.", m_buildFile, inScript, exitCode));
 		return false;
 	}
 

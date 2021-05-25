@@ -6,6 +6,8 @@
 #include "Json/JsonFile.hpp"
 
 #include "Terminal/Commands.hpp"
+#include "Terminal/Output.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonValidator.hpp"
@@ -80,6 +82,44 @@ void JsonFile::makeNode(const std::string& inName, const JsonDataType inType)
 }
 
 /*****************************************************************************/
+bool JsonFile::assignStringAndValidate(std::string& outString, const Json& inNode, const std::string& inKey, const std::string& inDefault)
+{
+	bool result = assignFromKey(outString, inNode, inKey);
+	if (result && outString.empty())
+	{
+		warnBlankKey(inKey, inDefault);
+		return false;
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
+bool JsonFile::assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey)
+{
+	if (!inNode.contains(inKey))
+		return false;
+
+	const Json& list = inNode.at(inKey);
+	if (!list.is_array())
+		return false;
+
+	for (auto& itemRaw : list)
+	{
+		if (!itemRaw.is_string())
+			return false;
+
+		std::string item = itemRaw.get<std::string>();
+		if (item.empty())
+			warnBlankKeyInList(inKey);
+
+		List::addIfDoesNotExist(outList, std::move(item));
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 bool JsonFile::validate(Json&& inSchemaJson)
 {
 	if (m_filename.empty())
@@ -142,4 +182,20 @@ void JsonFile::initializeDataType(Json& inJson, const JsonDataType inType)
 			break;
 	}
 }
+
+/*****************************************************************************/
+void JsonFile::warnBlankKey(const std::string& inKey, const std::string& inDefault)
+{
+	if (!inDefault.empty())
+		Diagnostic::warn(fmt::format("{}: '{}' was defined, but blank. Using the built-in default ({})", m_filename, inKey, inDefault));
+	else
+		Diagnostic::warn(fmt::format("{}: '{}' was defined, but blank.", m_filename, inKey));
+}
+
+/*****************************************************************************/
+void JsonFile::warnBlankKeyInList(const std::string& inKey)
+{
+	Diagnostic::warn(fmt::format("{}: A blank value was found in '{}'.", m_filename, inKey));
+}
+
 }

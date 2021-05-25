@@ -17,8 +17,6 @@ std::string getAnsiStyle(const Color inForegroundColor, const Color inBackground
 std::string getAnsiReset();
 
 void displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage, const bool inBold = true);
-void warnBlankKey(const std::string& inKey, const std::string& inDefault = "");
-void warnBlankKeyInList(const std::string& inKey);
 void resetStdout();
 void resetStderr();
 void lineBreak();

@@ -14,7 +14,7 @@ namespace chalet
 class AppBundlerMacOS : public IAppBundler
 {
 public:
-	explicit AppBundlerMacOS(BuildState& inState);
+	explicit AppBundlerMacOS(BuildState& inState, const std::string& inBuildFile);
 
 	virtual bool removeOldFiles(const bool inCleanOutput) final;
 	virtual bool bundleForPlatform(const bool inCleanOutput) final;
@@ -25,6 +25,7 @@ public:
 
 private:
 	BuildState& m_state;
+	const std::string& m_buildFile;
 };
 }
 

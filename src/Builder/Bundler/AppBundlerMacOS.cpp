@@ -31,8 +31,9 @@ namespace chalet
 */
 
 /*****************************************************************************/
-AppBundlerMacOS::AppBundlerMacOS(BuildState& inState) :
-	m_state(inState)
+AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const std::string& inBuildFile) :
+	m_state(inState),
+	m_buildFile(inBuildFile)
 {
 	// TODO: Generalized version of this in AppBundler
 	Output::print(Color::Blue, "   Creating the MacOS application bundle...");
@@ -94,7 +95,9 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	else
 	{
 		if (!icon.empty() && !sipsFound)
-			Diagnostic::warn(fmt::format("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", CommandLineInputs::file(), icon));
+		{
+			Diagnostic::warn(fmt::format("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", m_buildFile, icon));
+		}
 	}
 
 	const std::string outInfoPropertyList = fmt::format("{}/Info.plist", bundlePath);

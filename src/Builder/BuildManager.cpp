@@ -116,9 +116,11 @@ bool BuildManager::run(const Route inRoute)
 				break;
 			}
 
-			if (!runCommand || project->hasScripts())
+			const bool hasScripts = project->hasScripts();
+
+			if (!runCommand || hasScripts)
 			{
-				if (!project->hasScripts())
+				if (!hasScripts)
 					Output::msgTargetUpToDate(multiTarget, project->name());
 
 				Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
@@ -263,7 +265,7 @@ bool BuildManager::doScript()
 
 	const auto& scripts = m_project->scripts();
 
-	ScriptRunner scriptRunner(m_state.tools, m_cleanOutput);
+	ScriptRunner scriptRunner(m_state.tools, m_inputs.buildFile(), m_cleanOutput);
 	if (!scriptRunner.run(scripts))
 	{
 		Diagnostic::error(fmt::format("There was a problem running the script(s) for the build step: {}", m_project->name()));

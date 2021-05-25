@@ -30,13 +30,27 @@ struct JsonFile
 
 	bool validate(Json&& inSchemaJson);
 
+	template <typename T>
+	bool assignFromKey(T& outVariable, const Json& inNode, const std::string& inKey);
+
+	template <typename T>
+	bool containsKeyForType(const Json& inNode, const std::string& inKey);
+
+	bool assignStringAndValidate(std::string& outString, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
+	bool assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey);
+
 	Json json;
 
 private:
 	void initializeDataType(Json& inJson, const JsonDataType inType);
 
+	void warnBlankKey(const std::string& inKey, const std::string& inDefault = "");
+	void warnBlankKeyInList(const std::string& inKey);
+
 	std::string m_filename;
 };
 }
+
+#include "Json/JsonFile.inl"
 
 #endif // CHALET_JSON_FILE_HPP

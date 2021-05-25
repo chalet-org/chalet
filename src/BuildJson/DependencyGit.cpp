@@ -12,8 +12,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-DependencyGit::DependencyGit(const BuildEnvironment& inEnvironment) :
-	m_environment(inEnvironment)
+DependencyGit::DependencyGit(const BuildEnvironment& inEnvironment, const std::string& inBuildFile) :
+	m_environment(inEnvironment),
+	m_buildFile(inBuildFile)
 {
 }
 
@@ -116,7 +117,7 @@ bool DependencyGit::parseDestination()
 
 	if (!String::endsWith(".git", m_repository))
 	{
-		Diagnostic::errorAbort(fmt::format("{}: 'repository' was found but did not end with '.git'", CommandLineInputs::file()));
+		Diagnostic::errorAbort(fmt::format("{}: 'repository' was found but did not end with '.git'", m_buildFile));
 		return false;
 	}
 

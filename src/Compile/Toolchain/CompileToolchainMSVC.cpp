@@ -638,7 +638,19 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 
 	// TODO: Dynamic way of determining this list
 	// would they differ between console app & windows app?
-	for (auto& link : { "DbgHelp", "kernel32", "user32", "gdi32", "winspool", "shell32", "ole32", "oleaut32", "uuid", "comdlg32", "advapi32" })
+	for (auto& link : {
+			 "DbgHelp",
+			 "kernel32",
+			 "user32",
+			 "gdi32",
+			 "winspool",
+			 "shell32",
+			 "ole32",
+			 "oleaut32",
+			 "uuid",
+			 "comdlg32",
+			 "advapi32",
+		 })
 	{
 		List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
 	}

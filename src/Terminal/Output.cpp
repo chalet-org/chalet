@@ -145,21 +145,6 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 }
 
 /*****************************************************************************/
-void Output::warnBlankKey(const std::string& inKey, const std::string& inDefault)
-{
-	if (!inDefault.empty())
-		Diagnostic::warn(fmt::format("{}: '{}' was defined, but blank. Using the built-in default ({})", CommandLineInputs::file(), inKey, inDefault));
-	else
-		Diagnostic::warn(fmt::format("{}: '{}' was defined, but blank.", CommandLineInputs::file(), inKey));
-}
-
-/*****************************************************************************/
-void Output::warnBlankKeyInList(const std::string& inKey)
-{
-	Diagnostic::warn(fmt::format("{}: A blank value was found in '{}'.", CommandLineInputs::file(), inKey));
-}
-
-/*****************************************************************************/
 void Output::resetStdout()
 {
 	std::cout << getAnsiReset() << std::flush;
