@@ -158,7 +158,10 @@ void BuildManager::printBuildInformation()
 {
 	m_state.compilerTools.fetchCompilerVersions();
 
-	Diagnostic::info(fmt::format("Using Build Strategy: {}", m_state.environment.strategyName()));
+	{
+		const auto strategy = getBuildStrategyName();
+		Diagnostic::info(fmt::format("Using Build Strategy: {}", strategy));
+	}
 
 	bool usingCpp = false;
 	bool usingCc = false;
@@ -179,6 +182,43 @@ void BuildManager::printBuildInformation()
 	{
 		Diagnostic::info(fmt::format("C Compiler: {}", m_state.compilerTools.compilerVersionStringC()));
 	}
+}
+
+/*****************************************************************************/
+std::string BuildManager::getBuildStrategyName() const
+{
+	std::string ret;
+
+	switch (m_state.environment.strategy())
+	{
+		case StrategyType::Native:
+			ret = "Native";
+			break;
+
+		case StrategyType::Ninja:
+			ret = "Ninja";
+			break;
+
+		case StrategyType::Makefile: {
+			m_state.tools.fetchMakeVersion();
+			if (m_state.tools.makeIsNMake())
+			{
+				if (m_state.tools.makeIsJom())
+					ret = "NMAKE (Qt Jom)";
+				else
+					ret = "NMAKE";
+			}
+			else
+			{
+
+				ret = "Makefile";
+			}
+			break;
+		}
+		default: break;
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

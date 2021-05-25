@@ -21,7 +21,6 @@ struct BuildEnvironment
 	uint processorCount() const noexcept;
 
 	StrategyType strategy() const noexcept;
-	const std::string& strategyName() const noexcept;
 	void setStrategy(const std::string& inValue) noexcept;
 
 	const std::string& platform() const noexcept;
@@ -47,7 +46,6 @@ private:
 
 	std::string m_platform = "auto";
 	std::string m_externalDepDir{ "chalet_external" };
-	std::string m_strategyName{ "Makefile" };
 	StringList m_path;
 
 	std::string m_pathString;

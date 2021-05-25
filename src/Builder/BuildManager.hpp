@@ -27,6 +27,7 @@ public:
 
 private:
 	void printBuildInformation();
+	std::string getBuildStrategyName() const;
 
 	bool doScript();
 	bool copyRunDependencies(const ProjectConfiguration& inProject);

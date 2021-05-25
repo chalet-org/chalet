@@ -39,27 +39,19 @@ StrategyType BuildEnvironment::strategy() const noexcept
 	return m_strategy;
 }
 
-const std::string& BuildEnvironment::strategyName() const noexcept
-{
-	return m_strategyName;
-}
-
 void BuildEnvironment::setStrategy(const std::string& inValue) noexcept
 {
 	if (String::equals("makefile", inValue))
 	{
 		m_strategy = StrategyType::Makefile;
-		m_strategyName = "Makefile";
 	}
 	else if (String::equals(inValue, "native-experimental"))
 	{
 		m_strategy = StrategyType::Native;
-		m_strategyName = "Native";
 	}
 	else if (String::equals(inValue, "ninja"))
 	{
 		m_strategy = StrategyType::Ninja;
-		m_strategyName = "Ninja";
 	}
 	else
 	{

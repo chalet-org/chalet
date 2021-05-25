@@ -518,6 +518,12 @@ bool CacheJsonParser::makeCache()
 /*****************************************************************************/
 bool CacheJsonParser::serializeFromJsonRoot(const Json& inJson)
 {
+	if (!inJson.is_object())
+	{
+		Diagnostic::errorAbort(fmt::format("{}: Json root must be an object.", m_filename), "Error parsing file");
+		return false;
+	}
+
 	if (!parseRoot(inJson))
 		return false;
 
@@ -533,12 +539,6 @@ bool CacheJsonParser::serializeFromJsonRoot(const Json& inJson)
 /*****************************************************************************/
 bool CacheJsonParser::parseRoot(const Json& inNode)
 {
-	if (!inNode.is_object())
-	{
-		Diagnostic::errorAbort(fmt::format("{}: Json root must be an object.", m_filename), "Error parsing file");
-		return false;
-	}
-
 	if (std::string val; JsonNode::assignFromKey(val, inNode, kKeyStrategy))
 		m_state.environment.setStrategy(val);
 
