@@ -118,7 +118,7 @@ bool ProjectInitializer::makePch()
 bool ProjectInitializer::makeGitIgnore()
 {
 	const auto outFile = fmt::format("{}/.gitignore", m_rootPath);
-	const auto contents = FileTemplates::getGitIgnore();
+	const auto contents = FileTemplates::getGitIgnore(m_inputs.buildPath());
 
 	return Commands::createFileWithContents(outFile, contents);
 }

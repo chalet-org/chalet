@@ -11,12 +11,13 @@
 
 namespace chalet
 {
+struct CommandLineInputs;
 struct BuildPaths
 {
 	const std::string& workingDirectory() const noexcept;
 	void setWorkingDirectory(const std::string& inValue);
 
-	const std::string& buildDir() const;
+	const std::string& buildPath() const;
 	const std::string& buildOutputDir() const noexcept;
 	const std::string& objDir() const noexcept;
 	const std::string& depDir() const noexcept;
@@ -34,7 +35,7 @@ struct BuildPaths
 private:
 	friend class BuildState;
 
-	BuildPaths() = default;
+	explicit BuildPaths(const CommandLineInputs& inInputs);
 
 	void initialize(const std::string& inBuildConfiguration);
 
@@ -58,7 +59,7 @@ private:
 	// mutable StringList m_directoryCache;
 
 	std::string m_workingDirectory;
-	mutable std::string m_buildDir{ "build" };
+	const std::string& m_buildPath;
 	std::string m_buildOutputDir;
 	std::string m_objDir;
 	std::string m_depDir;

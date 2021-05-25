@@ -88,10 +88,15 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					m_inputs.setRunProject(std::move(value));
 				}
-				else if (String::equals({ "-i", "--input" }, key))
+				else if (String::equals({ "-i", "--input-file" }, key))
 				{
 					if (!value.empty())
 						m_inputs.setBuildFile(std::move(value));
+				}
+				else if (String::equals({ "-o", "--output-path" }, key))
+				{
+					if (!value.empty())
+						m_inputs.setBuildPath(std::move(value));
 				}
 				else if (String::equals({ "-g", "--generator" }, key))
 				{

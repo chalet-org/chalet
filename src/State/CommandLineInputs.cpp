@@ -21,6 +21,7 @@ const std::string CommandLineInputs::kDefaultEnvFile = ".env";
 CommandLineInputs::CommandLineInputs() :
 	m_notPlatforms(getNotPlatforms()),
 	m_buildFile("build.json"),
+	m_buildPath("build"),
 	m_platform(getPlatform())
 {
 	m_envFile = kDefaultEnvFile;
@@ -31,10 +32,19 @@ const std::string& CommandLineInputs::buildFile() const noexcept
 {
 	return m_buildFile;
 }
-
 void CommandLineInputs::setBuildFile(std::string&& inValue) noexcept
 {
 	m_buildFile = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::buildPath() const noexcept
+{
+	return m_buildPath;
+}
+void CommandLineInputs::setBuildPath(std::string&& inValue) noexcept
+{
+	m_buildPath = std::move(inValue);
 }
 
 /*****************************************************************************/

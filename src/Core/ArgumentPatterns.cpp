@@ -313,13 +313,25 @@ void ArgumentPatterns::populateMainArguments()
 /*****************************************************************************/
 void ArgumentPatterns::addInputFileArg()
 {
-	m_parser.add_argument("-i", "--input")
+	m_parser.add_argument("-i", "--input-file")
 		.help("input file")
 		.nargs(1)
 		.default_value(std::string("build.json"));
 
 	m_argumentMap.push_back({ "-i", Variant::Kind::String });
-	m_argumentMap.push_back({ "--input", Variant::Kind::String });
+	m_argumentMap.push_back({ "--input-file", Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addOutPathArg()
+{
+	m_parser.add_argument("-o", "--output-path")
+		.help("output build path")
+		.nargs(1)
+		.default_value(std::string("build"));
+
+	m_argumentMap.push_back({ "-o", Variant::Kind::String });
+	m_argumentMap.push_back({ "--output-path", Variant::Kind::String });
 }
 
 /*****************************************************************************/
@@ -404,6 +416,7 @@ void ArgumentPatterns::addRunArgumentsArg()
 void ArgumentPatterns::commandBuildRun()
 {
 	addInputFileArg();
+	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addSaveSchemaArg();
@@ -417,6 +430,7 @@ void ArgumentPatterns::commandBuildRun()
 void ArgumentPatterns::commandRun()
 {
 	addInputFileArg();
+	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addSaveSchemaArg();
@@ -430,6 +444,7 @@ void ArgumentPatterns::commandRun()
 void ArgumentPatterns::commandBuild()
 {
 	addInputFileArg();
+	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addSaveSchemaArg();
@@ -441,6 +456,7 @@ void ArgumentPatterns::commandBuild()
 void ArgumentPatterns::commandRebuild()
 {
 	addInputFileArg();
+	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addSaveSchemaArg();
@@ -452,6 +468,7 @@ void ArgumentPatterns::commandRebuild()
 void ArgumentPatterns::commandClean()
 {
 	addInputFileArg();
+	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addSaveSchemaArg();
@@ -464,6 +481,7 @@ void ArgumentPatterns::commandClean()
 void ArgumentPatterns::commandBundle()
 {
 	addInputFileArg();
+	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addSaveSchemaArg();
@@ -473,6 +491,7 @@ void ArgumentPatterns::commandBundle()
 void ArgumentPatterns::commandConfigure()
 {
 	addInputFileArg();
+	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addSaveSchemaArg();
@@ -482,6 +501,7 @@ void ArgumentPatterns::commandConfigure()
 void ArgumentPatterns::commandInit()
 {
 	addInputFileArg();
+	// addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 
@@ -505,6 +525,7 @@ void ArgumentPatterns::commandInit()
 void ArgumentPatterns::commandDebug()
 {
 	addInputFileArg();
+	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 }

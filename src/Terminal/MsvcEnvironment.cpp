@@ -68,11 +68,11 @@ bool MsvcEnvironment::readCompilerVariables()
 	if (m_initialized)
 		return true;
 
-	auto& buildDir = m_path.buildDir();
+	auto& buildPath = m_path.buildPath();
 
-	m_varsFileOriginal = buildDir + "/original.env";
-	m_varsFileMsvc = buildDir + "/msvc_all.env";
-	m_varsFileMsvcDelta = buildDir + "/msvc.env";
+	m_varsFileOriginal = buildPath + "/original.env";
+	m_varsFileMsvc = buildPath + "/msvc_all.env";
+	m_varsFileMsvcDelta = buildPath + "/msvc.env";
 
 	m_initialized = true;
 

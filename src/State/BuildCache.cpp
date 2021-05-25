@@ -21,7 +21,7 @@ BuildCache::BuildCache(const WorkspaceInfo& inInfo, const BuildPaths& inPaths) :
 	m_info(inInfo),
 	m_paths(inPaths)
 {
-	m_environmentCache.load(fmt::format("{}/chalet-cache.json", m_paths.buildDir()));
+	m_environmentCache.load(fmt::format("{}/chalet-cache.json", m_paths.buildPath()));
 	m_removeOldCacheFolder = m_environmentCache.json.empty();
 }
 
@@ -37,8 +37,8 @@ void BuildCache::initialize(const std::string& inAppPath)
 	const auto userDir = Environment::getUserDirectory();
 	m_cacheGlobal = fmt::format("{}/.chalet", userDir);
 
-	const auto& buildDir = m_paths.buildDir();
-	m_cacheLocal = fmt::format("{}/.cache", buildDir);
+	const auto& buildPath = m_paths.buildPath();
+	m_cacheLocal = fmt::format("{}/.cache", buildPath);
 
 	makeAppVersionCheck(inAppPath);
 }

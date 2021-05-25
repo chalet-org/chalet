@@ -111,17 +111,18 @@ std::string FileTemplates::getPch()
 }
 
 /*****************************************************************************/
-std::string FileTemplates::getGitIgnore()
+std::string FileTemplates::getGitIgnore(const std::string& inBuildFolder)
 {
-	std::string ret = R"(# General
+	std::string ret = fmt::format(R"(# General
 Thumbs.db
 .DS_Store
 
 # Build
-build
+{build}
 dist
 chalet_external/
-)";
+)",
+		fmt::arg("build", inBuildFolder));
 
 	return ret;
 }

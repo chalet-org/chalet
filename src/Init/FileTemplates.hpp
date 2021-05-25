@@ -18,7 +18,7 @@ struct FileTemplates
 	static Json getBuildJson(const BuildJsonProps& inProps);
 	static std::string getMainCpp();
 	static std::string getPch();
-	static std::string getGitIgnore();
+	static std::string getGitIgnore(const std::string& inBuildFolder);
 	static std::string getDotEnv();
 };
 }

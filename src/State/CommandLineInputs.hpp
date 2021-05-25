@@ -20,6 +20,9 @@ struct CommandLineInputs
 	const std::string& buildFile() const noexcept;
 	void setBuildFile(std::string&& inValue) noexcept;
 
+	const std::string& buildPath() const noexcept;
+	void setBuildPath(std::string&& inValue) noexcept;
+
 	Route command() const noexcept;
 	void setCommand(const Route inValue) noexcept;
 
@@ -69,6 +72,7 @@ private:
 	StringList m_notPlatforms;
 
 	std::string m_buildFile;
+	std::string m_buildPath;
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
 	std::string m_platform;

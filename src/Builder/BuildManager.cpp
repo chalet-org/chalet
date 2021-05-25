@@ -407,14 +407,14 @@ bool BuildManager::runProfiler(const StringList& inCommand, const std::string& i
 bool BuildManager::doLazyClean()
 {
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	const auto& buildDir = m_state.paths.buildDir();
+	const auto& buildPath = m_state.paths.buildPath();
 
 	const auto& inputBuild = m_inputs.buildConfiguration();
 	// const auto& build = m_state.buildConfiguration();
 
 	std::string dirToClean;
 	if (inputBuild.empty())
-		dirToClean = buildDir;
+		dirToClean = buildPath;
 	else
 		dirToClean = buildOutputDir;
 
