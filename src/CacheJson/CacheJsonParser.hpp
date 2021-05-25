@@ -15,7 +15,7 @@ struct CacheJsonParser
 {
 	explicit CacheJsonParser(const CommandLineInputs& inInputs, BuildState& inState);
 
-	virtual bool serialize() final;
+	bool serialize();
 
 private:
 	bool createMsvcEnvironment();

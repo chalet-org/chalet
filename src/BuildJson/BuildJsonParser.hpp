@@ -22,7 +22,7 @@ struct BuildJsonParser
 	CHALET_DISALLOW_COPY_MOVE(BuildJsonParser);
 	~BuildJsonParser();
 
-	virtual bool serialize() final;
+	bool serialize();
 
 private:
 	bool serializeFromJsonRoot(const Json& inJson);
