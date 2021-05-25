@@ -26,6 +26,8 @@ public:
 	bool run(const Route inRoute);
 
 private:
+	void printBuildInformation();
+
 	bool doScript();
 	bool copyRunDependencies(const ProjectConfiguration& inProject);
 	StringList getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig);

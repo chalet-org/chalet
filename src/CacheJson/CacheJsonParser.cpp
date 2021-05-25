@@ -46,11 +46,11 @@ bool CacheJsonParser::serialize()
 	bool cacheExists = m_state.cache.exists();
 	if (cacheExists)
 	{
-		Diagnostic::info(fmt::format("Reading Chalet Cache ({})", m_state.cache.environmentCache().filename()), false);
+		Diagnostic::info(fmt::format("Reading Cache [{}]", m_state.cache.environmentCache().filename()), false);
 	}
 	else
 	{
-		Diagnostic::info(fmt::format("Creating Chalet Cache ({})", m_state.cache.environmentCache().filename()), false);
+		Diagnostic::info(fmt::format("Creating Cache [{}]", m_state.cache.environmentCache().filename()), false);
 	}
 
 	if (!makeCache())
@@ -245,8 +245,6 @@ bool CacheJsonParser::setDefaultBuildStrategy()
 
 		m_state.cache.setDirty(true);
 	}
-
-	Diagnostic::info(fmt::format("Using Build Strategy: {}", m_state.environment.strategyName()));
 
 	return true;
 }

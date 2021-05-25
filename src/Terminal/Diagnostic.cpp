@@ -19,6 +19,7 @@ namespace
 /*****************************************************************************/
 bool sExceptionThrown = false;
 bool sAssertionFailure = false;
+bool sStartedInfo = false;
 }
 
 /*****************************************************************************/
@@ -42,11 +43,15 @@ void Diagnostic::info(const std::string& inMessage, const bool inLineBreak)
 		std::cout << std::endl;
 	else
 		std::cout << fmt::format("{} ... {}", color, reset) << std::flush;
+
+	sStartedInfo = true;
 }
 
 /*****************************************************************************/
 void Diagnostic::printDone(const std::string& inExtra)
 {
+	sStartedInfo = false;
+
 	const auto color = Output::getAnsiStyle(Color::Black);
 	const auto reset = Output::getAnsiReset();
 	if (!inExtra.empty())
@@ -130,6 +135,12 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 /*****************************************************************************/
 void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber)
 {
+	if (sStartedInfo)
+	{
+		std::cout << std::endl;
+		sStartedInfo = false;
+	}
+
 	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
 	const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
 	const auto blue = Output::getAnsiStyle(Color::Blue);
@@ -157,6 +168,12 @@ bool Diagnostic::assertionFailure() noexcept
 /*****************************************************************************/
 void Diagnostic::showHeader(const Type inType, const std::string& inTitle)
 {
+	if (sStartedInfo)
+	{
+		std::cout << std::endl;
+		sStartedInfo = false;
+	}
+
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
 	const auto reset = Output::getAnsiReset();
@@ -167,6 +184,12 @@ void Diagnostic::showHeader(const Type inType, const std::string& inTitle)
 /*****************************************************************************/
 void Diagnostic::showMessage(const Type inType, const std::string& inMessage)
 {
+	if (sStartedInfo)
+	{
+		std::cout << std::endl;
+		sStartedInfo = false;
+	}
+
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	out << fmt::format("   {}", inMessage) << std::endl;
 }
@@ -174,6 +197,12 @@ void Diagnostic::showMessage(const Type inType, const std::string& inMessage)
 /*****************************************************************************/
 void Diagnostic::showAsOneLine(const Type inType, const std::string& inTitle, const std::string& inMessage)
 {
+	if (sStartedInfo)
+	{
+		std::cout << std::endl;
+		sStartedInfo = false;
+	}
+
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
 	const auto reset = Output::getAnsiReset();

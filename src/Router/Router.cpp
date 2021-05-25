@@ -86,8 +86,6 @@ bool Router::run()
 		fetchToolVersions();
 
 		m_buildState->initializeBuild();
-
-		Output::lineBreak();
 	}
 
 	if (!managePathVariables())
@@ -230,7 +228,7 @@ bool Router::parseEnvFile()
 	if (Commands::pathExists(envFile))
 	{
 		Timer timer;
-		Diagnostic::info(fmt::format("Reading Environment ({})", envFile), false);
+		Diagnostic::info(fmt::format("Reading Environment [{}]", envFile), false);
 
 		if (!Environment::parseVariablesFromFile(envFile))
 		{
@@ -288,7 +286,7 @@ void Router::fetchToolVersions()
 {
 	Timer timer;
 
-	Diagnostic::info("Verifying required tools", false);
+	Diagnostic::info("Verifying Ancillary Tools", false);
 
 	{
 		m_buildState->tools.fetchVersions();

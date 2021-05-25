@@ -9,6 +9,7 @@
 #include "State/BuildPaths.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -110,7 +111,7 @@ bool MsvcEnvironment::readCompilerVariables()
 		if (notUsingMsvc)
 			return true;
 
-		Diagnostic::info(fmt::format("Creating Microsoft Visual C++ Environment Cache ({})", m_varsFileMsvcDelta), false);
+		Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
 
 		m_vsAppIdDir = Commands::subprocessOutput({ s_vswhere, "-latest", "-property", "installationPath" });
 		if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
@@ -177,7 +178,7 @@ bool MsvcEnvironment::readCompilerVariables()
 	}
 	else
 	{
-		Diagnostic::info(fmt::format("Reading Microsoft Visual C++ Environment Cache ({})", m_varsFileMsvcDelta), false);
+		Diagnostic::info(fmt::format("Reading Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
 	}
 
 	// Read delta to cache

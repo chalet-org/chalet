@@ -48,6 +48,8 @@ bool BuildManager::run(const Route inRoute)
 
 	if (inRoute == Route::Clean)
 	{
+		Output::lineBreak();
+
 		if (!cmdClean())
 			return false;
 
@@ -58,6 +60,7 @@ bool BuildManager::run(const Route inRoute)
 
 	if (m_buildRoutes.find(inRoute) == m_buildRoutes.end())
 	{
+		Output::lineBreak();
 		Diagnostic::error("Build command not recognized.");
 		return false;
 	}
@@ -68,6 +71,10 @@ bool BuildManager::run(const Route inRoute)
 	auto strategy = m_state.environment.strategy();
 	if (!runCommand)
 	{
+		printBuildInformation();
+
+		Output::lineBreak();
+
 		m_strategy = CompileFactory::makeStrategy(strategy, m_state);
 		if (!m_strategy->initialize())
 			return false;
@@ -144,6 +151,34 @@ bool BuildManager::run(const Route inRoute)
 		return doRun();
 
 	return true;
+}
+
+/*****************************************************************************/
+void BuildManager::printBuildInformation()
+{
+	m_state.compilerTools.fetchCompilerVersions();
+
+	Diagnostic::info(fmt::format("Using Build Strategy: {}", m_state.environment.strategyName()));
+
+	bool usingCpp = false;
+	bool usingCc = false;
+	for (auto& project : m_state.projects)
+	{
+		if (project->cmake() || project->hasScripts())
+			continue;
+
+		usingCpp |= project->language() == CodeLanguage::CPlusPlus;
+		usingCc |= project->language() == CodeLanguage::C;
+	}
+
+	if (usingCpp && !m_state.compilerTools.compilerVersionStringCpp().empty())
+	{
+		Diagnostic::info(fmt::format("C++ Compiler: {}", m_state.compilerTools.compilerVersionStringCpp()));
+	}
+	if (usingCc && !m_state.compilerTools.compilerVersionStringC().empty())
+	{
+		Diagnostic::info(fmt::format("C Compiler: {}", m_state.compilerTools.compilerVersionStringC()));
+	}
 }
 
 /*****************************************************************************/

@@ -5,14 +5,134 @@
 
 #include "Compile/CompilerTools.hpp"
 
+#include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
+#include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
+/*****************************************************************************/
+void CompilerTools::fetchCompilerVersions()
+{
+	if (m_compilerVersionStringCpp.empty())
+	{
+		if (!m_cpp.empty() && Commands::pathExists(m_cpp))
+		{
+			std::string version;
+#if defined(CHALET_WIN32)
+			if (String::endsWith("cl.exe", m_cpp))
+			{
+				version = parseVersionMSVC(m_cpp);
+			}
+			else
+			{
+				version = parseVersionGCC(m_cpp, "\r\n");
+			}
+#else
+#endif
+			m_compilerVersionStringCpp = std::move(version);
+		}
+	}
+
+	if (m_compilerVersionStringC.empty())
+	{
+		if (!m_cc.empty() && Commands::pathExists(m_cc))
+		{
+			std::string version;
+#if defined(CHALET_WIN32)
+			if (String::endsWith("cl.exe", m_cc))
+			{
+				version = parseVersionMSVC(m_cc);
+			}
+			else
+			{
+				version = parseVersionGCC(m_cc, "\r\n");
+			}
+#else
+#endif
+			m_compilerVersionStringC = std::move(version);
+		}
+	}
+}
+
+/*****************************************************************************/
+std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) const
+{
+	std::string ret;
+
+	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
+	std::string rawOutput = Commands::subprocessOutput({ inExecutable });
+	auto splitOutput = String::split(rawOutput, "\r\n");
+	if (splitOutput.size() >= 2)
+	{
+		auto start = splitOutput[1].find("Version");
+		auto end = splitOutput[1].find(" for ");
+		if (start != std::string::npos && end != std::string::npos)
+		{
+			const auto versionString = splitOutput[1].substr(start, end - start);
+			const auto arch = splitOutput[1].substr(end + 5);
+			ret = fmt::format("Microsoft{} Visual C/C++ {} ({})", Unicode::registered(), versionString, arch);
+		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string CompilerTools::parseVersionGCC(const std::string& inExecutable, const std::string_view inEol) const
+{
+	std::string ret;
+
+	// gcc version 10.2.0 (Ubuntu 10.2.0-13ubuntu1)
+	// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
+	const auto exec = String::getPathBaseName(inExecutable);
+	const bool isCpp = String::startsWith({ "g++", "c++" }, exec);
+	// const bool isC = String::startsWith({ "gcc", "cc" }, exec);
+	std::string rawOutput = Commands::subprocessOutput({ inExecutable, "-v" });
+	auto splitOutput = String::split(rawOutput, inEol);
+	if (splitOutput.size() >= 2)
+	{
+		auto start = splitOutput.back().find("version");
+		auto versionString = splitOutput.back().substr(start + 8);
+		while (versionString.back() == ' ')
+			versionString.pop_back();
+		std::string arch;
+		std::string threadModel;
+		for (auto& line : splitOutput)
+		{
+			if (String::startsWith("Target:", line))
+			{
+				arch = line.substr(8);
+				break;
+			}
+			/*else if (String::startsWith("Thread model:", line))
+			{
+				threadModel = line.substr(14);
+			}*/
+			// Supported LTO compression algorithms:
+		}
+		UNUSED(threadModel);
+		ret = fmt::format("GNU GCC {} Version {} ({})", isCpp ? "C++" : "C", versionString, arch);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+const std::string& CompilerTools::compilerVersionStringCpp() const noexcept
+{
+	return m_compilerVersionStringCpp;
+}
+
+const std::string& CompilerTools::compilerVersionStringC() const noexcept
+{
+	return m_compilerVersionStringC;
+}
+
 /*****************************************************************************/
 const std::string& CompilerTools::archiver() const noexcept
 {

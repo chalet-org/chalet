@@ -21,6 +21,7 @@ const char* circledSaltire();
 const char* heavyCurvedDownRightArrow();
 const char* heavyCurvedUpRightArrow();
 const char* rightwardsTripleArrow();
+const char* registered();
 }
 }
 

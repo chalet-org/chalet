@@ -119,6 +119,7 @@ const char* Unicode::heavyCurvedUpRightArrow()
 		return u8"\u27A6";
 }
 
+/*****************************************************************************/
 const char* Unicode::rightwardsTripleArrow()
 {
 #if defined(CHALET_WIN32)
@@ -127,6 +128,17 @@ const char* Unicode::rightwardsTripleArrow()
 	else
 #endif
 		return u8"\u21DB";
+}
+
+/*****************************************************************************/
+const char* Unicode::registered()
+{
+#if defined(CHALET_WIN32)
+	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+		return " (R)";
+	else
+#endif
+		return u8"\u00AE";
 }
 
 }

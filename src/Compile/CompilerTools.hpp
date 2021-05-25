@@ -15,6 +15,11 @@ struct CompilerTools
 {
 	CompilerTools() = default;
 
+	void fetchCompilerVersions();
+
+	const std::string& compilerVersionStringCpp() const noexcept;
+	const std::string& compilerVersionStringC() const noexcept;
+
 	const std::string& archiver() const noexcept;
 	void setArchiver(const std::string& inValue) noexcept;
 	bool isArchiverLibTool() const noexcept;
@@ -36,6 +41,9 @@ struct CompilerTools
 	CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
 
 private:
+	std::string parseVersionMSVC(const std::string& inExecutable) const;
+	std::string parseVersionGCC(const std::string& inExecutable, const std::string_view inEol = "\n") const;
+
 	mutable std::unordered_map<CodeLanguage, CompilerConfig> m_configs;
 
 	std::string m_archiver;
@@ -43,6 +51,9 @@ private:
 	std::string m_cc;
 	std::string m_linker;
 	std::string m_rc;
+
+	std::string m_compilerVersionStringCpp;
+	std::string m_compilerVersionStringC;
 
 	bool m_isArchiverLibTool = false;
 };

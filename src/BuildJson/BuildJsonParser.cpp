@@ -16,6 +16,7 @@
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonNode.hpp"
 
@@ -33,6 +34,9 @@ BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, BuildState& 
 bool BuildJsonParser::serialize()
 {
 	// Note: existence of m_filename is checked by Router (before the cache is made)
+
+	Timer timer;
+	Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
 
 	JsonFile buildJson(m_filename);
 	Json buildJsonSchema = Schema::getBuildJson();
@@ -76,6 +80,8 @@ bool BuildJsonParser::serialize()
 
 	m_state.info.setHash(Hash::uint64(toHash));
 	// LOG(hash);
+
+	Diagnostic::printDone(timer.asString());
 
 	return true;
 }
