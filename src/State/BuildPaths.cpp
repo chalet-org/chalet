@@ -158,19 +158,28 @@ SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, cons
 
 		asmSubDirs = getOutputDirectoryList(directories, m_asmDir);
 
-		ret.directories.reserve(4 + objSubDirs.size() + depSubDirs.size() + asmSubDirs.size());
+		if (!inIsMsvc)
+			ret.directories.reserve(4 + objSubDirs.size() + depSubDirs.size() + asmSubDirs.size());
+		else
+			ret.directories.reserve(4 + objSubDirs.size() + asmSubDirs.size());
 	}
 	else
 	{
-		ret.directories.reserve(3 + objSubDirs.size() + depSubDirs.size());
+		if (!inIsMsvc)
+			ret.directories.reserve(3 + objSubDirs.size() + depSubDirs.size());
+		else
+			ret.directories.reserve(3 + objSubDirs.size());
 	}
 
 	ret.directories.push_back(m_buildOutputDir);
 	ret.directories.push_back(m_objDir);
-	ret.directories.push_back(m_depDir);
-
 	ret.directories.insert(ret.directories.end(), objSubDirs.begin(), objSubDirs.end());
-	ret.directories.insert(ret.directories.end(), depSubDirs.begin(), depSubDirs.end());
+
+	if (!inIsMsvc)
+	{
+		ret.directories.push_back(m_depDir);
+		ret.directories.insert(ret.directories.end(), depSubDirs.begin(), depSubDirs.end());
+	}
 
 	if (dumpAssembly)
 	{

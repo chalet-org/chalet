@@ -128,6 +128,22 @@ default makebuild
 }
 
 /*****************************************************************************/
+std::string NinjaGenerator::getDepFile(const std::string& inDependency)
+{
+	std::string ret;
+
+	const auto& config = m_state.compilerTools.getConfig(m_project->language());
+	if (!config.isMsvc())
+	{
+		ret = fmt::format(R"ninja(
+  depfile = {dependency})ninja",
+			fmt::arg("dependency", inDependency));
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 std::string NinjaGenerator::getRules(const StringList& inExtensions)
 {
 	std::string rules = getPchRule();
@@ -197,6 +213,7 @@ std::string NinjaGenerator::getPchRule()
 		const auto deps = getRuleDeps();
 		const auto& depDir = m_state.paths.depDir();
 		const auto dependency = fmt::format("{}/$in.d", depDir);
+		const auto depFile = getDepFile(dependency);
 
 		const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
 		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
@@ -208,14 +225,13 @@ std::string NinjaGenerator::getPchRule()
 
 		ret = fmt::format(R"ninja(
 rule pch_{hash}
-  deps = {deps}
-  depfile = {dependency}
+  deps = {deps}{depFile}
   description = $in
   command = {pchCompile}
 )ninja",
 			fmt::arg("hash", m_hash),
 			FMT_ARG(deps),
-			FMT_ARG(dependency),
+			FMT_ARG(depFile),
 			FMT_ARG(pchCompile));
 	}
 
@@ -230,19 +246,19 @@ std::string NinjaGenerator::getRcRule()
 	const auto deps = getRuleDeps();
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+	const auto depFile = getDepFile(dependency);
 
 	const auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$in", "$out", m_generateDependencies, dependency));
 
 	ret = fmt::format(R"ninja(
 rule rc_{hash}
-  deps = {deps}
-  depfile = {dependency}
+  deps = {deps}{depFile}
   description = $in
   command = {rcCompile}
 )ninja",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(deps),
-		FMT_ARG(dependency),
+		FMT_ARG(depFile),
 		FMT_ARG(rcCompile));
 
 	return ret;
@@ -288,19 +304,19 @@ std::string NinjaGenerator::getCppRule()
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+	const auto depFile = getDepFile(dependency);
 
 	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::Cpp));
 
 	ret = fmt::format(R"ninja(
 rule cxx_{hash}
-  deps = {deps}
-  depfile = {dependency}
+  deps = {deps}{depFile}
   description = $in
   command = {cppCompile}
 )ninja",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(deps),
-		FMT_ARG(dependency),
+		FMT_ARG(depFile),
 		FMT_ARG(cppCompile));
 
 	return ret;
@@ -320,19 +336,19 @@ std::string NinjaGenerator::getObjcRule()
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+	const auto depFile = getDepFile(dependency);
 
 	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveC));
 
 	ret = fmt::format(R"ninja(
 rule objc_{hash}
-  deps = {deps}
-  depfile = {dependency}
+  deps = {deps}{depFile}
   description = $in
   command = {cppCompile}
 )ninja",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(deps),
-		FMT_ARG(dependency),
+		FMT_ARG(depFile),
 		FMT_ARG(cppCompile));
 
 	return ret;
@@ -352,19 +368,19 @@ std::string NinjaGenerator::getObjcppRule()
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+	const auto depFile = getDepFile(dependency);
 
 	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveCpp));
 
 	ret = fmt::format(R"ninja(
 rule objcpp_{hash}
-  deps = {deps}
-  depfile = {dependency}
+  deps = {deps}{depFile}
   description = $in
   command = {cppCompile}
 )ninja",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(deps),
-		FMT_ARG(dependency),
+		FMT_ARG(depFile),
 		FMT_ARG(cppCompile));
 
 	return ret;

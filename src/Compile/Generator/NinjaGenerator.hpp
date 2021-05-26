@@ -25,7 +25,7 @@ public:
 	virtual std::string getContents(const std::string& inPath) const final;
 
 private:
-	std::string getMoveCommand();
+	std::string getDepFile(const std::string& inDependency);
 
 	std::string getRules(const StringList& inExtensions);
 	std::string getBuildRules(const SourceOutputs& inOutputs);

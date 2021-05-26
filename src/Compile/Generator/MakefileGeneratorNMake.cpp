@@ -66,6 +66,18 @@ std::string MakefileGeneratorNMake::getContents(const std::string& inPath) const
 
 	auto recipes = String::join(m_targetRecipes);
 
+	std::string depDirs;
+
+	const bool isMsvc = true; // always true currently
+	if (!isMsvc)
+	{
+		depDirs = fmt::format(R"makefile(
+{depDir}/%.d: ;
+.PRECIOUS: {depDir}/%.d
+)makefile",
+			FMT_ARG(depDir));
+	}
+
 	//
 	//
 	//
@@ -76,15 +88,12 @@ std::string MakefileGeneratorNMake::getContents(const std::string& inPath) const
 .SUFFIXES: {suffixes}
 
 SHELL = {shell}
-{recipes}
-{depDir}/%.d: ;
-.PRECIOUS: {depDir}/%.d
-
+{recipes}{depDirs}
 )makefile",
 		FMT_ARG(suffixes),
 		FMT_ARG(shell),
 		FMT_ARG(recipes),
-		FMT_ARG(depDir));
+		FMT_ARG(depDirs));
 
 	// if (!isBash)
 	// {
