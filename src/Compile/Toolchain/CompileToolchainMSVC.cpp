@@ -686,7 +686,6 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 			if (List::contains(m_project.projectStaticLinks(), link))
 			{
 				outArgList.push_back(project->outputFile());
-				break;
 			}
 		}
 	}
@@ -700,6 +699,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 			if (List::contains(excludes, link))
 				continue;
 
+			bool found = false;
 			for (auto& project : m_state.projects)
 			{
 				if (project->name() == link && project->isSharedLibrary())
@@ -709,10 +709,15 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 					{
 						String::replaceAll(outputFile, ".dll", ".lib");
 						outArgList.push_back(std::move(outputFile));
+						found = true;
 						break;
 					}
 				}
 			}
+			if (found)
+				continue;
+
+			outArgList.push_back(link);
 		}
 	}
 
