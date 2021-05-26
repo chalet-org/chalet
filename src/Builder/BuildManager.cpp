@@ -153,11 +153,6 @@ void BuildManager::printBuildInformation()
 {
 	m_state.compilerTools.fetchCompilerVersions();
 
-	{
-		const auto strategy = getBuildStrategyName();
-		Diagnostic::info(fmt::format("Build Strategy: {}", strategy));
-	}
-
 	bool usingCpp = false;
 	bool usingCc = false;
 	for (auto& project : m_state.projects)
@@ -177,6 +172,9 @@ void BuildManager::printBuildInformation()
 	{
 		Diagnostic::info(fmt::format("C Compiler: {}", m_state.compilerTools.compilerVersionStringC()));
 	}
+
+	const auto strategy = getBuildStrategyName();
+	Diagnostic::info(fmt::format("Build Strategy: {}", strategy));
 }
 
 /*****************************************************************************/

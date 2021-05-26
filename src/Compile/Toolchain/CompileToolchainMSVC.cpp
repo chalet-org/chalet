@@ -273,8 +273,13 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 	if (debugSymbols)
 	{
 		ret.push_back("/debug");
+		ret.push_back("/INCREMENTAL");
 
 		ret.push_back(fmt::format("/pdb:{}.pdb", outputFileBase));
+	}
+	else
+	{
+		ret.push_back("/INCREMENTAL:NO");
 	}
 
 	// TODO /version
@@ -479,6 +484,18 @@ void CompileToolchainMSVC::addOptimizationOption(StringList& outArgList) const
 		return;
 
 	outArgList.push_back(std::move(opt));
+
+	if (configuration.debugSymbols())
+	{
+		outArgList.push_back("/Zi"); // separate pdb
+		outArgList.push_back(std::move(opt));
+		outArgList.push_back("/Ob0");  // disable inline expansion
+		outArgList.push_back("/RTC1"); // Enables stack frame run-time error checking, uninitialized variables
+	}
+	else
+	{
+		outArgList.push_back(std::move(opt));
+	}
 }
 
 /*****************************************************************************/

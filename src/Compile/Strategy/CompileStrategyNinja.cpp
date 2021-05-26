@@ -57,7 +57,7 @@ bool CompileStrategyNinja::initialize()
 
 	if (m_cacheNeedsUpdate)
 	{
-		buildCache[key] = String::getPathFilename(m_cacheFile);
+		buildCache[key] = hash;
 		m_state.cache.setDirty(true);
 	}
 
