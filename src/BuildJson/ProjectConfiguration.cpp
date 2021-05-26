@@ -767,10 +767,6 @@ void ProjectConfiguration::parseOutputFilename(const CompilerConfig& inConfig) n
 	std::string libraryExtension{ ".so" };
 #endif
 
-#if !defined(CHALET_WIN32)
-	UNUSED(inWindowsMsvc);
-#endif
-
 	if (staticLib)
 	{
 #if defined(CHALET_WIN32)
