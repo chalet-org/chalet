@@ -488,6 +488,7 @@ void CompileToolchainMSVC::addOptimizationOption(StringList& outArgList) const
 	if (configuration.debugSymbols())
 	{
 		outArgList.push_back("/Zi"); // separate pdb
+		outArgList.push_back("/FS"); // Force Synchronous PDB Writes
 		outArgList.push_back(std::move(opt));
 		outArgList.push_back("/Ob0");  // disable inline expansion
 		outArgList.push_back("/RTC1"); // Enables stack frame run-time error checking, uninitialized variables
