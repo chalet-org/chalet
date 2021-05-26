@@ -702,7 +702,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 
 			for (auto& project : m_state.projects)
 			{
-				if (project->name() == link)
+				if (project->name() == link && project->isSharedLibrary())
 				{
 					auto outputFile = project->outputFile();
 					if (String::endsWith(".dll", outputFile))

@@ -491,7 +491,14 @@ void CompileToolchainGNU::addLinks(StringList& outArgList) const
 			if (List::contains(excludes, link))
 				continue;
 
-			outArgList.push_back(prefix + link);
+			for (auto& project : m_state.projects)
+			{
+				if (project->name() == link && project->isSharedLibrary())
+				{
+					outArgList.push_back(prefix + link);
+					break;
+				}
+			}
 		}
 	}
 }
