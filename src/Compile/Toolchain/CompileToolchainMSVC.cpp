@@ -714,10 +714,11 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 					}
 				}
 			}
-			if (found)
-				continue;
 
-			outArgList.push_back(link);
+			if (!found)
+			{
+				outArgList.push_back(fmt::format("{}.lib", link));
+			}
 		}
 	}
 
