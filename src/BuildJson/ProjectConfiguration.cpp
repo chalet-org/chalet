@@ -686,6 +686,7 @@ void ProjectConfiguration::setPosixThreads(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+// TODO: string prefix (lib) / suffix (-s) control
 bool ProjectConfiguration::windowsPrefixOutputFilename() const noexcept
 {
 	bool staticLib = m_kind == ProjectKind::StaticLibrary;
@@ -695,6 +696,12 @@ bool ProjectConfiguration::windowsPrefixOutputFilename() const noexcept
 void ProjectConfiguration::setWindowsPrefixOutputFilename(const bool inValue) noexcept
 {
 	m_windowsPrefixOutputFilename = inValue;
+	m_setWindowsPrefixOutputFilename = true;
+}
+
+bool ProjectConfiguration::setWindowsPrefixOutputFilename() const noexcept
+{
+	return m_setWindowsPrefixOutputFilename;
 }
 
 /*****************************************************************************/
@@ -743,7 +750,7 @@ ProjectKind ProjectConfiguration::parseProjectKind(const std::string& inValue)
 }
 
 /*****************************************************************************/
-void ProjectConfiguration::parseOutputFilename(const bool inWindowsMsvc) noexcept
+void ProjectConfiguration::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 {
 	chalet_assert(!m_name.empty(), "m_name is blank");
 
@@ -767,7 +774,7 @@ void ProjectConfiguration::parseOutputFilename(const bool inWindowsMsvc) noexcep
 	if (staticLib)
 	{
 #if defined(CHALET_WIN32)
-		if (inWindowsMsvc)
+		if (inConfig.isMsvc())
 			libraryExtension = "-s.lib";
 		else
 #endif
@@ -783,7 +790,7 @@ void ProjectConfiguration::parseOutputFilename(const bool inWindowsMsvc) noexcep
 		}
 		case ProjectKind::SharedLibrary:
 		case ProjectKind::StaticLibrary: {
-			if (!windowsPrefixOutputFilename())
+			if (!windowsPrefixOutputFilename() || (inConfig.isMsvc() && !m_setWindowsPrefixOutputFilename))
 			{
 				m_outputFile = m_name + libraryExtension;
 			}

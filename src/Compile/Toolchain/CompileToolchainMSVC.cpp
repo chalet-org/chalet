@@ -181,7 +181,7 @@ StringList CompileToolchainMSVC::getLinkerTargetCommand(const std::string& outpu
 	ProjectKind kind = m_project.kind();
 	if (kind == ProjectKind::SharedLibrary)
 	{
-		return getSharedLibTargetCommand(outputFile, sourceObjs);
+		return getSharedLibTargetCommand(outputFile, sourceObjs, outputFileBase);
 	}
 	else if (kind == ProjectKind::StaticLibrary)
 	{
@@ -194,12 +194,60 @@ StringList CompileToolchainMSVC::getLinkerTargetCommand(const std::string& outpu
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
+StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFile, sourceObjs);
-	return {
-		"prompt"
-	};
+
+	chalet_assert(!outputFile.empty() && sourceObjs.size() > 0, "");
+
+	StringList ret;
+
+	addExectuable(ret, m_state.compilerTools.linker());
+	ret.push_back("/nologo");
+	ret.push_back("/dll");
+
+	addTargetPlatformArch(ret);
+	addSubSystem(ret);
+	addCgThreads(ret);
+	addLibDirs(ret);
+
+	const bool debugSymbols = m_state.configuration.debugSymbols();
+	if (m_state.configuration.linkTimeOptimization())
+	{
+		// combines w/ /GL - I think this is basically part of MS's link-time optimization
+		// ret.push_back("/LTCG");
+
+		// Note: These are also tied to /INCREMENTAL (implied with /debug)
+		if (debugSymbols)
+			ret.push_back("/opt:NOREF,NOICF,NOLBR");
+		else
+			ret.push_back("/opt:REF,ICF,LBR");
+
+		// OPT:LBR - relates to arm binaries
+	}
+
+	if (debugSymbols)
+	{
+		ret.push_back("/debug");
+		ret.push_back("/INCREMENTAL");
+
+		ret.push_back(fmt::format("/pdb:{}.pdb", outputFileBase));
+	}
+	else
+	{
+		ret.push_back("/INCREMENTAL:NO");
+	}
+
+	// TODO /version
+	ret.push_back("/version:0.0");
+
+	ret.push_back(fmt::format("/out:{}", outputFile));
+
+	addPrecompiledHeaderLink(ret);
+	addSourceObjects(ret, sourceObjs);
+	addLinks(ret);
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -625,7 +673,6 @@ void CompileToolchainMSVC::addLibDirs(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 {
-	const std::string suffix{ ".lib" };
 	const bool hasStaticLinks = m_project.staticLinks().size() > 0;
 	const bool hasDynamicLinks = m_project.links().size() > 0;
 
@@ -635,10 +682,11 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 	{
 		for (auto& project : m_state.projects)
 		{
-			auto& name = project->name();
-			if (List::contains(m_project.projectStaticLinks(), name))
+			auto& link = project->name();
+			if (List::contains(m_project.projectStaticLinks(), link))
 			{
-				outArgList.push_back(fmt::format("lib{}-s.lib", name));
+				outArgList.push_back(project->outputFile());
+				break;
 			}
 		}
 	}
@@ -652,13 +700,25 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 			if (List::contains(excludes, link))
 				continue;
 
-			outArgList.push_back(fmt::format("{}.lib", link));
+			for (auto& project : m_state.projects)
+			{
+				if (project->name() == link)
+				{
+					auto outputFile = project->outputFile();
+					if (String::endsWith(".dll", outputFile))
+					{
+						String::replaceAll(outputFile, ".dll", ".lib");
+						outArgList.push_back(std::move(outputFile));
+						break;
+					}
+				}
+			}
 		}
 	}
 
 	// TODO: Dynamic way of determining this list
 	// would they differ between console app & windows app?
-	for (auto& link : {
+	for (const char* link : {
 			 "DbgHelp",
 			 "kernel32",
 			 "user32",

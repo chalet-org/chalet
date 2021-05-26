@@ -571,7 +571,7 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 				if (cmakeResult)
 				{
 					auto& compilerConfig = m_state.compilerTools.getConfig(outProject.language());
-					outProject.parseOutputFilename(compilerConfig.isMsvc());
+					outProject.parseOutputFilename(compilerConfig);
 					return true;
 				}
 			}
@@ -598,10 +598,9 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 		}
 
 		auto& compilerConfig = m_state.compilerTools.getConfig(outProject.language());
+		outProject.parseOutputFilename(compilerConfig);
 
 		const bool isMsvc = compilerConfig.isMsvc();
-		outProject.parseOutputFilename(isMsvc);
-
 		if (!isMsvc)
 		{
 			std::string libDir = compilerConfig.compilerPathLib();

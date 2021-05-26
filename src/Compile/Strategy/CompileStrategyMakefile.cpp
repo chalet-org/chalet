@@ -275,17 +275,24 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	options.onStdErr = onStdErr;
 
 #if defined(CHALET_WIN32)
-	static Subprocess::PipeFunc onStdOut = [](std::string inData) {
-		String::replaceAll(inData, "\r\n", "\n");
-		std::cout << inData << std::flush;
-	};
-
-	// NMAKE
-	// if (m_state.tools.makeIsNMake())
+	options.stdoutOption = PipeOption::Pipe;
+	if (m_state.tools.makeIsNMake())
 	{
-		options.stdoutOption = PipeOption::Pipe;
-		options.onStdOut = onStdOut;
+		options.onStdOut = [](std::string inData) {
+			String::replaceAll(inData, "\r\n", "\n");
+			String::replaceAll(inData, ": warning ", Output::getAnsiReset() + ": warning ");
+			String::replaceAll(inData, ": error ", Output::getAnsiReset() + ": error ");
+			std::cout << inData << std::flush;
+		};
 	}
+	else
+	{
+		options.onStdOut = [](std::string inData) {
+			String::replaceAll(inData, "\r\n", "\n");
+			std::cout << inData << std::flush;
+		};
+	}
+
 #endif
 
 	int result = Subprocess::run(inCmd, std::move(options));

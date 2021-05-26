@@ -55,7 +55,7 @@ private:
 	// General
 	void addTargetPlatformArch(StringList& outArgList) const;
 
-	StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+	StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 

@@ -14,6 +14,7 @@
 
 namespace chalet
 {
+struct CompilerConfig;
 struct ProjectConfiguration
 {
 	explicit ProjectConfiguration(const std::string& inBuildConfig, const BuildEnvironment& inEnvironment);
@@ -82,7 +83,7 @@ struct ProjectConfiguration
 	//
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
-	void parseOutputFilename(const bool inWindowsMsvc = false) noexcept;
+	void parseOutputFilename(const CompilerConfig& inConfig) noexcept;
 
 	const std::string& outputFile() const noexcept;
 
@@ -162,6 +163,7 @@ struct ProjectConfiguration
 
 	bool windowsPrefixOutputFilename() const noexcept;
 	void setWindowsPrefixOutputFilename(const bool inValue) noexcept;
+	bool setWindowsPrefixOutputFilename() const noexcept;
 
 	bool windowsOutputDef() const noexcept;
 	void setWindowsOutputDef(const bool inValue) noexcept;
@@ -222,6 +224,7 @@ private:
 	bool m_posixThreads = true;
 	bool m_includeInBuild = true;
 	bool m_windowsPrefixOutputFilename = true;
+	bool m_setWindowsPrefixOutputFilename = false;
 	bool m_windowsOutputDef = false;
 };
 

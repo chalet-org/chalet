@@ -7,7 +7,7 @@
 
 #include "Utility/List.hpp"
 
-// TODO: Find a nice way to separate out the clang/appleclang stuff from CompileToolchainGNU
+// TODO: -ftime-trace
 
 namespace chalet
 {
