@@ -22,15 +22,15 @@ private:
 	bool validatePaths();
 	bool setDefaultBuildStrategy();
 	bool makeCache();
-	bool serializeFromJsonRoot(const Json& inJson);
+	bool serializeFromJsonRoot(Json& inJson);
 
 	bool parseRoot(const Json& inNode);
 	bool parseSettings(const Json& inNode);
 
 	bool parseTools(const Json& inNode);
-	bool parseCompilers(const Json& inNode);
+	bool parseCompilers(Json& inNode);
 
-	void parseHostArchitecture(std::string& outString) const;
+	bool parseArchitecture(std::string& outString) const;
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;

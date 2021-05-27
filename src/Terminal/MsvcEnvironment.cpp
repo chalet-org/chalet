@@ -72,7 +72,11 @@ bool MsvcEnvironment::readCompilerVariables()
 
 	m_varsFileOriginal = buildPath + "/original.env";
 	m_varsFileMsvc = buildPath + "/msvc_all.env";
-	m_varsFileMsvcDelta = buildPath + "/msvc.env";
+
+	if (m_state.targetArchitecture() == CpuArchitecture::X86)
+		m_varsFileMsvcDelta = buildPath + "/msvc_x86.env";
+	else
+		m_varsFileMsvcDelta = buildPath + "/msvc_x64.env";
 
 	m_initialized = true;
 
