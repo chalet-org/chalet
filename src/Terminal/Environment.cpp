@@ -527,6 +527,16 @@ std::string Environment::getPath()
 }
 
 /*****************************************************************************/
+void Environment::setPath(const std::string& inValue)
+{
+#if defined(CHALET_WIN32)
+	Environment::set("Path", inValue.c_str());
+#else
+	Environment::set("PATH", inValue.c_str());
+#endif
+}
+
+/*****************************************************************************/
 std::string Environment::getUserDirectory()
 {
 #ifdef CHALET_WIN32

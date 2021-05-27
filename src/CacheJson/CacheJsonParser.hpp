@@ -27,7 +27,7 @@ private:
 	bool parseRoot(const Json& inNode);
 	bool parseSettings(const Json& inNode);
 
-	bool parseTools(const Json& inNode);
+	bool parseTools(Json& inNode);
 	bool parseCompilers(Json& inNode);
 
 	bool parseArchitecture(std::string& outString) const;

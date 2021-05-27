@@ -583,7 +583,7 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool CacheJsonParser::parseTools(const Json& inNode)
+bool CacheJsonParser::parseTools(Json& inNode)
 {
 	if (!inNode.contains(kKeyTools))
 	{
@@ -591,7 +591,7 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 		return false;
 	}
 
-	const Json& tools = inNode.at(kKeyTools);
+	Json& tools = inNode.at(kKeyTools);
 	if (!tools.is_object())
 	{
 		Diagnostic::errorAbort(fmt::format("{}: '{}' must be an object.", m_filename, kKeyTools));
@@ -606,7 +606,16 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 		m_state.tools.setBrew(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCmake))
+	{
+#if defined(CHALET_WIN32)
+		if (!parseArchitecture(val))
+		{
+			tools[kKeyCmake] = val;
+			m_state.cache.setDirty(true);
+		}
+#endif
 		m_state.tools.setCmake(val);
+	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCodesign))
 		m_state.tools.setCodesign(val);
@@ -618,7 +627,16 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 		m_state.tools.setGit(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyGprof))
+	{
+#if defined(CHALET_WIN32)
+		if (!parseArchitecture(val))
+		{
+			tools[kKeyGprof] = val;
+			m_state.cache.setDirty(true);
+		}
+#endif
 		m_state.tools.setGprof(val);
+	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyHdiutil))
 		m_state.tools.setHdiutil(val);
@@ -640,6 +658,13 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyMake))
 	{
+#if defined(CHALET_WIN32)
+		if (!parseArchitecture(val))
+		{
+			tools[kKeyMake] = val;
+			m_state.cache.setDirty(true);
+		}
+#endif
 		m_state.tools.setMake(val);
 		m_make = std::move(val);
 	}
@@ -648,7 +673,16 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 		m_state.tools.setNinja(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyObjdump))
+	{
+#if defined(CHALET_WIN32)
+		if (!parseArchitecture(val))
+		{
+			tools[kKeyObjdump] = val;
+			m_state.cache.setDirty(true);
+		}
+#endif
 		m_state.tools.setObjdump(val);
+	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyOsascript))
 		m_state.tools.setOsascript(val);
@@ -666,13 +700,40 @@ bool CacheJsonParser::parseTools(const Json& inNode)
 		m_state.tools.setPowershell(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPython))
+	{
+#if defined(CHALET_WIN32)
+		if (!parseArchitecture(val))
+		{
+			tools[kKeyPython] = val;
+			m_state.cache.setDirty(true);
+		}
+#endif
 		m_state.tools.setPython(val);
+	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPython3))
+	{
+#if defined(CHALET_WIN32)
+		if (!parseArchitecture(val))
+		{
+			tools[kKeyPython3] = val;
+			m_state.cache.setDirty(true);
+		}
+#endif
 		m_state.tools.setPython3(val);
+	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyRuby))
+	{
+#if defined(CHALET_WIN32)
+		if (!parseArchitecture(val))
+		{
+			tools[kKeyRuby] = val;
+			m_state.cache.setDirty(true);
+		}
+#endif
 		m_state.tools.setRuby(val);
+	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeySample))
 		m_state.tools.setSample(val);
@@ -771,45 +832,111 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 {
 	bool ret = true;
 #if defined(CHALET_WIN32)
-	if (!String::endsWith({ "cl.exe", "link.exe", "lib.exe" }, outString))
-		return ret;
+	if (String::contains({ "/mingw64/", "/mingw32/" }, outString))
+	{
+		std::string lower = String::toLowerCase(outString);
+		if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
+		{
+			auto start = lower.find("/mingw32/");
+			if (start != std::string::npos)
+			{
+				std::string tmp = outString;
+				String::replaceAll(tmp, tmp.substr(start, 9), "/mingw64/");
+				if (Commands::pathExists(tmp))
+				{
+					outString = tmp;
+				}
+				ret = false;
+			}
+		}
+		else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
+		{
+			auto start = lower.find("/mingw64/");
+			if (start != std::string::npos)
+			{
+				std::string tmp = outString;
+				String::replaceAll(tmp, tmp.substr(start, 9), "/mingw32/");
+				if (Commands::pathExists(tmp))
+				{
+					outString = tmp;
+				}
+				ret = false;
+			}
+		}
+	}
+	else if (String::contains({ "/clang64/", "/clang32/" }, outString))
+	{
+		// TODO: clangarm64
 
-	std::string lower = String::toLowerCase(outString);
-	if (m_state.info.hostArchitecture() == CpuArchitecture::X64)
-	{
-		auto start = lower.find("/hostx86/");
-		if (start != std::string::npos)
+		std::string lower = String::toLowerCase(outString);
+		if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
 		{
-			String::replaceAll(outString, outString.substr(start, 9), "/HostX64/");
-			ret = false;
+			auto start = lower.find("/clang32/");
+			if (start != std::string::npos)
+			{
+				std::string tmp = outString;
+				String::replaceAll(tmp, tmp.substr(start, 9), "/clang64/");
+				if (Commands::pathExists(tmp))
+				{
+					outString = tmp;
+				}
+				ret = false;
+			}
+		}
+		else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
+		{
+			auto start = lower.find("/clang64/");
+			if (start != std::string::npos)
+			{
+				std::string tmp = outString;
+				String::replaceAll(tmp, tmp.substr(start, 9), "/clang32/");
+				if (Commands::pathExists(tmp))
+				{
+					outString = tmp;
+				}
+				ret = false;
+			}
 		}
 	}
-	else if (m_state.info.hostArchitecture() == CpuArchitecture::X86)
+	else if (String::endsWith({ "cl.exe", "link.exe", "lib.exe" }, outString))
 	{
-		auto start = lower.find("/hostx64/");
-		if (start != std::string::npos)
+		std::string lower = String::toLowerCase(outString);
+		if (m_state.info.hostArchitecture() == CpuArchitecture::X64)
 		{
-			String::replaceAll(outString, outString.substr(start, 9), "/HostX86/");
-			ret = false;
+			auto start = lower.find("/hostx86/");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outString, outString.substr(start, 9), "/HostX64/");
+				ret = false;
+			}
 		}
-	}
+		else if (m_state.info.hostArchitecture() == CpuArchitecture::X86)
+		{
+			auto start = lower.find("/hostx64/");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outString, outString.substr(start, 9), "/HostX86/");
+				ret = false;
+			}
+		}
 
-	if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
-	{
-		auto start = lower.find("/x86/");
-		if (start != std::string::npos)
+		if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
 		{
-			String::replaceAll(outString, outString.substr(start, 5), "/x64/");
-			ret = false;
+			auto start = lower.find("/x86/");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outString, outString.substr(start, 5), "/x64/");
+				ret = false;
+			}
 		}
-	}
-	else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
-	{
-		auto start = lower.find("/x64/");
-		if (start != std::string::npos)
+		else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
 		{
-			String::replaceAll(outString, outString.substr(start, 5), "/x86/");
-			ret = false;
+			auto start = lower.find("/x64/");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outString, outString.substr(start, 5), "/x86/");
+				ret = false;
+			}
 		}
 	}
 
