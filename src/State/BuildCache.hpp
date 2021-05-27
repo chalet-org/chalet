@@ -13,6 +13,8 @@
 
 namespace chalet
 {
+class BuildState;
+
 struct BuildCache
 {
 	enum class Type
@@ -61,7 +63,6 @@ private:
 
 	const std::string kKeySettings{ "settings" };
 	const std::string kKeyStrategy{ "strategy" };
-	const std::string kKeyTargetArchitecture{ "targetArchitecture" };
 	const std::string kKeyWorkingDirectory{ "workingDirectory" };
 	const std::string kKeyData{ "data" };
 

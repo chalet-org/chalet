@@ -19,8 +19,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildEnvironment::BuildEnvironment(const std::string& inBuildConfig) :
-	m_buildConfiguration(inBuildConfig),
+BuildEnvironment::BuildEnvironment(const WorkspaceInfo& inInfo) :
+	m_info(inInfo),
 	m_processorCount(std::thread::hardware_concurrency()),
 	m_maxJobs(m_processorCount)
 {
@@ -57,17 +57,6 @@ void BuildEnvironment::setStrategy(const std::string& inValue) noexcept
 	{
 		chalet_assert(false, "Invalid strategy type");
 	}
-}
-
-/*****************************************************************************/
-const std::string& BuildEnvironment::platform() const noexcept
-{
-	return m_platform;
-}
-
-void BuildEnvironment::setPlatform(const std::string& inValue) noexcept
-{
-	m_platform = inValue;
 }
 
 /*****************************************************************************/
@@ -130,7 +119,7 @@ void BuildEnvironment::addPath(std::string& inValue)
 	if (inValue.back() == '/')
 		inValue.pop_back();
 
-	String::replaceAll(inValue, "${configuration}", m_buildConfiguration);
+	String::replaceAll(inValue, "${configuration}", m_info.buildConfiguration());
 	String::replaceAll(inValue, "${externalDepDir}", m_externalDepDir);
 	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_path, std::move(inValue));

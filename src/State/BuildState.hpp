@@ -25,7 +25,6 @@ namespace chalet
 class BuildState
 {
 	const CommandLineInputs& m_inputs;
-	std::string m_buildConfiguration;
 
 public:
 	explicit BuildState(const CommandLineInputs& inInputs);
@@ -42,24 +41,12 @@ public:
 	AppBundle bundle;
 	BuildCache cache;
 
-	const std::string& buildConfiguration() const noexcept;
-	void setBuildConfiguration(const std::string& inValue) noexcept;
-
-	const std::string& platform() const noexcept;
-	const StringList& notPlatforms() const noexcept;
-
-	CpuArchitecture hostArchitecture() const noexcept;
-	CpuArchitecture targetArchitecture() const noexcept;
-	void setTargetArchitecture(const std::string& inValue) noexcept;
-
 private:
 	friend class Application;
 	friend class Router;
 
 	void initializeBuild();
 	void initializeCache();
-
-	CpuArchitecture m_targetArchitecture = CpuArchitecture::X64;
 };
 }
 

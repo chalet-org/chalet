@@ -7,6 +7,7 @@
 
 #include "BuildJson/BuildEnvironment.hpp"
 #include "Libraries/Format.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -197,12 +198,6 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 
 	const auto strategy = strategyJson.get<std::string>();
 
-	auto& targetArchJson = settingsJson[kKeyTargetArchitecture];
-	if (!targetArchJson.is_string())
-		return;
-
-	const auto targetArch = targetArchJson.get<std::string>();
-
 	UNUSED(inProjectNames);
 
 	StringList hashes;
@@ -344,16 +339,7 @@ void BuildCache::checkIfTargetArchitectureChanged()
 	if (!data.is_object())
 		return;
 
-	auto& settingsJson = m_environmentCache.json.at(kKeySettings);
-	if (!settingsJson.is_object())
-		return;
-
-	auto& targetArchJson = settingsJson[kKeyTargetArchitecture];
-	if (!targetArchJson.is_string())
-		return;
-
-	const auto targetArch = targetArchJson.get<std::string>();
-
+	const auto& targetArch = m_info.targetArchitectureString();
 	const auto hashTargetArch = Hash::string(targetArch);
 
 	if (!data.contains(kKeyDataTargetArchitecture))

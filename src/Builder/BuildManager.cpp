@@ -444,13 +444,14 @@ bool BuildManager::doLazyClean()
 /*****************************************************************************/
 bool BuildManager::doClean(const ProjectConfiguration& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean)
 {
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	// const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
-	if (m_cleanOutput && Commands::pathExists(buildOutputDir))
-	{
-		Output::msgCleaningRebuild();
-		Output::lineBreak();
-	}
+	// This prints for each project (bad)... maybe redundant since "Rebuild" is already printed
+	// if (m_cleanOutput && Commands::pathExists(buildOutputDir))
+	// {
+	// 	Output::msgCleaningRebuild();
+	// 	Output::lineBreak();
+	// }
 
 	auto pch = m_state.paths.getPrecompiledHeader(inProject);
 
@@ -485,7 +486,7 @@ bool BuildManager::cmdBuild()
 {
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	const auto& command = m_inputs.command();
 	const auto& outputFile = m_project->outputFile();
 	const bool hasScripts = m_project->hasScripts();
@@ -533,7 +534,7 @@ bool BuildManager::cmdRebuild()
 {
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	const auto& outputFile = m_project->outputFile();
 
 	Output::msgRebuild(buildConfiguration, outputFile);
@@ -554,7 +555,7 @@ bool BuildManager::cmdRun()
 {
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	auto outputFile = getRunOutputFile();
 
 	Output::msgRun(buildConfiguration, outputFile);
@@ -567,7 +568,7 @@ bool BuildManager::cmdRun()
 bool BuildManager::cmdClean()
 {
 	const auto& inputBuild = m_inputs.buildConfiguration();
-	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
 	Output::msgClean(inputBuild.empty() ? inputBuild : buildConfiguration);
 	Output::lineBreak();
@@ -660,7 +661,7 @@ std::string BuildManager::getRunOutputFile()
 /*****************************************************************************/
 void BuildManager::testTerminalMessages()
 {
-	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	const auto& distConfig = m_state.bundle.configuration();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 

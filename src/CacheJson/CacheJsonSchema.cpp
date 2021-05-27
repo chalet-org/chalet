@@ -261,7 +261,7 @@ Json Schema::getCacheJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["settings-targetArchitecture"] = R"json({
+	/*ret[kDefinitions]["settings-targetArchitecture"] = R"json({
 		"type": "string",
 		"description": "The target platform's architecture",
 		"enum": [
@@ -271,7 +271,7 @@ Json Schema::getCacheJson()
 			"arm64"
 		],
 		"default": "x64"
-	})json"_ojson;
+	})json"_ojson;*/
 
 	ret[kDefinitions]["settings-strategy"] = R"json({
 		"type": "string",
@@ -467,15 +467,11 @@ Json Schema::getCacheJson()
 		"additionalProperties": false,
 		"description": "A list of settings central to the build",
 		"required": [
-			"strategy",
-			"targetArchitecture"
+			"strategy"
 		],
 		"properties": {
 			"strategy": {
 				"$ref": "#/definitions/settings-strategy"
-			},
-			"targetArchitecture": {
-				"$ref": "#/definitions/settings-targetArchitecture"
 			}
 		}
 	})json"_ojson;

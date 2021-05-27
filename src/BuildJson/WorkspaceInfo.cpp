@@ -5,8 +5,21 @@
 
 #include "BuildJson/WorkspaceInfo.hpp"
 
+#include "Libraries/Format.hpp"
+#include "Terminal/Commands.hpp"
+#include "Terminal/Path.hpp"
+#include "Utility/String.hpp"
+
 namespace chalet
 {
+/*****************************************************************************/
+WorkspaceInfo::WorkspaceInfo(const CommandLineInputs& inInputs) :
+	m_inputs(inInputs)
+{
+	m_hostArchitecture.set(m_inputs.hostArchitecture(), CpuArchitecture::X64);
+	m_targetArchitecture.set(m_inputs.targetArchitecture(), m_hostArchitecture.val);
+}
+
 /*****************************************************************************/
 const std::string& WorkspaceInfo::workspace() const noexcept
 {
@@ -37,4 +50,96 @@ void WorkspaceInfo::setHash(const std::size_t inValue) noexcept
 {
 	m_hash = inValue;
 }
+
+/*****************************************************************************/
+const std::string& WorkspaceInfo::buildConfiguration() const noexcept
+{
+	chalet_assert(!m_buildConfiguration.empty(), "Build configuration is empty");
+	return m_buildConfiguration;
+}
+
+void WorkspaceInfo::setBuildConfiguration(const std::string& inValue) noexcept
+{
+	m_buildConfiguration = inValue;
+}
+
+/*****************************************************************************/
+const std::string& WorkspaceInfo::platform() const noexcept
+{
+	return m_inputs.platform();
+}
+
+const StringList& WorkspaceInfo::notPlatforms() const noexcept
+{
+	return m_inputs.notPlatforms();
+}
+
+/*****************************************************************************/
+CpuArchitecture WorkspaceInfo::hostArchitecture() const noexcept
+{
+	return m_hostArchitecture.val;
+}
+
+const std::string& WorkspaceInfo::hostArchitectureString() const noexcept
+{
+	return m_hostArchitecture.str;
+}
+
+/*****************************************************************************/
+CpuArchitecture WorkspaceInfo::targetArchitecture() const noexcept
+{
+	return m_targetArchitecture.val;
+}
+
+const std::string& WorkspaceInfo::targetArchitectureString() const noexcept
+{
+	return m_targetArchitecture.str;
+}
+
+/*****************************************************************************/
+void WorkspaceInfo::Architecture::set(const std::string& inValue, const CpuArchitecture inDefault) noexcept
+{
+	if (String::equals("x64", inValue))
+	{
+		val = CpuArchitecture::X64;
+		str = inValue;
+	}
+	else if (String::equals("x86", inValue))
+	{
+		val = CpuArchitecture::X86;
+		str = inValue;
+	}
+	else if (String::equals("arm", inValue))
+	{
+		val = CpuArchitecture::ARM;
+		str = inValue;
+	}
+	else if (String::equals("arm64", inValue))
+	{
+		val = CpuArchitecture::ARM64;
+		str = inValue;
+	}
+	else
+	{
+		val = inDefault;
+		switch (inDefault)
+		{
+			case CpuArchitecture::X86:
+				str = "x86";
+				break;
+			case CpuArchitecture::X64:
+				str = "x64";
+				break;
+			case CpuArchitecture::ARM:
+				str = "arm";
+				break;
+			case CpuArchitecture::ARM64:
+				str = "arm64";
+				break;
+			default:
+				break;
+		}
+	}
+}
+
 }

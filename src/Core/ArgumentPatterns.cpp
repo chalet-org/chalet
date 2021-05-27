@@ -80,14 +80,30 @@ bool ArgumentPatterns::parse(const StringList& inArguments)
 
 	if (inArguments.size() > 1) // expects "program [subcommand]"
 	{
+		bool isOption = false;
 		for (auto& arg : inArguments)
 		{
 			std::size_t i = &arg - &inArguments.front();
 			if (i == 0)
 				continue;
 
-			if (String::startsWith('-', arg))
+			if (isOption)
+			{
+				isOption = false;
+				if (!String::startsWith('-', arg))
+					continue;
+			}
+
+			ushort res = parseOption(arg);
+			if (res == 2)
+			{
+				isOption = true;
 				continue;
+			}
+			else if (res == 1)
+			{
+				continue;
+			}
 
 			Route route = getRouteFromString(arg);
 
@@ -112,6 +128,33 @@ bool ArgumentPatterns::parse(const StringList& inArguments)
 	populateMainArguments();
 
 	return doParse(inArguments);
+}
+
+/*****************************************************************************/
+ushort ArgumentPatterns::parseOption(const std::string& inString)
+{
+	ushort res = 0;
+
+	// clang-format off
+	if (String::equals({
+		"-i", "--input-file",
+		"-o", "--output-path",
+		"-g", "--generator",
+		"-e", "--envfile",
+		"-a", "--arch",
+	}, inString))
+	// clang-format on
+	{
+		// anything that takes 2 args
+		res = 2;
+	}
+	else if (String::startsWith('-', inString))
+	{
+		// one arg (--save-schema)
+		res = 1;
+	}
+
+	return res;
 }
 
 /*****************************************************************************/

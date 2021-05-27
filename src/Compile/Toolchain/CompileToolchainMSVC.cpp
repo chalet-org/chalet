@@ -783,7 +783,7 @@ void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
 void CompileToolchainMSVC::addTargetPlatformArch(StringList& outArgList) const
 {
 	// TODO: /MACHINE - target platform arch
-	const auto arch = m_state.targetArchitecture();
+	const auto arch = m_state.info.targetArchitecture();
 	switch (arch)
 	{
 		case CpuArchitecture::X64:

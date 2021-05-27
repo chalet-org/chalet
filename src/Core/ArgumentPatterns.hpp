@@ -33,6 +33,7 @@ public:
 	Route route() const noexcept;
 
 private:
+	ushort parseOption(const std::string& inString);
 	std::string getHelpCommand();
 
 	Route getRouteFromString(const std::string& inValue);

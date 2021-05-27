@@ -110,20 +110,6 @@ bool CacheJsonParser::createMsvcEnvironment()
 				readVariables = result;
 			}
 		}
-
-		if (jRoot.contains(kKeySettings))
-		{
-			auto& settings = jRoot[kKeySettings];
-			if (settings.is_object())
-			{
-				if (settings.contains(kKeyTargetArchitecture))
-				{
-					const Json& arch = settings[kKeyTargetArchitecture];
-					const auto str = arch.get<std::string>();
-					m_state.setTargetArchitecture(str);
-				}
-			}
-		}
 	}
 
 	if (readVariables)
@@ -293,8 +279,6 @@ bool CacheJsonParser::makeCache()
 	if (!settings.contains(kKeyStrategy))
 		settings[kKeyStrategy] = std::string();
 
-	if (!settings.contains(kKeyTargetArchitecture))
-		settings[kKeyTargetArchitecture] = std::string();
 	{
 		Json& strategyJson = settings[kKeyStrategy];
 
@@ -305,17 +289,6 @@ bool CacheJsonParser::makeCache()
 			// Note: this is only for validation. it gets changed later
 			strategyJson = "makefile";
 			m_changeStrategy = true;
-		}
-
-		Json& targetArchJson = settings[kKeyTargetArchitecture];
-		if (!targetArchJson.is_string())
-			targetArchJson = std::string();
-
-		const auto targetArch = targetArchJson.get<std::string>();
-
-		if (targetArch.empty())
-		{
-			targetArchJson = m_inputs.targetArchitecture();
 		}
 	}
 
@@ -606,9 +579,6 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 	if (std::string val; environmentCache.assignFromKey(val, settings, kKeyStrategy))
 		m_state.environment.setStrategy(val);
 
-	if (std::string val; environmentCache.assignFromKey(val, settings, kKeyTargetArchitecture))
-		m_state.setTargetArchitecture(val);
-
 	return true;
 }
 
@@ -805,7 +775,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 		return ret;
 
 	std::string lower = String::toLowerCase(outString);
-	if (m_state.hostArchitecture() == CpuArchitecture::X64)
+	if (m_state.info.hostArchitecture() == CpuArchitecture::X64)
 	{
 		auto start = lower.find("/hostx86/");
 		if (start != std::string::npos)
@@ -814,7 +784,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 			ret = false;
 		}
 	}
-	else if (m_state.hostArchitecture() == CpuArchitecture::X86)
+	else if (m_state.info.hostArchitecture() == CpuArchitecture::X86)
 	{
 		auto start = lower.find("/hostx64/");
 		if (start != std::string::npos)
@@ -824,7 +794,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 		}
 	}
 
-	if (m_state.targetArchitecture() == CpuArchitecture::X64)
+	if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
 	{
 		auto start = lower.find("/x86/");
 		if (start != std::string::npos)
@@ -833,7 +803,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 			ret = false;
 		}
 	}
-	else if (m_state.targetArchitecture() == CpuArchitecture::X86)
+	else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
 	{
 		auto start = lower.find("/x64/");
 		if (start != std::string::npos)

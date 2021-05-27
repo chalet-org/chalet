@@ -35,7 +35,7 @@ bool CmakeBuilder::run()
 
 	// TODO: add doxygen to path?
 
-	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
 	Output::msgBuild(buildConfiguration, name);
 	Output::lineBreak();
@@ -131,7 +131,7 @@ std::string CmakeBuilder::getArch() const
 
 	if (!isNinja && compileConfig.isMsvc())
 	{
-		switch (m_state.targetArchitecture())
+		switch (m_state.info.targetArchitecture())
 		{
 			case CpuArchitecture::X86:
 				ret = "Win32";
@@ -156,7 +156,7 @@ std::string CmakeBuilder::getArch() const
 /*****************************************************************************/
 StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) const
 {
-	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	auto& cmake = m_state.tools.cmake();
 
 	StringList ret{ cmake, "-G", getGenerator() };

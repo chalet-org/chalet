@@ -18,7 +18,7 @@ bool BuildJsonParser::parseKeyFromConfig(T& outVariable, const Json& inNode, con
 
 	bool res = m_buildJson->assignFromKey(outVariable, inNode, inKey);
 
-	const auto& platform = m_state.platform();
+	const auto& platform = m_state.info.platform();
 
 	res |= m_buildJson->assignFromKey(outVariable, inNode, fmt::format("{}.{}", inKey, platform));
 
@@ -33,7 +33,7 @@ bool BuildJsonParser::parseKeyFromConfig(T& outVariable, const Json& inNode, con
 		res |= m_buildJson->assignFromKey(outVariable, inNode, fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform));
 	}
 
-	for (auto& notPlatform : m_state.notPlatforms())
+	for (auto& notPlatform : m_state.info.notPlatforms())
 	{
 		res |= m_buildJson->assignFromKey(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform));
 

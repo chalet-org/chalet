@@ -23,7 +23,7 @@ CommandLineInputs::CommandLineInputs() :
 	m_platform(getPlatform()),
 	m_hostArchitecture(getHostArchitecture())
 {
-	m_targetArchitecture = m_hostArchitecture == CpuArchitecture::X86 ? "x86" : "x64";
+	m_targetArchitecture = m_hostArchitecture == "x86" ? "x86" : "x64";
 	m_envFile = kDefaultEnvFile;
 }
 
@@ -217,7 +217,7 @@ void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-CpuArchitecture CommandLineInputs::hostArchitecture() const noexcept
+const std::string& CommandLineInputs::hostArchitecture() const noexcept
 {
 	return m_hostArchitecture;
 }
@@ -284,16 +284,16 @@ StringList CommandLineInputs::getNotPlatforms() const noexcept
 }
 
 /*****************************************************************************/
-CpuArchitecture CommandLineInputs::getHostArchitecture() const noexcept
+std::string CommandLineInputs::getHostArchitecture() const noexcept
 {
 #if defined(CHALET_WIN32)
 	#if defined(_WIN64) || defined(__MINGW64__)
-	return CpuArchitecture::X64;
+	return "x64";
 	#else
-	return CpuArchitecture::X86;
+	return "x86";
 	#endif
 #else
-	return CpuArchitecture::X64;
+	return "x64";
 #endif
 }
 

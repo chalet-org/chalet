@@ -16,15 +16,12 @@ namespace chalet
 {
 struct BuildEnvironment
 {
-	explicit BuildEnvironment(const std::string& inBuildConfig);
+	explicit BuildEnvironment(const WorkspaceInfo& inInfo);
 
 	uint processorCount() const noexcept;
 
 	StrategyType strategy() const noexcept;
 	void setStrategy(const std::string& inValue) noexcept;
-
-	const std::string& platform() const noexcept;
-	void setPlatform(const std::string& inValue) noexcept;
 
 	const std::string& externalDepDir() const noexcept;
 	void setExternalDepDir(const std::string& inValue) noexcept;
@@ -42,9 +39,8 @@ struct BuildEnvironment
 	std::string makePathVariable(const std::string& inRootPath);
 
 private:
-	const std::string& m_buildConfiguration;
+	const WorkspaceInfo& m_info;
 
-	std::string m_platform = "auto";
 	std::string m_externalDepDir{ "chalet_external" };
 	StringList m_path;
 

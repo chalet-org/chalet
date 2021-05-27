@@ -59,7 +59,7 @@ bool BuildJsonParser::serialize()
 		return false;
 	}
 
-	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	if (!validBuildRequested())
 	{
 		Diagnostic::error(fmt::format("{}: No valid projects to build in '{}' configuration. Check usage of 'onlyInConfiguration'", m_filename, buildConfiguration));
@@ -193,17 +193,17 @@ void BuildJsonParser::parseBuildConfiguration(const Json& inNode)
 		const auto& bundleConfiguration = m_state.bundle.configuration();
 		if (!bundleConfiguration.empty())
 		{
-			m_state.setBuildConfiguration(bundleConfiguration);
+			m_state.info.setBuildConfiguration(bundleConfiguration);
 		}
 		else
 		{
 			m_state.bundle.setConfiguration("Release");
-			m_state.setBuildConfiguration("Release");
+			m_state.info.setBuildConfiguration("Release");
 		}
 	}
 	else
 	{
-		m_state.setBuildConfiguration(buildConfiguration);
+		m_state.info.setBuildConfiguration(buildConfiguration);
 	}
 }
 
@@ -255,7 +255,7 @@ bool BuildJsonParser::makePathVariable()
 /*****************************************************************************/
 bool BuildJsonParser::parseConfiguration(const Json& inNode)
 {
-	const auto& buildConfiguration = m_state.buildConfiguration();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
 	if (!inNode.contains(kKeyConfigurations))
 		return setDefaultConfigurations(buildConfiguration);
@@ -425,7 +425,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (m_abstractProjects.find(name) == m_abstractProjects.end())
 			{
-				auto abstractProject = std::make_unique<ProjectConfiguration>(m_state.buildConfiguration(), m_state.environment);
+				auto abstractProject = std::make_unique<ProjectConfiguration>(m_state.info.buildConfiguration(), m_state.environment);
 				if (!parseProject(*abstractProject, templateJson, true))
 					return false;
 
@@ -451,7 +451,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 
 		if (m_abstractProjects.find(name) == m_abstractProjects.end())
 		{
-			auto abstractProject = std::make_unique<ProjectConfiguration>(m_state.buildConfiguration(), m_state.environment);
+			auto abstractProject = std::make_unique<ProjectConfiguration>(m_state.info.buildConfiguration(), m_state.environment);
 			if (!parseProject(*abstractProject, templateJson, true))
 				return false;
 
@@ -487,7 +487,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 				Diagnostic::error(fmt::format("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name));
 				return false;
 			}
-			project = std::make_unique<ProjectConfiguration>(m_state.buildConfiguration(), m_state.environment);
+			project = std::make_unique<ProjectConfiguration>(m_state.info.buildConfiguration(), m_state.environment);
 		}
 		project->setName(name);
 
@@ -642,8 +642,8 @@ bool BuildJsonParser::parseScript(ProjectConfiguration& outProject, const Json& 
 /*****************************************************************************/
 bool BuildJsonParser::parsePlatformConfigExclusions(ProjectConfiguration& outProject, const Json& inNode)
 {
-	const auto& buildConfiguration = m_state.buildConfiguration();
-	const auto& platform = m_state.platform();
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
+	const auto& platform = m_state.info.platform();
 
 	if (StringList list; m_buildJson->assignStringListAndValidate(list, inNode, "onlyInConfiguration"))
 		outProject.setIncludeInBuild(List::contains(list, buildConfiguration));
@@ -1138,7 +1138,7 @@ bool BuildJsonParser::assignStringFromConfig(std::string& outVariable, const Jso
 {
 	bool res = m_buildJson->assignStringAndValidate(outVariable, inNode, inKey, inDefault);
 
-	const auto& platform = m_state.platform();
+	const auto& platform = m_state.info.platform();
 
 	res |= m_buildJson->assignStringAndValidate(outVariable, inNode, fmt::format("{}.{}", inKey, platform), inDefault);
 
@@ -1153,7 +1153,7 @@ bool BuildJsonParser::assignStringFromConfig(std::string& outVariable, const Jso
 		res |= m_buildJson->assignStringAndValidate(outVariable, inNode, fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform), inDefault);
 	}
 
-	for (auto& notPlatform : m_state.notPlatforms())
+	for (auto& notPlatform : m_state.info.notPlatforms())
 	{
 		res |= m_buildJson->assignStringAndValidate(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform), inDefault);
 
@@ -1171,7 +1171,7 @@ bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json
 {
 	bool res = m_buildJson->assignStringListAndValidate(outList, inNode, inKey);
 
-	const auto& platform = m_state.platform();
+	const auto& platform = m_state.info.platform();
 
 	res |= m_buildJson->assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
 
@@ -1186,7 +1186,7 @@ bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json
 		res |= m_buildJson->assignStringListAndValidate(outList, inNode, fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform));
 	}
 
-	for (auto& notPlatform : m_state.notPlatforms())
+	for (auto& notPlatform : m_state.info.notPlatforms())
 	{
 		res |= m_buildJson->assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
 
@@ -1204,7 +1204,7 @@ bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& 
 {
 	bool res = inNode.contains(inKey);
 
-	const auto& platform = m_state.platform();
+	const auto& platform = m_state.info.platform();
 
 	res |= inNode.contains(fmt::format("{}.{}", inKey, platform));
 
@@ -1219,7 +1219,7 @@ bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& 
 		res |= inNode.contains(fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform));
 	}
 
-	for (auto& notPlatform : m_state.notPlatforms())
+	for (auto& notPlatform : m_state.info.notPlatforms())
 	{
 		res |= inNode.contains(fmt::format("{}.!{}", inKey, notPlatform));
 

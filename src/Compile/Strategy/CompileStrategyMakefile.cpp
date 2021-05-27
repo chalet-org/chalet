@@ -41,7 +41,7 @@ bool CompileStrategyMakefile::initialize()
 
 	auto& environmentCache = m_state.cache.environmentCache();
 	Json& buildCache = environmentCache.json["data"];
-	std::string key = fmt::format("{}:{}", m_state.buildConfiguration(), name);
+	std::string key = fmt::format("{}:{}", m_state.info.buildConfiguration(), name);
 
 	const bool cacheExists = Commands::pathExists(m_cacheFile);
 	const bool appBuildChanged = m_state.cache.appBuildChanged();

@@ -58,7 +58,7 @@ struct CommandLineInputs
 	const std::string& envFile() const noexcept;
 	void setEnvFile(std::string&& inValue) noexcept;
 
-	CpuArchitecture hostArchitecture() const noexcept;
+	const std::string& hostArchitecture() const noexcept;
 	const std::string& targetArchitecture() const noexcept;
 	void setTargetArchitecture(std::string&& inValue) noexcept;
 
@@ -68,7 +68,8 @@ struct CommandLineInputs
 private:
 	std::string getPlatform() const noexcept;
 	StringList getNotPlatforms() const noexcept;
-	CpuArchitecture getHostArchitecture() const noexcept;
+
+	std::string getHostArchitecture() const noexcept;
 
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
 
@@ -88,9 +89,9 @@ private:
 	std::string m_initProjectName;
 	std::string m_initPath;
 	std::string m_envFile;
+	std::string m_hostArchitecture;
 	std::string m_targetArchitecture;
 
-	CpuArchitecture m_hostArchitecture = CpuArchitecture::X64;
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
 

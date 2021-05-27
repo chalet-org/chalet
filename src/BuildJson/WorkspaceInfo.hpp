@@ -6,10 +6,14 @@
 #ifndef CHALET_WORKSPACE_INFO_HPP
 #define CHALET_WORKSPACE_INFO_HPP
 
+#include "State/CommandLineInputs.hpp"
+
 namespace chalet
 {
 struct WorkspaceInfo
 {
+	explicit WorkspaceInfo(const CommandLineInputs& inInputs);
+
 	const std::string& workspace() const noexcept;
 	void setWorkspace(const std::string& inValue) noexcept;
 
@@ -19,10 +23,37 @@ struct WorkspaceInfo
 	std::size_t hash() const noexcept;
 	void setHash(const std::size_t inValue) noexcept;
 
+	const std::string& buildConfiguration() const noexcept;
+	void setBuildConfiguration(const std::string& inValue) noexcept;
+
+	const std::string& platform() const noexcept;
+	const StringList& notPlatforms() const noexcept;
+
+	CpuArchitecture hostArchitecture() const noexcept;
+	const std::string& hostArchitectureString() const noexcept;
+
+	CpuArchitecture targetArchitecture() const noexcept;
+	const std::string& targetArchitectureString() const noexcept;
+
 private:
+	struct Architecture
+	{
+		std::string str{ "x64" };
+		CpuArchitecture val = CpuArchitecture::X64;
+
+		void set(const std::string& inValue, const CpuArchitecture inDefault) noexcept;
+	};
+
+	const CommandLineInputs& m_inputs;
+
 	std::string m_workspace;
 	std::string m_version;
 	std::size_t m_hash;
+
+	std::string m_buildConfiguration;
+
+	Architecture m_hostArchitecture;
+	Architecture m_targetArchitecture;
 };
 }
 

@@ -555,7 +555,15 @@ std::string Commands::readShebangFromFile(const fs::path& inFile)
 		std::getline(file, ret);
 
 		if (String::startsWith("#!", ret))
+		{
 			ret = ret.substr(2);
+
+			// TODO: For now, don't support this kind of stuff
+			// example: https://github.com/google/zx
+			auto space = ret.find_first_of(" ");
+			if (space != std::string::npos)
+				ret = std::string();
+		}
 		else
 			ret = std::string();
 	}

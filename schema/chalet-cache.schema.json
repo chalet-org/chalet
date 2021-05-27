@@ -187,17 +187,6 @@
 				"type": "string"
 			}
 		},
-		"settings-targetArchitecture": {
-			"type": "string",
-			"description": "The target platform's architecture",
-			"enum": [
-				"x86",
-				"x64",
-				"arm",
-				"arm64"
-			],
-			"default": "x64"
-		},
 		"settings-strategy": {
 			"type": "string",
 			"description": "The build strategy to use.",
@@ -384,15 +373,11 @@
 			"additionalProperties": false,
 			"description": "A list of settings central to the build",
 			"required": [
-				"strategy",
-				"targetArchitecture"
+				"strategy"
 			],
 			"properties": {
 				"strategy": {
 					"$ref": "#/definitions/settings-strategy"
-				},
-				"targetArchitecture": {
-					"$ref": "#/definitions/settings-targetArchitecture"
 				}
 			}
 		}

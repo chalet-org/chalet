@@ -73,7 +73,7 @@ bool MsvcEnvironment::readCompilerVariables()
 	m_varsFileOriginal = buildPath + "/original.env";
 	m_varsFileMsvc = buildPath + "/msvc_all.env";
 
-	if (m_state.targetArchitecture() == CpuArchitecture::X86)
+	if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
 		m_varsFileMsvcDelta = buildPath + "/msvc_x86.env";
 	else
 		m_varsFileMsvcDelta = buildPath + "/msvc_x64.env";
@@ -308,8 +308,8 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 	// TODO: MS SDK version, ARM
 #if defined(CHALET_WIN32)
 	std::string vcvarsFile{ "vcvars64" };
-	auto hostArch = m_state.hostArchitecture();
-	auto targetArch = m_state.targetArchitecture();
+	auto hostArch = m_state.info.hostArchitecture();
+	auto targetArch = m_state.info.targetArchitecture();
 	if (hostArch == CpuArchitecture::X86 && targetArch == CpuArchitecture::X86)
 	{
 		vcvarsFile = "vcvars32";
