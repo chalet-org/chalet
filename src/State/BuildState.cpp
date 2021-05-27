@@ -8,6 +8,7 @@
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -16,7 +17,7 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	environment(m_buildConfiguration),
 	paths(m_inputs),
-	msvcEnvironment(paths),
+	msvcEnvironment(m_inputs, paths),
 	bundle(environment, projects, paths, compilerTools),
 	cache(info, paths)
 {
@@ -42,6 +43,7 @@ void BuildState::initializeCache()
 	}
 
 	cache.checkIfCompileStrategyChanged();
+	cache.checkIfTargetArchitectureChanged();
 	cache.checkIfWorkingDirectoryChanged();
 
 	cache.removeStaleProjectCaches(buildConfiguration(), projectNames, BuildCache::Type::Local);
@@ -70,6 +72,45 @@ const std::string& BuildState::platform() const noexcept
 const StringList& BuildState::notPlatforms() const noexcept
 {
 	return m_inputs.notPlatforms();
+}
+
+/*****************************************************************************/
+CpuArchitecture BuildState::hostArchitecture() const noexcept
+{
+	return m_inputs.hostArchitecture();
+}
+CpuArchitecture BuildState::targetArchitecture() const noexcept
+{
+	return m_targetArchitecture;
+}
+
+void BuildState::setTargetArchitecture(const std::string& inValue) noexcept
+{
+	if (m_archSet)
+		return;
+
+	if (String::equals("x64", inValue))
+	{
+		m_targetArchitecture = CpuArchitecture::X64;
+	}
+	else if (String::equals("x86", inValue))
+	{
+		m_targetArchitecture = CpuArchitecture::X86;
+	}
+	else if (String::equals("arm", inValue))
+	{
+		m_targetArchitecture = CpuArchitecture::ARM;
+	}
+	else if (String::equals("arm64", inValue))
+	{
+		m_targetArchitecture = CpuArchitecture::ARM64;
+	}
+	else
+	{
+		m_targetArchitecture = m_inputs.hostArchitecture();
+	}
+
+	m_archSet = true;
 }
 
 }

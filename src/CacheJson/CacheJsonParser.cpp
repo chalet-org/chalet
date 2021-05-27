@@ -220,7 +220,8 @@ bool CacheJsonParser::setDefaultBuildStrategy()
 	}
 
 	auto& environmentCache = m_state.cache.environmentCache();
-	Json& strategyJson = environmentCache.json[kKeyStrategy];
+	Json& settings = environmentCache.json[kKeySettings];
+	Json& strategyJson = settings[kKeyStrategy];
 
 	if (strategyJson.get<std::string>().empty() || m_changeStrategy)
 	{
@@ -256,8 +257,8 @@ bool CacheJsonParser::makeCache()
 	// Create the json cache
 	auto& environmentCache = m_state.cache.environmentCache();
 
-	environmentCache.makeNode(kKeyStrategy, JsonDataType::string);
 	environmentCache.makeNode(kKeyWorkingDirectory, JsonDataType::string);
+	environmentCache.makeNode(kKeySettings, JsonDataType::object);
 	environmentCache.makeNode(kKeyCompilerTools, JsonDataType::object);
 	environmentCache.makeNode(kKeyTools, JsonDataType::object);
 	environmentCache.makeNode(kKeyExternalDependencies, JsonDataType::object);
@@ -275,8 +276,15 @@ bool CacheJsonParser::makeCache()
 		}
 	}
 
+	Json& settings = environmentCache.json[kKeySettings];
+	if (!settings.contains(kKeyStrategy))
+		settings[kKeyStrategy] = std::string();
+
+	if (!settings.contains(kKeyTargetArchitecture))
+		settings[kKeyTargetArchitecture] = std::string();
 	{
-		Json& strategyJson = environmentCache.json[kKeyStrategy];
+		Json& strategyJson = settings[kKeyStrategy];
+
 		const auto strategy = strategyJson.get<std::string>();
 
 		if (strategy.empty())
@@ -284,6 +292,17 @@ bool CacheJsonParser::makeCache()
 			// Note: this is only for validation. it gets changed later
 			strategyJson = "makefile";
 			m_changeStrategy = true;
+		}
+
+		Json& targetArchJson = settings[kKeyTargetArchitecture];
+		if (!targetArchJson.is_string())
+			targetArchJson = std::string();
+
+		const auto targetArch = targetArchJson.get<std::string>();
+
+		if (targetArch.empty())
+		{
+			targetArchJson = m_inputs.targetArchitecture();
 		}
 	}
 
@@ -342,6 +361,8 @@ bool CacheJsonParser::makeCache()
 			}
 		}
 
+		parseHostArchitecture(cpp);
+
 		compilerTools[kKeyCpp] = std::move(cpp);
 		m_state.cache.setDirty(true);
 	}
@@ -367,6 +388,7 @@ bool CacheJsonParser::makeCache()
 			}
 		}
 
+		parseHostArchitecture(cc);
 		compilerTools[kKeyCc] = std::move(cc);
 		m_state.cache.setDirty(true);
 	}
@@ -385,6 +407,7 @@ bool CacheJsonParser::makeCache()
 				break;
 		}
 
+		parseHostArchitecture(link);
 		compilerTools[kKeyLinker] = std::move(link);
 		m_state.cache.setDirty(true);
 	}
@@ -403,6 +426,7 @@ bool CacheJsonParser::makeCache()
 				break;
 		}
 
+		parseHostArchitecture(ar);
 		compilerTools[kKeyArchiver] = std::move(ar);
 		m_state.cache.setDirty(true);
 	}
@@ -527,6 +551,9 @@ bool CacheJsonParser::serializeFromJsonRoot(const Json& inJson)
 	if (!parseRoot(inJson))
 		return false;
 
+	if (!parseSettings(inJson))
+		return false;
+
 	if (!parseTools(inJson))
 		return false;
 
@@ -540,11 +567,34 @@ bool CacheJsonParser::serializeFromJsonRoot(const Json& inJson)
 bool CacheJsonParser::parseRoot(const Json& inNode)
 {
 	auto& environmentCache = m_state.cache.environmentCache();
-	if (std::string val; environmentCache.assignFromKey(val, inNode, kKeyStrategy))
-		m_state.environment.setStrategy(val);
-
 	if (std::string val; environmentCache.assignFromKey(val, inNode, kKeyWorkingDirectory))
 		m_state.paths.setWorkingDirectory(val);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CacheJsonParser::parseSettings(const Json& inNode)
+{
+	if (!inNode.contains(kKeySettings))
+	{
+		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeySettings));
+		return false;
+	}
+
+	const Json& settings = inNode.at(kKeySettings);
+	if (!settings.is_object())
+	{
+		Diagnostic::errorAbort(fmt::format("{}: '{}' must be an object.", m_filename, kKeySettings));
+		return false;
+	}
+
+	auto& environmentCache = m_state.cache.environmentCache();
+	if (std::string val; environmentCache.assignFromKey(val, settings, kKeyStrategy))
+		m_state.environment.setStrategy(val);
+
+	if (std::string val; environmentCache.assignFromKey(val, settings, kKeyTargetArchitecture))
+		m_state.setTargetArchitecture(val);
 
 	return true;
 }
@@ -695,5 +745,34 @@ bool CacheJsonParser::parseCompilers(const Json& inNode)
 		m_state.compilerTools.setRc(val);
 
 	return true;
+}
+
+/*****************************************************************************/
+void CacheJsonParser::parseHostArchitecture(std::string& outString) const
+{
+#if defined(CHALET_WIN32)
+	if (!String::endsWith({ "cl.exe", "link.exe", "lib.exe" }, outString))
+		return;
+
+	std::string lower = String::toLowerCase(outString);
+	if (m_inputs.hostArchitecture() == CpuArchitecture::X64)
+	{
+		auto start = lower.find_last_of("hostx86");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outString, outString.substr(start, 7), "HostX64");
+		}
+	}
+	else if (m_inputs.hostArchitecture() == CpuArchitecture::X86)
+	{
+		auto start = lower.find_last_of("hostx64");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outString, outString.substr(start, 7), "HostX86");
+		}
+	}
+#else
+	UNUSED(outString);
+#endif
 }
 }

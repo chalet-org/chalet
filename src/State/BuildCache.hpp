@@ -36,6 +36,7 @@ struct BuildCache
 
 	bool appBuildChanged() const noexcept;
 	void checkIfCompileStrategyChanged();
+	void checkIfTargetArchitectureChanged();
 	void checkIfWorkingDirectoryChanged();
 
 	void removeStaleProjectCaches(const std::string& inBuildConfig, const StringList& inProjectNames, const Type inCacheType);
@@ -58,14 +59,17 @@ private:
 
 	JsonFile m_environmentCache;
 
+	const std::string kKeySettings{ "settings" };
 	const std::string kKeyStrategy{ "strategy" };
+	const std::string kKeyTargetArchitecture{ "targetArchitecture" };
 	const std::string kKeyWorkingDirectory{ "workingDirectory" };
 	const std::string kKeyData{ "data" };
 
 	const std::string kKeyDataVersion{ "01" };
 	const std::string kKeyDataVersionDebug{ "f1" };
-	const std::string kKeyDataStrategy{ "02" };
-	const std::string kKeyDataWorkingDirectory{ "03" };
+	const std::string kKeyDataWorkingDirectory{ "02" };
+	const std::string kKeyDataStrategy{ "03" };
+	const std::string kKeyDataTargetArchitecture{ "04" };
 
 	std::string m_cacheLocal;
 	std::string m_cacheGlobal;
@@ -73,6 +77,7 @@ private:
 	bool m_dirty = false;
 	bool m_appBuildChanged = false;
 	bool m_compileStrategyChanged = false;
+	bool m_targetArchitectureChanged = false;
 	bool m_workingDirectoryChanged = false;
 	bool m_removeOldCacheFolder = false;
 };

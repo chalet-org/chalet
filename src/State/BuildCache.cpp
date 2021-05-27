@@ -149,6 +149,8 @@ bool BuildCache::removeUnusedProjectFiles(const StringList& inHashes, const Type
 
 	bool result = true;
 
+	bool settingChanged = m_compileStrategyChanged || m_targetArchitectureChanged;
+
 	auto dirEnd = fs::directory_iterator();
 	for (auto it = fs::directory_iterator(cacheRef); it != dirEnd; ++it)
 	{
@@ -158,7 +160,7 @@ bool BuildCache::removeUnusedProjectFiles(const StringList& inHashes, const Type
 			const auto& path = item.path();
 			const auto stem = path.stem().string();
 
-			if (!List::contains(inHashes, stem) || m_compileStrategyChanged)
+			if (!List::contains(inHashes, stem) || settingChanged)
 				result &= Commands::removeRecursively(path.string());
 		}
 		else if (item.is_regular_file())
@@ -166,7 +168,7 @@ bool BuildCache::removeUnusedProjectFiles(const StringList& inHashes, const Type
 			const auto& path = item.path();
 			const auto filename = path.filename().string();
 
-			if (!List::contains(inHashes, filename) || m_compileStrategyChanged)
+			if (!List::contains(inHashes, filename) || settingChanged)
 				result &= Commands::remove(path.string());
 		}
 	}
@@ -182,14 +184,24 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 		return;
 
 	Json& buildCache = m_environmentCache.json.at(kKeyData);
-	if (buildCache.type() != JsonDataType::object)
+	if (!buildCache.is_object())
 		return;
 
-	auto& strategyJson = m_environmentCache.json.at(kKeyStrategy);
-	if (strategyJson.type() != JsonDataType::string)
+	auto& settingsJson = m_environmentCache.json.at(kKeySettings);
+	if (!settingsJson.is_object())
+		return;
+
+	auto& strategyJson = settingsJson[kKeyStrategy];
+	if (!strategyJson.is_string())
 		return;
 
 	const auto strategy = strategyJson.get<std::string>();
+
+	auto& targetArchJson = settingsJson[kKeyTargetArchitecture];
+	if (!targetArchJson.is_string())
+		return;
+
+	const auto targetArch = targetArchJson.get<std::string>();
 
 	UNUSED(inProjectNames);
 
@@ -205,7 +217,7 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 		// const bool validForBuild = splitKey.size() > 1 && (inBuildConfig == keyBuildConfig || List::contains<std::string>(inProjectNames, name));
 		const bool validForBuild = splitKey.size() > 1 && (inBuildConfig == keyBuildConfig || strategy == name);
 
-		const bool internalKey = key == kKeyDataVersion || key == kKeyDataVersionDebug || key == kKeyDataStrategy || key == kKeyDataWorkingDirectory;
+		const bool internalKey = key == kKeyDataVersion || key == kKeyDataVersionDebug || key == kKeyDataStrategy || key == kKeyDataTargetArchitecture || key == kKeyDataWorkingDirectory;
 		if (internalKey)
 		{
 			++it;
@@ -243,7 +255,7 @@ void BuildCache::removeBuildIfCacheChanged(const std::string& inBuildDir)
 	if (!Commands::pathExists(inBuildDir))
 		return;
 
-	if (m_compileStrategyChanged || m_workingDirectoryChanged)
+	if (m_compileStrategyChanged || m_targetArchitectureChanged || m_workingDirectoryChanged)
 		Commands::removeRecursively(inBuildDir);
 }
 
@@ -283,22 +295,22 @@ void BuildCache::checkIfCompileStrategyChanged()
 {
 	m_compileStrategyChanged = false;
 
-	if (!m_environmentCache.json.contains(kKeyStrategy))
-		return;
-
-	Json& strategyJson = m_environmentCache.json[kKeyStrategy];
-
-	if (!strategyJson.is_string())
-		return;
-
-	const auto strategy = strategyJson.get<std::string>();
-
 	if (!m_environmentCache.json.contains(kKeyData))
 		return;
 
 	Json& data = m_environmentCache.json[kKeyData];
 	if (!data.is_object())
 		return;
+
+	auto& settingsJson = m_environmentCache.json.at(kKeySettings);
+	if (!settingsJson.is_object())
+		return;
+
+	auto& strategyJson = settingsJson[kKeyStrategy];
+	if (!strategyJson.is_string())
+		return;
+
+	const auto strategy = strategyJson.get<std::string>();
 
 	const auto hashStrategy = Hash::string(strategy);
 
@@ -316,6 +328,48 @@ void BuildCache::checkIfCompileStrategyChanged()
 			data[kKeyDataStrategy] = hashStrategy;
 			setDirty(true);
 			m_compileStrategyChanged = true;
+		}
+	}
+}
+
+/*****************************************************************************/
+void BuildCache::checkIfTargetArchitectureChanged()
+{
+	m_targetArchitectureChanged = false;
+
+	if (!m_environmentCache.json.contains(kKeyData))
+		return;
+
+	Json& data = m_environmentCache.json[kKeyData];
+	if (!data.is_object())
+		return;
+
+	auto& settingsJson = m_environmentCache.json.at(kKeySettings);
+	if (!settingsJson.is_object())
+		return;
+
+	auto& targetArchJson = settingsJson[kKeyTargetArchitecture];
+	if (!targetArchJson.is_string())
+		return;
+
+	const auto targetArch = targetArchJson.get<std::string>();
+
+	const auto hashTargetArch = Hash::string(targetArch);
+
+	if (!data.contains(kKeyDataTargetArchitecture))
+	{
+		data[kKeyDataTargetArchitecture] = hashTargetArch;
+		setDirty(true);
+		return;
+	}
+	else
+	{
+		const auto dataStrategy = data[kKeyDataTargetArchitecture].get<std::string>();
+		if (dataStrategy != hashTargetArch)
+		{
+			data[kKeyDataTargetArchitecture] = hashTargetArch;
+			setDirty(true);
+			m_targetArchitectureChanged = true;
 		}
 	}
 }

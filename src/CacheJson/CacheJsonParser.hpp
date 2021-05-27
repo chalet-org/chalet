@@ -25,17 +25,22 @@ private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseRoot(const Json& inNode);
+	bool parseSettings(const Json& inNode);
 
 	bool parseTools(const Json& inNode);
 	bool parseCompilers(const Json& inNode);
+
+	void parseHostArchitecture(std::string& outString) const;
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 	const std::string& m_filename;
 
 	const std::string kKeyTools = "tools";
+	const std::string kKeySettings = "settings";
 	const std::string kKeyCompilerTools = "compilerTools";
 	const std::string kKeyStrategy = "strategy";
+	const std::string kKeyTargetArchitecture = "targetArchitecture";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
 	const std::string kKeyExternalDependencies = "externalDependencies";
 	const std::string kKeyData = "data";

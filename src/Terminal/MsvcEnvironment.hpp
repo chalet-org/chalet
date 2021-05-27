@@ -6,6 +6,8 @@
 #ifndef CHALET_MSVC_ENVIRONMENT_HPP
 #define CHALET_MSVC_ENVIRONMENT_HPP
 
+#include "State/CommandLineInputs.hpp"
+
 #if defined(CHALET_WIN32)
 	#include <unordered_map>
 #endif
@@ -17,7 +19,7 @@ struct BuildPaths;
 class MsvcEnvironment
 {
 public:
-	explicit MsvcEnvironment(BuildPaths& inPath);
+	explicit MsvcEnvironment(const CommandLineInputs& inInputs, BuildPaths& inPath);
 
 	static bool exists();
 
@@ -37,6 +39,7 @@ private:
 	bool saveOriginalEnvironment();
 	bool saveMsvcEnvironment();
 
+	const CommandLineInputs& m_inputs;
 	BuildPaths& m_path;
 
 #if defined(CHALET_WIN32)

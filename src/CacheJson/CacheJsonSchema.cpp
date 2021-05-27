@@ -21,6 +21,7 @@ Json Schema::getCacheJson()
 	ret["type"] = "object";
 	ret["additionalProperties"] = false;
 	ret["required"] = {
+		"settings",
 		"tools",
 		"compilerTools"
 	};
@@ -260,20 +261,19 @@ Json Schema::getCacheJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["environment-architecture"] = R"json({
+	ret[kDefinitions]["settings-targetArchitecture"] = R"json({
 		"type": "string",
-		"description": "The target platform architecture",
+		"description": "The target platform's architecture",
 		"enum": [
-			"auto",
 			"x86",
 			"x64",
-			"ARM",
-			"ARM64"
+			"arm",
+			"arm64"
 		],
-		"default": "auto"
+		"default": "x64"
 	})json"_ojson;
 
-	ret[kDefinitions]["environment-strategy"] = R"json({
+	ret[kDefinitions]["settings-strategy"] = R"json({
 		"type": "string",
 		"description": "The build strategy to use.",
 		"enum": [
@@ -462,8 +462,22 @@ Json Schema::getCacheJson()
 			"type": "object"
 	})json"_ojson;
 
-	ret[kProperties]["strategy"] = R"json({
-			"$ref": "#/definitions/environment-strategy"
+	ret[kProperties]["settings"] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"description": "A list of settings central to the build",
+		"required": [
+			"strategy",
+			"targetArchitecture"
+		],
+		"properties": {
+			"strategy": {
+				"$ref": "#/definitions/settings-strategy"
+			},
+			"targetArchitecture": {
+				"$ref": "#/definitions/settings-targetArchitecture"
+			}
+		}
 	})json"_ojson;
 
 	return ret;

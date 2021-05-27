@@ -53,11 +53,12 @@ bool MsvcEnvironment::exists()
 }
 
 /*****************************************************************************/
-MsvcEnvironment::MsvcEnvironment(BuildPaths& inPath) :
+MsvcEnvironment::MsvcEnvironment(const CommandLineInputs& inInputs, BuildPaths& inPath) :
+	m_inputs(inInputs),
 	m_path(inPath)
 {
 #if !defined(CHALET_WIN32)
-	UNUSED(m_path);
+	UNUSED(m_inputs, m_path);
 #endif
 }
 
@@ -301,16 +302,30 @@ bool MsvcEnvironment::saveOriginalEnvironment()
 /*****************************************************************************/
 bool MsvcEnvironment::saveMsvcEnvironment()
 {
+	// TODO: MS SDK version, ARM
 #if defined(CHALET_WIN32)
-
-	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\vcvarsall.bat\"", m_vsAppIdDir);
-
-	// TODO: arch-related stuff
-	std::string arch{ "x64" };
-
+	std::string vcvarsFile{ "vcvars64" };
+	auto hostArch = m_inputs.targetArchitecture();
+	auto targetArch = m_inputs.targetArchitecture();
+	if (hostArch == CpuArchitecture::X86 && targetArch == CpuArchitecture::X86)
+	{
+		vcvarsFile = "vcvars32";
+	}
+	else if (hostArch == CpuArchitecture::X64 && targetArch == CpuArchitecture::X64)
+	{
+		vcvarsFile = "vcvars64";
+	}
+	else if (hostArch == CpuArchitecture::X64 && targetArch == CpuArchitecture::X86)
+	{
+		vcvarsFile = "vcvarsamd64_x86";
+	}
+	else if (hostArch == CpuArchitecture::X86 && targetArch == CpuArchitecture::X64)
+	{
+		vcvarsFile = "vcvarsx86_amd64";
+	}
+	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
 	StringList cmd{
 		vcVarsAll,
-		arch,
 		">",
 		"nul",
 		"&&",

@@ -3,6 +3,7 @@
 	"type": "object",
 	"additionalProperties": false,
 	"required": [
+		"settings",
 		"tools",
 		"compilerTools"
 	],
@@ -186,19 +187,18 @@
 				"type": "string"
 			}
 		},
-		"environment-architecture": {
+		"settings-targetArchitecture": {
 			"type": "string",
-			"description": "The target platform architecture",
+			"description": "The target platform's architecture",
 			"enum": [
-				"auto",
 				"x86",
 				"x64",
-				"ARM",
-				"ARM64"
+				"arm",
+				"arm64"
 			],
-			"default": "auto"
+			"default": "x64"
 		},
-		"environment-strategy": {
+		"settings-strategy": {
 			"type": "string",
 			"description": "The build strategy to use.",
 			"enum": [
@@ -379,8 +379,22 @@
 		"data": {
 			"type": "object"
 		},
-		"strategy": {
-			"$ref": "#/definitions/environment-strategy"
+		"settings": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "A list of settings central to the build",
+			"required": [
+				"strategy",
+				"targetArchitecture"
+			],
+			"properties": {
+				"strategy": {
+					"$ref": "#/definitions/settings-strategy"
+				},
+				"targetArchitecture": {
+					"$ref": "#/definitions/settings-targetArchitecture"
+				}
+			}
 		}
 	}
 }

@@ -70,7 +70,8 @@ bool CmakeBuilder::run()
 		if (outDirectoryDoesNotExist)
 			Commands::makeDirectory(outDir, false);
 
-		// TODO: -A arch, -T toolset
+		// TODO: -T toolset (relates to Host arch)
+		// https://cmake.org/cmake/help/latest/variable/CMAKE_GENERATOR_TOOLSET.html#variable:CMAKE_GENERATOR_TOOLSET
 
 		{
 			StringList generatorCommand = getGeneratorCommand(location);
@@ -101,11 +102,53 @@ std::string CmakeBuilder::getGenerator() const
 
 	std::string ret;
 	if (isNinja)
+	{
 		ret = "Ninja";
+	}
+	else if (compileConfig.isMsvc())
+	{
+		ret = "Visual Studio 16 2019";
+	}
 	else if (compileConfig.isMingw())
+	{
 		ret = "MinGW Makefiles";
+	}
 	else
+	{
 		ret = "Unix Makefiles";
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string CmakeBuilder::getArch() const
+{
+	const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
+	const auto& compileConfig = m_state.compilerTools.getConfig(m_project.language());
+
+	std::string ret;
+
+	if (!isNinja && compileConfig.isMsvc())
+	{
+		switch (m_state.targetArchitecture())
+		{
+			case CpuArchitecture::X86:
+				ret = "Win32";
+				break;
+			case CpuArchitecture::X64:
+				ret = "x64";
+				break;
+			case CpuArchitecture::ARM:
+				ret = "ARM";
+				break;
+			case CpuArchitecture::ARM64:
+				ret = "ARM64";
+				break;
+			default:
+				break;
+		}
+	}
 
 	return ret;
 }
@@ -116,7 +159,15 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 	const auto& buildConfiguration = m_state.buildConfiguration();
 	auto& cmake = m_state.tools.cmake();
 
-	StringList ret{ cmake, "-G", getGenerator(), inLocation };
+	StringList ret{ cmake, "-G", getGenerator() };
+	std::string arch = getArch();
+	if (!arch.empty())
+	{
+		ret.push_back("-A");
+		ret.push_back(arch);
+	}
+
+	ret.push_back(inLocation);
 	for (auto& define : m_project.cmakeDefines())
 	{
 		ret.push_back("-D" + define);

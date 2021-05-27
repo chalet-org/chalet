@@ -20,8 +20,10 @@ CommandLineInputs::CommandLineInputs() :
 	kDefaultEnvFile(".env"),
 	m_buildFile("build.json"),
 	m_buildPath("build"),
-	m_platform(getPlatform())
+	m_platform(getPlatform()),
+	m_hostArchitecture(getHostArchitecture())
 {
+	m_targetArchitecture = m_hostArchitecture == CpuArchitecture::X86 ? "x86" : "x64";
 	m_envFile = kDefaultEnvFile;
 }
 
@@ -32,6 +34,9 @@ const std::string& CommandLineInputs::buildFile() const noexcept
 }
 void CommandLineInputs::setBuildFile(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_buildFile = std::move(inValue);
 }
 
@@ -42,6 +47,9 @@ const std::string& CommandLineInputs::buildPath() const noexcept
 }
 void CommandLineInputs::setBuildPath(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_buildPath = std::move(inValue);
 }
 
@@ -69,6 +77,9 @@ const std::string& CommandLineInputs::buildConfiguration() const noexcept
 
 void CommandLineInputs::setBuildConfiguration(const std::string& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_buildConfiguration = inValue;
 }
 
@@ -79,6 +90,9 @@ const std::string& CommandLineInputs::buildFromCommandLine() const noexcept
 }
 void CommandLineInputs::setBuildFromCommandLine(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_buildFromCommandLine = std::move(inValue);
 
 	setBuildConfiguration(m_buildFromCommandLine);
@@ -102,6 +116,9 @@ const std::string& CommandLineInputs::runProject() const noexcept
 
 void CommandLineInputs::setRunProject(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_runProject = std::move(inValue);
 }
 
@@ -131,6 +148,9 @@ const std::string& CommandLineInputs::appPath() const noexcept
 
 void CommandLineInputs::setAppPath(const std::string& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_appPath = inValue;
 }
 
@@ -147,6 +167,9 @@ const std::string& CommandLineInputs::generatorRaw() const noexcept
 
 void CommandLineInputs::setGenerator(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_generatorRaw = std::move(inValue);
 
 	m_generator = getIdeTypeFromString(m_generatorRaw);
@@ -160,6 +183,9 @@ const std::string& CommandLineInputs::initProjectName() const noexcept
 
 void CommandLineInputs::setInitProjectName(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_initProjectName = std::move(inValue);
 }
 
@@ -171,6 +197,9 @@ const std::string& CommandLineInputs::initPath() const noexcept
 
 void CommandLineInputs::setInitPath(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_initPath = std::move(inValue);
 }
 
@@ -181,7 +210,30 @@ const std::string& CommandLineInputs::envFile() const noexcept
 }
 void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_envFile = std::move(inValue);
+}
+
+/*****************************************************************************/
+CpuArchitecture CommandLineInputs::hostArchitecture() const noexcept
+{
+	return m_hostArchitecture;
+}
+const std::string& CommandLineInputs::targetArchitecture() const noexcept
+{
+	return m_targetArchitecture;
+}
+void CommandLineInputs::setTargetArchitecture(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	if (!String::equals({ "auto", "x64", "x86", "arm", "arm64" }, inValue))
+		return;
+
+	m_targetArchitecture = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -196,7 +248,7 @@ void CommandLineInputs::setSaveSchemaToFile(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-std::string CommandLineInputs::getPlatform() noexcept
+std::string CommandLineInputs::getPlatform() const noexcept
 {
 #if defined(CHALET_WIN32)
 	return "windows";
@@ -210,7 +262,7 @@ std::string CommandLineInputs::getPlatform() noexcept
 }
 
 /*****************************************************************************/
-StringList CommandLineInputs::getNotPlatforms() noexcept
+StringList CommandLineInputs::getNotPlatforms() const noexcept
 {
 #if defined(CHALET_WIN32)
 	return {
@@ -232,7 +284,21 @@ StringList CommandLineInputs::getNotPlatforms() noexcept
 }
 
 /*****************************************************************************/
-IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue)
+CpuArchitecture CommandLineInputs::getHostArchitecture() const noexcept
+{
+#if defined(CHALET_WIN32)
+	#if defined(_WIN64) || defined(__MINGW64__)
+	return CpuArchitecture::X64;
+	#else
+	return CpuArchitecture::X86;
+	#endif
+#else
+	return CpuArchitecture::X64;
+#endif
+}
+
+/*****************************************************************************/
+IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) const
 {
 	if (String::equals("vscode", inValue))
 	{

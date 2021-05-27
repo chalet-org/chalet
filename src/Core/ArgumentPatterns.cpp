@@ -329,7 +329,7 @@ void ArgumentPatterns::populateMainArguments()
 void ArgumentPatterns::addInputFileArg()
 {
 	m_parser.add_argument("-i", "--input-file")
-		.help("input file")
+		.help("Input file")
 		.nargs(1)
 		.default_value(std::string("build.json"));
 
@@ -341,7 +341,7 @@ void ArgumentPatterns::addInputFileArg()
 void ArgumentPatterns::addOutPathArg()
 {
 	m_parser.add_argument("-o", "--output-path")
-		.help("output build path")
+		.help("Output build path")
 		.nargs(1)
 		.default_value(std::string("build"));
 
@@ -353,7 +353,7 @@ void ArgumentPatterns::addOutPathArg()
 void ArgumentPatterns::addProjectGeneratorArg()
 {
 	m_parser.add_argument("-g", "--generator")
-		.help("project file generator")
+		.help("Project file generator")
 		.nargs(1)
 		.default_value(std::string());
 
@@ -365,7 +365,7 @@ void ArgumentPatterns::addProjectGeneratorArg()
 void ArgumentPatterns::addEnvFileArg()
 {
 	m_parser.add_argument("-e", "--envfile")
-		.help("file to load environment variables from")
+		.help("File to load environment variables from")
 		.nargs(1)
 		.default_value(std::string());
 
@@ -374,18 +374,35 @@ void ArgumentPatterns::addEnvFileArg()
 }
 
 /*****************************************************************************/
+void ArgumentPatterns::addArchArg()
+{
+	m_parser.add_argument("-a", "--arch")
+		.help("Target architecture")
+		.nargs(1)
+		.default_value(std::string("auto"))
+		.action([](const std::string& value) {
+			const StringList choices{ "auto", "x86", "x64", "arm", "arm64" };
+			if (std::find(choices.begin(), choices.end(), value) != choices.end())
+			{
+				return value;
+			}
+			return std::string{ "auto" };
+		});
+
+	m_argumentMap.push_back({ "-a", Variant::Kind::String });
+	m_argumentMap.push_back({ "--arch", Variant::Kind::String });
+}
+
+/*****************************************************************************/
 void ArgumentPatterns::addSaveSchemaArg()
 {
-	// This option should only be in the debug executable
-#ifdef CHALET_DEBUG
 	m_parser.add_argument("--save-schema")
-		.help("save schema")
+		.help("Save build & cache schemas to file")
 		.nargs(1)
 		.default_value(false)
 		.implicit_value(true);
 
 	m_argumentMap.push_back({ "--save-schema", Variant::Kind::Boolean });
-#endif
 }
 
 /*****************************************************************************/
@@ -434,6 +451,7 @@ void ArgumentPatterns::commandBuildRun()
 	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
+	addArchArg();
 	addSaveSchemaArg();
 
 	addBuildConfigurationArg();
@@ -448,6 +466,7 @@ void ArgumentPatterns::commandRun()
 	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
+	addArchArg();
 	addSaveSchemaArg();
 
 	addBuildConfigurationArg();
@@ -462,6 +481,7 @@ void ArgumentPatterns::commandBuild()
 	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
+	addArchArg();
 	addSaveSchemaArg();
 
 	addBuildConfigurationArg();
@@ -474,6 +494,7 @@ void ArgumentPatterns::commandRebuild()
 	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
+	addArchArg();
 	addSaveSchemaArg();
 
 	addBuildConfigurationArg();
@@ -486,6 +507,7 @@ void ArgumentPatterns::commandClean()
 	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
+	addArchArg();
 	addSaveSchemaArg();
 
 	bool optional = true;
@@ -499,6 +521,7 @@ void ArgumentPatterns::commandBundle()
 	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
+	addArchArg();
 	addSaveSchemaArg();
 }
 
@@ -509,6 +532,7 @@ void ArgumentPatterns::commandConfigure()
 	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
+	addArchArg();
 	addSaveSchemaArg();
 }
 
@@ -543,6 +567,7 @@ void ArgumentPatterns::commandDebug()
 	addOutPathArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
+	addArchArg();
 }
 #endif
 

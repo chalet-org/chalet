@@ -30,8 +30,8 @@ bool onlyContainsCharacters(const std::string& inChars, const std::string& inStr
 std::string fromBoolean(const bool inValue) noexcept;
 void replaceAll(std::string& outString, const std::string_view inFrom, const std::string_view inTo);
 void replaceAll(std::string& outString, const char inFrom, const char inTo);
-std::string toLowerCase(std::string inString);
-std::string toUpperCase(std::string inString);
+std::string toLowerCase(const std::string& inString);
+std::string toUpperCase(const std::string& inString);
 std::string join(const StringList& inList, const char inSeparator = ' ');
 std::string join(const StringList& inList, const std::string_view inSeparator);
 StringList split(std::string inString, const char inSeparator = ' ');

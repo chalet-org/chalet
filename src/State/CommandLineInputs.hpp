@@ -6,6 +6,7 @@
 #ifndef CHALET_COMMAND_LINE_INPUTS_HPP
 #define CHALET_COMMAND_LINE_INPUTS_HPP
 
+#include "Core/CpuArchitecture.hpp"
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
 
@@ -57,14 +58,19 @@ struct CommandLineInputs
 	const std::string& envFile() const noexcept;
 	void setEnvFile(std::string&& inValue) noexcept;
 
+	CpuArchitecture hostArchitecture() const noexcept;
+	const std::string& targetArchitecture() const noexcept;
+	void setTargetArchitecture(std::string&& inValue) noexcept;
+
 	bool saveSchemaToFile() const noexcept;
 	void setSaveSchemaToFile(const bool inValue) noexcept;
 
 private:
-	std::string getPlatform() noexcept;
-	StringList getNotPlatforms() noexcept;
+	std::string getPlatform() const noexcept;
+	StringList getNotPlatforms() const noexcept;
+	CpuArchitecture getHostArchitecture() const noexcept;
 
-	IdeType getIdeTypeFromString(const std::string& inValue);
+	IdeType getIdeTypeFromString(const std::string& inValue) const;
 
 	StringList m_runOptions;
 	StringList m_notPlatforms;
@@ -82,7 +88,9 @@ private:
 	std::string m_initProjectName;
 	std::string m_initPath;
 	std::string m_envFile;
+	std::string m_targetArchitecture;
 
+	CpuArchitecture m_hostArchitecture = CpuArchitecture::X64;
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
 

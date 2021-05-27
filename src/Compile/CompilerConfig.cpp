@@ -21,7 +21,7 @@ CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const CompilerTool
 		{ "/bin/hostx64/x86", "/lib/x86" },
 		{ "/bin/hostx86/x86", "/lib/x86" },
 		{ "/bin/hostx86/x64", "/lib/x64" },
-		{ "/bin/hostx64/x64", "/lib/64" },
+		// { "/bin/hostx64/x64", "/lib/64" }, // TODO: Not sure what makes this different from /lib/x64
 		{ "/bin", "/lib" },
 	}),
 	m_compilers(inCompilers),
@@ -113,7 +113,7 @@ bool CompilerConfig::testCompilerMacros()
 	const bool mingw64 = String::contains("__MINGW64__", macroResult);
 	const bool mingw = (mingw32 || mingw64);
 	const bool emscripten = String::contains("__EMSCRIPTEN__", macroResult);
-	const bool intel = String::contains("__INTEL_COMPILER", macroResult) || String::contains("__INTEL_COMPILER_BUILD_DATE", macroResult);
+	const bool intel = String::contains({ "__INTEL_COMPILER", "__INTEL_COMPILER_BUILD_DATE" }, macroResult);
 	const bool appleClang = clang && String::contains("Apple LLVM", macroResult);
 
 	if (emscripten)

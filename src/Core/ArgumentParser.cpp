@@ -90,13 +90,11 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				}
 				else if (String::equals({ "-i", "--input-file" }, key))
 				{
-					if (!value.empty())
-						m_inputs.setBuildFile(std::move(value));
+					m_inputs.setBuildFile(std::move(value));
 				}
 				else if (String::equals({ "-o", "--output-path" }, key))
 				{
-					if (!value.empty())
-						m_inputs.setBuildPath(std::move(value));
+					m_inputs.setBuildPath(std::move(value));
 				}
 				else if (String::equals({ "-g", "--generator" }, key))
 				{
@@ -104,8 +102,11 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				}
 				else if (String::equals({ "-e", "--envfile" }, key))
 				{
-					if (!value.empty())
-						m_inputs.setEnvFile(std::move(value));
+					m_inputs.setEnvFile(std::move(value));
+				}
+				else if (String::equals({ "-a", "--arch" }, key))
+				{
+					m_inputs.setTargetArchitecture(std::move(value));
 				}
 				else if (key == patterns.argInitName())
 				{

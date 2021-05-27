@@ -14,6 +14,7 @@
 #include "BuildJson/WorkspaceInfo.hpp"
 #include "CacheJson/CacheTools.hpp"
 #include "Compile/CompilerTools.hpp"
+#include "Core/CpuArchitecture.hpp"
 #include "State/BuildCache.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CommandLineInputs.hpp"
@@ -47,12 +48,19 @@ public:
 	const std::string& platform() const noexcept;
 	const StringList& notPlatforms() const noexcept;
 
+	CpuArchitecture hostArchitecture() const noexcept;
+	CpuArchitecture targetArchitecture() const noexcept;
+	void setTargetArchitecture(const std::string& inValue) noexcept;
+
 private:
 	friend class Application;
 	friend class Router;
 
 	void initializeBuild();
 	void initializeCache();
+
+	CpuArchitecture m_targetArchitecture = CpuArchitecture::X64;
+	bool m_archSet = false;
 };
 }
 
