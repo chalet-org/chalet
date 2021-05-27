@@ -64,6 +64,12 @@ void CompileToolchainLLVM::addThreadModelCompileOption(StringList& outArgList) c
 }
 
 /*****************************************************************************/
+void CompileToolchainLLVM::addArchitecture(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 // Linking
 /*****************************************************************************/
 /*****************************************************************************/

@@ -27,6 +27,7 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const override;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
+	virtual void addArchitecture(StringList& outArgList) const override;
 
 	// Linking
 	virtual void addStripSymbolsOption(StringList& outArgList) const override;
