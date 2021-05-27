@@ -17,10 +17,11 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	environment(m_buildConfiguration),
 	paths(m_inputs),
-	msvcEnvironment(m_inputs, paths),
+	msvcEnvironment(*this),
 	bundle(environment, projects, paths, compilerTools),
 	cache(info, paths)
 {
+	setTargetArchitecture(m_inputs.targetArchitecture());
 }
 
 /*****************************************************************************/
@@ -86,9 +87,6 @@ CpuArchitecture BuildState::targetArchitecture() const noexcept
 
 void BuildState::setTargetArchitecture(const std::string& inValue) noexcept
 {
-	if (m_archSet)
-		return;
-
 	if (String::equals("x64", inValue))
 	{
 		m_targetArchitecture = CpuArchitecture::X64;
@@ -109,8 +107,6 @@ void BuildState::setTargetArchitecture(const std::string& inValue) noexcept
 	{
 		m_targetArchitecture = m_inputs.hostArchitecture();
 	}
-
-	m_archSet = true;
 }
 
 }

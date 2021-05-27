@@ -14,12 +14,12 @@
 
 namespace chalet
 {
-struct BuildPaths;
+class BuildState;
 
 class MsvcEnvironment
 {
 public:
-	explicit MsvcEnvironment(const CommandLineInputs& inInputs, BuildPaths& inPath);
+	explicit MsvcEnvironment(BuildState& inState);
 
 	static bool exists();
 
@@ -39,8 +39,7 @@ private:
 	bool saveOriginalEnvironment();
 	bool saveMsvcEnvironment();
 
-	const CommandLineInputs& m_inputs;
-	BuildPaths& m_path;
+	BuildState& m_state;
 
 #if defined(CHALET_WIN32)
 	bool m_initialized = false;

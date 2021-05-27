@@ -60,7 +60,6 @@ private:
 	void initializeCache();
 
 	CpuArchitecture m_targetArchitecture = CpuArchitecture::X64;
-	bool m_archSet = false;
 };
 }
 

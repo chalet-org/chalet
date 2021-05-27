@@ -111,6 +111,20 @@ bool CacheJsonParser::createMsvcEnvironment()
 				readVariables = result;
 			}
 		}
+
+		if (jRoot.contains(kKeySettings))
+		{
+			auto& settings = jRoot[kKeySettings];
+			if (settings.is_object())
+			{
+				if (settings.contains(kKeyTargetArchitecture))
+				{
+					const Json& arch = settings[kKeyTargetArchitecture];
+					const auto str = arch.get<std::string>();
+					m_state.setTargetArchitecture(str);
+				}
+			}
+		}
 	}
 
 	if (readVariables)
@@ -757,17 +771,21 @@ void CacheJsonParser::parseHostArchitecture(std::string& outString) const
 	std::string lower = String::toLowerCase(outString);
 	if (m_inputs.hostArchitecture() == CpuArchitecture::X64)
 	{
-		auto start = lower.find_last_of("hostx86");
+		auto start = lower.find("hostx86");
+		LOG(lower.size(), outString.size(), start);
 		if (start != std::string::npos)
 		{
+			LOG(outString.substr(start, 7));
 			String::replaceAll(outString, outString.substr(start, 7), "HostX64");
 		}
 	}
 	else if (m_inputs.hostArchitecture() == CpuArchitecture::X86)
 	{
-		auto start = lower.find_last_of("hostx64");
+		auto start = lower.find("hostx64");
+		LOG(lower.size(), outString.size(), start);
 		if (start != std::string::npos)
 		{
+			LOG(outString.substr(start, 7));
 			String::replaceAll(outString, outString.substr(start, 7), "HostX86");
 		}
 	}

@@ -6,7 +6,7 @@
 #include "Terminal/MsvcEnvironment.hpp"
 
 #include "Libraries/Format.hpp"
-#include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Unicode.hpp"
@@ -53,12 +53,11 @@ bool MsvcEnvironment::exists()
 }
 
 /*****************************************************************************/
-MsvcEnvironment::MsvcEnvironment(const CommandLineInputs& inInputs, BuildPaths& inPath) :
-	m_inputs(inInputs),
-	m_path(inPath)
+MsvcEnvironment::MsvcEnvironment(BuildState& inState) :
+	m_state(inState)
 {
 #if !defined(CHALET_WIN32)
-	UNUSED(m_inputs, m_path);
+	UNUSED(m_state);
 #endif
 }
 
@@ -69,7 +68,7 @@ bool MsvcEnvironment::readCompilerVariables()
 	if (m_initialized)
 		return true;
 
-	auto& buildPath = m_path.buildPath();
+	auto& buildPath = m_state.paths.buildPath();
 
 	m_varsFileOriginal = buildPath + "/original.env";
 	m_varsFileMsvc = buildPath + "/msvc_all.env";
@@ -305,8 +304,8 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 	// TODO: MS SDK version, ARM
 #if defined(CHALET_WIN32)
 	std::string vcvarsFile{ "vcvars64" };
-	auto hostArch = m_inputs.targetArchitecture();
-	auto targetArch = m_inputs.targetArchitecture();
+	auto hostArch = m_state.hostArchitecture();
+	auto targetArch = m_state.targetArchitecture();
 	if (hostArch == CpuArchitecture::X86 && targetArch == CpuArchitecture::X86)
 	{
 		vcvarsFile = "vcvars32";
