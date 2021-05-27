@@ -424,8 +424,11 @@ void ArgumentPatterns::addArchArg()
 		.nargs(1)
 		.default_value(std::string("auto"))
 		.action([](const std::string& value) {
-			const StringList choices{ "auto", "x86", "x64", "arm", "arm64" };
-			if (std::find(choices.begin(), choices.end(), value) != choices.end())
+			// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
+			// Either parsed later (if MSVC) or passed directly to GNU compiler
+			if (std::all_of(value.begin(), value.end(), [](char c) {
+					return std::isalpha(c) || std::isdigit(c) || c == '-';
+				}))
 			{
 				return value;
 			}

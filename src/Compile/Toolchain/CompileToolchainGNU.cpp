@@ -57,6 +57,7 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 	addDiagnosticColorOption(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	addThreadModelCompileOption(ret);
+	addArchitecture(ret);
 
 	addDebuggingInformationOption(ret);
 	addProfileInformationCompileOption(ret);
@@ -141,6 +142,7 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 	addDiagnosticColorOption(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	addThreadModelCompileOption(ret);
+	addArchitecture(ret);
 
 	addDebuggingInformationOption(ret);
 	addProfileInformationCompileOption(ret);
@@ -214,6 +216,7 @@ StringList CompileToolchainGNU::getMingwDllTargetCommand(const std::string& outp
 	addProfileInformationLinkerOption(ret);
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
+	addArchitecture(ret);
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
@@ -249,6 +252,7 @@ StringList CompileToolchainGNU::getDylibTargetCommand(const std::string& outputF
 	addProfileInformationLinkerOption(ret);
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
+	addArchitecture(ret);
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
@@ -283,6 +287,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 	addProfileInformationLinkerOption(ret);
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
+	addArchitecture(ret);
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
@@ -350,6 +355,7 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 	addProfileInformationLinkerOption(ret);
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
+	addArchitecture(ret);
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
@@ -672,6 +678,71 @@ void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) co
 }
 
 /*****************************************************************************/
+void CompileToolchainGNU::addArchitecture(StringList& outArgList) const
+{
+	auto hostArch = m_state.info.hostArchitecture();
+	auto targetArch = m_state.info.targetArchitecture();
+
+	auto targetArchString = m_state.info.targetArchitectureString();
+	if (String::equals({ "arm", "arm64" }, targetArchString))
+	{
+		// don't do anything yet
+		return;
+	}
+
+	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
+	// gcc -Q --help=target
+
+	std::string arch;
+	std::string tune;
+	std::string flags;
+	if (hostArch == targetArch)
+	{
+		arch = tune = "native";
+	}
+	else if (String::equals({ "intel", "generic" }, targetArchString))
+	{
+		tune = targetArchString;
+		flags = "-m64";
+	}
+	else if (String::equals("x64", targetArchString))
+	{
+		arch = tune = "x86-64";
+		flags = "-m64";
+	}
+	else if (String::equals("x86", targetArchString))
+	{
+		arch = tune = "i686";
+		flags = "-m32";
+	}
+	else if (String::equals(m_arch86, targetArchString))
+	{
+		arch = tune = targetArchString;
+		flags = "-m32";
+	}
+	else
+	{
+		arch = tune = targetArchString;
+		flags = "-m64";
+	}
+
+	if (!arch.empty())
+	{
+		outArgList.push_back(fmt::format("-march={}", arch));
+	}
+
+	if (!tune.empty())
+	{
+		outArgList.push_back(fmt::format("-mtune={}", tune));
+	}
+
+	if (!flags.empty())
+	{
+		outArgList.push_back(flags);
+	}
+}
+
+/*****************************************************************************/
 void CompileToolchainGNU::addStripSymbolsOption(StringList& outArgList) const
 {
 	if (m_state.configuration.stripSymbols())
@@ -875,5 +946,82 @@ void CompileToolchainGNU::addMacosFrameworkOptions(StringList& outArgList) const
 #else
 	UNUSED(outArgList);
 #endif
+}
+
+/*****************************************************************************/
+void CompileToolchainGNU::initializeArch() const
+{
+	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
+	if (m_arch86.empty())
+	{
+		m_arch86 = {
+			"i386",
+			"i486",
+			"i586",
+			"pentium",
+			"lakemont",
+			"ptentium-mmx",
+			"pentiumpro",
+			"i686",
+			"pentium2",
+			"pentium3",
+			"pentium3m",
+			"pentium-m",
+			"pentium4m",
+			"prescott",
+			"k6",
+			"k6-2",
+			"k6-3",
+			"athlon",
+			"athlon-tbird",
+			"athlon-4",
+			"athlon-xp",
+			"athlon-mp",
+			"winchip-c6",
+			"winchip2",
+			"c3",
+			"c3-2",
+			"c7",
+			"samuel-2",
+			"nehemiah",
+			"esther",
+			"geode",
+		};
+	}
+	/*if (m_arch86_64.empty())
+	{
+		m_arch86_64 = {
+			"x86-64",
+			"x86-64-v2",
+			"x86-64-v3",
+			"x86-64-v4",
+			"k8",
+			"opteron",
+			"athlon64",
+			"athlon-fx",
+			"k8-sse3",
+			"opteron-sse3",
+			"athlon64-sse3",
+			"amdfam10",
+			"barcelona",
+			"bdver1",
+			"bdver2",
+			"bdver3",
+			"bdver4",
+			"znver1",
+			"znver2",
+			"znver3",
+			"btver1",
+			"btver2",
+			"eden-x2",
+			"eden-x4",
+			"nano",
+			"nano-1000",
+			"nano-2000",
+			"nano-3000",
+			"nano-x2",
+			"nano-x4",
+		};
+	}*/
 }
 }

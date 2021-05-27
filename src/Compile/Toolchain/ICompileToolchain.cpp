@@ -123,6 +123,11 @@ void ICompileToolchain::addThreadModelCompileOption(StringList& outArgList) cons
 	UNUSED(outArgList);
 }
 
+void ICompileToolchain::addArchitecture(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
 /*****************************************************************************/
 // Linking
 /*****************************************************************************/

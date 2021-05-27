@@ -230,10 +230,14 @@ void CommandLineInputs::setTargetArchitecture(std::string&& inValue) noexcept
 	if (inValue.empty())
 		return;
 
-	if (!String::equals({ "auto", "x64", "x86", "arm", "arm64" }, inValue))
-		return;
-
-	m_targetArchitecture = std::move(inValue);
+	if (String::equals("auto", inValue))
+	{
+		m_targetArchitecture = m_hostArchitecture;
+	}
+	else
+	{
+		m_targetArchitecture = std::move(inValue);
+	}
 }
 
 /*****************************************************************************/

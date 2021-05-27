@@ -832,73 +832,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 {
 	bool ret = true;
 #if defined(CHALET_WIN32)
-	if (String::contains({ "/mingw64/", "/mingw32/" }, outString))
-	{
-		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
-		{
-			auto start = lower.find("/mingw32/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/mingw64/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-		else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
-		{
-			auto start = lower.find("/mingw64/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/mingw32/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-	}
-	else if (String::contains({ "/clang64/", "/clang32/" }, outString))
-	{
-		// TODO: clangarm64
-
-		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
-		{
-			auto start = lower.find("/clang32/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/clang64/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-		else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
-		{
-			auto start = lower.find("/clang64/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/clang32/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-	}
-	else if (String::endsWith({ "cl.exe", "link.exe", "lib.exe" }, outString))
+	if (String::endsWith({ "cl.exe", "link.exe", "lib.exe" }, outString))
 	{
 		std::string lower = String::toLowerCase(outString);
 		if (m_state.info.hostArchitecture() == CpuArchitecture::X64)

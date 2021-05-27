@@ -45,6 +45,7 @@ protected:
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const;
+	virtual void addArchitecture(StringList& outArgList) const;
 
 	// Linking
 	virtual void addLibDirs(StringList& outArgList) const;

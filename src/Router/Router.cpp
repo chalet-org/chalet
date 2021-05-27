@@ -238,8 +238,6 @@ bool Router::parseEnvFile()
 			return false;
 		}
 
-		enforceArchitectureInPath();
-
 		Diagnostic::printDone(timer.asString());
 	}
 
@@ -362,70 +360,6 @@ bool Router::managePathVariables()
 #endif
 	}
 	return true;
-}
-
-/*****************************************************************************/
-void Router::enforceArchitectureInPath()
-{
-#if defined(CHALET_WIN32)
-	auto path = Environment::getPath();
-	if (String::contains({ "/mingw64/", "/mingw32/" }, path))
-	{
-
-		if (m_buildState)
-		{
-			std::string lower = String::toLowerCase(path);
-			auto targetArch = m_buildState->info.targetArchitecture();
-			if (targetArch == CpuArchitecture::X64)
-			{
-				auto start = lower.find("/mingw32/");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(path, path.substr(start, 9), "/mingw64/");
-					Environment::setPath(path);
-				}
-			}
-			else if (targetArch == CpuArchitecture::X86)
-			{
-				auto start = lower.find("/mingw64/");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(path, path.substr(start, 9), "/mingw32/");
-					Environment::setPath(path);
-				}
-			}
-		}
-	}
-	else if (String::contains({ "/clang64/", "/clang32/" }, path))
-	{
-		// TODO: clangarm64
-
-		if (m_buildState)
-		{
-			std::string lower = String::toLowerCase(path);
-			auto targetArch = m_buildState->info.targetArchitecture();
-			if (targetArch == CpuArchitecture::X64)
-			{
-				auto start = lower.find("/clang32/");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(path, path.substr(start, 9), "/clang64/");
-					Environment::setPath(path);
-				}
-			}
-			else if (targetArch == CpuArchitecture::X86)
-			{
-				auto start = lower.find("/clang64/");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(path, path.substr(start, 9), "/clang32/");
-					Environment::setPath(path);
-				}
-			}
-		}
-	}
-#else
-#endif
 }
 
 }

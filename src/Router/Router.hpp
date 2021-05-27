@@ -42,8 +42,6 @@ private:
 
 	bool managePathVariables();
 
-	void enforceArchitectureInPath();
-
 	const CommandLineInputs& m_inputs;
 
 	RouteList m_routes;

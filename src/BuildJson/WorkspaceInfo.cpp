@@ -16,8 +16,8 @@ namespace chalet
 WorkspaceInfo::WorkspaceInfo(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
 {
-	m_hostArchitecture.set(m_inputs.hostArchitecture(), CpuArchitecture::X64);
-	m_targetArchitecture.set(m_inputs.targetArchitecture(), m_hostArchitecture.val);
+	m_hostArchitecture.set(m_inputs.hostArchitecture());
+	m_targetArchitecture.set(m_inputs.targetArchitecture());
 }
 
 /*****************************************************************************/
@@ -97,48 +97,30 @@ const std::string& WorkspaceInfo::targetArchitectureString() const noexcept
 }
 
 /*****************************************************************************/
-void WorkspaceInfo::Architecture::set(const std::string& inValue, const CpuArchitecture inDefault) noexcept
+void WorkspaceInfo::Architecture::set(const std::string& inValue) noexcept
 {
-	if (String::equals("x64", inValue))
+	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
+	str = inValue;
+
+	if (String::equals("x64", str))
 	{
 		val = CpuArchitecture::X64;
-		str = inValue;
 	}
-	else if (String::equals("x86", inValue))
+	else if (String::equals("x86", str))
 	{
 		val = CpuArchitecture::X86;
-		str = inValue;
 	}
-	else if (String::equals("arm", inValue))
+	else if (String::equals("arm", str))
 	{
 		val = CpuArchitecture::ARM;
-		str = inValue;
 	}
-	else if (String::equals("arm64", inValue))
+	else if (String::equals("arm64", str))
 	{
 		val = CpuArchitecture::ARM64;
-		str = inValue;
 	}
 	else
 	{
-		val = inDefault;
-		switch (inDefault)
-		{
-			case CpuArchitecture::X86:
-				str = "x86";
-				break;
-			case CpuArchitecture::X64:
-				str = "x64";
-				break;
-			case CpuArchitecture::ARM:
-				str = "arm";
-				break;
-			case CpuArchitecture::ARM64:
-				str = "arm64";
-				break;
-			default:
-				break;
-		}
+		val = CpuArchitecture::Unknown;
 	}
 }
 

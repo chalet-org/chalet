@@ -38,10 +38,10 @@ struct WorkspaceInfo
 private:
 	struct Architecture
 	{
-		std::string str{ "x64" };
-		CpuArchitecture val = CpuArchitecture::X64;
+		std::string str;
+		CpuArchitecture val = CpuArchitecture::Unknown;
 
-		void set(const std::string& inValue, const CpuArchitecture inDefault) noexcept;
+		void set(const std::string& inValue) noexcept;
 	};
 
 	const CommandLineInputs& m_inputs;

@@ -5,10 +5,11 @@ namespace chalet
 {
 enum class CpuArchitecture : ushort
 {
+	Unknown,
 	X64,
 	X86,
 	ARM,
-	ARM64
+	ARM64,
 };
 }
 

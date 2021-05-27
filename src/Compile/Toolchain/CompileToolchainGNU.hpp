@@ -43,6 +43,7 @@ protected:
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
+	virtual void addArchitecture(StringList& outArgList) const override;
 
 	// Linking
 	virtual void addLibDirs(StringList& outArgList) const override;
@@ -79,11 +80,15 @@ protected:
 	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
+	void initializeArch() const;
 
 	const ProjectConfiguration& m_project;
 	const CompilerConfig& m_config;
 
 	const CppCompilerType m_compilerType;
+
+	mutable StringList m_arch86;
+	// mutable StringList m_arch86_64;
 };
 }
 
