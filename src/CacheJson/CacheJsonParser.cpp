@@ -772,20 +772,16 @@ void CacheJsonParser::parseHostArchitecture(std::string& outString) const
 	if (m_inputs.hostArchitecture() == CpuArchitecture::X64)
 	{
 		auto start = lower.find("hostx86");
-		LOG(lower.size(), outString.size(), start);
 		if (start != std::string::npos)
 		{
-			LOG(outString.substr(start, 7));
 			String::replaceAll(outString, outString.substr(start, 7), "HostX64");
 		}
 	}
 	else if (m_inputs.hostArchitecture() == CpuArchitecture::X86)
 	{
 		auto start = lower.find("hostx64");
-		LOG(lower.size(), outString.size(), start);
 		if (start != std::string::npos)
 		{
-			LOG(outString.substr(start, 7));
 			String::replaceAll(outString, outString.substr(start, 7), "HostX86");
 		}
 	}
