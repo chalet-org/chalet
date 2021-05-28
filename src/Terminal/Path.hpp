@@ -12,6 +12,7 @@ namespace Path
 {
 void sanitize(std::string& outValue, const bool inRemoveNewLine = false);
 void sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine = false);
+void clearWorkingDirectory(std::string& outValue);
 StringList getOSPaths();
 constexpr char getSeparator();
 }

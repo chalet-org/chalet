@@ -15,7 +15,7 @@
 namespace chalet
 {
 BuildPaths::BuildPaths(const CommandLineInputs& inInputs) :
-	m_buildPath(inInputs.buildPath())
+	m_inputs(inInputs)
 {
 }
 
@@ -24,7 +24,7 @@ void BuildPaths::initialize(const std::string& inBuildConfiguration)
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
-	m_buildOutputDir = fmt::format("{}/{}", m_buildPath, inBuildConfiguration);
+	m_buildOutputDir = fmt::format("{}/{}_{}_{}", m_inputs.buildPath(), m_inputs.hostArchitecture(), m_inputs.targetArchitecture(), inBuildConfiguration);
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
@@ -68,12 +68,13 @@ void BuildPaths::setWorkingDirectory(const std::string& inValue)
 /*****************************************************************************/
 const std::string& BuildPaths::buildPath() const
 {
-	chalet_assert(!m_buildPath.empty(), "buildPath was not defined");
+	const auto& buildPath = m_inputs.buildPath();
+	chalet_assert(!buildPath.empty(), "buildPath was not defined");
 	if (!m_binDirMade)
 	{
-		if (!Commands::pathExists(m_buildPath))
+		if (!Commands::pathExists(buildPath))
 		{
-			m_binDirMade = Commands::makeDirectory(m_buildPath);
+			m_binDirMade = Commands::makeDirectory(buildPath);
 		}
 		else
 		{
@@ -81,7 +82,7 @@ const std::string& BuildPaths::buildPath() const
 		}
 	}
 
-	return m_buildPath;
+	return buildPath;
 }
 
 const std::string& BuildPaths::buildOutputDir() const noexcept

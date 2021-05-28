@@ -29,6 +29,7 @@ struct BuildCache
 	bool exists(const Type inCacheType = Type::Local) const;
 	std::string getHash(const std::string& inIdentifier, const Type inCacheType) const;
 	std::string getPath(const std::string& inFolder, const Type inCacheType) const;
+	std::string getCacheKey(const std::string& inName);
 
 	JsonFile& environmentCache() noexcept;
 	void saveEnvironmentCache();
@@ -38,7 +39,6 @@ struct BuildCache
 
 	bool appBuildChanged() const noexcept;
 	void checkIfCompileStrategyChanged();
-	void checkIfTargetArchitectureChanged();
 	void checkIfWorkingDirectoryChanged();
 
 	void removeStaleProjectCaches(const std::string& inBuildConfig, const StringList& inProjectNames, const Type inCacheType);

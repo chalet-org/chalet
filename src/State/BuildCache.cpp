@@ -113,6 +113,12 @@ std::string BuildCache::getPath(const std::string& inFolder, const Type inCacheT
 }
 
 /*****************************************************************************/
+std::string BuildCache::getCacheKey(const std::string& inName)
+{
+	return fmt::format("{}_{}_{}:{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), m_info.buildConfiguration(), inName);
+}
+
+/*****************************************************************************/
 JsonFile& BuildCache::environmentCache() noexcept
 {
 	return m_environmentCache;
@@ -150,7 +156,7 @@ bool BuildCache::removeUnusedProjectFiles(const StringList& inHashes, const Type
 
 	bool result = true;
 
-	bool settingChanged = m_compileStrategyChanged || m_targetArchitectureChanged;
+	bool settingChanged = m_compileStrategyChanged;
 
 	auto dirEnd = fs::directory_iterator();
 	for (auto it = fs::directory_iterator(cacheRef); it != dirEnd; ++it)
@@ -181,7 +187,7 @@ bool BuildCache::removeUnusedProjectFiles(const StringList& inHashes, const Type
 void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, const StringList& inProjectNames, const Type inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
-	if (!m_environmentCache.json.contains(kKeyData))
+	if (!m_environmentCache.json.contains(kKeyData) || !m_environmentCache.json.contains(kKeySettings))
 		return;
 
 	Json& buildCache = m_environmentCache.json.at(kKeyData);
@@ -200,6 +206,8 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 
 	UNUSED(inProjectNames);
 
+	const auto buildConfig = fmt::format("{}_{}_{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), inBuildConfig);
+
 	StringList hashes;
 	for (auto it = buildCache.begin(); it != buildCache.end();)
 	{
@@ -209,8 +217,8 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 
 		const auto& name = splitKey.back();
 
-		// const bool validForBuild = splitKey.size() > 1 && (inBuildConfig == keyBuildConfig || List::contains<std::string>(inProjectNames, name));
-		const bool validForBuild = splitKey.size() > 1 && (inBuildConfig == keyBuildConfig || strategy == name);
+		// const bool validForBuild = splitKey.size() > 1 && (buildConfig == keyBuildConfig || List::contains<std::string>(inProjectNames, name));
+		const bool validForBuild = splitKey.size() > 1 && (strategy == name);
 
 		const bool internalKey = key == kKeyDataVersion || key == kKeyDataVersionDebug || key == kKeyDataStrategy || key == kKeyDataTargetArchitecture || key == kKeyDataWorkingDirectory;
 		if (internalKey)
@@ -250,7 +258,7 @@ void BuildCache::removeBuildIfCacheChanged(const std::string& inBuildDir)
 	if (!Commands::pathExists(inBuildDir))
 		return;
 
-	if (m_compileStrategyChanged || m_targetArchitectureChanged || m_workingDirectoryChanged)
+	if (m_compileStrategyChanged || m_workingDirectoryChanged)
 		Commands::removeRecursively(inBuildDir);
 }
 
@@ -323,39 +331,6 @@ void BuildCache::checkIfCompileStrategyChanged()
 			data[kKeyDataStrategy] = hashStrategy;
 			setDirty(true);
 			m_compileStrategyChanged = true;
-		}
-	}
-}
-
-/*****************************************************************************/
-void BuildCache::checkIfTargetArchitectureChanged()
-{
-	m_targetArchitectureChanged = false;
-
-	if (!m_environmentCache.json.contains(kKeyData))
-		return;
-
-	Json& data = m_environmentCache.json[kKeyData];
-	if (!data.is_object())
-		return;
-
-	const auto& targetArch = m_info.targetArchitectureString();
-	const auto hashTargetArch = Hash::string(targetArch);
-
-	if (!data.contains(kKeyDataTargetArchitecture))
-	{
-		data[kKeyDataTargetArchitecture] = hashTargetArch;
-		setDirty(true);
-		return;
-	}
-	else
-	{
-		const auto dataStrategy = data[kKeyDataTargetArchitecture].get<std::string>();
-		if (dataStrategy != hashTargetArch)
-		{
-			data[kKeyDataTargetArchitecture] = hashTargetArch;
-			setDirty(true);
-			m_targetArchitectureChanged = true;
 		}
 	}
 }

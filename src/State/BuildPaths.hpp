@@ -55,11 +55,12 @@ private:
 	StringList getFileList(const ProjectTarget& inProject) const;
 	StringList getDirectoryList(const ProjectTarget& inProject) const;
 
+	const CommandLineInputs& m_inputs;
+
 	mutable StringList m_fileListCache;
 	// mutable StringList m_directoryCache;
 
 	std::string m_workingDirectory;
-	const std::string& m_buildPath;
 	std::string m_buildOutputDir;
 	std::string m_objDir;
 	std::string m_depDir;

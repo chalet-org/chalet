@@ -38,6 +38,9 @@ void CommandLineInputs::setBuildFile(std::string&& inValue) noexcept
 		return;
 
 	m_buildFile = std::move(inValue);
+
+	Path::sanitize(m_buildFile);
+	Path::clearWorkingDirectory(m_buildFile);
 }
 
 /*****************************************************************************/
@@ -51,6 +54,9 @@ void CommandLineInputs::setBuildPath(std::string&& inValue) noexcept
 		return;
 
 	m_buildPath = std::move(inValue);
+
+	Path::sanitize(m_buildPath);
+	Path::clearWorkingDirectory(m_buildPath);
 }
 
 /*****************************************************************************/
@@ -214,6 +220,9 @@ void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 		return;
 
 	m_envFile = std::move(inValue);
+
+	Path::sanitize(m_envFile);
+	Path::clearWorkingDirectory(m_envFile);
 }
 
 /*****************************************************************************/

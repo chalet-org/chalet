@@ -75,9 +75,13 @@ bool BuildJsonParser::serialize()
 	// TODO: Check custom configurations - if both lto & debug info / profiling are enabled, throw error (lto wipes out debug/profiling symbols)
 
 	std::string jsonDump = jRoot.dump();
+	const auto& hostArch = m_state.info.hostArchitectureString();
+	const auto& targetArch = m_state.info.targetArchitectureString();
 
-	std::string toHash = fmt::format("{jsonDump}_{buildConfiguration}",
+	std::string toHash = fmt::format("{jsonDump}_{hostArch}_{targetArch}_{buildConfiguration}",
 		FMT_ARG(jsonDump),
+		FMT_ARG(hostArch),
+		FMT_ARG(targetArch),
 		FMT_ARG(buildConfiguration));
 
 	m_state.info.setHash(Hash::uint64(toHash));

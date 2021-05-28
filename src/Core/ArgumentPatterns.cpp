@@ -427,7 +427,7 @@ void ArgumentPatterns::addArchArg()
 			// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 			// Either parsed later (if MSVC) or passed directly to GNU compiler
 			if (std::all_of(value.begin(), value.end(), [](char c) {
-					return std::isalpha(c) || std::isdigit(c) || c == '-';
+					return ::isalpha(c) || ::isdigit(c) || c == '-';
 				}))
 			{
 				return value;

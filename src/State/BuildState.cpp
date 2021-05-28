@@ -42,7 +42,6 @@ void BuildState::initializeCache()
 	}
 
 	cache.checkIfCompileStrategyChanged();
-	cache.checkIfTargetArchitectureChanged();
 	cache.checkIfWorkingDirectoryChanged();
 
 	cache.removeStaleProjectCaches(info.buildConfiguration(), projectNames, BuildCache::Type::Local);

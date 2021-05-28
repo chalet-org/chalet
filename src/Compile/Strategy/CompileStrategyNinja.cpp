@@ -38,10 +38,10 @@ bool CompileStrategyNinja::initialize()
 
 	auto& environmentCache = m_state.cache.environmentCache();
 	Json& buildCache = environmentCache.json["data"];
-	std::string key = fmt::format("{}:{}", m_state.info.buildConfiguration(), name);
+	const auto key = m_state.cache.getCacheKey(name);
 
 	// Note: The ninja cache folder must not change between build.json changes
-	m_cacheFolder = m_state.cache.getPath(m_state.info.buildConfiguration(), BuildCache::Type::Local);
+	m_cacheFolder = m_state.cache.getPath(String::split(key, ':').front(), BuildCache::Type::Local);
 
 	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
 	const bool appBuildChanged = m_state.cache.appBuildChanged();
