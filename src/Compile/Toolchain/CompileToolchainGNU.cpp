@@ -678,17 +678,22 @@ void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) co
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addArchitecture(StringList& outArgList) const
+bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 {
 	auto hostArch = m_state.info.hostArchitecture();
 	auto targetArch = m_state.info.targetArchitecture();
 
-	auto targetArchString = m_state.info.targetArchitectureString();
+	const auto& targetArchString = m_state.info.targetArchitectureString();
+#if defined(CHALET_WIN32)
 	if (String::equals({ "arm", "arm64" }, targetArchString))
 	{
 		// don't do anything yet
-		return;
+		return false;
 	}
+#endif
+
+	if (hostArch == targetArch && targetArch != CpuArchitecture::Unknown)
+		return false;
 
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 	// gcc -Q --help=target
@@ -696,11 +701,7 @@ void CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	std::string arch;
 	std::string tune;
 	std::string flags;
-	if (hostArch == targetArch)
-	{
-		arch = tune = "native";
-	}
-	else if (String::equals({ "intel", "generic" }, targetArchString))
+	if (String::equals({ "intel", "generic" }, targetArchString))
 	{
 		tune = targetArchString;
 		flags = "-m64";
@@ -740,6 +741,8 @@ void CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	{
 		outArgList.push_back(flags);
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -916,7 +919,7 @@ void CompileToolchainGNU::addMacosSysRootOption(StringList& outArgList) const
 #if defined(CHALET_MACOS)
 	// TODO: Test Homebrew LLVM/GCC with this
 	outArgList.push_back("-isysroot");
-	outArgList.push_back(m_state.tools.macosSdk());
+	outArgList.push_back(m_state.tools.applePlatformSdk("macosx"));
 #else
 	UNUSED(outArgList);
 #endif

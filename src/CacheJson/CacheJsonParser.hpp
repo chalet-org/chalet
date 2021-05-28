@@ -29,6 +29,9 @@ private:
 
 	bool parseTools(Json& inNode);
 	bool parseCompilers(Json& inNode);
+#if defined(CHALET_MACOS)
+	bool parseAppleSdks(Json& inNode);
+#endif
 
 	bool parseArchitecture(std::string& outString) const;
 
@@ -39,6 +42,7 @@ private:
 	const std::string kKeyTools = "tools";
 	const std::string kKeySettings = "settings";
 	const std::string kKeyCompilerTools = "compilerTools";
+	const std::string kKeyApplePlatformSdks = "applePlatformSdks";
 	const std::string kKeyStrategy = "strategy";
 	// const std::string kKeyTargetArchitecture = "targetArchitecture";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
@@ -64,7 +68,6 @@ private:
 	const std::string kKeyInstruments = "instruments";
 	const std::string kKeyLdd = "ldd";
 	const std::string kKeyLua = "lua";
-	const std::string kKeyMacosSdk = "macosSdk";
 	const std::string kKeyMake = "make";
 	const std::string kKeyNinja = "ninja";
 	const std::string kKeyObjdump = "objdump";

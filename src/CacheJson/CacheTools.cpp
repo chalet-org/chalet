@@ -323,13 +323,13 @@ void CacheTools::setLua(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::macosSdk() const noexcept
+const std::string& CacheTools::applePlatformSdk(const std::string& inKey) const
 {
-	return m_macosSdk;
+	return m_applePlatformSdk.at(inKey);
 }
-void CacheTools::setMacosSdk(const std::string& inValue) noexcept
+void CacheTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
 {
-	m_macosSdk = inValue;
+	m_applePlatformSdk[inKey] = inValue;
 }
 
 /*****************************************************************************/

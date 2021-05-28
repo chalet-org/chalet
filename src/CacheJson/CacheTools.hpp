@@ -64,8 +64,8 @@ struct CacheTools
 	const std::string& lua() const noexcept;
 	void setLua(const std::string& inValue) noexcept;
 
-	const std::string& macosSdk() const noexcept;
-	void setMacosSdk(const std::string& inValue) noexcept;
+	const std::string& applePlatformSdk(const std::string& inKey) const;
+	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
 
 	const std::string& make() const noexcept;
 	void setMake(const std::string& inValue) noexcept;
@@ -151,6 +151,8 @@ struct CacheTools
 private:
 	void isolateVersion(std::string& outString);
 
+	std::unordered_map<std::string, std::string> m_applePlatformSdk;
+
 	std::string m_bash;
 	std::string m_brew;
 	std::string m_cmake;
@@ -163,7 +165,6 @@ private:
 	std::string m_instruments;
 	std::string m_ldd;
 	std::string m_lua;
-	std::string m_macosSdk;
 	std::string m_make;
 	std::string m_ninja;
 	std::string m_objdump;

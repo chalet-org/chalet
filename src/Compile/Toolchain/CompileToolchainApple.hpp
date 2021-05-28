@@ -20,6 +20,11 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 
 	virtual ToolchainType type() const final;
 
+	virtual bool initialize() final;
+
+	// Compiling
+	virtual bool addArchitecture(StringList& outArgList) const final;
+
 	// Linking
 	virtual void addProfileInformationLinkerOption(StringList& outArgList) const final;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const final;
@@ -28,6 +33,13 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 	virtual void addObjectiveCxxLink(StringList& outArgList) const final;
 	virtual void addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const final;
 	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const final;
+
+	// MacOS
+	virtual void addMacosSysRootOption(StringList& outArgList) const final;
+
+private:
+	std::string m_osTarget;
+	std::string m_osTargetVersion;
 };
 }
 

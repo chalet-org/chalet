@@ -11,7 +11,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-bool ICompileToolchain::preBuild()
+bool ICompileToolchain::initialize()
 {
 	return true;
 }
@@ -123,9 +123,11 @@ void ICompileToolchain::addThreadModelCompileOption(StringList& outArgList) cons
 	UNUSED(outArgList);
 }
 
-void ICompileToolchain::addArchitecture(StringList& outArgList) const
+bool ICompileToolchain::addArchitecture(StringList& outArgList) const
 {
 	UNUSED(outArgList);
+
+	return true;
 }
 
 /*****************************************************************************/

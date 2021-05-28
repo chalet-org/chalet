@@ -5,7 +5,9 @@
 
 #include "Compile/Toolchain/CompileToolchainLLVM.hpp"
 
+#include "Libraries/Format.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 // TODO: -ftime-trace
 
@@ -64,11 +66,27 @@ void CompileToolchainLLVM::addThreadModelCompileOption(StringList& outArgList) c
 }
 
 /*****************************************************************************/
-void CompileToolchainLLVM::addArchitecture(StringList& outArgList) const
+bool CompileToolchainLLVM::addArchitecture(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 
 	// https://clang.llvm.org/docs/CrossCompilation.html
+	// TOOD: -mcpu, -mfpu, -mfloat
+
+	// clang -print-supported-cpus
+
+	auto hostArch = m_state.info.hostArchitecture();
+	auto targetArch = m_state.info.targetArchitecture();
+
+	if (hostArch == targetArch && targetArch != CpuArchitecture::Unknown)
+		return false;
+
+	const auto& targetArchString = m_state.info.targetArchitectureString();
+
+	outArgList.push_back("-target");
+	outArgList.push_back(targetArchString);
+
+	return true;
 }
 
 /*****************************************************************************/

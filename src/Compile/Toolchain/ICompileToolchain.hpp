@@ -20,7 +20,7 @@ struct ICompileToolchain
 
 	virtual ToolchainType type() const = 0;
 
-	virtual bool preBuild();
+	virtual bool initialize();
 
 	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) = 0;
 	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) = 0;
@@ -45,7 +45,7 @@ protected:
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const;
-	virtual void addArchitecture(StringList& outArgList) const;
+	virtual bool addArchitecture(StringList& outArgList) const;
 
 	// Linking
 	virtual void addLibDirs(StringList& outArgList) const;

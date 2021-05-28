@@ -188,7 +188,7 @@ bool CacheJsonParser::validatePaths()
 	*/
 
 #if defined(CHALET_MACOS)
-	if (!Commands::pathExists(m_state.tools.macosSdk()))
+	if (!Commands::pathExists(m_state.tools.applePlatformSdk("macosx")))
 	{
 	#if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
@@ -260,6 +260,7 @@ bool CacheJsonParser::makeCache()
 	environmentCache.makeNode(kKeySettings, JsonDataType::object);
 	environmentCache.makeNode(kKeyCompilerTools, JsonDataType::object);
 	environmentCache.makeNode(kKeyTools, JsonDataType::object);
+	environmentCache.makeNode(kKeyApplePlatformSdks, JsonDataType::object);
 	environmentCache.makeNode(kKeyExternalDependencies, JsonDataType::object);
 	environmentCache.makeNode(kKeyData, JsonDataType::object);
 
@@ -458,17 +459,6 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyLdd);
 	whichAdd(tools, kKeyLua);
 
-	if (!tools.contains(kKeyMacosSdk))
-	{
-#if defined(CHALET_MACOS)
-		std::string sdkPath = Commands::subprocessOutput({ "xcrun", "--sdk", "macosx", "--show-sdk-path" });
-		tools[kKeyMacosSdk] = std::move(sdkPath);
-#else
-		tools[kKeyMacosSdk] = std::string();
-#endif
-		m_state.cache.setDirty(true);
-	}
-
 	if (!tools.contains(kKeyMake))
 	{
 #if defined(CHALET_WIN32)
@@ -522,6 +512,35 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyXcodegen, HostPlatform::MacOS);
 	whichAdd(tools, kKeyXcrun, HostPlatform::MacOS);
 
+#if defined(CHALET_MACOS)
+	// AppleTVOS.platform/
+	// AppleTVSimulator.platform
+	// MacOSX.platform
+	// WatchOS.platform
+	// WatchSimulator.platform
+	// iPhoneOS.platform
+	// iPhoneSimulator.platform
+	Json& platformSdksJson = environmentCache.json[kKeyApplePlatformSdks];
+
+	for (auto sdk : {
+			 "appletvos",
+			 "appletvsimulator",
+			 "macosx",
+			 "watchos",
+			 "watchsimulator",
+			 "iphoneos",
+			 "iphonesimulator",
+		 })
+	{
+		if (!platformSdksJson.contains(sdk))
+		{
+			std::string sdkPath = Commands::subprocessOutput({ "xcrun", "--sdk", sdk, "--show-sdk-path" });
+			platformSdksJson[sdk] = std::move(sdkPath);
+			m_state.cache.setDirty(true);
+		}
+	}
+#endif
+
 	return true;
 }
 
@@ -546,6 +565,10 @@ bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
 	if (!parseCompilers(inJson))
 		return false;
 
+#if defined(CHALET_MACOS)
+	if (!parseAppleSdks(inJson))
+		return false;
+#endif
 	return true;
 }
 
@@ -646,9 +669,6 @@ bool CacheJsonParser::parseTools(Json& inNode)
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstruments))
 		m_state.tools.setInstruments(val);
-
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyMacosSdk))
-		m_state.tools.setMacosSdk(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLdd))
 		m_state.tools.setLdd(val);
@@ -826,6 +846,32 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 
 	return true;
 }
+
+#if defined(CHALET_MACOS)
+bool CacheJsonParser::parseAppleSdks(Json& inNode)
+{
+	if (!inNode.contains(kKeyApplePlatformSdks))
+	{
+		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyApplePlatformSdks));
+		return false;
+	}
+
+	Json& platformSdks = inNode.at(kKeyApplePlatformSdks);
+	for (auto& [key, pathJson] : platformSdks.items())
+	{
+		if (!pathJson.is_string())
+		{
+			Diagnostic::errorAbort(fmt::format("{}: apple platform '{}' must be a string.", m_filename, key));
+			return false;
+		}
+
+		auto path = pathJson.get<std::string>();
+		m_state.tools.addApplePlatformSdk(key, std::move(path));
+	}
+
+	return true;
+}
+#endif
 
 /*****************************************************************************/
 bool CacheJsonParser::parseArchitecture(std::string& outString) const

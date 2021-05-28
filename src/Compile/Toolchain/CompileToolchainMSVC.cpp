@@ -32,7 +32,7 @@ ToolchainType CompileToolchainMSVC::type() const
 }
 
 /*****************************************************************************/
-bool CompileToolchainMSVC::preBuild()
+bool CompileToolchainMSVC::initialize()
 {
 	if (m_project.usesPch())
 	{

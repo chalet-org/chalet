@@ -20,7 +20,7 @@ struct CompileToolchainMSVC final : ICompileToolchain
 
 	virtual ToolchainType type() const final;
 
-	virtual bool preBuild() final;
+	virtual bool initialize() final;
 
 	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) final;
 	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) final;

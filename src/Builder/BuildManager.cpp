@@ -246,7 +246,7 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 		return false;
 	}
 
-	if (!buildToolchain->preBuild())
+	if (!buildToolchain->initialize())
 	{
 		Diagnostic::errorAbort(fmt::format("Error preparing the build for project: {}", inProject.name()));
 		return false;

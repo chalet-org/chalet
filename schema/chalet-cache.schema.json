@@ -68,10 +68,6 @@
 			"description": "The executable path to Lua",
 			"default": "/usr/local/bin/lua"
 		},
-		"tools-macosSdk": {
-			"type": "string",
-			"description": "The path to the current MacOS SDK (MacOS)"
-		},
 		"tools-make": {
 			"type": "string",
 			"description": "The executable path to GNU make utility.",
@@ -216,7 +212,6 @@
 				"instruments",
 				"ldd",
 				"lua",
-				"macosSdk",
 				"make",
 				"ninja",
 				"objdump",
@@ -272,9 +267,6 @@
 				"lua": {
 					"$ref": "#/definitions/tools-lua"
 				},
-				"macosSdk": {
-					"$ref": "#/definitions/tools-macosSdk"
-				},
 				"make": {
 					"$ref": "#/definitions/tools-make"
 				},
@@ -327,6 +319,10 @@
 					"$ref": "#/definitions/tools-xcrun"
 				}
 			}
+		},
+		"applePlatformSdks": {
+			"type": "object",
+			"description": "A list of Apple platform SDK paths (MacOS)"
 		},
 		"compilerTools": {
 			"type": "object",

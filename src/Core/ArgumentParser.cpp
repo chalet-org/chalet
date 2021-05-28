@@ -106,7 +106,15 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				}
 				else if (String::equals({ "-a", "--arch" }, key))
 				{
-					m_inputs.setTargetArchitecture(std::move(value));
+					if (String::contains(',', value))
+					{
+						auto split = String::split(value, ',');
+						m_inputs.setTargetArchitecture(std::move(split.front()));
+					}
+					else
+					{
+						m_inputs.setTargetArchitecture(std::move(value));
+					}
 				}
 				else if (key == patterns.argInitName())
 				{

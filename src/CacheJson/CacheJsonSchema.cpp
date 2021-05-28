@@ -102,11 +102,6 @@ Json Schema::getCacheJson()
 		"default": "/usr/local/bin/lua"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-macosSdk"] = R"json({
-		"type": "string",
-		"description": "The path to the current MacOS SDK (MacOS)"
-	})json"_ojson;
-
 	ret[kDefinitions]["tools-make"] = R"json({
 		"type": "string",
 		"description": "The executable path to GNU make utility.",
@@ -305,7 +300,6 @@ Json Schema::getCacheJson()
 			"instruments",
 			"ldd",
 			"lua",
-			"macosSdk",
 			"make",
 			"ninja",
 			"objdump",
@@ -361,9 +355,6 @@ Json Schema::getCacheJson()
 			"lua": {
 				"$ref": "#/definitions/tools-lua"
 			},
-			"macosSdk": {
-				"$ref": "#/definitions/tools-macosSdk"
-			},
 			"make": {
 				"$ref": "#/definitions/tools-make"
 			},
@@ -416,6 +407,11 @@ Json Schema::getCacheJson()
 				"$ref": "#/definitions/tools-xcrun"
 			}
 		}
+	})json"_ojson;
+
+	ret[kProperties]["applePlatformSdks"] = R"json({
+		"type": "object",
+		"description": "A list of Apple platform SDK paths (MacOS)"
 	})json"_ojson;
 
 	ret[kProperties]["compilerTools"] = R"json({
