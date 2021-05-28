@@ -102,7 +102,7 @@ void WorkspaceInfo::Architecture::set(const std::string& inValue) noexcept
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 	str = inValue;
 
-	if (String::equals("x64", str))
+	if (String::equals("x86_64", str))
 	{
 		val = CpuArchitecture::X64;
 	}

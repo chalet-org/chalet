@@ -706,7 +706,7 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 		tune = targetArchString;
 		flags = "-m64";
 	}
-	else if (String::equals("x64", targetArchString))
+	else if (String::equals("x86_64", targetArchString))
 	{
 		arch = tune = "x86-64";
 		flags = "-m64";
