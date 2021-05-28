@@ -27,6 +27,8 @@ private:
 	const BuildState& m_state;
 	const CMakeTarget& m_target;
 
+	std::string m_outputLocation;
+
 	const bool m_cleanOutput;
 };
 }

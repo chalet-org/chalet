@@ -47,40 +47,32 @@ bool CmakeBuilder::run()
 		return false;
 	}
 
-	const auto& loc = m_target.location();
+	auto cwd = Commands::getWorkingDirectory();
+	auto location = fmt::format("{}/{}", cwd, m_target.location());
+	Path::sanitize(location);
+
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	m_outputLocation = fmt::format("{}/{}/{}/{}", cwd, buildOutputDir, m_target.location(), m_target.name());
+	Path::sanitize(m_outputLocation);
 
-	auto cwd = Commands::getWorkingDirectoryPath();
-	auto outDirPath = cwd / loc / buildOutputDir;
-	std::string outDir = outDirPath.string();
-
-	Path::sanitize(outDir);
-
-	bool outDirectoryDoesNotExist = !Commands::pathExists(outDir);
+	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
 	bool recheckCmake = m_target.recheck();
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{
-		auto locationPath = cwd / loc;
-		std::string location = locationPath.string();
-
-		Path::sanitize(location);
 
 		if (outDirectoryDoesNotExist)
-			Commands::makeDirectory(outDir, m_cleanOutput);
-
-		// TODO: -T toolset (relates to Host arch)
-		// https://cmake.org/cmake/help/latest/variable/CMAKE_GENERATOR_TOOLSET.html#variable:CMAKE_GENERATOR_TOOLSET
+			Commands::makeDirectory(m_outputLocation, m_cleanOutput);
 
 		{
 			StringList generatorCommand = getGeneratorCommand(location);
-			if (!Commands::subprocess(generatorCommand, outDir, m_cleanOutput))
+			if (!Commands::subprocess(generatorCommand, m_cleanOutput))
 				return false;
 		}
 
 		{
-			StringList buildCommand = getBuildCommand(".");
-			if (!Commands::subprocess(buildCommand, outDir, PipeOption::StdOut, m_cleanOutput))
+			StringList buildCommand = getBuildCommand(m_outputLocation);
+			if (!Commands::subprocess(buildCommand, PipeOption::StdOut, m_cleanOutput))
 				return false;
 		}
 
@@ -189,6 +181,9 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 
 	ret.push_back("-S");
 	ret.push_back(inLocation);
+
+	ret.push_back("-B");
+	ret.push_back(m_outputLocation);
 
 	return ret;
 }
