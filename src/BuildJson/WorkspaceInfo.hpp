@@ -34,6 +34,7 @@ struct WorkspaceInfo
 
 	CpuArchitecture targetArchitecture() const noexcept;
 	const std::string& targetArchitectureString() const noexcept;
+	void setTargetArchitecture(const std::string& inValue) noexcept;
 
 private:
 	struct Architecture

@@ -11,9 +11,11 @@
 
 namespace chalet
 {
+struct WorkspaceInfo;
+
 struct CompilerTools
 {
-	CompilerTools() = default;
+	explicit CompilerTools(const WorkspaceInfo& inInfo);
 
 	void fetchCompilerVersions();
 
@@ -41,6 +43,8 @@ struct CompilerTools
 	CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
 
 private:
+	const WorkspaceInfo& m_info;
+
 	std::string parseVersionMSVC(const std::string& inExecutable) const;
 	std::string parseVersionGNU(const std::string& inExecutable, const std::string_view inEol = "\n") const;
 

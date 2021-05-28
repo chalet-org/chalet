@@ -96,27 +96,32 @@ const std::string& WorkspaceInfo::targetArchitectureString() const noexcept
 	return m_targetArchitecture.str;
 }
 
+void WorkspaceInfo::setTargetArchitecture(const std::string& inValue) noexcept
+{
+	m_targetArchitecture.set(inValue);
+}
+
 /*****************************************************************************/
 void WorkspaceInfo::Architecture::set(const std::string& inValue) noexcept
 {
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 	str = inValue;
 
-	if (String::equals("x86_64", str))
+	if (String::startsWith({ "x86_64", "x64" }, str))
 	{
 		val = CpuArchitecture::X64;
 	}
-	else if (String::equals("x86", str))
+	else if (String::startsWith("x86", str))
 	{
 		val = CpuArchitecture::X86;
 	}
-	else if (String::equals("arm", str))
-	{
-		val = CpuArchitecture::ARM;
-	}
-	else if (String::equals("arm64", str))
+	else if (String::startsWith("arm64", str))
 	{
 		val = CpuArchitecture::ARM64;
+	}
+	else if (String::startsWith("arm", str))
+	{
+		val = CpuArchitecture::ARM;
 	}
 	else
 	{

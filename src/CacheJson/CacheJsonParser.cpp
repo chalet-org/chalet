@@ -196,6 +196,14 @@ bool CacheJsonParser::validatePaths()
 		Diagnostic::errorAbort(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
 		return false;
 	}
+	if (String::contains("clang", m_state.compilerTools.cc()))
+	{
+		if (m_inputs.targetArchitecture().empty())
+		{
+			auto arch = Commands::subprocessOutput({ m_state.compilerTools.cc(), "-print-target-triple" });
+			m_state.info.setTargetArchitecture(arch);
+		}
+	}
 #endif
 
 	return true;

@@ -115,7 +115,8 @@ std::string BuildCache::getPath(const std::string& inFolder, const Type inCacheT
 /*****************************************************************************/
 std::string BuildCache::getCacheKey(const std::string& inName)
 {
-	return fmt::format("{}_{}_{}:{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), m_info.buildConfiguration(), inName);
+	// return fmt::format("{}_{}_{}:{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), m_info.buildConfiguration(), inName);
+	return fmt::format("{}_{}:{}", m_info.targetArchitectureString(), m_info.buildConfiguration(), inName);
 }
 
 /*****************************************************************************/
@@ -206,7 +207,8 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 
 	UNUSED(inProjectNames);
 
-	const auto buildConfig = fmt::format("{}_{}_{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), inBuildConfig);
+	// const auto buildConfig = fmt::format("{}_{}_{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), inBuildConfig);
+	const auto buildConfig = fmt::format("{}_{}", m_info.targetArchitectureString(), inBuildConfig);
 
 	StringList hashes;
 	for (auto it = buildCache.begin(); it != buildCache.end();)

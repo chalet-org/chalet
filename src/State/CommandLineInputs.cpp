@@ -27,7 +27,6 @@ CommandLineInputs::CommandLineInputs() :
 	m_platform(getPlatform()),
 	m_hostArchitecture(getHostArchitecture())
 {
-	m_targetArchitecture = m_hostArchitecture;
 	m_envFile = kDefaultEnvFile;
 }
 

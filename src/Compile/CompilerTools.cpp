@@ -5,6 +5,7 @@
 
 #include "Compile/CompilerTools.hpp"
 
+#include "BuildJson/WorkspaceInfo.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -15,6 +16,12 @@
 
 namespace chalet
 {
+/*****************************************************************************/
+CompilerTools::CompilerTools(const WorkspaceInfo& inInfo) :
+	m_info(inInfo)
+{
+}
+
 /*****************************************************************************/
 void CompilerTools::fetchCompilerVersions()
 {
@@ -95,7 +102,16 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, cons
 	const auto exec = String::getPathBaseName(inExecutable);
 	const bool isCpp = String::contains("++", exec);
 	// const bool isC = String::startsWith({ "gcc", "cc" }, exec);
-	std::string rawOutput = Commands::subprocessOutput({ inExecutable, "-v" });
+	std::string rawOutput;
+	if (String::contains("clang", inExecutable))
+	{
+		rawOutput = Commands::subprocessOutput({ inExecutable, "-target", m_info.targetArchitectureString(), "-v" });
+	}
+	else
+	{
+		rawOutput = Commands::subprocessOutput({ inExecutable, "-v" });
+	}
+
 	auto splitOutput = String::split(rawOutput, inEol);
 	if (splitOutput.size() >= 2)
 	{

@@ -5,6 +5,7 @@
 
 #include "State/BuildPaths.hpp"
 
+#include "BuildJson/WorkspaceInfo.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -14,8 +15,9 @@
 
 namespace chalet
 {
-BuildPaths::BuildPaths(const CommandLineInputs& inInputs) :
-	m_inputs(inInputs)
+BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceInfo& inInfo) :
+	m_inputs(inInputs),
+	m_info(inInfo)
 {
 }
 
@@ -24,7 +26,8 @@ void BuildPaths::initialize(const std::string& inBuildConfiguration)
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
-	m_buildOutputDir = fmt::format("{}/{}_{}_{}", m_inputs.buildPath(), m_inputs.hostArchitecture(), m_inputs.targetArchitecture(), inBuildConfiguration);
+	// m_buildOutputDir = fmt::format("{}/{}_{}_{}", m_inputs.buildPath(), m_info.hostArchitectureString(), m_info.targetArchitectureString(), inBuildConfiguration);
+	m_buildOutputDir = fmt::format("{}/{}_{}", m_inputs.buildPath(), m_info.targetArchitectureString(), inBuildConfiguration);
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);

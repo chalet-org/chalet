@@ -28,9 +28,9 @@ class BuildState
 public:
 	explicit BuildState(const CommandLineInputs& inInputs);
 
+	WorkspaceInfo info;
 	CacheTools tools;
 	CompilerTools compilerTools;
-	WorkspaceInfo info;
 	BuildEnvironment environment;
 	BuildPaths paths;
 	MsvcEnvironment msvcEnvironment;
