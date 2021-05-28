@@ -6,7 +6,7 @@
 #ifndef CHALET_PROFILER_RUNNER_HPP
 #define CHALET_PROFILER_RUNNER_HPP
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
 #include "State/BuildState.hpp"
 
 namespace chalet
@@ -14,7 +14,7 @@ namespace chalet
 class ProfilerRunner
 {
 public:
-	explicit ProfilerRunner(BuildState& inState, const ProjectConfiguration& inProject, const bool inCleanOutput);
+	explicit ProfilerRunner(BuildState& inState, const ProjectTarget& inProject, const bool inCleanOutput);
 
 	bool run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 
@@ -26,7 +26,7 @@ private:
 #endif
 
 	const BuildState& m_state;
-	const ProjectConfiguration& m_project;
+	const ProjectTarget& m_project;
 
 	const bool m_cleanOutput;
 };

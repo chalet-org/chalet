@@ -19,7 +19,7 @@ struct MakefileGeneratorGNU final : IStrategyGenerator
 {
 	explicit MakefileGeneratorGNU(const BuildState& inState);
 
-	virtual void addProjectRecipes(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) final;
+	virtual void addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) final;
 	virtual std::string getContents(const std::string& inPath) const final;
 
 private:

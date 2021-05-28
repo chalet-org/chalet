@@ -123,17 +123,18 @@ bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 bool BuildJsonParser::validBuildRequested()
 {
 	int count = 0;
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
 		count++;
 
-		if (project->hasScripts())
-			continue;
-
-		if (project->language() == CodeLanguage::None)
+		if (target->isProject())
 		{
-			Diagnostic::errorAbort(fmt::format("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project->name()), "Error parsing file");
-			return false;
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (project.language() == CodeLanguage::None)
+			{
+				Diagnostic::errorAbort(fmt::format("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project.name()), "Error parsing file");
+				return false;
+			}
 		}
 	}
 	return count > 0;
@@ -146,10 +147,14 @@ bool BuildJsonParser::validRunProjectRequestedFromInput()
 	if (inputRunProject.empty())
 		return true;
 
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (!inputRunProject.empty() && project->name() == inputRunProject)
-			return project->isExecutable();
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (!inputRunProject.empty() && project.name() == inputRunProject)
+				return project.isExecutable();
+		}
 	}
 
 	return false;
@@ -409,14 +414,14 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		return false;
 	}
 
-	const Json& projects = inNode.at(kKeyProjects);
-	if (!projects.is_object() || projects.size() == 0)
+	const Json& targets = inNode.at(kKeyProjects);
+	if (!targets.is_object() || targets.size() == 0)
 	{
 		Diagnostic::error(fmt::format("{}: '{}' must contain at least one project.", m_filename, kKeyProjects));
 		return false;
 	}
 
-	// ProjectConfiguration allProjects(m_state.buildConfiguration(), m_state.environment);
+	// ProjectTarget allProjects(m_state.buildConfiguration(), m_state.environment);
 
 	if (inNode.contains(kKeyTemplates))
 	{
@@ -425,7 +430,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (m_abstractProjects.find(name) == m_abstractProjects.end())
 			{
-				auto abstractProject = std::make_unique<ProjectConfiguration>(m_state.info.buildConfiguration(), m_state.environment);
+				auto abstractProject = std::make_unique<ProjectTarget>(m_state);
 				if (!parseProject(*abstractProject, templateJson, true))
 					return false;
 
@@ -451,7 +456,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 
 		if (m_abstractProjects.find(name) == m_abstractProjects.end())
 		{
-			auto abstractProject = std::make_unique<ProjectConfiguration>(m_state.info.buildConfiguration(), m_state.environment);
+			auto abstractProject = std::make_unique<ProjectTarget>(m_state);
 			if (!parseProject(*abstractProject, templateJson, true))
 				return false;
 
@@ -465,54 +470,68 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		}
 	}
 
-	for (auto& [name, projectJson] : projects.items())
+	for (auto& [name, targetJson] : targets.items())
 	{
 		std::string extends{ "all" };
-		if (projectJson.is_object())
+		if (targetJson.is_object())
 		{
-			m_buildJson->assignFromKey(extends, projectJson, "extends");
+			m_buildJson->assignFromKey(extends, targetJson, "extends");
 		}
 
-		const bool isScript = containsKeyThatStartsWith(projectJson, "script");
-
-		std::unique_ptr<ProjectConfiguration> project;
-		if (!isScript && m_abstractProjects.find(extends) != m_abstractProjects.end())
+		TargetType type = TargetType::Project;
+		if (containsKeyThatStartsWith(targetJson, "script"))
 		{
-			project = std::make_unique<ProjectConfiguration>(*m_abstractProjects.at(extends)); // note: copy ctor
+			type = TargetType::Script;
+		}
+		else if (targetJson.contains("cmake"))
+		{
+			type = TargetType::CMake;
+		}
+
+		std::unique_ptr<IBuildTarget> target;
+		if (type == TargetType::Project && m_abstractProjects.find(extends) != m_abstractProjects.end())
+		{
+			target = std::make_unique<ProjectTarget>(*m_abstractProjects.at(extends)); // note: copy ctor
 		}
 		else
 		{
-			if (!isScript && !String::equals("all", extends))
+			if (type == TargetType::Project && !String::equals("all", extends))
 			{
 				Diagnostic::error(fmt::format("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name));
 				return false;
 			}
-			project = std::make_unique<ProjectConfiguration>(m_state.info.buildConfiguration(), m_state.environment);
-		}
-		project->setName(name);
 
-		if (isScript)
+			target = IBuildTarget::make(m_state, type);
+		}
+		target->setName(name);
+
+		if (target->isScript())
 		{
-			if (!parseScript(*project, projectJson))
+			if (!parseScript(static_cast<ScriptTarget&>(*target), targetJson))
+				continue;
+		}
+		else if (target->isCMake())
+		{
+			if (!parseCMakeProject(static_cast<CMakeTarget&>(*target), targetJson))
 				continue;
 		}
 		else
 		{
-			if (!parseProject(*project, projectJson))
+			if (!parseProject(static_cast<ProjectTarget&>(*target), targetJson))
 				return false;
 		}
 
-		if (!project->includeInBuild())
+		if (!target->includeInBuild())
 			continue;
 
-		m_state.projects.push_back(std::move(project));
+		m_state.targets.push_back(std::move(target));
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract)
+bool BuildJsonParser::parseProject(ProjectTarget& outProject, const Json& inNode, const bool inAbstract)
 {
 	if (!parsePlatformConfigExclusions(outProject, inNode))
 		return true; // true to skip project
@@ -559,23 +578,6 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 		{
 			const Json& node = inNode.at(compilerSettingsCpp);
 
-			{
-				bool cmakeResult = parseProjectCmake(outProject, node);
-				if (cmakeResult && inAbstract)
-				{
-					Diagnostic::errorAbort(fmt::format("{}: project template for '{}' cannot contain a cmake configuration.", m_filename, outProject.name()));
-					return false;
-				}
-
-				// If it's a cmake project, ignore everything else and return
-				if (cmakeResult)
-				{
-					auto& compilerConfig = m_state.compilerTools.getConfig(outProject.language());
-					outProject.parseOutputFilename(compilerConfig);
-					return true;
-				}
-			}
-
 			if (!parseCompilerSettingsCxx(outProject, node))
 				return false;
 		}
@@ -612,26 +614,35 @@ bool BuildJsonParser::parseProject(ProjectConfiguration& outProject, const Json&
 	}
 
 	// Resolve links from projects
-	auto& projects = m_state.projects;
-	for (auto& project : projects)
+	for (auto& target : m_state.targets)
 	{
-		ProjectKind kind = project->kind();
-		bool staticLib = kind == ProjectKind::StaticLibrary;
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			ProjectKind kind = project.kind();
+			bool staticLib = kind == ProjectKind::StaticLibrary;
 
-		outProject.resolveLinksFromProject(project->name(), staticLib);
+			outProject.resolveLinksFromProject(project.name(), staticLib);
+		}
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseScript(ProjectConfiguration& outProject, const Json& inNode)
+bool BuildJsonParser::parseScript(ScriptTarget& outScript, const Json& inNode)
 {
-	if (!parseProjectScripts(outProject, inNode))
+	const std::string key{ "script" };
+
+	if (StringList list; assignStringListFromConfig(list, inNode, key))
+		outScript.addScripts(list);
+	else if (std::string val; assignStringFromConfig(val, inNode, key))
+		outScript.addScript(val);
+	else
 		return false;
 
 	if (std::string val; assignStringFromConfig(val, inNode, "description"))
-		outProject.setDescription(val);
+		outScript.setDescription(val);
 
 	// if (!parsePlatformConfigExclusions(outProject, inNode))
 	// 	return false;
@@ -640,7 +651,37 @@ bool BuildJsonParser::parseScript(ProjectConfiguration& outProject, const Json& 
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parsePlatformConfigExclusions(ProjectConfiguration& outProject, const Json& inNode)
+bool BuildJsonParser::parseCMakeProject(CMakeTarget& outProject, const Json& inNode)
+{
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "location"))
+		outProject.setLocation(std::move(val));
+	else
+		return false;
+
+	if (bool val = false; m_buildJson->assignFromKey(val, inNode, "recheck"))
+		outProject.setRecheck(val);
+
+	if (StringList list; m_buildJson->assignStringListAndValidate(list, inNode, "defines"))
+		outProject.addDefines(list);
+
+	if (std::string val; assignStringFromConfig(val, inNode, "description"))
+		outProject.setDescription(val);
+
+	if (!parsePlatformConfigExclusions(outProject, inNode))
+		return false;
+
+	// If it's a cmake project, ignore everything else and return
+	// if (cmakeResult)
+
+	// auto& compilerConfig = m_state.compilerTools.getConfig(outProject.language());
+	// outProject.parseOutputFilename(compilerConfig);
+	// return true;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::parsePlatformConfigExclusions(IBuildTarget& outProject, const Json& inNode)
 {
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	const auto& platform = m_state.info.platform();
@@ -669,7 +710,7 @@ bool BuildJsonParser::parsePlatformConfigExclusions(ProjectConfiguration& outPro
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseCompilerSettingsCxx(ProjectConfiguration& outProject, const Json& inNode)
+bool BuildJsonParser::parseCompilerSettingsCxx(ProjectTarget& outProject, const Json& inNode)
 {
 	if (bool val = false; m_buildJson->assignFromKey(val, inNode, "windowsPrefixOutputFilename"))
 		outProject.setWindowsPrefixOutputFilename(val);
@@ -739,7 +780,7 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectConfiguration& outProject,
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract)
+bool BuildJsonParser::parseFilesAndLocation(ProjectTarget& outProject, const Json& inNode, const bool inAbstract)
 {
 	bool locResult = parseProjectLocationOrFiles(outProject, inNode);
 	if (locResult && inAbstract)
@@ -772,22 +813,7 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectConfiguration& outProject, co
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProjectScripts(ProjectConfiguration& outProject, const Json& inNode)
-{
-	const std::string key{ "script" };
-
-	if (StringList list; assignStringListFromConfig(list, inNode, key))
-		outProject.addScripts(list);
-	else if (std::string val; assignStringFromConfig(val, inNode, key))
-		outProject.addScript(val);
-	else
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseProjectLocationOrFiles(ProjectConfiguration& outProject, const Json& inNode)
+bool BuildJsonParser::parseProjectLocationOrFiles(ProjectTarget& outProject, const Json& inNode)
 {
 	const std::string loc{ "location" };
 
@@ -837,34 +863,6 @@ bool BuildJsonParser::parseProjectLocationOrFiles(ProjectConfiguration& outProje
 		return false;
 
 	return true;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseProjectCmake(ProjectConfiguration& outProject, const Json& inNode)
-{
-	const std::string key{ "cmake" };
-
-	if (!inNode.contains(key))
-		return false;
-
-	const Json& node = inNode.at(key);
-	if (node.is_object())
-	{
-		// if it's an object, it must include "enabled"
-		if (bool val = false; m_buildJson->assignFromKey(val, node, "enabled"))
-			outProject.setCmake(val);
-
-		if (bool val = false; m_buildJson->assignFromKey(val, node, "recheck"))
-			outProject.setCmakeRecheck(val);
-
-		//
-		if (StringList list; m_buildJson->assignStringListAndValidate(list, node, "defines"))
-			outProject.addCmakeDefines(list);
-	}
-	else if (bool val = false; m_buildJson->assignFromKey(val, inNode, key))
-		outProject.setCmake(val);
-
-	return outProject.cmake();
 }
 
 /*****************************************************************************/

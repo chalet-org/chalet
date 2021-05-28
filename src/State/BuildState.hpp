@@ -10,6 +10,7 @@
 #include "BuildJson/BuildEnvironment.hpp"
 #include "BuildJson/ConfigurationOptions.hpp"
 #include "BuildJson/DependencyGit.hpp"
+#include "BuildJson/Target/IBuildTarget.hpp"
 #include "BuildJson/WorkspaceInfo.hpp"
 #include "CacheJson/CacheTools.hpp"
 #include "Compile/CompilerTools.hpp"
@@ -34,7 +35,7 @@ public:
 	BuildPaths paths;
 	MsvcEnvironment msvcEnvironment;
 	ConfigurationOptions configuration;
-	ProjectConfigurationList projects;
+	BuildTargetList targets;
 	DependencyList externalDependencies;
 	AppBundle bundle;
 	BuildCache cache;

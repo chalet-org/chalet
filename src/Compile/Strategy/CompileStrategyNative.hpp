@@ -11,7 +11,7 @@
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
 #include "State/BuildState.hpp"
 #include "Utility/ThreadPool.hpp"
 
@@ -47,10 +47,10 @@ public:
 	explicit CompileStrategyNative(BuildState& inState);
 
 	virtual bool initialize() final;
-	virtual bool addProject(const ProjectConfiguration& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
+	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
 
 	virtual bool saveBuildFile() const final;
-	virtual bool buildProject(const ProjectConfiguration& inProject) const final;
+	virtual bool buildProject(const ProjectTarget& inProject) const final;
 
 private:
 	Command getPchCommand(const std::string& pchTarget);
@@ -63,7 +63,7 @@ private:
 	CommandTemp getRcCompile(const std::string& source, const std::string& target) const;
 	StringList getAsmGenerate(const std::string& object, const std::string& target) const;
 
-	const ProjectConfiguration* m_project = nullptr;
+	const ProjectTarget* m_project = nullptr;
 	ICompileToolchain* m_toolchain = nullptr;
 
 	std::unordered_map<std::string, std::unique_ptr<NativeTarget>> m_targets;

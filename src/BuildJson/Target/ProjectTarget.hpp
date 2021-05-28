@@ -3,21 +3,23 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROJECT_CONFIGURATION_HPP
-#define CHALET_PROJECT_CONFIGURATION_HPP
+#ifndef CHALET_PROJECT_TARGET_HPP
+#define CHALET_PROJECT_TARGET_HPP
 
 #include "BuildJson/BuildEnvironment.hpp"
 #include "BuildJson/ProjectKind.hpp"
 #include "BuildJson/ProjectWarnings.hpp"
+#include "BuildJson/Target/IBuildTarget.hpp"
 #include "Compile/CodeLanguage.hpp"
 #include "State/CommandLineInputs.hpp"
 
 namespace chalet
 {
 struct CompilerConfig;
-struct ProjectConfiguration
+
+struct ProjectTarget final : public IBuildTarget
 {
-	explicit ProjectConfiguration(const std::string& inBuildConfig, const BuildEnvironment& inEnvironment);
+	explicit ProjectTarget(const BuildState& inState);
 
 	bool isExecutable() const noexcept;
 	bool isSharedLibrary() const noexcept;
@@ -61,9 +63,6 @@ struct ProjectConfiguration
 	ProjectWarnings warningsPreset() const noexcept;
 	bool warningsTreatedAsErrors() const noexcept;
 
-	bool includeInBuild() const noexcept;
-	void setIncludeInBuild(const bool inValue);
-
 	const StringList& compileOptions() const noexcept;
 	void addCompileOptions(StringList& inList);
 	void addCompileOption(std::string& inValue);
@@ -81,8 +80,6 @@ struct ProjectConfiguration
 	void addMacosFramework(std::string& inValue);
 
 	//
-	const std::string& name() const noexcept;
-	void setName(const std::string& inValue) noexcept;
 	void parseOutputFilename(const CompilerConfig& inConfig) noexcept;
 
 	const std::string& outputFile() const noexcept;
@@ -108,14 +105,6 @@ struct ProjectConfiguration
 	void addLocationExcludes(StringList& inList);
 	void addLocationExclude(std::string& inValue);
 
-	const StringList& scripts() const noexcept;
-	void addScripts(StringList& inList);
-	void addScript(std::string& inValue);
-	bool hasScripts() const noexcept;
-
-	const std::string& description() const noexcept;
-	void setDescription(const std::string& inValue) noexcept;
-
 	const std::string& pch() const noexcept;
 	void setPch(const std::string& inValue) noexcept;
 	bool usesPch() const noexcept;
@@ -131,17 +120,6 @@ struct ProjectConfiguration
 	ProjectKind kind() const noexcept;
 	void setKind(const ProjectKind inValue) noexcept;
 	void setKind(const std::string& inValue);
-
-	//
-	bool cmake() const noexcept;
-	void setCmake(const bool inValue) noexcept;
-
-	bool cmakeRecheck() const noexcept;
-	void setCmakeRecheck(const bool inValue) noexcept;
-
-	const StringList& cmakeDefines() const noexcept;
-	void addCmakeDefines(StringList& inList);
-	void addCmakeDefine(std::string& inValue);
 
 	bool dumpAssembly() const noexcept;
 	void setDumpAssembly(const bool inValue) noexcept;
@@ -169,15 +147,9 @@ struct ProjectConfiguration
 	void setWindowsOutputDef(const bool inValue) noexcept;
 
 private:
-	void parseStringVariables(std::string& outString);
-
 	ProjectKind parseProjectKind(const std::string& inValue);
-	StringList getDefaultCmakeDefines();
 	StringList getWarningPreset();
 	StringList parseWarnings(const std::string& inValue);
-
-	const std::string& m_buildConfiguration;
-	const BuildEnvironment& m_environment;
 
 	StringList m_fileExtensions;
 	StringList m_defines;
@@ -187,7 +159,6 @@ private:
 	StringList m_libDirs;
 	StringList m_includeDirs;
 	StringList m_runDependencies;
-	StringList m_cmakeDefines;
 	std::string m_productionDependencies;
 	std::string m_productionExcludes;
 	StringList m_warnings;
@@ -196,10 +167,6 @@ private:
 	StringList m_macosFrameworkPaths;
 	StringList m_macosFrameworks;
 
-	StringList m_scripts;
-
-	std::string m_name;
-	std::string m_description;
 	std::string m_outputFile;
 	std::string m_cStandard;
 	std::string m_cppStandard;
@@ -214,21 +181,16 @@ private:
 	CodeLanguage m_language = CodeLanguage::None;
 	ProjectWarnings m_warningsPreset = ProjectWarnings::None;
 
-	bool m_cmake = false;
-	bool m_cmakeRecheck = false;
 	bool m_dumpAssembly = false;
 	bool m_objectiveCxx = false;
 	bool m_rtti = true;
 	bool m_runProject = false;
 	bool m_staticLinking = false;
 	bool m_posixThreads = true;
-	bool m_includeInBuild = true;
 	bool m_windowsPrefixOutputFilename = true;
 	bool m_setWindowsPrefixOutputFilename = false;
 	bool m_windowsOutputDef = false;
 };
-
-using ProjectConfigurationList = std::vector<std::unique_ptr<ProjectConfiguration>>;
 }
 
-#endif // CHALET_PROJECT_CONFIGURATION_HPP
+#endif // CHALET_PROJECT_TARGET_HPP

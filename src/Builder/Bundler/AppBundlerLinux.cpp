@@ -46,21 +46,22 @@ bool AppBundlerLinux::removeOldFiles(const bool inCleanOutput)
 	auto& bundle = m_state.bundle;
 	auto& bundleProjects = bundle.projects();
 
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (project->hasScripts())
-			continue;
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (!List::contains(bundleProjects, project.name()))
+				continue;
 
-		if (!List::contains(bundleProjects, project->name()))
-			continue;
+			if (!project.isExecutable())
+				continue;
 
-		if (!project->isExecutable())
-			continue;
+			const auto& filename = fs::path{ project.outputFile() }.stem().string();
+			std::string outputFile = fmt::format("{}/{}.desktop", m_applicationsPath, filename);
 
-		const auto& filename = fs::path{ project->outputFile() }.stem().string();
-		std::string outputFile = fmt::format("{}/{}.desktop", m_applicationsPath, filename);
-
-		static_cast<void>(Commands::remove(outputFile, inCleanOutput));
+			static_cast<void>(Commands::remove(outputFile, inCleanOutput));
+		}
 	}
 
 	return true;
@@ -89,40 +90,41 @@ bool AppBundlerLinux::bundleForPlatform(const bool inCleanOutput)
 	// TODO: Right now this does this for every executable, but shares the same icon
 	//  Will need to rework how to make multiple bundles or something...
 	//  (or just use the runProject, but that might not be desireable)
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (project->hasScripts())
-			continue;
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (!List::contains(bundleProjects, project.name()))
+				continue;
 
-		if (!List::contains(bundleProjects, project->name()))
-			continue;
+			if (!project.isExecutable())
+				continue;
 
-		if (!project->isExecutable())
-			continue;
+			const auto filename = fmt::format("{}/{}", bundlePath, project.outputFile());
+			fs::path outDesktopEntry{ bundlePath / fs::path{ fs::path{ filename }.stem().string() + ".desktop" } };
+			std::string desktopEntryString = outDesktopEntry.string();
+			fs::path iconPath = bundlePath / fs::path{ icon }.filename();
 
-		const auto filename = fmt::format("{}/{}", bundlePath, project->outputFile());
-		fs::path outDesktopEntry{ bundlePath / fs::path{ fs::path{ filename }.stem().string() + ".desktop" } };
-		std::string desktopEntryString = outDesktopEntry.string();
-		fs::path iconPath = bundlePath / fs::path{ icon }.filename();
+			result &= Commands::copyRename(desktopEntry, desktopEntryString, inCleanOutput);
 
-		result &= Commands::copyRename(desktopEntry, desktopEntryString, inCleanOutput);
+			result &= Commands::readFileAndReplace(outDesktopEntry, [&](std::string& fileContents) {
+				String::replaceAll(fileContents, "${mainProject}", fs::absolute(filename).string());
+				String::replaceAll(fileContents, "${path}", fs::absolute(bundlePath).string());
+				String::replaceAll(fileContents, "${appName}", bundle.appName());
+				String::replaceAll(fileContents, "${shortDescription}", bundle.shortDescription());
+				String::replaceAll(fileContents, "${icon}", fs::absolute(iconPath).string());
 
-		result &= Commands::readFileAndReplace(outDesktopEntry, [&](std::string& fileContents) {
-			String::replaceAll(fileContents, "${mainProject}", fs::absolute(filename).string());
-			String::replaceAll(fileContents, "${path}", fs::absolute(bundlePath).string());
-			String::replaceAll(fileContents, "${appName}", bundle.appName());
-			String::replaceAll(fileContents, "${shortDescription}", bundle.shortDescription());
-			String::replaceAll(fileContents, "${icon}", fs::absolute(iconPath).string());
+				String::replaceAll(fileContents, '\\', '/');
+			});
 
-			String::replaceAll(fileContents, '\\', '/');
-		});
+			result &= Commands::setExecutableFlag(filename, inCleanOutput);
+			result &= Commands::setExecutableFlag(desktopEntryString, inCleanOutput);
 
-		result &= Commands::setExecutableFlag(filename, inCleanOutput);
-		result &= Commands::setExecutableFlag(desktopEntryString, inCleanOutput);
-
-		// TODO: Flag for this?
-		Commands::copy(desktopEntryString, m_applicationsPath, inCleanOutput);
-		break;
+			// TODO: Flag for this?
+			Commands::copy(desktopEntryString, m_applicationsPath, inCleanOutput);
+			break;
+		}
 	}
 
 	return result;

@@ -6,7 +6,7 @@
 #ifndef CHALET_CMAKE_BUILDER_HPP
 #define CHALET_CMAKE_BUILDER_HPP
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/CMakeTarget.hpp"
 #include "State/BuildState.hpp"
 
 namespace chalet
@@ -14,7 +14,7 @@ namespace chalet
 class CmakeBuilder
 {
 public:
-	explicit CmakeBuilder(const BuildState& inState, const ProjectConfiguration& inProject, const bool inCleanOutput);
+	explicit CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarget, const bool inCleanOutput);
 
 	bool run();
 
@@ -25,7 +25,7 @@ private:
 	StringList getBuildCommand(const std::string& inLocation) const;
 
 	const BuildState& m_state;
-	const ProjectConfiguration& m_project;
+	const CMakeTarget& m_target;
 
 	const bool m_cleanOutput;
 };

@@ -12,7 +12,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainLLVM::CompileToolchainLLVM(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig) :
+CompileToolchainLLVM::CompileToolchainLLVM(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
 	CompileToolchainGNU(inState, inProject, inConfig)
 {
 }
@@ -67,6 +67,8 @@ void CompileToolchainLLVM::addThreadModelCompileOption(StringList& outArgList) c
 void CompileToolchainLLVM::addArchitecture(StringList& outArgList) const
 {
 	UNUSED(outArgList);
+
+	// https://clang.llvm.org/docs/CrossCompilation.html
 }
 
 /*****************************************************************************/

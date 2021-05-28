@@ -16,7 +16,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig) :
+CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
 	ICompileToolchain(inState),
 	m_project(inProject),
 	m_config(inConfig),
@@ -680,12 +680,16 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 
 	if (hasStaticLinks)
 	{
-		for (auto& project : m_state.projects)
+		for (auto& target : m_state.targets)
 		{
-			auto& link = project->name();
-			if (List::contains(m_project.projectStaticLinks(), link))
+			if (target->isProject())
 			{
-				outArgList.push_back(project->outputFile());
+				auto& project = static_cast<const ProjectTarget&>(*target);
+				auto& link = project.name();
+				if (List::contains(m_project.projectStaticLinks(), link))
+				{
+					outArgList.push_back(project.outputFile());
+				}
 			}
 		}
 	}
@@ -700,17 +704,21 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 				continue;
 
 			bool found = false;
-			for (auto& project : m_state.projects)
+			for (auto& target : m_state.targets)
 			{
-				if (project->name() == link && project->isSharedLibrary())
+				if (target->isProject())
 				{
-					auto outputFile = project->outputFile();
-					if (String::endsWith(".dll", outputFile))
+					auto& project = static_cast<const ProjectTarget&>(*target);
+					if (project.name() == link && project.isSharedLibrary())
 					{
-						String::replaceAll(outputFile, ".dll", ".lib");
-						outArgList.push_back(std::move(outputFile));
-						found = true;
-						break;
+						auto outputFile = project.outputFile();
+						if (String::endsWith(".dll", outputFile))
+						{
+							String::replaceAll(outputFile, ".dll", ".lib");
+							outArgList.push_back(std::move(outputFile));
+							found = true;
+							break;
+						}
 					}
 				}
 			}

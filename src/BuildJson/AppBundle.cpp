@@ -14,9 +14,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-AppBundle::AppBundle(const BuildEnvironment& inEnvironment, const ProjectConfigurationList& inProjectList, const BuildPaths& inPaths, const CompilerTools& inCompilers) :
+AppBundle::AppBundle(const BuildEnvironment& inEnvironment, const BuildTargetList& inTargets, const BuildPaths& inPaths, const CompilerTools& inCompilers) :
 	m_environment(inEnvironment),
-	m_projectConfigs(inProjectList),
+	m_targets(inTargets),
 	m_paths(inPaths),
 	m_compilers(inCompilers)
 {
@@ -189,26 +189,28 @@ void AppBundle::addDependency(std::string& inValue)
 	}*/
 
 	std::string resolved;
-	for (auto& project : m_projectConfigs)
+	for (auto& target : m_targets)
 	{
-		if (project->hasScripts())
-			continue;
-
-		const auto& compilerConfig = m_compilers.getConfig(project->language());
-		const auto& compilerPathBin = compilerConfig.compilerPathBin();
-
-		resolved = fmt::format("{}/{}", compilerPathBin, inValue);
-		if (Commands::pathExists(resolved))
+		if (target->isProject())
 		{
-			add(resolved);
-			return;
-		}
+			auto& project = static_cast<const ProjectTarget&>(*target);
 
-		// LOG(resolved, ' ', project->outputFile());
-		if (String::contains(project->outputFile(), resolved))
-		{
-			add(resolved);
-			return;
+			const auto& compilerConfig = m_compilers.getConfig(project.language());
+			const auto& compilerPathBin = compilerConfig.compilerPathBin();
+
+			resolved = fmt::format("{}/{}", compilerPathBin, inValue);
+			if (Commands::pathExists(resolved))
+			{
+				add(resolved);
+				return;
+			}
+
+			// LOG(resolved, ' ', project.outputFile());
+			if (String::contains(project.outputFile(), resolved))
+			{
+				add(resolved);
+				return;
+			}
 		}
 	}
 

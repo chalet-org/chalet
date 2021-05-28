@@ -10,7 +10,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainApple::CompileToolchainApple(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig) :
+CompileToolchainApple::CompileToolchainApple(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
 	CompileToolchainLLVM(inState, inProject, inConfig)
 {
 }

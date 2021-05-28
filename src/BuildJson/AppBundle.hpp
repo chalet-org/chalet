@@ -9,7 +9,7 @@
 #include "BuildJson/Bundle/BundleLinux.hpp"
 #include "BuildJson/Bundle/BundleMacOS.hpp"
 #include "BuildJson/Bundle/BundleWindows.hpp"
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
 #include "Compile/CompilerTools.hpp"
 #include "State/BuildPaths.hpp"
 
@@ -17,7 +17,7 @@ namespace chalet
 {
 struct AppBundle
 {
-	explicit AppBundle(const BuildEnvironment& inEnvironment, const ProjectConfigurationList& inProjectList, const BuildPaths& inPaths, const CompilerTools& inCompilers);
+	explicit AppBundle(const BuildEnvironment& inEnvironment, const BuildTargetList& inTargets, const BuildPaths& inPaths, const CompilerTools& inCompilers);
 
 	const BundleLinux& linuxBundle() const noexcept;
 	void setLinuxBundle(const BundleLinux& inValue);
@@ -61,7 +61,7 @@ struct AppBundle
 
 private:
 	const BuildEnvironment& m_environment;
-	const ProjectConfigurationList& m_projectConfigs;
+	const BuildTargetList& m_targets;
 	const BuildPaths& m_paths;
 	const CompilerTools& m_compilers;
 

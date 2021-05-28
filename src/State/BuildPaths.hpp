@@ -6,7 +6,7 @@
 #ifndef CHALET_BUILD_PATHS_HPP
 #define CHALET_BUILD_PATHS_HPP
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
 #include "State/SourceOutputs.hpp"
 
 namespace chalet
@@ -23,13 +23,13 @@ struct BuildPaths
 	const std::string& depDir() const noexcept;
 	const std::string& asmDir() const noexcept;
 
-	std::string getTargetFilename(const ProjectConfiguration& inProject) const;
-	std::string getTargetBasename(const ProjectConfiguration& inProject) const;
-	std::string getPrecompiledHeader(const ProjectConfiguration& inProject) const;
-	std::string getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inPchExtension = true) const;
-	std::string getPrecompiledHeaderInclude(const ProjectConfiguration& inProject) const;
+	std::string getTargetFilename(const ProjectTarget& inProject) const;
+	std::string getTargetBasename(const ProjectTarget& inProject) const;
+	std::string getPrecompiledHeader(const ProjectTarget& inProject) const;
+	std::string getPrecompiledHeaderTarget(const ProjectTarget& inProject, const bool inPchExtension = true) const;
+	std::string getPrecompiledHeaderInclude(const ProjectTarget& inProject) const;
 
-	SourceOutputs getOutputs(const ProjectConfiguration& inProject, const bool inIsMsvc, const bool inObjExtension = false) const;
+	SourceOutputs getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inObjExtension = false) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const;
 
 private:
@@ -49,11 +49,11 @@ private:
 	StringList getDependencyFilesList(const SourceGroup& inFiles) const;
 	StringList getAssemblyFilesList(const SourceGroup& inFiles, const bool inObjExtension) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
-	std::string getPrecompiledHeaderDirectory(const ProjectConfiguration& inProject) const;
-	SourceGroup getFiles(const ProjectConfiguration& inProject) const;
-	SourceGroup getDirectories(const ProjectConfiguration& inProject) const;
-	StringList getFileList(const ProjectConfiguration& inProject) const;
-	StringList getDirectoryList(const ProjectConfiguration& inProject) const;
+	std::string getPrecompiledHeaderDirectory(const ProjectTarget& inProject) const;
+	SourceGroup getFiles(const ProjectTarget& inProject) const;
+	SourceGroup getDirectories(const ProjectTarget& inProject) const;
+	StringList getFileList(const ProjectTarget& inProject) const;
+	StringList getDirectoryList(const ProjectTarget& inProject) const;
 
 	mutable StringList m_fileListCache;
 	// mutable StringList m_directoryCache;

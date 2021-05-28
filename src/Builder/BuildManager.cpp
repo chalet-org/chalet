@@ -79,56 +79,69 @@ bool BuildManager::run(const Route inRoute)
 		if (!m_strategy->initialize())
 			return false;
 
-		for (auto& project : m_state.projects)
+		for (auto& target : m_state.targets)
 		{
-			if (project->cmake() || project->hasScripts())
-				continue;
-
-			if (!cacheRecipe(*project, inRoute))
-				return false;
+			if (target->isProject())
+			{
+				if (!cacheRecipe(static_cast<const ProjectTarget&>(*target), inRoute))
+					return false;
+			}
 		}
 
 		m_strategy->saveBuildFile();
 	}
 
-	bool multiTarget = m_state.projects.size() > 1;
+	bool multiTarget = m_state.targets.size() > 1;
+
+	const ProjectTarget* runProject = nullptr;
 
 	bool error = false;
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (runCommand && !project->runProject())
-			continue;
-
-		m_project = project.get();
-
-		if (project->cmake())
+		if ((runCommand || inRoute == Route::BuildRun) && target->isProject())
 		{
-			if (!compileCMakeProject())
+			auto project = static_cast<const ProjectTarget*>(target.get());
+			if (project->runProject())
+				runProject = project;
+			else if (runCommand)
+				continue;
+		}
+
+		if (target->isCMake())
+		{
+			if (!compileCMakeProject(static_cast<const CMakeTarget&>(*target)))
 				return false;
 		}
-		else
+		else if (target->isScript())
 		{
 			Timer buildTimer;
 
-			if (!m_buildRoutes[inRoute](*this))
+			if (!cmdScript(static_cast<const ScriptTarget&>(*target)))
 			{
 				error = true;
 				break;
 			}
 
-			const bool hasScripts = project->hasScripts();
+			Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+			Output::lineBreak();
+		}
+		else
+		{
+			Timer buildTimer;
 
-			if (!runCommand || hasScripts)
+			if (!m_buildRoutes[inRoute](*this, static_cast<const ProjectTarget&>(*target)))
 			{
-				if (!hasScripts)
-					Output::msgTargetUpToDate(multiTarget, project->name());
+				error = true;
+				break;
+			}
 
+			if (!runCommand)
+			{
+				Output::msgTargetUpToDate(multiTarget, target->name());
 				Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
 				Output::lineBreak();
 			}
 		}
-
-		m_project = nullptr;
 	}
 
 	if (error)
@@ -142,8 +155,8 @@ bool BuildManager::run(const Route inRoute)
 			Output::lineBreak();
 	}
 
-	if (inRoute == Route::BuildRun || runCommand)
-		return doRun();
+	if ((inRoute == Route::BuildRun || runCommand) && runProject != nullptr)
+		return doRun(*runProject);
 
 	return true;
 }
@@ -155,13 +168,15 @@ void BuildManager::printBuildInformation()
 
 	bool usingCpp = false;
 	bool usingCc = false;
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (project->cmake() || project->hasScripts())
-			continue;
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
 
-		usingCpp |= project->language() == CodeLanguage::CPlusPlus;
-		usingCc |= project->language() == CodeLanguage::C;
+			usingCpp |= project.language() == CodeLanguage::CPlusPlus;
+			usingCc |= project.language() == CodeLanguage::C;
+		}
 	}
 
 	if (usingCpp && !m_state.compilerTools.compilerVersionStringCpp().empty())
@@ -215,7 +230,7 @@ std::string BuildManager::getBuildStrategyName() const
 }
 
 /*****************************************************************************/
-bool BuildManager::cacheRecipe(const ProjectConfiguration& inProject, const Route inRoute)
+bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRoute)
 {
 	auto& compilerConfig = m_state.compilerTools.getConfig(inProject.language());
 	auto compilerType = compilerConfig.compilerType();
@@ -254,27 +269,7 @@ bool BuildManager::cacheRecipe(const ProjectConfiguration& inProject, const Rout
 }
 
 /*****************************************************************************/
-bool BuildManager::doScript()
-{
-	chalet_assert(m_project != nullptr, "");
-
-	if (!m_project->hasScripts())
-		return false;
-
-	const auto& scripts = m_project->scripts();
-
-	ScriptRunner scriptRunner(m_state.tools, m_inputs.buildFile(), m_cleanOutput);
-	if (!scriptRunner.run(scripts))
-	{
-		Diagnostic::error(fmt::format("There was a problem running the script(s) for the build step: {}", m_project->name()));
-		return false;
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildManager::copyRunDependencies(const ProjectConfiguration& inProject)
+bool BuildManager::copyRunDependencies(const ProjectTarget& inProject)
 {
 	bool result = true;
 
@@ -341,9 +336,9 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 }
 
 /*****************************************************************************/
-bool BuildManager::doRun()
+bool BuildManager::doRun(const ProjectTarget& inProject)
 {
-	auto outputFile = getRunOutputFile();
+	auto outputFile = inProject.outputFile();
 	if (outputFile.empty())
 		return false;
 
@@ -351,7 +346,7 @@ bool BuildManager::doRun()
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& runOptions = m_inputs.runOptions();
 
-	const auto& runArguments = m_project->runArguments();
+	const auto& runArguments = inProject.runArguments();
 
 	// LOG(workingDirectory);
 
@@ -389,15 +384,13 @@ bool BuildManager::doRun()
 		return true;
 	}
 
-	return runProfiler(cmd, file, m_state.paths.buildOutputDir());
+	return runProfiler(inProject, cmd, file, m_state.paths.buildOutputDir());
 }
 
 /*****************************************************************************/
-bool BuildManager::runProfiler(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
+bool BuildManager::runProfiler(const ProjectTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
-	chalet_assert(m_project != nullptr, "");
-
-	ProfilerRunner profiler(m_state, *m_project, m_cleanOutput);
+	ProfilerRunner profiler(m_state, inProject, m_cleanOutput);
 	return profiler.run(inCommand, inExecutable, inOutputFolder);
 }
 
@@ -442,7 +435,7 @@ bool BuildManager::doLazyClean()
 }
 
 /*****************************************************************************/
-bool BuildManager::doClean(const ProjectConfiguration& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean)
+bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean)
 {
 	// const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
@@ -482,43 +475,46 @@ bool BuildManager::doClean(const ProjectConfiguration& inProject, const std::str
 }
 
 /*****************************************************************************/
-bool BuildManager::cmdBuild()
+bool BuildManager::cmdScript(const ScriptTarget& inScript)
 {
-	chalet_assert(m_project != nullptr, "");
+	const auto& scripts = inScript.scripts();
+	if (scripts.empty())
+		return false;
 
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
-	const auto& command = m_inputs.command();
-	const auto& outputFile = m_project->outputFile();
-	const bool hasScripts = m_project->hasScripts();
-
-	if (hasScripts)
-	{
-		if (!m_project->description().empty())
-			Output::msgScriptDescription(m_project->description());
-		else
-			Output::msgScript(m_project->name());
-	}
+	if (!inScript.description().empty())
+		Output::msgScriptDescription(inScript.description());
 	else
-	{
-		if (m_project->name() == m_runProjectName && command == Route::BuildRun)
-			Output::msgBuildAndRun(buildConfiguration, outputFile);
-		else
-			Output::msgBuild(buildConfiguration, outputFile);
-	}
+		Output::msgScript(inScript.name());
 
 	Output::lineBreak();
 
-	bool result = false;
-	if (hasScripts)
+	ScriptRunner scriptRunner(m_state.tools, m_inputs.buildFile(), m_cleanOutput);
+	if (!scriptRunner.run(scripts))
 	{
-		result = doScript();
-	}
-	else
-	{
-		result = m_strategy->buildProject(*m_project);
+		Output::lineBreak();
+		Output::msgBuildFail(); // TODO: Script failed
+		Output::lineBreak();
+		return false;
 	}
 
-	if (!result)
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::cmdBuild(const ProjectTarget& inProject)
+{
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
+	const auto& command = m_inputs.command();
+	const auto& outputFile = inProject.outputFile();
+
+	if (inProject.name() == m_runProjectName && command == Route::BuildRun)
+		Output::msgBuildAndRun(buildConfiguration, outputFile);
+	else
+		Output::msgBuild(buildConfiguration, outputFile);
+
+	Output::lineBreak();
+
+	if (!m_strategy->buildProject(inProject))
 	{
 		Output::lineBreak();
 		Output::msgBuildFail();
@@ -530,17 +526,15 @@ bool BuildManager::cmdBuild()
 }
 
 /*****************************************************************************/
-bool BuildManager::cmdRebuild()
+bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 {
-	chalet_assert(m_project != nullptr, "");
-
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
-	const auto& outputFile = m_project->outputFile();
+	const auto& outputFile = inProject.outputFile();
 
 	Output::msgRebuild(buildConfiguration, outputFile);
 	Output::lineBreak();
 
-	if (!m_strategy->buildProject(*m_project))
+	if (!m_strategy->buildProject(inProject))
 	{
 		Output::msgBuildFail();
 		Output::lineBreak();
@@ -551,12 +545,10 @@ bool BuildManager::cmdRebuild()
 }
 
 /*****************************************************************************/
-bool BuildManager::cmdRun()
+bool BuildManager::cmdRun(const ProjectTarget& inProject)
 {
-	chalet_assert(m_project != nullptr, "");
-
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
-	auto outputFile = getRunOutputFile();
+	const auto& outputFile = inProject.outputFile();
 
 	Output::msgRun(buildConfiguration, outputFile);
 	Output::lineBreak();
@@ -596,16 +588,13 @@ bool BuildManager::cmdClean()
 }*/
 
 /*****************************************************************************/
-bool BuildManager::compileCMakeProject()
+bool BuildManager::compileCMakeProject(const CMakeTarget& inTarget)
 {
-	chalet_assert(m_project != nullptr, "");
-	chalet_assert(m_project->cmake(), "");
-
 	Timer buildTimer;
 
 	m_state.tools.fetchCmakeVersion();
 
-	CmakeBuilder cmake{ m_state, *m_project, m_cleanOutput };
+	CmakeBuilder cmake(m_state, inTarget, m_cleanOutput);
 	if (!cmake.run())
 		return false;
 
@@ -624,38 +613,17 @@ std::string BuildManager::getRunProject()
 	if (!runProjectArg.empty())
 		return runProjectArg;
 
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (project->isExecutable() && project->runProject())
-			return project->name(); // just get the top one
-	}
-
-	return std::string();
-}
-
-/*****************************************************************************/
-std::string BuildManager::getRunOutputFile()
-{
-	m_project = nullptr;
-
-	std::string outputFile;
-	for (auto& project : m_state.projects)
-	{
-		if (project->name() == m_runProjectName)
+		if (target->isProject())
 		{
-			outputFile = project->outputFile();
-			m_project = project.get();
-
-			// LOG(proj->runArguments());
-
-			break;
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (project.isExecutable() && project.runProject())
+				return project.name(); // just get the top one
 		}
 	}
 
-	if (m_project == nullptr)
-		m_project = m_state.projects.back().get();
-
-	return outputFile;
+	return std::string();
 }
 
 /*****************************************************************************/

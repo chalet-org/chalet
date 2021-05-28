@@ -12,7 +12,7 @@
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
 #include "State/BuildState.hpp"
 
 // Produces a compile strategy (Makefile / Ninja / Custom),
@@ -24,9 +24,9 @@ namespace CompileFactory
 {
 [[nodiscard]] CompileStrategy makeStrategy(const StrategyType inType, BuildState& inState);
 
-[[nodiscard]] CompileToolchain makeToolchain(const ToolchainType inType, const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
+[[nodiscard]] CompileToolchain makeToolchain(const ToolchainType inType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
 
-[[nodiscard]] CompileToolchain makeToolchain(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
+[[nodiscard]] CompileToolchain makeToolchain(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
 }
 }
 

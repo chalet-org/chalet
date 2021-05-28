@@ -130,7 +130,7 @@ bool CompileStrategyNative::initialize()
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::addProject(const ProjectConfiguration& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
+bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
 {
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
@@ -170,7 +170,7 @@ bool CompileStrategyNative::saveBuildFile() const
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::buildProject(const ProjectConfiguration& inProject) const
+bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 {
 	if (m_targets.find(inProject.name()) == m_targets.end())
 	{

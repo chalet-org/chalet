@@ -39,7 +39,7 @@ namespace chalet
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileToolchain CompileFactory::makeToolchain(const ToolchainType inType, const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig)
+[[nodiscard]] CompileToolchain CompileFactory::makeToolchain(const ToolchainType inType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig)
 {
 	switch (inType)
 	{
@@ -60,7 +60,7 @@ namespace chalet
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileToolchain CompileFactory::makeToolchain(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig)
+[[nodiscard]] CompileToolchain CompileFactory::makeToolchain(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig)
 {
 	switch (inCompilerType)
 	{

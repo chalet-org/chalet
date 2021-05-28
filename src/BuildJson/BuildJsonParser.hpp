@@ -8,7 +8,9 @@
 
 #include "Libraries/Json.hpp"
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/CMakeTarget.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
+#include "BuildJson/Target/ScriptTarget.hpp"
 #include "State/BuildState.hpp"
 #include "State/CommandLineInputs.hpp"
 
@@ -39,14 +41,13 @@ private:
 	bool parseExternalDependency(DependencyGit& outDependency, const Json& inNode);
 
 	bool parseProjects(const Json& inNode);
-	bool parseProject(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract = false);
-	bool parseScript(ProjectConfiguration& outProject, const Json& inNode);
-	bool parsePlatformConfigExclusions(ProjectConfiguration& outProject, const Json& inNode);
-	bool parseCompilerSettingsCxx(ProjectConfiguration& outProject, const Json& inNode);
-	bool parseFilesAndLocation(ProjectConfiguration& outProject, const Json& inNode, const bool inAbstract);
-	bool parseProjectLocationOrFiles(ProjectConfiguration& outProject, const Json& inNode);
-	bool parseProjectScripts(ProjectConfiguration& outProject, const Json& inNode);
-	bool parseProjectCmake(ProjectConfiguration& outProject, const Json& inNode);
+	bool parseProject(ProjectTarget& outProject, const Json& inNode, const bool inAbstract = false);
+	bool parseScript(ScriptTarget& outScript, const Json& inNode);
+	bool parseCMakeProject(CMakeTarget& outProject, const Json& inNode);
+	bool parsePlatformConfigExclusions(IBuildTarget& outProject, const Json& inNode);
+	bool parseCompilerSettingsCxx(ProjectTarget& outProject, const Json& inNode);
+	bool parseFilesAndLocation(ProjectTarget& outProject, const Json& inNode, const bool inAbstract);
+	bool parseProjectLocationOrFiles(ProjectTarget& outProject, const Json& inNode);
 
 	bool parseBundle(const Json& inNode);
 	bool parseBundleLinux(const Json& inNode);
@@ -78,7 +79,7 @@ private:
 
 	const std::string kKeyTemplates = "templates";
 
-	std::unordered_map<std::string, std::unique_ptr<ProjectConfiguration>> m_abstractProjects;
+	std::unordered_map<std::string, std::unique_ptr<ProjectTarget>> m_abstractProjects;
 
 	std::string m_filename;
 	std::string m_debugIdentifier{ "debug" };

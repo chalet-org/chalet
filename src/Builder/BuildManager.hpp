@@ -6,7 +6,9 @@
 #ifndef CHALET_MAKEFILE_RUNNER_HPP
 #define CHALET_MAKEFILE_RUNNER_HPP
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/CMakeTarget.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
+#include "BuildJson/Target/ScriptTarget.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Router/Route.hpp"
@@ -17,7 +19,7 @@ namespace chalet
 {
 class BuildManager
 {
-	using BuildAction = std::function<bool(BuildManager&)>;
+	using BuildAction = std::function<bool(BuildManager&, const ProjectTarget& inTarget)>;
 	using BuildRouteList = std::unordered_map<Route, BuildAction>;
 
 public:
@@ -29,27 +31,26 @@ private:
 	void printBuildInformation();
 	std::string getBuildStrategyName() const;
 
-	bool doScript();
-	bool copyRunDependencies(const ProjectConfiguration& inProject);
+	bool copyRunDependencies(const ProjectTarget& inProject);
 	StringList getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig);
-	bool doRun();
-	bool doClean(const ProjectConfiguration& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean = false);
+	bool doRun(const ProjectTarget& inProject);
+	bool doClean(const ProjectTarget& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean = false);
 	bool doLazyClean();
 
-	bool cacheRecipe(const ProjectConfiguration& inProject, const Route inRoute);
+	bool cacheRecipe(const ProjectTarget& inProject, const Route inRoute);
 
 	// commands
-	bool cmdBuild();
-	bool cmdRebuild();
-	bool cmdRun();
+	bool cmdScript(const ScriptTarget& inScript);
+	bool cmdBuild(const ProjectTarget& inProject);
+	bool cmdRebuild(const ProjectTarget& inProject);
+	bool cmdRun(const ProjectTarget& inProject);
 	bool cmdClean();
 	// bool cmdProfile();
 
-	bool compileCMakeProject();
+	bool compileCMakeProject(const CMakeTarget& inTarget);
 	std::string getRunProject();
-	std::string getRunOutputFile();
 	bool createAppBundle();
-	bool runProfiler(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
+	bool runProfiler(const ProjectTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 
 	void testTerminalMessages();
 
@@ -61,7 +62,7 @@ private:
 
 	CompileStrategy m_strategy;
 
-	ProjectConfiguration* m_project = nullptr;
+	// ProjectTarget* m_project = nullptr;
 
 	std::string m_runProjectName;
 

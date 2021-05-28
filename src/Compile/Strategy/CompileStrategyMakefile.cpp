@@ -67,7 +67,7 @@ bool CompileStrategyMakefile::initialize()
 }
 
 /*****************************************************************************/
-bool CompileStrategyMakefile::addProject(const ProjectConfiguration& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
+bool CompileStrategyMakefile::addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
 {
 	if (!m_initialized)
 		return false;
@@ -105,7 +105,7 @@ bool CompileStrategyMakefile::saveBuildFile() const
 }
 
 /*****************************************************************************/
-bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject) const
+bool CompileStrategyMakefile::buildProject(const ProjectTarget& inProject) const
 {
 	if (m_hashes.find(inProject.name()) == m_hashes.end())
 	{
@@ -129,7 +129,7 @@ bool CompileStrategyMakefile::buildProject(const ProjectConfiguration& inProject
 }
 
 /*****************************************************************************/
-bool CompileStrategyMakefile::buildMake(const ProjectConfiguration& inProject) const
+bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 {
 	const auto& makeExec = m_state.tools.make();
 	StringList command;
@@ -187,7 +187,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectConfiguration& inProject) c
 
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
-bool CompileStrategyMakefile::buildNMake(const ProjectConfiguration& inProject) const
+bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 {
 	const auto& makeExec = m_state.tools.make();
 

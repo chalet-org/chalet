@@ -40,7 +40,7 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-void NinjaGenerator::addProjectRecipes(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
+void NinjaGenerator::addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
 {
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
@@ -49,18 +49,20 @@ void NinjaGenerator::addProjectRecipes(const ProjectConfiguration& inProject, co
 	const auto& config = m_state.compilerTools.getConfig(m_project->language());
 	m_needsMsvcDepsPrefix |= config.isMsvc();
 
-	const auto& target = inOutputs.target;
-
 	const std::string rules = getRules(inOutputs.fileExtensions);
 	const std::string buildRules = getBuildRules(inOutputs);
 
 	auto objects = String::join(inOutputs.objectListLinker);
 
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (List::contains(inProject.projectStaticLinks(), project->name()))
+		if (target->isProject())
 		{
-			objects += " " + m_state.paths.getTargetFilename(*project);
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (List::contains(inProject.projectStaticLinks(), project.name()))
+			{
+				objects += " " + m_state.paths.getTargetFilename(project);
+			}
 		}
 	}
 
@@ -78,7 +80,7 @@ build build_{hash}: phony | {target}
 		FMT_ARG(rules),
 		FMT_ARG(buildRules),
 		FMT_ARG(objects),
-		FMT_ARG(target));
+		fmt::arg("target", inOutputs.target));
 
 	//
 

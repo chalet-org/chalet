@@ -105,20 +105,21 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	// TODO: Like with the linux bundler, this doesn't target a particular executable
 	// This just gets the first
 	std::string mainExecutable;
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (project->hasScripts())
-			continue;
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (!project.isExecutable())
+				continue;
 
-		if (!project->isExecutable())
-			continue;
+			if (!List::contains(bundleProjects, project.name()))
+				continue;
 
-		if (!List::contains(bundleProjects, project->name()))
-			continue;
-
-		// LOG("Main exec:", project->name());
-		mainExecutable = project->outputFile();
-		break;
+			// LOG("Main exec:", project.name());
+			mainExecutable = project.outputFile();
+			break;
+		}
 	}
 
 	if (mainExecutable.empty())
@@ -156,23 +157,21 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		return false;
 
 	StringList dylibs = macosBundle.dylibs();
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (project->hasScripts())
-			continue;
-
-		if (!project->cmake())
+		if (target->isProject())
 		{
-			if (project->isSharedLibrary())
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (project.isSharedLibrary())
 			{
-				const auto target = fmt::format("{}/{}", buildOutputDir, project->outputFile());
-				if (!Commands::pathExists(target))
+				const auto targetPath = fmt::format("{}/{}", buildOutputDir, project.outputFile());
+				if (!Commands::pathExists(targetPath))
 					return false;
 
-				// if (!Commands::copy(target, frameworkPath, inCleanOutput))
+				// if (!Commands::copy(targetPath, frameworkPath, inCleanOutput))
 				// 	return false;
 
-				dylibs.push_back(target);
+				dylibs.push_back(targetPath);
 			}
 		}
 	}
@@ -223,33 +222,34 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		}
 	}
 
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (project->hasScripts())
-			continue;
-
-		for (auto& framework : project->macosFrameworks())
+		if (target->isProject())
 		{
-			// Don't include System frameworks
-			// TODO: maybe make an option for this? Not sure what scenarios this is needed
-			if (Commands::pathExists(fmt::format("/System/Library/Frameworks/{}.framework", framework)))
-				continue;
-
-			for (auto& path : project->macosFrameworkPaths())
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			for (auto& framework : project.macosFrameworks())
 			{
-				const std::string filename = fmt::format("{}{}.framework", path, framework);
-				if (!Commands::pathExists(filename))
+				// Don't include System frameworks
+				// TODO: maybe make an option for this? Not sure what scenarios this is needed
+				if (Commands::pathExists(fmt::format("/System/Library/Frameworks/{}.framework", framework)))
 					continue;
 
-				if (!Commands::copySkipExisting(filename, frameworkPath, inCleanOutput))
-					return false;
+				for (auto& path : project.macosFrameworkPaths())
+				{
+					const std::string filename = fmt::format("{}{}.framework", path, framework);
+					if (!Commands::pathExists(filename))
+						continue;
 
-				const auto resolvedFramework = fmt::format("{}/{}.framework", frameworkPath, framework);
+					if (!Commands::copySkipExisting(filename, frameworkPath, inCleanOutput))
+						return false;
 
-				if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executableOutputPath }, inCleanOutput))
-					return false;
+					const auto resolvedFramework = fmt::format("{}/{}.framework", frameworkPath, framework);
 
-				break;
+					if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executableOutputPath }, inCleanOutput))
+						return false;
+
+					break;
+				}
 			}
 		}
 	}

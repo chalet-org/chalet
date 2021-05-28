@@ -79,25 +79,28 @@ bool AppBundler::run()
 		depsFromJson.push_back(dep);
 	}
 
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (!List::contains(bundleProjects, project->name()))
-			continue;
-
-		const auto& filename = project->outputFile();
-		const auto target = fmt::format("{buildOutputDir}/{filename}",
-			FMT_ARG(buildOutputDir),
-			FMT_ARG(filename));
-
-		if (project->isExecutable())
+		if (!target->isScript())
 		{
-			std::string outTarget = target;
-			List::addIfDoesNotExist(executables, std::move(outTarget));
-		}
-		dependencies.push_back(target);
+			auto& project = static_cast<const ProjectTarget&>(*target);
 
-		if (!m_state.tools.getExecutableDependencies(target, dependencies))
-			return false;
+			if (!List::contains(bundleProjects, project.name()))
+				continue;
+
+			const auto& filename = project.outputFile();
+			const auto buildTarget = fmt::format("{}/{}", buildOutputDir, filename);
+
+			if (project.isExecutable())
+			{
+				std::string outTarget = buildTarget;
+				List::addIfDoesNotExist(executables, std::move(outTarget));
+			}
+			dependencies.push_back(buildTarget);
+
+			if (!m_state.tools.getExecutableDependencies(buildTarget, dependencies))
+				return false;
+		}
 	}
 
 	bundle.addDependencies(dependencies);

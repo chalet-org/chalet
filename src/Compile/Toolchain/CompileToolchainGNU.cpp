@@ -14,7 +14,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig) :
+CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
 	ICompileToolchain(inState),
 	m_project(inProject),
 	m_config(inConfig),

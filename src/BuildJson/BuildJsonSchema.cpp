@@ -347,9 +347,6 @@ Json Schema::getBuildJson()
 			"cStandard": {
 				"$ref": "#/definitions/project-cxx-cStandard"
 			},
-			"cmake": {
-				"$ref": "#/definitions/project-cxx-cmake"
-			},
 			"compileOptions": {
 				"$ref": "#/definitions/project-cxx-compileOptions"
 			},
@@ -410,9 +407,6 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^cmake{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-cmake"
-	})json"_ojson;
 	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^cStandard{}$", patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-cStandard"
 	})json"_ojson;
@@ -479,19 +473,19 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/project-language"
 			},
 			"location": {
-				"$ref": "#/definitions/project-location"
+				"$ref": "#/definitions/target-location"
 			},
 			"onlyInConfiguration": {
-				"$ref": "#/definitions/project-onlyInConfiguration"
+				"$ref": "#/definitions/target-onlyInConfiguration"
 			},
 			"notInConfiguration": {
-				"$ref": "#/definitions/project-notInConfiguration"
+				"$ref": "#/definitions/target-notInConfiguration"
 			},
 			"onlyInPlatform": {
-				"$ref": "#/definitions/project-onlyInPlatform"
+				"$ref": "#/definitions/target-onlyInPlatform"
 			},
 			"notInPlatform": {
-				"$ref": "#/definitions/project-notInPlatform"
+				"$ref": "#/definitions/target-notInPlatform"
 			},
 			"runProject": {
 				"$ref": "#/definitions/project-runProject"
@@ -551,40 +545,6 @@ Json Schema::getBuildJson()
 			"gnu2x"
 		],
 		"default": "c11"
-	})json"_ojson;
-
-	ret[kDefinitions]["project-cxx-cmake"] = R"json({
-		"description": "Build the location with cmake",
-		"anyOf": [
-			{
-				"type": "boolean"
-			},
-			{
-				"type": "object",
-				"additionalProperties": false,
-				"required": [
-					"enabled"
-				],
-				"properties": {
-					"defines": {
-						"type": "array",
-						"uniqueItems": true,
-						"items": {
-							"type": "string"
-						}
-					},
-					"enabled": {
-						"type": "boolean",
-						"default": true
-					},
-					"recheck": {
-						"type": "boolean",
-						"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
-						"default": false
-					}
-				}
-			}
-		]
 	})json"_ojson;
 
 	ret[kDefinitions]["project-cxx-compileOptions"] = R"json({
@@ -718,7 +678,7 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["project-cxx-links"][kItems][kPattern] = patternProjectLinks;
 
-	ret[kDefinitions]["project-location"] = R"json({
+	ret[kDefinitions]["target-location"] = R"json({
 		"description": "The root path of the source files, relative to the working directory.",
 		"oneOf": [
 			{
@@ -740,7 +700,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	ret[kDefinitions]["project-location"]["oneOf"][2][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["target-location"]["oneOf"][2][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -754,7 +714,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	ret[kDefinitions]["project-location"]["oneOf"][2][kPatternProperties][fmt::format("^include{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["target-location"]["oneOf"][2][kPatternProperties][fmt::format("^include{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -799,7 +759,7 @@ Json Schema::getBuildJson()
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["project-onlyInConfiguration"] = R"json({
+	ret[kDefinitions]["target-onlyInConfiguration"] = R"json({
 		"description": "Only compile this project in specific build configuration(s)",
 		"oneOf": [
 			{
@@ -815,7 +775,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-notInConfiguration"] = R"json({
+	ret[kDefinitions]["target-notInConfiguration"] = R"json({
 		"description": "Don't compile this project in specific build configuration(s)",
 		"oneOf": [
 			{
@@ -831,7 +791,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-onlyInPlatform"] = R"json({
+	ret[kDefinitions]["target-onlyInPlatform"] = R"json({
 		"description": "Only compile this project on specific platform(s)",
 		"oneOf": [
 			{
@@ -847,7 +807,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-notInPlatform"] = R"json({
+	ret[kDefinitions]["target-notInPlatform"] = R"json({
 		"description": "Don't compile this project on specific platform(s)",
 		"oneOf": [
 			{
@@ -918,9 +878,9 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-script-description"] = R"json({
+	ret[kDefinitions]["target-description"] = R"json({
 		"type": "string",
-		"description": "A description of the script to display during the build."
+		"description": "A description of the target to display during the build."
 	})json"_ojson;
 
 	ret[kDefinitions]["project-cxx-staticLinking"] = R"json({
@@ -1267,7 +1227,7 @@ Json Schema::getBuildJson()
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["script"] = R"json({
+	ret[kDefinitions]["target-script"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"properties": {
@@ -1276,16 +1236,84 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/project-script"
 			},
 			"description": {
-				"$ref": "#/definitions/project-script-description"
+				"$ref": "#/definitions/target-description"
 			}
 		}
 	})json"_ojson;
-	ret[kDefinitions]["script"][kPatternProperties][fmt::format("^script{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["target-script"][kPatternProperties][fmt::format("^script{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"description": "Script(s) to run during this build step.",
 		"$ref": "#/definitions/project-script"
 	})json"_ojson;
-	ret[kDefinitions]["script"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-script-description"
+	ret[kDefinitions]["target-script"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-description"
+	})json"_ojson;
+
+	ret[kDefinitions]["target-cmake-cmake"] = R"json({
+		"type": "boolean",
+		"description": "true of Cmake project.",
+		"default": true
+	})json"_ojson;
+
+	ret[kDefinitions]["target-cmake-location"] = R"json({
+		"type": "string",
+		"description": "The location of the root CMakeLists.txt for the project."
+	})json"_ojson;
+
+	ret[kDefinitions]["target-cmake-defines"] = R"json({
+		"type": "array",
+		"uniqueItems": true,
+		"description": "Macro definitions to be passed into CMake.",
+		"items": {
+			"type": "string"
+		}
+	})json"_ojson;
+
+	ret[kDefinitions]["target-cmake-recheck"] = R"json({
+		"type": "boolean",
+		"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
+		"default": false
+	})json"_ojson;
+
+	ret[kDefinitions]["target-cmake"] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"required": [
+			"cmake",
+			"location"
+		],
+		"description": "Build the location with cmake",
+		"properties": {
+			"description": {
+				"$ref": "#/definitions/target-description"
+			},
+			"location": {
+				"$ref": "#/definitions/target-cmake-location"
+			},
+			"cmake": {
+				"$ref": "#/definitions/target-cmake-cmake"
+			},
+			"defines": {
+				"$ref": "#/definitions/target-cmake-defines"
+			},
+			"recheck": {
+				"$ref": "#/definitions/target-cmake-recheck"
+			},
+			"onlyInConfiguration": {
+				"$ref": "#/definitions/target-onlyInConfiguration"
+			},
+			"notInConfiguration": {
+				"$ref": "#/definitions/target-notInConfiguration"
+			},
+			"onlyInPlatform": {
+				"$ref": "#/definitions/target-onlyInPlatform"
+			},
+			"notInPlatform": {
+				"$ref": "#/definitions/target-notInPlatform"
+			}
+		}
+	})json"_ojson;
+	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-description"
 	})json"_ojson;
 
 	//
@@ -1459,7 +1487,10 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/project"
 			},
 			{
-				"$ref": "#/definitions/script"
+				"$ref": "#/definitions/target-cmake"
+			},
+			{
+				"$ref": "#/definitions/target-script"
 			}
 		]
 	})json"_ojson;

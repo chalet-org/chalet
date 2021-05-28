@@ -15,9 +15,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-CmakeBuilder::CmakeBuilder(const BuildState& inState, const ProjectConfiguration& inProject, const bool inCleanOutput) :
+CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarget, const bool inCleanOutput) :
 	m_state(inState),
-	m_project(inProject),
+	m_target(inTarget),
 	m_cleanOutput(inCleanOutput)
 {
 	UNUSED(m_cleanOutput);
@@ -26,7 +26,7 @@ CmakeBuilder::CmakeBuilder(const BuildState& inState, const ProjectConfiguration
 /*****************************************************************************/
 bool CmakeBuilder::run()
 {
-	const auto& name = m_project.name();
+	const auto& name = m_target.name();
 	if (!m_state.tools.cmakeAvailable())
 	{
 		Diagnostic::error(fmt::format("CMake was requsted for the project '{}' but was not found.", name));
@@ -47,8 +47,7 @@ bool CmakeBuilder::run()
 		return false;
 	}
 
-	// TODO: This should come from a single location
-	const auto& loc = m_project.locations().front();
+	const auto& loc = m_target.location();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	auto cwd = Commands::getWorkingDirectoryPath();
@@ -58,7 +57,7 @@ bool CmakeBuilder::run()
 	Path::sanitize(outDir);
 
 	bool outDirectoryDoesNotExist = !Commands::pathExists(outDir);
-	bool recheckCmake = m_project.cmakeRecheck();
+	bool recheckCmake = m_target.recheck();
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{
@@ -89,7 +88,7 @@ bool CmakeBuilder::run()
 	}
 
 	//
-	Output::msgTargetUpToDate(m_state.projects.size() > 1, m_project.name());
+	Output::msgTargetUpToDate(m_state.targets.size() > 1, m_target.name());
 
 	return true;
 }
@@ -98,7 +97,7 @@ bool CmakeBuilder::run()
 std::string CmakeBuilder::getGenerator() const
 {
 	const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
-	const auto& compileConfig = m_state.compilerTools.getConfig(m_project.language());
+	const auto& compileConfig = m_state.compilerTools.getConfig(CodeLanguage::CPlusPlus);
 
 	std::string ret;
 	if (isNinja)
@@ -125,7 +124,7 @@ std::string CmakeBuilder::getGenerator() const
 std::string CmakeBuilder::getArch() const
 {
 	const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
-	const auto& compileConfig = m_state.compilerTools.getConfig(m_project.language());
+	const auto& compileConfig = m_state.compilerTools.getConfig(CodeLanguage::CPlusPlus);
 
 	std::string ret;
 
@@ -168,7 +167,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 	}
 
 	ret.push_back(inLocation);
-	for (auto& define : m_project.cmakeDefines())
+	for (auto& define : m_target.defines())
 	{
 		ret.push_back("-D" + define);
 	}

@@ -14,7 +14,7 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 	environment(info),
 	paths(m_inputs),
 	msvcEnvironment(*this),
-	bundle(environment, projects, paths, compilerTools),
+	bundle(environment, targets, paths, compilerTools),
 	cache(info, paths)
 {
 }
@@ -33,9 +33,12 @@ void BuildState::initializeCache()
 	cache.initialize(m_inputs.appPath());
 
 	StringList projectNames;
-	for (auto& project : projects)
+	for (auto& target : targets)
 	{
-		projectNames.push_back(project->name());
+		if (target->isProject())
+		{
+			projectNames.push_back(target->name());
+		}
 	}
 
 	cache.checkIfCompileStrategyChanged();

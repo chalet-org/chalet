@@ -284,9 +284,6 @@
 				"cStandard": {
 					"$ref": "#/definitions/project-cxx-cStandard"
 				},
-				"cmake": {
-					"$ref": "#/definitions/project-cxx-cmake"
-				},
 				"compileOptions": {
 					"$ref": "#/definitions/project-cxx-compileOptions"
 				},
@@ -346,9 +343,6 @@
 				}
 			},
 			"patternProperties": {
-				"^cmake(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/project-cxx-cmake"
-				},
 				"^cStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/project-cxx-cStandard"
 				},
@@ -416,19 +410,19 @@
 					"$ref": "#/definitions/project-language"
 				},
 				"location": {
-					"$ref": "#/definitions/project-location"
+					"$ref": "#/definitions/target-location"
 				},
 				"onlyInConfiguration": {
-					"$ref": "#/definitions/project-onlyInConfiguration"
+					"$ref": "#/definitions/target-onlyInConfiguration"
 				},
 				"notInConfiguration": {
-					"$ref": "#/definitions/project-notInConfiguration"
+					"$ref": "#/definitions/target-notInConfiguration"
 				},
 				"onlyInPlatform": {
-					"$ref": "#/definitions/project-onlyInPlatform"
+					"$ref": "#/definitions/target-onlyInPlatform"
 				},
 				"notInPlatform": {
-					"$ref": "#/definitions/project-notInPlatform"
+					"$ref": "#/definitions/target-notInPlatform"
 				},
 				"runProject": {
 					"$ref": "#/definitions/project-runProject"
@@ -488,39 +482,6 @@
 				"gnu2x"
 			],
 			"default": "c11"
-		},
-		"project-cxx-cmake": {
-			"description": "Build the location with cmake",
-			"anyOf": [
-				{
-					"type": "boolean"
-				},
-				{
-					"type": "object",
-					"additionalProperties": false,
-					"required": [
-						"enabled"
-					],
-					"properties": {
-						"defines": {
-							"type": "array",
-							"uniqueItems": true,
-							"items": {
-								"type": "string"
-							}
-						},
-						"enabled": {
-							"type": "boolean",
-							"default": true
-						},
-						"recheck": {
-							"type": "boolean",
-							"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
-							"default": false
-						}
-					}
-				}
-			]
 		},
 		"project-cxx-compileOptions": {
 			"type": "array",
@@ -640,7 +601,7 @@
 				"pattern": "^[\\w\\-\\+\\.]+$"
 			}
 		},
-		"project-location": {
+		"target-location": {
 			"description": "The root path of the source files, relative to the working directory.",
 			"oneOf": [
 				{
@@ -713,7 +674,7 @@
 			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 			"default": false
 		},
-		"project-onlyInConfiguration": {
+		"target-onlyInConfiguration": {
 			"description": "Only compile this project in specific build configuration(s)",
 			"oneOf": [
 				{
@@ -728,7 +689,7 @@
 				}
 			]
 		},
-		"project-notInConfiguration": {
+		"target-notInConfiguration": {
 			"description": "Don't compile this project in specific build configuration(s)",
 			"oneOf": [
 				{
@@ -743,7 +704,7 @@
 				}
 			]
 		},
-		"project-onlyInPlatform": {
+		"target-onlyInPlatform": {
 			"description": "Only compile this project on specific platform(s)",
 			"oneOf": [
 				{
@@ -758,7 +719,7 @@
 				}
 			]
 		},
-		"project-notInPlatform": {
+		"target-notInPlatform": {
 			"description": "Don't compile this project on specific platform(s)",
 			"oneOf": [
 				{
@@ -821,9 +782,9 @@
 				}
 			]
 		},
-		"project-script-description": {
+		"target-description": {
 			"type": "string",
-			"description": "A description of the script to display during the build."
+			"description": "A description of the target to display during the build."
 		},
 		"project-cxx-staticLinking": {
 			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
@@ -1163,7 +1124,7 @@
 			"description": "If true for a dynamic library (dll) target on Windows, a .def file will be created",
 			"default": false
 		},
-		"script": {
+		"target-script": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
@@ -1172,7 +1133,7 @@
 					"$ref": "#/definitions/project-script"
 				},
 				"description": {
-					"$ref": "#/definitions/project-script-description"
+					"$ref": "#/definitions/target-description"
 				}
 			},
 			"patternProperties": {
@@ -1181,7 +1142,72 @@
 					"$ref": "#/definitions/project-script"
 				},
 				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/project-script-description"
+					"$ref": "#/definitions/target-description"
+				}
+			}
+		},
+		"target-cmake-cmake": {
+			"type": "boolean",
+			"description": "true of Cmake project.",
+			"default": true
+		},
+		"target-cmake-location": {
+			"type": "string",
+			"description": "The location of the root CMakeLists.txt for the project."
+		},
+		"target-cmake-defines": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "Macro definitions to be passed into CMake.",
+			"items": {
+				"type": "string"
+			}
+		},
+		"target-cmake-recheck": {
+			"type": "boolean",
+			"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
+			"default": false
+		},
+		"target-cmake": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"cmake",
+				"location"
+			],
+			"description": "Build the location with cmake",
+			"properties": {
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"location": {
+					"$ref": "#/definitions/target-cmake-location"
+				},
+				"cmake": {
+					"$ref": "#/definitions/target-cmake-cmake"
+				},
+				"defines": {
+					"$ref": "#/definitions/target-cmake-defines"
+				},
+				"recheck": {
+					"$ref": "#/definitions/target-cmake-recheck"
+				},
+				"onlyInConfiguration": {
+					"$ref": "#/definitions/target-onlyInConfiguration"
+				},
+				"notInConfiguration": {
+					"$ref": "#/definitions/target-notInConfiguration"
+				},
+				"onlyInPlatform": {
+					"$ref": "#/definitions/target-onlyInPlatform"
+				},
+				"notInPlatform": {
+					"$ref": "#/definitions/target-notInPlatform"
+				}
+			},
+			"patternProperties": {
+				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-description"
 				}
 			}
 		}
@@ -1349,7 +1375,10 @@
 							"$ref": "#/definitions/project"
 						},
 						{
-							"$ref": "#/definitions/script"
+							"$ref": "#/definitions/target-cmake"
+						},
+						{
+							"$ref": "#/definitions/target-script"
 						}
 					]
 				}

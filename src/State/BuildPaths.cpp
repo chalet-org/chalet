@@ -109,7 +109,7 @@ const std::string& BuildPaths::asmDir() const noexcept
 }
 
 /*****************************************************************************/
-SourceOutputs BuildPaths::getOutputs(const ProjectConfiguration& inProject, const bool inIsMsvc, const bool inObjExtension) const
+SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inObjExtension) const
 {
 	SourceOutputs ret;
 
@@ -211,7 +211,7 @@ void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::s
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getTargetFilename(const ProjectConfiguration& inProject) const
+std::string BuildPaths::getTargetFilename(const ProjectTarget& inProject) const
 {
 	const auto& filename = inProject.outputFile();
 
@@ -219,7 +219,7 @@ std::string BuildPaths::getTargetFilename(const ProjectConfiguration& inProject)
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getTargetBasename(const ProjectConfiguration& inProject) const
+std::string BuildPaths::getTargetBasename(const ProjectTarget& inProject) const
 {
 	const auto& name = inProject.name();
 	std::string base;
@@ -237,7 +237,7 @@ std::string BuildPaths::getTargetBasename(const ProjectConfiguration& inProject)
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeader(const ProjectConfiguration& inProject) const
+std::string BuildPaths::getPrecompiledHeader(const ProjectTarget& inProject) const
 {
 	std::string ret;
 	if (inProject.usesPch())
@@ -249,7 +249,7 @@ std::string BuildPaths::getPrecompiledHeader(const ProjectConfiguration& inProje
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectConfiguration& inProject, const bool inPchExtension) const
+std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectTarget& inProject, const bool inPchExtension) const
 {
 	std::string ret;
 	if (inProject.usesPch())
@@ -266,7 +266,7 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectConfiguration& i
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectConfiguration& inProject) const
+std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectTarget& inProject) const
 {
 	std::string ret;
 	if (inProject.usesPch())
@@ -352,7 +352,7 @@ StringList BuildPaths::getOutputDirectoryList(const SourceGroup& inDirectoryList
 }
 
 /*****************************************************************************/
-StringList BuildPaths::getFileList(const ProjectConfiguration& inProject) const
+StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 {
 	const auto& files = inProject.files();
 	if (files.size() > 0)
@@ -444,7 +444,7 @@ StringList BuildPaths::getFileList(const ProjectConfiguration& inProject) const
 }
 
 /*****************************************************************************/
-StringList BuildPaths::getDirectoryList(const ProjectConfiguration& inProject) const
+StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 {
 	StringList ret;
 
@@ -528,7 +528,7 @@ StringList BuildPaths::getDirectoryList(const ProjectConfiguration& inProject) c
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderDirectory(const ProjectConfiguration& inProject) const
+std::string BuildPaths::getPrecompiledHeaderDirectory(const ProjectTarget& inProject) const
 {
 	std::string ret;
 	if (inProject.usesPch())
@@ -540,7 +540,7 @@ std::string BuildPaths::getPrecompiledHeaderDirectory(const ProjectConfiguration
 }
 
 /*****************************************************************************/
-BuildPaths::SourceGroup BuildPaths::getFiles(const ProjectConfiguration& inProject) const
+BuildPaths::SourceGroup BuildPaths::getFiles(const ProjectTarget& inProject) const
 {
 	SourceGroup ret;
 	ret.list = getFileList(inProject);
@@ -550,7 +550,7 @@ BuildPaths::SourceGroup BuildPaths::getFiles(const ProjectConfiguration& inProje
 }
 
 /*****************************************************************************/
-BuildPaths::SourceGroup BuildPaths::getDirectories(const ProjectConfiguration& inProject) const
+BuildPaths::SourceGroup BuildPaths::getDirectories(const ProjectTarget& inProject) const
 {
 	SourceGroup ret;
 	ret.list = getDirectoryList(inProject);

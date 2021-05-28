@@ -6,7 +6,7 @@
 #ifndef CHALET_ISTRATEGY_GENERATOR_HPP
 #define CHALET_ISTRATEGY_GENERATOR_HPP
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
@@ -18,7 +18,7 @@ struct IStrategyGenerator
 	explicit IStrategyGenerator(const BuildState& inState);
 	virtual ~IStrategyGenerator() = default;
 
-	virtual void addProjectRecipes(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) = 0;
+	virtual void addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) = 0;
 	virtual std::string getContents(const std::string& inPath) const = 0;
 
 	bool hasProjectRecipes() const;
@@ -26,7 +26,7 @@ struct IStrategyGenerator
 protected:
 	const BuildState& m_state;
 	ICompileToolchain* m_toolchain = nullptr;
-	const ProjectConfiguration* m_project = nullptr;
+	const ProjectTarget* m_project = nullptr;
 
 	StringList m_targetRecipes;
 	StringList m_precompiledHeaders;

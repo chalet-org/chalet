@@ -13,7 +13,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProfilerRunner::ProfilerRunner(BuildState& inState, const ProjectConfiguration& inProject, const bool inCleanOutput) :
+ProfilerRunner::ProfilerRunner(BuildState& inState, const ProjectTarget& inProject, const bool inCleanOutput) :
 	m_state(inState),
 	m_project(inProject),
 	m_cleanOutput(inCleanOutput)

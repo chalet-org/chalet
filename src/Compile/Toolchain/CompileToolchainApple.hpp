@@ -8,7 +8,7 @@
 
 #include "Compile/Toolchain/CompileToolchainLLVM.hpp"
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
 
@@ -16,7 +16,7 @@ namespace chalet
 {
 struct CompileToolchainApple final : CompileToolchainLLVM
 {
-	explicit CompileToolchainApple(const BuildState& inState, const ProjectConfiguration& inProject, const CompilerConfig& inConfig);
+	explicit CompileToolchainApple(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
 
 	virtual ToolchainType type() const final;
 

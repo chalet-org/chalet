@@ -17,10 +17,10 @@ struct CompileStrategyNinja final : ICompileStrategy
 	explicit CompileStrategyNinja(BuildState& inState);
 
 	virtual bool initialize() final;
-	virtual bool addProject(const ProjectConfiguration& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
+	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
 
 	virtual bool saveBuildFile() const final;
-	virtual bool buildProject(const ProjectConfiguration& inProject) const final;
+	virtual bool buildProject(const ProjectTarget& inProject) const final;
 
 private:
 	bool subprocessNinja(const StringList& inCmd, const bool inCleanOutput, std::string inCwd = std::string()) const;

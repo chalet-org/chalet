@@ -6,7 +6,7 @@
 #ifndef CHALET_ICOMPILE_STRATEGY_HPP
 #define CHALET_ICOMPILE_STRATEGY_HPP
 
-#include "BuildJson/ProjectConfiguration.hpp"
+#include "BuildJson/Target/ProjectTarget.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
@@ -23,10 +23,10 @@ struct ICompileStrategy
 	StrategyType type() const noexcept;
 
 	virtual bool initialize() = 0;
-	virtual bool addProject(const ProjectConfiguration& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
+	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
 
 	virtual bool saveBuildFile() const = 0;
-	virtual bool buildProject(const ProjectConfiguration& inProject) const = 0;
+	virtual bool buildProject(const ProjectTarget& inProject) const = 0;
 
 protected:
 	BuildState& m_state;

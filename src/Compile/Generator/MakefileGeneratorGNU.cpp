@@ -39,7 +39,7 @@ MakefileGeneratorGNU::MakefileGeneratorGNU(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-void MakefileGeneratorGNU::addProjectRecipes(const ProjectConfiguration& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
+void MakefileGeneratorGNU::addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
 {
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
@@ -629,14 +629,18 @@ std::string MakefileGeneratorGNU::getLinkerPreReqs() const
 	std::string ret = fmt::format("$(SOURCE_OBJS_{})", m_hash);
 
 	uint count = 0;
-	for (auto& project : m_state.projects)
+	for (auto& target : m_state.targets)
 	{
-		if (List::contains(m_project->projectStaticLinks(), project->name()))
+		if (target->isProject())
 		{
-			if (count == 0)
-				ret += " |";
-			ret += " " + m_state.paths.getTargetFilename(*project);
-			++count;
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (List::contains(m_project->projectStaticLinks(), project.name()))
+			{
+				if (count == 0)
+					ret += " |";
+				ret += " " + m_state.paths.getTargetFilename(project);
+				++count;
+			}
 		}
 	}
 
