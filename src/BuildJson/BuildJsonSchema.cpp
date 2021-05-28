@@ -1259,10 +1259,15 @@ Json Schema::getBuildJson()
 		"description": "The location of the root CMakeLists.txt for the project."
 	})json"_ojson;
 
+	ret[kDefinitions]["target-cmake-buildScript"] = R"json({
+		"type": "string",
+		"description": "Pre-load a script to populate the cache. (-C)"
+	})json"_ojson;
+
 	ret[kDefinitions]["target-cmake-defines"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
-		"description": "Macro definitions to be passed into CMake.",
+		"description": "Macro definitions to be passed into CMake. (-D)",
 		"items": {
 			"type": "string"
 		}
@@ -1272,6 +1277,11 @@ Json Schema::getBuildJson()
 		"type": "boolean",
 		"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
 		"default": false
+	})json"_ojson;
+
+	ret[kDefinitions]["target-cmake-toolset"] = R"json({
+		"type": "string",
+		"description": "A toolset to be passed to CMake with the -T option."
 	})json"_ojson;
 
 	ret[kDefinitions]["target-cmake"] = R"json({
@@ -1289,11 +1299,17 @@ Json Schema::getBuildJson()
 			"location": {
 				"$ref": "#/definitions/target-cmake-location"
 			},
+			"buildScript": {
+				"$ref": "#/definitions/target-cmake-buildScript"
+			},
 			"cmake": {
 				"$ref": "#/definitions/target-cmake-cmake"
 			},
 			"defines": {
 				"$ref": "#/definitions/target-cmake-defines"
+			},
+			"toolset": {
+				"$ref": "#/definitions/target-cmake-toolset"
 			},
 			"recheck": {
 				"$ref": "#/definitions/target-cmake-recheck"
@@ -1314,6 +1330,15 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/target-description"
+	})json"_ojson;
+	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^buildScript{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-cmake-buildScript"
+	})json"_ojson;
+	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-cmake-defines"
+	})json"_ojson;
+	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^toolset{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-cmake-toolset"
 	})json"_ojson;
 
 	//

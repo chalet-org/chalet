@@ -1155,10 +1155,14 @@
 			"type": "string",
 			"description": "The location of the root CMakeLists.txt for the project."
 		},
+		"target-cmake-buildScript": {
+			"type": "string",
+			"description": "Pre-load a script to populate the cache. (-C)"
+		},
 		"target-cmake-defines": {
 			"type": "array",
 			"uniqueItems": true,
-			"description": "Macro definitions to be passed into CMake.",
+			"description": "Macro definitions to be passed into CMake. (-D)",
 			"items": {
 				"type": "string"
 			}
@@ -1167,6 +1171,10 @@
 			"type": "boolean",
 			"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
 			"default": false
+		},
+		"target-cmake-toolset": {
+			"type": "string",
+			"description": "A toolset to be passed to CMake with the -T option."
 		},
 		"target-cmake": {
 			"type": "object",
@@ -1183,11 +1191,17 @@
 				"location": {
 					"$ref": "#/definitions/target-cmake-location"
 				},
+				"buildScript": {
+					"$ref": "#/definitions/target-cmake-buildScript"
+				},
 				"cmake": {
 					"$ref": "#/definitions/target-cmake-cmake"
 				},
 				"defines": {
 					"$ref": "#/definitions/target-cmake-defines"
+				},
+				"toolset": {
+					"$ref": "#/definitions/target-cmake-toolset"
 				},
 				"recheck": {
 					"$ref": "#/definitions/target-cmake-recheck"
@@ -1208,6 +1222,15 @@
 			"patternProperties": {
 				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/target-description"
+				},
+				"^buildScript(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-cmake-buildScript"
+				},
+				"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-cmake-defines"
+				},
+				"^toolset(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-cmake-toolset"
 				}
 			}
 		}

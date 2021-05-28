@@ -658,6 +658,9 @@ bool BuildJsonParser::parseCMakeProject(CMakeTarget& outProject, const Json& inN
 	else
 		return false;
 
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "buildScript"))
+		outProject.setBuildScript(std::move(val));
+
 	if (bool val = false; m_buildJson->assignFromKey(val, inNode, "recheck"))
 		outProject.setRecheck(val);
 
@@ -666,6 +669,9 @@ bool BuildJsonParser::parseCMakeProject(CMakeTarget& outProject, const Json& inN
 
 	if (std::string val; assignStringFromConfig(val, inNode, "description"))
 		outProject.setDescription(val);
+
+	if (std::string val; assignStringFromConfig(val, inNode, "toolset"))
+		outProject.setToolset(std::move(val));
 
 	if (!parsePlatformConfigExclusions(outProject, inNode))
 		return false;

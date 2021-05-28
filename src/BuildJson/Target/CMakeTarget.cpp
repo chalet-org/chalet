@@ -19,30 +19,6 @@ CMakeTarget::CMakeTarget(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-const std::string& CMakeTarget::location() const noexcept
-{
-	return m_location;
-}
-void CMakeTarget::setLocation(std::string&& inValue) noexcept
-{
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
-	m_location = inValue;
-}
-
-/*****************************************************************************/
-bool CMakeTarget::recheck() const noexcept
-{
-	return m_recheck;
-}
-
-void CMakeTarget::setRecheck(const bool inValue) noexcept
-{
-	m_recheck = inValue;
-}
-
-/*****************************************************************************/
 const StringList& CMakeTarget::defines() const noexcept
 {
 	return m_defines;
@@ -56,6 +32,55 @@ void CMakeTarget::addDefines(StringList& inList)
 void CMakeTarget::addDefine(std::string& inValue)
 {
 	List::addIfDoesNotExist(m_defines, std::move(inValue));
+}
+
+/*****************************************************************************/
+const std::string& CMakeTarget::buildScript() const noexcept
+{
+	return m_buildScript;
+}
+
+void CMakeTarget::setBuildScript(std::string&& inValue) noexcept
+{
+	parseStringVariables(inValue);
+	Path::sanitize(inValue);
+
+	m_buildScript = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& CMakeTarget::toolset() const noexcept
+{
+	return m_toolset;
+}
+void CMakeTarget::setToolset(std::string&& inValue) noexcept
+{
+	m_toolset = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& CMakeTarget::location() const noexcept
+{
+	return m_location;
+}
+
+void CMakeTarget::setLocation(std::string&& inValue) noexcept
+{
+	parseStringVariables(inValue);
+	Path::sanitize(inValue);
+
+	m_location = std::move(inValue);
+}
+
+/*****************************************************************************/
+bool CMakeTarget::recheck() const noexcept
+{
+	return m_recheck;
+}
+
+void CMakeTarget::setRecheck(const bool inValue) noexcept
+{
+	m_recheck = inValue;
 }
 
 /*****************************************************************************/

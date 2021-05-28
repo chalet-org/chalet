@@ -67,20 +67,20 @@ bool CmakeBuilder::run()
 		Path::sanitize(location);
 
 		if (outDirectoryDoesNotExist)
-			Commands::makeDirectory(outDir, false);
+			Commands::makeDirectory(outDir, m_cleanOutput);
 
 		// TODO: -T toolset (relates to Host arch)
 		// https://cmake.org/cmake/help/latest/variable/CMAKE_GENERATOR_TOOLSET.html#variable:CMAKE_GENERATOR_TOOLSET
 
 		{
 			StringList generatorCommand = getGeneratorCommand(location);
-			if (!Commands::subprocess(generatorCommand, outDir))
+			if (!Commands::subprocess(generatorCommand, outDir, m_cleanOutput))
 				return false;
 		}
 
 		{
 			StringList buildCommand = getBuildCommand(".");
-			if (!Commands::subprocess(buildCommand, outDir, PipeOption::StdOut))
+			if (!Commands::subprocess(buildCommand, outDir, PipeOption::StdOut, m_cleanOutput))
 				return false;
 		}
 
@@ -159,6 +159,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 	auto& cmake = m_state.tools.cmake();
 
 	StringList ret{ cmake, "-G", getGenerator() };
+
 	std::string arch = getArch();
 	if (!arch.empty())
 	{
@@ -166,12 +167,28 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 		ret.push_back(arch);
 	}
 
-	ret.push_back(inLocation);
+	const auto& buildScript = m_target.buildScript();
+	if (!buildScript.empty())
+	{
+		ret.push_back("-C");
+		ret.push_back(buildScript);
+	}
+
+	const auto& toolset = m_target.toolset();
+	if (!toolset.empty())
+	{
+		ret.push_back("-T");
+		ret.push_back(toolset);
+	}
+
 	for (auto& define : m_target.defines())
 	{
 		ret.push_back("-D" + define);
 	}
 	ret.push_back("-DCMAKE_BUILD_TYPE=" + buildConfiguration);
+
+	ret.push_back("-S");
+	ret.push_back(inLocation);
 
 	return ret;
 }
