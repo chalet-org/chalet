@@ -6,7 +6,7 @@
 #ifndef CHALET_DEPENDENCY_GIT_HPP
 #define CHALET_DEPENDENCY_GIT_HPP
 
-#include "BuildJson/BuildEnvironment.hpp"
+#include "State/BuildEnvironment.hpp"
 
 namespace chalet
 {

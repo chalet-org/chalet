@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/BuildEnvironment.hpp"
+#include "State/BuildEnvironment.hpp"
 
 #include <thread>
 

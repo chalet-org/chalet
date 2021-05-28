@@ -6,8 +6,8 @@
 #ifndef CHALET_PROFILER_RUNNER_HPP
 #define CHALET_PROFILER_RUNNER_HPP
 
-#include "BuildJson/Target/ProjectTarget.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/ProjectTarget.hpp"
 
 namespace chalet
 {

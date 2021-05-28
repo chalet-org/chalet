@@ -6,12 +6,12 @@
 #ifndef CHALET_APP_BUNDLE_HPP
 #define CHALET_APP_BUNDLE_HPP
 
-#include "BuildJson/Bundle/BundleLinux.hpp"
-#include "BuildJson/Bundle/BundleMacOS.hpp"
-#include "BuildJson/Bundle/BundleWindows.hpp"
-#include "BuildJson/Target/ProjectTarget.hpp"
 #include "Compile/CompilerTools.hpp"
 #include "State/BuildPaths.hpp"
+#include "State/Bundle/BundleLinux.hpp"
+#include "State/Bundle/BundleMacOS.hpp"
+#include "State/Bundle/BundleWindows.hpp"
+#include "State/Target/ProjectTarget.hpp"
 
 namespace chalet
 {

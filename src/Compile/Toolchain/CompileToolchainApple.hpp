@@ -8,9 +8,9 @@
 
 #include "Compile/Toolchain/CompileToolchainLLVM.hpp"
 
-#include "BuildJson/Target/ProjectTarget.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/ProjectTarget.hpp"
 
 namespace chalet
 {

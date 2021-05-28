@@ -6,17 +6,17 @@
 #ifndef CHALET_BUILD_STATE_HPP
 #define CHALET_BUILD_STATE_HPP
 
-#include "BuildJson/AppBundle.hpp"
-#include "BuildJson/BuildEnvironment.hpp"
-#include "BuildJson/ConfigurationOptions.hpp"
-#include "BuildJson/DependencyGit.hpp"
-#include "BuildJson/Target/IBuildTarget.hpp"
-#include "BuildJson/WorkspaceInfo.hpp"
-#include "CacheJson/CacheTools.hpp"
 #include "Compile/CompilerTools.hpp"
+#include "State/AppBundle.hpp"
 #include "State/BuildCache.hpp"
+#include "State/BuildEnvironment.hpp"
 #include "State/BuildPaths.hpp"
+#include "State/CacheTools.hpp"
 #include "State/CommandLineInputs.hpp"
+#include "State/ConfigurationOptions.hpp"
+#include "State/DependencyGit.hpp"
+#include "State/Target/IBuildTarget.hpp"
+#include "State/WorkspaceInfo.hpp"
 #include "Terminal/MsvcEnvironment.hpp"
 
 namespace chalet

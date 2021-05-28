@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/DependencyGit.hpp"
+#include "State/DependencyGit.hpp"
 
 #include "Libraries/Format.hpp"
 #include "State/CommandLineInputs.hpp"

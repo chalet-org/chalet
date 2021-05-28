@@ -6,11 +6,11 @@
 #ifndef CHALET_BUILD_ENVIRONMENT_HPP
 #define CHALET_BUILD_ENVIRONMENT_HPP
 
-#include "BuildJson/WorkspaceInfo.hpp"
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "State/CommandLineInputs.hpp"
+#include "State/WorkspaceInfo.hpp"
 
 namespace chalet
 {

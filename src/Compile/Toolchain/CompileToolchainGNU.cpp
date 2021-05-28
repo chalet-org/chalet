@@ -692,7 +692,7 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	}
 #endif
 
-	if (hostArch == targetArch && targetArch != CpuArchitecture::Unknown)
+	if (hostArch == targetArch && targetArch != Arch::Cpu::Unknown)
 		return false;
 
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html

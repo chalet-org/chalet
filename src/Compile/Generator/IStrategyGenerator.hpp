@@ -6,10 +6,10 @@
 #ifndef CHALET_ISTRATEGY_GENERATOR_HPP
 #define CHALET_ISTRATEGY_GENERATOR_HPP
 
-#include "BuildJson/Target/ProjectTarget.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
+#include "State/Target/ProjectTarget.hpp"
 
 namespace chalet
 {

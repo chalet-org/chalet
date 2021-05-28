@@ -5,8 +5,8 @@
 
 #include "State/BuildCache.hpp"
 
-#include "BuildJson/BuildEnvironment.hpp"
 #include "Libraries/Format.hpp"
+#include "State/BuildEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

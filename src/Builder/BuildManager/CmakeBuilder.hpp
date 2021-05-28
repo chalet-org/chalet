@@ -6,8 +6,8 @@
 #ifndef CHALET_CMAKE_BUILDER_HPP
 #define CHALET_CMAKE_BUILDER_HPP
 
-#include "BuildJson/Target/CMakeTarget.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/CMakeTarget.hpp"
 
 namespace chalet
 {

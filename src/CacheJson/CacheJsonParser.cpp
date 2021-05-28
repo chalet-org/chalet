@@ -890,7 +890,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 	if (String::contains({ "/mingw64/", "/mingw32/" }, outString))
 	{
 		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
 		{
 			auto start = lower.find("/mingw32/");
 			if (start != std::string::npos)
@@ -904,7 +904,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 				ret = false;
 			}
 		}
-		else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
+		else if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
 		{
 			auto start = lower.find("/mingw64/");
 			if (start != std::string::npos)
@@ -924,7 +924,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 		// TODO: clangarm64
 
 		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
 		{
 			auto start = lower.find("/clang32/");
 			if (start != std::string::npos)
@@ -938,7 +938,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 				ret = false;
 			}
 		}
-		else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
+		else if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
 		{
 			auto start = lower.find("/clang64/");
 			if (start != std::string::npos)
@@ -956,7 +956,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 	else if (String::endsWith({ "cl.exe", "link.exe", "lib.exe" }, outString))
 	{
 		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.hostArchitecture() == CpuArchitecture::X64)
+		if (m_state.info.hostArchitecture() == Arch::Cpu::X64)
 		{
 			auto start = lower.find("/hostx86/");
 			if (start != std::string::npos)
@@ -965,7 +965,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 				ret = false;
 			}
 		}
-		else if (m_state.info.hostArchitecture() == CpuArchitecture::X86)
+		else if (m_state.info.hostArchitecture() == Arch::Cpu::X86)
 		{
 			auto start = lower.find("/hostx64/");
 			if (start != std::string::npos)
@@ -975,7 +975,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 			}
 		}
 
-		if (m_state.info.targetArchitecture() == CpuArchitecture::X64)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
 		{
 			auto start = lower.find("/x86/");
 			if (start != std::string::npos)
@@ -984,7 +984,7 @@ bool CacheJsonParser::parseArchitecture(std::string& outString) const
 				ret = false;
 			}
 		}
-		else if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
+		else if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
 		{
 			auto start = lower.find("/x64/");
 			if (start != std::string::npos)

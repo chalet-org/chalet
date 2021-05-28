@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/Bundle/BundleLinux.hpp"
+#include "State/Bundle/BundleLinux.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"

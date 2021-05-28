@@ -376,7 +376,7 @@ void Router::enforceArchitectureInPath()
 		{
 			std::string lower = String::toLowerCase(path);
 			auto targetArch = m_buildState->info.targetArchitecture();
-			if (targetArch == CpuArchitecture::X64)
+			if (targetArch == Arch::Cpu::X64)
 			{
 				auto start = lower.find("/mingw32/");
 				if (start != std::string::npos)
@@ -385,7 +385,7 @@ void Router::enforceArchitectureInPath()
 					Environment::setPath(path);
 				}
 			}
-			else if (targetArch == CpuArchitecture::X86)
+			else if (targetArch == Arch::Cpu::X86)
 			{
 				auto start = lower.find("/mingw64/");
 				if (start != std::string::npos)
@@ -404,7 +404,7 @@ void Router::enforceArchitectureInPath()
 		{
 			std::string lower = String::toLowerCase(path);
 			auto targetArch = m_buildState->info.targetArchitecture();
-			if (targetArch == CpuArchitecture::X64)
+			if (targetArch == Arch::Cpu::X64)
 			{
 				auto start = lower.find("/clang32/");
 				if (start != std::string::npos)
@@ -413,7 +413,7 @@ void Router::enforceArchitectureInPath()
 					Environment::setPath(path);
 				}
 			}
-			else if (targetArch == CpuArchitecture::X86)
+			else if (targetArch == Arch::Cpu::X86)
 			{
 				auto start = lower.find("/clang64/");
 				if (start != std::string::npos)

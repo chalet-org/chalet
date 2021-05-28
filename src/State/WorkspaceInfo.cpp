@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/WorkspaceInfo.hpp"
+#include "State/WorkspaceInfo.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
@@ -17,7 +17,7 @@ WorkspaceInfo::WorkspaceInfo(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
 {
 	m_hostArchitecture.set(m_inputs.hostArchitecture());
-	m_targetArchitecture.set(m_inputs.targetArchitecture());
+	setTargetArchitecture(m_inputs.targetArchitecture());
 }
 
 /*****************************************************************************/
@@ -75,7 +75,7 @@ const StringList& WorkspaceInfo::notPlatforms() const noexcept
 }
 
 /*****************************************************************************/
-CpuArchitecture WorkspaceInfo::hostArchitecture() const noexcept
+Arch::Cpu WorkspaceInfo::hostArchitecture() const noexcept
 {
 	return m_hostArchitecture.val;
 }
@@ -86,7 +86,7 @@ const std::string& WorkspaceInfo::hostArchitectureString() const noexcept
 }
 
 /*****************************************************************************/
-CpuArchitecture WorkspaceInfo::targetArchitecture() const noexcept
+Arch::Cpu WorkspaceInfo::targetArchitecture() const noexcept
 {
 	return m_targetArchitecture.val;
 }
@@ -98,34 +98,14 @@ const std::string& WorkspaceInfo::targetArchitectureString() const noexcept
 
 void WorkspaceInfo::setTargetArchitecture(const std::string& inValue) noexcept
 {
-	m_targetArchitecture.set(inValue);
-}
-
-/*****************************************************************************/
-void WorkspaceInfo::Architecture::set(const std::string& inValue) noexcept
-{
-	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
-	str = inValue;
-
-	if (String::startsWith({ "x86_64", "x64" }, str))
+	if (inValue.empty())
 	{
-		val = CpuArchitecture::X64;
-	}
-	else if (String::startsWith("x86", str))
-	{
-		val = CpuArchitecture::X86;
-	}
-	else if (String::startsWith("arm64", str))
-	{
-		val = CpuArchitecture::ARM64;
-	}
-	else if (String::startsWith("arm", str))
-	{
-		val = CpuArchitecture::ARM;
+		auto arch = Arch::getHostCpuArchitecture();
+		m_targetArchitecture.set(arch);
 	}
 	else
 	{
-		val = CpuArchitecture::Unknown;
+		m_targetArchitecture.set(inValue);
 	}
 }
 

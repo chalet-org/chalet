@@ -6,10 +6,10 @@
 #include "BuildJson/BuildJsonParser.hpp"
 
 #include "BuildJson/BuildJsonSchema.hpp"
-#include "BuildJson/Bundle/BundleLinux.hpp"
-#include "BuildJson/Bundle/BundleMacOS.hpp"
-#include "BuildJson/Bundle/BundleWindows.hpp"
 #include "Libraries/Format.hpp"
+#include "State/Bundle/BundleLinux.hpp"
+#include "State/Bundle/BundleMacOS.hpp"
+#include "State/Bundle/BundleWindows.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"

@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/Target/ScriptTarget.hpp"
+#include "State/Target/ScriptTarget.hpp"
 
 #include "State/BuildState.hpp"
 #include "Terminal/Path.hpp"

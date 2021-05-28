@@ -6,7 +6,7 @@
 #ifndef CHALET_CONFIGURATION_OPTIONS_HPP
 #define CHALET_CONFIGURATION_OPTIONS_HPP
 
-#include "BuildJson/OptimizationLevel.hpp"
+#include "State/OptimizationLevel.hpp"
 
 namespace chalet
 {

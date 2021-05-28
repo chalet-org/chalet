@@ -12,8 +12,8 @@
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
 
-#include "BuildJson/Target/ProjectTarget.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/ProjectTarget.hpp"
 
 // Produces a compile strategy (Makefile / Ninja / Custom),
 //  an object that describes the toolchain's compile commands (GNU/GCC & LLVM/Clang)

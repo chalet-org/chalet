@@ -5,8 +5,8 @@
 
 #include "State/BuildPaths.hpp"
 
-#include "BuildJson/WorkspaceInfo.hpp"
 #include "Libraries/Format.hpp"
+#include "State/WorkspaceInfo.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"

@@ -6,8 +6,8 @@
 #ifndef CHALET_BUILD_PATHS_HPP
 #define CHALET_BUILD_PATHS_HPP
 
-#include "BuildJson/Target/ProjectTarget.hpp"
 #include "State/SourceOutputs.hpp"
+#include "State/Target/ProjectTarget.hpp"
 
 namespace chalet
 {

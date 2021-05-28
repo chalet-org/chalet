@@ -78,7 +78,7 @@ bool CompileToolchainLLVM::addArchitecture(StringList& outArgList) const
 	auto hostArch = m_state.info.hostArchitecture();
 	auto targetArch = m_state.info.targetArchitecture();
 
-	if (hostArch == targetArch && targetArch != CpuArchitecture::Unknown)
+	if (hostArch == targetArch && targetArch != Arch::Cpu::Unknown)
 		return false;
 
 	const auto& targetArchString = m_state.info.targetArchitectureString();

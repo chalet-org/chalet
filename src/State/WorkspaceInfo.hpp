@@ -6,6 +6,7 @@
 #ifndef CHALET_WORKSPACE_INFO_HPP
 #define CHALET_WORKSPACE_INFO_HPP
 
+#include "Core/Arch.hpp"
 #include "State/CommandLineInputs.hpp"
 
 namespace chalet
@@ -29,22 +30,14 @@ struct WorkspaceInfo
 	const std::string& platform() const noexcept;
 	const StringList& notPlatforms() const noexcept;
 
-	CpuArchitecture hostArchitecture() const noexcept;
+	Arch::Cpu hostArchitecture() const noexcept;
 	const std::string& hostArchitectureString() const noexcept;
 
-	CpuArchitecture targetArchitecture() const noexcept;
+	Arch::Cpu targetArchitecture() const noexcept;
 	const std::string& targetArchitectureString() const noexcept;
 	void setTargetArchitecture(const std::string& inValue) noexcept;
 
 private:
-	struct Architecture
-	{
-		std::string str;
-		CpuArchitecture val = CpuArchitecture::Unknown;
-
-		void set(const std::string& inValue) noexcept;
-	};
-
 	const CommandLineInputs& m_inputs;
 
 	std::string m_workspace;
@@ -53,8 +46,8 @@ private:
 
 	std::string m_buildConfiguration;
 
-	Architecture m_hostArchitecture;
-	Architecture m_targetArchitecture;
+	Arch m_hostArchitecture;
+	Arch m_targetArchitecture;
 };
 }
 

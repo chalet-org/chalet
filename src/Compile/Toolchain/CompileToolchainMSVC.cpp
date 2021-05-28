@@ -794,19 +794,19 @@ void CompileToolchainMSVC::addTargetPlatformArch(StringList& outArgList) const
 	const auto arch = m_state.info.targetArchitecture();
 	switch (arch)
 	{
-		case CpuArchitecture::X64:
+		case Arch::Cpu::X64:
 			outArgList.push_back("/machine:x64");
 			break;
 
-		case CpuArchitecture::X86:
+		case Arch::Cpu::X86:
 			outArgList.push_back("/machine:x86");
 			break;
 
-		case CpuArchitecture::ARM:
+		case Arch::Cpu::ARM:
 			outArgList.push_back("/machine:arm");
 			break;
 
-		case CpuArchitecture::ARM64:
+		case Arch::Cpu::ARM64:
 		default:
 			// ??
 			break;

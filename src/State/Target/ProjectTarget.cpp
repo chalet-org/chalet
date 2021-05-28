@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/Target/ProjectTarget.hpp"
+#include "State/Target/ProjectTarget.hpp"
 
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"

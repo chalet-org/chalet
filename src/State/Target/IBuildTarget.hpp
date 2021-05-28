@@ -6,7 +6,7 @@
 #ifndef CHALET_IBUILD_TARGET_HPP
 #define CHALET_IBUILD_TARGET_HPP
 
-#include "BuildJson/Target/TargetType.hpp"
+#include "State/Target/TargetType.hpp"
 
 namespace chalet
 {

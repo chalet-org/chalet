@@ -124,16 +124,16 @@ std::string CmakeBuilder::getArch() const
 	{
 		switch (m_state.info.targetArchitecture())
 		{
-			case CpuArchitecture::X86:
+			case Arch::Cpu::X86:
 				ret = "Win32";
 				break;
-			case CpuArchitecture::X64:
+			case Arch::Cpu::X64:
 				ret = "x64";
 				break;
-			case CpuArchitecture::ARM:
+			case Arch::Cpu::ARM:
 				ret = "ARM";
 				break;
-			case CpuArchitecture::ARM64:
+			case Arch::Cpu::ARM64:
 				ret = "ARM64";
 				break;
 			default:

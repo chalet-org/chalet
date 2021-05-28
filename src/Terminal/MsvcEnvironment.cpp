@@ -73,7 +73,7 @@ bool MsvcEnvironment::readCompilerVariables()
 	m_varsFileOriginal = buildPath + "/original.env";
 	m_varsFileMsvc = buildPath + "/msvc_all.env";
 
-	if (m_state.info.targetArchitecture() == CpuArchitecture::X86)
+	if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
 		m_varsFileMsvcDelta = buildPath + "/msvc_x86.env";
 	else
 		m_varsFileMsvcDelta = buildPath + "/msvc_x64.env";
@@ -310,19 +310,19 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 	std::string vcvarsFile{ "vcvars64" };
 	auto hostArch = m_state.info.hostArchitecture();
 	auto targetArch = m_state.info.targetArchitecture();
-	if (hostArch == CpuArchitecture::X86 && targetArch == CpuArchitecture::X86)
+	if (hostArch == Arch::Cpu::X86 && targetArch == Arch::Cpu::X86)
 	{
 		vcvarsFile = "vcvars32";
 	}
-	else if (hostArch == CpuArchitecture::X64 && targetArch == CpuArchitecture::X64)
+	else if (hostArch == Arch::Cpu::X64 && targetArch == Arch::Cpu::X64)
 	{
 		vcvarsFile = "vcvars64";
 	}
-	else if (hostArch == CpuArchitecture::X64 && targetArch == CpuArchitecture::X86)
+	else if (hostArch == Arch::Cpu::X64 && targetArch == Arch::Cpu::X86)
 	{
 		vcvarsFile = "vcvarsamd64_x86";
 	}
-	else if (hostArch == CpuArchitecture::X86 && targetArch == CpuArchitecture::X64)
+	else if (hostArch == Arch::Cpu::X86 && targetArch == Arch::Cpu::X64)
 	{
 		vcvarsFile = "vcvarsx86_amd64";
 	}

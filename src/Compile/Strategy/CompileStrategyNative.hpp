@@ -11,8 +11,8 @@
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
-#include "BuildJson/Target/ProjectTarget.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/ProjectTarget.hpp"
 #include "Utility/ThreadPool.hpp"
 
 namespace chalet

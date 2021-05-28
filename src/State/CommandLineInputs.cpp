@@ -5,11 +5,8 @@
 
 #include "State/CommandLineInputs.hpp"
 
-#if defined(CHALET_MACOS)
-	#include "TargetConditionals.h"
-#endif
-
 #include "Builder/BuildManager.hpp"
+#include "Core/Arch.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -25,7 +22,7 @@ CommandLineInputs::CommandLineInputs() :
 	m_buildFile("build.json"),
 	m_buildPath("build"),
 	m_platform(getPlatform()),
-	m_hostArchitecture(getHostArchitecture())
+	m_hostArchitecture(Arch::getHostCpuArchitecture())
 {
 	m_envFile = kDefaultEnvFile;
 }
@@ -296,34 +293,6 @@ StringList CommandLineInputs::getNotPlatforms() const noexcept
 	return {
 		"windows", "macos", "linux"
 	};
-#endif
-}
-
-/*****************************************************************************/
-std::string CommandLineInputs::getHostArchitecture() const noexcept
-{
-#if defined(CHALET_WIN32)
-	#if defined(_WIN64) || defined(__MINGW64__)
-	return "x86_64";
-	#else
-	return "x86";
-	#endif
-#elif defined(CHALET_MACOS)
-	#if TARGET_CPU_ARM64
-	return "arm64";
-	#elif TARGET_CPU_X86_64
-	return "x86_64";
-	#else
-	return "x86";
-	#endif
-#else
-	#if __x86_64__
-	return "x86_64";
-	#elif __aarch64__
-	return "arm64";
-	#else
-	return "x86";
-	#endif
 #endif
 }
 

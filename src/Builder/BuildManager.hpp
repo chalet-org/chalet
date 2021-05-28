@@ -6,13 +6,13 @@
 #ifndef CHALET_MAKEFILE_RUNNER_HPP
 #define CHALET_MAKEFILE_RUNNER_HPP
 
-#include "BuildJson/Target/CMakeTarget.hpp"
-#include "BuildJson/Target/ProjectTarget.hpp"
-#include "BuildJson/Target/ScriptTarget.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Router/Route.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/CMakeTarget.hpp"
+#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/ScriptTarget.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet

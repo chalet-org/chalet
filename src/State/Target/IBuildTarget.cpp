@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/Target/IBuildTarget.hpp"
+#include "State/Target/IBuildTarget.hpp"
 
-#include "BuildJson/Target/CMakeTarget.hpp"
-#include "BuildJson/Target/ProjectTarget.hpp"
-#include "BuildJson/Target/ScriptTarget.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/CMakeTarget.hpp"
+#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/ScriptTarget.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet

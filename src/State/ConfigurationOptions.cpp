@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/ConfigurationOptions.hpp"
+#include "State/ConfigurationOptions.hpp"
 
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"

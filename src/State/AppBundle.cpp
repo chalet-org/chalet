@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/AppBundle.hpp"
+#include "State/AppBundle.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"

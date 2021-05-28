@@ -6,7 +6,7 @@
 #ifndef CHALET_ICOMPILE_STRATEGY_HPP
 #define CHALET_ICOMPILE_STRATEGY_HPP
 
-#include "BuildJson/Target/ProjectTarget.hpp"
+#include "State/Target/ProjectTarget.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"

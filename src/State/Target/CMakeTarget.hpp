@@ -6,7 +6,7 @@
 #ifndef CHALET_CMAKE_TARGET_HPP
 #define CHALET_CMAKE_TARGET_HPP
 
-#include "BuildJson/Target/IBuildTarget.hpp"
+#include "State/Target/IBuildTarget.hpp"
 
 namespace chalet
 {

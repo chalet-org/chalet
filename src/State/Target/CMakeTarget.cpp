@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/Target/CMakeTarget.hpp"
+#include "State/Target/CMakeTarget.hpp"
 
 #include "State/BuildState.hpp"
 #include "Terminal/Path.hpp"

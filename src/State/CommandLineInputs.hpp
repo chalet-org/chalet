@@ -6,7 +6,6 @@
 #ifndef CHALET_COMMAND_LINE_INPUTS_HPP
 #define CHALET_COMMAND_LINE_INPUTS_HPP
 
-#include "Core/CpuArchitecture.hpp"
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
 
@@ -68,8 +67,6 @@ struct CommandLineInputs
 private:
 	std::string getPlatform() const noexcept;
 	StringList getNotPlatforms() const noexcept;
-
-	std::string getHostArchitecture() const noexcept;
 
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
 
