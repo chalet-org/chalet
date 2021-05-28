@@ -41,6 +41,7 @@ private:
 	bool xcodebuildRoute();
 
 	bool managePathVariables();
+	void enforceArchitectureInPath();
 
 	const CommandLineInputs& m_inputs;
 
