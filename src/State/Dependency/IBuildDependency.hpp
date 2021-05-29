@@ -23,7 +23,8 @@ struct IBuildDependency
 	[[nodiscard]] static BuildDependency make(const BuildDependencyType inType, const BuildState& inState);
 
 	BuildDependencyType type() const noexcept;
-	bool isGit() const noexcept;
+	bool isSourceControl() const noexcept;
+	bool isPackageManager() const noexcept;
 
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
