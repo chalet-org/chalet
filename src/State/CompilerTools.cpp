@@ -57,7 +57,7 @@ bool CompilerTools::initialize()
 	{
 		auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
 #if defined(CHALET_WIN32)
-		auto split = String::split(results, '\r\n');
+		auto split = String::split(results, "\r\n");
 #else
 		auto split = String::split(results, '\n');
 #endif
