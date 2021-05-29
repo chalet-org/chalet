@@ -86,22 +86,4 @@ void IBuildTarget::setIncludeInBuild(const bool inValue)
 {
 	m_includeInBuild &= inValue;
 }
-
-/*****************************************************************************/
-void IBuildTarget::parseStringVariables(std::string& outString)
-{
-	String::replaceAll(outString, "${configuration}", m_state.info.buildConfiguration());
-
-	const auto& externalDepDir = m_state.environment.externalDepDir();
-	if (!externalDepDir.empty())
-	{
-		String::replaceAll(outString, "${externalDepDir}", externalDepDir);
-	}
-
-	if (!name().empty())
-	{
-		String::replaceAll(outString, "${name}", name());
-	}
-}
-
 }

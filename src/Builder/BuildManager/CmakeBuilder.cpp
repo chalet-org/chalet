@@ -52,7 +52,7 @@ bool CmakeBuilder::run()
 	Path::sanitize(location);
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	m_outputLocation = fmt::format("{}/{}/{}/{}", cwd, buildOutputDir, m_target.location(), m_target.name());
+	m_outputLocation = fmt::format("{}/{}/{}", cwd, buildOutputDir, m_target.location());
 	Path::sanitize(m_outputLocation);
 
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);

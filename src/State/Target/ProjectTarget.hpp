@@ -21,6 +21,8 @@ struct ProjectTarget final : public IBuildTarget
 {
 	explicit ProjectTarget(const BuildState& inState);
 
+	virtual void initialize() final;
+
 	bool isExecutable() const noexcept;
 	bool isSharedLibrary() const noexcept;
 	bool isStaticLibrary() const noexcept;

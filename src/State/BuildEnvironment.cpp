@@ -9,6 +9,8 @@
 
 #include "Libraries/FileSystem.hpp"
 #include "Libraries/Format.hpp"
+#include "State/BuildPaths.hpp"
+#include "State/WorkspaceInfo.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -19,12 +21,21 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildEnvironment::BuildEnvironment(const WorkspaceInfo& inInfo) :
-	m_info(inInfo),
+BuildEnvironment::BuildEnvironment(const BuildPaths& inPaths) :
+	m_paths(inPaths),
 	m_processorCount(std::thread::hardware_concurrency()),
 	m_maxJobs(m_processorCount)
 {
 	// LOG("Processor count: ", m_processorCount);
+}
+
+/*****************************************************************************/
+void BuildEnvironment::initialize()
+{
+	for (auto& path : m_path)
+	{
+		m_paths.parsePathWithVariables(path);
+	}
 }
 
 /*****************************************************************************/
@@ -57,23 +68,6 @@ void BuildEnvironment::setStrategy(const std::string& inValue) noexcept
 	{
 		chalet_assert(false, "Invalid strategy type");
 	}
-}
-
-/*****************************************************************************/
-const std::string& BuildEnvironment::externalDepDir() const noexcept
-{
-	return m_externalDepDir;
-}
-
-void BuildEnvironment::setExternalDepDir(const std::string& inValue) noexcept
-{
-	if (inValue.empty())
-		return;
-
-	m_externalDepDir = inValue;
-
-	if (m_externalDepDir.back() == '/')
-		m_externalDepDir.pop_back();
 }
 
 /*****************************************************************************/
@@ -119,9 +113,6 @@ void BuildEnvironment::addPath(std::string& inValue)
 	if (inValue.back() == '/')
 		inValue.pop_back();
 
-	String::replaceAll(inValue, "${configuration}", m_info.buildConfiguration());
-	String::replaceAll(inValue, "${externalDepDir}", m_externalDepDir);
-	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_path, std::move(inValue));
 }
 

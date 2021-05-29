@@ -12,8 +12,8 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	info(m_inputs),
 	compilerTools(info),
-	environment(info),
 	paths(m_inputs, info),
+	environment(paths),
 	msvcEnvironment(*this),
 	bundle(environment, targets, paths, compilerTools),
 	cache(info, paths)
@@ -23,7 +23,12 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 void BuildState::initializeBuild()
 {
-	paths.initialize(info.buildConfiguration());
+	paths.initialize();
+	environment.initialize();
+	for (auto& target : targets)
+	{
+		target->initialize();
+	}
 
 	initializeCache();
 }
@@ -33,19 +38,10 @@ void BuildState::initializeCache()
 {
 	cache.initialize(m_inputs.appPath());
 
-	StringList projectNames;
-	for (auto& target : targets)
-	{
-		if (target->isProject())
-		{
-			projectNames.push_back(target->name());
-		}
-	}
-
 	cache.checkIfCompileStrategyChanged();
 	cache.checkIfWorkingDirectoryChanged();
 
-	cache.removeStaleProjectCaches(info.buildConfiguration(), projectNames, BuildCache::Type::Local);
+	cache.removeStaleProjectCaches(BuildCache::Type::Local);
 	cache.removeBuildIfCacheChanged(paths.buildOutputDir());
 	cache.saveEnvironmentCache();
 }

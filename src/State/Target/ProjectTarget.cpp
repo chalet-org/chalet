@@ -32,6 +32,42 @@ ProjectTarget::ProjectTarget(const BuildState& inState) :
 }
 
 /*****************************************************************************/
+void ProjectTarget::initialize()
+{
+	const auto& targetName = this->name();
+	for (auto& dir : m_libDirs)
+	{
+		m_state.paths.parsePathWithVariables(dir, targetName);
+	}
+	for (auto& dir : m_includeDirs)
+	{
+		m_state.paths.parsePathWithVariables(dir, targetName);
+	}
+	for (auto& dir : m_runDependencies)
+	{
+		m_state.paths.parsePathWithVariables(dir, targetName);
+	}
+	for (auto& dir : m_macosFrameworkPaths)
+	{
+		m_state.paths.parsePathWithVariables(dir, targetName);
+	}
+	for (auto& dir : m_files)
+	{
+		m_state.paths.parsePathWithVariables(dir, targetName);
+	}
+	for (auto& dir : m_locations)
+	{
+		m_state.paths.parsePathWithVariables(dir, targetName);
+	}
+	for (auto& dir : m_locationExcludes)
+	{
+		m_state.paths.parsePathWithVariables(dir, targetName);
+	}
+
+	m_state.paths.parsePathWithVariables(m_pch, name());
+}
+
+/*****************************************************************************/
 bool ProjectTarget::isExecutable() const noexcept
 {
 	return m_kind == ProjectKind::ConsoleApplication || m_kind == ProjectKind::DesktopApplication;
@@ -167,10 +203,6 @@ void ProjectTarget::addLibDir(std::string& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	// TODO: check other places this can be done
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
 	List::addIfDoesNotExist(m_libDirs, std::move(inValue));
 }
 
@@ -191,9 +223,6 @@ void ProjectTarget::addIncludeDir(std::string& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
 	List::addIfDoesNotExist(m_includeDirs, std::move(inValue));
 }
 
@@ -212,9 +241,6 @@ void ProjectTarget::addRunDependency(std::string& inValue)
 {
 	if (inValue.back() != '/')
 		inValue += '/';
-
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
 
 	List::addIfDoesNotExist(m_runDependencies, std::move(inValue));
 }
@@ -329,9 +355,6 @@ void ProjectTarget::addMacosFrameworkPath(std::string& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
 	List::addIfDoesNotExist(m_macosFrameworkPaths, std::move(inValue));
 }
 
@@ -416,8 +439,6 @@ void ProjectTarget::addFiles(StringList& inList)
 
 void ProjectTarget::addFile(std::string& inValue)
 {
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_files, std::move(inValue));
 }
 
@@ -434,9 +455,6 @@ void ProjectTarget::addLocations(StringList& inList)
 
 void ProjectTarget::addLocation(std::string& inValue)
 {
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
 	List::addIfDoesNotExist(m_locations, std::move(inValue));
 }
 
@@ -453,9 +471,6 @@ void ProjectTarget::addLocationExcludes(StringList& inList)
 
 void ProjectTarget::addLocationExclude(std::string& inValue)
 {
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
 	List::addIfDoesNotExist(m_locationExcludes, std::move(inValue));
 }
 
@@ -468,9 +483,6 @@ const std::string& ProjectTarget::pch() const noexcept
 void ProjectTarget::setPch(const std::string& inValue) noexcept
 {
 	m_pch = inValue;
-
-	parseStringVariables(m_pch);
-	Path::sanitize(m_pch);
 
 	std::string path = String::getPathFolder(m_pch);
 	addLocation(path);

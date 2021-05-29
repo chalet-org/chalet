@@ -31,8 +31,8 @@ public:
 	WorkspaceInfo info;
 	CacheTools tools;
 	CompilerTools compilerTools;
-	BuildEnvironment environment;
 	BuildPaths paths;
+	BuildEnvironment environment;
 	MsvcEnvironment msvcEnvironment;
 	ConfigurationOptions configuration;
 	BuildTargetList targets;

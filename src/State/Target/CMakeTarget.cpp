@@ -19,6 +19,14 @@ CMakeTarget::CMakeTarget(const BuildState& inState) :
 }
 
 /*****************************************************************************/
+void CMakeTarget::initialize()
+{
+	const auto& targetName = this->name();
+	m_state.paths.parsePathWithVariables(m_buildScript, targetName);
+	m_state.paths.parsePathWithVariables(m_location, targetName);
+}
+
+/*****************************************************************************/
 const StringList& CMakeTarget::defines() const noexcept
 {
 	return m_defines;
@@ -42,9 +50,6 @@ const std::string& CMakeTarget::buildScript() const noexcept
 
 void CMakeTarget::setBuildScript(std::string&& inValue) noexcept
 {
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
 	m_buildScript = std::move(inValue);
 }
 
@@ -66,9 +71,6 @@ const std::string& CMakeTarget::location() const noexcept
 
 void CMakeTarget::setLocation(std::string&& inValue) noexcept
 {
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
 	m_location = std::move(inValue);
 }
 

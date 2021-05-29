@@ -41,7 +41,7 @@ struct BuildCache
 	void checkIfCompileStrategyChanged();
 	void checkIfWorkingDirectoryChanged();
 
-	void removeStaleProjectCaches(const std::string& inBuildConfig, const StringList& inProjectNames, const Type inCacheType);
+	void removeStaleProjectCaches(const Type inCacheType);
 	void removeBuildIfCacheChanged(const std::string& inBuildDir);
 
 private:

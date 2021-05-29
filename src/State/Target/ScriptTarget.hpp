@@ -14,6 +14,8 @@ struct ScriptTarget final : public IBuildTarget
 {
 	explicit ScriptTarget(const BuildState& inState);
 
+	virtual void initialize() final;
+
 	const StringList& scripts() const noexcept;
 	void addScripts(StringList& inList);
 	void addScript(std::string& inValue);

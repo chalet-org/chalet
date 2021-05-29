@@ -6,14 +6,15 @@
 #include "State/DependencyGit.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/CommandLineInputs.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-DependencyGit::DependencyGit(const BuildEnvironment& inEnvironment, const std::string& inBuildFile) :
-	m_environment(inEnvironment),
+DependencyGit::DependencyGit(const BuildPaths& inPaths, const std::string& inBuildFile) :
+	m_paths(inPaths),
 	m_buildFile(inBuildFile)
 {
 }
@@ -104,7 +105,7 @@ bool DependencyGit::parseDestination()
 	if (!m_destination.empty())
 		return false;
 
-	const auto& externalDepDir = m_environment.externalDepDir();
+	const auto& externalDepDir = m_paths.externalDepDir();
 	chalet_assert(!externalDepDir.empty(), "externalDepDir can't be blank.");
 
 	if (!m_name.empty())

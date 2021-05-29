@@ -18,6 +18,16 @@ ScriptTarget::ScriptTarget(const BuildState& inState) :
 }
 
 /*****************************************************************************/
+void ScriptTarget::initialize()
+{
+	const auto& targetName = this->name();
+	for (auto& script : m_scripts)
+	{
+		m_state.paths.parsePathWithVariables(script, targetName);
+	}
+}
+
+/*****************************************************************************/
 const StringList& ScriptTarget::scripts() const noexcept
 {
 	return m_scripts;
@@ -30,9 +40,6 @@ void ScriptTarget::addScripts(StringList& inList)
 
 void ScriptTarget::addScript(std::string& inValue)
 {
-	parseStringVariables(inValue);
-	Path::sanitize(inValue);
-
 	List::addIfDoesNotExist(m_scripts, std::move(inValue));
 }
 

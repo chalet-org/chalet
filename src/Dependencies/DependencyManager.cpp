@@ -30,7 +30,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 	if (m_state.tools.git().empty())
 		return true;
 
-	const auto& externalDepDir = m_state.environment.externalDepDir();
+	const auto& externalDepDir = m_state.paths.externalDepDir();
 	auto& environmentCache = m_state.cache.environmentCache();
 
 	Json& dependencyCache = environmentCache.json["externalDependencies"];

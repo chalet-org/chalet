@@ -19,8 +19,12 @@ struct BuildPaths
 	const std::string& workingDirectory() const noexcept;
 	void setWorkingDirectory(const std::string& inValue);
 
+	const std::string& externalDepDir() const noexcept;
+	void setExternalDepDir(const std::string& inValue) noexcept;
+
 	const std::string& buildPath() const;
 	const std::string& buildOutputDir() const noexcept;
+	const std::string& configuration() const noexcept;
 	const std::string& objDir() const noexcept;
 	const std::string& depDir() const noexcept;
 	const std::string& asmDir() const noexcept;
@@ -34,12 +38,14 @@ struct BuildPaths
 	SourceOutputs getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inObjExtension = false) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const;
 
+	void parsePathWithVariables(std::string& outPath, const std::string& inName = std::string()) const;
+
 private:
 	friend class BuildState;
 
 	explicit BuildPaths(const CommandLineInputs& inInputs, const WorkspaceInfo& inInfo);
 
-	void initialize(const std::string& inBuildConfiguration);
+	void initialize();
 
 	struct SourceGroup
 	{
@@ -64,6 +70,8 @@ private:
 	// mutable StringList m_directoryCache;
 
 	std::string m_workingDirectory;
+	std::string m_configuration;
+	std::string m_externalDepDir;
 	std::string m_buildOutputDir;
 	std::string m_objDir;
 	std::string m_depDir;

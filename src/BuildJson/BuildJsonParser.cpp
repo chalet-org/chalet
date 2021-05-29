@@ -231,7 +231,7 @@ bool BuildJsonParser::parseEnvironment(const Json& inJson)
 	}
 
 	if (std::string val; m_buildJson->assignStringAndValidate(val, environment, "externalDepDir"))
-		m_state.environment.setExternalDepDir(val);
+		m_state.paths.setExternalDepDir(val);
 
 	if (StringList list; assignStringListFromConfig(list, environment, "path"))
 		m_state.environment.addPaths(list);
@@ -361,7 +361,7 @@ bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 
 	for (auto& [name, dependencyJson] : externalDependencies.items())
 	{
-		auto dependency = std::make_unique<DependencyGit>(m_state.environment, m_inputs.buildFile());
+		auto dependency = std::make_unique<DependencyGit>(m_state.paths, m_inputs.buildFile());
 		dependency->setName(name);
 
 		if (!parseExternalDependency(*dependency, dependencyJson))

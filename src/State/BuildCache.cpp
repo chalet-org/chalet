@@ -115,8 +115,8 @@ std::string BuildCache::getPath(const std::string& inFolder, const Type inCacheT
 /*****************************************************************************/
 std::string BuildCache::getCacheKey(const std::string& inName)
 {
-	// return fmt::format("{}_{}_{}:{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), m_info.buildConfiguration(), inName);
-	return fmt::format("{}_{}:{}", m_info.targetArchitectureString(), m_info.buildConfiguration(), inName);
+	const auto& configuration = m_paths.configuration();
+	return fmt::format("{}:{}", configuration, inName);
 }
 
 /*****************************************************************************/
@@ -185,7 +185,7 @@ bool BuildCache::removeUnusedProjectFiles(const StringList& inHashes, const Type
 }
 
 /*****************************************************************************/
-void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, const StringList& inProjectNames, const Type inCacheType)
+void BuildCache::removeStaleProjectCaches(const Type inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 	if (!m_environmentCache.json.contains(kKeyData) || !m_environmentCache.json.contains(kKeySettings))
@@ -205,11 +205,6 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 
 	const auto strategy = strategyJson.get<std::string>();
 
-	UNUSED(inProjectNames);
-
-	// const auto buildConfig = fmt::format("{}_{}_{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), inBuildConfig);
-	const auto buildConfig = fmt::format("{}_{}", m_info.targetArchitectureString(), inBuildConfig);
-
 	StringList hashes;
 	for (auto it = buildCache.begin(); it != buildCache.end();)
 	{
@@ -219,7 +214,6 @@ void BuildCache::removeStaleProjectCaches(const std::string& inBuildConfig, cons
 
 		const auto& name = splitKey.back();
 
-		// const bool validForBuild = splitKey.size() > 1 && (buildConfig == keyBuildConfig || List::contains<std::string>(inProjectNames, name));
 		const bool validForBuild = splitKey.size() > 1 && (strategy == name);
 
 		const bool internalKey = key == kKeyDataVersion || key == kKeyDataVersionDebug || key == kKeyDataStrategy || key == kKeyDataTargetArchitecture || key == kKeyDataWorkingDirectory;

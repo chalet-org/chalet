@@ -22,12 +22,13 @@ BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceInfo& i
 }
 
 /*****************************************************************************/
-void BuildPaths::initialize(const std::string& inBuildConfiguration)
+void BuildPaths::initialize()
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
-	// m_buildOutputDir = fmt::format("{}/{}_{}_{}", m_inputs.buildPath(), m_info.hostArchitectureString(), m_info.targetArchitectureString(), inBuildConfiguration);
-	m_buildOutputDir = fmt::format("{}/{}_{}", m_inputs.buildPath(), m_info.targetArchitectureString(), inBuildConfiguration);
+	// m_configuration = fmt::format("{}_{}_{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), inBuildConfiguration);
+	m_configuration = fmt::format("{}_{}", m_info.targetArchitectureString(), m_info.buildConfiguration());
+	m_buildOutputDir = fmt::format("{}/{}", m_inputs.buildPath(), m_configuration);
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
@@ -69,6 +70,23 @@ void BuildPaths::setWorkingDirectory(const std::string& inValue)
 }
 
 /*****************************************************************************/
+const std::string& BuildPaths::externalDepDir() const noexcept
+{
+	return m_externalDepDir;
+}
+
+void BuildPaths::setExternalDepDir(const std::string& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_externalDepDir = inValue;
+
+	if (m_externalDepDir.back() == '/')
+		m_externalDepDir.pop_back();
+}
+
+/*****************************************************************************/
 const std::string& BuildPaths::buildPath() const
 {
 	const auto& buildPath = m_inputs.buildPath();
@@ -92,6 +110,12 @@ const std::string& BuildPaths::buildOutputDir() const noexcept
 {
 	chalet_assert(m_initialized, "BuildPaths::buildOutputDir() called before BuildPaths::initialize().");
 	return m_buildOutputDir;
+}
+
+const std::string& BuildPaths::configuration() const noexcept
+{
+	chalet_assert(m_initialized, "BuildPaths::configuration() called before BuildPaths::initialize().");
+	return m_configuration;
 }
 
 const std::string& BuildPaths::objDir() const noexcept
@@ -212,6 +236,26 @@ void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::s
 	}
 
 	// UNUSED(inOutput, inDumpAssembly);
+}
+
+/*****************************************************************************/
+void BuildPaths::parsePathWithVariables(std::string& outPath, const std::string& inName) const
+{
+	const auto& config = configuration();
+	String::replaceAll(outPath, "${configuration}", config);
+
+	const auto& external = externalDepDir();
+	if (!external.empty())
+	{
+		String::replaceAll(outPath, "${externalDepDir}", external);
+	}
+
+	if (!inName.empty())
+	{
+		String::replaceAll(outPath, "${name}", inName);
+	}
+
+	Path::sanitize(outPath);
 }
 
 /*****************************************************************************/

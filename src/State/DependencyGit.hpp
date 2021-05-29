@@ -6,13 +6,13 @@
 #ifndef CHALET_DEPENDENCY_GIT_HPP
 #define CHALET_DEPENDENCY_GIT_HPP
 
-#include "State/BuildEnvironment.hpp"
-
 namespace chalet
 {
+struct BuildPaths;
+
 struct DependencyGit
 {
-	explicit DependencyGit(const BuildEnvironment& inEnvironment, const std::string& inBuildFile);
+	explicit DependencyGit(const BuildPaths& inPaths, const std::string& inBuildFile);
 
 	const std::string& repository() const noexcept;
 	void setRepository(const std::string& inValue) noexcept;
@@ -37,7 +37,7 @@ struct DependencyGit
 	bool parseDestination();
 
 private:
-	const BuildEnvironment& m_environment;
+	const BuildPaths& m_paths;
 	const std::string& m_buildFile;
 
 	std::string m_repository;

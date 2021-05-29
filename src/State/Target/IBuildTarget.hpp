@@ -19,6 +19,8 @@ struct IBuildTarget
 
 	[[nodiscard]] static std::unique_ptr<IBuildTarget> make(const BuildState& inState, const TargetType inType);
 
+	virtual void initialize() = 0;
+
 	TargetType type() const noexcept;
 	bool isProject() const noexcept;
 	bool isScript() const noexcept;
@@ -34,8 +36,6 @@ struct IBuildTarget
 	void setIncludeInBuild(const bool inValue);
 
 protected:
-	void parseStringVariables(std::string& outString);
-
 	const BuildState& m_state;
 
 private:

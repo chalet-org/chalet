@@ -10,21 +10,22 @@
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "State/CommandLineInputs.hpp"
-#include "State/WorkspaceInfo.hpp"
 
 namespace chalet
 {
+struct BuildPaths;
+struct WorkspaceInfo;
+
 struct BuildEnvironment
 {
-	explicit BuildEnvironment(const WorkspaceInfo& inInfo);
+	explicit BuildEnvironment(const BuildPaths& inPaths);
+
+	void initialize();
 
 	uint processorCount() const noexcept;
 
 	StrategyType strategy() const noexcept;
 	void setStrategy(const std::string& inValue) noexcept;
-
-	const std::string& externalDepDir() const noexcept;
-	void setExternalDepDir(const std::string& inValue) noexcept;
 
 	uint maxJobs() const noexcept;
 	void setMaxJobs(const uint inValue) noexcept;
@@ -39,7 +40,7 @@ struct BuildEnvironment
 	std::string makePathVariable(const std::string& inRootPath);
 
 private:
-	const WorkspaceInfo& m_info;
+	const BuildPaths& m_paths;
 
 	std::string m_externalDepDir{ "chalet_external" };
 	StringList m_path;
