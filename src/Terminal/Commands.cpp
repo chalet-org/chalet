@@ -682,7 +682,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 		result = std::string(filename);
 		String::replaceAll(result, '\\', '/');
 	}
-#elif defined(CHALET_MACOS)
+#else
 	StringList command;
 	command = { "which", inExecutable };
 
@@ -690,6 +690,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	if (String::contains("which: no", result))
 		return std::string();
 
+	#if defined(CHALET_MACOS)
 	if (String::startsWith("/usr/bin/", result))
 	{
 		auto& xcodePath = getXcodePath();
@@ -697,6 +698,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 		if (Commands::pathExists(withXcodePath))
 			result = std::move(withXcodePath);
 	}
+	#endif
 #endif
 	return result;
 }
