@@ -383,8 +383,8 @@ Json Schema::getBuildJson()
 			"pch": {
 				"$ref": "#/definitions/project-cxx-pch"
 			},
-			"posixThreads": {
-				"$ref": "#/definitions/project-cxx-posixThreads"
+			"threads": {
+				"$ref": "#/definitions/project-cxx-threads"
 			},
 			"rtti": {
 				"$ref": "#/definitions/project-cxx-rtti"
@@ -440,8 +440,8 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^staticLinks{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-staticLinks"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^posixThreads{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-posixThreads"
+	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^threads{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/project-cxx-threads"
 	})json"_ojson;
 	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^rtti{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/project-cxx-rtti"
@@ -828,10 +828,14 @@ Json Schema::getBuildJson()
 		"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-posixThreads"] = R"json({
-		"type": "boolean",
-		"description": "TODO: remove?",
-		"default": true
+	ret[kDefinitions]["project-cxx-threads"] = R"json({
+		"type": "string",
+		"enum": [
+			"auto",
+			"posix",
+			"none"
+		],
+		"default": "auto"
 	})json"_ojson;
 
 	ret[kDefinitions]["project-cxx-rtti"] = R"json({

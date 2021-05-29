@@ -740,8 +740,8 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectTarget& outProject, const 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "staticLinking"))
 		outProject.setStaticLinking(val);
 
-	if (bool val = false; parseKeyFromConfig(val, inNode, "posixThreads"))
-		outProject.setPosixThreads(val);
+	if (std::string val; assignStringFromConfig(val, inNode, "threads"))
+		outProject.setThreadType(val);
 
 	if (std::string val; assignStringFromConfig(val, inNode, "cppStandard"))
 		outProject.setCppStandard(val);

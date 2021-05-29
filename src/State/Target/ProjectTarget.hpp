@@ -12,6 +12,7 @@
 #include "State/ProjectKind.hpp"
 #include "State/ProjectWarnings.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "State/ThreadType.hpp"
 
 namespace chalet
 {
@@ -123,6 +124,10 @@ struct ProjectTarget final : public IBuildTarget
 	void setKind(const ProjectKind inValue) noexcept;
 	void setKind(const std::string& inValue);
 
+	ThreadType threadType() const noexcept;
+	void setThreadType(const ThreadType inValue) noexcept;
+	void setThreadType(const std::string& inValue);
+
 	bool dumpAssembly() const noexcept;
 	void setDumpAssembly(const bool inValue) noexcept;
 
@@ -138,9 +143,6 @@ struct ProjectTarget final : public IBuildTarget
 	bool staticLinking() const noexcept;
 	void setStaticLinking(const bool inValue) noexcept;
 
-	bool posixThreads() const noexcept;
-	void setPosixThreads(const bool inValue) noexcept;
-
 	bool windowsPrefixOutputFilename() const noexcept;
 	void setWindowsPrefixOutputFilename(const bool inValue) noexcept;
 	bool setWindowsPrefixOutputFilename() const noexcept;
@@ -150,6 +152,7 @@ struct ProjectTarget final : public IBuildTarget
 
 private:
 	ProjectKind parseProjectKind(const std::string& inValue);
+	ThreadType parseThreadType(const std::string& inValue);
 	StringList getWarningPreset();
 	StringList parseWarnings(const std::string& inValue);
 
@@ -182,6 +185,7 @@ private:
 	ProjectKind m_kind = ProjectKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
 	ProjectWarnings m_warningsPreset = ProjectWarnings::None;
+	ThreadType m_threadType = ThreadType::Auto;
 
 	bool m_dumpAssembly = false;
 	bool m_objectiveCxx = false;

@@ -320,8 +320,8 @@
 				"pch": {
 					"$ref": "#/definitions/project-cxx-pch"
 				},
-				"posixThreads": {
-					"$ref": "#/definitions/project-cxx-posixThreads"
+				"threads": {
+					"$ref": "#/definitions/project-cxx-threads"
 				},
 				"rtti": {
 					"$ref": "#/definitions/project-cxx-rtti"
@@ -376,8 +376,8 @@
 				"^staticLinks(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/project-cxx-staticLinks"
 				},
-				"^posixThreads(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/project-cxx-posixThreads"
+				"^threads(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/project-cxx-threads"
 				},
 				"^rtti(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/project-cxx-rtti"
@@ -738,10 +738,14 @@
 			"type": "string",
 			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
 		},
-		"project-cxx-posixThreads": {
-			"type": "boolean",
-			"description": "TODO: remove?",
-			"default": true
+		"project-cxx-threads": {
+			"type": "string",
+			"enum": [
+				"auto",
+				"posix",
+				"none"
+			],
+			"default": "auto"
 		},
 		"project-cxx-rtti": {
 			"type": "boolean",

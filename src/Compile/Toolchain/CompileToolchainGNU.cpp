@@ -695,7 +695,8 @@ void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& outArgLi
 /*****************************************************************************/
 void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) const
 {
-	if (m_project.posixThreads())
+	auto threadType = m_project.threadType();
+	if (threadType == ThreadType::Posix || threadType == ThreadType::Auto)
 	{
 		List::addIfDoesNotExist(outArgList, "-pthread");
 	}
@@ -814,12 +815,13 @@ void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& outArgList) 
 /*****************************************************************************/
 void CompileToolchainGNU::addThreadModelLinkerOption(StringList& outArgList) const
 {
-	if (m_project.posixThreads())
+	auto threadType = m_project.threadType();
+	if (threadType == ThreadType::Posix || threadType == ThreadType::Auto)
 	{
 		if (m_config.isMingw() && m_project.staticLinking())
 		{
 			outArgList.push_back("-Wl,-Bstatic");
-			outArgList.push_back("-lstdc++");
+			outArgList.push_back("-lstdc++"); // TODO: This is weird
 			outArgList.push_back("-lpthread");
 		}
 		else

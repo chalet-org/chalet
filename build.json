@@ -47,7 +47,6 @@
 			"cppStandard": "c++17",
 			"rtti": false,
 			"staticLinking": true,
-			"posixThreads": true,
 			"warnings": "strict",
 			// "compileOptions": [],
 			// "linkerOptions": [],

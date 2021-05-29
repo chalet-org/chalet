@@ -523,6 +523,22 @@ void ProjectTarget::setKind(const std::string& inValue)
 }
 
 /*****************************************************************************/
+ThreadType ProjectTarget::threadType() const noexcept
+{
+	return m_threadType;
+}
+
+void ProjectTarget::setThreadType(const ThreadType inValue) noexcept
+{
+	m_threadType = inValue;
+}
+
+void ProjectTarget::setThreadType(const std::string& inValue)
+{
+	m_threadType = parseThreadType(inValue);
+}
+
+/*****************************************************************************/
 bool ProjectTarget::dumpAssembly() const noexcept
 {
 	return m_dumpAssembly;
@@ -577,17 +593,6 @@ void ProjectTarget::setStaticLinking(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-bool ProjectTarget::posixThreads() const noexcept
-{
-	return m_posixThreads;
-}
-
-void ProjectTarget::setPosixThreads(const bool inValue) noexcept
-{
-	m_posixThreads = inValue;
-}
-
-/*****************************************************************************/
 // TODO: string prefix (lib) / suffix (-s) control
 bool ProjectTarget::windowsPrefixOutputFilename() const noexcept
 {
@@ -614,6 +619,18 @@ bool ProjectTarget::windowsOutputDef() const noexcept
 void ProjectTarget::setWindowsOutputDef(const bool inValue) noexcept
 {
 	m_windowsOutputDef = inValue;
+}
+
+/*****************************************************************************/
+ThreadType ProjectTarget::parseThreadType(const std::string& inValue)
+{
+	if (String::equals("auto", inValue))
+		return ThreadType::Auto;
+
+	if (String::equals("posix", inValue))
+		return ThreadType::Posix;
+
+	return ThreadType::None;
 }
 
 /*****************************************************************************/
