@@ -13,47 +13,47 @@
 
 namespace chalet
 {
-IBuildTarget::IBuildTarget(const BuildState& inState, const TargetType inType) :
+IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inType) :
 	m_state(inState),
 	m_type(inType)
 {
 }
 
 /*****************************************************************************/
-[[nodiscard]] std::unique_ptr<IBuildTarget> IBuildTarget::make(const BuildState& inState, const TargetType inType)
+[[nodiscard]] std::unique_ptr<IBuildTarget> IBuildTarget::make(const BuildState& inState, const BuildTargetType inType)
 {
 	switch (inType)
 	{
-		case TargetType::Project:
+		case BuildTargetType::Project:
 			return std::make_unique<ProjectTarget>(inState);
-		case TargetType::Script:
+		case BuildTargetType::Script:
 			return std::make_unique<ScriptTarget>(inState);
-		case TargetType::CMake:
+		case BuildTargetType::CMake:
 			return std::make_unique<CMakeTarget>(inState);
 		default:
 			break;
 	}
 
-	Diagnostic::errorAbort(fmt::format("Unimplemented TargetType requested: ", static_cast<int>(inType)));
+	Diagnostic::errorAbort(fmt::format("Unimplemented BuildTargetType requested: ", static_cast<int>(inType)));
 	return nullptr;
 }
 
 /*****************************************************************************/
-TargetType IBuildTarget::type() const noexcept
+BuildTargetType IBuildTarget::type() const noexcept
 {
 	return m_type;
 }
 bool IBuildTarget::isProject() const noexcept
 {
-	return m_type == TargetType::Project;
+	return m_type == BuildTargetType::Project;
 }
 bool IBuildTarget::isScript() const noexcept
 {
-	return m_type == TargetType::Script;
+	return m_type == BuildTargetType::Script;
 }
 bool IBuildTarget::isCMake() const noexcept
 {
-	return m_type == TargetType::CMake;
+	return m_type == BuildTargetType::CMake;
 }
 
 /*****************************************************************************/

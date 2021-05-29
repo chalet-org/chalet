@@ -16,7 +16,7 @@ namespace chalet
 {
 /*****************************************************************************/
 ProjectTarget::ProjectTarget(const BuildState& inState) :
-	IBuildTarget(inState, TargetType::Project)
+	IBuildTarget(inState, BuildTargetType::Project)
 {
 	StringList exts = {
 		"cpp",

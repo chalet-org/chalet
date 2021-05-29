@@ -13,7 +13,7 @@ namespace chalet
 {
 /*****************************************************************************/
 CMakeTarget::CMakeTarget(const BuildState& inState) :
-	IBuildTarget(inState, TargetType::CMake),
+	IBuildTarget(inState, BuildTargetType::CMake),
 	m_defines(getDefaultCmakeDefines())
 {
 }

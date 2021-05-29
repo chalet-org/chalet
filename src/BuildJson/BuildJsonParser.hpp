@@ -10,6 +10,7 @@
 
 #include "State/BuildState.hpp"
 #include "State/CommandLineInputs.hpp"
+#include "State/Dependency/GitDependency.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptTarget.hpp"
@@ -38,7 +39,7 @@ private:
 	bool parseConfiguration(const Json& inNode);
 
 	bool parseExternalDependencies(const Json& inNode);
-	bool parseExternalDependency(DependencyGit& outDependency, const Json& inNode);
+	bool parseGitDependency(GitDependency& outDependency, const Json& inNode);
 
 	bool parseProjects(const Json& inNode);
 	bool parseProject(ProjectTarget& outProject, const Json& inNode, const bool inAbstract = false);

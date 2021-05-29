@@ -6,13 +6,13 @@
 #ifndef CHALET_DEPENDENCY_GIT_HPP
 #define CHALET_DEPENDENCY_GIT_HPP
 
+#include "State/Dependency/IBuildDependency.hpp"
+
 namespace chalet
 {
-struct BuildPaths;
-
-struct DependencyGit
+struct GitDependency : public IBuildDependency
 {
-	explicit DependencyGit(const BuildPaths& inPaths, const std::string& inBuildFile);
+	explicit GitDependency(const BuildState& inState);
 
 	const std::string& repository() const noexcept;
 	void setRepository(const std::string& inValue) noexcept;
@@ -26,9 +26,6 @@ struct DependencyGit
 	const std::string& commit() const noexcept;
 	void setCommit(const std::string& inValue) noexcept;
 
-	const std::string& name() const noexcept;
-	void setName(const std::string& inValue) noexcept;
-
 	const std::string& destination() const noexcept;
 
 	bool submodules() const noexcept;
@@ -37,9 +34,6 @@ struct DependencyGit
 	bool parseDestination();
 
 private:
-	const BuildPaths& m_paths;
-	const std::string& m_buildFile;
-
 	std::string m_repository;
 	std::string m_branch{ "master" };
 	std::string m_tag;
@@ -49,8 +43,6 @@ private:
 
 	bool m_submodules = false;
 };
-
-using DependencyList = std::vector<std::unique_ptr<DependencyGit>>;
 }
 
 #endif // CHALET_DEPENDENCY_GIT_HPP

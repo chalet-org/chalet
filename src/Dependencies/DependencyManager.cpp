@@ -6,6 +6,7 @@
 #include "Dependencies/DependencyManager.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/Dependency/GitDependency.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
@@ -39,10 +40,12 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 	bool result = true;
 	int count = 0;
-	for (auto& dep : m_state.externalDependencies)
+	for (auto& dependency : m_state.externalDependencies)
 	{
-		const auto& repository = dep->repository();
-		const auto& destination = dep->destination();
+		auto& git = static_cast<const GitDependency&>(*dependency);
+
+		const auto& repository = git.repository();
+		const auto& destination = git.destination();
 		destinationCache.push_back(destination);
 
 		if (destination.empty() || String::startsWith('.', destination) || String::startsWith('/', destination))
@@ -70,11 +73,11 @@ bool DependencyManager::run(const bool inInstallCmd)
 			update = true;
 		}
 
-		const bool submodules = dep->submodules();
+		const bool submodules = git.submodules();
 
-		const auto& branch = dep->branch();
-		const auto& tag = dep->tag();
-		const auto& commit = dep->commit();
+		const auto& branch = git.branch();
+		const auto& tag = git.tag();
+		const auto& commit = git.commit();
 
 		const bool tagValid = !tag.empty();
 		const bool commitValid = !commit.empty();

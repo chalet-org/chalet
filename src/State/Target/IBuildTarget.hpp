@@ -6,7 +6,7 @@
 #ifndef CHALET_IBUILD_TARGET_HPP
 #define CHALET_IBUILD_TARGET_HPP
 
-#include "State/Target/TargetType.hpp"
+#include "State/Target/BuildTargetType.hpp"
 
 namespace chalet
 {
@@ -14,14 +14,14 @@ class BuildState;
 
 struct IBuildTarget
 {
-	explicit IBuildTarget(const BuildState& inState, const TargetType inType);
+	explicit IBuildTarget(const BuildState& inState, const BuildTargetType inType);
 	virtual ~IBuildTarget() = default;
 
-	[[nodiscard]] static std::unique_ptr<IBuildTarget> make(const BuildState& inState, const TargetType inType);
+	[[nodiscard]] static std::unique_ptr<IBuildTarget> make(const BuildState& inState, const BuildTargetType inType);
 
 	virtual void initialize() = 0;
 
-	TargetType type() const noexcept;
+	BuildTargetType type() const noexcept;
 	bool isProject() const noexcept;
 	bool isScript() const noexcept;
 	bool isCMake() const noexcept;
@@ -42,7 +42,7 @@ private:
 	std::string m_name;
 	std::string m_description;
 
-	TargetType m_type;
+	BuildTargetType m_type;
 	bool m_includeInBuild = true;
 };
 

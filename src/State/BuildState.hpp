@@ -14,7 +14,7 @@
 #include "State/CacheTools.hpp"
 #include "State/CommandLineInputs.hpp"
 #include "State/ConfigurationOptions.hpp"
-#include "State/DependencyGit.hpp"
+#include "State/Dependency/IBuildDependency.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/WorkspaceInfo.hpp"
 #include "Terminal/MsvcEnvironment.hpp"
@@ -36,7 +36,7 @@ public:
 	MsvcEnvironment msvcEnvironment;
 	ConfigurationOptions configuration;
 	BuildTargetList targets;
-	DependencyList externalDependencies;
+	BuildDependencyList externalDependencies;
 	AppBundle bundle;
 	BuildCache cache;
 

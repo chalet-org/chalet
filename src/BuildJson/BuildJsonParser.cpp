@@ -10,6 +10,7 @@
 #include "State/Bundle/BundleLinux.hpp"
 #include "State/Bundle/BundleMacOS.hpp"
 #include "State/Bundle/BundleWindows.hpp"
+#include "State/Dependency/BuildDependencyType.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -359,12 +360,13 @@ bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 		return false;
 	}
 
+	BuildDependencyType type = BuildDependencyType::Git;
 	for (auto& [name, dependencyJson] : externalDependencies.items())
 	{
-		auto dependency = std::make_unique<DependencyGit>(m_state.paths, m_inputs.buildFile());
+		auto dependency = IBuildDependency::make(m_state, type);
 		dependency->setName(name);
 
-		if (!parseExternalDependency(*dependency, dependencyJson))
+		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
 			return false;
 
 		m_state.externalDependencies.push_back(std::move(dependency));
@@ -374,7 +376,7 @@ bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseExternalDependency(DependencyGit& outDependency, const Json& inNode)
+bool BuildJsonParser::parseGitDependency(GitDependency& outDependency, const Json& inNode)
 {
 	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "repository"))
 		outDependency.setRepository(val);
@@ -482,24 +484,24 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 			m_buildJson->assignFromKey(extends, targetJson, "extends");
 		}
 
-		TargetType type = TargetType::Project;
+		BuildTargetType type = BuildTargetType::Project;
 		if (containsKeyThatStartsWith(targetJson, "script"))
 		{
-			type = TargetType::Script;
+			type = BuildTargetType::Script;
 		}
 		else if (targetJson.contains("cmake"))
 		{
-			type = TargetType::CMake;
+			type = BuildTargetType::CMake;
 		}
 
 		std::unique_ptr<IBuildTarget> target;
-		if (type == TargetType::Project && m_abstractProjects.find(extends) != m_abstractProjects.end())
+		if (type == BuildTargetType::Project && m_abstractProjects.find(extends) != m_abstractProjects.end())
 		{
 			target = std::make_unique<ProjectTarget>(*m_abstractProjects.at(extends)); // note: copy ctor
 		}
 		else
 		{
-			if (type == TargetType::Project && !String::equals("all", extends))
+			if (type == BuildTargetType::Project && !String::equals("all", extends))
 			{
 				Diagnostic::error(fmt::format("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name));
 				return false;

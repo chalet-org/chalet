@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TARGET_TYPE_HPP
-#define CHALET_TARGET_TYPE_HPP
+#ifndef CHALET_BUILD_TARGET_TYPE_HPP
+#define CHALET_BUILD_TARGET_TYPE_HPP
 
 namespace chalet
 {
-enum class TargetType
+enum class BuildTargetType
 {
 	Project,
 	Script,
@@ -16,4 +16,4 @@ enum class TargetType
 };
 }
 
-#endif // CHALET_TARGET_TYPE_HPP
+#endif // CHALET_BUILD_TARGET_TYPE_HPP

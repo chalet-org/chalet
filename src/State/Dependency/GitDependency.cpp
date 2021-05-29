@@ -3,98 +3,85 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/DependencyGit.hpp"
+#include "State/Dependency/GitDependency.hpp"
 
 #include "Libraries/Format.hpp"
 #include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
 #include "State/CommandLineInputs.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-DependencyGit::DependencyGit(const BuildPaths& inPaths, const std::string& inBuildFile) :
-	m_paths(inPaths),
-	m_buildFile(inBuildFile)
+GitDependency::GitDependency(const BuildState& inState) :
+	IBuildDependency(inState, BuildDependencyType::Git)
 {
 }
 
 /*****************************************************************************/
-const std::string& DependencyGit::repository() const noexcept
+const std::string& GitDependency::repository() const noexcept
 {
 	return m_repository;
 }
 
-void DependencyGit::setRepository(const std::string& inValue) noexcept
+void GitDependency::setRepository(const std::string& inValue) noexcept
 {
 	m_repository = inValue;
 }
 
 /*****************************************************************************/
-const std::string& DependencyGit::branch() const noexcept
+const std::string& GitDependency::branch() const noexcept
 {
 	return m_branch;
 }
 
-void DependencyGit::setBranch(const std::string& inValue) noexcept
+void GitDependency::setBranch(const std::string& inValue) noexcept
 {
 	m_branch = inValue;
 }
 
 /*****************************************************************************/
-const std::string& DependencyGit::tag() const noexcept
+const std::string& GitDependency::tag() const noexcept
 {
 	return m_tag;
 }
 
-void DependencyGit::setTag(const std::string& inValue) noexcept
+void GitDependency::setTag(const std::string& inValue) noexcept
 {
 	m_tag = inValue;
 }
 
 /*****************************************************************************/
-const std::string& DependencyGit::commit() const noexcept
+const std::string& GitDependency::commit() const noexcept
 {
 	return m_commit;
 }
 
-void DependencyGit::setCommit(const std::string& inValue) noexcept
+void GitDependency::setCommit(const std::string& inValue) noexcept
 {
 	m_commit = inValue;
 }
 
 /*****************************************************************************/
-const std::string& DependencyGit::name() const noexcept
-{
-	return m_name;
-}
-void DependencyGit::setName(const std::string& inValue) noexcept
-{
-	if (String::startsWith('.', inValue) || String::startsWith('_', inValue) || String::startsWith('-', inValue) || String::startsWith('+', inValue))
-		return;
-
-	m_name = inValue;
-}
-
-/*****************************************************************************/
-const std::string& DependencyGit::destination() const noexcept
+const std::string& GitDependency::destination() const noexcept
 {
 	return m_destination;
 }
 
 /*****************************************************************************/
-bool DependencyGit::submodules() const noexcept
+bool GitDependency::submodules() const noexcept
 {
 	return m_submodules;
 }
 
-void DependencyGit::setSubmodules(const bool inValue) noexcept
+void GitDependency::setSubmodules(const bool inValue) noexcept
 {
 	m_submodules = inValue;
 }
 
 /*****************************************************************************/
-bool DependencyGit::parseDestination()
+bool GitDependency::parseDestination()
 {
 	// LOG("repository: ", m_repository);
 	// LOG("branch: ", m_branch);
@@ -105,7 +92,7 @@ bool DependencyGit::parseDestination()
 	if (!m_destination.empty())
 		return false;
 
-	const auto& externalDepDir = m_paths.externalDepDir();
+	const auto& externalDepDir = m_state.paths.externalDepDir();
 	chalet_assert(!externalDepDir.empty(), "externalDepDir can't be blank.");
 
 	if (!m_name.empty())
@@ -118,7 +105,7 @@ bool DependencyGit::parseDestination()
 
 	if (!String::endsWith(".git", m_repository))
 	{
-		Diagnostic::errorAbort(fmt::format("{}: 'repository' was found but did not end with '.git'", m_buildFile));
+		Diagnostic::errorAbort("'repository' was found but did not end with '.git'");
 		return false;
 	}
 

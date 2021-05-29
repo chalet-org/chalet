@@ -13,7 +13,7 @@ namespace chalet
 {
 /*****************************************************************************/
 ScriptTarget::ScriptTarget(const BuildState& inState) :
-	IBuildTarget(inState, TargetType::Script)
+	IBuildTarget(inState, BuildTargetType::Script)
 {
 }
 
