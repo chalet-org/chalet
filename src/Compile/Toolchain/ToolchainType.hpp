@@ -10,6 +10,7 @@ namespace chalet
 {
 enum class ToolchainType : ushort
 {
+	Unknown,
 	GNU,
 	LLVM,
 	Apple,

@@ -35,34 +35,20 @@ ProjectTarget::ProjectTarget(const BuildState& inState) :
 void ProjectTarget::initialize()
 {
 	const auto& targetName = this->name();
-	for (auto& dir : m_libDirs)
-	{
-		m_state.paths.parsePathWithVariables(dir, targetName);
-	}
-	for (auto& dir : m_includeDirs)
-	{
-		m_state.paths.parsePathWithVariables(dir, targetName);
-	}
-	for (auto& dir : m_runDependencies)
-	{
-		m_state.paths.parsePathWithVariables(dir, targetName);
-	}
-	for (auto& dir : m_macosFrameworkPaths)
-	{
-		m_state.paths.parsePathWithVariables(dir, targetName);
-	}
-	for (auto& dir : m_files)
-	{
-		m_state.paths.parsePathWithVariables(dir, targetName);
-	}
-	for (auto& dir : m_locations)
-	{
-		m_state.paths.parsePathWithVariables(dir, targetName);
-	}
-	for (auto& dir : m_locationExcludes)
-	{
-		m_state.paths.parsePathWithVariables(dir, targetName);
-	}
+	auto parse = [&](StringList& outList) {
+		for (auto& dir : outList)
+		{
+			m_state.paths.parsePathWithVariables(dir, targetName);
+		}
+	};
+
+	parse(m_libDirs);
+	parse(m_includeDirs);
+	parse(m_runDependencies);
+	parse(m_macosFrameworkPaths);
+	parse(m_files);
+	parse(m_locations);
+	parse(m_locationExcludes);
 
 	m_state.paths.parsePathWithVariables(m_pch, name());
 }

@@ -21,7 +21,7 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-void BuildState::initializeBuild()
+bool BuildState::initializeBuild()
 {
 	paths.initialize();
 	environment.initialize();
@@ -30,7 +30,16 @@ void BuildState::initializeBuild()
 		target->initialize();
 	}
 
+	if (!compilerTools.initialize())
+	{
+		const auto& targetArch = info.targetArchitectureString();
+		Diagnostic::error(fmt::format("Requested arch '{}' is not supported.", targetArch));
+		return false;
+	}
+
 	initializeCache();
+
+	return true;
 }
 
 /*****************************************************************************/

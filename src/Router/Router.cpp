@@ -87,7 +87,8 @@ bool Router::run()
 
 		fetchToolVersions();
 
-		m_buildState->initializeBuild();
+		if (!m_buildState->initializeBuild())
+			return false;
 	}
 
 	if (!managePathVariables())

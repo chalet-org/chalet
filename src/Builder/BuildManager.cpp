@@ -164,8 +164,6 @@ bool BuildManager::run(const Route inRoute)
 /*****************************************************************************/
 void BuildManager::printBuildInformation()
 {
-	m_state.compilerTools.fetchCompilerVersions();
-
 	bool usingCpp = false;
 	bool usingCc = false;
 	for (auto& target : m_state.targets)

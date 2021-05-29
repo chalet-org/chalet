@@ -23,6 +23,65 @@ CompilerTools::CompilerTools(const WorkspaceInfo& inInfo) :
 }
 
 /*****************************************************************************/
+void CompilerTools::detectToolchain()
+{
+#if defined(CHALET_WIN32)
+	if (String::endsWith("cl.exe", m_cc) || String::contains("cl.exe", m_cpp))
+	{
+		m_detectedToolchain = ToolchainType::MSVC;
+	}
+	else
+#endif
+		if (String::contains("clang", m_cc) || String::contains("clang", m_cpp))
+	{
+		m_detectedToolchain = ToolchainType::LLVM;
+	}
+	else if (String::contains("gcc", m_cc) || String::contains("g++", m_cpp))
+	{
+		m_detectedToolchain = ToolchainType::GNU;
+	}
+	else
+	{
+		m_detectedToolchain = ToolchainType::Unknown;
+	}
+
+	m_ccDetected = Commands::pathExists(m_cc);
+}
+
+/*****************************************************************************/
+bool CompilerTools::initialize()
+{
+	fetchCompilerVersions();
+
+	if (m_detectedToolchain == ToolchainType::LLVM)
+	{
+		auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
+#if defined(CHALET_WIN32)
+		auto split = String::split(results, '\r\n');
+#else
+		auto split = String::split(results, '\n');
+#endif
+		bool valid = false;
+		// m_state.info.setTargetArchitecture(arch);
+		const auto& targetArch = m_info.targetArchitectureString();
+		for (auto& line : split)
+		{
+			auto start = line.find_first_not_of(' ');
+			auto end = line.find_first_of(' ', start);
+
+			auto arch = line.substr(start, end - start);
+			if (String::startsWith(arch, targetArch))
+				valid = true;
+		}
+
+		UNUSED(split);
+		return valid;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 void CompilerTools::fetchCompilerVersions()
 {
 	if (m_compilerVersionStringCpp.empty())
@@ -31,7 +90,7 @@ void CompilerTools::fetchCompilerVersions()
 		{
 			std::string version;
 #if defined(CHALET_WIN32)
-			if (String::endsWith("cl.exe", m_cpp))
+			if (m_detectedToolchain == ToolchainType::MSVC)
 			{
 				version = parseVersionMSVC(m_cpp);
 			}
@@ -52,7 +111,7 @@ void CompilerTools::fetchCompilerVersions()
 		{
 			std::string version;
 #if defined(CHALET_WIN32)
-			if (String::endsWith("cl.exe", m_cc))
+			if (m_detectedToolchain == ToolchainType::MSVC)
 			{
 				version = parseVersionMSVC(m_cc);
 			}
@@ -161,6 +220,21 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, cons
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+ToolchainType CompilerTools::detectedToolchain() const
+{
+	return m_detectedToolchain;
+}
+
+/*****************************************************************************/
+const std::string& CompilerTools::compiler() const noexcept
+{
+	if (m_ccDetected)
+		return m_cc;
+	else
+		return m_cpp;
 }
 
 /*****************************************************************************/

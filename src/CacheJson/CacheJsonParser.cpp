@@ -198,22 +198,24 @@ bool CacheJsonParser::validatePaths()
 	}
 #endif
 
-	if (String::contains("clang", m_state.compilerTools.cc()))
+	m_state.compilerTools.detectToolchain();
+
+	if (m_state.compilerTools.detectedToolchain() == ToolchainType::LLVM)
 	{
 		if (m_inputs.targetArchitecture().empty())
 		{
 			// also takes -dumpmachine
-			auto arch = Commands::subprocessOutput({ m_state.compilerTools.cc(), "-print-target-triple" });
+			auto arch = Commands::subprocessOutput({ m_state.compilerTools.compiler(), "-print-target-triple" });
 			m_state.info.setTargetArchitecture(arch);
 		}
 	}
-	else if (String::contains("gcc", m_state.compilerTools.cc()))
+	else if (m_state.compilerTools.detectedToolchain() == ToolchainType::GNU)
 	{
-		auto arch = Commands::subprocessOutput({ m_state.compilerTools.cc(), "-dumpmachine" });
+		auto arch = Commands::subprocessOutput({ m_state.compilerTools.compiler(), "-dumpmachine" });
 		m_state.info.setTargetArchitecture(arch);
 	}
 #if defined(CHALET_WIN32)
-	else if (String::endsWith("cl.exe", m_state.compilerTools.cc()))
+	else if (m_state.compilerTools.detectedToolchain() == ToolchainType::MSVC)
 	{
 		const auto arch = m_state.info.targetArchitecture();
 		switch (arch)

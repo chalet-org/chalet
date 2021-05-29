@@ -43,14 +43,15 @@ namespace chalet
 {
 	switch (inType)
 	{
+		case ToolchainType::MSVC:
+			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
 		case ToolchainType::Apple:
 			return std::make_unique<CompileToolchainApple>(inState, inProject, inConfig);
 		case ToolchainType::LLVM:
 			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
+		case ToolchainType::Unknown:
 		case ToolchainType::GNU:
 			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
-		case ToolchainType::MSVC:
-			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
 		default:
 			break;
 	}

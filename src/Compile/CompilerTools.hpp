@@ -8,6 +8,7 @@
 
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerConfig.hpp"
+#include "Compile/Toolchain/ToolchainType.hpp"
 
 namespace chalet
 {
@@ -17,7 +18,12 @@ struct CompilerTools
 {
 	explicit CompilerTools(const WorkspaceInfo& inInfo);
 
+	void detectToolchain();
+	bool initialize();
 	void fetchCompilerVersions();
+
+	ToolchainType detectedToolchain() const;
+	const std::string& compiler() const noexcept;
 
 	const std::string& compilerVersionStringCpp() const noexcept;
 	const std::string& compilerVersionStringC() const noexcept;
@@ -45,6 +51,8 @@ struct CompilerTools
 private:
 	const WorkspaceInfo& m_info;
 
+	ToolchainType m_detectedToolchain = ToolchainType::Unknown;
+
 	std::string parseVersionMSVC(const std::string& inExecutable) const;
 	std::string parseVersionGNU(const std::string& inExecutable, const std::string_view inEol = "\n") const;
 
@@ -60,6 +68,7 @@ private:
 	std::string m_compilerVersionStringC;
 
 	bool m_isArchiverLibTool = false;
+	bool m_ccDetected = false;
 };
 }
 

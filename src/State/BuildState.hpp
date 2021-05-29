@@ -44,7 +44,7 @@ private:
 	friend class Application;
 	friend class Router;
 
-	void initializeBuild();
+	bool initializeBuild();
 	void initializeCache();
 };
 }
