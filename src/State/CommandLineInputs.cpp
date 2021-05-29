@@ -241,7 +241,7 @@ void CommandLineInputs::setTargetArchitecture(std::string&& inValue) noexcept
 
 	if (String::equals("auto", inValue))
 	{
-		m_targetArchitecture = m_hostArchitecture;
+		m_targetArchitecture.clear();
 	}
 	else
 	{
