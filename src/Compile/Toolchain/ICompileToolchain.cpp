@@ -5,17 +5,18 @@
 
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
+#include "Compile/CompilerConfig.hpp"
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/ProjectTarget.hpp"
+
+#include "Compile/Toolchain/CompileToolchainApple.hpp"
+#include "Compile/Toolchain/CompileToolchainGNU.hpp"
+#include "Compile/Toolchain/CompileToolchainLLVM.hpp"
+#include "Compile/Toolchain/CompileToolchainMSVC.hpp"
 
 namespace chalet
 {
-/*****************************************************************************/
-bool ICompileToolchain::initialize()
-{
-	return true;
-}
-
 /*****************************************************************************/
 ICompileToolchain::ICompileToolchain(const BuildState& inState) :
 	m_state(inState)
@@ -25,6 +26,59 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState) :
 	m_isNinja = m_state.environment.strategy() == StrategyType::Makefile;
 	m_isNinja = m_state.environment.strategy() == StrategyType::Ninja;
 	m_isNative = m_state.environment.strategy() == StrategyType::Native;
+}
+
+/*****************************************************************************/
+[[nodiscard]] CompileToolchain ICompileToolchain::make(const ToolchainType inType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig)
+{
+	switch (inType)
+	{
+		case ToolchainType::MSVC:
+			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
+		case ToolchainType::Apple:
+			return std::make_unique<CompileToolchainApple>(inState, inProject, inConfig);
+		case ToolchainType::LLVM:
+			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
+		case ToolchainType::Unknown:
+		case ToolchainType::GNU:
+			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
+		default:
+			break;
+	}
+
+	Diagnostic::errorAbort(fmt::format("Unimplemented ToolchainType requested: ", static_cast<int>(inType)));
+	return nullptr;
+}
+
+/*****************************************************************************/
+[[nodiscard]] CompileToolchain ICompileToolchain::make(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig)
+{
+	switch (inCompilerType)
+	{
+		case CppCompilerType::AppleClang:
+			return std::make_unique<CompileToolchainApple>(inState, inProject, inConfig);
+		case CppCompilerType::Clang:
+		case CppCompilerType::MingwClang:
+		case CppCompilerType::EmScripten:
+			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
+		case CppCompilerType::Intel:
+		case CppCompilerType::MingwGcc:
+		case CppCompilerType::Gcc:
+			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
+		case CppCompilerType::VisualStudio:
+			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
+		case CppCompilerType::Unknown:
+		default:
+			break;
+	}
+
+	Diagnostic::errorAbort(fmt::format("Unimplemented ToolchainType requested: ", static_cast<int>(inCompilerType)));
+	return nullptr;
+}
+/*****************************************************************************/
+bool ICompileToolchain::initialize()
+{
+	return true;
 }
 
 /*****************************************************************************/

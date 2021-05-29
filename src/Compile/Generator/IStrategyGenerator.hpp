@@ -6,6 +6,7 @@
 #ifndef CHALET_ISTRATEGY_GENERATOR_HPP
 #define CHALET_ISTRATEGY_GENERATOR_HPP
 
+#include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
@@ -13,10 +14,15 @@
 
 namespace chalet
 {
+struct IStrategyGenerator;
+using StrategyGenerator = std::unique_ptr<IStrategyGenerator>;
+
 struct IStrategyGenerator
 {
 	explicit IStrategyGenerator(const BuildState& inState);
 	virtual ~IStrategyGenerator() = default;
+
+	[[nodiscard]] static StrategyGenerator make(const StrategyType inType, BuildState& inState);
 
 	virtual void addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) = 0;
 	virtual std::string getContents(const std::string& inPath) const = 0;
@@ -37,7 +43,6 @@ protected:
 	bool m_generateDependencies = false;
 };
 
-using StrategyGenerator = std::unique_ptr<IStrategyGenerator>;
 }
 
 #endif // CHALET_ISTRATEGY_GENERATOR_HPP

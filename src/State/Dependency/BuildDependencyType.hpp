@@ -8,7 +8,8 @@
 
 namespace chalet
 {
-enum class BuildDependencyType
+// Source control + packages
+enum class BuildDependencyType : ushort
 {
 	Git,
 	SVN,

@@ -26,7 +26,7 @@ CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const Proj
 }
 
 /*****************************************************************************/
-ToolchainType CompileToolchainMSVC::type() const
+ToolchainType CompileToolchainMSVC::type() const noexcept
 {
 	return ToolchainType::MSVC;
 }

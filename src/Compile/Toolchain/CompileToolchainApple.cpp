@@ -83,7 +83,7 @@ bool CompileToolchainApple::initialize()
 }
 
 /*****************************************************************************/
-ToolchainType CompileToolchainApple::type() const
+ToolchainType CompileToolchainApple::type() const noexcept
 {
 	return ToolchainType::Apple;
 }

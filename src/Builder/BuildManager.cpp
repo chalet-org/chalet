@@ -12,7 +12,6 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 
-#include "Compile/CompileFactory.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -75,7 +74,7 @@ bool BuildManager::run(const Route inRoute)
 
 		Output::lineBreak();
 
-		m_strategy = CompileFactory::makeStrategy(strategy, m_state);
+		m_strategy = ICompileStrategy::make(strategy, m_state);
 		if (!m_strategy->initialize())
 			return false;
 
@@ -233,7 +232,7 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 	auto& compilerConfig = m_state.compilerTools.getConfig(inProject.language());
 	auto compilerType = compilerConfig.compilerType();
 
-	auto buildToolchain = CompileFactory::makeToolchain(compilerType, m_state, inProject, compilerConfig);
+	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
 
 	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
 	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), objExtension);

@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/CompilerTools.hpp"
+#include "State/CompilerTools.hpp"
 
 #include "Libraries/Format.hpp"
 #include "State/WorkspaceInfo.hpp"

@@ -363,7 +363,7 @@ bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 	BuildDependencyType type = BuildDependencyType::Git;
 	for (auto& [name, dependencyJson] : externalDependencies.items())
 	{
-		auto dependency = IBuildDependency::make(m_state, type);
+		auto dependency = IBuildDependency::make(type, m_state);
 		dependency->setName(name);
 
 		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
@@ -507,7 +507,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 				return false;
 			}
 
-			target = IBuildTarget::make(m_state, type);
+			target = IBuildTarget::make(type, m_state);
 		}
 		target->setName(name);
 

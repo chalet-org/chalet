@@ -18,7 +18,7 @@ struct CompileToolchainMSVC final : ICompileToolchain
 {
 	explicit CompileToolchainMSVC(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
 
-	virtual ToolchainType type() const final;
+	virtual ToolchainType type() const noexcept final;
 
 	virtual bool initialize() final;
 

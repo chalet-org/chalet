@@ -12,12 +12,15 @@ namespace chalet
 {
 class BuildState;
 
+struct IBuildTarget;
+using BuildTarget = std::unique_ptr<IBuildTarget>;
+
 struct IBuildTarget
 {
 	explicit IBuildTarget(const BuildState& inState, const BuildTargetType inType);
 	virtual ~IBuildTarget() = default;
 
-	[[nodiscard]] static std::unique_ptr<IBuildTarget> make(const BuildState& inState, const BuildTargetType inType);
+	[[nodiscard]] static BuildTarget make(const BuildTargetType inType, const BuildState& inState);
 
 	virtual void initialize() = 0;
 
@@ -46,7 +49,7 @@ private:
 	bool m_includeInBuild = true;
 };
 
-using BuildTargetList = std::vector<std::unique_ptr<IBuildTarget>>;
+using BuildTargetList = std::vector<BuildTarget>;
 }
 
 #endif // CHALET_IBUILD_TARGET_HPP

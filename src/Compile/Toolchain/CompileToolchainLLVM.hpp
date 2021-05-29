@@ -18,7 +18,7 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 {
 	explicit CompileToolchainLLVM(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
 
-	virtual ToolchainType type() const override;
+	virtual ToolchainType type() const noexcept override;
 
 	virtual StringList getLinkExclusions() const override;
 

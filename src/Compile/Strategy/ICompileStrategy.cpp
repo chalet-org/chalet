@@ -5,45 +5,17 @@
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
 
-#include "Compile/Generator/MakefileGeneratorGNU.hpp"
-#include "Compile/Generator/MakefileGeneratorNMake.hpp"
-#include "Compile/Generator/NinjaGenerator.hpp"
-
+#include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Libraries/Format.hpp"
+
+#include "Compile/Strategy/CompileStrategyMakefile.hpp"
+#include "Compile/Strategy/CompileStrategyNative.hpp"
+#include "Compile/Strategy/CompileStrategyNinja.hpp"
 
 namespace chalet
 {
 namespace
 {
-/*****************************************************************************/
-[[nodiscard]] StrategyGenerator makeGenerator(const StrategyType inType, BuildState& inState)
-{
-	switch (inType)
-	{
-		case StrategyType::Native:
-			return nullptr;
-
-		case StrategyType::Ninja: {
-			inState.tools.fetchNinjaVersion();
-			return std::make_unique<NinjaGenerator>(inState);
-		}
-
-		case StrategyType::Makefile: {
-			inState.tools.fetchMakeVersion();
-#if defined(CHALET_WIN32)
-			if (inState.tools.makeIsNMake())
-				return std::make_unique<MakefileGeneratorNMake>(inState);
-			else
-#endif
-				return std::make_unique<MakefileGeneratorGNU>(inState);
-		}
-		default:
-			break;
-	}
-
-	Diagnostic::errorAbort(fmt::format("Unimplemented StrategyGenerator requested: ", static_cast<int>(inType)));
-	return nullptr;
-}
 }
 
 /*****************************************************************************/
@@ -51,7 +23,26 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 	m_state(inState),
 	m_type(inType)
 {
-	m_generator = makeGenerator(inType, inState);
+	m_generator = IStrategyGenerator::make(inType, inState);
+}
+
+/*****************************************************************************/
+[[nodiscard]] CompileStrategy ICompileStrategy::make(const StrategyType inType, BuildState& inState)
+{
+	switch (inType)
+	{
+		case StrategyType::Makefile:
+			return std::make_unique<CompileStrategyMakefile>(inState);
+		case StrategyType::Ninja:
+			return std::make_unique<CompileStrategyNinja>(inState);
+		case StrategyType::Native:
+			return std::make_unique<CompileStrategyNative>(inState);
+		default:
+			break;
+	}
+
+	Diagnostic::errorAbort(fmt::format("Unimplemented StrategyType requested: ", static_cast<int>(inType)));
+	return nullptr;
 }
 
 /*****************************************************************************/

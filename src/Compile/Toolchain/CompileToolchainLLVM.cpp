@@ -20,7 +20,7 @@ CompileToolchainLLVM::CompileToolchainLLVM(const BuildState& inState, const Proj
 }
 
 /*****************************************************************************/
-ToolchainType CompileToolchainLLVM::type() const
+ToolchainType CompileToolchainLLVM::type() const noexcept
 {
 	return ToolchainType::LLVM;
 }

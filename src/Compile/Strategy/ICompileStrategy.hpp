@@ -6,19 +6,24 @@
 #ifndef CHALET_ICOMPILE_STRATEGY_HPP
 #define CHALET_ICOMPILE_STRATEGY_HPP
 
-#include "State/Target/ProjectTarget.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
+#include "State/Target/ProjectTarget.hpp"
 
 namespace chalet
 {
+struct ICompileStrategy;
+using CompileStrategy = std::unique_ptr<ICompileStrategy>;
+
 struct ICompileStrategy
 {
 	explicit ICompileStrategy(const StrategyType inType, BuildState& inState);
 	virtual ~ICompileStrategy() = default;
+
+	[[nodiscard]] static CompileStrategy make(const StrategyType inType, BuildState& inState);
 
 	StrategyType type() const noexcept;
 
@@ -38,7 +43,6 @@ protected:
 	StrategyType m_type;
 };
 
-using CompileStrategy = std::unique_ptr<ICompileStrategy>;
 }
 
 #endif // CHALET_ICOMPILE_STRATEGY_HPP

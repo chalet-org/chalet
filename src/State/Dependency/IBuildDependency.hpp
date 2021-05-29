@@ -12,12 +12,15 @@ namespace chalet
 {
 class BuildState;
 
+struct IBuildDependency;
+using BuildDependency = std::unique_ptr<IBuildDependency>;
+
 struct IBuildDependency
 {
 	explicit IBuildDependency(const BuildState& inState, const BuildDependencyType inType);
 	virtual ~IBuildDependency() = default;
 
-	[[nodiscard]] static std::unique_ptr<IBuildDependency> make(const BuildState& inState, const BuildDependencyType inType);
+	[[nodiscard]] static BuildDependency make(const BuildDependencyType inType, const BuildState& inState);
 
 	BuildDependencyType type() const noexcept;
 	bool isGit() const noexcept;
@@ -34,7 +37,7 @@ private:
 	BuildDependencyType m_type;
 };
 
-using BuildDependencyList = std::vector<std::unique_ptr<IBuildDependency>>;
+using BuildDependencyList = std::vector<BuildDependency>;
 }
 
 #endif // CHALET_IBUILD_DEPENDENCY_HPP

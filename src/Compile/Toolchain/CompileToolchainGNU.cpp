@@ -23,7 +23,7 @@ CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const Projec
 }
 
 /*****************************************************************************/
-ToolchainType CompileToolchainGNU::type() const
+ToolchainType CompileToolchainGNU::type() const noexcept
 {
 	return ToolchainType::GNU;
 }

@@ -19,7 +19,7 @@ IBuildDependency::IBuildDependency(const BuildState& inState, const BuildDepende
 }
 
 /*****************************************************************************/
-[[nodiscard]] std::unique_ptr<IBuildDependency> IBuildDependency::make(const BuildState& inState, const BuildDependencyType inType)
+[[nodiscard]] BuildDependency IBuildDependency::make(const BuildDependencyType inType, const BuildState& inState)
 {
 	switch (inType)
 	{

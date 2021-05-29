@@ -5,8 +5,8 @@
 
 #include "Compile/CompilerConfig.hpp"
 
-#include "Compile/CompilerTools.hpp"
 #include "Libraries/Format.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Utility/List.hpp"

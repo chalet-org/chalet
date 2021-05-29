@@ -12,13 +12,22 @@
 namespace chalet
 {
 class BuildState;
+struct ProjectTarget;
+struct CompilerConfig;
+
+struct ICompileToolchain;
+using CompileToolchain = std::unique_ptr<ICompileToolchain>;
 
 struct ICompileToolchain
 {
 	explicit ICompileToolchain(const BuildState& inState);
 	virtual ~ICompileToolchain() = default;
 
-	virtual ToolchainType type() const = 0;
+	[[nodiscard]] static CompileToolchain make(const ToolchainType inType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
+
+	[[nodiscard]] static CompileToolchain make(const CppCompilerType inType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
+
+	virtual ToolchainType type() const noexcept = 0;
 
 	virtual bool initialize();
 
@@ -70,7 +79,6 @@ protected:
 	bool m_isNative = false;
 };
 
-using CompileToolchain = std::unique_ptr<ICompileToolchain>;
 }
 
 #endif // CHALET_ICOMPILE_TOOLCHAIN_HPP
