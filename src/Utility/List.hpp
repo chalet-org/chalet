@@ -10,25 +10,25 @@ namespace chalet
 {
 namespace List
 {
-template <typename Container, class Inst, class MemFunc>
-inline void forEach(Container& inList, Inst&& inInst, MemFunc&& inFunc);
+template <typename VectorType, class T>
+void forEach(std::vector<VectorType>& inList, T* inst, void (T::*func)(VectorType&));
 
 template <typename Container>
-inline void sort(Container& inList);
+void sort(Container& inList);
 
 template <typename VectorType>
-inline void addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue);
+void addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue);
 
-inline void addIfDoesNotExist(std::vector<std::string>& outList, const char* inValue);
-inline void addIfDoesNotExist(std::vector<std::string>& outList, const std::string& inValue);
-
-template <typename VectorType>
-inline void removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue);
-
-inline void removeIfExists(std::vector<std::string>& outList, const char* inValue);
+void addIfDoesNotExist(std::vector<std::string>& outList, const char* inValue);
+void addIfDoesNotExist(std::vector<std::string>& outList, const std::string& inValue);
 
 template <typename VectorType>
-inline bool contains(const std::vector<VectorType>& inList, const VectorType& inValue);
+void removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue);
+
+void removeIfExists(std::vector<std::string>& outList, const char* inValue);
+
+template <typename VectorType>
+bool contains(const std::vector<VectorType>& inList, const VectorType& inValue);
 }
 }
 
