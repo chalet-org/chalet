@@ -8,8 +8,9 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				// "--generator=vscode",
-				"build",
-				"Release"
+				"buildrun",
+				"Release",
+				"tests_chalet"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",

@@ -101,7 +101,7 @@ bool BuildManager::run(const Route inRoute)
 		if ((runCommand || inRoute == Route::BuildRun) && target->isProject())
 		{
 			auto project = static_cast<const ProjectTarget*>(target.get());
-			if (project->runProject())
+			if (m_runProjectName == project->name())
 				runProject = project;
 			else if (runCommand)
 				continue;
