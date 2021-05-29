@@ -196,12 +196,40 @@ bool CacheJsonParser::validatePaths()
 		Diagnostic::errorAbort(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
 		return false;
 	}
+#endif
+
 	if (String::contains("clang", m_state.compilerTools.cc()))
 	{
 		if (m_inputs.targetArchitecture().empty())
 		{
+			// also takes -dumpmachine
 			auto arch = Commands::subprocessOutput({ m_state.compilerTools.cc(), "-print-target-triple" });
 			m_state.info.setTargetArchitecture(arch);
+		}
+	}
+	else if (String::contains("gcc", m_state.compilerTools.cc()))
+	{
+		auto arch = Commands::subprocessOutput({ m_state.compilerTools.cc(), "-dumpmachine" });
+		m_state.info.setTargetArchitecture(arch);
+	}
+#if defined(CHALET_WIN32)
+	else if (String::endsWith("cl.exe", m_state.compilerTools.cc()))
+	{
+		const auto arch = m_state.info.targetArchitecture();
+		switch (arch)
+		{
+			case Arch::Cpu::X64:
+				m_state.info.setTargetArchitecture("x86_64-pc-win32");
+				break;
+
+			case Arch::Cpu::X86:
+				m_state.info.setTargetArchitecture("i686-pc-win32");
+				break;
+
+			case Arch::Cpu::ARM:
+			case Arch::Cpu::ARM64:
+			default:
+				break;
 		}
 	}
 #endif

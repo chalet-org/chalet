@@ -43,19 +43,26 @@ void Arch::set(const std::string& inValue) noexcept
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 	str = inValue;
 
-	if (String::startsWith({ "x86_64", "x64" }, str))
+	std::string arch = str;
+	if (String::contains('-', arch))
+	{
+		auto split = String::split(str, '-');
+		arch = split.front();
+	}
+
+	if (String::equals({ "x86_64", "x64" }, arch))
 	{
 		val = Arch::Cpu::X64;
 	}
-	else if (String::startsWith("x86", str))
+	else if (String::equals("x86", arch))
 	{
 		val = Arch::Cpu::X86;
 	}
-	else if (String::startsWith("arm64", str))
+	else if (String::equals("arm64", arch))
 	{
 		val = Arch::Cpu::ARM64;
 	}
-	else if (String::startsWith("arm", str))
+	else if (String::startsWith("arm", arch))
 	{
 		val = Arch::Cpu::ARM;
 	}

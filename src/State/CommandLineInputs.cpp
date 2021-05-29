@@ -246,6 +246,9 @@ void CommandLineInputs::setTargetArchitecture(std::string&& inValue) noexcept
 	else
 	{
 		m_targetArchitecture = std::move(inValue);
+
+		if (String::equals("x64", m_targetArchitecture))
+			m_targetArchitecture = "x86_64";
 	}
 }
 

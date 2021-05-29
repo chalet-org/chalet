@@ -20,6 +20,8 @@ struct CompileToolchainGNU : ICompileToolchain
 
 	virtual ToolchainType type() const override;
 
+	virtual bool initialize() override;
+
 	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
 	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
 	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;
@@ -80,7 +82,7 @@ protected:
 	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
-	void initializeArch() const;
+	void initializeArchPresets() const;
 
 	const ProjectTarget& m_project;
 	const CompilerConfig& m_config;
@@ -89,6 +91,9 @@ protected:
 
 	mutable StringList m_arch86;
 	// mutable StringList m_arch86_64;
+
+private:
+	std::string m_arch;
 };
 }
 

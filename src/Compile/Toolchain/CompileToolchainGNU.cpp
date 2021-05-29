@@ -29,6 +29,30 @@ ToolchainType CompileToolchainGNU::type() const
 }
 
 /*****************************************************************************/
+bool CompileToolchainGNU::initialize()
+{
+	const auto& targetArchString = m_state.info.targetArchitectureString();
+
+	if (!String::contains('-', targetArchString))
+		return false;
+
+	std::string macosVersion;
+	auto triple = String::split(targetArchString, '-');
+	if (triple.size() == 3)
+	{
+		m_arch = triple.front();
+	}
+	else
+	{
+		m_arch = targetArchString;
+	}
+
+	initializeArchPresets();
+
+	return true;
+}
+
+/*****************************************************************************/
 StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
 {
 	StringList ret;
@@ -683,9 +707,8 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	auto hostArch = m_state.info.hostArchitecture();
 	auto targetArch = m_state.info.targetArchitecture();
 
-	const auto& targetArchString = m_state.info.targetArchitectureString();
 #if defined(CHALET_WIN32)
-	if (String::equals({ "arm", "arm64" }, targetArchString))
+	if (String::equals({ "arm", "arm64" }, m_arch))
 	{
 		// don't do anything yet
 		return false;
@@ -701,29 +724,30 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	std::string arch;
 	std::string tune;
 	std::string flags;
-	if (String::equals({ "intel", "generic" }, targetArchString))
+	if (String::equals({ "intel", "generic" }, m_arch))
 	{
-		tune = targetArchString;
+		tune = m_arch;
 		flags = "-m64";
 	}
-	else if (String::equals("x86_64", targetArchString))
+	else if (String::equals({ "x86_64", "x64" }, m_arch))
 	{
-		arch = tune = "x86-64";
+		arch = "x86-64";
+		tune = "generic";
 		flags = "-m64";
 	}
-	else if (String::equals("x86", targetArchString))
+	else if (String::equals("x86", m_arch))
 	{
 		arch = tune = "i686";
 		flags = "-m32";
 	}
-	else if (String::equals(m_arch86, targetArchString))
+	else if (String::equals(m_arch86, m_arch))
 	{
-		arch = tune = targetArchString;
+		arch = tune = m_arch;
 		flags = "-m32";
 	}
 	else
 	{
-		arch = tune = targetArchString;
+		arch = tune = m_arch;
 		flags = "-m64";
 	}
 
@@ -952,7 +976,7 @@ void CompileToolchainGNU::addMacosFrameworkOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::initializeArch() const
+void CompileToolchainGNU::initializeArchPresets() const
 {
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 	if (m_arch86.empty())

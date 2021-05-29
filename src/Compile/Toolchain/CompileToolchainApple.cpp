@@ -60,7 +60,6 @@ CompileToolchainApple::CompileToolchainApple(const BuildState& inState, const Pr
 /*****************************************************************************/
 bool CompileToolchainApple::initialize()
 {
-
 	const auto& targetArchString = m_state.info.targetArchitectureString();
 	std::string macosVersion;
 	auto triple = String::split(targetArchString, '-');

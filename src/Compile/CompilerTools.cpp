@@ -83,7 +83,8 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) con
 		if (start != std::string::npos && end != std::string::npos)
 		{
 			const auto versionString = splitOutput[1].substr(start, end - start);
-			const auto arch = splitOutput[1].substr(end + 5);
+			// const auto arch = splitOutput[1].substr(end + 5);
+			const auto arch = m_info.targetArchitectureString();
 			ret = fmt::format("Microsoft{} Visual C/C++ {} [{}]", Unicode::registered(), versionString, arch);
 		}
 	}
