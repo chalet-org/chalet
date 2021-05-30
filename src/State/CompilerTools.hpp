@@ -13,10 +13,11 @@
 namespace chalet
 {
 struct WorkspaceInfo;
+struct CommandLineInputs;
 
 struct CompilerTools
 {
-	explicit CompilerTools(const WorkspaceInfo& inInfo);
+	explicit CompilerTools(const CommandLineInputs& inInputs, const WorkspaceInfo& inInfo);
 
 	void detectToolchain();
 	bool initialize();
@@ -49,6 +50,7 @@ struct CompilerTools
 	CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
 
 private:
+	const CommandLineInputs& m_inputs;
 	const WorkspaceInfo& m_info;
 
 	ToolchainType m_detectedToolchain = ToolchainType::Unknown;

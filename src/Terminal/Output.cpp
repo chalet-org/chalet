@@ -5,10 +5,10 @@
 
 #include "Terminal/Output.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
 #include "Libraries/Regex.hpp"
 #include "Libraries/WindowsApi.hpp"
-#include "State/CommandLineInputs.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"

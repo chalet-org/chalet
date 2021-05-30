@@ -5,8 +5,8 @@
 
 #include "Builder/BuildManager/ScriptRunner.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
-#include "State/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"

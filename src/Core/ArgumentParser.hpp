@@ -6,7 +6,7 @@
 #ifndef CHALET_ARGUMENT_PARSER_HPP
 #define CHALET_ARGUMENT_PARSER_HPP
 
-#include "State/CommandLineInputs.hpp"
+#include "Core/CommandLineInputs.hpp"
 
 namespace chalet
 {

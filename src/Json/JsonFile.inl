@@ -5,8 +5,8 @@
 
 #include "Json/JsonFile.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
-#include "State/CommandLineInputs.hpp"
 
 namespace chalet
 {

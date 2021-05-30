@@ -5,10 +5,10 @@
 
 #include "State/Dependency/GitDependency.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
-#include "State/CommandLineInputs.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet

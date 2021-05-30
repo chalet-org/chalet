@@ -7,7 +7,7 @@
 #define CHALET_WORKSPACE_INFO_HPP
 
 #include "Core/Arch.hpp"
-#include "State/CommandLineInputs.hpp"
+#include "Core/CommandLineInputs.hpp"
 
 namespace chalet
 {

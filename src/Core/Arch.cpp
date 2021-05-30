@@ -25,11 +25,11 @@ std::string Arch::getHostCpuArchitecture()
 	return "x86";
 	#endif
 #else
-	#if defined(__x86_64__)
+	#if (defined(__x86_64__) && __x86_64__) || (defined(_M_AMD64) && _M_AMD64 == 100)
 	return "x86_64";
-	#elif defined(__aarch64__)
+	#elif (defined(__aarch64__) && __aarch64__) || (defined(_M_ARM64) && _M_ARM64 == 1)
 	return "arm64";
-	#elif defined(__arm__)
+	#elif (defined(__arm__) && __arm__) || (defined(_M_ARM) && _M_ARM == 7)
 	return "arm";
 	#else
 	return "x86";
@@ -54,7 +54,7 @@ void Arch::set(const std::string& inValue) noexcept
 	{
 		val = Arch::Cpu::X64;
 	}
-	else if (String::equals("x86", arch))
+	else if (String::equals({ "i686", "x86" }, arch))
 	{
 		val = Arch::Cpu::X86;
 	}
@@ -71,5 +71,4 @@ void Arch::set(const std::string& inValue) noexcept
 		val = Arch::Cpu::Unknown;
 	}
 }
-
 }

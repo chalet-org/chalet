@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/CommandLineInputs.hpp"
+#include "Core/CommandLineInputs.hpp"
 
 #include "Builder/BuildManager.hpp"
 #include "Core/Arch.hpp"
@@ -249,6 +249,8 @@ void CommandLineInputs::setTargetArchitecture(std::string&& inValue) noexcept
 
 		if (String::equals("x64", m_targetArchitecture))
 			m_targetArchitecture = "x86_64";
+		else if (String::equals("x86", m_targetArchitecture))
+			m_targetArchitecture = "i686";
 	}
 }
 

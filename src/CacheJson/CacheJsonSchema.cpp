@@ -256,18 +256,6 @@ Json Schema::getCacheJson()
 		}
 	})json"_ojson;
 
-	/*ret[kDefinitions]["settings-targetArchitecture"] = R"json({
-		"type": "string",
-		"description": "The target platform's architecture",
-		"enum": [
-			"x86",
-			"x64",
-			"arm",
-			"arm64"
-		],
-		"default": "x64"
-	})json"_ojson;*/
-
 	ret[kDefinitions]["settings-strategy"] = R"json({
 		"type": "string",
 		"description": "The build strategy to use.",

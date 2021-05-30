@@ -11,7 +11,7 @@ namespace chalet
 BuildState::BuildState(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	info(m_inputs),
-	compilerTools(info),
+	compilerTools(m_inputs, info),
 	paths(m_inputs, info),
 	environment(paths),
 	msvcEnvironment(*this),
@@ -32,7 +32,10 @@ bool BuildState::initializeBuild()
 
 	if (!compilerTools.initialize())
 	{
-		const auto& targetArch = info.targetArchitectureString();
+		const auto& targetArch = compilerTools.detectedToolchain() == ToolchainType::GNU ?
+			m_inputs.targetArchitecture() :
+			info.targetArchitectureString();
+
 		Diagnostic::error(fmt::format("Requested arch '{}' is not supported.", targetArch));
 		return false;
 	}

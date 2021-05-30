@@ -6,7 +6,7 @@
 #ifndef CHALET_APPLICATION_HPP
 #define CHALET_APPLICATION_HPP
 
-#include "State/CommandLineInputs.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Terminal/OSTerminal.hpp"
 
 namespace chalet

@@ -6,7 +6,7 @@
 #ifndef CHALET_MSVC_ENVIRONMENT_HPP
 #define CHALET_MSVC_ENVIRONMENT_HPP
 
-#include "State/CommandLineInputs.hpp"
+#include "Core/CommandLineInputs.hpp"
 
 #if defined(CHALET_WIN32)
 	#include <unordered_map>

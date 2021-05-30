@@ -9,7 +9,7 @@
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
-#include "State/CommandLineInputs.hpp"
+#include "Core/CommandLineInputs.hpp"
 
 namespace chalet
 {

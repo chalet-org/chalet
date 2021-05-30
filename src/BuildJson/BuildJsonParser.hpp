@@ -8,8 +8,8 @@
 
 #include "Libraries/Json.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
-#include "State/CommandLineInputs.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProjectTarget.hpp"

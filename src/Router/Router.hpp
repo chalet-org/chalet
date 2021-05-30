@@ -6,9 +6,9 @@
 #ifndef CHALET_COMMAND_CONDUCTOR_HPP
 #define CHALET_COMMAND_CONDUCTOR_HPP
 
+#include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "State/BuildState.hpp"
-#include "State/CommandLineInputs.hpp"
 
 namespace chalet
 {

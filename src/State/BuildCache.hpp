@@ -6,8 +6,8 @@
 #ifndef CHALET_BUILD_CACHE_HPP
 #define CHALET_BUILD_CACHE_HPP
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildPaths.hpp"
-#include "State/CommandLineInputs.hpp"
 #include "State/WorkspaceInfo.hpp"
 #include "Json/JsonFile.hpp"
 

@@ -7,8 +7,8 @@
 #define CHALET_PROJECT_TARGET_HPP
 
 #include "Compile/CodeLanguage.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildEnvironment.hpp"
-#include "State/CommandLineInputs.hpp"
 #include "State/ProjectKind.hpp"
 #include "State/ProjectWarnings.hpp"
 #include "State/Target/IBuildTarget.hpp"

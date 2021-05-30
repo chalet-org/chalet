@@ -5,6 +5,7 @@
 
 #include "State/CompilerTools.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
 #include "State/WorkspaceInfo.hpp"
 #include "Terminal/Commands.hpp"
@@ -17,7 +18,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompilerTools::CompilerTools(const WorkspaceInfo& inInfo) :
+CompilerTools::CompilerTools(const CommandLineInputs& inInputs, const WorkspaceInfo& inInfo) :
+	m_inputs(inInputs),
 	m_info(inInfo)
 {
 }
@@ -77,6 +79,30 @@ bool CompilerTools::initialize()
 		UNUSED(split);
 		return valid;
 	}
+	else if (m_detectedToolchain == ToolchainType::GNU)
+	{
+		const auto& arch = m_inputs.targetArchitecture();
+		if (!arch.empty())
+		{
+			const auto& targetArch = m_info.targetArchitectureString();
+
+			return String::startsWith(arch, targetArch);
+		}
+	}
+#if defined(CHALET_WIN32)
+	else if (m_detectedToolchain == ToolchainType::MSVC)
+	{
+		const auto& targetArch = m_info.targetArchitectureString();
+		auto arch = String::getPathFilename(String::getPathFolder(compiler()));
+
+		if (String::equals("x64", arch))
+			arch = "x86_64";
+		else if (String::equals("x86", arch))
+			arch = "i686";
+
+		return String::startsWith(arch, targetArch);
+	}
+#endif
 
 	return true;
 }

@@ -6,8 +6,8 @@
 #ifndef CHALET_CACHE_JSON_PARSER_HPP
 #define CHALET_CACHE_JSON_PARSER_HPP
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
-#include "State/CommandLineInputs.hpp"
 
 namespace chalet
 {
