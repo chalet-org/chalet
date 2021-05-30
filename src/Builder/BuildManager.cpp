@@ -235,7 +235,7 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
 
 	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
-	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), objExtension);
+	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), m_state.environment.dumpAssembly(), objExtension);
 
 	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
 	{

@@ -559,17 +559,6 @@ void ProjectTarget::setThreadType(const std::string& inValue)
 }
 
 /*****************************************************************************/
-bool ProjectTarget::dumpAssembly() const noexcept
-{
-	return m_dumpAssembly;
-}
-
-void ProjectTarget::setDumpAssembly(const bool inValue) noexcept
-{
-	m_dumpAssembly = inValue;
-}
-
-/*****************************************************************************/
 bool ProjectTarget::objectiveCxx() const noexcept
 {
 	return m_objectiveCxx;

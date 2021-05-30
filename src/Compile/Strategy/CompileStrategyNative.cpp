@@ -375,7 +375,7 @@ CompileStrategyNative::CommandList CompileStrategyNative::getAsmCommands(const S
 	chalet_assert(m_project != nullptr, "");
 
 	CommandList ret;
-	if (!m_project->dumpAssembly())
+	if (!m_state.environment.dumpAssembly())
 		return ret;
 
 	const auto& objDir = m_state.paths.objDir();

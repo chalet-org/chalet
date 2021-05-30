@@ -125,7 +125,9 @@ bool JsonFile::validate(Json&& inSchemaJson)
 	if (m_filename.empty())
 		return false;
 
-	JsonValidator validator(std::move(inSchemaJson), m_filename);
+	JsonValidator validator(m_filename);
+	if (!validator.setScehma(std::move(inSchemaJson)))
+		return false;
 
 	// false if any errors
 	if (!validator.validate(json))

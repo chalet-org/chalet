@@ -35,7 +35,7 @@ struct BuildPaths
 	std::string getPrecompiledHeaderTarget(const ProjectTarget& inProject, const bool inPchExtension = true) const;
 	std::string getPrecompiledHeaderInclude(const ProjectTarget& inProject) const;
 
-	SourceOutputs getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inObjExtension = false) const;
+	SourceOutputs getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inDumpAssembly, const bool inObjExtension = false) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const;
 
 	void parsePathWithVariables(std::string& outPath, const std::string& inName = std::string()) const;

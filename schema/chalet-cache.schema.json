@@ -175,13 +175,15 @@
 			"type": "string",
 			"description": "The executable path to the resource compiler (Windows)"
 		},
-		"environment-path": {
-			"type": "array",
-			"description": "Any additional paths to include not otherwise in the PATH environment variable.",
-			"uniqueItems": true,
-			"items": {
-				"type": "string"
-			}
+		"settings-dumpAssembly": {
+			"type": "boolean",
+			"description": "true to use include an asm dump of each file in the build, false otherwise.",
+			"default": false
+		},
+		"settings-maxJobs": {
+			"type": "integer",
+			"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
+			"minimum": 1
 		},
 		"settings-strategy": {
 			"type": "string",
@@ -192,6 +194,11 @@
 				"ninja"
 			],
 			"default": "makefile"
+		},
+		"settings-showCommands": {
+			"description": "true to show the commands run during the build, false to just show the source file.",
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"properties": {
@@ -369,11 +376,23 @@
 			"additionalProperties": false,
 			"description": "A list of settings central to the build",
 			"required": [
-				"strategy"
+				"dumpAssembly",
+				"maxJobs",
+				"strategy",
+				"showCommands"
 			],
 			"properties": {
+				"dumpAssembly": {
+					"$ref": "#/definitions/settings-dumpAssembly"
+				},
+				"maxJobs": {
+					"$ref": "#/definitions/settings-maxJobs"
+				},
 				"strategy": {
 					"$ref": "#/definitions/settings-strategy"
+				},
+				"showCommands": {
+					"$ref": "#/definitions/settings-showCommands"
 				}
 			}
 		}

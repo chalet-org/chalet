@@ -102,9 +102,6 @@ bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 	if (!parseRoot(inJson))
 		return false;
 
-	if (!parseEnvironment(inJson))
-		return false;
-
 	if (!makePathVariable())
 		return false;
 
@@ -179,6 +176,12 @@ bool BuildJsonParser::parseRoot(const Json& inNode)
 	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "version"))
 		m_state.info.setVersion(val);
 
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "externalDepDir"))
+		m_state.paths.setExternalDepDir(val);
+
+	if (StringList list; assignStringListFromConfig(list, inNode, "path"))
+		m_state.environment.addPaths(list);
+
 	return true;
 }
 
@@ -214,35 +217,6 @@ void BuildJsonParser::parseBuildConfiguration(const Json& inNode)
 	{
 		m_state.info.setBuildConfiguration(buildConfiguration);
 	}
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseEnvironment(const Json& inJson)
-{
-	// don't care
-	if (!inJson.contains(kKeyEnvironment))
-		return true;
-
-	const Json& environment = inJson.at(kKeyEnvironment);
-	if (!environment.is_object())
-	{
-		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeyEnvironment));
-		return false;
-	}
-
-	if (std::string val; m_buildJson->assignStringAndValidate(val, environment, "externalDepDir"))
-		m_state.paths.setExternalDepDir(val);
-
-	if (StringList list; assignStringListFromConfig(list, environment, "path"))
-		m_state.environment.addPaths(list);
-
-	if (bool val = false; m_buildJson->assignFromKey(val, environment, "showCommands"))
-		m_state.environment.setShowCommands(val);
-
-	if (ushort val = 0; parseKeyFromConfig(val, environment, "maxJobs"))
-		m_state.environment.setMaxJobs(val);
-
-	return true;
 }
 
 /*****************************************************************************/
@@ -413,25 +387,25 @@ bool BuildJsonParser::parseGitDependency(GitDependency& outDependency, const Jso
 /*****************************************************************************/
 bool BuildJsonParser::parseProjects(const Json& inNode)
 {
-	if (!inNode.contains(kKeyProjects))
+	if (!inNode.contains(kKeyTargets))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyProjects));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyTargets));
 		return false;
 	}
 
-	const Json& targets = inNode.at(kKeyProjects);
+	const Json& targets = inNode.at(kKeyTargets);
 	if (!targets.is_object() || targets.size() == 0)
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must contain at least one project.", m_filename, kKeyProjects));
+		Diagnostic::error(fmt::format("{}: '{}' must contain at least one project.", m_filename, kKeyTargets));
 		return false;
 	}
 
 	// ProjectTarget allProjects(m_state.buildConfiguration(), m_state.environment);
 
-	if (inNode.contains(kKeyTemplates))
+	if (inNode.contains(kKeyAbstracts))
 	{
-		const Json& templates = inNode.at(kKeyTemplates);
-		for (auto& [name, templateJson] : templates.items())
+		const Json& abstracts = inNode.at(kKeyAbstracts);
+		for (auto& [name, templateJson] : abstracts.items())
 		{
 			if (m_abstractProjects.find(name) == m_abstractProjects.end())
 			{
@@ -452,7 +426,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 
 	for (auto& [prefixedName, templateJson] : inNode.items())
 	{
-		std::string prefix{ fmt::format("{}:", kKeyTemplates) };
+		std::string prefix{ fmt::format("{}:", kKeyAbstracts) };
 		if (!String::startsWith(prefix, prefixedName))
 			continue;
 
@@ -559,14 +533,11 @@ bool BuildJsonParser::parseProject(ProjectTarget& outProject, const Json& inNode
 	if (bool val = false; parseKeyFromConfig(val, inNode, "runProject"))
 		outProject.setRunProject(val);
 
-	if (bool val = false; parseKeyFromConfig(val, inNode, "dumpAssembly"))
-		outProject.setDumpAssembly(val);
-
 	if (StringList list; assignStringListFromConfig(list, inNode, "runDependencies"))
 		outProject.addRunDependencies(list);
 
 	{
-		const auto compilerSettings{ "compilerSettings" };
+		const auto compilerSettings{ "settings" };
 		/*if (inNode.contains(compilerSettings))
 		{
 			const Json& jCompilerSettings = inNode.at(compilerSettings);
@@ -796,7 +767,7 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectTarget& outProject, const Jso
 	bool locResult = parseProjectLocationOrFiles(outProject, inNode);
 	if (locResult && inAbstract)
 	{
-		Diagnostic::error(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, kKeyTemplates));
+		Diagnostic::error(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, kKeyAbstracts));
 		return false;
 	}
 

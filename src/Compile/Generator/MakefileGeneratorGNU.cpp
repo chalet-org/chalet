@@ -145,7 +145,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 		recipes += getObjcRecipe(ext);
 	}
 
-	if (m_project->dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		recipes += getAsmRecipe();
 		recipes += getDumpAsmRecipe();
@@ -198,7 +198,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 {
 	std::string ret;
 
-	if (m_project->dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		const auto& asmDir = m_state.paths.asmDir();
 		const auto& objDir = m_state.paths.objDir();
@@ -289,7 +289,7 @@ std::string MakefileGeneratorGNU::getDumpAsmRecipe() const
 
 	std::string ret;
 
-	const bool dumpAssembly = m_project->dumpAssembly();
+	const bool dumpAssembly = m_state.environment.dumpAssembly();
 	if (dumpAssembly)
 	{
 		ret = fmt::format(R"makefile(
@@ -312,7 +312,7 @@ std::string MakefileGeneratorGNU::getAsmRecipe() const
 
 	std::string ext("asm");
 
-	const bool dumpAssembly = m_project->dumpAssembly();
+	const bool dumpAssembly = m_state.environment.dumpAssembly();
 	if (dumpAssembly)
 	{
 		for (auto& location : m_project->locations())

@@ -34,6 +34,9 @@ struct BuildEnvironment
 	void setShowCommands(const bool inValue) noexcept;
 	bool cleanOutput() const noexcept;
 
+	bool dumpAssembly() const noexcept;
+	void setDumpAssembly(const bool inValue) noexcept;
+
 	const StringList& path() const noexcept;
 	void addPaths(StringList& inList);
 	void addPath(std::string& inValue);
@@ -53,6 +56,7 @@ private:
 
 	StrategyType m_strategy = StrategyType::Makefile;
 
+	bool m_dumpAssembly = false;
 	bool m_showCommands = false;
 };
 }

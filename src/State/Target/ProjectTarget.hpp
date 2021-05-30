@@ -129,9 +129,6 @@ struct ProjectTarget final : public IBuildTarget
 	void setThreadType(const ThreadType inValue) noexcept;
 	void setThreadType(const std::string& inValue);
 
-	bool dumpAssembly() const noexcept;
-	void setDumpAssembly(const bool inValue) noexcept;
-
 	bool objectiveCxx() const noexcept;
 	void setObjectiveCxx(const bool inValue) noexcept;
 
@@ -189,7 +186,6 @@ private:
 	ProjectWarnings m_warningsPreset = ProjectWarnings::None;
 	ThreadType m_threadType = ThreadType::Auto;
 
-	bool m_dumpAssembly = false;
 	bool m_objectiveCxx = false;
 	bool m_rtti = true;
 	bool m_runProject = false;

@@ -136,7 +136,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 			return false;
 	}
 
-	if (inProject.dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		std::cout << Output::getAnsiStyle(Color::Magenta) << std::flush;
 

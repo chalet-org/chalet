@@ -16,8 +16,10 @@ struct JsonValidator
 {
 	using ValidationErrors = std::vector<JsonValidationError>;
 
-	explicit JsonValidator(Json&& inSchema, const std::string& inFile);
+	explicit JsonValidator(const std::string& inFile);
 	~JsonValidator();
+
+	bool setScehma(Json&& inSchema);
 
 	bool validate(const Json& inJsonContent);
 	const ValidationErrors& errors() const noexcept;

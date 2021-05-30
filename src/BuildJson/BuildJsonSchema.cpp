@@ -30,7 +30,7 @@ Json Schema::getBuildJson()
 	ret["required"] = {
 		"version",
 		"workspace",
-		"projects"
+		"targets"
 	};
 
 	//
@@ -304,16 +304,13 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["environment-externalDepDir"] = R"json({
+	ret[kDefinitions]["enum-platform"] = R"json({
 		"type": "string",
-		"description": "The path to install external dependencies into (see externalDependencies).",
-		"default": "chalet_external"
-	})json"_ojson;
-
-	ret[kDefinitions]["environment-maxJobs"] = R"json({
-		"type": "integer",
-		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
-		"minimum": 1
+		"enum": [
+			"windows",
+			"macos",
+			"linux"
+		]
 	})json"_ojson;
 
 	ret[kDefinitions]["environment-path"] = R"json({
@@ -325,152 +322,134 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["environment-showCommands"] = R"json({
-		"description": "true to show the commands run during the build, false to just show the source file.",
-		"type": "boolean",
-		"default": false
-	})json"_ojson;
-
-	ret[kDefinitions]["enum-platform"] = R"json({
-		"type": "string",
-		"enum": [
-			"windows",
-			"macos",
-			"linux"
-		]
-	})json"_ojson;
-
-	ret[kDefinitions]["project-compilerSettings-cxx"] = R"json({
+	ret[kDefinitions]["target-project-settings-cxx"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"properties": {
 			"cStandard": {
-				"$ref": "#/definitions/project-cxx-cStandard"
+				"$ref": "#/definitions/target-project-cxx-cStandard"
 			},
 			"compileOptions": {
-				"$ref": "#/definitions/project-cxx-compileOptions"
+				"$ref": "#/definitions/target-project-cxx-compileOptions"
 			},
 			"cppStandard": {
-				"$ref": "#/definitions/project-cxx-cppStandard"
+				"$ref": "#/definitions/target-project-cxx-cppStandard"
 			},
 			"defines": {
-				"$ref": "#/definitions/project-cxx-defines"
+				"$ref": "#/definitions/target-project-cxx-defines"
 			},
 			"includeDirs": {
-				"$ref": "#/definitions/project-cxx-includeDirs"
+				"$ref": "#/definitions/target-project-cxx-includeDirs"
 			},
 			"libDirs": {
-				"$ref": "#/definitions/project-cxx-libDirs"
+				"$ref": "#/definitions/target-project-cxx-libDirs"
 			},
 			"linkerScript": {
-				"$ref": "#/definitions/project-cxx-linkerScript"
+				"$ref": "#/definitions/target-project-cxx-linkerScript"
 			},
 			"linkerOptions": {
-				"$ref": "#/definitions/project-cxx-linkerOptions"
+				"$ref": "#/definitions/target-project-cxx-linkerOptions"
 			},
 			"links": {
-				"$ref": "#/definitions/project-cxx-links"
+				"$ref": "#/definitions/target-project-cxx-links"
 			},
 			"macosFrameworkPaths": {
-				"$ref": "#/definitions/project-cxx-macosFrameworkPaths"
+				"$ref": "#/definitions/target-project-cxx-macosFrameworkPaths"
 			},
 			"macosFrameworks": {
-				"$ref": "#/definitions/project-cxx-macosFrameworks"
+				"$ref": "#/definitions/target-project-cxx-macosFrameworks"
 			},
 			"objectiveCxx": {
-				"$ref": "#/definitions/project-cxx-objectiveCxx"
+				"$ref": "#/definitions/target-project-cxx-objectiveCxx"
 			},
 			"pch": {
-				"$ref": "#/definitions/project-cxx-pch"
+				"$ref": "#/definitions/target-project-cxx-pch"
 			},
 			"threads": {
-				"$ref": "#/definitions/project-cxx-threads"
+				"$ref": "#/definitions/target-project-cxx-threads"
 			},
 			"rtti": {
-				"$ref": "#/definitions/project-cxx-rtti"
+				"$ref": "#/definitions/target-project-cxx-rtti"
 			},
 			"staticLinking": {
-				"$ref": "#/definitions/project-cxx-staticLinking"
+				"$ref": "#/definitions/target-project-cxx-staticLinking"
 			},
 			"staticLinks": {
-				"$ref": "#/definitions/project-cxx-staticLinks"
+				"$ref": "#/definitions/target-project-cxx-staticLinks"
 			},
 			"warnings": {
-				"$ref": "#/definitions/project-cxx-warnings"
+				"$ref": "#/definitions/target-project-cxx-warnings"
 			},
 			"windowsPrefixOutputFilename": {
-				"$ref": "#/definitions/project-cxx-windowsPrefixOutputFilename"
+				"$ref": "#/definitions/target-project-cxx-windowsPrefixOutputFilename"
 			},
 			"windowsOutputDef": {
-				"$ref": "#/definitions/project-cxx-windowsOutputDef"
+				"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
 			}
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^cStandard{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-cStandard"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^cStandard{}$", patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-cStandard"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^cppStandard{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-cppStandard"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^cppStandard{}$", patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-cppStandard"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^compileOptions{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-compileOptions"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^compileOptions{}$", patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-compileOptions"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-defines"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-defines"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^includeDirs{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-includeDirs"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^includeDirs{}$", patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-includeDirs"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^libDirs{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-libDirs"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^libDirs{}$", patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-libDirs"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^linkerScript{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-linkerScript"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^linkerScript{}$", patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-linkerScript"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^linkerOptions{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-linkerOptions"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^linkerOptions{}$", patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-linkerOptions"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^links{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-links"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^links{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-links"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^objectiveCxx{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-objectiveCxx"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^objectiveCxx{}$", patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-objectiveCxx"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^staticLinks{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-staticLinks"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^staticLinks{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-staticLinks"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^threads{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-threads"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^threads{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-threads"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^rtti{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-rtti"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^rtti{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-rtti"
 	})json"_ojson;
-	ret[kDefinitions]["project-compilerSettings-cxx"][kPatternProperties][fmt::format("^staticLinking{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-cxx-staticLinking"
+	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^staticLinking{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-cxx-staticLinking"
 	})json"_ojson;
 
 	ret[kDefinitions]["project"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"properties": {
-			"compilerSettings:Cxx": {
-				"$ref": "#/definitions/project-compilerSettings-cxx"
-			},
-			"dumpAssembly": {
-				"$ref": "#/definitions/project-dumpAssembly"
+			"settings:Cxx": {
+				"$ref": "#/definitions/target-project-settings-cxx"
 			},
 			"extends": {
-				"$ref": "#/definitions/project-extends"
+				"$ref": "#/definitions/target-project-extends"
 			},
 			"files": {
-				"$ref": "#/definitions/project-files"
+				"$ref": "#/definitions/target-project-files"
 			},
 			"kind": {
-				"$ref": "#/definitions/project-kind"
+				"$ref": "#/definitions/target-project-kind"
 			},
 			"language": {
-				"$ref": "#/definitions/project-language"
+				"$ref": "#/definitions/target-project-language"
 			},
 			"location": {
 				"$ref": "#/definitions/target-location"
@@ -488,33 +467,30 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/target-notInPlatform"
 			},
 			"runProject": {
-				"$ref": "#/definitions/project-runProject"
+				"$ref": "#/definitions/target-project-runProject"
 			},
 			"runArguments": {
-				"$ref": "#/definitions/project-runArguments"
+				"$ref": "#/definitions/target-project-runArguments"
 			},
 			"runDependencies": {
-				"$ref": "#/definitions/project-runDependencies"
+				"$ref": "#/definitions/target-project-runDependencies"
 			}
 		}
 	})json"_ojson;
-	ret[kDefinitions]["project"][kPatternProperties][fmt::format("^dumpAssembly{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-dumpAssembly"
+	ret[kDefinitions]["target-project"][kPatternProperties][fmt::format("^runProject{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-runProject"
 	})json"_ojson;
-	ret[kDefinitions]["project"][kPatternProperties][fmt::format("^runProject{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-runProject"
-	})json"_ojson;
-	ret[kDefinitions]["project"][kPatternProperties][fmt::format("^runDependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/project-runDependencies"
+	ret[kDefinitions]["target-project"][kPatternProperties][fmt::format("^runDependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-project-runDependencies"
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-windowsPrefixOutputFilename"] = R"json({
+	ret[kDefinitions]["target-project-cxx-windowsPrefixOutputFilename"] = R"json({
 		"type": "boolean",
-		"description": "Only applies to dynamic library projects (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
+		"description": "Only applies to dynamic library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
 		"default": true
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-cStandard"] = R"json({
+	ret[kDefinitions]["target-project-cxx-cStandard"] = R"json({
 		"type": "string",
 		"description": "The C standard to use in the compilation",
 		"enum": [
@@ -547,7 +523,7 @@ Json Schema::getBuildJson()
 		"default": "c11"
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-compileOptions"] = R"json({
+	ret[kDefinitions]["target-project-cxx-compileOptions"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "Options to add during the compilation step.",
@@ -556,7 +532,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-cppStandard"] = R"json({
+	ret[kDefinitions]["target-project-cxx-cppStandard"] = R"json({
 		"type": "string",
 		"description": "The C++ standard to use in the compilation",
 		"enum": [
@@ -584,7 +560,7 @@ Json Schema::getBuildJson()
 		"default": "c++17"
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-defines"] = R"json({
+	ret[kDefinitions]["target-project-cxx-defines"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "Macro definitions to be used by the preprocessor",
@@ -593,7 +569,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-includeDirs"] = R"json({
+	ret[kDefinitions]["target-project-cxx-includeDirs"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "A list of directories to include with the project.",
@@ -602,20 +578,14 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-dumpAssembly"] = R"json({
-		"type": "boolean",
-		"description": "true to use include an asm dump of each file in the build, false otherwise.",
-		"default": false
-	})json"_ojson;
-
-	ret[kDefinitions]["project-extends"] = R"json({
+	ret[kDefinitions]["target-project-extends"] = R"json({
 		"type": "string",
 		"description": "A project template to extend. Defaults to 'all' implicitly.",
 		"pattern": "^[A-Za-z_-]+$",
 		"default": "all"
 	})json"_ojson;
 
-	ret[kDefinitions]["project-files"] = R"json({
+	ret[kDefinitions]["target-project-files"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "Explicitly define the source files, relative to the working directory.",
@@ -624,7 +594,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-kind"] = R"json({
+	ret[kDefinitions]["target-project-kind"] = R"json({
 		"type": "string",
 		"description": "The type of the project's compiled binary.",
 		"enum": [
@@ -635,7 +605,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-language"] = R"json({
+	ret[kDefinitions]["target-project-language"] = R"json({
 		"type": "string",
 		"description": "The target language of the project.",
 		"enum": [
@@ -645,7 +615,7 @@ Json Schema::getBuildJson()
 		"default": "C++"
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-libDirs"] = R"json({
+	ret[kDefinitions]["target-project-cxx-libDirs"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
@@ -654,12 +624,12 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-linkerScript"] = R"json({
+	ret[kDefinitions]["target-project-cxx-linkerScript"] = R"json({
 		"type": "string",
 		"description": "An LD linker script path (.ld file) to pass to the linker command"
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-linkerOptions"] = R"json({
+	ret[kDefinitions]["target-project-cxx-linkerOptions"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "Options to add during the linking step.",
@@ -668,7 +638,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-links"] = R"json({
+	ret[kDefinitions]["target-project-cxx-links"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "A list of dynamic links to use with the linker",
@@ -676,7 +646,7 @@ Json Schema::getBuildJson()
 			"type": "string"
 		}
 	})json"_ojson;
-	ret[kDefinitions]["project-cxx-links"][kItems][kPattern] = patternProjectLinks;
+	ret[kDefinitions]["target-project-cxx-links"][kItems][kPattern] = patternProjectLinks;
 
 	ret[kDefinitions]["target-location"] = R"json({
 		"description": "The root path of the source files, relative to the working directory.",
@@ -729,7 +699,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-macosFrameworkPaths"] = R"json({
+	ret[kDefinitions]["target-project-cxx-macosFrameworkPaths"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "A list of paths to search for MacOS Frameworks",
@@ -738,7 +708,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-macosFrameworks"] = R"json({
+	ret[kDefinitions]["target-project-cxx-macosFrameworks"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "",
@@ -753,7 +723,7 @@ Json Schema::getBuildJson()
 	// })json"_ojson;
 	// ret[kDefinitions]["project-name"][kPattern] = patternProjectName;
 
-	ret[kDefinitions]["project-cxx-objectiveCxx"] = R"json({
+	ret[kDefinitions]["target-project-cxx-objectiveCxx"] = R"json({
 		"type": "boolean",
 		"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 		"default": false
@@ -823,12 +793,12 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-pch"] = R"json({
+	ret[kDefinitions]["target-project-cxx-pch"] = R"json({
 		"type": "string",
 		"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-threads"] = R"json({
+	ret[kDefinitions]["target-project-cxx-threads"] = R"json({
 		"type": "string",
 		"enum": [
 			"auto",
@@ -838,19 +808,19 @@ Json Schema::getBuildJson()
 		"default": "auto"
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-rtti"] = R"json({
+	ret[kDefinitions]["target-project-cxx-rtti"] = R"json({
 		"type": "boolean",
 		"description": "true to include run-time type information (default), false to exclude.",
 		"default": true
 	})json"_ojson;
 
-	ret[kDefinitions]["project-runProject"] = R"json({
+	ret[kDefinitions]["target-project-runProject"] = R"json({
 		"type": "boolean",
-		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple projects are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
+		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["project-runArguments"] = R"json({
+	ret[kDefinitions]["target-project-runArguments"] = R"json({
 		"type": "array",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
 		"items": {
@@ -858,7 +828,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-runDependencies"] = R"json({
+	ret[kDefinitions]["target-project-runDependencies"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
@@ -867,7 +837,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["project-script"] = R"json({
+	ret[kDefinitions]["target-script-script"] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -887,13 +857,13 @@ Json Schema::getBuildJson()
 		"description": "A description of the target to display during the build."
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-staticLinking"] = R"json({
+	ret[kDefinitions]["target-project-cxx-staticLinking"] = R"json({
 		"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 		"type": "boolean",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-staticLinks"] = R"json({
+	ret[kDefinitions]["target-project-cxx-staticLinks"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "A list of static links to use with the linker",
@@ -901,9 +871,9 @@ Json Schema::getBuildJson()
 			"type": "string"
 		}
 	})json"_ojson;
-	ret[kDefinitions]["project-cxx-staticLinks"][kItems][kPattern] = patternProjectLinks;
+	ret[kDefinitions]["target-project-cxx-staticLinks"][kItems][kPattern] = patternProjectLinks;
 
-	ret[kDefinitions]["project-cxx-warnings"] = R"json({
+	ret[kDefinitions]["target-project-cxx-warnings"] = R"json({
 		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
 		"anyOf": [
 			{
@@ -929,7 +899,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["project-cxx-warnings"][kAnyOf][1][kItems][kEnum] = {
+	ret[kDefinitions]["target-project-cxx-warnings"][kAnyOf][1][kItems][kEnum] = {
 		"abi",
 		"absolute-value",
 		"address",
@@ -1225,7 +1195,7 @@ Json Schema::getBuildJson()
 		"zero-length-bounds"
 	};
 
-	ret[kDefinitions]["project-cxx-windowsOutputDef"] = R"json({
+	ret[kDefinitions]["target-project-cxx-windowsOutputDef"] = R"json({
 		"type": "boolean",
 		"description": "If true for a dynamic library (dll) target on Windows, a .def file will be created",
 		"default": false
@@ -1234,10 +1204,13 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-script"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
+		"required": [
+			"script"
+		],
 		"properties": {
 			"script": {
 				"description": "Script(s) to run during this build step.",
-				"$ref": "#/definitions/project-script"
+				"$ref": "#/definitions/target-script-script"
 			},
 			"description": {
 				"$ref": "#/definitions/target-description"
@@ -1246,7 +1219,7 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["target-script"][kPatternProperties][fmt::format("^script{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"description": "Script(s) to run during this build step.",
-		"$ref": "#/definitions/project-script"
+		"$ref": "#/definitions/target-script-script"
 	})json"_ojson;
 	ret[kDefinitions]["target-script"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/target-description"
@@ -1350,12 +1323,12 @@ Json Schema::getBuildJson()
 	ret[kProperties] = Json::object();
 	ret[kPatternProperties] = Json::object();
 
-	ret[kPatternProperties]["^templates:[a-z]+$"] = R"json({
-		"description": "An abstract build project. 'templates:all' is implicitely added to each project",
-		"$ref": "#/definitions/project"
+	ret[kPatternProperties]["^abstracts:[a-z]+$"] = R"json({
+		"description": "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project",
+		"$ref": "#/definitions/target-project"
 	})json"_ojson;
 
-	ret[kProperties]["templates"] = R"json({
+	ret[kProperties]["abstracts"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A list of abstract build projects",
@@ -1477,43 +1450,16 @@ Json Schema::getBuildJson()
 		"$ref": "#/definitions/externalDependency"
 	})json"_ojson;
 
-	ret[kProperties]["environment"] = R"json({
+	ret[kProperties]["targets"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "Variables to describe the typical environments built in",
-		"required": [],
-		"properties": {
-			"path": {
-				"$ref": "#/definitions/environment-path"
-			},
-			"maxJobs": {
-				"$ref": "#/definitions/environment-maxJobs"
-			},
-			"externalDepDir": {
-				"$ref": "#/definitions/environment-externalDepDir"
-			},
-			"showCommands": {
-				"$ref": "#/definitions/environment-showCommands"
-			}
-		}
+		"description": "A sequential list of projects, cmake projects, or scripts."
 	})json"_ojson;
-	ret[kProperties]["environment"][kPatternProperties][fmt::format("^path{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/environment-path"
-	})json"_ojson;
-	ret[kProperties]["environment"][kPatternProperties][fmt::format("^maxJobs{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/environment-maxJobs"
-	})json"_ojson;
-
-	ret[kProperties]["projects"] = R"json({
-		"type": "object",
-		"additionalProperties": false,
-		"description": "A sequential list of projects to build"
-	})json"_ojson;
-	ret[kProperties]["projects"][kPatternProperties][patternProjectName] = R"json({
+	ret[kProperties]["targets"][kPatternProperties][patternProjectName] = R"json({
 		"description": "A single build target or script.",
 		"oneOf": [
 			{
-				"$ref": "#/definitions/project"
+				"$ref": "#/definitions/target-project"
 			},
 			{
 				"$ref": "#/definitions/target-cmake"
@@ -1534,6 +1480,20 @@ Json Schema::getBuildJson()
 		"type": "string",
 		"description": "The name of the workspace.",
 		"pattern": "^[\\w\\-\\+ ]+$"
+	})json"_ojson;
+
+	ret[kProperties]["externalDepDir"] = R"json({
+		"type": "string",
+		"description": "The path to install external dependencies into (see externalDependencies).",
+		"default": "chalet_external"
+	})json"_ojson;
+
+	ret[kProperties]["path"] = R"json({
+		"$ref": "#/definitions/environment-path"
+	})json"_ojson;
+
+	ret[kPatternProperties][fmt::format("^path{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/environment-path"
 	})json"_ojson;
 
 	return ret;

@@ -84,7 +84,7 @@ build build_{hash}: phony | {target}
 
 	//
 
-	if (inProject.dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		auto assemblies = String::join(inOutputs.assemblyList);
 		ninjaTemplate += fmt::format(R"ninja(
@@ -184,7 +184,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 
 	rules += getObjBuildRules(inOutputs.objectList, pchTarget);
 
-	if (m_project->dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		auto assemblies = String::excludeIf(m_assemblies, inOutputs.assemblyList);
 		if (!assemblies.empty())
@@ -267,7 +267,7 @@ std::string NinjaGenerator::getAsmRule()
 {
 	std::string ret;
 
-	if (m_project->dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		std::string asmCompile = m_state.tools.getAsmGenerateCommand("$in", "$out");
 
@@ -498,7 +498,7 @@ std::string NinjaGenerator::getAsmBuildRules(const StringList& inAssemblies)
 {
 	std::string ret;
 
-	if (m_project->dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		const auto& asmDir = m_state.paths.asmDir();
 		const auto& objDir = m_state.paths.objDir();

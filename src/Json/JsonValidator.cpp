@@ -262,15 +262,29 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-JsonValidator::JsonValidator(Json&& inSchema, const std::string& inFile) :
+JsonValidator::JsonValidator(const std::string& inFile) :
 	m_impl(std::make_unique<Impl>()),
 	m_file(inFile)
 {
-	m_impl->validator.set_root_schema(std::move(inSchema));
 }
 
 /*****************************************************************************/
 JsonValidator::~JsonValidator() = default;
+
+/*****************************************************************************/
+bool JsonValidator::setScehma(Json&& inSchema)
+{
+	try
+	{
+		m_impl->validator.set_root_schema(std::move(inSchema));
+		return true;
+	}
+	catch (const std::exception& err)
+	{
+		Diagnostic::error(err.what());
+		return false;
+	}
+}
 
 /*****************************************************************************/
 bool JsonValidator::validate(const Json& inJsonContent)

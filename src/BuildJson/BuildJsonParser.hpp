@@ -33,7 +33,6 @@ private:
 	bool parseRoot(const Json& inNode);
 	void parseBuildConfiguration(const Json& inNode);
 
-	bool parseEnvironment(const Json& inNode);
 	bool makePathVariable();
 
 	bool parseConfiguration(const Json& inNode);
@@ -73,12 +72,11 @@ private:
 	BuildState& m_state;
 
 	const std::string kKeyBundle = "bundle";
-	const std::string kKeyEnvironment = "environment";
 	const std::string kKeyConfigurations = "configurations";
 	const std::string kKeyExternalDependencies = "externalDependencies";
-	const std::string kKeyProjects = "projects";
+	const std::string kKeyTargets = "targets";
 
-	const std::string kKeyTemplates = "templates";
+	const std::string kKeyAbstracts = "abstracts";
 
 	std::unordered_map<std::string, std::unique_ptr<ProjectTarget>> m_abstractProjects;
 

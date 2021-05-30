@@ -98,6 +98,17 @@ bool BuildEnvironment::cleanOutput() const noexcept
 }
 
 /*****************************************************************************/
+bool BuildEnvironment::dumpAssembly() const noexcept
+{
+	return m_dumpAssembly;
+}
+
+void BuildEnvironment::setDumpAssembly(const bool inValue) noexcept
+{
+	m_dumpAssembly = inValue;
+}
+
+/*****************************************************************************/
 const StringList& BuildEnvironment::path() const noexcept
 {
 	return m_path;

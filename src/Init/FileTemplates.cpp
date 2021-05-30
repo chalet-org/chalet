@@ -27,25 +27,22 @@ Json FileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	std::string ret = R"json({
 	"version": "${version}",
 	"workspace": "${workspace}",
-	"environment": {
-		"showCommands": false,
-		"path": []
-	},
-	"templates:all": {
+	"path": [],
+	"abstracts:all": {
 		"language": "${language}",
-		"compilerSettings:Cxx": {
+		"settings:Cxx": {
 			"${langStandardKey}": "${langStandardValue}",
 			"warnings": "pedantic"
 		}
 	},
-	"projects": {
+	"targets": {
 		"${project}": {
 			"kind": "${kind}",
 			"location": "src",
-			"compilerSettings:Cxx": {
+			"runProject": true,
+			"settings:Cxx": {
 				"pch": "src/PCH.hpp"
-			},
-			"runProject": true
+			}
 		}
 	}
 }

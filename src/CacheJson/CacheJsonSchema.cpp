@@ -247,13 +247,16 @@ Json Schema::getCacheJson()
 		"description": "The executable path to the resource compiler (Windows)"
 	})json"_ojson;
 
-	ret[kDefinitions]["environment-path"] = R"json({
-		"type": "array",
-		"description": "Any additional paths to include not otherwise in the PATH environment variable.",
-		"uniqueItems": true,
-		"items": {
-			"type": "string"
-		}
+	ret[kDefinitions]["settings-dumpAssembly"] = R"json({
+		"type": "boolean",
+		"description": "true to use include an asm dump of each file in the build, false otherwise.",
+		"default": false
+	})json"_ojson;
+
+	ret[kDefinitions]["settings-maxJobs"] = R"json({
+		"type": "integer",
+		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
+		"minimum": 1
 	})json"_ojson;
 
 	ret[kDefinitions]["settings-strategy"] = R"json({
@@ -265,6 +268,12 @@ Json Schema::getCacheJson()
 			"ninja"
 		],
 		"default": "makefile"
+	})json"_ojson;
+
+	ret[kDefinitions]["settings-showCommands"] = R"json({
+		"description": "true to show the commands run during the build, false to just show the source file.",
+		"type": "boolean",
+		"default": false
 	})json"_ojson;
 
 	//
@@ -451,11 +460,23 @@ Json Schema::getCacheJson()
 		"additionalProperties": false,
 		"description": "A list of settings central to the build",
 		"required": [
-			"strategy"
+			"dumpAssembly",
+			"maxJobs",
+			"strategy",
+			"showCommands"
 		],
 		"properties": {
+			"dumpAssembly": {
+				"$ref": "#/definitions/settings-dumpAssembly"
+			},
+			"maxJobs": {
+				"$ref": "#/definitions/settings-maxJobs"
+			},
 			"strategy": {
 				"$ref": "#/definitions/settings-strategy"
+			},
+			"showCommands": {
+				"$ref": "#/definitions/settings-showCommands"
 			}
 		}
 	})json"_ojson;

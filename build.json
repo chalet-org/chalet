@@ -1,12 +1,8 @@
 {
 	"version": "0.0.1",
 	"workspace": "Chalet",
-	"environment": {
-		"showCommands": false,
-		"externalDepDir": "chalet_external",
-		// "maxJobs": 8,
-		"path": []
-	},
+	"externalDepDir": "chalet_external",
+	"path": [],
 	/*"configurations": {
 		"Release": {
 			"optimizations": "3",
@@ -39,11 +35,10 @@
 		"MinSizeRel",
 		"Profile"
 	],*/
-	"templates:all": {
-		"dumpAssembly": false,
+	"abstracts:all": {
 		"language": "C++",
 		"runDependencies": [],
-		"compilerSettings:Cxx": {
+		"settings:Cxx": {
 			"cppStandard": "c++17",
 			"rtti": false,
 			"staticLinking": true,
@@ -68,7 +63,7 @@
 			"macosFrameworks": []
 		}
 	},
-	"projects": {
+	"targets": {
 		"json-schema-validator": {
 			"kind": "staticLibrary",
 			"location": "vendor/json-schema-validator"
@@ -80,7 +75,7 @@
 		"chalet": {
 			"kind": "consoleApplication",
 			"location": "src",
-			"compilerSettings:Cxx": {
+			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"staticLinks": [
 					"json-schema-validator",
@@ -98,7 +93,7 @@
 				],
 				"exclude": "src/Main.cpp"
 			},
-			"compilerSettings:Cxx": {
+			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"staticLinks": [
 					"json-schema-validator",

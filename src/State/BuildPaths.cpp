@@ -127,11 +127,9 @@ const std::string& BuildPaths::asmDir() const noexcept
 }
 
 /*****************************************************************************/
-SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inObjExtension) const
+SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inDumpAssembly, const bool inObjExtension) const
 {
 	SourceOutputs ret;
-
-	const bool dumpAssembly = inProject.dumpAssembly();
 
 	SourceGroup files = getFiles(inProject);
 	SourceGroup directories = getDirectories(inProject);
@@ -170,7 +168,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool 
 	StringList depSubDirs = getOutputDirectoryList(directories, m_depDir);
 
 	StringList asmSubDirs;
-	if (dumpAssembly)
+	if (inDumpAssembly)
 	{
 		ret.assemblyList = getAssemblyFilesList(files, inObjExtension);
 
@@ -199,7 +197,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool 
 		ret.directories.insert(ret.directories.end(), depSubDirs.begin(), depSubDirs.end());
 	}
 
-	if (dumpAssembly)
+	if (inDumpAssembly)
 	{
 		ret.directories.push_back(m_asmDir);
 		ret.directories.insert(ret.directories.end(), asmSubDirs.begin(), asmSubDirs.end());

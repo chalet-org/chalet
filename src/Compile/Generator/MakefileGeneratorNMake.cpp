@@ -188,7 +188,7 @@ std::string MakefileGeneratorNMake::getBuildRecipes(const SourceOutputs& inOutpu
 		List::addIfDoesNotExist(m_dependencies, dep);
 	}*/
 
-	if (m_project->dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		auto assemblies = String::excludeIf(m_assemblies, inOutputs.assemblyList);
 		if (!assemblies.empty())
@@ -271,7 +271,7 @@ std::string MakefileGeneratorNMake::getAsmBuildRecipes(const StringList& inAssem
 {
 	std::string ret;
 
-	if (m_project->dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		const auto& asmDir = m_state.paths.asmDir();
 		const auto& objDir = m_state.paths.objDir();
@@ -338,7 +338,7 @@ std::string MakefileGeneratorNMake::getDumpAsmRecipe(const StringList& inAssembl
 
 	std::string ret;
 
-	const bool dumpAssembly = m_project->dumpAssembly();
+	const bool dumpAssembly = m_state.environment.dumpAssembly();
 	if (dumpAssembly)
 	{
 		const auto assemblies = String::join(inAssemblies);
@@ -359,7 +359,7 @@ std::string MakefileGeneratorNMake::getAsmRecipe(const std::string& object, cons
 
 	std::string ret;
 
-	const bool dumpAssembly = m_project->dumpAssembly();
+	const bool dumpAssembly = m_state.environment.dumpAssembly();
 	if (dumpAssembly)
 	{
 		const auto quietFlag = getQuietFlag();

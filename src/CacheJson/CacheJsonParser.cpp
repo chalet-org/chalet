@@ -315,18 +315,34 @@ bool CacheJsonParser::makeCache()
 	}
 
 	Json& settings = environmentCache.json[kKeySettings];
-	if (!settings.contains(kKeyStrategy))
-		settings[kKeyStrategy] = std::string();
+
+	if (!settings.contains(kKeyDumpAssembly) || !settings[kKeyDumpAssembly].is_boolean())
+	{
+		settings[kKeyDumpAssembly] = false;
+		m_state.cache.setDirty(true);
+	}
+
+	if (!settings.contains(kKeyMaxJobs) || !settings[kKeyMaxJobs].is_number_integer())
+	{
+		settings[kKeyMaxJobs] = m_state.environment.processorCount();
+		m_state.cache.setDirty(true);
+	}
+
+	if (!settings.contains(kKeyShowCommands) || !settings[kKeyShowCommands].is_boolean())
+	{
+		settings[kKeyShowCommands] = false;
+		m_state.cache.setDirty(true);
+	}
 
 	{
-		Json& strategyJson = settings[kKeyStrategy];
+		Json& json = settings[kKeyStrategy];
 
-		const auto strategy = strategyJson.get<std::string>();
-
+		const auto strategy = json.get<std::string>();
 		if (strategy.empty())
 		{
 			// Note: this is only for validation. it gets changed later
-			strategyJson = "makefile";
+			json = "makefile";
+			m_state.cache.setDirty(true);
 			m_changeStrategy = true;
 		}
 	}
@@ -640,6 +656,15 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 	auto& environmentCache = m_state.cache.environmentCache();
 	if (std::string val; environmentCache.assignFromKey(val, settings, kKeyStrategy))
 		m_state.environment.setStrategy(val);
+
+	if (bool val = false; environmentCache.assignFromKey(val, settings, kKeyShowCommands))
+		m_state.environment.setShowCommands(val);
+
+	if (bool val = false; environmentCache.assignFromKey(val, inNode, kKeyDumpAssembly))
+		m_state.environment.setDumpAssembly(val);
+
+	if (ushort val = 0; environmentCache.assignFromKey(val, settings, kKeyMaxJobs))
+		m_state.environment.setMaxJobs(val);
 
 	return true;
 }
