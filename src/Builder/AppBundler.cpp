@@ -81,7 +81,7 @@ bool AppBundler::run()
 
 	for (auto& target : m_state.targets)
 	{
-		if (!target->isScript())
+		if (target->isProject())
 		{
 			auto& project = static_cast<const ProjectTarget&>(*target);
 

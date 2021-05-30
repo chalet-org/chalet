@@ -8,6 +8,7 @@
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/DependencyWalker.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -658,26 +659,42 @@ bool CacheTools::plistReplaceProperty(const std::string& inPlistFile, const std:
 /*****************************************************************************/
 bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList& outList) const
 {
-#if defined(CHALET_MACOS)
-	if (m_otool.empty())
+#if defined(CHALET_WIN32)
+	DependencyWalker depsWalker;
+	if (!depsWalker.read(inPath, outList))
+	{
+		Diagnostic::error("Dependencies for file '{}' could not be read.", inPath);
 		return false;
+	}
+
+	return true;
 #else
-	if (m_ldd.empty())
+	#if defined(CHALET_MACOS)
+	if (m_otool.empty())
+	{
+		Diagnostic::error("Dependencies for file '{}' could not be read. 'otool' was not found in cache.", inPath);
 		return false;
-#endif
+	}
+	#else
+	if (m_ldd.empty())
+	{
+		Diagnostic::error("Dependencies for file '{}' could not be read. 'ldd' was not found in cache.", inPath);
+		return false;
+	}
+	#endif
 
 	try
 	{
 		StringList cmd;
-#if defined(CHALET_MACOS)
+	#if defined(CHALET_MACOS)
 		cmd = { m_otool, "-L", inPath };
-#else
+	#else
 		// This block detects the dependencies of each target and adds them to a list
 		// The list resolves each path, favoring the paths supplied by build.json
 		// Note: this doesn't seem to work in standalone builds of GCC (tested 7.3.0)
 		//   but works fine w/ MSYS2
 		cmd = { m_ldd, inPath };
-#endif
+	#endif
 		std::string targetDeps = Commands::subprocessOutput(cmd);
 
 		std::string line;
@@ -686,18 +703,13 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 		while (std::getline(stream, line))
 		{
 			std::size_t beg = 0;
-#if defined(CHALET_MACOS)
+	#if defined(CHALET_MACOS)
 			std::size_t end = line.find(".dylib") + 5;
-#else
-	#if defined(CHALET_WIN32)
-			if (String::contains("System32", line) || String::contains("SYSTEM32", line) || String::contains("SysWOW64", line) || String::contains("SYSWOW64", line))
-				continue;
 	#else
 			if (String::contains("/usr/lib", line))
 				continue;
-	#endif
 			std::size_t end = line.find(" => ");
-#endif
+	#endif
 			if (end == std::string::npos)
 				continue;
 
@@ -715,6 +727,7 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 		std::cout << err.what() << std::endl;
 		return false;
 	}
+#endif
 }
 
 /*****************************************************************************/
