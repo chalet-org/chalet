@@ -85,6 +85,11 @@ bool BuildState::validateState()
 
 	for (auto& target : targets)
 	{
+		if (target->isCMake())
+		{
+			tools.fetchCmakeVersion();
+		}
+
 		result &= target->validate();
 	}
 

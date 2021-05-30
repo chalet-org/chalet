@@ -30,6 +30,7 @@ void CMakeTarget::initialize()
 bool CMakeTarget::validate()
 {
 	bool result = true;
+
 	if (!m_state.tools.cmakeAvailable())
 	{
 		Diagnostic::error(fmt::format("CMake was requsted for the project '{}' but was not found.", this->name()));

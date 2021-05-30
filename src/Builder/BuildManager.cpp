@@ -589,8 +589,6 @@ bool BuildManager::compileCMakeProject(const CMakeTarget& inTarget)
 {
 	Timer buildTimer;
 
-	m_state.tools.fetchCmakeVersion();
-
 	CmakeBuilder cmake(m_state, inTarget, m_cleanOutput);
 	if (!cmake.run())
 		return false;
