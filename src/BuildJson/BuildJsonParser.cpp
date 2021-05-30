@@ -86,7 +86,6 @@ bool BuildJsonParser::serialize()
 		FMT_ARG(buildConfiguration));
 
 	m_state.info.setHash(Hash::uint64(toHash));
-	// LOG(hash);
 
 	Diagnostic::printDone(timer.asString());
 

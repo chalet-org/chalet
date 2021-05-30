@@ -464,6 +464,7 @@ bool CacheJsonParser::makeCache()
 			rc = Commands::which("rc");
 #endif
 
+		parseArchitecture(rc);
 		compilerTools[kKeyWindowsResource] = std::move(rc);
 		m_state.cache.setDirty(true);
 	}
@@ -880,7 +881,16 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyWindowsResource))
+	{
+#if defined(CHALET_WIN32)
+		if (!parseArchitecture(val))
+		{
+			compilerTools[kKeyWindowsResource] = val;
+			m_state.cache.setDirty(true);
+		}
+#endif
 		m_state.compilerTools.setRc(val);
+	}
 
 	return true;
 }
