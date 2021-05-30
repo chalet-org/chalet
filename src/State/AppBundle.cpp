@@ -24,6 +24,24 @@ AppBundle::AppBundle(const BuildEnvironment& inEnvironment, const BuildTargetLis
 }
 
 /*****************************************************************************/
+bool AppBundle::validate()
+{
+	bool result = true;
+	if (m_exists)
+	{
+#if defined(CHALET_WIN32)
+		result &= m_windowsBundle.validate();
+#elif defined(CHALET_MACOS)
+		result &= m_macosBundle.validate();
+#else
+		result &= m_linuxBundle.validate();
+#endif
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 const BundleLinux& AppBundle::linuxBundle() const noexcept
 {
 	return m_linuxBundle;

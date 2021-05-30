@@ -19,7 +19,7 @@ struct DependencyWalker
 
 private:
 	bool verifyImageFile(const std::string& inFile);
-	void parseFile(const std::string& inFile, StringList& outList);
+	bool parseFile(const std::string& inFile, StringList& outList);
 	std::vector<char> readAllBytes(const std::string& inFile);
 #endif
 };

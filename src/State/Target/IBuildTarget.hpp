@@ -23,6 +23,7 @@ struct IBuildTarget
 	[[nodiscard]] static BuildTarget make(const BuildTargetType inType, const BuildState& inState);
 
 	virtual void initialize() = 0;
+	virtual bool validate() = 0;
 
 	BuildTargetType type() const noexcept;
 	bool isProject() const noexcept;

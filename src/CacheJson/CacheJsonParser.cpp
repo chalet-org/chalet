@@ -134,7 +134,7 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
 #endif
-		Diagnostic::errorAbort(fmt::format("{}: The toolchain's C++ compiler was blank or could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: The toolchain's C++ compiler was blank or could not be found.", m_filename));
 		return false;
 	}
 
@@ -143,7 +143,7 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
 #endif
-		Diagnostic::errorAbort(fmt::format("{}: The toolchain's C compiler was blank or could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: The toolchain's C compiler was blank or could not be found.", m_filename));
 		return false;
 	}
 
@@ -152,7 +152,7 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
 #endif
-		Diagnostic::errorAbort(fmt::format("{}: The toolchain's archive utility was blank or could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: The toolchain's archive utility was blank or could not be found.", m_filename));
 		return false;
 	}
 
@@ -161,7 +161,7 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
 #endif
-		Diagnostic::errorAbort(fmt::format("{}: The toolchain's linker was blank or could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: The toolchain's linker was blank or could not be found.", m_filename));
 		return false;
 	}
 
@@ -182,7 +182,7 @@ bool CacheJsonParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
 #endif
-		Diagnostic::errorAbort(fmt::format("{}: 'make' could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: 'make' could not be found.", m_filename));
 		return false;
 	}
 	*/
@@ -193,7 +193,7 @@ bool CacheJsonParser::validatePaths()
 	#if defined(CHALET_DEBUG)
 		cacheJson.dumpToTerminal();
 	#endif
-		Diagnostic::errorAbort(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
+		Diagnostic::error(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
 		return false;
 	}
 #endif
@@ -588,7 +588,7 @@ bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
 {
 	if (!inJson.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: Json root must be an object.", m_filename), "Error parsing file");
+		Diagnostic::error(fmt::format("{}: Json root must be an object.", m_filename), "Error parsing file");
 		return false;
 	}
 
@@ -626,14 +626,14 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 {
 	if (!inNode.contains(kKeySettings))
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeySettings));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeySettings));
 		return false;
 	}
 
 	const Json& settings = inNode.at(kKeySettings);
 	if (!settings.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' must be an object.", m_filename, kKeySettings));
+		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeySettings));
 		return false;
 	}
 
@@ -649,14 +649,14 @@ bool CacheJsonParser::parseTools(Json& inNode)
 {
 	if (!inNode.contains(kKeyTools))
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyTools));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyTools));
 		return false;
 	}
 
 	Json& tools = inNode.at(kKeyTools);
 	if (!tools.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' must be an object.", m_filename, kKeyTools));
+		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeyTools));
 		return false;
 	}
 
@@ -820,14 +820,14 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 {
 	if (!inNode.contains(kKeyCompilerTools))
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyCompilerTools));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyCompilerTools));
 		return false;
 	}
 
 	Json& compilerTools = inNode.at(kKeyCompilerTools);
 	if (!compilerTools.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' must be an object.", m_filename, kKeyCompilerTools));
+		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeyCompilerTools));
 		return false;
 	}
 
@@ -900,7 +900,7 @@ bool CacheJsonParser::parseAppleSdks(Json& inNode)
 {
 	if (!inNode.contains(kKeyApplePlatformSdks))
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyApplePlatformSdks));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyApplePlatformSdks));
 		return false;
 	}
 
@@ -909,7 +909,7 @@ bool CacheJsonParser::parseAppleSdks(Json& inNode)
 	{
 		if (!pathJson.is_string())
 		{
-			Diagnostic::errorAbort(fmt::format("{}: apple platform '{}' must be a string.", m_filename, key));
+			Diagnostic::error(fmt::format("{}: apple platform '{}' must be a string.", m_filename, key));
 			return false;
 		}
 

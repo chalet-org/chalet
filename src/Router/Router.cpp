@@ -85,6 +85,9 @@ bool Router::run()
 		if (!parseBuildJson(buildFile))
 			return false;
 
+		if (!m_buildState->validateState())
+			return false;
+
 		fetchToolVersions();
 
 		if (!m_buildState->initializeBuild())

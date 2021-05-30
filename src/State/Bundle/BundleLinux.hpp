@@ -12,6 +12,8 @@ struct BundleLinux
 {
 	BundleLinux() = default;
 
+	bool validate();
+
 	const std::string& icon() const noexcept;
 	void setIcon(const std::string& inValue);
 

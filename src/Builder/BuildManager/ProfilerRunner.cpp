@@ -73,7 +73,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 #endif
 	else
 	{
-		Diagnostic::errorAbort("Profiling is not been implemented on this compiler yet");
+		Diagnostic::error("Profiling is not been implemented on this compiler yet");
 		return false;
 	}
 }
@@ -90,7 +90,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	if (!Commands::subprocessOutputToFile({ m_state.tools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut, m_cleanOutput))
 	{
-		Diagnostic::errorAbort(fmt::format("{} failed to save.", profStatsFile));
+		Diagnostic::error(fmt::format("{} failed to save.", profStatsFile));
 		return false;
 	}
 

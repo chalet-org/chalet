@@ -5,13 +5,45 @@
 
 #include "State/Bundle/BundleLinux.hpp"
 
+#include "Builder/PlatformFile.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
-
-#include "Builder/PlatformFile.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
+/*****************************************************************************/
+bool BundleLinux::validate()
+{
+	bool result = true;
+	{
+		if (!String::endsWith(".png", m_icon))
+		{
+			Diagnostic::error(fmt::format("bundle.linux.icon must end with '.png', but was '{}'.", m_icon));
+			result = false;
+		}
+
+		if (!Commands::pathExists(m_icon))
+		{
+			Diagnostic::error("bundle.linux.icon was not found.");
+			result = false;
+		}
+	}
+	{
+		if (!String::endsWith(".desktop", m_desktopEntry))
+		{
+			Diagnostic::error(fmt::format("bundle.linux.desktopEntry must end with '.desktop', but was '{}'.", m_desktopEntry));
+			result = false;
+		}
+
+		if (!Commands::pathExists(m_desktopEntry))
+		{
+			std::ofstream(m_desktopEntry) << PlatformFile::linuxDesktopEntry();
+		}
+	}
+	return result;
+}
+
 /*****************************************************************************/
 const std::string& BundleLinux::icon() const noexcept
 {
@@ -20,20 +52,6 @@ const std::string& BundleLinux::icon() const noexcept
 
 void BundleLinux::setIcon(const std::string& inValue)
 {
-	fs::path path{ inValue };
-
-	if (!path.has_extension() || path.extension() != ".png")
-	{
-		Diagnostic::errorAbort(fmt::format("{} (bundle.linux.icon) must be '.png'. Aborting...", inValue));
-		return;
-	}
-
-	if (!Commands::pathExists(path))
-	{
-		Diagnostic::errorAbort(fmt::format("{} (bundle.linux.icon) was not found. Aborting...", inValue));
-		return;
-	}
-
 	m_icon = inValue;
 }
 
@@ -45,19 +63,6 @@ const std::string& BundleLinux::desktopEntry() const noexcept
 
 void BundleLinux::setDesktopEntry(const std::string& inValue)
 {
-	fs::path path{ inValue };
-
-	if (!path.has_extension() || path.extension() != ".desktop")
-	{
-		Diagnostic::errorAbort(fmt::format("{} (bundle.linux.desktopEntry) must be '.desktop'. Aborting...", inValue));
-		return;
-	}
-
-	if (!Commands::pathExists(path))
-	{
-		std::ofstream(path) << PlatformFile::linuxDesktopEntry();
-	}
-
 	m_desktopEntry = inValue;
 }
 }

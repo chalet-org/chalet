@@ -55,6 +55,7 @@ bool Application::initialize()
 
 #ifdef CHALET_DEBUG
 	priv::SignalHandler::start([this]() noexcept {
+		Diagnostic::printErrors();
 		this->cleanup();
 	});
 	testSignalHandling();
@@ -68,6 +69,7 @@ bool Application::initialize()
 /*****************************************************************************/
 int Application::onExit(const Status inStatus)
 {
+	Diagnostic::printErrors();
 	cleanup();
 
 	if (inStatus == Status::Success)

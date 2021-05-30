@@ -154,11 +154,7 @@ std::string NinjaGenerator::getRules(const StringList& inExtensions)
 		auto ext = String::toLowerCase(inExt);
 		if (m_rules.find(ext) == m_rules.end())
 		{
-			// TODO: Error checks like this should be elsewhere
-			//   This fires when an .hpp or .h is included in the explicit "files"
-			//   By the time a generator or build strategy runs, everything should be validated
-			Diagnostic::errorAbort(fmt::format("No Ninja rule found for file extension: '{}'", ext));
-			return std::string();
+			continue;
 		}
 
 #if !defined(CHALET_WIN32)

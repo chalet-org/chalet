@@ -23,6 +23,7 @@ struct ProjectTarget final : public IBuildTarget
 	explicit ProjectTarget(const BuildState& inState);
 
 	virtual void initialize() final;
+	virtual bool validate() final;
 
 	bool isExecutable() const noexcept;
 	bool isSharedLibrary() const noexcept;
@@ -166,6 +167,7 @@ private:
 	StringList m_runDependencies;
 	std::string m_productionDependencies;
 	std::string m_productionExcludes;
+	std::string m_warningPreset;
 	StringList m_warnings;
 	StringList m_compileOptions;
 	StringList m_linkerOptions;
@@ -193,6 +195,7 @@ private:
 	bool m_runProject = false;
 	bool m_staticLinking = false;
 	bool m_posixThreads = true;
+	bool m_invalidWarningPreset = false;
 	bool m_windowsPrefixOutputFilename = true;
 	bool m_setWindowsPrefixOutputFilename = false;
 	bool m_windowsOutputDef = false;

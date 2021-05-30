@@ -21,7 +21,8 @@ bool DependencyWalker::read(const std::string& inFile, StringList& outList)
 	if (!verifyImageFile(inFile))
 		return false;
 
-	parseFile(inFile, outList);
+	if (!parseFile(inFile, outList))
+		return false;
 
 	return true;
 }
@@ -66,7 +67,7 @@ bool DependencyWalker::verifyImageFile(const std::string& inFile)
 }
 
 /*****************************************************************************/
-void DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
+bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 {
 	constexpr auto MAGIC_NUM_32BIT = static_cast<WORD>(0x10b);		// 267
 	constexpr auto MAGIC_NUM_64BIT = static_cast<WORD>(0x20b);		// 523
@@ -117,8 +118,8 @@ void DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 	}
 	else
 	{
-		Diagnostic::error("Could not parse magic number for 32 or 64-bit PE-format Image File.");
-		return;
+		// Diagnostic::error("Could not parse magic number for 32 or 64-bit PE-format Image File.");
+		return false;
 	}
 
 	StringList ignoreList{ inFile, "System32", "SYSTEM32", "SysWOW64", "SYSWOW64" };
@@ -199,6 +200,8 @@ void DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 			imageSectionHeaderOffset = imageSectionHeaderOffset + sizeof(IMAGE_SECTION_HEADER);
 		}
 	}
+
+	return true;
 }
 
 /*****************************************************************************/

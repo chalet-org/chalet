@@ -7,9 +7,29 @@
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
+/*****************************************************************************/
+bool BundleWindows::validate()
+{
+	bool result = true;
+	if (!String::endsWith(".ico", m_icon))
+	{
+		Diagnostic::error(fmt::format("bundle.windows.icon must end with '.ico', but was '{}'.", m_icon));
+		result = false;
+	}
+
+	if (!Commands::pathExists(m_icon))
+	{
+		Diagnostic::error(fmt::format("bundle.windows.icon was not found.", m_icon));
+		result = false;
+	}
+
+	return result;
+}
+
 /*****************************************************************************/
 const std::string& BundleWindows::icon() const noexcept
 {
@@ -18,20 +38,6 @@ const std::string& BundleWindows::icon() const noexcept
 
 void BundleWindows::setIcon(const std::string& inValue)
 {
-	fs::path path{ inValue };
-
-	if (!path.has_extension() || path.extension() != ".ico")
-	{
-		Diagnostic::errorAbort(fmt::format("{} (bundle.windows.icon) must be '.ico'. Aborting...", inValue));
-		return;
-	}
-
-	if (!Commands::pathExists(path))
-	{
-		Diagnostic::errorAbort(fmt::format("{} (bundle.windows.icon) was not found. Aborting...", inValue));
-		return;
-	}
-
 	m_icon = inValue;
 }
 

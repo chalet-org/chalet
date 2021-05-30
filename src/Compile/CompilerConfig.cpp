@@ -74,7 +74,7 @@ bool CompilerConfig::configureCompilerPaths()
 	}
 
 	auto language = m_language == CodeLanguage::CPlusPlus ? "C++" : "C";
-	Diagnostic::errorAbort(fmt::format("Invalid compiler structure found for language '{}' (no 'bin' folder).", language));
+	Diagnostic::error(fmt::format("Invalid compiler structure found for language '{}' (no 'bin' folder).", language));
 	return false;
 }
 

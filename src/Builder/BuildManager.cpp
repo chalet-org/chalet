@@ -239,13 +239,13 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 
 	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
 	{
-		Diagnostic::errorAbort(fmt::format("Error creating paths for project: {}", inProject.name()));
+		Diagnostic::error(fmt::format("Error creating paths for project: {}", inProject.name()));
 		return false;
 	}
 
 	if (!buildToolchain->initialize())
 	{
-		Diagnostic::errorAbort(fmt::format("Error preparing the build for project: {}", inProject.name()));
+		Diagnostic::error(fmt::format("Error preparing the build for project: {}", inProject.name()));
 		return false;
 	}
 

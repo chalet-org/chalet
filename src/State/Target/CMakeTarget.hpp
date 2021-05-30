@@ -15,6 +15,7 @@ struct CMakeTarget final : public IBuildTarget
 	explicit CMakeTarget(const BuildState& inState);
 
 	virtual void initialize() final;
+	virtual bool validate() final;
 
 	const StringList& defines() const noexcept;
 	void addDefines(StringList& inList);

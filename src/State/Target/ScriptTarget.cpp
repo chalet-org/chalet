@@ -28,6 +28,12 @@ void ScriptTarget::initialize()
 }
 
 /*****************************************************************************/
+bool ScriptTarget::validate()
+{
+	return true;
+}
+
+/*****************************************************************************/
 const StringList& ScriptTarget::scripts() const noexcept
 {
 	return m_scripts;

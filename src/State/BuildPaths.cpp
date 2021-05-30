@@ -46,25 +46,15 @@ void BuildPaths::setWorkingDirectory(const std::string& inValue)
 {
 	chalet_assert(m_workingDirectory.empty(), "");
 
-	auto workingDirectory = Commands::getWorkingDirectory();
-	Path::sanitize(workingDirectory, true);
-
 	if (Commands::pathExists(inValue))
 	{
 		m_workingDirectory = inValue;
-
-		if (m_workingDirectory != workingDirectory)
-		{
-			std::error_code ec;
-			fs::current_path(m_workingDirectory, ec);
-			if (ec)
-			{
-				Diagnostic::error(fmt::format("Error changing directory to '{}'", m_workingDirectory));
-			}
-		}
 	}
 	else
 	{
+		auto workingDirectory = Commands::getWorkingDirectory();
+		Path::sanitize(workingDirectory, true);
+
 		m_workingDirectory = workingDirectory;
 	}
 }

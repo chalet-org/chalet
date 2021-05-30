@@ -54,6 +54,50 @@ void ProjectTarget::initialize()
 }
 
 /*****************************************************************************/
+bool ProjectTarget::validate()
+{
+	bool result = true;
+	for (auto& option : m_compileOptions)
+	{
+		if (String::equals(option.substr(0, 2), "-W"))
+		{
+			Diagnostic::error("'warnings' found in 'compileOptions' (options with '-W')");
+			result = false;
+		}
+
+		if (!option.empty() && option.front() != '-')
+		{
+			Diagnostic::error("Contents of 'compileOptions' list must begin with '-'");
+			result = false;
+		}
+	}
+
+	for (auto& option : m_linkerOptions)
+	{
+		if (String::equals(option.substr(0, 2), "-W"))
+		{
+			Diagnostic::error("'warnings' found in 'linkerOptions' (options with '-W'");
+			result = false;
+		}
+
+		if (!option.empty() && option.front() != '-')
+		{
+			Diagnostic::error("Contents of 'linkerOptions' list must begin with '-'");
+			result = false;
+		}
+	}
+
+	m_warnings = parseWarnings(m_warningPreset);
+	if (m_invalidWarningPreset)
+	{
+		Diagnostic::error(fmt::format("Unrecognized or invalid preset for 'warnings': {}", m_warningPreset));
+		result = false;
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 bool ProjectTarget::isExecutable() const noexcept
 {
 	return m_kind == ProjectKind::ConsoleApplication || m_kind == ProjectKind::DesktopApplication;
@@ -256,7 +300,7 @@ void ProjectTarget::addWarning(std::string& inValue)
 
 void ProjectTarget::setWarningPreset(const std::string& inValue)
 {
-	m_warnings = parseWarnings(inValue);
+	m_warningPreset = inValue;
 }
 
 ProjectWarnings ProjectTarget::warningsPreset() const noexcept
@@ -283,18 +327,6 @@ void ProjectTarget::addCompileOptions(StringList& inList)
 
 void ProjectTarget::addCompileOption(std::string& inValue)
 {
-	if (String::equals(inValue.substr(0, 2), "-W"))
-	{
-		Diagnostic::errorAbort("'warnings' found in 'compileOptions' (options with '-W')");
-		return;
-	}
-
-	if (!inValue.empty() && inValue.front() != '-')
-	{
-		Diagnostic::errorAbort("Contents of 'compileOptions' list must begin with '-'");
-		return;
-	}
-
 	List::addIfDoesNotExist(m_compileOptions, std::move(inValue));
 }
 
@@ -309,18 +341,6 @@ void ProjectTarget::addLinkerOptions(StringList& inList)
 }
 void ProjectTarget::addLinkerOption(std::string& inValue)
 {
-	if (String::equals(inValue.substr(0, 2), "-W"))
-	{
-		Diagnostic::errorAbort("'warnings' found in 'linkerOptions' (options with '-W'");
-		return;
-	}
-
-	if (!inValue.empty() && inValue.front() != '-')
-	{
-		Diagnostic::errorAbort("Contents of 'linkerOptions' list must begin with '-'");
-		return;
-	}
-
 	List::addIfDoesNotExist(m_linkerOptions, std::move(inValue));
 }
 
@@ -794,7 +814,7 @@ StringList ProjectTarget::parseWarnings(const std::string& inValue)
 	// can't be ignored in GCC 10.2.0, so best not to use it at all
 	// ret.push_back("switch-default");
 
-	Diagnostic::errorAbort(fmt::format("Unrecognized or invalid value for 'warnings': {}", inValue));
+	m_invalidWarningPreset = true;
 
 	return ret;
 }

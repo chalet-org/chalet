@@ -12,6 +12,8 @@ struct BundleMacOS
 {
 	BundleMacOS() = default;
 
+	bool validate();
+
 	const std::string& bundleName() const noexcept;
 	void setBundleName(const std::string& inValue);
 

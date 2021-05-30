@@ -30,6 +30,21 @@ const char* Diagnostic::CriticalException::what() const throw()
 
 /*****************************************************************************/
 Diagnostic::CriticalException Diagnostic::kCriticalError;
+Diagnostic::ErrorList* Diagnostic::s_ErrorList = nullptr;
+bool Diagnostic::s_Printed = false;
+
+/*****************************************************************************/
+Diagnostic::ErrorList* Diagnostic::getErrorList()
+{
+	chalet_assert(!s_Printed, "");
+
+	if (s_ErrorList == nullptr)
+	{
+		s_ErrorList = new ErrorList();
+	}
+
+	return s_ErrorList;
+}
 
 /*****************************************************************************/
 void Diagnostic::info(const std::string& inMessage, const bool inLineBreak)
@@ -73,7 +88,9 @@ void Diagnostic::warn(const std::string& inMessage, const std::string& inTitle)
 	auto type = Type::Warning;
 	// Diagnostic::showHeader(type, inTitle);
 	// Diagnostic::showMessage(type, inMessage);
-	Diagnostic::showAsOneLine(type, inTitle, inMessage);
+	// Diagnostic::showAsOneLine(type, inTitle, inMessage);
+	Diagnostic::addError(type, inMessage);
+	UNUSED(inTitle);
 
 	// const auto reset = Output::getAnsiReset();
 	// std::cout << reset << std::endl;
@@ -85,7 +102,9 @@ void Diagnostic::error(const std::string& inMessage, const std::string& inTitle)
 	auto type = Type::Error;
 	// Diagnostic::showHeader(type, inTitle);
 	// Diagnostic::showMessage(type, inMessage);
-	Diagnostic::showAsOneLine(type, inTitle, inMessage);
+	// Diagnostic::showAsOneLine(type, inTitle, inMessage);
+	Diagnostic::addError(type, inMessage);
+	UNUSED(inTitle);
 
 	// const auto reset = Output::getAnsiReset();
 	// std::cerr << reset << std::endl;
@@ -211,6 +230,52 @@ void Diagnostic::showAsOneLine(const Type inType, const std::string& inTitle, co
 	const auto reset = Output::getAnsiReset();
 
 	out << fmt::format("{}{}| {}{}", color, inTitle, reset, inMessage) << std::endl;
+}
+
+/*****************************************************************************/
+void Diagnostic::addError(const Type inType, const std::string& inMessage)
+{
+	getErrorList()->push_back({ inType, inMessage });
+}
+
+/*****************************************************************************/
+void Diagnostic::printErrors()
+{
+	if (s_ErrorList != nullptr)
+	{
+		{
+			auto& errorList = *s_ErrorList;
+			if (errorList.size() > 0)
+			{
+				Diagnostic::errorHeader("Errors");
+
+				for (auto& error : errorList)
+				{
+					if (error.message.empty())
+						continue;
+
+					Diagnostic::errorMessage(error.message);
+
+					/*switch (error.type)
+				{
+					case JsonErrorClassification::Fatal:
+						break;
+					case JsonErrorClassification::Warning:
+						// Output::print(Color::Yellow, fmt::format("    Attempting to continue build anyway..."));
+						break;
+					default:
+						break;
+				}*/
+				}
+				Output::lineBreak();
+			}
+		}
+
+		delete s_ErrorList;
+		s_ErrorList = nullptr;
+	}
+
+	s_Printed = true;
 }
 
 }

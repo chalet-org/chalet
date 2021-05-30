@@ -136,7 +136,7 @@ bool BuildJsonParser::validBuildRequested()
 			auto& project = static_cast<const ProjectTarget&>(*target);
 			if (project.language() == CodeLanguage::None)
 			{
-				Diagnostic::errorAbort(fmt::format("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project.name()), "Error parsing file");
+				Diagnostic::error(fmt::format("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project.name()), "Error parsing file");
 				return false;
 			}
 		}
@@ -169,7 +169,7 @@ bool BuildJsonParser::parseRoot(const Json& inNode)
 {
 	if (!inNode.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: Json root must be an object.", m_filename), "Error parsing file");
+		Diagnostic::error(fmt::format("{}: Json root must be an object.", m_filename), "Error parsing file");
 		return false;
 	}
 
@@ -226,7 +226,7 @@ bool BuildJsonParser::parseEnvironment(const Json& inJson)
 	const Json& environment = inJson.at(kKeyEnvironment);
 	if (!environment.is_object())
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' must be an object.", m_filename, kKeyEnvironment));
+		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeyEnvironment));
 		return false;
 	}
 
@@ -355,7 +355,7 @@ bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 	const Json& externalDependencies = inNode.at(kKeyExternalDependencies);
 	if (!externalDependencies.is_object() || externalDependencies.size() == 0)
 	{
-		Diagnostic::errorAbort(fmt::format("{}: '{}' must contain at least one external dependency.", m_filename, kKeyExternalDependencies));
+		Diagnostic::error(fmt::format("{}: '{}' must contain at least one external dependency.", m_filename, kKeyExternalDependencies));
 		return false;
 	}
 
@@ -381,7 +381,7 @@ bool BuildJsonParser::parseGitDependency(GitDependency& outDependency, const Jso
 		outDependency.setRepository(val);
 	else
 	{
-		Diagnostic::errorAbort(fmt::format("{}: 'repository' is required for all  external dependencies.", m_filename));
+		Diagnostic::error(fmt::format("{}: 'repository' is required for all  external dependencies.", m_filename));
 		return false;
 	}
 
@@ -394,7 +394,7 @@ bool BuildJsonParser::parseGitDependency(GitDependency& outDependency, const Jso
 	{
 		if (!outDependency.tag().empty())
 		{
-			Diagnostic::errorAbort(fmt::format("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_filename, outDependency.repository()));
+			Diagnostic::error(fmt::format("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_filename, outDependency.repository()));
 			return false;
 		}
 

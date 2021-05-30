@@ -27,25 +27,12 @@ CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarge
 bool CmakeBuilder::run()
 {
 	const auto& name = m_target.name();
-	if (!m_state.tools.cmakeAvailable())
-	{
-		Diagnostic::error(fmt::format("CMake was requsted for the project '{}' but was not found.", name));
-		return false;
-	}
-
 	// TODO: add doxygen to path?
 
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
 	Output::msgBuild(buildConfiguration, name);
 	Output::lineBreak();
-
-	if (!List::contains({ "Release", "Debug", "RelWithDebInfo", "MinSizeRel" }, buildConfiguration))
-	{
-		// https://cmake.org/cmake/help/v3.0/variable/CMAKE_BUILD_TYPE.html
-		Diagnostic::error(fmt::format("Build '{}' not recognized by CMAKE.", buildConfiguration));
-		return false;
-	}
 
 	auto cwd = Commands::getWorkingDirectory();
 	auto location = fmt::format("{}/{}", cwd, m_target.location());

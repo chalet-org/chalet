@@ -173,10 +173,7 @@ bool CompileStrategyNative::saveBuildFile() const
 bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 {
 	if (m_targets.find(inProject.name()) == m_targets.end())
-	{
-		Diagnostic::error(fmt::format("{} was not previously cached. Aborting.", inProject.name()));
 		return false;
-	}
 
 	auto& target = *m_targets.at(inProject.name());
 	auto& compiles = target.compiles;

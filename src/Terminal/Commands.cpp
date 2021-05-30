@@ -65,7 +65,7 @@ std::string Commands::getWorkingDirectory()
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return std::string();
 	}
 }
@@ -80,8 +80,24 @@ fs::path Commands::getWorkingDirectoryPath()
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return fs::path{ "" };
+	}
+}
+
+/*****************************************************************************/
+bool Commands::changeWorkingDirectory(const std::string& inValue)
+{
+	try
+	{
+		std::error_code errorCode;
+		fs::current_path(inValue, errorCode);
+		return errorCode.operator bool();
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::error(err.what());
+		return false;
 	}
 }
 
@@ -97,7 +113,7 @@ std::string Commands::getCanonicalPath(const std::string& inPath)
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return inPath;
 	}
 }
@@ -114,7 +130,7 @@ std::string Commands::getAbsolutePath(const std::string& inPath)
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return inPath;
 	}
 }
@@ -141,7 +157,7 @@ std::uintmax_t Commands::getPathSize(const std::string& inPath, const bool inCle
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return 0;
 	}
 }
@@ -160,7 +176,7 @@ bool Commands::makeDirectory(const std::string& inPath, const bool inCleanOutput
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 }
@@ -196,7 +212,7 @@ bool Commands::remove(const std::string& inPath, const bool inCleanOutput)
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 }
@@ -214,7 +230,7 @@ bool Commands::removeRecursively(const std::string& inPath, const bool inCleanOu
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 }
@@ -266,7 +282,7 @@ bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std:
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 #endif
@@ -290,7 +306,7 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 #endif
@@ -315,7 +331,7 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const bo
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 }
@@ -339,7 +355,7 @@ bool Commands::copySkipExisting(const std::string& inFrom, const std::string& in
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 }
@@ -360,7 +376,7 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 }
@@ -382,7 +398,7 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 }
@@ -397,7 +413,7 @@ bool Commands::pathExists(const fs::path& inPath)
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 }
@@ -454,12 +470,12 @@ bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& 
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 	catch (const std::runtime_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 }

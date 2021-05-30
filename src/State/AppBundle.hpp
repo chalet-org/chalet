@@ -19,6 +19,8 @@ struct AppBundle
 {
 	explicit AppBundle(const BuildEnvironment& inEnvironment, const BuildTargetList& inTargets, const BuildPaths& inPaths, const CompilerTools& inCompilers);
 
+	bool validate();
+
 	const BundleLinux& linuxBundle() const noexcept;
 	void setLinuxBundle(const BundleLinux& inValue);
 

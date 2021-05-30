@@ -105,7 +105,7 @@ bool GitDependency::parseDestination()
 
 	if (!String::endsWith(".git", m_repository))
 	{
-		Diagnostic::errorAbort("'repository' was found but did not end with '.git'");
+		Diagnostic::error("'repository' was found but did not end with '.git'");
 		return false;
 	}
 

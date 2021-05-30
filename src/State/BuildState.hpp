@@ -46,6 +46,7 @@ private:
 
 	bool initializeBuild();
 	void initializeCache();
+	bool validateState();
 };
 }
 

@@ -51,7 +51,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		if (destination.empty() || String::startsWith('.', destination) || String::startsWith('/', destination))
 		{
 			// This shouldn't occur, but would be pretty bad if it did
-			Diagnostic::errorAbort(fmt::format("The external dependency destination was blank for '{}'.", repository));
+			Diagnostic::error(fmt::format("The external dependency destination was blank for '{}'.", repository));
 			return false;
 		}
 

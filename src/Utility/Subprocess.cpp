@@ -145,7 +145,8 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 	}
 	catch (const std::exception& err)
 	{
-		Diagnostic::error(err.what());
+		std::string error(err.what());
+		Diagnostic::error("subprocess error: " + error);
 		return -1;
 	}
 }

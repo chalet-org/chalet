@@ -27,6 +27,28 @@ void CMakeTarget::initialize()
 }
 
 /*****************************************************************************/
+bool CMakeTarget::validate()
+{
+	bool result = true;
+	if (!m_state.tools.cmakeAvailable())
+	{
+		Diagnostic::error(fmt::format("CMake was requsted for the project '{}' but was not found.", this->name()));
+		result = false;
+	}
+
+	const auto& buildConfiguration = m_state.info.buildConfiguration();
+
+	if (!List::contains({ "Release", "Debug", "RelWithDebInfo", "MinSizeRel" }, buildConfiguration))
+	{
+		// https://cmake.org/cmake/help/v3.0/variable/CMAKE_BUILD_TYPE.html
+		Diagnostic::error(fmt::format("Build '{}' not recognized by CMAKE.", buildConfiguration));
+		result = false;
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 const StringList& CMakeTarget::defines() const noexcept
 {
 	return m_defines;
