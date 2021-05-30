@@ -7,8 +7,6 @@
 #define CHALET_PROJECT_TARGET_HPP
 
 #include "Compile/CodeLanguage.hpp"
-#include "Core/CommandLineInputs.hpp"
-#include "State/BuildEnvironment.hpp"
 #include "State/ProjectKind.hpp"
 #include "State/ProjectWarnings.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -16,6 +14,7 @@
 
 namespace chalet
 {
+class BuildState;
 struct CompilerConfig;
 
 struct ProjectTarget final : public IBuildTarget
@@ -164,7 +163,7 @@ private:
 	StringList m_runDependencies;
 	std::string m_productionDependencies;
 	std::string m_productionExcludes;
-	std::string m_warningPreset;
+	std::string m_warningsPresetString{ "none" };
 	StringList m_warnings;
 	StringList m_compileOptions;
 	StringList m_linkerOptions;

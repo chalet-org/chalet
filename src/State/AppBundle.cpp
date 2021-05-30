@@ -6,6 +6,9 @@
 #include "State/AppBundle.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/BuildEnvironment.hpp"
+#include "State/BuildPaths.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"

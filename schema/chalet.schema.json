@@ -372,7 +372,7 @@
 				}
 			}
 		},
-		"project": {
+		"target-project": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
@@ -415,9 +415,7 @@
 				"runDependencies": {
 					"$ref": "#/definitions/target-project-runDependencies"
 				}
-			}
-		},
-		"target-project": {
+			},
 			"patternProperties": {
 				"^runProject(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/target-project-runProject"
@@ -1107,9 +1105,6 @@
 		"target-script": {
 			"type": "object",
 			"additionalProperties": false,
-			"required": [
-				"script"
-			],
 			"properties": {
 				"script": {
 					"description": "Script(s) to run during this build step.",
@@ -1226,7 +1221,7 @@
 			"patternProperties": {
 				"^[A-Za-z_-]+$": {
 					"description": "An abstract build project. 'all' is implicitely added to each project.",
-					"$ref": "#/definitions/project"
+					"$ref": "#/definitions/target-project"
 				}
 			}
 		},

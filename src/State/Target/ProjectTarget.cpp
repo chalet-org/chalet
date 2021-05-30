@@ -87,10 +87,10 @@ bool ProjectTarget::validate()
 		}
 	}
 
-	m_warnings = parseWarnings(m_warningPreset);
+	m_warnings = parseWarnings(m_warningsPresetString);
 	if (m_invalidWarningPreset)
 	{
-		Diagnostic::error(fmt::format("Unrecognized or invalid preset for 'warnings': {}", m_warningPreset));
+		Diagnostic::error(fmt::format("Unrecognized or invalid preset for 'warnings': {}", m_warningsPresetString));
 		result = false;
 	}
 
@@ -300,7 +300,7 @@ void ProjectTarget::addWarning(std::string& inValue)
 
 void ProjectTarget::setWarningPreset(const std::string& inValue)
 {
-	m_warningPreset = inValue;
+	m_warningsPresetString = inValue;
 }
 
 ProjectWarnings ProjectTarget::warningsPreset() const noexcept

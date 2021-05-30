@@ -6,15 +6,17 @@
 #ifndef CHALET_APP_BUNDLE_HPP
 #define CHALET_APP_BUNDLE_HPP
 
-#include "State/BuildPaths.hpp"
 #include "State/Bundle/BundleLinux.hpp"
 #include "State/Bundle/BundleMacOS.hpp"
 #include "State/Bundle/BundleWindows.hpp"
-#include "State/CompilerTools.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/IBuildTarget.hpp"
 
 namespace chalet
 {
+struct CompilerTools;
+struct BuildEnvironment;
+struct BuildPaths;
+
 struct AppBundle
 {
 	explicit AppBundle(const BuildEnvironment& inEnvironment, const BuildTargetList& inTargets, const BuildPaths& inPaths, const CompilerTools& inCompilers);

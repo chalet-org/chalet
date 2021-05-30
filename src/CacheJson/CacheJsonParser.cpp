@@ -334,17 +334,12 @@ bool CacheJsonParser::makeCache()
 		m_state.cache.setDirty(true);
 	}
 
+	if (!settings.contains(kKeyStrategy) || !settings[kKeyStrategy].is_string() || settings[kKeyStrategy].get<std::string>().empty())
 	{
-		Json& json = settings[kKeyStrategy];
-
-		const auto strategy = json.get<std::string>();
-		if (strategy.empty())
-		{
-			// Note: this is only for validation. it gets changed later
-			json = "makefile";
-			m_state.cache.setDirty(true);
-			m_changeStrategy = true;
-		}
+		// Note: this is only for validation. it gets changed later
+		settings[kKeyStrategy] = "makefile";
+		m_state.cache.setDirty(true);
+		m_changeStrategy = true;
 	}
 
 	//

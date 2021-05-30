@@ -432,7 +432,7 @@ Json Schema::getBuildJson()
 		"$ref": "#/definitions/target-project-cxx-staticLinking"
 	})json"_ojson;
 
-	ret[kDefinitions]["project"] = R"json({
+	ret[kDefinitions]["target-project"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"properties": {
@@ -1204,9 +1204,6 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-script"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"required": [
-			"script"
-		],
 		"properties": {
 			"script": {
 				"description": "Script(s) to run during this build step.",
@@ -1335,7 +1332,7 @@ Json Schema::getBuildJson()
 		"patternProperties": {
 			"^[A-Za-z_-]+$": {
 				"description": "An abstract build project. 'all' is implicitely added to each project.",
-				"$ref": "#/definitions/project"
+				"$ref": "#/definitions/target-project"
 			}
 		}
 	})json"_ojson;
