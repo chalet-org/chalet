@@ -96,7 +96,7 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 	auto signature = (char*)&bytes[*signatureOffsetLocation];
 
 	if (*signature != *KNOWN_IMG_SIGNATURE)
-		return;
+		return false;
 
 	DWORD coffFileHeaderOffset = *signatureOffsetLocation + IMG_SIGNATURE_SIZE;
 	auto coffFileHeader = (IMAGE_FILE_HEADER*)&bytes[coffFileHeaderOffset];
