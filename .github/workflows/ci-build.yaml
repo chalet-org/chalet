@@ -47,7 +47,7 @@ jobs:
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema bundle
       - name: "Run: Tests"
-        run: build/x64_x64_Release/chalet run Release tests_chalet
+        run: build/x86_64-linux-gnu_Release/chalet run Release tests_chalet
       - name: "Zip binary"
         run: zip -j dist/chalet-linux.zip dist/chalet LICENSE.txt
       - name: "Upload binary"
@@ -92,16 +92,16 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: cmd
+        shell: pwsh
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Build: Debug"
         run: build.bat
       - name: "Build: Release"
-        run: build/Debug/chalet-debug --save-schema bundle
+        run: build/Debug/chalet-debug.exe --save-schema bundle
       - name: "Run: Tests"
-        run: build/x64_x64_Release/chalet run Release tests_chalet
+        run: build/x86_64-pc-win32_Release/chalet.exe run Release tests_chalet
       - name: "Zip binary"
         run: powershell Compress-Archive dist/chalet.exe LICENSE.txt dist/chalet-win32-msvc.zip
       - name: "Upload binary"
@@ -138,7 +138,7 @@ jobs:
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema bundle
       - name: "Run: Tests"
-        run: build/x64_x64_Release/chalet run Release tests_chalet
+        run: build/x86_64-w64-mingw32_Release/chalet run Release tests_chalet
       - name: "Zip binary"
         run: zip -j dist/chalet-win32-mingw64.zip dist/chalet.exe LICENSE.txt
       - name: "Upload binary"
