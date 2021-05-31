@@ -49,7 +49,10 @@ jobs:
       - name: "Run: Tests"
         run: build/x86_64-linux-gnu_Release/chalet run Release tests_chalet
       - name: "Zip binary"
-        run: zip -j dist/chalet-linux.zip dist/chalet LICENSE.txt
+        uses: papeloto/action-zip@v1
+        with:
+          files: dist/chalet LICENSE.txt
+          dest: dist/chalet-linux.zip
       - name: "Upload binary"
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -76,7 +79,10 @@ jobs:
       - name: "Run: Tests"
         run: build/x86_64-apple-darwin19.6.0_Release/chalet run Release tests_chalet
       - name: "Zip binary"
-        run: zip -j dist/chalet-macos.zip dist/Chalet.app/Contents/MacOS/chalet LICENSE.txt
+        uses: papeloto/action-zip@v1
+        with:
+          files: dist/Chalet.app/Contents/MacOS/chalet LICENSE.txt
+          dest: dist/chalet-macos.zip
       - name: "Upload binary"
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -107,7 +113,10 @@ jobs:
       - name: "Run: Tests"
         run: build/x86_64-pc-windows-msvc_Release/chalet run Release tests_chalet
       - name: "Zip binary"
-        run: zip -j dist/chalet-windows-msvc.zip dist/chalet.exe LICENSE.txt
+        uses: papeloto/action-zip@v1
+        with:
+          files: dist/chalet.exe LICENSE.txt
+          dest: dist/chalet-windows-msvc64.zip
       - name: "Upload binary"
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -116,7 +125,7 @@ jobs:
         with:
           upload_url: ${{ needs.Release.outputs.upload_url }}
           asset_path: ./dist/chalet-windows-msvc64.zip
-          asset_name: chalet-windows-msvc.zip
+          asset_name: chalet-windows-msvc64.zip
           asset_content_type: application/zip
   Windows-MSYS2:
     needs: Release
@@ -144,7 +153,10 @@ jobs:
       - name: "Run: Tests"
         run: build/x86_64-w64-mingw32_Release/chalet run Release tests_chalet
       - name: "Zip binary"
-        run: zip -j dist/chalet-windows-mingw64.zip dist/chalet.exe LICENSE.txt
+        uses: papeloto/action-zip@v1
+        with:
+          files: dist/chalet.exe LICENSE.txt
+          dest: dist/chalet-windows-mingw64.zip
       - name: "Upload binary"
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
