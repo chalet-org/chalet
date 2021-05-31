@@ -81,16 +81,6 @@ bool CompilerTools::initialize()
 			UNUSED(split);
 			return valid;
 		}
-		else
-		{
-			const auto& arch = m_inputs.targetArchitecture();
-			if (!arch.empty())
-			{
-				const auto& targetArch = m_info.targetArchitectureString();
-
-				return String::startsWith(arch, targetArch);
-			}
-		}
 	}
 	else if (m_detectedToolchain == ToolchainType::GNU)
 	{

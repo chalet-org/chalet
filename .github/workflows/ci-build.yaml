@@ -90,10 +90,11 @@ jobs:
   Windows-MSVC:
     needs: Release
     runs-on: windows-latest
-    defaults:
-      run:
-        shell: bash
     steps:
+      - name: "Get MSVC"
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: "Setup Ninja"
+        uses: ashutoshvarma/setup-ninja@master
       - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Build: Debug"
