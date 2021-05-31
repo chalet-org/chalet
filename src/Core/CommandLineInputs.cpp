@@ -195,7 +195,7 @@ const ToolchainPreference& CommandLineInputs::toolchainPreference() const noexce
 	return m_toolchainPreference;
 }
 
-void CommandLineInputs::setToolchainPreference(const std::string& inValue) noexcept
+void CommandLineInputs::setToolchainPreference(const std::string& inValue) const noexcept
 {
 	if (inValue.empty())
 		return;

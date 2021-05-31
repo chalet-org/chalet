@@ -33,7 +33,7 @@ private:
 
 	std::string getAsmRecipe() const;
 	std::string getPchRecipe(const std::string& pchTarget);
-	std::string getRcRecipe(const std::string& ext) const;
+	std::string getRcRecipe(const std::string& ext, const std::string& pchTarget) const;
 	std::string getCppRecipe(const std::string& ext, const std::string& pchTarget) const;
 	std::string getObjcRecipe(const std::string& ext) const;
 

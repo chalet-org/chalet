@@ -295,6 +295,133 @@ bool CacheJsonParser::setDefaultBuildStrategy()
 }
 
 /*****************************************************************************/
+bool CacheJsonParser::makeToolchain(Json& compilerTools, const ToolchainPreference& toolchain)
+{
+	bool result = true;
+
+	std::string cpp;
+	std::string cc;
+	if (!compilerTools.contains(kKeyCpp))
+	{
+		// auto varCXX = Environment::get("CXX");
+		// if (varCXX != nullptr)
+		// 	cpp = Commands::which(varCXX);
+
+		if (cpp.empty())
+		{
+			cpp = Commands::which(toolchain.cpp);
+		}
+
+		parseArchitecture(cpp);
+		result &= !cpp.empty();
+
+		compilerTools[kKeyCpp] = cpp;
+		m_state.cache.setDirty(true);
+	}
+
+	if (!compilerTools.contains(kKeyCc))
+	{
+		// auto varCC = Environment::get("CC");
+		// if (varCC != nullptr)
+		// 	cc = Commands::which(varCC);
+
+		if (cc.empty())
+		{
+			cc = Commands::which(toolchain.cc);
+		}
+
+		parseArchitecture(cc);
+		result &= !cc.empty();
+
+		compilerTools[kKeyCc] = cc;
+		m_state.cache.setDirty(true);
+	}
+
+	if (!compilerTools.contains(kKeyLinker))
+	{
+		std::string link;
+		StringList linkers;
+		linkers.push_back(toolchain.linker);
+		if (toolchain.type == ToolchainType::LLVM)
+		{
+			linkers.push_back("ld");
+		}
+
+		for (const auto& linker : linkers)
+		{
+			link = Commands::which(linker);
+			if (!link.empty())
+				break;
+		}
+
+		// handles edge case w/ MSVC & MinGW in same path
+		if (toolchain.type == ToolchainType::MSVC)
+		{
+			if (String::contains("/usr/bin/link", link))
+			{
+				if (!cc.empty())
+					link = cc;
+				else if (!cpp.empty())
+					link = cpp;
+
+				String::replaceAll(link, "cl.exe", "link.exe");
+			}
+		}
+
+		parseArchitecture(link);
+		result &= !link.empty();
+
+		compilerTools[kKeyLinker] = std::move(link);
+		m_state.cache.setDirty(true);
+	}
+
+	if (!compilerTools.contains(kKeyArchiver))
+	{
+		std::string ar;
+		StringList archivers;
+		if (toolchain.type == ToolchainType::LLVM || toolchain.type == ToolchainType::GNU)
+		{
+			archivers.push_back("libtool");
+		}
+		archivers.push_back(toolchain.archiver);
+
+		for (const auto& archiver : archivers)
+		{
+			ar = Commands::which(archiver);
+			if (!ar.empty())
+				break;
+		}
+
+		parseArchitecture(ar);
+		result &= !ar.empty();
+
+		compilerTools[kKeyArchiver] = std::move(ar);
+		m_state.cache.setDirty(true);
+	}
+
+	if (!compilerTools.contains(kKeyWindowsResource))
+	{
+		std::string rc;
+		rc = Commands::which(toolchain.rc);
+
+		parseArchitecture(rc);
+		compilerTools[kKeyWindowsResource] = std::move(rc);
+		m_state.cache.setDirty(true);
+	}
+
+	if (!result)
+	{
+		compilerTools.erase(kKeyCpp);
+		compilerTools.erase(kKeyCc);
+		compilerTools.erase(kKeyLinker);
+		compilerTools.erase(kKeyArchiver);
+		compilerTools.erase(kKeyWindowsResource);
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 bool CacheJsonParser::makeCache()
 {
 	// TODO: Copy from global cache. If one doesn't exist, do this
@@ -362,8 +489,6 @@ bool CacheJsonParser::makeCache()
 	HostPlatform platform = HostPlatform::Linux;
 #endif
 
-	auto& toolchain = m_inputs.toolchainPreference();
-
 	auto whichAdd = [&](Json& inNode, const std::string& inKey, const HostPlatform inPlatform = HostPlatform::Any) -> bool {
 		if (!inNode.contains(inKey))
 		{
@@ -386,110 +511,23 @@ bool CacheJsonParser::makeCache()
 		return true;
 	};
 
-	std::string cpp;
-	std::string cc;
-	if (!compilerTools.contains(kKeyCpp))
+	auto& toolchain = m_inputs.toolchainPreference();
+#if defined(CHALET_WIN32)
+	if (!makeToolchain(compilerTools, toolchain))
 	{
-		// auto varCXX = Environment::get("CXX");
-		// if (varCXX != nullptr)
-		// 	cpp = Commands::which(varCXX);
-
-		if (cpp.empty())
-		{
-			cpp = Commands::which(toolchain.cpp);
-		}
-
-		parseArchitecture(cpp);
-
-		compilerTools[kKeyCpp] = cpp;
-		m_state.cache.setDirty(true);
-	}
-
-	if (!compilerTools.contains(kKeyCc))
-	{
-		// auto varCC = Environment::get("CC");
-		// if (varCC != nullptr)
-		// 	cc = Commands::which(varCC);
-
-		if (cc.empty())
-		{
-			cc = Commands::which(toolchain.cc);
-		}
-
-		parseArchitecture(cc);
-		compilerTools[kKeyCc] = cc;
-		m_state.cache.setDirty(true);
-	}
-
-	if (!compilerTools.contains(kKeyLinker))
-	{
-		std::string link;
-		StringList linkers;
-		linkers.push_back(toolchain.linker);
-		if (toolchain.type == ToolchainType::LLVM)
-		{
-			linkers.push_back("ld");
-		}
-
-		for (const auto& linker : linkers)
-		{
-			link = Commands::which(linker);
-			if (!link.empty())
-				break;
-		}
-
-		// handles edge case w/ MSVC & MinGW in same path
 		if (toolchain.type == ToolchainType::MSVC)
 		{
-			if (String::contains("/usr/bin/link", link))
+			m_inputs.setToolchainPreference("gcc"); // aka mingw
+			if (!makeToolchain(compilerTools, toolchain))
 			{
-				if (!cc.empty())
-					link = cc;
-				else if (!cpp.empty())
-					link = cpp;
-
-				String::replaceAll(link, "cl.exe", "link.exe");
+				m_inputs.setToolchainPreference("llvm"); // try once more for clang
+				makeToolchain(compilerTools, toolchain);
 			}
 		}
-
-		parseArchitecture(link);
-		compilerTools[kKeyLinker] = std::move(link);
-		m_state.cache.setDirty(true);
 	}
-
-	if (!compilerTools.contains(kKeyArchiver))
-	{
-		std::string ar;
-		StringList archivers;
-		if (toolchain.type == ToolchainType::LLVM || toolchain.type == ToolchainType::GNU)
-		{
-			archivers.push_back("libtool");
-		}
-		archivers.push_back(toolchain.archiver);
-
-		for (const auto& archiver : archivers)
-		{
-			ar = Commands::which(archiver);
-			if (!ar.empty())
-				break;
-		}
-
-		parseArchitecture(ar);
-		compilerTools[kKeyArchiver] = std::move(ar);
-		m_state.cache.setDirty(true);
-	}
-
-	if (!compilerTools.contains(kKeyWindowsResource))
-	{
-		std::string rc;
-		rc = Commands::which(toolchain.rc);
-
-		parseArchitecture(rc);
-		compilerTools[kKeyWindowsResource] = std::move(rc);
-		m_state.cache.setDirty(true);
-	}
-
-	//
+#else
+	makeToolchain(compilerTools, toolchain);
+#endif
 
 	Json& tools = environmentCache.json[kKeyTools];
 

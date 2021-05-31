@@ -6,6 +6,7 @@
 #ifndef CHALET_CACHE_JSON_PARSER_HPP
 #define CHALET_CACHE_JSON_PARSER_HPP
 
+#include "Compile/ToolchainPreference.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 
@@ -22,6 +23,7 @@ private:
 	bool validatePaths();
 	bool setDefaultBuildStrategy();
 	bool makeCache();
+	bool makeToolchain(Json& compilerTools, const ToolchainPreference& toolchain);
 	bool serializeFromJsonRoot(Json& inJson);
 
 	bool parseRoot(const Json& inNode);

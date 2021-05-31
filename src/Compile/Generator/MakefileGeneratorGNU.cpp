@@ -131,7 +131,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 #if defined(CHALET_WIN32)
 	for (auto& ext : String::filterIf({ "rc", "RC" }, inOutputs.fileExtensions))
 	{
-		recipes += getRcRecipe(ext);
+		recipes += getRcRecipe(ext, pchTarget);
 	}
 #endif
 
@@ -394,7 +394,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& pchTarget)
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext) const
+std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std::string& pchTarget) const
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -427,7 +427,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext) const
 
 		ret += fmt::format(R"makefile(
 {objDir}/{location}/%.{ext}.res: {location}/%.{ext}
-{objDir}/{location}/%.{ext}.res: {location}/%.{ext} {depDir}/{location}/%.{ext}.d{pchPreReq}
+{objDir}/{location}/%.{ext}.res: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d{pchPreReq}
 	{compileEcho}
 	{quietFlag}{rcCompile}
 )makefile",
@@ -435,6 +435,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext) const
 			FMT_ARG(depDir),
 			FMT_ARG(ext),
 			FMT_ARG(location),
+			FMT_ARG(pchTarget),
 			FMT_ARG(dependency),
 			FMT_ARG(pchPreReq),
 			FMT_ARG(compileEcho),

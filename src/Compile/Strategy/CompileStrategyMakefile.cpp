@@ -262,12 +262,13 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::Pipe;
-	options.onStdErr = onStdErr;
+	options.onStdErr = std::move(onStdErr);
 
 #if defined(CHALET_WIN32)
-	options.stdoutOption = PipeOption::Pipe;
+	// options.stdoutOption = PipeOption::Pipe;
 	if (m_state.tools.makeIsNMake())
 	{
+		options.stdoutOption = PipeOption::Pipe;
 		options.onStdOut = [](std::string inData) {
 			String::replaceAll(inData, "\r\n", "\n");
 			String::replaceAll(inData, ": warning ", Output::getAnsiReset() + ": warning ");
@@ -277,10 +278,10 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	}
 	else
 	{
-		options.onStdOut = [](std::string inData) {
-			String::replaceAll(inData, "\r\n", "\n");
-			std::cout << inData << std::flush;
-		};
+		// options.onStdOut = [](std::string inData) {
+		// 	String::replaceAll(inData, "\r\n", "\n");
+		// 	std::cout << inData << std::flush;
+		// };
 	}
 
 #endif

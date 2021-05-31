@@ -50,7 +50,7 @@ struct CommandLineInputs
 	void setGenerator(std::string&& inValue) noexcept;
 
 	const ToolchainPreference& toolchainPreference() const noexcept;
-	void setToolchainPreference(const std::string& inValue) noexcept;
+	void setToolchainPreference(const std::string& inValue) const noexcept;
 
 	const std::string& initProjectName() const noexcept;
 	void setInitProjectName(std::string&& inValue) noexcept;
@@ -75,7 +75,7 @@ private:
 	ToolchainPreference getToolchainPreferenceFromString(const std::string& inValue) const;
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
 
-	ToolchainPreference m_toolchainPreference;
+	mutable ToolchainPreference m_toolchainPreference;
 
 	StringList m_runOptions;
 	StringList m_notPlatforms;

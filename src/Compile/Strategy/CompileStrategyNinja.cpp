@@ -182,7 +182,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, const bool i
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = PipeOption::StdErr;
-	options.onStdOut = onStdOut;
+	options.onStdOut = std::move(onStdOut);
 
 	int result = Subprocess::run(inCmd, std::move(options));
 
