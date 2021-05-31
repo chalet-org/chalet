@@ -431,24 +431,23 @@ bool CacheJsonParser::makeCache()
 			linkers.push_back("ld");
 		}
 
-		for (const auto& linker : linkers)
-		{
-			link = Commands::which(linker);
-			if (!link.empty())
-				break;
-		}
-
 		// handles edge case w/ MSVC & MinGW in same path
 		if (toolchain.type == ToolchainType::MSVC)
 		{
-			if (String::contains("/usr/bin/link", link))
-			{
-				if (!cc.empty())
-					link = cc;
-				else if (!cpp.empty())
-					link = cpp;
+			if (!cc.empty())
+				link = cc;
+			else if (!cpp.empty())
+				link = cpp;
 
-				String::replaceAll(link, "cl.exe", "link.exe");
+			String::replaceAll(link, "cl.exe", "link.exe");
+		}
+		else
+		{
+			for (const auto& linker : linkers)
+			{
+				link = Commands::which(linker);
+				if (!link.empty())
+					break;
 			}
 		}
 
