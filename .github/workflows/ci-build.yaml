@@ -105,7 +105,7 @@ jobs:
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema -t msvc bundle
       - name: "Run: Tests"
-        run: /build/x86_64-pc-windows-msvc_Release/chalet run Release tests_chalet
+        run: build/x86_64-pc-windows-msvc_Release/chalet run Release tests_chalet
       - name: "Zip binary"
         run: zip -j dist/chalet-windows-msvc.zip dist/chalet.exe LICENSE.txt
       - name: "Upload binary"
