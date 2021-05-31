@@ -25,6 +25,14 @@ CommandLineInputs::CommandLineInputs() :
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
 {
 	m_envFile = kDefaultEnvFile;
+
+#if defined(CHALET_WIN32)
+	m_toolchainPreference = getToolchainPreferenceFromString("msvc");
+#elif defined(CHALET_MACOS)
+	m_toolchainPreference = getToolchainPreferenceFromString("llvm");
+#else
+	m_toolchainPreference = getToolchainPreferenceFromString("gcc");
+#endif
 }
 
 /*****************************************************************************/
@@ -182,6 +190,20 @@ void CommandLineInputs::setGenerator(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const ToolchainPreference& CommandLineInputs::toolchainPreference() const noexcept
+{
+	return m_toolchainPreference;
+}
+
+void CommandLineInputs::setToolchainPreference(const std::string& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_toolchainPreference = getToolchainPreferenceFromString(inValue);
+}
+
+/*****************************************************************************/
 const std::string& CommandLineInputs::initProjectName() const noexcept
 {
 	return m_initProjectName;
@@ -302,6 +324,42 @@ StringList CommandLineInputs::getNotPlatforms() const noexcept
 }
 
 /*****************************************************************************/
+ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const std::string& inValue) const
+{
+	ToolchainPreference ret;
+
+	if (String::equals("msvc", inValue))
+	{
+		ret.type = ToolchainType::MSVC;
+		ret.cpp = "cl";
+		ret.cc = "cl";
+		ret.rc = "rc";
+		ret.linker = "link";
+		ret.archiver = "lib";
+	}
+	else if (String::equals("llvm", inValue))
+	{
+		ret.type = ToolchainType::LLVM;
+		ret.cpp = "clang++";
+		ret.cc = "clang";
+		ret.rc = "windres"; // TODO: verify this
+		ret.linker = "lld";
+		ret.archiver = "ar";
+	}
+	else if (String::equals("gcc", inValue))
+	{
+		ret.type = ToolchainType::GNU;
+		ret.cpp = "g++";
+		ret.cc = "gcc";
+		ret.rc = "windres";
+		ret.linker = "ld";
+		ret.archiver = "ar";
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) const
 {
 	if (String::equals("vscode", inValue))
@@ -316,10 +374,10 @@ IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) cons
 	{
 		return IdeType::XCode;
 	}
-	else if (String::equals("codeblocks", inValue))
+	/*else if (String::equals("codeblocks", inValue))
 	{
 		return IdeType::CodeBlocks;
-	}
+	}*/
 	else if (!inValue.empty())
 	{
 		return IdeType::Unknown;

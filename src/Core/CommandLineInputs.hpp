@@ -6,6 +6,7 @@
 #ifndef CHALET_COMMAND_LINE_INPUTS_HPP
 #define CHALET_COMMAND_LINE_INPUTS_HPP
 
+#include "Compile/ToolchainPreference.hpp"
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
 
@@ -48,6 +49,9 @@ struct CommandLineInputs
 	const std::string& generatorRaw() const noexcept;
 	void setGenerator(std::string&& inValue) noexcept;
 
+	const ToolchainPreference& toolchainPreference() const noexcept;
+	void setToolchainPreference(const std::string& inValue) noexcept;
+
 	const std::string& initProjectName() const noexcept;
 	void setInitProjectName(std::string&& inValue) noexcept;
 
@@ -68,7 +72,10 @@ private:
 	std::string getPlatform() const noexcept;
 	StringList getNotPlatforms() const noexcept;
 
+	ToolchainPreference getToolchainPreferenceFromString(const std::string& inValue) const;
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
+
+	ToolchainPreference m_toolchainPreference;
 
 	StringList m_runOptions;
 	StringList m_notPlatforms;

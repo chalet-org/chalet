@@ -28,7 +28,7 @@ CompilerTools::CompilerTools(const CommandLineInputs& inInputs, const WorkspaceI
 void CompilerTools::detectToolchain()
 {
 #if defined(CHALET_WIN32)
-	if (String::endsWith("cl.exe", m_cc) || String::contains("cl.exe", m_cpp))
+	if (String::endsWith("cl.exe", m_cc) || String::endsWith("cl.exe", m_cpp))
 	{
 		m_detectedToolchain = ToolchainType::MSVC;
 	}
@@ -57,7 +57,6 @@ bool CompilerTools::initialize()
 
 	if (m_detectedToolchain == ToolchainType::LLVM)
 	{
-		LOG("clang apparently");
 		auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
 		if (!String::contains("error:", results))
 		{
@@ -69,7 +68,6 @@ bool CompilerTools::initialize()
 			bool valid = false;
 			// m_state.info.setTargetArchitecture(arch);
 			const auto& targetArch = m_info.targetArchitectureString();
-			LOG("target arch:", targetArch);
 			for (auto& line : split)
 			{
 				auto start = line.find_first_not_of(' ');
@@ -87,11 +85,9 @@ bool CompilerTools::initialize()
 	else if (m_detectedToolchain == ToolchainType::GNU)
 	{
 		const auto& arch = m_inputs.targetArchitecture();
-		LOG("gcc arch:", arch);
 		if (!arch.empty())
 		{
 			const auto& targetArch = m_info.targetArchitectureString();
-			LOG("gcc targetArch:", targetArch);
 
 			return String::startsWith(arch, targetArch);
 		}
@@ -101,9 +97,6 @@ bool CompilerTools::initialize()
 	{
 		const auto& targetArch = m_info.targetArchitectureString();
 		auto arch = String::getPathFilename(String::getPathFolder(compiler()));
-
-		LOG("msvc target arch:", targetArch);
-		LOG("arch path: ", arch);
 
 		if (String::equals("x64", arch))
 			arch = "x86_64";

@@ -96,6 +96,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					m_inputs.setBuildPath(std::move(value));
 				}
+				else if (String::equals({ "-t", "--toolchain" }, key))
+				{
+					m_inputs.setToolchainPreference(value);
+				}
 				else if (String::equals({ "-g", "--generator" }, key))
 				{
 					m_inputs.setGenerator(std::move(value));

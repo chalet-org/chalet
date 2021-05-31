@@ -101,12 +101,17 @@ bool CacheJsonParser::createMsvcEnvironment()
 					return false;
 				};
 
-				bool result = false;
-				result |= keyEndsWith(kKeyCpp, "cl.exe");
-				result |= keyEndsWith(kKeyCc, "cl.exe");
-				result |= keyEndsWith(kKeyLinker, "link.exe");
-				result |= keyEndsWith(kKeyArchiver, "lib.exe");
-				result |= keyEndsWith(kKeyWindowsResource, "rc.exe");
+				auto& toolchain = m_inputs.toolchainPreference();
+
+				bool result = toolchain.type == ToolchainType::MSVC;
+				if (!result)
+				{
+					result |= keyEndsWith(kKeyCpp, "cl.exe");
+					result |= keyEndsWith(kKeyCc, "cl.exe");
+					result |= keyEndsWith(kKeyLinker, "link.exe");
+					result |= keyEndsWith(kKeyArchiver, "lib.exe");
+					result |= keyEndsWith(kKeyWindowsResource, "rc.exe");
+				}
 				readVariables = result;
 			}
 		}
@@ -242,19 +247,22 @@ bool CacheJsonParser::validatePaths()
 /*****************************************************************************/
 bool CacheJsonParser::setDefaultBuildStrategy()
 {
-	bool usingMsvc = false;
+#if defined(CHALET_WIN32)
+	auto& toolchain = m_inputs.toolchainPreference();
+	bool usingMsvc = toolchain.type == ToolchainType::MSVC;
+	if (!usingMsvc)
 	{
 		usingMsvc |= String::endsWith("cl.exe", m_state.compilerTools.cc());
 		usingMsvc |= String::endsWith("cl.exe", m_state.compilerTools.cpp());
 		usingMsvc |= String::endsWith("link.exe", m_state.compilerTools.linker());
 		usingMsvc |= String::endsWith("lib.exe", m_state.compilerTools.archiver());
 		usingMsvc |= String::endsWith("rc.exe", m_state.compilerTools.rc());
-
-		if (!usingMsvc)
-		{
-			m_state.msvcEnvironment.cleanup();
-		}
 	}
+	if (!usingMsvc)
+	{
+		m_state.msvcEnvironment.cleanup();
+	}
+#endif
 
 	auto& environmentCache = m_state.cache.environmentCache();
 	Json& settings = environmentCache.json[kKeySettings];
@@ -354,6 +362,8 @@ bool CacheJsonParser::makeCache()
 	HostPlatform platform = HostPlatform::Linux;
 #endif
 
+	auto& toolchain = m_inputs.toolchainPreference();
+
 	auto whichAdd = [&](Json& inNode, const std::string& inKey, const HostPlatform inPlatform = HostPlatform::Any) -> bool {
 		if (!inNode.contains(inKey))
 		{
@@ -378,23 +388,14 @@ bool CacheJsonParser::makeCache()
 
 	if (!compilerTools.contains(kKeyCpp))
 	{
-		auto varCXX = Environment::get("CXX");
 		std::string cpp;
-		if (varCXX != nullptr)
-			cpp = Commands::which(varCXX);
+		// auto varCXX = Environment::get("CXX");
+		// if (varCXX != nullptr)
+		// 	cpp = Commands::which(varCXX);
 
 		if (cpp.empty())
 		{
-#if defined(CHALET_WIN32)
-			for (const auto& compiler : { "clang++", "g++", "c++", "cl" })
-#else
-			for (const auto& compiler : { "clang++", "g++", "c++" })
-#endif
-			{
-				cpp = Commands::which(compiler);
-				if (!cpp.empty())
-					break;
-			}
+			cpp = Commands::which(toolchain.cpp);
 		}
 
 		parseArchitecture(cpp);
@@ -405,23 +406,14 @@ bool CacheJsonParser::makeCache()
 
 	if (!compilerTools.contains(kKeyCc))
 	{
-		auto varCC = Environment::get("CC");
 		std::string cc;
-		if (varCC != nullptr)
-			cc = Commands::which(varCC);
+		// auto varCC = Environment::get("CC");
+		// if (varCC != nullptr)
+		// 	cc = Commands::which(varCC);
 
 		if (cc.empty())
 		{
-#if defined(CHALET_WIN32)
-			for (const auto& compiler : { "clang", "gcc", "cc", "cl" })
-#else
-			for (const auto& compiler : { "clang", "gcc", "cc" })
-#endif
-			{
-				cc = Commands::which(compiler);
-				if (!cc.empty())
-					break;
-			}
+			cc = Commands::which(toolchain.cc);
 		}
 
 		parseArchitecture(cc);
@@ -432,11 +424,14 @@ bool CacheJsonParser::makeCache()
 	if (!compilerTools.contains(kKeyLinker))
 	{
 		std::string link;
-#if defined(CHALET_WIN32)
-		for (const auto& linker : { "lld", "ld", "link" })
-#else
-		for (const auto& linker : { "lld", "ld" })
-#endif
+		StringList linkers;
+		linkers.push_back(toolchain.linker);
+		if (toolchain.type == ToolchainType::LLVM)
+		{
+			linkers.push_back("ld");
+		}
+
+		for (const auto& linker : linkers)
 		{
 			link = Commands::which(linker);
 			if (!link.empty())
@@ -451,11 +446,14 @@ bool CacheJsonParser::makeCache()
 	if (!compilerTools.contains(kKeyArchiver))
 	{
 		std::string ar;
-#if defined(CHALET_WIN32)
-		for (const auto& archiver : { "ar", "lib" })
-#else
-		for (const auto& archiver : { "libtool", "ar" })
-#endif
+		StringList archivers;
+		if (toolchain.type == ToolchainType::LLVM || toolchain.type == ToolchainType::GNU)
+		{
+			archivers.push_back("libtool");
+		}
+		archivers.push_back(toolchain.archiver);
+
+		for (const auto& archiver : archivers)
 		{
 			ar = Commands::which(archiver);
 			if (!ar.empty())
@@ -469,11 +467,8 @@ bool CacheJsonParser::makeCache()
 
 	if (!compilerTools.contains(kKeyWindowsResource))
 	{
-		auto rc = Commands::which("windres");
-#if defined(CHALET_WIN32)
-		if (rc.empty())
-			rc = Commands::which("rc");
-#endif
+		std::string rc;
+		rc = Commands::which(toolchain.rc);
 
 		parseArchitecture(rc);
 		compilerTools[kKeyWindowsResource] = std::move(rc);
@@ -516,7 +511,16 @@ bool CacheJsonParser::makeCache()
 
 		// jom.exe - Qt's parallel NMAKE
 		// nmake.exe - MSVC's make-ish build tool, alternative to MSBuild
-		StringList makeSearches{ "mingw32-make", "jom", "nmake" };
+		StringList makeSearches;
+		if (toolchain.type != ToolchainType::MSVC)
+		{
+			makeSearches.push_back("mingw32-make");
+		}
+		else if (toolchain.type == ToolchainType::MSVC)
+		{
+			makeSearches.push_back("jom");
+			makeSearches.push_back("nmake");
+		}
 		makeSearches.push_back(kKeyMake);
 		for (const auto& tool : makeSearches)
 		{

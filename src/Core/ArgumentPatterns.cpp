@@ -139,6 +139,7 @@ ushort ArgumentPatterns::parseOption(const std::string& inString)
 	if (String::equals({
 		"-i", "--input-file",
 		"-o", "--output-path",
+		"-t", "--toolchain",
 		"-g", "--generator",
 		"-e", "--envfile",
 		"-a", "--arch",
@@ -396,12 +397,24 @@ void ArgumentPatterns::addOutPathArg()
 void ArgumentPatterns::addProjectGeneratorArg()
 {
 	m_parser.add_argument("-g", "--generator")
-		.help("Project file generator")
+		.help("Project file generator [vs2019,vscode,xcode]")
 		.nargs(1)
 		.default_value(std::string());
 
 	m_argumentMap.push_back({ "-g", Variant::Kind::String });
 	m_argumentMap.push_back({ "--generator", Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addToolchainArg()
+{
+	m_parser.add_argument("-t", "--toolchain")
+		.help("Toolchain preference [msvc,llvm,gcc]")
+		.nargs(1)
+		.default_value(std::string());
+
+	m_argumentMap.push_back({ "-t", Variant::Kind::String });
+	m_argumentMap.push_back({ "--toolchain", Variant::Kind::String });
 }
 
 /*****************************************************************************/
@@ -495,6 +508,7 @@ void ArgumentPatterns::commandBuildRun()
 {
 	addInputFileArg();
 	addOutPathArg();
+	addToolchainArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addArchArg();
@@ -510,6 +524,7 @@ void ArgumentPatterns::commandRun()
 {
 	addInputFileArg();
 	addOutPathArg();
+	addToolchainArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addArchArg();
@@ -525,6 +540,7 @@ void ArgumentPatterns::commandBuild()
 {
 	addInputFileArg();
 	addOutPathArg();
+	addToolchainArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addArchArg();
@@ -538,6 +554,7 @@ void ArgumentPatterns::commandRebuild()
 {
 	addInputFileArg();
 	addOutPathArg();
+	addToolchainArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addArchArg();
@@ -551,6 +568,7 @@ void ArgumentPatterns::commandClean()
 {
 	addInputFileArg();
 	addOutPathArg();
+	addToolchainArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addArchArg();
@@ -565,6 +583,7 @@ void ArgumentPatterns::commandBundle()
 {
 	addInputFileArg();
 	addOutPathArg();
+	addToolchainArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addArchArg();
@@ -576,6 +595,7 @@ void ArgumentPatterns::commandConfigure()
 {
 	addInputFileArg();
 	addOutPathArg();
+	addToolchainArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 	addArchArg();
@@ -587,6 +607,7 @@ void ArgumentPatterns::commandInit()
 {
 	addInputFileArg();
 	// addOutPathArg();
+	addToolchainArg();
 	addProjectGeneratorArg();
 	addEnvFileArg();
 

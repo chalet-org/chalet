@@ -48,6 +48,7 @@ private:
 	void addInputFileArg();
 	void addOutPathArg();
 	void addProjectGeneratorArg();
+	void addToolchainArg();
 	void addEnvFileArg();
 	void addArchArg();
 	void addBuildConfigurationArg(const bool inOptional = false);
