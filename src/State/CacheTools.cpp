@@ -703,11 +703,13 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 		while (std::getline(stream, line))
 		{
 			std::size_t beg = 0;
+
+			if (String::contains("/usr/lib", line))
+				continue;
+
 	#if defined(CHALET_MACOS)
 			std::size_t end = line.find(".dylib") + 5;
 	#else
-			if (String::contains("/usr/lib", line))
-				continue;
 			std::size_t end = line.find(" => ");
 	#endif
 			if (end == std::string::npos)

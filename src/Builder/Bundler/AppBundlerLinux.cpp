@@ -8,6 +8,7 @@
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -129,6 +130,8 @@ bool AppBundlerLinux::bundleForPlatform(const bool inCleanOutput)
 			break;
 		}
 	}
+
+	Output::lineBreak();
 
 	return result;
 }

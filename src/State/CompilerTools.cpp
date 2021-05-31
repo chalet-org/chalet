@@ -98,6 +98,9 @@ bool CompilerTools::initialize()
 		const auto& targetArch = m_info.targetArchitectureString();
 		auto arch = String::getPathFilename(String::getPathFolder(compiler()));
 
+		LOG("msvc target arch:", targetArch);
+		LOG("arch path: ", arch);
+
 		if (String::equals("x64", arch))
 			arch = "x86_64";
 		else if (String::equals("x86", arch))

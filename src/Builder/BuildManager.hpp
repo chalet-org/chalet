@@ -40,14 +40,14 @@ private:
 	bool cacheRecipe(const ProjectTarget& inProject, const Route inRoute);
 
 	// commands
-	bool cmdScript(const ScriptTarget& inScript);
 	bool cmdBuild(const ProjectTarget& inProject);
 	bool cmdRebuild(const ProjectTarget& inProject);
 	bool cmdRun(const ProjectTarget& inProject);
 	bool cmdClean();
 	// bool cmdProfile();
 
-	bool compileCMakeProject(const CMakeTarget& inTarget);
+	bool runScriptTarget(const ScriptTarget& inScript);
+	bool runCMakeTarget(const CMakeTarget& inTarget);
 	std::string getRunProject();
 	bool createAppBundle();
 	bool runProfiler(const ProjectTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);

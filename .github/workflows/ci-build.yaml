@@ -74,7 +74,7 @@ jobs:
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema bundle
       - name: "Run: Tests"
-        run: build/x64_x64_Release/chalet run Release tests_chalet
+        run: build/x86_64-apple-darwin19.6.0_Release/chalet run Release tests_chalet
       - name: "Zip binary"
         run: zip -j dist/chalet-macos.zip dist/Chalet.app/Contents/MacOS/chalet LICENSE.txt
       - name: "Upload binary"

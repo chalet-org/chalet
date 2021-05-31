@@ -108,14 +108,14 @@ bool BuildManager::run(const Route inRoute)
 
 		if (target->isCMake())
 		{
-			if (!compileCMakeProject(static_cast<const CMakeTarget&>(*target)))
+			if (!runCMakeTarget(static_cast<const CMakeTarget&>(*target)))
 				return false;
 		}
 		else if (target->isScript())
 		{
 			Timer buildTimer;
 
-			if (!cmdScript(static_cast<const ScriptTarget&>(*target)))
+			if (!runScriptTarget(static_cast<const ScriptTarget&>(*target)))
 			{
 				error = true;
 				break;
@@ -472,7 +472,7 @@ bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& in
 }
 
 /*****************************************************************************/
-bool BuildManager::cmdScript(const ScriptTarget& inScript)
+bool BuildManager::runScriptTarget(const ScriptTarget& inScript)
 {
 	const auto& scripts = inScript.scripts();
 	if (scripts.empty())
@@ -585,7 +585,7 @@ bool BuildManager::cmdClean()
 }*/
 
 /*****************************************************************************/
-bool BuildManager::compileCMakeProject(const CMakeTarget& inTarget)
+bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 {
 	Timer buildTimer;
 
