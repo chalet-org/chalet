@@ -92,18 +92,18 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: bash
+        shell: cmd
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Build: Debug"
-        run: bash ./build.sh Debug
+        run: build.bat
       - name: "Build: Release"
-        run: build/Debug/chalet-debug.exe --save-schema bundle
+        run: build\Debug\chalet-debug.exe --save-schema bundle
       - name: "Run: Tests"
-        run: build/x86_64-pc-win32_Release/chalet.exe run Release tests_chalet
+        run: build\x86_64-pc-win32_Release\chalet.exe run Release tests_chalet
       - name: "Zip binary"
-        run: powershell Compress-Archive dist/chalet.exe LICENSE.txt dist/chalet-win32-msvc.zip
+        run: powershell Compress-Archive dist\chalet.exe LICENSE.txt dist\chalet-win32-msvc.zip
       - name: "Upload binary"
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -119,18 +119,8 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: msys2 {0}
+        shell: bash
     steps:
-      - name: "Get MSYS2"
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: >-
-            base-devel
-            git
-            zip
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-cmake
       - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Build: Debug"
