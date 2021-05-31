@@ -58,27 +58,39 @@ bool CompilerTools::initialize()
 	if (m_detectedToolchain == ToolchainType::LLVM)
 	{
 		auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
-		LOG("print-targets result:\n", results);
-#if defined(CHALET_WIN32)
-		auto split = String::split(results, "\r\n");
-#else
-		auto split = String::split(results, '\n');
-#endif
-		bool valid = false;
-		// m_state.info.setTargetArchitecture(arch);
-		const auto& targetArch = m_info.targetArchitectureString();
-		for (auto& line : split)
+		if (!String::contains("error:", results))
 		{
-			auto start = line.find_first_not_of(' ');
-			auto end = line.find_first_of(' ', start);
+#if defined(CHALET_WIN32)
+			auto split = String::split(results, "\r\n");
+#else
+			auto split = String::split(results, '\n');
+#endif
+			bool valid = false;
+			// m_state.info.setTargetArchitecture(arch);
+			const auto& targetArch = m_info.targetArchitectureString();
+			for (auto& line : split)
+			{
+				auto start = line.find_first_not_of(' ');
+				auto end = line.find_first_of(' ', start);
 
-			auto arch = line.substr(start, end - start);
-			if (String::startsWith(arch, targetArch))
-				valid = true;
+				auto arch = line.substr(start, end - start);
+				if (String::startsWith(arch, targetArch))
+					valid = true;
+			}
+
+			UNUSED(split);
+			return valid;
 		}
+		else
+		{
+			const auto& arch = m_inputs.targetArchitecture();
+			if (!arch.empty())
+			{
+				const auto& targetArch = m_info.targetArchitectureString();
 
-		UNUSED(split);
-		return valid;
+				return String::startsWith(arch, targetArch);
+			}
+		}
 	}
 	else if (m_detectedToolchain == ToolchainType::GNU)
 	{
