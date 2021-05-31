@@ -156,7 +156,7 @@
 			"bundleIdentifier": "com.developer.chalet",
 			"icon": "env/chalet-logo.png",
 			"infoPropertyList": "env/osx/Info.plist.json",
-			"makeDmg": true,
+			"makeDmg": false,
 			"dmgBackground": {
 				"1x": "env/osx/dmg-background.png",
 				"2x": "env/osx/dmg-background@2x.png"
