@@ -58,6 +58,7 @@ bool CompilerTools::initialize()
 	if (m_detectedToolchain == ToolchainType::LLVM)
 	{
 		auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
+		LOG("print-targets result:\n", results);
 #if defined(CHALET_WIN32)
 		auto split = String::split(results, "\r\n");
 #else

@@ -122,7 +122,10 @@ bool AppBundlerLinux::bundleForPlatform(const bool inCleanOutput)
 			result &= Commands::setExecutableFlag(desktopEntryString, inCleanOutput);
 
 			// TODO: Flag for this?
-			Commands::copy(desktopEntryString, m_applicationsPath, inCleanOutput);
+			if (!Environment::isContinuousIntegrationServer())
+			{
+				Commands::copy(desktopEntryString, m_applicationsPath, inCleanOutput);
+			}
 			break;
 		}
 	}
