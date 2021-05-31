@@ -221,11 +221,11 @@ bool CacheJsonParser::validatePaths()
 		switch (arch)
 		{
 			case Arch::Cpu::X64:
-				m_state.info.setTargetArchitecture("x86_64-pc-win32");
+				m_state.info.setTargetArchitecture("x86_64-pc-windows-msvc");
 				break;
 
 			case Arch::Cpu::X86:
-				m_state.info.setTargetArchitecture("i686-pc-win32");
+				m_state.info.setTargetArchitecture("i686-pc-windows-msvc");
 				break;
 
 			case Arch::Cpu::ARM:
@@ -916,6 +916,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 }
 
 #if defined(CHALET_MACOS)
+/*****************************************************************************/
 bool CacheJsonParser::parseAppleSdks(Json& inNode)
 {
 	if (!inNode.contains(kKeyApplePlatformSdks))
