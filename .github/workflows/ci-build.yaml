@@ -92,7 +92,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: pwsh
+        shell: cmd
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
