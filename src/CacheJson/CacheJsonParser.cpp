@@ -386,9 +386,10 @@ bool CacheJsonParser::makeCache()
 		return true;
 	};
 
+	std::string cpp;
+	std::string cc;
 	if (!compilerTools.contains(kKeyCpp))
 	{
-		std::string cpp;
 		// auto varCXX = Environment::get("CXX");
 		// if (varCXX != nullptr)
 		// 	cpp = Commands::which(varCXX);
@@ -406,7 +407,6 @@ bool CacheJsonParser::makeCache()
 
 	if (!compilerTools.contains(kKeyCc))
 	{
-		std::string cc;
 		// auto varCC = Environment::get("CC");
 		// if (varCC != nullptr)
 		// 	cc = Commands::which(varCC);
@@ -436,6 +436,20 @@ bool CacheJsonParser::makeCache()
 			link = Commands::which(linker);
 			if (!link.empty())
 				break;
+		}
+
+		// handles edge case w/ MSVC & MinGW in same path
+		if (toolchain.type == ToolchainType::MSVC)
+		{
+			if (String::contains("/usr/bin/link", link))
+			{
+				if (!cc.empty())
+					link = cc;
+				else if (!cpp.empty())
+					link = cpp;
+
+				String::replaceAll(link, "cl.exe", "link.exe");
+			}
 		}
 
 		parseArchitecture(link);
