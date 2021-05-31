@@ -92,16 +92,16 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: cmd
+        shell: bash
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Build: Debug"
-        run: "build.bat"
+        run: bash ./build.sh Debug
       - name: "Build: Release"
-        run: "build/Debug/chalet-debug.exe" --save-schema bundle
+        run: build/Debug/chalet-debug.exe --save-schema bundle
       - name: "Run: Tests"
-        run: "build/x86_64-pc-win32_Release/chalet.exe" run Release tests_chalet
+        run: build/x86_64-pc-win32_Release/chalet.exe run Release tests_chalet
       - name: "Zip binary"
         run: powershell Compress-Archive dist/chalet.exe LICENSE.txt dist/chalet-win32-msvc.zip
       - name: "Upload binary"
