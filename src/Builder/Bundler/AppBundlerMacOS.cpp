@@ -49,17 +49,17 @@ bool AppBundlerMacOS::removeOldFiles(const bool inCleanOutput)
 bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 {
 	auto& bundle = m_state.bundle;
+	auto& macosBundle = bundle.macosBundle();
 
 	// No app name = no bundle to make
 	// treat it like linux/windows
-	if (bundle.appName().empty())
+	if (macosBundle.bundleName().empty())
 		return true;
 
 	// TODO: Generalized version of this in AppBundler
 	Output::print(Color::Blue, "   Creating the MacOS application bundle...");
 	Output::lineBreak();
 
-	auto& macosBundle = bundle.macosBundle();
 	auto& bundleProjects = bundle.projects();
 
 	const auto& outDir = bundle.outDir();
