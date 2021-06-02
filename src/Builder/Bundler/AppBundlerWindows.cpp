@@ -34,11 +34,13 @@ std::string AppBundlerWindows::getBundlePath() const
 	return m_state.bundle.outDir();
 }
 
+/*****************************************************************************/
 std::string AppBundlerWindows::getExecutablePath() const
 {
 	return m_state.bundle.outDir();
 }
 
+/*****************************************************************************/
 std::string AppBundlerWindows::getResourcePath() const
 {
 	return m_state.bundle.outDir();

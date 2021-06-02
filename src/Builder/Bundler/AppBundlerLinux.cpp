@@ -142,11 +142,13 @@ std::string AppBundlerLinux::getBundlePath() const
 	return m_state.bundle.outDir();
 }
 
+/*****************************************************************************/
 std::string AppBundlerLinux::getExecutablePath() const
 {
 	return m_state.bundle.outDir();
 }
 
+/*****************************************************************************/
 std::string AppBundlerLinux::getResourcePath() const
 {
 	return m_state.bundle.outDir();

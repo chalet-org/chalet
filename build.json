@@ -108,30 +108,30 @@
 			"onlyInConfiguration": "Release"
 		},
 		"script-bash": {
-			"script.!windows": "env/script_shell.sh",
-			"script.windows": "env/script_batch.bat"
+			"script.!windows": "platform/script_shell.sh",
+			"script.windows": "platform/script_batch.bat"
 		}
 		/*"script-batch": {
-			"script.windows": "env/script_batch.bat"
+			"script.windows": "platform/script_batch.bat"
 		},
 		"script-powershell": {
-			"script.windows": "env/script_powershell.ps1"
-			// "script.macos": "env/script_powershell.ps1"
+			"script.windows": "platform/script_powershell.ps1"
+			// "script.macos": "platform/script_powershell.ps1"
 		},
 		"script-bash-bad": {
-			"script": "env/script_shell_bad.sh"
+			"script": "platform/script_shell_bad.sh"
 		},
 		"script-python": {
-			"script": "env/script_python.py"
+			"script": "platform/script_python.py"
 		},
 		"script-ruby": {
-			"script": "env/script_ruby.rb"
+			"script": "platform/script_ruby.rb"
 		},
 		"script-perl": {
-			"script": "env/script_perl.pl"
+			"script": "platform/script_perl.pl"
 		},
 		"script-lua": {
-			"script": "env/script_lua.lua"
+			"script": "platform/script_lua.lua"
 		}*/
 	},
 	"bundle": {
@@ -146,7 +146,6 @@
 		"dependencies": [],
 		"exclude": [
 			"*.psd",
-			"*.rar",
 			"*.7z",
 			"Thumbs.db",
 			".DS_Store"
@@ -154,22 +153,22 @@
 		"macos": {
 			"bundleName": "Chalet",
 			"bundleIdentifier": "com.developer.chalet",
-			"icon": "env/chalet-logo.png",
-			"infoPropertyList": "env/osx/Info.plist.json",
+			"icon": "platform/chalet-logo.png",
+			"infoPropertyList": "platform/osx/Info.plist.json",
 			"makeDmg": false,
 			"dmgBackground": {
-				"1x": "env/osx/dmg-background.png",
-				"2x": "env/osx/dmg-background@2x.png"
+				"1x": "platform/osx/dmg-background.png",
+				"2x": "platform/osx/dmg-background@2x.png"
 			},
 			"dylibs": []
 		},
 		"linux": {
-			"icon": "env/chalet-logo.png",
-			"desktopEntry": "env/linux/app.desktop"
+			"icon": "platform/chalet-logo.png",
+			"desktopEntry": "platform/linux/app.desktop"
 		},
 		"windows": {
-			"icon": "env/windows/app.ico",
-			"manifest": "env/windows/app.manifest"
+			"icon": "platform/windows/app.ico",
+			"manifest": "platform/windows/app.manifest"
 		}
 	} /*,
 	"externalDependencies": {

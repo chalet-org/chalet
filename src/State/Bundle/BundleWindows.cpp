@@ -15,16 +15,19 @@ namespace chalet
 bool BundleWindows::validate()
 {
 	bool result = true;
-	if (!String::endsWith(".ico", m_icon))
-	{
-		Diagnostic::error(fmt::format("bundle.windows.icon must end with '.ico', but was '{}'.", m_icon));
-		result = false;
-	}
 
-	if (!Commands::pathExists(m_icon))
+	if (!m_icon.empty())
 	{
-		Diagnostic::error(fmt::format("bundle.windows.icon was not found.", m_icon));
-		result = false;
+		if (!String::endsWith(".ico", m_icon))
+		{
+			Diagnostic::error(fmt::format("bundle.windows.icon must end with '.ico', but was '{}'.", m_icon));
+			result = false;
+		}
+		else if (!Commands::pathExists(m_icon))
+		{
+			Diagnostic::error(fmt::format("bundle.windows.icon was not found.", m_icon));
+			result = false;
+		}
 	}
 
 	return result;

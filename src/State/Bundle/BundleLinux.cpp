@@ -16,31 +16,34 @@ namespace chalet
 bool BundleLinux::validate()
 {
 	bool result = true;
+
+	if (!m_icon.empty())
 	{
 		if (!String::endsWith(".png", m_icon))
 		{
 			Diagnostic::error(fmt::format("bundle.linux.icon must end with '.png', but was '{}'.", m_icon));
 			result = false;
 		}
-
-		if (!Commands::pathExists(m_icon))
+		else if (!Commands::pathExists(m_icon))
 		{
 			Diagnostic::error("bundle.linux.icon was not found.");
 			result = false;
 		}
 	}
+
+	if (!m_desktopEntry.empty())
 	{
 		if (!String::endsWith(".desktop", m_desktopEntry))
 		{
 			Diagnostic::error(fmt::format("bundle.linux.desktopEntry must end with '.desktop', but was '{}'.", m_desktopEntry));
 			result = false;
 		}
-
-		if (!Commands::pathExists(m_desktopEntry))
+		else if (!Commands::pathExists(m_desktopEntry))
 		{
 			std::ofstream(m_desktopEntry) << PlatformFile::linuxDesktopEntry();
 		}
 	}
+
 	return result;
 }
 

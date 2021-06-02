@@ -35,9 +35,6 @@ AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const std::string& inBuild
 	m_state(inState),
 	m_buildFile(inBuildFile)
 {
-	// TODO: Generalized version of this in AppBundler
-	Output::print(Color::Blue, "   Creating the MacOS application bundle...");
-	Output::lineBreak();
 }
 
 /*****************************************************************************/
@@ -52,6 +49,16 @@ bool AppBundlerMacOS::removeOldFiles(const bool inCleanOutput)
 bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 {
 	auto& bundle = m_state.bundle;
+
+	// No app name = no bundle to make
+	// treat it like linux/windows
+	if (bundle.appName().empty())
+		return true;
+
+	// TODO: Generalized version of this in AppBundler
+	Output::print(Color::Blue, "   Creating the MacOS application bundle...");
+	Output::lineBreak();
+
 	auto& macosBundle = bundle.macosBundle();
 	auto& bundleProjects = bundle.projects();
 
@@ -72,31 +79,33 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 
 	Commands::makeDirectory(frameworkPath, inCleanOutput);
 
-	const auto& sips = m_state.tools.sips();
-	bool sipsFound = !sips.empty();
-
-	std::string outIcon;
-	const std::string iconBaseName = String::getPathBaseName(icon);
-
-	if (String::endsWith(".png", icon) && sipsFound)
+	const auto iconBaseName = String::getPathBaseName(icon);
+	if (!icon.empty())
 	{
-		outIcon = fmt::format("{}/{}.icns", resourcePath, iconBaseName);
+		std::string outIcon;
+		const auto& sips = m_state.tools.sips();
+		bool sipsFound = !sips.empty();
 
-		if (!Commands::subprocessNoOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
-			return false;
-	}
-	else if (String::endsWith(".icns", icon))
-	{
-		outIcon = fmt::format("{}/{}.icns", resourcePath, iconBaseName);
-
-		if (!Commands::copy(icon, resourcePath, inCleanOutput))
-			return false;
-	}
-	else
-	{
-		if (!icon.empty() && !sipsFound)
+		if (String::endsWith(".png", icon) && sipsFound)
 		{
-			Diagnostic::warn(fmt::format("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", m_buildFile, icon));
+			outIcon = fmt::format("{}/{}.icns", resourcePath, iconBaseName);
+
+			if (!Commands::subprocessNoOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
+				return false;
+		}
+		else if (String::endsWith(".icns", icon))
+		{
+			outIcon = fmt::format("{}/{}.icns", resourcePath, iconBaseName);
+
+			if (!Commands::copy(icon, resourcePath, inCleanOutput))
+				return false;
+		}
+		else
+		{
+			if (!icon.empty() && !sipsFound)
+			{
+				Diagnostic::warn(fmt::format("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", m_buildFile, icon));
+			}
 		}
 	}
 
@@ -133,8 +142,11 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		return false;
 	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, inCleanOutput))
 		return false;
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", iconBaseName, inCleanOutput))
-		return false;
+	if (!iconBaseName.empty())
+	{
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", iconBaseName, inCleanOutput))
+			return false;
+	}
 	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", appName, inCleanOutput))
 		return false;
 	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, inCleanOutput))
@@ -363,17 +375,41 @@ std::string AppBundlerMacOS::getBundlePath() const
 {
 	const auto& outDir = m_state.bundle.outDir();
 	const auto& bundleName = m_state.bundle.macosBundle().bundleName();
-
-	return fmt::format("{}/{}.app/Contents", outDir, bundleName);
+	if (!bundleName.empty())
+	{
+		return fmt::format("{}/{}.app/Contents", outDir, bundleName);
+	}
+	else
+	{
+		return outDir;
+	}
 }
 
+/*****************************************************************************/
 std::string AppBundlerMacOS::getExecutablePath() const
 {
-	return fmt::format("{}/MacOS", getBundlePath());
+	const auto& bundleName = m_state.bundle.macosBundle().bundleName();
+	if (!bundleName.empty())
+	{
+		return fmt::format("{}/MacOS", getBundlePath());
+	}
+	else
+	{
+		return m_state.bundle.outDir();
+	}
 }
 
+/*****************************************************************************/
 std::string AppBundlerMacOS::getResourcePath() const
 {
-	return fmt::format("{}/Resources", getBundlePath());
+	const auto& bundleName = m_state.bundle.macosBundle().bundleName();
+	if (!bundleName.empty())
+	{
+		return fmt::format("{}/Resources", getBundlePath());
+	}
+	else
+	{
+		return m_state.bundle.outDir();
+	}
 }
 }
