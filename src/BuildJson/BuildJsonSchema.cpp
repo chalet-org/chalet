@@ -19,6 +19,7 @@ Json Schema::getBuildJson()
 
 	const std::string patternProjectName = R"(^[\w\-\+\.]{3,}$)";
 	const std::string patternProjectLinks = R"(^[\w\-\+\.]+$)";
+	const std::string patternDistributionName = R"(^[\w\-\+\.\ \(\)]{3,}$)";
 
 	const std::string patternConfigurations = R"((:debug|:!debug|))";
 	const std::string patternPlatforms = R"((\.windows|\.macos|\.linux|\.\!windows|\.\!macos|\.\!linux|))";
@@ -44,17 +45,57 @@ Json Schema::getBuildJson()
 	const auto kDefinitions = "definitions";
 	ret[kDefinitions] = Json::object();
 
-	ret[kDefinitions]["bundle-appName"] = R"json({
+	// configurations
+	ret[kDefinitions]["configurations-debugSymbols"] = R"json({
+		"type": "boolean",
+		"description": "true to include debug symbols, false otherwise.",
+		"default": false
+	})json"_ojson;
+
+	ret[kDefinitions]["configurations-enableProfiling"] = R"json({
+		"type": "boolean",
+		"description": "true to enable profiling for this configuration, false otherwise.",
+		"default": false
+	})json"_ojson;
+
+	ret[kDefinitions]["configurations-linkTimeOptimization"] = R"json({
+		"type": "boolean",
+		"description": "true to use link-time optimization, false otherwise.",
+		"default": false
+	})json"_ojson;
+
+	ret[kDefinitions]["configurations-optimizations"] = R"json({
+		"type": "string",
+		"description": "The optimization level of the build.",
+		"enum": [
+			"0",
+			"1",
+			"2",
+			"3",
+			"debug",
+			"size",
+			"fast"
+		]
+	})json"_ojson;
+
+	ret[kDefinitions]["configurations-stripSymbols"] = R"json({
+		"type": "boolean",
+		"description": "true to strip symbols from the build, false otherwise.",
+		"default": false
+	})json"_ojson;
+
+	// distribution
+	ret[kDefinitions]["distribution-appName"] = R"json({
 		"description": "The name of the app, if different from the workspace name",
 		"type": "string"
 	})json"_ojson;
 
-	ret[kDefinitions]["bundle-configuration"] = R"json({
+	ret[kDefinitions]["distribution-configuration"] = R"json({
 		"description": "The name of the build configuration to use for the distribution.",
 		"type": "string"
 	})json"_ojson;
 
-	ret[kDefinitions]["bundle-dependencies"] = R"json({
+	ret[kDefinitions]["distribution-dependencies"] = R"json({
 		"items": {
 			"type": "string"
 		},
@@ -62,7 +103,7 @@ Json Schema::getBuildJson()
 		"type": "array"
 	})json"_ojson;
 
-	ret[kDefinitions]["bundle-exclude"] = R"json({
+	ret[kDefinitions]["distribution-exclude"] = R"json({
 		"items": {
 			"type": "string"
 		},
@@ -70,7 +111,7 @@ Json Schema::getBuildJson()
 		"type": "array"
 	})json"_ojson;
 
-	ret[kDefinitions]["bundle-linux"] = R"json({
+	ret[kDefinitions]["distribution-linux"] = R"json({
 		"properties": {
 			"desktopEntry": {
 				"type": "string",
@@ -90,11 +131,11 @@ Json Schema::getBuildJson()
 		"type": "object"
 	})json"_ojson;
 
-	ret[kDefinitions]["bundle-longDescription"] = R"json({
+	ret[kDefinitions]["distribution-longDescription"] = R"json({
 		"type": "string"
 	})json"_ojson;
 
-	ret[kDefinitions]["bundle-macos"] = R"json({
+	ret[kDefinitions]["distribution-macos"] = R"json({
 		"type": "object",
 		"description": "Variables to describe the macos application bundle.",
 		"additionalProperties": false,
@@ -153,28 +194,28 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["bundle-outDir"] = R"json({
+	ret[kDefinitions]["distribution-outDir"] = R"json({
 		"type": "string",
 		"description": "The output folder to place the final build along with all of its dependencies.",
 		"default": "dist"
 	})json"_ojson;
 
-	ret[kDefinitions]["bundle-projects"] = R"json({
+	ret[kDefinitions]["distribution-projects"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
-		"description": "An array of projects to include in the bundle",
+		"description": "An array of projects to include",
 		"items": {
 			"type": "string",
 			"description": "The name of the project"
 		}
 	})json"_ojson;
-	ret[kDefinitions]["bundle-projects"][kItems][kPattern] = patternProjectName;
+	ret[kDefinitions]["distribution-projects"][kItems][kPattern] = patternProjectName;
 
-	ret[kDefinitions]["bundle-shortDescription"] = R"json({
+	ret[kDefinitions]["distribution-shortDescription"] = R"json({
 		"type": "string"
 	})json"_ojson;
 
-	ret[kDefinitions]["bundle-windows"] = R"json({
+	ret[kDefinitions]["distribution-windows"] = R"json({
 		"type": "object",
 		"description": "Variables to describe the windows application.",
 		"additionalProperties": false,
@@ -193,44 +234,58 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["configurations-debugSymbols"] = R"json({
-		"type": "boolean",
-		"description": "true to include debug symbols, false otherwise.",
-		"default": false
+	ret[kDefinitions]["distribution-bundle"] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"description": "Variables to describe the final output build.",
+		"required": [
+			"configuration",
+			"projects"
+		],
+		"properties": {
+			"appName": {
+				"$ref": "#/definitions/distribution-appName"
+			},
+			"configuration": {
+				"$ref": "#/definitions/distribution-configuration"
+			},
+			"dependencies": {
+				"$ref": "#/definitions/distribution-dependencies"
+			},
+			"exclude": {
+				"$ref": "#/definitions/distribution-exclude"
+			},
+			"linux": {
+				"$ref": "#/definitions/distribution-linux"
+			},
+			"longDescription": {
+				"$ref": "#/definitions/distribution-longDescription"
+			},
+			"macos": {
+				"$ref": "#/definitions/distribution-macos"
+			},
+			"outDir": {
+				"$ref": "#/definitions/distribution-outDir"
+			},
+			"projects": {
+				"$ref": "#/definitions/distribution-projects"
+			},
+			"shortDescription": {
+				"$ref": "#/definitions/distribution-shortDescription"
+			},
+			"windows": {
+				"$ref": "#/definitions/distribution-windows"
+			}
+		}
+	})json"_ojson;
+	ret[kDefinitions]["distribution-bundle"][kPatternProperties][fmt::format("^dependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/distribution-dependencies"
+	})json"_ojson;
+	ret[kDefinitions]["distribution-bundle"][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/distribution-exclude"
 	})json"_ojson;
 
-	ret[kDefinitions]["configurations-enableProfiling"] = R"json({
-		"type": "boolean",
-		"description": "true to enable profiling for this configuration, false otherwise.",
-		"default": false
-	})json"_ojson;
-
-	ret[kDefinitions]["configurations-linkTimeOptimization"] = R"json({
-		"type": "boolean",
-		"description": "true to use link-time optimization, false otherwise.",
-		"default": false
-	})json"_ojson;
-
-	ret[kDefinitions]["configurations-optimizations"] = R"json({
-		"type": "string",
-		"description": "The optimization level of the build.",
-		"enum": [
-			"0",
-			"1",
-			"2",
-			"3",
-			"debug",
-			"size",
-			"fast"
-		]
-	})json"_ojson;
-
-	ret[kDefinitions]["configurations-stripSymbols"] = R"json({
-		"type": "boolean",
-		"description": "true to strip symbols from the build, false otherwise.",
-		"default": false
-	})json"_ojson;
-
+	// externalDependency
 	ret[kDefinitions]["externalDependency-repository"] = R"json({
 		"type": "string",
 		"description": "The url of the git repository.",
@@ -1337,55 +1392,18 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kProperties]["bundle"] = R"json({
+	ret[kProperties]["distribution"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "Variables to describe the final output build.",
-		"required": [
-			"configuration",
-			"projects"
-		],
-		"properties": {
-			"appName": {
-				"$ref": "#/definitions/bundle-appName"
-			},
-			"configuration": {
-				"$ref": "#/definitions/bundle-configuration"
-			},
-			"dependencies": {
-				"$ref": "#/definitions/bundle-dependencies"
-			},
-			"exclude": {
-				"$ref": "#/definitions/bundle-exclude"
-			},
-			"linux": {
-				"$ref": "#/definitions/bundle-linux"
-			},
-			"longDescription": {
-				"$ref": "#/definitions/bundle-longDescription"
-			},
-			"macos": {
-				"$ref": "#/definitions/bundle-macos"
-			},
-			"outDir": {
-				"$ref": "#/definitions/bundle-outDir"
-			},
-			"projects": {
-				"$ref": "#/definitions/bundle-projects"
-			},
-			"shortDescription": {
-				"$ref": "#/definitions/bundle-shortDescription"
-			},
-			"windows": {
-				"$ref": "#/definitions/bundle-windows"
+		"description": "A list of bundle descriptors for the distribution."
+	})json"_ojson;
+	ret[kProperties]["distribution"][kPatternProperties][patternDistributionName] = R"json({
+		"description": "A single bundle or script.",
+		"oneOf": [
+			{
+				"$ref": "#/definitions/distribution-bundle"
 			}
-		}
-	})json"_ojson;
-	ret[kProperties]["bundle"][kPatternProperties][fmt::format("^dependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/bundle-dependencies"
-	})json"_ojson;
-	ret[kProperties]["bundle"][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/bundle-exclude"
+		]
 	})json"_ojson;
 
 	ret[kProperties]["configurations"] = R"json({

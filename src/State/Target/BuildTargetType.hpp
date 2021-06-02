@@ -13,6 +13,8 @@ enum class BuildTargetType
 	Project,
 	Script,
 	CMake,
+	//
+	DistributionBundle
 };
 }
 

@@ -6,18 +6,20 @@
 #ifndef CHALET_IAPP_BUNDLER_HPP
 #define CHALET_IAPP_BUNDLER_HPP
 
+#include "State/Target/BundleTarget.hpp"
+
 namespace chalet
 {
 struct IAppBundler
 {
 	virtual ~IAppBundler() = default;
 
-	virtual bool removeOldFiles(const bool inCleanOutput) = 0;
-	virtual bool bundleForPlatform(const bool inCleanOutput) = 0;
+	virtual bool removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput) = 0;
+	virtual bool bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput) = 0;
 
-	virtual std::string getBundlePath() const = 0;
-	virtual std::string getExecutablePath() const = 0;
-	virtual std::string getResourcePath() const = 0;
+	virtual std::string getBundlePath(const BundleTarget& bundle) const = 0;
+	virtual std::string getExecutablePath(const BundleTarget& bundle) const = 0;
+	virtual std::string getResourcePath(const BundleTarget& bundle) const = 0;
 };
 }
 

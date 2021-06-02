@@ -17,12 +17,12 @@ class AppBundlerLinux : public IAppBundler
 public:
 	explicit AppBundlerLinux(BuildState& inState);
 
-	virtual bool removeOldFiles(const bool inCleanOutput) final;
-	virtual bool bundleForPlatform(const bool inCleanOutput) final;
+	virtual bool removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput) final;
+	virtual bool bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput) final;
 
-	virtual std::string getBundlePath() const final;
-	virtual std::string getExecutablePath() const final;
-	virtual std::string getResourcePath() const final;
+	virtual std::string getBundlePath(const BundleTarget& bundle) const final;
+	virtual std::string getExecutablePath(const BundleTarget& bundle) const final;
+	virtual std::string getResourcePath(const BundleTarget& bundle) const final;
 
 private:
 	BuildState& m_state;

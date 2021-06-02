@@ -11,6 +11,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "State/Dependency/GitDependency.hpp"
+#include "State/Target/BundleTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptTarget.hpp"
@@ -49,10 +50,11 @@ private:
 	bool parseFilesAndLocation(ProjectTarget& outProject, const Json& inNode, const bool inAbstract);
 	bool parseProjectLocationOrFiles(ProjectTarget& outProject, const Json& inNode);
 
-	bool parseBundle(const Json& inNode);
-	bool parseBundleLinux(const Json& inNode);
-	bool parseBundleMacOS(const Json& inNode);
-	bool parseBundleWindows(const Json& inNode);
+	bool parseDistribution(const Json& inNode);
+	bool parseBundle(BundleTarget& outBundle, const Json& inNode);
+	bool parseBundleLinux(BundleTarget& outBundle, const Json& inNode);
+	bool parseBundleMacOS(BundleTarget& outBundle, const Json& inNode);
+	bool parseBundleWindows(BundleTarget& outBundle, const Json& inNode);
 
 	bool validBuildRequested();
 	bool validRunProjectRequested();
@@ -73,6 +75,7 @@ private:
 
 	const std::string kKeyBundle = "bundle";
 	const std::string kKeyConfigurations = "configurations";
+	const std::string kKeyDistribution = "distribution";
 	const std::string kKeyExternalDependencies = "externalDependencies";
 	const std::string kKeyTargets = "targets";
 

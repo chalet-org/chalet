@@ -42,9 +42,8 @@ AppBundlerLinux::AppBundlerLinux(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool AppBundlerLinux::removeOldFiles(const bool inCleanOutput)
+bool AppBundlerLinux::removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput)
 {
-	auto& bundle = m_state.bundle;
 	auto& bundleProjects = bundle.projects();
 
 	for (auto& target : m_state.targets)
@@ -69,16 +68,14 @@ bool AppBundlerLinux::removeOldFiles(const bool inCleanOutput)
 }
 
 /*****************************************************************************/
-bool AppBundlerLinux::bundleForPlatform(const bool inCleanOutput)
+bool AppBundlerLinux::bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput)
 {
-	auto& bundle = m_state.bundle;
-
 	const auto& icon = bundle.linuxBundle().icon();
 	if (icon.empty())
 		return false;
 
 	const auto& desktopEntry = bundle.linuxBundle().desktopEntry();
-	const std::string bundlePath = getBundlePath();
+	const std::string bundlePath = getBundlePath(bundle);
 
 	UNUSED(inCleanOutput, desktopEntry);
 
@@ -137,21 +134,21 @@ bool AppBundlerLinux::bundleForPlatform(const bool inCleanOutput)
 }
 
 /*****************************************************************************/
-std::string AppBundlerLinux::getBundlePath() const
+std::string AppBundlerLinux::getBundlePath(const BundleTarget& bundle) const
 {
-	return m_state.bundle.outDir();
+	return bundle.outDir();
 }
 
 /*****************************************************************************/
-std::string AppBundlerLinux::getExecutablePath() const
+std::string AppBundlerLinux::getExecutablePath(const BundleTarget& bundle) const
 {
-	return m_state.bundle.outDir();
+	return bundle.outDir();
 }
 
 /*****************************************************************************/
-std::string AppBundlerLinux::getResourcePath() const
+std::string AppBundlerLinux::getResourcePath(const BundleTarget& bundle) const
 {
-	return m_state.bundle.outDir();
+	return bundle.outDir();
 }
 
 }

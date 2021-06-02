@@ -7,7 +7,6 @@
 #define CHALET_BUILD_STATE_HPP
 
 #include "Core/CommandLineInputs.hpp"
-#include "State/AppBundle.hpp"
 #include "State/BuildCache.hpp"
 #include "State/BuildEnvironment.hpp"
 #include "State/BuildPaths.hpp"
@@ -37,7 +36,7 @@ public:
 	ConfigurationOptions configuration;
 	BuildTargetList targets;
 	BuildDependencyList externalDependencies;
-	AppBundle bundle;
+	DistributionTargetList distribution;
 	BuildCache cache;
 
 private:

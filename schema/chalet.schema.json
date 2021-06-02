@@ -8,29 +8,62 @@
 		"targets"
 	],
 	"definitions": {
-		"bundle-appName": {
+		"configurations-debugSymbols": {
+			"type": "boolean",
+			"description": "true to include debug symbols, false otherwise.",
+			"default": false
+		},
+		"configurations-enableProfiling": {
+			"type": "boolean",
+			"description": "true to enable profiling for this configuration, false otherwise.",
+			"default": false
+		},
+		"configurations-linkTimeOptimization": {
+			"type": "boolean",
+			"description": "true to use link-time optimization, false otherwise.",
+			"default": false
+		},
+		"configurations-optimizations": {
+			"type": "string",
+			"description": "The optimization level of the build.",
+			"enum": [
+				"0",
+				"1",
+				"2",
+				"3",
+				"debug",
+				"size",
+				"fast"
+			]
+		},
+		"configurations-stripSymbols": {
+			"type": "boolean",
+			"description": "true to strip symbols from the build, false otherwise.",
+			"default": false
+		},
+		"distribution-appName": {
 			"description": "The name of the app, if different from the workspace name",
 			"type": "string"
 		},
-		"bundle-configuration": {
+		"distribution-configuration": {
 			"description": "The name of the build configuration to use for the distribution.",
 			"type": "string"
 		},
-		"bundle-dependencies": {
+		"distribution-dependencies": {
 			"items": {
 				"type": "string"
 			},
 			"uniqueItems": true,
 			"type": "array"
 		},
-		"bundle-exclude": {
+		"distribution-exclude": {
 			"items": {
 				"type": "string"
 			},
 			"uniqueItems": true,
 			"type": "array"
 		},
-		"bundle-linux": {
+		"distribution-linux": {
 			"properties": {
 				"desktopEntry": {
 					"type": "string",
@@ -49,10 +82,10 @@
 			"description": "Variables to describe the linux application.",
 			"type": "object"
 		},
-		"bundle-longDescription": {
+		"distribution-longDescription": {
 			"type": "string"
 		},
-		"bundle-macos": {
+		"distribution-macos": {
 			"type": "object",
 			"description": "Variables to describe the macos application bundle.",
 			"additionalProperties": false,
@@ -110,25 +143,25 @@
 				}
 			}
 		},
-		"bundle-outDir": {
+		"distribution-outDir": {
 			"type": "string",
 			"description": "The output folder to place the final build along with all of its dependencies.",
 			"default": "dist"
 		},
-		"bundle-projects": {
+		"distribution-projects": {
 			"type": "array",
 			"uniqueItems": true,
-			"description": "An array of projects to include in the bundle",
+			"description": "An array of projects to include",
 			"items": {
 				"type": "string",
 				"description": "The name of the project",
 				"pattern": "^[\\w\\-\\+\\.]{3,}$"
 			}
 		},
-		"bundle-shortDescription": {
+		"distribution-shortDescription": {
 			"type": "string"
 		},
-		"bundle-windows": {
+		"distribution-windows": {
 			"type": "object",
 			"description": "Variables to describe the windows application.",
 			"additionalProperties": false,
@@ -146,38 +179,57 @@
 				}
 			}
 		},
-		"configurations-debugSymbols": {
-			"type": "boolean",
-			"description": "true to include debug symbols, false otherwise.",
-			"default": false
-		},
-		"configurations-enableProfiling": {
-			"type": "boolean",
-			"description": "true to enable profiling for this configuration, false otherwise.",
-			"default": false
-		},
-		"configurations-linkTimeOptimization": {
-			"type": "boolean",
-			"description": "true to use link-time optimization, false otherwise.",
-			"default": false
-		},
-		"configurations-optimizations": {
-			"type": "string",
-			"description": "The optimization level of the build.",
-			"enum": [
-				"0",
-				"1",
-				"2",
-				"3",
-				"debug",
-				"size",
-				"fast"
-			]
-		},
-		"configurations-stripSymbols": {
-			"type": "boolean",
-			"description": "true to strip symbols from the build, false otherwise.",
-			"default": false
+		"distribution-bundle": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Variables to describe the final output build.",
+			"required": [
+				"configuration",
+				"projects"
+			],
+			"properties": {
+				"appName": {
+					"$ref": "#/definitions/distribution-appName"
+				},
+				"configuration": {
+					"$ref": "#/definitions/distribution-configuration"
+				},
+				"dependencies": {
+					"$ref": "#/definitions/distribution-dependencies"
+				},
+				"exclude": {
+					"$ref": "#/definitions/distribution-exclude"
+				},
+				"linux": {
+					"$ref": "#/definitions/distribution-linux"
+				},
+				"longDescription": {
+					"$ref": "#/definitions/distribution-longDescription"
+				},
+				"macos": {
+					"$ref": "#/definitions/distribution-macos"
+				},
+				"outDir": {
+					"$ref": "#/definitions/distribution-outDir"
+				},
+				"projects": {
+					"$ref": "#/definitions/distribution-projects"
+				},
+				"shortDescription": {
+					"$ref": "#/definitions/distribution-shortDescription"
+				},
+				"windows": {
+					"$ref": "#/definitions/distribution-windows"
+				}
+			},
+			"patternProperties": {
+				"^dependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/distribution-dependencies"
+				},
+				"^exclude(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/distribution-exclude"
+				}
+			}
 		},
 		"externalDependency-repository": {
 			"type": "string",
@@ -1225,55 +1277,18 @@
 				}
 			}
 		},
-		"bundle": {
+		"distribution": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "Variables to describe the final output build.",
-			"required": [
-				"configuration",
-				"projects"
-			],
-			"properties": {
-				"appName": {
-					"$ref": "#/definitions/bundle-appName"
-				},
-				"configuration": {
-					"$ref": "#/definitions/bundle-configuration"
-				},
-				"dependencies": {
-					"$ref": "#/definitions/bundle-dependencies"
-				},
-				"exclude": {
-					"$ref": "#/definitions/bundle-exclude"
-				},
-				"linux": {
-					"$ref": "#/definitions/bundle-linux"
-				},
-				"longDescription": {
-					"$ref": "#/definitions/bundle-longDescription"
-				},
-				"macos": {
-					"$ref": "#/definitions/bundle-macos"
-				},
-				"outDir": {
-					"$ref": "#/definitions/bundle-outDir"
-				},
-				"projects": {
-					"$ref": "#/definitions/bundle-projects"
-				},
-				"shortDescription": {
-					"$ref": "#/definitions/bundle-shortDescription"
-				},
-				"windows": {
-					"$ref": "#/definitions/bundle-windows"
-				}
-			},
+			"description": "A list of bundle descriptors for the distribution.",
 			"patternProperties": {
-				"^dependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/bundle-dependencies"
-				},
-				"^exclude(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/bundle-exclude"
+				"^[\\w\\-\\+\\.\\ \\(\\)]{3,}$": {
+					"description": "A single bundle or script.",
+					"oneOf": [
+						{
+							"$ref": "#/definitions/distribution-bundle"
+						}
+					]
 				}
 			}
 		},

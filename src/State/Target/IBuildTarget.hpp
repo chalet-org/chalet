@@ -14,13 +14,15 @@ class BuildState;
 
 struct IBuildTarget;
 using BuildTarget = std::unique_ptr<IBuildTarget>;
+using DistributionTarget = std::unique_ptr<IBuildTarget>;
 
 struct IBuildTarget
 {
 	explicit IBuildTarget(const BuildState& inState, const BuildTargetType inType);
 	virtual ~IBuildTarget() = default;
 
-	[[nodiscard]] static BuildTarget make(const BuildTargetType inType, const BuildState& inState);
+	[[nodiscard]] static BuildTarget makeBuild(const BuildTargetType inType, const BuildState& inState);
+	[[nodiscard]] static DistributionTarget makeBundle(const BuildTargetType inType, const BuildState& inState);
 
 	virtual void initialize() = 0;
 	virtual bool validate() = 0;
@@ -29,6 +31,7 @@ struct IBuildTarget
 	bool isProject() const noexcept;
 	bool isScript() const noexcept;
 	bool isCMake() const noexcept;
+	bool isDistributionBundle() const noexcept;
 
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
@@ -51,6 +54,7 @@ private:
 };
 
 using BuildTargetList = std::vector<BuildTarget>;
+using DistributionTargetList = std::vector<DistributionTarget>;
 }
 
 #endif // CHALET_IBUILD_TARGET_HPP

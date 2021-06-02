@@ -134,41 +134,43 @@
 			"script": "platform/script_lua.lua"
 		}*/
 	},
-	"bundle": {
-		"appName": "Chalet",
-		"shortDescription": "Chalet Build System",
-		"longDescription": "A Modern C/C++ Build System for GCC/Clang",
-		"outDir": "dist",
-		"configuration": "Release",
-		"projects": [
-			"chalet"
-		],
-		"dependencies": [],
-		"exclude": [
-			"*.psd",
-			"*.7z",
-			"Thumbs.db",
-			".DS_Store"
-		],
-		"macos": {
-			"bundleName": "Chalet",
-			"bundleIdentifier": "com.developer.chalet",
-			"icon": "platform/chalet-logo.png",
-			"infoPropertyList": "platform/osx/Info.plist.json",
-			"makeDmg": false,
-			"dmgBackground": {
-				"1x": "platform/osx/dmg-background.png",
-				"2x": "platform/osx/dmg-background@2x.png"
+	"distribution": {
+		"Chalet": {
+			"appName": "Chalet",
+			"shortDescription": "Chalet Build System",
+			"longDescription": "A Modern C/C++ Build System for GCC/Clang",
+			"outDir": "dist",
+			"configuration": "Release",
+			"projects": [
+				"chalet"
+			],
+			"dependencies": [],
+			"exclude": [
+				"*.psd",
+				"*.7z",
+				"Thumbs.db",
+				".DS_Store"
+			],
+			"macos": {
+				"bundleName": "Chalet",
+				"bundleIdentifier": "com.developer.chalet",
+				"icon": "platform/chalet-logo.png",
+				"infoPropertyList": "platform/osx/Info.plist.json",
+				"makeDmg": false,
+				"dmgBackground": {
+					"1x": "platform/osx/dmg-background.png",
+					"2x": "platform/osx/dmg-background@2x.png"
+				},
+				"dylibs": []
 			},
-			"dylibs": []
-		},
-		"linux": {
-			"icon": "platform/chalet-logo.png",
-			"desktopEntry": "platform/linux/app.desktop"
-		},
-		"windows": {
-			"icon": "platform/windows/app.ico",
-			"manifest": "platform/windows/app.manifest"
+			"linux": {
+				"icon": "platform/chalet-logo.png",
+				"desktopEntry": "platform/linux/app.desktop"
+			},
+			"windows": {
+				"icon": "platform/windows/app.ico",
+				"manifest": "platform/windows/app.manifest"
+			}
 		}
 	} /*,
 	"externalDependencies": {

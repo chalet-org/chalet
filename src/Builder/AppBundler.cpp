@@ -5,12 +5,14 @@
 
 #include "Builder/AppBundler.hpp"
 
+#include "Builder/BuildManager/ScriptRunner.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+// #include "Utility/Timer.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Builder/Bundler/AppBundlerWindows.hpp"
@@ -26,7 +28,8 @@ namespace chalet
 {
 /*****************************************************************************/
 AppBundler::AppBundler(BuildState& inState, const std::string& inBuildFile) :
-	m_state(inState)
+	m_state(inState),
+	m_buildFile(inBuildFile)
 {
 #if defined(CHALET_WIN32)
 	UNUSED(inBuildFile);
@@ -46,16 +49,42 @@ AppBundler::AppBundler(BuildState& inState, const std::string& inBuildFile) :
 /*****************************************************************************/
 bool AppBundler::run()
 {
-	auto& bundle = m_state.bundle;
+	if (!removeOldFiles())
+	{
+		Diagnostic::error("There was an error removing the previous distribution bundles");
+		return false;
+	}
 
+	for (auto& target : m_state.distribution)
+	{
+		// Timer buildTimer;
+
+		if (target->isDistributionBundle())
+		{
+			if (!runBundleTarget(static_cast<BundleTarget&>(*target)))
+				return false;
+		}
+		else if (target->isScript())
+		{
+			if (!runScriptTarget(static_cast<const ScriptTarget&>(*target)))
+				return false;
+		}
+		// Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+		// Output::lineBreak();
+	}
+
+	return true;
+}
+
+bool AppBundler::runBundleTarget(BundleTarget& inBundle)
+{
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	const auto& bundleProjects = bundle.projects();
+	const auto& bundleProjects = inBundle.projects();
 
-	const auto bundlePath = m_impl->getBundlePath();
-	const auto executablePath = m_impl->getExecutablePath();
-	const auto resourcePath = m_impl->getResourcePath();
+	const auto bundlePath = m_impl->getBundlePath(inBundle);
+	const auto executablePath = m_impl->getExecutablePath(inBundle);
+	const auto resourcePath = m_impl->getResourcePath(inBundle);
 
-	removeOldFiles();
 	makeBundlePath(bundlePath, executablePath, resourcePath);
 
 	// auto path = Environment::getPath();
@@ -68,7 +97,7 @@ bool AppBundler::run()
 #endif
 
 	StringList depsFromJson;
-	for (auto& dep : bundle.dependencies())
+	for (auto& dep : inBundle.dependencies())
 	{
 		if (!Commands::pathExists(dep))
 			continue;
@@ -103,11 +132,11 @@ bool AppBundler::run()
 		}
 	}
 
-	bundle.addDependencies(dependencies);
-	bundle.sortDependencies();
+	inBundle.addDependencies(dependencies);
+	inBundle.sortDependencies();
 
 	uint copyCount = 0;
-	for (auto& dep : bundle.dependencies())
+	for (auto& dep : inBundle.dependencies())
 	{
 		if (List::contains(depsFromJson, dep))
 			continue;
@@ -132,7 +161,7 @@ bool AppBundler::run()
 #endif
 	}
 
-	Commands::forEachFileMatch(resourcePath, bundle.excludes(), [this](const fs::path& inPath) {
+	Commands::forEachFileMatch(resourcePath, inBundle.excludes(), [this](const fs::path& inPath) {
 		Commands::remove(inPath.string(), m_cleanOutput);
 	});
 
@@ -141,8 +170,34 @@ bool AppBundler::run()
 		Output::lineBreak();
 	}
 
-	if (!m_impl->bundleForPlatform(m_cleanOutput))
+	if (!m_impl->bundleForPlatform(inBundle, m_cleanOutput))
 		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::runScriptTarget(const ScriptTarget& inScript)
+{
+	const auto& scripts = inScript.scripts();
+	if (scripts.empty())
+		return false;
+
+	// if (!inScript.description().empty())
+	// 	Output::msgScriptDescription(inScript.description());
+	// else
+	// 	Output::msgScript(inScript.name());
+
+	// Output::lineBreak();
+
+	ScriptRunner scriptRunner(m_state.tools, m_buildFile, m_cleanOutput);
+	if (!scriptRunner.run(scripts))
+	{
+		Output::lineBreak();
+		Output::msgBuildFail(); // TODO: Script failed
+		Output::lineBreak();
+		return false;
+	}
 
 	return true;
 }
@@ -150,12 +205,18 @@ bool AppBundler::run()
 /*****************************************************************************/
 bool AppBundler::removeOldFiles()
 {
-	const auto& outDir = m_state.bundle.outDir();
-	if (!Commands::removeRecursively(outDir, m_cleanOutput))
-		return false;
+	for (auto& target : m_state.distribution)
+	{
+		if (target->isDistributionBundle())
+		{
+			auto& bundle = static_cast<const BundleTarget&>(*target);
+			const auto& outDir = bundle.outDir();
+			Commands::removeRecursively(outDir, m_cleanOutput);
 
-	if (!m_impl->removeOldFiles(m_cleanOutput))
-		return false;
+			if (!m_impl->removeOldFiles(bundle, m_cleanOutput))
+				return false;
+		}
+	}
 
 	return true;
 }

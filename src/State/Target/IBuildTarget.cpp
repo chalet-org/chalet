@@ -6,6 +6,7 @@
 #include "State/Target/IBuildTarget.hpp"
 
 #include "State/BuildState.hpp"
+#include "State/Target/BundleTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptTarget.hpp"
@@ -20,7 +21,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 }
 
 /*****************************************************************************/
-[[nodiscard]] std::unique_ptr<IBuildTarget> IBuildTarget::make(const BuildTargetType inType, const BuildState& inState)
+[[nodiscard]] BuildTarget IBuildTarget::makeBuild(const BuildTargetType inType, const BuildState& inState)
 {
 	switch (inType)
 	{
@@ -30,11 +31,31 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 			return std::make_unique<ScriptTarget>(inState);
 		case BuildTargetType::CMake:
 			return std::make_unique<CMakeTarget>(inState);
+		case BuildTargetType::DistributionBundle:
 		default:
 			break;
 	}
 
-	Diagnostic::errorAbort(fmt::format("Unimplemented BuildTargetType requested: ", static_cast<int>(inType)));
+	Diagnostic::errorAbort(fmt::format("Unimplemented BuildTargetType requested for makeBuild: ", static_cast<int>(inType)));
+	return nullptr;
+}
+
+/*****************************************************************************/
+[[nodiscard]] DistributionTarget IBuildTarget::makeBundle(const BuildTargetType inType, const BuildState& inState)
+{
+	switch (inType)
+	{
+		case BuildTargetType::DistributionBundle:
+			return std::make_unique<BundleTarget>(inState);
+		case BuildTargetType::Script:
+			return std::make_unique<ScriptTarget>(inState);
+		case BuildTargetType::CMake:
+		case BuildTargetType::Project:
+		default:
+			break;
+	}
+
+	Diagnostic::errorAbort(fmt::format("Unimplemented BuildTargetType requested for makeBundle: ", static_cast<int>(inType)));
 	return nullptr;
 }
 
@@ -54,6 +75,10 @@ bool IBuildTarget::isScript() const noexcept
 bool IBuildTarget::isCMake() const noexcept
 {
 	return m_type == BuildTargetType::CMake;
+}
+bool IBuildTarget::isDistributionBundle() const noexcept
+{
+	return m_type == BuildTargetType::DistributionBundle;
 }
 
 /*****************************************************************************/

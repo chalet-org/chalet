@@ -3,11 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/AppBundle.hpp"
+#include "State/Target/BundleTarget.hpp"
 
 #include "Libraries/Format.hpp"
 #include "State/BuildEnvironment.hpp"
 #include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
@@ -17,17 +18,19 @@
 namespace chalet
 {
 /*****************************************************************************/
-AppBundle::AppBundle(const BuildEnvironment& inEnvironment, const BuildTargetList& inTargets, const BuildPaths& inPaths, const CompilerTools& inCompilers) :
-	m_environment(inEnvironment),
-	m_targets(inTargets),
-	m_paths(inPaths),
-	m_compilers(inCompilers)
+BundleTarget::BundleTarget(const BuildState& inState) :
+	IBuildTarget(inState, BuildTargetType::DistributionBundle)
 {
-	UNUSED(m_paths);
+	setIncludeInBuild(false);
 }
 
 /*****************************************************************************/
-bool AppBundle::validate()
+void BundleTarget::initialize()
+{
+}
+
+/*****************************************************************************/
+bool BundleTarget::validate()
 {
 	bool result = true;
 	if (m_exists)
@@ -45,151 +48,151 @@ bool AppBundle::validate()
 }
 
 /*****************************************************************************/
-const BundleLinux& AppBundle::linuxBundle() const noexcept
+const BundleLinux& BundleTarget::linuxBundle() const noexcept
 {
 	return m_linuxBundle;
 }
 
-void AppBundle::setLinuxBundle(const BundleLinux& inValue)
+void BundleTarget::setLinuxBundle(BundleLinux&& inValue)
 {
-	m_linuxBundle = inValue;
+	m_linuxBundle = std::move(inValue);
 }
 
 /*****************************************************************************/
-const BundleMacOS& AppBundle::macosBundle() const noexcept
+const BundleMacOS& BundleTarget::macosBundle() const noexcept
 {
 	return m_macosBundle;
 }
 
-void AppBundle::setMacosBundle(const BundleMacOS& inValue)
+void BundleTarget::setMacosBundle(BundleMacOS&& inValue)
 {
-	m_macosBundle = inValue;
+	m_macosBundle = std::move(inValue);
 }
 
 /*****************************************************************************/
-const BundleWindows& AppBundle::windowsBundle() const noexcept
+const BundleWindows& BundleTarget::windowsBundle() const noexcept
 {
 	return m_windowsBundle;
 }
 
-void AppBundle::setWindowsBundle(const BundleWindows& inValue)
+void BundleTarget::setWindowsBundle(BundleWindows&& inValue)
 {
-	m_windowsBundle = inValue;
+	m_windowsBundle = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& AppBundle::appName() const noexcept
+const std::string& BundleTarget::appName() const noexcept
 {
 	return m_appName;
 }
 
-void AppBundle::setAppName(const std::string& inValue)
+void BundleTarget::setAppName(const std::string& inValue)
 {
 	m_appName = inValue;
 }
 
 /*****************************************************************************/
-const std::string& AppBundle::shortDescription() const noexcept
+const std::string& BundleTarget::shortDescription() const noexcept
 {
 	return m_shortDescription;
 }
 
-void AppBundle::setShortDescription(const std::string& inValue)
+void BundleTarget::setShortDescription(const std::string& inValue)
 {
 	m_shortDescription = inValue;
 }
 
 /*****************************************************************************/
-const std::string& AppBundle::longDescription() const noexcept
+const std::string& BundleTarget::longDescription() const noexcept
 {
 	return m_longDescription;
 }
 
-void AppBundle::setLongDescription(const std::string& inValue)
+void BundleTarget::setLongDescription(const std::string& inValue)
 {
 	m_longDescription = inValue;
 }
 
 /*****************************************************************************/
-const std::string& AppBundle::outDir() const noexcept
+const std::string& BundleTarget::outDir() const noexcept
 {
 	return m_distDir;
 }
 
-void AppBundle::setOutDir(const std::string& inValue)
+void BundleTarget::setOutDir(const std::string& inValue)
 {
 	m_distDir = inValue;
 	Path::sanitize(m_distDir);
 }
 
 /*****************************************************************************/
-const std::string& AppBundle::configuration() const noexcept
+const std::string& BundleTarget::configuration() const noexcept
 {
 	return m_configuration;
 }
 
-void AppBundle::setConfiguration(const std::string& inValue)
+void BundleTarget::setConfiguration(const std::string& inValue)
 {
 	m_configuration = inValue;
 }
 
 /*****************************************************************************/
-bool AppBundle::exists() const noexcept
+bool BundleTarget::exists() const noexcept
 {
 	return m_exists;
 }
 
-void AppBundle::setExists(const bool inValue) noexcept
+void BundleTarget::setExists(const bool inValue) noexcept
 {
 	m_exists = inValue;
 }
 
 /*****************************************************************************/
-const StringList& AppBundle::projects() const noexcept
+const StringList& BundleTarget::projects() const noexcept
 {
 	return m_projects;
 }
 
-void AppBundle::addProjects(StringList& inList)
+void BundleTarget::addProjects(StringList& inList)
 {
-	List::forEach(inList, this, &AppBundle::addProject);
+	List::forEach(inList, this, &BundleTarget::addProject);
 }
 
-void AppBundle::addProject(std::string& inValue)
+void BundleTarget::addProject(std::string& inValue)
 {
 	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_projects, std::move(inValue));
 }
 
 /*****************************************************************************/
-const StringList& AppBundle::excludes() const noexcept
+const StringList& BundleTarget::excludes() const noexcept
 {
 	return m_excludes;
 }
 
-void AppBundle::addExcludes(StringList& inList)
+void BundleTarget::addExcludes(StringList& inList)
 {
-	List::forEach(inList, this, &AppBundle::addExclude);
+	List::forEach(inList, this, &BundleTarget::addExclude);
 }
 
-void AppBundle::addExclude(std::string& inValue)
+void BundleTarget::addExclude(std::string& inValue)
 {
 	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_excludes, std::move(inValue));
 }
 
 /*****************************************************************************/
-const StringList& AppBundle::dependencies() const noexcept
+const StringList& BundleTarget::dependencies() const noexcept
 {
 	return m_dependencies;
 }
 
-void AppBundle::addDependencies(StringList& inList)
+void BundleTarget::addDependencies(StringList& inList)
 {
-	List::forEach(inList, this, &AppBundle::addDependency);
+	List::forEach(inList, this, &BundleTarget::addDependency);
 }
 
-void AppBundle::addDependency(std::string& inValue)
+void BundleTarget::addDependency(std::string& inValue)
 {
 	const auto add = [this](std::string& in) {
 		Path::sanitize(in);
@@ -210,13 +213,13 @@ void AppBundle::addDependency(std::string& inValue)
 	}*/
 
 	std::string resolved;
-	for (auto& target : m_targets)
+	for (auto& target : m_state.targets)
 	{
 		if (target->isProject())
 		{
 			auto& project = static_cast<const ProjectTarget&>(*target);
 
-			const auto& compilerConfig = m_compilers.getConfig(project.language());
+			const auto& compilerConfig = m_state.compilerTools.getConfig(project.language());
 			const auto& compilerPathBin = compilerConfig.compilerPathBin();
 
 			resolved = fmt::format("{}/{}", compilerPathBin, inValue);
@@ -235,7 +238,7 @@ void AppBundle::addDependency(std::string& inValue)
 		}
 	}
 
-	for (auto& path : m_environment.path())
+	for (auto& path : m_state.environment.path())
 	{
 		resolved = fmt::format("{}/{}", path, inValue);
 		if (Commands::pathExists(resolved))
@@ -247,7 +250,7 @@ void AppBundle::addDependency(std::string& inValue)
 }
 
 /*****************************************************************************/
-void AppBundle::sortDependencies()
+void BundleTarget::sortDependencies()
 {
 	List::sort(m_dependencies);
 }

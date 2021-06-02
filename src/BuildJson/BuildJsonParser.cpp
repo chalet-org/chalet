@@ -114,7 +114,7 @@ bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 	if (!parseProjects(inJson))
 		return false;
 
-	if (!parseBundle(inJson))
+	if (!parseDistribution(inJson))
 		return false;
 
 	return true;
@@ -188,28 +188,29 @@ bool BuildJsonParser::parseRoot(const Json& inNode)
 /*****************************************************************************/
 void BuildJsonParser::parseBuildConfiguration(const Json& inNode)
 {
-	if (inNode.contains(kKeyBundle))
+	UNUSED(inNode);
+	// if (inNode.contains(kKeyBundle))
 	{
 		// if the bundle is not an object, we'll error it in parseBundle
-		const Json& bundle = inNode.at(kKeyBundle);
-		if (bundle.is_object())
-		{
-			if (std::string val; m_buildJson->assignStringAndValidate(val, bundle, "configuration"))
-				m_state.bundle.setConfiguration(val);
-		}
+		// const Json& bundle = inNode.at(kKeyBundle);
+		// if (bundle.is_object())
+		// {
+		// 	if (std::string val; m_buildJson->assignStringAndValidate(val, bundle, "configuration"))
+		// 		m_state.bundle.setConfiguration(val);
+		// }
 	}
 
 	const auto& buildConfiguration = m_inputs.buildConfiguration();
 	if (buildConfiguration.empty())
 	{
-		const auto& bundleConfiguration = m_state.bundle.configuration();
-		if (!bundleConfiguration.empty())
+		// const auto& bundleConfiguration = m_state.bundle.configuration();
+		// if (!bundleConfiguration.empty())
+		// {
+		// 	m_state.info.setBuildConfiguration(bundleConfiguration);
+		// }
+		// else
 		{
-			m_state.info.setBuildConfiguration(bundleConfiguration);
-		}
-		else
-		{
-			m_state.bundle.setConfiguration("Release");
+			// m_state.bundle.setConfiguration("Release");
 			m_state.info.setBuildConfiguration("Release");
 		}
 	}
@@ -400,8 +401,6 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		return false;
 	}
 
-	// ProjectTarget allProjects(m_state.buildConfiguration(), m_state.environment);
-
 	if (inNode.contains(kKeyAbstracts))
 	{
 		const Json& abstracts = inNode.at(kKeyAbstracts);
@@ -424,11 +423,17 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		}
 	}
 
-	for (auto& [prefixedName, templateJson] : inNode.items())
+	for (auto& [prefixedName, abstractJson] : inNode.items())
 	{
 		std::string prefix{ fmt::format("{}:", kKeyAbstracts) };
 		if (!String::startsWith(prefix, prefixedName))
 			continue;
+
+		if (!abstractJson.is_object())
+		{
+			Diagnostic::error(fmt::format("{}: abstract target '{}' must be an object.", m_filename, prefixedName));
+			return false;
+		}
 
 		std::string name = prefixedName.substr(prefix.size());
 		String::replaceAll(name, prefix, "");
@@ -436,7 +441,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		if (m_abstractProjects.find(name) == m_abstractProjects.end())
 		{
 			auto abstractProject = std::make_unique<ProjectTarget>(m_state);
-			if (!parseProject(*abstractProject, templateJson, true))
+			if (!parseProject(*abstractProject, abstractJson, true))
 				return false;
 
 			m_abstractProjects.emplace(name, std::move(abstractProject));
@@ -451,6 +456,12 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 
 	for (auto& [name, targetJson] : targets.items())
 	{
+		if (!targetJson.is_object())
+		{
+			Diagnostic::error(fmt::format("{}: target '{}' must be an object.", m_filename, name));
+			return false;
+		}
+
 		std::string extends{ "all" };
 		if (targetJson.is_object())
 		{
@@ -467,7 +478,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 			type = BuildTargetType::CMake;
 		}
 
-		std::unique_ptr<IBuildTarget> target;
+		BuildTarget target;
 		if (type == BuildTargetType::Project && m_abstractProjects.find(extends) != m_abstractProjects.end())
 		{
 			target = std::make_unique<ProjectTarget>(*m_abstractProjects.at(extends)); // note: copy ctor
@@ -480,7 +491,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 				return false;
 			}
 
-			target = IBuildTarget::make(type, m_state);
+			target = IBuildTarget::makeBuild(type, m_state);
 		}
 		target->setName(name);
 
@@ -848,48 +859,85 @@ bool BuildJsonParser::parseProjectLocationOrFiles(ProjectTarget& outProject, con
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseBundle(const Json& inNode)
+bool BuildJsonParser::parseDistribution(const Json& inNode)
 {
-	if (!inNode.contains(kKeyBundle))
-	{
-		m_state.bundle.setExists(false);
-		return true;
-	}
+	if (!inNode.contains(kKeyDistribution))
+		return false;
 
-	const Json& bundle = inNode.at(kKeyBundle);
-	if (!bundle.is_object())
+	const Json& distribution = inNode.at(kKeyDistribution);
+	if (!distribution.is_object() || distribution.size() == 0)
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeyBundle));
+		Diagnostic::error(fmt::format("{}: '{}' must contain at least one bundle or script.", m_filename, kKeyDistribution));
 		return false;
 	}
 
-	if (std::string val; m_buildJson->assignStringAndValidate(val, bundle, "appName"))
-		m_state.bundle.setAppName(val);
+	for (auto& [name, targetJson] : distribution.items())
+	{
+		if (!targetJson.is_object())
+		{
+			Diagnostic::error(fmt::format("{}: distribution bundle '{}' must be an object.", m_filename, name));
+			return false;
+		}
 
-	if (std::string val; m_buildJson->assignStringAndValidate(val, bundle, "shortDescription"))
-		m_state.bundle.setShortDescription(val);
+		BuildTargetType type = BuildTargetType::DistributionBundle;
+		if (containsKeyThatStartsWith(targetJson, "script"))
+		{
+			type = BuildTargetType::Script;
+		}
 
-	if (std::string val; m_buildJson->assignStringAndValidate(val, bundle, "longDescription"))
-		m_state.bundle.setLongDescription(val);
+		DistributionTarget target = IBuildTarget::makeBundle(type, m_state);
+		target->setName(name);
 
-	if (std::string val; m_buildJson->assignStringAndValidate(val, bundle, "outDir"))
-		m_state.bundle.setOutDir(val);
+		if (target->isScript())
+		{
+			if (!parseScript(static_cast<ScriptTarget&>(*target), targetJson))
+				continue;
+		}
+		else
+		{
+			if (!parseBundle(static_cast<BundleTarget&>(*target), targetJson))
+				return false;
+		}
 
-	if (StringList list; assignStringListFromConfig(list, bundle, "projects"))
-		m_state.bundle.addProjects(list);
+		// if (!target->includeInBuild())
+		// 	continue;
 
-	if (StringList list; assignStringListFromConfig(list, bundle, "dependencies"))
-		m_state.bundle.addDependencies(list);
+		m_state.distribution.push_back(std::move(target));
+	}
 
-	if (StringList list; assignStringListFromConfig(list, bundle, "exclude"))
-		m_state.bundle.addExcludes(list);
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::parseBundle(BundleTarget& outBundle, const Json& inNode)
+{
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "appName"))
+		outBundle.setAppName(val);
+
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "shortDescription"))
+		outBundle.setShortDescription(val);
+
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "longDescription"))
+		outBundle.setLongDescription(val);
+
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "outDir"))
+		outBundle.setOutDir(val);
+
+	if (StringList list; assignStringListFromConfig(list, inNode, "projects"))
+		outBundle.addProjects(list);
+
+	if (StringList list; assignStringListFromConfig(list, inNode, "dependencies"))
+		outBundle.addDependencies(list);
+
+	if (StringList list; assignStringListFromConfig(list, inNode, "exclude"))
+		outBundle.addExcludes(list);
 
 #if defined(CHALET_LINUX)
-	return parseBundleLinux(bundle);
+	return parseBundleLinux(outBundle, inNode);
 #elif defined(CHALET_MACOS)
-	return parseBundleMacOS(bundle);
+	return parseBundleMacOS(outBundle, inNode);
 #elif defined(CHALET_WIN32)
-	return parseBundleWindows(bundle);
+	return parseBundleWindows(outBundle, inNode);
 #else
 	#error "Unrecognized platform"
 	return false;
@@ -897,7 +945,7 @@ bool BuildJsonParser::parseBundle(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseBundleLinux(const Json& inNode)
+bool BuildJsonParser::parseBundleLinux(BundleTarget& outBundle, const Json& inNode)
 {
 	if (!inNode.contains("linux"))
 		return true;
@@ -935,13 +983,13 @@ bool BuildJsonParser::parseBundleLinux(const Json& inNode)
 		return false;
 	}
 
-	m_state.bundle.setLinuxBundle(linuxBundle);
+	outBundle.setLinuxBundle(std::move(linuxBundle));
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseBundleMacOS(const Json& inNode)
+bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNode)
 {
 	if (!inNode.contains("macos"))
 		return true;
@@ -1016,13 +1064,13 @@ bool BuildJsonParser::parseBundleMacOS(const Json& inNode)
 		return false;
 	}
 
-	m_state.bundle.setMacosBundle(macosBundle);
+	outBundle.setMacosBundle(std::move(macosBundle));
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseBundleWindows(const Json& inNode)
+bool BuildJsonParser::parseBundleWindows(BundleTarget& outBundle, const Json& inNode)
 {
 	if (!inNode.contains("windows"))
 		return true;
@@ -1060,7 +1108,7 @@ bool BuildJsonParser::parseBundleWindows(const Json& inNode)
 		return false;
 	}
 
-	m_state.bundle.setWindowsBundle(windowsBundle);
+	outBundle.setWindowsBundle(std::move(windowsBundle));
 
 	return true;
 }

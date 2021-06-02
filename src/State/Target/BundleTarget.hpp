@@ -13,24 +13,21 @@
 
 namespace chalet
 {
-struct CompilerTools;
-struct BuildEnvironment;
-struct BuildPaths;
-
-struct AppBundle
+struct BundleTarget final : public IBuildTarget
 {
-	explicit AppBundle(const BuildEnvironment& inEnvironment, const BuildTargetList& inTargets, const BuildPaths& inPaths, const CompilerTools& inCompilers);
+	explicit BundleTarget(const BuildState& inState);
 
-	bool validate();
+	virtual void initialize() final;
+	virtual bool validate() final;
 
 	const BundleLinux& linuxBundle() const noexcept;
-	void setLinuxBundle(const BundleLinux& inValue);
+	void setLinuxBundle(BundleLinux&& inValue);
 
 	const BundleMacOS& macosBundle() const noexcept;
-	void setMacosBundle(const BundleMacOS& inValue);
+	void setMacosBundle(BundleMacOS&& inValue);
 
 	const BundleWindows& windowsBundle() const noexcept;
-	void setWindowsBundle(const BundleWindows& inValue);
+	void setWindowsBundle(BundleWindows&& inValue);
 
 	const std::string& appName() const noexcept;
 	void setAppName(const std::string& inValue);
@@ -64,11 +61,6 @@ struct AppBundle
 	void sortDependencies();
 
 private:
-	const BuildEnvironment& m_environment;
-	const BuildTargetList& m_targets;
-	const BuildPaths& m_paths;
-	const CompilerTools& m_compilers;
-
 	BundleLinux m_linuxBundle;
 	BundleMacOS m_macosBundle;
 	BundleWindows m_windowsBundle;

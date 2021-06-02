@@ -625,7 +625,7 @@ std::string BuildManager::getRunProject()
 void BuildManager::testTerminalMessages()
 {
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
-	const auto& distConfig = m_state.bundle.configuration();
+	// const auto& distConfig = m_state.bundle.configuration();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	const std::string name{ "cool-program.exe" };
@@ -634,7 +634,7 @@ void BuildManager::testTerminalMessages()
 	Output::msgBuildSuccess();
 	Output::msgLaunch(buildOutputDir, name);
 	Output::msgBuildFail();
-	Output::msgBuildProdError(distConfig);
+	// Output::msgBuildProdError(distConfig);
 	Output::msgProfilerDone(profAnalysis);
 	Output::msgBuildAndRun(buildConfiguration, name);
 	Output::msgBuild(buildConfiguration, name);

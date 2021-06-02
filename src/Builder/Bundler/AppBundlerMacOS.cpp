@@ -38,17 +38,16 @@ AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const std::string& inBuild
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::removeOldFiles(const bool inCleanOutput)
+bool AppBundlerMacOS::removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput)
 {
-	UNUSED(inCleanOutput);
+	UNUSED(bundle, inCleanOutput);
 
 	return true;
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
+bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput)
 {
-	auto& bundle = m_state.bundle;
 	auto& macosBundle = bundle.macosBundle();
 
 	// No app name = no bundle to make
@@ -72,10 +71,10 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	const auto& infoPropertyList = macosBundle.infoPropertyList();
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	const auto bundlePath = getBundlePath();
+	const auto bundlePath = getBundlePath(bundle);
 	const auto frameworkPath = fmt::format("{}/Frameworks", bundlePath);
-	const auto resourcePath = getResourcePath();
-	const auto executablePath = getExecutablePath();
+	const auto resourcePath = getResourcePath(bundle);
+	const auto executablePath = getExecutablePath(bundle);
 
 	Commands::makeDirectory(frameworkPath, inCleanOutput);
 
@@ -109,8 +108,6 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 		}
 	}
 
-	const std::string outInfoPropertyList = fmt::format("{}/Info.plist", bundlePath);
-
 	// TODO: Like with the linux bundler, this doesn't target a particular executable
 	// This just gets the first
 	std::string mainExecutable;
@@ -138,23 +135,28 @@ bool AppBundlerMacOS::bundleForPlatform(const bool inCleanOutput)
 	}
 
 	// PList
-	if (!m_state.tools.plistConvertToBinary(infoPropertyList, outInfoPropertyList, inCleanOutput))
-		return false;
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, inCleanOutput))
-		return false;
-	if (!iconBaseName.empty())
+	if (!infoPropertyList.empty())
 	{
-		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", iconBaseName, inCleanOutput))
+		const std::string outInfoPropertyList = fmt::format("{}/Info.plist", bundlePath);
+
+		if (!m_state.tools.plistConvertToBinary(infoPropertyList, outInfoPropertyList, inCleanOutput))
+			return false;
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, inCleanOutput))
+			return false;
+		if (!iconBaseName.empty())
+		{
+			if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", iconBaseName, inCleanOutput))
+				return false;
+		}
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", appName, inCleanOutput))
+			return false;
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, inCleanOutput))
+			return false;
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version, inCleanOutput))
+			return false;
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", mainExecutable, inCleanOutput))
 			return false;
 	}
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", appName, inCleanOutput))
-		return false;
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, inCleanOutput))
-		return false;
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version, inCleanOutput))
-		return false;
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", mainExecutable, inCleanOutput))
-		return false;
 
 	// install_name_tool
 	auto& installNameTool = m_state.tools.installNameUtil();
@@ -371,10 +373,10 @@ end tell)applescript",
 }
 
 /*****************************************************************************/
-std::string AppBundlerMacOS::getBundlePath() const
+std::string AppBundlerMacOS::getBundlePath(const BundleTarget& bundle) const
 {
-	const auto& outDir = m_state.bundle.outDir();
-	const auto& bundleName = m_state.bundle.macosBundle().bundleName();
+	const auto& outDir = bundle.outDir();
+	const auto& bundleName = bundle.macosBundle().bundleName();
 	if (!bundleName.empty())
 	{
 		return fmt::format("{}/{}.app/Contents", outDir, bundleName);
@@ -386,30 +388,30 @@ std::string AppBundlerMacOS::getBundlePath() const
 }
 
 /*****************************************************************************/
-std::string AppBundlerMacOS::getExecutablePath() const
+std::string AppBundlerMacOS::getExecutablePath(const BundleTarget& bundle) const
 {
-	const auto& bundleName = m_state.bundle.macosBundle().bundleName();
+	const auto& bundleName = bundle.macosBundle().bundleName();
 	if (!bundleName.empty())
 	{
-		return fmt::format("{}/MacOS", getBundlePath());
+		return fmt::format("{}/MacOS", getBundlePath(bundle));
 	}
 	else
 	{
-		return m_state.bundle.outDir();
+		return bundle.outDir();
 	}
 }
 
 /*****************************************************************************/
-std::string AppBundlerMacOS::getResourcePath() const
+std::string AppBundlerMacOS::getResourcePath(const BundleTarget& bundle) const
 {
-	const auto& bundleName = m_state.bundle.macosBundle().bundleName();
+	const auto& bundleName = bundle.macosBundle().bundleName();
 	if (!bundleName.empty())
 	{
-		return fmt::format("{}/Resources", getBundlePath());
+		return fmt::format("{}/Resources", getBundlePath(bundle));
 	}
 	else
 	{
-		return m_state.bundle.outDir();
+		return bundle.outDir();
 	}
 }
 }

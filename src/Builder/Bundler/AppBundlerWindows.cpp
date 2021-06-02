@@ -11,39 +11,40 @@ namespace chalet
 AppBundlerWindows::AppBundlerWindows(BuildState& inState) :
 	m_state(inState)
 {
+	UNUSED(m_state);
 }
 
 /*****************************************************************************/
-bool AppBundlerWindows::removeOldFiles(const bool inCleanOutput)
+bool AppBundlerWindows::removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput)
 {
-	UNUSED(inCleanOutput);
+	UNUSED(bundle, inCleanOutput);
 
 	return true;
 }
 
 /*****************************************************************************/
-bool AppBundlerWindows::bundleForPlatform(const bool inCleanOutput)
+bool AppBundlerWindows::bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput)
 {
-	UNUSED(inCleanOutput);
+	UNUSED(bundle, inCleanOutput);
 	return true;
 }
 
 /*****************************************************************************/
-std::string AppBundlerWindows::getBundlePath() const
+std::string AppBundlerWindows::getBundlePath(const BundleTarget& bundle) const
 {
-	return m_state.bundle.outDir();
+	return bundle.outDir();
 }
 
 /*****************************************************************************/
-std::string AppBundlerWindows::getExecutablePath() const
+std::string AppBundlerWindows::getExecutablePath(const BundleTarget& bundle) const
 {
-	return m_state.bundle.outDir();
+	return bundle.outDir();
 }
 
 /*****************************************************************************/
-std::string AppBundlerWindows::getResourcePath() const
+std::string AppBundlerWindows::getResourcePath(const BundleTarget& bundle) const
 {
-	return m_state.bundle.outDir();
+	return bundle.outDir();
 }
 
 }

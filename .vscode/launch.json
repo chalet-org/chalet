@@ -9,8 +9,7 @@
 			"args": [
 				// "--generator=vscode",
 				"buildrun",
-				"Release",
-				"tests_chalet"
+				"Release"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",

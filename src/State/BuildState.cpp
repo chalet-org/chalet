@@ -20,7 +20,6 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 	paths(m_inputs, info),
 	environment(paths),
 	msvcEnvironment(*this),
-	bundle(environment, targets, paths, compilerTools),
 	cache(info, paths)
 {
 }
@@ -81,8 +80,6 @@ bool BuildState::validateState()
 		}
 	}
 
-	result &= bundle.validate();
-
 	for (auto& target : targets)
 	{
 		if (target->isCMake())
@@ -90,6 +87,11 @@ bool BuildState::validateState()
 			tools.fetchCmakeVersion();
 		}
 
+		result &= target->validate();
+	}
+
+	for (auto& target : distribution)
+	{
 		result &= target->validate();
 	}
 
