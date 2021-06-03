@@ -110,7 +110,7 @@ bool AppBundlerLinux::bundleForPlatform()
 				String::replaceAll(fileContents, "${mainProject}", fs::absolute(filename).string());
 				String::replaceAll(fileContents, "${path}", fs::absolute(bundlePath).string());
 				String::replaceAll(fileContents, "${appName}", m_bundle.appName());
-				String::replaceAll(fileContents, "${shortDescription}", m_bundle.shortDescription());
+				String::replaceAll(fileContents, "${description}", m_bundle.description());
 				String::replaceAll(fileContents, "${icon}", fs::absolute(iconPath).string());
 
 				String::replaceAll(fileContents, '\\', '/');

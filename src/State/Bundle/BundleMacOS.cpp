@@ -95,17 +95,6 @@ void BundleMacOS::setBundleName(const std::string& inValue)
 }
 
 /*****************************************************************************/
-const std::string& BundleMacOS::bundleIdentifier() const noexcept
-{
-	return m_bundleIdentifier;
-}
-
-void BundleMacOS::setBundleIdentifier(const std::string& inValue)
-{
-	m_bundleIdentifier = inValue;
-}
-
-/*****************************************************************************/
 const std::string& BundleMacOS::icon() const noexcept
 {
 	return m_icon;
@@ -121,6 +110,7 @@ const std::string& BundleMacOS::infoPropertyList() const noexcept
 {
 	return m_infoPropertyList;
 }
+
 void BundleMacOS::setInfoPropertyList(const std::string& inValue)
 {
 	if (String::endsWith(".plist", inValue))
@@ -131,6 +121,17 @@ void BundleMacOS::setInfoPropertyList(const std::string& inValue)
 	{
 		m_infoPropertyList = inValue;
 	}
+}
+
+/*****************************************************************************/
+const std::string& BundleMacOS::infoPropertyListContent() const noexcept
+{
+	return m_infoPropertyListContent;
+}
+
+void BundleMacOS::setInfoPropertyListContent(std::string&& inValue)
+{
+	m_infoPropertyListContent = std::move(inValue);
 }
 
 /*****************************************************************************/

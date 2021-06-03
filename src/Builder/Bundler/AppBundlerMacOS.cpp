@@ -285,19 +285,37 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 {
 	auto& macosBundle = m_bundle.macosBundle();
 
+	std::string tmpInfoPlist;
 	const auto& infoPropertyList = macosBundle.infoPropertyList();
+	const auto& infoPropertyListContent = macosBundle.infoPropertyListContent();
 	if (infoPropertyList.empty())
-		return true;
+	{
+		if (infoPropertyListContent.empty())
+			return true;
+
+		const auto& outDir = m_bundle.outDir();
+		tmpInfoPlist = fmt::format("{}/Info.plist.json", outDir);
+		std::ofstream(tmpInfoPlist) << infoPropertyListContent << std::endl;
+	}
 
 	const auto& version = m_state.info.version();
 	const auto& appName = m_bundle.appName();
-	const auto& bundleIdentifier = macosBundle.bundleIdentifier();
+	// const auto& bundleIdentifier = macosBundle.bundleIdentifier();
 	const auto& bundleName = macosBundle.bundleName();
 
 	const std::string outInfoPropertyList = fmt::format("{}/Info.plist", m_bundlePath);
 
-	if (!m_state.tools.plistConvertToBinary(infoPropertyList, outInfoPropertyList, m_cleanOutput))
-		return false;
+	{
+		const auto& plistInput = !tmpInfoPlist.empty() ? tmpInfoPlist : infoPropertyList;
+		if (!m_state.tools.plistConvertToBinary(plistInput, outInfoPropertyList, m_cleanOutput))
+			return false;
+
+		if (!tmpInfoPlist.empty())
+		{
+			Commands::remove(tmpInfoPlist, m_cleanOutput);
+			tmpInfoPlist.clear();
+		}
+	}
 
 	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, m_cleanOutput))
 		return false;
@@ -311,8 +329,8 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", appName, m_cleanOutput))
 		return false;
 
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, m_cleanOutput))
-		return false;
+	// if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, m_cleanOutput))
+	// 	return false;
 
 	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version, m_cleanOutput))
 		return false;

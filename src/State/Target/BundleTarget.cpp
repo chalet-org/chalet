@@ -92,28 +92,6 @@ void BundleTarget::setAppName(const std::string& inValue)
 }
 
 /*****************************************************************************/
-const std::string& BundleTarget::shortDescription() const noexcept
-{
-	return m_shortDescription;
-}
-
-void BundleTarget::setShortDescription(const std::string& inValue)
-{
-	m_shortDescription = inValue;
-}
-
-/*****************************************************************************/
-const std::string& BundleTarget::longDescription() const noexcept
-{
-	return m_longDescription;
-}
-
-void BundleTarget::setLongDescription(const std::string& inValue)
-{
-	m_longDescription = inValue;
-}
-
-/*****************************************************************************/
 const std::string& BundleTarget::outDir() const noexcept
 {
 	return m_distDir;

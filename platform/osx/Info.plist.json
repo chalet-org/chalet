@@ -1,7 +1,7 @@
 {
 	"CFBundleName": "${bundleName}",
 	"CFBundleDisplayName": "${appName}",
-	"CFBundleIdentifier": "${bundleIdentifier}",
+	"CFBundleIdentifier": "com.developer.chalet",
 	"CFBundleVersion": "${version}",
 	"CFBundleDevelopmentRegion": "en",
 	"CFBundleInfoDictionaryVersion": "6.0",

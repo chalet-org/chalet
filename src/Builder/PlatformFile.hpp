@@ -10,13 +10,11 @@ namespace chalet
 {
 namespace PlatformFile
 {
-constexpr std::string_view linuxDesktopEntry();
-constexpr std::string_view macosInfoPlist();
-constexpr std::string_view macosDmgApplescript();
-constexpr std::string_view windowsAppManifest();
+std::string linuxDesktopEntry();
+std::string macosInfoPlist();
+std::string macosDmgApplescript();
+std::string windowsAppManifest();
 }
 }
-
-#include "Builder/PlatformFile.inl"
 
 #endif // CHALET_PLATFORM_FILE_HPP

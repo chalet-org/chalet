@@ -8,7 +8,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-constexpr std::string_view PlatformFile::linuxDesktopEntry()
+std::string PlatformFile::linuxDesktopEntry()
 {
 	return R"([Desktop Entry]
 Version=1.0
@@ -18,18 +18,18 @@ Terminal=false
 Exec=${mainProject}
 Path=${path}
 Name=${appName}
-Comment=${shortDescription}
+Comment=${description}
 Icon=${icon}
 )";
 }
 
 /*****************************************************************************/
-constexpr std::string_view PlatformFile::macosInfoPlist()
+std::string PlatformFile::macosInfoPlist()
 {
 	return R"({
 	"CFBundleName": "${bundleName}",
 	"CFBundleDisplayName": "${appName}",
-	"CFBundleIdentifier": "${bundleIdentifier}",
+	"CFBundleIdentifier": "com.developer.app",
 	"CFBundleVersion": "${version}",
 	"CFBundleDevelopmentRegion": "en",
 	"CFBundleInfoDictionaryVersion": "6.0",
@@ -43,7 +43,7 @@ constexpr std::string_view PlatformFile::macosInfoPlist()
 }
 
 /*****************************************************************************/
-constexpr std::string_view PlatformFile::macosDmgApplescript()
+std::string PlatformFile::macosDmgApplescript()
 {
 	return R"(set appName to system attribute "appName"
 set appNameExt to appName & ".app"
@@ -72,7 +72,7 @@ end tell
 }
 
 /*****************************************************************************/
-constexpr std::string_view PlatformFile::windowsAppManifest()
+std::string PlatformFile::windowsAppManifest()
 {
 	return R"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
@@ -81,7 +81,7 @@ constexpr std::string_view PlatformFile::windowsAppManifest()
 		processorArchitecture="ia64"
 		version="1.0.0.0"
 		type="win32" />
-	<description>${longDescription}</description>
+	<description>${description}</description>
 	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
 		<security>
 			<requestedPrivileges>

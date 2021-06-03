@@ -137,8 +137,7 @@
 	"distribution": {
 		"Chalet": {
 			"appName": "Chalet",
-			"shortDescription": "Chalet Build System",
-			"longDescription": "A Modern C/C++ Build System for GCC/Clang",
+			"description": "A Modern C/C++ Build System for GCC/Clang",
 			"outDir": "dist",
 			"configuration": "Release",
 			"projects": [
@@ -153,9 +152,20 @@
 			],
 			"macos": {
 				"bundleName": "Chalet",
-				"bundleIdentifier": "com.developer.chalet",
 				"icon": "platform/chalet-logo.png",
-				"infoPropertyList": "platform/osx/Info.plist.json",
+				"infoPropertyList": {
+					"CFBundleName": "${bundleName}",
+					"CFBundleDisplayName": "${appName}",
+					"CFBundleIdentifier": "com.developer.app",
+					"CFBundleVersion": "${version}",
+					"CFBundleDevelopmentRegion": "en",
+					"CFBundleInfoDictionaryVersion": "6.0",
+					"CFBundlePackageType": "APPL",
+					"CFBundleSignature": "????",
+					"CFBundleExecutable": "${mainProject}",
+					"CFBundleIconFile": "${icon}",
+					"NSHighResolutionCapable": true
+				},
 				"makeDmg": false,
 				"dmgBackground": {
 					"1x": "platform/osx/dmg-background.png",

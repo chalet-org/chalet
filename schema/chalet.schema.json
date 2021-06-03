@@ -56,6 +56,9 @@
 			"uniqueItems": true,
 			"type": "array"
 		},
+		"distribution-description": {
+			"type": "string"
+		},
 		"distribution-exclude": {
 			"items": {
 				"type": "string"
@@ -82,23 +85,16 @@
 			"description": "Variables to describe the linux application.",
 			"type": "object"
 		},
-		"distribution-longDescription": {
-			"type": "string"
-		},
 		"distribution-macos": {
 			"type": "object",
 			"description": "Variables to describe the macos application bundle.",
 			"additionalProperties": false,
 			"required": [
 				"bundleName",
-				"bundleIdentifier",
 				"icon",
 				"infoPropertyList"
 			],
 			"properties": {
-				"bundleIdentifier": {
-					"type": "string"
-				},
 				"bundleName": {
 					"type": "string"
 				},
@@ -108,6 +104,10 @@
 							"type": "string"
 						},
 						{
+							"type": "object",
+							"required": [
+								"1x"
+							],
 							"properties": {
 								"1x": {
 									"type": "string"
@@ -115,11 +115,7 @@
 								"2x": {
 									"type": "string"
 								}
-							},
-							"required": [
-								"1x"
-							],
-							"type": "object"
+							}
 						}
 					]
 				},
@@ -134,7 +130,27 @@
 					"type": "string"
 				},
 				"infoPropertyList": {
-					"type": "string"
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "object",
+							"default": {
+								"CFBundleName": "${bundleName}",
+								"CFBundleDisplayName": "${appName}",
+								"CFBundleIdentifier": "com.developer.app",
+								"CFBundleVersion": "${version}",
+								"CFBundleDevelopmentRegion": "en",
+								"CFBundleInfoDictionaryVersion": "6.0",
+								"CFBundlePackageType": "APPL",
+								"CFBundleSignature": "????",
+								"CFBundleExecutable": "${mainProject}",
+								"CFBundleIconFile": "${icon}",
+								"NSHighResolutionCapable": true
+							}
+						}
+					]
 				},
 				"makeDmg": {
 					"type": "boolean",
@@ -157,9 +173,6 @@
 				"description": "The name of the project",
 				"pattern": "^[\\w\\-\\+\\.]{3,}$"
 			}
-		},
-		"distribution-shortDescription": {
-			"type": "string"
 		},
 		"distribution-windows": {
 			"type": "object",
@@ -203,8 +216,8 @@
 				"linux": {
 					"$ref": "#/definitions/distribution-linux"
 				},
-				"longDescription": {
-					"$ref": "#/definitions/distribution-longDescription"
+				"description": {
+					"$ref": "#/definitions/distribution-description"
 				},
 				"macos": {
 					"$ref": "#/definitions/distribution-macos"
@@ -214,9 +227,6 @@
 				},
 				"projects": {
 					"$ref": "#/definitions/distribution-projects"
-				},
-				"shortDescription": {
-					"$ref": "#/definitions/distribution-shortDescription"
 				},
 				"windows": {
 					"$ref": "#/definitions/distribution-windows"

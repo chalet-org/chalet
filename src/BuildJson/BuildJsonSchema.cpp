@@ -5,6 +5,7 @@
 
 #include "BuildJson/BuildJsonSchema.hpp"
 
+#include "Builder/PlatformFile.hpp"
 #include "Libraries/Format.hpp"
 #include "Utility/String.hpp"
 #include "Utility/SuppressIntellisense.hpp"
@@ -103,6 +104,10 @@ Json Schema::getBuildJson()
 		"type": "array"
 	})json"_ojson;
 
+	ret[kDefinitions]["distribution-description"] = R"json({
+		"type": "string"
+	})json"_ojson;
+
 	ret[kDefinitions]["distribution-exclude"] = R"json({
 		"items": {
 			"type": "string"
@@ -131,24 +136,16 @@ Json Schema::getBuildJson()
 		"type": "object"
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-longDescription"] = R"json({
-		"type": "string"
-	})json"_ojson;
-
 	ret[kDefinitions]["distribution-macos"] = R"json({
 		"type": "object",
 		"description": "Variables to describe the macos application bundle.",
 		"additionalProperties": false,
 		"required": [
 			"bundleName",
-			"bundleIdentifier",
 			"icon",
 			"infoPropertyList"
 		],
 		"properties": {
-			"bundleIdentifier": {
-				"type": "string"
-			},
 			"bundleName": {
 				"type": "string"
 			},
@@ -158,6 +155,10 @@ Json Schema::getBuildJson()
 						"type": "string"
 					},
 					{
+						"type": "object",
+						"required": [
+							"1x"
+						],
 						"properties": {
 							"1x": {
 								"type": "string"
@@ -165,11 +166,7 @@ Json Schema::getBuildJson()
 							"2x": {
 								"type": "string"
 							}
-						},
-						"required": [
-							"1x"
-						],
-						"type": "object"
+						}
 					}
 				]
 			},
@@ -184,7 +181,14 @@ Json Schema::getBuildJson()
 				"type": "string"
 			},
 			"infoPropertyList": {
-				"type": "string"
+				"anyOf": [
+					{
+						"type": "string"
+					},
+					{
+						"type": "object"
+					}
+				]
 			},
 			"makeDmg": {
 				"type": "boolean",
@@ -193,6 +197,7 @@ Json Schema::getBuildJson()
 			}
 		}
 	})json"_ojson;
+	ret[kDefinitions]["distribution-macos"]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFile::macosInfoPlist());
 
 	ret[kDefinitions]["distribution-outDir"] = R"json({
 		"type": "string",
@@ -210,10 +215,6 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 	ret[kDefinitions]["distribution-projects"][kItems][kPattern] = patternProjectName;
-
-	ret[kDefinitions]["distribution-shortDescription"] = R"json({
-		"type": "string"
-	})json"_ojson;
 
 	ret[kDefinitions]["distribution-windows"] = R"json({
 		"type": "object",
@@ -258,8 +259,8 @@ Json Schema::getBuildJson()
 			"linux": {
 				"$ref": "#/definitions/distribution-linux"
 			},
-			"longDescription": {
-				"$ref": "#/definitions/distribution-longDescription"
+			"description": {
+				"$ref": "#/definitions/distribution-description"
 			},
 			"macos": {
 				"$ref": "#/definitions/distribution-macos"
@@ -269,9 +270,6 @@ Json Schema::getBuildJson()
 			},
 			"projects": {
 				"$ref": "#/definitions/distribution-projects"
-			},
-			"shortDescription": {
-				"$ref": "#/definitions/distribution-shortDescription"
 			},
 			"windows": {
 				"$ref": "#/definitions/distribution-windows"

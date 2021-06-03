@@ -32,12 +32,6 @@ struct BundleTarget final : public IBuildTarget
 	const std::string& appName() const noexcept;
 	void setAppName(const std::string& inValue);
 
-	const std::string& shortDescription() const noexcept;
-	void setShortDescription(const std::string& inValue);
-
-	const std::string& longDescription() const noexcept;
-	void setLongDescription(const std::string& inValue);
-
 	const std::string& outDir() const noexcept;
 	void setOutDir(const std::string& inValue);
 
@@ -70,8 +64,6 @@ private:
 	StringList m_excludes;
 
 	std::string m_appName;
-	std::string m_shortDescription;
-	std::string m_longDescription;
 	std::string m_distDir{ "dist" };
 	std::string m_configuration;
 

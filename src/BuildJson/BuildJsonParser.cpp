@@ -914,11 +914,8 @@ bool BuildJsonParser::parseBundle(BundleTarget& outBundle, const Json& inNode)
 	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "appName"))
 		outBundle.setAppName(val);
 
-	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "shortDescription"))
-		outBundle.setShortDescription(val);
-
-	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "longDescription"))
-		outBundle.setLongDescription(val);
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "description"))
+		outBundle.setDescription(val);
 
 	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "outDir"))
 		outBundle.setOutDir(val);
@@ -1010,22 +1007,29 @@ bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNo
 		assigned++;
 	}
 
-	if (std::string val; m_buildJson->assignStringAndValidate(val, macosNode, "bundleIdentifier"))
-	{
-		macosBundle.setBundleIdentifier(val);
-		assigned++;
-	}
-
 	if (std::string val; m_buildJson->assignStringAndValidate(val, macosNode, "icon"))
 	{
 		macosBundle.setIcon(val);
 		assigned++;
 	}
 
-	if (std::string val; m_buildJson->assignStringAndValidate(val, macosNode, "infoPropertyList"))
+	const std::string kInfoPropertyList{ "infoPropertyList" };
+	if (macosNode.contains(kInfoPropertyList))
 	{
-		macosBundle.setInfoPropertyList(val);
-		assigned++;
+		auto& infoPlistNode = macosNode.at(kInfoPropertyList);
+		if (infoPlistNode.is_object())
+		{
+			macosBundle.setInfoPropertyListContent(infoPlistNode.dump());
+			assigned++;
+		}
+		else
+		{
+			if (std::string val; m_buildJson->assignStringAndValidate(val, macosNode, kInfoPropertyList))
+			{
+				macosBundle.setInfoPropertyList(val);
+				assigned++;
+			}
+		}
 	}
 
 	if (bool val = false; m_buildJson->assignFromKey(val, macosNode, "makeDmg"))
@@ -1056,9 +1060,9 @@ bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNo
 	if (assigned == 0)
 		return false; // not an error
 
-	if (assigned >= 1 && assigned < 4)
+	if (assigned >= 1 && assigned < 3)
 	{
-		Diagnostic::error(fmt::format("{}: '{bundle}.macos.bundleName', '{bundle}.macos.bundleIdentifier' & '{bundle}.macos.icon' are required.",
+		Diagnostic::error(fmt::format("{}: '{bundle}.macos.bundleName' & '{bundle}.macos.icon' are required.",
 			m_filename,
 			fmt::arg("bundle", kKeyBundle)));
 		return false;

@@ -6,5 +6,5 @@ Terminal=false
 Exec=${mainProject}
 Path=${path}
 Name=${appName}
-Comment=${shortDescription}
+Comment=${description}
 Icon=${icon}
