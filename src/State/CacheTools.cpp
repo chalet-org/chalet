@@ -722,6 +722,13 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 				beg++;
 
 			std::string dependency = line.substr(beg, end);
+			// rpath, executable_path, etc
+			if (String::startsWith('@', dependency))
+			{
+				auto firstSlash = dependency.find('/');
+				if (firstSlash != std::string::npos)
+					dependency = dependency.substr(firstSlash + 1);
+			}
 			List::addIfDoesNotExist(outList, std::move(dependency));
 		}
 

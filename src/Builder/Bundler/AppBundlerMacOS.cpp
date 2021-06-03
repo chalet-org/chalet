@@ -180,6 +180,14 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inRPath) const
 
 	StringList dylibs = m_bundle.macosBundle().dylibs();
 
+	// Version A: Gets all dylibs and tries to update @rpath values
+	/*for (auto& dep : m_bundle.dependencies())
+	{
+		if (String::endsWith(".dylib", dep))
+			List::addIfDoesNotExist(dylibs, dep);
+	}*/
+
+	// Version B: Assume dylibs not part of project have been set correctly
 	if (m_bundle.includeDependentSharedLibraries())
 	{
 		for (auto& target : m_state.targets)
@@ -191,7 +199,10 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inRPath) const
 				{
 					const auto targetPath = fmt::format("{}/{}", buildOutputDir, project.outputFile());
 					if (!Commands::pathExists(targetPath))
+					{
+						Diagnostic::error(fmt::format("Path doesn't exist for target: {}", targetPath));
 						return false;
+					}
 
 					// if (!Commands::copy(targetPath, m_frameworkPath, m_cleanOutput))
 					// 	return false;
@@ -202,6 +213,7 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inRPath) const
 		}
 	}
 
+	// Process dylibs
 	for (auto& dylib : dylibs)
 	{
 		// TODO: At the moment, this expects the full path
@@ -215,19 +227,43 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inRPath) const
 			{
 				d = dylib;
 				if (!Commands::pathExists(d))
-					return false;
+				{
+					bool res = false;
+					for (auto& p : m_state.environment.path())
+					{
+						std::string newPath = fmt::format("{}/{}", p, d);
+						res |= Commands::pathExists(newPath);
+						if (res)
+						{
+							d = std::move(newPath);
+							break;
+						}
+					}
+
+					if (!res)
+					{
+						Diagnostic::error(fmt::format("Dependant dylib was not found in path: {}", d));
+						return false;
+					}
+				}
 
 				dylib = filename;
 			}
 
 			if (!Commands::copy(d, m_executablePath, m_cleanOutput))
+			{
+				Diagnostic::error(fmt::format("Error copying dylib: {}", d));
 				return false;
+			}
 
 			dylib = fmt::format("{}/{}", m_executablePath, dylib);
 		}
 
 		if (!Commands::subprocess({ installNameTool, "-change", dylib, fmt::format("@rpath/{}", filename), inRPath }, m_cleanOutput))
+		{
+			Diagnostic::error("install_name_tool error");
 			return false;
+		}
 	}
 
 	// all should be copied by this point
@@ -296,7 +332,10 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 	if (infoPropertyList.empty())
 	{
 		if (infoPropertyListContent.empty())
+		{
+			Diagnostic::error("No info plist or plist content");
 			return true;
+		}
 
 		const auto& outDir = m_bundle.outDir();
 		tmpInfoPlist = fmt::format("{}/Info.plist.json", outDir);
