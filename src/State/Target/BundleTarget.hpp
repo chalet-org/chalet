@@ -29,9 +29,6 @@ struct BundleTarget final : public IBuildTarget
 	const BundleWindows& windowsBundle() const noexcept;
 	void setWindowsBundle(BundleWindows&& inValue);
 
-	const std::string& appName() const noexcept;
-	void setAppName(const std::string& inValue);
-
 	const std::string& outDir() const noexcept;
 	void setOutDir(const std::string& inValue);
 
@@ -63,7 +60,6 @@ private:
 	StringList m_dependencies;
 	StringList m_excludes;
 
-	std::string m_appName;
 	std::string m_distDir{ "dist" };
 	std::string m_configuration;
 

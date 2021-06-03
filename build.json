@@ -136,7 +136,6 @@
 	},
 	"distribution": {
 		"Chalet": {
-			"appName": "Chalet",
 			"description": "A Modern C/C++ Build System for GCC/Clang",
 			"outDir": "dist",
 			"configuration": "Release",
@@ -155,7 +154,7 @@
 				"icon": "platform/chalet-logo.png",
 				"infoPropertyList": {
 					"CFBundleName": "${bundleName}",
-					"CFBundleDisplayName": "${appName}",
+					"CFBundleDisplayName": "${name}",
 					"CFBundleIdentifier": "com.developer.app",
 					"CFBundleVersion": "${version}",
 					"CFBundleDevelopmentRegion": "en",

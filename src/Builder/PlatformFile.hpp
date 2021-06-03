@@ -12,7 +12,7 @@ namespace PlatformFile
 {
 std::string linuxDesktopEntry();
 std::string macosInfoPlist();
-std::string macosDmgApplescript();
+std::string macosDmgApplescript(const std::string& inAppName);
 std::string windowsAppManifest();
 }
 }

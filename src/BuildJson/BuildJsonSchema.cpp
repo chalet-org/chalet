@@ -86,11 +86,6 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 
 	// distribution
-	ret[kDefinitions]["distribution-appName"] = R"json({
-		"description": "The name of the app, if different from the workspace name",
-		"type": "string"
-	})json"_ojson;
-
 	ret[kDefinitions]["distribution-configuration"] = R"json({
 		"description": "The name of the build configuration to use for the distribution.",
 		"type": "string"
@@ -142,7 +137,6 @@ Json Schema::getBuildJson()
 		"additionalProperties": false,
 		"required": [
 			"bundleName",
-			"icon",
 			"infoPropertyList"
 		],
 		"properties": {
@@ -244,9 +238,6 @@ Json Schema::getBuildJson()
 			"projects"
 		],
 		"properties": {
-			"appName": {
-				"$ref": "#/definitions/distribution-appName"
-			},
 			"configuration": {
 				"$ref": "#/definitions/distribution-configuration"
 			},

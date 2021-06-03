@@ -81,17 +81,6 @@ void BundleTarget::setWindowsBundle(BundleWindows&& inValue)
 }
 
 /*****************************************************************************/
-const std::string& BundleTarget::appName() const noexcept
-{
-	return m_appName;
-}
-
-void BundleTarget::setAppName(const std::string& inValue)
-{
-	m_appName = inValue;
-}
-
-/*****************************************************************************/
 const std::string& BundleTarget::outDir() const noexcept
 {
 	return m_distDir;

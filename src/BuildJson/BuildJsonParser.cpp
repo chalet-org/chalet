@@ -911,9 +911,6 @@ bool BuildJsonParser::parseDistribution(const Json& inNode)
 /*****************************************************************************/
 bool BuildJsonParser::parseBundle(BundleTarget& outBundle, const Json& inNode)
 {
-	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "appName"))
-		outBundle.setAppName(val);
-
 	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "description"))
 		outBundle.setDescription(val);
 
@@ -1008,10 +1005,7 @@ bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNo
 	}
 
 	if (std::string val; m_buildJson->assignStringAndValidate(val, macosNode, "icon"))
-	{
 		macosBundle.setIcon(val);
-		assigned++;
-	}
 
 	const std::string kInfoPropertyList{ "infoPropertyList" };
 	if (macosNode.contains(kInfoPropertyList))
@@ -1060,9 +1054,9 @@ bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNo
 	if (assigned == 0)
 		return false; // not an error
 
-	if (assigned >= 1 && assigned < 3)
+	if (assigned >= 1 && assigned < 2)
 	{
-		Diagnostic::error(fmt::format("{}: '{bundle}.macos.bundleName' & '{bundle}.macos.icon' are required.",
+		Diagnostic::error(fmt::format("{}: '{bundle}.macos.bundleName' is required.",
 			m_filename,
 			fmt::arg("bundle", kKeyBundle)));
 		return false;

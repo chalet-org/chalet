@@ -109,7 +109,7 @@ bool AppBundlerLinux::bundleForPlatform()
 			result &= Commands::readFileAndReplace(outDesktopEntry, [&](std::string& fileContents) {
 				String::replaceAll(fileContents, "${mainProject}", fs::absolute(filename).string());
 				String::replaceAll(fileContents, "${path}", fs::absolute(bundlePath).string());
-				String::replaceAll(fileContents, "${appName}", m_bundle.appName());
+				String::replaceAll(fileContents, "${name}", m_bundle.name());
 				String::replaceAll(fileContents, "${description}", m_bundle.description());
 				String::replaceAll(fileContents, "${icon}", fs::absolute(iconPath).string());
 

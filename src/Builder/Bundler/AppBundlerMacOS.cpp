@@ -5,6 +5,7 @@
 
 #include "Builder/Bundler/AppBundlerMacOS.hpp"
 
+#include "Builder/PlatformFile.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -17,7 +18,7 @@ namespace chalet
 /*
 	{
 		"CFBundleName": "${bundleName}",
-		"CFBundleDisplayName": "${appName}",
+		"CFBundleDisplayName": "${name}",
 		"CFBundleIdentifier": "${bundleIdentifier}",
 		"CFBundleVersion": "${version}",
 		"CFBundleDevelopmentRegion": "en",
@@ -299,7 +300,7 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 	}
 
 	const auto& version = m_state.info.version();
-	const auto& appName = m_bundle.appName();
+	const auto& name = m_bundle.name();
 	// const auto& bundleIdentifier = macosBundle.bundleIdentifier();
 	const auto& bundleName = macosBundle.bundleName();
 
@@ -326,7 +327,7 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 			return false;
 	}
 
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", appName, m_cleanOutput))
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", name, m_cleanOutput))
 		return false;
 
 	// if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, m_cleanOutput))
@@ -451,31 +452,7 @@ bool AppBundlerMacOS::createDmgImage() const
 	if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath), m_cleanOutput))
 		return false;
 
-	// const std::string applescriptPath = "env/osx/dmg.applescript";
-	// Environment::set("CHALET_MACOS_BUNDLE_NAME", bundleName);
-
-	const std::string applescriptText = fmt::format(R"applescript(set bundleName to "{bundleName}"
-set appNameExt to "{bundleName}.app"
-tell application "Finder"
- tell disk bundleName
-  open
-  set current view of container window to icon view
-  set toolbar visible of container window to false
-  set statusbar visible of container window to false
-  set the bounds of container window to {{0, 0, 512, 342}}
-  set viewOptions to the icon view options of container window
-  set arrangement of viewOptions to not arranged
-  set icon size of viewOptions to 80
-  set background picture of viewOptions to file ".background:background.tiff"
-  set position of item appNameExt of container window to {{120, 188}}
-  set position of item "Applications" of container window to {{392, 188}}
-  set position of item ".background" of container window to {{120, 388}}
-  close
-  update without registering applications
-  delay 2
- end tell
-end tell)applescript",
-		FMT_ARG(bundleName));
+	const auto applescriptText = PlatformFile::macosDmgApplescript(bundleName);
 
 	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }, m_cleanOutput))
 		return false;
