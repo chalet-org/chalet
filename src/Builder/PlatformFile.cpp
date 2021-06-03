@@ -47,9 +47,9 @@ std::string PlatformFile::macosInfoPlist()
 /*****************************************************************************/
 std::string PlatformFile::macosDmgApplescript(const std::string& inAppName)
 {
-	return fmt::format(R"applescript(set appNameExt to "{bundleName}.app"
+	return fmt::format(R"applescript(set appNameExt to "{appName}.app"
 tell application "Finder"
- tell disk "{bundleName}"
+ tell disk "{appName}"
   open
   set current view of container window to icon view
   set toolbar visible of container window to false
