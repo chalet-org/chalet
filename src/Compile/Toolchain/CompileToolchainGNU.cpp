@@ -193,13 +193,7 @@ StringList CompileToolchainGNU::getLinkerTargetCommand(const std::string& output
 	switch (m_project.kind())
 	{
 		case ProjectKind::SharedLibrary: {
-			// TODO: any difference in MinGW Clang vs GCC
-			if (m_config.isMingw())
-				return getMingwDllTargetCommand(outputFile, sourceObjs, outputFileBase);
-			else if (m_config.isClang())
-				return getDylibTargetCommand(outputFile, sourceObjs);
-			else
-				return getDynamicLibTargetCommand(outputFile, sourceObjs);
+			return getDynamicLibTargetCommand(outputFile, sourceObjs, outputFileBase);
 		}
 
 		case ProjectKind::StaticLibrary: {
@@ -216,13 +210,14 @@ StringList CompileToolchainGNU::getLinkerTargetCommand(const std::string& output
 }
 
 /*****************************************************************************/
-StringList CompileToolchainGNU::getMingwDllTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const
 {
 	StringList ret;
 
 	addExectuable(ret, m_config.compilerExecutable());
 
 	ret.push_back("-shared");
+	if (m_config.isMingw())
 	{
 		std::string mingwLinkerOptions;
 		if (m_project.windowsOutputDef())
@@ -231,8 +226,13 @@ StringList CompileToolchainGNU::getMingwDllTargetCommand(const std::string& outp
 		}
 		mingwLinkerOptions += fmt::format("-Wl,--out-implib={}.a", outputFileBase);
 		ret.push_back(std::move(mingwLinkerOptions));
+
+		ret.push_back("-Wl,--dll");
 	}
-	ret.push_back("-Wl,--dll");
+	else
+	{
+		ret.push_back("-fPIC");
+	}
 
 	addStripSymbolsOption(ret);
 	addLinkerOptions(ret);
@@ -260,78 +260,7 @@ StringList CompileToolchainGNU::getMingwDllTargetCommand(const std::string& outp
 }
 
 /*****************************************************************************/
-StringList CompileToolchainGNU::getDylibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
-{
-	StringList ret;
-
-	addExectuable(ret, m_config.compilerExecutable());
-
-	ret.push_back("-dynamiclib");
-	// ret.push_back("-fPIC");
-	// ret.push_back("-flat_namespace");
-
-	addStripSymbolsOption(ret);
-	addLinkerOptions(ret);
-	addMacosSysRootOption(ret);
-	addProfileInformationLinkerOption(ret);
-	addLinkTimeOptimizationOption(ret);
-	addThreadModelLinkerOption(ret);
-	addArchitecture(ret);
-	addLinkerScripts(ret);
-	addLibStdCppLinkerOption(ret);
-	addStaticCompilerLibraryOptions(ret);
-	addPlatformGuiApplicationFlag(ret);
-	addMacosFrameworkOptions(ret);
-
-	addLibDirs(ret);
-
-	ret.push_back("-o");
-	ret.push_back(outputFile);
-	addSourceObjects(ret, sourceObjs);
-
-	addLinks(ret);
-	addObjectiveCxxLink(ret);
-
-	return ret;
-}
-
-/*****************************************************************************/
-StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
-{
-	StringList ret;
-
-	addExectuable(ret, m_config.compilerExecutable());
-
-	ret.push_back("-shared");
-	ret.push_back("-fPIC");
-
-	addStripSymbolsOption(ret);
-	addLinkerOptions(ret);
-	addMacosSysRootOption(ret);
-	addProfileInformationLinkerOption(ret);
-	addLinkTimeOptimizationOption(ret);
-	addThreadModelLinkerOption(ret);
-	addArchitecture(ret);
-	addLinkerScripts(ret);
-	addLibStdCppLinkerOption(ret);
-	addStaticCompilerLibraryOptions(ret);
-	addPlatformGuiApplicationFlag(ret);
-	addMacosFrameworkOptions(ret);
-
-	addLibDirs(ret);
-
-	ret.push_back("-o");
-	ret.push_back(outputFile);
-	addSourceObjects(ret, sourceObjs);
-
-	addLinks(ret);
-	addObjectiveCxxLink(ret);
-
-	return ret;
-}
-
-/*****************************************************************************/
-StringList CompileToolchainGNU::getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
+StringList CompileToolchainGNU::getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs) const
 {
 	StringList ret;
 
@@ -357,7 +286,7 @@ StringList CompileToolchainGNU::getStaticLibTargetCommand(const std::string& out
 }
 
 /*****************************************************************************/
-StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
+StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs) const
 {
 	StringList ret;
 
@@ -446,7 +375,10 @@ void CompileToolchainGNU::addLibDirs(StringList& outArgList) const
 			outArgList.push_back(prefix + dir);
 	}
 
-	outArgList.push_back(prefix + m_state.paths.buildOutputDir());
+	if (m_quotePaths)
+		outArgList.push_back(fmt::format("{}\"{}\"", prefix, m_state.paths.buildOutputDir()));
+	else
+		outArgList.push_back(prefix + m_state.paths.buildOutputDir());
 
 #if !defined(CHALET_WIN32)
 	// must be last

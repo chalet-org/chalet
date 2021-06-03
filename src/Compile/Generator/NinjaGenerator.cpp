@@ -219,8 +219,6 @@ std::string NinjaGenerator::getPchRule()
 		// Have to pass in pchTarget here because MSVC's PCH compile command is wack
 		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", pchTarget, m_generateDependencies, dependency));
 
-		// TODO: Unique to each PCH
-
 		ret = fmt::format(R"ninja(
 rule pch_{hash}
   deps = {deps}{depFile}

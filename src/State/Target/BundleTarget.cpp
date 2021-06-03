@@ -102,6 +102,17 @@ void BundleTarget::setConfiguration(const std::string& inValue)
 }
 
 /*****************************************************************************/
+const std::string& BundleTarget::mainProject() const noexcept
+{
+	return m_mainProject;
+}
+
+void BundleTarget::setMainProject(const std::string& inValue)
+{
+	m_mainProject = inValue;
+}
+
+/*****************************************************************************/
 bool BundleTarget::includeDependentSharedLibraries() const noexcept
 {
 	return m_includeDependentSharedLibraries;

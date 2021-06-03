@@ -158,6 +158,10 @@
 				}
 			}
 		},
+		"distribution-mainProject": {
+			"type": "string",
+			"description": "The main executable project."
+		},
 		"distribution-outDir": {
 			"type": "string",
 			"description": "The output folder to place the final build along with all of its dependencies.",
@@ -220,6 +224,9 @@
 				},
 				"macos": {
 					"$ref": "#/definitions/distribution-macos"
+				},
+				"mainProject": {
+					"$ref": "#/definitions/distribution-mainProject"
 				},
 				"outDir": {
 					"$ref": "#/definitions/distribution-outDir"

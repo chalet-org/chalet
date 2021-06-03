@@ -211,7 +211,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool 
 /*****************************************************************************/
 void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const
 {
-	auto objects = String::join(inOutput.objectList);
+	auto objects = String::join(inOutput.objectListLinker);
 	Environment::set(fmt::format("SOURCE_OBJS_{}", inHash).c_str(), objects);
 
 	auto depdendencies = String::join(inOutput.dependencyList);

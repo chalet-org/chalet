@@ -75,11 +75,9 @@ protected:
 	virtual void addMacosSysRootOption(StringList& outArgList) const;
 	virtual void addMacosFrameworkOptions(StringList& outArgList) const;
 
-	StringList getMingwDllTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
-	StringList getDylibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
-	StringList getDynamicLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
-	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
-	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
+	virtual StringList getDynamicLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const;
+	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs) const;
+	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs) const;
 
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
 	void initializeArchPresets() const;

@@ -84,10 +84,10 @@ bool AppBundlerLinux::bundleForPlatform()
 
 	fs::path desktopEntryPath{ desktopEntry };
 	auto& bundleProjects = m_bundle.projects();
+	auto& mainProject = m_bundle.mainProject();
 
-	// TODO: Right now this does this for every executable, but shares the same icon
-	//  Will need to rework how to make multiple bundles or something...
-	//  (or just use the runProject, but that might not be desireable)
+	// Match mainProject if defined, otherwise get first executable
+
 	for (auto& target : m_state.targets)
 	{
 		if (target->isProject())
@@ -99,32 +99,40 @@ bool AppBundlerLinux::bundleForPlatform()
 			if (!project.isExecutable())
 				continue;
 
-			const auto filename = fmt::format("{}/{}", bundlePath, project.outputFile());
-			fs::path outDesktopEntry{ bundlePath / fs::path{ fs::path{ filename }.stem().string() + ".desktop" } };
-			std::string desktopEntryString = outDesktopEntry.string();
-			fs::path iconPath = bundlePath / fs::path{ icon }.filename();
+			if (!mainProject.empty() && !String::equals(mainProject, project.name()))
+				continue;
 
-			result &= Commands::copyRename(desktopEntry, desktopEntryString, m_cleanOutput);
-
-			result &= Commands::readFileAndReplace(outDesktopEntry, [&](std::string& fileContents) {
-				String::replaceAll(fileContents, "${mainProject}", fs::absolute(filename).string());
-				String::replaceAll(fileContents, "${path}", fs::absolute(bundlePath).string());
-				String::replaceAll(fileContents, "${name}", m_bundle.name());
-				String::replaceAll(fileContents, "${description}", m_bundle.description());
-				String::replaceAll(fileContents, "${icon}", fs::absolute(iconPath).string());
-
-				String::replaceAll(fileContents, '\\', '/');
-			});
-
-			result &= Commands::setExecutableFlag(filename, m_cleanOutput);
-			result &= Commands::setExecutableFlag(desktopEntryString, m_cleanOutput);
-
-			// TODO: Flag for this?
-			if (!Environment::isContinuousIntegrationServer())
-			{
-				Commands::copy(desktopEntryString, m_applicationsPath, m_cleanOutput);
-			}
+			m_mainExecutable = project.outputFile();
 			break;
+		}
+	}
+
+	if (!m_mainExecutable.empty())
+	{
+		const auto filename = fmt::format("{}/{}", bundlePath, m_mainExecutable);
+		fs::path outDesktopEntry{ bundlePath / fs::path{ fs::path{ filename }.stem().string() + ".desktop" } };
+		std::string desktopEntryString = outDesktopEntry.string();
+		fs::path iconPath = bundlePath / fs::path{ icon }.filename();
+
+		result &= Commands::copyRename(desktopEntry, desktopEntryString, m_cleanOutput);
+
+		result &= Commands::readFileAndReplace(outDesktopEntry, [&](std::string& fileContents) {
+			String::replaceAll(fileContents, "${mainProject}", fs::absolute(filename).string());
+			String::replaceAll(fileContents, "${path}", fs::absolute(bundlePath).string());
+			String::replaceAll(fileContents, "${name}", m_bundle.name());
+			String::replaceAll(fileContents, "${description}", m_bundle.description());
+			String::replaceAll(fileContents, "${icon}", fs::absolute(iconPath).string());
+
+			String::replaceAll(fileContents, '\\', '/');
+		});
+
+		result &= Commands::setExecutableFlag(filename, m_cleanOutput);
+		result &= Commands::setExecutableFlag(desktopEntryString, m_cleanOutput);
+
+		// TODO: Flag for this?
+		if (!Environment::isContinuousIntegrationServer())
+		{
+			Commands::copy(desktopEntryString, m_applicationsPath, m_cleanOutput);
 		}
 	}
 

@@ -635,6 +635,15 @@ std::string MakefileGeneratorGNU::getLinkerPreReqs() const
 		if (target->isProject())
 		{
 			auto& project = static_cast<const ProjectTarget&>(*target);
+			/*if (List::contains(m_project->links(), project.name()))
+			{
+				if (count == 0)
+					ret += " |";
+				ret += " " + m_state.paths.getTargetFilename(project);
+				++count;
+			}
+			else
+			*/
 			if (List::contains(m_project->projectStaticLinks(), project.name()))
 			{
 				if (count == 0)

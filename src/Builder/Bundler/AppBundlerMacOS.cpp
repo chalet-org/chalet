@@ -55,10 +55,11 @@ bool AppBundlerMacOS::bundleForPlatform()
 	m_executablePath = getExecutablePath();
 
 	auto& bundleProjects = m_bundle.projects();
+	auto& mainProject = m_bundle.mainProject();
 
 	std::string lastOutput;
-	// TODO: Like with the linux bundler, this doesn't target a particular executable
-	// This just gets the first
+
+	// Match mainProject if defined, otherwise get first executable
 	for (auto& target : m_state.targets)
 	{
 		if (target->isProject())
@@ -73,6 +74,9 @@ bool AppBundlerMacOS::bundleForPlatform()
 			lastOutput = project.outputFile();
 
 			if (!project.isExecutable())
+				continue;
+
+			if (!mainProject.empty() && !String::equals(mainProject, project.name()))
 				continue;
 
 			// LOG("Main exec:", project.name());

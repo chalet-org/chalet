@@ -27,6 +27,7 @@ public:
 private:
 	fs::path m_home;
 	std::string m_applicationsPath;
+	std::string m_mainExecutable;
 };
 }
 

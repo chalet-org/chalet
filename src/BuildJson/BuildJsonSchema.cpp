@@ -198,6 +198,11 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["distribution-macos"]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFile::macosInfoPlist());
 
+	ret[kDefinitions]["distribution-mainProject"] = R"json({
+		"type": "string",
+		"description": "The main executable project."
+	})json"_ojson;
+
 	ret[kDefinitions]["distribution-outDir"] = R"json({
 		"type": "string",
 		"description": "The output folder to place the final build along with all of its dependencies.",
@@ -263,6 +268,9 @@ Json Schema::getBuildJson()
 			},
 			"macos": {
 				"$ref": "#/definitions/distribution-macos"
+			},
+			"mainProject": {
+				"$ref": "#/definitions/distribution-mainProject"
 			},
 			"outDir": {
 				"$ref": "#/definitions/distribution-outDir"

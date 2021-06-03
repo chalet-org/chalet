@@ -139,6 +139,7 @@
 			"description": "A Modern C/C++ Build System for GCC/Clang",
 			"outDir": "dist",
 			"configuration": "Release",
+			"mainProject": "chalet",
 			"projects": [
 				"chalet"
 			],
