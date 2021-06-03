@@ -218,7 +218,12 @@ bool AppBundler::removeOldFiles(IAppBundler& inBundler)
 {
 	auto& bundle = inBundler.bundle();
 	const auto& outDir = bundle.outDir();
-	Commands::removeRecursively(outDir, m_cleanOutput);
+
+	if (!List::contains(m_removedDirs, outDir))
+	{
+		Commands::removeRecursively(outDir, m_cleanOutput);
+		m_removedDirs.push_back(outDir);
+	}
 
 	if (!inBundler.removeOldFiles())
 		return false;

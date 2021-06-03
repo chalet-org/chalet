@@ -55,6 +55,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	auto& bundleProjects = m_bundle.projects();
 
+	std::string lastOutput;
 	// TODO: Like with the linux bundler, this doesn't target a particular executable
 	// This just gets the first
 	for (auto& target : m_state.targets)
@@ -65,6 +66,14 @@ bool AppBundlerMacOS::bundleForPlatform()
 			if (!List::contains(bundleProjects, project.name()))
 				continue;
 
+			if (project.isStaticLibrary())
+				continue;
+
+			lastOutput = project.outputFile();
+
+			if (!project.isExecutable())
+				continue;
+
 			// LOG("Main exec:", project.name());
 			m_mainExecutable = project.outputFile();
 			break;
@@ -73,13 +82,16 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	if (m_mainExecutable.empty())
 	{
-		Diagnostic::error("No projects defined for bundle");
-		return false;
+		m_mainExecutable = std::move(lastOutput);
+		// return false;
 	}
+
+	if (m_mainExecutable.empty())
+		return true;
 
 	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
 
-	if (!changeRPathOfDependents())
+	if (!changeRPathOfDependents(m_executableOutputPath))
 		return false;
 
 	// No app name = no bundle to make
@@ -152,7 +164,7 @@ std::string AppBundlerMacOS::getResourcePath() const
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::changeRPathOfDependents() const
+bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inRPath) const
 {
 	auto& installNameTool = m_state.tools.installNameUtil();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
@@ -201,7 +213,7 @@ bool AppBundlerMacOS::changeRPathOfDependents() const
 			dylib = fmt::format("{}/{}", m_executablePath, dylib);
 		}
 
-		if (!Commands::subprocess({ installNameTool, "-change", dylib, fmt::format("@rpath/{}", filename), m_executableOutputPath }, m_cleanOutput))
+		if (!Commands::subprocess({ installNameTool, "-change", dylib, fmt::format("@rpath/{}", filename), inRPath }, m_cleanOutput))
 			return false;
 	}
 

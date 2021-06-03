@@ -704,6 +704,9 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 		{
 			std::size_t beg = 0;
 
+			if (String::startsWith("Archive", line))
+				break;
+
 			if (String::contains("/usr/lib", line))
 				continue;
 

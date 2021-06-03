@@ -24,7 +24,7 @@ public:
 	virtual std::string getResourcePath() const final;
 
 private:
-	bool changeRPathOfDependents() const;
+	bool changeRPathOfDependents(const std::string& inRPath) const;
 	bool createBundleIcon();
 	bool createPListAndUpdateCommonKeys() const;
 	bool setExecutablePaths() const;

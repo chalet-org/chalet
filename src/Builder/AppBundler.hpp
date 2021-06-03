@@ -29,6 +29,8 @@ private:
 	BuildState& m_state;
 	const std::string& m_buildFile;
 
+	StringList m_removedDirs;
+
 	bool m_cleanOutput = false;
 };
 }
