@@ -24,7 +24,11 @@ public:
 	virtual std::string getResourcePath() const final;
 
 private:
-	bool changeRpathOfDependents() const;
+	bool changeRPathOfDependents() const;
+	bool createBundleIcon();
+	bool createPListAndUpdateCommonKeys() const;
+	bool setExecutablePaths() const;
+	bool createDmgImage() const;
 
 	const std::string& m_buildFile;
 
@@ -34,6 +38,7 @@ private:
 	std::string m_executablePath;
 	std::string m_mainExecutable;
 	std::string m_executableOutputPath;
+	std::string m_iconBaseName;
 };
 }
 
