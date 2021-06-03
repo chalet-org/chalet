@@ -8,43 +8,39 @@
 namespace chalet
 {
 /*****************************************************************************/
-AppBundlerWindows::AppBundlerWindows(BuildState& inState) :
-	m_state(inState)
+AppBundlerWindows::AppBundlerWindows(BuildState& inState, BundleTarget& inBundle, const bool inCleanOutput) :
+	IAppBundler(inState, inBundle, inCleanOutput)
 {
-	UNUSED(m_state);
 }
 
 /*****************************************************************************/
-bool AppBundlerWindows::removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput)
+bool AppBundlerWindows::removeOldFiles()
 {
-	UNUSED(bundle, inCleanOutput);
-
 	return true;
 }
 
 /*****************************************************************************/
-bool AppBundlerWindows::bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput)
+bool AppBundlerWindows::bundleForPlatform()
 {
-	UNUSED(bundle, inCleanOutput);
 	return true;
 }
 
 /*****************************************************************************/
-std::string AppBundlerWindows::getBundlePath(const BundleTarget& bundle) const
+std::string AppBundlerWindows::getBundlePath() const
 {
-	return bundle.outDir();
+	return m_bundle.outDir();
 }
 
 /*****************************************************************************/
-std::string AppBundlerWindows::getExecutablePath(const BundleTarget& bundle) const
+std::string AppBundlerWindows::getExecutablePath() const
 {
-	return bundle.outDir();
+	return m_bundle.outDir();
 }
 
 /*****************************************************************************/
-std::string AppBundlerWindows::getResourcePath(const BundleTarget& bundle) const
+std::string AppBundlerWindows::getResourcePath() const
 {
-	return bundle.outDir();
+	return m_bundle.outDir();
 }
 
 }

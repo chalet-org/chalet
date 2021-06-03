@@ -12,14 +12,23 @@ namespace chalet
 {
 struct IAppBundler
 {
+	explicit IAppBundler(BuildState& inState, BundleTarget& inBundle, const bool inCleanOutput);
 	virtual ~IAppBundler() = default;
 
-	virtual bool removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput) = 0;
-	virtual bool bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput) = 0;
+	BundleTarget& bundle() const noexcept;
 
-	virtual std::string getBundlePath(const BundleTarget& bundle) const = 0;
-	virtual std::string getExecutablePath(const BundleTarget& bundle) const = 0;
-	virtual std::string getResourcePath(const BundleTarget& bundle) const = 0;
+	virtual bool removeOldFiles() = 0;
+	virtual bool bundleForPlatform() = 0;
+
+	virtual std::string getBundlePath() const = 0;
+	virtual std::string getExecutablePath() const = 0;
+	virtual std::string getResourcePath() const = 0;
+
+protected:
+	BuildState& m_state;
+	BundleTarget& m_bundle;
+
+	bool m_cleanOutput = false;
 };
 }
 

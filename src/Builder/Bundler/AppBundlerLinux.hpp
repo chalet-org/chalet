@@ -15,18 +15,16 @@ namespace chalet
 class AppBundlerLinux : public IAppBundler
 {
 public:
-	explicit AppBundlerLinux(BuildState& inState);
+	explicit AppBundlerLinux(BuildState& inState, BundleTarget& inBundle, const bool inCleanOutput);
 
-	virtual bool removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput) final;
-	virtual bool bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput) final;
+	virtual bool removeOldFiles() final;
+	virtual bool bundleForPlatform() final;
 
-	virtual std::string getBundlePath(const BundleTarget& bundle) const final;
-	virtual std::string getExecutablePath(const BundleTarget& bundle) const final;
-	virtual std::string getResourcePath(const BundleTarget& bundle) const final;
+	virtual std::string getBundlePath() const final;
+	virtual std::string getExecutablePath() const final;
+	virtual std::string getResourcePath() const final;
 
 private:
-	BuildState& m_state;
-
 	fs::path m_home;
 	std::string m_applicationsPath;
 };

@@ -14,17 +14,14 @@ namespace chalet
 class AppBundlerWindows : public IAppBundler
 {
 public:
-	explicit AppBundlerWindows(BuildState& inState);
+	explicit AppBundlerWindows(BuildState& inState, BundleTarget& inBundle, const bool inCleanOutput);
 
-	virtual bool removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput) final;
-	virtual bool bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput) final;
+	virtual bool removeOldFiles() final;
+	virtual bool bundleForPlatform() final;
 
-	virtual std::string getBundlePath(const BundleTarget& bundle) const final;
-	virtual std::string getExecutablePath(const BundleTarget& bundle) const final;
-	virtual std::string getResourcePath(const BundleTarget& bundle) const final;
-
-private:
-	BuildState& m_state;
+	virtual std::string getBundlePath() const final;
+	virtual std::string getExecutablePath() const final;
+	virtual std::string getResourcePath() const final;
 };
 }
 

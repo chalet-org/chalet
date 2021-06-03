@@ -26,22 +26,29 @@
 
 namespace chalet
 {
+namespace
+{
+[[nodiscard]] std::unique_ptr<IAppBundler> getAppBundler(BuildState& inState, const std::string& inBuildFile, BundleTarget& inBundle, const bool inCleanOutput)
+{
+#if defined(CHALET_WIN32)
+	UNUSED(inBuildFile);
+	return std::make_unique<AppBundlerWindows>(inState, inBundle, inCleanOutput);
+#elif defined(CHALET_MACOS)
+	return std::make_unique<AppBundlerMacOS>(inState, inBuildFile, inBundle, inCleanOutput);
+#elif defined(CHALET_LINUX)
+	UNUSED(inBuildFile);
+	return std::make_unique<AppBundlerLinux>(inState, inBundle, inCleanOutput);
+#else
+	Diagnostic::errorAbort("Unimplemented AppBundler requested: ");
+	return nullptr;
+#endif
+}
+}
 /*****************************************************************************/
 AppBundler::AppBundler(BuildState& inState, const std::string& inBuildFile) :
 	m_state(inState),
 	m_buildFile(inBuildFile)
 {
-#if defined(CHALET_WIN32)
-	UNUSED(inBuildFile);
-	m_impl = std::make_unique<AppBundlerWindows>(inState);
-#elif defined(CHALET_MACOS)
-	m_impl = std::make_unique<AppBundlerMacOS>(inState, inBuildFile);
-#elif defined(CHALET_LINUX)
-	UNUSED(inBuildFile);
-	m_impl = std::make_unique<AppBundlerLinux>(inState);
-#else
-	#error "Unknown platform"
-#endif
 
 	m_cleanOutput = m_state.environment.cleanOutput();
 }
@@ -49,19 +56,20 @@ AppBundler::AppBundler(BuildState& inState, const std::string& inBuildFile) :
 /*****************************************************************************/
 bool AppBundler::run()
 {
-	if (!removeOldFiles())
-	{
-		Diagnostic::error("There was an error removing the previous distribution bundles");
-		return false;
-	}
-
 	for (auto& target : m_state.distribution)
 	{
 		// Timer buildTimer;
 
 		if (target->isDistributionBundle())
 		{
-			if (!runBundleTarget(static_cast<BundleTarget&>(*target)))
+			auto bundler = getAppBundler(m_state, m_buildFile, static_cast<BundleTarget&>(*target), m_cleanOutput);
+			if (!removeOldFiles(*bundler))
+			{
+				Diagnostic::error(fmt::format("There was an error removing the previous distribution bundle for: {}", target->name()));
+				return false;
+			}
+
+			if (!runBundleTarget(*bundler))
 				return false;
 		}
 		else if (target->isScript())
@@ -69,6 +77,7 @@ bool AppBundler::run()
 			if (!runScriptTarget(static_cast<const ScriptTarget&>(*target)))
 				return false;
 		}
+
 		// Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
 		// Output::lineBreak();
 	}
@@ -76,14 +85,16 @@ bool AppBundler::run()
 	return true;
 }
 
-bool AppBundler::runBundleTarget(BundleTarget& inBundle)
+/*****************************************************************************/
+bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 {
+	auto& bundle = inBundler.bundle();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	const auto& bundleProjects = inBundle.projects();
+	const auto& bundleProjects = inBundler.bundle().projects();
 
-	const auto bundlePath = m_impl->getBundlePath(inBundle);
-	const auto executablePath = m_impl->getExecutablePath(inBundle);
-	const auto resourcePath = m_impl->getResourcePath(inBundle);
+	const auto bundlePath = inBundler.getBundlePath();
+	const auto executablePath = inBundler.getExecutablePath();
+	const auto resourcePath = inBundler.getResourcePath();
 
 	makeBundlePath(bundlePath, executablePath, resourcePath);
 
@@ -97,7 +108,7 @@ bool AppBundler::runBundleTarget(BundleTarget& inBundle)
 #endif
 
 	StringList depsFromJson;
-	for (auto& dep : inBundle.dependencies())
+	for (auto& dep : bundle.dependencies())
 	{
 		if (!Commands::pathExists(dep))
 			continue;
@@ -132,11 +143,11 @@ bool AppBundler::runBundleTarget(BundleTarget& inBundle)
 		}
 	}
 
-	inBundle.addDependencies(dependencies);
-	inBundle.sortDependencies();
+	bundle.addDependencies(dependencies);
+	bundle.sortDependencies();
 
 	uint copyCount = 0;
-	for (auto& dep : inBundle.dependencies())
+	for (auto& dep : bundle.dependencies())
 	{
 		if (List::contains(depsFromJson, dep))
 			continue;
@@ -161,7 +172,7 @@ bool AppBundler::runBundleTarget(BundleTarget& inBundle)
 #endif
 	}
 
-	Commands::forEachFileMatch(resourcePath, inBundle.excludes(), [this](const fs::path& inPath) {
+	Commands::forEachFileMatch(resourcePath, bundle.excludes(), [this](const fs::path& inPath) {
 		Commands::remove(inPath.string(), m_cleanOutput);
 	});
 
@@ -170,7 +181,7 @@ bool AppBundler::runBundleTarget(BundleTarget& inBundle)
 		Output::lineBreak();
 	}
 
-	if (!m_impl->bundleForPlatform(inBundle, m_cleanOutput))
+	if (!inBundler.bundleForPlatform())
 		return false;
 
 	return true;
@@ -203,20 +214,14 @@ bool AppBundler::runScriptTarget(const ScriptTarget& inScript)
 }
 
 /*****************************************************************************/
-bool AppBundler::removeOldFiles()
+bool AppBundler::removeOldFiles(IAppBundler& inBundler)
 {
-	for (auto& target : m_state.distribution)
-	{
-		if (target->isDistributionBundle())
-		{
-			auto& bundle = static_cast<const BundleTarget&>(*target);
-			const auto& outDir = bundle.outDir();
-			Commands::removeRecursively(outDir, m_cleanOutput);
+	auto& bundle = inBundler.bundle();
+	const auto& outDir = bundle.outDir();
+	Commands::removeRecursively(outDir, m_cleanOutput);
 
-			if (!m_impl->removeOldFiles(bundle, m_cleanOutput))
-				return false;
-		}
-	}
+	if (!inBundler.removeOldFiles())
+		return false;
 
 	return true;
 }
@@ -224,19 +229,17 @@ bool AppBundler::removeOldFiles()
 /*****************************************************************************/
 bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath)
 {
+	StringList dirList{ inBundlePath };
+	List::addIfDoesNotExist(dirList, inExecutablePath);
+	List::addIfDoesNotExist(dirList, inResourcePath);
+
 	// make prod dir
-	if (!Commands::makeDirectory(inBundlePath, m_cleanOutput))
-		return false;
+	for (auto& dir : dirList)
+	{
+		if (!Commands::makeDirectory(dir, m_cleanOutput))
+			return false;
+	}
 
-#if defined(CHALET_MACOS)
-	if (!Commands::makeDirectory(inExecutablePath, m_cleanOutput))
-		return false;
-
-	if (!Commands::makeDirectory(inResourcePath, m_cleanOutput))
-		return false;
-#else
-	UNUSED(inExecutablePath, inResourcePath);
-#endif
 	return true;
 }
 }

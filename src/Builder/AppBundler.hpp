@@ -21,12 +21,10 @@ public:
 	bool run();
 
 private:
-	bool runBundleTarget(BundleTarget& inBundle);
+	bool runBundleTarget(IAppBundler& inBundler);
 	bool runScriptTarget(const ScriptTarget& inScript);
-	bool removeOldFiles();
+	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath);
-
-	std::unique_ptr<IAppBundler> m_impl;
 
 	BuildState& m_state;
 	const std::string& m_buildFile;

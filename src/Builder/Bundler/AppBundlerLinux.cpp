@@ -30,8 +30,8 @@ namespace chalet
 */
 
 /*****************************************************************************/
-AppBundlerLinux::AppBundlerLinux(BuildState& inState) :
-	m_state(inState)
+AppBundlerLinux::AppBundlerLinux(BuildState& inState, BundleTarget& inBundle, const bool m_cleanOutput) :
+	IAppBundler(inState, inBundle, m_cleanOutput)
 {
 	const std::string kUserApplications{ ".local/share/applications" };
 
@@ -42,9 +42,9 @@ AppBundlerLinux::AppBundlerLinux(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool AppBundlerLinux::removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput)
+bool AppBundlerLinux::removeOldFiles()
 {
-	auto& bundleProjects = bundle.projects();
+	auto& bundleProjects = m_bundle.projects();
 
 	for (auto& target : m_state.targets)
 	{
@@ -60,7 +60,7 @@ bool AppBundlerLinux::removeOldFiles(const BundleTarget& bundle, const bool inCl
 			const auto& filename = fs::path{ project.outputFile() }.stem().string();
 			std::string outputFile = fmt::format("{}/{}.desktop", m_applicationsPath, filename);
 
-			static_cast<void>(Commands::remove(outputFile, inCleanOutput));
+			static_cast<void>(Commands::remove(outputFile, m_cleanOutput));
 		}
 	}
 
@@ -68,22 +68,22 @@ bool AppBundlerLinux::removeOldFiles(const BundleTarget& bundle, const bool inCl
 }
 
 /*****************************************************************************/
-bool AppBundlerLinux::bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput)
+bool AppBundlerLinux::bundleForPlatform()
 {
-	const auto& icon = bundle.linuxBundle().icon();
+	const auto& icon = m_bundle.linuxBundle().icon();
 	if (icon.empty())
 		return false;
 
-	const auto& desktopEntry = bundle.linuxBundle().desktopEntry();
-	const std::string bundlePath = getBundlePath(bundle);
+	const auto& desktopEntry = m_bundle.linuxBundle().desktopEntry();
+	const std::string bundlePath = getBundlePath();
 
-	UNUSED(inCleanOutput, desktopEntry);
+	UNUSED(m_cleanOutput, desktopEntry);
 
 	bool result = true;
-	result &= Commands::copy(icon, bundlePath, inCleanOutput);
+	result &= Commands::copy(icon, bundlePath, m_cleanOutput);
 
 	fs::path desktopEntryPath{ desktopEntry };
-	auto& bundleProjects = bundle.projects();
+	auto& bundleProjects = m_bundle.projects();
 
 	// TODO: Right now this does this for every executable, but shares the same icon
 	//  Will need to rework how to make multiple bundles or something...
@@ -104,25 +104,25 @@ bool AppBundlerLinux::bundleForPlatform(const BundleTarget& bundle, const bool i
 			std::string desktopEntryString = outDesktopEntry.string();
 			fs::path iconPath = bundlePath / fs::path{ icon }.filename();
 
-			result &= Commands::copyRename(desktopEntry, desktopEntryString, inCleanOutput);
+			result &= Commands::copyRename(desktopEntry, desktopEntryString, m_cleanOutput);
 
 			result &= Commands::readFileAndReplace(outDesktopEntry, [&](std::string& fileContents) {
 				String::replaceAll(fileContents, "${mainProject}", fs::absolute(filename).string());
 				String::replaceAll(fileContents, "${path}", fs::absolute(bundlePath).string());
-				String::replaceAll(fileContents, "${appName}", bundle.appName());
-				String::replaceAll(fileContents, "${shortDescription}", bundle.shortDescription());
+				String::replaceAll(fileContents, "${appName}", m_bundle.appName());
+				String::replaceAll(fileContents, "${shortDescription}", m_bundle.shortDescription());
 				String::replaceAll(fileContents, "${icon}", fs::absolute(iconPath).string());
 
 				String::replaceAll(fileContents, '\\', '/');
 			});
 
-			result &= Commands::setExecutableFlag(filename, inCleanOutput);
-			result &= Commands::setExecutableFlag(desktopEntryString, inCleanOutput);
+			result &= Commands::setExecutableFlag(filename, m_cleanOutput);
+			result &= Commands::setExecutableFlag(desktopEntryString, m_cleanOutput);
 
 			// TODO: Flag for this?
 			if (!Environment::isContinuousIntegrationServer())
 			{
-				Commands::copy(desktopEntryString, m_applicationsPath, inCleanOutput);
+				Commands::copy(desktopEntryString, m_applicationsPath, m_cleanOutput);
 			}
 			break;
 		}
@@ -134,21 +134,21 @@ bool AppBundlerLinux::bundleForPlatform(const BundleTarget& bundle, const bool i
 }
 
 /*****************************************************************************/
-std::string AppBundlerLinux::getBundlePath(const BundleTarget& bundle) const
+std::string AppBundlerLinux::getBundlePath() const
 {
-	return bundle.outDir();
+	return m_bundle.outDir();
 }
 
 /*****************************************************************************/
-std::string AppBundlerLinux::getExecutablePath(const BundleTarget& bundle) const
+std::string AppBundlerLinux::getExecutablePath() const
 {
-	return bundle.outDir();
+	return m_bundle.outDir();
 }
 
 /*****************************************************************************/
-std::string AppBundlerLinux::getResourcePath(const BundleTarget& bundle) const
+std::string AppBundlerLinux::getResourcePath() const
 {
-	return bundle.outDir();
+	return m_bundle.outDir();
 }
 
 }

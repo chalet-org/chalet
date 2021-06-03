@@ -31,24 +31,56 @@ namespace chalet
 */
 
 /*****************************************************************************/
-AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const std::string& inBuildFile) :
-	m_state(inState),
+AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const std::string& inBuildFile, BundleTarget& inBundle, const bool m_cleanOutput) :
+	IAppBundler(inState, inBundle, m_cleanOutput),
 	m_buildFile(inBuildFile)
 {
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput)
+bool AppBundlerMacOS::removeOldFiles()
 {
-	UNUSED(bundle, inCleanOutput);
-
 	return true;
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput)
+bool AppBundlerMacOS::bundleForPlatform()
 {
-	auto& macosBundle = bundle.macosBundle();
+	auto& macosBundle = m_bundle.macosBundle();
+
+	m_bundlePath = getBundlePath();
+	m_frameworkPath = fmt::format("{}/Frameworks", m_bundlePath);
+	m_resourcePath = getResourcePath();
+	m_executablePath = getExecutablePath();
+
+	auto& bundleProjects = m_bundle.projects();
+
+	// TODO: Like with the linux bundler, this doesn't target a particular executable
+	// This just gets the first
+	for (auto& target : m_state.targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (!List::contains(bundleProjects, project.name()))
+				continue;
+
+			// LOG("Main exec:", project.name());
+			m_mainExecutable = project.outputFile();
+			break;
+		}
+	}
+
+	if (m_mainExecutable.empty())
+	{
+		Diagnostic::error("No projects defined for bundle");
+		return false;
+	}
+
+	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
+
+	if (!changeRpathOfDependents())
+		return false;
 
 	// No app name = no bundle to make
 	// treat it like linux/windows
@@ -59,116 +91,18 @@ bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool i
 	Output::print(Color::Blue, "   Creating the MacOS application bundle...");
 	Output::lineBreak();
 
-	auto& bundleProjects = bundle.projects();
-
-	const auto& outDir = bundle.outDir();
+	const auto& outDir = m_bundle.outDir();
 
 	const auto& version = m_state.info.version();
 	const auto& icon = macosBundle.icon();
-	const auto& appName = bundle.appName();
+	const auto& appName = m_bundle.appName();
 	const auto& bundleIdentifier = macosBundle.bundleIdentifier();
 	const auto& bundleName = macosBundle.bundleName();
 	const auto& infoPropertyList = macosBundle.infoPropertyList();
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	const auto bundlePath = getBundlePath(bundle);
-	const auto frameworkPath = fmt::format("{}/Frameworks", bundlePath);
-	const auto resourcePath = getResourcePath(bundle);
-	const auto executablePath = getExecutablePath(bundle);
 
-	Commands::makeDirectory(frameworkPath, inCleanOutput);
-
-	const auto iconBaseName = String::getPathBaseName(icon);
-	if (!icon.empty())
-	{
-		std::string outIcon;
-		const auto& sips = m_state.tools.sips();
-		bool sipsFound = !sips.empty();
-
-		if (String::endsWith(".png", icon) && sipsFound)
-		{
-			outIcon = fmt::format("{}/{}.icns", resourcePath, iconBaseName);
-
-			if (!Commands::subprocessNoOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
-				return false;
-		}
-		else if (String::endsWith(".icns", icon))
-		{
-			outIcon = fmt::format("{}/{}.icns", resourcePath, iconBaseName);
-
-			if (!Commands::copy(icon, resourcePath, inCleanOutput))
-				return false;
-		}
-		else
-		{
-			if (!icon.empty() && !sipsFound)
-			{
-				Diagnostic::warn(fmt::format("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", m_buildFile, icon));
-			}
-		}
-	}
-
-	// TODO: Like with the linux bundler, this doesn't target a particular executable
-	// This just gets the first
-	std::string mainExecutable;
-	for (auto& target : m_state.targets)
-	{
-		if (target->isProject())
-		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
-			if (!project.isExecutable())
-				continue;
-
-			if (!List::contains(bundleProjects, project.name()))
-				continue;
-
-			// LOG("Main exec:", project.name());
-			mainExecutable = project.outputFile();
-			break;
-		}
-	}
-
-	if (mainExecutable.empty())
-	{
-		Diagnostic::error("No projects defined for bundle");
-		return false;
-	}
-
-	// PList
-	if (!infoPropertyList.empty())
-	{
-		const std::string outInfoPropertyList = fmt::format("{}/Info.plist", bundlePath);
-
-		if (!m_state.tools.plistConvertToBinary(infoPropertyList, outInfoPropertyList, inCleanOutput))
-			return false;
-		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, inCleanOutput))
-			return false;
-		if (!iconBaseName.empty())
-		{
-			if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", iconBaseName, inCleanOutput))
-				return false;
-		}
-		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", appName, inCleanOutput))
-			return false;
-		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, inCleanOutput))
-			return false;
-		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version, inCleanOutput))
-			return false;
-		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", mainExecutable, inCleanOutput))
-			return false;
-	}
-
-	// install_name_tool
 	auto& installNameTool = m_state.tools.installNameUtil();
-	const auto executableOutputPath = fmt::format("{}/{}", executablePath, mainExecutable);
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../MacOS", executableOutputPath }, inCleanOutput))
-		return false;
-
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", executableOutputPath }, inCleanOutput))
-		return false;
-
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Resources", executableOutputPath }, inCleanOutput))
-		return false;
 
 	StringList dylibs = macosBundle.dylibs();
 	for (auto& target : m_state.targets)
@@ -182,7 +116,7 @@ bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool i
 				if (!Commands::pathExists(targetPath))
 					return false;
 
-				// if (!Commands::copy(targetPath, frameworkPath, inCleanOutput))
+				// if (!Commands::copy(targetPath, m_frameworkPath, m_cleanOutput))
 				// 	return false;
 
 				dylibs.push_back(targetPath);
@@ -195,10 +129,10 @@ bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool i
 		// TODO: At the moment, this expects the full path
 		const std::string filename = String::getPathFilename(dylib);
 
-		const auto dylibBuild = fmt::format("{}/{}", executablePath, filename);
+		const auto dylibBuild = fmt::format("{}/{}", m_executablePath, filename);
 		if (!Commands::pathExists(dylibBuild))
 		{
-			auto d = Commands::which(dylib, inCleanOutput);
+			auto d = Commands::which(dylib, m_cleanOutput);
 			if (d.empty())
 			{
 				d = dylib;
@@ -208,13 +142,13 @@ bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool i
 				dylib = filename;
 			}
 
-			if (!Commands::copy(d, executablePath, inCleanOutput))
+			if (!Commands::copy(d, m_executablePath, m_cleanOutput))
 				return false;
 
-			dylib = fmt::format("{}/{}", executablePath, dylib);
+			dylib = fmt::format("{}/{}", m_executablePath, dylib);
 		}
 
-		if (!Commands::subprocess({ installNameTool, "-change", dylib, fmt::format("@rpath/{}", filename), executableOutputPath }, inCleanOutput))
+		if (!Commands::subprocess({ installNameTool, "-change", dylib, fmt::format("@rpath/{}", filename), m_executableOutputPath }, m_cleanOutput))
 			return false;
 	}
 
@@ -222,8 +156,8 @@ bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool i
 	for (auto& dylib : dylibs)
 	{
 		const std::string filename = String::getPathFilename(dylib);
-		const auto thisDylib = fmt::format("{}/{}", executablePath, filename);
-		Commands::subprocess({ installNameTool, "-id", fmt::format("@rpath/{}", filename), thisDylib }, inCleanOutput);
+		const auto thisDylib = fmt::format("{}/{}", m_executablePath, filename);
+		Commands::subprocess({ installNameTool, "-id", fmt::format("@rpath/{}", filename), thisDylib }, m_cleanOutput);
 
 		for (auto& d : dylibs)
 		{
@@ -231,10 +165,76 @@ bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool i
 				continue;
 
 			const std::string fn = String::getPathFilename(d);
-			const auto dylibBuild = fmt::format("{}/{}", executablePath, fn);
-			Commands::subprocess({ installNameTool, "-change", d, fmt::format("@rpath/{}", fn), thisDylib }, inCleanOutput);
+			const auto dylibBuild = fmt::format("{}/{}", m_executablePath, fn);
+			Commands::subprocess({ installNameTool, "-change", d, fmt::format("@rpath/{}", fn), thisDylib }, m_cleanOutput);
 		}
 	}
+
+	Commands::makeDirectory(m_frameworkPath, m_cleanOutput);
+
+	const auto iconBaseName = String::getPathBaseName(icon);
+	if (!icon.empty())
+	{
+		std::string outIcon;
+		const auto& sips = m_state.tools.sips();
+		bool sipsFound = !sips.empty();
+
+		if (String::endsWith(".png", icon) && sipsFound)
+		{
+			outIcon = fmt::format("{}/{}.icns", m_resourcePath, iconBaseName);
+
+			if (!Commands::subprocessNoOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
+				return false;
+		}
+		else if (String::endsWith(".icns", icon))
+		{
+			outIcon = fmt::format("{}/{}.icns", m_resourcePath, iconBaseName);
+
+			if (!Commands::copy(icon, m_resourcePath, m_cleanOutput))
+				return false;
+		}
+		else
+		{
+			if (!icon.empty() && !sipsFound)
+			{
+				Diagnostic::warn(fmt::format("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", m_buildFile, icon));
+			}
+		}
+	}
+
+	// PList
+	if (!infoPropertyList.empty())
+	{
+		const std::string outInfoPropertyList = fmt::format("{}/Info.plist", m_bundlePath);
+
+		if (!m_state.tools.plistConvertToBinary(infoPropertyList, outInfoPropertyList, m_cleanOutput))
+			return false;
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, m_cleanOutput))
+			return false;
+		if (!iconBaseName.empty())
+		{
+			if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", iconBaseName, m_cleanOutput))
+				return false;
+		}
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", appName, m_cleanOutput))
+			return false;
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, m_cleanOutput))
+			return false;
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version, m_cleanOutput))
+			return false;
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", m_mainExecutable, m_cleanOutput))
+			return false;
+	}
+
+	// install_name_tool
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../MacOS", m_executableOutputPath }, m_cleanOutput))
+		return false;
+
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", m_executableOutputPath }, m_cleanOutput))
+		return false;
+
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Resources", m_executableOutputPath }, m_cleanOutput))
+		return false;
 
 	for (auto& target : m_state.targets)
 	{
@@ -254,12 +254,12 @@ bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool i
 					if (!Commands::pathExists(filename))
 						continue;
 
-					if (!Commands::copySkipExisting(filename, frameworkPath, inCleanOutput))
+					if (!Commands::copySkipExisting(filename, m_frameworkPath, m_cleanOutput))
 						return false;
 
-					const auto resolvedFramework = fmt::format("{}/{}.framework", frameworkPath, framework);
+					const auto resolvedFramework = fmt::format("{}/{}.framework", m_frameworkPath, framework);
 
-					if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executableOutputPath }, inCleanOutput))
+					if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), m_executableOutputPath }, m_cleanOutput))
 						return false;
 
 					break;
@@ -275,9 +275,9 @@ bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool i
 		const std::string volumePath = fmt::format("/Volumes/{}", bundleName);
 		const std::string appPath = fmt::format("{}/{}.app", outDir, bundleName);
 
-		Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput);
+		Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }, m_cleanOutput);
 
-		if (inCleanOutput)
+		if (m_cleanOutput)
 		{
 			Output::print(Color::Blue, "   Creating the disk image for the application...");
 			Output::lineBreak();
@@ -298,26 +298,26 @@ bool AppBundlerMacOS::bundleForPlatform(const BundleTarget& bundle, const bool i
 			dmgSize = temp;
 		}
 
-		if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", fmt::format("{}", dmgSize), "-fs", "HFS+", "-volname", bundleName, tmpDmg }, inCleanOutput))
+		if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", fmt::format("{}", dmgSize), "-fs", "HFS+", "-volname", bundleName, tmpDmg }, m_cleanOutput))
 			return false;
 
-		if (!Commands::subprocessNoOutput({ hdiutil, "attach", tmpDmg }, inCleanOutput))
+		if (!Commands::subprocessNoOutput({ hdiutil, "attach", tmpDmg }, m_cleanOutput))
 			return false;
 
-		if (!Commands::copy(appPath, volumePath, inCleanOutput))
+		if (!Commands::copy(appPath, volumePath, m_cleanOutput))
 			return false;
 
 		const std::string backgroundPath = fmt::format("{}/.background", volumePath);
-		if (!Commands::makeDirectory(backgroundPath, inCleanOutput))
+		if (!Commands::makeDirectory(backgroundPath, m_cleanOutput))
 			return false;
 
 		const auto& background1x = macosBundle.dmgBackground1x();
 		const auto& background2x = macosBundle.dmgBackground2x();
 
-		if (!Commands::subprocessNoOutput({ tiffutil, "-cathidpicheck", background1x, background2x, "-out", fmt::format("{}/background.tiff", backgroundPath) }, inCleanOutput))
+		if (!Commands::subprocessNoOutput({ tiffutil, "-cathidpicheck", background1x, background2x, "-out", fmt::format("{}/background.tiff", backgroundPath) }, m_cleanOutput))
 			return false;
 
-		if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath), inCleanOutput))
+		if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath), m_cleanOutput))
 			return false;
 
 		// const std::string applescriptPath = "env/osx/dmg.applescript";
@@ -346,22 +346,22 @@ tell application "Finder"
 end tell)applescript",
 			FMT_ARG(bundleName));
 
-		if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }, inCleanOutput))
+		if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }, m_cleanOutput))
 			return false;
-		if (!Commands::subprocess({ "rm", "-rf", fmt::format("{}/.fseventsd", volumePath) }, inCleanOutput))
+		if (!Commands::subprocess({ "rm", "-rf", fmt::format("{}/.fseventsd", volumePath) }, m_cleanOutput))
 			return false;
 
-		if (!Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }, inCleanOutput))
+		if (!Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }, m_cleanOutput))
 			return false;
 
 		const std::string outDmgPath = fmt::format("{}/{}.dmg", outDir, bundleName);
-		if (!Commands::subprocessNoOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }, inCleanOutput))
+		if (!Commands::subprocessNoOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }, m_cleanOutput))
 			return false;
 
-		if (!Commands::removeRecursively(tmpDmg, inCleanOutput))
+		if (!Commands::removeRecursively(tmpDmg, m_cleanOutput))
 			return false;
 
-		if (inCleanOutput)
+		if (m_cleanOutput)
 		{
 			Output::print(Color::Blue, fmt::format("   Done. See '{}'", outDmgPath));
 		}
@@ -373,10 +373,10 @@ end tell)applescript",
 }
 
 /*****************************************************************************/
-std::string AppBundlerMacOS::getBundlePath(const BundleTarget& bundle) const
+std::string AppBundlerMacOS::getBundlePath() const
 {
-	const auto& outDir = bundle.outDir();
-	const auto& bundleName = bundle.macosBundle().bundleName();
+	const auto& outDir = m_bundle.outDir();
+	const auto& bundleName = m_bundle.macosBundle().bundleName();
 	if (!bundleName.empty())
 	{
 		return fmt::format("{}/{}.app/Contents", outDir, bundleName);
@@ -388,30 +388,105 @@ std::string AppBundlerMacOS::getBundlePath(const BundleTarget& bundle) const
 }
 
 /*****************************************************************************/
-std::string AppBundlerMacOS::getExecutablePath(const BundleTarget& bundle) const
+std::string AppBundlerMacOS::getExecutablePath() const
 {
-	const auto& bundleName = bundle.macosBundle().bundleName();
+	const auto& bundleName = m_bundle.macosBundle().bundleName();
 	if (!bundleName.empty())
 	{
-		return fmt::format("{}/MacOS", getBundlePath(bundle));
+		return fmt::format("{}/MacOS", getBundlePath());
 	}
 	else
 	{
-		return bundle.outDir();
+		return m_bundle.outDir();
 	}
 }
 
 /*****************************************************************************/
-std::string AppBundlerMacOS::getResourcePath(const BundleTarget& bundle) const
+std::string AppBundlerMacOS::getResourcePath() const
 {
-	const auto& bundleName = bundle.macosBundle().bundleName();
+	const auto& bundleName = m_bundle.macosBundle().bundleName();
 	if (!bundleName.empty())
 	{
-		return fmt::format("{}/Resources", getBundlePath(bundle));
+		return fmt::format("{}/Resources", getBundlePath());
 	}
 	else
 	{
-		return bundle.outDir();
+		return m_bundle.outDir();
 	}
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::changeRpathOfDependents() const
+{
+	auto& installNameTool = m_state.tools.installNameUtil();
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+
+	StringList dylibs = m_bundle.macosBundle().dylibs();
+	for (auto& target : m_state.targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (project.isSharedLibrary())
+			{
+				const auto targetPath = fmt::format("{}/{}", buildOutputDir, project.outputFile());
+				if (!Commands::pathExists(targetPath))
+					return false;
+
+				// if (!Commands::copy(targetPath, m_frameworkPath, m_cleanOutput))
+				// 	return false;
+
+				dylibs.push_back(targetPath);
+			}
+		}
+	}
+
+	for (auto& dylib : dylibs)
+	{
+		// TODO: At the moment, this expects the full path
+		const std::string filename = String::getPathFilename(dylib);
+
+		const auto dylibBuild = fmt::format("{}/{}", m_executablePath, filename);
+		if (!Commands::pathExists(dylibBuild))
+		{
+			auto d = Commands::which(dylib, m_cleanOutput);
+			if (d.empty())
+			{
+				d = dylib;
+				if (!Commands::pathExists(d))
+					return false;
+
+				dylib = filename;
+			}
+
+			if (!Commands::copy(d, m_executablePath, m_cleanOutput))
+				return false;
+
+			dylib = fmt::format("{}/{}", m_executablePath, dylib);
+		}
+
+		if (!Commands::subprocess({ installNameTool, "-change", dylib, fmt::format("@rpath/{}", filename), m_executableOutputPath }, m_cleanOutput))
+			return false;
+	}
+
+	// all should be copied by this point
+	for (auto& dylib : dylibs)
+	{
+		const std::string filename = String::getPathFilename(dylib);
+		const auto thisDylib = fmt::format("{}/{}", m_executablePath, filename);
+		Commands::subprocess({ installNameTool, "-id", fmt::format("@rpath/{}", filename), thisDylib }, m_cleanOutput);
+
+		for (auto& d : dylibs)
+		{
+			if (d == dylib)
+				continue;
+
+			const std::string fn = String::getPathFilename(d);
+			const auto dylibBuild = fmt::format("{}/{}", m_executablePath, fn);
+			Commands::subprocess({ installNameTool, "-change", d, fmt::format("@rpath/{}", fn), thisDylib }, m_cleanOutput);
+		}
+	}
+
+	return true;
 }
 }

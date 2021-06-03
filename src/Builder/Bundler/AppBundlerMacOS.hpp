@@ -8,25 +8,32 @@
 
 #include "Builder/Bundler/IAppBundler.hpp"
 #include "State/BuildState.hpp"
-#include "State/Target/BundleTarget.hpp"
 
 namespace chalet
 {
 class AppBundlerMacOS : public IAppBundler
 {
 public:
-	explicit AppBundlerMacOS(BuildState& inState, const std::string& inBuildFile);
+	explicit AppBundlerMacOS(BuildState& inState, const std::string& inBuildFile, BundleTarget& inBundle, const bool inCleanOutput);
 
-	virtual bool removeOldFiles(const BundleTarget& bundle, const bool inCleanOutput) final;
-	virtual bool bundleForPlatform(const BundleTarget& bundle, const bool inCleanOutput) final;
+	virtual bool removeOldFiles() final;
+	virtual bool bundleForPlatform() final;
 
-	virtual std::string getBundlePath(const BundleTarget& bundle) const final;
-	virtual std::string getExecutablePath(const BundleTarget& bundle) const final;
-	virtual std::string getResourcePath(const BundleTarget& bundle) const final;
+	virtual std::string getBundlePath() const final;
+	virtual std::string getExecutablePath() const final;
+	virtual std::string getResourcePath() const final;
 
 private:
-	BuildState& m_state;
+	bool changeRpathOfDependents() const;
+
 	const std::string& m_buildFile;
+
+	std::string m_bundlePath;
+	std::string m_frameworkPath;
+	std::string m_resourcePath;
+	std::string m_executablePath;
+	std::string m_mainExecutable;
+	std::string m_executableOutputPath;
 };
 }
 
