@@ -175,21 +175,25 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inRPath) const
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	StringList dylibs = m_bundle.macosBundle().dylibs();
-	for (auto& target : m_state.targets)
+
+	if (m_bundle.includeDependentSharedLibraries())
 	{
-		if (target->isProject())
+		for (auto& target : m_state.targets)
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
-			if (project.isSharedLibrary())
+			if (target->isProject())
 			{
-				const auto targetPath = fmt::format("{}/{}", buildOutputDir, project.outputFile());
-				if (!Commands::pathExists(targetPath))
-					return false;
+				auto& project = static_cast<const ProjectTarget&>(*target);
+				if (project.isSharedLibrary())
+				{
+					const auto targetPath = fmt::format("{}/{}", buildOutputDir, project.outputFile());
+					if (!Commands::pathExists(targetPath))
+						return false;
 
-				// if (!Commands::copy(targetPath, m_frameworkPath, m_cleanOutput))
-				// 	return false;
+					// if (!Commands::copy(targetPath, m_frameworkPath, m_cleanOutput))
+					// 	return false;
 
-				dylibs.push_back(targetPath);
+					dylibs.push_back(targetPath);
+				}
 			}
 		}
 	}

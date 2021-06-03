@@ -87,16 +87,16 @@ Json Schema::getBuildJson()
 
 	// distribution
 	ret[kDefinitions]["distribution-configuration"] = R"json({
-		"description": "The name of the build configuration to use for the distribution.",
-		"type": "string"
+		"type": "string",
+		"description": "The name of the build configuration to use for the distribution."
 	})json"_ojson;
 
 	ret[kDefinitions]["distribution-dependencies"] = R"json({
+		"type": "array",
+		"uniqueItems": true,
 		"items": {
 			"type": "string"
-		},
-		"uniqueItems": true,
-		"type": "array"
+		}
 	})json"_ojson;
 
 	ret[kDefinitions]["distribution-description"] = R"json({
@@ -104,14 +104,26 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 
 	ret[kDefinitions]["distribution-exclude"] = R"json({
+		"type": "array",
+		"uniqueItems": true,
 		"items": {
 			"type": "string"
-		},
-		"uniqueItems": true,
-		"type": "array"
+		}
+	})json"_ojson;
+
+	ret[kDefinitions]["distribution-includeDependentSharedLibraries"] = R"json({
+		"type": "boolean",
+		"default": true
 	})json"_ojson;
 
 	ret[kDefinitions]["distribution-linux"] = R"json({
+		"type": "object",
+		"description": "Variables to describe the linux application.",
+		"additionalProperties": false,
+		"required": [
+			"icon",
+			"desktopEntry"
+		],
 		"properties": {
 			"desktopEntry": {
 				"type": "string",
@@ -121,14 +133,7 @@ Json Schema::getBuildJson()
 				"type": "string",
 				"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
 			}
-		},
-		"required": [
-			"icon",
-			"desktopEntry"
-		],
-		"additionalProperties": false,
-		"description": "Variables to describe the linux application.",
-		"type": "object"
+		}
 	})json"_ojson;
 
 	ret[kDefinitions]["distribution-macos"] = R"json({
@@ -244,14 +249,17 @@ Json Schema::getBuildJson()
 			"dependencies": {
 				"$ref": "#/definitions/distribution-dependencies"
 			},
+			"description": {
+				"$ref": "#/definitions/distribution-description"
+			},
 			"exclude": {
 				"$ref": "#/definitions/distribution-exclude"
 			},
+			"includeDependentSharedLibraries": {
+				"$ref": "#/definitions/distribution-includeDependentSharedLibraries"
+			},
 			"linux": {
 				"$ref": "#/definitions/distribution-linux"
-			},
-			"description": {
-				"$ref": "#/definitions/distribution-description"
 			},
 			"macos": {
 				"$ref": "#/definitions/distribution-macos"

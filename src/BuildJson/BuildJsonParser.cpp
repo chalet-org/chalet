@@ -917,6 +917,9 @@ bool BuildJsonParser::parseBundle(BundleTarget& outBundle, const Json& inNode)
 	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "outDir"))
 		outBundle.setOutDir(val);
 
+	if (bool val; parseKeyFromConfig(val, inNode, "includeDependentSharedLibraries"))
+		outBundle.setIncludeDependentSharedLibraries(val);
+
 	if (StringList list; assignStringListFromConfig(list, inNode, "projects"))
 		outBundle.addProjects(list);
 

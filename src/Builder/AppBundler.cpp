@@ -128,18 +128,21 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 			if (!List::contains(bundleProjects, project.name()))
 				continue;
 
-			const auto& filename = project.outputFile();
-			const auto buildTarget = fmt::format("{}/{}", buildOutputDir, filename);
+			const auto& outputFile = project.outputFile();
+			const auto outputFilePath = fmt::format("{}/{}", buildOutputDir, outputFile);
 
 			if (project.isExecutable())
 			{
-				std::string outTarget = buildTarget;
+				std::string outTarget = outputFilePath;
 				List::addIfDoesNotExist(executables, std::move(outTarget));
 			}
-			dependencies.push_back(buildTarget);
+			dependencies.push_back(outputFilePath);
 
-			if (!m_state.tools.getExecutableDependencies(buildTarget, dependencies))
-				return false;
+			if (bundle.includeDependentSharedLibraries())
+			{
+				if (!m_state.tools.getExecutableDependencies(outputFilePath, dependencies))
+					return false;
+			}
 		}
 	}
 

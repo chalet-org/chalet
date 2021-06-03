@@ -35,8 +35,8 @@ struct BundleTarget final : public IBuildTarget
 	const std::string& configuration() const noexcept;
 	void setConfiguration(const std::string& inValue);
 
-	bool exists() const noexcept;
-	void setExists(const bool inValue) noexcept;
+	bool includeDependentSharedLibraries() const noexcept;
+	void setIncludeDependentSharedLibraries(const bool inValue) noexcept;
 
 	const StringList& projects() const noexcept;
 	void addProjects(StringList& inList);
@@ -63,7 +63,7 @@ private:
 	std::string m_distDir{ "dist" };
 	std::string m_configuration;
 
-	bool m_exists = true;
+	bool m_includeDependentSharedLibraries = true;
 };
 }
 

@@ -33,16 +33,14 @@ void BundleTarget::initialize()
 bool BundleTarget::validate()
 {
 	bool result = true;
-	if (m_exists)
-	{
+
 #if defined(CHALET_WIN32)
-		result &= m_windowsBundle.validate();
+	result &= m_windowsBundle.validate();
 #elif defined(CHALET_MACOS)
-		result &= m_macosBundle.validate();
+	result &= m_macosBundle.validate();
 #else
-		result &= m_linuxBundle.validate();
+	result &= m_linuxBundle.validate();
 #endif
-	}
 
 	return result;
 }
@@ -104,14 +102,14 @@ void BundleTarget::setConfiguration(const std::string& inValue)
 }
 
 /*****************************************************************************/
-bool BundleTarget::exists() const noexcept
+bool BundleTarget::includeDependentSharedLibraries() const noexcept
 {
-	return m_exists;
+	return m_includeDependentSharedLibraries;
 }
 
-void BundleTarget::setExists(const bool inValue) noexcept
+void BundleTarget::setIncludeDependentSharedLibraries(const bool inValue) noexcept
 {
-	m_exists = inValue;
+	m_includeDependentSharedLibraries = inValue;
 }
 
 /*****************************************************************************/
