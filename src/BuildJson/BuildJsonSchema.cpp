@@ -1407,6 +1407,9 @@ Json Schema::getBuildJson()
 		"oneOf": [
 			{
 				"$ref": "#/definitions/distribution-bundle"
+			},
+			{
+				"$ref": "#/definitions/target-script"
 			}
 		]
 	})json"_ojson;

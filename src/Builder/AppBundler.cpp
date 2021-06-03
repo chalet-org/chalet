@@ -12,7 +12,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-// #include "Utility/Timer.hpp"
+#include "Utility/Timer.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Builder/Bundler/AppBundlerWindows.hpp"
@@ -58,7 +58,6 @@ bool AppBundler::run()
 {
 	for (auto& target : m_state.distribution)
 	{
-		// Timer buildTimer;
 
 		if (target->isDistributionBundle())
 		{
@@ -74,12 +73,14 @@ bool AppBundler::run()
 		}
 		else if (target->isScript())
 		{
+			Timer buildTimer;
+
 			if (!runScriptTarget(static_cast<const ScriptTarget&>(*target)))
 				return false;
-		}
 
-		// Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
-		// Output::lineBreak();
+			Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+			Output::lineBreak();
+		}
 	}
 
 	return true;
@@ -197,12 +198,12 @@ bool AppBundler::runScriptTarget(const ScriptTarget& inScript)
 	if (scripts.empty())
 		return false;
 
-	// if (!inScript.description().empty())
-	// 	Output::msgScriptDescription(inScript.description());
-	// else
-	// 	Output::msgScript(inScript.name());
+	if (!inScript.description().empty())
+		Output::msgScriptDescription(inScript.description());
+	else
+		Output::msgScript(inScript.name());
 
-	// Output::lineBreak();
+	Output::lineBreak();
 
 	ScriptRunner scriptRunner(m_state.tools, m_buildFile, m_cleanOutput);
 	if (!scriptRunner.run(scripts))

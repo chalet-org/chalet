@@ -139,7 +139,6 @@
 			"description": "A Modern C/C++ Build System for GCC/Clang",
 			"outDir": "dist",
 			"configuration": "Release",
-			"mainProject": "chalet",
 			"projects": [
 				"chalet"
 			],
@@ -181,6 +180,10 @@
 				"icon": "platform/windows/app.ico",
 				"manifest": "platform/windows/app.manifest"
 			}
+		},
+		"post-bundle": {
+			"script.!windows": "platform/script_shell.sh",
+			"script.windows": "platform/script_batch.bat"
 		}
 	} /*,
 	"externalDependencies": {

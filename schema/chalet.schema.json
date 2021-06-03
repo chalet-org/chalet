@@ -1303,6 +1303,9 @@
 					"oneOf": [
 						{
 							"$ref": "#/definitions/distribution-bundle"
+						},
+						{
+							"$ref": "#/definitions/target-script"
 						}
 					]
 				}

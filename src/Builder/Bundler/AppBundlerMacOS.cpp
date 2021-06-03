@@ -259,21 +259,17 @@ bool AppBundlerMacOS::createBundleIcon()
 
 	if (!icon.empty())
 	{
-		std::string outIcon;
+		std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
 		const auto& sips = m_state.tools.sips();
 		bool sipsFound = !sips.empty();
 
 		if (String::endsWith(".png", icon) && sipsFound)
 		{
-			outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
-
 			if (!Commands::subprocessNoOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
 				return false;
 		}
 		else if (String::endsWith(".icns", icon))
 		{
-			outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
-
 			if (!Commands::copy(icon, m_resourcePath, m_cleanOutput))
 				return false;
 		}
