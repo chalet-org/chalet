@@ -30,8 +30,8 @@ namespace chalet
 */
 
 /*****************************************************************************/
-AppBundlerLinux::AppBundlerLinux(BuildState& inState, BundleTarget& inBundle, const bool m_cleanOutput) :
-	IAppBundler(inState, inBundle, m_cleanOutput)
+AppBundlerLinux::AppBundlerLinux(BuildState& inState, BundleTarget& inBundle, const bool inCleanOutput) :
+	IAppBundler(inState, inBundle, inCleanOutput)
 {
 	const std::string kUserApplications{ ".local/share/applications" };
 

@@ -32,8 +32,8 @@ namespace chalet
 */
 
 /*****************************************************************************/
-AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const std::string& inBuildFile, BundleTarget& inBundle, const bool m_cleanOutput) :
-	IAppBundler(inState, inBundle, m_cleanOutput),
+AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const std::string& inBuildFile, BundleTarget& inBundle, const bool inCleanOutput) :
+	IAppBundler(inState, inBundle, inCleanOutput),
 	m_buildFile(inBuildFile)
 {
 }
