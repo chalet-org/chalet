@@ -178,7 +178,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 	if (copyCount > 0)
 	{
-		Output::lineBreak();
+		// Output::lineBreak();
 	}
 
 	if (!inBundler.bundleForPlatform())

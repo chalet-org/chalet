@@ -162,6 +162,7 @@ bool Router::cmdBundle()
 	bool result = bundler.run();
 	if (result)
 	{
+		Output::lineBreak();
 		Output::msgBuildSuccess();
 		Output::lineBreak();
 	}

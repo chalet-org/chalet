@@ -98,7 +98,8 @@ bool AppBundlerMacOS::bundleForPlatform()
 	// treat it like linux/windows
 	if (macosBundle.bundleName().empty())
 	{
-		Output::lineBreak();
+		if (!m_cleanOutput)
+			Output::lineBreak();
 		return true;
 	}
 
