@@ -97,7 +97,10 @@ bool AppBundlerMacOS::bundleForPlatform()
 	// No app name = no bundle to make
 	// treat it like linux/windows
 	if (macosBundle.bundleName().empty())
+	{
+		Output::lineBreak();
 		return true;
+	}
 
 	// TODO: Generalized version of this in AppBundler
 	Output::print(Color::Blue, "   Creating the MacOS application bundle...");

@@ -241,6 +241,9 @@ bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::stri
 	// make prod dir
 	for (auto& dir : dirList)
 	{
+		if (Commands::pathExists(dir))
+			continue;
+
 		if (!Commands::makeDirectory(dir, m_cleanOutput))
 			return false;
 	}
