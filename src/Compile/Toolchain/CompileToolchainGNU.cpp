@@ -329,7 +329,7 @@ StringList CompileToolchainGNU::getLinkExclusions() const
 /*****************************************************************************/
 bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 {
-	if (m_config.isGcc())
+	// if (m_config.isGcc())
 	{
 		if (String::contains('=', inFlag))
 		{

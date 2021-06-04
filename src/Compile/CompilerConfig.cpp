@@ -163,6 +163,10 @@ bool CompilerConfig::getSupportedCompilerFlags()
 
 		// TODO: separate/joined -- kind of weird to check for
 	}
+	else if (isClang())
+	{
+		parseClangHelpList();
+	}
 
 	return true;
 }
@@ -219,6 +223,86 @@ void CompilerConfig::parseGnuHelpList(const std::string& inIdentifier)
 
 				if (String::startsWith('-', line))
 				{
+					if (m_supportedFlags.find(line) == m_supportedFlags.end())
+						m_supportedFlags.emplace(std::move(line), true);
+				}
+			}
+			else
+			{
+				if (m_supportedFlags.find(line) == m_supportedFlags.end())
+					m_supportedFlags.emplace(std::move(line), true);
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
+void CompilerConfig::parseClangHelpList()
+{
+	const auto& exec = compilerExecutable();
+
+	std::string raw = Commands::subprocessOutput({ exec, "-cc1", "--help" });
+	auto split = String::split(raw, String::eol());
+
+	for (auto& line : split)
+	{
+		auto beg = line.find_first_not_of(' ');
+		auto end = line.find_first_of('=', beg);
+		if (end == std::string::npos)
+		{
+			end = line.find_first_of('<', beg);
+			if (end == std::string::npos)
+			{
+				end = line.find_first_of(' ', beg);
+			}
+		}
+
+		if (beg != std::string::npos && end != std::string::npos)
+		{
+			line = line.substr(beg, end - beg);
+		}
+
+		if (line.back() == ' ')
+			line.pop_back();
+		if (line.back() == ',')
+			line.pop_back();
+
+		if (String::startsWith('-', line))
+		{
+			if (String::contains('\t', line))
+			{
+				auto afterTab = line.find_last_of('\t');
+				if (afterTab != std::string::npos)
+				{
+					std::string secondFlag = line.substr(afterTab);
+
+					if (String::startsWith('-', secondFlag))
+					{
+						if (secondFlag.back() == ' ')
+							secondFlag.pop_back();
+						if (secondFlag.back() == ',')
+							secondFlag.pop_back();
+
+						if (m_supportedFlags.find(secondFlag) == m_supportedFlags.end())
+							m_supportedFlags.emplace(std::move(secondFlag), true);
+					}
+				}
+
+				end = line.find_first_of('"');
+				if (end == std::string::npos)
+				{
+					end = line.find_first_of(' ');
+				}
+
+				line = line.substr(beg, end - beg);
+
+				if (String::startsWith('-', line))
+				{
+					if (line.back() == ' ')
+						line.pop_back();
+					if (line.back() == ',')
+						line.pop_back();
+
 					if (m_supportedFlags.find(line) == m_supportedFlags.end())
 						m_supportedFlags.emplace(std::move(line), true);
 				}

@@ -87,7 +87,9 @@ void CompileToolchainLLVM::addLibStdCppCompileOption(StringList& outArgList, con
 {
 	if (specialization != CxxSpecialization::ObjectiveC)
 	{
-		List::addIfDoesNotExist(outArgList, "-stdlib=libc++");
+		std::string flag{ "-stdlib=libc++" };
+		if (isFlagSupported(flag))
+			List::addIfDoesNotExist(outArgList, std::move(flag));
 	}
 }
 
@@ -148,7 +150,9 @@ void CompileToolchainLLVM::addLinkerScripts(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainLLVM::addLibStdCppLinkerOption(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "-stdlib=libc++");
+	std::string flag{ "-stdlib=libc++" };
+	if (isFlagSupported(flag))
+		List::addIfDoesNotExist(outArgList, std::move(flag));
 }
 
 /*****************************************************************************/
@@ -156,7 +160,9 @@ void CompileToolchainLLVM::addStaticCompilerLibraryOptions(StringList& outArgLis
 {
 	if (m_project.staticLinking())
 	{
-		List::addIfDoesNotExist(outArgList, "-static-libsan");
+		std::string flag{ "-static-libsan" };
+		if (isFlagSupported(flag))
+			List::addIfDoesNotExist(outArgList, std::move(flag));
 
 		// TODO: Investigate for other -static candidates on clang/mac
 	}

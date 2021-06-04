@@ -44,6 +44,7 @@ struct CompilerConfig
 
 private:
 	void parseGnuHelpList(const std::string& inIdentifier);
+	void parseClangHelpList();
 
 	const std::unordered_map<std::string, std::string> kCompilerStructures;
 
