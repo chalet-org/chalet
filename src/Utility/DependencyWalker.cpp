@@ -122,10 +122,10 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 					DWORD nameOffset = dependencyNameAddress - queriedSectionHeader->VirtualAddress + queriedSectionHeader->PointerToRawData;
 					char* dependencyName = (char*)&bytes[nameOffset];
 
-					std::string dependency = Commands::which(std::string(dependencyName));
+					std::string dependency = Commands::which(String::toLowerCase(std::string(dependencyName)));
 					if (!dependency.empty() && !String::contains(ignoreList, dependency))
 					{
-						List::addIfDoesNotExist(outList, String::toLowerCase(dependency));
+						List::addIfDoesNotExist(outList, std::move(dependency));
 					}
 
 					importTableOffset = importTableOffset + sizeof(IMAGE_IMPORT_DESCRIPTOR);
@@ -160,10 +160,10 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 					DWORD nameOffset = dependencyNameAddress - queriedSectionHeader->VirtualAddress + queriedSectionHeader->PointerToRawData;
 					auto dependencyName = (char*)&bytes[nameOffset];
 
-					std::string dependency = Commands::which(std::string(dependencyName));
+					std::string dependency = Commands::which(String::toLowerCase(std::string(dependencyName)));
 					if (!dependency.empty() && !String::contains(ignoreList, dependency))
 					{
-						List::addIfDoesNotExist(outList, String::toLowerCase(dependency));
+						List::addIfDoesNotExist(outList, std::move(dependency));
 					}
 
 					importTableOffset = importTableOffset + sizeof(IMAGE_IMPORT_DESCRIPTOR);

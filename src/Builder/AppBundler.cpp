@@ -141,7 +141,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 			}
 			dependencies.push_back(outputFilePath);
 
-			if (bundle.includeDependentSharedLibraries())
+			if (bundle.includeDependentSharedLibraries() && !project.isStaticLibrary())
 			{
 				if (!m_state.tools.getExecutableDependencies(outputFilePath, dependencies))
 				{
@@ -153,27 +153,31 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	}
 	bundle.addDependencies(dependencies);
 
-	StringList depsOfDeps;
-	for (auto& dep : dependencies)
+	if (bundle.includeDependentSharedLibraries())
 	{
-		if (dep.empty() || List::contains(depsFromJson, dep))
-			continue;
-
-		auto depPath = Commands::which(dep);
-		if (depPath.empty())
+		StringList depsOfDeps;
+		for (auto& dep : dependencies)
 		{
-			Diagnostic::warn(fmt::format("Dependency not found in path: '{}'", dep));
-			continue;
+			if (dep.empty() || List::contains(depsFromJson, dep))
+				continue;
+
+			auto depPath = Commands::which(dep);
+			if (depPath.empty())
+			{
+				Diagnostic::warn(fmt::format("Dependency not found in path: '{}'", dep));
+				continue;
+			}
+
+			if (!m_state.tools.getExecutableDependencies(depPath, depsOfDeps))
+			{
+				Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", depPath));
+				return false;
+			}
 		}
 
-		if (!m_state.tools.getExecutableDependencies(depPath, depsOfDeps))
-		{
-			Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", depPath));
-			return false;
-		}
+		bundle.addDependencies(depsOfDeps);
 	}
 
-	bundle.addDependencies(depsOfDeps);
 	bundle.sortDependencies();
 
 	// LOG("Distribution dependencies gathered in:", timer.asString());
