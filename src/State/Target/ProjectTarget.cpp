@@ -269,8 +269,8 @@ void ProjectTarget::addRunDependencies(StringList& inList)
 
 void ProjectTarget::addRunDependency(std::string& inValue)
 {
-	if (inValue.back() != '/')
-		inValue += '/';
+	// if (inValue.back() != '/')
+	// 	inValue += '/'; // no!
 
 	List::addIfDoesNotExist(m_runDependencies, std::move(inValue));
 }

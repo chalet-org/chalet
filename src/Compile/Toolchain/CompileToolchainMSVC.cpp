@@ -773,6 +773,7 @@ void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
 
 		case ProjectKind::DesktopApplication:
 			subsystem = "windows";
+			outArgList.push_back("/ENTRY:mainCRTStartup");
 			break;
 
 		default: break;

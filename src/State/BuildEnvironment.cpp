@@ -32,9 +32,18 @@ BuildEnvironment::BuildEnvironment(const BuildPaths& inPaths) :
 /*****************************************************************************/
 void BuildEnvironment::initialize()
 {
+	std::string addedPath;
 	for (auto& path : m_path)
 	{
 		m_paths.parsePathWithVariables(path);
+		addedPath += path;
+		addedPath += Path::getSeparator();
+	}
+
+	if (!addedPath.empty())
+	{
+		auto pathVar = addedPath + Environment::getPath();
+		Environment::setPath(pathVar);
 	}
 }
 

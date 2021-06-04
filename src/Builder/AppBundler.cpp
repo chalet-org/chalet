@@ -108,6 +108,8 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	StringList sharedLibraries;
 #endif
 
+	// Timer timer;
+
 	StringList depsFromJson;
 	for (auto& dep : bundle.dependencies())
 	{
@@ -142,13 +144,39 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 			if (bundle.includeDependentSharedLibraries())
 			{
 				if (!m_state.tools.getExecutableDependencies(outputFilePath, dependencies))
+				{
+					Diagnostic::error(fmt::format("getExecutableDependencies error for file '{}'.", outputFilePath));
 					return false;
+				}
 			}
 		}
 	}
-
 	bundle.addDependencies(dependencies);
+
+	StringList depsOfDeps;
+	for (auto& dep : dependencies)
+	{
+		if (dep.empty() || List::contains(depsFromJson, dep))
+			continue;
+
+		auto depPath = Commands::which(dep);
+		if (depPath.empty())
+		{
+			Diagnostic::warn(fmt::format("Dependency not found in path: '{}'", dep));
+			continue;
+		}
+
+		if (!m_state.tools.getExecutableDependencies(depPath, depsOfDeps))
+		{
+			Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", depPath));
+			return false;
+		}
+	}
+
+	bundle.addDependencies(depsOfDeps);
 	bundle.sortDependencies();
+
+	// LOG("Distribution dependencies gathered in:", timer.asString());
 
 	uint copyCount = 0;
 	for (auto& dep : bundle.dependencies())

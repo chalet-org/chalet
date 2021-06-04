@@ -146,16 +146,15 @@ bool BuildManager::run(const Route inRoute)
 	if (error)
 		return false;
 
-	if (inRoute == Route::BuildRun || inRoute == Route::Build || inRoute == Route::Rebuild)
+	if ((inRoute == Route::BuildRun || runCommand) && runProject != nullptr)
+	{
+		return doRun(*runProject);
+	}
+	else if (inRoute == Route::Build || inRoute == Route::Rebuild)
 	{
 		Output::msgBuildSuccess();
-
-		if (inRoute != Route::BuildRun)
-			Output::lineBreak();
+		Output::lineBreak();
 	}
-
-	if ((inRoute == Route::BuildRun || runCommand) && runProject != nullptr)
-		return doRun(*runProject);
 
 	return true;
 }
@@ -253,14 +252,6 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 	{
 		doClean(inProject, outputs.target, outputs.objectList, outputs.dependencyList);
 	}
-	else if (inRoute == Route::BuildRun)
-	{
-		if (!copyRunDependencies(inProject))
-		{
-			Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", inProject.name()));
-			return false;
-		}
-	}
 
 	return m_strategy->addProject(inProject, std::move(outputs), buildToolchain);
 }
@@ -270,29 +261,26 @@ bool BuildManager::copyRunDependencies(const ProjectTarget& inProject)
 {
 	bool result = true;
 
-	if (inProject.name() == m_runProjectName)
+	const auto& workingDirectory = m_state.paths.workingDirectory();
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	auto& compilerConfig = m_state.compilerTools.getConfig(inProject.language());
+	auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
+
+	auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);
+
+	int copied = 0;
+	for (auto& dep : runDependencies)
 	{
-		const auto& workingDirectory = m_state.paths.workingDirectory();
-		const auto& buildOutputDir = m_state.paths.buildOutputDir();
-		auto& compilerConfig = m_state.compilerTools.getConfig(inProject.language());
-		auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
-
-		auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);
-
-		int copied = 0;
-		for (auto& dep : runDependencies)
+		auto depFile = String::getPathFilename(dep);
+		if (!Commands::pathExists(fmt::format("{}/{}", outputFolder, depFile)))
 		{
-			auto depFile = String::getPathFilename(dep);
-			if (!Commands::pathExists(fmt::format("{}/{}", outputFolder, depFile)))
-			{
-				result &= Commands::copy(dep, outputFolder, true);
-				copied++;
-			}
+			result &= Commands::copy(dep, outputFolder, true);
+			copied++;
 		}
-
-		if (copied > 0)
-			Output::lineBreak();
 	}
+
+	if (copied > 0)
+		Output::lineBreak();
 
 	return result;
 }
@@ -335,6 +323,24 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 /*****************************************************************************/
 bool BuildManager::doRun(const ProjectTarget& inProject)
 {
+	for (auto& target : m_state.targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (project.runDependencies().empty())
+				continue;
+
+			if (!copyRunDependencies(project))
+			{
+				Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", project.name()));
+				return false;
+			}
+		}
+	}
+
+	Output::msgBuildSuccess();
+
 	auto outputFile = inProject.outputFile();
 	if (outputFile.empty())
 		return false;

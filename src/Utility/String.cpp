@@ -209,7 +209,7 @@ std::string String::join(const StringList& inList, const std::string_view inSepa
 }
 
 /*****************************************************************************/
-StringList String::split(std::string inString, const char inSeparator)
+StringList String::split(std::string inString, const char inSeparator, const std::size_t inMinLength)
 {
 	StringList ret;
 
@@ -232,14 +232,15 @@ StringList String::split(std::string inString, const char inSeparator)
 				sub.pop_back();
 		}
 
-		ret.push_back(sub);
+		if (sub.size() >= inMinLength)
+			ret.push_back(sub);
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-StringList String::split(std::string inString, const std::string_view inSeparator)
+StringList String::split(std::string inString, const std::string_view inSeparator, const std::size_t inMinLength)
 {
 	StringList ret;
 
@@ -262,7 +263,8 @@ StringList String::split(std::string inString, const std::string_view inSeparato
 				sub.pop_back();
 		}
 
-		ret.push_back(sub);
+		if (sub.size() >= inMinLength)
+			ret.push_back(sub);
 	}
 
 	return ret;
