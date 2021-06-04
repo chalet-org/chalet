@@ -77,7 +77,9 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 				continue;
 
 			if (!String::contains(ignoreList, line))
-				List::addIfDoesNotExist(outList, std::move(line));
+			{
+				List::addIfDoesNotExist(outList, String::toLowerCase(line));
+			}
 		}
 	}
 
