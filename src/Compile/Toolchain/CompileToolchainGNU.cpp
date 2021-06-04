@@ -49,7 +49,7 @@ bool CompileToolchainGNU::initialize()
 	}
 
 	initializeArchPresets();
-	initializeSupportedLinks();
+	// initializeSupportedLinks();
 
 	return true;
 }
@@ -349,7 +349,7 @@ bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 /*****************************************************************************/
 bool CompileToolchainGNU::isLinkSupported(const std::string& inLink) const
 {
-	if (m_config.isGcc())
+	if (m_supportedLinksInitialized && m_config.isGcc())
 	{
 		return m_supportedLinks.find(inLink) != m_supportedLinks.end();
 	}
@@ -1079,6 +1079,7 @@ void CompileToolchainGNU::initializeSupportedLinks()
 
 	// TODO: Links coming from CMake projects
 
+	StringList cmakeProjects;
 	StringList projectLinks;
 	for (auto& target : m_state.targets)
 	{
@@ -1095,6 +1096,11 @@ void CompileToolchainGNU::initializeSupportedLinks()
 			}
 			projectLinks.push_back(std::move(file));
 		}
+		else if (target->isCMake())
+		{
+			// Try to guess based on the project name
+			cmakeProjects.push_back(target->name());
+		}
 	}
 
 	StringList libDirs;
@@ -1104,7 +1110,7 @@ void CompileToolchainGNU::initializeSupportedLinks()
 
 	for (auto& staticLink : m_project.staticLinks())
 	{
-		if (m_config.isLinkSupported(staticLink, libDirs) || List::contains(projectLinks, staticLink))
+		if (m_config.isLinkSupported(staticLink, libDirs) || List::contains(projectLinks, staticLink) || String::contains(cmakeProjects, staticLink))
 			m_supportedLinks.emplace(staticLink, true);
 	}
 	for (auto& link : m_project.links())
@@ -1112,10 +1118,12 @@ void CompileToolchainGNU::initializeSupportedLinks()
 		if (List::contains(excludes, link))
 			continue;
 
-		if (m_config.isLinkSupported(link, libDirs) || List::contains(projectLinks, link))
+		if (m_config.isLinkSupported(link, libDirs) || List::contains(projectLinks, link) || String::contains(cmakeProjects, link))
 			m_supportedLinks.emplace(link, true);
 	}
 
 	m_quotePaths = oldQuotePaths;
+
+	m_supportedLinksInitialized = true;
 }
 }

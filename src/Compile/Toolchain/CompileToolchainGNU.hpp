@@ -97,6 +97,8 @@ protected:
 
 private:
 	std::string m_arch;
+
+	bool m_supportedLinksInitialized = false;
 };
 }
 
