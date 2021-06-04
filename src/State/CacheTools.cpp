@@ -707,11 +707,14 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 			if (String::startsWith("Archive", line))
 				break;
 
-			if (String::contains("/usr/lib", line))
+			if (String::startsWith(inPath, line))
 				continue;
 
 	#if defined(CHALET_MACOS)
-			std::size_t end = line.find(".dylib") + 5;
+			if (!String::contains(".dylib", line))
+				continue;
+
+			std::size_t end = line.find(".dylib") + 6;
 	#else
 			std::size_t end = line.find(" => ");
 	#endif
@@ -721,7 +724,7 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 			while (line[beg] == '\t')
 				beg++;
 
-			std::string dependency = line.substr(beg, end);
+			std::string dependency = line.substr(beg, end - beg);
 			// rpath, executable_path, etc
 			if (String::startsWith('@', dependency))
 			{
@@ -729,6 +732,10 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 				if (firstSlash != std::string::npos)
 					dependency = dependency.substr(firstSlash + 1);
 			}
+
+			if (String::startsWith("/usr/lib", dependency))
+				continue;
+
 			List::addIfDoesNotExist(outList, std::move(dependency));
 		}
 
