@@ -975,10 +975,15 @@ void CompileToolchainGNU::addMacosFrameworkOptions(StringList& outArgList) const
 	// TODO: Test Homebrew LLVM/GCC with this
 	{
 		const std::string prefix = "-F";
+		for (auto& path : m_project.libDirs())
+		{
+			outArgList.push_back(prefix + path);
+		}
 		for (auto& path : m_project.macosFrameworkPaths())
 		{
 			outArgList.push_back(prefix + path);
 		}
+		List::addIfDoesNotExist(outArgList, prefix = "/Library/Frameworks");
 	}
 	{
 		// const std::string suffix = ".framework";
