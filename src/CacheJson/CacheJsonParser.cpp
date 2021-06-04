@@ -211,6 +211,12 @@ bool CacheJsonParser::validatePaths()
 		{
 			// also takes -dumpmachine
 			auto arch = Commands::subprocessOutput({ m_state.compilerTools.compiler(), "-print-target-triple" });
+			// Strip out version in auto-detected mac triple
+			auto isDarwin = arch.find("apple-darwin");
+			if (isDarwin != std::string::npos)
+			{
+				arch = arch.substr(0, isDarwin + 12);
+			}
 			m_state.info.setTargetArchitecture(arch);
 		}
 	}
