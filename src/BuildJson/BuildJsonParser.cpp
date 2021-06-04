@@ -51,12 +51,15 @@ bool BuildJsonParser::serialize()
 
 	// TODO: schema versioning
 	if (!m_buildJson->validate(std::move(buildJsonSchema)))
+	{
+		Diagnostic::error(fmt::format("{}: There was an error validating the file against its schema.", m_filename));
 		return false;
+	}
 
 	const auto& jRoot = m_buildJson->json;
 	if (!serializeFromJsonRoot(jRoot))
 	{
-		Diagnostic::error(fmt::format("There was an error parsing {}", m_filename));
+		Diagnostic::error(fmt::format("{}: There was an error parsing the file.", m_filename));
 		return false;
 	}
 
@@ -242,7 +245,14 @@ bool BuildJsonParser::parseConfiguration(const Json& inNode)
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
 	if (!inNode.contains(kKeyConfigurations))
-		return setDefaultConfigurations(buildConfiguration);
+	{
+		bool result = setDefaultConfigurations(buildConfiguration);
+		if (!result)
+		{
+			Diagnostic::error(fmt::format("{}: Error setting the build configuration to '{}'.", m_filename, buildConfiguration));
+		}
+		return result;
+	}
 
 	std::string typeError = fmt::format("{}: '{}' must be either an array of presets, or an object where key is name", m_filename, kKeyConfigurations);
 
@@ -410,7 +420,10 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 			{
 				auto abstractProject = std::make_unique<ProjectTarget>(m_state);
 				if (!parseProject(*abstractProject, templateJson, true))
+				{
+					Diagnostic::error(fmt::format("{}: Error parsing the '{}' abstract project.", m_filename, name));
 					return false;
+				}
 
 				m_abstractProjects.emplace(name, std::move(abstractProject));
 			}
@@ -442,7 +455,10 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			auto abstractProject = std::make_unique<ProjectTarget>(m_state);
 			if (!parseProject(*abstractProject, abstractJson, true))
+			{
+				Diagnostic::error(fmt::format("{}: Error parsing the '{}' abstract project.", m_filename, name));
 				return false;
+			}
 
 			m_abstractProjects.emplace(name, std::move(abstractProject));
 		}
@@ -498,17 +514,26 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		if (target->isScript())
 		{
 			if (!parseScript(static_cast<ScriptTarget&>(*target), targetJson))
-				continue;
+			{
+				Diagnostic::error(fmt::format("{}: Error parsing the '{}' script.", m_filename, name));
+				return false;
+			}
 		}
 		else if (target->isCMake())
 		{
 			if (!parseCMakeProject(static_cast<CMakeTarget&>(*target), targetJson))
-				continue;
+			{
+				Diagnostic::error(fmt::format("{}: Error parsing the '{}' cmake project.", m_filename, name));
+				return false;
+			}
 		}
 		else
 		{
 			if (!parseProject(static_cast<ProjectTarget&>(*target), targetJson))
+			{
+				Diagnostic::error(fmt::format("{}: Error parsing the '{}' project.", m_filename, name));
 				return false;
+			}
 		}
 
 		if (!target->includeInBuild())
@@ -862,7 +887,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(ProjectTarget& outProject, con
 bool BuildJsonParser::parseDistribution(const Json& inNode)
 {
 	if (!inNode.contains(kKeyDistribution))
-		return false;
+		return true;
 
 	const Json& distribution = inNode.at(kKeyDistribution);
 	if (!distribution.is_object() || distribution.size() == 0)
