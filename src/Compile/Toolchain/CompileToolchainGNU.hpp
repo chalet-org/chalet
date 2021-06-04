@@ -84,13 +84,14 @@ protected:
 	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs) const;
 
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
-	void initializeArchPresets() const;
+	void initializeArchPresets();
+	void initializeSupportedLinks();
 
 	const ProjectTarget& m_project;
 	const CompilerConfig& m_config;
 
-	mutable StringList m_arch86;
-	// mutable StringList m_arch86_64;
+	StringList m_arch86;
+	// StringList m_arch86_64;
 
 	std::unordered_map<std::string, bool> m_supportedLinks;
 

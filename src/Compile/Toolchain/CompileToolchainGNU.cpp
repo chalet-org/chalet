@@ -49,31 +49,7 @@ bool CompileToolchainGNU::initialize()
 	}
 
 	initializeArchPresets();
-
-	{
-		bool oldQuotePaths = m_quotePaths;
-		m_quotePaths = false;
-
-		StringList libDirs;
-		addCompilerSearchPaths(libDirs); // do not quote paths for this
-
-		auto excludes = getLinkExclusions();
-		for (auto& staticLink : m_project.staticLinks())
-		{
-			if (m_config.isLinkSupported(staticLink, libDirs))
-				m_supportedLinks.emplace(staticLink, true);
-		}
-		for (auto& link : m_project.links())
-		{
-			if (List::contains(excludes, link))
-				continue;
-
-			if (m_config.isLinkSupported(link, libDirs))
-				m_supportedLinks.emplace(link, true);
-		}
-
-		m_quotePaths = oldQuotePaths;
-	}
+	initializeSupportedLinks();
 
 	return true;
 }
@@ -1009,7 +985,7 @@ void CompileToolchainGNU::addMacosFrameworkOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::initializeArchPresets() const
+void CompileToolchainGNU::initializeArchPresets()
 {
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 	if (m_arch86.empty())
@@ -1085,4 +1061,51 @@ void CompileToolchainGNU::initializeArchPresets() const
 	}*/
 }
 
+/*****************************************************************************/
+void CompileToolchainGNU::initializeSupportedLinks()
+{
+	bool oldQuotePaths = m_quotePaths;
+	m_quotePaths = false;
+
+	// TODO: Links coming from CMake projects
+
+	StringList projectLinks;
+	for (auto& target : m_state.targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (project.isExecutable())
+				continue;
+
+			auto file = project.name();
+			if (project.isStaticLibrary())
+			{
+				file += "-s";
+			}
+			projectLinks.push_back(std::move(file));
+		}
+	}
+
+	StringList libDirs;
+	addCompilerSearchPaths(libDirs); // do not quote paths for this
+
+	auto excludes = getLinkExclusions();
+
+	for (auto& staticLink : m_project.staticLinks())
+	{
+		if (m_config.isLinkSupported(staticLink, libDirs) || List::contains(projectLinks, staticLink))
+			m_supportedLinks.emplace(staticLink, true);
+	}
+	for (auto& link : m_project.links())
+	{
+		if (List::contains(excludes, link))
+			continue;
+
+		if (m_config.isLinkSupported(link, libDirs) || List::contains(projectLinks, link))
+			m_supportedLinks.emplace(link, true);
+	}
+
+	m_quotePaths = oldQuotePaths;
+}
 }
