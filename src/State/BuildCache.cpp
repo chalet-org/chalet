@@ -398,12 +398,7 @@ std::string BuildCache::getBuildHash(std::string appPath)
 	else*/
 	{
 		const std::string md5Result = Commands::subprocessOutput({ "cmd.exe", "/c", "certutil", "-hashfile", appPath, "MD5" });
-	#ifdef CHALET_MSVC
-		std::string eol = "\r\n";
-	#else
-		char eol = '\n';
-	#endif
-		auto list = String::split(md5Result, eol);
+		auto list = String::split(md5Result, String::eol());
 		if (list.size() >= 2)
 		{
 			md5 = list[1];

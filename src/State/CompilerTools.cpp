@@ -60,11 +60,7 @@ bool CompilerTools::initialize()
 		auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
 		if (!String::contains("error:", results))
 		{
-#if defined(CHALET_WIN32)
-			auto split = String::split(results, "\r\n");
-#else
-			auto split = String::split(results, '\n');
-#endif
+			auto split = String::split(results, String::eol());
 			bool valid = false;
 			// m_state.info.setTargetArchitecture(arch);
 			const auto& targetArch = m_info.targetArchitectureString();
@@ -125,7 +121,7 @@ void CompilerTools::fetchCompilerVersions()
 			}
 			else
 			{
-				version = parseVersionGNU(m_cpp, "\r\n");
+				version = parseVersionGNU(m_cpp, String::eol());
 			}
 #else
 			version = parseVersionGNU(m_cpp);
@@ -146,7 +142,7 @@ void CompilerTools::fetchCompilerVersions()
 			}
 			else
 			{
-				version = parseVersionGNU(m_cc, "\r\n");
+				version = parseVersionGNU(m_cc, String::eol());
 			}
 #else
 			version = parseVersionGNU(m_cc);
@@ -163,7 +159,7 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) con
 
 	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
 	std::string rawOutput = Commands::subprocessOutput({ inExecutable });
-	auto splitOutput = String::split(rawOutput, "\r\n");
+	auto splitOutput = String::split(rawOutput, String::eol());
 	if (splitOutput.size() >= 2)
 	{
 		auto start = splitOutput[1].find("Version");
@@ -383,10 +379,19 @@ CompilerConfig& CompilerTools::getConfig(const CodeLanguage inLanguage) const
 	m_configs.emplace(inLanguage, CompilerConfig(inLanguage, *this));
 	auto& config = m_configs.at(inLanguage);
 
-	UNUSED(config.configureCompilerPaths());
+	if (!config.configureCompilerPaths())
+	{
+		Diagnostic::errorAbort("Error configuring compiler paths.");
+	}
+
 	if (!config.testCompilerMacros())
 	{
 		Diagnostic::errorAbort("Unimplemented or unknown compiler toolchain.");
+	}
+
+	if (!config.getSupportedCompilerFlags())
+	{
+		Diagnostic::errorAbort("Error collecting supported compiler flags.");
 	}
 
 	return config;

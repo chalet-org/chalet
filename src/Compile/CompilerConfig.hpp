@@ -28,6 +28,9 @@ struct CompilerConfig
 
 	bool configureCompilerPaths();
 	bool testCompilerMacros();
+	bool getSupportedCompilerFlags();
+
+	bool isFlagSupported(const std::string& inFlag) const;
 
 	CppCompilerType compilerType() const noexcept;
 	bool isClang() const noexcept;
@@ -39,6 +42,8 @@ struct CompilerConfig
 	bool isClangOrMsvc() const noexcept;
 
 private:
+	void parseGnuHelpList(const std::string& inIdentifier);
+
 	const std::unordered_map<std::string, std::string> kCompilerStructures;
 
 	const CompilerTools& m_compilers;
@@ -47,6 +52,8 @@ private:
 	std::string m_compilerPathBin{ "/usr/bin" };
 	std::string m_compilerPathLib{ "/usr/lib" };
 	std::string m_compilerPathInclude{ "/usr/include" };
+
+	std::unordered_map<std::string, bool> m_supportedFlags;
 
 	CodeLanguage m_language = CodeLanguage::None;
 	CppCompilerType m_compilerType = CppCompilerType::Unknown;

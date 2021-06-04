@@ -41,7 +41,16 @@ std::string Arch::getHostCpuArchitecture()
 void Arch::set(const std::string& inValue) noexcept
 {
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
-	str = inValue;
+
+	// Note: Standalone "mingw32" is used in older mingw builds (4.x)
+	if (String::equals("mingw32", inValue))
+	{
+		str = "i686-pc-mingw32";
+	}
+	else
+	{
+		str = inValue;
+	}
 
 	std::string arch = str;
 	if (String::contains('-', arch))

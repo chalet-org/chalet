@@ -29,6 +29,8 @@ struct CompileToolchainGNU : ICompileToolchain
 
 protected:
 	virtual StringList getLinkExclusions() const;
+	virtual bool isSupported(const std::string& inFlag) const;
+	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;
 
 	// Compile
 	virtual void addIncludes(StringList& outArgList) const override;
@@ -84,8 +86,6 @@ protected:
 
 	const ProjectTarget& m_project;
 	const CompilerConfig& m_config;
-
-	const CppCompilerType m_compilerType;
 
 	mutable StringList m_arch86;
 	// mutable StringList m_arch86_64;

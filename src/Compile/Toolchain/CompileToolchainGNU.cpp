@@ -17,8 +17,7 @@ namespace chalet
 CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
 	ICompileToolchain(inState),
 	m_project(inProject),
-	m_config(inConfig),
-	m_compilerType(m_config.compilerType())
+	m_config(inConfig)
 {
 }
 
@@ -32,9 +31,11 @@ ToolchainType CompileToolchainGNU::type() const noexcept
 bool CompileToolchainGNU::initialize()
 {
 	const auto& targetArchString = m_state.info.targetArchitectureString();
-
 	if (!String::contains('-', targetArchString))
+	{
+		Diagnostic::error(fmt::format("Target architecture expected to be a triple, but was '{}'", targetArchString));
 		return false;
+	}
 
 	std::string macosVersion;
 	auto triple = String::split(targetArchString, '-');
@@ -231,7 +232,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 	}
 	else
 	{
-		ret.push_back("-fPIC");
+		addPositionIndependentCodeOption(ret);
 	}
 
 	addStripSymbolsOption(ret);
@@ -325,6 +326,30 @@ StringList CompileToolchainGNU::getLinkExclusions() const
 }
 
 /*****************************************************************************/
+bool CompileToolchainGNU::isSupported(const std::string& inFlag) const
+{
+	if (String::contains('=', inFlag))
+	{
+		auto cutoff = inFlag.find('=');
+		std::string flag = inFlag.substr(cutoff + 1);
+		return m_config.isFlagSupported(flag);
+	}
+	else
+	{
+		return m_config.isFlagSupported(inFlag);
+	}
+}
+
+/*****************************************************************************/
+std::string CompileToolchainGNU::getPathCommand(std::string_view inCmd, const std::string& inPath) const
+{
+	if (m_quotePaths)
+		return fmt::format("{}\"{}\"", inCmd, inPath);
+	else
+		return fmt::format("{}{}", inCmd, inPath);
+}
+
+/*****************************************************************************/
 void CompileToolchainGNU::addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const
 {
 	for (auto& source : sourceObjs)
@@ -339,27 +364,16 @@ void CompileToolchainGNU::addIncludes(StringList& outArgList) const
 	const std::string prefix{ "-I" };
 	for (const auto& dir : m_project.includeDirs())
 	{
-		if (m_quotePaths)
-			outArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
-		else
-			outArgList.push_back(prefix + dir);
+		outArgList.push_back(getPathCommand(prefix, dir));
 	}
 	for (const auto& dir : m_project.locations())
 	{
-		if (m_quotePaths)
-			outArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
-		else
-			outArgList.push_back(prefix + dir);
+		outArgList.push_back(getPathCommand(prefix, dir));
 	}
 
 #if !defined(CHALET_WIN32)
 	// must be last
-	std::string localInclude = prefix;
-	if (m_quotePaths)
-		localInclude += "\"/usr/local/include/\"";
-	else
-		localInclude += "/usr/local/include/";
-	List::addIfDoesNotExist(outArgList, std::move(localInclude));
+	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/usr/local/include/"));
 #endif
 }
 
@@ -369,25 +383,14 @@ void CompileToolchainGNU::addLibDirs(StringList& outArgList) const
 	const std::string prefix{ "-L" };
 	for (const auto& dir : m_project.libDirs())
 	{
-		if (m_quotePaths)
-			outArgList.push_back(fmt::format("{}\"{}\"", prefix, dir));
-		else
-			outArgList.push_back(prefix + dir);
+		outArgList.push_back(getPathCommand(prefix, dir));
 	}
 
-	if (m_quotePaths)
-		outArgList.push_back(fmt::format("{}\"{}\"", prefix, m_state.paths.buildOutputDir()));
-	else
-		outArgList.push_back(prefix + m_state.paths.buildOutputDir());
+	outArgList.push_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
 
 #if !defined(CHALET_WIN32)
 	// must be last
-	std::string localLib = prefix;
-	if (m_quotePaths)
-		localLib += "\"/usr/local/lib/\"";
-	else
-		localLib += "/usr/local/lib/";
-	List::addIfDoesNotExist(outArgList, std::move(localLib));
+	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/usr/local/lib/"));
 #endif
 }
 
@@ -397,18 +400,25 @@ void CompileToolchainGNU::addWarnings(StringList& outArgList) const
 	const std::string prefix{ "-W" };
 	for (auto& warning : m_project.warnings())
 	{
+		std::string out;
 		if (String::equals(warning, "pedantic-errors"))
 		{
-			outArgList.push_back("-" + warning);
-			continue;
+			out = "-" + warning;
 		}
-		outArgList.push_back(prefix + warning);
+		else
+		{
+			out = prefix + warning;
+		}
+
+		if (isSupported(out))
+			outArgList.push_back(std::move(out));
 	}
 
 	if (m_project.usesPch())
 	{
 		std::string invalidPch = prefix + "invalid-pch";
-		List::addIfDoesNotExist(outArgList, std::move(invalidPch));
+		if (isSupported(invalidPch))
+			List::addIfDoesNotExist(outArgList, std::move(invalidPch));
 	}
 }
 
@@ -467,10 +477,7 @@ void CompileToolchainGNU::addPchInclude(StringList& outArgList) const
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
 
 		outArgList.push_back("-include");
-		if (m_quotePaths)
-			outArgList.push_back(fmt::format("\"{}\"", objDirPch));
-		else
-			outArgList.push_back(objDirPch);
+		outArgList.push_back(getPathCommand("", objDirPch));
 	}
 }
 
@@ -562,6 +569,7 @@ void CompileToolchainGNU::addLanguageStandard(StringList& outArgList, const CxxS
 #endif
 	{
 		ret = "-std=" + ret;
+
 		outArgList.push_back(std::move(ret));
 	}
 }
@@ -572,7 +580,9 @@ void CompileToolchainGNU::addDebuggingInformationOption(StringList& outArgList) 
 	// TODO: Control debugging information level (g, g0-g3) from configurations
 	if (m_state.configuration.debugSymbols())
 	{
-		outArgList.push_back("-g3");
+		std::string debugInfo{ "-g3" };
+		if (isSupported(debugInfo))
+			outArgList.push_back(std::move(debugInfo));
 	}
 }
 
@@ -584,7 +594,11 @@ void CompileToolchainGNU::addProfileInformationCompileOption(StringList& outArgL
 	if (m_state.configuration.enableProfiling())
 	{
 		if (!m_project.isSharedLibrary())
-			outArgList.push_back("-pg");
+		{
+			std::string profileInfo{ "-pg" };
+			if (isSupported(profileInfo))
+				outArgList.push_back(std::move(profileInfo));
+		}
 	}
 }
 
@@ -600,7 +614,9 @@ void CompileToolchainGNU::addCompileOptions(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainGNU::addDiagnosticColorOption(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "-fdiagnostics-color=always");
+	std::string diagnosticColor{ "-fdiagnostics-color=always" };
+	if (isSupported(diagnosticColor))
+		List::addIfDoesNotExist(outArgList, std::move(diagnosticColor));
 }
 
 /*****************************************************************************/
@@ -612,7 +628,12 @@ void CompileToolchainGNU::addLibStdCppCompileOption(StringList& outArgList, cons
 /*****************************************************************************/
 void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "-fPIC");
+	if (!m_config.isMingw())
+	{
+		std::string fpic{ "-fPIC" };
+		if (isSupported(fpic))
+			List::addIfDoesNotExist(outArgList, std::move(fpic));
+	}
 }
 
 /*****************************************************************************/
@@ -620,7 +641,9 @@ void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& outArgLi
 {
 	if (!m_project.rtti())
 	{
-		List::addIfDoesNotExist(outArgList, "-fno-rtti");
+		std::string noRtti{ "-fno-rtti" };
+		if (isSupported(noRtti))
+			List::addIfDoesNotExist(outArgList, std::move(noRtti));
 	}
 }
 
@@ -630,7 +653,9 @@ void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) co
 	auto threadType = m_project.threadType();
 	if (threadType == ThreadType::Posix || threadType == ThreadType::Auto)
 	{
-		List::addIfDoesNotExist(outArgList, "-pthread");
+		std::string pthread{ "-pthread" };
+		if (isSupported(pthread))
+			List::addIfDoesNotExist(outArgList, std::move(pthread));
 	}
 }
 
@@ -686,17 +711,22 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 
 	if (!arch.empty())
 	{
-		outArgList.push_back(fmt::format("-march={}", arch));
+		auto archFlag = fmt::format("-march={}", arch);
+		if (isSupported(archFlag))
+			outArgList.push_back(std::move(archFlag));
 	}
 
 	if (!tune.empty())
 	{
-		outArgList.push_back(fmt::format("-mtune={}", tune));
+		auto tuneFlag = fmt::format("-mtune={}", tune);
+		if (isSupported(tuneFlag))
+			outArgList.push_back(std::move(tuneFlag));
 	}
 
 	if (!flags.empty())
 	{
-		outArgList.push_back(flags);
+		if (isSupported(flags))
+			outArgList.push_back(std::move(flags));
 	}
 
 	return true;
@@ -707,7 +737,9 @@ void CompileToolchainGNU::addStripSymbolsOption(StringList& outArgList) const
 {
 	if (m_state.configuration.stripSymbols())
 	{
-		outArgList.push_back("-s");
+		std::string strip{ "-s" };
+		if (isSupported(strip))
+			outArgList.push_back(std::move(strip));
 	}
 }
 
@@ -716,7 +748,8 @@ void CompileToolchainGNU::addLinkerOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.linkerOptions())
 	{
-		outArgList.push_back(option);
+		if (isSupported(option))
+			outArgList.push_back(option);
 	}
 }
 
@@ -727,7 +760,10 @@ void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& outArgLi
 	if (enableProfiling && m_project.isExecutable())
 	{
 		outArgList.push_back("-Wl,--allow-multiple-definition");
-		outArgList.push_back("-pg");
+
+		std::string profileInfo{ "-pg" };
+		if (isSupported(profileInfo))
+			outArgList.push_back(std::move(profileInfo));
 	}
 }
 
@@ -740,7 +776,9 @@ void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& outArgList) 
 
 	if (!enableProfiling && !debugSymbols && configuration.linkTimeOptimization())
 	{
-		List::addIfDoesNotExist(outArgList, "-flto");
+		std::string lto{ "-flto" };
+		if (isSupported(lto))
+			List::addIfDoesNotExist(outArgList, std::move(lto));
 	}
 }
 
@@ -788,12 +826,17 @@ void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& outArgList
 
 	if (m_project.staticLinking())
 	{
-		List::addIfDoesNotExist(outArgList, "-static-libgcc");
-		List::addIfDoesNotExist(outArgList, "-static-libasan");
-		List::addIfDoesNotExist(outArgList, "-static-libtsan");
-		List::addIfDoesNotExist(outArgList, "-static-liblsan");
-		List::addIfDoesNotExist(outArgList, "-static-libubsan");
-		List::addIfDoesNotExist(outArgList, "-static-libstdc++");
+		auto addFlag = [&](std::string flag) {
+			if (isSupported(flag))
+				List::addIfDoesNotExist(outArgList, std::move(flag));
+		};
+
+		addFlag("-static-libgcc");
+		addFlag("-static-libasan");
+		addFlag("-static-libtsan");
+		addFlag("-static-liblsan");
+		addFlag("-static-libubsan");
+		addFlag("-static-libstdc++");
 	}
 }
 
@@ -807,7 +850,9 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& outArgList) 
 		if (kind == ProjectKind::DesktopApplication && !debugSymbols)
 		{
 			// TODO: check other windows specific options
-			List::addIfDoesNotExist(outArgList, "-mwindows");
+			std::string mWindows{ "-mwindows" };
+			if (isSupported(mWindows))
+				List::addIfDoesNotExist(outArgList, std::move(mWindows));
 		}
 	}
 }
@@ -861,10 +906,12 @@ void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& outArgList, c
 	if (isObjCxx)
 	{
 #if defined(CHALET_MACOS)
-		List::addIfDoesNotExist(outArgList, "-fnext-runtime");
+		std::string objcRuntime{ "-fnext-runtime" };
 #else
-		List::addIfDoesNotExist(outArgList, "-fgnu-runtime");
+		std::string objcRuntime{ "-fgnu-runtime" };
 #endif
+		if (isSupported(objcRuntime))
+			List::addIfDoesNotExist(outArgList, std::move(objcRuntime));
 	}
 }
 
@@ -985,4 +1032,5 @@ void CompileToolchainGNU::initializeArchPresets() const
 		};
 	}*/
 }
+
 }

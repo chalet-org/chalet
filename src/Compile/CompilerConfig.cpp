@@ -143,6 +143,102 @@ bool CompilerConfig::testCompilerMacros()
 }
 
 /*****************************************************************************/
+bool CompilerConfig::getSupportedCompilerFlags()
+{
+	if (m_compilerType == CppCompilerType::Unknown)
+		return false;
+
+	const auto& exec = compilerExecutable();
+	if (exec.empty())
+		return false;
+
+	if (isGcc())
+	{
+		parseGnuHelpList("common");
+		parseGnuHelpList("optimizers");
+		// parseGnuHelpList("params");
+		parseGnuHelpList("target");
+		parseGnuHelpList("warnings");
+		parseGnuHelpList("undocumented");
+
+		// TODO: separate/joined -- kind of weird to check for
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+void CompilerConfig::parseGnuHelpList(const std::string& inIdentifier)
+{
+	const auto& exec = compilerExecutable();
+
+	std::string raw = Commands::subprocessOutput({ exec, "-Q", fmt::format("--help={}", inIdentifier) });
+	auto split = String::split(raw, String::eol());
+
+	for (auto& line : split)
+	{
+		auto beg = line.find_first_not_of(' ');
+		auto end = line.find_first_of('=', beg);
+		if (end == std::string::npos)
+		{
+			end = line.find_first_of('<', beg);
+			if (end == std::string::npos)
+			{
+				end = line.find_first_of(' ', beg);
+			}
+		}
+
+		if (beg != std::string::npos && end != std::string::npos)
+		{
+			line = line.substr(beg, end - beg);
+		}
+
+		if (String::startsWith('-', line))
+		{
+			if (String::contains('\t', line))
+			{
+				auto afterTab = line.find_last_of('\t');
+				if (afterTab != std::string::npos)
+				{
+					std::string secondFlag = line.substr(afterTab);
+
+					if (String::startsWith('-', secondFlag))
+					{
+						if (m_supportedFlags.find(secondFlag) == m_supportedFlags.end())
+							m_supportedFlags.emplace(std::move(secondFlag), true);
+					}
+				}
+
+				end = line.find_first_of('"');
+				if (end == std::string::npos)
+				{
+					end = line.find_first_of(' ');
+				}
+
+				line = line.substr(beg, end - beg);
+
+				if (String::startsWith('-', line))
+				{
+					if (m_supportedFlags.find(line) == m_supportedFlags.end())
+						m_supportedFlags.emplace(std::move(line), true);
+				}
+			}
+			else
+			{
+				if (m_supportedFlags.find(line) == m_supportedFlags.end())
+					m_supportedFlags.emplace(std::move(line), true);
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
+bool CompilerConfig::isFlagSupported(const std::string& inFlag) const
+{
+	return m_supportedFlags.find(inFlag) != m_supportedFlags.end();
+}
+
+/*****************************************************************************/
 CppCompilerType CompilerConfig::compilerType() const noexcept
 {
 	return m_compilerType;

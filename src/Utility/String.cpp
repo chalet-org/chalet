@@ -397,4 +397,13 @@ bool String::isWrapped(const std::string& inString, const std::string_view inSta
 	return true;
 }
 
+/*****************************************************************************/
+std::string String::eol()
+{
+#if defined(CHALET_WIN32)
+	return "\r\n";
+#else
+	return "\n";
+#endif
+}
 }

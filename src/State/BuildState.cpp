@@ -37,8 +37,8 @@ bool BuildState::initializeBuild()
 	if (!compilerTools.initialize())
 	{
 		const auto& targetArch = compilerTools.detectedToolchain() == ToolchainType::GNU ?
-			  m_inputs.targetArchitecture() :
-			  info.targetArchitectureString();
+			m_inputs.targetArchitecture() :
+			info.targetArchitectureString();
 
 		Diagnostic::error(fmt::format("Requested arch '{}' is not supported.", targetArch));
 		return false;
@@ -65,17 +65,16 @@ void BuildState::initializeCache()
 /*****************************************************************************/
 bool BuildState::validateState()
 {
-	bool result = true;
 	{
 		auto workingDirectory = Commands::getWorkingDirectory();
 		Path::sanitize(workingDirectory, true);
 
-		if (paths.workingDirectory() != workingDirectory)
+		if (String::toLowerCase(paths.workingDirectory()) != String::toLowerCase(workingDirectory))
 		{
 			if (!Commands::changeWorkingDirectory(paths.workingDirectory()))
 			{
 				Diagnostic::error(fmt::format("Error changing directory to '{}'", paths.workingDirectory()));
-				result = false;
+				return false;
 			}
 		}
 	}
@@ -87,12 +86,20 @@ bool BuildState::validateState()
 			tools.fetchCmakeVersion();
 		}
 
-		result &= target->validate();
+		if (!target->validate())
+		{
+			Diagnostic::error(fmt::format("Error validating the '{}' target.", target->name()));
+			return false;
+		}
 	}
 
 	for (auto& target : distribution)
 	{
-		result &= target->validate();
+		if (!target->validate())
+		{
+			Diagnostic::error(fmt::format("Error validating the '{}' distribution target.", target->name()));
+			return false;
+		}
 	}
 
 	auto strategy = environment.strategy();
@@ -101,8 +108,8 @@ bool BuildState::validateState()
 		const auto& makeExec = tools.make();
 		if (makeExec.empty() || !Commands::pathExists(makeExec))
 		{
-			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found. Aborting.", makeExec.empty() ? "make" : makeExec));
-			result = false;
+			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec));
+			return false;
 		}
 	}
 	else if (strategy == StrategyType::Ninja)
@@ -110,12 +117,12 @@ bool BuildState::validateState()
 		auto& ninjaExec = tools.ninja();
 		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
 		{
-			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found. Aborting.", ninjaExec.empty() ? "ninja" : ninjaExec));
-			result = false;
+			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec));
+			return false;
 		}
 	}
 
-	return result;
+	return true;
 }
 
 }

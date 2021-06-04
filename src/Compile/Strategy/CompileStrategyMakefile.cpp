@@ -309,8 +309,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 		else
 #endif
 		{
-			const char eol = '\n';
-			String::replaceAll(errorOutput, fmt::format("{}: *** Waiting for unfinished jobs....{}", make, eol), "");
+			String::replaceAll(errorOutput, fmt::format("{}: *** Waiting for unfinished jobs....{}", make, String::eol()), "");
 			String::replaceAll(errorOutput, fmt::format("{}: *** No rule", make), "No rule");
 			cutoff = errorOutput.find(fmt::format("{}: *** [", make));
 		}
