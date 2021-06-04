@@ -983,7 +983,7 @@ void CompileToolchainGNU::addMacosFrameworkOptions(StringList& outArgList) const
 		{
 			outArgList.push_back(prefix + path);
 		}
-		List::addIfDoesNotExist(outArgList, prefix = "/Library/Frameworks");
+		List::addIfDoesNotExist(outArgList, prefix + "/Library/Frameworks");
 	}
 	{
 		// const std::string suffix = ".framework";
