@@ -63,6 +63,8 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 
 	const char* KNOWN_IMG_SIGNATURE = static_cast<const char*>("PE\0\0");
 
+	int foundDepends = 0;
+
 	bool is64Bit = false;
 	bool is32Bit = false;
 
@@ -122,11 +124,14 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 					DWORD nameOffset = dependencyNameAddress - queriedSectionHeader->VirtualAddress + queriedSectionHeader->PointerToRawData;
 					char* dependencyName = (char*)&bytes[nameOffset];
 
-					std::string dependency = Commands::which(String::toLowerCase(std::string(dependencyName)));
-					if (!dependency.empty() && !String::contains(ignoreList, dependency))
+					std::string dependency = String::toLowerCase(std::string(dependencyName));
+					std::string dependencyResolved = Commands::which(dependency);
+					if (!dependency.empty() && !String::contains(ignoreList, dependencyResolved))
 					{
+						// LOG(inFile, dependency);
 						List::addIfDoesNotExist(outList, std::move(dependency));
 					}
+					++foundDepends;
 
 					importTableOffset = importTableOffset + sizeof(IMAGE_IMPORT_DESCRIPTOR);
 				}
@@ -155,16 +160,20 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 					{
 						break; //Signifies end of IMAGE_IMPORT_DESCRIPTORs
 					}
+
 					// (VA from data directory _entry_ to Image Import Descriptor's element you want) - VA from section header + section header's PointerToRawData
 					DWORD dependencyNameAddress = importTableDescriptor->Name; //VA not RVA; ABSOLUTE
 					DWORD nameOffset = dependencyNameAddress - queriedSectionHeader->VirtualAddress + queriedSectionHeader->PointerToRawData;
 					auto dependencyName = (char*)&bytes[nameOffset];
 
-					std::string dependency = Commands::which(String::toLowerCase(std::string(dependencyName)));
-					if (!dependency.empty() && !String::contains(ignoreList, dependency))
+					std::string dependency = String::toLowerCase(std::string(dependencyName));
+					std::string dependencyResolved = Commands::which(dependency);
+					if (!dependency.empty() && !String::contains(ignoreList, dependencyResolved))
 					{
+						// LOG(inFile, dependency);
 						List::addIfDoesNotExist(outList, std::move(dependency));
 					}
+					++foundDepends;
 
 					importTableOffset = importTableOffset + sizeof(IMAGE_IMPORT_DESCRIPTOR);
 				}
@@ -177,41 +186,43 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 
 	// Crude & slow version
 
-	/*
-	std::string temp(bytes.data(), bytes.size());
-
-	auto first = temp.find(".dll");
-	auto last = temp.rfind(".dll") + 4;
-	if (first != std::string::npos && first >= 100 && last != std::string::npos)
+	UNUSED(foundDepends);
+	/*if (foundDepends == 0)
 	{
-		auto begin = first - 100;
-		temp = temp.substr(begin, last - begin);
+		std::string temp(bytes.data(), bytes.size());
 
-		std::size_t pos = 0;
-		while ((pos = temp.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._+-", pos)) != std::string::npos)
+		auto first = temp.find(".dll");
+		auto last = temp.rfind(".dll") + 4;
+		if (first != std::string::npos && first >= 100 && last != std::string::npos)
 		{
-			temp.replace(pos, 1, "\n");
-			pos += 1;
-		}
+			auto begin = first - 100;
+			temp = temp.substr(begin, last - begin);
 
-		const std::size_t maxSearchLength = 5; // ".dll" + at least 1 char
-		auto split = String::split(temp, '\n', maxSearchLength);
-		StringList searches{ ".dll", ".DLL" };
-		for (auto& line : split)
-		{
-			if (line.empty() || !String::contains('.', line))
-				continue;
-
-			if (!String::endsWith(searches, line))
-				continue;
-
-			if (!String::contains(ignoreList, line))
+			std::size_t pos = 0;
+			while ((pos = temp.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._+-", pos)) != std::string::npos)
 			{
-				List::addIfDoesNotExist(outList, String::toLowerCase(line));
+				temp.replace(pos, 1, "\n");
+				pos += 1;
+			}
+
+			const std::size_t maxSearchLength = 5; // ".dll" + at least 1 char
+			auto split = String::split(temp, '\n', maxSearchLength);
+			StringList searches{ ".dll", ".DLL" };
+			for (auto& line : split)
+			{
+				if (line.empty() || !String::contains('.', line))
+					continue;
+
+				if (!String::endsWith(searches, line))
+					continue;
+
+				if (!String::contains(ignoreList, line))
+				{
+					List::addIfDoesNotExist(outList, String::toLowerCase(line));
+				}
 			}
 		}
-	}
-	*/
+	}*/
 
 	// Output::print(Color::Reset, fmt::format("   Dependency check time: {}", timer.asString()));
 	// Output::lineBreak();

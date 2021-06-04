@@ -155,10 +155,20 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 	if (bundle.includeDependentSharedLibraries())
 	{
+		StringList projectNames;
+		for (auto& target : m_state.targets)
+		{
+			if (target->isProject())
+			{
+				auto& project = static_cast<const ProjectTarget&>(*target);
+				projectNames.push_back(String::getPathFilename(project.outputFile()));
+			}
+		}
+
 		StringList depsOfDeps;
 		for (auto& dep : dependencies)
 		{
-			if (dep.empty() || List::contains(depsFromJson, dep))
+			if (dep.empty() || List::contains(depsFromJson, dep) || List::contains(projectNames, dep))
 				continue;
 
 			auto depPath = Commands::which(dep);
