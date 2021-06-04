@@ -752,9 +752,9 @@ void CompileToolchainGNU::addThreadModelLinkerOption(StringList& outArgList) con
 	{
 		if (m_config.isMingw() && m_project.staticLinking())
 		{
-			outArgList.push_back("-Wl,-Bstatic");
-			outArgList.push_back("-lstdc++"); // TODO: This is weird
-			outArgList.push_back("-lpthread");
+			outArgList.push_back("-Wl,-Bstatic,--whole-archive");
+			outArgList.push_back("-lwinpthread");
+			outArgList.push_back("-Wl,--no-whole-archive");
 		}
 		else
 		{
