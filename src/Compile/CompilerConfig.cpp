@@ -239,6 +239,33 @@ bool CompilerConfig::isFlagSupported(const std::string& inFlag) const
 }
 
 /*****************************************************************************/
+bool CompilerConfig::isLinkSupported(const std::string& inLink, const StringList& inDirectories) const
+{
+	const auto& exec = compilerExecutable();
+	if (exec.empty())
+		return false;
+
+	if (isGcc())
+	{
+		// This will print the input if the link is not found in path
+		auto file = fmt::format("lib{}.a", inLink);
+		StringList cmd{ exec };
+		for (auto& dir : inDirectories)
+		{
+			cmd.push_back(dir);
+		}
+		cmd.push_back(fmt::format("-print-file-name={}", file));
+
+		auto raw = Commands::subprocessOutput(cmd);
+		// auto split = String::split(raw, String::eol());
+
+		return !String::equals(file, raw);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 CppCompilerType CompilerConfig::compilerType() const noexcept
 {
 	return m_compilerType;

@@ -50,6 +50,31 @@ bool CompileToolchainGNU::initialize()
 
 	initializeArchPresets();
 
+	{
+		bool oldQuotePaths = m_quotePaths;
+		m_quotePaths = false;
+
+		StringList libDirs;
+		addCompilerSearchPaths(libDirs); // do not quote paths for this
+
+		auto excludes = getLinkExclusions();
+		for (auto& staticLink : m_project.staticLinks())
+		{
+			if (m_config.isLinkSupported(staticLink, libDirs))
+				m_supportedLinks.emplace(staticLink, true);
+		}
+		for (auto& link : m_project.links())
+		{
+			if (List::contains(excludes, link))
+				continue;
+
+			if (m_config.isLinkSupported(link, libDirs))
+				m_supportedLinks.emplace(link, true);
+		}
+
+		m_quotePaths = oldQuotePaths;
+	}
+
 	return true;
 }
 
@@ -326,7 +351,7 @@ StringList CompileToolchainGNU::getLinkExclusions() const
 }
 
 /*****************************************************************************/
-bool CompileToolchainGNU::isSupported(const std::string& inFlag) const
+bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 {
 	if (String::contains('=', inFlag))
 	{
@@ -338,6 +363,12 @@ bool CompileToolchainGNU::isSupported(const std::string& inFlag) const
 	{
 		return m_config.isFlagSupported(inFlag);
 	}
+}
+
+/*****************************************************************************/
+bool CompileToolchainGNU::isLinkSupported(const std::string& inLink) const
+{
+	return m_supportedLinks.find(inLink) != m_supportedLinks.end();
 }
 
 /*****************************************************************************/
@@ -410,14 +441,14 @@ void CompileToolchainGNU::addWarnings(StringList& outArgList) const
 			out = prefix + warning;
 		}
 
-		if (isSupported(out))
+		if (isFlagSupported(out))
 			outArgList.push_back(std::move(out));
 	}
 
 	if (m_project.usesPch())
 	{
 		std::string invalidPch = prefix + "invalid-pch";
-		if (isSupported(invalidPch))
+		if (isFlagSupported(invalidPch))
 			List::addIfDoesNotExist(outArgList, std::move(invalidPch));
 	}
 }
@@ -445,7 +476,8 @@ void CompileToolchainGNU::addLinks(StringList& outArgList) const
 
 		for (auto& staticLink : m_project.staticLinks())
 		{
-			outArgList.push_back(prefix + staticLink);
+			if (isLinkSupported(staticLink))
+				outArgList.push_back(prefix + staticLink);
 		}
 
 		endStaticLinkGroup(outArgList);
@@ -463,7 +495,8 @@ void CompileToolchainGNU::addLinks(StringList& outArgList) const
 			if (List::contains(excludes, link))
 				continue;
 
-			outArgList.push_back(prefix + link);
+			if (isLinkSupported(link))
+				outArgList.push_back(prefix + link);
 		}
 	}
 }
@@ -581,7 +614,7 @@ void CompileToolchainGNU::addDebuggingInformationOption(StringList& outArgList) 
 	if (m_state.configuration.debugSymbols())
 	{
 		std::string debugInfo{ "-g3" };
-		if (isSupported(debugInfo))
+		if (isFlagSupported(debugInfo))
 			outArgList.push_back(std::move(debugInfo));
 	}
 }
@@ -596,7 +629,7 @@ void CompileToolchainGNU::addProfileInformationCompileOption(StringList& outArgL
 		if (!m_project.isSharedLibrary())
 		{
 			std::string profileInfo{ "-pg" };
-			if (isSupported(profileInfo))
+			if (isFlagSupported(profileInfo))
 				outArgList.push_back(std::move(profileInfo));
 		}
 	}
@@ -615,7 +648,7 @@ void CompileToolchainGNU::addCompileOptions(StringList& outArgList) const
 void CompileToolchainGNU::addDiagnosticColorOption(StringList& outArgList) const
 {
 	std::string diagnosticColor{ "-fdiagnostics-color=always" };
-	if (isSupported(diagnosticColor))
+	if (isFlagSupported(diagnosticColor))
 		List::addIfDoesNotExist(outArgList, std::move(diagnosticColor));
 }
 
@@ -631,7 +664,7 @@ void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& outArgLis
 	if (!m_config.isMingw())
 	{
 		std::string fpic{ "-fPIC" };
-		if (isSupported(fpic))
+		if (isFlagSupported(fpic))
 			List::addIfDoesNotExist(outArgList, std::move(fpic));
 	}
 }
@@ -642,7 +675,7 @@ void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& outArgLi
 	if (!m_project.rtti())
 	{
 		std::string noRtti{ "-fno-rtti" };
-		if (isSupported(noRtti))
+		if (isFlagSupported(noRtti))
 			List::addIfDoesNotExist(outArgList, std::move(noRtti));
 	}
 }
@@ -654,7 +687,7 @@ void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) co
 	if (threadType == ThreadType::Posix || threadType == ThreadType::Auto)
 	{
 		std::string pthread{ "-pthread" };
-		if (isSupported(pthread))
+		if (isFlagSupported(pthread))
 			List::addIfDoesNotExist(outArgList, std::move(pthread));
 	}
 }
@@ -712,20 +745,20 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	if (!arch.empty())
 	{
 		auto archFlag = fmt::format("-march={}", arch);
-		if (isSupported(archFlag))
+		if (isFlagSupported(archFlag))
 			outArgList.push_back(std::move(archFlag));
 	}
 
 	if (!tune.empty())
 	{
 		auto tuneFlag = fmt::format("-mtune={}", tune);
-		if (isSupported(tuneFlag))
+		if (isFlagSupported(tuneFlag))
 			outArgList.push_back(std::move(tuneFlag));
 	}
 
 	if (!flags.empty())
 	{
-		if (isSupported(flags))
+		if (isFlagSupported(flags))
 			outArgList.push_back(std::move(flags));
 	}
 
@@ -738,7 +771,7 @@ void CompileToolchainGNU::addStripSymbolsOption(StringList& outArgList) const
 	if (m_state.configuration.stripSymbols())
 	{
 		std::string strip{ "-s" };
-		if (isSupported(strip))
+		if (isFlagSupported(strip))
 			outArgList.push_back(std::move(strip));
 	}
 }
@@ -748,7 +781,7 @@ void CompileToolchainGNU::addLinkerOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.linkerOptions())
 	{
-		if (isSupported(option))
+		if (isFlagSupported(option))
 			outArgList.push_back(option);
 	}
 }
@@ -762,7 +795,7 @@ void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& outArgLi
 		outArgList.push_back("-Wl,--allow-multiple-definition");
 
 		std::string profileInfo{ "-pg" };
-		if (isSupported(profileInfo))
+		if (isFlagSupported(profileInfo))
 			outArgList.push_back(std::move(profileInfo));
 	}
 }
@@ -777,7 +810,7 @@ void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& outArgList) 
 	if (!enableProfiling && !debugSymbols && configuration.linkTimeOptimization())
 	{
 		std::string lto{ "-flto" };
-		if (isSupported(lto))
+		if (isFlagSupported(lto))
 			List::addIfDoesNotExist(outArgList, std::move(lto));
 	}
 }
@@ -827,7 +860,7 @@ void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& outArgList
 	if (m_project.staticLinking())
 	{
 		auto addFlag = [&](std::string flag) {
-			if (isSupported(flag))
+			if (isFlagSupported(flag))
 				List::addIfDoesNotExist(outArgList, std::move(flag));
 		};
 
@@ -851,7 +884,7 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& outArgList) 
 		{
 			// TODO: check other windows specific options
 			std::string mWindows{ "-mwindows" };
-			if (isSupported(mWindows))
+			if (isFlagSupported(mWindows))
 				List::addIfDoesNotExist(outArgList, std::move(mWindows));
 		}
 	}
@@ -873,9 +906,28 @@ void CompileToolchainGNU::endStaticLinkGroup(StringList& outArgList) const
 	outArgList.push_back("-Wl,--end-group");
 }
 
+/*****************************************************************************/
 void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& outArgList) const
 {
 	outArgList.push_back("-Wl,-Bdynamic");
+}
+
+/*****************************************************************************/
+void CompileToolchainGNU::addCompilerSearchPaths(StringList& outArgList) const
+{
+	// Same as addLinks, but with -B, so far, just used in specific gcc calls
+	const std::string prefix{ "-B" };
+	for (const auto& dir : m_project.libDirs())
+	{
+		outArgList.push_back(getPathCommand(prefix, dir));
+	}
+
+	outArgList.push_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
+
+#if !defined(CHALET_WIN32)
+	// must be last
+	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/usr/local/lib/"));
+#endif
 }
 
 /*****************************************************************************/
@@ -910,7 +962,7 @@ void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& outArgList, c
 #else
 		std::string objcRuntime{ "-fgnu-runtime" };
 #endif
-		if (isSupported(objcRuntime))
+		if (isFlagSupported(objcRuntime))
 			List::addIfDoesNotExist(outArgList, std::move(objcRuntime));
 	}
 }

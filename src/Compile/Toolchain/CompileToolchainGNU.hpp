@@ -29,7 +29,8 @@ struct CompileToolchainGNU : ICompileToolchain
 
 protected:
 	virtual StringList getLinkExclusions() const;
-	virtual bool isSupported(const std::string& inFlag) const;
+	virtual bool isFlagSupported(const std::string& inFlag) const;
+	virtual bool isLinkSupported(const std::string& inLink) const;
 	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;
 
 	// Compile
@@ -67,6 +68,7 @@ protected:
 	virtual void startStaticLinkGroup(StringList& outArgList) const;
 	virtual void endStaticLinkGroup(StringList& outArgList) const;
 	virtual void startExplicitDynamicLinkGroup(StringList& outArgList) const;
+	virtual void addCompilerSearchPaths(StringList& outArgList) const;
 
 	// Objective-C / Objective-C++
 	virtual void addObjectiveCxxLink(StringList& outArgList) const;
@@ -89,6 +91,8 @@ protected:
 
 	mutable StringList m_arch86;
 	// mutable StringList m_arch86_64;
+
+	std::unordered_map<std::string, bool> m_supportedLinks;
 
 private:
 	std::string m_arch;

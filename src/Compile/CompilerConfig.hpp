@@ -31,6 +31,7 @@ struct CompilerConfig
 	bool getSupportedCompilerFlags();
 
 	bool isFlagSupported(const std::string& inFlag) const;
+	bool isLinkSupported(const std::string& inLink, const StringList& inDirectories) const;
 
 	CppCompilerType compilerType() const noexcept;
 	bool isClang() const noexcept;
