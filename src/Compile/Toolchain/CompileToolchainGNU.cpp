@@ -329,22 +329,32 @@ StringList CompileToolchainGNU::getLinkExclusions() const
 /*****************************************************************************/
 bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 {
-	if (String::contains('=', inFlag))
+	if (m_config.isGcc())
 	{
-		auto cutoff = inFlag.find('=');
-		std::string flag = inFlag.substr(cutoff + 1);
-		return m_config.isFlagSupported(flag);
+		if (String::contains('=', inFlag))
+		{
+			auto cutoff = inFlag.find('=');
+			std::string flag = inFlag.substr(cutoff + 1);
+			return m_config.isFlagSupported(flag);
+		}
+		else
+		{
+			return m_config.isFlagSupported(inFlag);
+		}
 	}
-	else
-	{
-		return m_config.isFlagSupported(inFlag);
-	}
+
+	return true;
 }
 
 /*****************************************************************************/
 bool CompileToolchainGNU::isLinkSupported(const std::string& inLink) const
 {
-	return m_supportedLinks.find(inLink) != m_supportedLinks.end();
+	if (m_config.isGcc())
+	{
+		return m_supportedLinks.find(inLink) != m_supportedLinks.end();
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
