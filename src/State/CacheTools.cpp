@@ -284,13 +284,13 @@ void CacheTools::setHdiutil(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::installNameUtil() const noexcept
+const std::string& CacheTools::installNameTool() const noexcept
 {
-	return m_installNameUtil;
+	return m_installNameTool;
 }
-void CacheTools::setInstallNameUtil(const std::string& inValue) noexcept
+void CacheTools::setInstallNameTool(const std::string& inValue) noexcept
 {
-	m_installNameUtil = inValue;
+	m_installNameTool = inValue;
 }
 
 /*****************************************************************************/

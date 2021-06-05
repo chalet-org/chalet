@@ -134,7 +134,11 @@ std::string CmakeBuilder::getArch() const
 /*****************************************************************************/
 StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) const
 {
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
+	std::string buildConfiguration = m_state.info.buildConfiguration();
+	if (m_state.configuration.enableProfiling())
+	{
+		buildConfiguration = "Debug";
+	}
 	auto& cmake = m_state.tools.cmake();
 
 	StringList ret{ cmake, "-G", getGenerator() };

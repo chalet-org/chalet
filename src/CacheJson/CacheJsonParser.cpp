@@ -786,7 +786,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_state.tools.setHdiutil(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstallNameTool))
-		m_state.tools.setInstallNameUtil(val);
+		m_state.tools.setInstallNameTool(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstruments))
 		m_state.tools.setInstruments(val);

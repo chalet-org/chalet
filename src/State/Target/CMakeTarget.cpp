@@ -37,12 +37,16 @@ bool CMakeTarget::validate()
 		result = false;
 	}
 
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
+	std::string buildConfiguration = m_state.info.buildConfiguration();
+	if (m_state.configuration.enableProfiling())
+	{
+		buildConfiguration = "Debug";
+	}
 
 	if (!List::contains({ "Release", "Debug", "RelWithDebInfo", "MinSizeRel" }, buildConfiguration))
 	{
 		// https://cmake.org/cmake/help/v3.0/variable/CMAKE_BUILD_TYPE.html
-		Diagnostic::error(fmt::format("Build '{}' not recognized by CMAKE.", buildConfiguration));
+		Diagnostic::error(fmt::format("Build '{}' not recognized by CMake.", buildConfiguration));
 		result = false;
 	}
 
