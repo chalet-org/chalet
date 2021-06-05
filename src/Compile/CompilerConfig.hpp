@@ -21,6 +21,8 @@ struct CompilerConfig
 
 	CodeLanguage language() const noexcept;
 
+	bool isInitialized() const noexcept;
+
 	const std::string& compilerExecutable() const noexcept;
 	const std::string& compilerPathBin() const noexcept;
 	const std::string& compilerPathLib() const noexcept;

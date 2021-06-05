@@ -139,6 +139,7 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 		return;
 
 	Diagnostic::error(inMessage, inTitle);
+	Diagnostic::printErrors();
 
 	if (Environment::isBashOrWindowsConPTY())
 	{

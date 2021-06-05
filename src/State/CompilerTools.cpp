@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
+#include "State/Target/ProjectTarget.hpp"
 #include "State/WorkspaceInfo.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -51,9 +52,13 @@ void CompilerTools::detectToolchain()
 }
 
 /*****************************************************************************/
-bool CompilerTools::initialize()
+bool CompilerTools::initialize(const BuildTargetList& inTargets)
 {
 	fetchCompilerVersions();
+
+	// Note: Expensive!
+	if (!initializeCompilerConfigs(inTargets))
+		return false;
 
 	if (m_detectedToolchain == ToolchainType::LLVM)
 	{
@@ -150,6 +155,48 @@ void CompilerTools::fetchCompilerVersions()
 			m_compilerVersionStringC = std::move(version);
 		}
 	}
+}
+
+/*****************************************************************************/
+bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
+{
+	for (auto& target : inTargets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<ProjectTarget&>(*target);
+			auto language = project.language();
+
+			if (m_configs.find(language) == m_configs.end())
+			{
+				m_configs.emplace(language, std::make_unique<CompilerConfig>(language, *this));
+			}
+		}
+	}
+
+	for (auto& [_, config] : m_configs)
+	{
+		if (!config->configureCompilerPaths())
+		{
+			Diagnostic::error("Error configuring compiler paths.");
+			return false;
+		}
+
+		if (!config->testCompilerMacros())
+		{
+			Diagnostic::error("Unimplemented or unknown compiler toolchain.");
+			return false;
+		}
+
+		if (!config->getSupportedCompilerFlags())
+		{
+			auto exec = String::getPathFilename(config->compilerExecutable());
+			Diagnostic::error(fmt::format("Error collecting supported compiler flags for '{}'.", exec));
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -371,29 +418,9 @@ std::string CompilerTools::getRootPathVariable()
 CompilerConfig& CompilerTools::getConfig(const CodeLanguage inLanguage) const
 {
 	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
-	if (m_configs.find(inLanguage) != m_configs.end())
-	{
-		return m_configs.at(inLanguage);
-	}
+	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "CompilerTools::getConfig called before being initialized.");
 
-	m_configs.emplace(inLanguage, CompilerConfig(inLanguage, *this));
-	auto& config = m_configs.at(inLanguage);
-
-	if (!config.configureCompilerPaths())
-	{
-		Diagnostic::errorAbort("Error configuring compiler paths.");
-	}
-
-	if (!config.testCompilerMacros())
-	{
-		Diagnostic::errorAbort("Unimplemented or unknown compiler toolchain.");
-	}
-
-	if (!config.getSupportedCompilerFlags())
-	{
-		Diagnostic::errorAbort("Error collecting supported compiler flags.");
-	}
-
+	auto& config = *m_configs.at(inLanguage);
 	return config;
 }
 }

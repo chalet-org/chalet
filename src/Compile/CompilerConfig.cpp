@@ -36,6 +36,12 @@ CodeLanguage CompilerConfig::language() const noexcept
 }
 
 /*****************************************************************************/
+bool CompilerConfig::isInitialized() const noexcept
+{
+	return m_language != CodeLanguage::None;
+}
+
+/*****************************************************************************/
 const std::string& CompilerConfig::compilerExecutable() const noexcept
 {
 	if (m_language == CodeLanguage::CPlusPlus)
@@ -49,8 +55,13 @@ bool CompilerConfig::configureCompilerPaths()
 {
 	const auto& exec = compilerExecutable();
 	chalet_assert(!exec.empty(), "No compiler was found");
+
+	auto language = m_language == CodeLanguage::CPlusPlus ? "C++" : "C";
 	if (exec.empty())
+	{
+		Diagnostic::error(fmt::format("Compiler executable was empty for language: '{}'", language));
 		return false;
+	}
 
 	std::string path = String::getPathFolder(exec);
 	const std::string lowercasePath = String::toLowerCase(path);
@@ -73,8 +84,7 @@ bool CompilerConfig::configureCompilerPaths()
 		}
 	}
 
-	auto language = m_language == CodeLanguage::CPlusPlus ? "C++" : "C";
-	Diagnostic::error(fmt::format("Invalid compiler structure found for language '{}' (no 'bin' folder).", language));
+	Diagnostic::error(fmt::format("Invalid compiler structure (no 'bin' folder) found for language: '{}'", language));
 	return false;
 }
 

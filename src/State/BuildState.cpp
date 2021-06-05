@@ -6,6 +6,7 @@
 #include "State/BuildState.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
@@ -27,14 +28,7 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool BuildState::initializeBuild()
 {
-	paths.initialize();
-	environment.initialize();
-	for (auto& target : targets)
-	{
-		target->initialize();
-	}
-
-	if (!compilerTools.initialize())
+	if (!compilerTools.initialize(targets))
 	{
 		const auto& targetArch = compilerTools.detectedToolchain() == ToolchainType::GNU ?
 			m_inputs.targetArchitecture() :
@@ -42,6 +36,44 @@ bool BuildState::initializeBuild()
 
 		Diagnostic::error(fmt::format("Requested arch '{}' is not supported.", targetArch));
 		return false;
+	}
+
+	for (auto& target : targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<ProjectTarget&>(*target);
+			auto& compilerConfig = compilerTools.getConfig(project.language());
+			project.parseOutputFilename(compilerConfig);
+
+			const bool isMsvc = compilerConfig.isMsvc();
+			if (!isMsvc)
+			{
+				std::string libDir = compilerConfig.compilerPathLib();
+				project.addLibDir(libDir);
+
+				std::string includeDir = compilerConfig.compilerPathInclude();
+				project.addIncludeDir(includeDir);
+			}
+
+			for (auto& t : targets)
+			{
+				if (t->isProject())
+				{
+					auto& p = static_cast<ProjectTarget&>(*t);
+					bool staticLib = p.kind() == ProjectKind::StaticLibrary;
+					project.resolveLinksFromProject(p.name(), staticLib);
+				}
+			}
+		}
+	}
+
+	paths.initialize();
+	environment.initialize();
+
+	for (auto& target : targets)
+	{
+		target->initialize();
 	}
 
 	initializeCache();

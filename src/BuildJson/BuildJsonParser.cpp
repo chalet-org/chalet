@@ -610,32 +610,6 @@ bool BuildJsonParser::parseProject(ProjectTarget& outProject, const Json& inNode
 			Diagnostic::error(fmt::format("{}: Precompiled header '{}' was not found.", m_filename, outProject.pch()));
 			return false;
 		}
-
-		auto& compilerConfig = m_state.compilerTools.getConfig(outProject.language());
-		outProject.parseOutputFilename(compilerConfig);
-
-		const bool isMsvc = compilerConfig.isMsvc();
-		if (!isMsvc)
-		{
-			std::string libDir = compilerConfig.compilerPathLib();
-			outProject.addLibDir(libDir);
-
-			std::string includeDir = compilerConfig.compilerPathInclude();
-			outProject.addIncludeDir(includeDir);
-		}
-	}
-
-	// Resolve links from projects
-	for (auto& target : m_state.targets)
-	{
-		if (target->isProject())
-		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
-			ProjectKind kind = project.kind();
-			bool staticLib = kind == ProjectKind::StaticLibrary;
-
-			outProject.resolveLinksFromProject(project.name(), staticLib);
-		}
 	}
 
 	return true;

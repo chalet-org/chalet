@@ -9,6 +9,7 @@
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
+#include "State/Target/IBuildTarget.hpp"
 
 namespace chalet
 {
@@ -20,7 +21,7 @@ struct CompilerTools
 	explicit CompilerTools(const CommandLineInputs& inInputs, const WorkspaceInfo& inInfo);
 
 	void detectToolchain();
-	bool initialize();
+	bool initialize(const BuildTargetList& inTargets);
 	void fetchCompilerVersions();
 
 	ToolchainType detectedToolchain() const;
@@ -50,15 +51,15 @@ struct CompilerTools
 	CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
 
 private:
-	const CommandLineInputs& m_inputs;
-	const WorkspaceInfo& m_info;
-
-	ToolchainType m_detectedToolchain = ToolchainType::Unknown;
+	bool initializeCompilerConfigs(const BuildTargetList& inTargets);
 
 	std::string parseVersionMSVC(const std::string& inExecutable) const;
 	std::string parseVersionGNU(const std::string& inExecutable, const std::string_view inEol = "\n") const;
 
-	mutable std::unordered_map<CodeLanguage, CompilerConfig> m_configs;
+	const CommandLineInputs& m_inputs;
+	const WorkspaceInfo& m_info;
+
+	mutable std::unordered_map<CodeLanguage, std::unique_ptr<CompilerConfig>> m_configs;
 
 	std::string m_archiver;
 	std::string m_cpp;
@@ -68,6 +69,8 @@ private:
 
 	std::string m_compilerVersionStringCpp;
 	std::string m_compilerVersionStringC;
+
+	ToolchainType m_detectedToolchain = ToolchainType::Unknown;
 
 	bool m_isArchiverLibTool = false;
 	bool m_ccDetected = false;
