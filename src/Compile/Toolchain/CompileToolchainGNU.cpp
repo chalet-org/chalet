@@ -335,11 +335,11 @@ bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 		{
 			auto cutoff = inFlag.find('=');
 			std::string flag = inFlag.substr(cutoff + 1);
-			return m_config.isFlagSupported(flag);
+			return m_config.isFlagSupported(String::toLowerCase(flag));
 		}
 		else
 		{
-			return m_config.isFlagSupported(inFlag);
+			return m_config.isFlagSupported(String::toLowerCase(inFlag));
 		}
 	}
 

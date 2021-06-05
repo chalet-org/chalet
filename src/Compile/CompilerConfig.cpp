@@ -209,7 +209,7 @@ void CompilerConfig::parseGnuHelpList(const std::string& inIdentifier)
 					if (String::startsWith('-', secondFlag))
 					{
 						if (m_supportedFlags.find(secondFlag) == m_supportedFlags.end())
-							m_supportedFlags.emplace(std::move(secondFlag), true);
+							m_supportedFlags.emplace(String::toLowerCase(secondFlag), true);
 					}
 				}
 
@@ -224,13 +224,13 @@ void CompilerConfig::parseGnuHelpList(const std::string& inIdentifier)
 				if (String::startsWith('-', line))
 				{
 					if (m_supportedFlags.find(line) == m_supportedFlags.end())
-						m_supportedFlags.emplace(std::move(line), true);
+						m_supportedFlags.emplace(String::toLowerCase(line), true);
 				}
 			}
 			else
 			{
 				if (m_supportedFlags.find(line) == m_supportedFlags.end())
-					m_supportedFlags.emplace(std::move(line), true);
+					m_supportedFlags.emplace(String::toLowerCase(line), true);
 			}
 		}
 	}
@@ -284,7 +284,7 @@ void CompilerConfig::parseClangHelpList()
 							secondFlag.pop_back();
 
 						if (m_supportedFlags.find(secondFlag) == m_supportedFlags.end())
-							m_supportedFlags.emplace(std::move(secondFlag), true);
+							m_supportedFlags.emplace(String::toLowerCase(secondFlag), true);
 					}
 				}
 
@@ -304,13 +304,13 @@ void CompilerConfig::parseClangHelpList()
 						line.pop_back();
 
 					if (m_supportedFlags.find(line) == m_supportedFlags.end())
-						m_supportedFlags.emplace(std::move(line), true);
+						m_supportedFlags.emplace(String::toLowerCase(line), true);
 				}
 			}
 			else
 			{
 				if (m_supportedFlags.find(line) == m_supportedFlags.end())
-					m_supportedFlags.emplace(std::move(line), true);
+					m_supportedFlags.emplace(String::toLowerCase(line), true);
 			}
 		}
 	}
