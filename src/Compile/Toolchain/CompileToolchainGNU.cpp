@@ -599,9 +599,7 @@ void CompileToolchainGNU::addDebuggingInformationOption(StringList& outArgList) 
 	// TODO: Control debugging information level (g, g0-g3) from configurations
 	if (m_state.configuration.debugSymbols())
 	{
-		std::string debugInfo{ "-g3" };
-		if (isFlagSupported(debugInfo))
-			outArgList.push_back(std::move(debugInfo));
+		outArgList.push_back("-g3");
 	}
 }
 

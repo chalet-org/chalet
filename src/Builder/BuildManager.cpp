@@ -368,6 +368,17 @@ bool BuildManager::doRun(const ProjectTarget& inProject)
 	if (!Commands::pathExists(file))
 		return false;
 
+#if defined(CHALET_MACOS)
+	// This is required for profiling
+	auto& installNameTool = m_state.tools.installNameTool();
+	// install_name_tool -add_rpath @executable_path/chalet_external/SFML/lib
+	for (auto p : m_state.environment.path())
+	{
+		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
+		Commands::subprocessNoOutput({ installNameTool, "-add_rpath", fmt::format("@executable_path/{}", p), file }, m_cleanOutput);
+	}
+#endif
+
 	const auto& args = !runOptions.empty() ? runOptions : runArguments;
 
 	StringList cmd = { file };

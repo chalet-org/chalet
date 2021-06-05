@@ -52,8 +52,8 @@ struct CacheTools
 	const std::string& hdiutil() const noexcept;
 	void setHdiutil(const std::string& inValue) noexcept;
 
-	const std::string& installNameUtil() const noexcept;
-	void setInstallNameUtil(const std::string& inValue) noexcept;
+	const std::string& installNameTool() const noexcept;
+	void setInstallNameTool(const std::string& inValue) noexcept;
 
 	const std::string& instruments() const noexcept;
 	void setInstruments(const std::string& inValue) noexcept;
@@ -161,7 +161,7 @@ private:
 	std::string m_git;
 	std::string m_gprof;
 	std::string m_hdiutil;
-	std::string m_installNameUtil;
+	std::string m_installNameTool;
 	std::string m_instruments;
 	std::string m_ldd;
 	std::string m_lua;

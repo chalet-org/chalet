@@ -326,45 +326,56 @@ bool Router::managePathVariables()
 
 	if (m_buildState != nullptr)
 	{
-#if !defined(CHALET_WIN32)
-		// This is needed on linux to look for additional libraries at runtime
-		// TODO: This might actually vary between distros. Figure out if any of this is needed?
-
-		// This is needed so ldd can resolve the correct file dependencies
 		StringList outPaths = m_buildState->environment.path();
 
-		for (auto& p : outPaths)
+		if (outPaths.size() > 0)
 		{
-			if (!Commands::pathExists(p))
-				continue;
+			for (auto& p : outPaths)
+			{
+				if (!Commands::pathExists(p))
+					continue;
 
-			p = Commands::getCanonicalPath(p);
-		}
+				p = Commands::getCanonicalPath(p);
+			}
+			std::string appendedPath = String::join(outPaths, Path::getSeparator());
 
-		// LD_LIBRARY_PATH - dynamic link paths
-		// LIBRARY_PATH - static link paths
-		// For now, just use the same paths for both
-		const auto kLdLibraryPath = "LD_LIBRARY_PATH";
-		const auto kLibraryPath = "LIBRARY_PATH";
+			// auto path = Environment::getPath();
+			// Environment::setPath(fmt::format("{}{}{}", appendedPath, Path::getSeparator(), path));
 
-		{
-			std::string libraryPath = String::join(outPaths, ':');
-			std::string ldLibraryPath = libraryPath;
+			// Note: Not needed on mac: @rpath stuff is done instead
+#if defined(CHALET_LINUX)
+			// This is needed on linux to look for additional libraries at runtime
+			// TODO: This might actually vary between distros. Figure out if any of this is needed?
 
-			auto oldLd = Environment::get(kLdLibraryPath);
-			if (oldLd != nullptr)
-				ldLibraryPath = ldLibraryPath.empty() ? oldLd : fmt::format("{}:{}", ldLibraryPath, oldLd);
+			// This is needed so ldd can resolve the correct file dependencies
 
-			auto old = Environment::get(kLibraryPath);
-			if (old != nullptr)
-				libraryPath = libraryPath.empty() ? oldLd : fmt::format("{}:{}", libraryPath, old);
+			// LD_LIBRARY_PATH - dynamic link paths
+			// LIBRARY_PATH - static link paths
+			// For now, just use the same paths for both
+			const auto kLdLibraryPath = "LD_LIBRARY_PATH";
+			const auto kLibraryPath = "LIBRARY_PATH";
 
-			// LOG(ldLibraryPath);
+			{
+				std::string libraryPath = appendedPath;
+				std::string ldLibraryPath = appendedPath;
 
-			Environment::set(kLdLibraryPath, ldLibraryPath);
-			Environment::set(kLibraryPath, libraryPath);
-		}
+				auto oldLd = Environment::get(kLdLibraryPath);
+				if (oldLd != nullptr)
+					ldLibraryPath = ldLibraryPath.empty() ? oldLd : fmt::format("{}:{}", ldLibraryPath, oldLd);
+
+				auto old = Environment::get(kLibraryPath);
+				if (old != nullptr)
+					libraryPath = libraryPath.empty() ? oldLd : fmt::format("{}:{}", libraryPath, old);
+
+				// LOG(ldLibraryPath);
+
+				Environment::set(kLdLibraryPath, ldLibraryPath);
+				Environment::set(kLibraryPath, libraryPath);
+			}
+#else
+			UNUSED(appendedPath);
 #endif
+		}
 	}
 	return true;
 }

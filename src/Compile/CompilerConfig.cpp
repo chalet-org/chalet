@@ -314,6 +314,13 @@ void CompilerConfig::parseClangHelpList()
 			}
 		}
 	}
+
+	// std::string supported;
+	// for (auto& [flag, _] : m_supportedFlags)
+	// {
+	// 	supported += flag + '\n';
+	// }
+	// std::ofstream("clang_flags.txt") << supported;
 }
 
 /*****************************************************************************/

@@ -175,7 +175,7 @@ std::string AppBundlerMacOS::getResourcePath() const
 /*****************************************************************************/
 bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inRPath) const
 {
-	auto& installNameTool = m_state.tools.installNameUtil();
+	auto& installNameTool = m_state.tools.installNameTool();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	StringList dylibs = m_bundle.macosBundle().dylibs();
@@ -388,7 +388,13 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 /*****************************************************************************/
 bool AppBundlerMacOS::setExecutablePaths() const
 {
-	auto& installNameTool = m_state.tools.installNameUtil();
+	auto& installNameTool = m_state.tools.installNameTool();
+
+	for (auto p : m_state.environment.path())
+	{
+		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
+		Commands::subprocessNoOutput({ installNameTool, "-delete_rpath", fmt::format("@executable_path/{}", p), m_executableOutputPath }, m_cleanOutput);
+	}
 
 	// install_name_tool
 	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../MacOS", m_executableOutputPath }, m_cleanOutput))

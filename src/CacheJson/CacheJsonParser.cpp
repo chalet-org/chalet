@@ -211,6 +211,12 @@ bool CacheJsonParser::validatePaths()
 		{
 			// also takes -dumpmachine
 			auto arch = Commands::subprocessOutput({ m_state.compilerTools.compiler(), "-print-target-triple" });
+			// Strip out version in auto-detected mac triple
+			auto isDarwin = arch.find("apple-darwin");
+			if (isDarwin != std::string::npos)
+			{
+				arch = arch.substr(0, isDarwin + 12);
+			}
 			m_state.info.setTargetArchitecture(arch);
 		}
 	}
@@ -780,7 +786,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_state.tools.setHdiutil(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstallNameTool))
-		m_state.tools.setInstallNameUtil(val);
+		m_state.tools.setInstallNameTool(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstruments))
 		m_state.tools.setInstruments(val);
