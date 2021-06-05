@@ -88,8 +88,6 @@ bool Router::run()
 		if (!m_buildState->validateState())
 			return false;
 
-		fetchToolVersions();
-
 		if (!m_buildState->initializeBuild())
 			return false;
 	}
@@ -267,18 +265,6 @@ bool Router::parseBuildJson(const std::string& inFile)
 
 	BuildJsonParser parser(m_inputs, *m_buildState, inFile);
 	return parser.serialize();
-}
-
-/*****************************************************************************/
-void Router::fetchToolVersions()
-{
-	Timer timer;
-
-	Diagnostic::info("Verifying Ancillary Tools", false);
-
-	m_buildState->tools.fetchVersions();
-
-	Diagnostic::printDone(timer.asString());
 }
 
 /*****************************************************************************/

@@ -12,7 +12,7 @@ struct CacheTools
 {
 	CacheTools() = default;
 
-	void fetchVersions();
+	bool fetchVersions();
 
 	void fetchBashVersion();
 	void fetchBrewVersion();

@@ -11,14 +11,23 @@
 #include "Utility/DependencyWalker.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-void CacheTools::fetchVersions()
+bool CacheTools::fetchVersions()
 {
+	Timer timer;
+
+	Diagnostic::info("Verifying Ancillary Tools", false);
+
 	fetchBashVersion();
 	fetchBrewVersion();
+
+	Diagnostic::printDone(timer.asString());
+
+	return true;
 }
 
 /*****************************************************************************/

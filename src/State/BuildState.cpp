@@ -10,6 +10,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -28,6 +29,13 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool BuildState::initializeBuild()
 {
+	if (!tools.fetchVersions())
+		return false;
+
+	Timer timer;
+
+	Diagnostic::info("Initializing State", false);
+
 	if (!compilerTools.initialize(targets))
 	{
 		const auto& targetArch = compilerTools.detectedToolchain() == ToolchainType::GNU ?
@@ -77,6 +85,8 @@ bool BuildState::initializeBuild()
 	}
 
 	initializeCache();
+
+	Diagnostic::printDone(timer.asString());
 
 	return true;
 }
