@@ -7,8 +7,8 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
+#include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
-#include "State/WorkspaceInfo.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -19,9 +19,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompilerTools::CompilerTools(const CommandLineInputs& inInputs, const WorkspaceInfo& inInfo) :
+CompilerTools::CompilerTools(const CommandLineInputs& inInputs, const BuildState& inState) :
 	m_inputs(inInputs),
-	m_info(inInfo)
+	m_state(inState)
 {
 }
 
@@ -68,7 +68,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 			auto split = String::split(results, String::eol());
 			bool valid = false;
 			// m_state.info.setTargetArchitecture(arch);
-			const auto& targetArch = m_info.targetArchitectureString();
+			const auto& targetArch = m_state.info.targetArchitectureString();
 			for (auto& line : split)
 			{
 				auto start = line.find_first_not_of(' ');
@@ -88,7 +88,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 		const auto& arch = m_inputs.targetArchitecture();
 		if (!arch.empty())
 		{
-			const auto& targetArch = m_info.targetArchitectureString();
+			const auto& targetArch = m_state.info.targetArchitectureString();
 
 			return String::startsWith(arch, targetArch);
 		}
@@ -96,7 +96,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 #if defined(CHALET_WIN32)
 	else if (m_detectedToolchain == ToolchainType::MSVC)
 	{
-		const auto& targetArch = m_info.targetArchitectureString();
+		const auto& targetArch = m_state.info.targetArchitectureString();
 		auto arch = String::getPathFilename(String::getPathFolder(compiler()));
 
 		if (String::equals("x64", arch))
@@ -169,7 +169,7 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 
 			if (m_configs.find(language) == m_configs.end())
 			{
-				m_configs.emplace(language, std::make_unique<CompilerConfig>(language, *this));
+				m_configs.emplace(language, std::make_unique<CompilerConfig>(language, m_state));
 			}
 		}
 	}
@@ -215,7 +215,7 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) con
 		{
 			const auto versionString = splitOutput[1].substr(start, end - start);
 			// const auto arch = splitOutput[1].substr(end + 5);
-			const auto arch = m_info.targetArchitectureString();
+			const auto arch = m_state.info.targetArchitectureString();
 			ret = fmt::format("Microsoft{} Visual C/C++ {} [{}]", Unicode::registered(), versionString, arch);
 		}
 	}
@@ -237,7 +237,7 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, cons
 	std::string rawOutput;
 	if (String::contains("clang", inExecutable))
 	{
-		rawOutput = Commands::subprocessOutput({ inExecutable, "-target", m_info.targetArchitectureString(), "-v" });
+		rawOutput = Commands::subprocessOutput({ inExecutable, "-target", m_state.info.targetArchitectureString(), "-v" });
 	}
 	else
 	{

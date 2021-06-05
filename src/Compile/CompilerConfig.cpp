@@ -6,6 +6,7 @@
 #include "Compile/CompilerConfig.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -15,7 +16,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const CompilerTools& inCompilers) :
+CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState) :
 	kCompilerStructures({
 		{ "/bin/hostx64/x64", "/lib/x64" },
 		{ "/bin/hostx64/x86", "/lib/x86" },
@@ -24,7 +25,7 @@ CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const CompilerTool
 		// { "/bin/hostx64/x64", "/lib/64" }, // TODO: Not sure what makes this different from /lib/x64
 		{ "/bin", "/lib" },
 	}),
-	m_compilers(inCompilers),
+	m_state(inState),
 	m_language(inLanguage)
 {
 }
@@ -45,9 +46,9 @@ bool CompilerConfig::isInitialized() const noexcept
 const std::string& CompilerConfig::compilerExecutable() const noexcept
 {
 	if (m_language == CodeLanguage::CPlusPlus)
-		return m_compilers.cpp();
+		return m_state.compilerTools.cpp();
 	else
-		return m_compilers.cc();
+		return m_state.compilerTools.cc();
 }
 
 /*****************************************************************************/
@@ -162,22 +163,46 @@ bool CompilerConfig::getSupportedCompilerFlags()
 	if (exec.empty())
 		return false;
 
-	if (isGcc())
-	{
-		parseGnuHelpList({
-			"common",
-			"optimizers",
-			//"params",
-			"target",
-			"warnings",
-			"undocumented",
-		});
+	auto& buildPath = m_state.paths.buildPath();
+	if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
+		m_flagsFile = buildPath + "/flags_x86.env";
+	else
+		m_flagsFile = buildPath + "/flags_x64.env";
 
-		// TODO: separate/joined -- kind of weird to check for
-	}
-	else if (isClang())
+	if (!Commands::pathExists(m_flagsFile))
 	{
-		parseClangHelpList();
+		if (isGcc())
+		{
+			parseGnuHelpList({
+				"common",
+				"optimizers",
+				//"params",
+				"target",
+				"warnings",
+				"undocumented",
+			});
+
+			// TODO: separate/joined -- kind of weird to check for
+		}
+		else if (isClang())
+		{
+			parseClangHelpList();
+		}
+
+		std::string outContents;
+		for (auto& [flag, _] : m_supportedFlags)
+		{
+			outContents += flag + "\n";
+		}
+		std::ofstream(m_flagsFile) << outContents;
+	}
+	else
+	{
+		std::ifstream input(m_flagsFile);
+		for (std::string line; std::getline(input, line);)
+		{
+			m_supportedFlags[std::move(line)] = true;
+		}
 	}
 
 	return true;

@@ -13,12 +13,12 @@
 
 namespace chalet
 {
-struct WorkspaceInfo;
+class BuildState;
 struct CommandLineInputs;
 
 struct CompilerTools
 {
-	explicit CompilerTools(const CommandLineInputs& inInputs, const WorkspaceInfo& inInfo);
+	explicit CompilerTools(const CommandLineInputs& inInputs, const BuildState& inState);
 
 	void detectToolchain();
 	bool initialize(const BuildTargetList& inTargets);
@@ -57,7 +57,7 @@ private:
 	std::string parseVersionGNU(const std::string& inExecutable, const std::string_view inEol = "\n") const;
 
 	const CommandLineInputs& m_inputs;
-	const WorkspaceInfo& m_info;
+	const BuildState& m_state;
 
 	mutable std::unordered_map<CodeLanguage, std::unique_ptr<CompilerConfig>> m_configs;
 

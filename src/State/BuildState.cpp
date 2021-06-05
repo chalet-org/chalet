@@ -18,7 +18,7 @@ namespace chalet
 BuildState::BuildState(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	info(m_inputs),
-	compilerTools(m_inputs, info),
+	compilerTools(m_inputs, *this),
 	paths(m_inputs, info),
 	environment(paths),
 	msvcEnvironment(*this),
@@ -36,6 +36,7 @@ bool BuildState::initializeBuild()
 
 	Diagnostic::info("Initializing State", false);
 
+	// Note: This is about as quick as it'll get (50ms in mingw)
 	if (!compilerTools.initialize(targets))
 	{
 		const auto& targetArch = compilerTools.detectedToolchain() == ToolchainType::GNU ?
@@ -46,6 +47,7 @@ bool BuildState::initializeBuild()
 		return false;
 	}
 
+	// Note: < 1ms
 	for (auto& target : targets)
 	{
 		if (target->isProject())
@@ -76,15 +78,18 @@ bool BuildState::initializeBuild()
 		}
 	}
 
-	paths.initialize();
-	environment.initialize();
-
-	for (auto& target : targets)
 	{
-		target->initialize();
-	}
+		// Note: Most time is spent here (277ms in mingw)
+		paths.initialize();
+		environment.initialize();
 
-	initializeCache();
+		for (auto& target : targets)
+		{
+			target->initialize();
+		}
+
+		initializeCache();
+	}
 
 	Diagnostic::printDone(timer.asString());
 

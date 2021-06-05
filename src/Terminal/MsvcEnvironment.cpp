@@ -194,7 +194,7 @@ bool MsvcEnvironment::readCompilerVariables()
 			auto splitVar = String::split(line, '=');
 			if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
 			{
-				m_variables[splitVar.front()] = splitVar.back();
+				m_variables[std::move(splitVar.front())] = splitVar.back();
 			}
 		}
 	}

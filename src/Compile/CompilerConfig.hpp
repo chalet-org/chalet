@@ -13,11 +13,11 @@
 
 namespace chalet
 {
-struct CompilerTools;
+class BuildState;
 
 struct CompilerConfig
 {
-	explicit CompilerConfig(const CodeLanguage inLanguage, const CompilerTools& inCompilers);
+	explicit CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState);
 
 	CodeLanguage language() const noexcept;
 
@@ -50,12 +50,13 @@ private:
 
 	const std::unordered_map<std::string, std::string> kCompilerStructures;
 
-	const CompilerTools& m_compilers;
+	const BuildState& m_state;
 
 	std::string m_compilerPath{ "/usr" };
 	std::string m_compilerPathBin{ "/usr/bin" };
 	std::string m_compilerPathLib{ "/usr/lib" };
 	std::string m_compilerPathInclude{ "/usr/include" };
+	std::string m_flagsFile;
 
 	std::unordered_map<std::string, bool> m_supportedFlags;
 
