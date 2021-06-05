@@ -164,12 +164,14 @@ bool CompilerConfig::getSupportedCompilerFlags()
 
 	if (isGcc())
 	{
-		parseGnuHelpList("common");
-		parseGnuHelpList("optimizers");
-		// parseGnuHelpList("params");
-		parseGnuHelpList("target");
-		parseGnuHelpList("warnings");
-		parseGnuHelpList("undocumented");
+		parseGnuHelpList({
+			"common",
+			"optimizers",
+			//"params",
+			"target",
+			"warnings",
+			"undocumented",
+		});
 
 		// TODO: separate/joined -- kind of weird to check for
 	}
@@ -182,11 +184,17 @@ bool CompilerConfig::getSupportedCompilerFlags()
 }
 
 /*****************************************************************************/
-void CompilerConfig::parseGnuHelpList(const std::string& inIdentifier)
+void CompilerConfig::parseGnuHelpList(const StringList& inHelps)
 {
 	const auto& exec = compilerExecutable();
 
-	std::string raw = Commands::subprocessOutput({ exec, "-Q", fmt::format("--help={}", inIdentifier) });
+	StringList cmd{ exec, "-Q" };
+	for (auto& help : inHelps)
+	{
+		cmd.push_back(fmt::format("--help={}", help));
+	}
+
+	std::string raw = Commands::subprocessOutput(cmd);
 	auto split = String::split(raw, String::eol());
 
 	for (auto& line : split)

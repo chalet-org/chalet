@@ -45,7 +45,7 @@ struct CompilerConfig
 	bool isClangOrMsvc() const noexcept;
 
 private:
-	void parseGnuHelpList(const std::string& inIdentifier);
+	void parseGnuHelpList(const StringList& inHelps);
 	void parseClangHelpList();
 
 	const std::unordered_map<std::string, std::string> kCompilerStructures;
