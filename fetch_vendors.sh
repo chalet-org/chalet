@@ -19,28 +19,28 @@ if [[ ! -d "$OUTDIR" ]]; then
 	)
 
 	repositories=(
-	'p-ranav/argparse'
-	'catchorg/Catch2'
-	'hanickadot/compile-time-regular-expressions'
-	'fmtlib/fmt'
-	'gulrak/filesystem'
-	'p-ranav/glob'
-	'andrew-r-king/json-schema-validator'
-	'nlohmann/json'
-	'andrew-r-king/subprocess'
-	'MisterTea/UniversalStacktrace'
+		'p-ranav/argparse'
+		'catchorg/Catch2'
+		'hanickadot/compile-time-regular-expressions'
+		'fmtlib/fmt'
+		'gulrak/filesystem'
+		'p-ranav/glob'
+		'andrew-r-king/json-schema-validator'
+		'nlohmann/json'
+		'andrew-r-king/subprocess'
+		'MisterTea/UniversalStacktrace'
 	)
 	tags=(
-	'64dd67c7587ec36d1fc39a0f03619ea219968a95'
-	'v2.x'
-	'v3.4.1'
-	'dccddc2bdb15f29f7df7d99f78278248fb8097db'
-	'v1.5.6'
-	'46fb9fc92d2fd8b41f536b2ccb371a6ea212e606'
-	'master'
-	'v3.9.1'
-	'master'
-	'e6ca24525f28556dd4847443b07dd4b9a4affa9d'
+		'64dd67c7587ec36d1fc39a0f03619ea219968a95'
+		'v2.x'
+		'v3.4.1'
+		'dccddc2bdb15f29f7df7d99f78278248fb8097db'
+		'v1.5.6'
+		'46fb9fc92d2fd8b41f536b2ccb371a6ea212e606'
+		'master'
+		'v3.9.1'
+		'master'
+		'e6ca24525f28556dd4847443b07dd4b9a4affa9d'
 	)
 
 	commits=(
@@ -56,8 +56,10 @@ if [[ ! -d "$OUTDIR" ]]; then
 		1
 	)
 
+	printf "Fetching dependencies into '$OUTDIR'...\n\n"
+
 	# git clone [--quiet] -b [tag|branch] [--single-branch|--depth 1] --config advice.detatchedHead=false (repo) (destination)
-	color='\033[0;35m'
+	color='\033[1;35m'
 	color_reset='\033[0m'
 	fetching_symbol='➥'
 
