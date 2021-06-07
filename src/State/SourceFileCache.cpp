@@ -104,6 +104,7 @@ bool SourceFileCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 	if (fileData.needsUpdate)
 		return add(inFile);
 
+	// TODO: Older file should also restat, but need to check values more closely '!=' seemed to always restat
 	return fileData.lastWrite > m_lastBuildTime;
 }
 
