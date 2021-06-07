@@ -159,7 +159,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, const bool i
 
 	bool skipOutput = false;
 	std::string noWork{ "ninja: no work to do.\n" };
-	Subprocess::PipeFunc onStdOut = [&skipOutput, &noWork](std::string inData) {
+	Subprocess::PipeFunc onStdOut = [](std::string inData) {
 #if defined(CHALET_WIN32)
 		String::replaceAll(inData, "\r\n", "\n");
 #endif
