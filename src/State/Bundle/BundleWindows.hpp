@@ -14,11 +14,7 @@ struct BundleWindows
 
 	bool validate();
 
-	const std::string& icon() const noexcept;
-	void setIcon(const std::string& inValue);
-
 private:
-	std::string m_icon;
 };
 }
 

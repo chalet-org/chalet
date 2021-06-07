@@ -78,6 +78,7 @@
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"windowsApplicationManifest": "platform/windows/app.manifest",
+				"windowsApplicationIcon": "platform/windows/app.ico",
 				"staticLinks": [
 					"json-schema-validator",
 					"subprocess"
@@ -99,7 +100,8 @@
 				"staticLinks": [
 					"json-schema-validator",
 					"subprocess"
-				]
+				],
+				"windowsApplicationIcon": "platform/windows/app.ico"
 			},
 			"runArguments": [
 				"-w",
@@ -176,9 +178,6 @@
 			"linux": {
 				"icon": "platform/chalet-logo.png",
 				"desktopEntry": "platform/linux/app.desktop"
-			},
-			"windows": {
-				"icon": "platform/windows/app.ico"
 			}
 		},
 		"post-bundle": {

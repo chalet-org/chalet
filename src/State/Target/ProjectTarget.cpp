@@ -538,6 +538,17 @@ void ProjectTarget::setWindowsApplicationManifest(const std::string& inValue) no
 }
 
 /*****************************************************************************/
+const std::string& ProjectTarget::windowsApplicationIcon() const noexcept
+{
+	return m_windowsApplicationIcon;
+}
+
+void ProjectTarget::setWindowsApplicationIcon(const std::string& inValue) noexcept
+{
+	m_windowsApplicationIcon = inValue;
+}
+
+/*****************************************************************************/
 ProjectKind ProjectTarget::kind() const noexcept
 {
 	return m_kind;

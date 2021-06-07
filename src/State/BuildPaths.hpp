@@ -37,6 +37,7 @@ struct BuildPaths
 	std::string getPrecompiledHeaderInclude(const ProjectTarget& inProject) const;
 	std::string getWindowsManifestFilename(const ProjectTarget& inProject) const;
 	std::string getWindowsManifestResourceFilename(const ProjectTarget& inProject) const;
+	std::string getWindowsIconResourceFilename(const ProjectTarget& inProject) const;
 
 	SourceOutputs getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inDumpAssembly, const bool inObjExtension = false) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const;

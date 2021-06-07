@@ -707,6 +707,9 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectTarget& outProject, const 
 	if (std::string val; assignStringFromConfig(val, inNode, "windowsApplicationManifest"))
 		outProject.setWindowsApplicationManifest(val);
 
+	if (std::string val; assignStringFromConfig(val, inNode, "windowsApplicationIcon"))
+		outProject.setWindowsApplicationIcon(val);
+
 	if (bool val = false; m_buildJson->assignFromKey(val, inNode, "windowsPrefixOutputFilename"))
 		outProject.setWindowsPrefixOutputFilename(val);
 
@@ -1090,15 +1093,15 @@ bool BuildJsonParser::parseBundleWindows(BundleTarget& outBundle, const Json& in
 
 	BundleWindows windowsBundle;
 
-	int assigned = 0;
-	if (std::string val; m_buildJson->assignStringAndValidate(val, windowsNode, "icon"))
-	{
-		windowsBundle.setIcon(val);
-		assigned++;
-	}
+	// int assigned = 0;
+	// if (std::string val; m_buildJson->assignStringAndValidate(val, windowsNode, "icon"))
+	// {
+	// 	windowsBundle.setIcon(val);
+	// 	assigned++;
+	// }
 
-	if (assigned == 0)
-		return false;
+	// if (assigned == 0)
+	// 	return false;
 
 	outBundle.setWindowsBundle(std::move(windowsBundle));
 

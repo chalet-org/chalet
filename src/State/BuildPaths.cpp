@@ -365,6 +365,25 @@ std::string BuildPaths::getWindowsManifestResourceFilename(const ProjectTarget& 
 }
 
 /*****************************************************************************/
+std::string BuildPaths::getWindowsIconResourceFilename(const ProjectTarget& inProject) const
+{
+	std::string ret;
+
+#if defined(CHALET_WIN32)
+	if (inProject.isExecutable())
+	{
+		const auto& name = inProject.name();
+
+		ret = fmt::format("{}/{}_win32_icon.rc", m_intermediateDir, name);
+	}
+#else
+	UNUSED(inProject);
+#endif
+
+	return ret;
+}
+
+/*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
 StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const bool inObjExtension) const
@@ -437,6 +456,7 @@ StringList BuildPaths::getOutputDirectoryList(const SourceGroup& inDirectoryList
 StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 {
 	auto manifestResource = getWindowsManifestResourceFilename(inProject);
+	auto iconResource = getWindowsIconResourceFilename(inProject);
 
 	const auto& files = inProject.files();
 	if (files.size() > 0)
@@ -465,6 +485,11 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 		if (!manifestResource.empty())
 		{
 			List::addIfDoesNotExist(fileList, std::move(manifestResource));
+		}
+
+		if (!iconResource.empty())
+		{
+			List::addIfDoesNotExist(fileList, std::move(iconResource));
 		}
 
 		return fileList;
@@ -544,6 +569,10 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 	if (!manifestResource.empty())
 	{
 		List::addIfDoesNotExist(ret, std::move(manifestResource));
+	}
+	if (!iconResource.empty())
+	{
+		List::addIfDoesNotExist(ret, std::move(iconResource));
 	}
 
 	return ret;

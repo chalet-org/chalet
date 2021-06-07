@@ -122,6 +122,9 @@ struct ProjectTarget final : public IBuildTarget
 	const std::string& windowsApplicationManifest() const noexcept;
 	void setWindowsApplicationManifest(const std::string& inValue) noexcept;
 
+	const std::string& windowsApplicationIcon() const noexcept;
+	void setWindowsApplicationIcon(const std::string& inValue) noexcept;
+
 	//
 	ProjectKind kind() const noexcept;
 	void setKind(const ProjectKind inValue) noexcept;
@@ -183,6 +186,7 @@ private:
 	std::string m_pch;
 	std::string m_linkerScript;
 	std::string m_windowsApplicationManifest;
+	std::string m_windowsApplicationIcon;
 
 	ProjectKind m_kind = ProjectKind::None;
 	CodeLanguage m_language = CodeLanguage::None;

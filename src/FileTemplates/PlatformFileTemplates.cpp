@@ -192,11 +192,23 @@ std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& i
 std::string PlatformFileTemplates::windowsManifestResource(const std::string& inManifestFile, const bool inDllPrivateDeps)
 {
 	int id = inDllPrivateDeps ? 2 : 1;
-	return fmt::format(R"rc(#include <winuser.h>
+	return fmt::format(R"rc(#define WIN32_LEAN_AND_MEAN
+#include <winuser.h>
 
 {id} RT_MANIFEST "{manifestFile}"
 )rc",
 		FMT_ARG(id),
 		fmt::arg("manifestFile", inManifestFile));
+}
+
+/*****************************************************************************/
+std::string PlatformFileTemplates::windowsIconResource(const std::string& inIconFile)
+{
+	return fmt::format(R"rc(#define WIN32_LEAN_AND_MEAN
+#include <winuser.h>
+
+2 ICON "{iconFile}"
+)rc",
+		fmt::arg("iconFile", inIconFile));
 }
 }

@@ -17,6 +17,7 @@ std::string minimumWindowsAppManifest();
 std::string generalWindowsAppManifest(const std::string& inName = "${name}", const std::string& inDescription = "${description}", const std::string& inVersion = "${version}");
 std::string loadedWindowsAppManifest(const std::string& inName = "${name}", const std::string& inDescription = "${description}", const std::string& inVersion = "${version}");
 std::string windowsManifestResource(const std::string& inManifestFile, const bool inDllPrivateDeps = false);
+std::string windowsIconResource(const std::string& inIconFile);
 }
 }
 

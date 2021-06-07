@@ -56,6 +56,9 @@ bool CompileToolchainGNU::initialize()
 #if defined(CHALET_WIN32)
 	if (!createWindowsApplicationManifest())
 		return false;
+
+	if (!createWindowsApplicationIcon())
+		return false;
 #endif
 
 	return true;

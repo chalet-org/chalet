@@ -17,11 +17,12 @@
 	#endif
 
 	#ifndef WIN32_ICON_MAIN
-		#define WIN32_ICON_MAIN 1
+		#define WIN32_ICON_MAIN 2
 	#endif
 
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
+	#include <winuser.h>
 
 	#ifdef CHALET_MSVC
 		#pragma execution_character_set("utf-8")

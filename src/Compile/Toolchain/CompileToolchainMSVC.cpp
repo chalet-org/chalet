@@ -61,6 +61,9 @@ bool CompileToolchainMSVC::initialize()
 	if (!createWindowsApplicationManifest())
 		return false;
 
+	if (!createWindowsApplicationIcon())
+		return false;
+
 	return true;
 }
 

@@ -12,35 +12,10 @@
 namespace chalet
 {
 /*****************************************************************************/
+// Something might fit here in the future, but for now, nothing!!
+/*****************************************************************************/
 bool BundleWindows::validate()
 {
-	bool result = true;
-
-	if (!m_icon.empty())
-	{
-		if (!String::endsWith(".ico", m_icon))
-		{
-			Diagnostic::error(fmt::format("bundle.windows.icon must end with '.ico', but was '{}'.", m_icon));
-			result = false;
-		}
-		else if (!Commands::pathExists(m_icon))
-		{
-			Diagnostic::error(fmt::format("bundle.windows.icon was not found.", m_icon));
-			result = false;
-		}
-	}
-
-	return result;
-}
-
-/*****************************************************************************/
-const std::string& BundleWindows::icon() const noexcept
-{
-	return m_icon;
-}
-
-void BundleWindows::setIcon(const std::string& inValue)
-{
-	m_icon = inValue;
+	return true;
 }
 }

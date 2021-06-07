@@ -100,9 +100,7 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 	{
 		// TODO: This is kind of a hack for now.
 		if (Commands::pathExists(windowsManifestResourceFile))
-		{
 			Commands::remove(windowsManifestResourceFile);
-		}
 
 		if (!Commands::pathExists(windowsManifestFile))
 		{
@@ -123,6 +121,41 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
 		{
 			Diagnostic::error(fmt::format("Error creating windows manifest resource file: {}", windowsManifestResourceFile));
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ICompileToolchain::createWindowsApplicationIcon()
+{
+	if (!m_project.isExecutable())
+		return true;
+
+	const auto& windowsIconFile = m_project.windowsApplicationIcon();
+	const auto windowsIconResourceFile = m_state.paths.getWindowsIconResourceFilename(m_project);
+
+	if (!windowsIconFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsIconFile))
+	{
+		// TODO: This is kind of a hack for now.
+		if (Commands::pathExists(windowsIconResourceFile))
+			Commands::remove(windowsIconResourceFile);
+
+		if (!Commands::pathExists(windowsIconFile))
+		{
+			Diagnostic::error(fmt::format("Windows icon does not exist: {}", windowsIconFile));
+			return false;
+		}
+	}
+
+	if (!windowsIconResourceFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsIconResourceFile))
+	{
+		std::string rcContents = PlatformFileTemplates::windowsIconResource(windowsIconFile);
+		if (!Commands::createFileWithContents(windowsIconResourceFile, rcContents))
+		{
+			Diagnostic::error(fmt::format("Error creating windows icon resource file: {}", windowsIconResourceFile));
 			return false;
 		}
 	}

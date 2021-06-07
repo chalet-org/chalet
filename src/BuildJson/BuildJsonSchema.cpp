@@ -224,15 +224,8 @@ Json Schema::getBuildJson()
 		"type": "object",
 		"description": "Variables to describe the windows application.",
 		"additionalProperties": false,
-		"required": [
-			"icon"
-		],
-		"properties": {
-			"icon": {
-				"type": "string",
-				"description": "The windows icon to use for the project"
-			}
-		}
+		"required": [],
+		"properties": {}
 	})json"_ojson;
 
 	ret[kDefinitions]["distribution-bundle"] = R"json({
@@ -273,9 +266,6 @@ Json Schema::getBuildJson()
 			},
 			"projects": {
 				"$ref": "#/definitions/distribution-projects"
-			},
-			"windows": {
-				"$ref": "#/definitions/distribution-windows"
 			}
 		}
 	})json"_ojson;
@@ -511,6 +501,9 @@ Json Schema::getBuildJson()
 			"windowsOutputDef": {
 				"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
 			},
+			"windowsApplicationIcon": {
+				"$ref": "#/definitions/target-project-cxx-windowsApplicationIcon"
+			},
 			"windowsApplicationManifest": {
 				"$ref": "#/definitions/target-project-cxx-windowsApplicationManifest"
 			}
@@ -610,12 +603,6 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["target-project"][kPatternProperties][fmt::format("^runDependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/target-project-runDependencies"
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-cxx-windowsPrefixOutputFilename"] = R"json({
-		"type": "boolean",
-		"description": "Only applies to dynamic library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
-		"default": true
 	})json"_ojson;
 
 	ret[kDefinitions]["target-project-cxx-cStandard"] = R"json({
@@ -1255,14 +1242,25 @@ Json Schema::getBuildJson()
 	};
 
 	ret[kDefinitions]["target-project-cxx-windowsApplicationManifest"] = R"json({
-		"description": "The path to a Windows application manifest to .",
+		"description": "The path to a Windows application manifest. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
 		"type": "string"
+	})json"_ojson;
+
+	ret[kDefinitions]["target-project-cxx-windowsApplicationIcon"] = R"json({
+		"type": "string",
+		"description": "The windows icon to use for the project. Only applies to application targets (kind=[consoleApplication|desktopApplication])"
 	})json"_ojson;
 
 	ret[kDefinitions]["target-project-cxx-windowsOutputDef"] = R"json({
 		"type": "boolean",
-		"description": "If true for a dynamic library (dll) target on Windows, a .def file will be created",
+		"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
 		"default": false
+	})json"_ojson;
+
+	ret[kDefinitions]["target-project-cxx-windowsPrefixOutputFilename"] = R"json({
+		"type": "boolean",
+		"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
+		"default": true
 	})json"_ojson;
 
 	ret[kDefinitions]["target-script"] = R"json({

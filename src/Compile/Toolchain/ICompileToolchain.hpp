@@ -38,6 +38,7 @@ struct ICompileToolchain
 
 protected:
 	bool createWindowsApplicationManifest();
+	bool createWindowsApplicationIcon();
 	virtual void addExectuable(StringList& outArgList, const std::string& inExecutable) const final;
 
 	// Compile
