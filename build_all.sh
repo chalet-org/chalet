@@ -12,6 +12,8 @@ if [[ $PLATFORM == "windows" ]]; then
 	PATH="/c/msys64/mingw64/bin:$PATH"
 fi
 
+bash ./fetch_vendors.sh
+
 bash ./build.sh Debug && build/Debug/chalet-debug --save-schema buildrun Release
 
 echo "exited with code $?"
