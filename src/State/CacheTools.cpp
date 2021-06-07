@@ -36,11 +36,11 @@ void CacheTools::fetchBashVersion()
 	if (!m_bash.empty())
 	{
 #if defined(CHALET_WIN32)
-		// if (Commands::pathExists(m_bash))
-		// {
-		// 	std::string version = Commands::subprocessOutput({ m_bash, "--version" });
-		// 	m_bashAvailable = String::startsWith("GNU bash", version);
-		// }
+		if (Commands::pathExists(m_bash))
+		{
+			std::string version = Commands::subprocessOutput({ m_bash, "--version" });
+			m_bashAvailable = String::startsWith("GNU bash", version);
+		}
 #else
 		m_bashAvailable = true;
 #endif
