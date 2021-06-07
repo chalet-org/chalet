@@ -17,7 +17,7 @@
 
 #define CTRE_STRING_IS_UTF8 0
 
-#include <ctre/ctre.hpp>
+#include <ctre/single-header/ctre.hpp>
 
 #ifdef CHALET_MSVC
 template <auto& ptn>

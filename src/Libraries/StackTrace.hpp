@@ -17,6 +17,7 @@
 	#pragma warning(disable : 4456)
 #else
 	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wunused-variable"
 	#pragma GCC diagnostic ignored "-Wunused-result"
 	#pragma GCC diagnostic ignored "-Wshadow"
 #endif

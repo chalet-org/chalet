@@ -49,6 +49,13 @@
 				"_DEBUG"
 			],
 			"includeDirs": [
+				"vendor/nlohmann/single_include",
+				"vendor/json-schema-validator/src",
+				"vendor/fmt/include",
+				"vendor/argparse/include",
+				"vendor/glob/single_include",
+				"vendor/ust",
+				"vendor/subprocess/src/cpp",
 				"vendor"
 			],
 			"links": [
@@ -66,11 +73,11 @@
 	"targets": {
 		"json-schema-validator": {
 			"kind": "staticLibrary",
-			"location": "vendor/json-schema-validator"
+			"location": "vendor/json-schema-validator/src"
 		},
 		"subprocess": {
 			"kind": "staticLibrary",
-			"location": "vendor/subprocess"
+			"location": "vendor/subprocess/src/cpp"
 		},
 		"chalet": {
 			"kind": "consoleApplication",
@@ -100,6 +107,9 @@
 				"staticLinks": [
 					"json-schema-validator",
 					"subprocess"
+				],
+				"includeDirs": [
+					"vendor/catch2/single_include"
 				],
 				"windowsApplicationIcon": "platform/windows/app.ico"
 			},

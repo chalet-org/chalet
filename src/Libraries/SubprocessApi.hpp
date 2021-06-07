@@ -14,7 +14,7 @@
 	#pragma GCC diagnostic ignored "-Wshadow"
 #endif
 
-#include <subprocess/subprocess.hpp>
+#include <subprocess.hpp>
 
 #ifdef CHALET_MSVC
 	#pragma warning(pop)

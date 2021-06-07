@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-OUTDIR=vendor_test
+OUTDIR="vendor"
 
 if [[ ! -d "$OUTDIR" ]]; then
 	rm -rf "$OUTDIR"
@@ -33,7 +33,7 @@ if [[ ! -d "$OUTDIR" ]]; then
 	tags=(
 		'64dd67c7587ec36d1fc39a0f03619ea219968a95'
 		'v2.x'
-		'v3.4.1'
+		'95c63867bf0f6497825ef6cf44a7d0791bd25883'
 		'dccddc2bdb15f29f7df7d99f78278248fb8097db'
 		'v1.5.6'
 		'46fb9fc92d2fd8b41f536b2ccb371a6ea212e606'
@@ -46,7 +46,7 @@ if [[ ! -d "$OUTDIR" ]]; then
 	commits=(
 		1
 		0
-		0
+		1
 		1
 		0
 		1

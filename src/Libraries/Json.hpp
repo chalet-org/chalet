@@ -8,7 +8,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "json-schema-validator/nlohmann/json-schema.hpp"
+#include <nlohmann/json-schema.hpp>
 
 inline nlohmann::ordered_json operator"" _ojson(const char* s, std::size_t n)
 {

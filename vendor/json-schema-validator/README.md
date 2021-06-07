@@ -49,6 +49,21 @@ a validation error occurs and decide what to do (throwing, counting, collecting)
 Another goal was to use Niels Lohmann's JSON-library. This is why the validator
 lives in his namespace.
 
+# Thread-safety
+
+Instance validation is thread-safe and the same validator-object can be used by
+different threads:
+
+The validate method is `const` which indicates the object is not modified when
+being called:
+
+```C++
+	json json_validator::validate(const json &) const;
+```
+
+Validator-object creation however is not thread-safe. A validator has to be
+created in one (main?) thread once.
+
 # Weaknesses
 
 Numerical validation uses nlohmann-json's integer, unsigned and floating point
@@ -105,6 +120,14 @@ access nlohmann-json:
 1 is there to make it work when this project is added as
 a sub-directory (via `add_subdirectory()`), 2 and 3 can be
 assisted by setting the `nlohmann_json_DIR`-variable.
+
+### Building with Hunter package manager
+
+To enable access to nlohmann json library, Hunter can be used. Just run with HUNTER_ENABLED=ON option. No further dependencies needed
+
+```bash
+cmake [..] -DHUNTER_ENABLED=ON [..]
+```
 
 ### Building as a CMake-subdirectory from within another project
 
@@ -285,15 +308,33 @@ All required tests are **OK**.
 
 # Format
 
-Optionally JSON-schema-validator can validation predefined or user-defined formats.
+Optionally JSON-schema-validator can validate predefined or user-defined formats.
 Therefore a format-checker-function can be provided by the user which is called by
-the validator when a format-check is required.
+the validator when a format-check is required (ie. the schema contains a format-field).
+
+This is how the prototype looks like and how it can be passed to the validation-instance:
+
+```C++
+static void my_format_checker(const std::string &format, const std::string &value)
+{
+	if (format == "something") {
+		if (!check_value_for_something(value))
+			throw std::invalid_argument("value is not a good something");
+	} else
+		throw std::logic_error("Don't know how to validate " + format);
+}
+
+// when creating the validator
+
+json_validator validator(nullptr, // or loader-callback
+                         my_format_checker); // create validator
+```
 
 The library contains a default-checker, which does some checks. It needs to be
 provided manually to the constructor of the validator:
 
 ```C++
-json_validator validator(loader,
+json_validator validator(loader, // or nullptr for no loader
                          nlohmann::json_schema::default_string_format_check);
 ```
 
