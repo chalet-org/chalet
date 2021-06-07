@@ -22,8 +22,8 @@ CMakeTarget::CMakeTarget(const BuildState& inState) :
 void CMakeTarget::initialize()
 {
 	const auto& targetName = this->name();
-	m_state.paths.parsePathWithVariables(m_buildScript, targetName);
-	m_state.paths.parsePathWithVariables(m_location, targetName);
+	m_state.paths.replaceVariablesInPath(m_buildScript, targetName);
+	m_state.paths.replaceVariablesInPath(m_location, targetName);
 }
 
 /*****************************************************************************/

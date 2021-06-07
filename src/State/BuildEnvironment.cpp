@@ -35,7 +35,7 @@ void BuildEnvironment::initialize()
 	std::string addedPath;
 	for (auto& path : m_path)
 	{
-		m_paths.parsePathWithVariables(path);
+		m_paths.replaceVariablesInPath(path);
 		addedPath += path;
 		addedPath += Path::getSeparator();
 	}

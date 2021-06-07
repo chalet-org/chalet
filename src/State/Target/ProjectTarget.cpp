@@ -38,7 +38,7 @@ void ProjectTarget::initialize()
 	auto parse = [&](StringList& outList) {
 		for (auto& dir : outList)
 		{
-			m_state.paths.parsePathWithVariables(dir, targetName);
+			m_state.paths.replaceVariablesInPath(dir, targetName);
 		}
 	};
 
@@ -50,7 +50,7 @@ void ProjectTarget::initialize()
 	parse(m_locations);
 	parse(m_locationExcludes);
 
-	m_state.paths.parsePathWithVariables(m_pch, name());
+	m_state.paths.replaceVariablesInPath(m_pch, name());
 }
 
 /*****************************************************************************/

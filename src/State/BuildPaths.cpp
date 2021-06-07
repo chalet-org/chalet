@@ -239,7 +239,7 @@ void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::s
 }
 
 /*****************************************************************************/
-void BuildPaths::parsePathWithVariables(std::string& outPath, const std::string& inName) const
+void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string& inName) const
 {
 	const auto& buildDir = buildOutputDir();
 
@@ -249,6 +249,8 @@ void BuildPaths::parsePathWithVariables(std::string& outPath, const std::string&
 	if (!external.empty())
 	{
 		String::replaceAll(outPath, "${externalDepDir}", external);
+		String::replaceAll(outPath, "${external}", external);
+		String::replaceAll(outPath, "${vendor}", external);
 	}
 
 	if (!inName.empty())

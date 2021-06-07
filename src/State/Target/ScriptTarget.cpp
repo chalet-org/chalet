@@ -23,7 +23,7 @@ void ScriptTarget::initialize()
 	const auto& targetName = this->name();
 	for (auto& script : m_scripts)
 	{
-		m_state.paths.parsePathWithVariables(script, targetName);
+		m_state.paths.replaceVariablesInPath(script, targetName);
 	}
 }
 

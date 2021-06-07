@@ -30,11 +30,11 @@ void BundleTarget::initialize()
 	const auto& targetName = this->name();
 	for (auto& dir : m_dependencies)
 	{
-		m_state.paths.parsePathWithVariables(dir, targetName);
+		m_state.paths.replaceVariablesInPath(dir, targetName);
 	}
 	for (auto& dir : m_excludes)
 	{
-		m_state.paths.parsePathWithVariables(dir, targetName);
+		m_state.paths.replaceVariablesInPath(dir, targetName);
 	}
 }
 

@@ -42,7 +42,7 @@ struct BuildPaths
 	SourceOutputs getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inDumpAssembly, const bool inObjExtension = false) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const;
 
-	void parsePathWithVariables(std::string& outPath, const std::string& inName = std::string()) const;
+	void replaceVariablesInPath(std::string& outPath, const std::string& inName = std::string()) const;
 
 private:
 	friend class BuildState;
