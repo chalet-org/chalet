@@ -85,7 +85,6 @@
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"windowsApplicationManifest": "platform/windows/app.manifest",
-				"windowsApplicationIcon": "platform/windows/app.ico",
 				"staticLinks": [
 					"json-schema-validator",
 					"subprocess"
@@ -110,8 +109,7 @@
 				],
 				"includeDirs": [
 					"vendor/catch2/single_include"
-				],
-				"windowsApplicationIcon": "platform/windows/app.ico"
+				]
 			},
 			"runArguments": [
 				"-w",

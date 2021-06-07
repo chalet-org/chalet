@@ -7,12 +7,14 @@
 
 #include "Libraries/WindowsApi.hpp"
 
-#include "Resource.h"
+#include "Win32/Resource.h"
+#include "Win32/Icon.h"
+
 
 #if defined(_DEBUG) || defined(DEBUG)
 WIN32_MANIFEST RT_MANIFEST "platform/windows/app.manifest"
-WIN32_ICON_MAIN ICON "platform/windows/app.ico"
 #endif
 
+WIN32_ICON_MAIN ICON "platform/windows/app.ico"
 
 #endif

@@ -372,7 +372,7 @@ std::string BuildPaths::getWindowsIconResourceFilename(const ProjectTarget& inPr
 	std::string ret;
 
 #if defined(CHALET_WIN32)
-	if (inProject.isExecutable())
+	if (inProject.isExecutable() && !inProject.windowsApplicationIcon().empty())
 	{
 		const auto& name = inProject.name();
 

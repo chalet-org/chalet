@@ -8,7 +8,21 @@
 
 #include <nlohmann/json.hpp>
 
+#ifdef CHALET_MSVC
+	// #pragma warning(push)
+	// #pragma warning(disable : 4100)
+#else
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
 #include <nlohmann/json-schema.hpp>
+
+#ifdef CHALET_MSVC
+	// #pragma warning(pop)
+#else
+	#pragma GCC diagnostic pop
+#endif
 
 inline nlohmann::ordered_json operator"" _ojson(const char* s, std::size_t n)
 {

@@ -16,11 +16,22 @@
 	#pragma warning(disable : 4996)
 #else
 	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wunused-variable"
 	#pragma GCC diagnostic ignored "-Wunused-parameter"
 	#pragma GCC diagnostic ignored "-Wshadow"
 #endif
 
+#if defined(_WIN32) && !defined(CHALET_MSVC)
+	#define _dupenv_s __dupenv_s
+#endif
+
 #include <glob/glob.hpp>
+
+#ifdef _WIN32
+	#ifdef _dupenv_s
+		#undef _dupenv_s
+	#endif
+#endif
 
 #ifdef CHALET_MSVC
 	#pragma warning(pop)
