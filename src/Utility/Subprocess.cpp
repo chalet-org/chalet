@@ -11,6 +11,11 @@
 #include "Libraries/SubprocessApi.hpp"
 #include "Terminal/OSTerminal.hpp"
 
+#ifdef CHALET_MSVC
+	#pragma warning(push)
+	#pragma warning(disable : 4244)
+#endif
+
 namespace chalet
 {
 namespace
@@ -157,3 +162,7 @@ void Subprocess::haltAllProcesses(const int inSignal)
 	subProcessSignalHandler(inSignal);
 }
 }
+
+#ifdef CHALET_MSVC
+	#pragma warning(pop)
+#endif
