@@ -101,13 +101,11 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 		// TODO: This is kind of a hack for now.
 		if (Commands::pathExists(windowsManifestResourceFile))
 		{
-			LOG("windowsManifestResourceFile remove");
 			Commands::remove(windowsManifestResourceFile);
 		}
 
 		if (!Commands::pathExists(windowsManifestFile))
 		{
-			LOG("windowsManifestFile change");
 			std::string manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
 			String::replaceAll(manifestContents, "\t", " ");
 
@@ -121,7 +119,6 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 
 	if (!windowsManifestResourceFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsManifestResourceFile))
 	{
-		LOG("windowsManifestResourceFile change");
 		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
 		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
 		{
