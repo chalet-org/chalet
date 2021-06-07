@@ -98,23 +98,31 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 
 	if (!windowsManifestFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsManifestFile))
 	{
-		std::string manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
-		String::replaceAll(manifestContents, "\t", " ");
-
 		// TODO: This is kind of a hack for now.
 		if (Commands::pathExists(windowsManifestResourceFile))
-			Commands::remove(windowsManifestResourceFile);
-
-		if (!Commands::createFileWithContents(windowsManifestFile, manifestContents))
 		{
-			Diagnostic::error(fmt::format("Error creating windows manifest file: {}", windowsManifestFile));
-			return false;
+			LOG("windowsManifestResourceFile remove");
+			Commands::remove(windowsManifestResourceFile);
+		}
+
+		if (!Commands::pathExists(windowsManifestFile))
+		{
+			LOG("windowsManifestFile change");
+			std::string manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
+			String::replaceAll(manifestContents, "\t", " ");
+
+			if (!Commands::createFileWithContents(windowsManifestFile, manifestContents))
+			{
+				Diagnostic::error(fmt::format("Error creating windows manifest file: {}", windowsManifestFile));
+				return false;
+			}
 		}
 	}
 
 	if (!windowsManifestResourceFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsManifestResourceFile))
 	{
-		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile);
+		LOG("windowsManifestResourceFile change");
+		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
 		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
 		{
 			Diagnostic::error(fmt::format("Error creating windows manifest resource file: {}", windowsManifestResourceFile));

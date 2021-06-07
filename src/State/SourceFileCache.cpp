@@ -45,7 +45,7 @@ bool SourceFileCache::initialize()
 				if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
 				{
 					auto& file = splitVar.back();
-					std::int64_t lastWrite = strtoll(splitVar.front().c_str(), NULL, 0);
+					std::time_t lastWrite = strtoll(splitVar.front().c_str(), NULL, 0);
 
 					auto& fileData = m_lastWrites[std::move(file)];
 					fileData.lastWrite = lastWrite;
@@ -56,7 +56,7 @@ bool SourceFileCache::initialize()
 		}
 	}
 
-	m_initializedTime = std::chrono::system_clock::now().time_since_epoch().count();
+	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
 	return true;
 }
@@ -115,7 +115,7 @@ bool SourceFileCache::add(const std::string& inFile) const
 		return false;
 
 	auto& fileData = getLastWrite(inFile);
-	if (lastWrite > fileData.lastWrite && !fileData.needsUpdate)
+	if (lastWrite >= fileData.lastWrite && !fileData.needsUpdate)
 		return false;
 
 	fileData.lastWrite = lastWrite;

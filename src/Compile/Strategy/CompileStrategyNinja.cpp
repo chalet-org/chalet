@@ -164,6 +164,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, const bool i
 		String::replaceAll(inData, "\r\n", "\n");
 #endif
 
+		/*
 #if defined(CHALET_WIN32)
 		// the n & inja split is a weird MinGW thing, although it seems consistent?
 		if (skipOutput || String::endsWith(noWork, inData) || String::equals('n', inData))
@@ -174,6 +175,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, const bool i
 			skipOutput = true;
 			return;
 		}
+		*/
 
 		std::cout << inData << std::flush;
 	};

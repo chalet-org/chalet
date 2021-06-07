@@ -16,7 +16,7 @@ std::string macosDmgApplescript(const std::string& inAppName);
 std::string minimumWindowsAppManifest();
 std::string generalWindowsAppManifest(const std::string& inName = "${name}", const std::string& inDescription = "${description}", const std::string& inVersion = "${version}");
 std::string loadedWindowsAppManifest(const std::string& inName = "${name}", const std::string& inDescription = "${description}", const std::string& inVersion = "${version}");
-std::string windowsManifestResource(const std::string& inManifestFile);
+std::string windowsManifestResource(const std::string& inManifestFile, const bool inDllPrivateDeps = false);
 }
 }
 

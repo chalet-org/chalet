@@ -52,6 +52,14 @@ void stripLastEndLine(std::string& inString)
 #endif
 	}
 }
+
+template <typename T>
+std::time_t timePointToTime(T tp)
+{
+	using system_clock = std::chrono::system_clock;
+	auto sctp = std::chrono::time_point_cast<system_clock::duration>(tp - T::clock::now() + system_clock::now());
+	return system_clock::to_time_t(sctp);
+}
 }
 
 /*****************************************************************************/
@@ -59,11 +67,9 @@ std::int64_t Commands::getLastWriteTime(const std::string& inFile)
 {
 	try
 	{
-		using system_clock = std::chrono::system_clock;
-
 		auto lastWrite = fs::last_write_time(inFile);
-		auto sctp = std::chrono::time_point_cast<system_clock::duration>(system_clock::now() - (decltype(lastWrite)::clock::now() - lastWrite));
-		return sctp.time_since_epoch().count();
+		auto outTime = timePointToTime(lastWrite);
+		return static_cast<std::int64_t>(outTime);
 	}
 	catch (const fs::filesystem_error& err)
 	{

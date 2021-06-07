@@ -84,6 +84,15 @@ std::string PlatformFileTemplates::minimumWindowsAppManifest()
 			</requestedPrivileges>
 		</security>
 	</trustInfo>
+	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+		<application>
+			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}" /> <!-- Windows Vista/Server 2008 -->
+			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}" /> <!-- Windows 7/Server 2008 R2 -->
+			<supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}" /> <!-- Windows 8/Server 2012 -->
+			<supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}" /> <!-- Windows 8.1/Server 2012 R2 -->
+			<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" /> <!-- Windows 10 -->
+		</application>
+	</compatibility>
 </assembly>
 )xml";
 }
@@ -113,16 +122,11 @@ std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& 
 	</trustInfo>
 	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
 		<application>
-			<!--The ID below indicates application support for Windows Vista -->
-			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/>
-			<!--The ID below indicates application support for Windows 7 -->
-			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
-			<!--The ID below indicates application support for Windows 8 -->
-			<supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>
-			<!--The ID below indicates application support for Windows 8.1 -->
-			<supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
-			<!--The ID below indicates application support for Windows 10 -->
-			<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}" /> <!-- Windows Vista/Server 2008 -->
+			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}" /> <!-- Windows 7/Server 2008 R2 -->
+			<supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}" /> <!-- Windows 8/Server 2012 -->
+			<supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}" /> <!-- Windows 8.1/Server 2012 R2 -->
+			<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" /> <!-- Windows 10 -->
 		</application>
 	</compatibility>
 </assembly>
@@ -182,12 +186,17 @@ std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& i
 }
 
 /*****************************************************************************/
-std::string PlatformFileTemplates::windowsManifestResource(const std::string& inManifestFile)
+// https://docs.microsoft.com/en-us/cpp/build/reference/manifest-create-side-by-side-assembly-manifest?view=msvc-160#remarks
+// Note: Use a value of 1 for an executable file. Use a value of 2 for a DLL to enable it to specify private dependencies.
+//   If the ID parameter is not specified, the default value is 2 if the /DLL option is set; otherwise, the default value is 1.
+std::string PlatformFileTemplates::windowsManifestResource(const std::string& inManifestFile, const bool inDllPrivateDeps)
 {
+	int id = inDllPrivateDeps ? 2 : 1;
 	return fmt::format(R"rc(#include <winuser.h>
 
-1 RT_MANIFEST "{manifestFile}"
+{id} RT_MANIFEST "{manifestFile}"
 )rc",
+		FMT_ARG(id),
 		fmt::arg("manifestFile", inManifestFile));
 }
 }

@@ -22,7 +22,7 @@ struct SourceFileCache
 private:
 	struct LastWrite
 	{
-		std::int64_t lastWrite = 0;
+		std::time_t lastWrite = 0;
 		bool needsUpdate = true;
 	};
 
@@ -35,8 +35,8 @@ private:
 
 	mutable std::unordered_map<std::string, LastWrite> m_lastWrites;
 
-	std::int64_t m_initializedTime = 0;
-	std::int64_t m_lastBuildTime = 0;
+	std::time_t m_initializedTime = 0;
+	std::time_t m_lastBuildTime = 0;
 
 	mutable bool m_dirty = true;
 };
