@@ -93,7 +93,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 		}
 
 		static auto onDefaultStdErr = [](std::string inString) {
-			std::cerr << inString;
+			std::cerr << inString << std::flush;
 		};
 
 		if (inOptions.stderrOption == PipeOption::StdErr)
@@ -103,7 +103,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 
 		if (inOptions.onStdOut != nullptr || inOptions.onStdErr != nullptr)
 		{
-			std::array<char, 128> buffer{ 0 };
+			static std::array<char, 256> buffer{ 0 };
 			sp::ssize_t bytesRead = 0;
 
 			if (inOptions.onStdOut != nullptr)
@@ -114,7 +114,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 					if (bytesRead > 0)
 					{
 						inOptions.onStdOut(std::string(buffer.data(), bytesRead));
-						buffer.fill(0);
+						std::fill_n(buffer.data(), bytesRead, 0);
 					}
 				} while (bytesRead > 0);
 			}
@@ -127,7 +127,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 					if (bytesRead > 0)
 					{
 						inOptions.onStdErr(std::string(buffer.data(), bytesRead));
-						buffer.fill(0);
+						std::fill_n(buffer.data(), bytesRead, 0);
 					}
 				} while (bytesRead > 0);
 			}

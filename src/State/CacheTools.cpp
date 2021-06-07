@@ -36,11 +36,12 @@ void CacheTools::fetchBashVersion()
 	if (!m_bash.empty())
 	{
 #if defined(CHALET_WIN32)
-		if (Commands::pathExists(m_bash))
+		/*if (Commands::pathExists(m_bash))
 		{
 			std::string version = Commands::subprocessOutput({ m_bash, "--version" });
 			m_bashAvailable = String::startsWith("GNU bash", version);
-		}
+		}*/
+		m_bashAvailable = Commands::pathExists(m_bash);
 #else
 		m_bashAvailable = true;
 #endif
@@ -53,17 +54,12 @@ void CacheTools::fetchBrewVersion()
 #if defined(CHALET_MACOS)
 	if (!m_brew.empty())
 	{
-		if (Commands::pathExists(m_brew))
+		/*if (Commands::pathExists(m_brew))
 		{
 			std::string version = Commands::subprocessOutput({ m_brew, "--version" });
-			auto firstEol = version.find('\n');
-			if (firstEol != std::string::npos)
-			{
-				version = version.substr(0, firstEol);
-			}
-
 			m_brewAvailable = String::startsWith("Homebrew ", version);
-		}
+		}*/
+		m_brewAvailable = Commands::pathExists(m_brew);
 	}
 #endif
 }
