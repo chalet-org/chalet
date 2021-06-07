@@ -5,7 +5,7 @@
 
 #include "State/Bundle/BundleMacOS.hpp"
 
-#include "Builder/PlatformFile.hpp"
+#include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
@@ -48,7 +48,7 @@ bool BundleMacOS::validate()
 		}
 		else if (!Commands::pathExists(m_infoPropertyList))
 		{
-			std::ofstream(m_infoPropertyList) << PlatformFile::macosInfoPlist();
+			std::ofstream(m_infoPropertyList) << PlatformFileTemplates::macosInfoPlist();
 		}
 	}
 

@@ -7,7 +7,9 @@
 
 #include "Libraries/Format.hpp"
 #include "State/BuildEnvironment.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/WorkspaceInfo.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -105,7 +107,12 @@ std::string BuildCache::getHash(const std::string& inIdentifier, const Type inCa
 std::string BuildCache::getPath(const std::string& inFolder, const Type inCacheType) const
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
-	std::string ret = fmt::format("{}/{}", cacheRef, inFolder);
+	std::string ret;
+
+	if (inFolder.empty())
+		ret = cacheRef;
+	else
+		ret = fmt::format("{}/{}", cacheRef, inFolder);
 
 	// LOG(ret);
 
@@ -216,7 +223,12 @@ void BuildCache::removeStaleProjectCaches(const Type inCacheType)
 
 		const bool validForBuild = splitKey.size() > 1 && (strategy == name);
 
-		const bool internalKey = key == kKeyDataVersion || key == kKeyDataVersionDebug || key == kKeyDataStrategy || key == kKeyDataTargetArchitecture || key == kKeyDataWorkingDirectory;
+		const bool internalKey = key == kKeyDataVersion
+			|| key == kKeyDataVersionDebug
+			|| key == kKeyDataStrategy
+			|| key == kKeyDataTargetArchitecture
+			|| key == kKeyDataWorkingDirectory;
+
 		if (internalKey)
 		{
 			++it;
@@ -230,8 +242,11 @@ void BuildCache::removeStaleProjectCaches(const Type inCacheType)
 			hashes.push_back(keyBuildConfig);
 
 			std::string path = fmt::format("{}/{}", cacheRef, hash);
-			if (!validForBuild && Commands::pathExists(path))
-				Commands::removeRecursively(path);
+			if (key != kKeyDataSourceList)
+			{
+				if (!validForBuild && Commands::pathExists(path))
+					Commands::removeRecursively(path);
+			}
 		}
 
 		if (!validForBuild)
@@ -328,6 +343,23 @@ void BuildCache::checkIfCompileStrategyChanged()
 			setDirty(true);
 			m_compileStrategyChanged = true;
 		}
+	}
+}
+
+/*****************************************************************************/
+void BuildCache::addSourceCache(const std::string& inHash)
+{
+	if (!m_environmentCache.json.contains(kKeyData))
+		return;
+
+	Json& data = m_environmentCache.json[kKeyData];
+	if (!data.is_object())
+		return;
+
+	if (!data.contains(kKeyDataSourceList))
+	{
+		data[kKeyDataSourceList] = inHash;
+		setDirty(true);
 	}
 }
 

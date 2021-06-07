@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Init/FileTemplates.hpp"
+#include "FileTemplates/StarterFileTemplates.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
@@ -15,7 +15,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-Json FileTemplates::getBuildJson(const BuildJsonProps& inProps)
+Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 {
 	const bool cpp = inProps.language == CodeLanguage::CPlusPlus;
 	const std::string language = cpp ? "C++" : "C";
@@ -60,7 +60,7 @@ Json FileTemplates::getBuildJson(const BuildJsonProps& inProps)
 }
 
 /*****************************************************************************/
-std::string FileTemplates::getMainCpp()
+std::string StarterFileTemplates::getMainCpp()
 {
 	std::string ret = R"(#include <iostream>
 
@@ -83,7 +83,7 @@ int main(const int argc, const char* const argv[])
 }
 
 /*****************************************************************************/
-std::string FileTemplates::getPch()
+std::string StarterFileTemplates::getPch()
 {
 
 	std::string ret = R"(#ifndef PRECOMPILED_HEADER_HPP
@@ -108,7 +108,7 @@ std::string FileTemplates::getPch()
 }
 
 /*****************************************************************************/
-std::string FileTemplates::getGitIgnore(const std::string& inBuildFolder)
+std::string StarterFileTemplates::getGitIgnore(const std::string& inBuildFolder)
 {
 	std::string ret = fmt::format(R"(# General
 Thumbs.db
@@ -125,7 +125,7 @@ chalet_external/
 }
 
 /*****************************************************************************/
-std::string FileTemplates::getDotEnv()
+std::string StarterFileTemplates::getDotEnv()
 {
 #if defined(CHALET_WIN32)
 	std::string ret;

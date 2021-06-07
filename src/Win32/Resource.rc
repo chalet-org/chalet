@@ -10,7 +10,10 @@
 
 #include "Resource.h"
 
+#if defined(_DEBUG) || defined(DEBUG)
+WIN32_MANIFEST RT_MANIFEST "platform/windows/app.manifest"
+#endif
+
 WIN32_ICON_MAIN ICON "platform/windows/app.ico"
-MANIFEST_RESOURCE_ID RT_MANIFEST "platform/windows/app.manifest"
 
 #endif

@@ -6,9 +6,12 @@
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
 #include "Compile/CompilerConfig.hpp"
+#include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
+#include "Terminal/Commands.hpp"
+#include "Utility/String.hpp"
 
 #include "Compile/Toolchain/CompileToolchainApple.hpp"
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
@@ -18,12 +21,14 @@
 namespace chalet
 {
 /*****************************************************************************/
-ICompileToolchain::ICompileToolchain(const BuildState& inState) :
-	m_state(inState)
+ICompileToolchain::ICompileToolchain(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
+	m_state(inState),
+	m_project(inProject),
+	m_config(inConfig)
 {
 	m_quotePaths = m_state.environment.strategy() != StrategyType::Native;
 
-	m_isNinja = m_state.environment.strategy() == StrategyType::Makefile;
+	m_isMakefile = m_state.environment.strategy() == StrategyType::Makefile;
 	m_isNinja = m_state.environment.strategy() == StrategyType::Ninja;
 	m_isNative = m_state.environment.strategy() == StrategyType::Native;
 }
@@ -75,9 +80,48 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState) :
 	Diagnostic::errorAbort(fmt::format("Unimplemented ToolchainType requested: ", static_cast<int>(inCompilerType)));
 	return nullptr;
 }
+
 /*****************************************************************************/
 bool ICompileToolchain::initialize()
 {
+	return true;
+}
+
+/*****************************************************************************/
+bool ICompileToolchain::createWindowsApplicationManifest()
+{
+	if (m_project.isStaticLibrary())
+		return true;
+
+	const auto windowsManifestFile = m_state.paths.getWindowsManifestFilename(m_project);
+	const auto windowsManifestResourceFile = m_state.paths.getWindowsManifestResourceFilename(m_project);
+
+	if (!windowsManifestFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsManifestFile))
+	{
+		std::string manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
+		String::replaceAll(manifestContents, "\t", " ");
+
+		// TODO: This is kind of a hack for now.
+		if (Commands::pathExists(windowsManifestResourceFile))
+			Commands::remove(windowsManifestResourceFile);
+
+		if (!Commands::createFileWithContents(windowsManifestFile, manifestContents))
+		{
+			Diagnostic::error(fmt::format("Error creating windows manifest file: {}", windowsManifestFile));
+			return false;
+		}
+	}
+
+	if (!windowsManifestResourceFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsManifestResourceFile))
+	{
+		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile);
+		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
+		{
+			Diagnostic::error(fmt::format("Error creating windows manifest resource file: {}", windowsManifestResourceFile));
+			return false;
+		}
+	}
+
 	return true;
 }
 

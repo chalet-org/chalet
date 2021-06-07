@@ -5,7 +5,7 @@
 
 #include "Builder/Bundler/AppBundlerMacOS.hpp"
 
-#include "Builder/PlatformFile.hpp"
+#include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -501,7 +501,7 @@ bool AppBundlerMacOS::createDmgImage() const
 	if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath), m_cleanOutput))
 		return false;
 
-	const auto applescriptText = PlatformFile::macosDmgApplescript(bundleName);
+	const auto applescriptText = PlatformFileTemplates::macosDmgApplescript(bundleName);
 
 	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }, m_cleanOutput))
 		return false;

@@ -8,12 +8,12 @@
 
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-#include "State/BuildState.hpp"
-#include "State/Target/ProjectTarget.hpp"
-
 namespace chalet
 {
+class BuildState;
+struct ProjectTarget;
+struct CompilerConfig;
+
 struct CompileToolchainMSVC final : ICompileToolchain
 {
 	explicit CompileToolchainMSVC(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
@@ -63,9 +63,6 @@ private:
 
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
 	void addPrecompiledHeaderLink(StringList outArgList) const;
-
-	const ProjectTarget& m_project;
-	const CompilerConfig& m_config;
 
 	const CppCompilerType m_compilerType;
 

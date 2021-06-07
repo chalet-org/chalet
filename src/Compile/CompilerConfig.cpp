@@ -173,14 +173,26 @@ bool CompilerConfig::getSupportedCompilerFlags()
 	{
 		if (isGcc())
 		{
-			parseGnuHelpList({
-				"common",
-				"optimizers",
-				//"params",
-				"target",
-				"warnings",
-				"undocumented",
-			});
+			{
+				StringList helps{
+					"common",
+					"optimizers",
+					//"params",
+					"target",
+					"warnings",
+					"undocumented",
+				};
+				StringList cmd{ exec, "-Q" };
+				for (auto& help : helps)
+				{
+					cmd.push_back(fmt::format("--help={}", help));
+				}
+				parseGnuHelpList(cmd);
+			}
+			{
+				StringList cmd{ exec, "-Wl,--help" };
+				parseGnuHelpList(cmd);
+			}
 
 			// TODO: separate/joined -- kind of weird to check for
 		}
@@ -209,21 +221,18 @@ bool CompilerConfig::getSupportedCompilerFlags()
 }
 
 /*****************************************************************************/
-void CompilerConfig::parseGnuHelpList(const StringList& inHelps)
+void CompilerConfig::parseGnuHelpList(const StringList& inCommand)
 {
-	const auto& exec = compilerExecutable();
-
-	StringList cmd{ exec, "-Q" };
-	for (auto& help : inHelps)
-	{
-		cmd.push_back(fmt::format("--help={}", help));
-	}
-
-	std::string raw = Commands::subprocessOutput(cmd);
+	std::string raw = Commands::subprocessOutput(inCommand);
 	auto split = String::split(raw, String::eol());
 
 	for (auto& line : split)
 	{
+		if (String::contains("-fno-rtti", line))
+		{
+			LOG(line);
+		}
+
 		auto beg = line.find_first_not_of(' ');
 		auto end = line.find_first_of('=', beg);
 		if (end == std::string::npos)
@@ -289,6 +298,10 @@ void CompilerConfig::parseClangHelpList()
 
 	for (auto& line : split)
 	{
+		if (String::contains("-frtti", line))
+		{
+			LOG(line);
+		}
 		auto beg = line.find_first_not_of(' ');
 		auto end = line.find_first_of('=', beg);
 		if (end == std::string::npos)

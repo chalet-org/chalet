@@ -6,7 +6,9 @@
 #ifndef CHALET_RESOURCE_H
 #define CHALET_RESOURCE_H
 
-#define MANIFEST_RESOURCE_ID 2
+#if defined(_DEBUG) || defined(DEBUG)
+	#define WIN32_MANIFEST 1
+#endif
 
 #include "Icon.h"
 

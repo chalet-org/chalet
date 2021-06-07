@@ -77,6 +77,7 @@
 			"location": "src",
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
+				"windowsApplicationManifest": "platform/windows/app.manifest",
 				"staticLinks": [
 					"json-schema-validator",
 					"subprocess"
@@ -177,8 +178,7 @@
 				"desktopEntry": "platform/linux/app.desktop"
 			},
 			"windows": {
-				"icon": "platform/windows/app.ico",
-				"manifest": "platform/windows/app.manifest"
+				"icon": "platform/windows/app.ico"
 			}
 		},
 		"post-bundle": {

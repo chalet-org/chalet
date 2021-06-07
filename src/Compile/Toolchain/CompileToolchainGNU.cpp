@@ -11,13 +11,15 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
+#include "Compile/CompilerConfig.hpp"
+#include "State/BuildState.hpp"
+#include "State/Target/ProjectTarget.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
 CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
-	ICompileToolchain(inState),
-	m_project(inProject),
-	m_config(inConfig)
+	ICompileToolchain(inState, inProject, inConfig)
 {
 }
 
@@ -50,6 +52,11 @@ bool CompileToolchainGNU::initialize()
 
 	initializeArchPresets();
 	// initializeSupportedLinks();
+
+#if defined(CHALET_WIN32)
+	if (!createWindowsApplicationManifest())
+		return false;
+#endif
 
 	return true;
 }
@@ -330,7 +337,7 @@ StringList CompileToolchainGNU::getLinkExclusions() const
 bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 {
 	// if (m_config.isGcc())
-	{
+	/*{
 		if (String::contains('=', inFlag))
 		{
 			auto cutoff = inFlag.find('=');
@@ -341,7 +348,9 @@ bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 		{
 			return m_config.isFlagSupported(String::toLowerCase(inFlag));
 		}
-	}
+	}*/
+
+	UNUSED(inFlag);
 
 	return true;
 }

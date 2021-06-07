@@ -43,15 +43,4 @@ void BundleWindows::setIcon(const std::string& inValue)
 {
 	m_icon = inValue;
 }
-
-/*****************************************************************************/
-const std::string& BundleWindows::manifest() const noexcept
-{
-	return m_manifest;
-}
-
-void BundleWindows::setManifest(const std::string& inValue)
-{
-	m_manifest = inValue;
-}
 }

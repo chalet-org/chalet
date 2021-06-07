@@ -5,7 +5,7 @@
 
 #include "State/Bundle/BundleLinux.hpp"
 
-#include "Builder/PlatformFile.hpp"
+#include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
@@ -40,7 +40,7 @@ bool BundleLinux::validate()
 		}
 		else if (!Commands::pathExists(m_desktopEntry))
 		{
-			std::ofstream(m_desktopEntry) << PlatformFile::linuxDesktopEntry();
+			std::ofstream(m_desktopEntry) << PlatformFileTemplates::linuxDesktopEntry();
 		}
 	}
 

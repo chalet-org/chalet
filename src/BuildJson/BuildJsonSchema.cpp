@@ -5,7 +5,7 @@
 
 #include "BuildJson/BuildJsonSchema.hpp"
 
-#include "Builder/PlatformFile.hpp"
+#include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Libraries/Format.hpp"
 #include "Utility/String.hpp"
 #include "Utility/SuppressIntellisense.hpp"
@@ -196,7 +196,7 @@ Json Schema::getBuildJson()
 			}
 		}
 	})json"_ojson;
-	ret[kDefinitions]["distribution-macos"]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFile::macosInfoPlist());
+	ret[kDefinitions]["distribution-macos"]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
 
 	ret[kDefinitions]["distribution-mainProject"] = R"json({
 		"type": "string",
@@ -225,16 +225,12 @@ Json Schema::getBuildJson()
 		"description": "Variables to describe the windows application.",
 		"additionalProperties": false,
 		"required": [
-			"icon",
-			"manifest"
+			"icon"
 		],
 		"properties": {
 			"icon": {
 				"type": "string",
 				"description": "The windows icon to use for the project"
-			},
-			"manifest": {
-				"type": "string"
 			}
 		}
 	})json"_ojson;
@@ -382,6 +378,75 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
+	ret[kDefinitions]["target-description"] = R"json({
+		"type": "string",
+		"description": "A description of the target to display during the build."
+	})json"_ojson;
+
+	ret[kDefinitions]["target-notInConfiguration"] = R"json({
+		"description": "Don't compile this project in specific build configuration(s)",
+		"oneOf": [
+			{
+				"type": "string"
+			},
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"items": {
+					"type": "string"
+				}
+			}
+		]
+	})json"_ojson;
+
+	ret[kDefinitions]["target-notInPlatform"] = R"json({
+		"description": "Don't compile this project on specific platform(s)",
+		"oneOf": [
+			{
+				"$ref": "#/definitions/enum-platform"
+			},
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"items": {
+					"$ref": "#/definitions/enum-platform"
+				}
+			}
+		]
+	})json"_ojson;
+
+	ret[kDefinitions]["target-onlyInConfiguration"] = R"json({
+		"description": "Only compile this project in specific build configuration(s)",
+		"oneOf": [
+			{
+				"type": "string"
+			},
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"items": {
+					"type": "string"
+				}
+			}
+		]
+	})json"_ojson;
+
+	ret[kDefinitions]["target-onlyInPlatform"] = R"json({
+		"description": "Only compile this project on specific platform(s)",
+		"oneOf": [
+			{
+				"$ref": "#/definitions/enum-platform"
+			},
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"items": {
+					"$ref": "#/definitions/enum-platform"
+				}
+			}
+		]
+	})json"_ojson;
+
 	ret[kDefinitions]["target-project-settings-cxx"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
@@ -445,6 +510,9 @@ Json Schema::getBuildJson()
 			},
 			"windowsOutputDef": {
 				"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
+			},
+			"windowsApplicationManifest": {
+				"$ref": "#/definitions/target-project-cxx-windowsApplicationManifest"
 			}
 		}
 	})json"_ojson;
@@ -512,7 +580,7 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/target-project-language"
 			},
 			"location": {
-				"$ref": "#/definitions/target-location"
+				"$ref": "#/definitions/target-project-location"
 			},
 			"onlyInConfiguration": {
 				"$ref": "#/definitions/target-onlyInConfiguration"
@@ -708,7 +776,7 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["target-project-cxx-links"][kItems][kPattern] = patternProjectLinks;
 
-	ret[kDefinitions]["target-location"] = R"json({
+	ret[kDefinitions]["target-project-location"] = R"json({
 		"description": "The root path of the source files, relative to the working directory.",
 		"oneOf": [
 			{
@@ -730,7 +798,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	ret[kDefinitions]["target-location"]["oneOf"][2][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["target-project-location"]["oneOf"][2][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -744,7 +812,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	ret[kDefinitions]["target-location"]["oneOf"][2][kPatternProperties][fmt::format("^include{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+	ret[kDefinitions]["target-project-location"]["oneOf"][2][kPatternProperties][fmt::format("^include{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -787,70 +855,6 @@ Json Schema::getBuildJson()
 		"type": "boolean",
 		"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 		"default": false
-	})json"_ojson;
-
-	ret[kDefinitions]["target-onlyInConfiguration"] = R"json({
-		"description": "Only compile this project in specific build configuration(s)",
-		"oneOf": [
-			{
-				"type": "string"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"items": {
-					"type": "string"
-				}
-			}
-		]
-	})json"_ojson;
-
-	ret[kDefinitions]["target-notInConfiguration"] = R"json({
-		"description": "Don't compile this project in specific build configuration(s)",
-		"oneOf": [
-			{
-				"type": "string"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"items": {
-					"type": "string"
-				}
-			}
-		]
-	})json"_ojson;
-
-	ret[kDefinitions]["target-onlyInPlatform"] = R"json({
-		"description": "Only compile this project on specific platform(s)",
-		"oneOf": [
-			{
-				"$ref": "#/definitions/enum-platform"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"items": {
-					"$ref": "#/definitions/enum-platform"
-				}
-			}
-		]
-	})json"_ojson;
-
-	ret[kDefinitions]["target-notInPlatform"] = R"json({
-		"description": "Don't compile this project on specific platform(s)",
-		"oneOf": [
-			{
-				"$ref": "#/definitions/enum-platform"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"items": {
-					"$ref": "#/definitions/enum-platform"
-				}
-			}
-		]
 	})json"_ojson;
 
 	ret[kDefinitions]["target-project-cxx-pch"] = R"json({
@@ -910,11 +914,6 @@ Json Schema::getBuildJson()
 				}
 			}
 		]
-	})json"_ojson;
-
-	ret[kDefinitions]["target-description"] = R"json({
-		"type": "string",
-		"description": "A description of the target to display during the build."
 	})json"_ojson;
 
 	ret[kDefinitions]["target-project-cxx-staticLinking"] = R"json({
@@ -1254,6 +1253,11 @@ Json Schema::getBuildJson()
 		"zero-as-null-pointer-constant",
 		"zero-length-bounds"
 	};
+
+	ret[kDefinitions]["target-project-cxx-windowsApplicationManifest"] = R"json({
+		"description": "The path to a Windows application manifest to .",
+		"type": "string"
+	})json"_ojson;
 
 	ret[kDefinitions]["target-project-cxx-windowsOutputDef"] = R"json({
 		"type": "boolean",

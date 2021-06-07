@@ -28,6 +28,7 @@ if [[ $PLATFORM == "windows" ]]; then
 	cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	# cmake -E time mingw32-make -j8
 	mingw32-make -j8
+	# cmake --build . -j 8 -- --no-print-directory
 else
 	cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	# cmake -E time make -j8

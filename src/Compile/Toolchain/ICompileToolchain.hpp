@@ -20,7 +20,7 @@ using CompileToolchain = std::unique_ptr<ICompileToolchain>;
 
 struct ICompileToolchain
 {
-	explicit ICompileToolchain(const BuildState& inState);
+	explicit ICompileToolchain(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
 	virtual ~ICompileToolchain() = default;
 
 	[[nodiscard]] static CompileToolchain make(const ToolchainType inType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
@@ -37,6 +37,7 @@ struct ICompileToolchain
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;
 
 protected:
+	bool createWindowsApplicationManifest();
 	virtual void addExectuable(StringList& outArgList, const std::string& inExecutable) const final;
 
 	// Compile
@@ -71,6 +72,8 @@ protected:
 	virtual void addPlatformGuiApplicationFlag(StringList& outArgList) const;
 
 	const BuildState& m_state;
+	const ProjectTarget& m_project;
+	const CompilerConfig& m_config;
 
 	bool m_quotePaths = true;
 

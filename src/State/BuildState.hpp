@@ -14,6 +14,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/ConfigurationOptions.hpp"
 #include "State/Dependency/IBuildDependency.hpp"
+#include "State/SourceFileCache.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/WorkspaceInfo.hpp"
 #include "Terminal/MsvcEnvironment.hpp"
@@ -38,6 +39,7 @@ public:
 	BuildDependencyList externalDependencies;
 	DistributionTargetList distribution;
 	BuildCache cache;
+	SourceFileCache sourceCache;
 
 private:
 	friend class Application;

@@ -22,7 +22,8 @@ BuildState::BuildState(const CommandLineInputs& inInputs) :
 	paths(m_inputs, info),
 	environment(paths),
 	msvcEnvironment(*this),
-	cache(info, paths)
+	cache(info, paths),
+	sourceCache(cache)
 {
 }
 
@@ -47,6 +48,8 @@ bool BuildState::initializeBuild()
 		return false;
 	}
 
+	paths.initialize();
+
 	// Note: < 1ms
 	for (auto& target : targets)
 	{
@@ -55,6 +58,12 @@ bool BuildState::initializeBuild()
 			auto& project = static_cast<ProjectTarget&>(*target);
 			auto& compilerConfig = compilerTools.getConfig(project.language());
 			project.parseOutputFilename(compilerConfig);
+
+			if (!project.isStaticLibrary())
+			{
+				std::string intermediateDir = paths.intermediateDir();
+				project.addLocation(intermediateDir);
+			}
 
 			const bool isMsvc = compilerConfig.isMsvc();
 			if (!isMsvc)
@@ -80,7 +89,6 @@ bool BuildState::initializeBuild()
 
 	{
 		// Note: Most time is spent here (277ms in mingw)
-		paths.initialize();
 		environment.initialize();
 
 		for (auto& target : targets)
@@ -107,6 +115,9 @@ void BuildState::initializeCache()
 	cache.removeStaleProjectCaches(BuildCache::Type::Local);
 	cache.removeBuildIfCacheChanged(paths.buildOutputDir());
 	cache.saveEnvironmentCache();
+
+	sourceCache.initialize();
+	sourceCache.save();
 }
 
 /*****************************************************************************/

@@ -5,7 +5,7 @@
 
 #include "Init/ProjectInitializer.hpp"
 
-#include "Init/FileTemplates.hpp"
+#include "FileTemplates/StarterFileTemplates.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Diagnostic.hpp"
@@ -89,7 +89,7 @@ bool ProjectInitializer::makeBuildJson()
 	props.version = "0.0.1";
 	props.language = CodeLanguage::CPlusPlus;
 
-	auto jsonFile = FileTemplates::getBuildJson(props);
+	auto jsonFile = StarterFileTemplates::getBuildJson(props);
 
 	JsonFile::saveToFile(jsonFile, buildJsonPath);
 
@@ -100,7 +100,7 @@ bool ProjectInitializer::makeBuildJson()
 bool ProjectInitializer::makeMainCpp()
 {
 	const auto outFile = fmt::format("{}/src/main.cpp", m_rootPath);
-	const auto contents = FileTemplates::getMainCpp();
+	const auto contents = StarterFileTemplates::getMainCpp();
 
 	return Commands::createFileWithContents(outFile, contents);
 }
@@ -109,7 +109,7 @@ bool ProjectInitializer::makeMainCpp()
 bool ProjectInitializer::makePch()
 {
 	const auto outFile = fmt::format("{}/src/PCH.hpp", m_rootPath);
-	const auto contents = FileTemplates::getPch();
+	const auto contents = StarterFileTemplates::getPch();
 
 	return Commands::createFileWithContents(outFile, contents);
 }
@@ -118,7 +118,7 @@ bool ProjectInitializer::makePch()
 bool ProjectInitializer::makeGitIgnore()
 {
 	const auto outFile = fmt::format("{}/.gitignore", m_rootPath);
-	const auto contents = FileTemplates::getGitIgnore(m_inputs.buildPath());
+	const auto contents = StarterFileTemplates::getGitIgnore(m_inputs.buildPath());
 
 	return Commands::createFileWithContents(outFile, contents);
 }
@@ -127,7 +127,7 @@ bool ProjectInitializer::makeGitIgnore()
 bool ProjectInitializer::makeDotEnv()
 {
 	const auto outFile = fmt::format("{}/.env", m_rootPath);
-	const auto contents = FileTemplates::getDotEnv();
+	const auto contents = StarterFileTemplates::getDotEnv();
 
 	return Commands::createFileWithContents(outFile, contents);
 }

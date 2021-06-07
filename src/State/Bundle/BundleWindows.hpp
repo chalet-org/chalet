@@ -17,12 +17,8 @@ struct BundleWindows
 	const std::string& icon() const noexcept;
 	void setIcon(const std::string& inValue);
 
-	const std::string& manifest() const noexcept;
-	void setManifest(const std::string& inValue);
-
 private:
 	std::string m_icon;
-	std::string m_manifest;
 };
 }
 

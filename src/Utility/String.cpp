@@ -36,7 +36,8 @@ bool String::equals(const StringList& inFind, const std::string& inString)
 /*****************************************************************************/
 bool String::contains(const std::string_view inFind, const std::string& inString)
 {
-	return inString.find(inFind) != std::string::npos;
+	auto result = inString.find(inFind);
+	return result != std::string::npos;
 }
 
 /*****************************************************************************/

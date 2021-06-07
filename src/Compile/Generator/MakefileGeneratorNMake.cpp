@@ -130,7 +130,8 @@ std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& fil
 
 	if (m_cleanOutput)
 	{
-		printer = getPrinter(fmt::format("   {blue}{file}", FMT_ARG(blue), FMT_ARG(file)));
+		auto outFile = String::getPathFilename(file);
+		printer = getPrinter(fmt::format("{blue}{outFile}", FMT_ARG(blue), FMT_ARG(outFile)));
 	}
 	else
 	{

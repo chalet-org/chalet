@@ -22,6 +22,7 @@ std::string getCanonicalPath(const std::string& inPath);
 std::string getAbsolutePath(const std::string& inPath);
 
 std::uintmax_t getPathSize(const std::string& inPath, const bool inCleanOutput = true);
+std::int64_t getLastWriteTime(const std::string& inFile);
 
 bool makeDirectory(const std::string& inPath, const bool inCleanOutput = true);
 bool makeDirectories(const StringList& inPaths, const bool inCleanOutput = true);

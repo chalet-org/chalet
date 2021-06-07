@@ -11,15 +11,17 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
+#include "Compile/CompilerConfig.hpp"
+#include "State/BuildState.hpp"
+#include "State/Target/ProjectTarget.hpp"
+
 // https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically?view=msvc-160
 
 namespace chalet
 {
 /*****************************************************************************/
 CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
-	ICompileToolchain(inState),
-	m_project(inProject),
-	m_config(inConfig),
+	ICompileToolchain(inState, inProject, inConfig),
 	m_compilerType(m_config.compilerType())
 {
 	UNUSED(m_project);
@@ -51,9 +53,13 @@ bool CompileToolchainMSVC::initialize()
 
 		if (!Commands::pathExists(m_pchSource))
 		{
-			return Commands::createFileWithContents(m_pchSource, fmt::format("#include \"{}\"", m_pchMinusLocation));
+			if (!Commands::createFileWithContents(m_pchSource, fmt::format("#include \"{}\"", m_pchMinusLocation)))
+				return false;
 		}
 	}
+
+	if (!createWindowsApplicationManifest())
+		return false;
 
 	return true;
 }

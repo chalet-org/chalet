@@ -527,6 +527,17 @@ void ProjectTarget::setLinkerScript(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& ProjectTarget::windowsApplicationManifest() const noexcept
+{
+	return m_windowsApplicationManifest;
+}
+
+void ProjectTarget::setWindowsApplicationManifest(const std::string& inValue) noexcept
+{
+	m_windowsApplicationManifest = inValue;
+}
+
+/*****************************************************************************/
 ProjectKind ProjectTarget::kind() const noexcept
 {
 	return m_kind;

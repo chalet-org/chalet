@@ -6,6 +6,6 @@
 #ifndef CHALET_ICON_H
 #define CHALET_ICON_H
 
-#define WIN32_ICON_MAIN 1
+#define WIN32_ICON_MAIN 2
 
 #endif // CHALET_ICON_H

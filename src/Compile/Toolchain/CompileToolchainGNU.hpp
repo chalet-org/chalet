@@ -8,12 +8,12 @@
 
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-#include "State/BuildState.hpp"
-#include "State/Target/ProjectTarget.hpp"
-
 namespace chalet
 {
+class BuildState;
+struct ProjectTarget;
+struct CompilerConfig;
+
 struct CompileToolchainGNU : ICompileToolchain
 {
 	explicit CompileToolchainGNU(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
@@ -86,9 +86,6 @@ protected:
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
 	void initializeArchPresets();
 	void initializeSupportedLinks();
-
-	const ProjectTarget& m_project;
-	const CompilerConfig& m_config;
 
 	StringList m_arch86;
 	// StringList m_arch86_64;

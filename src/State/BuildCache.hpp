@@ -7,13 +7,13 @@
 #define CHALET_BUILD_CACHE_HPP
 
 #include "Core/CommandLineInputs.hpp"
-#include "State/BuildPaths.hpp"
-#include "State/WorkspaceInfo.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
 {
+struct BuildPaths;
 class BuildState;
+struct WorkspaceInfo;
 
 struct BuildCache
 {
@@ -40,6 +40,7 @@ struct BuildCache
 	bool appBuildChanged() const noexcept;
 	void checkIfCompileStrategyChanged();
 	void checkIfWorkingDirectoryChanged();
+	void addSourceCache(const std::string& inHash);
 
 	void removeStaleProjectCaches(const Type inCacheType);
 	void removeBuildIfCacheChanged(const std::string& inBuildDir);
@@ -71,6 +72,7 @@ private:
 	const std::string kKeyDataWorkingDirectory{ "02" };
 	const std::string kKeyDataStrategy{ "03" };
 	const std::string kKeyDataTargetArchitecture{ "04" };
+	const std::string kKeyDataSourceList{ "05" };
 
 	std::string m_cacheLocal;
 	std::string m_cacheGlobal;

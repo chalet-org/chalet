@@ -5,7 +5,10 @@
 
 #include "Compile/Toolchain/CompileToolchainLLVM.hpp"
 
+#include "Compile/CompilerConfig.hpp"
 #include "Libraries/Format.hpp"
+#include "State/BuildState.hpp"
+#include "State/Target/ProjectTarget.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 

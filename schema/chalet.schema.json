@@ -182,16 +182,12 @@
 			"description": "Variables to describe the windows application.",
 			"additionalProperties": false,
 			"required": [
-				"icon",
-				"manifest"
+				"icon"
 			],
 			"properties": {
 				"icon": {
 					"type": "string",
 					"description": "The windows icon to use for the project"
-				},
-				"manifest": {
-					"type": "string"
 				}
 			}
 		},
@@ -330,6 +326,70 @@
 				"type": "string"
 			}
 		},
+		"target-description": {
+			"type": "string",
+			"description": "A description of the target to display during the build."
+		},
+		"target-notInConfiguration": {
+			"description": "Don't compile this project in specific build configuration(s)",
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"type": "string"
+					}
+				}
+			]
+		},
+		"target-notInPlatform": {
+			"description": "Don't compile this project on specific platform(s)",
+			"oneOf": [
+				{
+					"$ref": "#/definitions/enum-platform"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"$ref": "#/definitions/enum-platform"
+					}
+				}
+			]
+		},
+		"target-onlyInConfiguration": {
+			"description": "Only compile this project in specific build configuration(s)",
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"type": "string"
+					}
+				}
+			]
+		},
+		"target-onlyInPlatform": {
+			"description": "Only compile this project on specific platform(s)",
+			"oneOf": [
+				{
+					"$ref": "#/definitions/enum-platform"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"items": {
+						"$ref": "#/definitions/enum-platform"
+					}
+				}
+			]
+		},
 		"target-project-settings-cxx": {
 			"type": "object",
 			"additionalProperties": false,
@@ -393,6 +453,9 @@
 				},
 				"windowsOutputDef": {
 					"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
+				},
+				"windowsApplicationManifest": {
+					"$ref": "#/definitions/target-project-cxx-windowsApplicationManifest"
 				}
 			},
 			"patternProperties": {
@@ -460,7 +523,7 @@
 					"$ref": "#/definitions/target-project-language"
 				},
 				"location": {
-					"$ref": "#/definitions/target-location"
+					"$ref": "#/definitions/target-project-location"
 				},
 				"onlyInConfiguration": {
 					"$ref": "#/definitions/target-onlyInConfiguration"
@@ -643,7 +706,7 @@
 				"pattern": "^[\\w\\-\\+\\.]+$"
 			}
 		},
-		"target-location": {
+		"target-project-location": {
 			"description": "The root path of the source files, relative to the working directory.",
 			"oneOf": [
 				{
@@ -716,66 +779,6 @@
 			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 			"default": false
 		},
-		"target-onlyInConfiguration": {
-			"description": "Only compile this project in specific build configuration(s)",
-			"oneOf": [
-				{
-					"type": "string"
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"items": {
-						"type": "string"
-					}
-				}
-			]
-		},
-		"target-notInConfiguration": {
-			"description": "Don't compile this project in specific build configuration(s)",
-			"oneOf": [
-				{
-					"type": "string"
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"items": {
-						"type": "string"
-					}
-				}
-			]
-		},
-		"target-onlyInPlatform": {
-			"description": "Only compile this project on specific platform(s)",
-			"oneOf": [
-				{
-					"$ref": "#/definitions/enum-platform"
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"items": {
-						"$ref": "#/definitions/enum-platform"
-					}
-				}
-			]
-		},
-		"target-notInPlatform": {
-			"description": "Don't compile this project on specific platform(s)",
-			"oneOf": [
-				{
-					"$ref": "#/definitions/enum-platform"
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"items": {
-						"$ref": "#/definitions/enum-platform"
-					}
-				}
-			]
-		},
 		"target-project-cxx-pch": {
 			"type": "string",
 			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
@@ -827,10 +830,6 @@
 					}
 				}
 			]
-		},
-		"target-description": {
-			"type": "string",
-			"description": "A description of the target to display during the build."
 		},
 		"target-project-cxx-staticLinking": {
 			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
@@ -1164,6 +1163,10 @@
 					}
 				}
 			]
+		},
+		"target-project-cxx-windowsApplicationManifest": {
+			"description": "The path to a Windows application manifest to .",
+			"type": "string"
 		},
 		"target-project-cxx-windowsOutputDef": {
 			"type": "boolean",

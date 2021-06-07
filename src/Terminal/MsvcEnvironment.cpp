@@ -189,13 +189,10 @@ bool MsvcEnvironment::readCompilerVariables()
 	std::ifstream input(m_varsFileMsvcDelta);
 	for (std::string line; std::getline(input, line);)
 	{
-		if (String::contains('=', line))
+		auto splitVar = String::split(line, '=');
+		if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
 		{
-			auto splitVar = String::split(line, '=');
-			if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
-			{
-				m_variables[std::move(splitVar.front())] = splitVar.back();
-			}
+			m_variables[std::move(splitVar.front())] = splitVar.back();
 		}
 	}
 

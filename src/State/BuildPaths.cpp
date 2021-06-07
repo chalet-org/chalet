@@ -32,6 +32,7 @@ void BuildPaths::initialize()
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
+	m_intermediateDir = fmt::format("{}/chalet_intermediate", m_buildOutputDir);
 
 	m_initialized = true;
 }
@@ -126,6 +127,12 @@ const std::string& BuildPaths::asmDir() const noexcept
 	return m_asmDir;
 }
 
+const std::string& BuildPaths::intermediateDir() const noexcept
+{
+	chalet_assert(m_initialized, "BuildPaths::intermediateDir() called before BuildPaths::initialize().");
+	return m_intermediateDir;
+}
+
 /*****************************************************************************/
 SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inDumpAssembly, const bool inObjExtension) const
 {
@@ -189,6 +196,11 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool 
 
 	ret.directories.push_back(m_buildOutputDir);
 	ret.directories.push_back(m_objDir);
+#if defined(CHALET_WIN32)
+	if (!inProject.isStaticLibrary())
+		ret.directories.push_back(m_intermediateDir);
+#endif
+
 	ret.directories.insert(ret.directories.end(), objSubDirs.begin(), objSubDirs.end());
 
 	if (!inIsMsvc)
@@ -318,6 +330,41 @@ std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectTarget& inProje
 }
 
 /*****************************************************************************/
+std::string BuildPaths::getWindowsManifestFilename(const ProjectTarget& inProject) const
+{
+	if (inProject.windowsApplicationManifest().empty())
+	{
+		std::string ret;
+		const auto& outputFile = inProject.outputFile();
+
+		// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
+		ret = fmt::format("{}/{}.manifest", m_intermediateDir, outputFile);
+		return ret;
+	}
+
+	return inProject.windowsApplicationManifest();
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getWindowsManifestResourceFilename(const ProjectTarget& inProject) const
+{
+	std::string ret;
+
+#if defined(CHALET_WIN32)
+	if (!inProject.isStaticLibrary())
+	{
+		const auto& name = inProject.name();
+
+		ret = fmt::format("{}/{}_win32_manifest.rc", m_intermediateDir, name);
+	}
+#else
+	UNUSED(inProject);
+#endif
+
+	return ret;
+}
+
+/*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
 StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const bool inObjExtension) const
@@ -334,8 +381,6 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const bool 
 		{
 #if defined(CHALET_WIN32)
 			ret.push_back(fmt::format("{}/{}.res", m_objDir, file));
-#else
-			continue;
 #endif
 		}
 	}
@@ -391,6 +436,8 @@ StringList BuildPaths::getOutputDirectoryList(const SourceGroup& inDirectoryList
 /*****************************************************************************/
 StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 {
+	auto manifestResource = getWindowsManifestResourceFilename(inProject);
+
 	const auto& files = inProject.files();
 	if (files.size() > 0)
 	{
@@ -412,7 +459,12 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 				continue;
 			}
 
-			fileList.push_back(file);
+			List::addIfDoesNotExist(fileList, file);
+		}
+
+		if (!manifestResource.empty())
+		{
+			List::addIfDoesNotExist(fileList, std::move(manifestResource));
 		}
 
 		return fileList;
@@ -428,53 +480,70 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 	Path::sanitize(excludes);
 
 	StringList ret;
-	for (auto& locRaw : locations)
+
+	try
 	{
-		std::string loc = locRaw;
-		Path::sanitize(loc);
-
-		// if (m_useCache && List::contains(m_fileListCache, loc))
-		// 	continue;
-
-		int j = 0;
-		for (auto& item : fs::recursive_directory_iterator(loc))
+		for (auto& locRaw : locations)
 		{
-			if (item.is_directory())
+			std::string loc = locRaw;
+			Path::sanitize(loc);
+
+			if (String::equals(m_intermediateDir, locRaw))
 				continue;
 
-			const auto& path = item.path();
+			// if (m_useCache && List::contains(m_fileListCache, loc))
+			// 	continue;
 
-			if (!path.has_extension())
-				continue;
-
-			const std::string ext = path.extension().string();
-			if (!String::contains(ext, searchString))
-				continue;
-
-			std::string source = path.string();
-			Path::sanitize(source, true);
-
-			if (String::contains(source, excludes))
-				continue;
-
-			bool excluded = false;
-			for (auto& exclude : excludesList)
+			int j = 0;
+			for (auto& item : fs::recursive_directory_iterator(loc))
 			{
-				if (String::contains(exclude, source))
+				if (item.is_directory())
+					continue;
+
+				const auto& path = item.path();
+
+				if (!path.has_extension())
+					continue;
+
+				const std::string ext = path.extension().string();
+				if (!String::contains(ext, searchString))
+					continue;
+
+				std::string source = path.string();
+				Path::sanitize(source, true);
+
+				if (String::contains(source, excludes))
+					continue;
+
+				bool excluded = false;
+				for (auto& exclude : excludesList)
 				{
-					excluded = true;
-					break;
+					if (String::contains(exclude, source))
+					{
+						excluded = true;
+						break;
+					}
 				}
+				if (excluded)
+					continue;
+
+				List::addIfDoesNotExist(ret, std::move(source));
+				j++;
 			}
-			if (excluded)
-				continue;
 
-			List::addIfDoesNotExist(ret, std::move(source));
-			j++;
+			// if (m_useCache && !List::contains(m_fileListCache, source))
+			// 	m_fileListCache.push_back(source);
 		}
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::errorAbort(err.what());
+		return ret;
+	}
 
-		// if (m_useCache && !List::contains(m_fileListCache, source))
-		// 	m_fileListCache.push_back(source);
+	if (!manifestResource.empty())
+	{
+		List::addIfDoesNotExist(ret, std::move(manifestResource));
 	}
 
 	return ret;
@@ -485,80 +554,91 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 {
 	StringList ret;
 
-	if (inProject.usesPch())
+	try
 	{
-		fs::path pch{ inProject.pch() };
-		if (Commands::pathExists(pch))
+		if (inProject.usesPch())
 		{
-			std::string outPath = pch.parent_path().string();
-			Path::sanitize(outPath, true);
-
-			ret.push_back(std::move(outPath));
-		}
-	}
-
-	const auto& files = inProject.files();
-	if (files.size() > 0)
-	{
-		for (auto& file : files)
-		{
-			fs::path path{ file };
-			if (!Commands::pathExists(path))
-				continue;
-
-			std::string outPath = path.parent_path().string();
-			Path::sanitize(outPath, true);
-
-			ret.push_back(std::move(outPath));
-		}
-
-		return ret;
-	}
-
-	const auto& locations = inProject.locations();
-	const auto& locationExcludes = inProject.locationExcludes();
-
-	std::string excludes = String::join(locationExcludes);
-	Path::sanitize(excludes);
-
-	for (auto& locRaw : locations)
-	{
-		std::string loc = locRaw;
-		Path::sanitize(loc);
-
-		// if (m_useCache && List::contains(m_directoryCache, loc))
-		// 	continue;
-
-		ret.push_back(loc);
-
-		for (auto& item : fs::recursive_directory_iterator(loc))
-		{
-			if (!item.is_directory())
-				continue;
-
-			std::string path = item.path().string();
-			Path::sanitize(path, true);
-
-			if (String::contains(path, excludes))
-				continue;
-
-			bool excluded = false;
-			for (auto& exclude : locationExcludes)
+			fs::path pch{ inProject.pch() };
+			if (Commands::pathExists(pch))
 			{
-				if (String::contains(exclude, path))
-				{
-					excluded = true;
-					break;
-				}
-			}
-			if (excluded)
-				continue;
+				std::string outPath = pch.parent_path().string();
+				Path::sanitize(outPath, true);
 
-			ret.push_back(path);
+				ret.push_back(std::move(outPath));
+			}
 		}
 
-		// if (m_useCache && !List::contains(m_directoryCache, loc))
-		// 	m_directoryCache.push_back(loc);
+		const auto& files = inProject.files();
+		if (files.size() > 0)
+		{
+			for (auto& file : files)
+			{
+				fs::path path{ file };
+				if (!Commands::pathExists(path))
+					continue;
+
+				std::string outPath = path.parent_path().string();
+				Path::sanitize(outPath, true);
+
+				ret.push_back(std::move(outPath));
+			}
+
+			return ret;
+		}
+
+		const auto& locations = inProject.locations();
+		const auto& locationExcludes = inProject.locationExcludes();
+
+		std::string excludes = String::join(locationExcludes);
+		Path::sanitize(excludes);
+
+		for (auto& locRaw : locations)
+		{
+			std::string loc = locRaw;
+			Path::sanitize(loc);
+
+			// if (m_useCache && List::contains(m_directoryCache, loc))
+			// 	continue;
+
+			ret.push_back(loc);
+
+			if (String::equals(m_intermediateDir, locRaw))
+				continue;
+
+			for (auto& item : fs::recursive_directory_iterator(loc))
+			{
+				if (!item.is_directory())
+					continue;
+
+				std::string path = item.path().string();
+				Path::sanitize(path, true);
+
+				if (String::contains(path, excludes))
+					continue;
+
+				bool excluded = false;
+				for (auto& exclude : locationExcludes)
+				{
+					if (String::contains(exclude, path))
+					{
+						excluded = true;
+						break;
+					}
+				}
+				if (excluded)
+					continue;
+
+				ret.push_back(path);
+			}
+
+			// if (m_useCache && !List::contains(m_directoryCache, loc))
+			// 	m_directoryCache.push_back(loc);
+		}
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::errorAbort(err.what());
+		return ret;
 	}
 
 	return ret;

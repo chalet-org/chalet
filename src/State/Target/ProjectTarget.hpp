@@ -119,6 +119,9 @@ struct ProjectTarget final : public IBuildTarget
 	const std::string& linkerScript() const noexcept;
 	void setLinkerScript(const std::string& inValue) noexcept;
 
+	const std::string& windowsApplicationManifest() const noexcept;
+	void setWindowsApplicationManifest(const std::string& inValue) noexcept;
+
 	//
 	ProjectKind kind() const noexcept;
 	void setKind(const ProjectKind inValue) noexcept;
@@ -161,24 +164,25 @@ private:
 	StringList m_libDirs;
 	StringList m_includeDirs;
 	StringList m_runDependencies;
-	std::string m_productionDependencies;
-	std::string m_productionExcludes;
-	std::string m_warningsPresetString{ "none" };
 	StringList m_warnings;
 	StringList m_compileOptions;
 	StringList m_linkerOptions;
 	StringList m_macosFrameworkPaths;
 	StringList m_macosFrameworks;
-
-	std::string m_outputFile;
-	std::string m_cStandard;
-	std::string m_cppStandard;
 	StringList m_files;
 	StringList m_locations;
 	StringList m_locationExcludes;
-	std::string m_pch;
 	StringList m_runArguments;
+
+	std::string m_productionDependencies;
+	std::string m_productionExcludes;
+	std::string m_warningsPresetString{ "none" };
+	std::string m_outputFile;
+	std::string m_cStandard;
+	std::string m_cppStandard;
+	std::string m_pch;
 	std::string m_linkerScript;
+	std::string m_windowsApplicationManifest;
 
 	ProjectKind m_kind = ProjectKind::None;
 	CodeLanguage m_language = CodeLanguage::None;

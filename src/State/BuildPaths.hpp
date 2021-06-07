@@ -28,12 +28,15 @@ struct BuildPaths
 	const std::string& objDir() const noexcept;
 	const std::string& depDir() const noexcept;
 	const std::string& asmDir() const noexcept;
+	const std::string& intermediateDir() const noexcept;
 
 	std::string getTargetFilename(const ProjectTarget& inProject) const;
 	std::string getTargetBasename(const ProjectTarget& inProject) const;
 	std::string getPrecompiledHeader(const ProjectTarget& inProject) const;
 	std::string getPrecompiledHeaderTarget(const ProjectTarget& inProject, const bool inPchExtension = true) const;
 	std::string getPrecompiledHeaderInclude(const ProjectTarget& inProject) const;
+	std::string getWindowsManifestFilename(const ProjectTarget& inProject) const;
+	std::string getWindowsManifestResourceFilename(const ProjectTarget& inProject) const;
 
 	SourceOutputs getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inDumpAssembly, const bool inObjExtension = false) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const;
@@ -76,6 +79,7 @@ private:
 	std::string m_objDir;
 	std::string m_depDir;
 	std::string m_asmDir;
+	std::string m_intermediateDir;
 
 	bool m_initialized = false;
 	mutable bool m_binDirMade = false;

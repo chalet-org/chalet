@@ -704,6 +704,9 @@ bool BuildJsonParser::parsePlatformConfigExclusions(IBuildTarget& outProject, co
 /*****************************************************************************/
 bool BuildJsonParser::parseCompilerSettingsCxx(ProjectTarget& outProject, const Json& inNode)
 {
+	if (std::string val; assignStringFromConfig(val, inNode, "windowsApplicationManifest"))
+		outProject.setWindowsApplicationManifest(val);
+
 	if (bool val = false; m_buildJson->assignFromKey(val, inNode, "windowsPrefixOutputFilename"))
 		outProject.setWindowsPrefixOutputFilename(val);
 
@@ -1094,22 +1097,8 @@ bool BuildJsonParser::parseBundleWindows(BundleTarget& outBundle, const Json& in
 		assigned++;
 	}
 
-	if (std::string val; m_buildJson->assignStringAndValidate(val, windowsNode, "manifest"))
-	{
-		windowsBundle.setManifest(val);
-		assigned++;
-	}
-
 	if (assigned == 0)
 		return false;
-
-	if (assigned == 1)
-	{
-		Diagnostic::error(fmt::format("{}: '{bundle}.windows.icon' & '{bundle}.windows.manifest' are both required.",
-			m_filename,
-			fmt::arg("bundle", kKeyBundle)));
-		return false;
-	}
 
 	outBundle.setWindowsBundle(std::move(windowsBundle));
 

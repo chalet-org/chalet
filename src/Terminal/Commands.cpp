@@ -6,6 +6,7 @@
 #include "Terminal/Commands.hpp"
 
 #include <array>
+#include <chrono>
 #include <thread>
 
 #include "Libraries/WindowsApi.hpp"
@@ -53,7 +54,23 @@ void stripLastEndLine(std::string& inString)
 }
 }
 
-// TODO: std::filesystem::last_write_time as a starting point for deps w/ "native" strategy
+/*****************************************************************************/
+std::int64_t Commands::getLastWriteTime(const std::string& inFile)
+{
+	try
+	{
+		using system_clock = std::chrono::system_clock;
+
+		auto lastWrite = fs::last_write_time(inFile);
+		auto sctp = std::chrono::time_point_cast<system_clock::duration>(system_clock::now() - (decltype(lastWrite)::clock::now() - lastWrite));
+		return sctp.time_since_epoch().count();
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::error(err.what());
+		return 0;
+	}
+}
 
 /*****************************************************************************/
 std::string Commands::getWorkingDirectory()

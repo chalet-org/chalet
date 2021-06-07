@@ -44,7 +44,10 @@ Router::Router(const CommandLineInputs& inInputs) :
 Router::~Router()
 {
 	if (m_buildState != nullptr)
+	{
 		m_buildState->cache.saveEnvironmentCache();
+		m_buildState->sourceCache.save();
+	}
 }
 
 /*****************************************************************************/

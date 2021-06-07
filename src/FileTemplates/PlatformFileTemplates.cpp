@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Builder/PlatformFile.hpp"
+#include "FileTemplates/PlatformFileTemplates.hpp"
 
 #include "Libraries/Format.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-std::string PlatformFile::linuxDesktopEntry()
+std::string PlatformFileTemplates::linuxDesktopEntry()
 {
 	return R"([Desktop Entry]
 Version=1.0
@@ -26,7 +26,7 @@ Icon=${icon}
 }
 
 /*****************************************************************************/
-std::string PlatformFile::macosInfoPlist()
+std::string PlatformFileTemplates::macosInfoPlist()
 {
 	return R"({
 	"CFBundleName": "${bundleName}",
@@ -45,7 +45,7 @@ std::string PlatformFile::macosInfoPlist()
 }
 
 /*****************************************************************************/
-std::string PlatformFile::macosDmgApplescript(const std::string& inAppName)
+std::string PlatformFileTemplates::macosDmgApplescript(const std::string& inAppName)
 {
 	return fmt::format(R"applescript(set appNameExt to "{appName}.app"
 tell application "Finder"
@@ -71,17 +71,79 @@ end tell)applescript",
 }
 
 /*****************************************************************************/
-std::string PlatformFile::windowsAppManifest()
+// Note: This is the default for Visual Studio projects
+//
+std::string PlatformFileTemplates::minimumWindowsAppManifest()
 {
-	return R"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+	return R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+		<security>
+			<requestedPrivileges>
+				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
+			</requestedPrivileges>
+		</security>
+	</trustInfo>
+</assembly>
+)xml";
+}
+
+/*****************************************************************************/
+// Note: The default for Visual Studio projects omits assemblyIdentity & description
+//   The msys2 package 'mingw-w64-x86_64-windows-default-manifest' also includes
+//   supportedOS
+//
+std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& inName, const std::string& inDescription, const std::string& inVersion)
+{
+
+	return fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
 	<assemblyIdentity
-		name="${name}"
+		name="{name}"
 		processorArchitecture="ia64"
-		version="1.0.0.0"
+		version="{version}"
 		type="win32" />
-	<description>${description}</description>
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+	<description>{description}</description>
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+		<security>
+			<requestedPrivileges>
+				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
+			</requestedPrivileges>
+		</security>
+	</trustInfo>
+	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+		<application>
+			<!--The ID below indicates application support for Windows Vista -->
+			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/>
+			<!--The ID below indicates application support for Windows 7 -->
+			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
+			<!--The ID below indicates application support for Windows 8 -->
+			<supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>
+			<!--The ID below indicates application support for Windows 8.1 -->
+			<supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
+			<!--The ID below indicates application support for Windows 10 -->
+			<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+		</application>
+	</compatibility>
+</assembly>
+)xml",
+		fmt::arg("name", inName),
+		fmt::arg("version", inVersion),
+		fmt::arg("description", inDescription));
+}
+
+/*****************************************************************************/
+std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& inName, const std::string& inDescription, const std::string& inVersion)
+{
+	return fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+	<assemblyIdentity
+		name="{name}"
+		processorArchitecture="ia64"
+		version="{version}"
+		type="win32" />
+	<description>{description}</description>
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
 		<security>
 			<requestedPrivileges>
 				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
@@ -113,7 +175,19 @@ std::string PlatformFile::windowsAppManifest()
 		</application>
 	</compatibility>
 </assembly>
+)xml",
+		fmt::arg("name", inName),
+		fmt::arg("version", inVersion),
+		fmt::arg("description", inDescription));
+}
 
-)";
+/*****************************************************************************/
+std::string PlatformFileTemplates::windowsManifestResource(const std::string& inManifestFile)
+{
+	return fmt::format(R"rc(#include <winuser.h>
+
+1 RT_MANIFEST "{manifestFile}"
+)rc",
+		fmt::arg("manifestFile", inManifestFile));
 }
 }
