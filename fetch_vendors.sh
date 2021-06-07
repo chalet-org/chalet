@@ -30,7 +30,7 @@ repositories=(
 tags=(
 	'64dd67c7587ec36d1fc39a0f03619ea219968a95'
 	'v2.x'
-	'95c63867bf0f6497825ef6cf44a7d0791bd25883'
+	'f6eba2662aac0284c1cb5c0dc19c72f47820b17b'
 	'dccddc2bdb15f29f7df7d99f78278248fb8097db'
 	'v1.5.6'
 	'master'
@@ -46,7 +46,7 @@ commits=(
 	1
 	1
 	0
-	1
+	0
 	0
 	0
 	0
@@ -73,7 +73,7 @@ for idx in 0 1 2 3 4 5 6 7 8 9; do
 		mkdir -p "$path"
 
 		if [[ "$single_commit" == "1" ]]; then
-			git clone --quiet -b "master" --single-branch --config "advice.detachedHead=false" "git@github.com:$repo.git" "$path"
+			git clone --quiet --single-branch --config "advice.detachedHead=false" "git@github.com:$repo.git" "$path"
 			git -C "$path" reset --quiet --hard "$tag"
 		else
 			git clone --quiet -b "$tag" --depth 1 --config "advice.detachedHead=false" "git@github.com:$repo.git" "$path"
