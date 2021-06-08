@@ -41,13 +41,18 @@ public:
 	BuildCache cache;
 	SourceFileCache sourceCache;
 
+	bool initialize(const bool inInstallDependencies);
+
 private:
-	friend class Application;
-	friend class Router;
+	bool parseCacheJson();
+	bool parseBuildJson();
+	bool installDependencies();
 
 	bool initializeBuild();
 	void initializeCache();
 	bool validateState();
+
+	void enforceArchitectureInPath();
 };
 }
 

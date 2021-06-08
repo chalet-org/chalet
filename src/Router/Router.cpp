@@ -5,13 +5,12 @@
 
 #include "Router/Router.hpp"
 
-#include "BuildJson/BuildJsonParser.hpp"
 #include "Builder/AppBundler.hpp"
 #include "Builder/BuildManager.hpp"
-#include "CacheJson/CacheJsonParser.hpp"
-#include "Dependencies/DependencyManager.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 #include "Libraries/Format.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -23,21 +22,8 @@ namespace chalet
 {
 /*****************************************************************************/
 Router::Router(const CommandLineInputs& inInputs) :
-	m_inputs(inInputs),
-	m_routes({
-		{ Route::BuildRun, &Router::cmdBuild },
-		{ Route::Build, &Router::cmdBuild },
-		{ Route::Rebuild, &Router::cmdBuild },
-		{ Route::Run, &Router::cmdBuild },
-		{ Route::Bundle, &Router::cmdBundle },
-		{ Route::Clean, &Router::cmdBuild },
-		{ Route::Configure, &Router::cmdConfigure },
-		{ Route::Init, &Router::cmdInit },
-	})
+	m_inputs(inInputs)
 {
-#if defined(CHALET_DEBUG)
-	m_routes.emplace(Route::Debug, &Router::cmdDebug);
-#endif
 }
 
 /*****************************************************************************/
@@ -54,7 +40,8 @@ Router::~Router()
 bool Router::run()
 {
 	const auto& command = m_inputs.command();
-	if (m_routes.find(command) == m_routes.end())
+	if (command == Route::Unknown
+		|| static_cast<std::underlying_type_t<Route>>(command) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
 	{
 		Diagnostic::error("Command not recognized.");
 		return false;
@@ -80,25 +67,14 @@ bool Router::run()
 			return false;
 		}
 
+		m_installDependencies = true;
+
 		m_buildState = std::make_unique<BuildState>(m_inputs);
-
-		if (!parseCacheJson())
-			return false;
-
-		if (!parseBuildJson(buildFile))
-			return false;
-
-		if (!installDependencies(command))
-			return false;
-
-		if (!m_buildState->initializeBuild())
-			return false;
-
-		if (!m_buildState->validateState())
+		if (!m_buildState->initialize(m_installDependencies))
 			return false;
 	}
 
-	if (!managePathVariables())
+	if (!managePathVariables(m_buildState.get()))
 	{
 		Diagnostic::error("There was an error setting environment variables.");
 		return false;
@@ -112,7 +88,34 @@ bool Router::run()
 	if (m_inputs.generator() == IdeType::XCode)
 		return xcodebuildRoute();
 
-	return m_routes[command](*this);
+	switch (command)
+	{
+#if defined(CHALET_DEBUG)
+		case Route::Debug:
+			return cmdDebug();
+#endif
+		case Route::Bundle: {
+			chalet_assert(m_buildState != nullptr, "");
+			return cmdBundle(*m_buildState);
+		}
+
+		case Route::Configure:
+			return cmdConfigure();
+
+		case Route::Init:
+			return cmdInit();
+
+		case Route::BuildRun:
+		case Route::Build:
+		case Route::Rebuild:
+		case Route::Run:
+		case Route::Clean:
+		default:
+			break;
+	}
+
+	chalet_assert(m_buildState != nullptr, "");
+	return cmdBuild(*m_buildState);
 }
 
 /*****************************************************************************/
@@ -124,11 +127,9 @@ bool Router::cmdConfigure()
 }
 
 /*****************************************************************************/
-bool Router::cmdBuild()
+bool Router::cmdBuild(BuildState& inState)
 {
-	chalet_assert(m_buildState != nullptr, "");
-
-	if (!m_buildState->cache.createCacheFolder(BuildCache::Type::Local))
+	if (!inState.cache.createCacheFolder(BuildCache::Type::Local))
 	{
 		Diagnostic::error("There was an error creating the build cache.");
 		return false;
@@ -136,26 +137,25 @@ bool Router::cmdBuild()
 
 	const auto& command = m_inputs.command();
 
-	BuildManager mgr{ m_inputs, *m_buildState };
+	BuildManager mgr{ m_inputs, inState };
 	return mgr.run(command);
 }
 
 /*****************************************************************************/
-bool Router::cmdBundle()
+bool Router::cmdBundle(BuildState& inState)
 {
-	chalet_assert(m_buildState != nullptr, "");
-
 	const auto& buildFile = m_inputs.buildFile();
-	if (m_buildState->distribution.size() == 0)
+	if (inState.distribution.size() == 0)
 	{
 		Diagnostic::error(fmt::format("{}: 'bundle' object is required before creating a distribution bundle.", buildFile));
 		return false;
 	}
 
-	if (!cmdBuild())
+	if (!cmdBuild(inState))
 		return false;
 
-	AppBundler bundler(*m_buildState, buildFile);
+	// /*
+	AppBundler bundler(inState, buildFile);
 
 	bool result = bundler.run();
 	if (result)
@@ -165,6 +165,8 @@ bool Router::cmdBundle()
 		Output::lineBreak();
 	}
 	return result;
+	// */
+	// return false;
 }
 
 /*****************************************************************************/
@@ -241,48 +243,7 @@ bool Router::parseEnvFile()
 			return false;
 		}
 
-		enforceArchitectureInPath();
-
 		Diagnostic::printDone(timer.asString());
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool Router::parseCacheJson()
-{
-	chalet_assert(m_buildState != nullptr, "");
-
-	CacheJsonParser parser(m_inputs, *m_buildState);
-	return parser.serialize();
-}
-
-/*****************************************************************************/
-bool Router::parseBuildJson(const std::string& inFile)
-{
-	chalet_assert(m_buildState != nullptr, "");
-
-	BuildJsonParser parser(m_inputs, *m_buildState, inFile);
-	return parser.serialize();
-}
-
-/*****************************************************************************/
-bool Router::installDependencies(const Route inRoute)
-{
-	if (inRoute == Route::Init)
-		return true;
-
-	chalet_assert(m_buildState != nullptr, "");
-
-	const auto& command = m_inputs.command();
-	const bool cleanOutput = true;
-
-	DependencyManager depMgr(*m_buildState, cleanOutput);
-	if (!depMgr.run(command == Route::Configure))
-	{
-		Diagnostic::error("There was an error creating the dependencies.");
-		return false;
 	}
 
 	return true;
@@ -309,13 +270,13 @@ bool Router::xcodebuildRoute()
 }
 
 /*****************************************************************************/
-bool Router::managePathVariables()
+bool Router::managePathVariables(const BuildState* inState)
 {
 	Environment::set("CLICOLOR_FORCE", "1");
 
-	if (m_buildState != nullptr)
+	if (inState != nullptr)
 	{
-		StringList outPaths = m_buildState->environment.path();
+		StringList outPaths = inState->environment.path();
 
 		if (outPaths.size() > 0)
 		{
@@ -367,70 +328,6 @@ bool Router::managePathVariables()
 		}
 	}
 	return true;
-}
-
-/*****************************************************************************/
-void Router::enforceArchitectureInPath()
-{
-#if defined(CHALET_WIN32)
-	auto path = Environment::getPath();
-	if (String::contains({ "/mingw64/", "/mingw32/" }, path))
-	{
-
-		if (m_buildState)
-		{
-			std::string lower = String::toLowerCase(path);
-			auto targetArch = m_buildState->info.targetArchitecture();
-			if (targetArch == Arch::Cpu::X64)
-			{
-				auto start = lower.find("/mingw32/");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(path, path.substr(start, 9), "/mingw64/");
-					Environment::setPath(path);
-				}
-			}
-			else if (targetArch == Arch::Cpu::X86)
-			{
-				auto start = lower.find("/mingw64/");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(path, path.substr(start, 9), "/mingw32/");
-					Environment::setPath(path);
-				}
-			}
-		}
-	}
-	else if (String::contains({ "/clang64/", "/clang32/" }, path))
-	{
-		// TODO: clangarm64
-
-		if (m_buildState)
-		{
-			std::string lower = String::toLowerCase(path);
-			auto targetArch = m_buildState->info.targetArchitecture();
-			if (targetArch == Arch::Cpu::X64)
-			{
-				auto start = lower.find("/clang32/");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(path, path.substr(start, 9), "/clang64/");
-					Environment::setPath(path);
-				}
-			}
-			else if (targetArch == Arch::Cpu::X86)
-			{
-				auto start = lower.find("/clang64/");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(path, path.substr(start, 9), "/clang32/");
-					Environment::setPath(path);
-				}
-			}
-		}
-	}
-#else
-#endif
 }
 
 }

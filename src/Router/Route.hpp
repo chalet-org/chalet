@@ -22,6 +22,8 @@ enum class Route : ushort
 #if defined(CHALET_DEBUG)
 	Debug,
 #endif
+	//
+	Count,
 };
 }
 

@@ -6,12 +6,13 @@
 #ifndef CHALET_COMMAND_CONDUCTOR_HPP
 #define CHALET_COMMAND_CONDUCTOR_HPP
 
-#include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
-#include "State/BuildState.hpp"
 
 namespace chalet
 {
+struct CommandLineInputs;
+class BuildState;
+
 class Router
 {
 	using RouteAction = std::function<bool(Router&)>;
@@ -25,8 +26,8 @@ public:
 
 private:
 	bool cmdConfigure();
-	bool cmdBuild();
-	bool cmdBundle();
+	bool cmdBuild(BuildState& inState);
+	bool cmdBundle(BuildState& inState);
 	bool cmdInit();
 
 #if defined(CHALET_DEBUG)
@@ -34,19 +35,15 @@ private:
 #endif
 
 	bool parseEnvFile();
-	bool parseCacheJson();
-	bool parseBuildJson(const std::string& inFile);
-	bool installDependencies(const Route inRoute);
 	bool xcodebuildRoute();
 
-	bool managePathVariables();
-	void enforceArchitectureInPath();
+	bool managePathVariables(const BuildState* inState);
 
 	const CommandLineInputs& m_inputs;
 
-	RouteList m_routes;
-
 	std::unique_ptr<BuildState> m_buildState;
+
+	bool m_installDependencies = false;
 };
 }
 
