@@ -200,7 +200,7 @@ const std::string& CommandLineInputs::toolchainPreferenceRaw() const noexcept
 	return m_toolchainPreferenceRaw;
 }
 
-void CommandLineInputs::setToolchainPreference(std::string&& inValue) noexcept
+void CommandLineInputs::setToolchainPreference(std::string&& inValue) const noexcept
 {
 	if (inValue.empty())
 		return;

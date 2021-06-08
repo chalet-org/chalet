@@ -5,6 +5,7 @@
 
 #include "Terminal/Diagnostic.hpp"
 
+#include <csignal>
 #include <exception>
 
 #include "Libraries/Format.hpp"
