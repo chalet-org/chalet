@@ -16,10 +16,10 @@ public:
 	static void start(Callback inOnError = nullptr);
 	static void printStackTrace();
 
+	static void handler(const int inSignal);
+
 private:
 	SignalHandler() = delete;
-
-	static void handler(const int inSignal);
 
 	static void printError(const std::string& inType, const std::string& inDescription, const bool inPrintStackTrace = true);
 

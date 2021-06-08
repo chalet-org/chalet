@@ -19,6 +19,9 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
+static bool s_quietNonBuild = false;
+
+/*****************************************************************************/
 std::string getFormattedBuildTarget(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	return fmt::format("{} (target: {})", inBuildConfiguration, inName);
@@ -73,6 +76,17 @@ char getEscapeChar()
 	// else
 	// 	return '\x1b';
 }
+}
+
+/*****************************************************************************/
+bool Output::quietNonBuild()
+{
+	return s_quietNonBuild;
+}
+
+void Output::setQuietNonBuild(const bool inValue)
+{
+	s_quietNonBuild = inValue;
 }
 
 /*****************************************************************************/
@@ -139,9 +153,12 @@ std::string Output::getAnsiReset()
 /*****************************************************************************/
 void Output::displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage, const bool inBold)
 {
-	const auto color = getAnsiStyle(inColor, inBold);
-	const auto reset = getAnsiReset();
-	std::cout << fmt::format("{color}{inSymbol}  {inMessage}", FMT_ARG(color), FMT_ARG(inSymbol), FMT_ARG(inMessage)) << reset << std::endl;
+	if (!s_quietNonBuild)
+	{
+		const auto color = getAnsiStyle(inColor, inBold);
+		const auto reset = getAnsiReset();
+		std::cout << fmt::format("{color}{inSymbol}  {inMessage}", FMT_ARG(color), FMT_ARG(inSymbol), FMT_ARG(inMessage)) << reset << std::endl;
+	}
 }
 
 /*****************************************************************************/
@@ -159,23 +176,32 @@ void Output::resetStderr()
 /*****************************************************************************/
 void Output::lineBreak()
 {
-	std::cout << getAnsiReset() << std::endl;
+	if (!s_quietNonBuild)
+	{
+		std::cout << getAnsiReset() << std::endl;
+	}
 }
 
 /*****************************************************************************/
 void Output::print(const Color inColor, const std::string& inText, const bool inBold)
 {
-	const auto color = getAnsiStyle(inColor, inBold);
-	const auto reset = getAnsiReset();
-	std::cout << color << inText << reset << std::endl;
+	if (!s_quietNonBuild)
+	{
+		const auto color = getAnsiStyle(inColor, inBold);
+		const auto reset = getAnsiReset();
+		std::cout << color << inText << reset << std::endl;
+	}
 }
 
 /*****************************************************************************/
 void Output::print(const Color inColor, const StringList& inList, const bool inBold)
 {
-	const auto color = getAnsiStyle(inColor, inBold);
-	const auto reset = getAnsiReset();
-	std::cout << color << String::join(inList) << reset << std::endl;
+	if (!s_quietNonBuild)
+	{
+		const auto color = getAnsiStyle(inColor, inBold);
+		const auto reset = getAnsiReset();
+		std::cout << color << String::join(inList) << reset << std::endl;
+	}
 }
 
 /*****************************************************************************/
@@ -204,9 +230,12 @@ void Output::msgUpdatingDependency(const std::string& inGitUrl, const std::strin
 /*****************************************************************************/
 void Output::msgDisplayBlack(const std::string& inString)
 {
-	const auto color = getAnsiStyle(Color::Black, true);
-	const auto reset = getAnsiReset();
-	std::cout << color << fmt::format("   {}", inString) << reset << std::endl;
+	if (!s_quietNonBuild)
+	{
+		const auto color = getAnsiStyle(Color::Black, true);
+		const auto reset = getAnsiReset();
+		std::cout << color << fmt::format("   {}", inString) << reset << std::endl;
+	}
 }
 
 /*****************************************************************************/
@@ -219,11 +248,14 @@ void Output::msgBuildSuccess()
 /*****************************************************************************/
 void Output::msgTargetUpToDate(const bool inMultiTarget, const std::string& inProjectName)
 {
-	std::string successText = "Target is up to date.";
-	if (inMultiTarget)
-		print(Color::Blue, fmt::format("   {}: {}", inProjectName, successText));
-	else
-		print(Color::Blue, fmt::format("   {}", successText));
+	if (!s_quietNonBuild)
+	{
+		std::string successText = "Target is up to date.";
+		if (inMultiTarget)
+			print(Color::Blue, fmt::format("   {}: {}", inProjectName, successText));
+		else
+			print(Color::Blue, fmt::format("   {}", successText));
+	}
 }
 
 /*****************************************************************************/

@@ -38,8 +38,16 @@ int Application::run(const int argc, const char* const argv[])
 /*****************************************************************************/
 bool Application::runRouteConductor()
 {
-	Router routes(m_inputs);
-	return routes.run();
+	try
+	{
+		Router routes(m_inputs);
+		return routes.run();
+	}
+	catch (const std::exception& err)
+	{
+		Diagnostic::errorAbort(err.what());
+		return false;
+	}
 }
 
 /*****************************************************************************/

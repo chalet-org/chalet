@@ -10,6 +10,7 @@
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/SignalHandler.hpp"
 
 namespace chalet
 {
@@ -49,36 +50,42 @@ Diagnostic::ErrorList* Diagnostic::getErrorList()
 /*****************************************************************************/
 void Diagnostic::info(const std::string& inMessage, const bool inLineBreak)
 {
-	const auto color = Output::getAnsiStyle(Color::Black);
-	const auto reset = Output::getAnsiReset();
-	const auto symbol = '>';
+	if (!Output::quietNonBuild())
+	{
+		const auto color = Output::getAnsiStyle(Color::Black);
+		const auto reset = Output::getAnsiReset();
+		const auto symbol = '>';
 
-	std::cout << fmt::format("{}{}  {}{}", color, symbol, reset, inMessage);
-	if (inLineBreak)
-	{
-		std::cout << std::endl;
-	}
-	else
-	{
-		std::cout << fmt::format("{} ... {}", color, reset) << std::flush;
-		sStartedInfo = true;
+		std::cout << fmt::format("{}{}  {}{}", color, symbol, reset, inMessage);
+		if (inLineBreak)
+		{
+			std::cout << std::endl;
+		}
+		else
+		{
+			std::cout << fmt::format("{} ... {}", color, reset) << std::flush;
+			sStartedInfo = true;
+		}
 	}
 }
 
 /*****************************************************************************/
 void Diagnostic::printDone(const std::string& inExtra)
 {
-	const auto color = Output::getAnsiStyle(Color::Black);
-	const auto reset = Output::getAnsiReset();
+	if (!Output::quietNonBuild())
+	{
+		const auto color = Output::getAnsiStyle(Color::Black);
+		const auto reset = Output::getAnsiReset();
 
-	sStartedInfo = false;
-	if (!inExtra.empty())
-	{
-		std::cout << fmt::format("{}done ({}){}", color, inExtra, reset) << std::endl;
-	}
-	else
-	{
-		std::cout << fmt::format("{}done{}", color, reset) << std::endl;
+		sStartedInfo = false;
+		if (!inExtra.empty())
+		{
+			std::cout << fmt::format("{}done ({}){}", color, inExtra, reset) << std::endl;
+		}
+		else
+		{
+			std::cout << fmt::format("{}done{}", color, reset) << std::endl;
+		}
 	}
 }
 
@@ -152,7 +159,7 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 	if (!inThrow)
 		return;
 
-	throw kCriticalError;
+	priv::SignalHandler::handler(SIGABRT);
 }
 
 /*****************************************************************************/
@@ -179,7 +186,7 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 
 	sAssertionFailure = true;
 
-	std::abort();
+	priv::SignalHandler::handler(SIGABRT);
 }
 
 /*****************************************************************************/

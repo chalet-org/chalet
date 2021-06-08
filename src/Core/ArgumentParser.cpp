@@ -11,6 +11,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
 #include "Router/Route.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -98,7 +99,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				}
 				else if (String::equals({ "-t", "--toolchain" }, key))
 				{
-					m_inputs.setToolchainPreference(value);
+					m_inputs.setToolchainPreference(std::move(value));
 				}
 				else if (String::equals({ "-g", "--generator" }, key))
 				{
@@ -110,6 +111,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				}
 				else if (String::equals({ "-a", "--arch" }, key))
 				{
+					m_inputs.setArchRaw(value);
 					if (String::contains(',', value))
 					{
 						auto split = String::split(value, ',');
@@ -146,6 +148,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					m_inputs.setSaveSchemaToFile(value);
 				}
+				else if (String::equals("--quieter", key))
+				{
+					Output::setQuietNonBuild(value);
+				}
 				break;
 			}
 			default:
@@ -155,5 +161,4 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 	return true;
 }
-
 }

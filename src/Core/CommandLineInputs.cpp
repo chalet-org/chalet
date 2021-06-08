@@ -195,12 +195,19 @@ const ToolchainPreference& CommandLineInputs::toolchainPreference() const noexce
 	return m_toolchainPreference;
 }
 
-void CommandLineInputs::setToolchainPreference(const std::string& inValue) const noexcept
+const std::string& CommandLineInputs::toolchainPreferenceRaw() const noexcept
+{
+	return m_toolchainPreferenceRaw;
+}
+
+void CommandLineInputs::setToolchainPreference(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
 		return;
 
-	m_toolchainPreference = getToolchainPreferenceFromString(inValue);
+	m_toolchainPreferenceRaw = std::move(inValue);
+
+	m_toolchainPreference = getToolchainPreferenceFromString(m_toolchainPreferenceRaw);
 }
 
 /*****************************************************************************/
@@ -245,6 +252,16 @@ void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 
 	Path::sanitize(m_envFile);
 	Path::clearWorkingDirectory(m_envFile);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::archRaw() const noexcept
+{
+	return m_archRaw;
+}
+void CommandLineInputs::setArchRaw(const std::string& inValue) noexcept
+{
+	m_archRaw = inValue;
 }
 
 /*****************************************************************************/

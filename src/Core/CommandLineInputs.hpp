@@ -50,7 +50,8 @@ struct CommandLineInputs
 	void setGenerator(std::string&& inValue) noexcept;
 
 	const ToolchainPreference& toolchainPreference() const noexcept;
-	void setToolchainPreference(const std::string& inValue) const noexcept;
+	const std::string& toolchainPreferenceRaw() const noexcept;
+	void setToolchainPreference(std::string&& inValue) noexcept;
 
 	const std::string& initProjectName() const noexcept;
 	void setInitProjectName(std::string&& inValue) noexcept;
@@ -60,6 +61,9 @@ struct CommandLineInputs
 
 	const std::string& envFile() const noexcept;
 	void setEnvFile(std::string&& inValue) noexcept;
+
+	const std::string& archRaw() const noexcept;
+	void setArchRaw(const std::string& inValue) noexcept;
 
 	const std::string& hostArchitecture() const noexcept;
 	const std::string& targetArchitecture() const noexcept;
@@ -89,10 +93,12 @@ private:
 	std::string m_runProject;
 	std::string m_appPath;
 	std::string m_generatorRaw;
+	std::string m_toolchainPreferenceRaw;
 
 	std::string m_initProjectName;
 	std::string m_initPath;
 	std::string m_envFile;
+	std::string m_archRaw;
 	std::string m_hostArchitecture;
 	std::string m_targetArchitecture;
 

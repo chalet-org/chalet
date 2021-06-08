@@ -271,17 +271,20 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 		std::cout << help << std::endl;
 		return false;
 	}
+	catch (const std::exception& err)
+	{
+		Diagnostic::error(fmt::format("There was an unhandled exception during argument parsing: {}", err.what()));
+		return false;
+	}
 
-	populateArgumentMap(inArguments);
-
-	return true;
+	return populateArgumentMap(inArguments);
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
+bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 {
 	std::string lastValue;
-	auto gatherRemaining = [inArguments](const std::string& inLastValue) -> StringList {
+	auto gatherRemaining = [&inArguments](const std::string& inLastValue) -> StringList {
 		StringList remaining;
 		bool getNext = false;
 		for (const auto& arg : inArguments)
@@ -299,50 +302,75 @@ void ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		return remaining;
 	};
 
+	StringList keys;
+	for (auto& [key, value] : m_argumentMap)
+	{
+		keys.push_back(key);
+	}
+
+	for (auto& arg : inArguments)
+	{
+		if (arg.front() == '-' && !List::contains(keys, arg))
+		{
+			Diagnostic::error(fmt::format("An invalid argument was found: '{}'", arg));
+			return false;
+		}
+	}
+
 	for (auto& [key, value] : m_argumentMap)
 	{
 		if (key == m_routeString)
 			continue;
 
-		if (String::startsWith('-', key) && !List::contains(inArguments, key))
+		if (String::startsWith('-', key) && !List::contains(inArguments, key) && value.kind() != Variant::Kind::Boolean)
 			continue;
 
-		switch (value.kind())
+		try
 		{
-			case Variant::Kind::Boolean:
-				value = m_parser.get<bool>(key);
-				break;
+			switch (value.kind())
+			{
+				case Variant::Kind::Boolean:
+					value = m_parser.get<bool>(key);
+					break;
 
-			case Variant::Kind::Integer:
-				value = m_parser.get<int>(key);
-				break;
+				case Variant::Kind::Integer:
+					value = m_parser.get<int>(key);
+					break;
 
-			case Variant::Kind::String:
-				value = m_parser.get<std::string>(key);
-				lastValue = value.asString();
-				break;
+				case Variant::Kind::String:
+					value = m_parser.get<std::string>(key);
+					lastValue = value.asString();
+					break;
 
-			case Variant::Kind::StringList: {
-				try
-				{
-					value = m_parser.get<StringList>(key);
+				case Variant::Kind::StringList: {
+					try
+					{
+						value = m_parser.get<StringList>(key);
+					}
+					catch (std::exception& e)
+					{
+						std::cout << e.what() << std::endl;
+					}
+					return true;
 				}
-				catch (std::exception& e)
-				{
-					std::cout << e.what() << std::endl;
-				}
-				return;
+
+				case Variant::Kind::Remainder:
+					value = gatherRemaining(lastValue);
+					return true;
+
+				case Variant::Kind::Empty:
+				default:
+					break;
 			}
-
-			case Variant::Kind::Remainder:
-				value = gatherRemaining(lastValue);
-				return;
-
-			case Variant::Kind::Empty:
-			default:
-				break;
+		}
+		catch (const std::exception&)
+		{
+			Diagnostic::error(fmt::format("An invalid set of arguments were found.\n   Aborting..."));
+			return false;
 		}
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -465,6 +493,23 @@ void ArgumentPatterns::addSaveSchemaArg()
 }
 
 /*****************************************************************************/
+void ArgumentPatterns::addQuietArgs()
+{
+	// TODO: other quiet flags
+	// --quiet = build & initialization output (no descriptions or flare)
+	// --quieter = just build output
+	// --quietest = no output
+
+	m_parser.add_argument("--quieter")
+		.help("Show only build output")
+		.nargs(1)
+		.default_value(false)
+		.implicit_value(true);
+
+	m_argumentMap.push_back({ "--quieter", Variant::Kind::Boolean });
+}
+
+/*****************************************************************************/
 void ArgumentPatterns::addBuildConfigurationArg(const bool inOptional)
 {
 	if (inOptional)
@@ -513,6 +558,7 @@ void ArgumentPatterns::commandBuildRun()
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
+	addQuietArgs();
 
 	addBuildConfigurationArg();
 	addRunProjectArg();
@@ -529,6 +575,7 @@ void ArgumentPatterns::commandRun()
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
+	addQuietArgs();
 
 	addBuildConfigurationArg();
 	addRunProjectArg();
@@ -545,6 +592,7 @@ void ArgumentPatterns::commandBuild()
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
+	addQuietArgs();
 
 	addBuildConfigurationArg();
 }
@@ -559,6 +607,7 @@ void ArgumentPatterns::commandRebuild()
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
+	addQuietArgs();
 
 	addBuildConfigurationArg();
 }
@@ -573,6 +622,7 @@ void ArgumentPatterns::commandClean()
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
+	addQuietArgs();
 
 	bool optional = true;
 	addBuildConfigurationArg(optional);
@@ -588,6 +638,7 @@ void ArgumentPatterns::commandBundle()
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
+	addQuietArgs();
 }
 
 /*****************************************************************************/
@@ -600,6 +651,7 @@ void ArgumentPatterns::commandConfigure()
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
+	addQuietArgs();
 }
 
 /*****************************************************************************/

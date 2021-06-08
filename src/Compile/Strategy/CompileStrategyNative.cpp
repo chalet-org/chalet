@@ -175,6 +175,14 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 	if (m_targets.find(inProject.name()) == m_targets.end())
 		return false;
 
+	bool quietBuild = Output::quietNonBuild();
+	Output::setQuietNonBuild(false);
+
+	auto onError = [&quietBuild]() -> bool {
+		Output::setQuietNonBuild(quietBuild);
+		return false;
+	};
+
 	auto& target = *m_targets.at(inProject.name());
 	auto& compiles = target.compiles;
 	auto& pch = target.pch;
@@ -203,10 +211,10 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 		totalCompiles++;
 
 		if (!printCommand(pch.output, pch.command, Color::Blue, " ", cleanOutput, totalCompiles))
-			return false;
+			return onError();
 
 		if (!executeCommandFunc(pch.command, pch.renameFrom, pch.renameTo, m_generateDependencies))
-			return false;
+			return onError();
 	}
 
 	bool buildFailed = false;
@@ -231,23 +239,23 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 		catch (std::future_error& err)
 		{
 			std::cerr << err.what() << std::endl;
-			return false;
+			return onError();
 		}
 	}
 
 	if (buildFailed)
 	{
 		threadResults.clear();
-		return false;
+		return onError();
 	}
 
 	Output::lineBreak();
 
 	if (!printCommand(linkTarget.output, linkTarget.command, Color::Blue, Unicode::rightwardsTripleArrow(), cleanOutput))
-		return false;
+		return onError();
 
 	if (!executeCommandFunc(linkTarget.command, linkTarget.renameFrom, linkTarget.renameTo, m_generateDependencies))
-		return false;
+		return onError();
 
 	if (!assemblies.empty())
 	{
@@ -277,7 +285,7 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 			catch (std::future_error& err)
 			{
 				std::cerr << err.what() << std::endl;
-				return false;
+				return onError();
 			}
 		}
 	}
@@ -285,10 +293,12 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 	if (buildFailed)
 	{
 		threadResults.clear();
-		return false;
+		return onError();
 	}
 
 	Output::lineBreak();
+
+	Output::setQuietNonBuild(quietBuild);
 
 	const bool completed = !m_canceled;
 	return completed;

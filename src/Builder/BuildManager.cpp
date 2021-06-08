@@ -617,7 +617,7 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 {
 	Timer buildTimer;
 
-	SubChaletBuilder subChalet(m_state, inTarget, m_inputs.appPath(), m_cleanOutput);
+	SubChaletBuilder subChalet(m_state, inTarget, m_inputs, m_cleanOutput);
 	if (!subChalet.run())
 		return false;
 

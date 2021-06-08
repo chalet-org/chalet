@@ -40,7 +40,7 @@ private:
 
 	void makeParser();
 	bool doParse(const StringList& inArguments);
-	void populateArgumentMap(const StringList& inArguments);
+	bool populateArgumentMap(const StringList& inArguments);
 	// void populateArgumentMap(const StringList& inArguments);
 	std::string getHelp();
 
@@ -55,6 +55,7 @@ private:
 	void addRunProjectArg();
 	void addRunArgumentsArg();
 	void addSaveSchemaArg();
+	void addQuietArgs();
 
 	void commandBuildRun();
 	void commandRun();

@@ -10,18 +10,19 @@ namespace chalet
 {
 class BuildState;
 struct SubChaletTarget;
+struct CommandLineInputs;
 
 class SubChaletBuilder
 {
 public:
-	explicit SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const std::string& inChaletExecutable, const bool inCleanOutput);
+	explicit SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const CommandLineInputs& inInputs, const bool inCleanOutput);
 
 	bool run();
 
 private:
 	const BuildState& m_state;
 	const SubChaletTarget& m_target;
-	std::string m_chaletExecutable;
+	const CommandLineInputs& m_inputs;
 
 	std::string m_outputLocation;
 
