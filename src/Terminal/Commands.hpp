@@ -18,6 +18,9 @@ std::string getWorkingDirectory();
 fs::path getWorkingDirectoryPath();
 bool changeWorkingDirectory(const std::string& inValue);
 
+bool pathIsFile(const std::string& inValue);
+bool pathIsDirectory(const std::string& inValue);
+
 std::string getCanonicalPath(const std::string& inPath);
 std::string getAbsolutePath(const std::string& inPath);
 

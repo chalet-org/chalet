@@ -28,6 +28,7 @@ private:
 	const CMakeTarget& m_target;
 
 	std::string m_outputLocation;
+	std::string m_buildFile;
 
 	const bool m_cleanOutput;
 };

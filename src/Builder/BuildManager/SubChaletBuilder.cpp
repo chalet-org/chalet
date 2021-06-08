@@ -12,6 +12,8 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Path.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -28,20 +30,7 @@ SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTar
 bool SubChaletBuilder::run()
 {
 	const auto& name = m_target.name();
-	const auto& location = m_target.location();
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
-
-	std::string exec = m_inputs.appPath();
-
-	if (!Commands::pathExists(exec))
-	{
-		exec = Commands::which("chalet");
-		if (!Commands::pathExists(exec))
-		{
-			Diagnostic::error("The path to the chalet executable could not be resolved (welp.)");
-			return false;
-		}
-	}
 
 	Output::msgBuild(buildConfiguration, name);
 	Output::lineBreak();
@@ -49,20 +38,62 @@ bool SubChaletBuilder::run()
 	const auto oldPath = Environment::getPath();
 	const auto oldWorkingDirectory = Commands::getWorkingDirectory();
 
-	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("executable: {}", exec), false);
+	auto cwd = Commands::getWorkingDirectory();
+	auto location = fmt::format("{}/{}", cwd, m_target.location());
+	Path::sanitize(location);
+	if (!m_target.buildFile().empty())
+	{
+		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
+	}
+
+	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("executable: {}", m_state.tools.chalet()), false);
 	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("name: {}", name), false);
 	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("location: {}", location), false);
 	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
 
-	const auto cwd = Commands::getAbsolutePath(location);
-	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("new cwd: {}", cwd), false);
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	m_outputLocation = fmt::format("{}/{}", location, buildOutputDir);
+	Path::sanitize(m_outputLocation);
 
-	// Commands::changeWorkingDirectory(cwd);
+	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
+	bool recheckChalet = m_target.recheck();
 
 	bool result = true;
 
-	StringList cmd{ exec };
+	if (outDirectoryDoesNotExist || recheckChalet)
+	{
+		// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("new cwd: {}", cwd), false);
+
+		// Commands::changeWorkingDirectory(workingDirectory);
+
+		StringList cmd = getBuildCommand();
+		// UNUSED(m_cleanOutput);
+		result = Commands::subprocess(cmd, location, m_cleanOutput);
+
+		// Commands::changeWorkingDirectory(oldWorkingDirectory);
+		Environment::setPath(oldPath);
+	}
+
+	if (result)
+	{
+		//
+		Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
+StringList SubChaletBuilder::getBuildCommand() const
+{
+	StringList cmd{ m_state.tools.chalet() };
 	cmd.push_back("--quieter");
+
+	if (!m_buildFile.empty())
+	{
+		cmd.push_back("--input-file");
+		cmd.push_back(m_buildFile);
+	}
 
 	if (!m_inputs.toolchainPreferenceRaw().empty())
 	{
@@ -89,19 +120,6 @@ bool SubChaletBuilder::run()
 	cmd.push_back("build");
 	cmd.push_back(m_state.info.buildConfiguration());
 
-	// UNUSED(m_cleanOutput);
-	if (!Commands::subprocess(cmd, cwd, m_cleanOutput))
-		result = false;
-
-	// Commands::changeWorkingDirectory(oldWorkingDirectory);
-	Environment::setPath(oldPath);
-
-	if (result)
-	{
-		//
-		Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
-	}
-
-	return result;
+	return cmd;
 }
 }

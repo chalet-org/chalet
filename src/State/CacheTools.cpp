@@ -16,6 +16,21 @@
 namespace chalet
 {
 /*****************************************************************************/
+bool CacheTools::resolveOwnExecutable(const std::string& inAppPath)
+{
+	m_chalet = inAppPath;
+
+	if (!Commands::pathExists(m_chalet))
+	{
+		m_chalet = Commands::which("chalet");
+		if (!Commands::pathExists(m_chalet))
+			m_chalet.clear();
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 bool CacheTools::fetchVersions()
 {
 	Timer timer;
@@ -88,7 +103,7 @@ void CacheTools::fetchMakeVersion()
 }
 
 /*****************************************************************************/
-void CacheTools::fetchCmakeVersion()
+bool CacheTools::fetchCmakeVersion()
 {
 	if (!m_cmake.empty() && m_cmakeVersionMajor == 0 && m_cmakeVersionMinor == 0)
 	{
@@ -108,6 +123,8 @@ void CacheTools::fetchCmakeVersion()
 			}
 		}
 	}
+
+	return m_cmakeAvailable;
 }
 
 /*****************************************************************************/
@@ -179,6 +196,12 @@ void CacheTools::fetchXcodeGenVersion()
 		}
 	}
 #endif
+}
+
+/*****************************************************************************/
+const std::string& CacheTools::chalet() const noexcept
+{
+	return m_chalet;
 }
 
 /*****************************************************************************/

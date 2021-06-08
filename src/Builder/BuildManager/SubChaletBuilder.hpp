@@ -20,11 +20,14 @@ public:
 	bool run();
 
 private:
+	StringList getBuildCommand() const;
+
 	const BuildState& m_state;
 	const SubChaletTarget& m_target;
 	const CommandLineInputs& m_inputs;
 
 	std::string m_outputLocation;
+	std::string m_buildFile;
 
 	const bool m_cleanOutput;
 };

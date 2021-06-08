@@ -125,6 +125,34 @@ bool Commands::changeWorkingDirectory(const std::string& inValue)
 }
 
 /*****************************************************************************/
+bool Commands::pathIsFile(const std::string& inValue)
+{
+	try
+	{
+		return fs::is_regular_file(inValue);
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::error(err.what());
+		return false;
+	}
+}
+
+/*****************************************************************************/
+bool Commands::pathIsDirectory(const std::string& inValue)
+{
+	try
+	{
+		return fs::is_directory(inValue);
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::error(err.what());
+		return false;
+	}
+}
+
+/*****************************************************************************/
 std::string Commands::getCanonicalPath(const std::string& inPath)
 {
 	try

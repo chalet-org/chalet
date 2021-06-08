@@ -1291,12 +1291,12 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["target-cmake-location"] = R"json({
 		"type": "string",
-		"description": "The location of the root CMakeLists.txt for the project."
+		"description": "The folder path of the root CMakeLists.txt for the project."
 	})json"_ojson;
 
-	ret[kDefinitions]["target-cmake-buildScript"] = R"json({
+	ret[kDefinitions]["target-cmake-buildFile"] = R"json({
 		"type": "string",
-		"description": "The root script to use, if not CMakeLists.txt. (-C)"
+		"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)"
 	})json"_ojson;
 
 	ret[kDefinitions]["target-cmake-defines"] = R"json({
@@ -1310,7 +1310,7 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["target-cmake-recheck"] = R"json({
 		"type": "boolean",
-		"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't build each time), so it defaults to false.",
+		"description": "If true, CMake will be invoked each time during the build.",
 		"default": false
 	})json"_ojson;
 
@@ -1334,8 +1334,8 @@ Json Schema::getBuildJson()
 			"location": {
 				"$ref": "#/definitions/target-cmake-location"
 			},
-			"buildScript": {
-				"$ref": "#/definitions/target-cmake-buildScript"
+			"buildFile": {
+				"$ref": "#/definitions/target-cmake-buildFile"
 			},
 			"defines": {
 				"$ref": "#/definitions/target-cmake-defines"
@@ -1366,8 +1366,8 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/target-description"
 	})json"_ojson;
-	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^buildScript{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-cmake-buildScript"
+	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^buildFile{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-cmake-buildFile"
 	})json"_ojson;
 	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/target-cmake-defines"
@@ -1378,13 +1378,17 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["target-chalet-location"] = R"json({
 		"type": "string",
-		"description": "The location of the root build.json for the project."
+		"description": "The folder path of the root build.json for the project."
+	})json"_ojson;
+
+	ret[kDefinitions]["target-chalet-buildFile"] = R"json({
+		"type": "string",
+		"description": "The build file to use, if not build.json, relative to the location."
 	})json"_ojson;
 
 	ret[kDefinitions]["target-chalet-recheck"] = R"json({
 		"type": "boolean",
-		"description": "If true, Chalet will be invoked each time during the build. This might not be desirable (a library that doesn't build each time), so it defaults to false.",
-		"default": false
+		"description": "If true, Chalet will be invoked each time during the build."
 	})json"_ojson;
 
 	ret[kDefinitions]["target-chalet"] = R"json({
@@ -1401,6 +1405,9 @@ Json Schema::getBuildJson()
 			},
 			"location": {
 				"$ref": "#/definitions/target-chalet-location"
+			},
+			"buildFile": {
+				"$ref": "#/definitions/target-chalet-buildFile"
 			},
 			"recheck": {
 				"$ref": "#/definitions/target-chalet-recheck"
@@ -1424,6 +1431,9 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["target-chalet"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/target-description"
+	})json"_ojson;
+	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^buildFile{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-chalet-buildFile"
 	})json"_ojson;
 
 	//

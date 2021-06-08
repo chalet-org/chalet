@@ -23,7 +23,7 @@ CMakeTarget::CMakeTarget(const BuildState& inState) :
 void CMakeTarget::initialize()
 {
 	const auto& targetName = this->name();
-	m_state.paths.replaceVariablesInPath(m_buildScript, targetName);
+	m_state.paths.replaceVariablesInPath(m_buildFile, targetName);
 	m_state.paths.replaceVariablesInPath(m_location, targetName);
 }
 
@@ -36,6 +36,12 @@ bool CMakeTarget::validate()
 	if (!Commands::pathExists(m_location))
 	{
 		Diagnostic::error(fmt::format("location for CMake target '{}' doesn't exist: {}", targetName, m_location));
+		result = false;
+	}
+
+	if (!m_buildFile.empty() && !Commands::pathExists(fmt::format("{}/{}", m_location, m_buildFile)))
+	{
+		Diagnostic::error(fmt::format("buildFile '{}' for CMake target '{}' was not found in the location: {}", m_buildFile, targetName, m_location));
 		result = false;
 	}
 
@@ -78,14 +84,14 @@ void CMakeTarget::addDefine(std::string& inValue)
 }
 
 /*****************************************************************************/
-const std::string& CMakeTarget::buildScript() const noexcept
+const std::string& CMakeTarget::buildFile() const noexcept
 {
-	return m_buildScript;
+	return m_buildFile;
 }
 
-void CMakeTarget::setBuildScript(std::string&& inValue) noexcept
+void CMakeTarget::setBuildFile(std::string&& inValue) noexcept
 {
-	m_buildScript = std::move(inValue);
+	m_buildFile = std::move(inValue);
 }
 
 /*****************************************************************************/

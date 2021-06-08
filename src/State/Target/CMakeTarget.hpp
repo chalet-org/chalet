@@ -24,8 +24,8 @@ struct CMakeTarget final : public IBuildTarget
 	const std::string& location() const noexcept;
 	void setLocation(std::string&& inValue) noexcept;
 
-	const std::string& buildScript() const noexcept;
-	void setBuildScript(std::string&& inValue) noexcept;
+	const std::string& buildFile() const noexcept;
+	void setBuildFile(std::string&& inValue) noexcept;
 
 	const std::string& toolset() const noexcept;
 	void setToolset(std::string&& inValue) noexcept;
@@ -38,7 +38,7 @@ private:
 
 	StringList m_defines;
 	std::string m_location;
-	std::string m_buildScript;
+	std::string m_buildFile;
 	std::string m_toolset;
 
 	bool m_recheck = true;

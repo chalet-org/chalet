@@ -1201,11 +1201,11 @@
 		},
 		"target-cmake-location": {
 			"type": "string",
-			"description": "The location of the root CMakeLists.txt for the project."
+			"description": "The folder path of the root CMakeLists.txt for the project."
 		},
-		"target-cmake-buildScript": {
+		"target-cmake-buildFile": {
 			"type": "string",
-			"description": "The root script to use, if not CMakeLists.txt. (-C)"
+			"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)"
 		},
 		"target-cmake-defines": {
 			"type": "array",
@@ -1217,7 +1217,7 @@
 		},
 		"target-cmake-recheck": {
 			"type": "boolean",
-			"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't build each time), so it defaults to false.",
+			"description": "If true, CMake will be invoked each time during the build.",
 			"default": false
 		},
 		"target-cmake-toolset": {
@@ -1239,8 +1239,8 @@
 				"location": {
 					"$ref": "#/definitions/target-cmake-location"
 				},
-				"buildScript": {
-					"$ref": "#/definitions/target-cmake-buildScript"
+				"buildFile": {
+					"$ref": "#/definitions/target-cmake-buildFile"
 				},
 				"defines": {
 					"$ref": "#/definitions/target-cmake-defines"
@@ -1271,8 +1271,8 @@
 				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^buildScript(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/target-cmake-buildScript"
+				"^buildFile(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-chalet-buildFile"
 				},
 				"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/target-cmake-defines"
@@ -1284,12 +1284,15 @@
 		},
 		"target-chalet-location": {
 			"type": "string",
-			"description": "The location of the root build.json for the project."
+			"description": "The folder path of the root build.json for the project."
+		},
+		"target-chalet-buildFile": {
+			"type": "string",
+			"description": "The build file to use, if not build.json, relative to the location."
 		},
 		"target-chalet-recheck": {
 			"type": "boolean",
-			"description": "If true, Chalet will be invoked each time during the build. This might not be desirable (a library that doesn't build each time), so it defaults to false.",
-			"default": false
+			"description": "If true, Chalet will be invoked each time during the build."
 		},
 		"target-chalet": {
 			"type": "object",
@@ -1305,6 +1308,9 @@
 				},
 				"location": {
 					"$ref": "#/definitions/target-chalet-location"
+				},
+				"buildFile": {
+					"$ref": "#/definitions/target-chalet-buildFile"
 				},
 				"recheck": {
 					"$ref": "#/definitions/target-chalet-recheck"

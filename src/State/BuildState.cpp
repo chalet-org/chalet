@@ -41,8 +41,8 @@ bool BuildState::initializeBuild()
 	if (!compilerTools.initialize(targets))
 	{
 		const auto& targetArch = compilerTools.detectedToolchain() == ToolchainType::GNU ?
-			m_inputs.targetArchitecture() :
-			info.targetArchitectureString();
+			  m_inputs.targetArchitecture() :
+			  info.targetArchitectureString();
 
 		Diagnostic::error(fmt::format("Requested arch '{}' is not supported.", targetArch));
 		return false;
@@ -137,16 +137,39 @@ bool BuildState::validateState()
 		}
 	}
 
+	bool hasCMakeTargets = false;
+	bool hasSubChaletTargets = false;
 	for (auto& target : targets)
 	{
-		if (target->isCMake())
+		if (target->isSubChalet())
 		{
-			tools.fetchCmakeVersion();
+			hasSubChaletTargets = true;
+		}
+		else if (target->isCMake())
+		{
+			hasCMakeTargets = true;
 		}
 
 		if (!target->validate())
 		{
 			Diagnostic::error(fmt::format("Error validating the '{}' target.", target->name()));
+			return false;
+		}
+	}
+
+	if (hasCMakeTargets)
+	{
+		if (!tools.fetchCmakeVersion())
+		{
+			Diagnostic::error(fmt::format("The path to the CMake executable could not be resolved: {}", tools.cmake()));
+			return false;
+		}
+	}
+	if (hasSubChaletTargets)
+	{
+		if (!tools.resolveOwnExecutable(m_inputs.appPath()))
+		{
+			Diagnostic::error(fmt::format("(Welp.) The path to the chalet executable could not be resolved: {}", tools.chalet()));
 			return false;
 		}
 	}

@@ -666,11 +666,14 @@ bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outProject, const Js
 	else
 		return false;
 
-	if (bool val = false; m_buildJson->assignFromKey(val, inNode, "recheck"))
-		outProject.setRecheck(val);
-
 	if (std::string val; assignStringFromConfig(val, inNode, "description"))
 		outProject.setDescription(val);
+
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "buildFile"))
+		outProject.setBuildFile(std::move(val));
+
+	if (bool val = false; m_buildJson->assignFromKey(val, inNode, "recheck"))
+		outProject.setRecheck(val);
 
 	if (!parsePlatformConfigExclusions(outProject, inNode))
 		return false;
@@ -686,20 +689,20 @@ bool BuildJsonParser::parseCMakeProject(CMakeTarget& outProject, const Json& inN
 	else
 		return false;
 
-	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "buildScript"))
-		outProject.setBuildScript(std::move(val));
+	if (std::string val; assignStringFromConfig(val, inNode, "description"))
+		outProject.setDescription(val);
+
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "buildFile"))
+		outProject.setBuildFile(std::move(val));
 
 	if (bool val = false; m_buildJson->assignFromKey(val, inNode, "recheck"))
 		outProject.setRecheck(val);
 
-	if (StringList list; m_buildJson->assignStringListAndValidate(list, inNode, "defines"))
-		outProject.addDefines(list);
-
-	if (std::string val; assignStringFromConfig(val, inNode, "description"))
-		outProject.setDescription(val);
-
 	if (std::string val; assignStringFromConfig(val, inNode, "toolset"))
 		outProject.setToolset(std::move(val));
+
+	if (StringList list; m_buildJson->assignStringListAndValidate(list, inNode, "defines"))
+		outProject.addDefines(list);
 
 	if (!parsePlatformConfigExclusions(outProject, inNode))
 		return false;

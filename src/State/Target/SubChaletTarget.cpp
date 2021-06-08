@@ -21,6 +21,7 @@ SubChaletTarget::SubChaletTarget(const BuildState& inState) :
 void SubChaletTarget::initialize()
 {
 	const auto& targetName = this->name();
+	m_state.paths.replaceVariablesInPath(m_buildFile, targetName);
 	m_state.paths.replaceVariablesInPath(m_location, targetName);
 }
 
@@ -36,6 +37,12 @@ bool SubChaletTarget::validate()
 		result = false;
 	}
 
+	if (!m_buildFile.empty() && !Commands::pathExists(fmt::format("{}/{}", m_location, m_buildFile)))
+	{
+		Diagnostic::error(fmt::format("buildFile '{}' for Chalet target '{}' was not found in the location: {}", m_buildFile, targetName, m_location));
+		result = false;
+	}
+
 	return result;
 }
 
@@ -48,6 +55,17 @@ const std::string& SubChaletTarget::location() const noexcept
 void SubChaletTarget::setLocation(std::string&& inValue) noexcept
 {
 	m_location = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& SubChaletTarget::buildFile() const noexcept
+{
+	return m_buildFile;
+}
+
+void SubChaletTarget::setBuildFile(std::string&& inValue) noexcept
+{
+	m_buildFile = std::move(inValue);
 }
 
 /*****************************************************************************/

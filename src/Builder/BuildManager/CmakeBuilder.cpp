@@ -39,6 +39,10 @@ bool CmakeBuilder::run()
 	auto cwd = Commands::getWorkingDirectory();
 	auto location = fmt::format("{}/{}", cwd, m_target.location());
 	Path::sanitize(location);
+	if (!m_target.buildFile().empty())
+	{
+		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
+	}
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	m_outputLocation = fmt::format("{}/{}/{}", cwd, buildOutputDir, m_target.location());
@@ -152,11 +156,10 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 		ret.push_back(arch);
 	}
 
-	const auto& buildScript = m_target.buildScript();
-	if (!buildScript.empty())
+	if (!m_buildFile.empty())
 	{
 		ret.push_back("-C");
-		ret.push_back(buildScript);
+		ret.push_back(m_buildFile);
 	}
 
 	const auto& toolset = m_target.toolset();

@@ -20,11 +20,15 @@ struct SubChaletTarget final : public IBuildTarget
 	const std::string& location() const noexcept;
 	void setLocation(std::string&& inValue) noexcept;
 
+	const std::string& buildFile() const noexcept;
+	void setBuildFile(std::string&& inValue) noexcept;
+
 	bool recheck() const noexcept;
 	void setRecheck(const bool inValue) noexcept;
 
 private:
 	std::string m_location;
+	std::string m_buildFile;
 
 	bool m_recheck = true;
 };

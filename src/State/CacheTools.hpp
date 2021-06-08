@@ -12,15 +12,19 @@ struct CacheTools
 {
 	CacheTools() = default;
 
+	bool resolveOwnExecutable(const std::string& inAppPath);
+
 	bool fetchVersions();
 
 	void fetchBashVersion();
 	void fetchBrewVersion();
 	void fetchMakeVersion();
-	void fetchCmakeVersion();
+	bool fetchCmakeVersion();
 	void fetchNinjaVersion();
 	void fetchXcodeVersion();
 	void fetchXcodeGenVersion();
+
+	const std::string& chalet() const noexcept;
 
 	const std::string& bash() const noexcept;
 	void setBash(const std::string& inValue) noexcept;
@@ -152,6 +156,8 @@ private:
 	void isolateVersion(std::string& outString);
 
 	std::unordered_map<std::string, std::string> m_applePlatformSdk;
+
+	std::string m_chalet;
 
 	std::string m_bash;
 	std::string m_brew;
