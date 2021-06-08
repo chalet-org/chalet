@@ -105,8 +105,6 @@ bool GitDependency::parseDestination()
 
 	chalet_assert(!m_repository.empty(), "dependency git repository can't be blank.");
 
-	LOG(m_repository);
-
 	if (!String::endsWith(".git", m_repository))
 	{
 		Diagnostic::error("'repository' was found but did not end with '.git'");

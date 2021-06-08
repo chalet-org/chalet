@@ -54,8 +54,6 @@ bool DependencyManager::run(const bool inInstallCmd)
 			return false;
 		}
 
-		LOG(destination);
-
 		destinationCache.push_back(destination);
 
 		bool update = false;
