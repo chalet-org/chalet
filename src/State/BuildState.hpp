@@ -42,6 +42,7 @@ public:
 	SourceFileCache sourceCache;
 
 	bool initialize(const bool inInstallDependencies);
+	void saveCaches();
 
 private:
 	bool parseCacheJson();

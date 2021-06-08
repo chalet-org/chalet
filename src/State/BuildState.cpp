@@ -58,6 +58,13 @@ bool BuildState::initialize(const bool inInstallDependencies)
 }
 
 /*****************************************************************************/
+void BuildState::saveCaches()
+{
+	cache.saveEnvironmentCache();
+	sourceCache.save();
+}
+
+/*****************************************************************************/
 bool BuildState::parseCacheJson()
 {
 	CacheJsonParser parser(m_inputs, *this);

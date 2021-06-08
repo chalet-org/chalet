@@ -27,16 +27,6 @@ Router::Router(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-Router::~Router()
-{
-	if (m_buildState != nullptr)
-	{
-		m_buildState->cache.saveEnvironmentCache();
-		m_buildState->sourceCache.save();
-	}
-}
-
-/*****************************************************************************/
 bool Router::run()
 {
 	const auto& command = m_inputs.command();
@@ -58,6 +48,8 @@ bool Router::run()
 	if (!parseEnvFile())
 		return false;
 
+	std::unique_ptr<BuildState> buildState;
+
 	if (command != Route::Init)
 	{
 		const auto& buildFile = m_inputs.buildFile();
@@ -69,12 +61,12 @@ bool Router::run()
 
 		m_installDependencies = true;
 
-		m_buildState = std::make_unique<BuildState>(m_inputs);
-		if (!m_buildState->initialize(m_installDependencies))
+		buildState = std::make_unique<BuildState>(m_inputs);
+		if (!buildState->initialize(m_installDependencies))
 			return false;
 	}
 
-	if (!managePathVariables(m_buildState.get()))
+	if (!managePathVariables(buildState.get()))
 	{
 		Diagnostic::error("There was an error setting environment variables.");
 		return false;
@@ -85,37 +77,55 @@ bool Router::run()
 		std::cout << fmt::format("generator: '{}'", m_inputs.generatorRaw()) << std::endl;
 	}
 
+	bool result = false;
+
 	if (m_inputs.generator() == IdeType::XCode)
-		return xcodebuildRoute();
-
-	switch (command)
 	{
+		chalet_assert(buildState != nullptr, "");
+		result = xcodebuildRoute(*buildState);
+	}
+	else
+	{
+		switch (command)
+		{
 #if defined(CHALET_DEBUG)
-		case Route::Debug:
-			return cmdDebug();
+			case Route::Debug:
+				result = cmdDebug();
+				break;
 #endif
-		case Route::Bundle: {
-			chalet_assert(m_buildState != nullptr, "");
-			return cmdBundle(*m_buildState);
+			case Route::Bundle: {
+				chalet_assert(buildState != nullptr, "");
+				result = cmdBundle(*buildState);
+				break;
+			}
+
+			case Route::Configure:
+				result = cmdConfigure();
+				break;
+
+			case Route::Init:
+				result = cmdInit();
+				break;
+
+			case Route::BuildRun:
+			case Route::Build:
+			case Route::Rebuild:
+			case Route::Run:
+			case Route::Clean: {
+				chalet_assert(buildState != nullptr, "");
+				result = cmdBuild(*buildState);
+				break;
+			}
+
+			default:
+				break;
 		}
-
-		case Route::Configure:
-			return cmdConfigure();
-
-		case Route::Init:
-			return cmdInit();
-
-		case Route::BuildRun:
-		case Route::Build:
-		case Route::Rebuild:
-		case Route::Run:
-		case Route::Clean:
-		default:
-			break;
 	}
 
-	chalet_assert(m_buildState != nullptr, "");
-	return cmdBuild(*m_buildState);
+	if (buildState != nullptr)
+		buildState->saveCaches();
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -250,20 +260,20 @@ bool Router::parseEnvFile()
 }
 
 /*****************************************************************************/
-bool Router::xcodebuildRoute()
+bool Router::xcodebuildRoute(BuildState& inState)
 {
 #if defined(CHALET_MACOS)
-	chalet_assert(m_buildState != nullptr, "");
 	// Generate an XcodeGen spec in json based on the build state
 	// Run xcodebuild from the command line if possible
 	// This would be a lightweight BuildManager
 
-	std::cout << "brew available: " << m_buildState->tools.brewAvailable() << "\n";
+	std::cout << "brew available: " << inState.tools.brewAvailable() << "\n";
 
 	// rm -rf build/Chalet.xcodeproj && xcodegen -s xcode-project.json -p build --use-cache
 
 	return true;
 #else
+	UNUSED(inState);
 	Diagnostic::error("Xcode project generation (-g xcode) is only available on MacOS");
 	return false;
 #endif

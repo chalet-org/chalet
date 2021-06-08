@@ -20,7 +20,6 @@ class Router
 
 public:
 	explicit Router(const CommandLineInputs& inInputs);
-	~Router();
 
 	bool run();
 
@@ -35,13 +34,11 @@ private:
 #endif
 
 	bool parseEnvFile();
-	bool xcodebuildRoute();
+	bool xcodebuildRoute(BuildState& inState);
 
 	bool managePathVariables(const BuildState* inState);
 
 	const CommandLineInputs& m_inputs;
-
-	std::unique_ptr<BuildState> m_buildState;
 
 	bool m_installDependencies = false;
 };
