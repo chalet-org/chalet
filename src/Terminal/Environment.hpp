@@ -23,6 +23,7 @@ struct Environment
 	static bool parseVariablesFromFile(const std::string& inFile);
 
 	static std::string getPath();
+	static const char* getPathKey();
 	static void setPath(const std::string& inValue);
 
 	static std::string getUserDirectory();

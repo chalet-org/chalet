@@ -507,6 +507,16 @@ bool Environment::parseVariablesFromFile(const std::string& inFile)
 }
 
 /*****************************************************************************/
+const char* Environment::getPathKey()
+{
+#if defined(CHALET_WIN32)
+	return "Path";
+#else
+	return "PATH";
+#endif
+}
+
+/*****************************************************************************/
 std::string Environment::getPath()
 {
 	auto path = Environment::get("PATH");
@@ -529,11 +539,7 @@ std::string Environment::getPath()
 /*****************************************************************************/
 void Environment::setPath(const std::string& inValue)
 {
-#if defined(CHALET_WIN32)
-	Environment::set("Path", inValue.c_str());
-#else
-	Environment::set("PATH", inValue.c_str());
-#endif
+	Environment::set(Environment::getPathKey(), inValue.c_str());
 }
 
 /*****************************************************************************/

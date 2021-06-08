@@ -5,7 +5,9 @@
 
 #include "State/Target/SubChaletTarget.hpp"
 
+#include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
+#include "Terminal/Commands.hpp"
 
 namespace chalet
 {
@@ -25,7 +27,16 @@ void SubChaletTarget::initialize()
 /*****************************************************************************/
 bool SubChaletTarget::validate()
 {
-	return true;
+	const auto& targetName = this->name();
+
+	bool result = true;
+	if (!Commands::pathExists(m_location))
+	{
+		Diagnostic::error(fmt::format("location for Chalet target '{}' doesn't exist: {}", targetName, m_location));
+		result = false;
+	}
+
+	return result;
 }
 
 /*****************************************************************************/

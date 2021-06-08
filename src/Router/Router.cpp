@@ -88,10 +88,13 @@ bool Router::run()
 		if (!parseBuildJson(buildFile))
 			return false;
 
-		if (!m_buildState->validateState())
+		if (!installDependencies(command))
 			return false;
 
 		if (!m_buildState->initializeBuild())
+			return false;
+
+		if (!m_buildState->validateState())
 			return false;
 	}
 
@@ -115,9 +118,6 @@ bool Router::run()
 /*****************************************************************************/
 bool Router::cmdConfigure()
 {
-	if (!installDependencies())
-		return false;
-
 	// TODO: pass command to installDependencies & recheck them
 	Output::msgBuildSuccess();
 	return true;
@@ -127,9 +127,6 @@ bool Router::cmdConfigure()
 bool Router::cmdBuild()
 {
 	chalet_assert(m_buildState != nullptr, "");
-
-	if (!installDependencies())
-		return false;
 
 	if (!m_buildState->cache.createCacheFolder(BuildCache::Type::Local))
 	{
@@ -271,8 +268,11 @@ bool Router::parseBuildJson(const std::string& inFile)
 }
 
 /*****************************************************************************/
-bool Router::installDependencies()
+bool Router::installDependencies(const Route inRoute)
 {
+	if (inRoute == Route::Init)
+		return true;
+
 	chalet_assert(m_buildState != nullptr, "");
 
 	const auto& command = m_inputs.command();

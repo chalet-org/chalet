@@ -56,7 +56,17 @@ void ProjectTarget::initialize()
 /*****************************************************************************/
 bool ProjectTarget::validate()
 {
+	const auto& targetName = this->name();
 	bool result = true;
+	for (auto& location : m_locations)
+	{
+		if (!Commands::pathExists(location) && !String::equals(m_state.paths.intermediateDir(), location))
+		{
+			Diagnostic::error(fmt::format("location for project target '{}' doesn't exist: {}", targetName, location));
+			result = false;
+		}
+	}
+
 	for (auto& option : m_compileOptions)
 	{
 		if (String::equals(option.substr(0, 2), "-W"))

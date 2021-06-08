@@ -46,7 +46,6 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 		const auto& repository = git.repository();
 		const auto& destination = git.destination();
-		destinationCache.push_back(destination);
 
 		if (destination.empty() || String::startsWith('.', destination) || String::startsWith('/', destination))
 		{
@@ -54,6 +53,10 @@ bool DependencyManager::run(const bool inInstallCmd)
 			Diagnostic::error(fmt::format("The external dependency destination was blank for '{}'.", repository));
 			return false;
 		}
+
+		LOG(destination);
+
+		destinationCache.push_back(destination);
 
 		bool update = false;
 

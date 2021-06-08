@@ -353,6 +353,7 @@ bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 	for (auto& [name, dependencyJson] : externalDependencies.items())
 	{
 		auto dependency = IBuildDependency::make(type, m_state);
+		LOG(name);
 		dependency->setName(name);
 
 		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))

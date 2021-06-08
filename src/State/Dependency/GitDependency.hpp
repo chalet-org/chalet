@@ -38,7 +38,6 @@ private:
 	std::string m_branch;
 	std::string m_tag;
 	std::string m_commit;
-	std::string m_name;
 	std::string m_destination;
 
 	bool m_submodules = false;

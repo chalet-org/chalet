@@ -95,13 +95,17 @@ bool GitDependency::parseDestination()
 	const auto& externalDepDir = m_state.paths.externalDepDir();
 	chalet_assert(!externalDepDir.empty(), "externalDepDir can't be blank.");
 
-	if (!m_name.empty())
+	auto& targetName = this->name();
+
+	if (!targetName.empty())
 	{
-		m_destination = fmt::format("{}/{}", externalDepDir, m_name);
+		m_destination = fmt::format("{}/{}", externalDepDir, targetName);
 		return true;
 	}
 
 	chalet_assert(!m_repository.empty(), "dependency git repository can't be blank.");
+
+	LOG(m_repository);
 
 	if (!String::endsWith(".git", m_repository))
 	{

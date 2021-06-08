@@ -21,7 +21,7 @@ public:
 private:
 	const BuildState& m_state;
 	const SubChaletTarget& m_target;
-	const std::string& m_chaletExecutable;
+	std::string m_chaletExecutable;
 
 	std::string m_outputLocation;
 

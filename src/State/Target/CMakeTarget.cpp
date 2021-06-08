@@ -5,7 +5,9 @@
 
 #include "State/Target/CMakeTarget.hpp"
 
+#include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 
 namespace chalet
@@ -28,7 +30,14 @@ void CMakeTarget::initialize()
 /*****************************************************************************/
 bool CMakeTarget::validate()
 {
+	const auto& targetName = this->name();
+
 	bool result = true;
+	if (!Commands::pathExists(m_location))
+	{
+		Diagnostic::error(fmt::format("location for CMake target '{}' doesn't exist: {}", targetName, m_location));
+		result = false;
+	}
 
 	if (!m_state.tools.cmakeAvailable())
 	{
