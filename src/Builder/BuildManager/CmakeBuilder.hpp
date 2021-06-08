@@ -6,11 +6,11 @@
 #ifndef CHALET_CMAKE_BUILDER_HPP
 #define CHALET_CMAKE_BUILDER_HPP
 
-#include "State/BuildState.hpp"
-#include "State/Target/CMakeTarget.hpp"
-
 namespace chalet
 {
+class BuildState;
+struct CMakeTarget;
+
 class CmakeBuilder
 {
 public:

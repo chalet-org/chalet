@@ -8,9 +8,15 @@
 #include "Builder/BuildManager/CmakeBuilder.hpp"
 #include "Builder/BuildManager/ProfilerRunner.hpp"
 #include "Builder/BuildManager/ScriptRunner.hpp"
+#include "Builder/BuildManager/SubChaletBuilder.hpp"
 #include "Router/Route.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+
+#include "State/Target/CMakeTarget.hpp"
+#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/ScriptTarget.hpp"
+#include "State/Target/SubChaletTarget.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
@@ -106,7 +112,12 @@ bool BuildManager::run(const Route inRoute)
 				continue;
 		}
 
-		if (target->isCMake())
+		if (target->isSubChalet())
+		{
+			if (!runSubChaletTarget(static_cast<const SubChaletTarget&>(*target)))
+				return false;
+		}
+		else if (target->isCMake())
 		{
 			if (!runCMakeTarget(static_cast<const CMakeTarget&>(*target)))
 				return false;
@@ -600,6 +611,23 @@ bool BuildManager::cmdClean()
 
 	return true;
 }*/
+
+/*****************************************************************************/
+bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
+{
+	Timer buildTimer;
+
+	SubChaletBuilder subChalet(m_state, inTarget, m_inputs.appPath(), m_cleanOutput);
+	if (!subChalet.run())
+		return false;
+
+	auto result = buildTimer.stop();
+
+	Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
+	Output::lineBreak();
+
+	return true;
+}
 
 /*****************************************************************************/
 bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)

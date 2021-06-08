@@ -12,6 +12,7 @@ enum class BuildTargetType
 {
 	Project,
 	Script,
+	SubChalet,
 	CMake,
 	//
 	DistributionBundle

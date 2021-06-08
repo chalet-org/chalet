@@ -10,13 +10,15 @@
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Router/Route.hpp"
 #include "State/BuildState.hpp"
-#include "State/Target/CMakeTarget.hpp"
-#include "State/Target/ProjectTarget.hpp"
-#include "State/Target/ScriptTarget.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
 {
+struct SubChaletTarget;
+struct CMakeTarget;
+struct ProjectTarget;
+struct ScriptTarget;
+
 class BuildManager
 {
 	using BuildAction = std::function<bool(BuildManager&, const ProjectTarget& inTarget)>;
@@ -47,6 +49,7 @@ private:
 	// bool cmdProfile();
 
 	bool runScriptTarget(const ScriptTarget& inScript);
+	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
 	std::string getRunProject();
 	bool createAppBundle();

@@ -160,8 +160,13 @@ bool DependencyManager::run(const bool inInstallCmd)
 			cmd.push_back(m_state.tools.git());
 			cmd.push_back("clone");
 			cmd.push_back("--quiet");
-			cmd.push_back("-b");
-			cmd.push_back(checkoutTo);
+
+			if (!checkoutTo.empty())
+			{
+				cmd.push_back("-b");
+				cmd.push_back(checkoutTo);
+			}
+
 			if (commitValid)
 			{
 				cmd.push_back("--single-branch");

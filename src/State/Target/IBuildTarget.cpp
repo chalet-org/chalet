@@ -10,6 +10,7 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptTarget.hpp"
+#include "State/Target/SubChaletTarget.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -29,6 +30,8 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 			return std::make_unique<ProjectTarget>(inState);
 		case BuildTargetType::Script:
 			return std::make_unique<ScriptTarget>(inState);
+		case BuildTargetType::SubChalet:
+			return std::make_unique<SubChaletTarget>(inState);
 		case BuildTargetType::CMake:
 			return std::make_unique<CMakeTarget>(inState);
 		case BuildTargetType::DistributionBundle:
@@ -49,6 +52,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 			return std::make_unique<BundleTarget>(inState);
 		case BuildTargetType::Script:
 			return std::make_unique<ScriptTarget>(inState);
+		case BuildTargetType::SubChalet:
 		case BuildTargetType::CMake:
 		case BuildTargetType::Project:
 		default:
@@ -71,6 +75,10 @@ bool IBuildTarget::isProject() const noexcept
 bool IBuildTarget::isScript() const noexcept
 {
 	return m_type == BuildTargetType::Script;
+}
+bool IBuildTarget::isSubChalet() const noexcept
+{
+	return m_type == BuildTargetType::SubChalet;
 }
 bool IBuildTarget::isCMake() const noexcept
 {

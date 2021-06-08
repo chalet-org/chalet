@@ -35,7 +35,7 @@ struct GitDependency : public IBuildDependency
 
 private:
 	std::string m_repository;
-	std::string m_branch{ "master" };
+	std::string m_branch;
 	std::string m_tag;
 	std::string m_commit;
 	std::string m_name;

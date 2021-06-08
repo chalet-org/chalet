@@ -6,6 +6,8 @@
 #include "Builder/BuildManager/CmakeBuilder.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/BuildState.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
@@ -27,9 +29,9 @@ CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarge
 bool CmakeBuilder::run()
 {
 	const auto& name = m_target.name();
-	// TODO: add doxygen to path?
-
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
+
+	// TODO: add doxygen to path?
 
 	Output::msgBuild(buildConfiguration, name);
 	Output::lineBreak();
@@ -67,7 +69,7 @@ bool CmakeBuilder::run()
 	}
 
 	//
-	Output::msgTargetUpToDate(m_state.targets.size() > 1, m_target.name());
+	Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
 
 	return true;
 }

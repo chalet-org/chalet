@@ -11,6 +11,11 @@
 #include "State/Bundle/BundleMacOS.hpp"
 #include "State/Bundle/BundleWindows.hpp"
 #include "State/Dependency/BuildDependencyType.hpp"
+#include "State/Target/BundleTarget.hpp"
+#include "State/Target/CMakeTarget.hpp"
+#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/ScriptTarget.hpp"
+#include "State/Target/SubChaletTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -489,9 +494,18 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			type = BuildTargetType::Script;
 		}
-		else if (targetJson.contains("cmake"))
+		else if (targetJson.contains("type"))
 		{
-			type = BuildTargetType::CMake;
+			std::string val;
+			m_buildJson->assignFromKey(val, targetJson, "type");
+			if (String::equals("CMake", val))
+			{
+				type = BuildTargetType::CMake;
+			}
+			else if (String::equals("Chalet", val))
+			{
+				type = BuildTargetType::SubChalet;
+			}
 		}
 
 		BuildTarget target;
@@ -515,7 +529,15 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (!parseScript(static_cast<ScriptTarget&>(*target), targetJson))
 			{
-				Diagnostic::error(fmt::format("{}: Error parsing the '{}' script.", m_filename, name));
+				Diagnostic::error(fmt::format("{}: Error parsing the '{}' script target.", m_filename, name));
+				return false;
+			}
+		}
+		else if (target->isSubChalet())
+		{
+			if (!parseSubChaletTarget(static_cast<SubChaletTarget&>(*target), targetJson))
+			{
+				Diagnostic::error(fmt::format("{}: Error parsing the '{}' target of type 'Chalet'.", m_filename, name));
 				return false;
 			}
 		}
@@ -523,7 +545,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (!parseCMakeProject(static_cast<CMakeTarget&>(*target), targetJson))
 			{
-				Diagnostic::error(fmt::format("{}: Error parsing the '{}' cmake project.", m_filename, name));
+				Diagnostic::error(fmt::format("{}: Error parsing the '{}' target of type 'CMake'.", m_filename, name));
 				return false;
 			}
 		}
@@ -531,7 +553,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (!parseProject(static_cast<ProjectTarget&>(*target), targetJson))
 			{
-				Diagnostic::error(fmt::format("{}: Error parsing the '{}' project.", m_filename, name));
+				Diagnostic::error(fmt::format("{}: Error parsing the '{}' project target.", m_filename, name));
 				return false;
 			}
 		}
@@ -632,6 +654,26 @@ bool BuildJsonParser::parseScript(ScriptTarget& outScript, const Json& inNode)
 
 	// if (!parsePlatformConfigExclusions(outProject, inNode))
 	// 	return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode)
+{
+	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "location"))
+		outProject.setLocation(std::move(val));
+	else
+		return false;
+
+	if (bool val = false; m_buildJson->assignFromKey(val, inNode, "recheck"))
+		outProject.setRecheck(val);
+
+	if (std::string val; assignStringFromConfig(val, inNode, "description"))
+		outProject.setDescription(val);
+
+	if (!parsePlatformConfigExclusions(outProject, inNode))
+		return false;
 
 	return true;
 }

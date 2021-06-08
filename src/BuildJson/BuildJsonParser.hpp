@@ -11,14 +11,15 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "State/Dependency/GitDependency.hpp"
-#include "State/Target/BundleTarget.hpp"
-#include "State/Target/CMakeTarget.hpp"
-#include "State/Target/ProjectTarget.hpp"
-#include "State/Target/ScriptTarget.hpp"
 
 namespace chalet
 {
 struct JsonFile;
+struct BundleTarget;
+struct CMakeTarget;
+struct ProjectTarget;
+struct ScriptTarget;
+struct SubChaletTarget;
 
 struct BuildJsonParser
 {
@@ -44,6 +45,7 @@ private:
 	bool parseProjects(const Json& inNode);
 	bool parseProject(ProjectTarget& outProject, const Json& inNode, const bool inAbstract = false);
 	bool parseScript(ScriptTarget& outScript, const Json& inNode);
+	bool parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode);
 	bool parseCMakeProject(CMakeTarget& outProject, const Json& inNode);
 	bool parsePlatformConfigExclusions(IBuildTarget& outProject, const Json& inNode);
 	bool parseCompilerSettingsCxx(ProjectTarget& outProject, const Json& inNode);

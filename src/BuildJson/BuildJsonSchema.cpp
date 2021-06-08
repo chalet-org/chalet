@@ -285,8 +285,7 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["externalDependency-branch"] = R"json({
 		"type": "string",
-		"description": "The branch to checkout. Defaults to 'master'",
-		"default": "master"
+		"description": "The branch to checkout. Uses the repository's default if not set."
 	})json"_ojson;
 
 	ret[kDefinitions]["externalDependency-commit"] = R"json({
@@ -1284,10 +1283,10 @@ Json Schema::getBuildJson()
 		"$ref": "#/definitions/target-description"
 	})json"_ojson;
 
-	ret[kDefinitions]["target-cmake-cmake"] = R"json({
-		"type": "boolean",
-		"description": "true of Cmake project.",
-		"default": true
+	ret[kDefinitions]["target-type"] = R"json({
+		"type": "string",
+		"description": "The target type, if not a local project or script.",
+		"enum": ["CMake", "Chalet"]
 	})json"_ojson;
 
 	ret[kDefinitions]["target-cmake-location"] = R"json({
@@ -1297,7 +1296,7 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["target-cmake-buildScript"] = R"json({
 		"type": "string",
-		"description": "Pre-load a script to populate the cache. (-C)"
+		"description": "The root script to use, if not CMakeLists.txt. (-C)"
 	})json"_ojson;
 
 	ret[kDefinitions]["target-cmake-defines"] = R"json({
@@ -1311,7 +1310,7 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["target-cmake-recheck"] = R"json({
 		"type": "boolean",
-		"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
+		"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't build each time), so it defaults to false.",
 		"default": false
 	})json"_ojson;
 
@@ -1324,7 +1323,7 @@ Json Schema::getBuildJson()
 		"type": "object",
 		"additionalProperties": false,
 		"required": [
-			"cmake",
+			"type",
 			"location"
 		],
 		"description": "Build the location with cmake",
@@ -1338,9 +1337,6 @@ Json Schema::getBuildJson()
 			"buildScript": {
 				"$ref": "#/definitions/target-cmake-buildScript"
 			},
-			"cmake": {
-				"$ref": "#/definitions/target-cmake-cmake"
-			},
 			"defines": {
 				"$ref": "#/definitions/target-cmake-defines"
 			},
@@ -1349,6 +1345,9 @@ Json Schema::getBuildJson()
 			},
 			"recheck": {
 				"$ref": "#/definitions/target-cmake-recheck"
+			},
+			"type": {
+				"$ref": "#/definitions/target-type"
 			},
 			"onlyInConfiguration": {
 				"$ref": "#/definitions/target-onlyInConfiguration"
@@ -1375,6 +1374,56 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^toolset{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"$ref": "#/definitions/target-cmake-toolset"
+	})json"_ojson;
+
+	ret[kDefinitions]["target-chalet-location"] = R"json({
+		"type": "string",
+		"description": "The location of the root build.json for the project."
+	})json"_ojson;
+
+	ret[kDefinitions]["target-chalet-recheck"] = R"json({
+		"type": "boolean",
+		"description": "If true, Chalet will be invoked each time during the build. This might not be desirable (a library that doesn't build each time), so it defaults to false.",
+		"default": false
+	})json"_ojson;
+
+	ret[kDefinitions]["target-chalet"] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"required": [
+			"type",
+			"location"
+		],
+		"description": "Build the location with cmake",
+		"properties": {
+			"description": {
+				"$ref": "#/definitions/target-description"
+			},
+			"location": {
+				"$ref": "#/definitions/target-chalet-location"
+			},
+			"recheck": {
+				"$ref": "#/definitions/target-chalet-recheck"
+			},
+			"type": {
+				"$ref": "#/definitions/target-type"
+			},
+			"onlyInConfiguration": {
+				"$ref": "#/definitions/target-onlyInConfiguration"
+			},
+			"notInConfiguration": {
+				"$ref": "#/definitions/target-notInConfiguration"
+			},
+			"onlyInPlatform": {
+				"$ref": "#/definitions/target-onlyInPlatform"
+			},
+			"notInPlatform": {
+				"$ref": "#/definitions/target-notInPlatform"
+			}
+		}
+	})json"_ojson;
+	ret[kDefinitions]["target-chalet"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+		"$ref": "#/definitions/target-description"
 	})json"_ojson;
 
 	//
@@ -1487,10 +1536,33 @@ Json Schema::getBuildJson()
 				"$ref": "#/definitions/target-project"
 			},
 			{
-				"$ref": "#/definitions/target-cmake"
+				"$ref": "#/definitions/target-script"
 			},
 			{
-				"$ref": "#/definitions/target-script"
+				"type": "object",
+				"properties": {
+					"type": {
+						"$ref": "#/definitions/target-type"
+					}
+				},
+				 "allOf": [
+					{
+						"if": {
+							"properties": { "type": { "const": "CMake" } }
+						},
+						"then": {
+							"$ref": "#/definitions/target-cmake"
+						}
+					},
+					{
+						"if": {
+							"properties": { "type": { "const": "Chalet" } }
+						},
+						"then": {
+							"$ref": "#/definitions/target-chalet"
+						}
+					}
+				]
 			}
 		]
 	})json"_ojson;

@@ -240,8 +240,7 @@
 		},
 		"externalDependency-branch": {
 			"type": "string",
-			"description": "The branch to checkout. Defaults to 'master'",
-			"default": "master"
+			"description": "The branch to checkout. Uses the repository's default if not set."
 		},
 		"externalDependency-commit": {
 			"type": "string",
@@ -1192,10 +1191,13 @@
 				}
 			}
 		},
-		"target-cmake-cmake": {
-			"type": "boolean",
-			"description": "true of Cmake project.",
-			"default": true
+		"target-type": {
+			"type": "string",
+			"description": "The target type, if not a local project or script.",
+			"enum": [
+				"CMake",
+				"Chalet"
+			]
 		},
 		"target-cmake-location": {
 			"type": "string",
@@ -1203,7 +1205,7 @@
 		},
 		"target-cmake-buildScript": {
 			"type": "string",
-			"description": "Pre-load a script to populate the cache. (-C)"
+			"description": "The root script to use, if not CMakeLists.txt. (-C)"
 		},
 		"target-cmake-defines": {
 			"type": "array",
@@ -1215,7 +1217,7 @@
 		},
 		"target-cmake-recheck": {
 			"type": "boolean",
-			"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't get built each time), so it defaults to false.",
+			"description": "If true, CMake will be invoked each time during the build. This might not be desirable (a library that doesn't build each time), so it defaults to false.",
 			"default": false
 		},
 		"target-cmake-toolset": {
@@ -1226,7 +1228,7 @@
 			"type": "object",
 			"additionalProperties": false,
 			"required": [
-				"cmake",
+				"type",
 				"location"
 			],
 			"description": "Build the location with cmake",
@@ -1240,9 +1242,6 @@
 				"buildScript": {
 					"$ref": "#/definitions/target-cmake-buildScript"
 				},
-				"cmake": {
-					"$ref": "#/definitions/target-cmake-cmake"
-				},
 				"defines": {
 					"$ref": "#/definitions/target-cmake-defines"
 				},
@@ -1251,6 +1250,9 @@
 				},
 				"recheck": {
 					"$ref": "#/definitions/target-cmake-recheck"
+				},
+				"type": {
+					"$ref": "#/definitions/target-type"
 				},
 				"onlyInConfiguration": {
 					"$ref": "#/definitions/target-onlyInConfiguration"
@@ -1277,6 +1279,55 @@
 				},
 				"^toolset(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 					"$ref": "#/definitions/target-cmake-toolset"
+				}
+			}
+		},
+		"target-chalet-location": {
+			"type": "string",
+			"description": "The location of the root build.json for the project."
+		},
+		"target-chalet-recheck": {
+			"type": "boolean",
+			"description": "If true, Chalet will be invoked each time during the build. This might not be desirable (a library that doesn't build each time), so it defaults to false.",
+			"default": false
+		},
+		"target-chalet": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"type",
+				"location"
+			],
+			"description": "Build the location with cmake",
+			"properties": {
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"location": {
+					"$ref": "#/definitions/target-chalet-location"
+				},
+				"recheck": {
+					"$ref": "#/definitions/target-chalet-recheck"
+				},
+				"type": {
+					"$ref": "#/definitions/target-type"
+				},
+				"onlyInConfiguration": {
+					"$ref": "#/definitions/target-onlyInConfiguration"
+				},
+				"notInConfiguration": {
+					"$ref": "#/definitions/target-notInConfiguration"
+				},
+				"onlyInPlatform": {
+					"$ref": "#/definitions/target-onlyInPlatform"
+				},
+				"notInPlatform": {
+					"$ref": "#/definitions/target-notInPlatform"
+				}
+			},
+			"patternProperties": {
+				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-description"
 				}
 			}
 		}
@@ -1382,10 +1433,41 @@
 							"$ref": "#/definitions/target-project"
 						},
 						{
-							"$ref": "#/definitions/target-cmake"
+							"$ref": "#/definitions/target-script"
 						},
 						{
-							"$ref": "#/definitions/target-script"
+							"type": "object",
+							"properties": {
+								"type": {
+									"$ref": "#/definitions/target-type"
+								}
+							},
+							"allOf": [
+								{
+									"if": {
+										"properties": {
+											"type": {
+												"const": "CMake"
+											}
+										}
+									},
+									"then": {
+										"$ref": "#/definitions/target-cmake"
+									}
+								},
+								{
+									"if": {
+										"properties": {
+											"type": {
+												"const": "Chalet"
+											}
+										}
+									},
+									"then": {
+										"$ref": "#/definitions/target-chalet"
+									}
+								}
+							]
 						}
 					]
 				}

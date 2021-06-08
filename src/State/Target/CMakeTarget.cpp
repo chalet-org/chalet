@@ -6,7 +6,6 @@
 #include "State/Target/CMakeTarget.hpp"
 
 #include "State/BuildState.hpp"
-#include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 
 namespace chalet

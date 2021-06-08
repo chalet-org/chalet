@@ -30,6 +30,7 @@ struct IBuildTarget
 	BuildTargetType type() const noexcept;
 	bool isProject() const noexcept;
 	bool isScript() const noexcept;
+	bool isSubChalet() const noexcept;
 	bool isCMake() const noexcept;
 	bool isDistributionBundle() const noexcept;
 
