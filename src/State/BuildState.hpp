@@ -7,6 +7,7 @@
 #define CHALET_BUILD_STATE_HPP
 
 #include "Core/CommandLineInputs.hpp"
+#include "Router/Route.hpp"
 #include "State/BuildCache.hpp"
 #include "State/BuildEnvironment.hpp"
 #include "State/BuildPaths.hpp"
@@ -42,6 +43,8 @@ public:
 	SourceFileCache sourceCache;
 
 	bool initialize(const bool inInstallDependencies);
+	bool doBuild();
+	bool doBuild(const Route inRoute);
 	void saveCaches();
 
 private:

@@ -6,6 +6,7 @@
 #include "State/BuildState.hpp"
 
 #include "BuildJson/BuildJsonParser.hpp"
+#include "Builder/BuildManager.hpp"
 #include "CacheJson/CacheJsonParser.hpp"
 #include "Dependencies/DependencyManager.hpp"
 #include "Libraries/Format.hpp"
@@ -55,6 +56,19 @@ bool BuildState::initialize(const bool inInstallDependencies)
 		return false;
 
 	return true;
+}
+
+/*****************************************************************************/
+bool BuildState::doBuild()
+{
+	BuildManager mgr(m_inputs, *this);
+	return mgr.run(m_inputs.command());
+}
+
+bool BuildState::doBuild(const Route inRoute)
+{
+	BuildManager mgr(m_inputs, *this);
+	return mgr.run(inRoute);
 }
 
 /*****************************************************************************/

@@ -5,8 +5,8 @@
 
 #include "Router/Router.hpp"
 
-#include "Builder/BuildManager.hpp"
 #include "Bundler/AppBundler.hpp"
+#include "Bundler/UniversalBinaryMacOS.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 #include "Libraries/Format.hpp"
@@ -147,10 +147,7 @@ bool Router::cmdBuild(BuildState& inState)
 		return false;
 	}
 
-	const auto& command = m_inputs.command();
-
-	BuildManager mgr{ m_inputs, inState };
-	return mgr.run(command);
+	return inState.doBuild();
 }
 
 /*****************************************************************************/
@@ -183,7 +180,7 @@ bool Router::cmdBundle(BuildState& inState)
 
 	if (universalBinary)
 	{
-		if (!buildOppositeMacosArchitecture(inState))
+		if (!bundleUniversalBinary(inState))
 			return false;
 	}
 	else
@@ -305,111 +302,11 @@ bool Router::xcodebuildRoute(BuildState& inState)
 }
 
 /*****************************************************************************/
-bool Router::buildOppositeMacosArchitecture(BuildState& inState)
+bool Router::bundleUniversalBinary(BuildState& inState)
 {
 #if defined(CHALET_MACOS)
-	// TODO: Separate this into a class
-	if (inState.tools.lipo().empty())
-	{
-		Diagnostic::error("The tool 'lipo' was not found in PATH, but is required for universal bundles.");
-		return false;
-	}
-
-	auto arch = inState.info.targetArchitectureString();
-	if (String::startsWith("x86_64-", arch))
-		String::replaceAll(arch, "x86_64-", "arm64-");
-	else
-		String::replaceAll(arch, "arm64-", "x86_64-");
-
-	CommandLineInputs inputs = m_inputs;
-	inputs.setTargetArchitecture(std::move(arch));
-
-	auto buildState = std::make_unique<BuildState>(inputs);
-	if (!buildState->initialize(m_installDependencies))
-		return false;
-
-	if (!cmdBuild(*buildState))
-		return false;
-
-	auto quiet = Output::quietNonBuild();
-	Output::setQuietNonBuild(true);
-
-	auto archUniversal = inState.info.targetArchitectureString();
-	if (String::startsWith("x86_64-", archUniversal))
-		String::replaceAll(archUniversal, "x86_64-", "universal-");
-	else
-		String::replaceAll(archUniversal, "arm64-", "universal-");
-
-	CommandLineInputs inputsUniversal = m_inputs;
-	inputsUniversal.setTargetArchitecture(std::move(archUniversal));
-
-	auto buildStateUniversal = std::make_unique<BuildState>(inputsUniversal);
-	if (!buildStateUniversal->initialize(m_installDependencies))
-		return false;
-
-	Output::setQuietNonBuild(quiet);
-
-	auto getProjectFiles = [](BuildState& inBuildState) -> StringList {
-		StringList ret;
-
-		auto& buildOutputDir = inBuildState.paths.buildOutputDir();
-		for (auto& target : inBuildState.targets)
-		{
-			if (target->isProject())
-			{
-				auto& project = static_cast<ProjectTarget&>(*target);
-				if (project.isStaticLibrary())
-					continue;
-
-				ret.push_back(fmt::format("{}/{}", buildOutputDir, project.outputFile()));
-			}
-		}
-
-		return ret;
-	};
-
-	StringList outputFilesA = getProjectFiles(inState);
-	StringList outputFilesB = getProjectFiles(*buildState);
-	StringList outputFilesUniversal = getProjectFiles(*buildStateUniversal);
-
-	chalet_assert(outputFilesA.size() == outputFilesB.size() && outputFilesA.size() == outputFilesUniversal.size(), "");
-
-	auto& universalBuildDir = buildStateUniversal->paths.buildOutputDir();
-	if (!Commands::pathExists(universalBuildDir))
-	{
-		if (!Commands::makeDirectory(universalBuildDir))
-		{
-			Diagnostic::error(fmt::format("There was an error creating the directory: {}", universalBuildDir));
-			return false;
-		}
-	}
-
-	for (std::size_t i = 0; i < outputFilesA.size(); ++i)
-	{
-		auto& fileArchA = outputFilesA[i];
-		auto& fileArchB = outputFilesB[i];
-		auto& fileUniversal = outputFilesUniversal[i];
-
-		// LOG(fileArchA, fileArchB, fileUniversal);
-
-		if (!Commands::subprocess({ inState.tools.lipo(), "-create", "-output", fileUniversal, std::move(fileArchA), std::move(fileArchB) }))
-		{
-			Diagnostic::error(fmt::format("There was an error making the binary: {}", fileUniversal));
-			return false;
-		}
-	}
-
-	// lipo -create -output universal-apple-darwin_Release/chalet x86_64-apple-darwin_Release/chalet  arm64-apple-darwin_Release/chalet
-
-	AppBundler bundler;
-	const auto& buildFile = inputsUniversal.buildFile();
-	for (auto& target : buildStateUniversal->distribution)
-	{
-		if (!bundler.run(target, *buildStateUniversal, buildFile))
-			return false;
-	}
-
-	return true;
+	UniversalBinaryMacOS uniBinaryBuilder(m_inputs, inState);
+	return uniBinaryBuilder.run(m_installDependencies);
 #else
 	UNUSED(inState);
 	return false;
