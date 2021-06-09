@@ -176,7 +176,8 @@
 					"CFBundleIconFile": "${icon}",
 					"NSHighResolutionCapable": true
 				},
-				"makeDmg": false,
+				"universalBinary": true,
+				"makeDmg": true,
 				"dmgBackground": {
 					"1x": "platform/osx/dmg-background.png",
 					"2x": "platform/osx/dmg-background@2x.png"

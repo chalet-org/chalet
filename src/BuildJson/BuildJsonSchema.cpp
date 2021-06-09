@@ -189,6 +189,11 @@ Json Schema::getBuildJson()
 					}
 				]
 			},
+			"universalBinary": {
+				"type": "boolean",
+				"description": "If true, the project will be built in both x64 and arm64, and combined into universal binaries before being bundled.",
+				"default": false
+			},
 			"makeDmg": {
 				"type": "boolean",
 				"description": "If true, a .dmg image will be built",

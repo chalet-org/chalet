@@ -63,6 +63,11 @@
 			"description": "The executable path to ldd.",
 			"default": "/usr/bin/ldd"
 		},
+		"tools-lipo": {
+			"type": "string",
+			"description": "The executable path to Apple's lipo utility (MacOS)",
+			"default": "/usr/bin/lipo"
+		},
 		"tools-lua": {
 			"type": "string",
 			"description": "The executable path to Lua",
@@ -218,6 +223,7 @@
 				"install_name_tool",
 				"instruments",
 				"ldd",
+				"lipo",
 				"lua",
 				"make",
 				"ninja",
@@ -270,6 +276,9 @@
 				},
 				"ldd": {
 					"$ref": "#/definitions/tools-ldd"
+				},
+				"lipo": {
+					"$ref": "#/definitions/tools-lipo"
 				},
 				"lua": {
 					"$ref": "#/definitions/tools-lua"

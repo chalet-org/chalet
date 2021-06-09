@@ -60,6 +60,9 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 	if (!initializeCompilerConfigs(inTargets))
 		return false;
 
+	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalArm64_X64)
+		return true;
+
 	if (m_detectedToolchain == ToolchainType::LLVM)
 	{
 		auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });

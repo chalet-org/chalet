@@ -13,6 +13,9 @@ struct Arch
 		X86,
 		ARM,
 		ARM64,
+#if defined(CHALET_MACOS)
+		UniversalArm64_X64
+#endif
 	};
 
 	std::string str;

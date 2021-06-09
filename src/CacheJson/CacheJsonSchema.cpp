@@ -96,6 +96,12 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/ldd"
 	})json"_ojson;
 
+	ret[kDefinitions]["tools-lipo"] = R"json({
+		"type": "string",
+		"description": "The executable path to Apple's lipo utility (MacOS)",
+		"default": "/usr/bin/lipo"
+	})json"_ojson;
+
 	ret[kDefinitions]["tools-lua"] = R"json({
 		"type": "string",
 		"description": "The executable path to Lua",
@@ -296,6 +302,7 @@ Json Schema::getCacheJson()
 			"install_name_tool",
 			"instruments",
 			"ldd",
+			"lipo",
 			"lua",
 			"make",
 			"ninja",
@@ -348,6 +355,9 @@ Json Schema::getCacheJson()
 			},
 			"ldd": {
 				"$ref": "#/definitions/tools-ldd"
+			},
+			"lipo": {
+				"$ref": "#/definitions/tools-lipo"
 			},
 			"lua": {
 				"$ref": "#/definitions/tools-lua"

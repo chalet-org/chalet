@@ -35,6 +35,7 @@ private:
 
 	bool parseEnvFile();
 	bool xcodebuildRoute(BuildState& inState);
+	bool buildOppositeMacosArchitecture(BuildState& inState);
 
 	bool managePathVariables(const BuildState* inState);
 

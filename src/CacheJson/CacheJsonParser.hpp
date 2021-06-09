@@ -72,6 +72,7 @@ private:
 	const std::string kKeyInstallNameTool = "install_name_tool";
 	const std::string kKeyInstruments = "instruments";
 	const std::string kKeyLdd = "ldd";
+	const std::string kKeyLipo = "lipo";
 	const std::string kKeyLua = "lua";
 	const std::string kKeyMake = "make";
 	const std::string kKeyNinja = "ninja";

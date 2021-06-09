@@ -1082,6 +1082,9 @@ bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNo
 		}
 	}
 
+	if (bool val = false; m_buildJson->assignFromKey(val, macosNode, "universalBinary"))
+		macosBundle.setUniversalBinary(val);
+
 	if (bool val = false; m_buildJson->assignFromKey(val, macosNode, "makeDmg"))
 		macosBundle.setMakeDmg(val);
 

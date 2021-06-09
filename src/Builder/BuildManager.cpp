@@ -48,6 +48,9 @@ BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inStat
 /*****************************************************************************/
 bool BuildManager::run(const Route inRoute)
 {
+	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalArm64_X64)
+		return true;
+
 	m_removeCache.clear();
 	m_cleanOutput = m_state.environment.cleanOutput();
 

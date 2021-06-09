@@ -75,6 +75,12 @@ void Arch::set(const std::string& inValue) noexcept
 	{
 		val = Arch::Cpu::ARM;
 	}
+#if defined(CHALET_MACOS)
+	else if (String::startsWith("universal", arch))
+	{
+		val = Arch::Cpu::UniversalArm64_X64;
+	}
+#endif
 	else
 	{
 		val = Arch::Cpu::Unknown;

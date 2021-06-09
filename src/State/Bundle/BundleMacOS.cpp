@@ -135,6 +135,17 @@ void BundleMacOS::setInfoPropertyListContent(std::string&& inValue)
 }
 
 /*****************************************************************************/
+bool BundleMacOS::universalBinary() const noexcept
+{
+	return m_universalBinary;
+}
+
+void BundleMacOS::setUniversalBinary(const bool inValue) noexcept
+{
+	m_universalBinary = inValue;
+}
+
+/*****************************************************************************/
 bool BundleMacOS::makeDmg() const noexcept
 {
 	return m_makeDmg;

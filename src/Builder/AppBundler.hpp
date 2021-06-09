@@ -7,27 +7,25 @@
 #define CHALET_APP_BUNDLER_HPP
 
 #include "Builder/Bundler/IAppBundler.hpp"
-#include "State/BuildState.hpp"
-#include "State/Target/BundleTarget.hpp"
-#include "State/Target/ScriptTarget.hpp"
 
 namespace chalet
 {
+struct BundleTarget;
+struct ScriptTarget;
+class BuildState;
+
 class AppBundler
 {
 public:
-	explicit AppBundler(BuildState& inState, const std::string& inBuildFile);
+	AppBundler() = default;
 
-	bool run();
+	bool run(BuildTarget& inTarget, BuildState& inState, const std::string& inBuildFile);
 
 private:
-	bool runBundleTarget(IAppBundler& inBundler);
-	bool runScriptTarget(const ScriptTarget& inScript);
+	bool runBundleTarget(IAppBundler& inBundler, BuildState& inState);
+	bool runScriptTarget(const ScriptTarget& inScript, BuildState& inState, const std::string& inBuildFile);
 	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath);
-
-	BuildState& m_state;
-	const std::string& m_buildFile;
 
 	StringList m_removedDirs;
 

@@ -65,6 +65,9 @@ struct CacheTools
 	const std::string& ldd() const noexcept;
 	void setLdd(const std::string& inValue) noexcept;
 
+	const std::string& lipo() const noexcept;
+	void setLipo(const std::string& inValue) noexcept;
+
 	const std::string& lua() const noexcept;
 	void setLua(const std::string& inValue) noexcept;
 
@@ -170,6 +173,7 @@ private:
 	std::string m_installNameTool;
 	std::string m_instruments;
 	std::string m_ldd;
+	std::string m_lipo;
 	std::string m_lua;
 	std::string m_make;
 	std::string m_ninja;

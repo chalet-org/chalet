@@ -7,6 +7,9 @@
 
 #include "Builder/BuildManager/ScriptRunner.hpp"
 #include "Libraries/Format.hpp"
+#include "State/BuildState.hpp"
+#include "State/Target/BundleTarget.hpp"
+#include "State/Target/ScriptTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -44,53 +47,43 @@ namespace
 #endif
 }
 }
-/*****************************************************************************/
-AppBundler::AppBundler(BuildState& inState, const std::string& inBuildFile) :
-	m_state(inState),
-	m_buildFile(inBuildFile)
-{
-
-	m_cleanOutput = m_state.environment.cleanOutput();
-}
 
 /*****************************************************************************/
-bool AppBundler::run()
+bool AppBundler::run(BuildTarget& inTarget, BuildState& inState, const std::string& inBuildFile)
 {
-	for (auto& target : m_state.distribution)
+	m_cleanOutput = inState.environment.cleanOutput();
+
+	if (inTarget->isDistributionBundle())
 	{
-
-		if (target->isDistributionBundle())
+		auto bundler = getAppBundler(inState, inBuildFile, static_cast<BundleTarget&>(*inTarget), m_cleanOutput);
+		if (!removeOldFiles(*bundler))
 		{
-			auto bundler = getAppBundler(m_state, m_buildFile, static_cast<BundleTarget&>(*target), m_cleanOutput);
-			if (!removeOldFiles(*bundler))
-			{
-				Diagnostic::error(fmt::format("There was an error removing the previous distribution bundle for: {}", target->name()));
-				return false;
-			}
-
-			if (!runBundleTarget(*bundler))
-				return false;
+			Diagnostic::error(fmt::format("There was an error removing the previous distribution bundle for: {}", inTarget->name()));
+			return false;
 		}
-		else if (target->isScript())
-		{
-			Timer buildTimer;
 
-			if (!runScriptTarget(static_cast<const ScriptTarget&>(*target)))
-				return false;
+		if (!runBundleTarget(*bundler, inState))
+			return false;
+	}
+	else if (inTarget->isScript())
+	{
+		Timer buildTimer;
 
-			Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
-			Output::lineBreak();
-		}
+		if (!runScriptTarget(static_cast<const ScriptTarget&>(*inTarget), inState, inBuildFile))
+			return false;
+
+		Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+		Output::lineBreak();
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool AppBundler::runBundleTarget(IAppBundler& inBundler)
+bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 {
 	auto& bundle = inBundler.bundle();
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	const auto& buildOutputDir = inState.paths.buildOutputDir();
 	const auto& bundleProjects = inBundler.bundle().projects();
 
 	const auto bundlePath = inBundler.getBundlePath();
@@ -122,7 +115,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 		depsFromJson.push_back(dep);
 	}
 
-	for (auto& target : m_state.targets)
+	for (auto& target : inState.targets)
 	{
 		if (target->isProject())
 		{
@@ -143,7 +136,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 			if (bundle.includeDependentSharedLibraries() && !project.isStaticLibrary())
 			{
-				if (!m_state.tools.getExecutableDependencies(outputFilePath, dependencies))
+				if (!inState.tools.getExecutableDependencies(outputFilePath, dependencies))
 				{
 					Diagnostic::error(fmt::format("getExecutableDependencies error for file '{}'.", outputFilePath));
 					return false;
@@ -156,7 +149,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	if (bundle.includeDependentSharedLibraries())
 	{
 		StringList projectNames;
-		for (auto& target : m_state.targets)
+		for (auto& target : inState.targets)
 		{
 			if (target->isProject())
 			{
@@ -178,7 +171,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 				continue;
 			}
 
-			if (!m_state.tools.getExecutableDependencies(depPath, depsOfDeps))
+			if (!inState.tools.getExecutableDependencies(depPath, depsOfDeps))
 			{
 				Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", depPath));
 				return false;
@@ -234,7 +227,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 }
 
 /*****************************************************************************/
-bool AppBundler::runScriptTarget(const ScriptTarget& inScript)
+bool AppBundler::runScriptTarget(const ScriptTarget& inScript, BuildState& inState, const std::string& inBuildFile)
 {
 	const auto& scripts = inScript.scripts();
 	if (scripts.empty())
@@ -247,7 +240,7 @@ bool AppBundler::runScriptTarget(const ScriptTarget& inScript)
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_state.tools, m_buildFile, m_cleanOutput);
+	ScriptRunner scriptRunner(inState.tools, inBuildFile, m_cleanOutput);
 	if (!scriptRunner.run(scripts))
 	{
 		Output::lineBreak();

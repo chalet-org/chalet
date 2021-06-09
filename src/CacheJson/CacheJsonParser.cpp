@@ -560,6 +560,7 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyInstallNameTool, HostPlatform::MacOS);
 	whichAdd(tools, kKeyInstruments, HostPlatform::MacOS);
 	whichAdd(tools, kKeyLdd);
+	whichAdd(tools, kKeyLipo, HostPlatform::MacOS);
 	whichAdd(tools, kKeyLua);
 
 	if (!tools.contains(kKeyMake))
@@ -793,6 +794,9 @@ bool CacheJsonParser::parseTools(Json& inNode)
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLdd))
 		m_state.tools.setLdd(val);
+
+	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLipo))
+		m_state.tools.setLipo(val);
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLua))
 		m_state.tools.setLua(val);

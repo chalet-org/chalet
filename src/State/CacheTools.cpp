@@ -342,6 +342,16 @@ void CacheTools::setLdd(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CacheTools::lipo() const noexcept
+{
+	return m_lipo;
+}
+void CacheTools::setLipo(const std::string& inValue) noexcept
+{
+	m_lipo = inValue;
+}
+
+/*****************************************************************************/
 const std::string& CacheTools::lua() const noexcept
 {
 	return m_lua;
