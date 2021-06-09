@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Builder/Bundler/AppBundlerMacOS.hpp"
+#include "Bundler/AppBundlerMacOS.hpp"
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Libraries/Format.hpp"

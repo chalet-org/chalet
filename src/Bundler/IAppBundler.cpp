@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Builder/Bundler/IAppBundler.hpp"
+#include "Bundler/IAppBundler.hpp"
 
 namespace chalet
 {

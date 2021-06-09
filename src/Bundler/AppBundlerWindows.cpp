@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Builder/Bundler/AppBundlerWindows.hpp"
+#include "Bundler/AppBundlerWindows.hpp"
 
 namespace chalet
 {

@@ -5,8 +5,8 @@
 
 #include "Router/Router.hpp"
 
-#include "Builder/AppBundler.hpp"
 #include "Builder/BuildManager.hpp"
+#include "Bundler/AppBundler.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 #include "Libraries/Format.hpp"

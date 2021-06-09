@@ -6,7 +6,7 @@
 #ifndef CHALET_APP_BUNDLER_HPP
 #define CHALET_APP_BUNDLER_HPP
 
-#include "Builder/Bundler/IAppBundler.hpp"
+#include "Bundler/IAppBundler.hpp"
 
 namespace chalet
 {

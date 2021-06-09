@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Builder/BuildManager/ProfilerRunner.hpp"
+#include "Builder/ProfilerRunner.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"

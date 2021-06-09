@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Builder/BuildManager/CmakeBuilder.hpp"
+#include "Builder/CmakeBuilder.hpp"
 
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"

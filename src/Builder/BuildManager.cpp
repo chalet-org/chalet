@@ -5,10 +5,10 @@
 
 #include "Builder/BuildManager.hpp"
 
-#include "Builder/BuildManager/CmakeBuilder.hpp"
-#include "Builder/BuildManager/ProfilerRunner.hpp"
-#include "Builder/BuildManager/ScriptRunner.hpp"
-#include "Builder/BuildManager/SubChaletBuilder.hpp"
+#include "Builder/CmakeBuilder.hpp"
+#include "Builder/ProfilerRunner.hpp"
+#include "Builder/ScriptRunner.hpp"
+#include "Builder/SubChaletBuilder.hpp"
 #include "Router/Route.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"

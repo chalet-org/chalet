@@ -6,7 +6,7 @@
 #ifndef CHALET_MACOS_APP_BUNDLER_HPP
 #define CHALET_MACOS_APP_BUNDLER_HPP
 
-#include "Builder/Bundler/IAppBundler.hpp"
+#include "Bundler/IAppBundler.hpp"
 #include "State/BuildState.hpp"
 
 namespace chalet

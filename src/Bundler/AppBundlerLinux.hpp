@@ -6,7 +6,7 @@
 #ifndef CHALET_LINUX_APP_BUNDLER_HPP
 #define CHALET_LINUX_APP_BUNDLER_HPP
 
-#include "Builder/Bundler/IAppBundler.hpp"
+#include "Bundler/IAppBundler.hpp"
 #include "Libraries/FileSystem.hpp"
 #include "State/BuildState.hpp"
 

@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Builder/BuildManager/ScriptRunner.hpp"
+#include "Builder/ScriptRunner.hpp"
 
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"

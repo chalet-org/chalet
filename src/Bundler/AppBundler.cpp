@@ -3,9 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Builder/AppBundler.hpp"
+#include "Bundler/AppBundler.hpp"
 
-#include "Builder/BuildManager/ScriptRunner.hpp"
+#include "Builder/ScriptRunner.hpp"
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/BundleTarget.hpp"
@@ -18,11 +18,11 @@
 #include "Utility/Timer.hpp"
 
 #if defined(CHALET_WIN32)
-	#include "Builder/Bundler/AppBundlerWindows.hpp"
+	#include "Bundler/AppBundlerWindows.hpp"
 #elif defined(CHALET_MACOS)
-	#include "Builder/Bundler/AppBundlerMacOS.hpp"
+	#include "Bundler/AppBundlerMacOS.hpp"
 #elif defined(CHALET_LINUX)
-	#include "Builder/Bundler/AppBundlerLinux.hpp"
+	#include "Bundler/AppBundlerLinux.hpp"
 #else
 	#error "Unknown platform"
 #endif
