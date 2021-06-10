@@ -140,10 +140,6 @@ Json Schema::getBuildJson()
 		"type": "object",
 		"description": "Variables to describe the macos application bundle.",
 		"additionalProperties": false,
-		"required": [
-			"bundleName",
-			"infoPropertyList"
-		],
 		"properties": {
 			"bundleName": {
 				"type": "string"

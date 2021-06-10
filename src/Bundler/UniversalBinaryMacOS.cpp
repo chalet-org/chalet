@@ -6,8 +6,10 @@
 #include "Bundler/UniversalBinaryMacOS.hpp"
 
 #include "Bundler/AppBundler.hpp"
+#include "Bundler/AppBundlerMacOS.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
@@ -144,14 +146,40 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 }
 
 /*****************************************************************************/
-bool UniversalBinaryMacOS::bundleState(BuildState& inState) const
+bool UniversalBinaryMacOS::bundleState(BuildState& inUniversalState) const
 {
 	AppBundler bundler;
 	const auto& buildFile = m_inputs.buildFile();
-	for (auto& target : inState.distribution)
+
+	for (auto& target : m_state.distribution)
 	{
-		if (!bundler.run(target, inState, buildFile))
-			return false;
+		if (target->isDistributionBundle())
+		{
+			auto& bundle = static_cast<BundleTarget&>(*target);
+			if (!bundler.gatherDependencies(bundle, inUniversalState))
+				return false;
+
+			if (!bundle.macosBundle().universalBinary())
+			{
+				if (!bundler.run(target, m_state, buildFile))
+					return false;
+			}
+		}
+	}
+
+	// bundler.logDependencies();
+
+	for (auto& target : inUniversalState.distribution)
+	{
+		if (target->isDistributionBundle())
+		{
+			auto& bundle = static_cast<BundleTarget&>(*target);
+			if (bundle.macosBundle().universalBinary())
+			{
+				if (!bundler.run(target, inUniversalState, buildFile))
+					return false;
+			}
+		}
 	}
 
 	return true;

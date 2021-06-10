@@ -6,13 +6,16 @@
 #ifndef CHALET_IAPP_BUNDLER_HPP
 #define CHALET_IAPP_BUNDLER_HPP
 
-#include "State/Target/BundleTarget.hpp"
+#include "Bundler/BinaryDependencyMap.hpp"
 
 namespace chalet
 {
+class BuildState;
+struct BundleTarget;
+
 struct IAppBundler
 {
-	explicit IAppBundler(BuildState& inState, BundleTarget& inBundle, const bool inCleanOutput);
+	explicit IAppBundler(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput);
 	virtual ~IAppBundler() = default;
 
 	BundleTarget& bundle() const noexcept;
@@ -24,9 +27,12 @@ struct IAppBundler
 	virtual std::string getExecutablePath() const = 0;
 	virtual std::string getResourcePath() const = 0;
 
+	[[nodiscard]] static std::unique_ptr<IAppBundler> make(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile, const bool inCleanOutput);
+
 protected:
 	BuildState& m_state;
 	BundleTarget& m_bundle;
+	BinaryDependencyMap& m_dependencyMap;
 
 	bool m_cleanOutput = false;
 };

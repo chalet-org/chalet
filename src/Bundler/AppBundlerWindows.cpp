@@ -5,11 +5,13 @@
 
 #include "Bundler/AppBundlerWindows.hpp"
 
+#include "State/Target/BundleTarget.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
-AppBundlerWindows::AppBundlerWindows(BuildState& inState, BundleTarget& inBundle, const bool inCleanOutput) :
-	IAppBundler(inState, inBundle, inCleanOutput)
+AppBundlerWindows::AppBundlerWindows(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput) :
+	IAppBundler(inState, inBundle, inDependencyMap, inCleanOutput)
 {
 }
 

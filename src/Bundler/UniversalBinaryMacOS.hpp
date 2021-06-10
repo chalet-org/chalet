@@ -6,6 +6,8 @@
 #ifndef CHALET_UNIVERSAL_BINARY_MACOS_HPP
 #define CHALET_UNIVERSAL_BINARY_MACOS_HPP
 
+#include "State/Target/IBuildTarget.hpp"
+
 namespace chalet
 {
 struct CommandLineInputs;
@@ -21,7 +23,7 @@ private:
 	std::unique_ptr<BuildState> getIntermediateState(std::string_view inReplaceA, std::string_view inReplaceB) const;
 	StringList getProjectFiles(const BuildState& inState) const;
 	bool createUniversalBinaries(const BuildState& inStateA, const BuildState& inStateB, const BuildState& inUniversalState) const;
-	bool bundleState(BuildState& inState) const;
+	bool bundleState(BuildState& inUniversalState) const;
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;

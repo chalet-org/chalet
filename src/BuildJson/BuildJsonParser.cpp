@@ -1053,11 +1053,11 @@ bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNo
 
 	BundleMacOS macosBundle;
 
-	int assigned = 0;
+	// int assigned = 0;
 	if (std::string val; m_buildJson->assignStringAndValidate(val, macosNode, "bundleName"))
 	{
 		macosBundle.setBundleName(val);
-		assigned++;
+		// assigned++;
 	}
 
 	if (std::string val; m_buildJson->assignStringAndValidate(val, macosNode, "icon"))
@@ -1070,14 +1070,14 @@ bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNo
 		if (infoPlistNode.is_object())
 		{
 			macosBundle.setInfoPropertyListContent(infoPlistNode.dump());
-			assigned++;
+			// assigned++;
 		}
 		else
 		{
 			if (std::string val; m_buildJson->assignStringAndValidate(val, macosNode, kInfoPropertyList))
 			{
 				macosBundle.setInfoPropertyList(val);
-				assigned++;
+				// assigned++;
 			}
 		}
 	}
@@ -1110,16 +1110,16 @@ bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNo
 		}
 	}
 
-	if (assigned == 0)
-		return false; // not an error
+	// if (assigned == 0)
+	// 	return false; // not an error
 
-	if (assigned >= 1 && assigned < 2)
-	{
-		Diagnostic::error(fmt::format("{}: '{bundle}.macos.bundleName' is required.",
-			m_filename,
-			fmt::arg("bundle", kKeyBundle)));
-		return false;
-	}
+	// if (assigned >= 1 && assigned < 2)
+	// {
+	// 	Diagnostic::error(fmt::format("{}: '{bundle}.macos.bundleName' is required.",
+	// 		m_filename,
+	// 		fmt::arg("bundle", kKeyBundle)));
+	// 	return false;
+	// }
 
 	outBundle.setMacosBundle(std::move(macosBundle));
 

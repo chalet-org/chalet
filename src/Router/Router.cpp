@@ -305,8 +305,8 @@ bool Router::xcodebuildRoute(BuildState& inState)
 bool Router::bundleUniversalBinary(BuildState& inState)
 {
 #if defined(CHALET_MACOS)
-	UniversalBinaryMacOS uniBinaryBuilder(m_inputs, inState);
-	return uniBinaryBuilder.run(m_installDependencies);
+	UniversalBinaryMacOS uniBinaryBuilder(m_inputs, inState, m_installDependencies);
+	return uniBinaryBuilder.run();
 #else
 	UNUSED(inState);
 	return false;

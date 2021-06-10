@@ -6,6 +6,7 @@
 #include "Bundler/AppBundlerLinux.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/Target/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -30,8 +31,8 @@ namespace chalet
 */
 
 /*****************************************************************************/
-AppBundlerLinux::AppBundlerLinux(BuildState& inState, BundleTarget& inBundle, const bool inCleanOutput) :
-	IAppBundler(inState, inBundle, inCleanOutput)
+AppBundlerLinux::AppBundlerLinux(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput) :
+	IAppBundler(inState, inBundle, inDependencyMap, inCleanOutput)
 {
 	const std::string kUserApplications{ ".local/share/applications" };
 

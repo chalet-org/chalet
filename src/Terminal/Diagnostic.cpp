@@ -168,7 +168,7 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 {
 	if (sStartedInfo)
 	{
-		std::cout << std::endl;
+		std::cerr << std::endl;
 		sStartedInfo = false;
 	}
 
@@ -199,13 +199,13 @@ bool Diagnostic::assertionFailure() noexcept
 /*****************************************************************************/
 void Diagnostic::showHeader(const Type inType, const std::string& inTitle)
 {
+	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	if (sStartedInfo)
 	{
-		std::cout << std::endl;
+		out << std::endl;
 		sStartedInfo = false;
 	}
 
-	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
 	const auto reset = Output::getAnsiReset();
 
@@ -215,26 +215,26 @@ void Diagnostic::showHeader(const Type inType, const std::string& inTitle)
 /*****************************************************************************/
 void Diagnostic::showMessage(const Type inType, const std::string& inMessage)
 {
+	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	if (sStartedInfo)
 	{
-		std::cout << std::endl;
+		out << std::endl;
 		sStartedInfo = false;
 	}
 
-	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	out << fmt::format("   {}", inMessage) << std::endl;
 }
 
 /*****************************************************************************/
 void Diagnostic::showAsOneLine(const Type inType, const std::string& inTitle, const std::string& inMessage)
 {
+	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	if (sStartedInfo)
 	{
-		std::cout << std::endl;
+		out << std::endl;
 		sStartedInfo = false;
 	}
 
-	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
 	const auto reset = Output::getAnsiReset();
 
@@ -254,27 +254,37 @@ void Diagnostic::printErrors()
 	{
 		{
 			auto& errorList = *s_ErrorList;
-			if (errorList.size() > 0)
+			StringList warnings;
+			StringList errors;
+			for (auto& err : errorList)
+			{
+				if (err.message.empty())
+					continue;
+
+				if (err.type == Type::Warning)
+					warnings.push_back(err.message);
+				else
+					errors.push_back(err.message);
+			}
+
+			sStartedInfo = false;
+			if (warnings.size() > 0)
+			{
+				Diagnostic::warnHeader(u8"\u26A0  Warnings");
+
+				for (auto& message : warnings)
+				{
+					Diagnostic::warnMessage(message);
+				}
+				Output::lineBreak();
+			}
+			if (errors.size() > 0)
 			{
 				Diagnostic::errorHeader("Errors");
 
-				for (auto& error : errorList)
+				for (auto& message : errors)
 				{
-					if (error.message.empty())
-						continue;
-
-					Diagnostic::errorMessage(error.message);
-
-					/*switch (error.type)
-				{
-					case JsonErrorClassification::Fatal:
-						break;
-					case JsonErrorClassification::Warning:
-						// Output::print(Color::Yellow, fmt::format("    Attempting to continue build anyway..."));
-						break;
-					default:
-						break;
-				}*/
+					Diagnostic::errorMessage(message);
 				}
 				Output::lineBreak();
 			}

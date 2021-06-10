@@ -6,6 +6,7 @@
 #include "Bundler/AppBundler.hpp"
 
 #include "Builder/ScriptRunner.hpp"
+#include "Bundler/IAppBundler.hpp"
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/BundleTarget.hpp"
@@ -17,36 +18,8 @@
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
-#if defined(CHALET_WIN32)
-	#include "Bundler/AppBundlerWindows.hpp"
-#elif defined(CHALET_MACOS)
-	#include "Bundler/AppBundlerMacOS.hpp"
-#elif defined(CHALET_LINUX)
-	#include "Bundler/AppBundlerLinux.hpp"
-#else
-	#error "Unknown platform"
-#endif
-
 namespace chalet
 {
-namespace
-{
-[[nodiscard]] std::unique_ptr<IAppBundler> getAppBundler(BuildState& inState, const std::string& inBuildFile, BundleTarget& inBundle, const bool inCleanOutput)
-{
-#if defined(CHALET_WIN32)
-	UNUSED(inBuildFile);
-	return std::make_unique<AppBundlerWindows>(inState, inBundle, inCleanOutput);
-#elif defined(CHALET_MACOS)
-	return std::make_unique<AppBundlerMacOS>(inState, inBuildFile, inBundle, inCleanOutput);
-#elif defined(CHALET_LINUX)
-	UNUSED(inBuildFile);
-	return std::make_unique<AppBundlerLinux>(inState, inBundle, inCleanOutput);
-#else
-	Diagnostic::errorAbort("Unimplemented AppBundler requested: ");
-	return nullptr;
-#endif
-}
-}
 
 /*****************************************************************************/
 bool AppBundler::run(BuildTarget& inTarget, BuildState& inState, const std::string& inBuildFile)
@@ -55,12 +28,16 @@ bool AppBundler::run(BuildTarget& inTarget, BuildState& inState, const std::stri
 
 	if (inTarget->isDistributionBundle())
 	{
-		auto bundler = getAppBundler(inState, inBuildFile, static_cast<BundleTarget&>(*inTarget), m_cleanOutput);
+		auto& bundle = static_cast<BundleTarget&>(*inTarget);
+		auto bundler = IAppBundler::make(inState, bundle, m_dependencyMap, inBuildFile, m_cleanOutput);
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error(fmt::format("There was an error removing the previous distribution bundle for: {}", inTarget->name()));
 			return false;
 		}
+
+		if (!gatherDependencies(bundle, inState))
+			return false;
 
 		if (!runBundleTarget(*bundler, inState))
 			return false;
@@ -76,7 +53,23 @@ bool AppBundler::run(BuildTarget& inTarget, BuildState& inState, const std::stri
 		Output::lineBreak();
 	}
 
+	// logDependencies();
+
 	return true;
+}
+
+/*****************************************************************************/
+void AppBundler::logDependencies() const
+{
+	for (auto& [file, dependencies] : m_dependencyMap)
+	{
+		LOG(file);
+		for (auto& dep : dependencies)
+		{
+			LOG("    ", dep);
+		}
+	}
+	LOG("");
 }
 
 /*****************************************************************************/
@@ -95,15 +88,10 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	// auto path = Environment::getPath();
 	// LOG(path);
 
-	StringList dependencies;
 	StringList executables;
-#if defined(CHALET_MACOS)
-	StringList sharedLibraries;
-#endif
 
 	// Timer timer;
 
-	StringList depsFromJson;
 	for (auto& dep : bundle.dependencies())
 	{
 		if (!Commands::pathExists(dep))
@@ -111,10 +99,9 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 		if (!Commands::copy(dep, resourcePath, m_cleanOutput))
 			return false;
-
-		depsFromJson.push_back(dep);
 	}
 
+	uint copyCount = 0;
 	for (auto& target : inState.targets)
 	{
 		if (target->isProject())
@@ -132,84 +119,56 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 				std::string outTarget = outputFilePath;
 				List::addIfDoesNotExist(executables, std::move(outTarget));
 			}
-			dependencies.push_back(outputFilePath);
 
-			if (bundle.includeDependentSharedLibraries() && !project.isStaticLibrary())
+			auto dependencies = m_dependencyMap.find(outputFilePath);
+			if (dependencies == m_dependencyMap.end())
 			{
-				if (!inState.tools.getExecutableDependencies(outputFilePath, dependencies))
+				Diagnostic::error(fmt::format("Dependency not cached: {}", outputFilePath));
+				return false;
+			}
+
+			if (Commands::pathExists(outputFilePath))
+			{
+				if (!Commands::copy(outputFilePath, executablePath, m_cleanOutput))
 				{
-					Diagnostic::error(fmt::format("getExecutableDependencies error for file '{}'.", outputFilePath));
-					return false;
+					const auto filename = String::getPathFilename(outputFilePath);
+					Diagnostic::warn(fmt::format("Target '{}' could not be copied to: {}", filename, executablePath));
+					continue;
 				}
 			}
+
+			for (auto& dep : dependencies->second)
+			{
+				if (Commands::pathExists(dep))
+				{
+					if (!Commands::copy(dep, executablePath, m_cleanOutput))
+					{
+						const auto filename = String::getPathFilename(dep);
+						Diagnostic::warn(fmt::format("Dependency '{}' could not be copied to: {}", filename, executablePath));
+						continue;
+					}
+				}
+
+				++copyCount;
+			}
 		}
 	}
-	bundle.addDependencies(dependencies);
-
-	if (bundle.includeDependentSharedLibraries())
-	{
-		StringList projectNames;
-		for (auto& target : inState.targets)
-		{
-			if (target->isProject())
-			{
-				auto& project = static_cast<const ProjectTarget&>(*target);
-				projectNames.push_back(String::getPathFilename(project.outputFile()));
-			}
-		}
-
-		StringList depsOfDeps;
-		for (auto& dep : dependencies)
-		{
-			if (dep.empty() || List::contains(depsFromJson, dep) || List::contains(projectNames, dep))
-				continue;
-
-			auto depPath = Commands::which(dep);
-			if (depPath.empty())
-			{
-				Diagnostic::warn(fmt::format("Dependency not found in path: '{}'", dep));
-				continue;
-			}
-
-			if (!inState.tools.getExecutableDependencies(depPath, depsOfDeps))
-			{
-				Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", depPath));
-				return false;
-			}
-		}
-
-		bundle.addDependencies(depsOfDeps);
-	}
-
-	bundle.sortDependencies();
-
-	// LOG("Distribution dependencies gathered in:", timer.asString());
-
-	uint copyCount = 0;
-	for (auto& dep : bundle.dependencies())
-	{
-		if (List::contains(depsFromJson, dep))
-			continue;
-
-		if (!Commands::pathExists(dep))
-			continue;
-
-		if (!Commands::copy(dep, executablePath, m_cleanOutput))
-			return false;
-
-		++copyCount;
 
 #if !defined(CHALET_WIN32)
-		if (List::contains(executables, dep))
-		{
-			const auto filename = String::getPathFilename(dep);
-			const auto executable = fmt::format("{}/{}", executablePath, filename);
+	for (auto& exec : executables)
+	{
+		const auto filename = String::getPathFilename(exec);
+		const auto executable = fmt::format("{}/{}", executablePath, filename);
 
-			if (!Commands::setExecutableFlag(executable, m_cleanOutput))
-				return false;
+		if (!Commands::setExecutableFlag(executable, m_cleanOutput))
+		{
+			Diagnostic::warn(fmt::format("Exececutable flag could not be set for: {}", executable));
+			continue;
 		}
-#endif
 	}
+#endif
+
+	// LOG("Distribution dependencies gathered in:", timer.asString());
 
 	Commands::forEachFileMatch(resourcePath, bundle.excludes(), [this](const fs::path& inPath) {
 		Commands::remove(inPath.string(), m_cleanOutput);
@@ -222,6 +181,108 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	if (!inBundler.bundleForPlatform())
 		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+const BinaryDependencyMap& AppBundler::dependencyMap() const noexcept
+{
+	return m_dependencyMap;
+}
+
+bool AppBundler::gatherDependencies(BundleTarget& inTarget, BuildState& inState)
+{
+	const auto& bundleProjects = inTarget.projects();
+	const auto& buildOutputDir = inState.paths.buildOutputDir();
+
+	StringList depsFromJson;
+	for (auto& dep : inTarget.dependencies())
+	{
+		if (!Commands::pathExists(dep))
+			continue;
+
+		depsFromJson.push_back(dep);
+	}
+
+	/*StringList projectNames;
+	for (auto& target : inState.targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			projectNames.push_back(String::getPathFilename(project.outputFile()));
+		}
+	}*/
+
+	for (auto& target : inState.targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+
+			if (List::contains(bundleProjects, project.name()))
+			{
+				const auto& outputFile = project.outputFile();
+				const auto outputFilePath = fmt::format("{}/{}", buildOutputDir, outputFile);
+
+				// dependencies.push_back(outputFilePath);
+
+				if (inTarget.includeDependentSharedLibraries())
+				{
+					if (m_dependencyMap.find(outputFilePath) == m_dependencyMap.end())
+					{
+						StringList dependencies;
+						if (!project.isStaticLibrary())
+						{
+							if (!inState.tools.getExecutableDependencies(outputFilePath, dependencies))
+							{
+								Diagnostic::error(fmt::format("getExecutableDependencies error for file '{}'.", outputFilePath));
+								return false;
+							}
+
+							for (auto& dep : dependencies)
+							{
+								if (dep.empty()
+									|| List::contains(depsFromJson, dep)
+									//  || List::contains(projectNames, dep)
+								)
+									continue;
+
+								std::string depPath;
+								if (!Commands::pathExists(dep))
+								{
+									depPath = Commands::which(dep);
+									if (depPath.empty())
+									{
+										Diagnostic::warn(fmt::format("Dependency not found in path: '{}'", dep));
+										continue;
+									}
+								}
+								else
+								{
+									depPath = dep;
+								}
+
+								if (m_dependencyMap.find(depPath) == m_dependencyMap.end())
+								{
+									StringList depsOfDeps;
+									if (!inState.tools.getExecutableDependencies(depPath, depsOfDeps))
+									{
+										Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", depPath));
+										return false;
+									}
+									m_dependencyMap.emplace(std::move(depPath), std::move(depsOfDeps));
+								}
+							}
+						}
+
+						m_dependencyMap.emplace(std::move(outputFilePath), std::move(dependencies));
+					}
+				}
+			}
+		}
+	}
 
 	return true;
 }

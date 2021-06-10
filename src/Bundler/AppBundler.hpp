@@ -6,13 +6,14 @@
 #ifndef CHALET_APP_BUNDLER_HPP
 #define CHALET_APP_BUNDLER_HPP
 
-#include "Bundler/IAppBundler.hpp"
+#include "Bundler/BinaryDependencyMap.hpp"
+#include "State/Target/IBuildTarget.hpp"
 
 namespace chalet
 {
 struct BundleTarget;
 struct ScriptTarget;
-class BuildState;
+struct IAppBundler;
 
 class AppBundler
 {
@@ -21,11 +22,17 @@ public:
 
 	bool run(BuildTarget& inTarget, BuildState& inState, const std::string& inBuildFile);
 
+	const BinaryDependencyMap& dependencyMap() const noexcept;
+	bool gatherDependencies(BundleTarget& inTarget, BuildState& inState);
+	void logDependencies() const;
+
 private:
 	bool runBundleTarget(IAppBundler& inBundler, BuildState& inState);
 	bool runScriptTarget(const ScriptTarget& inScript, BuildState& inState, const std::string& inBuildFile);
 	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath);
+
+	BinaryDependencyMap m_dependencyMap;
 
 	StringList m_removedDirs;
 
