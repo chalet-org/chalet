@@ -88,19 +88,34 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	// auto path = Environment::getPath();
 	// LOG(path);
 
-	StringList executables;
-
 	// Timer timer;
+
+	const auto copyDependency = [cleanOutput = m_cleanOutput](const std::string& inDep, const std::string& inOutPath) -> bool {
+		if (Commands::pathExists(inDep))
+		{
+			const auto filename = String::getPathFilename(inDep);
+			if (!filename.empty())
+			{
+				auto outputFile = fmt::format("{}/{}", inOutPath, filename);
+				if (Commands::pathExists(outputFile))
+					return true; // Already copied - duplicate dependency
+			}
+			if (!Commands::copy(inDep, inOutPath, cleanOutput))
+			{
+				Diagnostic::warn(fmt::format("Dependency '{}' could not be copied to: {}", filename, inOutPath));
+				return false;
+			}
+		}
+		return true;
+	};
 
 	for (auto& dep : bundle.dependencies())
 	{
-		if (!Commands::pathExists(dep))
-			continue;
-
-		if (!Commands::copy(dep, resourcePath, m_cleanOutput))
+		if (!copyDependency(dep, resourcePath))
 			return false;
 	}
 
+	StringList executables;
 	uint copyCount = 0;
 	for (auto& target : inState.targets)
 	{
@@ -127,27 +142,13 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 				return false;
 			}
 
-			if (Commands::pathExists(outputFilePath))
-			{
-				if (!Commands::copy(outputFilePath, executablePath, m_cleanOutput))
-				{
-					const auto filename = String::getPathFilename(outputFilePath);
-					Diagnostic::warn(fmt::format("Target '{}' could not be copied to: {}", filename, executablePath));
-					continue;
-				}
-			}
+			if (!copyDependency(outputFilePath, executablePath))
+				continue;
 
 			for (auto& dep : dependencies->second)
 			{
-				if (Commands::pathExists(dep))
-				{
-					if (!Commands::copy(dep, executablePath, m_cleanOutput))
-					{
-						const auto filename = String::getPathFilename(dep);
-						Diagnostic::warn(fmt::format("Dependency '{}' could not be copied to: {}", filename, executablePath));
-						continue;
-					}
-				}
+				if (!copyDependency(dep, executablePath))
+					continue;
 
 				++copyCount;
 			}

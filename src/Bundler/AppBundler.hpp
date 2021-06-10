@@ -15,9 +15,8 @@ struct BundleTarget;
 struct ScriptTarget;
 struct IAppBundler;
 
-class AppBundler
+struct AppBundler
 {
-public:
 	AppBundler() = default;
 
 	bool run(BuildTarget& inTarget, BuildState& inState, const std::string& inBuildFile);
