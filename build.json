@@ -181,8 +181,7 @@
 				"dmgBackground": {
 					"1x": "platform/osx/dmg-background.png",
 					"2x": "platform/osx/dmg-background@2x.png"
-				},
-				"dylibs": []
+				}
 			},
 			"linux": {
 				"icon": "platform/chalet-logo.png",

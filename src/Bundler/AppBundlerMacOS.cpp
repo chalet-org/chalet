@@ -97,7 +97,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
 
-	if (!changeRPathOfDependents(m_state, m_bundle, m_state.paths.buildOutputDir(), m_executableOutputPath, m_executablePath, m_cleanOutput))
+	if (!changeRPathOfDependents(m_state, m_dependencyMap, m_executablePath, m_cleanOutput))
 		return false;
 
 	// No app name = no bundle to make
@@ -174,136 +174,32 @@ std::string AppBundlerMacOS::getResourcePath() const
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::changeRPathOfDependents2(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildOutputDir, const std::string& inRPath, const std::string& inExecutablePath, const bool inCleanOutput)
-{
-	// auto& installNameTool = inState.tools.installNameTool();
-
-	// for (auto& [file, dependencies] : m_dependencyMap)
-	// {
-	// 	LOG(file);
-	// 	for (auto& dep : dependencies)
-	// 	{
-	// 		LOG("    ", dep);
-	// 	}
-	// }
-	UNUSED(inState, inBundle, inDependencyMap, inBuildOutputDir, inRPath, inExecutablePath, inCleanOutput);
-
-	return true;
-}
-
-/*****************************************************************************/
-bool AppBundlerMacOS::changeRPathOfDependents(BuildState& inState, BundleTarget& inBundle, const std::string& inBuildOutputDir, const std::string& inRPath, const std::string& inExecutablePath, const bool inCleanOutput)
+bool AppBundlerMacOS::changeRPathOfDependents(BuildState& inState, BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath, const bool inCleanOutput)
 {
 	auto& installNameTool = inState.tools.installNameTool();
 
-	StringList dylibs = inBundle.macosBundle().dylibs();
-
-	/*for (auto& dep : inBundle.dependencies())
+	for (auto& [file, dependencies] : inDependencyMap)
 	{
-		LOG(dep);
-	}*/
+		auto filename = String::getPathFilename(file);
+		const auto outputFile = fmt::format("{}/{}", inExecutablePath, filename);
 
-	// Version A: Gets all dylibs and tries to update @rpath values
-	/*for (auto& dep : m_bundle.dependencies())
-	{
-		if (String::endsWith(".dylib", dep))
-			List::addIfDoesNotExist(dylibs, dep);
-	}*/
-
-	// Version B: Assume dylibs not part of project have been set correctly
-	if (inBundle.includeDependentSharedLibraries())
-	{
-		for (auto& target : inState.targets)
+		if (dependencies.size() > 0)
 		{
-			if (target->isProject())
+			if (!Commands::subprocess({ installNameTool, "-id", fmt::format("@rpath/{}", filename), outputFile }, inCleanOutput))
 			{
-				auto& project = static_cast<const ProjectTarget&>(*target);
-				if (project.isSharedLibrary())
-				{
-					const auto targetPath = fmt::format("{}/{}", inBuildOutputDir, project.outputFile());
-					if (!Commands::pathExists(targetPath))
-					{
-						Diagnostic::error(fmt::format("Path doesn't exist for target: {}", targetPath));
-						return false;
-					}
-
-					// if (!Commands::copy(targetPath, m_frameworkPath, m_cleanOutput))
-					// 	return false;
-
-					dylibs.push_back(targetPath);
-				}
-			}
-		}
-	}
-
-	// Process dylibs
-	for (auto& dylib : dylibs)
-	{
-		// TODO: At the moment, this expects the full path
-		const std::string filename = String::getPathFilename(dylib);
-
-		const auto dylibBuild = fmt::format("{}/{}", inExecutablePath, filename);
-		if (!Commands::pathExists(dylibBuild))
-		{
-			auto d = Commands::which(dylib, inCleanOutput);
-			if (d.empty())
-			{
-				d = dylib;
-				if (!Commands::pathExists(d))
-				{
-					bool res = false;
-					for (auto& p : inState.environment.path())
-					{
-						std::string newPath = fmt::format("{}/{}", p, d);
-						res |= Commands::pathExists(newPath);
-						if (res)
-						{
-							d = std::move(newPath);
-							break;
-						}
-					}
-
-					if (!res)
-					{
-						Diagnostic::error(fmt::format("Dependant dylib was not found in path: {}", d));
-						return false;
-					}
-				}
-
-				dylib = filename;
-			}
-
-			if (!Commands::copy(d, inExecutablePath, inCleanOutput))
-			{
-				Diagnostic::error(fmt::format("Error copying dylib: {}", d));
+				Diagnostic::error("install_name_tool error");
 				return false;
 			}
-
-			dylib = fmt::format("{}/{}", inExecutablePath, dylib);
 		}
 
-		if (!Commands::subprocess({ installNameTool, "-change", dylib, fmt::format("@rpath/{}", filename), inRPath }, inCleanOutput))
+		for (auto& dep : dependencies)
 		{
-			Diagnostic::error("install_name_tool error");
-			return false;
-		}
-	}
-
-	// all should be copied by this point
-	for (auto& dylib : dylibs)
-	{
-		const std::string filename = String::getPathFilename(dylib);
-		const auto thisDylib = fmt::format("{}/{}", inExecutablePath, filename);
-		Commands::subprocess({ installNameTool, "-id", fmt::format("@rpath/{}", filename), thisDylib }, inCleanOutput);
-
-		for (auto& d : dylibs)
-		{
-			if (d == dylib)
-				continue;
-
-			const std::string fn = String::getPathFilename(d);
-			const auto dylibBuild = fmt::format("{}/{}", inExecutablePath, fn);
-			Commands::subprocess({ installNameTool, "-change", d, fmt::format("@rpath/{}", fn), thisDylib }, inCleanOutput);
+			auto depFile = String::getPathFilename(dep);
+			if (!Commands::subprocess({ installNameTool, "-change", dep, fmt::format("@rpath/{}", depFile), outputFile }, inCleanOutput))
+			{
+				Diagnostic::error("install_name_tool error");
+				return false;
+			}
 		}
 	}
 

@@ -38,10 +38,6 @@ struct BundleMacOS
 	const std::string& dmgBackground2x() const noexcept;
 	void setDmgBackground2x(const std::string& inValue);
 
-	const StringList& dylibs() const noexcept;
-	void addDylibs(StringList& inList);
-	void addDylib(std::string& inValue);
-
 private:
 	StringList m_dylibs;
 

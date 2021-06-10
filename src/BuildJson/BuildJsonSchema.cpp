@@ -165,13 +165,6 @@ Json Schema::getBuildJson()
 					}
 				]
 			},
-			"dylibs": {
-				"items": {
-					"type": "string"
-				},
-				"uniqueItems": true,
-				"type": "array"
-			},
 			"icon": {
 				"type": "string"
 			},

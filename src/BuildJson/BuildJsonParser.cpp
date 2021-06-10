@@ -1088,9 +1088,6 @@ bool BuildJsonParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNo
 	if (bool val = false; m_buildJson->assignFromKey(val, macosNode, "makeDmg"))
 		macosBundle.setMakeDmg(val);
 
-	if (StringList list; m_buildJson->assignStringListAndValidate(list, macosNode, "dylibs"))
-		macosBundle.addDylibs(list);
-
 	const std::string kDmgBackground{ "dmgBackground" };
 	if (macosNode.contains(kDmgBackground))
 	{

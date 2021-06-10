@@ -23,8 +23,7 @@ public:
 	virtual std::string getExecutablePath() const final;
 	virtual std::string getResourcePath() const final;
 
-	static bool changeRPathOfDependents2(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildOutputDir, const std::string& inRPath, const std::string& inExecutablePath, const bool inCleanOutput);
-	static bool changeRPathOfDependents(BuildState& inState, BundleTarget& inBundle, const std::string& inBuildOutputDir, const std::string& inRPath, const std::string& inExecutablePath, const bool inCleanOutput);
+	static bool changeRPathOfDependents(BuildState& inState, BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath, const bool inCleanOutput);
 
 private:
 	bool createBundleIcon();

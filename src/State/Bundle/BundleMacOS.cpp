@@ -178,20 +178,4 @@ void BundleMacOS::setDmgBackground2x(const std::string& inValue)
 	m_dmgBackground2x = inValue;
 }
 
-/*****************************************************************************/
-const StringList& BundleMacOS::dylibs() const noexcept
-{
-	return m_dylibs;
-}
-
-void BundleMacOS::addDylibs(StringList& inList)
-{
-	List::forEach(inList, this, &BundleMacOS::addDylib);
-}
-
-void BundleMacOS::addDylib(std::string& inValue)
-{
-	List::addIfDoesNotExist(m_dylibs, std::move(inValue));
-}
-
 }
