@@ -55,6 +55,17 @@ bool BundleTarget::validate()
 }
 
 /*****************************************************************************/
+bool BundleTarget::updateRPaths() const noexcept
+{
+	return m_updateRPaths;
+}
+
+void BundleTarget::setUpdateRPaths(const bool inValue) noexcept
+{
+	m_updateRPaths = inValue;
+}
+
+/*****************************************************************************/
 const BundleLinux& BundleTarget::linuxBundle() const noexcept
 {
 	return m_linuxBundle;

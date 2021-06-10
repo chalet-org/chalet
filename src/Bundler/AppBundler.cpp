@@ -238,14 +238,16 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget, BuildState& inState)
 						{
 							if (!inState.tools.getExecutableDependencies(outputFilePath, dependencies))
 							{
-								Diagnostic::error(fmt::format("getExecutableDependencies error for file '{}'.", outputFilePath));
+								Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", outputFilePath));
 								return false;
 							}
 
 							for (auto& dep : dependencies)
 							{
+								const auto filename = String::getPathFilename(dep);
 								if (dep.empty()
 									|| List::contains(depsFromJson, dep)
+									|| List::contains(depsFromJson, filename)
 									//  || List::contains(projectNames, dep)
 								)
 									continue;
@@ -256,8 +258,8 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget, BuildState& inState)
 									depPath = Commands::which(dep);
 									if (depPath.empty())
 									{
-										Diagnostic::warn(fmt::format("Dependency not found in path: '{}'", dep));
-										continue;
+										Diagnostic::error(fmt::format("Dependency not found in path: '{}'", dep));
+										return false;
 									}
 								}
 								else
@@ -286,6 +288,15 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget, BuildState& inState)
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+void AppBundler::addDependencies(std::string&& inFile, StringList&& inDependencies)
+{
+	if (m_dependencyMap.find(inFile) == m_dependencyMap.end())
+	{
+		m_dependencyMap.emplace(std::move(inFile), std::move(inDependencies));
+	}
 }
 
 /*****************************************************************************/

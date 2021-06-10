@@ -5,13 +5,13 @@
 
 #include "Bundler/UniversalBinaryMacOS.hpp"
 
-#include "Bundler/AppBundler.hpp"
 #include "Bundler/AppBundlerMacOS.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -55,10 +55,75 @@ bool UniversalBinaryMacOS::run()
 
 	Output::setQuietNonBuild(quiet);
 
+	if (!gatherDependencies(m_state, *oppositeState, *universalState))
+		return false;
+
 	if (!createUniversalBinaries(m_state, *oppositeState, *universalState))
 		return false;
 
 	return bundleState(*universalState);
+}
+
+/*****************************************************************************/
+bool UniversalBinaryMacOS::gatherDependencies(BuildState& inStateA, BuildState& inStateB, BuildState& inUniversalState)
+{
+	auto gather = [&](BuildState& inState) -> bool {
+		for (auto& target : inState.distribution)
+		{
+			if (target->isDistributionBundle())
+			{
+				auto& bundle = static_cast<BundleTarget&>(*target);
+				bundle.setUpdateRPaths(false);
+
+				if (!m_bundler.gatherDependencies(bundle, inState))
+					return false;
+			}
+		}
+		return true;
+	};
+
+	if (!gather(inStateA))
+		return false;
+
+	if (!gather(inStateB))
+		return false;
+
+	for (auto& target : inUniversalState.distribution)
+	{
+		if (target->isDistributionBundle())
+		{
+			auto& bundle = static_cast<BundleTarget&>(*target);
+			bundle.setUpdateRPaths(false);
+		}
+	}
+
+	BinaryDependencyMap newDeps;
+	auto& archABuildDir = inStateA.paths.buildOutputDir();
+	auto& universalBuildDir = inUniversalState.paths.buildOutputDir();
+	for (auto& [file, deps] : m_bundler.dependencyMap())
+	{
+		if (String::contains(archABuildDir, file))
+		{
+			StringList outDeps;
+			for (std::string dep : deps)
+			{
+				String::replaceAll(dep, archABuildDir, universalBuildDir);
+				outDeps.push_back(std::move(dep));
+			}
+			newDeps.emplace(file, std::move(outDeps));
+		}
+	}
+
+	for (auto& [file, deps] : newDeps)
+	{
+		auto outFile = file;
+		String::replaceAll(outFile, archABuildDir, universalBuildDir);
+		m_bundler.addDependencies(std::move(outFile), std::move(deps));
+	}
+
+	// m_bundler.logDependencies();
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -124,31 +189,71 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 		}
 	}
 
+	auto& archA = inStateA.info.targetArchitectureString();
+	auto& archB = inStateB.info.targetArchitectureString();
+
+	auto& installNameTool = inUniversalState.tools.installNameTool();
+
+	auto makeIntermediateFile = [&](const std::string& inFile, const std::string& inArch, const std::string& inOutFolder) {
+		auto tmpFolder = fmt::format("{}/tmp_{}", inOutFolder, inArch);
+		if (!Commands::pathExists(tmpFolder))
+			Commands::makeDirectory(tmpFolder);
+
+		auto file = String::getPathFilename(inFile);
+		auto tmpFile = fmt::format("{}/{}", tmpFolder, file);
+		if (Commands::copySilent(inFile, tmpFolder))
+		{
+			auto iter = m_bundler.dependencyMap().find(inFile);
+			if (!AppBundlerMacOS::changeRPathOfDependents(installNameTool, file, iter->second, tmpFile, true))
+			{
+				Diagnostic::error("Error chaning run path for file: {}", tmpFile);
+				return std::make_pair(std::string(), std::string());
+			}
+		}
+		return std::make_pair(std::move(tmpFile), std::move(tmpFolder));
+	};
+
+	StringList removeFolders;
 	for (std::size_t i = 0; i < outputFilesA.size(); ++i)
 	{
-		auto& fileArchA = outputFilesA[i];
-		auto& fileArchB = outputFilesB[i];
 		auto& fileUniversal = outputFilesUniversal[i];
+
+		auto outFolder = String::getPathFolder(fileUniversal);
+
+		auto [tmpFileA, tmpFolderA] = makeIntermediateFile(outputFilesA[i], archA, outFolder);
+		if (tmpFileA.empty())
+			return false;
+
+		auto [tmpFileB, tmpFolderB] = makeIntermediateFile(outputFilesB[i], archB, outFolder);
+		if (tmpFileA.empty())
+			return false;
 
 		// LOG(fileArchA, fileArchB, fileUniversal);
 
 		// Example:
 		// lipo -create -output universal-apple-darwin_Release/chalet x86_64-apple-darwin_Release/chalet  arm64-apple-darwin_Release/chalet
 
-		if (!Commands::subprocess({ m_state.tools.lipo(), "-create", "-output", fileUniversal, std::move(fileArchA), std::move(fileArchB) }))
+		if (!Commands::subprocess({ m_state.tools.lipo(), "-create", "-output", fileUniversal, std::move(tmpFileA), std::move(tmpFileB) }))
 		{
 			Diagnostic::error(fmt::format("There was an error making the binary: {}", fileUniversal));
 			return false;
 		}
+
+		List::addIfDoesNotExist(removeFolders, std::move(tmpFolderA));
+		List::addIfDoesNotExist(removeFolders, std::move(tmpFolderB));
+	}
+
+	for (auto& path : removeFolders)
+	{
+		Commands::removeRecursively(path);
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool UniversalBinaryMacOS::bundleState(BuildState& inUniversalState) const
+bool UniversalBinaryMacOS::bundleState(BuildState& inUniversalState)
 {
-	AppBundler bundler;
 	const auto& buildFile = m_inputs.buildFile();
 
 	for (auto& target : m_state.distribution)
@@ -156,18 +261,13 @@ bool UniversalBinaryMacOS::bundleState(BuildState& inUniversalState) const
 		if (target->isDistributionBundle())
 		{
 			auto& bundle = static_cast<BundleTarget&>(*target);
-			if (!bundler.gatherDependencies(bundle, inUniversalState))
-				return false;
-
 			if (!bundle.macosBundle().universalBinary())
 			{
-				if (!bundler.run(target, m_state, buildFile))
+				if (!m_bundler.run(target, m_state, buildFile))
 					return false;
 			}
 		}
 	}
-
-	// bundler.logDependencies();
 
 	for (auto& target : inUniversalState.distribution)
 	{
@@ -176,7 +276,7 @@ bool UniversalBinaryMacOS::bundleState(BuildState& inUniversalState) const
 			auto& bundle = static_cast<BundleTarget&>(*target);
 			if (bundle.macosBundle().universalBinary())
 			{
-				if (!bundler.run(target, inUniversalState, buildFile))
+				if (!m_bundler.run(target, inUniversalState, buildFile))
 					return false;
 			}
 		}

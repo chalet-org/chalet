@@ -97,7 +97,14 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
 
-	if (!changeRPathOfDependents(m_state, m_dependencyMap, m_executablePath, m_cleanOutput))
+	auto& installNameTool = m_state.tools.installNameTool();
+	if (m_bundle.updateRPaths())
+	{
+		if (!changeRPathOfDependents(installNameTool, m_dependencyMap, m_executablePath, m_cleanOutput))
+			return false;
+	}
+
+	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/.", m_executableOutputPath }, m_cleanOutput))
 		return false;
 
 	// No app name = no bundle to make
@@ -174,32 +181,39 @@ std::string AppBundlerMacOS::getResourcePath() const
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::changeRPathOfDependents(BuildState& inState, BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath, const bool inCleanOutput)
+bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath, const bool inCleanOutput)
 {
-	auto& installNameTool = inState.tools.installNameTool();
-
 	for (auto& [file, dependencies] : inDependencyMap)
 	{
 		auto filename = String::getPathFilename(file);
 		const auto outputFile = fmt::format("{}/{}", inExecutablePath, filename);
 
-		if (dependencies.size() > 0)
-		{
-			if (!Commands::subprocess({ installNameTool, "-id", fmt::format("@rpath/{}", filename), outputFile }, inCleanOutput))
-			{
-				Diagnostic::error("install_name_tool error");
-				return false;
-			}
-		}
+		if (!changeRPathOfDependents(inInstallNameTool, filename, dependencies, outputFile, inCleanOutput))
+			return false;
+	}
 
-		for (auto& dep : dependencies)
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile, const bool inCleanOutput)
+{
+	if (inDependencies.size() > 0)
+	{
+		if (!Commands::subprocess({ inInstallNameTool, "-id", fmt::format("@rpath/{}", inFile), inOutputFile }, inCleanOutput))
 		{
-			auto depFile = String::getPathFilename(dep);
-			if (!Commands::subprocess({ installNameTool, "-change", dep, fmt::format("@rpath/{}", depFile), outputFile }, inCleanOutput))
-			{
-				Diagnostic::error("install_name_tool error");
-				return false;
-			}
+			Diagnostic::error("install_name_tool error");
+			return false;
+		}
+	}
+
+	for (auto& dep : inDependencies)
+	{
+		auto depFile = String::getPathFilename(dep);
+		if (!Commands::subprocess({ inInstallNameTool, "-change", dep, fmt::format("@rpath/{}", depFile), inOutputFile }, inCleanOutput))
+		{
+			Diagnostic::error("install_name_tool error");
+			return false;
 		}
 	}
 

@@ -388,6 +388,25 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const bo
 }
 
 /*****************************************************************************/
+bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
+{
+	try
+	{
+		fs::path from{ inFrom };
+		fs::path to{ inTo / from.filename() };
+
+		fs::copy(from, to, fs::copy_options::recursive | fs::copy_options::overwrite_existing);
+
+		return true;
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::error(err.what());
+		return false;
+	}
+}
+
+/*****************************************************************************/
 bool Commands::copySkipExisting(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput)
 {
 	try

@@ -20,6 +20,9 @@ struct BundleTarget final : public IBuildTarget
 	virtual void initialize() final;
 	virtual bool validate() final;
 
+	bool updateRPaths() const noexcept;
+	void setUpdateRPaths(const bool inValue) noexcept;
+
 	const BundleLinux& linuxBundle() const noexcept;
 	void setLinuxBundle(BundleLinux&& inValue);
 
@@ -68,6 +71,7 @@ private:
 	std::string m_mainProject;
 
 	bool m_includeDependentSharedLibraries = true;
+	bool m_updateRPaths = true;
 };
 }
 

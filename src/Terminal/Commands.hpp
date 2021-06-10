@@ -35,6 +35,7 @@ bool setExecutableFlag(const std::string& inPath, const bool inCleanOutput = tru
 bool createDirectorySymbolicLink(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 bool createSymbolicLink(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 bool copy(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
+bool copySilent(const std::string& inFrom, const std::string& inTo);
 bool copySkipExisting(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 bool copyRename(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
 bool rename(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput = true);
