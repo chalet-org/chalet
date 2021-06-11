@@ -60,8 +60,10 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 	if (!initializeCompilerConfigs(inTargets))
 		return false;
 
+#if defined(CHALET_MACOS)
 	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalArm64_X64)
 		return true;
+#endif
 
 	if (m_detectedToolchain == ToolchainType::LLVM)
 	{
