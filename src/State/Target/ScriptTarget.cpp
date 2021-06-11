@@ -39,12 +39,12 @@ const StringList& ScriptTarget::scripts() const noexcept
 	return m_scripts;
 }
 
-void ScriptTarget::addScripts(StringList& inList)
+void ScriptTarget::addScripts(StringList&& inList)
 {
 	List::forEach(inList, this, &ScriptTarget::addScript);
 }
 
-void ScriptTarget::addScript(std::string& inValue)
+void ScriptTarget::addScript(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_scripts, std::move(inValue));
 }

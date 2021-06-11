@@ -73,12 +73,12 @@ const StringList& CMakeTarget::defines() const noexcept
 	return m_defines;
 }
 
-void CMakeTarget::addDefines(StringList& inList)
+void CMakeTarget::addDefines(StringList&& inList)
 {
 	List::forEach(inList, this, &CMakeTarget::addDefine);
 }
 
-void CMakeTarget::addDefine(std::string& inValue)
+void CMakeTarget::addDefine(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_defines, std::move(inValue));
 }

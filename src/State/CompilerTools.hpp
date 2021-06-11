@@ -31,20 +31,20 @@ struct CompilerTools
 	const std::string& compilerVersionStringC() const noexcept;
 
 	const std::string& archiver() const noexcept;
-	void setArchiver(const std::string& inValue) noexcept;
+	void setArchiver(std::string&& inValue) noexcept;
 	bool isArchiverLibTool() const noexcept;
 
 	const std::string& cpp() const noexcept;
-	void setCpp(const std::string& inValue) noexcept;
+	void setCpp(std::string&& inValue) noexcept;
 
 	const std::string& cc() const noexcept;
-	void setCc(const std::string& inValue) noexcept;
+	void setCc(std::string&& inValue) noexcept;
 
 	const std::string& linker() const noexcept;
-	void setLinker(const std::string& inValue) noexcept;
+	void setLinker(std::string&& inValue) noexcept;
 
 	const std::string& rc() const noexcept;
-	void setRc(const std::string& inValue) noexcept;
+	void setRc(std::string&& inValue) noexcept;
 
 	std::string getRootPathVariable();
 

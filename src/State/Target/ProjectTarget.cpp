@@ -28,7 +28,7 @@ ProjectTarget::ProjectTarget(const BuildState& inState) :
 		"m",
 		"rc"
 	};
-	addFileExtensions(exts);
+	addFileExtensions(std::move(exts));
 }
 
 /*****************************************************************************/
@@ -129,12 +129,12 @@ const StringList& ProjectTarget::fileExtensions() const noexcept
 	return m_fileExtensions;
 }
 
-void ProjectTarget::addFileExtensions(StringList& inList)
+void ProjectTarget::addFileExtensions(StringList&& inList)
 {
 	List::forEach(inList, this, &ProjectTarget::addFileExtension);
 }
 
-void ProjectTarget::addFileExtension(std::string& inValue)
+void ProjectTarget::addFileExtension(std::string&& inValue)
 {
 	if (!inValue.empty() && inValue.front() != '.')
 		inValue = "." + inValue;
@@ -148,13 +148,13 @@ const StringList& ProjectTarget::defines() const noexcept
 	return m_defines;
 }
 
-void ProjectTarget::addDefines(StringList& inList)
+void ProjectTarget::addDefines(StringList&& inList)
 {
 	// -D
 	List::forEach(inList, this, &ProjectTarget::addDefine);
 }
 
-void ProjectTarget::addDefine(std::string& inValue)
+void ProjectTarget::addDefine(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_defines, std::move(inValue));
 }
@@ -165,13 +165,13 @@ const StringList& ProjectTarget::links() const noexcept
 	return m_links;
 }
 
-void ProjectTarget::addLinks(StringList& inList)
+void ProjectTarget::addLinks(StringList&& inList)
 {
 	// -l
 	List::forEach(inList, this, &ProjectTarget::addLink);
 }
 
-void ProjectTarget::addLink(std::string& inValue)
+void ProjectTarget::addLink(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_links, std::move(inValue));
 }
@@ -215,13 +215,13 @@ const StringList& ProjectTarget::staticLinks() const noexcept
 	return m_staticLinks;
 }
 
-void ProjectTarget::addStaticLinks(StringList& inList)
+void ProjectTarget::addStaticLinks(StringList&& inList)
 {
 	// -Wl,-Bstatic -l
 	List::forEach(inList, this, &ProjectTarget::addStaticLink);
 }
 
-void ProjectTarget::addStaticLink(std::string& inValue)
+void ProjectTarget::addStaticLink(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_staticLinks, std::move(inValue));
 }
@@ -232,13 +232,13 @@ const StringList& ProjectTarget::libDirs() const noexcept
 	return m_libDirs;
 }
 
-void ProjectTarget::addLibDirs(StringList& inList)
+void ProjectTarget::addLibDirs(StringList&& inList)
 {
 	// -L
 	List::forEach(inList, this, &ProjectTarget::addLibDir);
 }
 
-void ProjectTarget::addLibDir(std::string& inValue)
+void ProjectTarget::addLibDir(std::string&& inValue)
 {
 	if (inValue.back() != '/')
 		inValue += '/';
@@ -252,13 +252,13 @@ const StringList& ProjectTarget::includeDirs() const noexcept
 	return m_includeDirs;
 }
 
-void ProjectTarget::addIncludeDirs(StringList& inList)
+void ProjectTarget::addIncludeDirs(StringList&& inList)
 {
 	// -I
 	List::forEach(inList, this, &ProjectTarget::addIncludeDir);
 }
 
-void ProjectTarget::addIncludeDir(std::string& inValue)
+void ProjectTarget::addIncludeDir(std::string&& inValue)
 {
 	if (inValue.back() != '/')
 		inValue += '/';
@@ -272,12 +272,12 @@ const StringList& ProjectTarget::runDependencies() const noexcept
 	return m_runDependencies;
 }
 
-void ProjectTarget::addRunDependencies(StringList& inList)
+void ProjectTarget::addRunDependencies(StringList&& inList)
 {
 	List::forEach(inList, this, &ProjectTarget::addRunDependency);
 }
 
-void ProjectTarget::addRunDependency(std::string& inValue)
+void ProjectTarget::addRunDependency(std::string&& inValue)
 {
 	// if (inValue.back() != '/')
 	// 	inValue += '/'; // no!
@@ -291,13 +291,13 @@ const StringList& ProjectTarget::warnings() const noexcept
 	return m_warnings;
 }
 
-void ProjectTarget::addWarnings(StringList& inList)
+void ProjectTarget::addWarnings(StringList&& inList)
 {
 	List::forEach(inList, this, &ProjectTarget::addWarning);
 	m_warningsPreset = ProjectWarnings::Custom;
 }
 
-void ProjectTarget::addWarning(std::string& inValue)
+void ProjectTarget::addWarning(std::string&& inValue)
 {
 	if (String::equals(inValue.substr(0, 2), "-W"))
 	{
@@ -308,9 +308,9 @@ void ProjectTarget::addWarning(std::string& inValue)
 	List::addIfDoesNotExist(m_warnings, std::move(inValue));
 }
 
-void ProjectTarget::setWarningPreset(const std::string& inValue)
+void ProjectTarget::setWarningPreset(std::string&& inValue)
 {
-	m_warningsPresetString = inValue;
+	m_warningsPresetString = std::move(inValue);
 }
 
 ProjectWarnings ProjectTarget::warningsPreset() const noexcept
@@ -330,12 +330,12 @@ const StringList& ProjectTarget::compileOptions() const noexcept
 	return m_compileOptions;
 }
 
-void ProjectTarget::addCompileOptions(StringList& inList)
+void ProjectTarget::addCompileOptions(StringList&& inList)
 {
 	List::forEach(inList, this, &ProjectTarget::addCompileOption);
 }
 
-void ProjectTarget::addCompileOption(std::string& inValue)
+void ProjectTarget::addCompileOption(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_compileOptions, std::move(inValue));
 }
@@ -345,11 +345,11 @@ const StringList& ProjectTarget::linkerOptions() const noexcept
 {
 	return m_linkerOptions;
 }
-void ProjectTarget::addLinkerOptions(StringList& inList)
+void ProjectTarget::addLinkerOptions(StringList&& inList)
 {
 	List::forEach(inList, this, &ProjectTarget::addLinkerOption);
 }
-void ProjectTarget::addLinkerOption(std::string& inValue)
+void ProjectTarget::addLinkerOption(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_linkerOptions, std::move(inValue));
 }
@@ -360,13 +360,13 @@ const StringList& ProjectTarget::macosFrameworkPaths() const noexcept
 	return m_macosFrameworkPaths;
 }
 
-void ProjectTarget::addMacosFrameworkPaths(StringList& inList)
+void ProjectTarget::addMacosFrameworkPaths(StringList&& inList)
 {
 	// -F
 	List::forEach(inList, this, &ProjectTarget::addMacosFrameworkPath);
 }
 
-void ProjectTarget::addMacosFrameworkPath(std::string& inValue)
+void ProjectTarget::addMacosFrameworkPath(std::string&& inValue)
 {
 	if (inValue.back() != '/')
 		inValue += '/';
@@ -380,13 +380,13 @@ const StringList& ProjectTarget::macosFrameworks() const noexcept
 	return m_macosFrameworks;
 }
 
-void ProjectTarget::addMacosFrameworks(StringList& inList)
+void ProjectTarget::addMacosFrameworks(StringList&& inList)
 {
 	// -framework *.framework
 	List::forEach(inList, this, &ProjectTarget::addMacosFramework);
 }
 
-void ProjectTarget::addMacosFramework(std::string& inValue)
+void ProjectTarget::addMacosFramework(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_macosFrameworks, std::move(inValue));
 }
@@ -403,9 +403,9 @@ const std::string& ProjectTarget::cStandard() const noexcept
 	return m_cStandard;
 }
 
-void ProjectTarget::setCStandard(const std::string& inValue) noexcept
+void ProjectTarget::setCStandard(std::string&& inValue) noexcept
 {
-	m_cStandard = inValue;
+	m_cStandard = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -414,9 +414,9 @@ const std::string& ProjectTarget::cppStandard() const noexcept
 	return m_cppStandard;
 }
 
-void ProjectTarget::setCppStandard(const std::string& inValue) noexcept
+void ProjectTarget::setCppStandard(std::string&& inValue) noexcept
 {
-	m_cppStandard = inValue;
+	m_cppStandard = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -448,12 +448,12 @@ const StringList& ProjectTarget::files() const noexcept
 	return m_files;
 }
 
-void ProjectTarget::addFiles(StringList& inList)
+void ProjectTarget::addFiles(StringList&& inList)
 {
 	List::forEach(inList, this, &ProjectTarget::addFile);
 }
 
-void ProjectTarget::addFile(std::string& inValue)
+void ProjectTarget::addFile(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_files, std::move(inValue));
 }
@@ -464,12 +464,12 @@ const StringList& ProjectTarget::locations() const noexcept
 	return m_locations;
 }
 
-void ProjectTarget::addLocations(StringList& inList)
+void ProjectTarget::addLocations(StringList&& inList)
 {
 	List::forEach(inList, this, &ProjectTarget::addLocation);
 }
 
-void ProjectTarget::addLocation(std::string& inValue)
+void ProjectTarget::addLocation(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_locations, std::move(inValue));
 }
@@ -480,12 +480,12 @@ const StringList& ProjectTarget::locationExcludes() const noexcept
 	return m_locationExcludes;
 }
 
-void ProjectTarget::addLocationExcludes(StringList& inList)
+void ProjectTarget::addLocationExcludes(StringList&& inList)
 {
 	List::forEach(inList, this, &ProjectTarget::addLocationExclude);
 }
 
-void ProjectTarget::addLocationExclude(std::string& inValue)
+void ProjectTarget::addLocationExclude(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_locationExcludes, std::move(inValue));
 }
@@ -496,12 +496,12 @@ const std::string& ProjectTarget::pch() const noexcept
 	return m_pch;
 }
 
-void ProjectTarget::setPch(const std::string& inValue) noexcept
+void ProjectTarget::setPch(std::string&& inValue) noexcept
 {
-	m_pch = inValue;
+	m_pch = std::move(inValue);
 
 	std::string path = String::getPathFolder(m_pch);
-	addLocation(path);
+	addLocation(std::move(path));
 }
 
 bool ProjectTarget::usesPch() const noexcept
@@ -515,12 +515,12 @@ const StringList& ProjectTarget::runArguments() const noexcept
 	return m_runArguments;
 }
 
-void ProjectTarget::addRunArguments(StringList& inList)
+void ProjectTarget::addRunArguments(StringList&& inList)
 {
 	List::forEach(inList, this, &ProjectTarget::addRunArgument);
 }
 
-void ProjectTarget::addRunArgument(std::string& inValue)
+void ProjectTarget::addRunArgument(std::string&& inValue)
 {
 	m_runArguments.push_back(std::move(inValue));
 }
@@ -531,9 +531,9 @@ const std::string& ProjectTarget::linkerScript() const noexcept
 	return m_linkerScript;
 }
 
-void ProjectTarget::setLinkerScript(const std::string& inValue) noexcept
+void ProjectTarget::setLinkerScript(std::string&& inValue) noexcept
 {
-	m_linkerScript = inValue;
+	m_linkerScript = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -542,9 +542,9 @@ const std::string& ProjectTarget::windowsApplicationManifest() const noexcept
 	return m_windowsApplicationManifest;
 }
 
-void ProjectTarget::setWindowsApplicationManifest(const std::string& inValue) noexcept
+void ProjectTarget::setWindowsApplicationManifest(std::string&& inValue) noexcept
 {
-	m_windowsApplicationManifest = inValue;
+	m_windowsApplicationManifest = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -553,9 +553,9 @@ const std::string& ProjectTarget::windowsApplicationIcon() const noexcept
 	return m_windowsApplicationIcon;
 }
 
-void ProjectTarget::setWindowsApplicationIcon(const std::string& inValue) noexcept
+void ProjectTarget::setWindowsApplicationIcon(std::string&& inValue) noexcept
 {
-	m_windowsApplicationIcon = inValue;
+	m_windowsApplicationIcon = std::move(inValue);
 }
 
 /*****************************************************************************/

@@ -18,8 +18,8 @@ struct CMakeTarget final : public IBuildTarget
 	virtual bool validate() final;
 
 	const StringList& defines() const noexcept;
-	void addDefines(StringList& inList);
-	void addDefine(std::string& inValue);
+	void addDefines(StringList&& inList);
+	void addDefine(std::string&& inValue);
 
 	const std::string& location() const noexcept;
 	void setLocation(std::string&& inValue) noexcept;

@@ -25,9 +25,9 @@ const std::string& GitDependency::repository() const noexcept
 	return m_repository;
 }
 
-void GitDependency::setRepository(const std::string& inValue) noexcept
+void GitDependency::setRepository(std::string&& inValue) noexcept
 {
-	m_repository = inValue;
+	m_repository = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -36,9 +36,9 @@ const std::string& GitDependency::branch() const noexcept
 	return m_branch;
 }
 
-void GitDependency::setBranch(const std::string& inValue) noexcept
+void GitDependency::setBranch(std::string&& inValue) noexcept
 {
-	m_branch = inValue;
+	m_branch = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -47,9 +47,9 @@ const std::string& GitDependency::tag() const noexcept
 	return m_tag;
 }
 
-void GitDependency::setTag(const std::string& inValue) noexcept
+void GitDependency::setTag(std::string&& inValue) noexcept
 {
-	m_tag = inValue;
+	m_tag = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -58,9 +58,9 @@ const std::string& GitDependency::commit() const noexcept
 	return m_commit;
 }
 
-void GitDependency::setCommit(const std::string& inValue) noexcept
+void GitDependency::setCommit(std::string&& inValue) noexcept
 {
-	m_commit = inValue;
+	m_commit = std::move(inValue);
 }
 
 /*****************************************************************************/

@@ -26,9 +26,9 @@ const std::string& WorkspaceInfo::workspace() const noexcept
 	return m_workspace;
 }
 
-void WorkspaceInfo::setWorkspace(const std::string& inValue) noexcept
+void WorkspaceInfo::setWorkspace(std::string&& inValue) noexcept
 {
-	m_workspace = inValue;
+	m_workspace = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -36,9 +36,9 @@ const std::string& WorkspaceInfo::version() const noexcept
 {
 	return m_version;
 }
-void WorkspaceInfo::setVersion(const std::string& inValue) noexcept
+void WorkspaceInfo::setVersion(std::string&& inValue) noexcept
 {
-	m_version = inValue;
+	m_version = std::move(inValue);
 }
 
 /*****************************************************************************/

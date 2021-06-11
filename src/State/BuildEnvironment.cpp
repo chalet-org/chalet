@@ -123,12 +123,12 @@ const StringList& BuildEnvironment::path() const noexcept
 	return m_path;
 }
 
-void BuildEnvironment::addPaths(StringList& inList)
+void BuildEnvironment::addPaths(StringList&& inList)
 {
 	List::forEach(inList, this, &BuildEnvironment::addPath);
 }
 
-void BuildEnvironment::addPath(std::string& inValue)
+void BuildEnvironment::addPath(std::string&& inValue)
 {
 	if (inValue.back() == '/')
 		inValue.pop_back();

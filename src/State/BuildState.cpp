@@ -143,17 +143,17 @@ bool BuildState::initializeBuild()
 			if (!project.isStaticLibrary())
 			{
 				std::string intermediateDir = paths.intermediateDir();
-				project.addLocation(intermediateDir);
+				project.addLocation(std::move(intermediateDir));
 			}
 
 			const bool isMsvc = compilerConfig.isMsvc();
 			if (!isMsvc)
 			{
 				std::string libDir = compilerConfig.compilerPathLib();
-				project.addLibDir(libDir);
+				project.addLibDir(std::move(libDir));
 
 				std::string includeDir = compilerConfig.compilerPathInclude();
-				project.addIncludeDir(includeDir);
+				project.addIncludeDir(std::move(includeDir));
 			}
 
 			for (auto& t : targets)

@@ -690,7 +690,7 @@ bool CacheJsonParser::parseRoot(const Json& inNode)
 {
 	auto& environmentCache = m_state.cache.environmentCache();
 	if (std::string val; environmentCache.assignFromKey(val, inNode, kKeyWorkingDirectory))
-		m_state.paths.setWorkingDirectory(val);
+		m_state.paths.setWorkingDirectory(std::move(val));
 
 	return true;
 }
@@ -745,10 +745,10 @@ bool CacheJsonParser::parseTools(Json& inNode)
 
 	auto& environmentCache = m_state.cache.environmentCache();
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyBash))
-		m_state.tools.setBash(val);
+		m_state.tools.setBash(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyBrew))
-		m_state.tools.setBrew(val);
+		m_state.tools.setBrew(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCmake))
 	{
@@ -759,17 +759,17 @@ bool CacheJsonParser::parseTools(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.tools.setCmake(val);
+		m_state.tools.setCmake(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCodesign))
-		m_state.tools.setCodesign(val);
+		m_state.tools.setCodesign(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCommandPrompt))
-		m_state.tools.setCommandPrompt(val);
+		m_state.tools.setCommandPrompt(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyGit))
-		m_state.tools.setGit(val);
+		m_state.tools.setGit(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyGprof))
 	{
@@ -780,26 +780,26 @@ bool CacheJsonParser::parseTools(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.tools.setGprof(val);
+		m_state.tools.setGprof(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyHdiutil))
-		m_state.tools.setHdiutil(val);
+		m_state.tools.setHdiutil(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstallNameTool))
-		m_state.tools.setInstallNameTool(val);
+		m_state.tools.setInstallNameTool(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstruments))
-		m_state.tools.setInstruments(val);
+		m_state.tools.setInstruments(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLdd))
-		m_state.tools.setLdd(val);
+		m_state.tools.setLdd(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLipo))
-		m_state.tools.setLipo(val);
+		m_state.tools.setLipo(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLua))
-		m_state.tools.setLua(val);
+		m_state.tools.setLua(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyMake))
 	{
@@ -810,12 +810,12 @@ bool CacheJsonParser::parseTools(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.tools.setMake(val);
+		m_state.tools.setMake(std::move(val));
 		m_make = std::move(val);
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyNinja))
-		m_state.tools.setNinja(val);
+		m_state.tools.setNinja(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyObjdump))
 	{
@@ -826,23 +826,23 @@ bool CacheJsonParser::parseTools(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.tools.setObjdump(val);
+		m_state.tools.setObjdump(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyOsascript))
-		m_state.tools.setOsascript(val);
+		m_state.tools.setOsascript(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyOtool))
-		m_state.tools.setOtool(val);
+		m_state.tools.setOtool(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPerl))
-		m_state.tools.setPerl(val);
+		m_state.tools.setPerl(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPlutil))
-		m_state.tools.setPlutil(val);
+		m_state.tools.setPlutil(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPowershell))
-		m_state.tools.setPowershell(val);
+		m_state.tools.setPowershell(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPython))
 	{
@@ -853,7 +853,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.tools.setPython(val);
+		m_state.tools.setPython(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPython3))
@@ -865,7 +865,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.tools.setPython3(val);
+		m_state.tools.setPython3(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyRuby))
@@ -877,26 +877,26 @@ bool CacheJsonParser::parseTools(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.tools.setRuby(val);
+		m_state.tools.setRuby(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeySample))
-		m_state.tools.setSample(val);
+		m_state.tools.setSample(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeySips))
-		m_state.tools.setSips(val);
+		m_state.tools.setSips(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyTiffutil))
-		m_state.tools.setTiffutil(val);
+		m_state.tools.setTiffutil(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyXcodebuild))
-		m_state.tools.setXcodebuild(val);
+		m_state.tools.setXcodebuild(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyXcodegen))
-		m_state.tools.setXcodegen(val);
+		m_state.tools.setXcodegen(std::move(val));
 
 	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyXcrun))
-		m_state.tools.setXcrun(val);
+		m_state.tools.setXcrun(std::move(val));
 
 	return true;
 }
@@ -927,7 +927,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setArchiver(val);
+		m_state.compilerTools.setArchiver(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyCpp))
@@ -939,7 +939,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setCpp(val);
+		m_state.compilerTools.setCpp(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyCc))
@@ -951,7 +951,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setCc(val);
+		m_state.compilerTools.setCc(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyLinker))
@@ -963,7 +963,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setLinker(val);
+		m_state.compilerTools.setLinker(std::move(val));
 	}
 
 	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyWindowsResource))
@@ -975,7 +975,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 			m_state.cache.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setRc(val);
+		m_state.compilerTools.setRc(std::move(val));
 	}
 
 	return true;

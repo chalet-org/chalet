@@ -17,10 +17,10 @@ struct WorkspaceInfo;
 struct BuildPaths
 {
 	const std::string& workingDirectory() const noexcept;
-	void setWorkingDirectory(const std::string& inValue);
+	void setWorkingDirectory(std::string&& inValue);
 
 	const std::string& externalDepDir() const noexcept;
-	void setExternalDepDir(const std::string& inValue) noexcept;
+	void setExternalDepDir(std::string&& inValue) noexcept;
 
 	const std::string& buildPath() const;
 	const std::string& buildOutputDir() const noexcept;

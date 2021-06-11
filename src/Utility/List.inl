@@ -9,11 +9,11 @@ namespace chalet
 {
 /*****************************************************************************/
 template <typename VectorType, class T>
-void List::forEach(std::vector<VectorType>& inList, T* inst, void (T::*func)(VectorType&))
+void List::forEach(std::vector<VectorType>& inList, T* inst, void (T::*func)(VectorType&&))
 {
-	for (auto& item : inList)
+	for (auto&& item : inList)
 	{
-		std::invoke(func, inst, item);
+		std::invoke(func, inst, std::move(item));
 	}
 }
 

@@ -89,9 +89,9 @@ const std::string& BundleMacOS::bundleName() const noexcept
 	return m_bundleName;
 }
 
-void BundleMacOS::setBundleName(const std::string& inValue)
+void BundleMacOS::setBundleName(std::string&& inValue)
 {
-	m_bundleName = inValue;
+	m_bundleName = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -100,9 +100,9 @@ const std::string& BundleMacOS::icon() const noexcept
 	return m_icon;
 }
 
-void BundleMacOS::setIcon(const std::string& inValue)
+void BundleMacOS::setIcon(std::string&& inValue)
 {
-	m_icon = inValue;
+	m_icon = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -111,7 +111,7 @@ const std::string& BundleMacOS::infoPropertyList() const noexcept
 	return m_infoPropertyList;
 }
 
-void BundleMacOS::setInfoPropertyList(const std::string& inValue)
+void BundleMacOS::setInfoPropertyList(std::string&& inValue)
 {
 	if (String::endsWith(".plist", inValue))
 	{
@@ -119,7 +119,7 @@ void BundleMacOS::setInfoPropertyList(const std::string& inValue)
 	}
 	else
 	{
-		m_infoPropertyList = inValue;
+		m_infoPropertyList = std::move(inValue);
 	}
 }
 
@@ -162,9 +162,9 @@ const std::string& BundleMacOS::dmgBackground1x() const noexcept
 	return m_dmgBackground1x;
 }
 
-void BundleMacOS::setDmgBackground1x(const std::string& inValue)
+void BundleMacOS::setDmgBackground1x(std::string&& inValue)
 {
-	m_dmgBackground1x = inValue;
+	m_dmgBackground1x = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -173,9 +173,9 @@ const std::string& BundleMacOS::dmgBackground2x() const noexcept
 	return m_dmgBackground2x;
 }
 
-void BundleMacOS::setDmgBackground2x(const std::string& inValue)
+void BundleMacOS::setDmgBackground2x(std::string&& inValue)
 {
-	m_dmgBackground2x = inValue;
+	m_dmgBackground2x = std::move(inValue);
 }
 
 }

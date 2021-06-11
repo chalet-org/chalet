@@ -15,10 +15,10 @@ struct BundleLinux
 	bool validate();
 
 	const std::string& icon() const noexcept;
-	void setIcon(const std::string& inValue);
+	void setIcon(std::string&& inValue);
 
 	const std::string& desktopEntry() const noexcept;
-	void setDesktopEntry(const std::string& inValue);
+	void setDesktopEntry(std::string&& inValue);
 
 private:
 	std::string m_icon;

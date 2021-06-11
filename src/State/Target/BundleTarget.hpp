@@ -33,28 +33,28 @@ struct BundleTarget final : public IBuildTarget
 	void setWindowsBundle(BundleWindows&& inValue);
 
 	const std::string& outDir() const noexcept;
-	void setOutDir(const std::string& inValue);
+	void setOutDir(std::string&& inValue);
 
 	const std::string& configuration() const noexcept;
-	void setConfiguration(const std::string& inValue);
+	void setConfiguration(std::string&& inValue);
 
 	const std::string& mainProject() const noexcept;
-	void setMainProject(const std::string& inValue);
+	void setMainProject(std::string&& inValue);
 
 	bool includeDependentSharedLibraries() const noexcept;
 	void setIncludeDependentSharedLibraries(const bool inValue) noexcept;
 
 	const StringList& projects() const noexcept;
-	void addProjects(StringList& inList);
-	void addProject(std::string& inValue);
+	void addProjects(StringList&& inList);
+	void addProject(std::string&& inValue);
 
 	const StringList& excludes() const noexcept;
-	void addExcludes(StringList& inList);
-	void addExclude(std::string& inValue);
+	void addExcludes(StringList&& inList);
+	void addExclude(std::string&& inValue);
 
 	const StringList& dependencies() const noexcept;
-	void addDependencies(StringList& inList);
-	void addDependency(std::string& inValue);
+	void addDependencies(StringList&& inList);
+	void addDependency(std::string&& inValue);
 	void sortDependencies();
 
 private:

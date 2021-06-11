@@ -53,9 +53,9 @@ const std::string& BundleLinux::icon() const noexcept
 	return m_icon;
 }
 
-void BundleLinux::setIcon(const std::string& inValue)
+void BundleLinux::setIcon(std::string&& inValue)
 {
-	m_icon = inValue;
+	m_icon = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -64,8 +64,8 @@ const std::string& BundleLinux::desktopEntry() const noexcept
 	return m_desktopEntry;
 }
 
-void BundleLinux::setDesktopEntry(const std::string& inValue)
+void BundleLinux::setDesktopEntry(std::string&& inValue)
 {
-	m_desktopEntry = inValue;
+	m_desktopEntry = std::move(inValue);
 }
 }

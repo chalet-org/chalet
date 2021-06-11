@@ -104,9 +104,9 @@ const std::string& IBuildTarget::description() const noexcept
 {
 	return m_description;
 }
-void IBuildTarget::setDescription(const std::string& inValue) noexcept
+void IBuildTarget::setDescription(std::string&& inValue) noexcept
 {
-	m_description = inValue;
+	m_description = std::move(inValue);
 }
 
 /*****************************************************************************/

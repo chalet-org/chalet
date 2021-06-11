@@ -29,58 +29,58 @@ struct ProjectTarget final : public IBuildTarget
 	bool isStaticLibrary() const noexcept;
 
 	const StringList& fileExtensions() const noexcept;
-	void addFileExtensions(StringList& inList);
-	void addFileExtension(std::string& inValue);
+	void addFileExtensions(StringList&& inList);
+	void addFileExtension(std::string&& inValue);
 
 	const StringList& defines() const noexcept;
-	void addDefines(StringList& inList);
-	void addDefine(std::string& inValue);
+	void addDefines(StringList&& inList);
+	void addDefine(std::string&& inValue);
 
 	const StringList& links() const noexcept;
-	void addLinks(StringList& inList);
-	void addLink(std::string& inValue);
+	void addLinks(StringList&& inList);
+	void addLink(std::string&& inValue);
 	void resolveLinksFromProject(const std::string& inProjectName, const bool inStaticLib);
 
 	const StringList& projectStaticLinks() const noexcept;
 
 	const StringList& staticLinks() const noexcept;
-	void addStaticLinks(StringList& inList);
-	void addStaticLink(std::string& inValue);
+	void addStaticLinks(StringList&& inList);
+	void addStaticLink(std::string&& inValue);
 
 	const StringList& libDirs() const noexcept;
-	void addLibDirs(StringList& inList);
-	void addLibDir(std::string& inValue);
+	void addLibDirs(StringList&& inList);
+	void addLibDir(std::string&& inValue);
 
 	const StringList& includeDirs() const noexcept;
-	void addIncludeDirs(StringList& inList);
-	void addIncludeDir(std::string& inValue);
+	void addIncludeDirs(StringList&& inList);
+	void addIncludeDir(std::string&& inValue);
 
 	const StringList& runDependencies() const noexcept;
-	void addRunDependencies(StringList& inList);
-	void addRunDependency(std::string& inValue);
+	void addRunDependencies(StringList&& inList);
+	void addRunDependency(std::string&& inValue);
 
 	const StringList& warnings() const noexcept;
-	void addWarnings(StringList& inList);
-	void addWarning(std::string& inValue);
-	void setWarningPreset(const std::string& inValue);
+	void addWarnings(StringList&& inList);
+	void addWarning(std::string&& inValue);
+	void setWarningPreset(std::string&& inValue);
 	ProjectWarnings warningsPreset() const noexcept;
 	bool warningsTreatedAsErrors() const noexcept;
 
 	const StringList& compileOptions() const noexcept;
-	void addCompileOptions(StringList& inList);
-	void addCompileOption(std::string& inValue);
+	void addCompileOptions(StringList&& inList);
+	void addCompileOption(std::string&& inValue);
 
 	const StringList& linkerOptions() const noexcept;
-	void addLinkerOptions(StringList& inList);
-	void addLinkerOption(std::string& inValue);
+	void addLinkerOptions(StringList&& inList);
+	void addLinkerOption(std::string&& inValue);
 
 	const StringList& macosFrameworkPaths() const noexcept;
-	void addMacosFrameworkPaths(StringList& inList);
-	void addMacosFrameworkPath(std::string& inValue);
+	void addMacosFrameworkPaths(StringList&& inList);
+	void addMacosFrameworkPath(std::string&& inValue);
 
 	const StringList& macosFrameworks() const noexcept;
-	void addMacosFrameworks(StringList& inList);
-	void addMacosFramework(std::string& inValue);
+	void addMacosFrameworks(StringList&& inList);
+	void addMacosFramework(std::string&& inValue);
 
 	//
 	void parseOutputFilename(const CompilerConfig& inConfig) noexcept;
@@ -91,39 +91,39 @@ struct ProjectTarget final : public IBuildTarget
 	void setLanguage(const std::string& inValue) noexcept;
 
 	const std::string& cStandard() const noexcept;
-	void setCStandard(const std::string& inValue) noexcept;
+	void setCStandard(std::string&& inValue) noexcept;
 
 	const std::string& cppStandard() const noexcept;
-	void setCppStandard(const std::string& inValue) noexcept;
+	void setCppStandard(std::string&& inValue) noexcept;
 
 	const StringList& files() const noexcept;
-	void addFiles(StringList& inList);
-	void addFile(std::string& inValue);
+	void addFiles(StringList&& inList);
+	void addFile(std::string&& inValue);
 
 	const StringList& locations() const noexcept;
-	void addLocations(StringList& inList);
-	void addLocation(std::string& inValue);
+	void addLocations(StringList&& inList);
+	void addLocation(std::string&& inValue);
 
 	const StringList& locationExcludes() const noexcept;
-	void addLocationExcludes(StringList& inList);
-	void addLocationExclude(std::string& inValue);
+	void addLocationExcludes(StringList&& inList);
+	void addLocationExclude(std::string&& inValue);
 
 	const std::string& pch() const noexcept;
-	void setPch(const std::string& inValue) noexcept;
+	void setPch(std::string&& inValue) noexcept;
 	bool usesPch() const noexcept;
 
 	const StringList& runArguments() const noexcept;
-	void addRunArguments(StringList& inList);
-	void addRunArgument(std::string& inValue);
+	void addRunArguments(StringList&& inList);
+	void addRunArgument(std::string&& inValue);
 
 	const std::string& linkerScript() const noexcept;
-	void setLinkerScript(const std::string& inValue) noexcept;
+	void setLinkerScript(std::string&& inValue) noexcept;
 
 	const std::string& windowsApplicationManifest() const noexcept;
-	void setWindowsApplicationManifest(const std::string& inValue) noexcept;
+	void setWindowsApplicationManifest(std::string&& inValue) noexcept;
 
 	const std::string& windowsApplicationIcon() const noexcept;
-	void setWindowsApplicationIcon(const std::string& inValue) noexcept;
+	void setWindowsApplicationIcon(std::string&& inValue) noexcept;
 
 	//
 	ProjectKind kind() const noexcept;

@@ -15,13 +15,13 @@ struct BundleMacOS
 	bool validate();
 
 	const std::string& bundleName() const noexcept;
-	void setBundleName(const std::string& inValue);
+	void setBundleName(std::string&& inValue);
 
 	const std::string& icon() const noexcept;
-	void setIcon(const std::string& inValue);
+	void setIcon(std::string&& inValue);
 
 	const std::string& infoPropertyList() const noexcept;
-	void setInfoPropertyList(const std::string& inValue);
+	void setInfoPropertyList(std::string&& inValue);
 
 	const std::string& infoPropertyListContent() const noexcept;
 	void setInfoPropertyListContent(std::string&& inValue);
@@ -33,10 +33,10 @@ struct BundleMacOS
 	void setMakeDmg(const bool inValue) noexcept;
 
 	const std::string& dmgBackground1x() const noexcept;
-	void setDmgBackground1x(const std::string& inValue);
+	void setDmgBackground1x(std::string&& inValue);
 
 	const std::string& dmgBackground2x() const noexcept;
-	void setDmgBackground2x(const std::string& inValue);
+	void setDmgBackground2x(std::string&& inValue);
 
 private:
 	StringList m_dylibs;

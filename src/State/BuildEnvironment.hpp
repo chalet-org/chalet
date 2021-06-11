@@ -38,8 +38,8 @@ struct BuildEnvironment
 	void setDumpAssembly(const bool inValue) noexcept;
 
 	const StringList& path() const noexcept;
-	void addPaths(StringList& inList);
-	void addPath(std::string& inValue);
+	void addPaths(StringList&& inList);
+	void addPath(std::string&& inValue);
 	std::string makePathVariable(const std::string& inRootPath);
 
 private:

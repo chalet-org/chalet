@@ -210,9 +210,9 @@ const std::string& CacheTools::bash() const noexcept
 	return m_bash;
 }
 
-void CacheTools::setBash(const std::string& inValue) noexcept
+void CacheTools::setBash(std::string&& inValue) noexcept
 {
-	m_bash = inValue;
+	m_bash = std::move(inValue);
 }
 
 bool CacheTools::bashAvailable() const noexcept
@@ -225,9 +225,9 @@ const std::string& CacheTools::brew() const noexcept
 {
 	return m_brew;
 }
-void CacheTools::setBrew(const std::string& inValue) noexcept
+void CacheTools::setBrew(std::string&& inValue) noexcept
 {
-	m_brew = inValue;
+	m_brew = std::move(inValue);
 }
 bool CacheTools::brewAvailable() noexcept
 {
@@ -239,9 +239,9 @@ const std::string& CacheTools::cmake() const noexcept
 {
 	return m_cmake;
 }
-void CacheTools::setCmake(const std::string& inValue) noexcept
+void CacheTools::setCmake(std::string&& inValue) noexcept
 {
-	m_cmake = inValue;
+	m_cmake = std::move(inValue);
 }
 uint CacheTools::cmakeVersionMajor() const noexcept
 {
@@ -265,9 +265,9 @@ const std::string& CacheTools::codesign() const noexcept
 {
 	return m_codesign;
 }
-void CacheTools::setCodesign(const std::string& inValue) noexcept
+void CacheTools::setCodesign(std::string&& inValue) noexcept
 {
-	m_codesign = inValue;
+	m_codesign = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -275,9 +275,9 @@ const std::string& CacheTools::commandPrompt() const noexcept
 {
 	return m_commandPrompt;
 }
-void CacheTools::setCommandPrompt(const std::string& inValue) noexcept
+void CacheTools::setCommandPrompt(std::string&& inValue) noexcept
 {
-	m_commandPrompt = inValue;
+	m_commandPrompt = std::move(inValue);
 	Path::sanitizeForWindows(m_commandPrompt);
 }
 
@@ -286,9 +286,9 @@ const std::string& CacheTools::git() const noexcept
 {
 	return m_git;
 }
-void CacheTools::setGit(const std::string& inValue) noexcept
+void CacheTools::setGit(std::string&& inValue) noexcept
 {
-	m_git = inValue;
+	m_git = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -296,9 +296,9 @@ const std::string& CacheTools::gprof() const noexcept
 {
 	return m_gprof;
 }
-void CacheTools::setGprof(const std::string& inValue) noexcept
+void CacheTools::setGprof(std::string&& inValue) noexcept
 {
-	m_gprof = inValue;
+	m_gprof = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -306,9 +306,9 @@ const std::string& CacheTools::hdiutil() const noexcept
 {
 	return m_hdiutil;
 }
-void CacheTools::setHdiutil(const std::string& inValue) noexcept
+void CacheTools::setHdiutil(std::string&& inValue) noexcept
 {
-	m_hdiutil = inValue;
+	m_hdiutil = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -316,9 +316,9 @@ const std::string& CacheTools::installNameTool() const noexcept
 {
 	return m_installNameTool;
 }
-void CacheTools::setInstallNameTool(const std::string& inValue) noexcept
+void CacheTools::setInstallNameTool(std::string&& inValue) noexcept
 {
-	m_installNameTool = inValue;
+	m_installNameTool = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -326,9 +326,9 @@ const std::string& CacheTools::instruments() const noexcept
 {
 	return m_instruments;
 }
-void CacheTools::setInstruments(const std::string& inValue) noexcept
+void CacheTools::setInstruments(std::string&& inValue) noexcept
 {
-	m_instruments = inValue;
+	m_instruments = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -336,9 +336,9 @@ const std::string& CacheTools::ldd() const noexcept
 {
 	return m_ldd;
 }
-void CacheTools::setLdd(const std::string& inValue) noexcept
+void CacheTools::setLdd(std::string&& inValue) noexcept
 {
-	m_ldd = inValue;
+	m_ldd = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -346,9 +346,9 @@ const std::string& CacheTools::lipo() const noexcept
 {
 	return m_lipo;
 }
-void CacheTools::setLipo(const std::string& inValue) noexcept
+void CacheTools::setLipo(std::string&& inValue) noexcept
 {
-	m_lipo = inValue;
+	m_lipo = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -356,9 +356,9 @@ const std::string& CacheTools::lua() const noexcept
 {
 	return m_lua;
 }
-void CacheTools::setLua(const std::string& inValue) noexcept
+void CacheTools::setLua(std::string&& inValue) noexcept
 {
-	m_lua = inValue;
+	m_lua = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -368,7 +368,7 @@ const std::string& CacheTools::applePlatformSdk(const std::string& inKey) const
 }
 void CacheTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
 {
-	m_applePlatformSdk[inKey] = inValue;
+	m_applePlatformSdk[inKey] = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -376,9 +376,9 @@ const std::string& CacheTools::make() const noexcept
 {
 	return m_make;
 }
-void CacheTools::setMake(const std::string& inValue) noexcept
+void CacheTools::setMake(std::string&& inValue) noexcept
 {
-	m_make = inValue;
+	m_make = std::move(inValue);
 }
 
 uint CacheTools::makeVersionMajor() const noexcept
@@ -405,9 +405,9 @@ const std::string& CacheTools::ninja() const noexcept
 {
 	return m_ninja;
 }
-void CacheTools::setNinja(const std::string& inValue) noexcept
+void CacheTools::setNinja(std::string&& inValue) noexcept
 {
-	m_ninja = inValue;
+	m_ninja = std::move(inValue);
 }
 uint CacheTools::ninjaVersionMajor() const noexcept
 {
@@ -431,9 +431,9 @@ const std::string& CacheTools::objdump() const noexcept
 {
 	return m_objdump;
 }
-void CacheTools::setObjdump(const std::string& inValue) noexcept
+void CacheTools::setObjdump(std::string&& inValue) noexcept
 {
-	m_objdump = inValue;
+	m_objdump = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -442,9 +442,9 @@ const std::string CacheTools::osascript() const noexcept
 	return m_osascript;
 }
 
-void CacheTools::setOsascript(const std::string& inValue) noexcept
+void CacheTools::setOsascript(std::string&& inValue) noexcept
 {
-	m_osascript = inValue;
+	m_osascript = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -452,9 +452,9 @@ const std::string& CacheTools::otool() const noexcept
 {
 	return m_otool;
 }
-void CacheTools::setOtool(const std::string& inValue) noexcept
+void CacheTools::setOtool(std::string&& inValue) noexcept
 {
-	m_otool = inValue;
+	m_otool = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -462,9 +462,9 @@ const std::string& CacheTools::perl() const noexcept
 {
 	return m_perl;
 }
-void CacheTools::setPerl(const std::string& inValue) noexcept
+void CacheTools::setPerl(std::string&& inValue) noexcept
 {
-	m_perl = inValue;
+	m_perl = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -472,9 +472,9 @@ const std::string& CacheTools::plutil() const noexcept
 {
 	return m_plutil;
 }
-void CacheTools::setPlutil(const std::string& inValue) noexcept
+void CacheTools::setPlutil(std::string&& inValue) noexcept
 {
-	m_plutil = inValue;
+	m_plutil = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -482,9 +482,9 @@ const std::string& CacheTools::powershell() const noexcept
 {
 	return m_powershell;
 }
-void CacheTools::setPowershell(const std::string& inValue) noexcept
+void CacheTools::setPowershell(std::string&& inValue) noexcept
 {
-	m_powershell = inValue;
+	m_powershell = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -492,9 +492,9 @@ const std::string& CacheTools::python() const noexcept
 {
 	return m_python;
 }
-void CacheTools::setPython(const std::string& inValue) noexcept
+void CacheTools::setPython(std::string&& inValue) noexcept
 {
-	m_python = inValue;
+	m_python = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -502,9 +502,9 @@ const std::string& CacheTools::python3() const noexcept
 {
 	return m_python3;
 }
-void CacheTools::setPython3(const std::string& inValue) noexcept
+void CacheTools::setPython3(std::string&& inValue) noexcept
 {
-	m_python3 = inValue;
+	m_python3 = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -512,9 +512,9 @@ const std::string& CacheTools::ruby() const noexcept
 {
 	return m_ruby;
 }
-void CacheTools::setRuby(const std::string& inValue) noexcept
+void CacheTools::setRuby(std::string&& inValue) noexcept
 {
-	m_ruby = inValue;
+	m_ruby = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -522,9 +522,9 @@ const std::string& CacheTools::sample() const noexcept
 {
 	return m_sample;
 }
-void CacheTools::setSample(const std::string& inValue) noexcept
+void CacheTools::setSample(std::string&& inValue) noexcept
 {
-	m_sample = inValue;
+	m_sample = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -532,9 +532,9 @@ const std::string& CacheTools::sips() const noexcept
 {
 	return m_sips;
 }
-void CacheTools::setSips(const std::string& inValue) noexcept
+void CacheTools::setSips(std::string&& inValue) noexcept
 {
-	m_sips = inValue;
+	m_sips = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -542,9 +542,9 @@ const std::string& CacheTools::tiffutil() const noexcept
 {
 	return m_tiffutil;
 }
-void CacheTools::setTiffutil(const std::string& inValue) noexcept
+void CacheTools::setTiffutil(std::string&& inValue) noexcept
 {
-	m_tiffutil = inValue;
+	m_tiffutil = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -552,9 +552,9 @@ const std::string& CacheTools::xcodebuild() const noexcept
 {
 	return m_xcodebuild;
 }
-void CacheTools::setXcodebuild(const std::string& inValue) noexcept
+void CacheTools::setXcodebuild(std::string&& inValue) noexcept
 {
-	m_xcodebuild = inValue;
+	m_xcodebuild = std::move(inValue);
 }
 uint CacheTools::xcodeVersionMajor() const noexcept
 {
@@ -570,9 +570,9 @@ const std::string& CacheTools::xcodegen() const noexcept
 {
 	return m_xcodegen;
 }
-void CacheTools::setXcodegen(const std::string& inValue) noexcept
+void CacheTools::setXcodegen(std::string&& inValue) noexcept
 {
-	m_xcodegen = inValue;
+	m_xcodegen = std::move(inValue);
 }
 uint CacheTools::xcodegenVersionMajor() const noexcept
 {
@@ -592,9 +592,9 @@ const std::string& CacheTools::xcrun() const noexcept
 {
 	return m_xcrun;
 }
-void CacheTools::setXcrun(const std::string& inValue) noexcept
+void CacheTools::setXcrun(std::string&& inValue) noexcept
 {
-	m_xcrun = inValue;
+	m_xcrun = std::move(inValue);
 }
 
 /*****************************************************************************/

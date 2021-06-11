@@ -328,9 +328,9 @@ const std::string& CompilerTools::archiver() const noexcept
 {
 	return m_archiver;
 }
-void CompilerTools::setArchiver(const std::string& inValue) noexcept
+void CompilerTools::setArchiver(std::string&& inValue) noexcept
 {
-	m_archiver = inValue;
+	m_archiver = std::move(inValue);
 
 	m_isArchiverLibTool = String::endsWith("libtool", inValue);
 }
@@ -344,9 +344,9 @@ const std::string& CompilerTools::cpp() const noexcept
 {
 	return m_cpp;
 }
-void CompilerTools::setCpp(const std::string& inValue) noexcept
+void CompilerTools::setCpp(std::string&& inValue) noexcept
 {
-	m_cpp = inValue;
+	m_cpp = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -354,9 +354,9 @@ const std::string& CompilerTools::cc() const noexcept
 {
 	return m_cc;
 }
-void CompilerTools::setCc(const std::string& inValue) noexcept
+void CompilerTools::setCc(std::string&& inValue) noexcept
 {
-	m_cc = inValue;
+	m_cc = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -364,9 +364,9 @@ const std::string& CompilerTools::linker() const noexcept
 {
 	return m_linker;
 }
-void CompilerTools::setLinker(const std::string& inValue) noexcept
+void CompilerTools::setLinker(std::string&& inValue) noexcept
 {
-	m_linker = inValue;
+	m_linker = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -374,9 +374,9 @@ const std::string& CompilerTools::rc() const noexcept
 {
 	return m_rc;
 }
-void CompilerTools::setRc(const std::string& inValue) noexcept
+void CompilerTools::setRc(std::string&& inValue) noexcept
 {
-	m_rc = inValue;
+	m_rc = std::move(inValue);
 }
 
 /*****************************************************************************/

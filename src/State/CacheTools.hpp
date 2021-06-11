@@ -27,117 +27,117 @@ struct CacheTools
 	const std::string& chalet() const noexcept;
 
 	const std::string& bash() const noexcept;
-	void setBash(const std::string& inValue) noexcept;
+	void setBash(std::string&& inValue) noexcept;
 	bool bashAvailable() const noexcept;
 
 	const std::string& brew() const noexcept;
-	void setBrew(const std::string& inValue) noexcept;
+	void setBrew(std::string&& inValue) noexcept;
 	bool brewAvailable() noexcept;
 
 	const std::string& cmake() const noexcept;
-	void setCmake(const std::string& inValue) noexcept;
+	void setCmake(std::string&& inValue) noexcept;
 	uint cmakeVersionMajor() const noexcept;
 	uint cmakeVersionMinor() const noexcept;
 	uint cmakeVersionPatch() const noexcept;
 	bool cmakeAvailable() const noexcept;
 
 	const std::string& codesign() const noexcept;
-	void setCodesign(const std::string& inValue) noexcept;
+	void setCodesign(std::string&& inValue) noexcept;
 
 	const std::string& commandPrompt() const noexcept;
-	void setCommandPrompt(const std::string& inValue) noexcept;
+	void setCommandPrompt(std::string&& inValue) noexcept;
 
 	const std::string& git() const noexcept;
-	void setGit(const std::string& inValue) noexcept;
+	void setGit(std::string&& inValue) noexcept;
 
 	const std::string& gprof() const noexcept;
-	void setGprof(const std::string& inValue) noexcept;
+	void setGprof(std::string&& inValue) noexcept;
 
 	const std::string& hdiutil() const noexcept;
-	void setHdiutil(const std::string& inValue) noexcept;
+	void setHdiutil(std::string&& inValue) noexcept;
 
 	const std::string& installNameTool() const noexcept;
-	void setInstallNameTool(const std::string& inValue) noexcept;
+	void setInstallNameTool(std::string&& inValue) noexcept;
 
 	const std::string& instruments() const noexcept;
-	void setInstruments(const std::string& inValue) noexcept;
+	void setInstruments(std::string&& inValue) noexcept;
 
 	const std::string& ldd() const noexcept;
-	void setLdd(const std::string& inValue) noexcept;
+	void setLdd(std::string&& inValue) noexcept;
 
 	const std::string& lipo() const noexcept;
-	void setLipo(const std::string& inValue) noexcept;
+	void setLipo(std::string&& inValue) noexcept;
 
 	const std::string& lua() const noexcept;
-	void setLua(const std::string& inValue) noexcept;
+	void setLua(std::string&& inValue) noexcept;
 
 	const std::string& applePlatformSdk(const std::string& inKey) const;
 	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
 
 	const std::string& make() const noexcept;
-	void setMake(const std::string& inValue) noexcept;
+	void setMake(std::string&& inValue) noexcept;
 	uint makeVersionMajor() const noexcept;
 	uint makeVersionMinor() const noexcept;
 	bool makeIsNMake() const noexcept;
 	bool makeIsJom() const noexcept;
 
 	const std::string& ninja() const noexcept;
-	void setNinja(const std::string& inValue) noexcept;
+	void setNinja(std::string&& inValue) noexcept;
 	uint ninjaVersionMajor() const noexcept;
 	uint ninjaVersionMinor() const noexcept;
 	uint ninjaVersionPatch() const noexcept;
 	bool ninjaAvailable() const noexcept;
 
 	const std::string& objdump() const noexcept;
-	void setObjdump(const std::string& inValue) noexcept;
+	void setObjdump(std::string&& inValue) noexcept;
 
 	const std::string osascript() const noexcept;
-	void setOsascript(const std::string& inValue) noexcept;
+	void setOsascript(std::string&& inValue) noexcept;
 
 	const std::string& otool() const noexcept;
-	void setOtool(const std::string& inValue) noexcept;
+	void setOtool(std::string&& inValue) noexcept;
 
 	const std::string& perl() const noexcept;
-	void setPerl(const std::string& inValue) noexcept;
+	void setPerl(std::string&& inValue) noexcept;
 
 	const std::string& plutil() const noexcept;
-	void setPlutil(const std::string& inValue) noexcept;
+	void setPlutil(std::string&& inValue) noexcept;
 
 	const std::string& powershell() const noexcept;
-	void setPowershell(const std::string& inValue) noexcept;
+	void setPowershell(std::string&& inValue) noexcept;
 
 	const std::string& python() const noexcept;
-	void setPython(const std::string& inValue) noexcept;
+	void setPython(std::string&& inValue) noexcept;
 
 	const std::string& python3() const noexcept;
-	void setPython3(const std::string& inValue) noexcept;
+	void setPython3(std::string&& inValue) noexcept;
 
 	const std::string& ruby() const noexcept;
-	void setRuby(const std::string& inValue) noexcept;
+	void setRuby(std::string&& inValue) noexcept;
 
 	const std::string& sample() const noexcept;
-	void setSample(const std::string& inValue) noexcept;
+	void setSample(std::string&& inValue) noexcept;
 
 	const std::string& sips() const noexcept;
-	void setSips(const std::string& inValue) noexcept;
+	void setSips(std::string&& inValue) noexcept;
 
 	const std::string& tiffutil() const noexcept;
-	void setTiffutil(const std::string& inValue) noexcept;
+	void setTiffutil(std::string&& inValue) noexcept;
 
 	const std::string& xcodebuild() const noexcept;
-	void setXcodebuild(const std::string& inValue) noexcept;
+	void setXcodebuild(std::string&& inValue) noexcept;
 	uint xcodeVersionMajor() const noexcept;
 	uint xcodeVersionMinor() const noexcept;
 
 	// xcodegen
 	const std::string& xcodegen() const noexcept;
-	void setXcodegen(const std::string& inValue) noexcept;
+	void setXcodegen(std::string&& inValue) noexcept;
 	uint xcodegenVersionMajor() const noexcept;
 	uint xcodegenVersionMinor() const noexcept;
 	uint xcodegenVersionPatch() const noexcept;
 
 	const std::string& xcrun() const noexcept;
-	void setXcrun(const std::string& inValue) noexcept;
+	void setXcrun(std::string&& inValue) noexcept;
 
 	// Commands
 	std::string getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) const;

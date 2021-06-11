@@ -38,7 +38,7 @@ struct IBuildTarget
 	void setName(const std::string& inValue) noexcept;
 
 	const std::string& description() const noexcept;
-	void setDescription(const std::string& inValue) noexcept;
+	void setDescription(std::string&& inValue) noexcept;
 
 	bool includeInBuild() const noexcept;
 	void setIncludeInBuild(const bool inValue);

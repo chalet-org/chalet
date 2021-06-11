@@ -43,13 +43,13 @@ const std::string& BuildPaths::workingDirectory() const noexcept
 	return m_workingDirectory;
 }
 
-void BuildPaths::setWorkingDirectory(const std::string& inValue)
+void BuildPaths::setWorkingDirectory(std::string&& inValue)
 {
 	chalet_assert(m_workingDirectory.empty(), "");
 
 	if (Commands::pathExists(inValue))
 	{
-		m_workingDirectory = inValue;
+		m_workingDirectory = std::move(inValue);
 	}
 	else
 	{
@@ -66,12 +66,12 @@ const std::string& BuildPaths::externalDepDir() const noexcept
 	return m_externalDepDir;
 }
 
-void BuildPaths::setExternalDepDir(const std::string& inValue) noexcept
+void BuildPaths::setExternalDepDir(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
 		return;
 
-	m_externalDepDir = inValue;
+	m_externalDepDir = std::move(inValue);
 
 	if (m_externalDepDir.back() == '/')
 		m_externalDepDir.pop_back();

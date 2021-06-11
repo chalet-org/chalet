@@ -104,7 +104,7 @@ const std::string& BundleTarget::outDir() const noexcept
 	return m_distDir;
 }
 
-void BundleTarget::setOutDir(const std::string& inValue)
+void BundleTarget::setOutDir(std::string&& inValue)
 {
 	m_distDir = inValue;
 	Path::sanitize(m_distDir);
@@ -116,7 +116,7 @@ const std::string& BundleTarget::configuration() const noexcept
 	return m_configuration;
 }
 
-void BundleTarget::setConfiguration(const std::string& inValue)
+void BundleTarget::setConfiguration(std::string&& inValue)
 {
 	m_configuration = inValue;
 }
@@ -127,7 +127,7 @@ const std::string& BundleTarget::mainProject() const noexcept
 	return m_mainProject;
 }
 
-void BundleTarget::setMainProject(const std::string& inValue)
+void BundleTarget::setMainProject(std::string&& inValue)
 {
 	m_mainProject = inValue;
 }
@@ -149,12 +149,12 @@ const StringList& BundleTarget::projects() const noexcept
 	return m_projects;
 }
 
-void BundleTarget::addProjects(StringList& inList)
+void BundleTarget::addProjects(StringList&& inList)
 {
 	List::forEach(inList, this, &BundleTarget::addProject);
 }
 
-void BundleTarget::addProject(std::string& inValue)
+void BundleTarget::addProject(std::string&& inValue)
 {
 	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_projects, std::move(inValue));
@@ -166,12 +166,12 @@ const StringList& BundleTarget::excludes() const noexcept
 	return m_excludes;
 }
 
-void BundleTarget::addExcludes(StringList& inList)
+void BundleTarget::addExcludes(StringList&& inList)
 {
 	List::forEach(inList, this, &BundleTarget::addExclude);
 }
 
-void BundleTarget::addExclude(std::string& inValue)
+void BundleTarget::addExclude(std::string&& inValue)
 {
 	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_excludes, std::move(inValue));
@@ -183,21 +183,21 @@ const StringList& BundleTarget::dependencies() const noexcept
 	return m_dependencies;
 }
 
-void BundleTarget::addDependencies(StringList& inList)
+void BundleTarget::addDependencies(StringList&& inList)
 {
 	List::forEach(inList, this, &BundleTarget::addDependency);
 }
 
-void BundleTarget::addDependency(std::string& inValue)
+void BundleTarget::addDependency(std::string&& inValue)
 {
-	const auto add = [this](std::string& in) {
+	const auto add = [this](std::string&& in) {
 		Path::sanitize(in);
 		List::addIfDoesNotExist(m_dependencies, std::move(in));
 	};
 
 	if (Commands::pathExists(inValue))
 	{
-		add(inValue);
+		add(std::move(inValue));
 		return;
 	}
 
@@ -221,14 +221,14 @@ void BundleTarget::addDependency(std::string& inValue)
 			resolved = fmt::format("{}/{}", compilerPathBin, inValue);
 			if (Commands::pathExists(resolved))
 			{
-				add(resolved);
+				add(std::move(resolved));
 				return;
 			}
 
 			// LOG(resolved, ' ', project.outputFile());
 			if (String::contains(project.outputFile(), resolved))
 			{
-				add(resolved);
+				add(std::move(resolved));
 				return;
 			}
 		}
@@ -239,7 +239,7 @@ void BundleTarget::addDependency(std::string& inValue)
 		resolved = fmt::format("{}/{}", path, inValue);
 		if (Commands::pathExists(resolved))
 		{
-			add(resolved);
+			add(std::move(resolved));
 			return;
 		}
 	}

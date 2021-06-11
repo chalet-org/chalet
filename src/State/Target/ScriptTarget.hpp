@@ -18,8 +18,8 @@ struct ScriptTarget final : public IBuildTarget
 	virtual bool validate() final;
 
 	const StringList& scripts() const noexcept;
-	void addScripts(StringList& inList);
-	void addScript(std::string& inValue);
+	void addScripts(StringList&& inList);
+	void addScript(std::string&& inValue);
 
 private:
 	StringList m_scripts;

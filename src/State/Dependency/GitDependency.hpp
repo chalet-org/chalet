@@ -15,16 +15,16 @@ struct GitDependency : public IBuildDependency
 	explicit GitDependency(const BuildState& inState);
 
 	const std::string& repository() const noexcept;
-	void setRepository(const std::string& inValue) noexcept;
+	void setRepository(std::string&& inValue) noexcept;
 
 	const std::string& branch() const noexcept;
-	void setBranch(const std::string& inValue) noexcept;
+	void setBranch(std::string&& inValue) noexcept;
 
 	const std::string& tag() const noexcept;
-	void setTag(const std::string& inValue) noexcept;
+	void setTag(std::string&& inValue) noexcept;
 
 	const std::string& commit() const noexcept;
-	void setCommit(const std::string& inValue) noexcept;
+	void setCommit(std::string&& inValue) noexcept;
 
 	const std::string& destination() const noexcept;
 

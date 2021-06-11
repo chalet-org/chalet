@@ -11,7 +11,7 @@ namespace chalet
 namespace List
 {
 template <typename VectorType, class T>
-void forEach(std::vector<VectorType>& inList, T* inst, void (T::*func)(VectorType&));
+void forEach(std::vector<VectorType>& inList, T* inst, void (T::*func)(VectorType&&));
 
 template <typename Container>
 void sort(Container& inList);

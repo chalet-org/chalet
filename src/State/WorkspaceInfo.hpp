@@ -16,10 +16,10 @@ struct WorkspaceInfo
 	explicit WorkspaceInfo(const CommandLineInputs& inInputs);
 
 	const std::string& workspace() const noexcept;
-	void setWorkspace(const std::string& inValue) noexcept;
+	void setWorkspace(std::string&& inValue) noexcept;
 
 	const std::string& version() const noexcept;
-	void setVersion(const std::string& inValue) noexcept;
+	void setVersion(std::string&& inValue) noexcept;
 
 	std::size_t hash() const noexcept;
 	void setHash(const std::size_t inValue) noexcept;
