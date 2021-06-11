@@ -6,21 +6,24 @@
 #include "CacheJson/CacheJsonParser.hpp"
 
 #include "CacheJson/CacheJsonSchema.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Core/HostPlatform.hpp"
 #include "Libraries/Format.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, BuildState& inState) :
+CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, BuildState& inState, JsonFile& inJsonFile) :
 	m_inputs(inInputs),
 	m_state(inState),
-	m_filename(m_state.cache.environmentCache().filename())
+	m_jsonFile(inJsonFile)
 {
 	UNUSED(m_state);
 }
@@ -33,7 +36,6 @@ bool CacheJsonParser::serialize()
 		return false;
 #endif
 
-	auto& environmentCache = m_state.cache.environmentCache();
 	Json cacheJsonSchema = Schema::getCacheJson();
 
 	if (m_inputs.saveSchemaToFile())
@@ -45,22 +47,22 @@ bool CacheJsonParser::serialize()
 	bool cacheExists = m_state.cache.exists();
 	if (cacheExists)
 	{
-		Diagnostic::info(fmt::format("Reading Cache [{}]", m_state.cache.environmentCache().filename()), false);
+		Diagnostic::info(fmt::format("Reading Cache [{}]", m_jsonFile.filename()), false);
 	}
 	else
 	{
-		Diagnostic::info(fmt::format("Creating Cache [{}]", m_state.cache.environmentCache().filename()), false);
+		Diagnostic::info(fmt::format("Creating Cache [{}]", m_jsonFile.filename()), false);
 	}
 
 	if (!makeCache())
 		return false;
 
-	if (!environmentCache.validate(std::move(cacheJsonSchema)))
+	if (!m_jsonFile.validate(std::move(cacheJsonSchema)))
 		return false;
 
-	if (!serializeFromJsonRoot(environmentCache.json))
+	if (!serializeFromJsonRoot(m_jsonFile.json))
 	{
-		Diagnostic::error(fmt::format("There was an error parsing {}", m_filename));
+		Diagnostic::error(fmt::format("There was an error parsing {}", m_jsonFile.filename()));
 		return false;
 	}
 
@@ -81,8 +83,7 @@ bool CacheJsonParser::createMsvcEnvironment()
 #if defined(CHALET_WIN32)
 	bool readVariables = true;
 
-	auto& environmentCache = m_state.cache.environmentCache();
-	const auto& jRoot = environmentCache.json;
+	const auto& jRoot = m_jsonFile.json;
 	if (jRoot.is_object())
 	{
 		if (jRoot.contains(kKeyCompilerTools))
@@ -130,43 +131,39 @@ bool CacheJsonParser::createMsvcEnvironment()
 bool CacheJsonParser::validatePaths()
 {
 	auto& compilerTools = m_state.compilerTools;
-#if defined(CHALET_DEBUG)
-	auto& cacheJson = m_state.cache.environmentCache();
-#endif
-
 	if (!Commands::pathExists(compilerTools.cpp()))
 	{
 #if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
+		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: The toolchain's C++ compiler was blank or could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: The toolchain's C++ compiler was blank or could not be found.", m_jsonFile.filename()));
 		return false;
 	}
 
 	if (!Commands::pathExists(compilerTools.cc()))
 	{
 #if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
+		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: The toolchain's C compiler was blank or could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: The toolchain's C compiler was blank or could not be found.", m_jsonFile.filename()));
 		return false;
 	}
 
 	if (!Commands::pathExists(compilerTools.archiver()))
 	{
 #if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
+		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: The toolchain's archive utility was blank or could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: The toolchain's archive utility was blank or could not be found.", m_jsonFile.filename()));
 		return false;
 	}
 
 	if (!Commands::pathExists(compilerTools.linker()))
 	{
 #if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
+		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: The toolchain's linker was blank or could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: The toolchain's linker was blank or could not be found.", m_jsonFile.filename()));
 		return false;
 	}
 
@@ -174,9 +171,9 @@ bool CacheJsonParser::validatePaths()
 	if (!Commands::pathExists(compilerTools.rc()))
 	{
 	#if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
+		m_jsonFile.dumpToTerminal();
 	#endif
-		Diagnostic::warn(fmt::format("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_filename));
+		Diagnostic::warn(fmt::format("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename()));
 	}
 #endif
 
@@ -185,9 +182,9 @@ bool CacheJsonParser::validatePaths()
 	if (!Commands::pathExists(m_make))
 	{
 #if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
+		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: 'make' could not be found.", m_filename));
+		Diagnostic::error(fmt::format("{}: 'make' could not be found.", m_jsonFile.filename()));
 		return false;
 	}
 	*/
@@ -196,9 +193,9 @@ bool CacheJsonParser::validatePaths()
 	if (!Commands::pathExists(m_state.tools.applePlatformSdk("macosx")))
 	{
 	#if defined(CHALET_DEBUG)
-		cacheJson.dumpToTerminal();
+		m_jsonFile.dumpToTerminal();
 	#endif
-		Diagnostic::error(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_filename));
+		Diagnostic::error(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_jsonFile.filename()));
 		return false;
 	}
 #endif
@@ -270,8 +267,7 @@ bool CacheJsonParser::setDefaultBuildStrategy()
 	}
 #endif
 
-	auto& environmentCache = m_state.cache.environmentCache();
-	Json& settings = environmentCache.json[kKeySettings];
+	Json& settings = m_jsonFile.json[kKeySettings];
 	Json& strategyJson = settings[kKeyStrategy];
 
 	if (strategyJson.get<std::string>().empty() || m_changeStrategy)
@@ -433,18 +429,16 @@ bool CacheJsonParser::makeCache()
 	// TODO: Copy from global cache. If one doesn't exist, do this
 
 	// Create the json cache
-	auto& environmentCache = m_state.cache.environmentCache();
-
-	environmentCache.makeNode(kKeyWorkingDirectory, JsonDataType::string);
-	environmentCache.makeNode(kKeySettings, JsonDataType::object);
-	environmentCache.makeNode(kKeyCompilerTools, JsonDataType::object);
-	environmentCache.makeNode(kKeyTools, JsonDataType::object);
-	environmentCache.makeNode(kKeyApplePlatformSdks, JsonDataType::object);
-	environmentCache.makeNode(kKeyExternalDependencies, JsonDataType::object);
-	environmentCache.makeNode(kKeyData, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyWorkingDirectory, JsonDataType::string);
+	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyCompilerTools, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyTools, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyApplePlatformSdks, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyExternalDependencies, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyData, JsonDataType::object);
 
 	{
-		Json& workingDirectoryJson = environmentCache.json[kKeyWorkingDirectory];
+		Json& workingDirectoryJson = m_jsonFile.json[kKeyWorkingDirectory];
 		const auto workingDirectory = workingDirectoryJson.get<std::string>();
 
 		if (workingDirectory.empty())
@@ -455,7 +449,7 @@ bool CacheJsonParser::makeCache()
 		}
 	}
 
-	Json& settings = environmentCache.json[kKeySettings];
+	Json& settings = m_jsonFile.json[kKeySettings];
 
 	if (!settings.contains(kKeyDumpAssembly) || !settings[kKeyDumpAssembly].is_boolean())
 	{
@@ -485,7 +479,7 @@ bool CacheJsonParser::makeCache()
 
 	//
 
-	Json& compilerTools = environmentCache.json[kKeyCompilerTools];
+	Json& compilerTools = m_jsonFile.json[kKeyCompilerTools];
 
 #if defined(CHALET_WIN32)
 	HostPlatform platform = HostPlatform::Windows;
@@ -535,7 +529,7 @@ bool CacheJsonParser::makeCache()
 	makeToolchain(compilerTools, toolchain);
 #endif
 
-	Json& tools = environmentCache.json[kKeyTools];
+	Json& tools = m_jsonFile.json[kKeyTools];
 
 	whichAdd(tools, kKeyBash);
 	whichAdd(tools, kKeyBrew, HostPlatform::MacOS);
@@ -633,7 +627,7 @@ bool CacheJsonParser::makeCache()
 	// WatchSimulator.platform
 	// iPhoneOS.platform
 	// iPhoneSimulator.platform
-	Json& platformSdksJson = environmentCache.json[kKeyApplePlatformSdks];
+	Json& platformSdksJson = m_jsonFile.json[kKeyApplePlatformSdks];
 
 	for (auto sdk : {
 			 "appletvos",
@@ -662,7 +656,7 @@ bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
 {
 	if (!inJson.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: Json root must be an object.", m_filename), "Error parsing file");
+		Diagnostic::error(fmt::format("{}: Json root must be an object.", m_jsonFile.filename()), "Error parsing file");
 		return false;
 	}
 
@@ -688,8 +682,7 @@ bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
 /*****************************************************************************/
 bool CacheJsonParser::parseRoot(const Json& inNode)
 {
-	auto& environmentCache = m_state.cache.environmentCache();
-	if (std::string val; environmentCache.assignFromKey(val, inNode, kKeyWorkingDirectory))
+	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyWorkingDirectory))
 		m_state.paths.setWorkingDirectory(std::move(val));
 
 	return true;
@@ -700,28 +693,27 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 {
 	if (!inNode.contains(kKeySettings))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeySettings));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeySettings));
 		return false;
 	}
 
 	const Json& settings = inNode.at(kKeySettings);
 	if (!settings.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeySettings));
+		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeySettings));
 		return false;
 	}
 
-	auto& environmentCache = m_state.cache.environmentCache();
-	if (std::string val; environmentCache.assignFromKey(val, settings, kKeyStrategy))
+	if (std::string val; m_jsonFile.assignFromKey(val, settings, kKeyStrategy))
 		m_state.environment.setStrategy(val);
 
-	if (bool val = false; environmentCache.assignFromKey(val, settings, kKeyShowCommands))
+	if (bool val = false; m_jsonFile.assignFromKey(val, settings, kKeyShowCommands))
 		m_state.environment.setShowCommands(val);
 
-	if (bool val = false; environmentCache.assignFromKey(val, inNode, kKeyDumpAssembly))
+	if (bool val = false; m_jsonFile.assignFromKey(val, inNode, kKeyDumpAssembly))
 		m_state.environment.setDumpAssembly(val);
 
-	if (ushort val = 0; environmentCache.assignFromKey(val, settings, kKeyMaxJobs))
+	if (ushort val = 0; m_jsonFile.assignFromKey(val, settings, kKeyMaxJobs))
 		m_state.environment.setMaxJobs(val);
 
 	return true;
@@ -732,25 +724,24 @@ bool CacheJsonParser::parseTools(Json& inNode)
 {
 	if (!inNode.contains(kKeyTools))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyTools));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyTools));
 		return false;
 	}
 
 	Json& tools = inNode.at(kKeyTools);
 	if (!tools.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeyTools));
+		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyTools));
 		return false;
 	}
 
-	auto& environmentCache = m_state.cache.environmentCache();
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyBash))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyBash))
 		m_state.tools.setBash(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyBrew))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyBrew))
 		m_state.tools.setBrew(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCmake))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyCmake))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -762,16 +753,16 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_state.tools.setCmake(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCodesign))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyCodesign))
 		m_state.tools.setCodesign(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyCommandPrompt))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyCommandPrompt))
 		m_state.tools.setCommandPrompt(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyGit))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyGit))
 		m_state.tools.setGit(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyGprof))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyGprof))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -783,25 +774,25 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_state.tools.setGprof(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyHdiutil))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyHdiutil))
 		m_state.tools.setHdiutil(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstallNameTool))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyInstallNameTool))
 		m_state.tools.setInstallNameTool(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyInstruments))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyInstruments))
 		m_state.tools.setInstruments(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLdd))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLdd))
 		m_state.tools.setLdd(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLipo))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLipo))
 		m_state.tools.setLipo(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyLua))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLua))
 		m_state.tools.setLua(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyMake))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyMake))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -814,10 +805,10 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_make = std::move(val);
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyNinja))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyNinja))
 		m_state.tools.setNinja(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyObjdump))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyObjdump))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -829,22 +820,22 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_state.tools.setObjdump(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyOsascript))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyOsascript))
 		m_state.tools.setOsascript(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyOtool))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyOtool))
 		m_state.tools.setOtool(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPerl))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPerl))
 		m_state.tools.setPerl(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPlutil))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPlutil))
 		m_state.tools.setPlutil(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPowershell))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPowershell))
 		m_state.tools.setPowershell(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPython))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPython))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -856,7 +847,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_state.tools.setPython(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyPython3))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPython3))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -868,7 +859,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_state.tools.setPython3(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyRuby))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyRuby))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -880,22 +871,22 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_state.tools.setRuby(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeySample))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeySample))
 		m_state.tools.setSample(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeySips))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeySips))
 		m_state.tools.setSips(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyTiffutil))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyTiffutil))
 		m_state.tools.setTiffutil(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyXcodebuild))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcodebuild))
 		m_state.tools.setXcodebuild(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyXcodegen))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcodegen))
 		m_state.tools.setXcodegen(std::move(val));
 
-	if (std::string val; environmentCache.assignFromKey(val, tools, kKeyXcrun))
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcrun))
 		m_state.tools.setXcrun(std::move(val));
 
 	return true;
@@ -906,19 +897,18 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 {
 	if (!inNode.contains(kKeyCompilerTools))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyCompilerTools));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyCompilerTools));
 		return false;
 	}
 
 	Json& compilerTools = inNode.at(kKeyCompilerTools);
 	if (!compilerTools.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_filename, kKeyCompilerTools));
+		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyCompilerTools));
 		return false;
 	}
 
-	auto& environmentCache = m_state.cache.environmentCache();
-	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyArchiver))
+	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyArchiver))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -930,7 +920,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 		m_state.compilerTools.setArchiver(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyCpp))
+	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyCpp))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -942,7 +932,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 		m_state.compilerTools.setCpp(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyCc))
+	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyCc))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -954,7 +944,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 		m_state.compilerTools.setCc(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyLinker))
+	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyLinker))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -966,7 +956,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 		m_state.compilerTools.setLinker(std::move(val));
 	}
 
-	if (std::string val; environmentCache.assignFromKey(val, compilerTools, kKeyWindowsResource))
+	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyWindowsResource))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
@@ -987,7 +977,7 @@ bool CacheJsonParser::parseAppleSdks(Json& inNode)
 {
 	if (!inNode.contains(kKeyApplePlatformSdks))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyApplePlatformSdks));
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyApplePlatformSdks));
 		return false;
 	}
 
@@ -996,7 +986,7 @@ bool CacheJsonParser::parseAppleSdks(Json& inNode)
 	{
 		if (!pathJson.is_string())
 		{
-			Diagnostic::error(fmt::format("{}: apple platform '{}' must be a string.", m_filename, key));
+			Diagnostic::error(fmt::format("{}: apple platform '{}' must be a string.", m_jsonFile.filename(), key));
 			return false;
 		}
 

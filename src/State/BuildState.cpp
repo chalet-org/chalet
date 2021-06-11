@@ -81,7 +81,8 @@ void BuildState::saveCaches()
 /*****************************************************************************/
 bool BuildState::parseCacheJson()
 {
-	CacheJsonParser parser(m_inputs, *this);
+	auto& cacheFile = cache.environmentCache();
+	CacheJsonParser parser(m_inputs, *this, cacheFile);
 	return parser.serialize();
 }
 
