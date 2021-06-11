@@ -31,11 +31,11 @@ struct BuildCache
 	std::string getPath(const std::string& inFolder, const Type inCacheType) const;
 	std::string getCacheKey(const std::string& inName);
 
-	JsonFile& environmentCache() noexcept;
-	void saveEnvironmentCache();
+	JsonFile& localConfig() noexcept;
+	void saveLocalConfig();
 
-	bool dirty() const noexcept;
-	void setDirty(const bool inValue) noexcept;
+	JsonFile& globalConfig() noexcept;
+	void saveGlobalConfig();
 
 	bool appBuildChanged() const noexcept;
 	void checkIfCompileStrategyChanged();
@@ -60,7 +60,8 @@ private:
 	const WorkspaceInfo& m_info;
 	const BuildPaths& m_paths;
 
-	JsonFile m_environmentCache;
+	JsonFile m_localConfig;
+	JsonFile m_globalConfig;
 
 	const std::string kKeySettings{ "settings" };
 	const std::string kKeyStrategy{ "strategy" };
@@ -77,7 +78,6 @@ private:
 	std::string m_cacheLocal;
 	std::string m_cacheGlobal;
 
-	bool m_dirty = false;
 	bool m_appBuildChanged = false;
 	bool m_compileStrategyChanged = false;
 	bool m_targetArchitectureChanged = false;

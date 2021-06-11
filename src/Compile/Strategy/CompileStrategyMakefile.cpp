@@ -32,8 +32,8 @@ bool CompileStrategyMakefile::initialize()
 	auto& name = "makefile";
 	m_cacheFile = m_state.cache.getHash(name, BuildCache::Type::Local);
 
-	auto& environmentCache = m_state.cache.environmentCache();
-	Json& buildCache = environmentCache.json["data"];
+	auto& localConfig = m_state.cache.localConfig();
+	Json& buildCache = localConfig.json["data"];
 	const auto key = m_state.cache.getCacheKey(name);
 
 	const bool cacheExists = Commands::pathExists(m_cacheFile);
@@ -51,7 +51,7 @@ bool CompileStrategyMakefile::initialize()
 	if (m_cacheNeedsUpdate)
 	{
 		buildCache[key] = hash;
-		m_state.cache.setDirty(true);
+		localConfig.setDirty(true);
 	}
 
 	m_initialized = true;

@@ -21,6 +21,9 @@ struct JsonFile
 	void load(std::string inFilename);
 	void save();
 
+	bool dirty() const noexcept;
+	void setDirty(const bool inValue) noexcept;
+
 	void dumpToTerminal();
 
 	void setContents(Json&& inJson);
@@ -48,6 +51,8 @@ private:
 	void warnBlankKeyInList(const std::string& inKey);
 
 	std::string m_filename;
+
+	bool m_dirty = false;
 };
 }
 

@@ -32,9 +32,9 @@ bool DependencyManager::run(const bool inInstallCmd)
 		return true;
 
 	const auto& externalDepDir = m_state.paths.externalDepDir();
-	auto& environmentCache = m_state.cache.environmentCache();
+	auto& localConfig = m_state.cache.localConfig();
 
-	Json& dependencyCache = environmentCache.json["externalDependencies"];
+	Json& dependencyCache = localConfig.json["externalDependencies"];
 
 	StringList destinationCache;
 
@@ -66,7 +66,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 			{
 				const std::string commitHash = m_state.tools.getCurrentGitRepositoryHash(destination, m_cleanOutput);
 				dependencyCache[destination] = commitHash;
-				m_state.cache.setDirty(true);
+				localConfig.setDirty(true);
 			}
 			if (!inInstallCmd)
 				continue;
@@ -208,7 +208,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			// Output::msgDisplayBlack(commitHash); // useful for debugging
 			dependencyCache[destination] = commitHash;
-			m_state.cache.setDirty(true);
+			localConfig.setDirty(true);
 		}
 		else
 		{
@@ -245,7 +245,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 			}
 
 			dependencyCache.erase(it);
-			m_state.cache.setDirty(true);
+			localConfig.setDirty(true);
 		}
 
 		if (Commands::pathIsEmpty(externalDepDir, {}, true))

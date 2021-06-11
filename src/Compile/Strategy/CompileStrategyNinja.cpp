@@ -29,8 +29,8 @@ bool CompileStrategyNinja::initialize()
 	auto& name = "ninja";
 	m_cacheFile = m_state.cache.getHash(name, BuildCache::Type::Local);
 
-	auto& environmentCache = m_state.cache.environmentCache();
-	Json& buildCache = environmentCache.json["data"];
+	auto& localConfig = m_state.cache.localConfig();
+	Json& buildCache = localConfig.json["data"];
 	const auto key = m_state.cache.getCacheKey(name);
 
 	// Note: The ninja cache folder must not change between build.json changes
@@ -51,7 +51,7 @@ bool CompileStrategyNinja::initialize()
 	if (m_cacheNeedsUpdate)
 	{
 		buildCache[key] = hash;
-		m_state.cache.setDirty(true);
+		localConfig.setDirty(true);
 	}
 
 	if (!Commands::pathExists(m_cacheFolder))

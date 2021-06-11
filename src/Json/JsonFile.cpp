@@ -51,10 +51,20 @@ void JsonFile::load(std::string inFilename)
 /*****************************************************************************/
 void JsonFile::save()
 {
-	if (m_filename.empty())
-		return;
+	if (!m_filename.empty() && m_dirty)
+	{
+		JsonFile::saveToFile(json, m_filename);
+	}
+}
 
-	JsonFile::saveToFile(json, m_filename);
+/*****************************************************************************/
+bool JsonFile::dirty() const noexcept
+{
+	return m_dirty;
+}
+void JsonFile::setDirty(const bool inValue) noexcept
+{
+	m_dirty = inValue;
 }
 
 /*****************************************************************************/

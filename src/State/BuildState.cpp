@@ -74,14 +74,14 @@ bool BuildState::doBuild(const Route inRoute)
 /*****************************************************************************/
 void BuildState::saveCaches()
 {
-	cache.saveEnvironmentCache();
+	cache.saveLocalConfig();
 	sourceCache.save();
 }
 
 /*****************************************************************************/
 bool BuildState::parseCacheJson()
 {
-	auto& cacheFile = cache.environmentCache();
+	auto& cacheFile = cache.localConfig();
 	CacheJsonParser parser(m_inputs, *this, cacheFile);
 	return parser.serialize();
 }
@@ -196,7 +196,7 @@ void BuildState::initializeCache()
 
 	cache.removeStaleProjectCaches(BuildCache::Type::Local);
 	cache.removeBuildIfCacheChanged(paths.buildOutputDir());
-	cache.saveEnvironmentCache();
+	cache.saveLocalConfig();
 
 	sourceCache.initialize();
 	sourceCache.save();

@@ -290,7 +290,7 @@ bool CacheJsonParser::setDefaultBuildStrategy()
 		const auto strategy = strategyJson.get<std::string>();
 		m_state.environment.setStrategy(strategy);
 
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	return true;
@@ -318,7 +318,7 @@ bool CacheJsonParser::makeToolchain(Json& compilerTools, const ToolchainPreferen
 		result &= !cpp.empty();
 
 		compilerTools[kKeyCpp] = cpp;
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	if (!compilerTools.contains(kKeyCc))
@@ -336,7 +336,7 @@ bool CacheJsonParser::makeToolchain(Json& compilerTools, const ToolchainPreferen
 		result &= !cc.empty();
 
 		compilerTools[kKeyCc] = cc;
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	if (!compilerTools.contains(kKeyLinker))
@@ -374,7 +374,7 @@ bool CacheJsonParser::makeToolchain(Json& compilerTools, const ToolchainPreferen
 		result &= !link.empty();
 
 		compilerTools[kKeyLinker] = std::move(link);
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	if (!compilerTools.contains(kKeyArchiver))
@@ -398,7 +398,7 @@ bool CacheJsonParser::makeToolchain(Json& compilerTools, const ToolchainPreferen
 		result &= !ar.empty();
 
 		compilerTools[kKeyArchiver] = std::move(ar);
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	if (!compilerTools.contains(kKeyWindowsResource))
@@ -408,7 +408,7 @@ bool CacheJsonParser::makeToolchain(Json& compilerTools, const ToolchainPreferen
 
 		parseArchitecture(rc);
 		compilerTools[kKeyWindowsResource] = std::move(rc);
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	if (!result)
@@ -454,26 +454,26 @@ bool CacheJsonParser::makeCache()
 	if (!settings.contains(kKeyDumpAssembly) || !settings[kKeyDumpAssembly].is_boolean())
 	{
 		settings[kKeyDumpAssembly] = false;
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	if (!settings.contains(kKeyMaxJobs) || !settings[kKeyMaxJobs].is_number_integer())
 	{
 		settings[kKeyMaxJobs] = m_state.environment.processorCount();
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	if (!settings.contains(kKeyShowCommands) || !settings[kKeyShowCommands].is_boolean())
 	{
 		settings[kKeyShowCommands] = false;
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	if (!settings.contains(kKeyStrategy) || !settings[kKeyStrategy].is_string() || settings[kKeyStrategy].get<std::string>().empty())
 	{
 		// Note: this is only for validation. it gets changed later
 		settings[kKeyStrategy] = "makefile";
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 		m_changeStrategy = true;
 	}
 
@@ -497,13 +497,13 @@ bool CacheJsonParser::makeCache()
 				auto path = Commands::which(inKey);
 				bool res = !path.empty();
 				inNode[inKey] = std::move(path);
-				m_state.cache.setDirty(true);
+				m_jsonFile.setDirty(true);
 				return res;
 			}
 			else
 			{
 				inNode[inKey] = std::string();
-				m_state.cache.setDirty(true);
+				m_jsonFile.setDirty(true);
 				return true;
 			}
 		}
@@ -545,7 +545,7 @@ bool CacheJsonParser::makeCache()
 #else
 		tools[kKeyCommandPrompt] = std::string();
 #endif
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	whichAdd(tools, kKeyGit);
@@ -588,7 +588,7 @@ bool CacheJsonParser::makeCache()
 #endif
 
 		tools[kKeyMake] = std::move(make);
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	whichAdd(tools, kKeyNinja);
@@ -608,7 +608,7 @@ bool CacheJsonParser::makeCache()
 			powershell = Commands::which(kKeyPowershell);
 #endif
 		tools[kKeyPowershell] = std::move(powershell);
-		m_state.cache.setDirty(true);
+		m_jsonFile.setDirty(true);
 	}
 
 	whichAdd(tools, kKeyRuby);
@@ -643,7 +643,7 @@ bool CacheJsonParser::makeCache()
 		{
 			std::string sdkPath = Commands::subprocessOutput({ "xcrun", "--sdk", sdk, "--show-sdk-path" });
 			platformSdksJson[sdk] = std::move(sdkPath);
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 	}
 #endif
@@ -747,7 +747,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			tools[kKeyCmake] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.tools.setCmake(std::move(val));
@@ -768,7 +768,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			tools[kKeyGprof] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.tools.setGprof(std::move(val));
@@ -798,7 +798,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			tools[kKeyMake] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.tools.setMake(std::move(val));
@@ -814,7 +814,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			tools[kKeyObjdump] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.tools.setObjdump(std::move(val));
@@ -841,7 +841,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			tools[kKeyPython] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.tools.setPython(std::move(val));
@@ -853,7 +853,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			tools[kKeyPython3] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.tools.setPython3(std::move(val));
@@ -865,7 +865,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			tools[kKeyRuby] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.tools.setRuby(std::move(val));
@@ -914,7 +914,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			compilerTools[kKeyArchiver] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.compilerTools.setArchiver(std::move(val));
@@ -926,7 +926,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			compilerTools[kKeyCpp] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.compilerTools.setCpp(std::move(val));
@@ -938,7 +938,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			compilerTools[kKeyCc] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.compilerTools.setCc(std::move(val));
@@ -950,7 +950,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			compilerTools[kKeyLinker] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.compilerTools.setLinker(std::move(val));
@@ -962,7 +962,7 @@ bool CacheJsonParser::parseCompilers(Json& inNode)
 		if (!parseArchitecture(val))
 		{
 			compilerTools[kKeyWindowsResource] = val;
-			m_state.cache.setDirty(true);
+			m_jsonFile.setDirty(true);
 		}
 #endif
 		m_state.compilerTools.setRc(std::move(val));
