@@ -762,7 +762,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainMSVC::addCgThreads(StringList& outArgList) const
 {
-	uint maxJobs = m_state.environment.maxJobs();
+	uint maxJobs = m_state.maxJobs();
 	if (maxJobs > 4)
 	{
 		maxJobs = std::min<uint>(maxJobs, 8);

@@ -3,16 +3,16 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SCRIPT_TARGET_HPP
-#define CHALET_SCRIPT_TARGET_HPP
+#ifndef CHALET_SCRIPT_BUILD_TARGET_HPP
+#define CHALET_SCRIPT_BUILD_TARGET_HPP
 
 #include "State/Target/IBuildTarget.hpp"
 
 namespace chalet
 {
-struct ScriptTarget final : public IBuildTarget
+struct ScriptBuildTarget final : public IBuildTarget
 {
-	explicit ScriptTarget(const BuildState& inState);
+	explicit ScriptBuildTarget(const BuildState& inState);
 
 	virtual void initialize() final;
 	virtual bool validate() final;
@@ -26,4 +26,4 @@ private:
 };
 }
 
-#endif // CHALET_SCRIPT_TARGET_HPP
+#endif // CHALET_SCRIPT_BUILD_TARGET_HPP

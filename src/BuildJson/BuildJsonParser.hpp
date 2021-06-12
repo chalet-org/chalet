@@ -18,12 +18,13 @@ struct JsonFile;
 struct BundleTarget;
 struct CMakeTarget;
 struct ProjectTarget;
-struct ScriptTarget;
+struct ScriptBuildTarget;
 struct SubChaletTarget;
+struct StatePrototype;
 
 struct BuildJsonParser
 {
-	explicit BuildJsonParser(const CommandLineInputs& inInputs, BuildState& inState, std::string inFilename);
+	explicit BuildJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, BuildState& inState);
 	CHALET_DISALLOW_COPY_MOVE(BuildJsonParser);
 	~BuildJsonParser();
 
@@ -33,7 +34,7 @@ private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseRoot(const Json& inNode);
-	void parseBuildConfiguration(const Json& inNode);
+	bool parseBuildConfiguration(const Json& inNode);
 
 	bool makePathVariable();
 
@@ -44,19 +45,13 @@ private:
 
 	bool parseProjects(const Json& inNode);
 	bool parseProject(ProjectTarget& outProject, const Json& inNode, const bool inAbstract = false);
-	bool parseScript(ScriptTarget& outScript, const Json& inNode);
+	bool parseScript(ScriptBuildTarget& outScript, const Json& inNode);
 	bool parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode);
 	bool parseCMakeProject(CMakeTarget& outProject, const Json& inNode);
 	bool parsePlatformConfigExclusions(IBuildTarget& outProject, const Json& inNode);
 	bool parseCompilerSettingsCxx(ProjectTarget& outProject, const Json& inNode);
 	bool parseFilesAndLocation(ProjectTarget& outProject, const Json& inNode, const bool inAbstract);
 	bool parseProjectLocationOrFiles(ProjectTarget& outProject, const Json& inNode);
-
-	bool parseDistribution(const Json& inNode);
-	bool parseBundle(BundleTarget& outBundle, const Json& inNode);
-	bool parseBundleLinux(BundleTarget& outBundle, const Json& inNode);
-	bool parseBundleMacOS(BundleTarget& outBundle, const Json& inNode);
-	bool parseBundleWindows(BundleTarget& outBundle, const Json& inNode);
 
 	bool validBuildRequested();
 	bool validRunProjectRequested();
@@ -70,25 +65,16 @@ private:
 	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey);
 
 	bool containsComplexKey(const Json& inNode, const std::string& inKey);
-	bool containsKeyThatStartsWith(const Json& inNode, const std::string& inFind);
 
 	const CommandLineInputs& m_inputs;
+	StatePrototype& m_prototype;
+	JsonFile& m_buildJson;
+	const std::string& m_filename;
 	BuildState& m_state;
-
-	const std::string kKeyBundle = "bundle";
-	const std::string kKeyConfigurations = "configurations";
-	const std::string kKeyDistribution = "distribution";
-	const std::string kKeyExternalDependencies = "externalDependencies";
-	const std::string kKeyTargets = "targets";
-
-	const std::string kKeyAbstracts = "abstracts";
 
 	std::unordered_map<std::string, std::unique_ptr<ProjectTarget>> m_abstractProjects;
 
-	std::string m_filename;
 	std::string m_debugIdentifier{ "debug" };
-
-	std::unique_ptr<JsonFile> m_buildJson;
 };
 }
 

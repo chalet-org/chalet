@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/Target/ScriptTarget.hpp"
+#include "State/Target/ScriptBuildTarget.hpp"
 
 #include "State/BuildState.hpp"
 #include "Terminal/Path.hpp"
@@ -12,13 +12,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-ScriptTarget::ScriptTarget(const BuildState& inState) :
+ScriptBuildTarget::ScriptBuildTarget(const BuildState& inState) :
 	IBuildTarget(inState, BuildTargetType::Script)
 {
 }
 
 /*****************************************************************************/
-void ScriptTarget::initialize()
+void ScriptBuildTarget::initialize()
 {
 	const auto& targetName = this->name();
 	for (auto& script : m_scripts)
@@ -28,23 +28,23 @@ void ScriptTarget::initialize()
 }
 
 /*****************************************************************************/
-bool ScriptTarget::validate()
+bool ScriptBuildTarget::validate()
 {
 	return true;
 }
 
 /*****************************************************************************/
-const StringList& ScriptTarget::scripts() const noexcept
+const StringList& ScriptBuildTarget::scripts() const noexcept
 {
 	return m_scripts;
 }
 
-void ScriptTarget::addScripts(StringList&& inList)
+void ScriptBuildTarget::addScripts(StringList&& inList)
 {
-	List::forEach(inList, this, &ScriptTarget::addScript);
+	List::forEach(inList, this, &ScriptBuildTarget::addScript);
 }
 
-void ScriptTarget::addScript(std::string&& inValue)
+void ScriptBuildTarget::addScript(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_scripts, std::move(inValue));
 }

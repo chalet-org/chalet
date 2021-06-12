@@ -7,31 +7,41 @@
 #define CHALET_APP_BUNDLER_HPP
 
 #include "Bundler/BinaryDependencyMap.hpp"
-#include "State/Target/IBuildTarget.hpp"
+#include "State/Distribution/IDistTarget.hpp"
 
 namespace chalet
 {
 struct BundleTarget;
-struct ScriptTarget;
+struct ScriptDistTarget;
+struct CommandLineInputs;
+struct StatePrototype;
 struct IAppBundler;
 
 struct AppBundler
 {
-	AppBundler() = default;
+	using StateMap = std::unordered_map<std::string, std::unique_ptr<BuildState>>;
 
-	bool run(BuildTarget& inTarget, BuildState& inState, const std::string& inBuildFile);
+	explicit AppBundler(const CommandLineInputs& inInputs, StatePrototype& inPrototype);
+
+	bool runBuilds(const bool inInstallDependencies);
+
+	bool run(const DistributionTarget& inTarget);
 
 	const BinaryDependencyMap& dependencyMap() const noexcept;
-	bool gatherDependencies(BundleTarget& inTarget, BuildState& inState);
+	bool gatherDependencies(const BundleTarget& inTarget, BuildState& inState);
 	void addDependencies(std::string&& inFile, StringList&& inDependencies);
 	void logDependencies() const;
 
 private:
 	bool runBundleTarget(IAppBundler& inBundler, BuildState& inState);
-	bool runScriptTarget(const ScriptTarget& inScript, BuildState& inState, const std::string& inBuildFile);
+	bool runScriptTarget(const ScriptDistTarget& inScript, const std::string& inBuildFile);
 	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath);
 
+	const CommandLineInputs& m_inputs;
+	StatePrototype& m_prototype;
+
+	StateMap m_states;
 	BinaryDependencyMap m_dependencyMap;
 
 	StringList m_removedDirs;

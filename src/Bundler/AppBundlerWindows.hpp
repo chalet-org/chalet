@@ -14,7 +14,7 @@ namespace chalet
 class AppBundlerWindows : public IAppBundler
 {
 public:
-	explicit AppBundlerWindows(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput);
+	explicit AppBundlerWindows(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput);
 
 	virtual bool removeOldFiles() final;
 	virtual bool bundleForPlatform() final;

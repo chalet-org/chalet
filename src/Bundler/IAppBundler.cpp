@@ -6,7 +6,7 @@
 #include "Bundler/IAppBundler.hpp"
 
 #include "State/BuildState.hpp"
-#include "State/Target/BundleTarget.hpp"
+#include "State/Distribution/BundleTarget.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Bundler/AppBundlerWindows.hpp"
@@ -19,7 +19,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-[[nodiscard]] std::unique_ptr<IAppBundler> IAppBundler::make(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile, const bool inCleanOutput)
+[[nodiscard]] std::unique_ptr<IAppBundler> IAppBundler::make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile, const bool inCleanOutput)
 {
 #if defined(CHALET_WIN32)
 	UNUSED(inBuildFile);
@@ -36,7 +36,7 @@ namespace chalet
 }
 
 /*****************************************************************************/
-IAppBundler::IAppBundler(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput) :
+IAppBundler::IAppBundler(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput) :
 	m_state(inState),
 	m_bundle(inBundle),
 	m_dependencyMap(inDependencyMap),
@@ -45,7 +45,7 @@ IAppBundler::IAppBundler(BuildState& inState, BundleTarget& inBundle, BinaryDepe
 }
 
 /*****************************************************************************/
-BundleTarget& IAppBundler::bundle() const noexcept
+const BundleTarget& IAppBundler::bundle() const noexcept
 {
 	return m_bundle;
 }

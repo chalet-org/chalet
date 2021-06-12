@@ -12,11 +12,12 @@
 namespace chalet
 {
 struct CommandLineInputs;
+struct StatePrototype;
 class BuildState;
 
 struct UniversalBinaryMacOS
 {
-	explicit UniversalBinaryMacOS(const CommandLineInputs& inInputs, BuildState& inState, const bool inInstallDependencies);
+	explicit UniversalBinaryMacOS(const CommandLineInputs& inInputs, AppBundler& inBundler, BuildState& inState, const bool inInstallDependencies);
 
 	bool run();
 
@@ -28,9 +29,8 @@ private:
 	bool bundleState(BuildState& inUniversalState);
 
 	const CommandLineInputs& m_inputs;
+	AppBundler& m_bundler;
 	BuildState& m_state;
-
-	AppBundler m_bundler;
 
 	bool m_installDependencies = false;
 };

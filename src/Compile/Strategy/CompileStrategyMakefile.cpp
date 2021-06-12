@@ -6,6 +6,7 @@
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/CacheTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -126,7 +127,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 
 	{
 		std::string jobs;
-		const auto maxJobs = m_state.environment.maxJobs();
+		const auto maxJobs = m_state.maxJobs();
 		if (maxJobs > 0)
 			jobs = fmt::format("-j{}", maxJobs);
 
@@ -147,7 +148,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 	auto& hash = m_hashes.at(inProject.name());
 
 	auto& outputs = m_outputs.at(inProject.name());
-	m_state.paths.setBuildEnvironment(outputs, hash, m_state.environment.dumpAssembly());
+	m_state.paths.setBuildEnvironment(outputs, hash, m_state.dumpAssembly());
 
 	const bool clean = true;
 #if defined(CHALET_WIN32)
@@ -163,7 +164,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 			return false;
 	}
 
-	if (m_state.environment.dumpAssembly())
+	if (m_state.dumpAssembly())
 	{
 		command.back() = fmt::format("asm_{}", hash);
 		bool result = subprocessMakefile(command, clean);
@@ -196,7 +197,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 
 	if (makeIsJom)
 	{
-		const auto maxJobs = m_state.environment.maxJobs();
+		const auto maxJobs = m_state.maxJobs();
 
 		command.push_back("/J" + std::to_string(maxJobs));
 		// command.push_back(std::to_string(maxJobs));
@@ -231,7 +232,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 			return false;
 	}
 
-	if (m_state.environment.dumpAssembly())
+	if (m_state.dumpAssembly())
 	{
 		command.back() = fmt::format("asm_{}", hash);
 

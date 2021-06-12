@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
+#include "State/CacheTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 

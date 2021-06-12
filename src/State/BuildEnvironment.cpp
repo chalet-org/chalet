@@ -21,8 +21,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildEnvironment::BuildEnvironment(const BuildPaths& inPaths) :
-	m_paths(inPaths),
+BuildEnvironment::BuildEnvironment() :
 	m_processorCount(std::thread::hardware_concurrency()),
 	m_maxJobs(m_processorCount)
 {
@@ -30,12 +29,12 @@ BuildEnvironment::BuildEnvironment(const BuildPaths& inPaths) :
 }
 
 /*****************************************************************************/
-void BuildEnvironment::initialize()
+void BuildEnvironment::initialize(BuildPaths& inPaths)
 {
 	std::string addedPath;
 	for (auto& path : m_path)
 	{
-		m_paths.replaceVariablesInPath(path);
+		inPaths.replaceVariablesInPath(path);
 		addedPath += path;
 		addedPath += Path::getSeparator();
 	}

@@ -8,6 +8,7 @@
 #include "Compile/CompilerConfig.hpp"
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
+#include "State/CacheTools.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Utility/String.hpp"
 

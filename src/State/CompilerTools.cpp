@@ -334,7 +334,7 @@ void CompilerTools::setArchiver(std::string&& inValue) noexcept
 {
 	m_archiver = std::move(inValue);
 
-	m_isArchiverLibTool = String::endsWith("libtool", inValue);
+	m_isArchiverLibTool = String::endsWith("libtool", m_archiver);
 }
 bool CompilerTools::isArchiverLibTool() const noexcept
 {

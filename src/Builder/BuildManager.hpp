@@ -17,7 +17,7 @@ namespace chalet
 struct SubChaletTarget;
 struct CMakeTarget;
 struct ProjectTarget;
-struct ScriptTarget;
+struct ScriptBuildTarget;
 
 class BuildManager
 {
@@ -48,7 +48,7 @@ private:
 	bool cmdClean();
 	// bool cmdProfile();
 
-	bool runScriptTarget(const ScriptTarget& inScript);
+	bool runScriptTarget(const ScriptBuildTarget& inScript);
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
 	std::string getRunProject();

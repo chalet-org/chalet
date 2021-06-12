@@ -64,17 +64,6 @@ void WorkspaceInfo::setBuildConfiguration(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& WorkspaceInfo::platform() const noexcept
-{
-	return m_inputs.platform();
-}
-
-const StringList& WorkspaceInfo::notPlatforms() const noexcept
-{
-	return m_inputs.notPlatforms();
-}
-
-/*****************************************************************************/
 Arch::Cpu WorkspaceInfo::hostArchitecture() const noexcept
 {
 	return m_hostArchitecture.val;

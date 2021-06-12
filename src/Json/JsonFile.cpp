@@ -130,6 +130,19 @@ bool JsonFile::assignStringListAndValidate(StringList& outList, const Json& inNo
 }
 
 /*****************************************************************************/
+bool JsonFile::containsKeyThatStartsWith(const Json& inNode, const std::string& inFind)
+{
+	bool res = false;
+
+	for (auto& [key, value] : inNode.items())
+	{
+		res |= String::startsWith(inFind, key);
+	}
+
+	return res;
+}
+
+/*****************************************************************************/
 bool JsonFile::validate(Json&& inSchemaJson)
 {
 	if (m_filename.empty())

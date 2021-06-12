@@ -10,12 +10,13 @@
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
 #include "Router/Route.hpp"
+#include "State/CacheTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProjectTarget.hpp"
-#include "State/Target/ScriptTarget.hpp"
+#include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 
 #include "Libraries/Format.hpp"
@@ -54,7 +55,7 @@ bool BuildManager::run(const Route inRoute)
 #endif
 
 	m_removeCache.clear();
-	m_cleanOutput = m_state.environment.cleanOutput();
+	m_cleanOutput = !m_state.showCommands();
 
 	if (inRoute == Route::Clean)
 	{
@@ -78,7 +79,7 @@ bool BuildManager::run(const Route inRoute)
 	bool runCommand = inRoute == Route::Run;
 	m_runProjectName = getRunProject();
 
-	auto strategy = m_state.environment.strategy();
+	auto strategy = m_state.strategy();
 	if (!runCommand)
 	{
 		printBuildInformation();
@@ -131,7 +132,7 @@ bool BuildManager::run(const Route inRoute)
 		{
 			Timer buildTimer;
 
-			if (!runScriptTarget(static_cast<const ScriptTarget&>(*target)))
+			if (!runScriptTarget(static_cast<const ScriptBuildTarget&>(*target)))
 			{
 				error = true;
 				break;
@@ -209,7 +210,7 @@ std::string BuildManager::getBuildStrategyName() const
 {
 	std::string ret;
 
-	switch (m_state.environment.strategy())
+	switch (m_state.strategy())
 	{
 		case StrategyType::Native:
 			ret = "Native";
@@ -220,7 +221,6 @@ std::string BuildManager::getBuildStrategyName() const
 			break;
 
 		case StrategyType::Makefile: {
-			m_state.tools.fetchMakeVersion();
 			if (m_state.tools.makeIsNMake())
 			{
 				if (m_state.tools.makeIsJom())
@@ -250,7 +250,7 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
 
 	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
-	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), m_state.environment.dumpAssembly(), objExtension);
+	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), m_state.dumpAssembly(), objExtension);
 
 	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
 	{
@@ -322,7 +322,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 			continue;
 		}
 
-		for (auto& path : m_state.environment.path())
+		for (auto& path : m_state.environmentPath())
 		{
 			resolved = fmt::format("{}/{}", path, dep);
 			if (Commands::pathExists(resolved))
@@ -388,7 +388,7 @@ bool BuildManager::doRun(const ProjectTarget& inProject)
 	// This is required for profiling
 	auto& installNameTool = m_state.tools.installNameTool();
 	// install_name_tool -add_rpath @executable_path/chalet_external/SFML/lib
-	for (auto p : m_state.environment.path())
+	for (auto p : m_state.environmentPath())
 	{
 		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
 		Commands::subprocessNoOutput({ installNameTool, "-add_rpath", fmt::format("@executable_path/{}", p), file }, m_cleanOutput);
@@ -505,7 +505,7 @@ bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& in
 }
 
 /*****************************************************************************/
-bool BuildManager::runScriptTarget(const ScriptTarget& inScript)
+bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript)
 {
 	const auto& scripts = inScript.scripts();
 	if (scripts.empty())

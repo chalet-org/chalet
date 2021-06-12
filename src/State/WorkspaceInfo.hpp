@@ -27,9 +27,6 @@ struct WorkspaceInfo
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(const std::string& inValue) noexcept;
 
-	const std::string& platform() const noexcept;
-	const StringList& notPlatforms() const noexcept;
-
 	Arch::Cpu hostArchitecture() const noexcept;
 	const std::string& hostArchitectureString() const noexcept;
 

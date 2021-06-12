@@ -3,21 +3,21 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_APP_BUNDLE_HPP
-#define CHALET_APP_BUNDLE_HPP
+#ifndef CHALET_BUNDLE_TARGET_HPP
+#define CHALET_BUNDLE_TARGET_HPP
 
 #include "State/Bundle/BundleLinux.hpp"
 #include "State/Bundle/BundleMacOS.hpp"
 #include "State/Bundle/BundleWindows.hpp"
-#include "State/Target/IBuildTarget.hpp"
+#include "State/Distribution/IDistTarget.hpp"
 
 namespace chalet
 {
-struct BundleTarget final : public IBuildTarget
+struct BundleTarget final : public IDistTarget
 {
-	explicit BundleTarget(const BuildState& inState);
+	explicit BundleTarget();
 
-	virtual void initialize() final;
+	virtual void initialize(const BuildState& inState) final;
 	virtual bool validate() final;
 
 	bool updateRPaths() const noexcept;
@@ -58,11 +58,14 @@ struct BundleTarget final : public IBuildTarget
 	void sortDependencies();
 
 private:
+	void initializeDependencies(const BuildState& inState);
+
 	BundleLinux m_linuxBundle;
 	BundleMacOS m_macosBundle;
 	BundleWindows m_windowsBundle;
 
 	StringList m_projects;
+	StringList m_rawDependencies;
 	StringList m_dependencies;
 	StringList m_excludes;
 
@@ -71,8 +74,9 @@ private:
 	std::string m_mainProject;
 
 	bool m_includeDependentSharedLibraries = true;
+	bool m_dependenciesResolved = false;
 	bool m_updateRPaths = true;
 };
 }
 
-#endif // CHALET_APP_BUNDLE_HPP
+#endif // CHALET_BUNDLE_TARGET_HPP

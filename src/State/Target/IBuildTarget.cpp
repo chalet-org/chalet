@@ -6,10 +6,9 @@
 #include "State/Target/IBuildTarget.hpp"
 
 #include "State/BuildState.hpp"
-#include "State/Target/BundleTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProjectTarget.hpp"
-#include "State/Target/ScriptTarget.hpp"
+#include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "Utility/String.hpp"
 
@@ -22,44 +21,23 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 }
 
 /*****************************************************************************/
-[[nodiscard]] BuildTarget IBuildTarget::makeBuild(const BuildTargetType inType, const BuildState& inState)
+[[nodiscard]] BuildTarget IBuildTarget::make(const BuildTargetType inType, const BuildState& inState)
 {
 	switch (inType)
 	{
 		case BuildTargetType::Project:
 			return std::make_unique<ProjectTarget>(inState);
 		case BuildTargetType::Script:
-			return std::make_unique<ScriptTarget>(inState);
+			return std::make_unique<ScriptBuildTarget>(inState);
 		case BuildTargetType::SubChalet:
 			return std::make_unique<SubChaletTarget>(inState);
 		case BuildTargetType::CMake:
 			return std::make_unique<CMakeTarget>(inState);
-		case BuildTargetType::DistributionBundle:
 		default:
 			break;
 	}
 
 	Diagnostic::errorAbort(fmt::format("Unimplemented BuildTargetType requested for makeBuild: ", static_cast<int>(inType)));
-	return nullptr;
-}
-
-/*****************************************************************************/
-[[nodiscard]] DistributionTarget IBuildTarget::makeBundle(const BuildTargetType inType, const BuildState& inState)
-{
-	switch (inType)
-	{
-		case BuildTargetType::DistributionBundle:
-			return std::make_unique<BundleTarget>(inState);
-		case BuildTargetType::Script:
-			return std::make_unique<ScriptTarget>(inState);
-		case BuildTargetType::SubChalet:
-		case BuildTargetType::CMake:
-		case BuildTargetType::Project:
-		default:
-			break;
-	}
-
-	Diagnostic::errorAbort(fmt::format("Unimplemented BuildTargetType requested for makeBundle: ", static_cast<int>(inType)));
 	return nullptr;
 }
 
@@ -84,11 +62,6 @@ bool IBuildTarget::isCMake() const noexcept
 {
 	return m_type == BuildTargetType::CMake;
 }
-bool IBuildTarget::isDistributionBundle() const noexcept
-{
-	return m_type == BuildTargetType::DistributionBundle;
-}
-
 /*****************************************************************************/
 const std::string& IBuildTarget::name() const noexcept
 {

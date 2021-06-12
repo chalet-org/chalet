@@ -244,6 +244,12 @@ void Diagnostic::showAsOneLine(const Type inType, const std::string& inTitle, co
 /*****************************************************************************/
 void Diagnostic::addError(const Type inType, const std::string& inMessage)
 {
+	if (sStartedInfo)
+	{
+		std::cerr << std::endl;
+		sStartedInfo = false;
+	}
+
 	getErrorList()->push_back({ inType, inMessage });
 }
 

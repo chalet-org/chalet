@@ -14,10 +14,11 @@ namespace chalet
 struct CommandLineInputs;
 class BuildState;
 struct JsonFile;
+struct StatePrototype;
 
 struct CacheJsonParser
 {
-	explicit CacheJsonParser(const CommandLineInputs& inInputs, BuildState& inState, JsonFile& inJsonFile);
+	explicit CacheJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, BuildState& inState, JsonFile& inJsonFile);
 
 	bool serialize();
 
@@ -41,6 +42,7 @@ private:
 	bool parseArchitecture(std::string& outString) const;
 
 	const CommandLineInputs& m_inputs;
+	StatePrototype& m_prototype;
 	BuildState& m_state;
 	JsonFile& m_jsonFile;
 

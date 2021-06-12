@@ -32,7 +32,7 @@ struct CacheTools
 
 	const std::string& brew() const noexcept;
 	void setBrew(std::string&& inValue) noexcept;
-	bool brewAvailable() noexcept;
+	bool brewAvailable() const noexcept;
 
 	const std::string& cmake() const noexcept;
 	void setCmake(std::string&& inValue) noexcept;
@@ -217,6 +217,7 @@ private:
 	bool m_cmakeAvailable = false;
 	bool m_makeIsNMake = false;
 	bool m_makeIsJom = false;
+	bool m_fetchedVersions = false;
 };
 }
 

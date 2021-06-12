@@ -26,12 +26,10 @@ IStrategyGenerator::IStrategyGenerator(const BuildState& inState) :
 			return nullptr;
 
 		case StrategyType::Ninja: {
-			inState.tools.fetchNinjaVersion();
 			return std::make_unique<NinjaGenerator>(inState);
 		}
 
 		case StrategyType::Makefile: {
-			inState.tools.fetchMakeVersion();
 #if defined(CHALET_WIN32)
 			if (inState.tools.makeIsNMake())
 				return std::make_unique<MakefileGeneratorNMake>(inState);

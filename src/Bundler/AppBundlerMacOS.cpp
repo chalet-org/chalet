@@ -7,7 +7,8 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Libraries/Format.hpp"
-#include "State/Target/BundleTarget.hpp"
+#include "State/CacheTools.hpp"
+#include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -33,7 +34,7 @@ namespace chalet
 */
 
 /*****************************************************************************/
-AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile, const bool inCleanOutput) :
+AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile, const bool inCleanOutput) :
 	IAppBundler(inState, inBundle, inDependencyMap, inCleanOutput),
 	m_buildFile(inBuildFile)
 {
@@ -323,7 +324,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 {
 	auto& installNameTool = m_state.tools.installNameTool();
 
-	for (auto p : m_state.environment.path())
+	for (auto p : m_state.environmentPath())
 	{
 		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
 		Commands::subprocessNoOutput({ installNameTool, "-delete_rpath", fmt::format("@executable_path/{}", p), m_executableOutputPath }, m_cleanOutput);

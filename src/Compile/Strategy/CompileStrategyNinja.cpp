@@ -6,6 +6,7 @@
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/CacheTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
@@ -111,7 +112,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 	StringList command;
 	command.push_back(ninjaExec);
 
-	if (m_state.environment.showCommands())
+	if (m_state.showCommands())
 		command.push_back("-v");
 
 	command.push_back("-f");
@@ -136,7 +137,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 			return false;
 	}
 
-	if (m_state.environment.dumpAssembly())
+	if (m_state.dumpAssembly())
 	{
 		std::cout << Output::getAnsiStyle(Color::Magenta) << std::flush;
 

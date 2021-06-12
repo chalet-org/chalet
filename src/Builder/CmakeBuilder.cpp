@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
+#include "State/CacheTools.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -81,7 +82,7 @@ bool CmakeBuilder::run()
 /*****************************************************************************/
 std::string CmakeBuilder::getGenerator() const
 {
-	const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
+	const bool isNinja = m_state.strategy() == StrategyType::Ninja;
 	const auto& compileConfig = m_state.compilerTools.getConfig(CodeLanguage::CPlusPlus);
 
 	std::string ret;
@@ -108,7 +109,7 @@ std::string CmakeBuilder::getGenerator() const
 /*****************************************************************************/
 std::string CmakeBuilder::getArch() const
 {
-	const bool isNinja = m_state.environment.strategy() == StrategyType::Ninja;
+	const bool isNinja = m_state.strategy() == StrategyType::Ninja;
 	const auto& compileConfig = m_state.compilerTools.getConfig(CodeLanguage::CPlusPlus);
 
 	std::string ret;
@@ -188,9 +189,9 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 {
 	auto& cmake = m_state.tools.cmake();
-	const auto maxJobs = m_state.environment.maxJobs();
+	const auto maxJobs = m_state.maxJobs();
 
-	const bool isMake = m_state.environment.strategy() == StrategyType::Makefile;
+	const bool isMake = m_state.strategy() == StrategyType::Makefile;
 
 	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };
 

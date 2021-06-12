@@ -36,11 +36,13 @@ struct JsonFile
 	template <typename T>
 	bool assignFromKey(T& outVariable, const Json& inNode, const std::string& inKey);
 
+	bool assignStringAndValidate(std::string& outString, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
+	bool assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey);
+
 	template <typename T>
 	bool containsKeyForType(const Json& inNode, const std::string& inKey);
 
-	bool assignStringAndValidate(std::string& outString, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
-	bool assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey);
+	bool containsKeyThatStartsWith(const Json& inNode, const std::string& inFind);
 
 	Json json;
 

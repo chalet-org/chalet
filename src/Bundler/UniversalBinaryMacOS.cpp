@@ -8,7 +8,8 @@
 #include "Bundler/AppBundlerMacOS.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
-#include "State/Target/BundleTarget.hpp"
+#include "State/CacheTools.hpp"
+#include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
@@ -17,8 +18,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-UniversalBinaryMacOS::UniversalBinaryMacOS(const CommandLineInputs& inInputs, BuildState& inState, const bool inInstallDependencies) :
+UniversalBinaryMacOS::UniversalBinaryMacOS(const CommandLineInputs& inInputs, AppBundler& inBundler, BuildState& inState, const bool inInstallDependencies) :
 	m_inputs(inInputs),
+	m_bundler(inBundler),
 	m_state(inState),
 	m_installDependencies(inInstallDependencies)
 {
@@ -141,11 +143,14 @@ std::unique_ptr<BuildState> UniversalBinaryMacOS::getIntermediateState(std::stri
 	CommandLineInputs inputs = m_inputs;
 	inputs.setTargetArchitecture(std::move(arch));
 
-	auto buildState = std::make_unique<BuildState>(inputs);
-	if (!buildState->initialize(m_installDependencies))
-		return nullptr;
+	UNUSED(m_installDependencies);
 
-	return buildState;
+	// auto buildState = std::make_unique<BuildState>(inputs);
+	// if (!buildState->initialize(m_installDependencies))
+	// 	return nullptr;
+
+	// return buildState;
+	return nullptr;
 }
 
 /*****************************************************************************/
@@ -254,8 +259,6 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 /*****************************************************************************/
 bool UniversalBinaryMacOS::bundleState(BuildState& inUniversalState)
 {
-	const auto& buildFile = m_inputs.buildFile();
-
 	for (auto& target : m_state.distribution)
 	{
 		if (target->isDistributionBundle())
@@ -263,7 +266,7 @@ bool UniversalBinaryMacOS::bundleState(BuildState& inUniversalState)
 			auto& bundle = static_cast<BundleTarget&>(*target);
 			if (!bundle.macosBundle().universalBinary())
 			{
-				if (!m_bundler.run(target, m_state, buildFile))
+				if (!m_bundler.run(target))
 					return false;
 			}
 		}
@@ -276,7 +279,7 @@ bool UniversalBinaryMacOS::bundleState(BuildState& inUniversalState)
 			auto& bundle = static_cast<BundleTarget&>(*target);
 			if (bundle.macosBundle().universalBinary())
 			{
-				if (!m_bundler.run(target, inUniversalState, buildFile))
+				if (!m_bundler.run(target))
 					return false;
 			}
 		}

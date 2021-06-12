@@ -6,6 +6,7 @@
 #include "Builder/ProfilerRunner.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/CacheTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
@@ -18,9 +19,6 @@ ProfilerRunner::ProfilerRunner(BuildState& inState, const ProjectTarget& inProje
 	m_project(inProject),
 	m_cleanOutput(inCleanOutput)
 {
-#if defined(CHALET_MACOS)
-	inState.tools.fetchXcodeVersion();
-#endif
 }
 
 /*****************************************************************************/

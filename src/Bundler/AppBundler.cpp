@@ -7,10 +7,12 @@
 
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/IAppBundler.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
-#include "State/Target/BundleTarget.hpp"
-#include "State/Target/ScriptTarget.hpp"
+#include "State/Distribution/BundleTarget.hpp"
+#include "State/Distribution/ScriptDistTarget.hpp"
+#include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -20,33 +22,72 @@
 
 namespace chalet
 {
+/*****************************************************************************/
+AppBundler::AppBundler(const CommandLineInputs& inInputs, StatePrototype& inPrototype) :
+	m_inputs(inInputs),
+	m_prototype(inPrototype)
+{
+}
 
 /*****************************************************************************/
-bool AppBundler::run(BuildTarget& inTarget, BuildState& inState, const std::string& inBuildFile)
+bool AppBundler::runBuilds(const bool inInstallDependencies)
 {
-	m_cleanOutput = inState.environment.cleanOutput();
+	// Build all required configurations
+	for (auto& config : m_prototype.requiredBuildConfigurations())
+	{
+		CommandLineInputs inputs = m_inputs;
+		inputs.setBuildConfiguration(config);
+		m_states.emplace(config, std::make_unique<BuildState>(std::move(inputs), m_prototype));
+	}
+
+	for (auto& [config, state] : m_states)
+	{
+		if (!state->initialize(inInstallDependencies))
+			return false;
+
+		if (!state->doBuild())
+			return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::run(const DistributionTarget& inTarget)
+{
+	const auto& buildFile = m_inputs.buildFile();
+	m_cleanOutput = m_prototype.environment.cleanOutput();
 
 	if (inTarget->isDistributionBundle())
 	{
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
-		auto bundler = IAppBundler::make(inState, bundle, m_dependencyMap, inBuildFile, m_cleanOutput);
+
+		chalet_assert(!bundle.configuration().empty(), "State not initialized");
+		chalet_assert(m_states.find(bundle.configuration()) != m_states.end(), "State not initialized");
+
+		LOG(bundle.configuration());
+		auto& state = m_states.at(bundle.configuration());
+
+		auto bundler = IAppBundler::make(*state, bundle, m_dependencyMap, buildFile, m_cleanOutput);
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error(fmt::format("There was an error removing the previous distribution bundle for: {}", inTarget->name()));
 			return false;
 		}
 
-		if (!gatherDependencies(bundle, inState))
+		bundle.initialize(*state);
+
+		if (!gatherDependencies(bundle, *state))
 			return false;
 
-		if (!runBundleTarget(*bundler, inState))
+		if (!runBundleTarget(*bundler, *state))
 			return false;
 	}
 	else if (inTarget->isScript())
 	{
 		Timer buildTimer;
 
-		if (!runScriptTarget(static_cast<const ScriptTarget&>(*inTarget), inState, inBuildFile))
+		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget), buildFile))
 			return false;
 
 		Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
@@ -192,7 +233,8 @@ const BinaryDependencyMap& AppBundler::dependencyMap() const noexcept
 	return m_dependencyMap;
 }
 
-bool AppBundler::gatherDependencies(BundleTarget& inTarget, BuildState& inState)
+/*****************************************************************************/
+bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& inState)
 {
 	const auto& bundleProjects = inTarget.projects();
 	const auto& buildOutputDir = inState.paths.buildOutputDir();
@@ -300,7 +342,7 @@ void AppBundler::addDependencies(std::string&& inFile, StringList&& inDependenci
 }
 
 /*****************************************************************************/
-bool AppBundler::runScriptTarget(const ScriptTarget& inScript, BuildState& inState, const std::string& inBuildFile)
+bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::string& inBuildFile)
 {
 	const auto& scripts = inScript.scripts();
 	if (scripts.empty())
@@ -313,7 +355,7 @@ bool AppBundler::runScriptTarget(const ScriptTarget& inScript, BuildState& inSta
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(inState.tools, inBuildFile, m_cleanOutput);
+	ScriptRunner scriptRunner(m_prototype.tools, inBuildFile, m_cleanOutput);
 	if (!scriptRunner.run(scripts))
 	{
 		Output::lineBreak();
@@ -328,7 +370,7 @@ bool AppBundler::runScriptTarget(const ScriptTarget& inScript, BuildState& inSta
 /*****************************************************************************/
 bool AppBundler::removeOldFiles(IAppBundler& inBundler)
 {
-	auto& bundle = inBundler.bundle();
+	const auto& bundle = inBundler.bundle();
 	const auto& outDir = bundle.outDir();
 
 	if (!List::contains(m_removedDirs, outDir))

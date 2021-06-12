@@ -18,9 +18,9 @@ struct WorkspaceInfo;
 
 struct BuildEnvironment
 {
-	explicit BuildEnvironment(const BuildPaths& inPaths);
+	BuildEnvironment();
 
-	void initialize();
+	void initialize(BuildPaths& inPaths);
 
 	uint processorCount() const noexcept;
 
@@ -43,8 +43,6 @@ struct BuildEnvironment
 	std::string makePathVariable(const std::string& inRootPath);
 
 private:
-	const BuildPaths& m_paths;
-
 	std::string m_externalDepDir{ "chalet_external" };
 	StringList m_path;
 

@@ -6,6 +6,7 @@
 #include "Dependencies/DependencyManager.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/CacheTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -155,7 +156,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			Output::msgFetchingDependency(repository, checkoutTo);
 
-			uint maxJobs = m_state.environment.maxJobs();
+			uint maxJobs = m_state.maxJobs();
 
 			StringList cmd;
 			cmd.push_back(m_state.tools.git());

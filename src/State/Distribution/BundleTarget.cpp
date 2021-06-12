@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/Target/BundleTarget.hpp"
+#include "State/Distribution/BundleTarget.hpp"
 
 #include "Libraries/Format.hpp"
 #include "State/BuildEnvironment.hpp"
@@ -18,24 +18,26 @@
 namespace chalet
 {
 /*****************************************************************************/
-BundleTarget::BundleTarget(const BuildState& inState) :
-	IBuildTarget(inState, BuildTargetType::DistributionBundle)
+BundleTarget::BundleTarget() :
+	IDistTarget(DistTargetType::DistributionBundle)
 {
-	setIncludeInBuild(false);
 }
 
 /*****************************************************************************/
-void BundleTarget::initialize()
+void BundleTarget::initialize(const BuildState& inState)
 {
 	const auto& targetName = this->name();
-	for (auto& dir : m_dependencies)
+	for (auto& dir : m_rawDependencies)
 	{
-		m_state.paths.replaceVariablesInPath(dir, targetName);
+		inState.paths.replaceVariablesInPath(dir, targetName);
 	}
 	for (auto& dir : m_excludes)
 	{
-		m_state.paths.replaceVariablesInPath(dir, targetName);
+		inState.paths.replaceVariablesInPath(dir, targetName);
 	}
+
+	initializeDependencies(inState);
+	m_dependenciesResolved = true;
 }
 
 /*****************************************************************************/
@@ -106,7 +108,7 @@ const std::string& BundleTarget::outDir() const noexcept
 
 void BundleTarget::setOutDir(std::string&& inValue)
 {
-	m_distDir = inValue;
+	m_distDir = std::move(inValue);
 	Path::sanitize(m_distDir);
 }
 
@@ -118,7 +120,7 @@ const std::string& BundleTarget::configuration() const noexcept
 
 void BundleTarget::setConfiguration(std::string&& inValue)
 {
-	m_configuration = inValue;
+	m_configuration = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -129,7 +131,7 @@ const std::string& BundleTarget::mainProject() const noexcept
 
 void BundleTarget::setMainProject(std::string&& inValue)
 {
-	m_mainProject = inValue;
+	m_mainProject = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -180,6 +182,7 @@ void BundleTarget::addExclude(std::string&& inValue)
 /*****************************************************************************/
 const StringList& BundleTarget::dependencies() const noexcept
 {
+	chalet_assert(m_dependenciesResolved, "BundleTarget dependencies not resolved");
 	return m_dependencies;
 }
 
@@ -190,57 +193,73 @@ void BundleTarget::addDependencies(StringList&& inList)
 
 void BundleTarget::addDependency(std::string&& inValue)
 {
-	const auto add = [this](std::string&& in) {
+	Path::sanitize(inValue);
+	List::addIfDoesNotExist(m_rawDependencies, std::move(inValue));
+}
+
+/*****************************************************************************/
+void BundleTarget::initializeDependencies(const BuildState& inState)
+{
+	const auto add = [this](std::string in) {
 		Path::sanitize(in);
 		List::addIfDoesNotExist(m_dependencies, std::move(in));
 	};
 
-	if (Commands::pathExists(inValue))
+	for (auto& dependency : m_rawDependencies)
 	{
-		add(std::move(inValue));
-		return;
-	}
-
-	/*std::string resolved = fmt::format("{}/{}", m_paths.buildOutputDir(), inValue);
-	if (Commands::pathExists(resolved))
-	{
-		add(resolved);
-		return;
-	}*/
-
-	std::string resolved;
-	for (auto& target : m_state.targets)
-	{
-		if (target->isProject())
+		if (Commands::pathExists(dependency))
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
-
-			const auto& compilerConfig = m_state.compilerTools.getConfig(project.language());
-			const auto& compilerPathBin = compilerConfig.compilerPathBin();
-
-			resolved = fmt::format("{}/{}", compilerPathBin, inValue);
-			if (Commands::pathExists(resolved))
-			{
-				add(std::move(resolved));
-				return;
-			}
-
-			// LOG(resolved, ' ', project.outputFile());
-			if (String::contains(project.outputFile(), resolved))
-			{
-				add(std::move(resolved));
-				return;
-			}
+			add(dependency);
+			continue;
 		}
-	}
 
-	for (auto& path : m_state.environment.path())
-	{
-		resolved = fmt::format("{}/{}", path, inValue);
+		/*std::string resolved = fmt::format("{}/{}", inState.paths.buildOutputDir(), inValue);
 		if (Commands::pathExists(resolved))
 		{
-			add(std::move(resolved));
-			return;
+			add(resolved);
+			continue;
+		}*/
+
+		std::string resolved;
+		bool found = false;
+		for (auto& target : inState.targets)
+		{
+			if (target->isProject())
+			{
+				auto& project = static_cast<const ProjectTarget&>(*target);
+
+				const auto& compilerConfig = inState.compilerTools.getConfig(project.language());
+				const auto& compilerPathBin = compilerConfig.compilerPathBin();
+
+				resolved = fmt::format("{}/{}", compilerPathBin, dependency);
+				if (Commands::pathExists(resolved))
+				{
+					add(std::move(resolved));
+					found = true;
+					break;
+				}
+
+				// LOG(resolved, ' ', project.outputFile());
+				if (String::contains(project.outputFile(), resolved))
+				{
+					add(std::move(resolved));
+					found = true;
+					break;
+				}
+			}
+		}
+
+		if (!found)
+		{
+			for (auto& path : inState.environmentPath())
+			{
+				resolved = fmt::format("{}/{}", path, dependency);
+				if (Commands::pathExists(resolved))
+				{
+					add(std::move(resolved));
+					break;
+				}
+			}
 		}
 	}
 }

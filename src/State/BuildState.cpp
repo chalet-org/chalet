@@ -10,6 +10,8 @@
 #include "CacheJson/CacheJsonParser.hpp"
 #include "Dependencies/DependencyManager.hpp"
 #include "Libraries/Format.hpp"
+#include "State/CacheTools.hpp"
+#include "State/StatePrototype.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -20,12 +22,14 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildState::BuildState(const CommandLineInputs& inInputs) :
-	m_inputs(inInputs),
+BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototype) :
+	m_inputs(std::move(inInputs)),
+	m_prototype(inJsonPrototype),
+	tools(m_prototype.tools),
+	distribution(m_prototype.distribution),
 	info(m_inputs),
 	compilerTools(m_inputs, *this),
 	paths(m_inputs, info),
-	environment(paths),
 	msvcEnvironment(*this),
 	cache(info, paths),
 	sourceCache(cache)
@@ -55,6 +59,12 @@ bool BuildState::initialize(const bool inInstallDependencies)
 	if (!validateState())
 		return false;
 
+	if (!cache.createCacheFolder(BuildCache::Type::Local))
+	{
+		Diagnostic::error("There was an error creating the build cache.");
+		return false;
+	}
+
 	return true;
 }
 
@@ -79,17 +89,52 @@ void BuildState::saveCaches()
 }
 
 /*****************************************************************************/
+const StringList& BuildState::environmentPath() const noexcept
+{
+	return m_prototype.environment.path();
+}
+
+void BuildState::addEnvironmentPaths(StringList&& inList)
+{
+	m_prototype.environment.addPaths(std::move(inList));
+}
+
+/*****************************************************************************/
+bool BuildState::dumpAssembly() const noexcept
+{
+	return m_prototype.environment.dumpAssembly();
+}
+
+/*****************************************************************************/
+bool BuildState::showCommands() const noexcept
+{
+	return m_prototype.environment.showCommands();
+}
+
+/*****************************************************************************/
+uint BuildState::maxJobs() const noexcept
+{
+	return m_prototype.environment.maxJobs();
+}
+
+/*****************************************************************************/
+StrategyType BuildState::strategy() const noexcept
+{
+	return m_prototype.environment.strategy();
+}
+
+/*****************************************************************************/
 bool BuildState::parseCacheJson()
 {
 	auto& cacheFile = cache.localConfig();
-	CacheJsonParser parser(m_inputs, *this, cacheFile);
+	CacheJsonParser parser(m_inputs, m_prototype, *this, cacheFile);
 	return parser.serialize();
 }
 
 /*****************************************************************************/
 bool BuildState::parseBuildJson()
 {
-	BuildJsonParser parser(m_inputs, *this, m_inputs.buildFile());
+	BuildJsonParser parser(m_inputs, m_prototype, *this);
 	return parser.serialize();
 }
 
@@ -112,7 +157,7 @@ bool BuildState::installDependencies()
 /*****************************************************************************/
 bool BuildState::initializeBuild()
 {
-	if (!tools.fetchVersions())
+	if (!m_prototype.tools.fetchVersions())
 		return false;
 
 	Timer timer;
@@ -171,7 +216,7 @@ bool BuildState::initializeBuild()
 
 	{
 		// Note: Most time is spent here (277ms in mingw)
-		environment.initialize();
+		m_prototype.environment.initialize(paths);
 
 		for (auto& target : targets)
 		{
@@ -241,22 +286,31 @@ bool BuildState::validateState()
 
 	if (hasCMakeTargets)
 	{
-		if (!tools.fetchCmakeVersion())
+		if (!m_prototype.tools.fetchCmakeVersion())
 		{
-			Diagnostic::error(fmt::format("The path to the CMake executable could not be resolved: {}", tools.cmake()));
+			Diagnostic::error(fmt::format("The path to the CMake executable could not be resolved: {}", m_prototype.tools.cmake()));
 			return false;
 		}
 	}
 	if (hasSubChaletTargets)
 	{
-		if (!tools.resolveOwnExecutable(m_inputs.appPath()))
+		if (!m_prototype.tools.resolveOwnExecutable(m_inputs.appPath()))
 		{
-			Diagnostic::error(fmt::format("(Welp.) The path to the chalet executable could not be resolved: {}", tools.chalet()));
+			Diagnostic::error(fmt::format("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.tools.chalet()));
 			return false;
 		}
 	}
 
-	for (auto& target : distribution)
+	if (configuration.enableProfiling())
+	{
+#if defined(CHALET_MACOS)
+		m_prototype.tools.fetchXcodeVersion();
+#endif
+	}
+
+	auto strat = m_prototype.environment.strategy();
+
+	for (auto& target : m_prototype.distribution)
 	{
 		if (!target->validate())
 		{
@@ -265,19 +319,22 @@ bool BuildState::validateState()
 		}
 	}
 
-	auto strategy = environment.strategy();
-	if (strategy == StrategyType::Makefile)
+	if (strat == StrategyType::Makefile)
 	{
-		const auto& makeExec = tools.make();
+		m_prototype.tools.fetchMakeVersion();
+
+		const auto& makeExec = m_prototype.tools.make();
 		if (makeExec.empty() || !Commands::pathExists(makeExec))
 		{
 			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec));
 			return false;
 		}
 	}
-	else if (strategy == StrategyType::Ninja)
+	else if (strat == StrategyType::Ninja)
 	{
-		auto& ninjaExec = tools.ninja();
+		m_prototype.tools.fetchNinjaVersion();
+
+		auto& ninjaExec = m_prototype.tools.ninja();
 		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
 		{
 			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec));

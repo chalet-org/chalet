@@ -6,12 +6,13 @@
 #include "Router/Router.hpp"
 
 #include "Bundler/AppBundler.hpp"
-#include "Bundler/UniversalBinaryMacOS.hpp"
+// #include "Bundler/UniversalBinaryMacOS.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
-#include "State/Target/BundleTarget.hpp"
+#include "State/Distribution/BundleTarget.hpp"
+#include "State/StatePrototype.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -50,25 +51,36 @@ bool Router::run()
 	if (!parseEnvFile())
 		return false;
 
+	std::unique_ptr<StatePrototype> prototype;
 	std::unique_ptr<BuildState> buildState;
 
+	const auto& buildFile = m_inputs.buildFile();
 	if (command != Route::Init)
 	{
-		const auto& buildFile = m_inputs.buildFile();
 		if (!Commands::pathExists(buildFile))
 		{
 			Diagnostic::error(fmt::format("Not a chalet project. '{}' was not found.", buildFile));
 			return false;
 		}
 
+		prototype = std::make_unique<StatePrototype>(m_inputs, buildFile);
+
+		if (!prototype->initialize())
+			return false;
+	}
+
+	if (command != Route::Init && command != Route::Bundle)
+	{
 		m_installDependencies = true;
 
-		buildState = std::make_unique<BuildState>(m_inputs);
+		chalet_assert(prototype != nullptr, "");
+
+		buildState = std::make_unique<BuildState>(m_inputs, *prototype);
 		if (!buildState->initialize(m_installDependencies))
 			return false;
 	}
 
-	if (!managePathVariables(buildState.get()))
+	if (!managePathVariables(prototype.get()))
 	{
 		Diagnostic::error("There was an error setting environment variables.");
 		return false;
@@ -96,8 +108,8 @@ bool Router::run()
 				break;
 #endif
 			case Route::Bundle: {
-				chalet_assert(buildState != nullptr, "");
-				result = cmdBundle(*buildState);
+				chalet_assert(prototype != nullptr, "");
+				result = cmdBundle(*prototype);
 				break;
 			}
 
@@ -115,7 +127,7 @@ bool Router::run()
 			case Route::Run:
 			case Route::Clean: {
 				chalet_assert(buildState != nullptr, "");
-				result = cmdBuild(*buildState);
+				result = buildState->doBuild();
 				break;
 			}
 
@@ -139,33 +151,24 @@ bool Router::cmdConfigure()
 }
 
 /*****************************************************************************/
-bool Router::cmdBuild(BuildState& inState)
-{
-	if (!inState.cache.createCacheFolder(BuildCache::Type::Local))
-	{
-		Diagnostic::error("There was an error creating the build cache.");
-		return false;
-	}
-
-	return inState.doBuild();
-}
-
-/*****************************************************************************/
-bool Router::cmdBundle(BuildState& inState)
+bool Router::cmdBundle(StatePrototype& inPrototype)
 {
 	const auto& buildFile = m_inputs.buildFile();
-	if (inState.distribution.size() == 0)
+	if (inPrototype.requiredBuildConfigurations().size() == 0)
 	{
-		Diagnostic::error(fmt::format("{}: 'bundle' object is required before creating a distribution bundle.", buildFile));
+		Diagnostic::error(fmt::format("{}: 'bundle' ran without any valid distribution bundles: missing 'configuration'", buildFile));
 		return false;
 	}
 
-	if (!cmdBuild(inState))
+	AppBundler bundler(m_inputs, inPrototype);
+
+	m_installDependencies = true;
+	if (!bundler.runBuilds(m_installDependencies))
 		return false;
 
 #if defined(CHALET_MACOS)
 	bool universalBinary = false;
-	for (auto& target : inState.distribution)
+	for (auto& target : inPrototype.distribution)
 	{
 		if (target->isDistributionBundle())
 		{
@@ -178,18 +181,17 @@ bool Router::cmdBundle(BuildState& inState)
 		}
 	}
 
-	if (universalBinary)
-	{
-		if (!bundleUniversalBinary(inState))
-			return false;
-	}
-	else
+	// if (universalBinary)
+	// {
+	// 	if (!bundleUniversalBinary(inState))
+	// 		return false;
+	// }
+	// else
 #endif
 	{
-		AppBundler bundler;
-		for (auto& target : inState.distribution)
+		for (auto& target : inPrototype.distribution)
 		{
-			if (!bundler.run(target, inState, buildFile))
+			if (!bundler.run(target))
 				return false;
 		}
 	}
@@ -304,23 +306,23 @@ bool Router::xcodebuildRoute(BuildState& inState)
 /*****************************************************************************/
 bool Router::bundleUniversalBinary(BuildState& inState)
 {
-#if defined(CHALET_MACOS)
-	UniversalBinaryMacOS uniBinaryBuilder(m_inputs, inState, m_installDependencies);
-	return uniBinaryBuilder.run();
-#else
+	// #if defined(CHALET_MACOS)
+	// 	UniversalBinaryMacOS uniBinaryBuilder(m_inputs, inState, m_installDependencies);
+	// 	return uniBinaryBuilder.run();
+	// #else
 	UNUSED(inState);
 	return false;
-#endif
+	// #endif
 }
 
 /*****************************************************************************/
-bool Router::managePathVariables(const BuildState* inState)
+bool Router::managePathVariables(const StatePrototype* inPrototype)
 {
 	Environment::set("CLICOLOR_FORCE", "1");
 
-	if (inState != nullptr)
+	if (inPrototype != nullptr)
 	{
-		StringList outPaths = inState->environment.path();
+		StringList outPaths = inPrototype->environment.path();
 
 		if (outPaths.size() > 0)
 		{

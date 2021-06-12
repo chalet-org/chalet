@@ -12,6 +12,7 @@ namespace chalet
 {
 struct CommandLineInputs;
 class BuildState;
+struct StatePrototype;
 
 class Router
 {
@@ -25,8 +26,7 @@ public:
 
 private:
 	bool cmdConfigure();
-	bool cmdBuild(BuildState& inState);
-	bool cmdBundle(BuildState& inState);
+	bool cmdBundle(StatePrototype& inPrototype);
 	bool cmdInit();
 
 #if defined(CHALET_DEBUG)
@@ -37,7 +37,7 @@ private:
 	bool xcodebuildRoute(BuildState& inState);
 	bool bundleUniversalBinary(BuildState& inState);
 
-	bool managePathVariables(const BuildState* inState);
+	bool managePathVariables(const StatePrototype* inPrototype);
 
 	const CommandLineInputs& m_inputs;
 

@@ -18,13 +18,16 @@ namespace chalet
 /*****************************************************************************/
 bool CacheTools::resolveOwnExecutable(const std::string& inAppPath)
 {
-	m_chalet = inAppPath;
-
-	if (!Commands::pathExists(m_chalet))
+	if (m_chalet.empty())
 	{
-		m_chalet = Commands::which("chalet");
+		m_chalet = inAppPath;
+
 		if (!Commands::pathExists(m_chalet))
-			m_chalet.clear();
+		{
+			m_chalet = Commands::which("chalet");
+			if (!Commands::pathExists(m_chalet))
+				m_chalet.clear();
+		}
 	}
 
 	return true;
@@ -33,14 +36,19 @@ bool CacheTools::resolveOwnExecutable(const std::string& inAppPath)
 /*****************************************************************************/
 bool CacheTools::fetchVersions()
 {
-	Timer timer;
+	if (!m_fetchedVersions)
+	{
+		Timer timer;
 
-	Diagnostic::info("Verifying Ancillary Tools", false);
+		Diagnostic::info("Verifying Ancillary Tools", false);
 
-	fetchBashVersion();
-	fetchBrewVersion();
+		fetchBashVersion();
+		fetchBrewVersion();
 
-	Diagnostic::printDone(timer.asString());
+		Diagnostic::printDone(timer.asString());
+
+		m_fetchedVersions = true;
+	}
 
 	return true;
 }
@@ -229,7 +237,7 @@ void CacheTools::setBrew(std::string&& inValue) noexcept
 {
 	m_brew = std::move(inValue);
 }
-bool CacheTools::brewAvailable() noexcept
+bool CacheTools::brewAvailable() const noexcept
 {
 	return m_brewAvailable;
 }
