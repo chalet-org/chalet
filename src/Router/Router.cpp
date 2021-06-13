@@ -167,26 +167,26 @@ bool Router::cmdBundle(StatePrototype& inPrototype)
 		return false;
 
 #if defined(CHALET_MACOS)
-	bool universalBinary = false;
-	for (auto& target : inPrototype.distribution)
-	{
-		if (target->isDistributionBundle())
-		{
-			auto& bundle = static_cast<BundleTarget&>(*target);
-			if (bundle.macosBundle().universalBinary())
-			{
-				universalBinary = true;
-				break;
-			}
-		}
-	}
+		// bool universalBinary = false;
+		// for (auto& target : inPrototype.distribution)
+		// {
+		// 	if (target->isDistributionBundle())
+		// 	{
+		// 		auto& bundle = static_cast<BundleTarget&>(*target);
+		// 		if (bundle.macosBundle().universalBinary())
+		// 		{
+		// 			universalBinary = true;
+		// 			break;
+		// 		}
+		// 	}
+		// }
 
-	// if (universalBinary)
-	// {
-	// 	if (!bundleUniversalBinary(inState))
-	// 		return false;
-	// }
-	// else
+		// if (universalBinary)
+		// {
+		// 	if (!bundleUniversalBinary(inState))
+		// 		return false;
+		// }
+		// else
 #endif
 	{
 		for (auto& target : inPrototype.distribution)

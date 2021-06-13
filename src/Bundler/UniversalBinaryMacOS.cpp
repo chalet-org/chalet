@@ -27,6 +27,29 @@ UniversalBinaryMacOS::UniversalBinaryMacOS(const CommandLineInputs& inInputs, Ap
 }
 
 /*****************************************************************************/
+bool UniversalBinaryMacOS::createOppositeState()
+{
+	m_oppositeState = getIntermediateState("arm64", "x86_64");
+	if (m_oppositeState == nullptr)
+	{
+		Diagnostic::error("Universal Binary builder expects 'x86_64' or 'arm64' architecture.");
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool UniversalBinaryMacOS::buildOppositeState()
+{
+	chalet_assert(m_oppositeState != nullptr, "");
+	if (!m_oppositeState->doBuild(Route::Build))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
 bool UniversalBinaryMacOS::run()
 {
 	if (m_state.tools.lipo().empty())
@@ -35,15 +58,7 @@ bool UniversalBinaryMacOS::run()
 		return false;
 	}
 
-	auto oppositeState = getIntermediateState("arm64", "x86_64");
-	if (oppositeState == nullptr)
-	{
-		Diagnostic::error("Universal Binary builder expects 'x86_64' or 'arm64' architecture.");
-		return false;
-	}
-
-	if (!oppositeState->doBuild(Route::Build))
-		return false;
+	chalet_assert(m_oppositeState != nullptr, "");
 
 	auto quiet = Output::quietNonBuild();
 	Output::setQuietNonBuild(true);
@@ -57,10 +72,10 @@ bool UniversalBinaryMacOS::run()
 
 	Output::setQuietNonBuild(quiet);
 
-	if (!gatherDependencies(m_state, *oppositeState, *universalState))
+	if (!gatherDependencies(m_state, *m_oppositeState, *universalState))
 		return false;
 
-	if (!createUniversalBinaries(m_state, *oppositeState, *universalState))
+	if (!createUniversalBinaries(m_state, *m_oppositeState, *universalState))
 		return false;
 
 	return bundleState(*universalState);

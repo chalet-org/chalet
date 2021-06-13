@@ -19,6 +19,8 @@ struct UniversalBinaryMacOS
 {
 	explicit UniversalBinaryMacOS(const CommandLineInputs& inInputs, AppBundler& inBundler, BuildState& inState, const bool inInstallDependencies);
 
+	bool createOppositeState();
+	bool buildOppositeState();
 	bool run();
 
 private:
@@ -31,6 +33,8 @@ private:
 	const CommandLineInputs& m_inputs;
 	AppBundler& m_bundler;
 	BuildState& m_state;
+
+	std::unique_ptr<BuildState> m_oppositeState;
 
 	bool m_installDependencies = false;
 };

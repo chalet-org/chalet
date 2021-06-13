@@ -49,9 +49,49 @@ bool StatePrototype::initialize()
 	if (!parseRequired(m_buildJson->json))
 		return false;
 
+	if (!validate())
+		return false;
+
 	Diagnostic::printDone(timer.asString());
 
 	return true;
+}
+
+/*****************************************************************************/
+bool StatePrototype::validate()
+{
+	std::unordered_map<std::string, std::string> locations;
+	bool result = true;
+	for (auto& target : distribution)
+	{
+		if (target->isDistributionBundle())
+		{
+			auto& bundle = static_cast<const BundleTarget&>(*target);
+
+			for (auto& projectName : bundle.projects())
+			{
+				auto res = locations.find(projectName);
+				if (res != locations.end())
+				{
+					if (res->second == bundle.outDir())
+					{
+						Diagnostic::error(fmt::format("Project '{}' has duplicate bundle destination of '{}' defined in distribution bundle: {}", projectName, bundle.outDir(), bundle.name()));
+						result = false;
+					}
+					else
+					{
+						locations.emplace(projectName, bundle.outDir());
+					}
+				}
+				else
+				{
+					locations.emplace(projectName, bundle.outDir());
+				}
+			}
+		}
+	}
+
+	return result;
 }
 
 /*****************************************************************************/

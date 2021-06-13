@@ -24,6 +24,7 @@ struct StatePrototype
 	explicit StatePrototype(const CommandLineInputs& inInputs, std::string inFilename);
 
 	bool initialize();
+	bool validate();
 
 	JsonFile& jsonFile() noexcept;
 	const std::string& filename() const noexcept;

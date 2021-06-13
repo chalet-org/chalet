@@ -33,11 +33,28 @@ AppBundler::AppBundler(const CommandLineInputs& inInputs, StatePrototype& inProt
 bool AppBundler::runBuilds(const bool inInstallDependencies)
 {
 	// Build all required configurations
-	for (auto& config : m_prototype.requiredBuildConfigurations())
+	StringList arches;
+	for (auto& target : m_prototype.distribution)
 	{
-		CommandLineInputs inputs = m_inputs;
-		inputs.setBuildConfiguration(config);
-		m_states.emplace(config, std::make_unique<BuildState>(std::move(inputs), m_prototype));
+		if (target->isDistributionBundle())
+		{
+			auto& bundle = static_cast<BundleTarget&>(*target);
+			const auto& configuration = bundle.configuration();
+
+			if (m_states.find(configuration) == m_states.end())
+			{
+				CommandLineInputs inputs = m_inputs;
+				inputs.setBuildConfiguration(configuration);
+				auto state = std::make_unique<BuildState>(std::move(inputs), m_prototype);
+				LOG("arch:", state->info.targetArchitectureString());
+
+				m_states.emplace(configuration, std::move(state));
+			}
+
+			// if (bundle.macosBundle().universalBinary())
+			// {
+			// }
+		}
 	}
 
 	for (auto& [config, state] : m_states)
@@ -45,7 +62,7 @@ bool AppBundler::runBuilds(const bool inInstallDependencies)
 		if (!state->initialize(inInstallDependencies))
 			return false;
 
-		if (!state->doBuild())
+		if (!state->doBuild(Route::Build))
 			return false;
 	}
 
@@ -65,7 +82,6 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 		chalet_assert(!bundle.configuration().empty(), "State not initialized");
 		chalet_assert(m_states.find(bundle.configuration()) != m_states.end(), "State not initialized");
 
-		LOG(bundle.configuration());
 		auto& state = m_states.at(bundle.configuration());
 
 		auto bundler = IAppBundler::make(*state, bundle, m_dependencyMap, buildFile, m_cleanOutput);
