@@ -1476,7 +1476,7 @@ Json Schema::getBuildJson()
 				"additionalProperties": false,
 				"description": "A list of allowed build configurations",
 				"patternProperties": {
-					"^[\\w\\-\\+\\.]{3,}$": {
+					"^[A-Za-z]{3,}$": {
 						"type": "object",
 						"additionalProperties": false,
 						"properties": {

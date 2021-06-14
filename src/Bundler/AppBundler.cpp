@@ -33,30 +33,48 @@ AppBundler::AppBundler(const CommandLineInputs& inInputs, StatePrototype& inProt
 bool AppBundler::runBuilds(const bool inInstallDependencies)
 {
 	// Build all required configurations
+	m_detectedArch = m_inputs.targetArchitecture().empty() ? m_inputs.hostArchitecture() : m_inputs.targetArchitecture();
+
+	auto makeState = [&](std::string arch, BundleTarget& inBundle) {
+		const auto& configuration = inBundle.configuration();
+		auto configName = fmt::format("{}_{}", arch, configuration);
+		if (m_states.find(configName) == m_states.end())
+		{
+			CommandLineInputs inputs = m_inputs;
+			inputs.setBuildConfiguration(configuration);
+			inputs.setTargetArchitecture(std::move(arch));
+			auto state = std::make_unique<BuildState>(std::move(inputs), m_prototype);
+
+			m_states.emplace(configName, std::move(state));
+		}
+	};
+
 	StringList arches;
 	for (auto& target : m_prototype.distribution)
 	{
 		if (target->isDistributionBundle())
 		{
 			auto& bundle = static_cast<BundleTarget&>(*target);
-			const auto& configuration = bundle.configuration();
 
-			if (m_states.find(configuration) == m_states.end())
+			auto universalBinaryArches = bundle.macosBundle().universalBinaryArches();
+
+#if defined(CHALET_MACOS)
+			if (!universalBinaryArches.empty())
 			{
-				CommandLineInputs inputs = m_inputs;
-				inputs.setBuildConfiguration(configuration);
-				auto state = std::make_unique<BuildState>(std::move(inputs), m_prototype);
-				LOG("arch:", state->info.targetArchitectureString());
-
-				m_states.emplace(configuration, std::move(state));
+				for (auto arch : universalBinaryArches)
+				{
+					makeState(arch, bundle);
+				}
 			}
-
-			// if (bundle.macosBundle().universalBinary())
-			// {
-			// }
+			else
+#endif
+			{
+				makeState(m_detectedArch, bundle);
+			}
 		}
 	}
 
+	// BuildState* stateArchA = nullptr;
 	for (auto& [config, state] : m_states)
 	{
 		if (!state->initialize(inInstallDependencies))
@@ -80,23 +98,45 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
 
 		chalet_assert(!bundle.configuration().empty(), "State not initialized");
-		chalet_assert(m_states.find(bundle.configuration()) != m_states.end(), "State not initialized");
 
-		auto& state = m_states.at(bundle.configuration());
+		auto universalBinaryArches = bundle.macosBundle().universalBinaryArches();
+		if (universalBinaryArches.size() > 0)
+		{
+			Diagnostic::error(fmt::format("Universal binary.", bundle.configuration()));
+			return false;
+		}
 
-		auto bundler = IAppBundler::make(*state, bundle, m_dependencyMap, buildFile, m_cleanOutput);
+		BuildState* buildState = nullptr;
+		for (auto& [config, state] : m_states)
+		{
+			auto configName = fmt::format("{}_{}", m_detectedArch, bundle.configuration());
+			if (String::equals(configName, config))
+			{
+				buildState = state.get();
+				break;
+			}
+		}
+
+		chalet_assert(buildState != nullptr, "State not initialized");
+		if (buildState == nullptr)
+		{
+			Diagnostic::error(fmt::format("Arch and/or build configuration '{}' not detected.", bundle.configuration()));
+			return false;
+		}
+
+		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, buildFile, m_cleanOutput);
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error(fmt::format("There was an error removing the previous distribution bundle for: {}", inTarget->name()));
 			return false;
 		}
 
-		bundle.initialize(*state);
+		bundle.initialize(*buildState);
 
-		if (!gatherDependencies(bundle, *state))
+		if (!gatherDependencies(bundle, *buildState))
 			return false;
 
-		if (!runBundleTarget(*bundler, *state))
+		if (!runBundleTarget(*bundler, *buildState))
 			return false;
 	}
 	else if (inTarget->isScript())

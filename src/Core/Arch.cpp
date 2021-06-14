@@ -18,11 +18,11 @@ std::string Arch::getHostCpuArchitecture()
 {
 #if defined(CHALET_MACOS)
 	#if TARGET_CPU_ARM64
-	return "arm64";
+	return "arm64-apple-darwin";
 	#elif TARGET_CPU_X86_64
-	return "x86_64";
+	return "x86_64-apple-darwin";
 	#else
-	return "x86";
+	return "i686-apple-darwin";
 	#endif
 #else
 	#if (defined(__x86_64__) && __x86_64__) || (defined(_M_AMD64) && _M_AMD64 == 100)

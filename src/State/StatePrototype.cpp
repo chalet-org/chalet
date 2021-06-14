@@ -75,7 +75,7 @@ bool StatePrototype::validate()
 				{
 					if (res->second == bundle.outDir())
 					{
-						Diagnostic::error(fmt::format("Project '{}' has duplicate bundle destination of '{}' defined in distribution bundle: {}", projectName, bundle.outDir(), bundle.name()));
+						Diagnostic::error(fmt::format("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", projectName, bundle.outDir(), bundle.name()));
 						result = false;
 					}
 					else

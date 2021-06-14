@@ -38,8 +38,13 @@ struct BundleMacOS
 	const std::string& dmgBackground2x() const noexcept;
 	void setDmgBackground2x(std::string&& inValue);
 
+	const StringList& universalBinaryArches() const noexcept;
+	void addUniversalBinaryArches(StringList&& inList);
+	void addUniversalBinaryArch(std::string&& inValue);
+
 private:
 	StringList m_dylibs;
+	StringList m_universalBinaryArches;
 
 	std::string m_bundleName;
 	std::string m_icon;

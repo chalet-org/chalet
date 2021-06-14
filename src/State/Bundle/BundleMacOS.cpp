@@ -8,6 +8,7 @@
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -143,6 +144,14 @@ bool BundleMacOS::universalBinary() const noexcept
 void BundleMacOS::setUniversalBinary(const bool inValue) noexcept
 {
 	m_universalBinary = inValue;
+
+	if (m_universalBinary)
+	{
+		addUniversalBinaryArches({
+			"x86_64-apple-darwin",
+			"arm64-apple-darwin",
+		});
+	}
 }
 
 /*****************************************************************************/
@@ -178,4 +187,20 @@ void BundleMacOS::setDmgBackground2x(std::string&& inValue)
 	m_dmgBackground2x = std::move(inValue);
 }
 
+/*****************************************************************************/
+const StringList& BundleMacOS::universalBinaryArches() const noexcept
+{
+	return m_universalBinaryArches;
+}
+
+void BundleMacOS::addUniversalBinaryArches(StringList&& inList)
+{
+	List::forEach(inList, this, &BundleMacOS::addUniversalBinaryArch);
+}
+
+void BundleMacOS::addUniversalBinaryArch(std::string&& inValue)
+{
+	Path::sanitize(inValue);
+	List::addIfDoesNotExist(m_universalBinaryArches, std::move(inValue));
+}
 }

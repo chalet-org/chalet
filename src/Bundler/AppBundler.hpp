@@ -46,6 +46,8 @@ private:
 
 	StringList m_removedDirs;
 
+	std::string m_detectedArch;
+
 	bool m_cleanOutput = false;
 };
 }
