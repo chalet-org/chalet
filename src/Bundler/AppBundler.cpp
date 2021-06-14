@@ -189,8 +189,9 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 			return false;
 
 		Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
-		Output::lineBreak();
 	}
+
+	Output::lineBreak();
 
 	// logDependencies();
 
