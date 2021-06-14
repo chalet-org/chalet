@@ -6,7 +6,6 @@
 #include "Router/Router.hpp"
 
 #include "Bundler/AppBundler.hpp"
-// #include "Bundler/UniversalBinaryMacOS.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 #include "Libraries/Format.hpp"
@@ -67,17 +66,16 @@ bool Router::run()
 
 		if (!prototype->initialize())
 			return false;
-	}
 
-	if (command != Route::Init && command != Route::Bundle)
-	{
-		m_installDependencies = true;
+		if (command != Route::Bundle)
+		{
+			m_installDependencies = true;
 
-		chalet_assert(prototype != nullptr, "");
-
-		buildState = std::make_unique<BuildState>(m_inputs, *prototype);
-		if (!buildState->initialize(m_installDependencies))
-			return false;
+			chalet_assert(prototype != nullptr, "");
+			buildState = std::make_unique<BuildState>(m_inputs, *prototype);
+			if (!buildState->initialize(m_installDependencies))
+				return false;
+		}
 	}
 
 	if (!managePathVariables(prototype.get()))
@@ -166,34 +164,10 @@ bool Router::cmdBundle(StatePrototype& inPrototype)
 	if (!bundler.runBuilds(m_installDependencies))
 		return false;
 
-#if defined(CHALET_MACOS)
-		// bool universalBinary = false;
-		// for (auto& target : inPrototype.distribution)
-		// {
-		// 	if (target->isDistributionBundle())
-		// 	{
-		// 		auto& bundle = static_cast<BundleTarget&>(*target);
-		// 		if (bundle.macosBundle().universalBinary())
-		// 		{
-		// 			universalBinary = true;
-		// 			break;
-		// 		}
-		// 	}
-		// }
-
-		// if (universalBinary)
-		// {
-		// 	if (!bundleUniversalBinary(inState))
-		// 		return false;
-		// }
-		// else
-#endif
+	for (auto& target : inPrototype.distribution)
 	{
-		for (auto& target : inPrototype.distribution)
-		{
-			if (!bundler.run(target))
-				return false;
-		}
+		if (!bundler.run(target))
+			return false;
 	}
 
 	Output::lineBreak();
@@ -301,18 +275,6 @@ bool Router::xcodebuildRoute(BuildState& inState)
 	Diagnostic::error("Xcode project generation (-g xcode) is only available on MacOS");
 	return false;
 #endif
-}
-
-/*****************************************************************************/
-bool Router::bundleUniversalBinary(BuildState& inState)
-{
-	// #if defined(CHALET_MACOS)
-	// 	UniversalBinaryMacOS uniBinaryBuilder(m_inputs, inState, m_installDependencies);
-	// 	return uniBinaryBuilder.run();
-	// #else
-	UNUSED(inState);
-	return false;
-	// #endif
 }
 
 /*****************************************************************************/
