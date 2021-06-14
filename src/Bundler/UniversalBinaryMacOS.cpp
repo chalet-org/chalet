@@ -18,39 +18,15 @@
 namespace chalet
 {
 /*****************************************************************************/
-UniversalBinaryMacOS::UniversalBinaryMacOS(const CommandLineInputs& inInputs, AppBundler& inBundler, BuildState& inState, const bool inInstallDependencies) :
-	m_inputs(inInputs),
+UniversalBinaryMacOS::UniversalBinaryMacOS(AppBundler& inBundler, BuildState& inState, BundleTarget& inBundle) :
 	m_bundler(inBundler),
 	m_state(inState),
-	m_installDependencies(inInstallDependencies)
+	m_bundle(inBundle)
 {
 }
 
 /*****************************************************************************/
-bool UniversalBinaryMacOS::createOppositeState()
-{
-	m_oppositeState = getIntermediateState("arm64", "x86_64");
-	if (m_oppositeState == nullptr)
-	{
-		Diagnostic::error("Universal Binary builder expects 'x86_64' or 'arm64' architecture.");
-		return false;
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool UniversalBinaryMacOS::buildOppositeState()
-{
-	chalet_assert(m_oppositeState != nullptr, "");
-	if (!m_oppositeState->doBuild(Route::Build))
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-bool UniversalBinaryMacOS::run()
+bool UniversalBinaryMacOS::run(BuildState& inStateB, BuildState& inUniversalState)
 {
 	if (m_state.tools.lipo().empty())
 	{
@@ -58,44 +34,25 @@ bool UniversalBinaryMacOS::run()
 		return false;
 	}
 
-	chalet_assert(m_oppositeState != nullptr, "");
-
-	auto quiet = Output::quietNonBuild();
-	Output::setQuietNonBuild(true);
-
-	auto universalState = getIntermediateState("universal", "universal");
-	if (universalState == nullptr)
-	{
-		Diagnostic::error("Universal Binary builder expects 'x86_64' or 'arm64' architecture.");
-		return false;
-	}
-
-	Output::setQuietNonBuild(quiet);
-
-	if (!gatherDependencies(m_state, *m_oppositeState, *universalState))
+	if (!gatherDependencies(m_state, inStateB, inUniversalState))
 		return false;
 
-	if (!createUniversalBinaries(m_state, *m_oppositeState, *universalState))
+	if (!createUniversalBinaries(m_state, inStateB, inUniversalState))
 		return false;
 
-	return bundleState(*universalState);
+	return true;
 }
 
 /*****************************************************************************/
 bool UniversalBinaryMacOS::gatherDependencies(BuildState& inStateA, BuildState& inStateB, BuildState& inUniversalState)
 {
 	auto gather = [&](BuildState& inState) -> bool {
-		for (auto& target : inState.distribution)
-		{
-			if (target->isDistributionBundle())
-			{
-				auto& bundle = static_cast<BundleTarget&>(*target);
-				bundle.setUpdateRPaths(false);
+		m_bundle.setUpdateRPaths(false);
+		m_bundle.initialize(inState);
 
-				if (!m_bundler.gatherDependencies(bundle, inState))
-					return false;
-			}
-		}
+		if (!m_bundler.gatherDependencies(m_bundle, inState))
+			return false;
+
 		return true;
 	};
 
@@ -104,15 +61,6 @@ bool UniversalBinaryMacOS::gatherDependencies(BuildState& inStateA, BuildState& 
 
 	if (!gather(inStateB))
 		return false;
-
-	for (auto& target : inUniversalState.distribution)
-	{
-		if (target->isDistributionBundle())
-		{
-			auto& bundle = static_cast<BundleTarget&>(*target);
-			bundle.setUpdateRPaths(false);
-		}
-	}
 
 	BinaryDependencyMap newDeps;
 	auto& archABuildDir = inStateA.paths.buildOutputDir();
@@ -144,31 +92,6 @@ bool UniversalBinaryMacOS::gatherDependencies(BuildState& inStateA, BuildState& 
 }
 
 /*****************************************************************************/
-std::unique_ptr<BuildState> UniversalBinaryMacOS::getIntermediateState(std::string_view inReplaceA, std::string_view inReplaceB) const
-{
-	std::string arch = m_state.info.targetArchitectureString();
-
-	if (String::startsWith("x86_64-", arch))
-		String::replaceAll(arch, "x86_64", inReplaceA);
-	else if (String::startsWith("arm64-", arch))
-		String::replaceAll(arch, "arm64", inReplaceB);
-	else
-		return nullptr;
-
-	CommandLineInputs inputs = m_inputs;
-	inputs.setTargetArchitecture(std::move(arch));
-
-	UNUSED(m_installDependencies);
-
-	// auto buildState = std::make_unique<BuildState>(inputs);
-	// if (!buildState->initialize(m_installDependencies))
-	// 	return nullptr;
-
-	// return buildState;
-	return nullptr;
-}
-
-/*****************************************************************************/
 StringList UniversalBinaryMacOS::getProjectFiles(const BuildState& inState) const
 {
 	StringList ret;
@@ -182,7 +105,10 @@ StringList UniversalBinaryMacOS::getProjectFiles(const BuildState& inState) cons
 			if (project.isStaticLibrary())
 				continue;
 
-			ret.push_back(fmt::format("{}/{}", buildOutputDir, project.outputFile()));
+			if (List::contains(m_bundle.projects(), project.name()))
+			{
+				ret.push_back(fmt::format("{}/{}", buildOutputDir, project.outputFile()));
+			}
 		}
 	}
 
@@ -214,6 +140,8 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 
 	auto& installNameTool = inUniversalState.tools.installNameTool();
 
+	auto dependencyMap = m_bundler.dependencyMap();
+
 	auto makeIntermediateFile = [&](const std::string& inFile, const std::string& inArch, const std::string& inOutFolder) {
 		auto tmpFolder = fmt::format("{}/tmp_{}", inOutFolder, inArch);
 		if (!Commands::pathExists(tmpFolder))
@@ -223,7 +151,12 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 		auto tmpFile = fmt::format("{}/{}", tmpFolder, file);
 		if (Commands::copySilent(inFile, tmpFolder))
 		{
-			auto iter = m_bundler.dependencyMap().find(inFile);
+			auto iter = dependencyMap.find(inFile);
+			if (iter == dependencyMap.end())
+			{
+				Diagnostic::error(fmt::format("There was an error finding the file: {}", inFile));
+				return std::make_pair(std::string(), std::string());
+			}
 			if (!AppBundlerMacOS::changeRPathOfDependents(installNameTool, file, iter->second, tmpFile, true))
 			{
 				Diagnostic::error("Error chaning run path for file: {}", tmpFile);
@@ -266,38 +199,6 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 	for (auto& path : removeFolders)
 	{
 		Commands::removeRecursively(path);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool UniversalBinaryMacOS::bundleState(BuildState& inUniversalState)
-{
-	for (auto& target : m_state.distribution)
-	{
-		if (target->isDistributionBundle())
-		{
-			auto& bundle = static_cast<BundleTarget&>(*target);
-			if (!bundle.macosBundle().universalBinary())
-			{
-				if (!m_bundler.run(target))
-					return false;
-			}
-		}
-	}
-
-	for (auto& target : inUniversalState.distribution)
-	{
-		if (target->isDistributionBundle())
-		{
-			auto& bundle = static_cast<BundleTarget&>(*target);
-			if (bundle.macosBundle().universalBinary())
-			{
-				if (!m_bundler.run(target))
-					return false;
-			}
-		}
 	}
 
 	return true;

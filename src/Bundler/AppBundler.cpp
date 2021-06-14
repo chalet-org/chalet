@@ -7,6 +7,7 @@
 
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/IAppBundler.hpp"
+#include "Bundler/UniversalBinaryMacOS.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
@@ -56,7 +57,7 @@ bool AppBundler::runBuilds(const bool inInstallDependencies)
 		{
 			auto& bundle = static_cast<BundleTarget&>(*target);
 
-			auto universalBinaryArches = bundle.macosBundle().universalBinaryArches();
+			const auto& universalBinaryArches = bundle.macosBundle().universalBinaryArches();
 
 #if defined(CHALET_MACOS)
 			if (!universalBinaryArches.empty())
@@ -99,29 +100,70 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 
 		chalet_assert(!bundle.configuration().empty(), "State not initialized");
 
-		auto universalBinaryArches = bundle.macosBundle().universalBinaryArches();
-		if (universalBinaryArches.size() > 0)
-		{
-			Diagnostic::error(fmt::format("Universal binary.", bundle.configuration()));
-			return false;
-		}
-
 		BuildState* buildState = nullptr;
-		for (auto& [config, state] : m_states)
+#if defined(CHALET_MACOS)
+		const auto& universalBinaryArches = bundle.macosBundle().universalBinaryArches();
+		if (universalBinaryArches.size() == 2)
 		{
-			auto configName = fmt::format("{}_{}", m_detectedArch, bundle.configuration());
-			if (String::equals(configName, config))
+			BuildState* buildStateB = nullptr;
+			for (auto& [config, state] : m_states)
 			{
-				buildState = state.get();
-				break;
+				auto configNameA = fmt::format("{}_{}", universalBinaryArches[0], bundle.configuration());
+				auto configNameB = fmt::format("{}_{}", universalBinaryArches[1], bundle.configuration());
+				if (String::equals(configNameA, config))
+				{
+					chalet_assert(buildState == nullptr, "");
+					buildState = state.get();
+				}
+				else if (String::equals(configNameB, config))
+				{
+					chalet_assert(buildStateB == nullptr, "");
+					buildStateB = state.get();
+				}
 			}
-		}
+			chalet_assert(buildState != nullptr, "State not initialized for universal binary");
+			chalet_assert(buildStateB != nullptr, "State not initialized for universal binary");
+			if (buildState == nullptr || buildStateB == nullptr)
+			{
+				Diagnostic::error(fmt::format("Arch and/or build configuration '{}' not detected.", bundle.configuration()));
+				return false;
+			}
 
-		chalet_assert(buildState != nullptr, "State not initialized");
-		if (buildState == nullptr)
+			if (m_univeralState == nullptr)
+			{
+				auto quiet = Output::quietNonBuild();
+				Output::setQuietNonBuild(true);
+				m_univeralState = getUniversalState(*buildState);
+
+				Output::setQuietNonBuild(quiet);
+			}
+
+			chalet_assert(m_univeralState != nullptr, "State not initialized for universal binary");
+			UniversalBinaryMacOS universalBundler(*this, *buildState, static_cast<BundleTarget&>(*inTarget));
+			if (!universalBundler.run(*buildStateB, *m_univeralState))
+				return false;
+
+			buildState = m_univeralState.get();
+		}
+		else
+#endif
 		{
-			Diagnostic::error(fmt::format("Arch and/or build configuration '{}' not detected.", bundle.configuration()));
-			return false;
+			for (auto& [config, state] : m_states)
+			{
+				auto configName = fmt::format("{}_{}", m_detectedArch, bundle.configuration());
+				if (String::equals(configName, config))
+				{
+					buildState = state.get();
+					break;
+				}
+			}
+
+			chalet_assert(buildState != nullptr, "State not initialized");
+			if (buildState == nullptr)
+			{
+				Diagnostic::error(fmt::format("Arch and/or build configuration '{}' not detected.", bundle.configuration()));
+				return false;
+			}
 		}
 
 		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, buildFile, m_cleanOutput);
@@ -460,4 +502,24 @@ bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::stri
 
 	return true;
 }
+
+/*****************************************************************************/
+std::unique_ptr<BuildState> AppBundler::getUniversalState(BuildState& inState) const
+{
+	std::string arch = inState.info.targetArchitectureString();
+
+	auto firstDash = arch.find('-');
+	arch = fmt::format("universal-{}", arch.substr(firstDash + 1));
+
+	CommandLineInputs inputs = m_inputs;
+	inputs.setTargetArchitecture(std::move(arch));
+	inputs.setBuildConfiguration(inState.info.buildConfiguration());
+
+	auto buildState = std::make_unique<BuildState>(std::move(inputs), m_prototype);
+	if (!buildState->initialize(false))
+		return nullptr;
+
+	return buildState;
+}
+
 }

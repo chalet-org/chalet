@@ -37,6 +37,7 @@ private:
 	bool runScriptTarget(const ScriptDistTarget& inScript, const std::string& inBuildFile);
 	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath);
+	std::unique_ptr<BuildState> getUniversalState(BuildState& inState) const;
 
 	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
@@ -45,6 +46,10 @@ private:
 	BinaryDependencyMap m_dependencyMap;
 
 	StringList m_removedDirs;
+
+#if defined(CHALET_MACOS)
+	std::unique_ptr<BuildState> m_univeralState;
+#endif
 
 	std::string m_detectedArch;
 
