@@ -286,6 +286,43 @@ bool BuildState::validateState()
 		}
 	}
 
+	m_prototype.tools.fetchBashVersion();
+	m_prototype.tools.fetchBrewVersion();
+
+	for (auto& target : distribution)
+	{
+		if (!target->validate())
+		{
+			Diagnostic::error(fmt::format("Error validating the '{}' distribution target.", target->name()));
+			return false;
+		}
+	}
+
+	auto strat = m_prototype.environment.strategy();
+
+	if (strat == StrategyType::Makefile)
+	{
+		m_prototype.tools.fetchMakeVersion();
+
+		const auto& makeExec = tools.make();
+		if (makeExec.empty() || !Commands::pathExists(makeExec))
+		{
+			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec));
+			return false;
+		}
+	}
+	else if (strat == StrategyType::Ninja)
+	{
+		m_prototype.tools.fetchNinjaVersion();
+
+		auto& ninjaExec = tools.ninja();
+		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
+		{
+			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec));
+			return false;
+		}
+	}
+
 	bool hasCMakeTargets = false;
 	bool hasSubChaletTargets = false;
 	for (auto& target : targets)

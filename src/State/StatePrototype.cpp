@@ -99,6 +99,8 @@ bool StatePrototype::validateBundleDestinations()
 /*****************************************************************************/
 bool StatePrototype::validate()
 {
+	// TODO: Figure out how to manage compiler toolchains & read the cache via the prototype
+	//   before any of this can be done
 	/*
 	Timer timer;
 	Diagnostic::info("Verifying Ancillary Tools", false);
