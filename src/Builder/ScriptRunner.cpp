@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
+#include "State/CacheTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"

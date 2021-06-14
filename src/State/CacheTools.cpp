@@ -34,26 +34,6 @@ bool CacheTools::resolveOwnExecutable(const std::string& inAppPath)
 }
 
 /*****************************************************************************/
-bool CacheTools::fetchVersions()
-{
-	if (!m_fetchedVersions)
-	{
-		Timer timer;
-
-		// Diagnostic::info("Verifying Ancillary Tools", false);
-
-		fetchBashVersion();
-		fetchBrewVersion();
-
-		// Diagnostic::printDone(timer.asString());
-
-		m_fetchedVersions = true;
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 void CacheTools::fetchBashVersion()
 {
 	if (!m_bash.empty())
@@ -88,77 +68,6 @@ void CacheTools::fetchBrewVersion()
 }
 
 /*****************************************************************************/
-void CacheTools::fetchMakeVersion()
-{
-	if (!m_make.empty() && m_makeVersionMajor == 0 && m_makeVersionMinor == 0)
-	{
-		if (Commands::pathExists(m_make))
-		{
-			std::string version = Commands::subprocessOutput({ m_make, "--version" });
-			isolateVersion(version);
-
-			auto vals = String::split(version, '.');
-			if (vals.size() == 2)
-			{
-				m_makeVersionMajor = std::stoi(vals[0]);
-				m_makeVersionMinor = std::stoi(vals[1]);
-			}
-
-			m_makeIsJom = String::endsWith("jom.exe", m_make);
-			m_makeIsNMake = String::endsWith("nmake.exe", m_make) || m_makeIsJom;
-		}
-	}
-}
-
-/*****************************************************************************/
-bool CacheTools::fetchCmakeVersion()
-{
-	if (!m_cmake.empty() && m_cmakeVersionMajor == 0 && m_cmakeVersionMinor == 0)
-	{
-		if (Commands::pathExists(m_cmake))
-		{
-			std::string version = Commands::subprocessOutput({ m_cmake, "--version" });
-			m_cmakeAvailable = String::startsWith("cmake version ", version);
-
-			isolateVersion(version);
-
-			auto vals = String::split(version, '.');
-			if (vals.size() == 3)
-			{
-				m_cmakeVersionMajor = std::stoi(vals[0]);
-				m_cmakeVersionMinor = std::stoi(vals[1]);
-				m_cmakeVersionPatch = std::stoi(vals[2]);
-			}
-		}
-	}
-
-	return m_cmakeAvailable;
-}
-
-/*****************************************************************************/
-void CacheTools::fetchNinjaVersion()
-{
-	if (!m_ninja.empty() && m_ninjaVersionMajor == 0 && m_ninjaVersionMinor == 0)
-	{
-		if (Commands::pathExists(m_ninja))
-		{
-			std::string version = Commands::subprocessOutput({ m_ninja, "--version" });
-			isolateVersion(version);
-
-			auto vals = String::split(version, '.');
-			if (vals.size() == 3)
-			{
-				m_ninjaVersionMajor = std::stoi(vals[0]);
-				m_ninjaVersionMinor = std::stoi(vals[1]);
-				m_ninjaVersionPatch = std::stoi(vals[2]);
-			}
-
-			m_ninjaAvailable = m_ninjaVersionMajor > 0 && m_ninjaVersionMinor > 0;
-		}
-	}
-}
-
-/*****************************************************************************/
 void CacheTools::fetchXcodeVersion()
 {
 #if defined(CHALET_MACOS)
@@ -170,7 +79,7 @@ void CacheTools::fetchXcodeVersion()
 			if (String::contains("requires Xcode", version))
 				return;
 
-			isolateVersion(version);
+			version = Commands::isolateVersion(version);
 
 			auto vals = String::split(version, '.');
 			if (vals.size() == 2)
@@ -192,7 +101,7 @@ void CacheTools::fetchXcodeGenVersion()
 		if (Commands::pathExists(m_xcodegen))
 		{
 			std::string version = Commands::subprocessOutput({ m_xcodegen, "--version" });
-			isolateVersion(version);
+			version = Commands::isolateVersion(version);
 
 			auto vals = String::split(version, '.');
 			if (vals.size() == 3)
@@ -243,32 +152,6 @@ bool CacheTools::brewAvailable() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::cmake() const noexcept
-{
-	return m_cmake;
-}
-void CacheTools::setCmake(std::string&& inValue) noexcept
-{
-	m_cmake = std::move(inValue);
-}
-uint CacheTools::cmakeVersionMajor() const noexcept
-{
-	return m_cmakeVersionMajor;
-}
-uint CacheTools::cmakeVersionMinor() const noexcept
-{
-	return m_cmakeVersionMinor;
-}
-uint CacheTools::cmakeVersionPatch() const noexcept
-{
-	return m_cmakeVersionPatch;
-}
-bool CacheTools::cmakeAvailable() const noexcept
-{
-	return m_cmakeAvailable;
-}
-
-/*****************************************************************************/
 const std::string& CacheTools::codesign() const noexcept
 {
 	return m_codesign;
@@ -297,16 +180,6 @@ const std::string& CacheTools::git() const noexcept
 void CacheTools::setGit(std::string&& inValue) noexcept
 {
 	m_git = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& CacheTools::gprof() const noexcept
-{
-	return m_gprof;
-}
-void CacheTools::setGprof(std::string&& inValue) noexcept
-{
-	m_gprof = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -377,71 +250,6 @@ const std::string& CacheTools::applePlatformSdk(const std::string& inKey) const
 void CacheTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
 {
 	m_applePlatformSdk[inKey] = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& CacheTools::make() const noexcept
-{
-	return m_make;
-}
-void CacheTools::setMake(std::string&& inValue) noexcept
-{
-	m_make = std::move(inValue);
-}
-
-uint CacheTools::makeVersionMajor() const noexcept
-{
-	return m_makeVersionMajor;
-}
-uint CacheTools::makeVersionMinor() const noexcept
-{
-	return m_makeVersionMinor;
-}
-
-bool CacheTools::makeIsNMake() const noexcept
-{
-	return m_makeIsNMake;
-}
-
-bool CacheTools::makeIsJom() const noexcept
-{
-	return m_makeIsJom;
-}
-
-/*****************************************************************************/
-const std::string& CacheTools::ninja() const noexcept
-{
-	return m_ninja;
-}
-void CacheTools::setNinja(std::string&& inValue) noexcept
-{
-	m_ninja = std::move(inValue);
-}
-uint CacheTools::ninjaVersionMajor() const noexcept
-{
-	return m_ninjaVersionMajor;
-}
-uint CacheTools::ninjaVersionMinor() const noexcept
-{
-	return m_ninjaVersionMinor;
-}
-uint CacheTools::ninjaVersionPatch() const noexcept
-{
-	return m_ninjaVersionPatch;
-}
-bool CacheTools::ninjaAvailable() const noexcept
-{
-	return m_ninjaAvailable;
-}
-
-/*****************************************************************************/
-const std::string& CacheTools::objdump() const noexcept
-{
-	return m_objdump;
-}
-void CacheTools::setObjdump(std::string&& inValue) noexcept
-{
-	m_objdump = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -615,8 +423,7 @@ std::string CacheTools::getAsmGenerateCommand(const std::string& inputFile, cons
 		FMT_ARG(inputFile),
 		FMT_ARG(outputFile));
 #else
-	return fmt::format("{objdump} -d -C -Mintel {inputFile} > {outputFile}",
-		fmt::arg("objdump", m_objdump),
+	return fmt::format("objdump -d -C -Mintel {inputFile} > {outputFile}",
 		FMT_ARG(inputFile),
 		FMT_ARG(outputFile));
 #endif
@@ -793,22 +600,6 @@ bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList
 		return false;
 	}
 #endif
-}
-
-/*****************************************************************************/
-void CacheTools::isolateVersion(std::string& outString)
-{
-	auto firstEol = outString.find('\n');
-	if (firstEol != std::string::npos)
-	{
-		outString = outString.substr(0, firstEol);
-	}
-
-	auto lastSpace = outString.find_last_of(' ');
-	if (lastSpace != std::string::npos)
-	{
-		outString = outString.substr(lastSpace + 1);
-	}
 }
 
 }

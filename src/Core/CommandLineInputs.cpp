@@ -55,6 +55,21 @@ void CommandLineInputs::setBuildFile(std::string&& inValue) noexcept
 const std::string& CommandLineInputs::buildPath() const noexcept
 {
 	return m_buildPath;
+
+	chalet_assert(!m_buildPath.empty(), "buildPath was not defined");
+	if (!m_buildPathMade)
+	{
+		if (!Commands::pathExists(m_buildPath))
+		{
+			m_buildPathMade = Commands::makeDirectory(m_buildPath);
+		}
+		else
+		{
+			m_buildPathMade = true;
+		}
+	}
+
+	return m_buildPath;
 }
 void CommandLineInputs::setBuildPath(std::string&& inValue) noexcept
 {
@@ -351,7 +366,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 	if (String::equals("msvc", inValue))
 	{
+		m_toolchainPreferenceRaw = inValue;
 		ret.type = ToolchainType::MSVC;
+		ret.strategy = StrategyType::Ninja;
 		ret.cpp = "cl";
 		ret.cc = "cl";
 		ret.rc = "rc";
@@ -360,7 +377,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 	else if (String::equals("llvm", inValue))
 	{
+		m_toolchainPreferenceRaw = inValue;
 		ret.type = ToolchainType::LLVM;
+		ret.strategy = StrategyType::Makefile;
 		ret.cpp = "clang++";
 		ret.cc = "clang";
 		ret.rc = "windres"; // TODO: verify this
@@ -369,7 +388,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 	else if (String::equals("gcc", inValue))
 	{
+		m_toolchainPreferenceRaw = inValue;
 		ret.type = ToolchainType::GNU;
+		ret.strategy = StrategyType::Makefile;
 		ret.cpp = "g++";
 		ret.cc = "gcc";
 		ret.rc = "windres";

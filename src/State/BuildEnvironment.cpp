@@ -53,32 +53,6 @@ uint BuildEnvironment::processorCount() const noexcept
 }
 
 /*****************************************************************************/
-StrategyType BuildEnvironment::strategy() const noexcept
-{
-	return m_strategy;
-}
-
-void BuildEnvironment::setStrategy(const std::string& inValue) noexcept
-{
-	if (String::equals("makefile", inValue))
-	{
-		m_strategy = StrategyType::Makefile;
-	}
-	else if (String::equals(inValue, "native-experimental"))
-	{
-		m_strategy = StrategyType::Native;
-	}
-	else if (String::equals(inValue, "ninja"))
-	{
-		m_strategy = StrategyType::Ninja;
-	}
-	else
-	{
-		chalet_assert(false, "Invalid strategy type");
-	}
-}
-
-/*****************************************************************************/
 uint BuildEnvironment::maxJobs() const noexcept
 {
 	return m_maxJobs;

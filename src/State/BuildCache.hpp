@@ -11,9 +11,9 @@
 
 namespace chalet
 {
-struct BuildPaths;
+struct CommandLineInputs;
 class BuildState;
-struct WorkspaceInfo;
+struct StatePrototype;
 
 struct BuildCache
 {
@@ -23,13 +23,13 @@ struct BuildCache
 		Global
 	};
 
-	explicit BuildCache(const WorkspaceInfo& inInfo, const BuildPaths& inPaths);
+	explicit BuildCache(const CommandLineInputs& inInputs);
 
 	bool createCacheFolder(const Type inCacheType);
 	bool exists(const Type inCacheType = Type::Local) const;
-	std::string getHash(const std::string& inIdentifier, const Type inCacheType) const;
+	std::string getHash(std::size_t inWorkspaceHash, const std::string& inIdentifier, const Type inCacheType) const;
 	std::string getPath(const std::string& inFolder, const Type inCacheType) const;
-	std::string getCacheKey(const std::string& inName);
+	std::string getCacheKey(const std::string& inName, const std::string& inConfig);
 
 	JsonFile& localConfig() noexcept;
 	void saveLocalConfig();
@@ -38,15 +38,16 @@ struct BuildCache
 	void saveGlobalConfig();
 
 	bool appBuildChanged() const noexcept;
-	void checkIfCompileStrategyChanged();
+	void checkIfCompileStrategyChanged(const std::string& inToolchain);
 	void checkIfWorkingDirectoryChanged();
 	void addSourceCache(const std::string& inHash);
 
-	void removeStaleProjectCaches(const Type inCacheType);
+	void removeStaleProjectCaches(const std::string& inToolchain, const Type inCacheType);
 	void removeBuildIfCacheChanged(const std::string& inBuildDir);
 
 private:
 	friend class BuildState;
+	friend struct StatePrototype;
 
 	const std::string& getCacheRef(const Type inCacheType) const;
 	void removeCacheFolder(const Type inCacheType);
@@ -57,8 +58,7 @@ private:
 
 	bool removeUnusedProjectFiles(const StringList& inHashes, const Type inCacheType);
 
-	const WorkspaceInfo& m_info;
-	const BuildPaths& m_paths;
+	const CommandLineInputs& m_inputs;
 
 	JsonFile m_localConfig;
 	JsonFile m_globalConfig;

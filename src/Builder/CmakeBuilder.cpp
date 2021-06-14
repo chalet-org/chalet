@@ -82,7 +82,7 @@ bool CmakeBuilder::run()
 /*****************************************************************************/
 std::string CmakeBuilder::getGenerator() const
 {
-	const bool isNinja = m_state.strategy() == StrategyType::Ninja;
+	const bool isNinja = m_state.compilerTools.strategy() == StrategyType::Ninja;
 	const auto& compileConfig = m_state.compilerTools.getConfig(CodeLanguage::CPlusPlus);
 
 	std::string ret;
@@ -109,7 +109,7 @@ std::string CmakeBuilder::getGenerator() const
 /*****************************************************************************/
 std::string CmakeBuilder::getArch() const
 {
-	const bool isNinja = m_state.strategy() == StrategyType::Ninja;
+	const bool isNinja = m_state.compilerTools.strategy() == StrategyType::Ninja;
 	const auto& compileConfig = m_state.compilerTools.getConfig(CodeLanguage::CPlusPlus);
 
 	std::string ret;
@@ -146,7 +146,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 	{
 		buildConfiguration = "Debug";
 	}
-	auto& cmake = m_state.tools.cmake();
+	auto& cmake = m_state.compilerTools.cmake();
 
 	StringList ret{ cmake, "-G", getGenerator() };
 
@@ -188,14 +188,14 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 /*****************************************************************************/
 StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 {
-	auto& cmake = m_state.tools.cmake();
+	auto& cmake = m_state.compilerTools.cmake();
 	const auto maxJobs = m_state.maxJobs();
 
-	const bool isMake = m_state.strategy() == StrategyType::Makefile;
+	const bool isMake = m_state.compilerTools.strategy() == StrategyType::Makefile;
 
 	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };
 
-	if (isMake && m_state.tools.makeVersionMajor() >= 4)
+	if (isMake && m_state.compilerTools.makeVersionMajor() >= 4)
 	{
 		ret.push_back("--");
 		ret.push_back("--output-sync=target");

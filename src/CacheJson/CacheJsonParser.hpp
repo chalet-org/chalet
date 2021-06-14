@@ -12,38 +12,29 @@
 namespace chalet
 {
 struct CommandLineInputs;
-class BuildState;
 struct JsonFile;
 struct StatePrototype;
 
 struct CacheJsonParser
 {
-	explicit CacheJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, BuildState& inState, JsonFile& inJsonFile);
+	explicit CacheJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
 
 	bool serialize();
 
 private:
-	bool createMsvcEnvironment();
 	bool validatePaths();
-	bool setDefaultBuildStrategy();
 	bool makeCache();
-	bool makeToolchain(Json& compilerTools, const ToolchainPreference& toolchain);
 	bool serializeFromJsonRoot(Json& inJson);
 
-	bool parseRoot(const Json& inNode);
 	bool parseSettings(const Json& inNode);
 
 	bool parseTools(Json& inNode);
-	bool parseCompilers(Json& inNode);
 #if defined(CHALET_MACOS)
 	bool parseAppleSdks(Json& inNode);
 #endif
 
-	bool parseArchitecture(std::string& outString) const;
-
 	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
-	BuildState& m_state;
 	JsonFile& m_jsonFile;
 
 	const std::string kKeyTools = "tools";
@@ -52,36 +43,24 @@ private:
 	const std::string kKeyApplePlatformSdks = "applePlatformSdks";
 	const std::string kKeyDumpAssembly = "dumpAssembly";
 	const std::string kKeyMaxJobs = "maxJobs";
-	const std::string kKeyStrategy = "strategy";
 	const std::string kKeyShowCommands = "showCommands";
 	// const std::string kKeyTargetArchitecture = "targetArchitecture";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
 	const std::string kKeyExternalDependencies = "externalDependencies";
 	const std::string kKeyData = "data";
 
-	const std::string kKeyArchiver = "archiver";
-	const std::string kKeyCpp = "C++";
-	const std::string kKeyCc = "C";
-	const std::string kKeyLinker = "linker";
-	const std::string kKeyWindowsResource = "windowsResource";
-
 	// should match executables
 	const std::string kKeyBash = "bash";
 	const std::string kKeyBrew = "brew";
-	const std::string kKeyCmake = "cmake";
 	const std::string kKeyCodesign = "codesign";
 	const std::string kKeyCommandPrompt = "command_prompt";
 	const std::string kKeyGit = "git";
-	const std::string kKeyGprof = "gprof";
 	const std::string kKeyHdiutil = "hdiutil";
 	const std::string kKeyInstallNameTool = "install_name_tool";
 	const std::string kKeyInstruments = "instruments";
 	const std::string kKeyLdd = "ldd";
 	const std::string kKeyLipo = "lipo";
 	const std::string kKeyLua = "lua";
-	const std::string kKeyMake = "make";
-	const std::string kKeyNinja = "ninja";
-	const std::string kKeyObjdump = "objdump";
 	const std::string kKeyOsascript = "osascript";
 	const std::string kKeyOtool = "otool";
 	const std::string kKeyPerl = "perl";
@@ -96,10 +75,6 @@ private:
 	const std::string kKeyXcodebuild = "xcodebuild";
 	const std::string kKeyXcodegen = "xcodegen";
 	const std::string kKeyXcrun = "xcrun";
-
-	std::string m_make;
-
-	bool m_changeStrategy = false;
 };
 }
 

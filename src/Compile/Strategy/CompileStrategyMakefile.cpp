@@ -31,11 +31,11 @@ bool CompileStrategyMakefile::initialize()
 		return false;
 
 	auto& name = "makefile";
-	m_cacheFile = m_state.cache.getHash(name, BuildCache::Type::Local);
+	m_cacheFile = m_state.cache.getHash(m_state.info.hash(), name, BuildCache::Type::Local);
 
 	auto& localConfig = m_state.cache.localConfig();
 	Json& buildCache = localConfig.json["data"];
-	const auto key = m_state.cache.getCacheKey(name);
+	const auto key = m_state.cache.getCacheKey(name, m_state.paths.configuration());
 
 	const bool cacheExists = Commands::pathExists(m_cacheFile);
 	const bool appBuildChanged = m_state.cache.appBuildChanged();
@@ -107,7 +107,7 @@ bool CompileStrategyMakefile::buildProject(const ProjectTarget& inProject) const
 	StringList command;
 
 #if defined(CHALET_WIN32)
-	const bool makeIsNMake = m_state.tools.makeIsNMake();
+	const bool makeIsNMake = m_state.compilerTools.makeIsNMake();
 	if (makeIsNMake)
 	{
 		return buildNMake(inProject);
@@ -122,7 +122,7 @@ bool CompileStrategyMakefile::buildProject(const ProjectTarget& inProject) const
 /*****************************************************************************/
 bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 {
-	const auto& makeExec = m_state.tools.make();
+	const auto& makeExec = m_state.compilerTools.make();
 	StringList command;
 
 	{
@@ -180,12 +180,12 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 /*****************************************************************************/
 bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 {
-	const auto& makeExec = m_state.tools.make();
+	const auto& makeExec = m_state.compilerTools.make();
 
 	StringList command;
 
-	const bool makeIsNMake = m_state.tools.makeIsNMake();
-	const bool makeIsJom = m_state.tools.makeIsJom();
+	const bool makeIsNMake = m_state.compilerTools.makeIsNMake();
+	const bool makeIsJom = m_state.compilerTools.makeIsJom();
 	if (makeIsNMake)
 	{
 		command.clear();
@@ -267,7 +267,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 
 #if defined(CHALET_WIN32)
 	// options.stdoutOption = PipeOption::Pipe;
-	if (m_state.tools.makeIsNMake())
+	if (m_state.compilerTools.makeIsNMake())
 	{
 		options.stdoutOption = PipeOption::Pipe;
 		options.onStdOut = [](std::string inData) {
@@ -291,14 +291,14 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	if (!errorOutput.empty())
 	{
 		std::size_t cutoff = std::string::npos;
-		const auto make = String::getPathBaseName(m_state.tools.make());
+		const auto make = String::getPathBaseName(m_state.compilerTools.make());
 
 #if defined(CHALET_WIN32)
-		if (m_state.tools.makeIsNMake())
+		if (m_state.compilerTools.makeIsNMake())
 		{
 			String::replaceAll(errorOutput, "\r", "\r\n");
 
-			if (m_state.tools.makeIsJom())
+			if (m_state.compilerTools.makeIsJom())
 			{
 				cutoff = errorOutput.find("jom: ");
 			}

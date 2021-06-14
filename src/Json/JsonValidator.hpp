@@ -19,7 +19,7 @@ struct JsonValidator
 	explicit JsonValidator(const std::string& inFile);
 	~JsonValidator();
 
-	bool setScehma(Json&& inSchema);
+	bool setSchema(Json&& inSchema);
 
 	bool validate(const Json& inJsonContent);
 	const ValidationErrors& errors() const noexcept;

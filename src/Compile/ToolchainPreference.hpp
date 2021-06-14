@@ -6,6 +6,7 @@
 #ifndef CHALET_TOOLCHAIN_PREFERENCE_HPP
 #define CHALET_TOOLCHAIN_PREFERENCE_HPP
 
+#include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
 
 namespace chalet
@@ -13,6 +14,7 @@ namespace chalet
 struct ToolchainPreference
 {
 	ToolchainType type = ToolchainType::Unknown;
+	StrategyType strategy = StrategyType::Makefile;
 	std::string cpp;
 	std::string cc;
 	std::string rc;

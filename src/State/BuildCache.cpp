@@ -9,7 +9,6 @@
 #include "State/BuildEnvironment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
-#include "State/WorkspaceInfo.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -20,11 +19,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildCache::BuildCache(const WorkspaceInfo& inInfo, const BuildPaths& inPaths) :
-	m_info(inInfo),
-	m_paths(inPaths)
+BuildCache::BuildCache(const CommandLineInputs& inInputs) :
+	m_inputs(inInputs)
 {
-	m_localConfig.load(fmt::format("{}/chalet-cache.json", m_paths.buildPath()));
+	m_localConfig.load(fmt::format("{}/chalet-cache.json", m_inputs.buildPath()));
 	m_removeOldCacheFolder = m_localConfig.json.empty();
 }
 
@@ -40,7 +38,7 @@ void BuildCache::initialize(const std::string& inAppPath)
 	const auto userDir = Environment::getUserDirectory();
 	m_cacheGlobal = fmt::format("{}/.chalet", userDir);
 
-	const auto& buildPath = m_paths.buildPath();
+	const auto& buildPath = m_inputs.buildPath();
 	m_cacheLocal = fmt::format("{}/.cache", buildPath);
 
 	makeAppVersionCheck(inAppPath);
@@ -88,11 +86,9 @@ void BuildCache::removeCacheFolder(const Type inCacheType)
 }
 
 /*****************************************************************************/
-std::string BuildCache::getHash(const std::string& inIdentifier, const Type inCacheType) const
+std::string BuildCache::getHash(const std::size_t inWorkspaceHash, const std::string& inIdentifier, const Type inCacheType) const
 {
-	std::size_t infoHash = m_info.hash();
-
-	std::string toHash = fmt::format("{}_{}", infoHash, inIdentifier);
+	std::string toHash = fmt::format("{}_{}", inWorkspaceHash, inIdentifier);
 	std::string hash = Hash::string(toHash);
 
 	const auto& cacheRef = getCacheRef(inCacheType);
@@ -120,10 +116,9 @@ std::string BuildCache::getPath(const std::string& inFolder, const Type inCacheT
 }
 
 /*****************************************************************************/
-std::string BuildCache::getCacheKey(const std::string& inName)
+std::string BuildCache::getCacheKey(const std::string& inName, const std::string& inConfig)
 {
-	const auto& configuration = m_paths.configuration();
-	return fmt::format("{}:{}", configuration, inName);
+	return fmt::format("{}:{}", inConfig, inName);
 }
 
 /*****************************************************************************/
@@ -181,7 +176,7 @@ bool BuildCache::removeUnusedProjectFiles(const StringList& inHashes, const Type
 }
 
 /*****************************************************************************/
-void BuildCache::removeStaleProjectCaches(const Type inCacheType)
+void BuildCache::removeStaleProjectCaches(const std::string& inToolchain, const Type inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 	if (!m_localConfig.json.contains(kKeyData) || !m_localConfig.json.contains(kKeySettings))
@@ -191,11 +186,15 @@ void BuildCache::removeStaleProjectCaches(const Type inCacheType)
 	if (!buildCache.is_object())
 		return;
 
-	auto& settingsJson = m_localConfig.json.at(kKeySettings);
-	if (!settingsJson.is_object())
+	auto& compilerTools = m_localConfig.json.at("compilerTools");
+	if (!compilerTools.is_object())
 		return;
 
-	auto& strategyJson = settingsJson[kKeyStrategy];
+	auto& toolchainJson = compilerTools[inToolchain];
+	if (!toolchainJson.is_object())
+		return;
+
+	auto& strategyJson = toolchainJson[kKeyStrategy];
 	if (!strategyJson.is_string())
 		return;
 
@@ -294,7 +293,7 @@ void BuildCache::makeAppVersionCheck(const std::string& inAppPath)
 }
 
 /*****************************************************************************/
-void BuildCache::checkIfCompileStrategyChanged()
+void BuildCache::checkIfCompileStrategyChanged(const std::string& inToolchain)
 {
 	m_compileStrategyChanged = false;
 
@@ -305,11 +304,15 @@ void BuildCache::checkIfCompileStrategyChanged()
 	if (!data.is_object())
 		return;
 
-	auto& settingsJson = m_localConfig.json.at(kKeySettings);
-	if (!settingsJson.is_object())
+	auto& compilerTools = m_localConfig.json.at("compilerTools");
+	if (!compilerTools.is_object())
 		return;
 
-	auto& strategyJson = settingsJson[kKeyStrategy];
+	auto& toolchainJson = compilerTools[inToolchain];
+	if (!toolchainJson.is_object())
+		return;
+
+	auto& strategyJson = toolchainJson[kKeyStrategy];
 	if (!strategyJson.is_string())
 		return;
 

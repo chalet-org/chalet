@@ -7,7 +7,7 @@
 
 #include "BuildJson/BuildJsonParser.hpp"
 #include "Builder/BuildManager.hpp"
-#include "CacheJson/CacheJsonParser.hpp"
+#include "CacheJson/CacheToolchainParser.hpp"
 #include "Dependencies/DependencyManager.hpp"
 #include "Libraries/Format.hpp"
 #include "State/CacheTools.hpp"
@@ -27,12 +27,12 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 	m_prototype(inJsonPrototype),
 	tools(m_prototype.tools),
 	distribution(m_prototype.distribution),
+	cache(m_prototype.cache),
 	info(m_inputs),
 	compilerTools(m_inputs, *this),
 	paths(m_inputs, info),
 	msvcEnvironment(*this),
-	cache(info, paths),
-	sourceCache(cache)
+	sourceCache(m_prototype.cache)
 {
 }
 
@@ -59,12 +59,6 @@ bool BuildState::initialize(const bool inInstallDependencies)
 	if (!initializeBuild())
 		return false;
 
-	if (!cache.createCacheFolder(BuildCache::Type::Local))
-	{
-		Diagnostic::error("There was an error creating the build cache.");
-		return false;
-	}
-
 	return true;
 }
 
@@ -84,7 +78,7 @@ bool BuildState::doBuild(const Route inRoute)
 /*****************************************************************************/
 void BuildState::saveCaches()
 {
-	cache.saveLocalConfig();
+	m_prototype.cache.saveLocalConfig();
 	sourceCache.save();
 }
 
@@ -118,12 +112,6 @@ uint BuildState::maxJobs() const noexcept
 }
 
 /*****************************************************************************/
-StrategyType BuildState::strategy() const noexcept
-{
-	return m_prototype.environment.strategy();
-}
-
-/*****************************************************************************/
 bool BuildState::initializeBuildConfiguration()
 {
 	auto& config = m_inputs.buildConfiguration();
@@ -144,15 +132,14 @@ bool BuildState::initializeBuildConfiguration()
 /*****************************************************************************/
 bool BuildState::parseCacheJson()
 {
-	auto& cacheFile = cache.localConfig();
-	CacheJsonParser parser(m_inputs, m_prototype, *this, cacheFile);
+	auto& cacheFile = m_prototype.cache.localConfig();
+	CacheToolchainParser parser(m_inputs, *this, cacheFile);
 	return parser.serialize();
 }
 
 /*****************************************************************************/
 bool BuildState::parseBuildJson()
 {
-
 	BuildJsonParser parser(m_inputs, m_prototype, *this);
 	return parser.serialize();
 }
@@ -176,9 +163,6 @@ bool BuildState::installDependencies()
 /*****************************************************************************/
 bool BuildState::initializeBuild()
 {
-	if (!m_prototype.tools.fetchVersions())
-		return false;
-
 	Timer timer;
 
 	Diagnostic::info("Initializing State", false);
@@ -256,14 +240,12 @@ bool BuildState::initializeBuild()
 /*****************************************************************************/
 void BuildState::initializeCache()
 {
-	cache.initialize(m_inputs.appPath());
+	m_prototype.cache.checkIfCompileStrategyChanged(m_inputs.toolchainPreferenceRaw());
+	m_prototype.cache.checkIfWorkingDirectoryChanged();
 
-	cache.checkIfCompileStrategyChanged();
-	cache.checkIfWorkingDirectoryChanged();
-
-	cache.removeStaleProjectCaches(BuildCache::Type::Local);
-	cache.removeBuildIfCacheChanged(paths.buildOutputDir());
-	cache.saveLocalConfig();
+	m_prototype.cache.removeStaleProjectCaches(m_inputs.toolchainPreferenceRaw(), BuildCache::Type::Local);
+	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
+	m_prototype.cache.saveLocalConfig();
 
 	sourceCache.initialize();
 	sourceCache.save();
@@ -286,25 +268,12 @@ bool BuildState::validateState()
 		}
 	}
 
-	m_prototype.tools.fetchBashVersion();
-	m_prototype.tools.fetchBrewVersion();
-
-	for (auto& target : distribution)
-	{
-		if (!target->validate())
-		{
-			Diagnostic::error(fmt::format("Error validating the '{}' distribution target.", target->name()));
-			return false;
-		}
-	}
-
-	auto strat = m_prototype.environment.strategy();
-
+	auto strat = compilerTools.strategy();
 	if (strat == StrategyType::Makefile)
 	{
-		m_prototype.tools.fetchMakeVersion();
+		compilerTools.fetchMakeVersion();
 
-		const auto& makeExec = tools.make();
+		const auto& makeExec = compilerTools.make();
 		if (makeExec.empty() || !Commands::pathExists(makeExec))
 		{
 			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec));
@@ -313,9 +282,9 @@ bool BuildState::validateState()
 	}
 	else if (strat == StrategyType::Ninja)
 	{
-		m_prototype.tools.fetchNinjaVersion();
+		compilerTools.fetchNinjaVersion();
 
-		auto& ninjaExec = tools.ninja();
+		auto& ninjaExec = compilerTools.ninja();
 		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
 		{
 			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec));
@@ -345,9 +314,9 @@ bool BuildState::validateState()
 
 	if (hasCMakeTargets)
 	{
-		if (!m_prototype.tools.fetchCmakeVersion())
+		if (!compilerTools.fetchCmakeVersion())
 		{
-			Diagnostic::error(fmt::format("The path to the CMake executable could not be resolved: {}", m_prototype.tools.cmake()));
+			Diagnostic::error(fmt::format("The path to the CMake executable could not be resolved: {}", compilerTools.cmake()));
 			return false;
 		}
 	}

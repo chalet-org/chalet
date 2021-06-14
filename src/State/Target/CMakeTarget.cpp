@@ -46,7 +46,7 @@ bool CMakeTarget::validate()
 		result = false;
 	}
 
-	if (!m_state.tools.cmakeAvailable())
+	if (!m_state.compilerTools.cmakeAvailable())
 	{
 		Diagnostic::error(fmt::format("CMake was requsted for the project '{}' but was not found.", this->name()));
 		result = false;

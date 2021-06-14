@@ -14,13 +14,8 @@ struct CacheTools
 
 	bool resolveOwnExecutable(const std::string& inAppPath);
 
-	bool fetchVersions();
-
 	void fetchBashVersion();
 	void fetchBrewVersion();
-	void fetchMakeVersion();
-	bool fetchCmakeVersion();
-	void fetchNinjaVersion();
 	void fetchXcodeVersion();
 	void fetchXcodeGenVersion();
 
@@ -34,13 +29,6 @@ struct CacheTools
 	void setBrew(std::string&& inValue) noexcept;
 	bool brewAvailable() const noexcept;
 
-	const std::string& cmake() const noexcept;
-	void setCmake(std::string&& inValue) noexcept;
-	uint cmakeVersionMajor() const noexcept;
-	uint cmakeVersionMinor() const noexcept;
-	uint cmakeVersionPatch() const noexcept;
-	bool cmakeAvailable() const noexcept;
-
 	const std::string& codesign() const noexcept;
 	void setCodesign(std::string&& inValue) noexcept;
 
@@ -49,9 +37,6 @@ struct CacheTools
 
 	const std::string& git() const noexcept;
 	void setGit(std::string&& inValue) noexcept;
-
-	const std::string& gprof() const noexcept;
-	void setGprof(std::string&& inValue) noexcept;
 
 	const std::string& hdiutil() const noexcept;
 	void setHdiutil(std::string&& inValue) noexcept;
@@ -73,23 +58,6 @@ struct CacheTools
 
 	const std::string& applePlatformSdk(const std::string& inKey) const;
 	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
-
-	const std::string& make() const noexcept;
-	void setMake(std::string&& inValue) noexcept;
-	uint makeVersionMajor() const noexcept;
-	uint makeVersionMinor() const noexcept;
-	bool makeIsNMake() const noexcept;
-	bool makeIsJom() const noexcept;
-
-	const std::string& ninja() const noexcept;
-	void setNinja(std::string&& inValue) noexcept;
-	uint ninjaVersionMajor() const noexcept;
-	uint ninjaVersionMinor() const noexcept;
-	uint ninjaVersionPatch() const noexcept;
-	bool ninjaAvailable() const noexcept;
-
-	const std::string& objdump() const noexcept;
-	void setObjdump(std::string&& inValue) noexcept;
 
 	const std::string osascript() const noexcept;
 	void setOsascript(std::string&& inValue) noexcept;
@@ -156,28 +124,21 @@ struct CacheTools
 	bool getExecutableDependencies(const std::string& inPath, StringList& outList) const;
 
 private:
-	void isolateVersion(std::string& outString);
-
 	std::unordered_map<std::string, std::string> m_applePlatformSdk;
 
 	std::string m_chalet;
 
 	std::string m_bash;
 	std::string m_brew;
-	std::string m_cmake;
 	std::string m_codesign;
 	std::string m_commandPrompt;
 	std::string m_git;
-	std::string m_gprof;
 	std::string m_hdiutil;
 	std::string m_installNameTool;
 	std::string m_instruments;
 	std::string m_ldd;
 	std::string m_lipo;
 	std::string m_lua;
-	std::string m_make;
-	std::string m_ninja;
-	std::string m_objdump;
 	std::string m_osascript;
 	std::string m_otool;
 	std::string m_perl;
@@ -193,17 +154,6 @@ private:
 	std::string m_xcodegen;
 	std::string m_xcrun;
 
-	uint m_cmakeVersionMajor = 0;
-	uint m_cmakeVersionMinor = 0;
-	uint m_cmakeVersionPatch = 0;
-
-	uint m_makeVersionMajor = 0;
-	uint m_makeVersionMinor = 0;
-
-	uint m_ninjaVersionMajor = 0;
-	uint m_ninjaVersionMinor = 0;
-	uint m_ninjaVersionPatch = 0;
-
 	uint m_xcodeVersionMajor = 0;
 	uint m_xcodeVersionMinor = 0;
 
@@ -213,11 +163,6 @@ private:
 
 	bool m_brewAvailable = false;
 	bool m_bashAvailable = false;
-	bool m_ninjaAvailable = false;
-	bool m_cmakeAvailable = false;
-	bool m_makeIsNMake = false;
-	bool m_makeIsJom = false;
-	bool m_fetchedVersions = false;
 };
 }
 

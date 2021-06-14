@@ -6,6 +6,7 @@
 #include "State/StatePrototype.hpp"
 
 #include "BuildJson/BuildJsonSchema.hpp"
+#include "CacheJson/CacheJsonParser.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
 #include "State/Distribution/BundleTarget.hpp"
@@ -20,6 +21,7 @@ namespace chalet
 {
 /*****************************************************************************/
 StatePrototype::StatePrototype(const CommandLineInputs& inInputs, std::string inFilename) :
+	cache(inInputs),
 	m_inputs(inInputs),
 	m_filename(std::move(inFilename)),
 	m_buildJson(std::make_unique<JsonFile>(m_filename))
@@ -30,6 +32,8 @@ StatePrototype::StatePrototype(const CommandLineInputs& inInputs, std::string in
 bool StatePrototype::initialize()
 {
 	// Note: existence of m_filename is checked by Router (before the cache is made)
+	if (!parseCacheJson())
+		return false;
 
 	Timer timer;
 	Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
@@ -54,9 +58,20 @@ bool StatePrototype::initialize()
 	if (!validateBundleDestinations())
 		return false;
 
+	cache.initialize(m_inputs.appPath());
+
+	if (!cache.createCacheFolder(BuildCache::Type::Local))
+	{
+		Diagnostic::error("There was an error creating the build cache.");
+		return false;
+	}
+
+	if (!validate())
+		return false;
+
 	Diagnostic::printDone(timer.asString());
 
-	return validate();
+	return true;
 }
 
 /*****************************************************************************/
@@ -99,12 +114,6 @@ bool StatePrototype::validateBundleDestinations()
 /*****************************************************************************/
 bool StatePrototype::validate()
 {
-	// TODO: Figure out how to manage compiler toolchains & read the cache via the prototype
-	//   before any of this can be done
-	/*
-	Timer timer;
-	Diagnostic::info("Verifying Ancillary Tools", false);
-
 	tools.fetchBashVersion();
 	tools.fetchBrewVersion();
 
@@ -116,34 +125,6 @@ bool StatePrototype::validate()
 			return false;
 		}
 	}
-
-	auto strat = environment.strategy();
-
-	if (strat == StrategyType::Makefile)
-	{
-		tools.fetchMakeVersion();
-
-		const auto& makeExec = tools.make();
-		if (makeExec.empty() || !Commands::pathExists(makeExec))
-		{
-			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec));
-			return false;
-		}
-	}
-	else if (strat == StrategyType::Ninja)
-	{
-		tools.fetchNinjaVersion();
-
-		auto& ninjaExec = tools.ninja();
-		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
-		{
-			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec));
-			return false;
-		}
-	}
-
-	Diagnostic::printDone(timer.asString());
-	*/
 
 	return true;
 }
@@ -176,6 +157,33 @@ const StringList& StatePrototype::requiredBuildConfigurations() const noexcept
 const StringList& StatePrototype::requiredArchitectures() const noexcept
 {
 	return m_requiredArchitectures;
+}
+
+/*****************************************************************************/
+const std::string& StatePrototype::releaseConfiguration() const noexcept
+{
+	return m_releaseConfiguration;
+}
+
+/*****************************************************************************/
+const std::string& StatePrototype::anyConfiguration() const noexcept
+{
+	if (!m_requiredBuildConfigurations.empty() && !m_requiredBuildConfigurations.front().empty())
+	{
+		return m_requiredBuildConfigurations.front();
+	}
+	else
+	{
+		return m_releaseConfiguration;
+	}
+}
+
+/*****************************************************************************/
+bool StatePrototype::parseCacheJson()
+{
+	auto& cacheFile = cache.localConfig();
+	CacheJsonParser parser(m_inputs, *this, cacheFile);
+	return parser.serialize();
 }
 
 /*****************************************************************************/
@@ -238,6 +246,14 @@ bool StatePrototype::parseConfiguration(const Json& inNode)
 			if (bool val = false; m_buildJson->assignFromKey(val, configJson, "enableProfiling"))
 				config.setEnableProfiling(val);
 
+			if (m_releaseConfiguration.empty())
+			{
+				if (!config.debugSymbols() && !config.enableProfiling())
+				{
+					m_releaseConfiguration = config.name();
+				}
+			}
+
 			m_buildConfigurations.emplace(std::move(name), std::move(config));
 		}
 	}
@@ -261,6 +277,14 @@ bool StatePrototype::parseConfiguration(const Json& inNode)
 				{
 					Diagnostic::error(fmt::format("{}: Error creating the default build configuration '{}'", m_filename, name));
 					return false;
+				}
+
+				if (m_releaseConfiguration.empty())
+				{
+					if (!config.debugSymbols() && !config.enableProfiling())
+					{
+						m_releaseConfiguration = config.name();
+					}
 				}
 
 				m_buildConfigurations.emplace(std::move(name), std::move(config));
@@ -557,6 +581,8 @@ bool StatePrototype::makeDefaultBuildConfigurations()
 		"MinSizeRel",
 		"Profile",
 	};
+
+	m_releaseConfiguration = "Release";
 
 	for (auto& name : m_allowedBuildConfigurations)
 	{

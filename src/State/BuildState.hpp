@@ -24,6 +24,7 @@ namespace chalet
 {
 struct StatePrototype;
 struct CacheTools;
+struct BuildCache;
 
 class BuildState
 {
@@ -35,6 +36,7 @@ public:
 
 	const CacheTools& tools;
 	const DistributionTargetList& distribution;
+	BuildCache& cache;
 
 	WorkspaceInfo info;
 	CompilerTools compilerTools;
@@ -43,7 +45,6 @@ public:
 	BuildConfiguration configuration;
 	BuildTargetList targets;
 	BuildDependencyList externalDependencies;
-	BuildCache cache;
 	SourceFileCache sourceCache;
 
 	bool initialize(const bool inInstallDependencies);
@@ -57,7 +58,6 @@ public:
 	bool dumpAssembly() const noexcept;
 	bool showCommands() const noexcept;
 	uint maxJobs() const noexcept;
-	StrategyType strategy() const noexcept;
 
 private:
 	bool initializeBuildConfiguration();

@@ -79,7 +79,7 @@ bool BuildManager::run(const Route inRoute)
 	bool runCommand = inRoute == Route::Run;
 	m_runProjectName = getRunProject();
 
-	auto strategy = m_state.strategy();
+	auto strategy = m_state.compilerTools.strategy();
 	if (!runCommand)
 	{
 		printBuildInformation();
@@ -210,7 +210,7 @@ std::string BuildManager::getBuildStrategyName() const
 {
 	std::string ret;
 
-	switch (m_state.strategy())
+	switch (m_state.compilerTools.strategy())
 	{
 		case StrategyType::Native:
 			ret = "Native";
@@ -221,9 +221,9 @@ std::string BuildManager::getBuildStrategyName() const
 			break;
 
 		case StrategyType::Makefile: {
-			if (m_state.tools.makeIsNMake())
+			if (m_state.compilerTools.makeIsNMake())
 			{
-				if (m_state.tools.makeIsJom())
+				if (m_state.compilerTools.makeIsJom())
 					ret = "NMAKE (Qt Jom)";
 				else
 					ret = "NMAKE";

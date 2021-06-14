@@ -80,21 +80,7 @@ void BuildPaths::setExternalDepDir(std::string&& inValue) noexcept
 /*****************************************************************************/
 const std::string& BuildPaths::buildPath() const
 {
-	const auto& buildPath = m_inputs.buildPath();
-	chalet_assert(!buildPath.empty(), "buildPath was not defined");
-	if (!m_binDirMade)
-	{
-		if (!Commands::pathExists(buildPath))
-		{
-			m_binDirMade = Commands::makeDirectory(buildPath);
-		}
-		else
-		{
-			m_binDirMade = true;
-		}
-	}
-
-	return buildPath;
+	return m_inputs.buildPath();
 }
 
 const std::string& BuildPaths::buildOutputDir() const noexcept

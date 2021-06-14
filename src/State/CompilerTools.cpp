@@ -300,6 +300,103 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, cons
 }
 
 /*****************************************************************************/
+void CompilerTools::fetchMakeVersion()
+{
+	if (!m_make.empty() && m_makeVersionMajor == 0 && m_makeVersionMinor == 0)
+	{
+		if (Commands::pathExists(m_make))
+		{
+			std::string version = Commands::subprocessOutput({ m_make, "--version" });
+			version = Commands::isolateVersion(version);
+
+			auto vals = String::split(version, '.');
+			if (vals.size() == 2)
+			{
+				m_makeVersionMajor = std::stoi(vals[0]);
+				m_makeVersionMinor = std::stoi(vals[1]);
+			}
+
+			m_makeIsJom = String::endsWith("jom.exe", m_make);
+			m_makeIsNMake = String::endsWith("nmake.exe", m_make) || m_makeIsJom;
+		}
+	}
+}
+
+/*****************************************************************************/
+bool CompilerTools::fetchCmakeVersion()
+{
+	if (!m_cmake.empty() && m_cmakeVersionMajor == 0 && m_cmakeVersionMinor == 0)
+	{
+		if (Commands::pathExists(m_cmake))
+		{
+			std::string version = Commands::subprocessOutput({ m_cmake, "--version" });
+			m_cmakeAvailable = String::startsWith("cmake version ", version);
+
+			version = Commands::isolateVersion(version);
+
+			auto vals = String::split(version, '.');
+			if (vals.size() == 3)
+			{
+				m_cmakeVersionMajor = std::stoi(vals[0]);
+				m_cmakeVersionMinor = std::stoi(vals[1]);
+				m_cmakeVersionPatch = std::stoi(vals[2]);
+			}
+		}
+	}
+
+	return m_cmakeAvailable;
+}
+
+/*****************************************************************************/
+void CompilerTools::fetchNinjaVersion()
+{
+	if (!m_ninja.empty() && m_ninjaVersionMajor == 0 && m_ninjaVersionMinor == 0)
+	{
+		if (Commands::pathExists(m_ninja))
+		{
+			std::string version = Commands::subprocessOutput({ m_ninja, "--version" });
+			version = Commands::isolateVersion(version);
+
+			auto vals = String::split(version, '.');
+			if (vals.size() == 3)
+			{
+				m_ninjaVersionMajor = std::stoi(vals[0]);
+				m_ninjaVersionMinor = std::stoi(vals[1]);
+				m_ninjaVersionPatch = std::stoi(vals[2]);
+			}
+
+			m_ninjaAvailable = m_ninjaVersionMajor > 0 && m_ninjaVersionMinor > 0;
+		}
+	}
+}
+
+/*****************************************************************************/
+StrategyType CompilerTools::strategy() const noexcept
+{
+	return m_strategy;
+}
+
+void CompilerTools::setStrategy(const std::string& inValue) noexcept
+{
+	if (String::equals("makefile", inValue))
+	{
+		m_strategy = StrategyType::Makefile;
+	}
+	else if (String::equals(inValue, "native-experimental"))
+	{
+		m_strategy = StrategyType::Native;
+	}
+	else if (String::equals(inValue, "ninja"))
+	{
+		m_strategy = StrategyType::Ninja;
+	}
+	else
+	{
+		chalet_assert(false, "Invalid strategy type");
+	}
+}
+
+/*****************************************************************************/
 ToolchainType CompilerTools::detectedToolchain() const
 {
 	return m_detectedToolchain;
@@ -362,6 +459,42 @@ void CompilerTools::setCc(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CompilerTools::cmake() const noexcept
+{
+	return m_cmake;
+}
+void CompilerTools::setCmake(std::string&& inValue) noexcept
+{
+	m_cmake = std::move(inValue);
+}
+uint CompilerTools::cmakeVersionMajor() const noexcept
+{
+	return m_cmakeVersionMajor;
+}
+uint CompilerTools::cmakeVersionMinor() const noexcept
+{
+	return m_cmakeVersionMinor;
+}
+uint CompilerTools::cmakeVersionPatch() const noexcept
+{
+	return m_cmakeVersionPatch;
+}
+bool CompilerTools::cmakeAvailable() const noexcept
+{
+	return m_cmakeAvailable;
+}
+
+/*****************************************************************************/
+const std::string& CompilerTools::gprof() const noexcept
+{
+	return m_gprof;
+}
+void CompilerTools::setGprof(std::string&& inValue) noexcept
+{
+	m_gprof = std::move(inValue);
+}
+
+/*****************************************************************************/
 const std::string& CompilerTools::linker() const noexcept
 {
 	return m_linker;
@@ -369,6 +502,71 @@ const std::string& CompilerTools::linker() const noexcept
 void CompilerTools::setLinker(std::string&& inValue) noexcept
 {
 	m_linker = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& CompilerTools::make() const noexcept
+{
+	return m_make;
+}
+void CompilerTools::setMake(std::string&& inValue) noexcept
+{
+	m_make = std::move(inValue);
+}
+
+uint CompilerTools::makeVersionMajor() const noexcept
+{
+	return m_makeVersionMajor;
+}
+uint CompilerTools::makeVersionMinor() const noexcept
+{
+	return m_makeVersionMinor;
+}
+
+bool CompilerTools::makeIsNMake() const noexcept
+{
+	return m_makeIsNMake;
+}
+
+bool CompilerTools::makeIsJom() const noexcept
+{
+	return m_makeIsJom;
+}
+
+/*****************************************************************************/
+const std::string& CompilerTools::ninja() const noexcept
+{
+	return m_ninja;
+}
+void CompilerTools::setNinja(std::string&& inValue) noexcept
+{
+	m_ninja = std::move(inValue);
+}
+uint CompilerTools::ninjaVersionMajor() const noexcept
+{
+	return m_ninjaVersionMajor;
+}
+uint CompilerTools::ninjaVersionMinor() const noexcept
+{
+	return m_ninjaVersionMinor;
+}
+uint CompilerTools::ninjaVersionPatch() const noexcept
+{
+	return m_ninjaVersionPatch;
+}
+bool CompilerTools::ninjaAvailable() const noexcept
+{
+	return m_ninjaAvailable;
+}
+
+/*****************************************************************************/
+const std::string& CompilerTools::objdump() const noexcept
+{
+	return m_objdump;
+}
+void CompilerTools::setObjdump(std::string&& inValue) noexcept
+{
+	m_objdump = std::move(inValue);
 }
 
 /*****************************************************************************/

@@ -67,6 +67,7 @@ std::string subprocessOutput(const StringList& inCmd, const bool inCleanOutput =
 inline bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const bool inCleanOutput = true);
 bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr, const bool inCleanOutput = true);
 
+std::string isolateVersion(const std::string& outString);
 std::string which(const std::string& inExecutable, const bool inCleanOutput = true);
 
 std::string testCompilerFlags(const std::string& inCompilerExec, const bool inCleanOutput = true);

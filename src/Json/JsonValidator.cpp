@@ -272,7 +272,7 @@ JsonValidator::JsonValidator(const std::string& inFile) :
 JsonValidator::~JsonValidator() = default;
 
 /*****************************************************************************/
-bool JsonValidator::setScehma(Json&& inSchema)
+bool JsonValidator::setSchema(Json&& inSchema)
 {
 	try
 	{

@@ -8,7 +8,6 @@
 
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerConfig.hpp"
-#include "Compile/Strategy/StrategyType.hpp"
 #include "Core/CommandLineInputs.hpp"
 
 namespace chalet
@@ -23,9 +22,6 @@ struct BuildEnvironment
 	void initialize(BuildPaths& inPaths);
 
 	uint processorCount() const noexcept;
-
-	StrategyType strategy() const noexcept;
-	void setStrategy(const std::string& inValue) noexcept;
 
 	uint maxJobs() const noexcept;
 	void setMaxJobs(const uint inValue) noexcept;
@@ -51,8 +47,6 @@ private:
 
 	uint m_processorCount = 0;
 	uint m_maxJobs = 0;
-
-	StrategyType m_strategy = StrategyType::Makefile;
 
 	bool m_dumpAssembly = false;
 	bool m_showCommands = false;

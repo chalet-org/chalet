@@ -6,10 +6,10 @@
 #ifndef CHALET_SCRIPT_RUNNER_HPP
 #define CHALET_SCRIPT_RUNNER_HPP
 
-#include "State/CacheTools.hpp"
-
 namespace chalet
 {
+struct CacheTools;
+
 class ScriptRunner
 {
 public:

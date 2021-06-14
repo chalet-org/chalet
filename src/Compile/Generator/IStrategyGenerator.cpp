@@ -31,7 +31,7 @@ IStrategyGenerator::IStrategyGenerator(const BuildState& inState) :
 
 		case StrategyType::Makefile: {
 #if defined(CHALET_WIN32)
-			if (inState.tools.makeIsNMake())
+			if (inState.compilerTools.makeIsNMake())
 				return std::make_unique<MakefileGeneratorNMake>(inState);
 			else
 #endif

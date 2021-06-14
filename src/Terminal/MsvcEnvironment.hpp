@@ -24,7 +24,6 @@ public:
 	static bool exists();
 
 	bool readCompilerVariables();
-	void cleanup();
 
 	const StringList& include() const noexcept;
 	const StringList& lib() const noexcept;

@@ -149,7 +149,7 @@ bool JsonFile::validate(Json&& inSchemaJson)
 		return false;
 
 	JsonValidator validator(m_filename);
-	if (!validator.setScehma(std::move(inSchemaJson)))
+	if (!validator.setSchema(std::move(inSchemaJson)))
 		return false;
 
 	// false if any errors

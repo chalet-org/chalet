@@ -42,12 +42,6 @@ Json Schema::getCacheJson()
 		"default": "/usr/local/bin/brew"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-cmake"] = R"json({
-		"type": "string",
-		"description": "The executable path to CMake",
-		"default": "/usr/local/bin/cmake"
-	})json"_ojson;
-
 	ret[kDefinitions]["tools-command_prompt"] = R"json({
 		"type": "string",
 		"description": "The executable path to Command Prompt (Windows)",
@@ -64,12 +58,6 @@ Json Schema::getCacheJson()
 		"type": "string",
 		"description": "The executable path to git.",
 		"default": "/usr/bin/git"
-	})json"_ojson;
-
-	ret[kDefinitions]["tools-gprof"] = R"json({
-		"type": "string",
-		"description": "The executable path to gprof.",
-		"default": "/usr/bin/gprof"
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-hdiutil"] = R"json({
@@ -106,22 +94,6 @@ Json Schema::getCacheJson()
 		"type": "string",
 		"description": "The executable path to Lua",
 		"default": "/usr/local/bin/lua"
-	})json"_ojson;
-
-	ret[kDefinitions]["tools-make"] = R"json({
-		"type": "string",
-		"description": "The executable path to GNU make utility.",
-		"default": "/usr/bin/make"
-	})json"_ojson;
-
-	ret[kDefinitions]["tools-ninja"] = R"json({
-		"type": "string",
-		"description": "The executable path to ninja."
-	})json"_ojson;
-
-	ret[kDefinitions]["tools-objdump"] = R"json({
-		"type": "string",
-		"description": "The executable path to objdump."
 	})json"_ojson;
 
 	ret[kDefinitions]["tools-osascript"] = R"json({
@@ -227,10 +199,38 @@ Json Schema::getCacheJson()
 		"default": "/usr/bin/cc"
 	})json"_ojson;
 
+	ret[kDefinitions]["compilerTools-cmake"] = R"json({
+		"type": "string",
+		"description": "The executable path to CMake",
+		"default": "/usr/local/bin/cmake"
+	})json"_ojson;
+
+	ret[kDefinitions]["compilerTools-gprof"] = R"json({
+		"type": "string",
+		"description": "The executable path to gprof.",
+		"default": "/usr/bin/gprof"
+	})json"_ojson;
+
 	ret[kDefinitions]["compilerTools-linker"] = R"json({
 		"type": "string",
 		"description": "The executable path to the toolchain's linker",
 		"default": "/usr/bin/ld"
+	})json"_ojson;
+
+	ret[kDefinitions]["compilerTools-make"] = R"json({
+		"type": "string",
+		"description": "The executable path to GNU make utility.",
+		"default": "/usr/bin/make"
+	})json"_ojson;
+
+	ret[kDefinitions]["compilerTools-ninja"] = R"json({
+		"type": "string",
+		"description": "The executable path to ninja."
+	})json"_ojson;
+
+	ret[kDefinitions]["compilerTools-objdump"] = R"json({
+		"type": "string",
+		"description": "The executable path to objdump."
 	})json"_ojson;
 
 	/*
@@ -253,6 +253,71 @@ Json Schema::getCacheJson()
 		"description": "The executable path to the resource compiler (Windows)"
 	})json"_ojson;
 
+	ret[kDefinitions]["compilerTools-strategy"] = R"json({
+		"type": "string",
+		"description": "The build strategy to use.",
+		"enum": [
+			"makefile",
+			"native-experimental",
+			"ninja"
+		],
+		"default": "makefile"
+	})json"_ojson;
+
+	ret[kDefinitions]["compilerTools"] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"description": "The list of compilers for the platform",
+		"required": [
+			"archiver",
+			"C++",
+			"C",
+			"cmake",
+			"gprof",
+			"linker",
+			"make",
+			"objdump",
+			"ninja",
+			"strategy",
+			"windowsResource"
+		],
+		"properties": {
+			"strategy": {
+				"$ref": "#/definitions/compilerTools-strategy"
+			},
+			"archiver": {
+				"$ref": "#/definitions/compilerTools-archiver"
+			},
+			"C++": {
+				"$ref": "#/definitions/compilerTools-cpp"
+			},
+			"C": {
+				"$ref": "#/definitions/compilerTools-c"
+			},
+			"cmake": {
+				"$ref": "#/definitions/compilerTools-cmake"
+			},
+			"gprof": {
+				"$ref": "#/definitions/compilerTools-gprof"
+			},
+			"linker": {
+				"$ref": "#/definitions/compilerTools-linker"
+			},
+			"make": {
+				"$ref": "#/definitions/compilerTools-make"
+			},
+			"ninja": {
+				"$ref": "#/definitions/compilerTools-ninja"
+			},
+			"objdump": {
+				"$ref": "#/definitions/compilerTools-objdump"
+			},
+			"windowsResource": {
+				"$ref": "#/definitions/compilerTools-windowsResource"
+			}
+		}
+	})json"_ojson;
+
 	ret[kDefinitions]["settings-dumpAssembly"] = R"json({
 		"type": "boolean",
 		"description": "true to use include an asm dump of each file in the build, false otherwise.",
@@ -263,17 +328,6 @@ Json Schema::getCacheJson()
 		"type": "integer",
 		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
 		"minimum": 1
-	})json"_ojson;
-
-	ret[kDefinitions]["settings-strategy"] = R"json({
-		"type": "string",
-		"description": "The build strategy to use.",
-		"enum": [
-			"makefile",
-			"native-experimental",
-			"ninja"
-		],
-		"default": "makefile"
 	})json"_ojson;
 
 	ret[kDefinitions]["settings-showCommands"] = R"json({
@@ -294,19 +348,14 @@ Json Schema::getCacheJson()
 			"bash",
 			"brew",
 			"command_prompt",
-			"cmake",
 			"codesign",
 			"git",
-			"gprof",
 			"hdiutil",
 			"install_name_tool",
 			"instruments",
 			"ldd",
 			"lipo",
 			"lua",
-			"make",
-			"ninja",
-			"objdump",
 			"osascript",
 			"otool",
 			"perl",
@@ -329,9 +378,6 @@ Json Schema::getCacheJson()
 			"brew": {
 				"$ref": "#/definitions/tools-brew"
 			},
-			"cmake": {
-				"$ref": "#/definitions/tools-cmake"
-			},
 			"command_prompt": {
 				"$ref": "#/definitions/tools-command_prompt"
 			},
@@ -340,9 +386,6 @@ Json Schema::getCacheJson()
 			},
 			"git": {
 				"$ref": "#/definitions/tools-git"
-			},
-			"gprof": {
-				"$ref": "#/definitions/tools-gprof"
 			},
 			"hdiutil": {
 				"$ref": "#/definitions/tools-hdiutil"
@@ -361,15 +404,6 @@ Json Schema::getCacheJson()
 			},
 			"lua": {
 				"$ref": "#/definitions/tools-lua"
-			},
-			"make": {
-				"$ref": "#/definitions/tools-make"
-			},
-			"ninja": {
-				"$ref": "#/definitions/tools-ninja"
-			},
-			"objdump": {
-				"$ref": "#/definitions/tools-objdump"
 			},
 			"osascript": {
 				"$ref": "#/definitions/tools-osascript"
@@ -421,36 +455,6 @@ Json Schema::getCacheJson()
 		"description": "A list of Apple platform SDK paths (MacOS)"
 	})json"_ojson;
 
-	ret[kProperties]["compilerTools"] = R"json({
-		"type": "object",
-		"additionalProperties": false,
-		"description": "The list of compilers for the platform",
-		"required": [
-			"archiver",
-			"C++",
-			"C",
-			"linker",
-			"windowsResource"
-		],
-		"properties": {
-			"archiver": {
-				"$ref": "#/definitions/compilerTools-archiver"
-			},
-			"C++": {
-				"$ref": "#/definitions/compilerTools-cpp"
-			},
-			"C": {
-				"$ref": "#/definitions/compilerTools-c"
-			},
-			"linker": {
-				"$ref": "#/definitions/compilerTools-linker"
-			},
-			"windowsResource": {
-				"$ref": "#/definitions/compilerTools-windowsResource"
-			}
-		}
-	})json"_ojson;
-
 	ret[kProperties]["workingDirectory"] = R"json({
 		"type": "string",
 		"description": "The working directory of the workspace"
@@ -472,7 +476,6 @@ Json Schema::getCacheJson()
 		"required": [
 			"dumpAssembly",
 			"maxJobs",
-			"strategy",
 			"showCommands"
 		],
 		"properties": {
@@ -482,11 +485,19 @@ Json Schema::getCacheJson()
 			"maxJobs": {
 				"$ref": "#/definitions/settings-maxJobs"
 			},
-			"strategy": {
-				"$ref": "#/definitions/settings-strategy"
-			},
 			"showCommands": {
 				"$ref": "#/definitions/settings-showCommands"
+			}
+		}
+	})json"_ojson;
+
+	ret[kProperties]["compilerTools"] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"description": "A list of compiler toolchains, mapped to the ids: msvc-x64, msvc-x86, llvm, gcc",
+		"patternProperties": {
+			"^(msvc-x64|msvc-x86|llvm|gcc)$": {
+				"$ref": "#/definitions/compilerTools"
 			}
 		}
 	})json"_ojson;

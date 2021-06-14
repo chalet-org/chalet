@@ -21,23 +21,16 @@
 namespace chalet
 {
 /*****************************************************************************/
-CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, BuildState& inState, JsonFile& inJsonFile) :
+CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile) :
 	m_inputs(inInputs),
 	m_prototype(inPrototype),
-	m_state(inState),
 	m_jsonFile(inJsonFile)
 {
-	UNUSED(m_state);
 }
 
 /*****************************************************************************/
 bool CacheJsonParser::serialize()
 {
-#if defined(CHALET_WIN32)
-	if (!createMsvcEnvironment())
-		return false;
-#endif
-
 	Json cacheJsonSchema = Schema::getCacheJson();
 
 	if (m_inputs.saveSchemaToFile())
@@ -46,7 +39,7 @@ bool CacheJsonParser::serialize()
 	}
 
 	Timer timer;
-	bool cacheExists = m_state.cache.exists();
+	bool cacheExists = m_prototype.cache.exists();
 	if (cacheExists)
 	{
 		Diagnostic::info(fmt::format("Reading Cache [{}]", m_jsonFile.filename()), false);
@@ -68,63 +61,10 @@ bool CacheJsonParser::serialize()
 		return false;
 	}
 
-	Diagnostic::printDone(timer.asString());
-
 	if (!validatePaths())
 		return false;
 
-	if (!setDefaultBuildStrategy())
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-bool CacheJsonParser::createMsvcEnvironment()
-{
-#if defined(CHALET_WIN32)
-	bool readVariables = true;
-
-	const auto& jRoot = m_jsonFile.json;
-	if (jRoot.is_object())
-	{
-		if (jRoot.contains(kKeyCompilerTools))
-		{
-			auto& compilerTools = jRoot[kKeyCompilerTools];
-			if (compilerTools.is_object())
-			{
-				auto keyEndsWith = [&compilerTools](const std::string& inKey, std::string_view inExt) {
-					if (compilerTools.contains(inKey))
-					{
-						const Json& j = compilerTools[inKey];
-						const auto str = j.get<std::string>();
-						return String::endsWith(inExt, str);
-					}
-
-					return false;
-				};
-
-				auto& toolchain = m_inputs.toolchainPreference();
-
-				bool result = toolchain.type == ToolchainType::MSVC;
-				if (!result)
-				{
-					result |= keyEndsWith(kKeyCpp, "cl.exe");
-					result |= keyEndsWith(kKeyCc, "cl.exe");
-					result |= keyEndsWith(kKeyLinker, "link.exe");
-					result |= keyEndsWith(kKeyArchiver, "lib.exe");
-					result |= keyEndsWith(kKeyWindowsResource, "rc.exe");
-				}
-				readVariables = result;
-			}
-		}
-	}
-
-	if (readVariables)
-	{
-		return m_state.msvcEnvironment.readCompilerVariables();
-	}
-#endif
+	Diagnostic::printDone(timer.asString());
 
 	return true;
 }
@@ -132,65 +72,6 @@ bool CacheJsonParser::createMsvcEnvironment()
 /*****************************************************************************/
 bool CacheJsonParser::validatePaths()
 {
-	auto& compilerTools = m_state.compilerTools;
-	if (!Commands::pathExists(compilerTools.cpp()))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
-		Diagnostic::error(fmt::format("{}: The toolchain's C++ compiler was blank or could not be found.", m_jsonFile.filename()));
-		return false;
-	}
-
-	if (!Commands::pathExists(compilerTools.cc()))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
-		Diagnostic::error(fmt::format("{}: The toolchain's C compiler was blank or could not be found.", m_jsonFile.filename()));
-		return false;
-	}
-
-	if (!Commands::pathExists(compilerTools.archiver()))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
-		Diagnostic::error(fmt::format("{}: The toolchain's archive utility was blank or could not be found.", m_jsonFile.filename()));
-		return false;
-	}
-
-	if (!Commands::pathExists(compilerTools.linker()))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
-		Diagnostic::error(fmt::format("{}: The toolchain's linker was blank or could not be found.", m_jsonFile.filename()));
-		return false;
-	}
-
-#if defined(CHALET_WIN32)
-	if (!Commands::pathExists(compilerTools.rc()))
-	{
-	#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-	#endif
-		Diagnostic::warn(fmt::format("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename()));
-	}
-#endif
-
-	UNUSED(m_make);
-	/*
-	if (!Commands::pathExists(m_make))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
-		Diagnostic::error(fmt::format("{}: 'make' could not be found.", m_jsonFile.filename()));
-		return false;
-	}
-	*/
-
 #if defined(CHALET_MACOS)
 	if (!Commands::pathExists(m_prototype.tools.applePlatformSdk("macosx")))
 	{
@@ -202,227 +83,7 @@ bool CacheJsonParser::validatePaths()
 	}
 #endif
 
-	m_state.compilerTools.detectToolchain();
-
-	if (m_state.compilerTools.detectedToolchain() == ToolchainType::LLVM)
-	{
-		if (m_inputs.targetArchitecture().empty())
-		{
-			// also takes -dumpmachine
-			auto arch = Commands::subprocessOutput({ m_state.compilerTools.compiler(), "-print-target-triple" });
-			// Strip out version in auto-detected mac triple
-			auto isDarwin = arch.find("apple-darwin");
-			if (isDarwin != std::string::npos)
-			{
-				arch = arch.substr(0, isDarwin + 12);
-			}
-			m_state.info.setTargetArchitecture(arch);
-		}
-	}
-	else if (m_state.compilerTools.detectedToolchain() == ToolchainType::GNU)
-	{
-		auto arch = Commands::subprocessOutput({ m_state.compilerTools.compiler(), "-dumpmachine" });
-		m_state.info.setTargetArchitecture(arch);
-	}
-#if defined(CHALET_WIN32)
-	else if (m_state.compilerTools.detectedToolchain() == ToolchainType::MSVC)
-	{
-		const auto arch = m_state.info.targetArchitecture();
-		switch (arch)
-		{
-			case Arch::Cpu::X64:
-				m_state.info.setTargetArchitecture("x86_64-pc-windows-msvc");
-				break;
-
-			case Arch::Cpu::X86:
-				m_state.info.setTargetArchitecture("i686-pc-windows-msvc");
-				break;
-
-			case Arch::Cpu::ARM:
-			case Arch::Cpu::ARM64:
-			default:
-				break;
-		}
-	}
-#endif
-
 	return true;
-}
-
-/*****************************************************************************/
-bool CacheJsonParser::setDefaultBuildStrategy()
-{
-#if defined(CHALET_WIN32)
-	auto& toolchain = m_inputs.toolchainPreference();
-	bool usingMsvc = toolchain.type == ToolchainType::MSVC;
-	if (!usingMsvc)
-	{
-		usingMsvc |= String::endsWith("cl.exe", m_state.compilerTools.cc());
-		usingMsvc |= String::endsWith("cl.exe", m_state.compilerTools.cpp());
-		usingMsvc |= String::endsWith("link.exe", m_state.compilerTools.linker());
-		usingMsvc |= String::endsWith("lib.exe", m_state.compilerTools.archiver());
-		usingMsvc |= String::endsWith("rc.exe", m_state.compilerTools.rc());
-	}
-	if (!usingMsvc)
-	{
-		m_state.msvcEnvironment.cleanup();
-	}
-#endif
-
-	Json& settings = m_jsonFile.json[kKeySettings];
-	Json& strategyJson = settings[kKeyStrategy];
-
-	if (strategyJson.get<std::string>().empty() || m_changeStrategy)
-	{
-		if (Environment::isContinuousIntegrationServer())
-		{
-			strategyJson = "native-experimental";
-		}
-#if defined(CHALET_WIN32)
-		else if (usingMsvc && !m_prototype.tools.ninja().empty())
-		{
-			strategyJson = "ninja";
-		}
-#endif
-		else
-		{
-			strategyJson = "makefile";
-		}
-
-		const auto strategy = strategyJson.get<std::string>();
-		m_prototype.environment.setStrategy(strategy);
-
-		m_jsonFile.setDirty(true);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool CacheJsonParser::makeToolchain(Json& compilerTools, const ToolchainPreference& toolchain)
-{
-	bool result = true;
-
-	std::string cpp;
-	std::string cc;
-	if (!compilerTools.contains(kKeyCpp))
-	{
-		// auto varCXX = Environment::get("CXX");
-		// if (varCXX != nullptr)
-		// 	cpp = Commands::which(varCXX);
-
-		if (cpp.empty())
-		{
-			cpp = Commands::which(toolchain.cpp);
-		}
-
-		parseArchitecture(cpp);
-		result &= !cpp.empty();
-
-		compilerTools[kKeyCpp] = cpp;
-		m_jsonFile.setDirty(true);
-	}
-
-	if (!compilerTools.contains(kKeyCc))
-	{
-		// auto varCC = Environment::get("CC");
-		// if (varCC != nullptr)
-		// 	cc = Commands::which(varCC);
-
-		if (cc.empty())
-		{
-			cc = Commands::which(toolchain.cc);
-		}
-
-		parseArchitecture(cc);
-		result &= !cc.empty();
-
-		compilerTools[kKeyCc] = cc;
-		m_jsonFile.setDirty(true);
-	}
-
-	if (!compilerTools.contains(kKeyLinker))
-	{
-		std::string link;
-		StringList linkers;
-		linkers.push_back(toolchain.linker);
-		if (toolchain.type == ToolchainType::LLVM)
-		{
-			linkers.push_back("ld");
-		}
-
-		for (const auto& linker : linkers)
-		{
-			link = Commands::which(linker);
-			if (!link.empty())
-				break;
-		}
-
-		// handles edge case w/ MSVC & MinGW in same path
-		if (toolchain.type == ToolchainType::MSVC)
-		{
-			if (String::contains("/usr/bin/link", link))
-			{
-				if (!cc.empty())
-					link = cc;
-				else if (!cpp.empty())
-					link = cpp;
-
-				String::replaceAll(link, "cl.exe", "link.exe");
-			}
-		}
-
-		parseArchitecture(link);
-		result &= !link.empty();
-
-		compilerTools[kKeyLinker] = std::move(link);
-		m_jsonFile.setDirty(true);
-	}
-
-	if (!compilerTools.contains(kKeyArchiver))
-	{
-		std::string ar;
-		StringList archivers;
-		if (toolchain.type == ToolchainType::LLVM || toolchain.type == ToolchainType::GNU)
-		{
-			archivers.push_back("libtool");
-		}
-		archivers.push_back(toolchain.archiver);
-
-		for (const auto& archiver : archivers)
-		{
-			ar = Commands::which(archiver);
-			if (!ar.empty())
-				break;
-		}
-
-		parseArchitecture(ar);
-		result &= !ar.empty();
-
-		compilerTools[kKeyArchiver] = std::move(ar);
-		m_jsonFile.setDirty(true);
-	}
-
-	if (!compilerTools.contains(kKeyWindowsResource))
-	{
-		std::string rc;
-		rc = Commands::which(toolchain.rc);
-
-		parseArchitecture(rc);
-		compilerTools[kKeyWindowsResource] = std::move(rc);
-		m_jsonFile.setDirty(true);
-	}
-
-	if (!result)
-	{
-		compilerTools.erase(kKeyCpp);
-		compilerTools.erase(kKeyCc);
-		compilerTools.erase(kKeyLinker);
-		compilerTools.erase(kKeyArchiver);
-		compilerTools.erase(kKeyWindowsResource);
-	}
-
-	return result;
 }
 
 /*****************************************************************************/
@@ -471,17 +132,7 @@ bool CacheJsonParser::makeCache()
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!settings.contains(kKeyStrategy) || !settings[kKeyStrategy].is_string() || settings[kKeyStrategy].get<std::string>().empty())
-	{
-		// Note: this is only for validation. it gets changed later
-		settings[kKeyStrategy] = "makefile";
-		m_jsonFile.setDirty(true);
-		m_changeStrategy = true;
-	}
-
 	//
-
-	Json& compilerTools = m_jsonFile.json[kKeyCompilerTools];
 
 #if defined(CHALET_WIN32)
 	HostPlatform platform = HostPlatform::Windows;
@@ -513,29 +164,10 @@ bool CacheJsonParser::makeCache()
 		return true;
 	};
 
-	auto& toolchain = m_inputs.toolchainPreference();
-#if defined(CHALET_WIN32)
-	if (!makeToolchain(compilerTools, toolchain))
-	{
-		if (toolchain.type == ToolchainType::MSVC)
-		{
-			m_inputs.setToolchainPreference("gcc"); // aka mingw
-			if (!makeToolchain(compilerTools, toolchain))
-			{
-				m_inputs.setToolchainPreference("llvm"); // try once more for clang
-				makeToolchain(compilerTools, toolchain);
-			}
-		}
-	}
-#else
-	makeToolchain(compilerTools, toolchain);
-#endif
-
 	Json& tools = m_jsonFile.json[kKeyTools];
 
 	whichAdd(tools, kKeyBash);
 	whichAdd(tools, kKeyBrew, HostPlatform::MacOS);
-	whichAdd(tools, kKeyCmake);
 	whichAdd(tools, kKeyCodesign, HostPlatform::MacOS);
 
 	if (!tools.contains(kKeyCommandPrompt))
@@ -551,7 +183,6 @@ bool CacheJsonParser::makeCache()
 	}
 
 	whichAdd(tools, kKeyGit);
-	whichAdd(tools, kKeyGprof);
 	whichAdd(tools, kKeyHdiutil, HostPlatform::MacOS);
 	whichAdd(tools, kKeyInstallNameTool, HostPlatform::MacOS);
 	whichAdd(tools, kKeyInstruments, HostPlatform::MacOS);
@@ -559,42 +190,6 @@ bool CacheJsonParser::makeCache()
 	whichAdd(tools, kKeyLipo, HostPlatform::MacOS);
 	whichAdd(tools, kKeyLua);
 
-	if (!tools.contains(kKeyMake))
-	{
-#if defined(CHALET_WIN32)
-		std::string make;
-
-		// jom.exe - Qt's parallel NMAKE
-		// nmake.exe - MSVC's make-ish build tool, alternative to MSBuild
-		StringList makeSearches;
-		if (toolchain.type != ToolchainType::MSVC)
-		{
-			makeSearches.push_back("mingw32-make");
-		}
-		else if (toolchain.type == ToolchainType::MSVC)
-		{
-			makeSearches.push_back("jom");
-			makeSearches.push_back("nmake");
-		}
-		makeSearches.push_back(kKeyMake);
-		for (const auto& tool : makeSearches)
-		{
-			make = Commands::which(tool);
-			if (!make.empty())
-			{
-				break;
-			}
-		}
-#else
-		std::string make = Commands::which(kKeyMake);
-#endif
-
-		tools[kKeyMake] = std::move(make);
-		m_jsonFile.setDirty(true);
-	}
-
-	whichAdd(tools, kKeyNinja);
-	whichAdd(tools, kKeyObjdump);
 	whichAdd(tools, kKeyOsascript, HostPlatform::MacOS);
 	whichAdd(tools, kKeyOtool, HostPlatform::MacOS);
 	whichAdd(tools, kKeyPerl);
@@ -662,31 +257,31 @@ bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
 		return false;
 	}
 
-	if (!parseRoot(inJson))
-		return false;
-
 	if (!parseSettings(inJson))
 		return false;
 
 	if (!parseTools(inJson))
 		return false;
 
-	if (!parseCompilers(inJson))
+		/*
+	if (!inNode.contains(kKeyCompilerTools))
+	{
+		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyCompilerTools));
 		return false;
+	}
+
+	Json& compilerTools = inNode.at(kKeyCompilerTools);
+	if (!compilerTools.is_object())
+	{
+		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyCompilerTools));
+		return false;
+	}
+*/
 
 #if defined(CHALET_MACOS)
 	if (!parseAppleSdks(inJson))
 		return false;
 #endif
-	return true;
-}
-
-/*****************************************************************************/
-bool CacheJsonParser::parseRoot(const Json& inNode)
-{
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyWorkingDirectory))
-		m_state.paths.setWorkingDirectory(std::move(val));
-
 	return true;
 }
 
@@ -705,9 +300,6 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeySettings));
 		return false;
 	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, settings, kKeyStrategy))
-		m_prototype.environment.setStrategy(val);
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, settings, kKeyShowCommands))
 		m_prototype.environment.setShowCommands(val);
@@ -743,18 +335,6 @@ bool CacheJsonParser::parseTools(Json& inNode)
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyBrew))
 		m_prototype.tools.setBrew(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyCmake))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			tools[kKeyCmake] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_prototype.tools.setCmake(std::move(val));
-	}
-
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyCodesign))
 		m_prototype.tools.setCodesign(std::move(val));
 
@@ -763,18 +343,6 @@ bool CacheJsonParser::parseTools(Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyGit))
 		m_prototype.tools.setGit(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyGprof))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			tools[kKeyGprof] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_prototype.tools.setGprof(std::move(val));
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyHdiutil))
 		m_prototype.tools.setHdiutil(std::move(val));
@@ -794,34 +362,6 @@ bool CacheJsonParser::parseTools(Json& inNode)
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLua))
 		m_prototype.tools.setLua(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyMake))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			tools[kKeyMake] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_prototype.tools.setMake(std::move(val));
-		m_make = std::move(val);
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyNinja))
-		m_prototype.tools.setNinja(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyObjdump))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			tools[kKeyObjdump] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_prototype.tools.setObjdump(std::move(val));
-	}
-
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyOsascript))
 		m_prototype.tools.setOsascript(std::move(val));
 
@@ -838,40 +378,13 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		m_prototype.tools.setPowershell(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPython))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			tools[kKeyPython] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_prototype.tools.setPython(std::move(val));
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPython3))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			tools[kKeyPython3] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_prototype.tools.setPython3(std::move(val));
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyRuby))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			tools[kKeyRuby] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_prototype.tools.setRuby(std::move(val));
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeySample))
 		m_prototype.tools.setSample(std::move(val));
@@ -890,85 +403,6 @@ bool CacheJsonParser::parseTools(Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcrun))
 		m_prototype.tools.setXcrun(std::move(val));
-
-	return true;
-}
-
-/*****************************************************************************/
-bool CacheJsonParser::parseCompilers(Json& inNode)
-{
-	if (!inNode.contains(kKeyCompilerTools))
-	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyCompilerTools));
-		return false;
-	}
-
-	Json& compilerTools = inNode.at(kKeyCompilerTools);
-	if (!compilerTools.is_object())
-	{
-		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyCompilerTools));
-		return false;
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyArchiver))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			compilerTools[kKeyArchiver] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_state.compilerTools.setArchiver(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyCpp))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			compilerTools[kKeyCpp] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_state.compilerTools.setCpp(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyCc))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			compilerTools[kKeyCc] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_state.compilerTools.setCc(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyLinker))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			compilerTools[kKeyLinker] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_state.compilerTools.setLinker(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, compilerTools, kKeyWindowsResource))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			compilerTools[kKeyWindowsResource] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_state.compilerTools.setRc(std::move(val));
-	}
 
 	return true;
 }
@@ -1000,124 +434,4 @@ bool CacheJsonParser::parseAppleSdks(Json& inNode)
 }
 #endif
 
-/*****************************************************************************/
-bool CacheJsonParser::parseArchitecture(std::string& outString) const
-{
-	bool ret = true;
-#if defined(CHALET_WIN32)
-
-	if (String::contains({ "/mingw64/", "/mingw32/" }, outString))
-	{
-		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
-		{
-			auto start = lower.find("/mingw32/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/mingw64/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-		else if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/mingw64/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/mingw32/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-	}
-	else if (String::contains({ "/clang64/", "/clang32/" }, outString))
-	{
-		// TODO: clangarm64
-
-		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
-		{
-			auto start = lower.find("/clang32/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/clang64/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-		else if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/clang64/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/clang32/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-	}
-	else if (String::endsWith({ "cl.exe", "link.exe", "lib.exe" }, outString))
-	{
-		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.hostArchitecture() == Arch::Cpu::X64)
-		{
-			auto start = lower.find("/hostx86/");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outString, outString.substr(start, 9), "/HostX64/");
-				ret = false;
-			}
-		}
-		else if (m_state.info.hostArchitecture() == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/hostx64/");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outString, outString.substr(start, 9), "/HostX86/");
-				ret = false;
-			}
-		}
-
-		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
-		{
-			auto start = lower.find("/x86/");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outString, outString.substr(start, 5), "/x64/");
-				ret = false;
-			}
-		}
-		else if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/x64/");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outString, outString.substr(start, 5), "/x86/");
-				ret = false;
-			}
-		}
-	}
-
-#else
-	UNUSED(outString);
-#endif
-
-	return ret;
-}
 }

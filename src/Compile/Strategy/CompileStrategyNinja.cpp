@@ -28,11 +28,11 @@ bool CompileStrategyNinja::initialize()
 		return false;
 
 	auto& name = "ninja";
-	m_cacheFile = m_state.cache.getHash(name, BuildCache::Type::Local);
+	m_cacheFile = m_state.cache.getHash(m_state.info.hash(), name, BuildCache::Type::Local);
 
 	auto& localConfig = m_state.cache.localConfig();
 	Json& buildCache = localConfig.json["data"];
-	const auto key = m_state.cache.getCacheKey(name);
+	const auto key = m_state.cache.getCacheKey(name, m_state.paths.configuration());
 
 	// Note: The ninja cache folder must not change between build.json changes
 	m_cacheFolder = m_state.cache.getPath(String::split(key, ':').front(), BuildCache::Type::Local);
@@ -105,7 +105,7 @@ bool CompileStrategyNinja::saveBuildFile() const
 /*****************************************************************************/
 bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 {
-	auto& ninjaExec = m_state.tools.ninja();
+	auto& ninjaExec = m_state.compilerTools.ninja();
 	if (m_hashes.find(inProject.name()) == m_hashes.end())
 		return false;
 
@@ -118,7 +118,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 	command.push_back("-f");
 	command.push_back(m_cacheFile);
 
-	if (m_state.tools.ninjaVersionMajor() >= 1 && m_state.tools.ninjaVersionMinor() > 10)
+	if (m_state.compilerTools.ninjaVersionMajor() >= 1 && m_state.compilerTools.ninjaVersionMinor() > 10)
 	{
 		// silences ninja status updates
 		command.push_back("--quiet"); // forthcoming (in ninja's master branch currently)

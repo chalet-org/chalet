@@ -8,6 +8,7 @@
 
 #include "Libraries/Json.hpp"
 
+#include "State/BuildCache.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildEnvironment.hpp"
 #include "State/CacheTools.hpp"
@@ -33,6 +34,8 @@ struct StatePrototype
 	const BuildConfigurationMap& buildConfigurations() const noexcept;
 	const StringList& requiredBuildConfigurations() const noexcept;
 	const StringList& requiredArchitectures() const noexcept;
+	const std::string& releaseConfiguration() const noexcept;
+	const std::string& anyConfiguration() const noexcept;
 
 	const std::string kKeyConfigurations = "configurations";
 	const std::string kKeyDistribution = "distribution";
@@ -42,11 +45,13 @@ struct StatePrototype
 	const std::string kKeyAbstracts = "abstracts";
 
 	BuildEnvironment environment;
+	BuildCache cache;
 	CacheTools tools;
 	DistributionTargetList distribution;
 
 private:
 	bool validateBundleDestinations();
+	bool parseCacheJson();
 	bool parseRequired(const Json& inNode);
 	bool parseConfiguration(const Json& inNode);
 	bool parseDistribution(const Json& inNode);
@@ -74,6 +79,7 @@ private:
 	StringList m_requiredArchitectures;
 
 	std::string m_filename;
+	std::string m_releaseConfiguration;
 
 	std::unique_ptr<JsonFile> m_buildJson;
 };

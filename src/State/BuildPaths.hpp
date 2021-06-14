@@ -83,7 +83,6 @@ private:
 	std::string m_intermediateDir;
 
 	bool m_initialized = false;
-	mutable bool m_binDirMade = false;
 	bool m_useCache = true;
 };
 }

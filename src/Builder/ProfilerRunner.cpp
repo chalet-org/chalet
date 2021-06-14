@@ -26,7 +26,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 {
 
 	auto& compilerConfig = m_state.compilerTools.getConfig(m_project.language());
-	if (compilerConfig.isGcc() && !m_state.tools.gprof().empty())
+	if (compilerConfig.isGcc() && !m_state.compilerTools.gprof().empty())
 	{
 		return ProfilerRunner::runWithGprof(inCommand, inExecutable, inOutputFolder);
 	}
@@ -86,7 +86,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 	const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
 	Output::msgProfilerStartedGprof(profStatsFile);
 
-	if (!Commands::subprocessOutputToFile({ m_state.tools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut, m_cleanOutput))
+	if (!Commands::subprocessOutputToFile({ m_state.compilerTools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut, m_cleanOutput))
 	{
 		Diagnostic::error(fmt::format("{} failed to save.", profStatsFile));
 		return false;

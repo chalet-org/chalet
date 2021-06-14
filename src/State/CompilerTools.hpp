@@ -8,6 +8,7 @@
 
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerConfig.hpp"
+#include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
 #include "State/Target/IBuildTarget.hpp"
 
@@ -23,6 +24,13 @@ struct CompilerTools
 	void detectToolchain();
 	bool initialize(const BuildTargetList& inTargets);
 	void fetchCompilerVersions();
+
+	void fetchMakeVersion();
+	bool fetchCmakeVersion();
+	void fetchNinjaVersion();
+
+	StrategyType strategy() const noexcept;
+	void setStrategy(const std::string& inValue) noexcept;
 
 	ToolchainType detectedToolchain() const;
 	const std::string& compiler() const noexcept;
@@ -40,8 +48,35 @@ struct CompilerTools
 	const std::string& cc() const noexcept;
 	void setCc(std::string&& inValue) noexcept;
 
+	const std::string& cmake() const noexcept;
+	void setCmake(std::string&& inValue) noexcept;
+	uint cmakeVersionMajor() const noexcept;
+	uint cmakeVersionMinor() const noexcept;
+	uint cmakeVersionPatch() const noexcept;
+	bool cmakeAvailable() const noexcept;
+
+	const std::string& gprof() const noexcept;
+	void setGprof(std::string&& inValue) noexcept;
+
 	const std::string& linker() const noexcept;
 	void setLinker(std::string&& inValue) noexcept;
+
+	const std::string& make() const noexcept;
+	void setMake(std::string&& inValue) noexcept;
+	uint makeVersionMajor() const noexcept;
+	uint makeVersionMinor() const noexcept;
+	bool makeIsNMake() const noexcept;
+	bool makeIsJom() const noexcept;
+
+	const std::string& objdump() const noexcept;
+	void setObjdump(std::string&& inValue) noexcept;
+
+	const std::string& ninja() const noexcept;
+	void setNinja(std::string&& inValue) noexcept;
+	uint ninjaVersionMajor() const noexcept;
+	uint ninjaVersionMinor() const noexcept;
+	uint ninjaVersionPatch() const noexcept;
+	bool ninjaAvailable() const noexcept;
 
 	const std::string& rc() const noexcept;
 	void setRc(std::string&& inValue) noexcept;
@@ -64,16 +99,37 @@ private:
 	std::string m_archiver;
 	std::string m_cpp;
 	std::string m_cc;
+	std::string m_cmake;
+	std::string m_gprof;
 	std::string m_linker;
+	std::string m_make;
+	std::string m_ninja;
+	std::string m_objdump;
 	std::string m_rc;
 
 	std::string m_compilerVersionStringCpp;
 	std::string m_compilerVersionStringC;
 
+	uint m_cmakeVersionMajor = 0;
+	uint m_cmakeVersionMinor = 0;
+	uint m_cmakeVersionPatch = 0;
+
+	uint m_makeVersionMajor = 0;
+	uint m_makeVersionMinor = 0;
+
+	uint m_ninjaVersionMajor = 0;
+	uint m_ninjaVersionMinor = 0;
+	uint m_ninjaVersionPatch = 0;
+
 	ToolchainType m_detectedToolchain = ToolchainType::Unknown;
+	StrategyType m_strategy = StrategyType::Makefile;
 
 	bool m_isArchiverLibTool = false;
 	bool m_ccDetected = false;
+	bool m_cmakeAvailable = false;
+	bool m_ninjaAvailable = false;
+	bool m_makeIsNMake = false;
+	bool m_makeIsJom = false;
 };
 }
 

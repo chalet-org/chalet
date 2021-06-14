@@ -746,6 +746,26 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 }
 
 /*****************************************************************************/
+std::string Commands::isolateVersion(const std::string& outString)
+{
+	std::string ret = outString;
+
+	auto firstEol = ret.find('\n');
+	if (firstEol != std::string::npos)
+	{
+		ret = ret.substr(0, firstEol);
+	}
+
+	auto lastSpace = ret.find_last_of(' ');
+	if (lastSpace != std::string::npos)
+	{
+		ret = ret.substr(lastSpace + 1);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 std::string Commands::which(const std::string& inExecutable, const bool inCleanOutput)
 {
 	std::string result;

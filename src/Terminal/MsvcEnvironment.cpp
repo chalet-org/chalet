@@ -240,17 +240,11 @@ bool MsvcEnvironment::readCompilerVariables()
 		m_lib = String::split(lib->second, ";");
 	}
 
+	Commands::remove(m_varsFileMsvcDelta);
+
 	Diagnostic::printDone(timer.asString());
 #endif
 	return true;
-}
-
-/*****************************************************************************/
-void MsvcEnvironment::cleanup()
-{
-#if defined(CHALET_WIN32)
-	Commands::remove(m_varsFileMsvcDelta);
-#endif
 }
 
 /*****************************************************************************/

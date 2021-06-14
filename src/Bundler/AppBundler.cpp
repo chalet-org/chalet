@@ -36,13 +36,12 @@ bool AppBundler::runBuilds(const bool inInstallDependencies)
 	// Build all required configurations
 	m_detectedArch = m_inputs.targetArchitecture().empty() ? m_inputs.hostArchitecture() : m_inputs.targetArchitecture();
 
-	auto makeState = [&](std::string arch, BundleTarget& inBundle) {
-		const auto& configuration = inBundle.configuration();
-		auto configName = fmt::format("{}_{}", arch, configuration);
+	auto makeState = [&](std::string arch, const std::string& inConfig) {
+		auto configName = fmt::format("{}_{}", arch, inConfig);
 		if (m_states.find(configName) == m_states.end())
 		{
 			CommandLineInputs inputs = m_inputs;
-			inputs.setBuildConfiguration(configuration);
+			inputs.setBuildConfiguration(inConfig);
 			inputs.setTargetArchitecture(std::move(arch));
 			auto state = std::make_unique<BuildState>(std::move(inputs), m_prototype);
 
@@ -64,13 +63,13 @@ bool AppBundler::runBuilds(const bool inInstallDependencies)
 			{
 				for (auto arch : universalBinaryArches)
 				{
-					makeState(arch, bundle);
+					makeState(arch, bundle.configuration());
 				}
 			}
 			else
 #endif
 			{
-				makeState(m_detectedArch, bundle);
+				makeState(m_detectedArch, bundle.configuration());
 			}
 		}
 	}
@@ -148,22 +147,9 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 		else
 #endif
 		{
-			for (auto& [config, state] : m_states)
-			{
-				auto configName = fmt::format("{}_{}", m_detectedArch, bundle.configuration());
-				if (String::equals(configName, config))
-				{
-					buildState = state.get();
-					break;
-				}
-			}
-
-			chalet_assert(buildState != nullptr, "State not initialized");
+			buildState = getBuildState(bundle.configuration());
 			if (buildState == nullptr)
-			{
-				Diagnostic::error(fmt::format("Arch and/or build configuration '{}' not detected.", bundle.configuration()));
 				return false;
-			}
 		}
 
 		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, buildFile, m_cleanOutput);
@@ -196,6 +182,30 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 	// logDependencies();
 
 	return true;
+}
+
+/*****************************************************************************/
+BuildState* AppBundler::getBuildState(const std::string& inBuildConfiguration) const
+{
+	BuildState* ret = nullptr;
+	for (auto& [config, state] : m_states)
+	{
+		auto configName = fmt::format("{}_{}", m_detectedArch, inBuildConfiguration);
+		if (String::equals(configName, config))
+		{
+			ret = state.get();
+			break;
+		}
+	}
+
+	chalet_assert(ret != nullptr, "State not initialized");
+	if (ret == nullptr)
+	{
+		Diagnostic::error(fmt::format("Arch and/or build configuration '{}' not detected.", inBuildConfiguration));
+		return nullptr;
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/
