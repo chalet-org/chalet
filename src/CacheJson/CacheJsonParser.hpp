@@ -37,9 +37,9 @@ private:
 	StatePrototype& m_prototype;
 	JsonFile& m_jsonFile;
 
-	const std::string kKeyTools = "tools";
+	const std::string kKeyTools = "ancillaryTools";
 	const std::string kKeySettings = "settings";
-	const std::string kKeyCompilerTools = "compilerTools";
+	const std::string kKeyToolchains = "toolchains";
 	const std::string kKeyApplePlatformSdks = "applePlatformSdks";
 	const std::string kKeyDumpAssembly = "dumpAssembly";
 	const std::string kKeyMaxJobs = "maxJobs";
@@ -55,6 +55,7 @@ private:
 	const std::string kKeyCodesign = "codesign";
 	const std::string kKeyCommandPrompt = "command_prompt";
 	const std::string kKeyGit = "git";
+	const std::string kKeyGprof = "gprof";
 	const std::string kKeyHdiutil = "hdiutil";
 	const std::string kKeyInstallNameTool = "install_name_tool";
 	const std::string kKeyInstruments = "instruments";

@@ -55,9 +55,6 @@ struct CompilerTools
 	uint cmakeVersionPatch() const noexcept;
 	bool cmakeAvailable() const noexcept;
 
-	const std::string& gprof() const noexcept;
-	void setGprof(std::string&& inValue) noexcept;
-
 	const std::string& linker() const noexcept;
 	void setLinker(std::string&& inValue) noexcept;
 
@@ -100,7 +97,6 @@ private:
 	std::string m_cpp;
 	std::string m_cc;
 	std::string m_cmake;
-	std::string m_gprof;
 	std::string m_linker;
 	std::string m_make;
 	std::string m_ninja;

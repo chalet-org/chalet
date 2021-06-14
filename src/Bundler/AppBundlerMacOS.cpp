@@ -7,7 +7,7 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Libraries/Format.hpp"
-#include "State/CacheTools.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -98,7 +98,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
 
-	auto& installNameTool = m_state.tools.installNameTool();
+	auto& installNameTool = m_state.ancillaryTools.installNameTool();
 	if (m_bundle.updateRPaths())
 	{
 		if (!changeRPathOfDependents(installNameTool, m_dependencyMap, m_executablePath, m_cleanOutput))
@@ -230,7 +230,7 @@ bool AppBundlerMacOS::createBundleIcon()
 	if (!icon.empty())
 	{
 		std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
-		const auto& sips = m_state.tools.sips();
+		const auto& sips = m_state.ancillaryTools.sips();
 		bool sipsFound = !sips.empty();
 
 		if (String::endsWith(".png", icon) && sipsFound)
@@ -285,7 +285,7 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 
 	{
 		const auto& plistInput = !tmpInfoPlist.empty() ? tmpInfoPlist : infoPropertyList;
-		if (!m_state.tools.plistConvertToBinary(plistInput, outInfoPropertyList, m_cleanOutput))
+		if (!m_state.ancillaryTools.plistConvertToBinary(plistInput, outInfoPropertyList, m_cleanOutput))
 			return false;
 
 		if (!tmpInfoPlist.empty())
@@ -295,25 +295,25 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 		}
 	}
 
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, m_cleanOutput))
+	if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName, m_cleanOutput))
 		return false;
 
 	if (!m_iconBaseName.empty())
 	{
-		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", m_iconBaseName, m_cleanOutput))
+		if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", m_iconBaseName, m_cleanOutput))
 			return false;
 	}
 
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", name, m_cleanOutput))
+	if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", name, m_cleanOutput))
 		return false;
 
-	// if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, m_cleanOutput))
+	// if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier, m_cleanOutput))
 	// 	return false;
 
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version, m_cleanOutput))
+	if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version, m_cleanOutput))
 		return false;
 
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", m_mainExecutable, m_cleanOutput))
+	if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", m_mainExecutable, m_cleanOutput))
 		return false;
 
 	return true;
@@ -322,7 +322,7 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 /*****************************************************************************/
 bool AppBundlerMacOS::setExecutablePaths() const
 {
-	auto& installNameTool = m_state.tools.installNameTool();
+	auto& installNameTool = m_state.ancillaryTools.installNameTool();
 
 	for (auto p : m_state.environmentPath())
 	{
@@ -385,8 +385,8 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	const auto& outDir = m_bundle.outDir();
 
-	auto& hdiutil = m_state.tools.hdiutil();
-	auto& tiffutil = m_state.tools.tiffutil();
+	auto& hdiutil = m_state.ancillaryTools.hdiutil();
+	auto& tiffutil = m_state.ancillaryTools.tiffutil();
 	const std::string volumePath = fmt::format("/Volumes/{}", bundleName);
 	const std::string appPath = fmt::format("{}/{}.app", outDir, bundleName);
 
@@ -437,7 +437,7 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	const auto applescriptText = PlatformFileTemplates::macosDmgApplescript(bundleName);
 
-	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }, m_cleanOutput))
+	if (!Commands::subprocess({ m_state.ancillaryTools.osascript(), "-e", applescriptText }, m_cleanOutput))
 		return false;
 	if (!Commands::subprocess({ "rm", "-rf", fmt::format("{}/.fseventsd", volumePath) }, m_cleanOutput))
 		return false;

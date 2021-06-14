@@ -12,7 +12,7 @@
 namespace chalet
 {
 struct CommandLineInputs;
-struct WorkspaceInfo;
+struct BuildInfo;
 
 struct BuildPaths
 {
@@ -47,7 +47,7 @@ struct BuildPaths
 private:
 	friend class BuildState;
 
-	explicit BuildPaths(const CommandLineInputs& inInputs, const WorkspaceInfo& inInfo);
+	explicit BuildPaths(const CommandLineInputs& inInputs, const BuildInfo& inInfo);
 
 	void initialize();
 
@@ -68,7 +68,7 @@ private:
 	StringList getDirectoryList(const ProjectTarget& inProject) const;
 
 	const CommandLineInputs& m_inputs;
-	const WorkspaceInfo& m_info;
+	const BuildInfo& m_info;
 
 	mutable StringList m_fileListCache;
 	// mutable StringList m_directoryCache;

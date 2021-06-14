@@ -6,7 +6,7 @@
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 
 #include "Libraries/Format.hpp"
-#include "State/CacheTools.hpp"
+#include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -31,7 +31,7 @@ bool CompileStrategyMakefile::initialize()
 		return false;
 
 	auto& name = "makefile";
-	m_cacheFile = m_state.cache.getHash(m_state.info.hash(), name, BuildCache::Type::Local);
+	m_cacheFile = m_state.cache.getHash(m_state.info.hash(), name, WorkspaceCache::Type::Local);
 
 	auto& localConfig = m_state.cache.localConfig();
 	Json& buildCache = localConfig.json["data"];
@@ -107,7 +107,7 @@ bool CompileStrategyMakefile::buildProject(const ProjectTarget& inProject) const
 	StringList command;
 
 #if defined(CHALET_WIN32)
-	const bool makeIsNMake = m_state.compilerTools.makeIsNMake();
+	const bool makeIsNMake = m_state.toolchain.makeIsNMake();
 	if (makeIsNMake)
 	{
 		return buildNMake(inProject);
@@ -122,7 +122,7 @@ bool CompileStrategyMakefile::buildProject(const ProjectTarget& inProject) const
 /*****************************************************************************/
 bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 {
-	const auto& makeExec = m_state.compilerTools.make();
+	const auto& makeExec = m_state.toolchain.make();
 	StringList command;
 
 	{
@@ -180,12 +180,12 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 /*****************************************************************************/
 bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 {
-	const auto& makeExec = m_state.compilerTools.make();
+	const auto& makeExec = m_state.toolchain.make();
 
 	StringList command;
 
-	const bool makeIsNMake = m_state.compilerTools.makeIsNMake();
-	const bool makeIsJom = m_state.compilerTools.makeIsJom();
+	const bool makeIsNMake = m_state.toolchain.makeIsNMake();
+	const bool makeIsJom = m_state.toolchain.makeIsJom();
 	if (makeIsNMake)
 	{
 		command.clear();
@@ -267,7 +267,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 
 #if defined(CHALET_WIN32)
 	// options.stdoutOption = PipeOption::Pipe;
-	if (m_state.compilerTools.makeIsNMake())
+	if (m_state.toolchain.makeIsNMake())
 	{
 		options.stdoutOption = PipeOption::Pipe;
 		options.onStdOut = [](std::string inData) {
@@ -291,14 +291,14 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const 
 	if (!errorOutput.empty())
 	{
 		std::size_t cutoff = std::string::npos;
-		const auto make = String::getPathBaseName(m_state.compilerTools.make());
+		const auto make = String::getPathBaseName(m_state.toolchain.make());
 
 #if defined(CHALET_WIN32)
-		if (m_state.compilerTools.makeIsNMake())
+		if (m_state.toolchain.makeIsNMake())
 		{
 			String::replaceAll(errorOutput, "\r", "\r\n");
 
-			if (m_state.compilerTools.makeIsJom())
+			if (m_state.toolchain.makeIsJom())
 			{
 				cutoff = errorOutput.find("jom: ");
 			}

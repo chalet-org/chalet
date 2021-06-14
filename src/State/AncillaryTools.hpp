@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CACHE_TOOLS_HPP
-#define CHALET_CACHE_TOOLS_HPP
+#ifndef CHALET_ANCILLARY_TOOLS_HPP
+#define CHALET_ANCILLARY_TOOLS_HPP
 
 namespace chalet
 {
-struct CacheTools
+struct AncillaryTools
 {
-	CacheTools() = default;
+	AncillaryTools() = default;
 
 	bool resolveOwnExecutable(const std::string& inAppPath);
 
@@ -37,6 +37,9 @@ struct CacheTools
 
 	const std::string& git() const noexcept;
 	void setGit(std::string&& inValue) noexcept;
+
+	const std::string& gprof() const noexcept;
+	void setGprof(std::string&& inValue) noexcept;
 
 	const std::string& hdiutil() const noexcept;
 	void setHdiutil(std::string&& inValue) noexcept;
@@ -133,6 +136,7 @@ private:
 	std::string m_codesign;
 	std::string m_commandPrompt;
 	std::string m_git;
+	std::string m_gprof;
 	std::string m_hdiutil;
 	std::string m_installNameTool;
 	std::string m_instruments;
@@ -166,4 +170,4 @@ private:
 };
 }
 
-#endif // CHALET_CACHE_TOOLS_HPP
+#endif // CHALET_ANCILLARY_TOOLS_HPP

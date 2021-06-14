@@ -46,9 +46,9 @@ bool CompilerConfig::isInitialized() const noexcept
 const std::string& CompilerConfig::compilerExecutable() const noexcept
 {
 	if (m_language == CodeLanguage::CPlusPlus)
-		return m_state.compilerTools.cpp();
+		return m_state.toolchain.cpp();
 	else
-		return m_state.compilerTools.cc();
+		return m_state.toolchain.cc();
 }
 
 /*****************************************************************************/

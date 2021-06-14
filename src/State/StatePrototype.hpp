@@ -8,11 +8,11 @@
 
 #include "Libraries/Json.hpp"
 
-#include "State/BuildCache.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
-#include "State/BuildEnvironment.hpp"
-#include "State/CacheTools.hpp"
 #include "State/Distribution/IDistTarget.hpp"
+#include "State/WorkspaceCache.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -44,9 +44,9 @@ struct StatePrototype
 
 	const std::string kKeyAbstracts = "abstracts";
 
-	BuildEnvironment environment;
-	BuildCache cache;
-	CacheTools tools;
+	WorkspaceEnvironment environment;
+	WorkspaceCache cache;
+	AncillaryTools ancillaryTools;
 	DistributionTargetList distribution;
 
 private:

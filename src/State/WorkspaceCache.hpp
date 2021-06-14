@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_CACHE_HPP
-#define CHALET_BUILD_CACHE_HPP
+#ifndef CHALET_WORKSPACE_CACHE_HPP
+#define CHALET_WORKSPACE_CACHE_HPP
 
 #include "Core/CommandLineInputs.hpp"
 #include "Json/JsonFile.hpp"
@@ -15,7 +15,7 @@ struct CommandLineInputs;
 class BuildState;
 struct StatePrototype;
 
-struct BuildCache
+struct WorkspaceCache
 {
 	enum class Type
 	{
@@ -23,7 +23,7 @@ struct BuildCache
 		Global
 	};
 
-	explicit BuildCache(const CommandLineInputs& inInputs);
+	explicit WorkspaceCache(const CommandLineInputs& inInputs);
 
 	bool createCacheFolder(const Type inCacheType);
 	bool exists(const Type inCacheType = Type::Local) const;
@@ -86,4 +86,4 @@ private:
 };
 }
 
-#endif // CHALET_BUILD_CACHE_HPP
+#endif // CHALET_WORKSPACE_CACHE_HPP

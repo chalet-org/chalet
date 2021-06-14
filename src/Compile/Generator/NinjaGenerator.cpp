@@ -6,7 +6,7 @@
 #include "Compile/Generator/NinjaGenerator.hpp"
 
 #include "Libraries/Format.hpp"
-#include "State/CacheTools.hpp"
+#include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -47,7 +47,7 @@ void NinjaGenerator::addProjectRecipes(const ProjectTarget& inProject, const Sou
 	m_toolchain = inToolchain.get();
 	m_hash = inTargetHash;
 
-	const auto& config = m_state.compilerTools.getConfig(m_project->language());
+	const auto& config = m_state.toolchain.getConfig(m_project->language());
 	m_needsMsvcDepsPrefix |= config.isMsvc();
 
 	const std::string rules = getRules(inOutputs.fileExtensions);
@@ -135,7 +135,7 @@ std::string NinjaGenerator::getDepFile(const std::string& inDependency)
 {
 	std::string ret;
 
-	const auto& config = m_state.compilerTools.getConfig(m_project->language());
+	const auto& config = m_state.toolchain.getConfig(m_project->language());
 	if (!config.isMsvc())
 	{
 		ret = fmt::format(R"ninja(
@@ -177,7 +177,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 {
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	std::string rules = getPchBuildRule(pchTarget);
@@ -214,7 +214,7 @@ std::string NinjaGenerator::getPchRule()
 		const auto dependency = fmt::format("{}/$in.d", depDir);
 		const auto depFile = getDepFile(dependency);
 
-		const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+		const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 		// Have to pass in pchTarget here because MSVC's PCH compile command is wack
@@ -268,11 +268,11 @@ std::string NinjaGenerator::getAsmRule()
 
 	if (m_state.dumpAssembly())
 	{
-		std::string asmCompile = m_state.tools.getAsmGenerateCommand("$in", "$out");
+		std::string asmCompile = m_state.ancillaryTools.getAsmGenerateCommand("$in", "$out");
 
 #if defined(CHALET_WIN32)
-		if (!m_state.tools.bash().empty() && m_state.tools.bashAvailable())
-			asmCompile = fmt::format("{} -c \"{}\"", m_state.tools.bash(), asmCompile);
+		if (!m_state.ancillaryTools.bash().empty() && m_state.ancillaryTools.bashAvailable())
+			asmCompile = fmt::format("{} -c \"{}\"", m_state.ancillaryTools.bash(), asmCompile);
 #endif
 
 		ret = fmt::format(R"ninja(
@@ -296,7 +296,7 @@ std::string NinjaGenerator::getCppRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	// const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
@@ -328,7 +328,7 @@ std::string NinjaGenerator::getObjcRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	// const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
@@ -360,7 +360,7 @@ std::string NinjaGenerator::getObjcppRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	// const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
@@ -391,7 +391,7 @@ std::string NinjaGenerator::getLinkRule()
 
 	std::string ret;
 
-	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 
@@ -429,7 +429,7 @@ build {pchTarget}: pch_{hash} {pch}
 			FMT_ARG(pch));
 
 #if defined(CHALET_WIN32)
-		const auto& config = m_state.compilerTools.getConfig(m_project->language());
+		const auto& config = m_state.toolchain.getConfig(m_project->language());
 		if (config.isMsvc())
 		{
 			std::string pchObj = pchTarget;
@@ -527,7 +527,7 @@ std::string NinjaGenerator::getAsmBuildRules(const StringList& inAssemblies)
 std::string NinjaGenerator::getRuleDeps() const
 {
 #if defined(CHALET_WIN32)
-	const auto& config = m_state.compilerTools.getConfig(m_project->language());
+	const auto& config = m_state.toolchain.getConfig(m_project->language());
 	return config.isMsvc() ? "msvc" : "gcc";
 #else
 	return "gcc";

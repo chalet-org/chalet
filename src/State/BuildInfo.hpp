@@ -3,17 +3,17 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_WORKSPACE_INFO_HPP
-#define CHALET_WORKSPACE_INFO_HPP
+#ifndef CHALET_BUILD_INFO_HPP
+#define CHALET_BUILD_INFO_HPP
 
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 
 namespace chalet
 {
-struct WorkspaceInfo
+struct BuildInfo
 {
-	explicit WorkspaceInfo(const CommandLineInputs& inInputs);
+	explicit BuildInfo(const CommandLineInputs& inInputs);
 
 	const std::string& workspace() const noexcept;
 	void setWorkspace(std::string&& inValue) noexcept;
@@ -48,4 +48,4 @@ private:
 };
 }
 
-#endif // CHALET_WORKSPACE_INFO_HPP
+#endif // CHALET_BUILD_INFO_HPP

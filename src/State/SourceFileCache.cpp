@@ -5,8 +5,8 @@
 
 #include "State/SourceFileCache.hpp"
 
-#include "State/BuildCache.hpp"
 #include "State/BuildPaths.hpp"
+#include "State/WorkspaceCache.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
@@ -14,7 +14,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-SourceFileCache::SourceFileCache(BuildCache& inCache) :
+SourceFileCache::SourceFileCache(WorkspaceCache& inCache) :
 	m_cache(inCache)
 {
 }
@@ -23,7 +23,7 @@ SourceFileCache::SourceFileCache(BuildCache& inCache) :
 bool SourceFileCache::initialize()
 {
 	{
-		auto path = m_cache.getPath("", BuildCache::Type::Local);
+		auto path = m_cache.getPath("", WorkspaceCache::Type::Local);
 		auto file = Hash::string("chalet_dependencies");
 		m_cache.addSourceCache(file);
 		m_filename = fmt::format("{}/{}", path, file);

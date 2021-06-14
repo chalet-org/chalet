@@ -6,7 +6,7 @@
 #include "Compile/Generator/MakefileGeneratorGNU.hpp"
 
 #include "Libraries/Format.hpp"
-#include "State/CacheTools.hpp"
+#include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -124,7 +124,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 		List::addIfDoesNotExist(m_fileExtensions, ext);
 	}
 
-	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
 
 	std::string recipes = getPchRecipe(pchTarget);
@@ -324,7 +324,7 @@ std::string MakefileGeneratorGNU::getAsmRecipe() const
 			const auto& asmDir = m_state.paths.asmDir();
 			const auto& objDir = m_state.paths.objDir();
 			const auto quietFlag = getQuietFlag();
-			const auto asmCompile = m_state.tools.getAsmGenerateCommand("'$<'", "'$@'");
+			const auto asmCompile = m_state.ancillaryTools.getAsmGenerateCommand("'$<'", "'$@'");
 			const auto compileEcho = getCompileEchoAsm();
 
 			ret += fmt::format(R"makefile(

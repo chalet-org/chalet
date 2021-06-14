@@ -27,7 +27,7 @@ private:
 #if defined(CHALET_WIN32)
 	bool createMsvcEnvironment(const Json& inNode);
 #endif
-	bool makeToolchain(Json& compilerTools, const ToolchainPreference& toolchain);
+	bool makeToolchain(Json& toolchains, const ToolchainPreference& toolchain);
 	bool parseToolchain(Json& inNode);
 
 	bool parseArchitecture(std::string& outString) const;
@@ -47,7 +47,6 @@ private:
 
 	//
 	const std::string kKeyCmake = "cmake";
-	const std::string kKeyGprof = "gprof";
 	const std::string kKeyMake = "make";
 	const std::string kKeyNinja = "ninja";
 	const std::string kKeyObjdump = "objdump";

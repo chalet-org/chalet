@@ -9,22 +9,22 @@
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
-#include "State/BuildCache.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Dependency/IBuildDependency.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/SourceFileCache.hpp"
 #include "State/Target/IBuildTarget.hpp"
-#include "State/WorkspaceInfo.hpp"
+#include "State/WorkspaceCache.hpp"
 #include "Terminal/MsvcEnvironment.hpp"
 
 namespace chalet
 {
 struct StatePrototype;
-struct CacheTools;
-struct BuildCache;
+struct AncillaryTools;
+struct WorkspaceCache;
 
 class BuildState
 {
@@ -34,12 +34,12 @@ class BuildState
 public:
 	explicit BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototype);
 
-	const CacheTools& tools;
+	const AncillaryTools& ancillaryTools;
 	const DistributionTargetList& distribution;
-	BuildCache& cache;
+	WorkspaceCache& cache;
 
-	WorkspaceInfo info;
-	CompilerTools compilerTools;
+	BuildInfo info;
+	CompilerTools toolchain;
 	BuildPaths paths;
 	MsvcEnvironment msvcEnvironment;
 	BuildConfiguration configuration;

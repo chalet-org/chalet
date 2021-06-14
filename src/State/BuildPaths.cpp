@@ -6,7 +6,7 @@
 #include "State/BuildPaths.hpp"
 
 #include "Libraries/Format.hpp"
-#include "State/WorkspaceInfo.hpp"
+#include "State/BuildInfo.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -15,7 +15,7 @@
 
 namespace chalet
 {
-BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceInfo& inInfo) :
+BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const BuildInfo& inInfo) :
 	m_inputs(inInputs),
 	m_info(inInfo)
 {

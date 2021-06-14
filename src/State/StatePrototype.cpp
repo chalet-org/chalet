@@ -60,7 +60,7 @@ bool StatePrototype::initialize()
 
 	cache.initialize(m_inputs.appPath());
 
-	if (!cache.createCacheFolder(BuildCache::Type::Local))
+	if (!cache.createCacheFolder(WorkspaceCache::Type::Local))
 	{
 		Diagnostic::error("There was an error creating the build cache.");
 		return false;
@@ -114,8 +114,8 @@ bool StatePrototype::validateBundleDestinations()
 /*****************************************************************************/
 bool StatePrototype::validate()
 {
-	tools.fetchBashVersion();
-	tools.fetchBrewVersion();
+	ancillaryTools.fetchBashVersion();
+	ancillaryTools.fetchBrewVersion();
 
 	for (auto& target : distribution)
 	{

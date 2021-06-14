@@ -28,7 +28,7 @@ bool MsvcEnvironment::exists()
 	{
 		// TODO:
 		//   Note that if you install vswhere using Chocolatey (instead of the VS/MSBuild installer),
-		//   it will be located at %ProgramData%\chocolatey\lib\vswhere\tools\vswhere.exe
+		//   it will be located at %ProgramData%\chocolatey\lib\vswhere\ancillaryTools\vswhere.exe
 		//   https://stackoverflow.com/questions/54305638/how-to-find-vswhere-exe-path
 
 		std::string progFiles = Environment::getAsString("ProgramFiles(x86)");

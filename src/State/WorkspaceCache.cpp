@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/BuildCache.hpp"
+#include "State/WorkspaceCache.hpp"
 
 #include "Libraries/Format.hpp"
-#include "State/BuildEnvironment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -19,7 +19,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildCache::BuildCache(const CommandLineInputs& inInputs) :
+WorkspaceCache::WorkspaceCache(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
 {
 	m_localConfig.load(fmt::format("{}/chalet-cache.json", m_inputs.buildPath()));
@@ -27,13 +27,13 @@ BuildCache::BuildCache(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-const std::string& BuildCache::getCacheRef(const Type inCacheType) const
+const std::string& WorkspaceCache::getCacheRef(const Type inCacheType) const
 {
 	return inCacheType == Type::Global ? m_cacheGlobal : m_cacheLocal;
 }
 
 /*****************************************************************************/
-void BuildCache::initialize(const std::string& inAppPath)
+void WorkspaceCache::initialize(const std::string& inAppPath)
 {
 	const auto userDir = Environment::getUserDirectory();
 	m_cacheGlobal = fmt::format("{}/.chalet", userDir);
@@ -45,7 +45,7 @@ void BuildCache::initialize(const std::string& inAppPath)
 }
 
 /*****************************************************************************/
-bool BuildCache::createCacheFolder(const Type inCacheType)
+bool WorkspaceCache::createCacheFolder(const Type inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 
@@ -70,14 +70,14 @@ bool BuildCache::createCacheFolder(const Type inCacheType)
 }
 
 /*****************************************************************************/
-bool BuildCache::exists(const Type inCacheType) const
+bool WorkspaceCache::exists(const Type inCacheType) const
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 	return Commands::pathExists(cacheRef) || Commands::pathExists(m_localConfig.filename());
 }
 
 /*****************************************************************************/
-void BuildCache::removeCacheFolder(const Type inCacheType)
+void WorkspaceCache::removeCacheFolder(const Type inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 
@@ -86,7 +86,7 @@ void BuildCache::removeCacheFolder(const Type inCacheType)
 }
 
 /*****************************************************************************/
-std::string BuildCache::getHash(const std::size_t inWorkspaceHash, const std::string& inIdentifier, const Type inCacheType) const
+std::string WorkspaceCache::getHash(const std::size_t inWorkspaceHash, const std::string& inIdentifier, const Type inCacheType) const
 {
 	std::string toHash = fmt::format("{}_{}", inWorkspaceHash, inIdentifier);
 	std::string hash = Hash::string(toHash);
@@ -100,7 +100,7 @@ std::string BuildCache::getHash(const std::size_t inWorkspaceHash, const std::st
 }
 
 /*****************************************************************************/
-std::string BuildCache::getPath(const std::string& inFolder, const Type inCacheType) const
+std::string WorkspaceCache::getPath(const std::string& inFolder, const Type inCacheType) const
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 	std::string ret;
@@ -116,31 +116,31 @@ std::string BuildCache::getPath(const std::string& inFolder, const Type inCacheT
 }
 
 /*****************************************************************************/
-std::string BuildCache::getCacheKey(const std::string& inName, const std::string& inConfig)
+std::string WorkspaceCache::getCacheKey(const std::string& inName, const std::string& inConfig)
 {
 	return fmt::format("{}:{}", inConfig, inName);
 }
 
 /*****************************************************************************/
-JsonFile& BuildCache::localConfig() noexcept
+JsonFile& WorkspaceCache::localConfig() noexcept
 {
 	return m_localConfig;
 }
 
 /*****************************************************************************/
-void BuildCache::saveLocalConfig()
+void WorkspaceCache::saveLocalConfig()
 {
 	m_localConfig.save();
 }
 
 /*****************************************************************************/
-bool BuildCache::appBuildChanged() const noexcept
+bool WorkspaceCache::appBuildChanged() const noexcept
 {
 	return m_appBuildChanged;
 }
 
 /*****************************************************************************/
-bool BuildCache::removeUnusedProjectFiles(const StringList& inHashes, const Type inCacheType)
+bool WorkspaceCache::removeUnusedProjectFiles(const StringList& inHashes, const Type inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 	if (!Commands::pathExists(cacheRef) || inHashes.size() == 0)
@@ -176,7 +176,7 @@ bool BuildCache::removeUnusedProjectFiles(const StringList& inHashes, const Type
 }
 
 /*****************************************************************************/
-void BuildCache::removeStaleProjectCaches(const std::string& inToolchain, const Type inCacheType)
+void WorkspaceCache::removeStaleProjectCaches(const std::string& inToolchain, const Type inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 	if (!m_localConfig.json.contains(kKeyData) || !m_localConfig.json.contains(kKeySettings))
@@ -186,11 +186,11 @@ void BuildCache::removeStaleProjectCaches(const std::string& inToolchain, const 
 	if (!buildCache.is_object())
 		return;
 
-	auto& compilerTools = m_localConfig.json.at("compilerTools");
-	if (!compilerTools.is_object())
+	auto& toolchains = m_localConfig.json.at("toolchains");
+	if (!toolchains.is_object())
 		return;
 
-	auto& toolchainJson = compilerTools[inToolchain];
+	auto& toolchainJson = toolchains[inToolchain];
 	if (!toolchainJson.is_object())
 		return;
 
@@ -252,7 +252,7 @@ void BuildCache::removeStaleProjectCaches(const std::string& inToolchain, const 
 }
 
 /*****************************************************************************/
-void BuildCache::removeBuildIfCacheChanged(const std::string& inBuildDir)
+void WorkspaceCache::removeBuildIfCacheChanged(const std::string& inBuildDir)
 {
 	if (!Commands::pathExists(inBuildDir))
 		return;
@@ -262,7 +262,7 @@ void BuildCache::removeBuildIfCacheChanged(const std::string& inBuildDir)
 }
 
 /*****************************************************************************/
-void BuildCache::makeAppVersionCheck(const std::string& inAppPath)
+void WorkspaceCache::makeAppVersionCheck(const std::string& inAppPath)
 {
 #if defined(CHALET_DEBUG)
 	const auto& kKeyVer = kKeyDataVersionDebug;
@@ -293,7 +293,7 @@ void BuildCache::makeAppVersionCheck(const std::string& inAppPath)
 }
 
 /*****************************************************************************/
-void BuildCache::checkIfCompileStrategyChanged(const std::string& inToolchain)
+void WorkspaceCache::checkIfCompileStrategyChanged(const std::string& inToolchain)
 {
 	m_compileStrategyChanged = false;
 
@@ -304,11 +304,11 @@ void BuildCache::checkIfCompileStrategyChanged(const std::string& inToolchain)
 	if (!data.is_object())
 		return;
 
-	auto& compilerTools = m_localConfig.json.at("compilerTools");
-	if (!compilerTools.is_object())
+	auto& toolchains = m_localConfig.json.at("toolchains");
+	if (!toolchains.is_object())
 		return;
 
-	auto& toolchainJson = compilerTools[inToolchain];
+	auto& toolchainJson = toolchains[inToolchain];
 	if (!toolchainJson.is_object())
 		return;
 
@@ -339,7 +339,7 @@ void BuildCache::checkIfCompileStrategyChanged(const std::string& inToolchain)
 }
 
 /*****************************************************************************/
-void BuildCache::addSourceCache(const std::string& inHash)
+void WorkspaceCache::addSourceCache(const std::string& inHash)
 {
 	if (!m_localConfig.json.contains(kKeyData))
 		return;
@@ -356,7 +356,7 @@ void BuildCache::addSourceCache(const std::string& inHash)
 }
 
 /*****************************************************************************/
-void BuildCache::checkIfWorkingDirectoryChanged()
+void WorkspaceCache::checkIfWorkingDirectoryChanged()
 {
 	m_workingDirectoryChanged = false;
 
@@ -398,7 +398,7 @@ void BuildCache::checkIfWorkingDirectoryChanged()
 }
 
 /*****************************************************************************/
-std::string BuildCache::getBuildHash(std::string appPath)
+std::string WorkspaceCache::getBuildHash(std::string appPath)
 {
 	// TODO: Keep an eye on this...
 

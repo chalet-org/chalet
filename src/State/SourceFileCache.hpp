@@ -8,11 +8,11 @@
 
 namespace chalet
 {
-struct BuildCache;
+struct WorkspaceCache;
 
 struct SourceFileCache
 {
-	explicit SourceFileCache(BuildCache& inCache);
+	explicit SourceFileCache(WorkspaceCache& inCache);
 
 	bool initialize();
 	bool save();
@@ -29,7 +29,7 @@ private:
 	bool add(const std::string& inFile) const;
 	LastWrite& getLastWrite(const std::string& inFile) const;
 
-	BuildCache& m_cache;
+	WorkspaceCache& m_cache;
 
 	std::string m_filename;
 

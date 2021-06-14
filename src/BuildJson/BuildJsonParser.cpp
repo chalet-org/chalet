@@ -176,7 +176,7 @@ bool BuildJsonParser::parseRoot(const Json& inNode)
 /*****************************************************************************/
 bool BuildJsonParser::makePathVariable()
 {
-	// auto rootPath = m_state.compilerTools.getRootPathVariable();
+	// auto rootPath = m_state.toolchain.getRootPathVariable();
 	// auto pathVariable = m_state.environment.makePathVariable(rootPath);
 
 	// // LOG(pathVariable);
@@ -564,7 +564,7 @@ bool BuildJsonParser::parseCMakeProject(CMakeTarget& outProject, const Json& inN
 	// If it's a cmake project, ignore everything else and return
 	// if (cmakeResult)
 
-	// auto& compilerConfig = m_state.compilerTools.getConfig(outProject.language());
+	// auto& compilerConfig = m_state.toolchain.getConfig(outProject.language());
 	// outProject.parseOutputFilename(compilerConfig);
 	// return true;
 

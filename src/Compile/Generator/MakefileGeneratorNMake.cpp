@@ -364,7 +364,7 @@ std::string MakefileGeneratorNMake::getAsmRecipe(const std::string& object, cons
 	if (dumpAssembly)
 	{
 		const auto quietFlag = getQuietFlag();
-		const auto asmCompile = m_state.tools.getAsmGenerateCommand(fmt::format("'{}'", object), fmt::format("'{}'", assembly));
+		const auto asmCompile = m_state.ancillaryTools.getAsmGenerateCommand(fmt::format("'{}'", object), fmt::format("'{}'", assembly));
 		const auto compileEcho = getCompileEchoAsm(assembly);
 
 		ret = fmt::format(R"makefile(
@@ -398,7 +398,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& pchTarget)
 		const auto& depDir = m_state.paths.depDir();
 		const auto& pch = m_project->pch();
 		m_precompiledHeaders.push_back(pch);
-		// const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+		// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 
 		const auto dependency = fmt::format("{depDir}/{pch}",
 			FMT_ARG(depDir),

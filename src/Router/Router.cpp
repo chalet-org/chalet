@@ -265,7 +265,7 @@ bool Router::xcodebuildRoute(BuildState& inState)
 	// Run xcodebuild from the command line if possible
 	// This would be a lightweight BuildManager
 
-	std::cout << "brew available: " << inState.tools.brewAvailable() << "\n";
+	std::cout << "brew available: " << inState.ancillaryTools.brewAvailable() << "\n";
 
 	// rm -rf build/Chalet.xcodeproj && xcodegen -s xcode-project.json -p build --use-cache
 

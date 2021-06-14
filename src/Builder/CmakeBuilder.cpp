@@ -6,8 +6,8 @@
 #include "Builder/CmakeBuilder.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "State/CacheTools.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -82,8 +82,8 @@ bool CmakeBuilder::run()
 /*****************************************************************************/
 std::string CmakeBuilder::getGenerator() const
 {
-	const bool isNinja = m_state.compilerTools.strategy() == StrategyType::Ninja;
-	const auto& compileConfig = m_state.compilerTools.getConfig(CodeLanguage::CPlusPlus);
+	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+	const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
 
 	std::string ret;
 	if (isNinja)
@@ -109,8 +109,8 @@ std::string CmakeBuilder::getGenerator() const
 /*****************************************************************************/
 std::string CmakeBuilder::getArch() const
 {
-	const bool isNinja = m_state.compilerTools.strategy() == StrategyType::Ninja;
-	const auto& compileConfig = m_state.compilerTools.getConfig(CodeLanguage::CPlusPlus);
+	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+	const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
 
 	std::string ret;
 
@@ -146,7 +146,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 	{
 		buildConfiguration = "Debug";
 	}
-	auto& cmake = m_state.compilerTools.cmake();
+	auto& cmake = m_state.toolchain.cmake();
 
 	StringList ret{ cmake, "-G", getGenerator() };
 
@@ -188,14 +188,14 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 /*****************************************************************************/
 StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 {
-	auto& cmake = m_state.compilerTools.cmake();
+	auto& cmake = m_state.toolchain.cmake();
 	const auto maxJobs = m_state.maxJobs();
 
-	const bool isMake = m_state.compilerTools.strategy() == StrategyType::Makefile;
+	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
 
 	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };
 
-	if (isMake && m_state.compilerTools.makeVersionMajor() >= 4)
+	if (isMake && m_state.toolchain.makeVersionMajor() >= 4)
 	{
 		ret.push_back("--");
 		ret.push_back("--output-sync=target");

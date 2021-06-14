@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/BuildEnvironment.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 
 #include <thread>
 
 #include "Libraries/FileSystem.hpp"
 #include "Libraries/Format.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
-#include "State/WorkspaceInfo.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -21,7 +21,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildEnvironment::BuildEnvironment() :
+WorkspaceEnvironment::WorkspaceEnvironment() :
 	m_processorCount(std::thread::hardware_concurrency()),
 	m_maxJobs(m_processorCount)
 {
@@ -29,7 +29,7 @@ BuildEnvironment::BuildEnvironment() :
 }
 
 /*****************************************************************************/
-void BuildEnvironment::initialize(BuildPaths& inPaths)
+void WorkspaceEnvironment::initialize(BuildPaths& inPaths)
 {
 	std::string addedPath;
 	for (auto& path : m_path)
@@ -47,61 +47,61 @@ void BuildEnvironment::initialize(BuildPaths& inPaths)
 }
 
 /*****************************************************************************/
-uint BuildEnvironment::processorCount() const noexcept
+uint WorkspaceEnvironment::processorCount() const noexcept
 {
 	return m_processorCount;
 }
 
 /*****************************************************************************/
-uint BuildEnvironment::maxJobs() const noexcept
+uint WorkspaceEnvironment::maxJobs() const noexcept
 {
 	return m_maxJobs;
 }
 
-void BuildEnvironment::setMaxJobs(const uint inValue) noexcept
+void WorkspaceEnvironment::setMaxJobs(const uint inValue) noexcept
 {
 	m_maxJobs = std::min(inValue, processorCount());
 }
 
 /*****************************************************************************/
-bool BuildEnvironment::showCommands() const noexcept
+bool WorkspaceEnvironment::showCommands() const noexcept
 {
 	return m_showCommands;
 }
 
-void BuildEnvironment::setShowCommands(const bool inValue) noexcept
+void WorkspaceEnvironment::setShowCommands(const bool inValue) noexcept
 {
 	m_showCommands = inValue;
 }
 
-bool BuildEnvironment::cleanOutput() const noexcept
+bool WorkspaceEnvironment::cleanOutput() const noexcept
 {
 	return !m_showCommands;
 }
 
 /*****************************************************************************/
-bool BuildEnvironment::dumpAssembly() const noexcept
+bool WorkspaceEnvironment::dumpAssembly() const noexcept
 {
 	return m_dumpAssembly;
 }
 
-void BuildEnvironment::setDumpAssembly(const bool inValue) noexcept
+void WorkspaceEnvironment::setDumpAssembly(const bool inValue) noexcept
 {
 	m_dumpAssembly = inValue;
 }
 
 /*****************************************************************************/
-const StringList& BuildEnvironment::path() const noexcept
+const StringList& WorkspaceEnvironment::path() const noexcept
 {
 	return m_path;
 }
 
-void BuildEnvironment::addPaths(StringList&& inList)
+void WorkspaceEnvironment::addPaths(StringList&& inList)
 {
-	List::forEach(inList, this, &BuildEnvironment::addPath);
+	List::forEach(inList, this, &WorkspaceEnvironment::addPath);
 }
 
-void BuildEnvironment::addPath(std::string&& inValue)
+void WorkspaceEnvironment::addPath(std::string&& inValue)
 {
 	if (inValue.back() == '/')
 		inValue.pop_back();
@@ -110,7 +110,7 @@ void BuildEnvironment::addPath(std::string&& inValue)
 }
 
 /*****************************************************************************/
-std::string BuildEnvironment::makePathVariable(const std::string& inRootPath)
+std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath)
 {
 	auto separator = Path::getSeparator();
 

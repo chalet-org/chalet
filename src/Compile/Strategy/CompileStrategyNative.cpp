@@ -6,7 +6,7 @@
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 
 #include "Libraries/Format.hpp"
-#include "State/CacheTools.hpp"
+#include "State/AncillaryTools.hpp"
 #include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -138,7 +138,7 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& compilerConfig = m_state.compilerTools.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !compilerConfig.isMsvc();
@@ -199,7 +199,7 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 		this->m_canceled = true;
 	};
 
-	const auto& config = m_state.compilerTools.getConfig(inProject.language());
+	const auto& config = m_state.toolchain.getConfig(inProject.language());
 	auto executeCommandFunc = config.isMsvc() ? executeCommandMsvc : executeCommand;
 
 	bool cleanOutput = !m_state.showCommands();
@@ -491,11 +491,11 @@ StringList CompileStrategyNative::getAsmGenerate(const std::string& object, cons
 {
 	StringList ret;
 
-	if (!m_state.tools.bash().empty() && m_state.tools.bashAvailable())
+	if (!m_state.ancillaryTools.bash().empty() && m_state.ancillaryTools.bashAvailable())
 	{
-		auto asmCommand = m_state.tools.getAsmGenerateCommand(object, target);
+		auto asmCommand = m_state.ancillaryTools.getAsmGenerateCommand(object, target);
 
-		ret.push_back(m_state.tools.bash());
+		ret.push_back(m_state.ancillaryTools.bash());
 		ret.push_back("-c");
 		ret.push_back(std::move(asmCommand));
 	}

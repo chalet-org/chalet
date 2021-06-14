@@ -26,11 +26,11 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const ProjectTar
 	m_project(inProject),
 	m_config(inConfig)
 {
-	m_quotePaths = m_state.compilerTools.strategy() != StrategyType::Native;
+	m_quotePaths = m_state.toolchain.strategy() != StrategyType::Native;
 
-	m_isMakefile = m_state.compilerTools.strategy() == StrategyType::Makefile;
-	m_isNinja = m_state.compilerTools.strategy() == StrategyType::Ninja;
-	m_isNative = m_state.compilerTools.strategy() == StrategyType::Native;
+	m_isMakefile = m_state.toolchain.strategy() == StrategyType::Makefile;
+	m_isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+	m_isNative = m_state.toolchain.strategy() == StrategyType::Native;
 }
 
 /*****************************************************************************/

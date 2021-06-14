@@ -6,10 +6,10 @@
 #include "State/Distribution/BundleTarget.hpp"
 
 #include "Libraries/Format.hpp"
-#include "State/BuildEnvironment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
@@ -228,7 +228,7 @@ void BundleTarget::initializeDependencies(const BuildState& inState)
 			{
 				auto& project = static_cast<const ProjectTarget&>(*target);
 
-				const auto& compilerConfig = inState.compilerTools.getConfig(project.language());
+				const auto& compilerConfig = inState.toolchain.getConfig(project.language());
 				const auto& compilerPathBin = compilerConfig.compilerPathBin();
 
 				resolved = fmt::format("{}/{}", compilerPathBin, dependency);

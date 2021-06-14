@@ -7,7 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Format.hpp"
-#include "State/CacheTools.hpp"
+#include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -18,7 +18,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-ScriptRunner::ScriptRunner(const CacheTools& inTools, const std::string& inBuildFile, const bool inCleanOutput) :
+ScriptRunner::ScriptRunner(const AncillaryTools& inTools, const std::string& inBuildFile, const bool inCleanOutput) :
 	m_tools(inTools),
 	m_buildFile(inBuildFile),
 	m_cleanOutput(inCleanOutput)

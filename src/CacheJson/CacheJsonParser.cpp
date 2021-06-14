@@ -73,7 +73,7 @@ bool CacheJsonParser::serialize()
 bool CacheJsonParser::validatePaths()
 {
 #if defined(CHALET_MACOS)
-	if (!Commands::pathExists(m_prototype.tools.applePlatformSdk("macosx")))
+	if (!Commands::pathExists(m_prototype.ancillaryTools.applePlatformSdk("macosx")))
 	{
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -94,7 +94,7 @@ bool CacheJsonParser::makeCache()
 	// Create the json cache
 	m_jsonFile.makeNode(kKeyWorkingDirectory, JsonDataType::string);
 	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
-	m_jsonFile.makeNode(kKeyCompilerTools, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyToolchains, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyTools, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyApplePlatformSdks, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyExternalDependencies, JsonDataType::object);
@@ -164,57 +164,58 @@ bool CacheJsonParser::makeCache()
 		return true;
 	};
 
-	Json& tools = m_jsonFile.json[kKeyTools];
+	Json& ancillaryTools = m_jsonFile.json[kKeyTools];
 
-	whichAdd(tools, kKeyBash);
-	whichAdd(tools, kKeyBrew, HostPlatform::MacOS);
-	whichAdd(tools, kKeyCodesign, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyBash);
+	whichAdd(ancillaryTools, kKeyBrew, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyCodesign, HostPlatform::MacOS);
 
-	if (!tools.contains(kKeyCommandPrompt))
+	if (!ancillaryTools.contains(kKeyCommandPrompt))
 	{
 #if defined(CHALET_WIN32)
 		auto res = Commands::which("cmd");
 		String::replaceAll(res, "WINDOWS/SYSTEM32", "Windows/System32");
-		tools[kKeyCommandPrompt] = std::move(res);
+		ancillaryTools[kKeyCommandPrompt] = std::move(res);
 #else
-		tools[kKeyCommandPrompt] = std::string();
+		ancillaryTools[kKeyCommandPrompt] = std::string();
 #endif
 		m_jsonFile.setDirty(true);
 	}
 
-	whichAdd(tools, kKeyGit);
-	whichAdd(tools, kKeyHdiutil, HostPlatform::MacOS);
-	whichAdd(tools, kKeyInstallNameTool, HostPlatform::MacOS);
-	whichAdd(tools, kKeyInstruments, HostPlatform::MacOS);
-	whichAdd(tools, kKeyLdd);
-	whichAdd(tools, kKeyLipo, HostPlatform::MacOS);
-	whichAdd(tools, kKeyLua);
+	whichAdd(ancillaryTools, kKeyGit);
+	whichAdd(ancillaryTools, kKeyGprof);
+	whichAdd(ancillaryTools, kKeyHdiutil, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyInstallNameTool, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyInstruments, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyLdd);
+	whichAdd(ancillaryTools, kKeyLipo, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyLua);
 
-	whichAdd(tools, kKeyOsascript, HostPlatform::MacOS);
-	whichAdd(tools, kKeyOtool, HostPlatform::MacOS);
-	whichAdd(tools, kKeyPerl);
-	whichAdd(tools, kKeyPlutil, HostPlatform::MacOS);
-	whichAdd(tools, kKeyPython);
-	whichAdd(tools, kKeyPython3);
+	whichAdd(ancillaryTools, kKeyOsascript, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyOtool, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyPerl);
+	whichAdd(ancillaryTools, kKeyPlutil, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyPython);
+	whichAdd(ancillaryTools, kKeyPython3);
 
-	if (!tools.contains(kKeyPowershell))
+	if (!ancillaryTools.contains(kKeyPowershell))
 	{
 		auto powershell = Commands::which("pwsh"); // Powershell OS 6+ (ex: C:/Program Files/Powershell/6)
 #if defined(CHALET_WIN32)
 		if (powershell.empty())
 			powershell = Commands::which(kKeyPowershell);
 #endif
-		tools[kKeyPowershell] = std::move(powershell);
+		ancillaryTools[kKeyPowershell] = std::move(powershell);
 		m_jsonFile.setDirty(true);
 	}
 
-	whichAdd(tools, kKeyRuby);
-	whichAdd(tools, kKeySample, HostPlatform::MacOS);
-	whichAdd(tools, kKeySips, HostPlatform::MacOS);
-	whichAdd(tools, kKeyTiffutil, HostPlatform::MacOS);
-	whichAdd(tools, kKeyXcodebuild, HostPlatform::MacOS);
-	whichAdd(tools, kKeyXcodegen, HostPlatform::MacOS);
-	whichAdd(tools, kKeyXcrun, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyRuby);
+	whichAdd(ancillaryTools, kKeySample, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeySips, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyTiffutil, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyXcodebuild, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyXcodegen, HostPlatform::MacOS);
+	whichAdd(ancillaryTools, kKeyXcrun, HostPlatform::MacOS);
 
 #if defined(CHALET_MACOS)
 	// AppleTVOS.platform/
@@ -270,8 +271,8 @@ bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
 		return false;
 	}
 
-	Json& compilerTools = inNode.at(kKeyCompilerTools);
-	if (!compilerTools.is_object())
+	Json& toolchains = inNode.at(kKeyCompilerTools);
+	if (!toolchains.is_object())
 	{
 		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyCompilerTools));
 		return false;
@@ -322,87 +323,90 @@ bool CacheJsonParser::parseTools(Json& inNode)
 		return false;
 	}
 
-	Json& tools = inNode.at(kKeyTools);
-	if (!tools.is_object())
+	Json& ancillaryTools = inNode.at(kKeyTools);
+	if (!ancillaryTools.is_object())
 	{
 		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyTools));
 		return false;
 	}
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyBash))
-		m_prototype.tools.setBash(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyBash))
+		m_prototype.ancillaryTools.setBash(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyBrew))
-		m_prototype.tools.setBrew(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyBrew))
+		m_prototype.ancillaryTools.setBrew(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyCodesign))
-		m_prototype.tools.setCodesign(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyCodesign))
+		m_prototype.ancillaryTools.setCodesign(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyCommandPrompt))
-		m_prototype.tools.setCommandPrompt(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyCommandPrompt))
+		m_prototype.ancillaryTools.setCommandPrompt(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyGit))
-		m_prototype.tools.setGit(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyGit))
+		m_prototype.ancillaryTools.setGit(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyHdiutil))
-		m_prototype.tools.setHdiutil(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyGprof))
+		m_prototype.ancillaryTools.setGprof(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyInstallNameTool))
-		m_prototype.tools.setInstallNameTool(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyHdiutil))
+		m_prototype.ancillaryTools.setHdiutil(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyInstruments))
-		m_prototype.tools.setInstruments(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyInstallNameTool))
+		m_prototype.ancillaryTools.setInstallNameTool(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLdd))
-		m_prototype.tools.setLdd(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyInstruments))
+		m_prototype.ancillaryTools.setInstruments(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLipo))
-		m_prototype.tools.setLipo(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyLdd))
+		m_prototype.ancillaryTools.setLdd(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLua))
-		m_prototype.tools.setLua(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyLipo))
+		m_prototype.ancillaryTools.setLipo(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyOsascript))
-		m_prototype.tools.setOsascript(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyLua))
+		m_prototype.ancillaryTools.setLua(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyOtool))
-		m_prototype.tools.setOtool(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyOsascript))
+		m_prototype.ancillaryTools.setOsascript(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPerl))
-		m_prototype.tools.setPerl(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyOtool))
+		m_prototype.ancillaryTools.setOtool(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPlutil))
-		m_prototype.tools.setPlutil(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyPerl))
+		m_prototype.ancillaryTools.setPerl(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPowershell))
-		m_prototype.tools.setPowershell(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyPlutil))
+		m_prototype.ancillaryTools.setPlutil(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPython))
-		m_prototype.tools.setPython(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyPowershell))
+		m_prototype.ancillaryTools.setPowershell(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPython3))
-		m_prototype.tools.setPython3(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyPython))
+		m_prototype.ancillaryTools.setPython(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyRuby))
-		m_prototype.tools.setRuby(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyPython3))
+		m_prototype.ancillaryTools.setPython3(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeySample))
-		m_prototype.tools.setSample(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyRuby))
+		m_prototype.ancillaryTools.setRuby(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeySips))
-		m_prototype.tools.setSips(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeySample))
+		m_prototype.ancillaryTools.setSample(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyTiffutil))
-		m_prototype.tools.setTiffutil(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeySips))
+		m_prototype.ancillaryTools.setSips(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcodebuild))
-		m_prototype.tools.setXcodebuild(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyTiffutil))
+		m_prototype.ancillaryTools.setTiffutil(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcodegen))
-		m_prototype.tools.setXcodegen(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyXcodebuild))
+		m_prototype.ancillaryTools.setXcodebuild(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcrun))
-		m_prototype.tools.setXcrun(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyXcodegen))
+		m_prototype.ancillaryTools.setXcodegen(std::move(val));
+
+	if (std::string val; m_jsonFile.assignFromKey(val, ancillaryTools, kKeyXcrun))
+		m_prototype.ancillaryTools.setXcrun(std::move(val));
 
 	return true;
 }
@@ -427,7 +431,7 @@ bool CacheJsonParser::parseAppleSdks(Json& inNode)
 		}
 
 		auto path = pathJson.get<std::string>();
-		m_prototype.tools.addApplePlatformSdk(key, std::move(path));
+		m_prototype.ancillaryTools.addApplePlatformSdk(key, std::move(path));
 	}
 
 	return true;

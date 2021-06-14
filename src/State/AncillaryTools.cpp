@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/CacheTools.hpp"
+#include "State/AncillaryTools.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
@@ -16,7 +16,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-bool CacheTools::resolveOwnExecutable(const std::string& inAppPath)
+bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
 {
 	if (m_chalet.empty())
 	{
@@ -34,7 +34,7 @@ bool CacheTools::resolveOwnExecutable(const std::string& inAppPath)
 }
 
 /*****************************************************************************/
-void CacheTools::fetchBashVersion()
+void AncillaryTools::fetchBashVersion()
 {
 	if (!m_bash.empty())
 	{
@@ -52,7 +52,7 @@ void CacheTools::fetchBashVersion()
 }
 
 /*****************************************************************************/
-void CacheTools::fetchBrewVersion()
+void AncillaryTools::fetchBrewVersion()
 {
 #if defined(CHALET_MACOS)
 	if (!m_brew.empty())
@@ -68,7 +68,7 @@ void CacheTools::fetchBrewVersion()
 }
 
 /*****************************************************************************/
-void CacheTools::fetchXcodeVersion()
+void AncillaryTools::fetchXcodeVersion()
 {
 #if defined(CHALET_MACOS)
 	if (!m_xcodebuild.empty() && m_xcodeVersionMajor == 0 && m_xcodeVersionMinor == 0)
@@ -93,7 +93,7 @@ void CacheTools::fetchXcodeVersion()
 }
 
 /*****************************************************************************/
-void CacheTools::fetchXcodeGenVersion()
+void AncillaryTools::fetchXcodeGenVersion()
 {
 #if defined(CHALET_MACOS)
 	if (!m_xcodegen.empty() && m_xcodegenVersionMajor == 0 && m_xcodegenVersionMinor == 0)
@@ -116,305 +116,315 @@ void CacheTools::fetchXcodeGenVersion()
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::chalet() const noexcept
+const std::string& AncillaryTools::chalet() const noexcept
 {
 	return m_chalet;
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::bash() const noexcept
+const std::string& AncillaryTools::bash() const noexcept
 {
 	return m_bash;
 }
 
-void CacheTools::setBash(std::string&& inValue) noexcept
+void AncillaryTools::setBash(std::string&& inValue) noexcept
 {
 	m_bash = std::move(inValue);
 }
 
-bool CacheTools::bashAvailable() const noexcept
+bool AncillaryTools::bashAvailable() const noexcept
 {
 	return m_bashAvailable;
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::brew() const noexcept
+const std::string& AncillaryTools::brew() const noexcept
 {
 	return m_brew;
 }
-void CacheTools::setBrew(std::string&& inValue) noexcept
+void AncillaryTools::setBrew(std::string&& inValue) noexcept
 {
 	m_brew = std::move(inValue);
 }
-bool CacheTools::brewAvailable() const noexcept
+bool AncillaryTools::brewAvailable() const noexcept
 {
 	return m_brewAvailable;
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::codesign() const noexcept
+const std::string& AncillaryTools::codesign() const noexcept
 {
 	return m_codesign;
 }
-void CacheTools::setCodesign(std::string&& inValue) noexcept
+void AncillaryTools::setCodesign(std::string&& inValue) noexcept
 {
 	m_codesign = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::commandPrompt() const noexcept
+const std::string& AncillaryTools::commandPrompt() const noexcept
 {
 	return m_commandPrompt;
 }
-void CacheTools::setCommandPrompt(std::string&& inValue) noexcept
+void AncillaryTools::setCommandPrompt(std::string&& inValue) noexcept
 {
 	m_commandPrompt = std::move(inValue);
 	Path::sanitizeForWindows(m_commandPrompt);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::git() const noexcept
+const std::string& AncillaryTools::git() const noexcept
 {
 	return m_git;
 }
-void CacheTools::setGit(std::string&& inValue) noexcept
+void AncillaryTools::setGit(std::string&& inValue) noexcept
 {
 	m_git = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::hdiutil() const noexcept
+const std::string& AncillaryTools::gprof() const noexcept
+{
+	return m_gprof;
+}
+void AncillaryTools::setGprof(std::string&& inValue) noexcept
+{
+	m_gprof = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& AncillaryTools::hdiutil() const noexcept
 {
 	return m_hdiutil;
 }
-void CacheTools::setHdiutil(std::string&& inValue) noexcept
+void AncillaryTools::setHdiutil(std::string&& inValue) noexcept
 {
 	m_hdiutil = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::installNameTool() const noexcept
+const std::string& AncillaryTools::installNameTool() const noexcept
 {
 	return m_installNameTool;
 }
-void CacheTools::setInstallNameTool(std::string&& inValue) noexcept
+void AncillaryTools::setInstallNameTool(std::string&& inValue) noexcept
 {
 	m_installNameTool = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::instruments() const noexcept
+const std::string& AncillaryTools::instruments() const noexcept
 {
 	return m_instruments;
 }
-void CacheTools::setInstruments(std::string&& inValue) noexcept
+void AncillaryTools::setInstruments(std::string&& inValue) noexcept
 {
 	m_instruments = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::ldd() const noexcept
+const std::string& AncillaryTools::ldd() const noexcept
 {
 	return m_ldd;
 }
-void CacheTools::setLdd(std::string&& inValue) noexcept
+void AncillaryTools::setLdd(std::string&& inValue) noexcept
 {
 	m_ldd = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::lipo() const noexcept
+const std::string& AncillaryTools::lipo() const noexcept
 {
 	return m_lipo;
 }
-void CacheTools::setLipo(std::string&& inValue) noexcept
+void AncillaryTools::setLipo(std::string&& inValue) noexcept
 {
 	m_lipo = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::lua() const noexcept
+const std::string& AncillaryTools::lua() const noexcept
 {
 	return m_lua;
 }
-void CacheTools::setLua(std::string&& inValue) noexcept
+void AncillaryTools::setLua(std::string&& inValue) noexcept
 {
 	m_lua = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::applePlatformSdk(const std::string& inKey) const
+const std::string& AncillaryTools::applePlatformSdk(const std::string& inKey) const
 {
 	return m_applePlatformSdk.at(inKey);
 }
-void CacheTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
+void AncillaryTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
 {
 	m_applePlatformSdk[inKey] = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string CacheTools::osascript() const noexcept
+const std::string AncillaryTools::osascript() const noexcept
 {
 	return m_osascript;
 }
 
-void CacheTools::setOsascript(std::string&& inValue) noexcept
+void AncillaryTools::setOsascript(std::string&& inValue) noexcept
 {
 	m_osascript = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::otool() const noexcept
+const std::string& AncillaryTools::otool() const noexcept
 {
 	return m_otool;
 }
-void CacheTools::setOtool(std::string&& inValue) noexcept
+void AncillaryTools::setOtool(std::string&& inValue) noexcept
 {
 	m_otool = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::perl() const noexcept
+const std::string& AncillaryTools::perl() const noexcept
 {
 	return m_perl;
 }
-void CacheTools::setPerl(std::string&& inValue) noexcept
+void AncillaryTools::setPerl(std::string&& inValue) noexcept
 {
 	m_perl = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::plutil() const noexcept
+const std::string& AncillaryTools::plutil() const noexcept
 {
 	return m_plutil;
 }
-void CacheTools::setPlutil(std::string&& inValue) noexcept
+void AncillaryTools::setPlutil(std::string&& inValue) noexcept
 {
 	m_plutil = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::powershell() const noexcept
+const std::string& AncillaryTools::powershell() const noexcept
 {
 	return m_powershell;
 }
-void CacheTools::setPowershell(std::string&& inValue) noexcept
+void AncillaryTools::setPowershell(std::string&& inValue) noexcept
 {
 	m_powershell = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::python() const noexcept
+const std::string& AncillaryTools::python() const noexcept
 {
 	return m_python;
 }
-void CacheTools::setPython(std::string&& inValue) noexcept
+void AncillaryTools::setPython(std::string&& inValue) noexcept
 {
 	m_python = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::python3() const noexcept
+const std::string& AncillaryTools::python3() const noexcept
 {
 	return m_python3;
 }
-void CacheTools::setPython3(std::string&& inValue) noexcept
+void AncillaryTools::setPython3(std::string&& inValue) noexcept
 {
 	m_python3 = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::ruby() const noexcept
+const std::string& AncillaryTools::ruby() const noexcept
 {
 	return m_ruby;
 }
-void CacheTools::setRuby(std::string&& inValue) noexcept
+void AncillaryTools::setRuby(std::string&& inValue) noexcept
 {
 	m_ruby = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::sample() const noexcept
+const std::string& AncillaryTools::sample() const noexcept
 {
 	return m_sample;
 }
-void CacheTools::setSample(std::string&& inValue) noexcept
+void AncillaryTools::setSample(std::string&& inValue) noexcept
 {
 	m_sample = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::sips() const noexcept
+const std::string& AncillaryTools::sips() const noexcept
 {
 	return m_sips;
 }
-void CacheTools::setSips(std::string&& inValue) noexcept
+void AncillaryTools::setSips(std::string&& inValue) noexcept
 {
 	m_sips = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::tiffutil() const noexcept
+const std::string& AncillaryTools::tiffutil() const noexcept
 {
 	return m_tiffutil;
 }
-void CacheTools::setTiffutil(std::string&& inValue) noexcept
+void AncillaryTools::setTiffutil(std::string&& inValue) noexcept
 {
 	m_tiffutil = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::xcodebuild() const noexcept
+const std::string& AncillaryTools::xcodebuild() const noexcept
 {
 	return m_xcodebuild;
 }
-void CacheTools::setXcodebuild(std::string&& inValue) noexcept
+void AncillaryTools::setXcodebuild(std::string&& inValue) noexcept
 {
 	m_xcodebuild = std::move(inValue);
 }
-uint CacheTools::xcodeVersionMajor() const noexcept
+uint AncillaryTools::xcodeVersionMajor() const noexcept
 {
 	return m_xcodeVersionMajor;
 }
-uint CacheTools::xcodeVersionMinor() const noexcept
+uint AncillaryTools::xcodeVersionMinor() const noexcept
 {
 	return m_xcodeVersionMinor;
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::xcodegen() const noexcept
+const std::string& AncillaryTools::xcodegen() const noexcept
 {
 	return m_xcodegen;
 }
-void CacheTools::setXcodegen(std::string&& inValue) noexcept
+void AncillaryTools::setXcodegen(std::string&& inValue) noexcept
 {
 	m_xcodegen = std::move(inValue);
 }
-uint CacheTools::xcodegenVersionMajor() const noexcept
+uint AncillaryTools::xcodegenVersionMajor() const noexcept
 {
 	return m_xcodegenVersionMajor;
 }
-uint CacheTools::xcodegenVersionMinor() const noexcept
+uint AncillaryTools::xcodegenVersionMinor() const noexcept
 {
 	return m_xcodegenVersionMinor;
 }
-uint CacheTools::xcodegenVersionPatch() const noexcept
+uint AncillaryTools::xcodegenVersionPatch() const noexcept
 {
 	return m_xcodegenVersionPatch;
 }
 
 /*****************************************************************************/
-const std::string& CacheTools::xcrun() const noexcept
+const std::string& AncillaryTools::xcrun() const noexcept
 {
 	return m_xcrun;
 }
-void CacheTools::setXcrun(std::string&& inValue) noexcept
+void AncillaryTools::setXcrun(std::string&& inValue) noexcept
 {
 	m_xcrun = std::move(inValue);
 }
 
 /*****************************************************************************/
-std::string CacheTools::getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) const
+std::string AncillaryTools::getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) const
 {
 	// TODO: Customizations for these commands
 #if defined(CHALET_MACOS)
@@ -430,7 +440,7 @@ std::string CacheTools::getAsmGenerateCommand(const std::string& inputFile, cons
 }
 
 /*****************************************************************************/
-bool CacheTools::installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput) const
+bool AncillaryTools::installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)
 	const std::string result = Commands::subprocessOutput({ m_brew, "ls", "--versions", inPackage }, inCleanOutput);
@@ -448,47 +458,47 @@ bool CacheTools::installHomebrewPackage(const std::string& inPackage, const bool
 }
 
 /*****************************************************************************/
-std::string CacheTools::getCurrentGitRepositoryBranch(const std::string& inRepoPath, const bool inCleanOutput) const
+std::string AncillaryTools::getCurrentGitRepositoryBranch(const std::string& inRepoPath, const bool inCleanOutput) const
 {
 	std::string branch = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" }, inCleanOutput);
 	return branch;
 }
 
 /*****************************************************************************/
-std::string CacheTools::getCurrentGitRepositoryTag(const std::string& inRepoPath, const bool inCleanOutput) const
+std::string AncillaryTools::getCurrentGitRepositoryTag(const std::string& inRepoPath, const bool inCleanOutput) const
 {
 	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "abbrev=0" }, inCleanOutput, PipeOption::Close);
 	return tag;
 }
 
 /*****************************************************************************/
-std::string CacheTools::getCurrentGitRepositoryHash(const std::string& inRepoPath, const bool inCleanOutput) const
+std::string AncillaryTools::getCurrentGitRepositoryHash(const std::string& inRepoPath, const bool inCleanOutput) const
 {
 	std::string hash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" }, inCleanOutput);
 	return hash;
 }
 
 /*****************************************************************************/
-std::string CacheTools::getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch, const bool inCleanOutput) const
+std::string AncillaryTools::getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch, const bool inCleanOutput) const
 {
 	std::string originHash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) }, inCleanOutput);
 	return originHash;
 }
 
 /*****************************************************************************/
-bool CacheTools::updateGitRepositoryShallow(const std::string& inRepoPath, const bool inCleanOutput) const
+bool AncillaryTools::updateGitRepositoryShallow(const std::string& inRepoPath, const bool inCleanOutput) const
 {
 	return Commands::subprocess({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" }, inCleanOutput);
 }
 
 /*****************************************************************************/
-bool CacheTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit, const bool inCleanOutput) const
+bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit, const bool inCleanOutput) const
 {
 	return Commands::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit }, inCleanOutput);
 }
 
 /*****************************************************************************/
-bool CacheTools::plistConvertToBinary(const std::string& inInput, const std::string& inOutput, const bool inCleanOutput) const
+bool AncillaryTools::plistConvertToBinary(const std::string& inInput, const std::string& inOutput, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)
 	return Commands::subprocess({ m_plutil, "-convert", "binary1", inInput, "-o", inOutput }, inCleanOutput);
@@ -499,7 +509,7 @@ bool CacheTools::plistConvertToBinary(const std::string& inInput, const std::str
 }
 
 /*****************************************************************************/
-bool CacheTools::plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue, const bool inCleanOutput) const
+bool AncillaryTools::plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)
 	return Commands::subprocess({ m_plutil, "-replace", inKey, "-string", inValue, inPlistFile }, inCleanOutput);
@@ -510,7 +520,7 @@ bool CacheTools::plistReplaceProperty(const std::string& inPlistFile, const std:
 }
 
 /*****************************************************************************/
-bool CacheTools::getExecutableDependencies(const std::string& inPath, StringList& outList) const
+bool AncillaryTools::getExecutableDependencies(const std::string& inPath, StringList& outList) const
 {
 #if defined(CHALET_WIN32)
 	DependencyWalker depsWalker;

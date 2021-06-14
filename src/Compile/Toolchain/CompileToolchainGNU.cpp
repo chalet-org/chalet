@@ -8,8 +8,8 @@
 #include "Compile/CompilerConfig.hpp"
 #include "Libraries/Format.hpp"
 #include "Libraries/Regex.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "State/CacheTools.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
@@ -115,7 +115,7 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 {
 	StringList ret;
 
-	addExectuable(ret, m_state.compilerTools.rc());
+	addExectuable(ret, m_state.toolchain.rc());
 
 	ret.push_back("-J");
 	ret.push_back("rc");
@@ -276,9 +276,9 @@ StringList CompileToolchainGNU::getStaticLibTargetCommand(const std::string& out
 {
 	StringList ret;
 
-	addExectuable(ret, m_state.compilerTools.archiver());
+	addExectuable(ret, m_state.toolchain.archiver());
 
-	if (m_state.compilerTools.isArchiverLibTool())
+	if (m_state.toolchain.isArchiverLibTool())
 	{
 		ret.push_back("-static");
 		ret.push_back("-no_warning_for_no_symbols");
@@ -972,7 +972,7 @@ void CompileToolchainGNU::addMacosSysRootOption(StringList& outArgList) const
 #if defined(CHALET_MACOS)
 	// TODO: Test Homebrew LLVM/GCC with this
 	outArgList.push_back("-isysroot");
-	outArgList.push_back(m_state.tools.applePlatformSdk("macosx"));
+	outArgList.push_back(m_state.ancillaryTools.applePlatformSdk("macosx"));
 #else
 	UNUSED(outArgList);
 #endif

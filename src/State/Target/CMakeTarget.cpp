@@ -6,8 +6,8 @@
 #include "State/Target/CMakeTarget.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "State/CacheTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 
@@ -46,7 +46,7 @@ bool CMakeTarget::validate()
 		result = false;
 	}
 
-	if (!m_state.compilerTools.cmakeAvailable())
+	if (!m_state.toolchain.cmakeAvailable())
 	{
 		Diagnostic::error(fmt::format("CMake was requsted for the project '{}' but was not found.", this->name()));
 		result = false;

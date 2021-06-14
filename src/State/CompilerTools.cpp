@@ -485,16 +485,6 @@ bool CompilerTools::cmakeAvailable() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::gprof() const noexcept
-{
-	return m_gprof;
-}
-void CompilerTools::setGprof(std::string&& inValue) noexcept
-{
-	m_gprof = std::move(inValue);
-}
-
-/*****************************************************************************/
 const std::string& CompilerTools::linker() const noexcept
 {
 	return m_linker;

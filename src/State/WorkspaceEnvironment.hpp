@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_ENVIRONMENT_HPP
-#define CHALET_BUILD_ENVIRONMENT_HPP
+#ifndef CHALET_WORKSPACE_ENVIRONMENT_HPP
+#define CHALET_WORKSPACE_ENVIRONMENT_HPP
 
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerConfig.hpp"
@@ -13,11 +13,11 @@
 namespace chalet
 {
 struct BuildPaths;
-struct WorkspaceInfo;
+struct BuildInfo;
 
-struct BuildEnvironment
+struct WorkspaceEnvironment
 {
-	BuildEnvironment();
+	WorkspaceEnvironment();
 
 	void initialize(BuildPaths& inPaths);
 
@@ -53,4 +53,4 @@ private:
 };
 }
 
-#endif // CHALET_BUILD_ENVIRONMENT_HPP
+#endif // CHALET_WORKSPACE_ENVIRONMENT_HPP

@@ -124,7 +124,7 @@ StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFil
 
 	StringList ret;
 
-	addExectuable(ret, m_state.compilerTools.rc());
+	addExectuable(ret, m_state.toolchain.rc());
 	ret.push_back("/nologo");
 
 	addResourceDefines(ret);
@@ -211,7 +211,7 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 
 	StringList ret;
 
-	addExectuable(ret, m_state.compilerTools.linker());
+	addExectuable(ret, m_state.toolchain.linker());
 	ret.push_back("/nologo");
 	ret.push_back("/dll");
 
@@ -268,7 +268,7 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 
 	StringList ret;
 
-	addExectuable(ret, m_state.compilerTools.archiver());
+	addExectuable(ret, m_state.toolchain.archiver());
 	ret.push_back("/nologo");
 
 	addTargetPlatformArch(ret);
@@ -304,7 +304,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 
 	StringList ret;
 
-	addExectuable(ret, m_state.compilerTools.linker());
+	addExectuable(ret, m_state.toolchain.linker());
 	ret.push_back("/nologo");
 
 	addTargetPlatformArch(ret);

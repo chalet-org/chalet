@@ -10,7 +10,7 @@
 #include "CacheJson/CacheToolchainParser.hpp"
 #include "Dependencies/DependencyManager.hpp"
 #include "Libraries/Format.hpp"
-#include "State/CacheTools.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -25,11 +25,11 @@ namespace chalet
 BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototype) :
 	m_inputs(std::move(inInputs)),
 	m_prototype(inJsonPrototype),
-	tools(m_prototype.tools),
+	ancillaryTools(m_prototype.ancillaryTools),
 	distribution(m_prototype.distribution),
 	cache(m_prototype.cache),
 	info(m_inputs),
-	compilerTools(m_inputs, *this),
+	toolchain(m_inputs, *this),
 	paths(m_inputs, info),
 	msvcEnvironment(*this),
 	sourceCache(m_prototype.cache)
@@ -165,12 +165,12 @@ bool BuildState::initializeBuild()
 {
 	Timer timer;
 
-	Diagnostic::info("Initializing State", false);
+	Diagnostic::info("Initializing Build", false);
 
 	// Note: This is about as quick as it'll get (50ms in mingw)
-	if (!compilerTools.initialize(targets))
+	if (!toolchain.initialize(targets))
 	{
-		const auto& targetArch = compilerTools.detectedToolchain() == ToolchainType::GNU ?
+		const auto& targetArch = toolchain.detectedToolchain() == ToolchainType::GNU ?
 			  m_inputs.targetArchitecture() :
 			  info.targetArchitectureString();
 
@@ -186,7 +186,7 @@ bool BuildState::initializeBuild()
 		if (target->isProject())
 		{
 			auto& project = static_cast<ProjectTarget&>(*target);
-			auto& compilerConfig = compilerTools.getConfig(project.language());
+			auto& compilerConfig = toolchain.getConfig(project.language());
 			project.parseOutputFilename(compilerConfig);
 
 			if (!project.isStaticLibrary())
@@ -243,7 +243,7 @@ void BuildState::initializeCache()
 	m_prototype.cache.checkIfCompileStrategyChanged(m_inputs.toolchainPreferenceRaw());
 	m_prototype.cache.checkIfWorkingDirectoryChanged();
 
-	m_prototype.cache.removeStaleProjectCaches(m_inputs.toolchainPreferenceRaw(), BuildCache::Type::Local);
+	m_prototype.cache.removeStaleProjectCaches(m_inputs.toolchainPreferenceRaw(), WorkspaceCache::Type::Local);
 	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
 	m_prototype.cache.saveLocalConfig();
 
@@ -268,12 +268,12 @@ bool BuildState::validateState()
 		}
 	}
 
-	auto strat = compilerTools.strategy();
+	auto strat = toolchain.strategy();
 	if (strat == StrategyType::Makefile)
 	{
-		compilerTools.fetchMakeVersion();
+		toolchain.fetchMakeVersion();
 
-		const auto& makeExec = compilerTools.make();
+		const auto& makeExec = toolchain.make();
 		if (makeExec.empty() || !Commands::pathExists(makeExec))
 		{
 			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec));
@@ -282,9 +282,9 @@ bool BuildState::validateState()
 	}
 	else if (strat == StrategyType::Ninja)
 	{
-		compilerTools.fetchNinjaVersion();
+		toolchain.fetchNinjaVersion();
 
-		auto& ninjaExec = compilerTools.ninja();
+		auto& ninjaExec = toolchain.ninja();
 		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
 		{
 			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec));
@@ -314,17 +314,17 @@ bool BuildState::validateState()
 
 	if (hasCMakeTargets)
 	{
-		if (!compilerTools.fetchCmakeVersion())
+		if (!toolchain.fetchCmakeVersion())
 		{
-			Diagnostic::error(fmt::format("The path to the CMake executable could not be resolved: {}", compilerTools.cmake()));
+			Diagnostic::error(fmt::format("The path to the CMake executable could not be resolved: {}", toolchain.cmake()));
 			return false;
 		}
 	}
 	if (hasSubChaletTargets)
 	{
-		if (!m_prototype.tools.resolveOwnExecutable(m_inputs.appPath()))
+		if (!m_prototype.ancillaryTools.resolveOwnExecutable(m_inputs.appPath()))
 		{
-			Diagnostic::error(fmt::format("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.tools.chalet()));
+			Diagnostic::error(fmt::format("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.ancillaryTools.chalet()));
 			return false;
 		}
 	}
@@ -332,7 +332,7 @@ bool BuildState::validateState()
 	if (configuration.enableProfiling())
 	{
 #if defined(CHALET_MACOS)
-		m_prototype.tools.fetchXcodeVersion();
+		m_prototype.ancillaryTools.fetchXcodeVersion();
 #endif
 	}
 

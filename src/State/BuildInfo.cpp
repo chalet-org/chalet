@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/WorkspaceInfo.hpp"
+#include "State/BuildInfo.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
@@ -13,7 +13,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-WorkspaceInfo::WorkspaceInfo(const CommandLineInputs& inInputs) :
+BuildInfo::BuildInfo(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
 {
 	m_hostArchitecture.set(m_inputs.hostArchitecture());
@@ -21,71 +21,71 @@ WorkspaceInfo::WorkspaceInfo(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-const std::string& WorkspaceInfo::workspace() const noexcept
+const std::string& BuildInfo::workspace() const noexcept
 {
 	return m_workspace;
 }
 
-void WorkspaceInfo::setWorkspace(std::string&& inValue) noexcept
+void BuildInfo::setWorkspace(std::string&& inValue) noexcept
 {
 	m_workspace = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& WorkspaceInfo::version() const noexcept
+const std::string& BuildInfo::version() const noexcept
 {
 	return m_version;
 }
-void WorkspaceInfo::setVersion(std::string&& inValue) noexcept
+void BuildInfo::setVersion(std::string&& inValue) noexcept
 {
 	m_version = std::move(inValue);
 }
 
 /*****************************************************************************/
-std::size_t WorkspaceInfo::hash() const noexcept
+std::size_t BuildInfo::hash() const noexcept
 {
 	return m_hash;
 }
-void WorkspaceInfo::setHash(const std::size_t inValue) noexcept
+void BuildInfo::setHash(const std::size_t inValue) noexcept
 {
 	m_hash = inValue;
 }
 
 /*****************************************************************************/
-const std::string& WorkspaceInfo::buildConfiguration() const noexcept
+const std::string& BuildInfo::buildConfiguration() const noexcept
 {
 	chalet_assert(!m_buildConfiguration.empty(), "Build configuration is empty");
 	return m_buildConfiguration;
 }
 
-void WorkspaceInfo::setBuildConfiguration(const std::string& inValue) noexcept
+void BuildInfo::setBuildConfiguration(const std::string& inValue) noexcept
 {
 	m_buildConfiguration = inValue;
 }
 
 /*****************************************************************************/
-Arch::Cpu WorkspaceInfo::hostArchitecture() const noexcept
+Arch::Cpu BuildInfo::hostArchitecture() const noexcept
 {
 	return m_hostArchitecture.val;
 }
 
-const std::string& WorkspaceInfo::hostArchitectureString() const noexcept
+const std::string& BuildInfo::hostArchitectureString() const noexcept
 {
 	return m_hostArchitecture.str;
 }
 
 /*****************************************************************************/
-Arch::Cpu WorkspaceInfo::targetArchitecture() const noexcept
+Arch::Cpu BuildInfo::targetArchitecture() const noexcept
 {
 	return m_targetArchitecture.val;
 }
 
-const std::string& WorkspaceInfo::targetArchitectureString() const noexcept
+const std::string& BuildInfo::targetArchitectureString() const noexcept
 {
 	return m_targetArchitecture.str;
 }
 
-void WorkspaceInfo::setTargetArchitecture(const std::string& inValue) noexcept
+void BuildInfo::setTargetArchitecture(const std::string& inValue) noexcept
 {
 	if (inValue.empty())
 	{

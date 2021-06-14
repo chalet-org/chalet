@@ -10,7 +10,7 @@
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
 #include "Router/Route.hpp"
-#include "State/CacheTools.hpp"
+#include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 
@@ -79,7 +79,7 @@ bool BuildManager::run(const Route inRoute)
 	bool runCommand = inRoute == Route::Run;
 	m_runProjectName = getRunProject();
 
-	auto strategy = m_state.compilerTools.strategy();
+	auto strategy = m_state.toolchain.strategy();
 	if (!runCommand)
 	{
 		printBuildInformation();
@@ -192,13 +192,13 @@ void BuildManager::printBuildInformation()
 		}
 	}
 
-	if (usingCpp && !m_state.compilerTools.compilerVersionStringCpp().empty())
+	if (usingCpp && !m_state.toolchain.compilerVersionStringCpp().empty())
 	{
-		Diagnostic::info(fmt::format("C++ Compiler: {}", m_state.compilerTools.compilerVersionStringCpp()));
+		Diagnostic::info(fmt::format("C++ Compiler: {}", m_state.toolchain.compilerVersionStringCpp()));
 	}
-	if (usingCc && !m_state.compilerTools.compilerVersionStringC().empty())
+	if (usingCc && !m_state.toolchain.compilerVersionStringC().empty())
 	{
-		Diagnostic::info(fmt::format("C Compiler: {}", m_state.compilerTools.compilerVersionStringC()));
+		Diagnostic::info(fmt::format("C Compiler: {}", m_state.toolchain.compilerVersionStringC()));
 	}
 
 	const auto strategy = getBuildStrategyName();
@@ -210,7 +210,7 @@ std::string BuildManager::getBuildStrategyName() const
 {
 	std::string ret;
 
-	switch (m_state.compilerTools.strategy())
+	switch (m_state.toolchain.strategy())
 	{
 		case StrategyType::Native:
 			ret = "Native";
@@ -221,9 +221,9 @@ std::string BuildManager::getBuildStrategyName() const
 			break;
 
 		case StrategyType::Makefile: {
-			if (m_state.compilerTools.makeIsNMake())
+			if (m_state.toolchain.makeIsNMake())
 			{
-				if (m_state.compilerTools.makeIsJom())
+				if (m_state.toolchain.makeIsJom())
 					ret = "NMAKE (Qt Jom)";
 				else
 					ret = "NMAKE";
@@ -244,7 +244,7 @@ std::string BuildManager::getBuildStrategyName() const
 /*****************************************************************************/
 bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRoute)
 {
-	auto& compilerConfig = m_state.compilerTools.getConfig(inProject.language());
+	auto& compilerConfig = m_state.toolchain.getConfig(inProject.language());
 	auto compilerType = compilerConfig.compilerType();
 
 	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
@@ -279,7 +279,7 @@ bool BuildManager::copyRunDependencies(const ProjectTarget& inProject)
 
 	const auto& workingDirectory = m_state.paths.workingDirectory();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto& compilerConfig = m_state.compilerTools.getConfig(inProject.language());
+	auto& compilerConfig = m_state.toolchain.getConfig(inProject.language());
 	auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
 
 	auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);
@@ -386,7 +386,7 @@ bool BuildManager::doRun(const ProjectTarget& inProject)
 
 #if defined(CHALET_MACOS)
 	// This is required for profiling
-	auto& installNameTool = m_state.tools.installNameTool();
+	auto& installNameTool = m_state.ancillaryTools.installNameTool();
 	// install_name_tool -add_rpath @executable_path/chalet_external/SFML/lib
 	for (auto p : m_state.environmentPath())
 	{
@@ -518,7 +518,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript)
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_state.tools, m_inputs.buildFile(), m_cleanOutput);
+	ScriptRunner scriptRunner(m_state.ancillaryTools, m_inputs.buildFile(), m_cleanOutput);
 	if (!scriptRunner.run(scripts))
 	{
 		Output::lineBreak();

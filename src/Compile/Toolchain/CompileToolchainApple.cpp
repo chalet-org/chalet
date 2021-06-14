@@ -7,8 +7,8 @@
 
 #include "Compile/CompilerConfig.hpp"
 #include "Libraries/Format.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "State/CacheTools.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Utility/String.hpp"
 
@@ -190,7 +190,7 @@ void CompileToolchainApple::addMacosSysRootOption(StringList& outArgList) const
 	}
 
 	outArgList.push_back("-isysroot");
-	outArgList.push_back(m_state.tools.applePlatformSdk(sdk));
+	outArgList.push_back(m_state.ancillaryTools.applePlatformSdk(sdk));
 }
 
 }

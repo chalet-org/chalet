@@ -30,13 +30,13 @@ bool CacheToolchainParser::serialize()
 		m_state.paths.setWorkingDirectory(std::move(val));
 
 	const auto& preference = m_inputs.toolchainPreferenceRaw();
-	auto& compilerTools = rootNode["compilerTools"];
-	if (!compilerTools.contains(preference))
+	auto& toolchains = rootNode["toolchains"];
+	if (!toolchains.contains(preference))
 	{
-		compilerTools[preference] = JsonDataType::object;
+		toolchains[preference] = JsonDataType::object;
 	}
 
-	auto& node = compilerTools.at(preference);
+	auto& node = toolchains.at(preference);
 	return serialize(node);
 }
 
@@ -81,8 +81,7 @@ bool CacheToolchainParser::serialize(Json& inNode)
 /*****************************************************************************/
 bool CacheToolchainParser::validatePaths()
 {
-	auto& compilerTools = m_state.compilerTools;
-	if (!Commands::pathExists(compilerTools.cpp()))
+	if (!Commands::pathExists(m_state.toolchain.cpp()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -91,7 +90,7 @@ bool CacheToolchainParser::validatePaths()
 		return false;
 	}
 
-	if (!Commands::pathExists(compilerTools.cc()))
+	if (!Commands::pathExists(m_state.toolchain.cc()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -100,7 +99,7 @@ bool CacheToolchainParser::validatePaths()
 		return false;
 	}
 
-	if (!Commands::pathExists(compilerTools.archiver()))
+	if (!Commands::pathExists(m_state.toolchain.archiver()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -109,7 +108,7 @@ bool CacheToolchainParser::validatePaths()
 		return false;
 	}
 
-	if (!Commands::pathExists(compilerTools.linker()))
+	if (!Commands::pathExists(m_state.toolchain.linker()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -119,7 +118,7 @@ bool CacheToolchainParser::validatePaths()
 	}
 
 #if defined(CHALET_WIN32)
-	if (!Commands::pathExists(compilerTools.rc()))
+	if (!Commands::pathExists(m_state.toolchain.rc()))
 	{
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -139,14 +138,14 @@ bool CacheToolchainParser::validatePaths()
 	}
 	*/
 
-	m_state.compilerTools.detectToolchain();
+	m_state.toolchain.detectToolchain();
 
-	if (m_state.compilerTools.detectedToolchain() == ToolchainType::LLVM)
+	if (m_state.toolchain.detectedToolchain() == ToolchainType::LLVM)
 	{
 		if (m_inputs.targetArchitecture().empty())
 		{
 			// also takes -dumpmachine
-			auto arch = Commands::subprocessOutput({ m_state.compilerTools.compiler(), "-print-target-triple" });
+			auto arch = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-print-target-triple" });
 #if defined(CHALET_MACOS)
 			// Strip out version in auto-detected mac triple
 			auto isDarwin = arch.find("apple-darwin");
@@ -158,13 +157,13 @@ bool CacheToolchainParser::validatePaths()
 			m_state.info.setTargetArchitecture(arch);
 		}
 	}
-	else if (m_state.compilerTools.detectedToolchain() == ToolchainType::GNU)
+	else if (m_state.toolchain.detectedToolchain() == ToolchainType::GNU)
 	{
-		auto arch = Commands::subprocessOutput({ m_state.compilerTools.compiler(), "-dumpmachine" });
+		auto arch = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-dumpmachine" });
 		m_state.info.setTargetArchitecture(arch);
 	}
 #if defined(CHALET_WIN32)
-	else if (m_state.compilerTools.detectedToolchain() == ToolchainType::MSVC)
+	else if (m_state.toolchain.detectedToolchain() == ToolchainType::MSVC)
 	{
 		const auto arch = m_state.info.targetArchitecture();
 		switch (arch)
@@ -231,24 +230,24 @@ bool CacheToolchainParser::createMsvcEnvironment(const Json& inNode)
 #endif
 
 /*****************************************************************************/
-bool CacheToolchainParser::makeToolchain(Json& compilerTools, const ToolchainPreference& toolchain)
+bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPreference& toolchain)
 {
 	bool result = true;
 
-	if (!compilerTools.contains(kKeyStrategy) || !compilerTools[kKeyStrategy].is_string() || compilerTools[kKeyStrategy].get<std::string>().empty())
+	if (!toolchains.contains(kKeyStrategy) || !toolchains[kKeyStrategy].is_string() || toolchains[kKeyStrategy].get<std::string>().empty())
 	{
 		// Note: this is only for validation. it gets changed later
 		if (toolchain.strategy == StrategyType::Makefile)
 		{
-			compilerTools[kKeyStrategy] = "makefile";
+			toolchains[kKeyStrategy] = "makefile";
 		}
 		else if (toolchain.strategy == StrategyType::Ninja)
 		{
-			compilerTools[kKeyStrategy] = "ninja";
+			toolchains[kKeyStrategy] = "ninja";
 		}
 		else if (toolchain.strategy == StrategyType::Native)
 		{
-			compilerTools[kKeyStrategy] = "native-experimental";
+			toolchains[kKeyStrategy] = "native-experimental";
 		}
 
 		m_jsonFile.setDirty(true);
@@ -256,7 +255,7 @@ bool CacheToolchainParser::makeToolchain(Json& compilerTools, const ToolchainPre
 
 	std::string cpp;
 	std::string cc;
-	if (!compilerTools.contains(kKeyCpp))
+	if (!toolchains.contains(kKeyCpp))
 	{
 		// auto varCXX = Environment::get("CXX");
 		// if (varCXX != nullptr)
@@ -270,11 +269,11 @@ bool CacheToolchainParser::makeToolchain(Json& compilerTools, const ToolchainPre
 		parseArchitecture(cpp);
 		result &= !cpp.empty();
 
-		compilerTools[kKeyCpp] = cpp;
+		toolchains[kKeyCpp] = cpp;
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!compilerTools.contains(kKeyCc))
+	if (!toolchains.contains(kKeyCc))
 	{
 		// auto varCC = Environment::get("CC");
 		// if (varCC != nullptr)
@@ -288,11 +287,11 @@ bool CacheToolchainParser::makeToolchain(Json& compilerTools, const ToolchainPre
 		parseArchitecture(cc);
 		result &= !cc.empty();
 
-		compilerTools[kKeyCc] = cc;
+		toolchains[kKeyCc] = cc;
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!compilerTools.contains(kKeyLinker))
+	if (!toolchains.contains(kKeyLinker))
 	{
 		std::string link;
 		StringList linkers;
@@ -328,11 +327,11 @@ bool CacheToolchainParser::makeToolchain(Json& compilerTools, const ToolchainPre
 		parseArchitecture(link);
 		result &= !link.empty();
 
-		compilerTools[kKeyLinker] = std::move(link);
+		toolchains[kKeyLinker] = std::move(link);
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!compilerTools.contains(kKeyArchiver))
+	if (!toolchains.contains(kKeyArchiver))
 	{
 		std::string ar;
 		StringList archivers;
@@ -352,27 +351,27 @@ bool CacheToolchainParser::makeToolchain(Json& compilerTools, const ToolchainPre
 		parseArchitecture(ar);
 		result &= !ar.empty();
 
-		compilerTools[kKeyArchiver] = std::move(ar);
+		toolchains[kKeyArchiver] = std::move(ar);
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!compilerTools.contains(kKeyWindowsResource))
+	if (!toolchains.contains(kKeyWindowsResource))
 	{
 		std::string rc;
 		rc = Commands::which(toolchain.rc);
 
 		parseArchitecture(rc);
-		compilerTools[kKeyWindowsResource] = std::move(rc);
+		toolchains[kKeyWindowsResource] = std::move(rc);
 		m_jsonFile.setDirty(true);
 	}
 
 	if (!result)
 	{
-		compilerTools.erase(kKeyCpp);
-		compilerTools.erase(kKeyCc);
-		compilerTools.erase(kKeyLinker);
-		compilerTools.erase(kKeyArchiver);
-		compilerTools.erase(kKeyWindowsResource);
+		toolchains.erase(kKeyCpp);
+		toolchains.erase(kKeyCc);
+		toolchains.erase(kKeyLinker);
+		toolchains.erase(kKeyArchiver);
+		toolchains.erase(kKeyWindowsResource);
 	}
 
 	auto whichAdd = [&](Json& inNode, const std::string& inKey) -> bool {
@@ -387,10 +386,9 @@ bool CacheToolchainParser::makeToolchain(Json& compilerTools, const ToolchainPre
 
 		return true;
 	};
-	whichAdd(compilerTools, kKeyCmake);
-	whichAdd(compilerTools, kKeyGprof);
+	whichAdd(toolchains, kKeyCmake);
 
-	if (!compilerTools.contains(kKeyMake))
+	if (!toolchains.contains(kKeyMake))
 	{
 #if defined(CHALET_WIN32)
 		std::string make;
@@ -420,12 +418,12 @@ bool CacheToolchainParser::makeToolchain(Json& compilerTools, const ToolchainPre
 		std::string make = Commands::which(kKeyMake);
 #endif
 
-		compilerTools[kKeyMake] = std::move(make);
+		toolchains[kKeyMake] = std::move(make);
 		m_jsonFile.setDirty(true);
 	}
 
-	whichAdd(compilerTools, kKeyNinja);
-	whichAdd(compilerTools, kKeyObjdump);
+	whichAdd(toolchains, kKeyNinja);
+	whichAdd(toolchains, kKeyObjdump);
 
 	return result;
 }
@@ -434,18 +432,18 @@ bool CacheToolchainParser::makeToolchain(Json& compilerTools, const ToolchainPre
 bool CacheToolchainParser::parseToolchain(Json& inNode)
 {
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyStrategy))
-		m_state.compilerTools.setStrategy(val);
+		m_state.toolchain.setStrategy(val);
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyArchiver))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			compilerTools[kKeyArchiver] = val;
+			toolchains[kKeyArchiver] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setArchiver(std::move(val));
+		m_state.toolchain.setArchiver(std::move(val));
 	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCpp))
@@ -453,11 +451,11 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			compilerTools[kKeyCpp] = val;
+			toolchains[kKeyCpp] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setCpp(std::move(val));
+		m_state.toolchain.setCpp(std::move(val));
 	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCc))
@@ -465,11 +463,11 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			compilerTools[kKeyCc] = val;
+			toolchains[kKeyCc] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setCc(std::move(val));
+		m_state.toolchain.setCc(std::move(val));
 	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyLinker))
@@ -477,11 +475,11 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			compilerTools[kKeyLinker] = val;
+			toolchains[kKeyLinker] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setLinker(std::move(val));
+		m_state.toolchain.setLinker(std::move(val));
 	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyWindowsResource))
@@ -489,11 +487,11 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			compilerTools[kKeyWindowsResource] = val;
+			toolchains[kKeyWindowsResource] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setRc(std::move(val));
+		m_state.toolchain.setRc(std::move(val));
 	}
 
 	//
@@ -503,23 +501,11 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			compilerTools[kKeyCmake] = val;
+			toolchains[kKeyCmake] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setCmake(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyGprof))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			compilerTools[kKeyGprof] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
-		m_state.compilerTools.setGprof(std::move(val));
+		m_state.toolchain.setCmake(std::move(val));
 	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyMake))
@@ -527,27 +513,27 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			compilerTools[kKeyMake] = val;
+			toolchains[kKeyMake] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setMake(std::move(val));
+		m_state.toolchain.setMake(std::move(val));
 		m_make = std::move(val);
 	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyNinja))
-		m_state.compilerTools.setNinja(std::move(val));
+		m_state.toolchain.setNinja(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyObjdump))
 	{
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			compilerTools[kKeyObjdump] = val;
+			toolchains[kKeyObjdump] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
-		m_state.compilerTools.setObjdump(std::move(val));
+		m_state.toolchain.setObjdump(std::move(val));
 	}
 
 	return true;

@@ -437,7 +437,7 @@ void ArgumentPatterns::addProjectGeneratorArg()
 void ArgumentPatterns::addToolchainArg()
 {
 	m_parser.add_argument("-t", "--toolchain")
-		.help("Toolchain preference [msvc,llvm,gcc]")
+		.help("Toolchain preference [msvc,llvm,gcc,...]")
 		.nargs(1)
 		.default_value(std::string());
 
