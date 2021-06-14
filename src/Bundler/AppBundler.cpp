@@ -133,7 +133,7 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 			{
 				auto quiet = Output::quietNonBuild();
 				Output::setQuietNonBuild(true);
-				m_univeralState = getUniversalState(*buildState);
+				m_univeralState = getUniversalState(*buildState, bundle.configuration());
 
 				Output::setQuietNonBuild(quiet);
 			}
@@ -505,7 +505,7 @@ bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::stri
 }
 
 /*****************************************************************************/
-std::unique_ptr<BuildState> AppBundler::getUniversalState(BuildState& inState) const
+std::unique_ptr<BuildState> AppBundler::getUniversalState(BuildState& inState, const std::string& inBuildConfig) const
 {
 	std::string arch = inState.info.targetArchitectureString();
 
@@ -514,7 +514,7 @@ std::unique_ptr<BuildState> AppBundler::getUniversalState(BuildState& inState) c
 
 	CommandLineInputs inputs = m_inputs;
 	inputs.setTargetArchitecture(std::move(arch));
-	inputs.setBuildConfiguration(inState.info.buildConfiguration());
+	inputs.setBuildConfiguration(inBuildConfig);
 
 	auto buildState = std::make_unique<BuildState>(std::move(inputs), m_prototype);
 	if (!buildState->initialize(false))
