@@ -23,6 +23,7 @@ CompilerTools::CompilerTools(const CommandLineInputs& inInputs, const BuildState
 	m_inputs(inInputs),
 	m_state(inState)
 {
+	m_detectedToolchain = m_inputs.toolchainPreference().type;
 }
 
 /*****************************************************************************/

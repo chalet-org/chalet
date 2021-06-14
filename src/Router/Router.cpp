@@ -23,7 +23,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-Router::Router(const CommandLineInputs& inInputs) :
+Router::Router(CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
 {
 }
@@ -49,6 +49,11 @@ bool Router::run()
 
 	if (!parseEnvFile())
 		return false;
+
+	if (m_inputs.toolchainPreferenceRaw().empty())
+	{
+		m_inputs.detectToolchainPreference();
+	}
 
 	std::unique_ptr<StatePrototype> prototype;
 	std::unique_ptr<BuildState> buildState;

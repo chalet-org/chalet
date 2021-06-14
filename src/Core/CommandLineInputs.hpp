@@ -16,6 +16,8 @@ struct CommandLineInputs
 {
 	CommandLineInputs();
 
+	void detectToolchainPreference();
+
 	const std::string& defaultEnvFile() const noexcept;
 
 	const std::string& buildFile() const noexcept;

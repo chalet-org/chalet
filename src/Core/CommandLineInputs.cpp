@@ -22,12 +22,21 @@ CommandLineInputs::CommandLineInputs() :
 	m_buildFile("build.json"),
 	m_buildPath("build"),
 	m_platform(getPlatform()),
+	m_envFile(kDefaultEnvFile),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
 {
-	m_envFile = kDefaultEnvFile;
+}
 
+/*****************************************************************************/
+void CommandLineInputs::detectToolchainPreference()
+{
 #if defined(CHALET_WIN32)
-	m_toolchainPreference = getToolchainPreferenceFromString("msvc");
+	if (!Commands::which("clang").empty())
+		m_toolchainPreference = getToolchainPreferenceFromString("llvm");
+	else if (!Commands::which("gcc").empty())
+		m_toolchainPreference = getToolchainPreferenceFromString("gcc");
+	else
+		m_toolchainPreference = getToolchainPreferenceFromString("msvc");
 #elif defined(CHALET_MACOS)
 	m_toolchainPreference = getToolchainPreferenceFromString("llvm");
 #else

@@ -52,22 +52,22 @@ bool CacheToolchainParser::serialize(Json& inNode)
 #endif
 
 	auto& toolchain = m_inputs.toolchainPreference();
-#if defined(CHALET_WIN32)
-	if (!makeToolchain(inNode, toolchain))
-	{
-		if (toolchain.type == ToolchainType::MSVC)
-		{
-			m_inputs.setToolchainPreference("gcc"); // aka mingw
-			if (!makeToolchain(inNode, toolchain))
-			{
-				m_inputs.setToolchainPreference("llvm"); // try once more for clang
-				makeToolchain(inNode, toolchain);
-			}
-		}
-	}
-#else
+	// #if defined(CHALET_WIN32)
+	// 	if (!makeToolchain(inNode, toolchain))
+	// 	{
+	// 		if (toolchain.type == ToolchainType::MSVC)
+	// 		{
+	// 			m_inputs.setToolchainPreference("gcc"); // aka mingw
+	// 			if (!makeToolchain(inNode, toolchain))
+	// 			{
+	// 				m_inputs.setToolchainPreference("llvm"); // try once more for clang
+	// 				makeToolchain(inNode, toolchain);
+	// 			}
+	// 		}
+	// 	}
+	// #else
 	makeToolchain(inNode, toolchain);
-#endif
+	// #endif
 
 	if (!parseToolchain(inNode))
 		return false;
@@ -138,9 +138,10 @@ bool CacheToolchainParser::validatePaths()
 	}
 	*/
 
-	m_state.toolchain.detectToolchain();
+	// m_state.toolchain.detectToolchain();
+	auto& toolchain = m_inputs.toolchainPreference();
 
-	if (m_state.toolchain.detectedToolchain() == ToolchainType::LLVM)
+	if (toolchain.type == ToolchainType::LLVM)
 	{
 		if (m_inputs.targetArchitecture().empty())
 		{
@@ -157,13 +158,13 @@ bool CacheToolchainParser::validatePaths()
 			m_state.info.setTargetArchitecture(arch);
 		}
 	}
-	else if (m_state.toolchain.detectedToolchain() == ToolchainType::GNU)
+	else if (toolchain.type == ToolchainType::GNU)
 	{
 		auto arch = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-dumpmachine" });
 		m_state.info.setTargetArchitecture(arch);
 	}
 #if defined(CHALET_WIN32)
-	else if (m_state.toolchain.detectedToolchain() == ToolchainType::MSVC)
+	else if (toolchain.type == ToolchainType::MSVC)
 	{
 		const auto arch = m_state.info.targetArchitecture();
 		switch (arch)

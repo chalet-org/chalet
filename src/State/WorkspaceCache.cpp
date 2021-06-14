@@ -55,18 +55,10 @@ bool WorkspaceCache::createCacheFolder(const Type inCacheType)
 		m_removeOldCacheFolder = false;
 	}
 
-	try
-	{
-		if (!Commands::pathExists(cacheRef))
-			fs::create_directory(cacheRef);
+	if (!Commands::pathExists(cacheRef))
+		return Commands::makeDirectory(cacheRef);
 
-		return true;
-	}
-	catch (const fs::filesystem_error& err)
-	{
-		std::cout << err.what() << std::endl;
-		return false;
-	}
+	return true;
 }
 
 /*****************************************************************************/
@@ -178,29 +170,31 @@ bool WorkspaceCache::removeUnusedProjectFiles(const StringList& inHashes, const 
 /*****************************************************************************/
 void WorkspaceCache::removeStaleProjectCaches(const std::string& inToolchain, const Type inCacheType)
 {
-	const auto& cacheRef = getCacheRef(inCacheType);
-	if (!m_localConfig.json.contains(kKeyData) || !m_localConfig.json.contains(kKeySettings))
-		return;
+	UNUSED(inToolchain);
+	// const auto& cacheRef = getCacheRef(inCacheType);
+	// if (!m_localConfig.json.contains(kKeyData) || !m_localConfig.json.contains(kKeySettings))
+	// 	return;
 
-	Json& buildCache = m_localConfig.json.at(kKeyData);
-	if (!buildCache.is_object())
-		return;
+	// Json& buildCache = m_localConfig.json.at(kKeyData);
+	// if (!buildCache.is_object())
+	// 	return;
 
-	auto& toolchains = m_localConfig.json.at("toolchains");
-	if (!toolchains.is_object())
-		return;
+	// auto& toolchains = m_localConfig.json.at("toolchains");
+	// if (!toolchains.is_object())
+	// 	return;
 
-	auto& toolchainJson = toolchains[inToolchain];
-	if (!toolchainJson.is_object())
-		return;
+	// auto& toolchainJson = toolchains[inToolchain];
+	// if (!toolchainJson.is_object())
+	// 	return;
 
-	auto& strategyJson = toolchainJson[kKeyStrategy];
-	if (!strategyJson.is_string())
-		return;
+	// auto& strategyJson = toolchainJson[kKeyStrategy];
+	// if (!strategyJson.is_string())
+	// 	return;
 
-	const auto strategy = strategyJson.get<std::string>();
+	// const auto strategy = strategyJson.get<std::string>();
 
 	StringList hashes;
+	/*
 	for (auto it = buildCache.begin(); it != buildCache.end();)
 	{
 		const auto& key = it.key();
@@ -247,6 +241,7 @@ void WorkspaceCache::removeStaleProjectCaches(const std::string& inToolchain, co
 			++it;
 		}
 	}
+	*/
 
 	UNUSED(removeUnusedProjectFiles(hashes, inCacheType));
 }
@@ -333,7 +328,7 @@ void WorkspaceCache::checkIfCompileStrategyChanged(const std::string& inToolchai
 		{
 			data[kKeyDataStrategy] = hashStrategy;
 			m_localConfig.setDirty(true);
-			m_compileStrategyChanged = true;
+			// m_compileStrategyChanged = true;
 		}
 	}
 }

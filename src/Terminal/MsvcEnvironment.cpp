@@ -240,7 +240,7 @@ bool MsvcEnvironment::readCompilerVariables()
 		m_lib = String::split(lib->second, ";");
 	}
 
-	Commands::remove(m_varsFileMsvcDelta);
+	// Commands::remove(m_varsFileMsvcDelta);
 
 	Diagnostic::printDone(timer.asString());
 #endif

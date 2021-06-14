@@ -20,7 +20,7 @@ class Router
 	using RouteList = std::unordered_map<Route, RouteAction>;
 
 public:
-	explicit Router(const CommandLineInputs& inInputs);
+	explicit Router(CommandLineInputs& inInputs);
 
 	bool run();
 
@@ -38,7 +38,7 @@ private:
 
 	bool managePathVariables(const StatePrototype* inPrototype);
 
-	const CommandLineInputs& m_inputs;
+	CommandLineInputs& m_inputs;
 
 	bool m_installDependencies = false;
 };
