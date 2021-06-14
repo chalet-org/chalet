@@ -10,9 +10,9 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "State/BuildCache.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CompilerTools.hpp"
-#include "State/ConfigurationOptions.hpp"
 #include "State/Dependency/IBuildDependency.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/SourceFileCache.hpp"
@@ -40,7 +40,7 @@ public:
 	CompilerTools compilerTools;
 	BuildPaths paths;
 	MsvcEnvironment msvcEnvironment;
-	ConfigurationOptions configuration;
+	BuildConfiguration configuration;
 	BuildTargetList targets;
 	BuildDependencyList externalDependencies;
 	BuildCache cache;
@@ -60,6 +60,7 @@ public:
 	StrategyType strategy() const noexcept;
 
 private:
+	bool initializeBuildConfiguration();
 	bool parseCacheJson();
 	bool parseBuildJson();
 	bool installDependencies();

@@ -44,6 +44,9 @@ bool BuildState::initialize(const bool inInstallDependencies)
 
 	enforceArchitectureInPath();
 
+	if (!initializeBuildConfiguration())
+		return false;
+
 	if (!parseBuildJson())
 		return false;
 
@@ -54,9 +57,6 @@ bool BuildState::initialize(const bool inInstallDependencies)
 	}
 
 	if (!initializeBuild())
-		return false;
-
-	if (!validateState())
 		return false;
 
 	if (!cache.createCacheFolder(BuildCache::Type::Local))
@@ -124,6 +124,24 @@ StrategyType BuildState::strategy() const noexcept
 }
 
 /*****************************************************************************/
+bool BuildState::initializeBuildConfiguration()
+{
+	auto& config = m_inputs.buildConfiguration();
+	const auto& buildConfigurations = m_prototype.buildConfigurations();
+
+	if (buildConfigurations.find(config) == buildConfigurations.end())
+	{
+		Diagnostic::error(fmt::format("{}: The build configuration '{}' was not found.", m_inputs.buildFile(), config));
+		return false;
+	}
+
+	configuration = buildConfigurations.at(config);
+	info.setBuildConfiguration(config);
+
+	return true;
+}
+
+/*****************************************************************************/
 bool BuildState::parseCacheJson()
 {
 	auto& cacheFile = cache.localConfig();
@@ -134,6 +152,7 @@ bool BuildState::parseCacheJson()
 /*****************************************************************************/
 bool BuildState::parseBuildJson()
 {
+
 	BuildJsonParser parser(m_inputs, m_prototype, *this);
 	return parser.serialize();
 }
@@ -226,6 +245,9 @@ bool BuildState::initializeBuild()
 		initializeCache();
 	}
 
+	if (!validateState())
+		return false;
+
 	Diagnostic::printDone(timer.asString());
 
 	return true;
@@ -306,40 +328,6 @@ bool BuildState::validateState()
 #if defined(CHALET_MACOS)
 		m_prototype.tools.fetchXcodeVersion();
 #endif
-	}
-
-	auto strat = m_prototype.environment.strategy();
-
-	for (auto& target : m_prototype.distribution)
-	{
-		if (!target->validate())
-		{
-			Diagnostic::error(fmt::format("Error validating the '{}' distribution target.", target->name()));
-			return false;
-		}
-	}
-
-	if (strat == StrategyType::Makefile)
-	{
-		m_prototype.tools.fetchMakeVersion();
-
-		const auto& makeExec = m_prototype.tools.make();
-		if (makeExec.empty() || !Commands::pathExists(makeExec))
-		{
-			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec));
-			return false;
-		}
-	}
-	else if (strat == StrategyType::Ninja)
-	{
-		m_prototype.tools.fetchNinjaVersion();
-
-		auto& ninjaExec = m_prototype.tools.ninja();
-		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
-		{
-			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec));
-			return false;
-		}
 	}
 
 	return true;

@@ -31,10 +31,12 @@ namespace chalet
 /*****************************************************************************/
 BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, BuildState& inState) :
 	m_inputs(inInputs),
-	m_prototype(inPrototype),
-	m_buildJson(m_prototype.jsonFile()),
-	m_filename(m_prototype.filename()),
-	m_state(inState)
+	m_buildJson(inPrototype.jsonFile()),
+	m_filename(inPrototype.filename()),
+	m_state(inState),
+	kKeyAbstracts(inPrototype.kKeyAbstracts),
+	kKeyTargets(inPrototype.kKeyTargets),
+	kKeyExternalDependencies(inPrototype.kKeyExternalDependencies)
 {
 }
 
@@ -44,8 +46,8 @@ BuildJsonParser::~BuildJsonParser() = default;
 /*****************************************************************************/
 bool BuildJsonParser::serialize()
 {
-	Timer timer;
-	Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
+	// Timer timer;
+	// Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
 
 	const Json& jRoot = m_buildJson.json;
 	if (!serializeFromJsonRoot(jRoot))
@@ -81,7 +83,7 @@ bool BuildJsonParser::serialize()
 
 	m_state.info.setHash(Hash::uint64(toHash));
 
-	Diagnostic::printDone(timer.asString());
+	// Diagnostic::printDone(timer.asString());
 
 	return true;
 }
@@ -91,17 +93,11 @@ bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 {
 	// order is important!
 
-	if (!parseBuildConfiguration(inJson))
-		return false;
-
 	if (!parseRoot(inJson))
 		return false;
 
 	// if (!makePathVariable())
 	// 	return false;
-
-	if (!parseConfiguration(inJson))
-		return false;
 
 	if (!parseExternalDependencies(inJson))
 		return false;
@@ -178,47 +174,6 @@ bool BuildJsonParser::parseRoot(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseBuildConfiguration(const Json& inNode)
-{
-	UNUSED(inNode);
-	// if (inNode.contains(kKeyDistribution))
-	{
-		// if the distribution is not an object, we'll error it in parseDistribution
-		// const Json& distribution = inNode.at(kKeyDistribution);
-		// if (distribution.is_object())
-		// {
-		// 	if (std::string val; m_buildJson.assignStringAndValidate(val, bundle, "configuration"))
-		// 		m_state.bundle.setConfiguration(val);
-		// }
-	}
-
-	const auto& buildConfiguration = m_inputs.buildConfiguration();
-	// chalet_assert(!buildConfiguration.empty(), "");
-
-	if (buildConfiguration.empty())
-	{
-		// const auto& bundleConfiguration = m_state.bundle.configuration();
-		// if (!bundleConfiguration.empty())
-		// {
-		// 	m_state.info.setBuildConfiguration(bundleConfiguration);
-		// }
-		// else
-		{
-			// // m_state.bundle.setConfiguration("Release");
-			// m_state.info.setBuildConfiguration("Release");
-		}
-		Diagnostic::error("Build was created without a build configuration (Release, Debug, etc.)");
-		return false;
-	}
-	else
-	{
-		m_state.info.setBuildConfiguration(buildConfiguration);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool BuildJsonParser::makePathVariable()
 {
 	// auto rootPath = m_state.compilerTools.getRootPathVariable();
@@ -235,103 +190,9 @@ bool BuildJsonParser::makePathVariable()
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseConfiguration(const Json& inNode)
-{
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
-
-	auto& kKeyConfigurations = m_prototype.kKeyConfigurations;
-
-	if (!inNode.contains(kKeyConfigurations))
-	{
-		bool result = setDefaultConfigurations(buildConfiguration);
-		if (!result)
-		{
-			Diagnostic::error(fmt::format("{}: Error setting the build configuration to '{}'.", m_filename, buildConfiguration));
-		}
-		return result;
-	}
-
-	std::string typeError = fmt::format("{}: '{}' must be either an array of presets, or an object where key is name", m_filename, kKeyConfigurations);
-
-	bool configFound = false;
-
-	const Json& configurations = inNode.at(kKeyConfigurations);
-	if (configurations.is_object())
-	{
-		for (auto& [name, config] : configurations.items())
-		{
-			if (!config.is_object())
-			{
-				Diagnostic::error(fmt::format("{}: configuration '{}' must be an object.", m_filename, name));
-				return false;
-			}
-
-			if (name.empty())
-			{
-				Diagnostic::error(fmt::format("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations));
-				return false;
-			}
-
-			if (name != buildConfiguration)
-				continue;
-
-			m_state.configuration.setName(name);
-
-			if (std::string val; m_buildJson.assignStringAndValidate(val, config, "optimizations"))
-				m_state.configuration.setOptimizations(std::move(val));
-
-			if (bool val = false; m_buildJson.assignFromKey(val, config, "linkTimeOptimization"))
-				m_state.configuration.setLinkTimeOptimization(val);
-
-			if (bool val = false; m_buildJson.assignFromKey(val, config, "stripSymbols"))
-				m_state.configuration.setStripSymbols(val);
-
-			if (bool val = false; m_buildJson.assignFromKey(val, config, "debugSymbols"))
-				m_state.configuration.setDebugSymbols(val);
-
-			if (bool val = false; m_buildJson.assignFromKey(val, config, "enableProfiling"))
-				m_state.configuration.setEnableProfiling(val);
-
-			configFound = true;
-			break;
-		}
-	}
-	else if (configurations.is_array())
-	{
-		for (auto& config : configurations)
-		{
-			if (config.is_string())
-			{
-				if (config == buildConfiguration)
-					return setDefaultConfigurations(config);
-			}
-			else
-			{
-				Diagnostic::error(typeError);
-				return false;
-			}
-		}
-	}
-	else
-	{
-		Diagnostic::error(typeError);
-		return false;
-	}
-
-	if (!configFound)
-	{
-		Diagnostic::error(fmt::format("{}: The configuration '{}' was not found.", m_filename, buildConfiguration));
-		return false;
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 {
 	// don't care if there aren't any dependencies
-	auto& kKeyExternalDependencies = m_prototype.kKeyExternalDependencies;
 	if (!inNode.contains(kKeyExternalDependencies))
 		return true;
 
@@ -396,9 +257,6 @@ bool BuildJsonParser::parseGitDependency(GitDependency& outDependency, const Jso
 /*****************************************************************************/
 bool BuildJsonParser::parseProjects(const Json& inNode)
 {
-	auto& kKeyAbstracts = m_prototype.kKeyAbstracts;
-	auto& kKeyTargets = m_prototype.kKeyTargets;
-
 	if (!inNode.contains(kKeyTargets))
 	{
 		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyTargets));
@@ -824,7 +682,7 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectTarget& outProject, const Jso
 	bool locResult = parseProjectLocationOrFiles(outProject, inNode);
 	if (locResult && inAbstract)
 	{
-		Diagnostic::error(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, m_prototype.kKeyAbstracts));
+		Diagnostic::error(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, kKeyAbstracts));
 		return false;
 	}
 
@@ -900,53 +758,6 @@ bool BuildJsonParser::parseProjectLocationOrFiles(ProjectTarget& outProject, con
 		outProject.addLocation(std::move(val));
 	else
 		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::setDefaultConfigurations(const std::string& inConfig)
-{
-	if (String::equals("Release", inConfig))
-	{
-		m_state.configuration.setName(inConfig);
-		m_state.configuration.setOptimizations("3");
-		m_state.configuration.setLinkTimeOptimization(true);
-		m_state.configuration.setStripSymbols(true);
-	}
-	else if (String::equals("Debug", inConfig))
-	{
-		m_state.configuration.setName(inConfig);
-		m_state.configuration.setOptimizations("0");
-		m_state.configuration.setDebugSymbols(true);
-	}
-	// these two are the same as cmake
-	else if (String::equals("RelWithDebInfo", inConfig))
-	{
-		m_state.configuration.setName(inConfig);
-		m_state.configuration.setOptimizations("2");
-		m_state.configuration.setDebugSymbols(true);
-		m_state.configuration.setLinkTimeOptimization(true);
-	}
-	else if (String::equals("MinSizeRel", inConfig))
-	{
-		m_state.configuration.setName(inConfig);
-		m_state.configuration.setOptimizations("size");
-		// m_state.configuration.setLinkTimeOptimization(true);
-		m_state.configuration.setStripSymbols(true);
-	}
-	else if (String::equals("Profile", inConfig))
-	{
-		m_state.configuration.setName(inConfig);
-		m_state.configuration.setOptimizations("0");
-		m_state.configuration.setDebugSymbols(true);
-		m_state.configuration.setEnableProfiling(true);
-	}
-	else
-	{
-		Diagnostic::error(fmt::format("{}: An invalid build configuration ({}) was requested. Expected: Release, Debug, RelWithDebInfo, MinSizeRel, Profile", m_filename, inConfig));
-		return false;
-	}
 
 	return true;
 }

@@ -34,11 +34,8 @@ private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseRoot(const Json& inNode);
-	bool parseBuildConfiguration(const Json& inNode);
 
 	bool makePathVariable();
-
-	bool parseConfiguration(const Json& inNode);
 
 	bool parseExternalDependencies(const Json& inNode);
 	bool parseGitDependency(GitDependency& outDependency, const Json& inNode);
@@ -56,7 +53,6 @@ private:
 	bool validBuildRequested();
 	bool validRunProjectRequested();
 	bool validRunProjectRequestedFromInput();
-	bool setDefaultConfigurations(const std::string& inConfig);
 
 	template <typename T>
 	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey);
@@ -67,10 +63,13 @@ private:
 	bool containsComplexKey(const Json& inNode, const std::string& inKey);
 
 	const CommandLineInputs& m_inputs;
-	StatePrototype& m_prototype;
 	JsonFile& m_buildJson;
 	const std::string& m_filename;
 	BuildState& m_state;
+
+	const std::string& kKeyAbstracts;
+	const std::string& kKeyTargets;
+	const std::string& kKeyExternalDependencies;
 
 	std::unordered_map<std::string, std::unique_ptr<ProjectTarget>> m_abstractProjects;
 

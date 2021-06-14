@@ -40,12 +40,12 @@ bool CacheTools::fetchVersions()
 	{
 		Timer timer;
 
-		Diagnostic::info("Verifying Ancillary Tools", false);
+		// Diagnostic::info("Verifying Ancillary Tools", false);
 
 		fetchBashVersion();
 		fetchBrewVersion();
 
-		Diagnostic::printDone(timer.asString());
+		// Diagnostic::printDone(timer.asString());
 
 		m_fetchedVersions = true;
 	}

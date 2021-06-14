@@ -8,6 +8,7 @@
 
 #include "Libraries/Json.hpp"
 
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildEnvironment.hpp"
 #include "State/CacheTools.hpp"
 #include "State/Distribution/IDistTarget.hpp"
@@ -29,7 +30,7 @@ struct StatePrototype
 	JsonFile& jsonFile() noexcept;
 	const std::string& filename() const noexcept;
 
-	const StringList& allowedBuildConfigurations() const noexcept;
+	const BuildConfigurationMap& buildConfigurations() const noexcept;
 	const StringList& requiredBuildConfigurations() const noexcept;
 	const StringList& requiredArchitectures() const noexcept;
 
@@ -45,7 +46,9 @@ struct StatePrototype
 	DistributionTargetList distribution;
 
 private:
+	bool validateBundleDestinations();
 	bool parseRequired(const Json& inNode);
+	bool parseConfiguration(const Json& inNode);
 	bool parseDistribution(const Json& inNode);
 	bool parseScript(ScriptDistTarget& outScript, const Json& inNode);
 	bool parseBundle(BundleTarget& outBundle, const Json& inNode);
@@ -53,11 +56,16 @@ private:
 	bool parseBundleMacOS(BundleTarget& outBundle, const Json& inNode);
 	bool parseBundleWindows(BundleTarget& outBundle, const Json& inNode);
 
+	bool makeDefaultBuildConfigurations();
+	bool getDefaultBuildConfiguration(BuildConfiguration& outConfig, const std::string& inName) const;
+
 	template <typename T>
 	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey);
 
 	bool assignStringFromConfig(std::string& outVariable, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
 	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey);
+
+	BuildConfigurationMap m_buildConfigurations;
 
 	const CommandLineInputs& m_inputs;
 

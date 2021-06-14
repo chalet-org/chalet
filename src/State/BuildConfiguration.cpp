@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/ConfigurationOptions.hpp"
+#include "State/BuildConfiguration.hpp"
 
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
@@ -11,71 +11,71 @@
 namespace chalet
 {
 /*****************************************************************************/
-const std::string& ConfigurationOptions::name() const noexcept
+const std::string& BuildConfiguration::name() const noexcept
 {
 	return m_name;
 }
 
-void ConfigurationOptions::setName(const std::string& inValue) noexcept
+void BuildConfiguration::setName(const std::string& inValue) noexcept
 {
 	m_name = inValue;
 }
 
 /*****************************************************************************/
-OptimizationLevel ConfigurationOptions::optimizations() const noexcept
+OptimizationLevel BuildConfiguration::optimizations() const noexcept
 {
 	return m_optimizations;
 }
 
-void ConfigurationOptions::setOptimizations(const std::string& inValue) noexcept
+void BuildConfiguration::setOptimizations(const std::string& inValue) noexcept
 {
 	m_optimizations = parseOptimizations(inValue);
 }
 
 /*****************************************************************************/
-bool ConfigurationOptions::linkTimeOptimization() const noexcept
+bool BuildConfiguration::linkTimeOptimization() const noexcept
 {
 	return m_linkTimeOptimization;
 }
 
-void ConfigurationOptions::setLinkTimeOptimization(const bool inValue) noexcept
+void BuildConfiguration::setLinkTimeOptimization(const bool inValue) noexcept
 {
 	m_linkTimeOptimization = inValue;
 }
 
 /*****************************************************************************/
-bool ConfigurationOptions::stripSymbols() const noexcept
+bool BuildConfiguration::stripSymbols() const noexcept
 {
 	return m_stripSymbols;
 }
-void ConfigurationOptions::setStripSymbols(const bool inValue) noexcept
+void BuildConfiguration::setStripSymbols(const bool inValue) noexcept
 {
 	m_stripSymbols = inValue;
 }
 
 /*****************************************************************************/
-bool ConfigurationOptions::debugSymbols() const noexcept
+bool BuildConfiguration::debugSymbols() const noexcept
 {
 	return m_debugSymbols;
 }
 
-void ConfigurationOptions::setDebugSymbols(const bool inValue) noexcept
+void BuildConfiguration::setDebugSymbols(const bool inValue) noexcept
 {
 	m_debugSymbols = inValue;
 }
 
 /*****************************************************************************/
-bool ConfigurationOptions::enableProfiling() const noexcept
+bool BuildConfiguration::enableProfiling() const noexcept
 {
 	return m_enableProfiling;
 }
-void ConfigurationOptions::setEnableProfiling(const bool inValue) noexcept
+void BuildConfiguration::setEnableProfiling(const bool inValue) noexcept
 {
 	m_enableProfiling = inValue;
 }
 
 /*****************************************************************************/
-OptimizationLevel ConfigurationOptions::parseOptimizations(const std::string& inValue) noexcept
+OptimizationLevel BuildConfiguration::parseOptimizations(const std::string& inValue) noexcept
 {
 	if (String::equals("debug", inValue))
 		return OptimizationLevel::Debug;

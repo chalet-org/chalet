@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CONFIGURATION_OPTIONS_HPP
-#define CHALET_CONFIGURATION_OPTIONS_HPP
+#ifndef CHALET_BUILD_CONFIGURATION_HPP
+#define CHALET_BUILD_CONFIGURATION_HPP
 
 #include "State/OptimizationLevel.hpp"
 
 namespace chalet
 {
-struct ConfigurationOptions
+struct BuildConfiguration
 {
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
@@ -40,6 +40,8 @@ private:
 	bool m_debugSymbols = false;
 	bool m_enableProfiling = false;
 };
+
+using BuildConfigurationMap = std::unordered_map<std::string, BuildConfiguration>;
 }
 
-#endif // CHALET_CONFIGURATION_OPTIONS_HPP
+#endif // CHALET_BUILD_CONFIGURATION_HPP

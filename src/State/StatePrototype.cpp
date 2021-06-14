@@ -10,7 +10,9 @@
 #include "Libraries/Format.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -30,7 +32,7 @@ bool StatePrototype::initialize()
 	// Note: existence of m_filename is checked by Router (before the cache is made)
 
 	Timer timer;
-	Diagnostic::info(fmt::format("Validating Build File [{}]", m_filename), false);
+	Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
 
 	Json buildJsonSchema = Schema::getBuildJson();
 
@@ -49,16 +51,16 @@ bool StatePrototype::initialize()
 	if (!parseRequired(m_buildJson->json))
 		return false;
 
-	if (!validate())
+	if (!validateBundleDestinations())
 		return false;
 
 	Diagnostic::printDone(timer.asString());
 
-	return true;
+	return validate();
 }
 
 /*****************************************************************************/
-bool StatePrototype::validate()
+bool StatePrototype::validateBundleDestinations()
 {
 	std::unordered_map<std::string, std::string> locations;
 	bool result = true;
@@ -95,6 +97,56 @@ bool StatePrototype::validate()
 }
 
 /*****************************************************************************/
+bool StatePrototype::validate()
+{
+	/*
+	Timer timer;
+	Diagnostic::info("Verifying Ancillary Tools", false);
+
+	tools.fetchBashVersion();
+	tools.fetchBrewVersion();
+
+	for (auto& target : distribution)
+	{
+		if (!target->validate())
+		{
+			Diagnostic::error(fmt::format("Error validating the '{}' distribution target.", target->name()));
+			return false;
+		}
+	}
+
+	auto strat = environment.strategy();
+
+	if (strat == StrategyType::Makefile)
+	{
+		tools.fetchMakeVersion();
+
+		const auto& makeExec = tools.make();
+		if (makeExec.empty() || !Commands::pathExists(makeExec))
+		{
+			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec));
+			return false;
+		}
+	}
+	else if (strat == StrategyType::Ninja)
+	{
+		tools.fetchNinjaVersion();
+
+		auto& ninjaExec = tools.ninja();
+		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
+		{
+			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec));
+			return false;
+		}
+	}
+
+	Diagnostic::printDone(timer.asString());
+	*/
+
+	return true;
+}
+
+/*****************************************************************************/
 JsonFile& StatePrototype::jsonFile() noexcept
 {
 	return *m_buildJson;
@@ -107,9 +159,9 @@ const std::string& StatePrototype::filename() const noexcept
 }
 
 /*****************************************************************************/
-const StringList& StatePrototype::allowedBuildConfigurations() const noexcept
+const BuildConfigurationMap& StatePrototype::buildConfigurations() const noexcept
 {
-	return m_allowedBuildConfigurations;
+	return m_buildConfigurations;
 }
 
 /*****************************************************************************/
@@ -127,25 +179,92 @@ const StringList& StatePrototype::requiredArchitectures() const noexcept
 /*****************************************************************************/
 bool StatePrototype::parseRequired(const Json& inNode)
 {
-
 	if (!inNode.is_object())
 		return false;
 
-	if (inNode.contains(kKeyConfigurations))
-	{
-		// TODO: Get all build configurations + data
-		auto& configurationsNode = inNode.at(kKeyConfigurations);
-		if (configurationsNode.is_object())
-		{
-			for (auto& [name, _] : configurationsNode.items())
-			{
-				m_allowedBuildConfigurations.push_back(name);
-			}
-		}
-	}
+	if (!parseConfiguration(inNode))
+		return false;
 
 	if (!parseDistribution(inNode))
 		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool StatePrototype::parseConfiguration(const Json& inNode)
+{
+	if (!inNode.contains(kKeyConfigurations))
+	{
+		return makeDefaultBuildConfigurations();
+	}
+
+	m_allowedBuildConfigurations.clear();
+
+	const Json& configurations = inNode.at(kKeyConfigurations);
+	if (configurations.is_object())
+	{
+		for (auto& [name, configJson] : configurations.items())
+		{
+			if (!configJson.is_object())
+			{
+				Diagnostic::error(fmt::format("{}: configuration '{}' must be an object.", m_filename, name));
+				return false;
+			}
+
+			if (name.empty())
+			{
+				Diagnostic::error(fmt::format("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations));
+				return false;
+			}
+
+			BuildConfiguration config;
+			config.setName(name);
+
+			if (std::string val; m_buildJson->assignStringAndValidate(val, configJson, "optimizations"))
+				config.setOptimizations(std::move(val));
+
+			if (bool val = false; m_buildJson->assignFromKey(val, configJson, "linkTimeOptimization"))
+				config.setLinkTimeOptimization(val);
+
+			if (bool val = false; m_buildJson->assignFromKey(val, configJson, "stripSymbols"))
+				config.setStripSymbols(val);
+
+			if (bool val = false; m_buildJson->assignFromKey(val, configJson, "debugSymbols"))
+				config.setDebugSymbols(val);
+
+			if (bool val = false; m_buildJson->assignFromKey(val, configJson, "enableProfiling"))
+				config.setEnableProfiling(val);
+
+			m_buildConfigurations.emplace(std::move(name), std::move(config));
+		}
+	}
+	else if (configurations.is_array())
+	{
+		m_buildConfigurations.clear();
+
+		for (auto& configJson : configurations)
+		{
+			if (configJson.is_string())
+			{
+				auto name = configJson.get<std::string>();
+				if (name.empty())
+				{
+					Diagnostic::error(fmt::format("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations));
+					return false;
+				}
+
+				BuildConfiguration config;
+				if (!getDefaultBuildConfiguration(config, name))
+				{
+					Diagnostic::error(fmt::format("{}: Error creating the default build configuration '{}'", m_filename, name));
+					return false;
+				}
+
+				m_buildConfigurations.emplace(std::move(name), std::move(config));
+			}
+		}
+	}
 
 	return true;
 }
@@ -420,6 +539,78 @@ bool StatePrototype::parseBundleWindows(BundleTarget& outBundle, const Json& inN
 	// 	return false;
 
 	outBundle.setWindowsBundle(std::move(windowsBundle));
+
+	return true;
+}
+
+/*****************************************************************************/
+bool StatePrototype::makeDefaultBuildConfigurations()
+{
+	m_buildConfigurations.clear();
+
+	m_allowedBuildConfigurations = {
+		"Release",
+		"Debug",
+		"RelWithDebInfo",
+		"MinSizeRel",
+		"Profile",
+	};
+
+	for (auto& name : m_allowedBuildConfigurations)
+	{
+		BuildConfiguration config;
+		if (!getDefaultBuildConfiguration(config, name))
+		{
+			Diagnostic::error(fmt::format("{}: Error creating the default build configurations.", m_filename));
+			return false;
+		}
+
+		m_buildConfigurations.emplace(std::move(name), std::move(config));
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool StatePrototype::getDefaultBuildConfiguration(BuildConfiguration& outConfig, const std::string& inName) const
+{
+	if (String::equals("Release", inName))
+	{
+		outConfig.setOptimizations("3");
+		outConfig.setLinkTimeOptimization(true);
+		outConfig.setStripSymbols(true);
+	}
+	else if (String::equals("Debug", inName))
+	{
+		outConfig.setOptimizations("0");
+		outConfig.setDebugSymbols(true);
+	}
+	// these two are the same as cmake
+	else if (String::equals("RelWithDebInfo", inName))
+	{
+		outConfig.setOptimizations("2");
+		outConfig.setDebugSymbols(true);
+		outConfig.setLinkTimeOptimization(true);
+	}
+	else if (String::equals("MinSizeRel", inName))
+	{
+		outConfig.setOptimizations("size");
+		// outConfig.setLinkTimeOptimization(true);
+		outConfig.setStripSymbols(true);
+	}
+	else if (String::equals("Profile", inName))
+	{
+		outConfig.setOptimizations("0");
+		outConfig.setDebugSymbols(true);
+		outConfig.setEnableProfiling(true);
+	}
+	else
+	{
+		Diagnostic::error(fmt::format("{}: An invalid build configuration ({}) was requested. Expected: Release, Debug, RelWithDebInfo, MinSizeRel, Profile", m_filename, inName));
+		return false;
+	}
+
+	outConfig.setName(inName);
 
 	return true;
 }
