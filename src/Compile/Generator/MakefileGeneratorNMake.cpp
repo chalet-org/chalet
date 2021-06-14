@@ -6,6 +6,7 @@
 #include "Compile/Generator/MakefileGeneratorNMake.hpp"
 
 #include "Libraries/Format.hpp"
+#include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -20,7 +21,7 @@ namespace chalet
 MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
-	m_cleanOutput = m_state.environment.cleanOutput();
+	m_cleanOutput = !m_state.showCommands();
 	// m_generateDependencies = !Environment::isContinuousIntegrationServer();
 	m_generateDependencies = false;
 }

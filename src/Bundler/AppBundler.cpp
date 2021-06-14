@@ -56,9 +56,8 @@ bool AppBundler::runBuilds(const bool inInstallDependencies)
 		{
 			auto& bundle = static_cast<BundleTarget&>(*target);
 
-			const auto& universalBinaryArches = bundle.macosBundle().universalBinaryArches();
-
 #if defined(CHALET_MACOS)
+			const auto& universalBinaryArches = bundle.macosBundle().universalBinaryArches();
 			if (!universalBinaryArches.empty())
 			{
 				for (auto arch : universalBinaryArches)

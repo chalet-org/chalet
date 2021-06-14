@@ -439,7 +439,7 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			toolchains[kKeyArchiver] = val;
+			inNode[kKeyArchiver] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
@@ -451,7 +451,7 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			toolchains[kKeyCpp] = val;
+			inNode[kKeyCpp] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
@@ -463,7 +463,7 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			toolchains[kKeyCc] = val;
+			inNode[kKeyCc] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
@@ -475,7 +475,7 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			toolchains[kKeyLinker] = val;
+			inNode[kKeyLinker] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
@@ -487,7 +487,7 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			toolchains[kKeyWindowsResource] = val;
+			inNode[kKeyWindowsResource] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
@@ -501,7 +501,7 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			toolchains[kKeyCmake] = val;
+			inNode[kKeyCmake] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
@@ -513,7 +513,7 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			toolchains[kKeyMake] = val;
+			inNode[kKeyMake] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
@@ -529,7 +529,7 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #if defined(CHALET_WIN32)
 		if (!parseArchitecture(val))
 		{
-			toolchains[kKeyObjdump] = val;
+			inNode[kKeyObjdump] = val;
 			m_jsonFile.setDirty(true);
 		}
 #endif
