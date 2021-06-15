@@ -87,43 +87,7 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 	settings.msvcCommand = config.isMsvc();
 	settings.cleanOutput = !m_state.environment.showCommands();
 	settings.quiet = Output::quietNonBuild();
-
-	// Unicode::rightwardsTripleArrow()
-
-	/*
-	if (!assemblies.empty())
-	{
-		Output::lineBreak();
-
-		s_compileIndex = 1;
-		totalCompiles = static_cast<uint>(assemblies.size());
-
-		threadResults.clear();
-		for (auto& it : assemblies)
-		{
-			threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Magenta, " ", cleanOutput, totalCompiles));
-			threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, m_generateDependencies));
-		}
-
-		for (auto& tr : threadResults)
-		{
-			try
-			{
-				if (!tr.get())
-				{
-					signalHandler(SIGTERM);
-					buildFailed = true;
-					break;
-				}
-			}
-			catch (std::future_error& err)
-			{
-				std::cerr << err.what() << std::endl;
-				return onError();
-			}
-		}
-	}
-	*/
+	settings.renameAfterCommand = true;
 
 	return m_commandPool.run(target, settings);
 }
@@ -210,41 +174,6 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 }
 
 /*****************************************************************************/
-CommandPool::CmdList CompileStrategyNative::getAsmCommands(const StringList& inAssemblies)
-{
-	chalet_assert(m_project != nullptr, "");
-
-	CommandPool::CmdList ret;
-	if (!m_state.environment.dumpAssembly())
-		return ret;
-
-	const auto& objDir = m_state.paths.objDir();
-	const auto& asmDir = m_state.paths.asmDir();
-
-	for (auto& asmFile : inAssemblies)
-	{
-		if (asmFile.empty())
-			continue;
-
-		std::string object = asmFile;
-		String::replaceAll(object, asmDir, objDir);
-
-		if (String::endsWith(".asm", object))
-			object = object.substr(0, object.size() - 4);
-
-		auto command = getAsmGenerate(object, asmFile);
-		CommandPool::Cmd out;
-		out.output = asmFile;
-		out.command = getAsmGenerate(object, asmFile);
-		out.color = Color::Magenta;
-		out.symbol = " ";
-		ret.push_back(std::move(out));
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 CommandPool::Cmd CompileStrategyNative::getLinkCommand(const std::string& inTarget, const StringList& inObjects)
 {
 	chalet_assert(m_project != nullptr, "");
@@ -322,20 +251,4 @@ CompileStrategyNative::CmdTemp CompileStrategyNative::getRcCompile(const std::st
 	return ret;
 }
 
-/*****************************************************************************/
-StringList CompileStrategyNative::getAsmGenerate(const std::string& object, const std::string& target) const
-{
-	StringList ret;
-
-	if (!m_state.ancillaryTools.bash().empty() && m_state.ancillaryTools.bashAvailable())
-	{
-		auto asmCommand = m_state.ancillaryTools.getAsmGenerateCommand(object, target);
-
-		ret.push_back(m_state.ancillaryTools.bash());
-		ret.push_back("-c");
-		ret.push_back(std::move(asmCommand));
-	}
-
-	return ret;
-}
 }

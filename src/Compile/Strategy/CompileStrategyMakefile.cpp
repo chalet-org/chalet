@@ -149,7 +149,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 	auto& hash = m_hashes.at(inProject.name());
 
 	auto& outputs = m_outputs.at(inProject.name());
-	m_state.paths.setBuildEnvironment(outputs, hash, m_state.environment.dumpAssembly());
+	m_state.paths.setBuildEnvironment(outputs, hash);
 
 	const bool clean = true;
 #if defined(CHALET_WIN32)
@@ -159,15 +159,6 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 	{
 
 		command.push_back(fmt::format("build_{}", hash));
-		bool result = subprocessMakefile(command, clean);
-
-		if (!result)
-			return false;
-	}
-
-	if (m_state.environment.dumpAssembly())
-	{
-		command.back() = fmt::format("asm_{}", hash);
 		bool result = subprocessMakefile(command, clean);
 
 		if (!result)
@@ -227,15 +218,6 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 
 		command.back() = fmt::format("build_{}", hash);
 		Environment::set("CL", "/MP"); // doesn't work
-
-		bool result = subprocessMakefile(command, clean);
-		if (!result)
-			return false;
-	}
-
-	if (m_state.environment.dumpAssembly())
-	{
-		command.back() = fmt::format("asm_{}", hash);
 
 		bool result = subprocessMakefile(command, clean);
 		if (!result)

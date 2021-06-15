@@ -43,7 +43,8 @@ BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inStat
 		{ Route::Run, &BuildManager::cmdRun },
 		// { Route::kProfile, &BuildManager::cmdProfile },
 		{ Route::Bundle, &BuildManager::cmdBuild },
-	})
+	}),
+	m_asmDumper(inState)
 {
 }
 
@@ -271,6 +272,12 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 	if (inRoute == Route::Rebuild)
 	{
 		doClean(inProject, outputs.target, outputs.objectList, outputs.dependencyList);
+	}
+
+	if (m_state.environment.dumpAssembly())
+	{
+		if (!m_asmDumper.addProject(inProject, std::move(outputs.assemblyList)))
+			return false;
 	}
 
 	return m_strategy->addProject(inProject, std::move(outputs), buildToolchain);
@@ -556,6 +563,12 @@ bool BuildManager::cmdBuild(const ProjectTarget& inProject)
 		return false;
 	}
 
+	if (m_state.environment.dumpAssembly())
+	{
+		if (!m_asmDumper.dumpProject(inProject))
+			return false;
+	}
+
 	return true;
 }
 
@@ -573,6 +586,12 @@ bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 		Output::msgBuildFail();
 		Output::lineBreak();
 		return false;
+	}
+
+	if (m_state.environment.dumpAssembly())
+	{
+		if (!m_asmDumper.dumpProject(inProject))
+			return false;
 	}
 
 	return true;

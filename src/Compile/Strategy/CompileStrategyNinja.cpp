@@ -138,18 +138,6 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 			return false;
 	}
 
-	if (m_state.environment.dumpAssembly())
-	{
-		std::cout << Output::getAnsiStyle(Color::Magenta) << std::flush;
-
-		command.back() = fmt::format("asm_{}", hash);
-
-		bool result = subprocessNinja(command, clean);
-
-		if (!result)
-			return false;
-	}
-
 	return true;
 }
 

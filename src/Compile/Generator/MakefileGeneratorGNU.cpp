@@ -147,12 +147,6 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 		recipes += getObjcRecipe(ext);
 	}
 
-	if (m_state.environment.dumpAssembly())
-	{
-		recipes += getAsmRecipe();
-		recipes += getDumpAsmRecipe();
-	}
-
 	recipes += getTargetRecipe(inOutputs.target);
 
 	return recipes;
@@ -196,56 +190,6 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 }*/
 
 /*****************************************************************************/
-/*std::string MakefileGeneratorGNU::getAsmBuildRecipes(const StringList& inAssemblies)
-{
-	std::string ret;
-
-	if (m_state.environment.dumpAssembly())
-	{
-		const auto& asmDir = m_state.paths.asmDir();
-		const auto& objDir = m_state.paths.objDir();
-
-		for (auto& asmFile : inAssemblies)
-		{
-			if (asmFile.empty())
-				continue;
-
-			std::string object = asmFile;
-			String::replaceAll(object, asmDir, objDir);
-
-			if (String::endsWith(".asm", object))
-			{
-				object = object.substr(0, object.size() - 4);
-			}
-
-			ret += getAsmRecipe(object, asmFile);
-		}
-
-		ret += getDumpAsmRecipe(inAssemblies);
-	}
-
-	return ret;
-}*/
-
-/*****************************************************************************/
-std::string MakefileGeneratorGNU::getCompileEchoAsm() const
-{
-	const auto purple = getColorPurple();
-	std::string printer;
-
-	if (m_cleanOutput)
-	{
-		printer = getPrinter(fmt::format("   {}$@", purple), true);
-	}
-	else
-	{
-		printer = getPrinter(std::string(purple));
-	}
-
-	return fmt::format("@{}", printer);
-}
-
-/*****************************************************************************/
 std::string MakefileGeneratorGNU::getCompileEchoSources() const
 {
 	const auto blue = getColorBlue();
@@ -282,69 +226,6 @@ std::string MakefileGeneratorGNU::getCompileEchoLinker() const
 	}
 
 	return fmt::format("@{}", printer);
-}
-
-/*****************************************************************************/
-std::string MakefileGeneratorGNU::getDumpAsmRecipe() const
-{
-	chalet_assert(m_project != nullptr, "");
-
-	std::string ret;
-
-	const bool dumpAssembly = m_state.environment.dumpAssembly();
-	if (dumpAssembly)
-	{
-		ret = fmt::format(R"makefile(
-asm_{hash}: $(SOURCE_ASMS)
-	$(NOOP)
-.PHONY: dumpasm
-)makefile",
-			fmt::arg("hash", m_hash));
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string MakefileGeneratorGNU::getAsmRecipe() const
-{
-	chalet_assert(m_project != nullptr, "");
-
-	std::string ret;
-
-	std::string ext("asm");
-
-	const bool dumpAssembly = m_state.environment.dumpAssembly();
-	if (dumpAssembly)
-	{
-		for (auto& location : m_project->locations())
-		{
-			if (locationExists(location, ext))
-				continue;
-
-			const auto& asmDir = m_state.paths.asmDir();
-			const auto& objDir = m_state.paths.objDir();
-			const auto quietFlag = getQuietFlag();
-			const auto asmCompile = m_state.ancillaryTools.getAsmGenerateCommand("'$<'", "'$@'");
-			const auto compileEcho = getCompileEchoAsm();
-
-			ret += fmt::format(R"makefile(
-{asmDir}/{location}/%.o.asm: {objDir}/{location}/%.o
-	{compileEcho}
-	{quietFlag}{asmCompile}
-)makefile",
-				FMT_ARG(asmDir),
-				FMT_ARG(objDir),
-				FMT_ARG(location),
-				FMT_ARG(compileEcho),
-				FMT_ARG(quietFlag),
-				FMT_ARG(asmCompile));
-
-			m_locationCache[location].push_back(ext);
-		}
-	}
-
-	return ret;
 }
 
 /*****************************************************************************/
@@ -707,17 +588,6 @@ std::string MakefileGeneratorGNU::getColorBlue() const
 	return "\x1b[0;34m";
 #else
 	return "\\033[0;34m";
-#endif
-}
-
-/*****************************************************************************/
-std::string MakefileGeneratorGNU::getColorPurple() const
-{
-#if defined(CHALET_WIN32)
-	// return Environment::isBash() ? "\033[0;35m" : "\x1b[0;35m";
-	return "\x1b[0;35m";
-#else
-	return "\\033[0;35m";
 #endif
 }
 

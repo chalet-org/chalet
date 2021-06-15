@@ -86,16 +86,6 @@ build build_{hash}: phony | {target}
 
 	//
 
-	if (m_state.environment.dumpAssembly())
-	{
-		auto assemblies = String::join(inOutputs.assemblyList);
-		ninjaTemplate += fmt::format(R"ninja(
-build asm_{hash}: phony | {assemblies}
-)ninja",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(assemblies));
-	}
-
 	m_targetRecipes.push_back(std::move(ninjaTemplate));
 
 	m_toolchain = nullptr;
@@ -167,7 +157,6 @@ std::string NinjaGenerator::getRules(const StringList& inExtensions)
 		rules += m_rules[ext](*this);
 	}
 
-	rules += getAsmRule();
 	rules += getLinkRule();
 
 	return rules;
@@ -185,20 +174,6 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 	rules += '\n';
 
 	rules += getObjBuildRules(inOutputs.objectList, pchTarget);
-
-	if (m_state.environment.dumpAssembly())
-	{
-		auto assemblies = String::excludeIf(m_assemblies, inOutputs.assemblyList);
-		if (!assemblies.empty())
-		{
-			rules += getAsmBuildRules(assemblies);
-
-			for (auto& assem : assemblies)
-			{
-				List::addIfDoesNotExist(m_assemblies, assem);
-			}
-		}
-	}
 
 	return rules;
 }
@@ -258,32 +233,6 @@ rule rc_{hash}
 		FMT_ARG(deps),
 		FMT_ARG(depFile),
 		FMT_ARG(rcCompile));
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string NinjaGenerator::getAsmRule()
-{
-	std::string ret;
-
-	if (m_state.environment.dumpAssembly())
-	{
-		std::string asmCompile = m_state.ancillaryTools.getAsmGenerateCommand("$in", "$out");
-
-#if defined(CHALET_WIN32)
-		if (!m_state.ancillaryTools.bash().empty() && m_state.ancillaryTools.bashAvailable())
-			asmCompile = fmt::format("{} -c \"{}\"", m_state.ancillaryTools.bash(), asmCompile);
-#endif
-
-		ret = fmt::format(R"ninja(
-rule asm_{hash}
-  description = $out
-  command = {asmCompile}
-)ninja",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(asmCompile));
-	}
 
 	return ret;
 }
@@ -488,37 +437,6 @@ std::string NinjaGenerator::getObjBuildRules(const StringList& inObjects, const 
 			FMT_ARG(rule),
 			FMT_ARG(source),
 			FMT_ARG(pchImplicitDep));
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string NinjaGenerator::getAsmBuildRules(const StringList& inAssemblies)
-{
-	std::string ret;
-
-	if (m_state.environment.dumpAssembly())
-	{
-		const auto& asmDir = m_state.paths.asmDir();
-		const auto& objDir = m_state.paths.objDir();
-
-		for (auto& asmFile : inAssemblies)
-		{
-			if (asmFile.empty())
-				continue;
-
-			std::string object = asmFile;
-			String::replaceAll(object, asmDir, objDir);
-
-			if (String::endsWith(".asm", object))
-				object = object.substr(0, object.size() - 4);
-
-			ret += fmt::format("build {asmFile}: asm_{hash} {object}\n",
-				fmt::arg("hash", m_hash),
-				FMT_ARG(asmFile),
-				FMT_ARG(object));
-		}
 	}
 
 	return ret;

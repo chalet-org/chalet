@@ -107,24 +107,6 @@ SHELL = {shell}
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getCompileEchoAsm(const std::string& file) const
-{
-	const auto purple = getColorPurple();
-	std::string printer;
-
-	if (m_cleanOutput)
-	{
-		printer = getPrinter(fmt::format("   {purple}{file}", FMT_ARG(purple), FMT_ARG(file)));
-	}
-	else
-	{
-		printer = getPrinter(std::string(purple));
-	}
-
-	return fmt::format("@{}", printer);
-}
-
-/*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& file) const
 {
 	const auto blue = getColorBlue();
@@ -191,20 +173,6 @@ std::string MakefileGeneratorNMake::getBuildRecipes(const SourceOutputs& inOutpu
 		List::addIfDoesNotExist(m_dependencies, dep);
 	}*/
 
-	if (m_state.environment.dumpAssembly())
-	{
-		auto assemblies = String::excludeIf(m_assemblies, inOutputs.assemblyList);
-		if (!assemblies.empty())
-		{
-			recipes += getAsmBuildRecipes(assemblies);
-
-			for (auto& assem : assemblies)
-			{
-				List::addIfDoesNotExist(m_assemblies, assem);
-			}
-		}
-	}
-
 	recipes += getTargetRecipe(inOutputs.target, inOutputs.objectListLinker);
 
 	return recipes;
@@ -270,38 +238,6 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const StringList& inObjec
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getAsmBuildRecipes(const StringList& inAssemblies)
-{
-	std::string ret;
-
-	if (m_state.environment.dumpAssembly())
-	{
-		const auto& asmDir = m_state.paths.asmDir();
-		const auto& objDir = m_state.paths.objDir();
-
-		for (auto& asmFile : inAssemblies)
-		{
-			if (asmFile.empty())
-				continue;
-
-			std::string object = asmFile;
-			String::replaceAll(object, asmDir, objDir);
-
-			if (String::endsWith(".asm", object))
-			{
-				object = object.substr(0, object.size() - 4);
-			}
-
-			ret += getAsmRecipe(object, asmFile);
-		}
-
-		ret += getDumpAsmRecipe(inAssemblies);
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 std::string MakefileGeneratorNMake::getTargetRecipe(const std::string& linkerTarget, const StringList& objects) const
 {
 	chalet_assert(m_project != nullptr, "");
@@ -330,56 +266,6 @@ std::string MakefileGeneratorNMake::getTargetRecipe(const std::string& linkerTar
 		FMT_ARG(quietFlag),
 		FMT_ARG(linkerCommand),
 		FMT_ARG(printer));
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string MakefileGeneratorNMake::getDumpAsmRecipe(const StringList& inAssemblies) const
-{
-	chalet_assert(m_project != nullptr, "");
-
-	std::string ret;
-
-	const bool dumpAssembly = m_state.environment.dumpAssembly();
-	if (dumpAssembly)
-	{
-		const auto assemblies = String::join(inAssemblies);
-		ret = fmt::format(R"makefile(
-asm_{hash}: {assemblies}
-)makefile",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(assemblies));
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string MakefileGeneratorNMake::getAsmRecipe(const std::string& object, const std::string& assembly) const
-{
-	chalet_assert(m_project != nullptr, "");
-
-	std::string ret;
-
-	const bool dumpAssembly = m_state.environment.dumpAssembly();
-	if (dumpAssembly)
-	{
-		const auto quietFlag = getQuietFlag();
-		const auto asmCompile = m_state.ancillaryTools.getAsmGenerateCommand(fmt::format("'{}'", object), fmt::format("'{}'", assembly));
-		const auto compileEcho = getCompileEchoAsm(assembly);
-
-		ret = fmt::format(R"makefile(
-{assembly}: {object}
-	{compileEcho}
-	{quietFlag}{asmCompile}
-)makefile",
-			FMT_ARG(assembly),
-			FMT_ARG(object),
-			FMT_ARG(compileEcho),
-			FMT_ARG(quietFlag),
-			FMT_ARG(asmCompile));
-	}
 
 	return ret;
 }
@@ -530,11 +416,6 @@ std::string MakefileGeneratorNMake::getColorBlue() const
 	return "\x1b[0;34m";
 }
 
-/*****************************************************************************/
-std::string MakefileGeneratorNMake::getColorPurple() const
-{
-	return "\x1b[0;35m";
-}
 #else
 MakefileGeneratorNMake::MakefileGeneratorNMake()
 {

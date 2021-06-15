@@ -6,6 +6,7 @@
 #ifndef CHALET_MAKEFILE_RUNNER_HPP
 #define CHALET_MAKEFILE_RUNNER_HPP
 
+#include "Compile/AssemblyDumper.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Router/Route.hpp"
@@ -64,6 +65,7 @@ private:
 	StringList m_removeCache;
 
 	CompileStrategy m_strategy;
+	AssemblyDumper m_asmDumper;
 
 	// ProjectTarget* m_project = nullptr;
 

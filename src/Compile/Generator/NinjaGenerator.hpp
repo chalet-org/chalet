@@ -33,7 +33,6 @@ private:
 	std::string getDependencyRule();
 	std::string getPchRule();
 	std::string getRcRule();
-	std::string getAsmRule();
 	std::string getCppRule();
 	std::string getObjcRule();
 	std::string getObjcppRule();
@@ -42,12 +41,10 @@ private:
 
 	std::string getPchBuildRule(const std::string& pchTarget);
 	std::string getObjBuildRules(const StringList& inObjects, const std::string& pchTarget);
-	std::string getAsmBuildRules(const StringList& inAssemblies);
 
 	std::string getRuleDeps() const;
 
 	NinjaRuleList m_rules;
-	StringList m_assemblies;
 
 	bool m_needsMsvcDepsPrefix = false;
 };

@@ -6,8 +6,6 @@
 #ifndef CHALET_COMPILE_STRATEGY_NATIVE_HPP
 #define CHALET_COMPILE_STRATEGY_NATIVE_HPP
 
-#include <csignal>
-
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
@@ -38,13 +36,11 @@ public:
 private:
 	CommandPool::Cmd getPchCommand(const std::string& pchTarget);
 	CommandPool::CmdList getCompileCommands(const StringList& inObjects);
-	CommandPool::CmdList getAsmCommands(const StringList& inAssemblies);
 	CommandPool::Cmd getLinkCommand(const std::string& inTarget, const StringList& inObjects);
 
 	CmdTemp getPchCompile(const std::string& source, const std::string& target) const;
 	CmdTemp getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
 	CmdTemp getRcCompile(const std::string& source, const std::string& target) const;
-	StringList getAsmGenerate(const std::string& object, const std::string& target) const;
 
 	CommandPool m_commandPool;
 

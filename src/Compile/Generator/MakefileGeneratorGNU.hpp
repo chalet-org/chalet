@@ -25,20 +25,16 @@ struct MakefileGeneratorGNU final : IStrategyGenerator
 private:
 	std::string getBuildRecipes(const SourceOutputs& inOutputs);
 	// std::string getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget);
-	// std::string getAsmBuildRecipes(const StringList& inAssemblies);
 
-	std::string getCompileEchoAsm() const;
 	std::string getCompileEchoSources() const;
 	std::string getCompileEchoLinker() const;
 
-	std::string getAsmRecipe() const;
 	std::string getPchRecipe(const std::string& pchTarget);
 	std::string getRcRecipe(const std::string& ext, const std::string& pchTarget) const;
 	std::string getCppRecipe(const std::string& ext, const std::string& pchTarget) const;
 	std::string getObjcRecipe(const std::string& ext) const;
 
 	std::string getTargetRecipe(const std::string& linkerTarget) const;
-	std::string getDumpAsmRecipe() const;
 
 	std::string getPchOrderOnlyPreReq() const;
 	std::string getLinkerPreReqs() const;
@@ -50,7 +46,6 @@ private:
 	bool locationExists(const std::string& location, const std::string& ext) const;
 
 	std::string getColorBlue() const;
-	std::string getColorPurple() const;
 
 	StringList m_fileExtensions;
 

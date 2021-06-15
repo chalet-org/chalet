@@ -5,6 +5,8 @@
 
 #include "Compile/CommandPool.hpp"
 
+#include <csignal>
+
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"

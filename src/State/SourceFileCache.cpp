@@ -29,6 +29,8 @@ bool SourceFileCache::initialize()
 		m_filename = fmt::format("{}/{}", path, file);
 	}
 
+	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
 	if (Commands::pathExists(m_filename))
 	{
 		int i = 0;
@@ -55,8 +57,6 @@ bool SourceFileCache::initialize()
 			++i;
 		}
 	}
-
-	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
 	return true;
 }

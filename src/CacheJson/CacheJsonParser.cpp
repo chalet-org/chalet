@@ -305,7 +305,7 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 	if (bool val = false; m_jsonFile.assignFromKey(val, settings, kKeyShowCommands))
 		m_prototype.environment.setShowCommands(val);
 
-	if (bool val = false; m_jsonFile.assignFromKey(val, inNode, kKeyDumpAssembly))
+	if (bool val = false; m_jsonFile.assignFromKey(val, settings, kKeyDumpAssembly))
 		m_prototype.environment.setDumpAssembly(val);
 
 	if (ushort val = 0; m_jsonFile.assignFromKey(val, settings, kKeyMaxJobs))

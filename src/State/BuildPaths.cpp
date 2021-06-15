@@ -209,21 +209,13 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool 
 }
 
 /*****************************************************************************/
-void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash, const bool inDumpAssembly) const
+void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const
 {
 	auto objects = String::join(inOutput.objectListLinker);
 	Environment::set(fmt::format("SOURCE_OBJS_{}", inHash).c_str(), objects);
 
 	auto depdendencies = String::join(inOutput.dependencyList);
 	Environment::set(fmt::format("SOURCE_DEPS", inHash).c_str(), depdendencies);
-
-	if (inDumpAssembly)
-	{
-		auto assemblies = String::join(inOutput.assemblyList);
-		Environment::set(fmt::format("SOURCE_ASMS", inHash).c_str(), assemblies);
-	}
-
-	// UNUSED(inOutput, inDumpAssembly);
 }
 
 /*****************************************************************************/
