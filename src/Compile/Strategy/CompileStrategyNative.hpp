@@ -11,36 +11,19 @@
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
+#include "Compile/CommandPool.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
-#include "Utility/ThreadPool.hpp"
 
 namespace chalet
 {
 class CompileStrategyNative final : public ICompileStrategy
 {
-	struct Command
-	{
-		std::string output;
-		StringList command;
-		std::string renameFrom;
-		std::string renameTo;
-	};
-	struct CommandTemp
+	struct CmdTemp
 	{
 		StringList command;
 		std::string renameFrom;
 		std::string renameTo;
-	};
-
-	using CommandList = std::vector<Command>;
-
-	struct NativeTarget
-	{
-		Command pch;
-		Command linkTarget;
-		CommandList compiles;
-		CommandList assemblies;
 	};
 
 public:
@@ -53,25 +36,24 @@ public:
 	virtual bool buildProject(const ProjectTarget& inProject) const final;
 
 private:
-	Command getPchCommand(const std::string& pchTarget);
-	CommandList getCompileCommands(const StringList& inObjects);
-	CommandList getAsmCommands(const StringList& inAssemblies);
-	Command getLinkCommand(const std::string& inTarget, const StringList& inObjects);
+	CommandPool::Cmd getPchCommand(const std::string& pchTarget);
+	CommandPool::CmdList getCompileCommands(const StringList& inObjects);
+	CommandPool::CmdList getAsmCommands(const StringList& inAssemblies);
+	CommandPool::Cmd getLinkCommand(const std::string& inTarget, const StringList& inObjects);
 
-	CommandTemp getPchCompile(const std::string& source, const std::string& target) const;
-	CommandTemp getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
-	CommandTemp getRcCompile(const std::string& source, const std::string& target) const;
+	CmdTemp getPchCompile(const std::string& source, const std::string& target) const;
+	CmdTemp getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
+	CmdTemp getRcCompile(const std::string& source, const std::string& target) const;
 	StringList getAsmGenerate(const std::string& object, const std::string& target) const;
+
+	CommandPool m_commandPool;
 
 	const ProjectTarget* m_project = nullptr;
 	ICompileToolchain* m_toolchain = nullptr;
 
-	std::unordered_map<std::string, std::unique_ptr<NativeTarget>> m_targets;
-
-	mutable ThreadPool m_threadPool;
+	std::unordered_map<std::string, std::unique_ptr<CommandPool::Target>> m_targets;
 
 	bool m_generateDependencies = false;
-	mutable bool m_canceled = false;
 };
 }
 

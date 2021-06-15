@@ -21,107 +21,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-namespace
-{
-std::mutex s_mutex;
-std::atomic<uint> s_compileIndex = 0;
-std::function<void()> s_shutdownHandler;
-
-/*****************************************************************************/
-bool printCommand(std::string output, StringList command, Color inColor, std::string symbol, bool cleanOutput, uint total = 0)
-{
-	std::unique_lock<std::mutex> lock(s_mutex);
-	if (total > 0)
-	{
-		auto indexStr = std::to_string(s_compileIndex);
-		const auto totalStr = std::to_string(total);
-		while (indexStr.size() < totalStr.size())
-		{
-			indexStr = " " + indexStr;
-		}
-
-		std::cout << Output::getAnsiStyle(inColor) << fmt::format("{}  ", symbol) << Output::getAnsiReset() << fmt::format("[{}/{}] ", indexStr, total);
-	}
-	else
-	{
-		std::cout << Output::getAnsiStyle(inColor) << fmt::format("{}  ", symbol);
-	}
-
-	if (cleanOutput)
-		Output::print(inColor, output);
-	else
-		Output::print(inColor, command);
-
-	s_compileIndex++;
-
-	return true;
-}
-
-/*****************************************************************************/
-bool executeCommandMsvc(StringList command, std::string renameFrom, std::string renameTo, bool generateDependencies)
-{
-	std::string srcFile;
-	{
-		auto start = renameFrom.find_last_of('/') + 1;
-		auto end = renameFrom.find_last_of('.');
-		srcFile = renameFrom.substr(start, end - start);
-	}
-
-	SubprocessOptions options;
-	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::StdErr;
-	options.onStdOut = [&srcFile](std::string inData) {
-		if (String::startsWith(srcFile, inData))
-			return;
-
-		std::cout << inData << std::flush;
-	};
-
-	if (Subprocess::run(command, std::move(options)) != EXIT_SUCCESS)
-		return false;
-
-	if (!generateDependencies)
-		return true;
-
-	if (!renameFrom.empty() && !renameTo.empty())
-	{
-		std::unique_lock<std::mutex> lock(s_mutex);
-		return Commands::rename(renameFrom, renameTo);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool executeCommand(StringList command, std::string renameFrom, std::string renameTo, bool generateDependencies)
-{
-	if (!Commands::subprocess(command))
-		return false;
-
-	if (!generateDependencies)
-		return true;
-
-	if (!renameFrom.empty() && !renameTo.empty())
-	{
-		std::unique_lock<std::mutex> lock(s_mutex);
-		return Commands::rename(renameFrom, renameTo);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-void signalHandler(int inSignal)
-{
-	Subprocess::haltAllProcesses(inSignal);
-	s_shutdownHandler();
-}
-}
-
-/*****************************************************************************/
 CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
 	ICompileStrategy(StrategyType::Native, inState),
-	m_threadPool(m_state.environment.maxJobs())
+	m_commandPool(m_state.environment.maxJobs())
 {
 }
 
@@ -144,11 +46,11 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 
 	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !compilerConfig.isMsvc();
 
-	auto target = std::make_unique<NativeTarget>();
-	target->pch = getPchCommand(pchTarget);
-	target->compiles = getCompileCommands(inOutputs.objectList);
-	target->assemblies = getAsmCommands(inOutputs.assemblyList);
-	target->linkTarget = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
+	auto target = std::make_unique<CommandPool::Target>();
+	target->pre = getPchCommand(pchTarget);
+	target->list = getCompileCommands(inOutputs.objectList);
+	// target->assemblies = getAsmCommands(inOutputs.assemblyList);
+	target->post = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
 
 	auto& name = inProject.name();
 
@@ -177,88 +79,18 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 	if (m_targets.find(inProject.name()) == m_targets.end())
 		return false;
 
-	bool quietBuild = Output::quietNonBuild();
-	Output::setQuietNonBuild(false);
-
-	auto onError = [&quietBuild]() -> bool {
-		Output::setQuietNonBuild(quietBuild);
-		return false;
-	};
-
 	auto& target = *m_targets.at(inProject.name());
-	auto& compiles = target.compiles;
-	auto& pch = target.pch;
-	auto& linkTarget = target.linkTarget;
-	auto& assemblies = target.assemblies;
-
-	::signal(SIGINT, signalHandler);
-	::signal(SIGTERM, signalHandler);
-	::signal(SIGABRT, signalHandler);
-
-	s_shutdownHandler = [this]() {
-		this->m_threadPool.stop();
-		this->m_canceled = true;
-	};
 
 	const auto& config = m_state.toolchain.getConfig(inProject.language());
-	auto executeCommandFunc = config.isMsvc() ? executeCommandMsvc : executeCommand;
 
-	bool cleanOutput = !m_state.environment.showCommands();
+	CommandPool::Settings settings;
+	settings.msvcCommand = config.isMsvc();
+	settings.cleanOutput = !m_state.environment.showCommands();
+	settings.quiet = Output::quietNonBuild();
 
-	s_compileIndex = 1;
-	uint totalCompiles = static_cast<uint>(compiles.size());
+	// Unicode::rightwardsTripleArrow()
 
-	if (!pch.command.empty())
-	{
-		totalCompiles++;
-
-		if (!printCommand(pch.output, pch.command, Color::Blue, " ", cleanOutput, totalCompiles))
-			return onError();
-
-		if (!executeCommandFunc(pch.command, pch.renameFrom, pch.renameTo, m_generateDependencies))
-			return onError();
-	}
-
-	bool buildFailed = false;
-	std::vector<std::future<bool>> threadResults;
-	for (auto& it : compiles)
-	{
-		threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, Color::Blue, " ", cleanOutput, totalCompiles));
-		threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, m_generateDependencies));
-	}
-
-	for (auto& tr : threadResults)
-	{
-		try
-		{
-			if (!tr.get())
-			{
-				signalHandler(SIGTERM);
-				buildFailed = true;
-				break;
-			}
-		}
-		catch (std::future_error& err)
-		{
-			std::cerr << err.what() << std::endl;
-			return onError();
-		}
-	}
-
-	if (buildFailed)
-	{
-		threadResults.clear();
-		return onError();
-	}
-
-	Output::lineBreak();
-
-	if (!printCommand(linkTarget.output, linkTarget.command, Color::Blue, Unicode::rightwardsTripleArrow(), cleanOutput))
-		return onError();
-
-	if (!executeCommandFunc(linkTarget.command, linkTarget.renameFrom, linkTarget.renameTo, m_generateDependencies))
-		return onError();
-
+	/*
 	if (!assemblies.empty())
 	{
 		Output::lineBreak();
@@ -291,27 +123,17 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 			}
 		}
 	}
+	*/
 
-	if (buildFailed)
-	{
-		threadResults.clear();
-		return onError();
-	}
-
-	Output::lineBreak();
-
-	Output::setQuietNonBuild(quietBuild);
-
-	const bool completed = !m_canceled;
-	return completed;
+	return m_commandPool.run(target, settings);
 }
 
 /*****************************************************************************/
-CompileStrategyNative::Command CompileStrategyNative::getPchCommand(const std::string& pchTarget)
+CommandPool::Cmd CompileStrategyNative::getPchCommand(const std::string& pchTarget)
 {
 	chalet_assert(m_project != nullptr, "");
 
-	Command ret;
+	CommandPool::Cmd ret;
 	if (m_project->usesPch())
 	{
 		std::string source = m_project->pch();
@@ -321,17 +143,19 @@ CompileStrategyNative::Command CompileStrategyNative::getPchCommand(const std::s
 		ret.command = std::move(tmp.command);
 		ret.renameFrom = std::move(tmp.renameFrom);
 		ret.renameTo = std::move(tmp.renameTo);
+		ret.color = Color::Blue;
+		ret.symbol = " ";
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-CompileStrategyNative::CommandList CompileStrategyNative::getCompileCommands(const StringList& inObjects)
+CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList& inObjects)
 {
 	const auto& objDir = fmt::format("{}/", m_state.paths.objDir());
 
-	CommandList ret;
+	CommandPool::CmdList ret;
 
 	for (auto& target : inObjects)
 	{
@@ -356,11 +180,13 @@ CompileStrategyNative::CommandList CompileStrategyNative::getCompileCommands(con
 		{
 #if defined(CHALET_WIN32)
 			auto tmp = getRcCompile(source, target);
-			Command out;
+			CommandPool::Cmd out;
 			out.output = std::move(source);
 			out.command = std::move(tmp.command);
 			out.renameFrom = std::move(tmp.renameFrom);
 			out.renameTo = std::move(tmp.renameTo);
+			out.color = Color::Blue;
+			out.symbol = " ";
 			ret.push_back(std::move(out));
 #else
 			continue;
@@ -369,11 +195,13 @@ CompileStrategyNative::CommandList CompileStrategyNative::getCompileCommands(con
 		else
 		{
 			auto tmp = getCxxCompile(source, target, specialization);
-			Command out;
+			CommandPool::Cmd out;
 			out.output = std::move(source);
 			out.command = std::move(tmp.command);
 			out.renameFrom = std::move(tmp.renameFrom);
 			out.renameTo = std::move(tmp.renameTo);
+			out.color = Color::Blue;
+			out.symbol = " ";
 			ret.push_back(std::move(out));
 		}
 	}
@@ -382,11 +210,11 @@ CompileStrategyNative::CommandList CompileStrategyNative::getCompileCommands(con
 }
 
 /*****************************************************************************/
-CompileStrategyNative::CommandList CompileStrategyNative::getAsmCommands(const StringList& inAssemblies)
+CommandPool::CmdList CompileStrategyNative::getAsmCommands(const StringList& inAssemblies)
 {
 	chalet_assert(m_project != nullptr, "");
 
-	CommandList ret;
+	CommandPool::CmdList ret;
 	if (!m_state.environment.dumpAssembly())
 		return ret;
 
@@ -405,14 +233,19 @@ CompileStrategyNative::CommandList CompileStrategyNative::getAsmCommands(const S
 			object = object.substr(0, object.size() - 4);
 
 		auto command = getAsmGenerate(object, asmFile);
-		ret.push_back({ asmFile, command, std::string(), std::string() });
+		CommandPool::Cmd out;
+		out.output = asmFile;
+		out.command = getAsmGenerate(object, asmFile);
+		out.color = Color::Magenta;
+		out.symbol = " ";
+		ret.push_back(std::move(out));
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-CompileStrategyNative::Command CompileStrategyNative::getLinkCommand(const std::string& inTarget, const StringList& inObjects)
+CommandPool::Cmd CompileStrategyNative::getLinkCommand(const std::string& inTarget, const StringList& inObjects)
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -421,20 +254,22 @@ CompileStrategyNative::Command CompileStrategyNative::getLinkCommand(const std::
 
 	const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 
-	Command ret;
+	CommandPool::Cmd ret;
 	ret.command = m_toolchain->getLinkerTargetCommand(inTarget, inObjects, targetBasename);
 	ret.output = fmt::format("{} {}", description, inTarget);
+	ret.color = Color::Blue;
+	ret.symbol = Unicode::rightwardsTripleArrow();
 
 	return ret;
 }
 
 /*****************************************************************************/
-CompileStrategyNative::CommandTemp CompileStrategyNative::getPchCompile(const std::string& source, const std::string& target) const
+CompileStrategyNative::CmdTemp CompileStrategyNative::getPchCompile(const std::string& source, const std::string& target) const
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
 
-	CommandTemp ret;
+	CmdTemp ret;
 
 	if (m_project->usesPch())
 	{
@@ -450,11 +285,11 @@ CompileStrategyNative::CommandTemp CompileStrategyNative::getPchCompile(const st
 }
 
 /*****************************************************************************/
-CompileStrategyNative::CommandTemp CompileStrategyNative::getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const
+CompileStrategyNative::CmdTemp CompileStrategyNative::getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const
 {
 	chalet_assert(m_toolchain != nullptr, "");
 
-	CommandTemp ret;
+	CmdTemp ret;
 
 	const auto& depDir = m_state.paths.depDir();
 
@@ -467,11 +302,11 @@ CompileStrategyNative::CommandTemp CompileStrategyNative::getCxxCompile(const st
 }
 
 /*****************************************************************************/
-CompileStrategyNative::CommandTemp CompileStrategyNative::getRcCompile(const std::string& source, const std::string& target) const
+CompileStrategyNative::CmdTemp CompileStrategyNative::getRcCompile(const std::string& source, const std::string& target) const
 {
 	chalet_assert(m_toolchain != nullptr, "");
 
-	CommandTemp ret;
+	CmdTemp ret;
 
 #if defined(CHALET_WIN32)
 	const auto& depDir = m_state.paths.depDir();
@@ -503,5 +338,4 @@ StringList CompileStrategyNative::getAsmGenerate(const std::string& object, cons
 
 	return ret;
 }
-
 }
