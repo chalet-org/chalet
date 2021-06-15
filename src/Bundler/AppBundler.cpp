@@ -262,6 +262,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	}
 
 	StringList executables;
+	StringList dependenciesToCopy;
 	uint copyCount = 0;
 	for (auto& target : inState.targets)
 	{
@@ -293,12 +294,27 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 			for (auto& dep : dependencies->second)
 			{
-				if (!copyDependency(dep, executablePath))
-					continue;
+				List::addIfDoesNotExist(dependenciesToCopy, dep);
 
-				++copyCount;
+				auto depsOfDep = m_dependencyMap.find(dep);
+				if (depsOfDep != m_dependencyMap.end())
+				{
+					for (auto& d : depsOfDep->second)
+					{
+						List::addIfDoesNotExist(dependenciesToCopy, d);
+					}
+				}
 			}
 		}
+	}
+
+	std::sort(dependenciesToCopy.begin(), dependenciesToCopy.end());
+	for (auto& dep : dependenciesToCopy)
+	{
+		if (!copyDependency(dep, executablePath))
+			continue;
+
+		++copyCount;
 	}
 
 #if !defined(CHALET_WIN32)
@@ -399,22 +415,19 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 								)
 									continue;
 
-								std::string depPath = fmt::format("{}/{}", buildOutputDir, filename);
-								if (!Commands::pathExists(depPath))
+								std::string depPath;
+								if (!Commands::pathExists(dep))
 								{
-									if (!Commands::pathExists(dep))
+									depPath = Commands::which(dep);
+									if (depPath.empty())
 									{
-										depPath = Commands::which(dep);
-										if (depPath.empty())
-										{
-											Diagnostic::error(fmt::format("Dependency not found in path: '{}'", dep));
-											return false;
-										}
+										Diagnostic::error(fmt::format("Dependency not found in path: '{}'", dep));
+										return false;
 									}
-									else
-									{
-										depPath = dep;
-									}
+								}
+								else
+								{
+									depPath = dep;
 								}
 
 								if (m_dependencyMap.find(depPath) == m_dependencyMap.end())
