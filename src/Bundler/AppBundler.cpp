@@ -399,19 +399,22 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 								)
 									continue;
 
-								std::string depPath;
-								if (!Commands::pathExists(dep))
+								std::string depPath = fmt::format("{}/{}", buildOutputDir, filename);
+								if (!Commands::pathExists(depPath))
 								{
-									depPath = Commands::which(dep);
-									if (depPath.empty())
+									if (!Commands::pathExists(dep))
 									{
-										Diagnostic::error(fmt::format("Dependency not found in path: '{}'", dep));
-										return false;
+										depPath = Commands::which(dep);
+										if (depPath.empty())
+										{
+											Diagnostic::error(fmt::format("Dependency not found in path: '{}'", dep));
+											return false;
+										}
 									}
-								}
-								else
-								{
-									depPath = dep;
+									else
+									{
+										depPath = dep;
+									}
 								}
 
 								if (m_dependencyMap.find(depPath) == m_dependencyMap.end())
