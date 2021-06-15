@@ -424,22 +424,6 @@ void AncillaryTools::setXcrun(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-std::string AncillaryTools::getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) const
-{
-	// TODO: Customizations for these commands
-#if defined(CHALET_MACOS)
-	return fmt::format("{otool} -tvV {inputFile} | c++filt > {outputFile}",
-		fmt::arg("otool", m_otool),
-		FMT_ARG(inputFile),
-		FMT_ARG(outputFile));
-#else
-	return fmt::format("objdump -d -C -Mintel {inputFile} > {outputFile}",
-		FMT_ARG(inputFile),
-		FMT_ARG(outputFile));
-#endif
-}
-
-/*****************************************************************************/
 bool AncillaryTools::installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput) const
 {
 #if defined(CHALET_MACOS)

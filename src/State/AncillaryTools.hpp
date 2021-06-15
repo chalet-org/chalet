@@ -111,7 +111,6 @@ struct AncillaryTools
 	void setXcrun(std::string&& inValue) noexcept;
 
 	// Commands
-	std::string getAsmGenerateCommand(const std::string& inputFile, const std::string& outputFile) const;
 
 	bool installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput = true) const;
 

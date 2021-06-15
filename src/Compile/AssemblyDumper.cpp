@@ -119,7 +119,17 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 
 	if (!m_state.ancillaryTools.bash().empty() && m_state.ancillaryTools.bashAvailable())
 	{
-		auto asmCommand = m_state.ancillaryTools.getAsmGenerateCommand(object, target);
+#if defined(CHALET_MACOS)
+		auto asmCommand = fmt::format("{otool} -tvV {object} | c++filt > {target}",
+			fmt::arg("otool", m_state.ancillaryTools.otool()),
+			FMT_ARG(object),
+			FMT_ARG(target));
+#else
+		auto asmCommand = fmt::format("{objdump} -d -C -Mintel {object} > {target}",
+			fmt::arg("objdump", m_state.toolchain.objdump()),
+			FMT_ARG(object),
+			FMT_ARG(target));
+#endif
 
 		ret.push_back(m_state.ancillaryTools.bash());
 		ret.push_back("-c");
