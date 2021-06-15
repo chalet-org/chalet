@@ -96,6 +96,7 @@ StringList UniversalBinaryMacOS::getProjectFiles(const BuildState& inState) cons
 {
 	StringList ret;
 
+	auto dependencyMap = m_bundler.dependencyMap();
 	auto& buildOutputDir = inState.paths.buildOutputDir();
 	for (auto& target : inState.targets)
 	{
@@ -107,7 +108,17 @@ StringList UniversalBinaryMacOS::getProjectFiles(const BuildState& inState) cons
 
 			if (List::contains(m_bundle.projects(), project.name()))
 			{
-				ret.push_back(fmt::format("{}/{}", buildOutputDir, project.outputFile()));
+				auto outputFile = fmt::format("{}/{}", buildOutputDir, project.outputFile());
+				List::addIfDoesNotExist(ret, outputFile);
+
+				auto iter = dependencyMap.find(outputFile);
+				if (iter != dependencyMap.end())
+				{
+					for (auto& dep : iter->second)
+					{
+						List::addIfDoesNotExist(ret, dep);
+					}
+				}
 			}
 		}
 	}

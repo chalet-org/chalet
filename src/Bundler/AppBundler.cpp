@@ -418,7 +418,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 								std::string depPath;
 								if (!Commands::pathExists(dep))
 								{
-									depPath = Commands::which(dep);
+									depPath = Commands::which(filename);
 									if (depPath.empty())
 									{
 										Diagnostic::error(fmt::format("Dependency not found in path: '{}'", dep));
