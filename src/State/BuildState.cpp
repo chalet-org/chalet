@@ -306,12 +306,6 @@ bool BuildState::validateState()
 		{
 			hasCMakeTargets = true;
 		}
-
-		if (!target->validate())
-		{
-			Diagnostic::error(fmt::format("Error validating the '{}' target.", target->name()));
-			return false;
-		}
 	}
 
 	if (hasCMakeTargets)
@@ -327,6 +321,16 @@ bool BuildState::validateState()
 		if (!m_prototype.ancillaryTools.resolveOwnExecutable(m_inputs.appPath()))
 		{
 			Diagnostic::error(fmt::format("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.ancillaryTools.chalet()));
+			return false;
+		}
+	}
+
+	for (auto& target : targets)
+	{
+		// must validate after cmake/sub-chalet check
+		if (!target->validate())
+		{
+			Diagnostic::error(fmt::format("Error validating the '{}' target.", target->name()));
 			return false;
 		}
 	}
