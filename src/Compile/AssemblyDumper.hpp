@@ -27,7 +27,6 @@ private:
 	StringList getAsmGenerate(const std::string& object, const std::string& target) const;
 
 	BuildState& m_state;
-	const ProjectTarget* m_project = nullptr;
 
 	std::unordered_map<std::string, StringList> m_outputs;
 

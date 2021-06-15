@@ -25,14 +25,8 @@ AssemblyDumper::AssemblyDumper(BuildState& inState) :
 /*****************************************************************************/
 bool AssemblyDumper::addProject(const ProjectTarget& inProject, StringList&& inAssemblies)
 {
-	m_project = &inProject;
-
-	chalet_assert(m_project != nullptr, "");
-
 	auto& name = inProject.name();
 	m_outputs[name] = std::move(inAssemblies);
-
-	m_project = nullptr;
 
 	return true;
 }
@@ -70,8 +64,6 @@ bool AssemblyDumper::dumpProject(const ProjectTarget& inProject) const
 /*****************************************************************************/
 CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssemblies) const
 {
-	chalet_assert(m_project != nullptr, "");
-
 	CommandPool::CmdList ret;
 
 	const auto& objDir = m_state.paths.objDir();
