@@ -31,9 +31,13 @@ WorkspaceEnvironment::WorkspaceEnvironment() :
 /*****************************************************************************/
 void WorkspaceEnvironment::initialize(BuildPaths& inPaths)
 {
+	auto originalPathVar = Environment::getPath();
 	std::string addedPath;
 	for (auto& path : m_path)
 	{
+		if (String::contains(path + Path::getSeparator(), originalPathVar))
+			continue;
+
 		inPaths.replaceVariablesInPath(path);
 		addedPath += path;
 		addedPath += Path::getSeparator();
@@ -41,7 +45,7 @@ void WorkspaceEnvironment::initialize(BuildPaths& inPaths)
 
 	if (!addedPath.empty())
 	{
-		auto pathVar = addedPath + Environment::getPath();
+		auto pathVar = addedPath + originalPathVar;
 		Environment::setPath(pathVar);
 	}
 }
@@ -110,7 +114,7 @@ void WorkspaceEnvironment::addPath(std::string&& inValue)
 }
 
 /*****************************************************************************/
-std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath)
+std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath) const
 {
 	auto separator = Path::getSeparator();
 

@@ -25,6 +25,7 @@ namespace chalet
 struct StatePrototype;
 struct AncillaryTools;
 struct WorkspaceCache;
+struct WorkspaceEnvironment;
 
 class BuildState
 {
@@ -36,6 +37,7 @@ public:
 
 	const AncillaryTools& ancillaryTools;
 	const DistributionTargetList& distribution;
+	const WorkspaceEnvironment& environment;
 	WorkspaceCache& cache;
 
 	BuildInfo info;

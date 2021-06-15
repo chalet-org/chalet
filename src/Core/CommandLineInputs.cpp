@@ -30,6 +30,9 @@ CommandLineInputs::CommandLineInputs() :
 /*****************************************************************************/
 void CommandLineInputs::detectToolchainPreference()
 {
+	if (!m_toolchainPreferenceRaw.empty())
+		return;
+
 #if defined(CHALET_WIN32)
 	if (!Commands::which("clang").empty())
 		m_toolchainPreference = getToolchainPreferenceFromString("llvm");

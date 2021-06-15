@@ -36,7 +36,7 @@ struct WorkspaceEnvironment
 	const StringList& path() const noexcept;
 	void addPaths(StringList&& inList);
 	void addPath(std::string&& inValue);
-	std::string makePathVariable(const std::string& inRootPath);
+	std::string makePathVariable(const std::string& inRootPath) const;
 
 private:
 	std::string m_externalDepDir{ "chalet_external" };

@@ -94,7 +94,10 @@ bool CompilerConfig::testCompilerMacros()
 {
 	const auto& exec = compilerExecutable();
 	if (exec.empty())
+	{
+		Diagnostic::error("No compiler executable was found");
 		return false;
+	}
 
 #if defined(CHALET_WIN32)
 	if (String::endsWith("/cl.exe", exec))
@@ -107,6 +110,11 @@ bool CompilerConfig::testCompilerMacros()
 	const std::string macroResult = Commands::testCompilerFlags(exec);
 	// String::replaceAll(macroResult, '\n', ' ');
 	// String::replaceAll(macroResult, "#include ", "");
+	if (macroResult.empty())
+	{
+		Diagnostic::error("Failed to query predefined compiler macros.");
+		return false;
+	}
 
 	// Notes:
 	// GCC will just have __GNUC__
@@ -126,6 +134,7 @@ bool CompilerConfig::testCompilerMacros()
 	const bool emscripten = String::contains("__EMSCRIPTEN__", macroResult);
 	const bool intel = String::contains({ "__INTEL_COMPILER", "__INTEL_COMPILER_BUILD_DATE" }, macroResult);
 	const bool appleClang = clang && String::contains("Apple LLVM", macroResult);
+	bool result = true;
 
 	if (emscripten)
 		m_compilerType = CppCompilerType::EmScripten;
@@ -144,13 +153,13 @@ bool CompilerConfig::testCompilerMacros()
 	else
 	{
 		m_compilerType = CppCompilerType::Unknown;
-		return false;
+		result = false;
 	}
 
 	// LOG(fmt::format("gcc: {}, clang: {}, appleClang: {}, mingw32: {}, mingw64: {}, emscripten: {}, intel: {},", gcc, clang, appleClang, mingw32, mingw64, emscripten, intel));
 	// LOG("m_compilerType: ", static_cast<int>(m_compilerType));
 
-	return true;
+	return result;
 }
 
 /*****************************************************************************/

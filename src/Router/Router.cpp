@@ -50,10 +50,7 @@ bool Router::run()
 	if (!parseEnvFile())
 		return false;
 
-	if (m_inputs.toolchainPreferenceRaw().empty())
-	{
-		m_inputs.detectToolchainPreference();
-	}
+	m_inputs.detectToolchainPreference();
 
 	std::unique_ptr<StatePrototype> prototype;
 	std::unique_ptr<BuildState> buildState;
@@ -301,9 +298,6 @@ bool Router::managePathVariables(const StatePrototype* inPrototype)
 				p = Commands::getCanonicalPath(p);
 			}
 			std::string appendedPath = String::join(outPaths, Path::getSeparator());
-
-			// auto path = Environment::getPath();
-			// Environment::setPath(fmt::format("{}{}{}", appendedPath, Path::getSeparator(), path));
 
 			// Note: Not needed on mac: @rpath stuff is done instead
 #if defined(CHALET_LINUX)

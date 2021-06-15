@@ -234,9 +234,6 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	makeBundlePath(bundlePath, executablePath, resourcePath);
 
-	// auto path = Environment::getPath();
-	// LOG(path);
-
 	// Timer timer;
 
 	const auto copyDependency = [cleanOutput = m_cleanOutput](const std::string& inDep, const std::string& inOutPath) -> bool {

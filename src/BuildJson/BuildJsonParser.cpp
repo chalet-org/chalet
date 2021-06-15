@@ -96,8 +96,8 @@ bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 	if (!parseRoot(inJson))
 		return false;
 
-	// if (!makePathVariable())
-	// 	return false;
+	if (!makePathVariable())
+		return false;
 
 	if (!parseExternalDependencies(inJson))
 		return false;
@@ -176,15 +176,12 @@ bool BuildJsonParser::parseRoot(const Json& inNode)
 /*****************************************************************************/
 bool BuildJsonParser::makePathVariable()
 {
-	// auto rootPath = m_state.toolchain.getRootPathVariable();
-	// auto pathVariable = m_state.environment.makePathVariable(rootPath);
+	auto rootPath = m_state.toolchain.getRootPathVariable();
+	auto pathVariable = m_state.environment.makePathVariable(rootPath);
 
 	// // LOG(pathVariable);
 
-	// Environment::set("PATH", pathVariable);
-	// // #if defined(CHALET_WIN32)
-	// // 	Environment::set("Path", pathVariable);
-	// // #endif
+	Environment::setPath(pathVariable);
 
 	return true;
 }

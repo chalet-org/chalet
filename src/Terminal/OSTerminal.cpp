@@ -50,9 +50,6 @@ void OSTerminal::initialize()
 		Environment::set("GCC_COLORS", "error=01;31:warning=01;33:note=01;36:caret=01;32:locus=00;34:quote=01");
 	}
 
-	// auto path = Environment::getPath();
-	// LOG(path);
-
 	reset();
 
 	m_initialized = true;

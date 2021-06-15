@@ -591,15 +591,13 @@ std::string CompilerTools::getRootPathVariable()
 
 		auto path = Commands::getCanonicalPath(p); // probably not needed, but just in case
 
-		if (!List::contains(outList, path))
-			outList.push_back(std::move(path));
+		List::addIfDoesNotExist(outList, std::move(path));
 	}
 
 	char separator = Path::getSeparator();
 	for (auto& path : String::split(originalPath, separator))
 	{
-		if (!List::contains(outList, path))
-			outList.push_back(std::move(path));
+		List::addIfDoesNotExist(outList, std::move(path));
 	}
 
 	std::string ret = String::join(outList, separator);

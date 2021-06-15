@@ -13,6 +13,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/ProjectTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -27,6 +28,7 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 	m_prototype(inJsonPrototype),
 	ancillaryTools(m_prototype.ancillaryTools),
 	distribution(m_prototype.distribution),
+	environment(m_prototype.environment),
 	cache(m_prototype.cache),
 	info(m_inputs),
 	toolchain(m_inputs, *this),
