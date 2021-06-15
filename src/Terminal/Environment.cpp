@@ -566,7 +566,11 @@ std::string Environment::getUserDirectory()
 		return std::string();
 	}
 
-	return std::string(user);
+	std::string ret(user);
+	if (ret.back() == '/')
+		ret.pop_back();
+
+	return ret;
 #endif
 }
 

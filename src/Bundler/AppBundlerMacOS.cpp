@@ -118,6 +118,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 	}
 
 	// TODO: Generalized version of this in AppBundler
+	Output::lineBreak();
 	Output::print(Color::Blue, "   Creating the MacOS application bundle...");
 	Output::lineBreak();
 
@@ -394,6 +395,7 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	if (m_cleanOutput)
 	{
+		Output::lineBreak();
 		Output::print(Color::Blue, "   Creating the disk image for the application...");
 		Output::lineBreak();
 	}
@@ -454,10 +456,9 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	if (m_cleanOutput)
 	{
-		Output::print(Color::Blue, fmt::format("   Done. See '{}'", outDmgPath));
+		Output::lineBreak();
+		Output::print(Color::Blue, fmt::format("   Done! See '{}'", outDmgPath));
 	}
-
-	Output::lineBreak();
 
 	return true;
 }

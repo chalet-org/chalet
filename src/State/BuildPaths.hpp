@@ -82,6 +82,8 @@ private:
 	std::string m_asmDir;
 	std::string m_intermediateDir;
 
+	std::string m_homeDirectory;
+
 	bool m_initialized = false;
 	bool m_useCache = true;
 };
