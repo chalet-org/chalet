@@ -17,7 +17,6 @@
 #include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -167,6 +166,9 @@ bool BuildJsonParser::parseRoot(const Json& inNode)
 
 	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "externalDepDir"))
 		m_state.paths.setExternalDepDir(std::move(val));
+
+	if (StringList list; assignStringListFromConfig(list, inNode, "path"))
+		m_state.environment.addPaths(std::move(list));
 
 	return true;
 }

@@ -9,7 +9,6 @@
 #include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -121,7 +120,12 @@ bool AppBundlerMacOS::bundleForPlatform()
 	// TODO: Generalized version of this in AppBundler
 	Output::lineBreak();
 	Output::print(Color::Blue, "   Creating the MacOS application bundle...");
-	Output::lineBreak();
+
+	const auto& universalBinaryArches = macosBundle.universalBinaryArches();
+	if (universalBinaryArches.size() < 2)
+	{
+		Output::lineBreak();
+	}
 
 	Commands::makeDirectory(m_frameworkPath, m_cleanOutput);
 
@@ -396,7 +400,12 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	if (m_cleanOutput)
 	{
-		Output::lineBreak();
+		const auto& universalBinaryArches = macosBundle.universalBinaryArches();
+		if (universalBinaryArches.size() < 2)
+		{
+			Output::lineBreak();
+		}
+
 		Output::print(Color::Blue, "   Creating the disk image for the application...");
 		Output::lineBreak();
 	}

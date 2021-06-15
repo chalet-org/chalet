@@ -53,8 +53,6 @@ private:
 #endif
 
 	std::string m_detectedArch;
-
-	bool m_cleanOutput = false;
 };
 }
 

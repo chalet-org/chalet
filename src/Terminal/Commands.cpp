@@ -109,12 +109,12 @@ fs::path Commands::getWorkingDirectoryPath()
 }
 
 /*****************************************************************************/
-bool Commands::changeWorkingDirectory(const std::string& inValue)
+bool Commands::changeWorkingDirectory(const std::string& inPath)
 {
 	try
 	{
 		std::error_code errorCode;
-		fs::current_path(inValue, errorCode);
+		fs::current_path(inPath, errorCode);
 		return errorCode.operator bool();
 	}
 	catch (const fs::filesystem_error& err)
@@ -125,11 +125,11 @@ bool Commands::changeWorkingDirectory(const std::string& inValue)
 }
 
 /*****************************************************************************/
-bool Commands::pathIsFile(const std::string& inValue)
+bool Commands::pathIsFile(const std::string& inPath)
 {
 	try
 	{
-		return fs::is_regular_file(inValue);
+		return fs::is_regular_file(inPath);
 	}
 	catch (const fs::filesystem_error& err)
 	{
@@ -139,11 +139,25 @@ bool Commands::pathIsFile(const std::string& inValue)
 }
 
 /*****************************************************************************/
-bool Commands::pathIsDirectory(const std::string& inValue)
+bool Commands::pathIsDirectory(const std::string& inPath)
 {
 	try
 	{
-		return fs::is_directory(inValue);
+		return fs::is_directory(inPath);
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::error(err.what());
+		return false;
+	}
+}
+
+/*****************************************************************************/
+bool Commands::pathIsSymLink(const std::string& inPath)
+{
+	try
+	{
+		return fs::is_symlink(inPath);
 	}
 	catch (const fs::filesystem_error& err)
 	{
@@ -178,6 +192,22 @@ std::string Commands::getAbsolutePath(const std::string& inPath)
 		std::string ret = path.string();
 		Path::sanitize(ret);
 		return ret;
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::error(err.what());
+		return inPath;
+	}
+}
+
+/*****************************************************************************/
+std::string Commands::resolveSymlink(const std::string& inPath)
+{
+	try
+	{
+		auto path = fs::read_symlink(inPath);
+		auto out = path.string();
+		return out;
 	}
 	catch (const fs::filesystem_error& err)
 	{
@@ -806,6 +836,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	}
 	#endif
 #endif
+
 	return result;
 }
 

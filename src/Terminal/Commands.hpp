@@ -16,13 +16,15 @@ using CreateSubprocessFunc = std::function<void(int /* pid */)>;
 
 std::string getWorkingDirectory();
 fs::path getWorkingDirectoryPath();
-bool changeWorkingDirectory(const std::string& inValue);
+bool changeWorkingDirectory(const std::string& inPath);
 
-bool pathIsFile(const std::string& inValue);
-bool pathIsDirectory(const std::string& inValue);
+bool pathIsFile(const std::string& inPath);
+bool pathIsDirectory(const std::string& inPath);
+bool pathIsSymLink(const std::string& inPath);
 
 std::string getCanonicalPath(const std::string& inPath);
 std::string getAbsolutePath(const std::string& inPath);
+std::string resolveSymlink(const std::string& inPath);
 
 std::uintmax_t getPathSize(const std::string& inPath, const bool inCleanOutput = true);
 std::int64_t getLastWriteTime(const std::string& inFile);

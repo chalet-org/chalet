@@ -18,6 +18,7 @@
 #include "State/SourceFileCache.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/WorkspaceCache.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/MsvcEnvironment.hpp"
 
 namespace chalet
@@ -25,7 +26,6 @@ namespace chalet
 struct StatePrototype;
 struct AncillaryTools;
 struct WorkspaceCache;
-struct WorkspaceEnvironment;
 
 class BuildState
 {
@@ -37,10 +37,10 @@ public:
 
 	const AncillaryTools& ancillaryTools;
 	const DistributionTargetList& distribution;
-	const WorkspaceEnvironment& environment;
 	WorkspaceCache& cache;
 
 	BuildInfo info;
+	WorkspaceEnvironment environment;
 	CompilerTools toolchain;
 	BuildPaths paths;
 	MsvcEnvironment msvcEnvironment;

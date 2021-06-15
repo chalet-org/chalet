@@ -14,7 +14,6 @@
 #include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 
 // https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically?view=msvc-160
 

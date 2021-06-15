@@ -8,7 +8,6 @@
 #include "Libraries/Format.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"

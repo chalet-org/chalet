@@ -18,7 +18,6 @@
 #include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
@@ -652,7 +651,10 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 
 	auto result = buildTimer.stop();
 
-	Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
+	if (result > 0)
+	{
+		Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
+	}
 	Output::lineBreak();
 
 	return true;
@@ -669,7 +671,10 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 
 	auto result = buildTimer.stop();
 
-	Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
+	if (result > 0)
+	{
+		Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
+	}
 	Output::lineBreak();
 
 	return true;

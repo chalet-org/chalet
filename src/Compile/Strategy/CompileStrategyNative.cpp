@@ -7,7 +7,6 @@
 
 #include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

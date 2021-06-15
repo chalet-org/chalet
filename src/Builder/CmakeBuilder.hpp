@@ -20,7 +20,7 @@ public:
 
 private:
 	std::string getGenerator() const;
-	std::string getArch() const;
+	std::string getPlatform() const;
 	StringList getGeneratorCommand(const std::string& inLocation) const;
 	StringList getBuildCommand(const std::string& inLocation) const;
 

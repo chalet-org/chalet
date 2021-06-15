@@ -8,7 +8,6 @@
 #include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"

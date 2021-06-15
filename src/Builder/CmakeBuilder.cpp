@@ -9,7 +9,6 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
@@ -108,13 +107,14 @@ std::string CmakeBuilder::getGenerator() const
 }
 
 /*****************************************************************************/
-std::string CmakeBuilder::getArch() const
+std::string CmakeBuilder::getPlatform() const
 {
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 	const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
 
 	std::string ret;
 
+	// Note: The -A flag is only really used by VS
 	if (!isNinja && compileConfig.isMsvc())
 	{
 		switch (m_state.info.targetArchitecture())
@@ -147,15 +147,23 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 	{
 		buildConfiguration = "Debug";
 	}
+#if defined(CHALET_MACOS)
+	std::string targetArch = m_state.info.targetArchitectureString();
+	{
+		auto dash = targetArch.find('-');
+		targetArch = targetArch.substr(0, dash);
+	}
+#endif
+
 	auto& cmake = m_state.toolchain.cmake();
 
 	StringList ret{ cmake, "-G", getGenerator() };
 
-	std::string arch = getArch();
-	if (!arch.empty())
+	std::string platform = getPlatform();
+	if (!platform.empty())
 	{
 		ret.push_back("-A");
-		ret.push_back(arch);
+		ret.push_back(platform);
 	}
 
 	if (!m_buildFile.empty())
@@ -176,6 +184,9 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 		ret.push_back("-D" + define);
 	}
 	ret.push_back("-DCMAKE_BUILD_TYPE=" + buildConfiguration);
+#if defined(CHALET_MACOS)
+	ret.push_back("-DCMAKE_OSX_ARCHITECTURES=" + targetArch);
+#endif
 
 	ret.push_back("-S");
 	ret.push_back(inLocation);

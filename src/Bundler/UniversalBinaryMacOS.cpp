@@ -116,7 +116,34 @@ StringList UniversalBinaryMacOS::getProjectFiles(const BuildState& inState) cons
 				{
 					for (auto& dep : iter->second)
 					{
-						List::addIfDoesNotExist(ret, dep);
+						auto file = String::getPathFilename(dep);
+						for (auto& p : inState.environment.path())
+						{
+							auto out = fmt::format("{}/{}", p, file);
+							if (Commands::pathExists(out))
+							{
+								dep = std::move(out);
+								break;
+							}
+						}
+
+						if (Commands::pathIsSymLink(dep))
+						{
+							file = Commands::resolveSymlink(dep);
+							for (auto& p : inState.environment.path())
+							{
+								auto out = fmt::format("{}/{}", p, file);
+								if (Commands::pathExists(out))
+								{
+									List::addIfDoesNotExist(ret, std::move(out));
+									break;
+								}
+							}
+						}
+						else
+						{
+							List::addIfDoesNotExist(ret, dep);
+						}
 					}
 				}
 			}
@@ -163,15 +190,13 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 		if (Commands::copySilent(inFile, tmpFolder))
 		{
 			auto iter = dependencyMap.find(inFile);
-			if (iter == dependencyMap.end())
+			if (iter != dependencyMap.end())
 			{
-				Diagnostic::error(fmt::format("There was an error finding the file: {}", inFile));
-				return std::make_pair(std::string(), std::string());
-			}
-			if (!AppBundlerMacOS::changeRPathOfDependents(installNameTool, file, iter->second, tmpFile, true))
-			{
-				Diagnostic::error("Error chaning run path for file: {}", tmpFile);
-				return std::make_pair(std::string(), std::string());
+				if (!AppBundlerMacOS::changeRPathOfDependents(installNameTool, file, iter->second, tmpFile, true))
+				{
+					Diagnostic::error("Error changing run path for file: {}", tmpFile);
+					return std::make_pair(std::string(), std::string());
+				}
 			}
 		}
 		return std::make_pair(std::move(tmpFile), std::move(tmpFolder));
@@ -183,6 +208,11 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 		auto& fileUniversal = outputFilesUniversal[i];
 
 		auto outFolder = String::getPathFolder(fileUniversal);
+		if (outFolder.empty())
+		{
+			Diagnostic::error("Error creating temp folder folders for universal binary.");
+			return false;
+		}
 
 		auto [tmpFileA, tmpFolderA] = makeIntermediateFile(outputFilesA[i], archA, outFolder);
 		if (tmpFileA.empty())
@@ -191,8 +221,6 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 		auto [tmpFileB, tmpFolderB] = makeIntermediateFile(outputFilesB[i], archB, outFolder);
 		if (tmpFileA.empty())
 			return false;
-
-		// LOG(fileArchA, fileArchB, fileUniversal);
 
 		// Example:
 		// lipo -create -output universal-apple-darwin_Release/chalet x86_64-apple-darwin_Release/chalet  arm64-apple-darwin_Release/chalet

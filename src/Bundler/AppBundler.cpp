@@ -92,7 +92,6 @@ bool AppBundler::runBuilds(const bool inInstallDependencies)
 bool AppBundler::run(const DistributionTarget& inTarget)
 {
 	const auto& buildFile = m_inputs.buildFile();
-	m_cleanOutput = m_prototype.environment.cleanOutput();
 
 	if (inTarget->isDistributionBundle())
 	{
@@ -153,7 +152,7 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 				return false;
 		}
 
-		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, buildFile, m_cleanOutput);
+		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, buildFile, buildState->environment.cleanOutput());
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error(fmt::format("There was an error removing the previous distribution bundle for: {}", inTarget->name()));
@@ -162,8 +161,15 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 
 		bundle.initialize(*buildState);
 
-		if (!gatherDependencies(bundle, *buildState))
-			return false;
+#if defined(CHALET_MACOS)
+		if (universalBinaryArches.size() < 2)
+		{
+#endif
+			if (!gatherDependencies(bundle, *buildState))
+				return false;
+#if defined(CHALET_MACOS)
+		}
+#endif
 
 		if (!runBundleTarget(*bundler, *buildState))
 			return false;
@@ -236,9 +242,11 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	makeBundlePath(bundlePath, executablePath, resourcePath);
 
+	bool cleanOutput = inState.environment.cleanOutput();
+
 	// Timer timer;
 
-	const auto copyDependency = [cleanOutput = m_cleanOutput](const std::string& inDep, const std::string& inOutPath) -> bool {
+	const auto copyDependency = [cleanOutput = cleanOutput](const std::string& inDep, const std::string& inOutPath) -> bool {
 		if (Commands::pathExists(inDep))
 		{
 			const auto filename = String::getPathFilename(inDep);
@@ -325,7 +333,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 		const auto filename = String::getPathFilename(exec);
 		const auto executable = fmt::format("{}/{}", executablePath, filename);
 
-		if (!Commands::setExecutableFlag(executable, m_cleanOutput))
+		if (!Commands::setExecutableFlag(executable, cleanOutput))
 		{
 			Diagnostic::warn(fmt::format("Exececutable flag could not be set for: {}", executable));
 			continue;
@@ -335,8 +343,8 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	// LOG("Distribution dependencies gathered in:", timer.asString());
 
-	Commands::forEachFileMatch(resourcePath, bundle.excludes(), [this](const fs::path& inPath) {
-		Commands::remove(inPath.string(), m_cleanOutput);
+	Commands::forEachFileMatch(resourcePath, bundle.excludes(), [&](const fs::path& inPath) {
+		Commands::remove(inPath.string(), cleanOutput);
 	});
 
 	if (copyCount > 0)
@@ -412,35 +420,49 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 								const auto filename = String::getPathFilename(dep);
 								if (dep.empty()
 									|| List::contains(depsFromJson, dep)
-									|| List::contains(depsFromJson, filename)
-									//  || List::contains(projectNames, dep)
-								)
+									|| List::contains(depsFromJson, filename))
 									continue;
 
-								std::string depPath;
 								if (!Commands::pathExists(dep))
 								{
-									depPath = Commands::which(filename);
-									if (depPath.empty())
+									std::string resolved = Commands::which(filename);
+									if (resolved.empty())
 									{
 										Diagnostic::error(fmt::format("Dependency not found in path: '{}'", dep));
 										return false;
 									}
-								}
-								else
-								{
-									depPath = dep;
+									dep = std::move(resolved);
 								}
 
-								if (m_dependencyMap.find(depPath) == m_dependencyMap.end())
+								if (m_dependencyMap.find(dep) == m_dependencyMap.end())
 								{
 									StringList depsOfDeps;
-									if (!inState.ancillaryTools.getExecutableDependencies(depPath, depsOfDeps))
+									if (!inState.ancillaryTools.getExecutableDependencies(dep, depsOfDeps))
 									{
-										Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", depPath));
+										Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", dep));
 										return false;
 									}
-									m_dependencyMap.emplace(std::move(depPath), std::move(depsOfDeps));
+
+									for (auto& d : depsOfDeps)
+									{
+										auto file = String::getPathFilename(d);
+										if (dep.empty()
+											|| List::contains(depsFromJson, d)
+											|| List::contains(depsFromJson, file))
+											continue;
+
+										if (!Commands::pathExists(d))
+										{
+											std::string resolved = Commands::which(file);
+											if (resolved.empty())
+											{
+												Diagnostic::error(fmt::format("Dependency not found in path: '{}'", d));
+												return false;
+											}
+											d = std::move(resolved);
+										}
+									}
+									m_dependencyMap.emplace(dep, std::move(depsOfDeps));
 								}
 							}
 						}
@@ -478,7 +500,8 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_prototype.ancillaryTools, inBuildFile, m_cleanOutput);
+	bool cleanOutput = true;
+	ScriptRunner scriptRunner(m_prototype.ancillaryTools, inBuildFile, cleanOutput);
 	if (!scriptRunner.run(scripts))
 	{
 		Output::lineBreak();
@@ -496,9 +519,10 @@ bool AppBundler::removeOldFiles(IAppBundler& inBundler)
 	const auto& bundle = inBundler.bundle();
 	const auto& outDir = bundle.outDir();
 
+	bool cleanOutput = true;
 	if (!List::contains(m_removedDirs, outDir))
 	{
-		Commands::removeRecursively(outDir, m_cleanOutput);
+		Commands::removeRecursively(outDir, cleanOutput);
 		m_removedDirs.push_back(outDir);
 	}
 
@@ -515,13 +539,14 @@ bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::stri
 	List::addIfDoesNotExist(dirList, inExecutablePath);
 	List::addIfDoesNotExist(dirList, inResourcePath);
 
+	bool cleanOutput = true;
 	// make prod dir
 	for (auto& dir : dirList)
 	{
 		if (Commands::pathExists(dir))
 			continue;
 
-		if (!Commands::makeDirectory(dir, m_cleanOutput))
+		if (!Commands::makeDirectory(dir, cleanOutput))
 			return false;
 	}
 
@@ -546,5 +571,4 @@ std::unique_ptr<BuildState> AppBundler::getUniversalState(BuildState& inState, c
 
 	return buildState;
 }
-
 }
