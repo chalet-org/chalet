@@ -9,10 +9,11 @@
 namespace chalet
 {
 struct WorkspaceCache;
+struct BuildInfo;
 
 struct SourceFileCache
 {
-	explicit SourceFileCache(WorkspaceCache& inCache);
+	explicit SourceFileCache(WorkspaceCache& inCache, const BuildInfo& inInfo);
 
 	bool initialize();
 	bool save();
@@ -30,6 +31,7 @@ private:
 	LastWrite& getLastWrite(const std::string& inFile) const;
 
 	WorkspaceCache& m_cache;
+	const BuildInfo& m_info;
 
 	std::string m_filename;
 

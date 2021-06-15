@@ -34,7 +34,7 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 	toolchain(m_inputs, *this),
 	paths(m_inputs, info),
 	msvcEnvironment(*this),
-	sourceCache(m_prototype.cache)
+	sourceCache(m_prototype.cache, info)
 {
 }
 
