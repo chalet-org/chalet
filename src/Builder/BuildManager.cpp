@@ -18,6 +18,7 @@
 #include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
@@ -55,7 +56,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 #endif
 
 	m_removeCache.clear();
-	m_cleanOutput = !m_state.showCommands();
+	m_cleanOutput = !m_state.environment.showCommands();
 
 	if (inRoute == Route::Clean)
 	{
@@ -253,7 +254,7 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
 
 	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
-	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), m_state.dumpAssembly(), objExtension);
+	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), m_state.environment.dumpAssembly(), objExtension);
 
 	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
 	{
@@ -325,7 +326,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 			continue;
 		}
 
-		for (auto& path : m_state.environmentPath())
+		for (auto& path : m_state.environment.path())
 		{
 			resolved = fmt::format("{}/{}", path, dep);
 			if (Commands::pathExists(resolved))
@@ -391,7 +392,7 @@ bool BuildManager::doRun(const ProjectTarget& inProject)
 	// This is required for profiling
 	auto& installNameTool = m_state.ancillaryTools.installNameTool();
 	// install_name_tool -add_rpath @executable_path/chalet_external/SFML/lib
-	for (auto p : m_state.environmentPath())
+	for (auto p : m_state.environment.path())
 	{
 		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
 		Commands::subprocessNoOutput({ installNameTool, "-add_rpath", fmt::format("@executable_path/{}", p), file }, m_cleanOutput);

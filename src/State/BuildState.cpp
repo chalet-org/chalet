@@ -85,35 +85,6 @@ void BuildState::saveCaches()
 }
 
 /*****************************************************************************/
-const StringList& BuildState::environmentPath() const noexcept
-{
-	return m_prototype.environment.path();
-}
-
-void BuildState::addEnvironmentPaths(StringList&& inList)
-{
-	m_prototype.environment.addPaths(std::move(inList));
-}
-
-/*****************************************************************************/
-bool BuildState::dumpAssembly() const noexcept
-{
-	return m_prototype.environment.dumpAssembly();
-}
-
-/*****************************************************************************/
-bool BuildState::showCommands() const noexcept
-{
-	return m_prototype.environment.showCommands();
-}
-
-/*****************************************************************************/
-uint BuildState::maxJobs() const noexcept
-{
-	return m_prototype.environment.maxJobs();
-}
-
-/*****************************************************************************/
 bool BuildState::initializeBuildConfiguration()
 {
 	auto& config = m_inputs.buildConfiguration();

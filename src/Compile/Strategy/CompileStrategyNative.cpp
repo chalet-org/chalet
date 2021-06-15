@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -120,7 +121,7 @@ void signalHandler(int inSignal)
 /*****************************************************************************/
 CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
 	ICompileStrategy(StrategyType::Native, inState),
-	m_threadPool(m_state.maxJobs())
+	m_threadPool(m_state.environment.maxJobs())
 {
 }
 
@@ -202,7 +203,7 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 	const auto& config = m_state.toolchain.getConfig(inProject.language());
 	auto executeCommandFunc = config.isMsvc() ? executeCommandMsvc : executeCommand;
 
-	bool cleanOutput = !m_state.showCommands();
+	bool cleanOutput = !m_state.environment.showCommands();
 
 	s_compileIndex = 1;
 	uint totalCompiles = static_cast<uint>(compiles.size());
@@ -386,7 +387,7 @@ CompileStrategyNative::CommandList CompileStrategyNative::getAsmCommands(const S
 	chalet_assert(m_project != nullptr, "");
 
 	CommandList ret;
-	if (!m_state.dumpAssembly())
+	if (!m_state.environment.dumpAssembly())
 		return ret;
 
 	const auto& objDir = m_state.paths.objDir();

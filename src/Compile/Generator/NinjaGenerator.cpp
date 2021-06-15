@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -85,7 +86,7 @@ build build_{hash}: phony | {target}
 
 	//
 
-	if (m_state.dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		auto assemblies = String::join(inOutputs.assemblyList);
 		ninjaTemplate += fmt::format(R"ninja(
@@ -185,7 +186,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 
 	rules += getObjBuildRules(inOutputs.objectList, pchTarget);
 
-	if (m_state.dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		auto assemblies = String::excludeIf(m_assemblies, inOutputs.assemblyList);
 		if (!assemblies.empty())
@@ -266,7 +267,7 @@ std::string NinjaGenerator::getAsmRule()
 {
 	std::string ret;
 
-	if (m_state.dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		std::string asmCompile = m_state.ancillaryTools.getAsmGenerateCommand("$in", "$out");
 
@@ -497,7 +498,7 @@ std::string NinjaGenerator::getAsmBuildRules(const StringList& inAssemblies)
 {
 	std::string ret;
 
-	if (m_state.dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		const auto& asmDir = m_state.paths.asmDir();
 		const auto& objDir = m_state.paths.objDir();

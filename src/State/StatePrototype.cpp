@@ -192,6 +192,9 @@ bool StatePrototype::parseRequired(const Json& inNode)
 	if (!inNode.is_object())
 		return false;
 
+	if (StringList list; assignStringListFromConfig(list, inNode, "path"))
+		environment.addPaths(std::move(list));
+
 	if (!parseConfiguration(inNode))
 		return false;
 

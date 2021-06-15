@@ -9,6 +9,7 @@
 #include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -325,7 +326,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 {
 	auto& installNameTool = m_state.ancillaryTools.installNameTool();
 
-	for (auto p : m_state.environmentPath())
+	for (auto p : m_state.environment.path())
 	{
 		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
 		Commands::subprocessNoOutput({ installNameTool, "-delete_rpath", fmt::format("@executable_path/{}", p), m_executableOutputPath }, m_cleanOutput);

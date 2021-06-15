@@ -7,6 +7,7 @@
 
 #include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -34,7 +35,7 @@ const char* unicodeRightwardsTripleArrow()
 MakefileGeneratorGNU::MakefileGeneratorGNU(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
-	m_cleanOutput = !m_state.showCommands();
+	m_cleanOutput = !m_state.environment.showCommands();
 	// m_generateDependencies = inToolchain->type() != ToolchainType::MSVC && !Environment::isContinuousIntegrationServer();
 	m_generateDependencies = true;
 }
@@ -146,7 +147,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 		recipes += getObjcRecipe(ext);
 	}
 
-	if (m_state.dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		recipes += getAsmRecipe();
 		recipes += getDumpAsmRecipe();
@@ -199,7 +200,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 {
 	std::string ret;
 
-	if (m_state.dumpAssembly())
+	if (m_state.environment.dumpAssembly())
 	{
 		const auto& asmDir = m_state.paths.asmDir();
 		const auto& objDir = m_state.paths.objDir();
@@ -290,7 +291,7 @@ std::string MakefileGeneratorGNU::getDumpAsmRecipe() const
 
 	std::string ret;
 
-	const bool dumpAssembly = m_state.dumpAssembly();
+	const bool dumpAssembly = m_state.environment.dumpAssembly();
 	if (dumpAssembly)
 	{
 		ret = fmt::format(R"makefile(
@@ -313,7 +314,7 @@ std::string MakefileGeneratorGNU::getAsmRecipe() const
 
 	std::string ext("asm");
 
-	const bool dumpAssembly = m_state.dumpAssembly();
+	const bool dumpAssembly = m_state.environment.dumpAssembly();
 	if (dumpAssembly)
 	{
 		for (auto& location : m_project->locations())

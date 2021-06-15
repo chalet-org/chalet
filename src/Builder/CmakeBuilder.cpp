@@ -9,6 +9,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
@@ -189,7 +190,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 {
 	auto& cmake = m_state.toolchain.cmake();
-	const auto maxJobs = m_state.maxJobs();
+	const auto maxJobs = m_state.environment.maxJobs();
 
 	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
 

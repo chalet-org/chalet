@@ -8,6 +8,7 @@
 #include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
@@ -156,7 +157,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			Output::msgFetchingDependency(repository, checkoutTo);
 
-			uint maxJobs = m_state.maxJobs();
+			uint maxJobs = m_state.environment.maxJobs();
 
 			StringList cmd;
 			cmd.push_back(m_state.ancillaryTools.git());

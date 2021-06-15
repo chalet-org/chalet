@@ -14,6 +14,7 @@
 #include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 
 // https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically?view=msvc-160
 
@@ -762,7 +763,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainMSVC::addCgThreads(StringList& outArgList) const
 {
-	uint maxJobs = m_state.maxJobs();
+	uint maxJobs = m_state.environment.maxJobs();
 	if (maxJobs > 4)
 	{
 		maxJobs = std::min<uint>(maxJobs, 8);

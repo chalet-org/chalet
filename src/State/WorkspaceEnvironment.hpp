@@ -40,7 +40,7 @@ struct WorkspaceEnvironment
 
 private:
 	std::string m_externalDepDir{ "chalet_external" };
-	StringList m_path;
+	mutable StringList m_path;
 
 	std::string m_pathString;
 	StringList m_pathInternal;

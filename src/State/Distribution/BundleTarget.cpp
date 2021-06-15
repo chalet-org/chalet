@@ -251,7 +251,7 @@ void BundleTarget::initializeDependencies(const BuildState& inState)
 
 		if (!found)
 		{
-			for (auto& path : inState.environmentPath())
+			for (auto& path : inState.environment.path())
 			{
 				resolved = fmt::format("{}/{}", path, dependency);
 				if (Commands::pathExists(resolved))

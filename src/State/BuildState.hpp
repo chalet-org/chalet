@@ -54,13 +54,6 @@ public:
 	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
 	void saveCaches();
 
-	const StringList& environmentPath() const noexcept;
-	void addEnvironmentPaths(StringList&& inList);
-
-	bool dumpAssembly() const noexcept;
-	bool showCommands() const noexcept;
-	uint maxJobs() const noexcept;
-
 private:
 	bool initializeBuildConfiguration();
 	bool parseCacheJson();
