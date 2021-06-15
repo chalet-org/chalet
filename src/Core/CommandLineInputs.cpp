@@ -5,7 +5,6 @@
 
 #include "Core/CommandLineInputs.hpp"
 
-#include "Builder/BuildManager.hpp"
 #include "Core/Arch.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

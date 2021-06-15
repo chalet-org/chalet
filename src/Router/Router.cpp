@@ -172,7 +172,6 @@ bool Router::cmdBundle(StatePrototype& inPrototype)
 			return false;
 	}
 
-	Output::lineBreak();
 	Output::msgBuildSuccess();
 	Output::lineBreak();
 

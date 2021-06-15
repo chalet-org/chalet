@@ -65,16 +65,16 @@ bool BuildState::initialize(const bool inInstallDependencies)
 }
 
 /*****************************************************************************/
-bool BuildState::doBuild()
+bool BuildState::doBuild(const bool inShowSuccess)
 {
 	BuildManager mgr(m_inputs, *this);
-	return mgr.run(m_inputs.command());
+	return mgr.run(m_inputs.command(), inShowSuccess);
 }
 
-bool BuildState::doBuild(const Route inRoute)
+bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 {
 	BuildManager mgr(m_inputs, *this);
-	return mgr.run(inRoute);
+	return mgr.run(inRoute, inShowSuccess);
 }
 
 /*****************************************************************************/
@@ -173,8 +173,8 @@ bool BuildState::initializeBuild()
 	if (!toolchain.initialize(targets))
 	{
 		const auto& targetArch = m_inputs.toolchainPreference().type == ToolchainType::GNU ?
-			m_inputs.targetArchitecture() :
-			info.targetArchitectureString();
+			  m_inputs.targetArchitecture() :
+			  info.targetArchitectureString();
 
 		Diagnostic::error(fmt::format("Requested arch '{}' is not supported.", targetArch));
 		return false;

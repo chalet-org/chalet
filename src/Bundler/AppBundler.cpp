@@ -79,7 +79,7 @@ bool AppBundler::runBuilds(const bool inInstallDependencies)
 		if (!state->initialize(inInstallDependencies))
 			return false;
 
-		if (!state->doBuild(Route::Build))
+		if (!state->doBuild(Route::Build, false))
 			return false;
 	}
 

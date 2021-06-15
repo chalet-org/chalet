@@ -47,7 +47,7 @@ BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inStat
 }
 
 /*****************************************************************************/
-bool BuildManager::run(const Route inRoute)
+bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 {
 #if defined(CHALET_MACOS)
 	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalArm64_X64)
@@ -169,8 +169,11 @@ bool BuildManager::run(const Route inRoute)
 	}
 	else if (inRoute == Route::Build || inRoute == Route::Rebuild)
 	{
-		Output::msgBuildSuccess();
-		Output::lineBreak();
+		if (inShowSuccess)
+		{
+			Output::msgBuildSuccess();
+			Output::lineBreak();
+		}
 	}
 
 	return true;

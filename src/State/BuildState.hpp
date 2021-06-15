@@ -50,8 +50,8 @@ public:
 	SourceFileCache sourceCache;
 
 	bool initialize(const bool inInstallDependencies);
-	bool doBuild();
-	bool doBuild(const Route inRoute);
+	bool doBuild(const bool inShowSuccess = true);
+	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
 	void saveCaches();
 
 	const StringList& environmentPath() const noexcept;

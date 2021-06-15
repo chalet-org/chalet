@@ -27,7 +27,7 @@ class BuildManager
 public:
 	explicit BuildManager(const CommandLineInputs& inInputs, BuildState& inState);
 
-	bool run(const Route inRoute);
+	bool run(const Route inRoute, const bool inShowSuccess = true);
 
 private:
 	void printBuildInformation();

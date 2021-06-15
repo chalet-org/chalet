@@ -5,7 +5,6 @@
 
 #include "Core/ArgumentPatterns.hpp"
 
-#include "Builder/BuildManager.hpp"
 #include "Libraries/Format.hpp"
 // #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
