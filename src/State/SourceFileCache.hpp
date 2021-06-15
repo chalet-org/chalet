@@ -19,6 +19,7 @@ struct SourceFileCache
 	bool save();
 
 	bool fileChangedOrDoesNotExist(const std::string& inFile) const;
+	bool fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const;
 
 private:
 	struct LastWrite

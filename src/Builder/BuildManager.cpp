@@ -590,7 +590,8 @@ bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 
 	if (m_state.environment.dumpAssembly())
 	{
-		if (!m_asmDumper.dumpProject(inProject))
+		bool forced = true;
+		if (!m_asmDumper.dumpProject(inProject, forced))
 			return false;
 	}
 

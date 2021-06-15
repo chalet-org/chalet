@@ -20,10 +20,10 @@ struct AssemblyDumper
 
 	bool addProject(const ProjectTarget& inProject, StringList&& inAssemblies);
 
-	bool dumpProject(const ProjectTarget& inProject) const;
+	bool dumpProject(const ProjectTarget& inProject, const bool inForced = false) const;
 
 private:
-	CommandPool::CmdList getAsmCommands(const StringList& inAssemblies) const;
+	CommandPool::CmdList getAsmCommands(const StringList& inAssemblies, const bool inForced) const;
 	StringList getAsmGenerate(const std::string& object, const std::string& target) const;
 
 	BuildState& m_state;

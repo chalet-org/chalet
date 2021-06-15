@@ -113,6 +113,25 @@ bool SourceFileCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 }
 
 /*****************************************************************************/
+bool SourceFileCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
+{
+	if (!Commands::pathExists(inFile) || !Commands::pathExists(inDependency))
+	{
+		m_lastWrites[inFile].lastWrite = m_initializedTime;
+		m_lastWrites[inFile].needsUpdate = true;
+		m_dirty = true;
+		return true;
+	}
+
+	auto& fileData = getLastWrite(inFile);
+	if (fileData.needsUpdate)
+		return add(inFile);
+
+	// TODO: Older file should also restat, but need to check values more closely '!=' seemed to always restat
+	return fileData.lastWrite > m_lastBuildTime;
+}
+
+/*****************************************************************************/
 bool SourceFileCache::add(const std::string& inFile) const
 {
 	auto lastWrite = Commands::getLastWriteTime(inFile);

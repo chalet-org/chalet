@@ -9,6 +9,7 @@
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -32,7 +33,7 @@ bool AssemblyDumper::addProject(const ProjectTarget& inProject, StringList&& inA
 }
 
 /*****************************************************************************/
-bool AssemblyDumper::dumpProject(const ProjectTarget& inProject) const
+bool AssemblyDumper::dumpProject(const ProjectTarget& inProject, const bool inForced) const
 {
 	auto& name = inProject.name();
 	if (m_outputs.find(name) == m_outputs.end())
@@ -41,7 +42,7 @@ bool AssemblyDumper::dumpProject(const ProjectTarget& inProject) const
 	auto& assemblies = m_outputs.at(name);
 
 	CommandPool::Target target;
-	target.list = getAsmCommands(assemblies);
+	target.list = getAsmCommands(assemblies, inForced);
 
 	CommandPool::Settings settings;
 	settings.msvcCommand = false;
@@ -62,7 +63,7 @@ bool AssemblyDumper::dumpProject(const ProjectTarget& inProject) const
 }
 
 /*****************************************************************************/
-CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssemblies) const
+CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssemblies, const bool inForced) const
 {
 	CommandPool::CmdList ret;
 
@@ -73,6 +74,11 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssembli
 	{
 		if (asmFile.empty() || List::contains(m_cache, asmFile))
 			continue;
+
+		if (inForced)
+		{
+			Commands::remove(asmFile);
+		}
 
 		std::string object = asmFile;
 		String::replaceAll(object, asmDir, objDir);
@@ -88,7 +94,7 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssembli
 		else if (String::endsWith({ ".res", ".obj" }, source))
 			source = source.substr(0, source.size() - 4);
 
-		if (m_state.sourceCache.fileChangedOrDoesNotExist(source))
+		if (m_state.sourceCache.fileChangedOrDoesNotExist(source, asmFile))
 		{
 			CommandPool::Cmd out;
 			out.output = asmFile;
