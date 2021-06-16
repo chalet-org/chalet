@@ -426,8 +426,10 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 									std::string resolved = Commands::which(filename);
 									if (resolved.empty())
 									{
-										Diagnostic::error(fmt::format("Dependency not found in path: '{}'", dep));
-										return false;
+										// Diagnostic::warn(fmt::format("Dependency not copied (not found in path): '{}'", dep));
+										// return false;
+										// We probably don't care about them anyway
+										continue;
 									}
 									dep = std::move(resolved);
 								}
@@ -454,8 +456,10 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 											std::string resolved = Commands::which(file);
 											if (resolved.empty())
 											{
-												Diagnostic::error(fmt::format("Dependency not found in path: '{}'", d));
-												return false;
+												// Diagnostic::warn(fmt::format("Dependency not copied (not found in path): '{}'", d));
+												// return false;
+												// We probably don't care about them anyway
+												continue;
 											}
 											d = std::move(resolved);
 										}
