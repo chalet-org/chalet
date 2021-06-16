@@ -19,11 +19,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const CommandLineInputs& inInputs, const bool inCleanOutput) :
+SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const CommandLineInputs& inInputs) :
 	m_state(inState),
 	m_target(inTarget),
-	m_inputs(inInputs),
-	m_cleanOutput(inCleanOutput)
+	m_inputs(inInputs)
 {
 }
 
@@ -68,8 +67,7 @@ bool SubChaletBuilder::run()
 		// Commands::changeWorkingDirectory(workingDirectory);
 
 		StringList cmd = getBuildCommand();
-		// UNUSED(m_cleanOutput);
-		result = Commands::subprocess(cmd, location, m_cleanOutput);
+		result = Commands::subprocess(cmd, location);
 
 		// Commands::changeWorkingDirectory(oldWorkingDirectory);
 		Environment::setPath(oldPath);

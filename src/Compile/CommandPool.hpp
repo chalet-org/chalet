@@ -34,7 +34,7 @@ struct CommandPool
 	struct Settings
 	{
 		bool quiet = false;
-		bool cleanOutput = true;
+		bool showCommands = false;
 		bool msvcCommand = false;
 		bool renameAfterCommand = false;
 	};

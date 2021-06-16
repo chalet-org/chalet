@@ -15,7 +15,7 @@ struct BundleTarget;
 
 struct IAppBundler
 {
-	explicit IAppBundler(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput);
+	explicit IAppBundler(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap);
 	virtual ~IAppBundler() = default;
 
 	const BundleTarget& bundle() const noexcept;
@@ -27,14 +27,12 @@ struct IAppBundler
 	virtual std::string getExecutablePath() const = 0;
 	virtual std::string getResourcePath() const = 0;
 
-	[[nodiscard]] static std::unique_ptr<IAppBundler> make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile, const bool inCleanOutput);
+	[[nodiscard]] static std::unique_ptr<IAppBundler> make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile);
 
 protected:
 	BuildState& m_state;
 	const BundleTarget& m_bundle;
 	BinaryDependencyMap& m_dependencyMap;
-
-	bool m_cleanOutput = false;
 };
 }
 

@@ -152,7 +152,7 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 				return false;
 		}
 
-		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, buildFile, buildState->environment.cleanOutput());
+		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, buildFile);
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error(fmt::format("There was an error removing the previous distribution bundle for: {}", inTarget->name()));
@@ -242,11 +242,9 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	makeBundlePath(bundlePath, executablePath, resourcePath);
 
-	bool cleanOutput = inState.environment.cleanOutput();
-
 	// Timer timer;
 
-	const auto copyDependency = [cleanOutput = cleanOutput](const std::string& inDep, const std::string& inOutPath) -> bool {
+	const auto copyDependency = [](const std::string& inDep, const std::string& inOutPath) -> bool {
 		if (Commands::pathExists(inDep))
 		{
 			const auto filename = String::getPathFilename(inDep);
@@ -256,7 +254,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 				if (Commands::pathExists(outputFile))
 					return true; // Already copied - duplicate dependency
 			}
-			if (!Commands::copy(inDep, inOutPath, cleanOutput))
+			if (!Commands::copy(inDep, inOutPath))
 			{
 				Diagnostic::warn(fmt::format("Dependency '{}' could not be copied to: {}", filename, inOutPath));
 				return false;
@@ -333,7 +331,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 		const auto filename = String::getPathFilename(exec);
 		const auto executable = fmt::format("{}/{}", executablePath, filename);
 
-		if (!Commands::setExecutableFlag(executable, cleanOutput))
+		if (!Commands::setExecutableFlag(executable))
 		{
 			Diagnostic::warn(fmt::format("Exececutable flag could not be set for: {}", executable));
 			continue;
@@ -344,7 +342,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	// LOG("Distribution dependencies gathered in:", timer.asString());
 
 	Commands::forEachFileMatch(resourcePath, bundle.excludes(), [&](const fs::path& inPath) {
-		Commands::remove(inPath.string(), cleanOutput);
+		Commands::remove(inPath.string());
 	});
 
 	if (copyCount > 0)
@@ -500,8 +498,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 
 	Output::lineBreak();
 
-	bool cleanOutput = true;
-	ScriptRunner scriptRunner(m_prototype.ancillaryTools, inBuildFile, cleanOutput);
+	ScriptRunner scriptRunner(m_prototype.ancillaryTools, inBuildFile);
 	if (!scriptRunner.run(scripts))
 	{
 		Output::lineBreak();
@@ -519,10 +516,9 @@ bool AppBundler::removeOldFiles(IAppBundler& inBundler)
 	const auto& bundle = inBundler.bundle();
 	const auto& outDir = bundle.outDir();
 
-	bool cleanOutput = true;
 	if (!List::contains(m_removedDirs, outDir))
 	{
-		Commands::removeRecursively(outDir, cleanOutput);
+		Commands::removeRecursively(outDir);
 		m_removedDirs.push_back(outDir);
 	}
 
@@ -539,14 +535,13 @@ bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::stri
 	List::addIfDoesNotExist(dirList, inExecutablePath);
 	List::addIfDoesNotExist(dirList, inResourcePath);
 
-	bool cleanOutput = true;
 	// make prod dir
 	for (auto& dir : dirList)
 	{
 		if (Commands::pathExists(dir))
 			continue;
 
-		if (!Commands::makeDirectory(dir, cleanOutput))
+		if (!Commands::makeDirectory(dir))
 			return false;
 	}
 

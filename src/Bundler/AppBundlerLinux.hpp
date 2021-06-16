@@ -15,7 +15,7 @@ namespace chalet
 class AppBundlerLinux : public IAppBundler
 {
 public:
-	explicit AppBundlerLinux(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput);
+	explicit AppBundlerLinux(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap);
 
 	virtual bool removeOldFiles() final;
 	virtual bool bundleForPlatform() final;

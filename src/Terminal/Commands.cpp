@@ -217,11 +217,11 @@ std::string Commands::resolveSymlink(const std::string& inPath)
 }
 
 /*****************************************************************************/
-std::uintmax_t Commands::getPathSize(const std::string& inPath, const bool inCleanOutput)
+std::uintmax_t Commands::getPathSize(const std::string& inPath)
 {
 	try
 	{
-		if (!inCleanOutput)
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("get directory size: {}", inPath));
 
 		const auto path = fs::path{ inPath };
@@ -244,11 +244,11 @@ std::uintmax_t Commands::getPathSize(const std::string& inPath, const bool inCle
 }
 
 /*****************************************************************************/
-bool Commands::makeDirectory(const std::string& inPath, const bool inCleanOutput)
+bool Commands::makeDirectory(const std::string& inPath)
 {
 	try
 	{
-		if (!inCleanOutput)
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("make directory: {}", inPath));
 
 		fs::create_directories(inPath);
@@ -263,7 +263,7 @@ bool Commands::makeDirectory(const std::string& inPath, const bool inCleanOutput
 }
 
 /*****************************************************************************/
-bool Commands::makeDirectories(const StringList& inPaths, const bool inCleanOutput)
+bool Commands::makeDirectories(const StringList& inPaths)
 {
 	bool result = true;
 	for (auto& path : inPaths)
@@ -271,21 +271,21 @@ bool Commands::makeDirectories(const StringList& inPaths, const bool inCleanOutp
 		if (Commands::pathExists(path))
 			continue;
 
-		result &= Commands::makeDirectory(path, inCleanOutput);
+		result &= Commands::makeDirectory(path);
 	}
 
 	return result;
 }
 
 /*****************************************************************************/
-bool Commands::remove(const std::string& inPath, const bool inCleanOutput)
+bool Commands::remove(const std::string& inPath)
 {
 	try
 	{
 		if (!fs::exists(inPath))
 			return true;
 
-		if (!inCleanOutput)
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("remove file: {}", inPath));
 
 		bool result = fs::remove(inPath);
@@ -299,11 +299,11 @@ bool Commands::remove(const std::string& inPath, const bool inCleanOutput)
 }
 
 /*****************************************************************************/
-bool Commands::removeRecursively(const std::string& inPath, const bool inCleanOutput)
+bool Commands::removeRecursively(const std::string& inPath)
 {
 	try
 	{
-		if (!inCleanOutput)
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("remove recursively: {}", inPath));
 
 		bool result = fs::remove_all(inPath) > 0;
@@ -317,10 +317,10 @@ bool Commands::removeRecursively(const std::string& inPath, const bool inCleanOu
 }
 
 /*****************************************************************************/
-bool Commands::setExecutableFlag(const std::string& inPath, const bool inCleanOutput)
+bool Commands::setExecutableFlag(const std::string& inPath)
 {
 #if defined(CHALET_WIN32)
-	UNUSED(inPath, inCleanOutput);
+	UNUSED(inPath);
 	return true;
 #else
 	try
@@ -328,7 +328,7 @@ bool Commands::setExecutableFlag(const std::string& inPath, const bool inCleanOu
 		// if (inPath.front() == '/')
 		// 	return false;
 
-		if (!inCleanOutput)
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("set executable permission: {}", inPath));
 
 		fs::permissions(inPath,
@@ -346,15 +346,15 @@ bool Commands::setExecutableFlag(const std::string& inPath, const bool inCleanOu
 }
 
 /*****************************************************************************/
-bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput)
+bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std::string& inTo)
 {
 #if defined(CHALET_WIN32)
-	UNUSED(inFrom, inTo, inCleanOutput);
+	UNUSED(inFrom, inTo);
 	return true;
 #else
 	try
 	{
-		if (!inCleanOutput)
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("create directory symlink: {} {}", inFrom, inTo));
 
 		fs::create_directory_symlink(inFrom, inTo);
@@ -370,15 +370,15 @@ bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std:
 }
 
 /*****************************************************************************/
-bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput)
+bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& inTo)
 {
 #if defined(CHALET_WIN32)
-	UNUSED(inFrom, inTo, inCleanOutput);
+	UNUSED(inFrom, inTo);
 	return true;
 #else
 	try
 	{
-		if (!inCleanOutput)
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("create symlink: {} {}", inFrom, inTo));
 
 		fs::create_symlink(inFrom, inTo);
@@ -394,17 +394,17 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 }
 
 /*****************************************************************************/
-bool Commands::copy(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput)
+bool Commands::copy(const std::string& inFrom, const std::string& inTo)
 {
 	try
 	{
 		fs::path from{ inFrom };
 		fs::path to{ inTo / from.filename() };
 
-		if (inCleanOutput)
-			Output::msgCopying(inFrom, inTo);
-		else
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("copy to path: {} {}", inFrom, inTo));
+		else
+			Output::msgCopying(inFrom, inTo);
 
 		fs::copy(from, to, fs::copy_options::recursive);
 
@@ -437,17 +437,17 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
 }
 
 /*****************************************************************************/
-bool Commands::copySkipExisting(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput)
+bool Commands::copySkipExisting(const std::string& inFrom, const std::string& inTo)
 {
 	try
 	{
 		fs::path from{ inFrom };
 		fs::path to{ inTo / from.filename() };
 
-		if (inCleanOutput)
-			Output::msgCopying(inFrom, inTo);
-		else
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("copy to path: {} {}", inFrom, inTo));
+		else
+			Output::msgCopying(inFrom, inTo);
 
 		fs::copy(from, to, fs::copy_options::recursive | fs::copy_options::skip_existing);
 
@@ -461,14 +461,14 @@ bool Commands::copySkipExisting(const std::string& inFrom, const std::string& in
 }
 
 /*****************************************************************************/
-bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput)
+bool Commands::copyRename(const std::string& inFrom, const std::string& inTo)
 {
 	try
 	{
-		if (inCleanOutput)
-			Output::msgCopying(inFrom, inTo);
-		else
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("copy: {} {}", inFrom, inTo));
+		else
+			Output::msgCopying(inFrom, inTo);
 
 		fs::copy(inFrom, inTo);
 
@@ -482,11 +482,11 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 }
 
 /*****************************************************************************/
-bool Commands::rename(const std::string& inFrom, const std::string& inTo, const bool inCleanOutput)
+bool Commands::rename(const std::string& inFrom, const std::string& inTo)
 {
 	try
 	{
-		if (!inCleanOutput)
+		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("rename: {} {}", inFrom, inTo));
 
 		if (fs::exists(inTo))
@@ -702,9 +702,9 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 }
 
 /*****************************************************************************/
-bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap, const bool inCleanOutput)
+bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap)
 {
-	if (!inCleanOutput)
+	if (Output::showCommands())
 		Output::print(Color::Blue, inCmd);
 
 	chalet_assert(inStdOut != PipeOption::Pipe, "Commands::subprocess must implement onStdOut");
@@ -721,9 +721,9 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 }
 
 /*****************************************************************************/
-std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCleanOutput, const PipeOption inStdErr)
+std::string Commands::subprocessOutput(const StringList& inCmd, const PipeOption inStdErr)
 {
-	if (!inCleanOutput)
+	if (Output::showCommands())
 		Output::print(Color::Blue, inCmd);
 
 	std::string ret;
@@ -748,9 +748,9 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const bool inCle
 }
 
 /*****************************************************************************/
-bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr, const bool inCleanOutput)
+bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr)
 {
-	if (!inCleanOutput)
+	if (Output::showCommands())
 		Output::print(Color::Blue, inCmd);
 
 	std::ofstream outputStream(inOutputFile);
@@ -796,11 +796,11 @@ std::string Commands::isolateVersion(const std::string& outString)
 }
 
 /*****************************************************************************/
-std::string Commands::which(const std::string& inExecutable, const bool inCleanOutput)
+std::string Commands::which(const std::string& inExecutable)
 {
 	std::string result;
 #if defined(CHALET_WIN32)
-	if (!inCleanOutput)
+	if (Output::showCommands())
 		Output::print(Color::Blue, fmt::format("executable search: {}", inExecutable));
 
 	LPSTR lpFilePart;
@@ -822,7 +822,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 	StringList command;
 	command = { "which", inExecutable };
 
-	result = Commands::subprocessOutput(command, inCleanOutput);
+	result = Commands::subprocessOutput(command);
 	if (String::contains("which: no", result))
 		return std::string();
 
@@ -841,7 +841,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inCleanO
 }
 
 /*****************************************************************************/
-std::string Commands::testCompilerFlags(const std::string& inCompilerExec, const bool inCleanOutput)
+std::string Commands::testCompilerFlags(const std::string& inCompilerExec)
 {
 	if (inCompilerExec.empty())
 		return std::string();
@@ -853,7 +853,7 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec, const
 #endif
 
 	StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
-	auto result = Commands::subprocessOutput(command, inCleanOutput);
+	auto result = Commands::subprocessOutput(command);
 
 	return result;
 }

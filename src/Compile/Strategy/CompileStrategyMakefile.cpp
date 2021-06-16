@@ -150,7 +150,6 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 	auto& outputs = m_outputs.at(inProject.name());
 	m_state.paths.setBuildEnvironment(outputs, hash);
 
-	const bool clean = true;
 #if defined(CHALET_WIN32)
 	std::cout << Output::getAnsiStyle(Color::Blue);
 #endif
@@ -158,7 +157,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 	{
 
 		command.push_back(fmt::format("build_{}", hash));
-		bool result = subprocessMakefile(command, clean);
+		bool result = subprocessMakefile(command);
 
 		if (!result)
 			return false;
@@ -196,7 +195,6 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 
 	auto& hash = m_hashes.at(inProject.name());
 
-	const bool clean = true;
 	#if defined(CHALET_WIN32)
 	std::cout << Output::getAnsiStyle(Color::Blue);
 	#endif
@@ -208,7 +206,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 		command.back() = fmt::format("pch_{}", hash);
 		Environment::set("CL", "");
 
-		bool result = subprocessMakefile(command, clean);
+		bool result = subprocessMakefile(command);
 		if (!result)
 			return false;
 	}
@@ -218,7 +216,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 		command.back() = fmt::format("build_{}", hash);
 		Environment::set("CL", "/MP"); // doesn't work
 
-		bool result = subprocessMakefile(command, clean);
+		bool result = subprocessMakefile(command);
 		if (!result)
 			return false;
 	}
@@ -228,10 +226,10 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 #endif
 
 /*****************************************************************************/
-bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, const bool inCleanOutput, std::string inCwd) const
+bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::string inCwd) const
 {
-	if (!inCleanOutput)
-		Output::print(Color::Blue, inCmd);
+	// if (Output::showCommands())
+	// 	Output::print(Color::Blue, inCmd);
 
 	std::string errorOutput;
 	Subprocess::PipeFunc onStdErr = [&errorOutput](std::string inData) {

@@ -21,7 +21,6 @@ namespace chalet
 MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
-	m_cleanOutput = !m_state.environment.showCommands();
 	// m_generateDependencies = !Environment::isContinuousIntegrationServer();
 	m_generateDependencies = false;
 }
@@ -111,7 +110,7 @@ std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& fil
 	const auto blue = getColorBlue();
 	std::string printer;
 
-	if (m_cleanOutput)
+	if (Output::cleanOutput())
 	{
 		auto outFile = String::getPathFilename(file);
 		printer = getPrinter(fmt::format("{blue}{outFile}", FMT_ARG(blue), FMT_ARG(outFile)));
@@ -130,7 +129,7 @@ std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& file
 	const auto blue = getColorBlue();
 	std::string printer;
 
-	if (m_cleanOutput)
+	if (Output::cleanOutput())
 	{
 		// Note: If trying to echo "=   Linking (file)", nmake will eat up the additional spaces,
 		//   so both them and the symbol are taken out since
@@ -390,7 +389,7 @@ std::string MakefileGeneratorNMake::getLinkerPreReqs(const StringList& objects) 
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getQuietFlag() const
 {
-	return m_cleanOutput ? "@" : "";
+	return Output::cleanOutput() ? "@" : "";
 }
 
 /*****************************************************************************/

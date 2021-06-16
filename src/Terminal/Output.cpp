@@ -20,6 +20,8 @@ namespace
 {
 /*****************************************************************************/
 static bool s_quietNonBuild = false;
+static bool s_showCommands = false;
+static bool s_allowCommandsToShow = true;
 
 /*****************************************************************************/
 std::string getFormattedBuildTarget(const std::string& inBuildConfiguration, const std::string& inName)
@@ -87,6 +89,27 @@ bool Output::quietNonBuild()
 void Output::setQuietNonBuild(const bool inValue)
 {
 	s_quietNonBuild = inValue;
+}
+
+/*****************************************************************************/
+bool Output::cleanOutput()
+{
+	return !s_showCommands || !s_allowCommandsToShow;
+}
+
+bool Output::showCommands()
+{
+	return s_allowCommandsToShow && s_showCommands;
+}
+
+void Output::setShowCommands(const bool inValue)
+{
+	s_showCommands = inValue;
+}
+
+void Output::setShowCommandOverride(const bool inValue)
+{
+	s_allowCommandsToShow = inValue;
 }
 
 /*****************************************************************************/

@@ -20,9 +20,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-DependencyManager::DependencyManager(BuildState& inState, const bool inCleanOutput) :
-	m_state(inState),
-	m_cleanOutput(inCleanOutput)
+DependencyManager::DependencyManager(BuildState& inState) :
+	m_state(inState)
 {
 }
 
@@ -65,7 +64,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		{
 			if (!dependencyCache.contains(destination))
 			{
-				const std::string commitHash = m_state.ancillaryTools.getCurrentGitRepositoryHash(destination, m_cleanOutput);
+				const std::string commitHash = m_state.ancillaryTools.getCurrentGitRepositoryHash(destination);
 				dependencyCache[destination] = commitHash;
 				localConfig.setDirty(true);
 			}
@@ -88,39 +87,39 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 		if (update)
 		{
-			const std::string currentBranch = m_state.ancillaryTools.getCurrentGitRepositoryBranch(destination, m_cleanOutput);
+			const std::string currentBranch = m_state.ancillaryTools.getCurrentGitRepositoryBranch(destination);
 			// LOG('\'', currentBranch, "'  '", branch, '\'');
 
 			// in this case, HEAD means the branch is on a tag or commit
 			if ((currentBranch != "HEAD" || commitValid) && currentBranch != branch)
 			{
 				// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-				result &= Commands::removeRecursively(destination, m_cleanOutput);
+				result &= Commands::removeRecursively(destination);
 				update = false;
 			}
 
 			if (update && commitValid)
 			{
-				const std::string currentCommit = m_state.ancillaryTools.getCurrentGitRepositoryHash(destination, m_cleanOutput);
+				const std::string currentCommit = m_state.ancillaryTools.getCurrentGitRepositoryHash(destination);
 				// LOG('\'', currentTag, "'  '", tag, '\'');
 
 				if (!String::startsWith(commit, currentCommit))
 				{
 					// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-					result &= Commands::removeRecursively(destination, m_cleanOutput);
+					result &= Commands::removeRecursively(destination);
 					update = false;
 				}
 			}
 
 			if (update && tagValid)
 			{
-				const std::string currentTag = m_state.ancillaryTools.getCurrentGitRepositoryTag(destination, m_cleanOutput);
+				const std::string currentTag = m_state.ancillaryTools.getCurrentGitRepositoryTag(destination);
 				// LOG('\'', currentTag, "'  '", tag, '\'');
 
 				if (currentTag != tag)
 				{
 					// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-					result &= Commands::removeRecursively(destination, m_cleanOutput);
+					result &= Commands::removeRecursively(destination);
 					update = false;
 				}
 			}
@@ -134,7 +133,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 				if (dependencyCache.contains(destination))
 				{
 					// We're using a shallow clone, so this only works if the branch hasn't changed
-					const std::string originHash = m_state.ancillaryTools.getCurrentGitRepositoryHashFromRemote(destination, branch, m_cleanOutput);
+					const std::string originHash = m_state.ancillaryTools.getCurrentGitRepositoryHashFromRemote(destination, branch);
 					const std::string cachedHash = dependencyCache[destination].get<std::string>();
 
 					if (cachedHash == originHash)
@@ -145,7 +144,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 				Output::msgUpdatingDependency(repository, checkoutTo);
 
-				res &= m_state.ancillaryTools.updateGitRepositoryShallow(destination, m_cleanOutput);
+				res &= m_state.ancillaryTools.updateGitRepositoryShallow(destination);
 				result &= res;
 			}
 		}
@@ -193,11 +192,11 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			// LOG(cmd);
 
-			res &= Commands::subprocess(cmd, m_cleanOutput);
+			res &= Commands::subprocess(cmd);
 
 			if (commitValid)
 			{
-				res &= m_state.ancillaryTools.resetGitRepositoryToCommit(destination, commit, m_cleanOutput);
+				res &= m_state.ancillaryTools.resetGitRepositoryToCommit(destination, commit);
 			}
 
 			result &= res;
@@ -205,7 +204,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 		if (res)
 		{
-			const std::string commitHash = m_state.ancillaryTools.getCurrentGitRepositoryHash(destination, m_cleanOutput);
+			const std::string commitHash = m_state.ancillaryTools.getCurrentGitRepositoryHash(destination);
 
 			// Output::msgDisplayBlack(commitHash); // useful for debugging
 			dependencyCache[destination] = commitHash;
@@ -213,7 +212,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		}
 		else
 		{
-			result &= Commands::removeRecursively(destination, m_cleanOutput);
+			result &= Commands::removeRecursively(destination);
 		}
 
 		++count;
@@ -232,7 +231,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		{
 			if (Commands::pathExists(it))
 			{
-				const bool removed = Commands::removeRecursively(it, m_cleanOutput);
+				const bool removed = Commands::removeRecursively(it);
 				if (removed)
 				{
 					std::string name = it;

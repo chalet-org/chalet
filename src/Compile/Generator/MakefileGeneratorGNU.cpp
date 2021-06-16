@@ -34,7 +34,6 @@ const char* unicodeRightwardsTripleArrow()
 MakefileGeneratorGNU::MakefileGeneratorGNU(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
-	m_cleanOutput = !m_state.environment.showCommands();
 	// m_generateDependencies = inToolchain->type() != ToolchainType::MSVC && !Environment::isContinuousIntegrationServer();
 	m_generateDependencies = true;
 }
@@ -194,7 +193,7 @@ std::string MakefileGeneratorGNU::getCompileEchoSources() const
 	const auto blue = getColorBlue();
 	std::string printer;
 
-	if (m_cleanOutput)
+	if (Output::cleanOutput())
 	{
 		printer = getPrinter(fmt::format("   {}$<", blue), true);
 	}
@@ -212,7 +211,7 @@ std::string MakefileGeneratorGNU::getCompileEchoLinker() const
 	const auto blue = getColorBlue();
 	std::string printer;
 
-	if (m_cleanOutput)
+	if (Output::cleanOutput())
 	{
 		const auto arrow = unicodeRightwardsTripleArrow();
 		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
@@ -542,7 +541,7 @@ std::string MakefileGeneratorGNU::getLinkerPreReqs() const
 /*****************************************************************************/
 std::string MakefileGeneratorGNU::getQuietFlag() const
 {
-	return m_cleanOutput ? "@" : "";
+	return Output::cleanOutput() ? "@" : "";
 }
 
 /*****************************************************************************/

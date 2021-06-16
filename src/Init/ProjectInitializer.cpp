@@ -47,8 +47,7 @@ bool ProjectInitializer::run()
 	if (!makeBuildJson())
 		return false;
 
-	bool cleanOutput = true;
-	Commands::makeDirectory(fmt::format("{}/src/", m_rootPath), cleanOutput);
+	Commands::makeDirectory(fmt::format("{}/src/", m_rootPath));
 
 	bool result = true;
 

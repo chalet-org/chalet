@@ -28,7 +28,7 @@ private:
 	bool buildNMake(const ProjectTarget& inProject) const;
 #endif
 
-	bool subprocessMakefile(const StringList& inCmd, const bool inCleanOutput, std::string inCwd = std::string()) const;
+	bool subprocessMakefile(const StringList& inCmd, std::string inCwd = std::string()) const;
 
 	std::string m_cacheFile;
 

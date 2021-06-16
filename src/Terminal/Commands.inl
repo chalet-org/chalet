@@ -8,62 +8,62 @@
 namespace chalet
 {
 /*****************************************************************************/
-inline bool Commands::subprocess(const StringList& inCmd, const bool inCleanOutput)
+inline bool Commands::subprocess(const StringList& inCmd)
 {
-	return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr, {}, inCleanOutput);
+	return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr, {});
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocess(const StringList& inCmd, CreateSubprocessFunc inOnCreate, const bool inCleanOutput)
+inline bool Commands::subprocess(const StringList& inCmd, CreateSubprocessFunc inOnCreate)
 {
-	return Commands::subprocess(inCmd, std::string(), std::move(inOnCreate), PipeOption::StdOut, PipeOption::StdErr, {}, inCleanOutput);
+	return Commands::subprocess(inCmd, std::string(), std::move(inOnCreate), PipeOption::StdOut, PipeOption::StdErr, {});
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocess(const StringList& inCmd, std::string inCwd, const bool inCleanOutput)
+inline bool Commands::subprocess(const StringList& inCmd, std::string inCwd)
 {
-	return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, PipeOption::StdErr, {}, inCleanOutput);
+	return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, PipeOption::StdErr, {});
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdErr, const bool inCleanOutput)
+inline bool Commands::subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdErr)
 {
-	return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, inStdErr, {}, inCleanOutput);
+	return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, inStdErr, {});
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr, const bool inCleanOutput)
+inline bool Commands::subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr)
 {
-	return Commands::subprocess(inCmd, std::move(inCwd), nullptr, inStdOut, inStdErr, {}, inCleanOutput);
+	return Commands::subprocess(inCmd, std::move(inCwd), nullptr, inStdOut, inStdErr, {});
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocess(const StringList& inCmd, const PipeOption inStdErr, const bool inCleanOutput)
+inline bool Commands::subprocess(const StringList& inCmd, const PipeOption inStdErr)
 {
-	return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::StdOut, inStdErr, {}, inCleanOutput);
+	return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::StdOut, inStdErr, {});
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocess(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr, const bool inCleanOutput)
+inline bool Commands::subprocess(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr)
 {
-	return Commands::subprocess(inCmd, std::string(), nullptr, inStdOut, inStdErr, {}, inCleanOutput);
+	return Commands::subprocess(inCmd, std::string(), nullptr, inStdOut, inStdErr, {});
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocessNoOutput(const StringList& inCmd, const bool inCleanOutput)
+inline bool Commands::subprocessNoOutput(const StringList& inCmd)
 {
-	return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::Close, PipeOption::Close, {}, inCleanOutput);
+	return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::Close, PipeOption::Close, {});
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocessNoOutput(const StringList& inCmd, std::string inCwd, const bool inCleanOutput)
+inline bool Commands::subprocessNoOutput(const StringList& inCmd, std::string inCwd)
 {
-	return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::Close, PipeOption::Close, {}, inCleanOutput);
+	return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::Close, PipeOption::Close, {});
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const bool inCleanOutput)
+inline bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile)
 {
-	return Commands::subprocessOutputToFile(inCmd, inOutputFile, PipeOption::Pipe, inCleanOutput);
+	return Commands::subprocessOutputToFile(inCmd, inOutputFile, PipeOption::Pipe);
 }
 }

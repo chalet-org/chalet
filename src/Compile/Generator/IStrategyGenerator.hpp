@@ -39,7 +39,6 @@ protected:
 
 	std::string m_hash;
 
-	bool m_cleanOutput = false;
 	bool m_generateDependencies = false;
 };
 

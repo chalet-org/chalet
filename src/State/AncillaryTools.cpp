@@ -424,81 +424,81 @@ void AncillaryTools::setXcrun(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-bool AncillaryTools::installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput) const
+bool AncillaryTools::installHomebrewPackage(const std::string& inPackage) const
 {
 #if defined(CHALET_MACOS)
-	const std::string result = Commands::subprocessOutput({ m_brew, "ls", "--versions", inPackage }, inCleanOutput);
+	const std::string result = Commands::subprocessOutput({ m_brew, "ls", "--versions", inPackage });
 	if (result.empty())
 	{
-		if (!Commands::subprocess({ m_brew, "install", inPackage }, inCleanOutput))
+		if (!Commands::subprocess({ m_brew, "install", inPackage }))
 			return false;
 	}
 
 	return true;
 #else
-	UNUSED(inPackage, inCleanOutput);
+	UNUSED(inPackage);
 	return false;
 #endif
 }
 
 /*****************************************************************************/
-std::string AncillaryTools::getCurrentGitRepositoryBranch(const std::string& inRepoPath, const bool inCleanOutput) const
+std::string AncillaryTools::getCurrentGitRepositoryBranch(const std::string& inRepoPath) const
 {
-	std::string branch = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" }, inCleanOutput);
+	std::string branch = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" });
 	return branch;
 }
 
 /*****************************************************************************/
-std::string AncillaryTools::getCurrentGitRepositoryTag(const std::string& inRepoPath, const bool inCleanOutput) const
+std::string AncillaryTools::getCurrentGitRepositoryTag(const std::string& inRepoPath) const
 {
-	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "abbrev=0" }, inCleanOutput, PipeOption::Close);
+	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "abbrev=0" }, PipeOption::Close);
 	return tag;
 }
 
 /*****************************************************************************/
-std::string AncillaryTools::getCurrentGitRepositoryHash(const std::string& inRepoPath, const bool inCleanOutput) const
+std::string AncillaryTools::getCurrentGitRepositoryHash(const std::string& inRepoPath) const
 {
-	std::string hash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" }, inCleanOutput);
+	std::string hash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" });
 	return hash;
 }
 
 /*****************************************************************************/
-std::string AncillaryTools::getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch, const bool inCleanOutput) const
+std::string AncillaryTools::getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch) const
 {
-	std::string originHash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) }, inCleanOutput);
+	std::string originHash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) });
 	return originHash;
 }
 
 /*****************************************************************************/
-bool AncillaryTools::updateGitRepositoryShallow(const std::string& inRepoPath, const bool inCleanOutput) const
+bool AncillaryTools::updateGitRepositoryShallow(const std::string& inRepoPath) const
 {
-	return Commands::subprocess({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" }, inCleanOutput);
+	return Commands::subprocess({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" });
 }
 
 /*****************************************************************************/
-bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit, const bool inCleanOutput) const
+bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const
 {
-	return Commands::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit }, inCleanOutput);
+	return Commands::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
 }
 
 /*****************************************************************************/
-bool AncillaryTools::plistConvertToBinary(const std::string& inInput, const std::string& inOutput, const bool inCleanOutput) const
+bool AncillaryTools::plistConvertToBinary(const std::string& inInput, const std::string& inOutput) const
 {
 #if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_plutil, "-convert", "binary1", inInput, "-o", inOutput }, inCleanOutput);
+	return Commands::subprocess({ m_plutil, "-convert", "binary1", inInput, "-o", inOutput });
 #else
-	UNUSED(inInput, inOutput, inCleanOutput);
+	UNUSED(inInput, inOutput);
 	return false;
 #endif
 }
 
 /*****************************************************************************/
-bool AncillaryTools::plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue, const bool inCleanOutput) const
+bool AncillaryTools::plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue) const
 {
 #if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_plutil, "-replace", inKey, "-string", inValue, inPlistFile }, inCleanOutput);
+	return Commands::subprocess({ m_plutil, "-replace", inKey, "-string", inValue, inPlistFile });
 #else
-	UNUSED(inPlistFile, inKey, inValue, inCleanOutput);
+	UNUSED(inPlistFile, inKey, inValue);
 	return false;
 #endif
 }

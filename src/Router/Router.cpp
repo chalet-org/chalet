@@ -195,7 +195,7 @@ bool Router::cmdDebug()
 	{
 		Timer timer;
 
-		Commands::subprocess({ "echo", "Hello World!" }, false);
+		Commands::subprocess({ "echo", "Hello World!" });
 
 		auto result = timer.stop();
 		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
@@ -211,9 +211,9 @@ bool Router::cmdDebug()
 
 		// std::cout << std::endl;
 
-		// Commands::subprocess({ "chalet", "build", "TestingStuff" }, false);
-		Commands::subprocess({ "cd", "build" }, false);
-		// auto output = Commands::subprocessOutput({ "which", "chalet" }, false);
+		// Commands::subprocess({ "chalet", "build", "TestingStuff" });
+		Commands::subprocess({ "cd", "build" });
+		// auto output = Commands::subprocessOutput({ "which", "chalet" });
 		// LOG(output);
 
 		auto result = timer.stop();

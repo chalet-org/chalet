@@ -13,14 +13,12 @@ namespace chalet
 class DependencyManager
 {
 public:
-	explicit DependencyManager(BuildState& inState, const bool inCleanOutput);
+	explicit DependencyManager(BuildState& inState);
 
 	bool run(const bool inInstallCmd);
 
 private:
 	BuildState& m_state;
-
-	const bool m_cleanOutput;
 };
 }
 

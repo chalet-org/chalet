@@ -18,10 +18,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-ScriptRunner::ScriptRunner(const AncillaryTools& inTools, const std::string& inBuildFile, const bool inCleanOutput) :
+ScriptRunner::ScriptRunner(const AncillaryTools& inTools, const std::string& inBuildFile) :
 	m_tools(inTools),
-	m_buildFile(inBuildFile),
-	m_cleanOutput(inCleanOutput)
+	m_buildFile(inBuildFile)
 {
 }
 
@@ -64,7 +63,7 @@ bool ScriptRunner::run(const std::string& inScript)
 		return false;
 	}
 
-	Commands::setExecutableFlag(outScriptPath, m_cleanOutput);
+	Commands::setExecutableFlag(outScriptPath);
 
 	StringList command;
 
@@ -222,7 +221,7 @@ bool ScriptRunner::run(const std::string& inScript)
 
 	command.push_back(std::move(outScriptPath));
 
-	if (!Commands::subprocess(command, m_cleanOutput))
+	if (!Commands::subprocess(command))
 	{
 		Output::lineBreak();
 		auto exitCode = Subprocess::getLastExitCode();

@@ -192,7 +192,7 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 			auto iter = dependencyMap.find(inFile);
 			if (iter != dependencyMap.end())
 			{
-				if (!AppBundlerMacOS::changeRPathOfDependents(installNameTool, file, iter->second, tmpFile, true))
+				if (!AppBundlerMacOS::changeRPathOfDependents(installNameTool, file, iter->second, tmpFile))
 				{
 					Diagnostic::error("Error changing run path for file: {}", tmpFile);
 					return std::make_pair(std::string(), std::string());

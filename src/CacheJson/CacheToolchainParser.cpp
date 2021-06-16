@@ -9,6 +9,7 @@
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -138,6 +139,8 @@ bool CacheToolchainParser::validatePaths()
 	}
 	*/
 
+	Output::setShowCommandOverride(false);
+
 	// m_state.toolchain.detectToolchain();
 	auto& toolchain = m_inputs.toolchainPreference();
 
@@ -184,6 +187,8 @@ bool CacheToolchainParser::validatePaths()
 		}
 	}
 #endif
+
+	Output::setShowCommandOverride(true);
 
 	return true;
 }

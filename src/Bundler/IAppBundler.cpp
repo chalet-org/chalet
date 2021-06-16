@@ -19,16 +19,16 @@
 namespace chalet
 {
 /*****************************************************************************/
-[[nodiscard]] std::unique_ptr<IAppBundler> IAppBundler::make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile, const bool inCleanOutput)
+[[nodiscard]] std::unique_ptr<IAppBundler> IAppBundler::make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile)
 {
 #if defined(CHALET_WIN32)
 	UNUSED(inBuildFile);
-	return std::make_unique<AppBundlerWindows>(inState, inBundle, inDependencyMap, inCleanOutput);
+	return std::make_unique<AppBundlerWindows>(inState, inBundle, inDependencyMap);
 #elif defined(CHALET_MACOS)
-	return std::make_unique<AppBundlerMacOS>(inState, inBundle, inDependencyMap, inBuildFile, inCleanOutput);
+	return std::make_unique<AppBundlerMacOS>(inState, inBundle, inDependencyMap, inBuildFile);
 #elif defined(CHALET_LINUX)
 	UNUSED(inBuildFile);
-	return std::make_unique<AppBundlerLinux>(inState, inBundle, inDependencyMap, inCleanOutput);
+	return std::make_unique<AppBundlerLinux>(inState, inBundle, inDependencyMap);
 #else
 	Diagnostic::errorAbort("Unimplemented AppBundler requested: ");
 	return nullptr;
@@ -36,11 +36,10 @@ namespace chalet
 }
 
 /*****************************************************************************/
-IAppBundler::IAppBundler(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput) :
+IAppBundler::IAppBundler(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap) :
 	m_state(inState),
 	m_bundle(inBundle),
-	m_dependencyMap(inDependencyMap),
-	m_cleanOutput(inCleanOutput)
+	m_dependencyMap(inDependencyMap)
 {
 }
 

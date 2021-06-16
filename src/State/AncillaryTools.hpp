@@ -112,17 +112,17 @@ struct AncillaryTools
 
 	// Commands
 
-	bool installHomebrewPackage(const std::string& inPackage, const bool inCleanOutput = true) const;
+	bool installHomebrewPackage(const std::string& inPackage) const;
 
-	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath, const bool inCleanOutput = true) const;
-	std::string getCurrentGitRepositoryTag(const std::string& inRepoPath, const bool inCleanOutput = true) const;
-	std::string getCurrentGitRepositoryHash(const std::string& inRepoPath, const bool inCleanOutput = true) const;
-	std::string getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch, const bool inCleanOutput = true) const;
-	bool updateGitRepositoryShallow(const std::string& inRepoPath, const bool inCleanOutput = true) const;
-	bool resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit, const bool inCleanOutput = true) const;
+	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath) const;
+	std::string getCurrentGitRepositoryTag(const std::string& inRepoPath) const;
+	std::string getCurrentGitRepositoryHash(const std::string& inRepoPath) const;
+	std::string getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch) const;
+	bool updateGitRepositoryShallow(const std::string& inRepoPath) const;
+	bool resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const;
 
-	bool plistConvertToBinary(const std::string& inInput, const std::string& inOutput, const bool inCleanOutput = true) const;
-	bool plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue, const bool inCleanOutput = true) const;
+	bool plistConvertToBinary(const std::string& inInput, const std::string& inOutput) const;
+	bool plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue) const;
 	bool getExecutableDependencies(const std::string& inPath, StringList& outList) const;
 
 private:

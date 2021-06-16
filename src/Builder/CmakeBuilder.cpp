@@ -18,12 +18,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarget, const bool inCleanOutput) :
+CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarget) :
 	m_state(inState),
-	m_target(inTarget),
-	m_cleanOutput(inCleanOutput)
+	m_target(inTarget)
 {
-	UNUSED(m_cleanOutput);
 }
 
 /*****************************************************************************/
@@ -56,17 +54,17 @@ bool CmakeBuilder::run()
 	{
 
 		if (outDirectoryDoesNotExist)
-			Commands::makeDirectory(m_outputLocation, m_cleanOutput);
+			Commands::makeDirectory(m_outputLocation);
 
 		{
 			StringList generatorCommand = getGeneratorCommand(location);
-			if (!Commands::subprocess(generatorCommand, m_cleanOutput))
+			if (!Commands::subprocess(generatorCommand))
 				return false;
 		}
 
 		{
 			StringList buildCommand = getBuildCommand(m_outputLocation);
-			if (!Commands::subprocess(buildCommand, PipeOption::StdOut, m_cleanOutput))
+			if (!Commands::subprocess(buildCommand, PipeOption::StdOut))
 				return false;
 		}
 

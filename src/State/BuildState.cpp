@@ -15,6 +15,7 @@
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -125,9 +126,8 @@ bool BuildState::parseBuildJson()
 bool BuildState::installDependencies()
 {
 	const auto& command = m_inputs.command();
-	const bool cleanOutput = true;
 
-	DependencyManager depMgr(*this, cleanOutput);
+	DependencyManager depMgr(*this);
 	if (!depMgr.run(command == Route::Configure))
 	{
 		Diagnostic::error("There was an error creating the dependencies.");
@@ -141,6 +141,8 @@ bool BuildState::installDependencies()
 bool BuildState::initializeBuild()
 {
 	Timer timer;
+
+	Output::setShowCommandOverride(false);
 
 	Diagnostic::info("Initializing Build", false);
 
@@ -210,6 +212,8 @@ bool BuildState::initializeBuild()
 		return false;
 
 	Diagnostic::printDone(timer.asString());
+
+	Output::setShowCommandOverride(true);
 
 	return true;
 }

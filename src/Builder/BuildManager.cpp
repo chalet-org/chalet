@@ -56,7 +56,6 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 #endif
 
 	m_removeCache.clear();
-	m_cleanOutput = !m_state.environment.showCommands();
 
 	if (inRoute == Route::Clean)
 	{
@@ -101,6 +100,11 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		}
 
 		m_strategy->saveBuildFile();
+	}
+
+	if (Output::showCommands())
+	{
+		Output::lineBreak();
 	}
 
 	bool multiTarget = m_state.targets.size() > 1;
@@ -256,7 +260,7 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
 	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), m_state.environment.dumpAssembly(), objExtension);
 
-	if (!Commands::makeDirectories(outputs.directories, m_cleanOutput))
+	if (!Commands::makeDirectories(outputs.directories))
 	{
 		Diagnostic::error(fmt::format("Error creating paths for project: {}", inProject.name()));
 		return false;
@@ -300,7 +304,7 @@ bool BuildManager::copyRunDependencies(const ProjectTarget& inProject)
 		auto depFile = String::getPathFilename(dep);
 		if (!Commands::pathExists(fmt::format("{}/{}", outputFolder, depFile)))
 		{
-			result &= Commands::copy(dep, outputFolder, true);
+			result &= Commands::copy(dep, outputFolder);
 			copied++;
 		}
 	}
@@ -401,7 +405,7 @@ bool BuildManager::doRun(const ProjectTarget& inProject)
 	for (auto p : m_state.environment.path())
 	{
 		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
-		Commands::subprocessNoOutput({ installNameTool, "-add_rpath", fmt::format("@executable_path/{}", p), file }, m_cleanOutput);
+		Commands::subprocessNoOutput({ installNameTool, "-add_rpath", fmt::format("@executable_path/{}", p), file });
 	}
 #endif
 
@@ -415,7 +419,7 @@ bool BuildManager::doRun(const ProjectTarget& inProject)
 
 	if (!m_state.configuration.enableProfiling())
 	{
-		if (!Commands::subprocess(cmd, m_cleanOutput))
+		if (!Commands::subprocess(cmd))
 		{
 			Diagnostic::error(fmt::format("{} exited with code: {}", file, Subprocess::getLastExitCode()));
 			return false;
@@ -430,7 +434,7 @@ bool BuildManager::doRun(const ProjectTarget& inProject)
 /*****************************************************************************/
 bool BuildManager::runProfiler(const ProjectTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
-	ProfilerRunner profiler(m_state, inProject, m_cleanOutput);
+	ProfilerRunner profiler(m_state, inProject);
 	return profiler.run(inCommand, inExecutable, inOutputFolder);
 }
 
@@ -456,19 +460,19 @@ bool BuildManager::doLazyClean()
 		return true;
 	}
 
-	if (m_cleanOutput)
+	if (Output::cleanOutput())
 	{
 		Output::msgCleaning();
 		Output::lineBreak();
 	}
 
-	Commands::removeRecursively(dirToClean, m_cleanOutput);
+	Commands::removeRecursively(dirToClean);
 
 	// TODO: Clean CMake projects
 	// TODO: Flag to clean externalDependencies
 	// TODO: Also clean cache files specific to build configuration
 
-	if (!m_cleanOutput)
+	if (Output::showCommands())
 		Output::lineBreak();
 
 	return true;
@@ -480,7 +484,7 @@ bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& in
 	// const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	// This prints for each project (bad)... maybe redundant since "Rebuild" is already printed
-	// if (m_cleanOutput && Commands::pathExists(buildOutputDir))
+	// if (Output::cleanOutput() && Commands::pathExists(buildOutputDir))
 	// {
 	// 	Output::msgCleaningRebuild();
 	// 	Output::lineBreak();
@@ -498,14 +502,14 @@ bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& in
 				continue;
 
 			outCache.push_back(item);
-			Commands::remove(item, m_cleanOutput);
+			Commands::remove(item);
 		}
 	};
 
 	if (!List::contains(m_removeCache, inTarget))
 	{
 		m_removeCache.push_back(inTarget);
-		Commands::remove(inTarget, m_cleanOutput);
+		Commands::remove(inTarget);
 	}
 
 	cacheAndRemove(inObjectList, m_removeCache);
@@ -528,7 +532,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript)
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_state.ancillaryTools, m_inputs.buildFile(), m_cleanOutput);
+	ScriptRunner scriptRunner(m_state.ancillaryTools, m_inputs.buildFile());
 	if (!scriptRunner.run(scripts))
 	{
 		Output::lineBreak();
@@ -645,7 +649,7 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 {
 	Timer buildTimer;
 
-	SubChaletBuilder subChalet(m_state, inTarget, m_inputs, m_cleanOutput);
+	SubChaletBuilder subChalet(m_state, inTarget, m_inputs);
 	if (!subChalet.run())
 		return false;
 
@@ -665,7 +669,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 {
 	Timer buildTimer;
 
-	CmakeBuilder cmake(m_state, inTarget, m_cleanOutput);
+	CmakeBuilder cmake(m_state, inTarget);
 	if (!cmake.run())
 		return false;
 

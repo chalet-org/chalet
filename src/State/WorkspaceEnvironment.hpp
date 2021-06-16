@@ -26,10 +26,6 @@ struct WorkspaceEnvironment
 	uint maxJobs() const noexcept;
 	void setMaxJobs(const uint inValue) noexcept;
 
-	bool showCommands() const noexcept;
-	void setShowCommands(const bool inValue) noexcept;
-	bool cleanOutput() const noexcept;
-
 	bool dumpAssembly() const noexcept;
 	void setDumpAssembly(const bool inValue) noexcept;
 
@@ -49,7 +45,6 @@ private:
 	uint m_maxJobs = 0;
 
 	bool m_dumpAssembly = false;
-	bool m_showCommands = false;
 };
 }
 

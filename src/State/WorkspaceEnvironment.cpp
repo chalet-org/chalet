@@ -68,22 +68,6 @@ void WorkspaceEnvironment::setMaxJobs(const uint inValue) noexcept
 }
 
 /*****************************************************************************/
-bool WorkspaceEnvironment::showCommands() const noexcept
-{
-	return m_showCommands;
-}
-
-void WorkspaceEnvironment::setShowCommands(const bool inValue) noexcept
-{
-	m_showCommands = inValue;
-}
-
-bool WorkspaceEnvironment::cleanOutput() const noexcept
-{
-	return !m_showCommands;
-}
-
-/*****************************************************************************/
 bool WorkspaceEnvironment::dumpAssembly() const noexcept
 {
 	return m_dumpAssembly;

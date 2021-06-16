@@ -14,10 +14,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProfilerRunner::ProfilerRunner(BuildState& inState, const ProjectTarget& inProject, const bool inCleanOutput) :
+ProfilerRunner::ProfilerRunner(BuildState& inState, const ProjectTarget& inProject) :
 	m_state(inState),
-	m_project(inProject),
-	m_cleanOutput(inCleanOutput)
+	m_project(inProject)
 {
 }
 
@@ -79,14 +78,14 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 /*****************************************************************************/
 bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
-	const bool result = Commands::subprocess(inCommand, m_cleanOutput);
+	const bool result = Commands::subprocess(inCommand);
 
 	Output::print(Color::Gray, "   Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
 
 	const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
 	Output::msgProfilerStartedGprof(profStatsFile);
 
-	if (!Commands::subprocessOutputToFile({ m_state.ancillaryTools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut, m_cleanOutput))
+	if (!Commands::subprocessOutputToFile({ m_state.ancillaryTools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut))
 	{
 		Diagnostic::error(fmt::format("{} failed to save.", profStatsFile));
 		return false;
@@ -109,7 +108,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 	auto instrumentsTrace = fmt::format("{}/profiler_analysis.trace", inOutputFolder);
 	if (Commands::pathExists(instrumentsTrace))
 	{
-		if (!Commands::removeRecursively(instrumentsTrace, m_cleanOutput))
+		if (!Commands::removeRecursively(instrumentsTrace))
 			return false;
 	}
 
@@ -136,7 +135,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 			cmd.push_back(arg);
 		}
 
-		if (!Commands::subprocess(cmd, m_cleanOutput))
+		if (!Commands::subprocess(cmd))
 			return false;
 	}
 	else
@@ -150,7 +149,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 		Output::print(Color::Gray, fmt::format("   Running {} through instruments without output...", inExecutable));
 		Output::lineBreak();
 
-		if (!Commands::subprocess(cmd, m_cleanOutput))
+		if (!Commands::subprocess(cmd))
 			return false;
 	}
 
@@ -175,10 +174,10 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 	auto onCreate = [&](int pid) -> void {
 		Output::msgProfilerStartedSample(inExecutable, sampleDuration, samplingInterval);
 
-		sampleResult = Commands::subprocess({ m_state.ancillaryTools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close, m_cleanOutput);
+		sampleResult = Commands::subprocess({ m_state.ancillaryTools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close);
 	};
 
-	bool result = Commands::subprocess(inCommand, std::move(onCreate), m_cleanOutput);
+	bool result = Commands::subprocess(inCommand, std::move(onCreate));
 	if (!sampleResult)
 		return false;
 

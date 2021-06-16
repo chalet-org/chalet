@@ -15,6 +15,11 @@ namespace Output
 bool quietNonBuild();
 void setQuietNonBuild(const bool inValue);
 
+bool cleanOutput();
+bool showCommands();
+void setShowCommands(const bool inValue);
+void setShowCommandOverride(const bool inValue);
+
 std::string getAnsiStyle(const Color inColor, const bool inBold = false);
 std::string getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold = false);
 std::string getAnsiReset();

@@ -14,7 +14,7 @@ struct CMakeTarget;
 class CmakeBuilder
 {
 public:
-	explicit CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarget, const bool inCleanOutput);
+	explicit CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarget);
 
 	bool run();
 
@@ -29,8 +29,6 @@ private:
 
 	std::string m_outputLocation;
 	std::string m_buildFile;
-
-	const bool m_cleanOutput;
 };
 }
 

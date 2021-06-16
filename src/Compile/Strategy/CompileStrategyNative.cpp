@@ -84,7 +84,7 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 
 	CommandPool::Settings settings;
 	settings.msvcCommand = config.isMsvc();
-	settings.cleanOutput = !m_state.environment.showCommands();
+	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
 	settings.renameAfterCommand = true;
 

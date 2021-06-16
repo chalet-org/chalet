@@ -70,8 +70,6 @@ private:
 	// ProjectTarget* m_project = nullptr;
 
 	std::string m_runProjectName;
-
-	bool m_cleanOutput = false;
 };
 }
 

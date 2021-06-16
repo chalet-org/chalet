@@ -23,7 +23,7 @@ std::atomic<uint> s_compileIndex = 0;
 std::function<void()> s_shutdownHandler;
 
 /*****************************************************************************/
-bool printCommand(std::string output, StringList command, Color inColor, std::string symbol, bool cleanOutput, uint total = 0)
+bool printCommand(std::string output, StringList command, Color inColor, std::string symbol, bool showCommmands, uint total = 0)
 {
 	std::unique_lock<std::mutex> lock(s_mutex);
 	if (total > 0)
@@ -42,10 +42,10 @@ bool printCommand(std::string output, StringList command, Color inColor, std::st
 		std::cout << Output::getAnsiStyle(inColor) << fmt::format("{}  ", symbol);
 	}
 
-	if (cleanOutput)
-		Output::print(inColor, output);
-	else
+	if (showCommmands)
 		Output::print(inColor, command);
+	else
+		Output::print(inColor, output);
 
 	s_compileIndex++;
 
@@ -126,7 +126,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	auto& pre = inTarget.pre;
 	auto& post = inTarget.post;
 
-	auto&& [quiet, cleanOutput, msvcCommand, renameAfterCommand] = inSettings;
+	auto&& [quiet, showCommmands, msvcCommand, renameAfterCommand] = inSettings;
 
 	::signal(SIGINT, signalHandler);
 	::signal(SIGTERM, signalHandler);
@@ -143,6 +143,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	};
 
 	Output::setQuietNonBuild(false);
+	Output::setShowCommandOverride(false);
 
 	auto executeCommandFunc = msvcCommand ? executeCommandMsvc : executeCommand;
 
@@ -153,7 +154,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	{
 		totalCompiles++;
 
-		if (!printCommand(pre.output, pre.command, pre.color, pre.symbol, cleanOutput, totalCompiles))
+		if (!printCommand(pre.output, pre.command, pre.color, pre.symbol, showCommmands, totalCompiles))
 			return onError();
 
 		if (!executeCommandFunc(pre.command, pre.renameFrom, pre.renameTo, renameAfterCommand))
@@ -164,7 +165,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	std::vector<std::future<bool>> threadResults;
 	for (auto& it : list)
 	{
-		threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, it.color, it.symbol, cleanOutput, totalCompiles));
+		threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, it.color, it.symbol, showCommmands, totalCompiles));
 		threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, renameAfterCommand));
 	}
 
@@ -196,7 +197,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 	if (!post.command.empty())
 	{
-		if (!printCommand(post.output, post.command, post.color, post.symbol, cleanOutput))
+		if (!printCommand(post.output, post.command, post.color, post.symbol, showCommmands))
 			return onError();
 
 		if (!executeCommandFunc(post.command, post.renameFrom, post.renameTo, renameAfterCommand))
@@ -212,6 +213,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	}
 
 	Output::setQuietNonBuild(quiet);
+	Output::setShowCommandOverride(true);
 
 	const bool completed = !m_canceled;
 	return completed;

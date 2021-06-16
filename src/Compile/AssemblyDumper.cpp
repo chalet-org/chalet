@@ -45,7 +45,7 @@ bool AssemblyDumper::dumpProject(const ProjectTarget& inProject, const bool inFo
 
 	CommandPool::Settings settings;
 	settings.msvcCommand = false;
-	settings.cleanOutput = !m_state.environment.showCommands();
+	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
 	settings.renameAfterCommand = false;
 

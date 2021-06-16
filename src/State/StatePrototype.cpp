@@ -12,6 +12,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -34,6 +35,8 @@ bool StatePrototype::initialize()
 	// Note: existence of m_filename is checked by Router (before the cache is made)
 	if (!parseCacheJson())
 		return false;
+
+	Output::setShowCommandOverride(false);
 
 	Timer timer;
 	Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
@@ -70,6 +73,8 @@ bool StatePrototype::initialize()
 		return false;
 
 	Diagnostic::printDone(timer.asString());
+
+	Output::setShowCommandOverride(true);
 
 	return true;
 }

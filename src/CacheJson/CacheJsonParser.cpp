@@ -13,6 +13,7 @@
 #include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -303,7 +304,7 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 	}
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, settings, kKeyShowCommands))
-		m_prototype.environment.setShowCommands(val);
+		Output::setShowCommands(val);
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, settings, kKeyDumpAssembly))
 		m_prototype.environment.setDumpAssembly(val);

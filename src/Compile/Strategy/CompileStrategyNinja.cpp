@@ -112,7 +112,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 	StringList command;
 	command.push_back(ninjaExec);
 
-	if (m_state.environment.showCommands())
+	if (Output::showCommands())
 		command.push_back("-v");
 
 	command.push_back("-f");
@@ -124,14 +124,13 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 		command.push_back("--quiet"); // forthcoming (in ninja's master branch currently)
 	}
 
-	const bool clean = true;
 	auto& hash = m_hashes.at(inProject.name());
 
 	{
 		std::cout << Output::getAnsiStyle(Color::Blue) << std::flush;
 
 		command.push_back(fmt::format("build_{}", hash));
-		bool result = subprocessNinja(command, clean);
+		bool result = subprocessNinja(command);
 
 		if (!result)
 			return false;
@@ -141,10 +140,10 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 }
 
 /*****************************************************************************/
-bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, const bool inCleanOutput, std::string inCwd) const
+bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string inCwd) const
 {
-	if (!inCleanOutput)
-		Output::print(Color::Blue, inCmd);
+	// if (Output::showCommands())
+	// 	Output::print(Color::Blue, inCmd);
 
 	bool skipOutput = false;
 	std::string noWork{ "ninja: no work to do.\n" };

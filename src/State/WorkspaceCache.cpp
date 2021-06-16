@@ -10,6 +10,7 @@
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -54,8 +55,12 @@ bool WorkspaceCache::createCacheFolder(const Type inCacheType)
 		m_removeOldCacheFolder = false;
 	}
 
+	Output::setShowCommandOverride(false);
+
 	if (!Commands::pathExists(cacheRef))
 		return Commands::makeDirectory(cacheRef);
+
+	Output::setShowCommandOverride(true);
 
 	return true;
 }
@@ -394,49 +399,14 @@ void WorkspaceCache::checkIfWorkingDirectoryChanged()
 /*****************************************************************************/
 std::string WorkspaceCache::getBuildHash(std::string appPath)
 {
-	// TODO: Keep an eye on this...
-
+	Output::setShowCommandOverride(false);
 	if (!Commands::pathExists(appPath))
 	{
-		// Get the exact path via which
-		// Note: There's no fs equivalent of this (fs::absolute returns a garbage/non-existent path)
 		appPath = Commands::which(appPath);
 	}
+	auto lastWrite = Commands::getLastWriteTime(appPath);
+	Output::setShowCommandOverride(true);
 
-	std::string md5;
-#if defined(CHALET_WIN32)
-	/*if (Environment::isBash())
-	{
-		const std::string md5Result = Commands::subprocessOutput({ "md5sum", appPath });
-		auto list = String::split(md5Result);
-
-		md5 = list.front();
-		String::replaceAll(md5, '\\', 0);
-	}
-	else*/
-	{
-		const std::string md5Result = Commands::subprocessOutput({ "cmd.exe", "/c", "certutil", "-hashfile", appPath, "MD5" });
-		auto list = String::split(md5Result, String::eol());
-		if (list.size() >= 2)
-		{
-			md5 = list[1];
-		}
-	}
-#elif defined(CHALET_MACOS)
-	std::string md5Result = Commands::subprocessOutput({ "md5", appPath });
-	auto list = String::split(md5Result);
-
-	md5 = list.back();
-#else
-	const std::string md5Result = Commands::subprocessOutput({ "md5sum", appPath });
-	auto list = String::split(md5Result);
-
-	md5 = list.front();
-	String::replaceAll(md5, '\\', 0);
-#endif
-
-	// LOG(md5);
-
-	return Hash::string(md5);
+	return Hash::string(std::to_string(lastWrite));
 }
 }

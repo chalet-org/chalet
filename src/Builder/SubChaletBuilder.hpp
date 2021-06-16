@@ -15,7 +15,7 @@ struct CommandLineInputs;
 class SubChaletBuilder
 {
 public:
-	explicit SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const CommandLineInputs& inInputs, const bool inCleanOutput);
+	explicit SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const CommandLineInputs& inInputs);
 
 	bool run();
 
@@ -28,8 +28,6 @@ private:
 
 	std::string m_outputLocation;
 	std::string m_buildFile;
-
-	const bool m_cleanOutput;
 };
 }
 

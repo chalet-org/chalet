@@ -31,8 +31,8 @@ namespace chalet
 */
 
 /*****************************************************************************/
-AppBundlerLinux::AppBundlerLinux(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const bool inCleanOutput) :
-	IAppBundler(inState, inBundle, inDependencyMap, inCleanOutput)
+AppBundlerLinux::AppBundlerLinux(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap) :
+	IAppBundler(inState, inBundle, inDependencyMap)
 {
 	const std::string kUserApplications{ ".local/share/applications" };
 
@@ -61,7 +61,7 @@ bool AppBundlerLinux::removeOldFiles()
 			const auto& filename = fs::path{ project.outputFile() }.stem().string();
 			std::string outputFile = fmt::format("{}/{}.desktop", m_applicationsPath, filename);
 
-			static_cast<void>(Commands::remove(outputFile, m_cleanOutput));
+			static_cast<void>(Commands::remove(outputFile));
 		}
 	}
 
@@ -78,10 +78,10 @@ bool AppBundlerLinux::bundleForPlatform()
 	const auto& desktopEntry = m_bundle.linuxBundle().desktopEntry();
 	const std::string bundlePath = getBundlePath();
 
-	UNUSED(m_cleanOutput, desktopEntry);
+	UNUSED(desktopEntry);
 
 	bool result = true;
-	result &= Commands::copy(icon, bundlePath, m_cleanOutput);
+	result &= Commands::copy(icon, bundlePath);
 
 	fs::path desktopEntryPath{ desktopEntry };
 	auto& bundleProjects = m_bundle.projects();
@@ -115,7 +115,7 @@ bool AppBundlerLinux::bundleForPlatform()
 		std::string desktopEntryString = outDesktopEntry.string();
 		fs::path iconPath = bundlePath / fs::path{ icon }.filename();
 
-		result &= Commands::copyRename(desktopEntry, desktopEntryString, m_cleanOutput);
+		result &= Commands::copyRename(desktopEntry, desktopEntryString);
 
 		result &= Commands::readFileAndReplace(outDesktopEntry, [&](std::string& fileContents) {
 			String::replaceAll(fileContents, "${mainProject}", fs::absolute(filename).string());
@@ -127,13 +127,13 @@ bool AppBundlerLinux::bundleForPlatform()
 			String::replaceAll(fileContents, '\\', '/');
 		});
 
-		result &= Commands::setExecutableFlag(filename, m_cleanOutput);
-		result &= Commands::setExecutableFlag(desktopEntryString, m_cleanOutput);
+		result &= Commands::setExecutableFlag(filename);
+		result &= Commands::setExecutableFlag(desktopEntryString);
 
 		// TODO: Flag for this?
 		if (!Environment::isContinuousIntegrationServer())
 		{
-			Commands::copy(desktopEntryString, m_applicationsPath, m_cleanOutput);
+			Commands::copy(desktopEntryString, m_applicationsPath);
 		}
 	}
 
