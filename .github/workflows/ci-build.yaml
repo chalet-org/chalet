@@ -44,6 +44,8 @@ jobs:
           sudo apt install gcc-10 g++-10 zip
       - name: "Fetch Dependencies"
         run: bash ./fetch_vendors.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Build: Release"
@@ -76,6 +78,8 @@ jobs:
         uses: actions/checkout@v2
       - name: "Fetch Dependencies"
         run: bash ./fetch_vendors.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Build: Release"
@@ -112,6 +116,8 @@ jobs:
         uses: actions/checkout@v2
       - name: "Fetch Dependencies"
         run: bash ./fetch_vendors.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Debug"
         run: ./build.bat Debug
       - name: "Build: Release"
@@ -154,6 +160,8 @@ jobs:
         uses: actions/checkout@v2
       - name: "Fetch Dependencies"
         run: bash ./fetch_vendors.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Build: Release"
