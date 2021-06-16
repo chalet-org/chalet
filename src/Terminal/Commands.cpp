@@ -489,6 +489,9 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo)
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("rename: {} {}", inFrom, inTo));
 
+		if (fs::exists(inFrom))
+			return false;
+
 		if (fs::exists(inTo))
 			fs::remove(inTo);
 
