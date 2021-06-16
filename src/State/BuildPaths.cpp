@@ -184,10 +184,9 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool 
 
 	ret.directories.push_back(m_buildOutputDir);
 	ret.directories.push_back(m_objDir);
-#if defined(CHALET_WIN32)
+
 	if (!inProject.isStaticLibrary())
 		ret.directories.push_back(m_intermediateDir);
-#endif
 
 	ret.directories.insert(ret.directories.end(), objSubDirs.begin(), objSubDirs.end());
 

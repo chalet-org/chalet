@@ -85,7 +85,7 @@ jobs:
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema bundle
       - name: "Run: Tests"
-        run: build/x86_64-apple-darwin19.6.0_Release/chalet run Release tests_chalet
+        run: build/x86_64-apple-darwin_Release/chalet run Release tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:

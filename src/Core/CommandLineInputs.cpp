@@ -407,6 +407,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.archiver = "ar";
 	}
 
+	if (Environment::isContinuousIntegrationServer())
+	{
+		ret.strategy = StrategyType::Native;
+	}
+
 	return ret;
 }
 
