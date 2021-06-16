@@ -73,10 +73,10 @@ for idx in 0 1 2 3 4 5 6 7 8 9; do
 		mkdir -p "$path"
 
 		if [[ "$single_commit" == "1" ]]; then
-			git clone --quiet --single-branch --config "advice.detachedHead=false" "git@github.com:$repo.git" "$path"
+			git clone --quiet --single-branch --config "advice.detachedHead=false" "https://github.com/$repo.git" "$path"
 			git -C "$path" reset --quiet --hard "$tag"
 		else
-			git clone --quiet -b "$tag" --depth 1 --config "advice.detachedHead=false" "git@github.com:$repo.git" "$path"
+			git clone --quiet -b "$tag" --depth 1 --config "advice.detachedHead=false" "https://github.com/$repo.git" "$path"
 		fi
 	fi
 done
