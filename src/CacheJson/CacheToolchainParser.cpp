@@ -141,7 +141,6 @@ bool CacheToolchainParser::validatePaths()
 
 	Output::setShowCommandOverride(false);
 
-	// m_state.toolchain.detectToolchain();
 	auto& toolchain = m_inputs.toolchainPreference();
 
 	if (toolchain.type == ToolchainType::LLVM)

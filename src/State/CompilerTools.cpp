@@ -23,33 +23,6 @@ CompilerTools::CompilerTools(const CommandLineInputs& inInputs, const BuildState
 	m_inputs(inInputs),
 	m_state(inState)
 {
-	m_detectedToolchain = m_inputs.toolchainPreference().type;
-}
-
-/*****************************************************************************/
-void CompilerTools::detectToolchain()
-{
-#if defined(CHALET_WIN32)
-	if (String::endsWith("cl.exe", m_cc) || String::endsWith("cl.exe", m_cpp))
-	{
-		m_detectedToolchain = ToolchainType::MSVC;
-	}
-	else
-#endif
-		if (String::contains("clang", m_cc) || String::contains("clang", m_cpp))
-	{
-		m_detectedToolchain = ToolchainType::LLVM;
-	}
-	else if (String::contains("gcc", m_cc) || String::contains("g++", m_cpp))
-	{
-		m_detectedToolchain = ToolchainType::GNU;
-	}
-	else
-	{
-		m_detectedToolchain = ToolchainType::Unknown;
-	}
-
-	m_ccDetected = Commands::pathExists(m_cc);
 }
 
 /*****************************************************************************/
@@ -59,14 +32,19 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 
 	// Note: Expensive!
 	if (!initializeCompilerConfigs(inTargets))
+	{
+		Diagnostic::error("Compiler Configs failed to initialize");
 		return false;
+	}
 
 #if defined(CHALET_MACOS)
 	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalArm64_X64)
 		return true;
 #endif
 
-	if (m_detectedToolchain == ToolchainType::LLVM)
+	ToolchainType toolchainType = m_inputs.toolchainPreference().type;
+
+	if (toolchainType == ToolchainType::LLVM)
 	{
 		auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
 		if (!String::contains("error:", results))
@@ -81,6 +59,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 				auto end = line.find_first_of(' ', start);
 
 				auto arch = line.substr(start, end - start);
+				LOG("llvm | arch:", arch, targetArch);
 				if (String::startsWith(arch, targetArch))
 					valid = true;
 			}
@@ -89,18 +68,19 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 			return valid;
 		}
 	}
-	else if (m_detectedToolchain == ToolchainType::GNU)
+	else if (toolchainType == ToolchainType::GNU)
 	{
 		const auto& arch = m_inputs.targetArchitecture();
 		if (!arch.empty())
 		{
 			const auto& targetArch = m_state.info.targetArchitectureString();
 
+			LOG("gcc | arch:", arch, targetArch);
 			return String::startsWith(arch, targetArch);
 		}
 	}
 #if defined(CHALET_WIN32)
-	else if (m_detectedToolchain == ToolchainType::MSVC)
+	else if (toolchainType == ToolchainType::MSVC)
 	{
 		const auto& targetArch = m_state.info.targetArchitectureString();
 		auto arch = String::getPathFilename(String::getPathFolder(compiler()));
@@ -110,6 +90,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 		else if (String::equals("x86", arch))
 			arch = "i686";
 
+		LOG("msvc | arch:", arch, targetArch);
 		return String::startsWith(arch, targetArch);
 	}
 #endif
@@ -126,7 +107,7 @@ void CompilerTools::fetchCompilerVersions()
 		{
 			std::string version;
 #if defined(CHALET_WIN32)
-			if (m_detectedToolchain == ToolchainType::MSVC)
+			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 			{
 				version = parseVersionMSVC(m_cpp);
 			}
@@ -147,7 +128,7 @@ void CompilerTools::fetchCompilerVersions()
 		{
 			std::string version;
 #if defined(CHALET_WIN32)
-			if (m_detectedToolchain == ToolchainType::MSVC)
+			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 			{
 				version = parseVersionMSVC(m_cc);
 			}
@@ -395,12 +376,6 @@ void CompilerTools::setStrategy(const std::string& inValue) noexcept
 	{
 		chalet_assert(false, "Invalid strategy type");
 	}
-}
-
-/*****************************************************************************/
-ToolchainType CompilerTools::detectedToolchain() const
-{
-	return m_detectedToolchain;
 }
 
 /*****************************************************************************/

@@ -129,7 +129,7 @@ bool CacheJsonParser::makeCache()
 
 	if (!settings.contains(kKeyShowCommands) || !settings[kKeyShowCommands].is_boolean())
 	{
-		settings[kKeyShowCommands] = false;
+		settings[kKeyShowCommands] = true;
 		m_jsonFile.setDirty(true);
 	}
 

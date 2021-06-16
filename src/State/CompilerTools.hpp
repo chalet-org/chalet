@@ -21,7 +21,6 @@ struct CompilerTools
 {
 	explicit CompilerTools(const CommandLineInputs& inInputs, const BuildState& inState);
 
-	void detectToolchain();
 	bool initialize(const BuildTargetList& inTargets);
 	void fetchCompilerVersions();
 
@@ -32,7 +31,6 @@ struct CompilerTools
 	StrategyType strategy() const noexcept;
 	void setStrategy(const std::string& inValue) noexcept;
 
-	ToolchainType detectedToolchain() const;
 	const std::string& compiler() const noexcept;
 
 	const std::string& compilerVersionStringCpp() const noexcept;
@@ -117,7 +115,6 @@ private:
 	uint m_ninjaVersionMinor = 0;
 	uint m_ninjaVersionPatch = 0;
 
-	ToolchainType m_detectedToolchain = ToolchainType::Unknown;
 	StrategyType m_strategy = StrategyType::Makefile;
 
 	bool m_isArchiverLibTool = false;
