@@ -25,6 +25,20 @@ AssemblyDumper::AssemblyDumper(BuildState& inState) :
 /*****************************************************************************/
 bool AssemblyDumper::addProject(const ProjectTarget& inProject, StringList&& inAssemblies)
 {
+#if defined(CHALET_MACOS)
+	if (m_state.toolchain.otool().empty())
+	{
+		Diagnostic::error("dumpAssembly feature requires otool, which is blank in the toolchain cache.");
+		return false;
+	}
+#else
+	if (m_state.toolchain.objdump().empty())
+	{
+		Diagnostic::error("dumpAssembly feature requires objdump, which is blank in the toolchain cache.");
+		return false;
+	}
+#endif
+
 	auto& name = inProject.name();
 	m_outputs[name] = std::move(inAssemblies);
 

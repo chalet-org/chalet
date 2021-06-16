@@ -86,7 +86,7 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 	settings.msvcCommand = config.isMsvc();
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
-	settings.renameAfterCommand = true;
+	settings.renameAfterCommand = !config.isMsvc();
 
 	return m_commandPool.run(target, settings);
 }
