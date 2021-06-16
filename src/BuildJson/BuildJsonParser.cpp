@@ -138,11 +138,18 @@ bool BuildJsonParser::validRunProjectRequestedFromInput()
 
 	for (auto& target : m_state.targets)
 	{
+		auto& name = target->name();
+		bool isProjectFromArgs = !inputRunProject.empty() && name == inputRunProject;
 		if (target->isProject())
 		{
 			auto& project = static_cast<const ProjectTarget&>(*target);
-			if (!inputRunProject.empty() && project.name() == inputRunProject)
-				return project.isExecutable();
+			if (isProjectFromArgs && project.isExecutable())
+				return true;
+		}
+		else if (target->isScript())
+		{
+			if (isProjectFromArgs)
+				return true;
 		}
 	}
 

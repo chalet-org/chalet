@@ -268,14 +268,15 @@ void Diagnostic::printErrors()
 					continue;
 
 				if (err.type == Type::Warning)
-					warnings.push_back(err.message);
+					warnings.push_back(std::move(err.message));
 				else
-					errors.push_back(err.message);
+					errors.push_back(std::move(err.message));
 			}
 
 			sStartedInfo = false;
 			if (warnings.size() > 0)
 			{
+				Output::lineBreak();
 				Diagnostic::warnHeader(u8"\u26A0  Warnings");
 
 				for (auto& message : warnings)
@@ -286,6 +287,7 @@ void Diagnostic::printErrors()
 			}
 			if (errors.size() > 0)
 			{
+				Output::lineBreak();
 				Diagnostic::errorHeader("Errors");
 
 				for (auto& message : errors)

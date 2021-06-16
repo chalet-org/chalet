@@ -503,7 +503,8 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 	Output::lineBreak();
 
 	ScriptRunner scriptRunner(m_prototype.ancillaryTools, inBuildFile);
-	if (!scriptRunner.run(scripts))
+	bool showExitCode = false;
+	if (!scriptRunner.run(scripts, showExitCode))
 	{
 		Output::lineBreak();
 		Output::msgBuildFail(); // TODO: Script failed

@@ -36,7 +36,6 @@ private:
 
 	bool copyRunDependencies(const ProjectTarget& inProject);
 	StringList getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig);
-	bool doRun(const ProjectTarget& inProject);
 	bool doClean(const ProjectTarget& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean = false);
 	bool doLazyClean();
 
@@ -49,7 +48,7 @@ private:
 	bool cmdClean();
 	// bool cmdProfile();
 
-	bool runScriptTarget(const ScriptBuildTarget& inScript);
+	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
 	std::string getRunProject();

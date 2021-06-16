@@ -282,12 +282,6 @@ void Output::msgTargetUpToDate(const bool inMultiTarget, const std::string& inPr
 }
 
 /*****************************************************************************/
-void Output::msgLaunch(const std::string& inBuildDir, const std::string& inName)
-{
-	displayStyledSymbol(Color::Green, " ", fmt::format("Launching {}/{}", inBuildDir, inName));
-}
-
-/*****************************************************************************/
 void Output::msgBuildFail()
 {
 	auto symbol = Unicode::heavyBallotX();
@@ -362,13 +356,6 @@ void Output::msgClean(const std::string& inBuildConfiguration)
 }
 
 /*****************************************************************************/
-void Output::msgBuildAndRun(const std::string& inBuildConfiguration, const std::string& inName)
-{
-	auto symbol = Unicode::triangle();
-	displayStyledSymbol(Color::Yellow, symbol, "Build & Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
-}
-
-/*****************************************************************************/
 void Output::msgBuild(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
@@ -383,24 +370,24 @@ void Output::msgRebuild(const std::string& inBuildConfiguration, const std::stri
 }
 
 /*****************************************************************************/
-void Output::msgScript(const std::string& inName)
+void Output::msgScript(const std::string& inName, const Color inColor)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(Color::Yellow, symbol, fmt::format("Script: {}", inName));
+	displayStyledSymbol(inColor, symbol, fmt::format("Script: {}", inName));
 }
 
 /*****************************************************************************/
-void Output::msgScriptDescription(const std::string& inDescription)
+void Output::msgScriptDescription(const std::string& inDescription, const Color inColor)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(Color::Yellow, symbol, inDescription);
+	displayStyledSymbol(inColor, symbol, inDescription);
 }
 
 /*****************************************************************************/
 void Output::msgRun(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(Color::Yellow, symbol, "Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(Color::Green, symbol, "Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/

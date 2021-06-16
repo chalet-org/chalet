@@ -144,14 +144,14 @@ bool BuildState::initializeBuild()
 
 	Output::setShowCommandOverride(false);
 
-	Diagnostic::info("Initializing Build", false);
+	Diagnostic::info("Initializing", false);
 
 	// Note: This is about as quick as it'll get (50ms in mingw)
 	if (!toolchain.initialize(targets))
 	{
 		const auto& targetArch = m_inputs.toolchainPreference().type == ToolchainType::GNU ?
-			  m_inputs.targetArchitecture() :
-			  info.targetArchitectureString();
+			m_inputs.targetArchitecture() :
+			info.targetArchitectureString();
 
 		Diagnostic::error(fmt::format("Requested arch '{}' is not supported.", targetArch));
 		return false;

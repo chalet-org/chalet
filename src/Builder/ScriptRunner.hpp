@@ -15,8 +15,8 @@ class ScriptRunner
 public:
 	explicit ScriptRunner(const AncillaryTools& inTools, const std::string& inBuildFile);
 
-	bool run(const StringList& inScripts);
-	bool run(const std::string& inScript);
+	bool run(const StringList& inScripts, const bool inShowExitCode);
+	bool run(const std::string& inScript, const bool inShowExitCode);
 
 private:
 	const AncillaryTools& m_tools;

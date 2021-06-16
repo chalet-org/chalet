@@ -22,6 +22,7 @@
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
+#include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Subprocess.hpp"
@@ -102,23 +103,22 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		m_strategy->saveBuildFile();
 	}
 
-	if (Output::showCommands())
-	{
-		Output::lineBreak();
-	}
-
 	bool multiTarget = m_state.targets.size() > 1;
 
-	const ProjectTarget* runProject = nullptr;
+	const IBuildTarget* runProject = nullptr;
 
 	bool error = false;
 	for (auto& target : m_state.targets)
 	{
-		if ((runCommand || inRoute == Route::BuildRun) && target->isProject())
+		auto& name = target->name();
+		if (runCommand || inRoute == Route::BuildRun)
 		{
-			auto project = static_cast<const ProjectTarget*>(target.get());
-			if (m_runProjectName == project->name())
-				runProject = project;
+			if (m_runProjectName == name)
+			{
+				runProject = target.get();
+				if (!target->isProject())
+					continue;
+			}
 			else if (runCommand)
 				continue;
 		}
@@ -137,7 +137,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			Timer buildTimer;
 
-			if (!runScriptTarget(static_cast<const ScriptBuildTarget&>(*target)))
+			if (!runScriptTarget(static_cast<const ScriptBuildTarget&>(*target), false))
 			{
 				error = true;
 				break;
@@ -148,17 +148,17 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		}
 		else
 		{
-			Timer buildTimer;
-
-			if (!m_buildRoutes[inRoute](*this, static_cast<const ProjectTarget&>(*target)))
-			{
-				error = true;
-				break;
-			}
-
 			if (!runCommand)
 			{
-				Output::msgTargetUpToDate(multiTarget, target->name());
+				Timer buildTimer;
+
+				if (!m_buildRoutes[inRoute](*this, static_cast<const ProjectTarget&>(*target)))
+				{
+					error = true;
+					break;
+				}
+
+				Output::msgTargetUpToDate(multiTarget, name);
 				Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
 				Output::lineBreak();
 			}
@@ -166,18 +166,52 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	}
 
 	if (error)
+	{
+		if (!runCommand)
+		{
+			Output::msgBuildFail(); // TODO: Script failed
+			Output::lineBreak();
+		}
 		return false;
-
-	if ((inRoute == Route::BuildRun || runCommand) && runProject != nullptr)
-	{
-		return doRun(*runProject);
 	}
-	else if (inRoute == Route::Build || inRoute == Route::Rebuild)
+	else
 	{
-		if (inShowSuccess)
+		if (!runCommand && inShowSuccess)
 		{
 			Output::msgBuildSuccess();
 			Output::lineBreak();
+		}
+	}
+
+	if ((inRoute == Route::BuildRun || runCommand) && runProject != nullptr)
+	{
+		if (runProject->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*runProject);
+			if (!Commands::pathExists(m_state.paths.getTargetFilename(project)))
+			{
+				Diagnostic::error(fmt::format("Requested configuration '{}' must be built for run project: '{}'", m_state.info.buildConfiguration(), project.name()));
+				return false;
+			}
+
+			if (runCommand)
+				Output::lineBreak();
+
+			return cmdRun(project);
+		}
+		else if (runProject->isScript())
+		{
+			auto& script = static_cast<const ScriptBuildTarget&>(*runProject);
+
+			if (runCommand)
+				Output::lineBreak();
+
+			return runScriptTarget(script, true);
+		}
+		else
+		{
+			Diagnostic::error(fmt::format("Run project not found: '{}'", m_runProjectName));
+			return false;
 		}
 	}
 
@@ -351,87 +385,6 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 }
 
 /*****************************************************************************/
-bool BuildManager::doRun(const ProjectTarget& inProject)
-{
-	for (auto& target : m_state.targets)
-	{
-		if (target->isProject())
-		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
-			if (project.runDependencies().empty())
-				continue;
-
-			if (!copyRunDependencies(project))
-			{
-				Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", project.name()));
-				return false;
-			}
-		}
-	}
-
-	Output::msgBuildSuccess();
-
-	auto outputFile = inProject.outputFile();
-	if (outputFile.empty())
-		return false;
-
-	const auto& workingDirectory = m_state.paths.workingDirectory();
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	const auto& runOptions = m_inputs.runOptions();
-
-	const auto& runArguments = inProject.runArguments();
-
-	// LOG(workingDirectory);
-
-	auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);
-
-	Output::msgLaunch(buildOutputDir, outputFile);
-	Output::lineBreak();
-
-	// LOG(runOptions);
-	// LOG(runArguments);
-
-	auto file = fmt::format("{}/{}", outputFolder, outputFile);
-
-	// LOG(file);
-
-	if (!Commands::pathExists(file))
-		return false;
-
-#if defined(CHALET_MACOS)
-	// This is required for profiling
-	auto& installNameTool = m_state.ancillaryTools.installNameTool();
-	// install_name_tool -add_rpath @executable_path/chalet_external/SFML/lib
-	for (auto p : m_state.environment.path())
-	{
-		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
-		Commands::subprocessNoOutput({ installNameTool, "-add_rpath", fmt::format("@executable_path/{}", p), file });
-	}
-#endif
-
-	const auto& args = !runOptions.empty() ? runOptions : runArguments;
-
-	StringList cmd = { file };
-	for (auto& arg : args)
-	{
-		cmd.push_back(arg);
-	}
-
-	if (!m_state.configuration.enableProfiling())
-	{
-		if (!Commands::subprocess(cmd))
-		{
-			Diagnostic::error(fmt::format("{} exited with code: {}", file, Subprocess::getLastExitCode()));
-			return false;
-		}
-
-		return true;
-	}
-
-	return runProfiler(inProject, cmd, file, m_state.paths.buildOutputDir());
-}
-
-/*****************************************************************************/
 bool BuildManager::runProfiler(const ProjectTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
 	ProfilerRunner profiler(m_state, inProject);
@@ -519,27 +472,25 @@ bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& in
 }
 
 /*****************************************************************************/
-bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript)
+bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand)
 {
 	const auto& scripts = inScript.scripts();
 	if (scripts.empty())
 		return false;
 
+	const bool isRun = m_inputs.command() == Route::Run || inRunCommand;
+	const Color color = isRun ? Color::Green : Color::Yellow;
+
 	if (!inScript.description().empty())
-		Output::msgScriptDescription(inScript.description());
+		Output::msgScriptDescription(inScript.description(), color);
 	else
-		Output::msgScript(inScript.name());
+		Output::msgScript(inScript.name(), color);
 
 	Output::lineBreak();
 
 	ScriptRunner scriptRunner(m_state.ancillaryTools, m_inputs.buildFile());
-	if (!scriptRunner.run(scripts))
-	{
-		Output::lineBreak();
-		Output::msgBuildFail(); // TODO: Script failed
-		Output::lineBreak();
+	if (!scriptRunner.run(scripts, inRunCommand))
 		return false;
-	}
 
 	return true;
 }
@@ -548,14 +499,9 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript)
 bool BuildManager::cmdBuild(const ProjectTarget& inProject)
 {
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
-	const auto& command = m_inputs.command();
 	const auto& outputFile = inProject.outputFile();
 
-	if (inProject.name() == m_runProjectName && command == Route::BuildRun)
-		Output::msgBuildAndRun(buildConfiguration, outputFile);
-	else
-		Output::msgBuild(buildConfiguration, outputFile);
-
+	Output::msgBuild(buildConfiguration, outputFile);
 	Output::lineBreak();
 
 	if (!m_strategy->buildProject(inProject))
@@ -604,13 +550,81 @@ bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 /*****************************************************************************/
 bool BuildManager::cmdRun(const ProjectTarget& inProject)
 {
+	for (auto& target : m_state.targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (project.runDependencies().empty())
+				continue;
+
+			if (!copyRunDependencies(project))
+			{
+				Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", project.name()));
+				return false;
+			}
+		}
+	}
+
+	auto outputFile = inProject.outputFile();
+	if (outputFile.empty())
+		return false;
+
+	const auto& workingDirectory = m_state.paths.workingDirectory();
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	const auto& runOptions = m_inputs.runOptions();
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
-	const auto& outputFile = inProject.outputFile();
+
+	const auto& runArguments = inProject.runArguments();
+
+	// LOG(workingDirectory);
+
+	auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);
 
 	Output::msgRun(buildConfiguration, outputFile);
 	Output::lineBreak();
+	// LOG(runOptions);
+	// LOG(runArguments);
 
-	return true;
+	auto file = fmt::format("{}/{}", outputFolder, outputFile);
+
+	// LOG(file);
+
+	if (!Commands::pathExists(file))
+		return false;
+
+#if defined(CHALET_MACOS)
+	// This is required for profiling
+	auto& installNameTool = m_state.ancillaryTools.installNameTool();
+	// install_name_tool -add_rpath @executable_path/chalet_external/SFML/lib
+	for (auto p : m_state.environment.path())
+	{
+		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
+		Commands::subprocessNoOutput({ installNameTool, "-add_rpath", fmt::format("@executable_path/{}", p), file });
+	}
+#endif
+
+	const auto& args = !runOptions.empty() ? runOptions : runArguments;
+
+	StringList cmd = { file };
+	for (auto& arg : args)
+	{
+		cmd.push_back(arg);
+	}
+
+	if (!m_state.configuration.enableProfiling())
+	{
+		bool result = Commands::subprocess(cmd);
+		auto outFile = fmt::format("{}/{}", buildOutputDir, outputFile);
+		auto message = fmt::format("{} exited with code: {}", outFile, Subprocess::getLastExitCode());
+
+		Output::lineBreak();
+		Output::print(result ? Color::Reset : Color::Red, message, true);
+
+		return result;
+	}
+
+	return runProfiler(inProject, cmd, file, m_state.paths.buildOutputDir());
 }
 
 /*****************************************************************************/
@@ -687,17 +701,21 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 /*****************************************************************************/
 std::string BuildManager::getRunProject()
 {
-	const auto& runProjectArg = m_inputs.runProject();
-	if (!runProjectArg.empty())
-		return runProjectArg;
+	// Note: validated in BuildJsonParser::validRunProjectRequestedFromInput()
+	//  before BuildManager is run
+	//
+	const auto& inputRunProject = m_inputs.runProject();
+	if (!inputRunProject.empty())
+		return inputRunProject;
 
 	for (auto& target : m_state.targets)
 	{
+		auto& name = target->name();
 		if (target->isProject())
 		{
 			auto& project = static_cast<const ProjectTarget&>(*target);
 			if (project.isExecutable() && project.runProject())
-				return project.name(); // just get the top one
+				return name; // just get the top one
 		}
 	}
 
@@ -709,17 +727,14 @@ void BuildManager::testTerminalMessages()
 {
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	// const auto& distConfig = m_state.bundle.configuration();
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	const std::string name{ "cool-program.exe" };
 	const std::string profAnalysis{ "profiler_analysis.stats" };
 
 	Output::msgBuildSuccess();
-	Output::msgLaunch(buildOutputDir, name);
 	Output::msgBuildFail();
 	// Output::msgBuildProdError(distConfig);
 	Output::msgProfilerDone(profAnalysis);
-	Output::msgBuildAndRun(buildConfiguration, name);
 	Output::msgBuild(buildConfiguration, name);
 	Output::msgRebuild(buildConfiguration, name);
 	Output::msgRun(buildConfiguration, name);

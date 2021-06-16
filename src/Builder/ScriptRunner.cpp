@@ -25,7 +25,7 @@ ScriptRunner::ScriptRunner(const AncillaryTools& inTools, const std::string& inB
 }
 
 /*****************************************************************************/
-bool ScriptRunner::run(const StringList& inScripts)
+bool ScriptRunner::run(const StringList& inScripts, const bool inShowExitCode)
 {
 	for (auto& scriptPath : inScripts)
 	{
@@ -35,7 +35,7 @@ bool ScriptRunner::run(const StringList& inScripts)
 			std::cout << Output::getAnsiReset() << std::flush;
 		}
 
-		if (!run(scriptPath))
+		if (!run(scriptPath, inShowExitCode))
 			return false;
 	}
 
@@ -43,7 +43,7 @@ bool ScriptRunner::run(const StringList& inScripts)
 }
 
 /*****************************************************************************/
-bool ScriptRunner::run(const std::string& inScript)
+bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 {
 #if defined(CHALET_WIN32)
 	std::string parsedScriptPath = inScript;
@@ -221,14 +221,19 @@ bool ScriptRunner::run(const std::string& inScript)
 
 	command.push_back(std::move(outScriptPath));
 
-	if (!Commands::subprocess(command))
+	bool result = Commands::subprocess(command);
+	auto exitCode = Subprocess::getLastExitCode();
+	auto message = fmt::format("{} exited with code: {}", inScript, exitCode);
+
+	if (inShowExitCode || !result)
 	{
 		Output::lineBreak();
-		auto exitCode = Subprocess::getLastExitCode();
-		Diagnostic::error(fmt::format("{}: The script '{}' exited with code {}.", m_buildFile, inScript, exitCode));
-		return false;
+		Output::print(result ? Color::Reset : Color::Red, message, true);
+
+		if (!inShowExitCode && !result)
+			Output::lineBreak();
 	}
 
-	return true;
+	return result;
 }
 }

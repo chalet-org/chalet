@@ -37,7 +37,6 @@ void msgDisplayBlack(const std::string& inString);
 
 void msgBuildSuccess();
 void msgTargetUpToDate(const bool inMultiTarget, const std::string& inProjectName);
-void msgLaunch(const std::string& inBuildDir, const std::string& inName);
 void msgBuildFail();
 void msgCleaning();
 void msgNothingToClean();
@@ -48,11 +47,10 @@ void msgProfilerStartedSample(const std::string& inExecutable, const uint inDura
 void msgProfilerDone(const std::string& inProfileAnalysis);
 void msgProfilerDoneInstruments(const std::string& inProfileAnalysis);
 void msgClean(const std::string& inBuildConfiguration);
-void msgBuildAndRun(const std::string& inBuildConfiguration, const std::string& inName);
 void msgBuild(const std::string& inBuildConfiguration, const std::string& inName);
 void msgRebuild(const std::string& inBuildConfiguration, const std::string& inName);
-void msgScript(const std::string& inName);
-void msgScriptDescription(const std::string& inDescription);
+void msgScript(const std::string& inName, const Color inColor = Color::Yellow);
+void msgScriptDescription(const std::string& inDescription, const Color inColor = Color::Yellow);
 void msgRun(const std::string& inBuildConfiguration, const std::string& inName);
 void msgBuildProd(const std::string& inBuildConfiguration, const std::string& inName);
 void msgProfile(const std::string& inBuildConfiguration, const std::string& inName);
