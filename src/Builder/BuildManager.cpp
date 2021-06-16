@@ -505,12 +505,7 @@ bool BuildManager::cmdBuild(const ProjectTarget& inProject)
 	Output::lineBreak();
 
 	if (!m_strategy->buildProject(inProject))
-	{
-		Output::lineBreak();
-		Output::msgBuildFail();
-		Output::lineBreak();
 		return false;
-	}
 
 	if (m_state.environment.dumpAssembly())
 	{
@@ -531,11 +526,7 @@ bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 	Output::lineBreak();
 
 	if (!m_strategy->buildProject(inProject))
-	{
-		Output::msgBuildFail();
-		Output::lineBreak();
 		return false;
-	}
 
 	if (m_state.environment.dumpAssembly())
 	{

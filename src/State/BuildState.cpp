@@ -225,7 +225,10 @@ void BuildState::initializeCache()
 	m_prototype.cache.checkIfWorkingDirectoryChanged();
 
 	m_prototype.cache.removeStaleProjectCaches(m_inputs.toolchainPreferenceRaw(), WorkspaceCache::Type::Local);
-	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
+
+	// TODO: Remove entirely?
+	// m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
+
 	m_prototype.cache.saveLocalConfig();
 
 	sourceCache.initialize();
