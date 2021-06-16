@@ -23,7 +23,7 @@ std::atomic<uint> s_compileIndex = 0;
 std::function<void()> s_shutdownHandler;
 
 /*****************************************************************************/
-bool printCommand(std::string output, StringList command, Color inColor, std::string symbol, bool showCommmands, uint total = 0)
+bool printCommand(std::string prefix, std::string text, uint total = 0)
 {
 	std::unique_lock<std::mutex> lock(s_mutex);
 	if (total > 0)
@@ -35,17 +35,12 @@ bool printCommand(std::string output, StringList command, Color inColor, std::st
 			indexStr = " " + indexStr;
 		}
 
-		std::cout << Output::getAnsiStyle(inColor) << fmt::format("{}  ", symbol) << Output::getAnsiReset() << fmt::format("[{}/{}] ", indexStr, total);
+		std::cout << fmt::format("{}  [{}/{}] {}", prefix, indexStr, total, text) << std::endl;
 	}
 	else
 	{
-		std::cout << Output::getAnsiStyle(inColor) << fmt::format("{}  ", symbol);
+		std::cout << fmt::format("{}  {}", prefix, text) << std::endl;
 	}
-
-	if (showCommmands)
-		Output::print(inColor, command);
-	else
-		Output::print(inColor, output);
 
 	s_compileIndex++;
 
@@ -150,11 +145,18 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	s_compileIndex = 1;
 	uint totalCompiles = static_cast<uint>(list.size());
 
+	auto reset = Output::getAnsiReset();
+
 	if (!pre.command.empty())
 	{
 		totalCompiles++;
 
-		if (!printCommand(pre.output, pre.command, pre.color, pre.symbol, showCommmands, totalCompiles))
+		auto color = Output::getAnsiStyle(pre.color);
+
+		if (!printCommand(
+				color + pre.symbol + reset,
+				color + (showCommmands ? String::join(pre.command) : pre.output) + reset,
+				totalCompiles))
 			return onError();
 
 		if (!executeCommandFunc(pre.command, pre.renameFrom, pre.renameTo, renameAfterCommand))
@@ -165,7 +167,13 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	std::vector<std::future<bool>> threadResults;
 	for (auto& it : list)
 	{
-		threadResults.emplace_back(m_threadPool.enqueue(printCommand, it.output, it.command, it.color, it.symbol, showCommmands, totalCompiles));
+		auto color = Output::getAnsiStyle(it.color);
+
+		threadResults.emplace_back(m_threadPool.enqueue(
+			printCommand,
+			color + it.symbol + reset,
+			color + (showCommmands ? String::join(it.command) : it.output) + reset,
+			totalCompiles));
 		threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, renameAfterCommand));
 	}
 
@@ -197,7 +205,11 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 	if (!post.command.empty())
 	{
-		if (!printCommand(post.output, post.command, post.color, post.symbol, showCommmands))
+		auto color = Output::getAnsiStyle(post.color);
+
+		if (!printCommand(
+				color + post.symbol + reset,
+				color + (showCommmands ? String::join(post.command) : post.output) + reset))
 			return onError();
 
 		if (!executeCommandFunc(post.command, post.renameFrom, post.renameTo, renameAfterCommand))
