@@ -65,8 +65,6 @@ void CommandLineInputs::setBuildFile(std::string&& inValue) noexcept
 /*****************************************************************************/
 const std::string& CommandLineInputs::buildPath() const noexcept
 {
-	return m_buildPath;
-
 	chalet_assert(!m_buildPath.empty(), "buildPath was not defined");
 	if (!m_buildPathMade)
 	{
