@@ -26,9 +26,15 @@ void BuildPaths::initialize()
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
+	const auto& buildPath = m_inputs.buildPath();
+	if (!Commands::pathExists(buildPath))
+	{
+		Commands::makeDirectory(buildPath);
+	}
+
 	// m_configuration = fmt::format("{}_{}_{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), inBuildConfiguration);
 	m_configuration = fmt::format("{}_{}", m_info.targetArchitectureString(), m_info.buildConfiguration());
-	m_buildOutputDir = fmt::format("{}/{}", m_inputs.buildPath(), m_configuration);
+	m_buildOutputDir = fmt::format("{}/{}", buildPath, m_configuration);
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);

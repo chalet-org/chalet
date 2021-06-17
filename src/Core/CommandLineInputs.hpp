@@ -107,7 +107,6 @@ private:
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
 
-	mutable bool m_buildPathMade = false;
 	bool m_saveSchemaToFile = false;
 };
 }
