@@ -714,7 +714,7 @@ void ProjectTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 	if (staticLib)
 	{
 #if defined(CHALET_WIN32)
-		if (inConfig.isMsvc())
+		if (inConfig.isMsvc() || inConfig.isWindowsClang())
 			libraryExtension = "-s.lib";
 		else
 #endif
