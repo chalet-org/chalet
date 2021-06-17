@@ -34,6 +34,8 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 	// MacOS
 	virtual void addMacosSysRootOption(StringList& outArgList) const final;
 
+	virtual StringList getDynamicLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const final;
+
 private:
 	std::string m_osTarget;
 	std::string m_osTargetVersion;

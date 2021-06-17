@@ -730,7 +730,7 @@ void ProjectTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 		}
 		case ProjectKind::SharedLibrary:
 		case ProjectKind::StaticLibrary: {
-			if (!windowsPrefixOutputFilename() || (inConfig.isMsvc() && !m_setWindowsPrefixOutputFilename))
+			if (!windowsPrefixOutputFilename() || (inConfig.isMsvc() && !m_setWindowsPrefixOutputFilename) || inConfig.isWindowsClang())
 			{
 				m_outputFile = projectName + libraryExtension;
 			}

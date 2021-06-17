@@ -427,6 +427,15 @@ CppCompilerType CompilerConfig::compilerType() const noexcept
 	return m_compilerType;
 }
 
+bool CompilerConfig::isWindowsClang() const noexcept
+{
+#if defined(CHALET_WIN32)
+	return m_compilerType == CppCompilerType::Clang;
+#else
+	return false;
+#endif
+}
+
 bool CompilerConfig::isClang() const noexcept
 {
 	return m_compilerType == CppCompilerType::Clang || m_compilerType == CppCompilerType::AppleClang || m_compilerType == CppCompilerType::MingwClang || m_compilerType == CppCompilerType::EmScripten;

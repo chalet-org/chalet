@@ -36,6 +36,7 @@ struct CompilerConfig
 	bool isLinkSupported(const std::string& inLink, const StringList& inDirectories) const;
 
 	CppCompilerType compilerType() const noexcept;
+	bool isWindowsClang() const noexcept;
 	bool isClang() const noexcept;
 	bool isAppleClang() const noexcept;
 	bool isGcc() const noexcept;

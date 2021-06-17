@@ -38,44 +38,6 @@ StringList CompileToolchainLLVM::getLinkExclusions() const
 // Note: Noops mean a flag/feature isn't supported
 
 /*****************************************************************************/
-StringList CompileToolchainLLVM::getDynamicLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const
-{
-	StringList ret;
-
-	addExectuable(ret, m_config.compilerExecutable());
-
-	ret.push_back("-dynamiclib");
-	// ret.push_back("-fPIC");
-	// ret.push_back("-flat_namespace");
-
-	UNUSED(outputFileBase);
-
-	addStripSymbolsOption(ret);
-	addLinkerOptions(ret);
-	addMacosSysRootOption(ret);
-	addProfileInformationLinkerOption(ret);
-	addLinkTimeOptimizationOption(ret);
-	addThreadModelLinkerOption(ret);
-	addArchitecture(ret);
-	addLinkerScripts(ret);
-	addLibStdCppLinkerOption(ret);
-	addStaticCompilerLibraryOptions(ret);
-	addPlatformGuiApplicationFlag(ret);
-	addMacosFrameworkOptions(ret);
-
-	addLibDirs(ret);
-
-	ret.push_back("-o");
-	ret.push_back(outputFile);
-	addSourceObjects(ret, sourceObjs);
-
-	addLinks(ret);
-	addObjectiveCxxLink(ret);
-
-	return ret;
-}
-
-/*****************************************************************************/
 // Compile
 /*****************************************************************************/
 /*****************************************************************************/

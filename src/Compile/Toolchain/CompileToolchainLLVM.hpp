@@ -37,8 +37,6 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 	virtual void startStaticLinkGroup(StringList& outArgList) const override;
 	virtual void endStaticLinkGroup(StringList& outArgList) const override;
 	virtual void startExplicitDynamicLinkGroup(StringList& outArgList) const override;
-
-	virtual StringList getDynamicLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const override;
 };
 }
 
