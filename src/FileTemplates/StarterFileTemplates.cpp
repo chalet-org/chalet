@@ -27,7 +27,6 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	std::string ret = R"json({
 	"version": "${version}",
 	"workspace": "${workspace}",
-	"path": [],
 	"abstracts:all": {
 		"language": "${language}",
 		"settings:Cxx": {
