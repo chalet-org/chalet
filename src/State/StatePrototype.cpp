@@ -376,6 +376,11 @@ bool StatePrototype::parseBundle(BundleTarget& outBundle, const Json& inNode)
 		outBundle.setConfiguration(std::move(val));
 		List::addIfDoesNotExist(m_requiredBuildConfigurations, outBundle.configuration());
 	}
+	else
+	{
+		Diagnostic::error(fmt::format("{}: Distribution bundle '{}' was found without 'configuration'", m_filename, outBundle.name()));
+		return false;
+	}
 
 	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "description"))
 		outBundle.setDescription(std::move(val));
@@ -390,7 +395,14 @@ bool StatePrototype::parseBundle(BundleTarget& outBundle, const Json& inNode)
 		outBundle.setIncludeDependentSharedLibraries(val);
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "projects"))
+	{
 		outBundle.addProjects(std::move(list));
+	}
+	else
+	{
+		Diagnostic::error(fmt::format("{}: Distribution bundle '{}' was found without 'projects'", m_filename, outBundle.name()));
+		return false;
+	}
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "dependencies"))
 		outBundle.addDependencies(std::move(list));

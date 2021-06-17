@@ -237,10 +237,10 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		}
 
 		case JsonSchemaError::array_too_many_items:
-			return "array has too many items";
+			return fmt::format("Array property '{}' has too many items", outError.key);
 
 		case JsonSchemaError::array_too_few_items:
-			return "array has too few items";
+			return fmt::format("Array property '{}' has too few items", outError.key);
 
 		case JsonSchemaError::array_items_must_be_unique:
 			return "items have to be unique for this array";

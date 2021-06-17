@@ -94,6 +94,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["distribution-dependencies"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
+		"minItems": 1,
 		"items": {
 			"type": "string"
 		}
@@ -106,6 +107,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["distribution-exclude"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
+		"minItems": 1,
 		"items": {
 			"type": "string"
 		}
@@ -207,6 +209,7 @@ Json Schema::getBuildJson()
 		"type": "array",
 		"uniqueItems": true,
 		"description": "An array of projects to include",
+		"minItems": 1,
 		"items": {
 			"type": "string",
 			"description": "The name of the project"
@@ -226,10 +229,6 @@ Json Schema::getBuildJson()
 		"type": "object",
 		"additionalProperties": false,
 		"description": "Variables to describe the final output build.",
-		"required": [
-			"configuration",
-			"projects"
-		],
 		"properties": {
 			"configuration": {
 				"$ref": "#/definitions/distribution-configuration"
@@ -356,6 +355,7 @@ Json Schema::getBuildJson()
 		"type": "array",
 		"description": "Any additional paths to include.",
 		"uniqueItems": true,
+		"minItems": 1,
 		"items": {
 			"type": "string"
 		}
@@ -375,6 +375,7 @@ Json Schema::getBuildJson()
 			{
 				"type": "array",
 				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"type": "string"
 				}
@@ -391,6 +392,7 @@ Json Schema::getBuildJson()
 			{
 				"type": "array",
 				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"$ref": "#/definitions/enum-platform"
 				}
@@ -407,6 +409,7 @@ Json Schema::getBuildJson()
 			{
 				"type": "array",
 				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"type": "string"
 				}
@@ -423,6 +426,7 @@ Json Schema::getBuildJson()
 			{
 				"type": "array",
 				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"$ref": "#/definitions/enum-platform"
 				}
@@ -634,6 +638,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-project-cxx-compileOptions"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
+		"minItems": 1,
 		"description": "Options to add during the compilation step.",
 		"items": {
 			"type": "string"
@@ -671,6 +676,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-project-cxx-defines"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
+		"minItems": 1,
 		"description": "Macro definitions to be used by the preprocessor",
 		"items": {
 			"type": "string"
@@ -680,6 +686,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-project-cxx-includeDirs"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
+		"minItems": 1,
 		"description": "A list of directories to include with the project.",
 		"items": {
 			"type": "string"
@@ -696,6 +703,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-project-files"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
+		"minItems": 1,
 		"description": "Explicitly define the source files, relative to the working directory.",
 		"items": {
 			"type": "string"
@@ -726,6 +734,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-project-cxx-libDirs"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
+		"minItems": 1,
 		"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
 		"items": {
 			"type": "string"
@@ -740,6 +749,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-project-cxx-linkerOptions"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
+		"minItems": 1,
 		"description": "Options to add during the linking step.",
 		"items": {
 			"type": "string"
@@ -749,6 +759,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-project-cxx-links"] = R"json({
 		"type": "array",
 		"uniqueItems": true,
+		"minItems": 1,
 		"description": "A list of dynamic links to use with the linker",
 		"items": {
 			"type": "string"
@@ -765,6 +776,7 @@ Json Schema::getBuildJson()
 			{
 				"type": "array",
 				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"type": "string"
 				}
@@ -786,6 +798,7 @@ Json Schema::getBuildJson()
 			{
 				"type": "array",
 				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"type": "string"
 				}
@@ -800,6 +813,7 @@ Json Schema::getBuildJson()
 			{
 				"type": "array",
 				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"type": "string"
 				}
@@ -809,8 +823,9 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["target-project-cxx-macosFrameworkPaths"] = R"json({
 		"type": "array",
-		"uniqueItems": true,
 		"description": "A list of paths to search for MacOS Frameworks",
+		"uniqueItems": true,
+		"minItems": 1,
 		"items": {
 			"type": "string"
 		}
@@ -818,8 +833,9 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["target-project-cxx-macosFrameworks"] = R"json({
 		"type": "array",
+		"description": "A list of MacOS Frameworks to link to the project",
 		"uniqueItems": true,
-		"description": "",
+		"minItems": 1,
 		"items": {
 			"type": "string"
 		}
@@ -867,6 +883,7 @@ Json Schema::getBuildJson()
 	ret[kDefinitions]["target-project-runArguments"] = R"json({
 		"type": "array",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
+		"minItems": 1,
 		"items": {
 			"type": "string"
 		}
@@ -876,6 +893,7 @@ Json Schema::getBuildJson()
 		"type": "array",
 		"uniqueItems": true,
 		"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
+		"minItems": 1,
 		"items": {
 			"type": "string"
 		}
@@ -889,6 +907,7 @@ Json Schema::getBuildJson()
 			{
 				"type": "array",
 				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"type": "string"
 				}
@@ -904,8 +923,9 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["target-project-cxx-staticLinks"] = R"json({
 		"type": "array",
-		"uniqueItems": true,
 		"description": "A list of static links to use with the linker",
+		"uniqueItems": true,
+		"minItems": 1,
 		"items": {
 			"type": "string"
 		}
@@ -932,7 +952,7 @@ Json Schema::getBuildJson()
 				"items": {
 					"type": "string",
 					"uniqueItems": true,
-					"enum": []
+					"minItems": 1
 				}
 			}
 		]
@@ -1295,8 +1315,9 @@ Json Schema::getBuildJson()
 
 	ret[kDefinitions]["target-cmake-defines"] = R"json({
 		"type": "array",
-		"uniqueItems": true,
 		"description": "Macro definitions to be passed into CMake. (-D)",
+		"uniqueItems": true,
+		"minItems": 1,
 		"items": {
 			"type": "string"
 		}
@@ -1461,10 +1482,10 @@ Json Schema::getBuildJson()
 		"description": "A single bundle or script.",
 		"oneOf": [
 			{
-				"$ref": "#/definitions/distribution-bundle"
+				"$ref": "#/definitions/target-script"
 			},
 			{
-				"$ref": "#/definitions/target-script"
+				"$ref": "#/definitions/distribution-bundle"
 			}
 		]
 	})json"_ojson;
@@ -1501,8 +1522,9 @@ Json Schema::getBuildJson()
 			},
 			{
 				"type": "array",
-				"uniqueItems": true,
 				"description": "An array of allowed build configuration presets",
+				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"type": "string",
 					"description": "A configuration preset",

@@ -2,7 +2,7 @@
 	"version": "0.0.1",
 	"workspace": "Chalet",
 	"externalDepDir": "chalet_external",
-	"path": [],
+	// "path": [],
 	/*"configurations": {
 		"Release": {
 			"optimizations": "3",
@@ -37,7 +37,7 @@
 	],*/
 	"abstracts:all": {
 		"language": "C++",
-		"runDependencies": [],
+		// "runDependencies": [],
 		"settings:Cxx": {
 			"cppStandard": "c++17",
 			"rtti": false,
@@ -66,8 +66,8 @@
 			],
 			"macosFrameworkPaths": [
 				"/Library/Frameworks"
-			],
-			"macosFrameworks": []
+			]
+			// "macosFrameworks": []
 		}
 	},
 	"targets": {
@@ -153,7 +153,7 @@
 			"projects": [
 				"chalet"
 			],
-			"dependencies": [],
+			// "dependencies": [],
 			"exclude": [
 				"*.psd",
 				"*.7z",

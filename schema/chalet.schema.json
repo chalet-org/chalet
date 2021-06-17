@@ -48,6 +48,7 @@
 		"distribution-dependencies": {
 			"type": "array",
 			"uniqueItems": true,
+			"minItems": 1,
 			"items": {
 				"type": "string"
 			}
@@ -58,6 +59,7 @@
 		"distribution-exclude": {
 			"type": "array",
 			"uniqueItems": true,
+			"minItems": 1,
 			"items": {
 				"type": "string"
 			}
@@ -165,6 +167,7 @@
 			"type": "array",
 			"uniqueItems": true,
 			"description": "An array of projects to include",
+			"minItems": 1,
 			"items": {
 				"type": "string",
 				"description": "The name of the project",
@@ -182,10 +185,6 @@
 			"type": "object",
 			"additionalProperties": false,
 			"description": "Variables to describe the final output build.",
-			"required": [
-				"configuration",
-				"projects"
-			],
 			"properties": {
 				"configuration": {
 					"$ref": "#/definitions/distribution-configuration"
@@ -305,6 +304,7 @@
 			"type": "array",
 			"description": "Any additional paths to include.",
 			"uniqueItems": true,
+			"minItems": 1,
 			"items": {
 				"type": "string"
 			}
@@ -322,6 +322,7 @@
 				{
 					"type": "array",
 					"uniqueItems": true,
+					"minItems": 1,
 					"items": {
 						"type": "string"
 					}
@@ -337,6 +338,7 @@
 				{
 					"type": "array",
 					"uniqueItems": true,
+					"minItems": 1,
 					"items": {
 						"$ref": "#/definitions/enum-platform"
 					}
@@ -352,6 +354,7 @@
 				{
 					"type": "array",
 					"uniqueItems": true,
+					"minItems": 1,
 					"items": {
 						"type": "string"
 					}
@@ -367,6 +370,7 @@
 				{
 					"type": "array",
 					"uniqueItems": true,
+					"minItems": 1,
 					"items": {
 						"$ref": "#/definitions/enum-platform"
 					}
@@ -577,6 +581,7 @@
 		"target-project-cxx-compileOptions": {
 			"type": "array",
 			"uniqueItems": true,
+			"minItems": 1,
 			"description": "Options to add during the compilation step.",
 			"items": {
 				"type": "string"
@@ -612,6 +617,7 @@
 		"target-project-cxx-defines": {
 			"type": "array",
 			"uniqueItems": true,
+			"minItems": 1,
 			"description": "Macro definitions to be used by the preprocessor",
 			"items": {
 				"type": "string"
@@ -620,6 +626,7 @@
 		"target-project-cxx-includeDirs": {
 			"type": "array",
 			"uniqueItems": true,
+			"minItems": 1,
 			"description": "A list of directories to include with the project.",
 			"items": {
 				"type": "string"
@@ -634,6 +641,7 @@
 		"target-project-files": {
 			"type": "array",
 			"uniqueItems": true,
+			"minItems": 1,
 			"description": "Explicitly define the source files, relative to the working directory.",
 			"items": {
 				"type": "string"
@@ -661,6 +669,7 @@
 		"target-project-cxx-libDirs": {
 			"type": "array",
 			"uniqueItems": true,
+			"minItems": 1,
 			"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
 			"items": {
 				"type": "string"
@@ -673,6 +682,7 @@
 		"target-project-cxx-linkerOptions": {
 			"type": "array",
 			"uniqueItems": true,
+			"minItems": 1,
 			"description": "Options to add during the linking step.",
 			"items": {
 				"type": "string"
@@ -681,6 +691,7 @@
 		"target-project-cxx-links": {
 			"type": "array",
 			"uniqueItems": true,
+			"minItems": 1,
 			"description": "A list of dynamic links to use with the linker",
 			"items": {
 				"type": "string",
@@ -696,6 +707,7 @@
 				{
 					"type": "array",
 					"uniqueItems": true,
+					"minItems": 1,
 					"items": {
 						"type": "string"
 					}
@@ -715,6 +727,7 @@
 								{
 									"type": "array",
 									"uniqueItems": true,
+									"minItems": 1,
 									"items": {
 										"type": "string"
 									}
@@ -729,6 +742,7 @@
 								{
 									"type": "array",
 									"uniqueItems": true,
+									"minItems": 1,
 									"items": {
 										"type": "string"
 									}
@@ -741,16 +755,18 @@
 		},
 		"target-project-cxx-macosFrameworkPaths": {
 			"type": "array",
-			"uniqueItems": true,
 			"description": "A list of paths to search for MacOS Frameworks",
+			"uniqueItems": true,
+			"minItems": 1,
 			"items": {
 				"type": "string"
 			}
 		},
 		"target-project-cxx-macosFrameworks": {
 			"type": "array",
+			"description": "A list of MacOS Frameworks to link to the project",
 			"uniqueItems": true,
-			"description": "",
+			"minItems": 1,
 			"items": {
 				"type": "string"
 			}
@@ -786,6 +802,7 @@
 		"target-project-runArguments": {
 			"type": "array",
 			"description": "If the project is the run target, a string of arguments to pass to the run command.",
+			"minItems": 1,
 			"items": {
 				"type": "string"
 			}
@@ -794,6 +811,7 @@
 			"type": "array",
 			"uniqueItems": true,
 			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
+			"minItems": 1,
 			"items": {
 				"type": "string"
 			}
@@ -806,6 +824,7 @@
 				{
 					"type": "array",
 					"uniqueItems": true,
+					"minItems": 1,
 					"items": {
 						"type": "string"
 					}
@@ -819,8 +838,9 @@
 		},
 		"target-project-cxx-staticLinks": {
 			"type": "array",
-			"uniqueItems": true,
 			"description": "A list of static links to use with the linker",
+			"uniqueItems": true,
+			"minItems": 1,
 			"items": {
 				"type": "string",
 				"pattern": "^[\\w\\-\\+\\.]+$"
@@ -846,6 +866,7 @@
 					"items": {
 						"type": "string",
 						"uniqueItems": true,
+						"minItems": 1,
 						"enum": [
 							"abi",
 							"absolute-value",
@@ -1203,8 +1224,9 @@
 		},
 		"target-cmake-defines": {
 			"type": "array",
-			"uniqueItems": true,
 			"description": "Macro definitions to be passed into CMake. (-D)",
+			"uniqueItems": true,
+			"minItems": 1,
 			"items": {
 				"type": "string"
 			}
@@ -1353,10 +1375,10 @@
 					"description": "A single bundle or script.",
 					"oneOf": [
 						{
-							"$ref": "#/definitions/distribution-bundle"
+							"$ref": "#/definitions/target-script"
 						},
 						{
-							"$ref": "#/definitions/target-script"
+							"$ref": "#/definitions/distribution-bundle"
 						}
 					]
 				}
@@ -1394,8 +1416,9 @@
 				},
 				{
 					"type": "array",
-					"uniqueItems": true,
 					"description": "An array of allowed build configuration presets",
+					"uniqueItems": true,
+					"minItems": 1,
 					"items": {
 						"type": "string",
 						"description": "A configuration preset",
