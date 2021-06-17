@@ -287,7 +287,7 @@ void Diagnostic::printErrors()
 			}
 			if (errors.size() > 0)
 			{
-				Output::lineBreak();
+				Output::lineBreakStderr();
 				Diagnostic::errorHeader("Errors");
 
 				for (auto& message : errors)

@@ -206,6 +206,15 @@ void Output::lineBreak()
 }
 
 /*****************************************************************************/
+void Output::lineBreakStderr()
+{
+	if (!s_quietNonBuild)
+	{
+		std::cerr << getAnsiReset() << std::endl;
+	}
+}
+
+/*****************************************************************************/
 void Output::print(const Color inColor, const std::string& inText, const bool inBold)
 {
 	if (!s_quietNonBuild)

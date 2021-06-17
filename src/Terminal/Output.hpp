@@ -28,6 +28,7 @@ void displayStyledSymbol(const Color inColor, const std::string_view inSymbol, c
 void resetStdout();
 void resetStderr();
 void lineBreak();
+void lineBreakStderr();
 void print(const Color inColor, const std::string& inText, const bool inBold = false);
 void print(const Color inColor, const StringList& inList, const bool inBold = false);
 
