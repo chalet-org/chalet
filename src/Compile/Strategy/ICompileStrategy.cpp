@@ -6,7 +6,6 @@
 #include "Compile/Strategy/ICompileStrategy.hpp"
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
-#include "Libraries/Format.hpp"
 
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 #include "Compile/Strategy/CompileStrategyNative.hpp"
@@ -41,7 +40,7 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 			break;
 	}
 
-	Diagnostic::errorAbort(fmt::format("Unimplemented StrategyType requested: ", static_cast<int>(inType)));
+	Diagnostic::errorAbort("Unimplemented StrategyType requested: ", static_cast<int>(inType));
 	return nullptr;
 }
 

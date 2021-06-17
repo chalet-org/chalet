@@ -7,7 +7,6 @@
 
 #include <csignal>
 
-#include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"

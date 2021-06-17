@@ -5,7 +5,6 @@
 
 #include "State/Target/ProjectTarget.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
@@ -62,7 +61,7 @@ bool ProjectTarget::validate()
 	{
 		if (!Commands::pathExists(location) && !String::equals(m_state.paths.intermediateDir(), location))
 		{
-			Diagnostic::error(fmt::format("location for project target '{}' doesn't exist: {}", targetName, location));
+			Diagnostic::error("location for project target '{}' doesn't exist: {}", targetName, location);
 			result = false;
 		}
 	}
@@ -100,7 +99,7 @@ bool ProjectTarget::validate()
 	m_warnings = parseWarnings(m_warningsPresetString);
 	if (m_invalidWarningPreset)
 	{
-		Diagnostic::error(fmt::format("Unrecognized or invalid preset for 'warnings': {}", m_warningsPresetString));
+		Diagnostic::error("Unrecognized or invalid preset for 'warnings': {}", m_warningsPresetString);
 		result = false;
 	}
 
@@ -301,7 +300,7 @@ void ProjectTarget::addWarning(std::string&& inValue)
 {
 	if (String::equals(inValue.substr(0, 2), "-W"))
 	{
-		Diagnostic::warn(fmt::format("Removing '-W' prefix from '{}'", inValue));
+		Diagnostic::warn("Removing '-W' prefix from '{}'", inValue);
 		inValue = inValue.substr(2);
 	}
 

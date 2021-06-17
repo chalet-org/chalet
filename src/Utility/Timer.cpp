@@ -5,8 +5,6 @@
 
 #include "Utility/Timer.hpp"
 
-#include "Libraries/Format.hpp"
-
 namespace chalet
 {
 /*****************************************************************************/

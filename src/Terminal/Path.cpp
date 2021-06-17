@@ -5,7 +5,6 @@
 
 #include "Terminal/Path.hpp"
 
-#include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Utility/String.hpp"

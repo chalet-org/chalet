@@ -6,7 +6,7 @@
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
 
 #include "Compile/CompilerConfig.hpp"
-#include "Libraries/Format.hpp"
+
 #include "Libraries/Regex.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"

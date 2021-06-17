@@ -5,7 +5,6 @@
 
 #include "Builder/ProfilerRunner.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -87,7 +86,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	if (!Commands::subprocessOutputToFile({ m_state.ancillaryTools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut))
 	{
-		Diagnostic::error(fmt::format("{} failed to save.", profStatsFile));
+		Diagnostic::error("{} failed to save.", profStatsFile);
 		return false;
 	}
 

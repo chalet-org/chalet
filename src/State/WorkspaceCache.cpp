@@ -5,7 +5,6 @@
 
 #include "State/WorkspaceCache.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"

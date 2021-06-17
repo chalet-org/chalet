@@ -5,7 +5,6 @@
 
 #include "Compile/Generator/MakefileGeneratorGNU.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

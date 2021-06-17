@@ -6,7 +6,7 @@
 #include "State/CompilerTools.hpp"
 
 #include "Core/CommandLineInputs.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -116,8 +116,16 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCac
 	{
 		if (archFromInput.empty() || !String::contains('-', targetArchString))
 		{
-			auto arch = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-dumpmachine" });
-			m_state.info.setTargetArchitecture(arch);
+			auto result = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-dumpmachine" });
+#if defined(CHALET_MACOS)
+			// Strip out version in auto-detected mac triple
+			auto darwin = result.find("apple-darwin");
+			if (darwin != std::string::npos)
+			{
+				result = result.substr(0, darwin + 12);
+			}
+#endif
+			m_state.info.setTargetArchitecture(result);
 		}
 		else
 		{
@@ -279,7 +287,7 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 		if (!config->getSupportedCompilerFlags())
 		{
 			auto exec = String::getPathFilename(config->compilerExecutable());
-			Diagnostic::error(fmt::format("Error collecting supported compiler flags for '{}'.", exec));
+			Diagnostic::error("Error collecting supported compiler flags for '{}'.", exec);
 			return false;
 		}
 	}

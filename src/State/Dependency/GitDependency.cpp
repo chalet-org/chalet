@@ -6,7 +6,7 @@
 #include "State/Dependency/GitDependency.hpp"
 
 #include "Core/CommandLineInputs.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "Utility/String.hpp"

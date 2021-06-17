@@ -5,7 +5,6 @@
 
 #include "State/Bundle/BundleWindows.hpp"
 
-#include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 

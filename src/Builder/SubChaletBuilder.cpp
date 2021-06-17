@@ -6,7 +6,7 @@
 #include "Builder/SubChaletBuilder.hpp"
 
 #include "Core/CommandLineInputs.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SubChaletTarget.hpp"

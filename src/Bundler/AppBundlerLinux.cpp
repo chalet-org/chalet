@@ -5,7 +5,6 @@
 
 #include "Bundler/AppBundlerLinux.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

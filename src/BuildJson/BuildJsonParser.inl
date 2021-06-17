@@ -5,8 +5,6 @@
 
 #include "BuildJson/BuildJsonParser.hpp"
 
-#include "Libraries/Format.hpp"
-
 namespace chalet
 {
 /*****************************************************************************/

@@ -5,7 +5,6 @@
 
 #include "State/BuildPaths.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/BuildInfo.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -465,13 +464,13 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 		{
 			if (usesPch && String::equals(pch, file))
 			{
-				Diagnostic::warn(fmt::format("Precompiled header explicitly included as file: {} (ignored)", file));
+				Diagnostic::warn("Precompiled header explicitly included as file: {} (ignored)", file);
 				continue;
 			}
 
 			if (!Commands::pathExists(file))
 			{
-				Diagnostic::warn(fmt::format("File not found: {}", file));
+				Diagnostic::warn("File not found: {}", file);
 				continue;
 			}
 

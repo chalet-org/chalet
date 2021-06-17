@@ -106,7 +106,8 @@ const char* Unicode::circledSaltire()
 		return "X";
 	else
 #endif
-		return u8"\u2B59";
+		// return u8"\u2B59";
+		return u8"\u2A02";
 }
 
 /*****************************************************************************/

@@ -212,15 +212,15 @@ void JsonFile::initializeDataType(Json& inJson, const JsonDataType inType)
 void JsonFile::warnBlankKey(const std::string& inKey, const std::string& inDefault)
 {
 	if (!inDefault.empty())
-		Diagnostic::warn(fmt::format("{}: '{}' was defined, but blank. Using the built-in default ({})", m_filename, inKey, inDefault));
+		Diagnostic::warn("{}: '{}' was defined, but blank. Using the built-in default ({})", m_filename, inKey, inDefault);
 	else
-		Diagnostic::warn(fmt::format("{}: '{}' was defined, but blank.", m_filename, inKey));
+		Diagnostic::warn("{}: '{}' was defined, but blank.", m_filename, inKey);
 }
 
 /*****************************************************************************/
 void JsonFile::warnBlankKeyInList(const std::string& inKey)
 {
-	Diagnostic::warn(fmt::format("{}: A blank value was found in '{}'.", m_filename, inKey));
+	Diagnostic::warn("{}: A blank value was found in '{}'.", m_filename, inKey);
 }
 
 }

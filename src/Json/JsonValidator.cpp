@@ -5,7 +5,6 @@
 
 #include "Json/JsonValidator.hpp"
 
-#include "Libraries/Format.hpp"
 // #include "Libraries/Regex.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
@@ -119,7 +118,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return "the subschema has succeeded, but it is required to not validate";
 
 		case JsonSchemaError::logical_combination:
-			return fmt::format("An invalid key/value pair was found in '{}'. Review the expected schema.", outError.key);
+			return fmt::format("Validation failed for a key or value inside of '{}'", outError.key);
 
 		case JsonSchemaError::logical_combination_all_of: {
 			const auto msg = std::any_cast<std::pair<JsonSchemaError, std::any>>(data);
@@ -253,7 +252,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			break;
 	}
 
-	Diagnostic::error(fmt::format("{}: Schema failed validation for '{}' (expected {}). See details below.", m_file, outError.key, outError.typeName));
+	Diagnostic::error("{}: Schema failed validation for '{}' (expected {}). See details below.", m_file, outError.key, outError.typeName);
 	Output::msgDisplayBlack(fmt::format("   unhandled error: {}\n", static_cast<std::underlying_type<JsonSchemaError>::type>(outError.type)));
 
 	return std::string();
@@ -301,28 +300,14 @@ bool JsonValidator::printErrors()
 	if (m_errors.size() == 0)
 		return true;
 
-	Diagnostic::errorHeader(fmt::format("{} Errors", m_file));
-
 	for (auto& error : m_errors)
 	{
 		if (error.message.empty())
 			continue;
 
-		Diagnostic::errorMessage(error.message);
-
-		/*switch (error.type)
-		{
-			case JsonErrorClassification::Fatal:
-				break;
-			case JsonErrorClassification::Warning:
-				// Output::print(Color::Yellow, fmt::format("    Attempting to continue build anyway..."));
-				break;
-			default:
-				break;
-		}*/
+		// Pass them to the primary error handler
+		Diagnostic::error(error.message);
 	}
-
-	Output::lineBreak();
 
 	return false;
 }

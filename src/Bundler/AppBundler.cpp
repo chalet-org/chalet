@@ -9,7 +9,7 @@
 #include "Bundler/IAppBundler.hpp"
 #include "Bundler/UniversalBinaryMacOS.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
@@ -124,7 +124,7 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 			chalet_assert(buildStateB != nullptr, "State not initialized for universal binary");
 			if (buildState == nullptr || buildStateB == nullptr)
 			{
-				Diagnostic::error(fmt::format("Arch and/or build configuration '{}' not detected.", bundle.configuration()));
+				Diagnostic::error("Arch and/or build configuration '{}' not detected.", bundle.configuration());
 				return false;
 			}
 
@@ -155,7 +155,7 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, buildFile);
 		if (!removeOldFiles(*bundler))
 		{
-			Diagnostic::error(fmt::format("There was an error removing the previous distribution bundle for: {}", inTarget->name()));
+			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget->name());
 			return false;
 		}
 
@@ -208,7 +208,7 @@ BuildState* AppBundler::getBuildState(const std::string& inBuildConfiguration) c
 	chalet_assert(ret != nullptr, "State not initialized");
 	if (ret == nullptr)
 	{
-		Diagnostic::error(fmt::format("Arch and/or build configuration '{}' not detected.", inBuildConfiguration));
+		Diagnostic::error("Arch and/or build configuration '{}' not detected.", inBuildConfiguration);
 		return nullptr;
 	}
 
@@ -256,7 +256,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 			}
 			if (!Commands::copy(inDep, inOutPath))
 			{
-				Diagnostic::warn(fmt::format("Dependency '{}' could not be copied to: {}", filename, inOutPath));
+				Diagnostic::warn("Dependency '{}' could not be copied to: {}", filename, inOutPath);
 				return false;
 			}
 		}
@@ -293,7 +293,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 			auto dependencies = m_dependencyMap.find(outputFilePath);
 			if (dependencies == m_dependencyMap.end())
 			{
-				Diagnostic::error(fmt::format("Dependency not cached: {}", outputFilePath));
+				Diagnostic::error("Dependency not cached: {}", outputFilePath);
 				return false;
 			}
 
@@ -333,7 +333,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 		if (!Commands::setExecutableFlag(executable))
 		{
-			Diagnostic::warn(fmt::format("Exececutable flag could not be set for: {}", executable));
+			Diagnostic::warn("Exececutable flag could not be set for: {}", executable);
 			continue;
 		}
 	}
@@ -409,7 +409,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 						{
 							if (!inState.ancillaryTools.getExecutableDependencies(outputFilePath, dependencies))
 							{
-								Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", outputFilePath));
+								Diagnostic::error("Dependencies not found for file: '{}'", outputFilePath);
 								return false;
 							}
 
@@ -426,7 +426,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 									std::string resolved = Commands::which(filename);
 									if (resolved.empty())
 									{
-										// Diagnostic::warn(fmt::format("Dependency not copied (not found in path): '{}'", dep));
+										// Diagnostic::warn("Dependency not copied (not found in path): '{}'", dep);
 										// return false;
 										// We probably don't care about them anyway
 										continue;
@@ -439,7 +439,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 									StringList depsOfDeps;
 									if (!inState.ancillaryTools.getExecutableDependencies(dep, depsOfDeps))
 									{
-										Diagnostic::error(fmt::format("Dependencies not found for file: '{}'", dep));
+										Diagnostic::error("Dependencies not found for file: '{}'", dep);
 										return false;
 									}
 
@@ -456,7 +456,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 											std::string resolved = Commands::which(file);
 											if (resolved.empty())
 											{
-												// Diagnostic::warn(fmt::format("Dependency not copied (not found in path): '{}'", d));
+												// Diagnostic::warn("Dependency not copied (not found in path): '{}'", d);
 												// return false;
 												// We probably don't care about them anyway
 												continue;

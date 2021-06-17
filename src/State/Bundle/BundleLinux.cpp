@@ -6,7 +6,7 @@
 #include "State/Bundle/BundleLinux.hpp"
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
-#include "Libraries/Format.hpp"
+
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
@@ -21,7 +21,7 @@ bool BundleLinux::validate()
 	{
 		if (!String::endsWith(".png", m_icon))
 		{
-			Diagnostic::error(fmt::format("bundle.linux.icon must end with '.png', but was '{}'.", m_icon));
+			Diagnostic::error("bundle.linux.icon must end with '.png', but was '{}'.", m_icon);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_icon))
@@ -35,7 +35,7 @@ bool BundleLinux::validate()
 	{
 		if (!String::endsWith(".desktop", m_desktopEntry))
 		{
-			Diagnostic::error(fmt::format("bundle.linux.desktopEntry must end with '.desktop', but was '{}'.", m_desktopEntry));
+			Diagnostic::error("bundle.linux.desktopEntry must end with '.desktop', but was '{}'.", m_desktopEntry);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_desktopEntry))

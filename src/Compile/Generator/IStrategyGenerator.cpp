@@ -41,7 +41,7 @@ IStrategyGenerator::IStrategyGenerator(const BuildState& inState) :
 			break;
 	}
 
-	Diagnostic::errorAbort(fmt::format("Unimplemented StrategyGenerator requested: ", static_cast<int>(inType)));
+	Diagnostic::errorAbort("Unimplemented StrategyGenerator requested: ", static_cast<int>(inType));
 	return nullptr;
 }
 /*****************************************************************************/

@@ -8,7 +8,7 @@
 #include "BuildJson/BuildJsonSchema.hpp"
 #include "CacheJson/CacheJsonParser.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -51,7 +51,7 @@ bool StatePrototype::initialize()
 	// TODO: schema versioning
 	if (!m_buildJson->validate(std::move(buildJsonSchema)))
 	{
-		Diagnostic::error(fmt::format("{}: There was an error validating the file against its schema.", m_filename));
+		Diagnostic::error("{}: There was an error validating the file against its schema.", m_filename);
 		return false;
 	}
 
@@ -88,7 +88,14 @@ bool StatePrototype::validateBundleDestinations()
 	{
 		if (target->isDistributionBundle())
 		{
-			auto& bundle = static_cast<const BundleTarget&>(*target);
+			auto& bundle = static_cast<BundleTarget&>(*target);
+
+			if (bundle.configuration().empty() && !m_releaseConfiguration.empty())
+			{
+				auto config = m_releaseConfiguration;
+				bundle.setConfiguration(std::move(config));
+				List::addIfDoesNotExist(m_requiredBuildConfigurations, bundle.configuration());
+			}
 
 			for (auto& projectName : bundle.projects())
 			{
@@ -97,7 +104,7 @@ bool StatePrototype::validateBundleDestinations()
 				{
 					if (res->second == bundle.outDir())
 					{
-						Diagnostic::error(fmt::format("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", projectName, bundle.outDir(), bundle.name()));
+						Diagnostic::error("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", projectName, bundle.outDir(), bundle.name());
 						result = false;
 					}
 					else
@@ -126,7 +133,7 @@ bool StatePrototype::validate()
 	{
 		if (!target->validate())
 		{
-			Diagnostic::error(fmt::format("Error validating the '{}' distribution target.", target->name()));
+			Diagnostic::error("Error validating the '{}' distribution target.", target->name());
 			return false;
 		}
 	}
@@ -223,13 +230,13 @@ bool StatePrototype::parseConfiguration(const Json& inNode)
 		{
 			if (!configJson.is_object())
 			{
-				Diagnostic::error(fmt::format("{}: configuration '{}' must be an object.", m_filename, name));
+				Diagnostic::error("{}: configuration '{}' must be an object.", m_filename, name);
 				return false;
 			}
 
 			if (name.empty())
 			{
-				Diagnostic::error(fmt::format("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations));
+				Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations);
 				return false;
 			}
 
@@ -273,14 +280,14 @@ bool StatePrototype::parseConfiguration(const Json& inNode)
 				auto name = configJson.get<std::string>();
 				if (name.empty())
 				{
-					Diagnostic::error(fmt::format("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations));
+					Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations);
 					return false;
 				}
 
 				BuildConfiguration config;
 				if (!getDefaultBuildConfiguration(config, name))
 				{
-					Diagnostic::error(fmt::format("{}: Error creating the default build configuration '{}'", m_filename, name));
+					Diagnostic::error("{}: Error creating the default build configuration '{}'", m_filename, name);
 					return false;
 				}
 
@@ -309,7 +316,7 @@ bool StatePrototype::parseDistribution(const Json& inNode)
 	const Json& distributionJson = inNode.at(kKeyDistribution);
 	if (!distributionJson.is_object() || distributionJson.size() == 0)
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must contain at least one bundle or script.", m_filename, kKeyDistribution));
+		Diagnostic::error("{}: '{}' must contain at least one bundle or script.", m_filename, kKeyDistribution);
 		return false;
 	}
 
@@ -317,7 +324,7 @@ bool StatePrototype::parseDistribution(const Json& inNode)
 	{
 		if (!targetJson.is_object())
 		{
-			Diagnostic::error(fmt::format("{}: distribution bundle '{}' must be an object.", m_filename, name));
+			Diagnostic::error("{}: distribution bundle '{}' must be an object.", m_filename, name);
 			return false;
 		}
 
@@ -376,11 +383,6 @@ bool StatePrototype::parseBundle(BundleTarget& outBundle, const Json& inNode)
 		outBundle.setConfiguration(std::move(val));
 		List::addIfDoesNotExist(m_requiredBuildConfigurations, outBundle.configuration());
 	}
-	else
-	{
-		Diagnostic::error(fmt::format("{}: Distribution bundle '{}' was found without 'configuration'", m_filename, outBundle.name()));
-		return false;
-	}
 
 	if (std::string val; m_buildJson->assignStringAndValidate(val, inNode, "description"))
 		outBundle.setDescription(std::move(val));
@@ -400,7 +402,7 @@ bool StatePrototype::parseBundle(BundleTarget& outBundle, const Json& inNode)
 	}
 	else
 	{
-		Diagnostic::error(fmt::format("{}: Distribution bundle '{}' was found without 'projects'", m_filename, outBundle.name()));
+		Diagnostic::error("{}: Distribution bundle '{}' was found without 'projects'", m_filename, outBundle.name());
 		return false;
 	}
 
@@ -431,7 +433,7 @@ bool StatePrototype::parseBundleLinux(BundleTarget& outBundle, const Json& inNod
 	const Json& linuxNode = inNode.at("linux");
 	if (!linuxNode.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: '{}.linux' must be an object.", m_filename, kKeyDistribution));
+		Diagnostic::error("{}: '{}.linux' must be an object.", m_filename, kKeyDistribution);
 		return false;
 	}
 
@@ -455,9 +457,9 @@ bool StatePrototype::parseBundleLinux(BundleTarget& outBundle, const Json& inNod
 
 	if (assigned == 1)
 	{
-		Diagnostic::error(fmt::format("{}: '{bundle}.linux.icon' & '{bundle}.linux.desktopEntry' are both required.",
+		Diagnostic::error("{}: '{bundle}.linux.icon' & '{bundle}.linux.desktopEntry' are both required.",
 			m_filename,
-			fmt::arg("bundle", kKeyDistribution)));
+			fmt::arg("bundle", kKeyDistribution));
 		return false;
 	}
 
@@ -475,7 +477,7 @@ bool StatePrototype::parseBundleMacOS(BundleTarget& outBundle, const Json& inNod
 	const Json& macosNode = inNode.at("macos");
 	if (!macosNode.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: '{}.macos' must be an object.", m_filename, kKeyDistribution));
+		Diagnostic::error("{}: '{}.macos' must be an object.", m_filename, kKeyDistribution);
 		return false;
 	}
 
@@ -545,9 +547,9 @@ bool StatePrototype::parseBundleMacOS(BundleTarget& outBundle, const Json& inNod
 
 	// if (assigned >= 1 && assigned < 2)
 	// {
-	// 	Diagnostic::error(fmt::format("{}: '{bundle}.macos.bundleName' is required.",
+	// 	Diagnostic::error("{}: '{bundle}.macos.bundleName' is required.",
 	// 		m_filename,
-	// 		fmt::arg("bundle", kKeyDistribution)));
+	// 		fmt::arg("bundle", kKeyDistribution));
 	// 	return false;
 	// }
 
@@ -565,7 +567,7 @@ bool StatePrototype::parseBundleWindows(BundleTarget& outBundle, const Json& inN
 	const Json& windowsNode = inNode.at("windows");
 	if (!windowsNode.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: '{}.windows' must be an object.", m_filename, kKeyDistribution));
+		Diagnostic::error("{}: '{}.windows' must be an object.", m_filename, kKeyDistribution);
 		return false;
 	}
 
@@ -606,7 +608,7 @@ bool StatePrototype::makeDefaultBuildConfigurations()
 		BuildConfiguration config;
 		if (!getDefaultBuildConfiguration(config, name))
 		{
-			Diagnostic::error(fmt::format("{}: Error creating the default build configurations.", m_filename));
+			Diagnostic::error("{}: Error creating the default build configurations.", m_filename);
 			return false;
 		}
 
@@ -651,7 +653,7 @@ bool StatePrototype::getDefaultBuildConfiguration(BuildConfiguration& outConfig,
 	}
 	else
 	{
-		Diagnostic::error(fmt::format("{}: An invalid build configuration ({}) was requested. Expected: Release, Debug, RelWithDebInfo, MinSizeRel, Profile", m_filename, inName));
+		Diagnostic::error("{}: An invalid build configuration ({}) was requested. Expected: Release, Debug, RelWithDebInfo, MinSizeRel, Profile", m_filename, inName);
 		return false;
 	}
 

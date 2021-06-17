@@ -8,7 +8,7 @@
 #include <thread>
 
 #include "Libraries/FileSystem.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "Terminal/Commands.hpp"

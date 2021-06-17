@@ -5,7 +5,6 @@
 
 #include "Terminal/Environment.hpp"
 
-#include "Libraries/Format.hpp"
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/MsvcEnvironment.hpp"
 #include "Utility/String.hpp"
@@ -410,7 +409,7 @@ void Environment::set(const char* inName, const std::string& inValue)
 #endif
 	if (result != 0)
 	{
-		Diagnostic::errorAbort(fmt::format("Could not set {}", inName));
+		Diagnostic::errorAbort("Could not set {}", inName);
 	}
 }
 

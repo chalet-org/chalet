@@ -40,6 +40,8 @@
 #include "Utility/Types.hpp"
 
 #include "Libraries/FileSystem.hpp"
+#include "Libraries/Format.hpp"
+
 #include "Terminal/Diagnostic.hpp"
 #include "Utility/Logger.hpp"
 #include "Utility/Macros.hpp"

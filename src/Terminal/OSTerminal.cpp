@@ -5,7 +5,6 @@
 
 #include "Terminal/OSTerminal.hpp"
 
-#include "Libraries/Format.hpp"
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Environment.hpp"
 

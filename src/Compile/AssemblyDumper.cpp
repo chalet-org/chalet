@@ -67,7 +67,7 @@ bool AssemblyDumper::dumpProject(const ProjectTarget& inProject, const bool inFo
 	{
 		if (!m_commandPool.run(target, settings))
 		{
-			Diagnostic::error(fmt::format("There was a problem dumping asm files for: {}", inProject.name()));
+			Diagnostic::error("There was a problem dumping asm files for: {}", inProject.name());
 			return false;
 		}
 	}

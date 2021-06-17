@@ -5,7 +5,6 @@
 
 #include "Utility/DependencyWalker.hpp"
 
-#include "Libraries/Format.hpp"
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"

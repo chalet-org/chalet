@@ -6,7 +6,7 @@
 #include "Init/ProjectInitializer.hpp"
 
 #include "FileTemplates/StarterFileTemplates.hpp"
-#include "Libraries/Format.hpp"
+
 #include "Terminal/Commands.hpp"
 #include "Terminal/Diagnostic.hpp"
 #include "Terminal/Output.hpp"
@@ -28,7 +28,7 @@ bool ProjectInitializer::run()
 	const auto& path = m_inputs.initPath();
 	if (!Commands::pathExists(path))
 	{
-		Diagnostic::error(fmt::format("Path '{}' does not exit. Please create it first.", path));
+		Diagnostic::error("Path '{}' does not exit. Please create it first.", path);
 		return false;
 	}
 
@@ -36,7 +36,7 @@ bool ProjectInitializer::run()
 	m_rootPath = Commands::getCanonicalPath(path);
 	if (!Commands::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))
 	{
-		Diagnostic::error(fmt::format("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath));
+		Diagnostic::error("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath);
 		return false;
 	}
 

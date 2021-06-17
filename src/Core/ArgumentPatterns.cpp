@@ -5,7 +5,6 @@
 
 #include "Core/ArgumentPatterns.hpp"
 
-#include "Libraries/Format.hpp"
 // #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "Utility/List.hpp"
@@ -272,7 +271,7 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 	}
 	catch (const std::exception& err)
 	{
-		Diagnostic::error(fmt::format("There was an unhandled exception during argument parsing: {}", err.what()));
+		Diagnostic::error("There was an unhandled exception during argument parsing: {}", err.what());
 		return false;
 	}
 
@@ -311,7 +310,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 	{
 		if (arg.front() == '-' && !List::contains(keys, arg))
 		{
-			Diagnostic::error(fmt::format("An invalid argument was found: '{}'", arg));
+			Diagnostic::error("An invalid argument was found: '{}'", arg);
 			return false;
 		}
 	}
@@ -364,7 +363,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		}
 		catch (const std::exception&)
 		{
-			Diagnostic::error(fmt::format("An invalid set of arguments were found.\n   Aborting..."));
+			Diagnostic::error("An invalid set of arguments were found.\n   Aborting...");
 			return false;
 		}
 	}

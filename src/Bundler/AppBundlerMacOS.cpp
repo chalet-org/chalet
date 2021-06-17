@@ -6,7 +6,7 @@
 #include "Bundler/AppBundlerMacOS.hpp"
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/AncillaryTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -253,7 +253,7 @@ bool AppBundlerMacOS::createBundleIcon()
 		{
 			if (!icon.empty() && !sipsFound)
 			{
-				Diagnostic::warn(fmt::format("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", m_buildFile, icon));
+				Diagnostic::warn("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", m_buildFile, icon);
 			}
 		}
 	}

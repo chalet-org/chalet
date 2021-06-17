@@ -5,7 +5,6 @@
 
 #include "State/AncillaryTools.hpp"
 
-#include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/DependencyWalker.hpp"
@@ -510,7 +509,7 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 	DependencyWalker depsWalker;
 	if (!depsWalker.read(inPath, outList))
 	{
-		Diagnostic::error(fmt::format("Dependencies for file '{}' could not be read.", inPath));
+		Diagnostic::error("Dependencies for file '{}' could not be read.", inPath);
 		return false;
 	}
 
@@ -519,13 +518,13 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 	#if defined(CHALET_MACOS)
 	if (m_otool.empty())
 	{
-		Diagnostic::error(fmt::format("Dependencies for file '{}' could not be read. 'otool' was not found in cache.", inPath));
+		Diagnostic::error("Dependencies for file '{}' could not be read. 'otool' was not found in cache.", inPath);
 		return false;
 	}
 	#else
 	if (m_ldd.empty())
 	{
-		Diagnostic::error(fmt::format("Dependencies for file '{}' could not be read. 'ldd' was not found in cache.", inPath));
+		Diagnostic::error("Dependencies for file '{}' could not be read. 'ldd' was not found in cache.", inPath);
 		return false;
 	}
 	#endif

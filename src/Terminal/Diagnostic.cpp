@@ -8,7 +8,6 @@
 #include <csignal>
 #include <exception>
 
-#include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
@@ -92,62 +91,12 @@ void Diagnostic::printDone(const std::string& inExtra)
 }
 
 /*****************************************************************************/
-void Diagnostic::warn(const std::string& inMessage, const std::string& inTitle)
-{
-	auto type = Type::Warning;
-	// Diagnostic::showHeader(type, inTitle);
-	// Diagnostic::showMessage(type, inMessage);
-	// Diagnostic::showAsOneLine(type, inTitle, inMessage);
-	Diagnostic::addError(type, inMessage);
-	UNUSED(inTitle);
-
-	// const auto reset = Output::getAnsiReset();
-	// std::cout << reset << std::endl;
-}
-
-/*****************************************************************************/
-void Diagnostic::error(const std::string& inMessage, const std::string& inTitle)
-{
-	auto type = Type::Error;
-	// Diagnostic::showHeader(type, inTitle);
-	// Diagnostic::showMessage(type, inMessage);
-	// Diagnostic::showAsOneLine(type, inTitle, inMessage);
-	Diagnostic::addError(type, inMessage);
-	UNUSED(inTitle);
-
-	// const auto reset = Output::getAnsiReset();
-	// std::cerr << reset << std::endl;
-}
-
-/*****************************************************************************/
-void Diagnostic::warnHeader(const std::string& inTitle)
-{
-	Diagnostic::showHeader(Type::Warning, inTitle);
-}
-
-void Diagnostic::warnMessage(const std::string& inMessage)
-{
-	Diagnostic::showMessage(Type::Warning, inMessage);
-}
-
-/*****************************************************************************/
-void Diagnostic::errorHeader(const std::string& inTitle)
-{
-	Diagnostic::showHeader(Type::Error, inTitle);
-}
-
-void Diagnostic::errorMessage(const std::string& inMessage)
-{
-	Diagnostic::showMessage(Type::Error, inMessage);
-}
-
-/*****************************************************************************/
-void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inTitle, const bool inThrow)
+void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 {
 	if (sExceptionThrown)
 		return;
 
-	Diagnostic::error(inMessage, inTitle);
+	Diagnostic::showMessage(Type::Error, std::move(inMessage));
 	Diagnostic::printErrors();
 
 	if (Environment::isBashOrWindowsConPTY())
@@ -157,9 +106,6 @@ void Diagnostic::errorAbort(const std::string& inMessage, const std::string& inT
 	}
 
 	sExceptionThrown = true;
-
-	if (!inThrow)
-		return;
 
 	priv::SignalHandler::handler(SIGABRT);
 }
@@ -183,8 +129,10 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 			  << inExpression << ' ' << blue << inFile << ':' << inLineNumber << reset << std::endl;
 
 	if (!inMessage.empty())
+	{
 		std::cerr << '\n'
 				  << boldBlack << inMessage << reset << std::endl;
+	}
 
 	sAssertionFailure = true;
 
@@ -198,7 +146,7 @@ bool Diagnostic::assertionFailure() noexcept
 }
 
 /*****************************************************************************/
-void Diagnostic::showHeader(const Type inType, const std::string& inTitle)
+void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 {
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	if (sStartedInfo)
@@ -210,11 +158,11 @@ void Diagnostic::showHeader(const Type inType, const std::string& inTitle)
 	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
 	const auto reset = Output::getAnsiReset();
 
-	out << color << inTitle << ':' << reset << std::endl;
+	out << color << std::move(inTitle) << ':' << reset << std::endl;
 }
 
 /*****************************************************************************/
-void Diagnostic::showMessage(const Type inType, const std::string& inMessage)
+void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 {
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
 	if (sStartedInfo)
@@ -223,27 +171,11 @@ void Diagnostic::showMessage(const Type inType, const std::string& inMessage)
 		sStartedInfo = false;
 	}
 
-	out << fmt::format("   {}", inMessage) << std::endl;
+	out << fmt::format("   {}", std::move(inMessage)) << std::endl;
 }
 
 /*****************************************************************************/
-void Diagnostic::showAsOneLine(const Type inType, const std::string& inTitle, const std::string& inMessage)
-{
-	auto& out = inType == Type::Error ? std::cerr : std::cout;
-	if (sStartedInfo)
-	{
-		out << std::endl;
-		sStartedInfo = false;
-	}
-
-	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
-	const auto reset = Output::getAnsiReset();
-
-	out << fmt::format("{}{}| {}{}", color, inTitle, reset, inMessage) << std::endl;
-}
-
-/*****************************************************************************/
-void Diagnostic::addError(const Type inType, const std::string& inMessage)
+void Diagnostic::addError(const Type inType, std::string&& inMessage)
 {
 	if (sStartedInfo)
 	{
@@ -251,7 +183,7 @@ void Diagnostic::addError(const Type inType, const std::string& inMessage)
 		sStartedInfo = false;
 	}
 
-	getErrorList()->push_back({ inType, inMessage });
+	getErrorList()->push_back({ inType, std::move(inMessage) });
 }
 
 /*****************************************************************************/
@@ -278,12 +210,13 @@ void Diagnostic::printErrors()
 			bool hasWarnings = false;
 			if (warnings.size() > 0)
 			{
+				Type type = Type::Warning;
 				Output::lineBreak();
-				Diagnostic::warnHeader(fmt::format("{}  Warnings", Unicode::warning()));
+				Diagnostic::showHeader(type, fmt::format("{}  Warnings", Unicode::warning()));
 
 				for (auto& message : warnings)
 				{
-					Diagnostic::warnMessage(message);
+					Diagnostic::showMessage(type, std::move(message));
 				}
 				if (errors.size() == 0)
 					Output::lineBreak();
@@ -292,14 +225,15 @@ void Diagnostic::printErrors()
 			}
 			if (errors.size() > 0)
 			{
+				Type type = Type::Error;
 				if (!hasWarnings)
 					Output::lineBreakStderr();
 
-				Diagnostic::errorHeader(fmt::format("{}  Errors", Unicode::circledSaltire()));
+				Diagnostic::showHeader(type, fmt::format("{}  Errors", Unicode::circledSaltire()));
 
 				for (auto& message : errors)
 				{
-					Diagnostic::errorMessage(message);
+					Diagnostic::showMessage(type, std::move(message));
 				}
 				Output::lineBreak();
 			}

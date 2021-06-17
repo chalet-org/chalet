@@ -37,7 +37,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 			break;
 	}
 
-	Diagnostic::errorAbort(fmt::format("Unimplemented BuildTargetType requested for makeBuild: ", static_cast<int>(inType)));
+	Diagnostic::errorAbort("Unimplemented BuildTargetType requested for makeBuild: ", static_cast<int>(inType));
 	return nullptr;
 }
 

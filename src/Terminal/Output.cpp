@@ -6,7 +6,7 @@
 #include "Terminal/Output.hpp"
 
 #include "Core/CommandLineInputs.hpp"
-#include "Libraries/Format.hpp"
+
 #include "Libraries/Regex.hpp"
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Environment.hpp"

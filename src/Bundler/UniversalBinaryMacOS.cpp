@@ -168,7 +168,7 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 	{
 		if (!Commands::makeDirectory(universalBuildDir))
 		{
-			Diagnostic::error(fmt::format("There was an error creating the directory: {}", universalBuildDir));
+			Diagnostic::error("There was an error creating the directory: {}", universalBuildDir);
 			return false;
 		}
 	}
@@ -227,7 +227,7 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 
 		if (!Commands::subprocess({ m_state.ancillaryTools.lipo(), "-create", "-output", fileUniversal, std::move(tmpFileA), std::move(tmpFileB) }))
 		{
-			Diagnostic::error(fmt::format("There was an error making the binary: {}", fileUniversal));
+			Diagnostic::error("There was an error making the binary: {}", fileUniversal);
 			return false;
 		}
 

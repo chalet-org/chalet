@@ -8,7 +8,7 @@
 #include "Core/ArgumentPatterns.hpp"
 // #include "Core/ArgumentMap.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Libraries/Format.hpp"
+
 #include "Router/Route.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"

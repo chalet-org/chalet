@@ -5,8 +5,6 @@
 
 #include "State/StatePrototype.hpp"
 
-#include "Libraries/Format.hpp"
-
 namespace chalet
 {
 /*****************************************************************************/

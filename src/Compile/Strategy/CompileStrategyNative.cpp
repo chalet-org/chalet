@@ -5,7 +5,6 @@
 
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"

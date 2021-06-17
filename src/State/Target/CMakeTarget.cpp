@@ -5,7 +5,6 @@
 
 #include "State/Target/CMakeTarget.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
@@ -36,19 +35,19 @@ bool CMakeTarget::validate()
 	bool result = true;
 	if (!Commands::pathExists(m_location))
 	{
-		Diagnostic::error(fmt::format("location for CMake target '{}' doesn't exist: {}", targetName, m_location));
+		Diagnostic::error("location for CMake target '{}' doesn't exist: {}", targetName, m_location);
 		result = false;
 	}
 
 	if (!m_buildFile.empty() && !Commands::pathExists(fmt::format("{}/{}", m_location, m_buildFile)))
 	{
-		Diagnostic::error(fmt::format("buildFile '{}' for CMake target '{}' was not found in the location: {}", m_buildFile, targetName, m_location));
+		Diagnostic::error("buildFile '{}' for CMake target '{}' was not found in the location: {}", m_buildFile, targetName, m_location);
 		result = false;
 	}
 
 	if (!m_state.toolchain.cmakeAvailable())
 	{
-		Diagnostic::error(fmt::format("CMake was requsted for the project '{}' but was not found.", this->name()));
+		Diagnostic::error("CMake was requsted for the project '{}' but was not found.", this->name());
 		result = false;
 	}
 
@@ -61,7 +60,7 @@ bool CMakeTarget::validate()
 	if (!List::contains({ "Release", "Debug", "RelWithDebInfo", "MinSizeRel" }, buildConfiguration))
 	{
 		// https://cmake.org/cmake/help/v3.0/variable/CMAKE_BUILD_TYPE.html
-		Diagnostic::error(fmt::format("Build '{}' not recognized by CMake.", buildConfiguration));
+		Diagnostic::error("Build '{}' not recognized by CMake.", buildConfiguration);
 		result = false;
 	}
 

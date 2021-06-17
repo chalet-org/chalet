@@ -43,7 +43,8 @@
 		},
 		"distribution-configuration": {
 			"type": "string",
-			"description": "The name of the build configuration to use for the distribution."
+			"description": "The name of the build configuration to use for the distribution.",
+			"default": "Release"
 		},
 		"distribution-dependencies": {
 			"type": "array",

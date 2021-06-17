@@ -76,7 +76,7 @@ bool CacheToolchainParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: The toolchain's C++ compiler was blank or could not be found.", m_jsonFile.filename()));
+		Diagnostic::error("{}: The toolchain's C++ compiler was blank or could not be found.", m_jsonFile.filename());
 		result = false;
 	}
 
@@ -85,7 +85,7 @@ bool CacheToolchainParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: The toolchain's C compiler was blank or could not be found.", m_jsonFile.filename()));
+		Diagnostic::error("{}: The toolchain's C compiler was blank or could not be found.", m_jsonFile.filename());
 		result = false;
 	}
 
@@ -94,7 +94,7 @@ bool CacheToolchainParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: The toolchain's archive utility was blank or could not be found.", m_jsonFile.filename()));
+		Diagnostic::error("{}: The toolchain's archive utility was blank or could not be found.", m_jsonFile.filename());
 		result = false;
 	}
 
@@ -103,7 +103,7 @@ bool CacheToolchainParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: The toolchain's linker was blank or could not be found.", m_jsonFile.filename()));
+		Diagnostic::error("{}: The toolchain's linker was blank or could not be found.", m_jsonFile.filename());
 		result = false;
 	}
 
@@ -113,13 +113,13 @@ bool CacheToolchainParser::validatePaths()
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 	#endif
-		Diagnostic::warn(fmt::format("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename()));
+		Diagnostic::warn("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename());
 	}
 #endif
 	if (!result)
 	{
 		auto& preference = m_inputs.toolchainPreferenceRaw();
-		Diagnostic::error(fmt::format("{}: The requested toolchain of '{}' could either not be detected, or had invalid tools.", m_jsonFile.filename(), preference));
+		Diagnostic::error("{}: The requested toolchain of '{}' could either not be detected, or had invalid tools.", m_jsonFile.filename(), preference);
 	}
 
 	/*
@@ -128,7 +128,7 @@ bool CacheToolchainParser::validatePaths()
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 #endif
-		Diagnostic::error(fmt::format("{}: 'make' could not be found.", m_jsonFile.filename()));
+		Diagnostic::error("{}: 'make' could not be found.", m_jsonFile.filename());
 		return false;
 	}
 	*/

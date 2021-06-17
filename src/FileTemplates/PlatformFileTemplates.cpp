@@ -5,8 +5,6 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
-#include "Libraries/Format.hpp"
-
 namespace chalet
 {
 /*****************************************************************************/

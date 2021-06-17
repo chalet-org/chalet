@@ -8,7 +8,7 @@
 #include "CacheJson/CacheJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Core/HostPlatform.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/BuildState.hpp"
 #include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
@@ -58,7 +58,7 @@ bool CacheJsonParser::serialize()
 
 	if (!serializeFromJsonRoot(m_jsonFile.json))
 	{
-		Diagnostic::error(fmt::format("There was an error parsing {}", m_jsonFile.filename()));
+		Diagnostic::error("There was an error parsing {}", m_jsonFile.filename());
 		return false;
 	}
 
@@ -79,7 +79,7 @@ bool CacheJsonParser::validatePaths()
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 	#endif
-		Diagnostic::error(fmt::format("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_jsonFile.filename()));
+		Diagnostic::error("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_jsonFile.filename());
 		return false;
 	}
 #endif
@@ -281,7 +281,7 @@ bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
 {
 	if (!inJson.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: Json root must be an object.", m_jsonFile.filename()), "Error parsing file");
+		Diagnostic::error("{}: Json root must be an object.", m_jsonFile.filename());
 		return false;
 	}
 
@@ -294,14 +294,14 @@ bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
 		/*
 	if (!inNode.contains(kKeyCompilerTools))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyCompilerTools));
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyCompilerTools);
 		return false;
 	}
 
 	Json& toolchains = inNode.at(kKeyCompilerTools);
 	if (!toolchains.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyCompilerTools));
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyCompilerTools);
 		return false;
 	}
 */
@@ -318,14 +318,14 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 {
 	if (!inNode.contains(kKeySettings))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeySettings));
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeySettings);
 		return false;
 	}
 
 	const Json& settings = inNode.at(kKeySettings);
 	if (!settings.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeySettings));
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeySettings);
 		return false;
 	}
 
@@ -349,14 +349,14 @@ bool CacheJsonParser::parseTools(Json& inNode)
 {
 	if (!inNode.contains(kKeyTools))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyTools));
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyTools);
 		return false;
 	}
 
 	Json& ancillaryTools = inNode.at(kKeyTools);
 	if (!ancillaryTools.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyTools));
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyTools);
 		return false;
 	}
 
@@ -447,7 +447,7 @@ bool CacheJsonParser::parseAppleSdks(Json& inNode)
 {
 	if (!inNode.contains(kKeyApplePlatformSdks))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyApplePlatformSdks));
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyApplePlatformSdks);
 		return false;
 	}
 
@@ -456,7 +456,7 @@ bool CacheJsonParser::parseAppleSdks(Json& inNode)
 	{
 		if (!pathJson.is_string())
 		{
-			Diagnostic::error(fmt::format("{}: apple platform '{}' must be a string.", m_jsonFile.filename(), key));
+			Diagnostic::error("{}: apple platform '{}' must be a string.", m_jsonFile.filename(), key);
 			return false;
 		}
 

@@ -5,7 +5,6 @@
 
 #include "Builder/CmakeBuilder.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"

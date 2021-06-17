@@ -29,12 +29,12 @@ Json JsonComments::parse(const std::string& inFilename)
 	}
 	catch (Json::out_of_range& e)
 	{
-		Diagnostic::errorAbort(e.what(), "JsonComments::parse: Error parsing " + inFilename);
+		Diagnostic::errorAbort("JsonComments::parse ({}): {}", inFilename, e.what());
 		return Json();
 	}
 	catch (Json::parse_error& e)
 	{
-		Diagnostic::errorAbort(e.what(), "JsonComments::parse: Error parsing " + inFilename);
+		Diagnostic::errorAbort("JsonComments::parse ({}): {}", inFilename, e.what());
 		return Json();
 	}
 }
@@ -52,12 +52,12 @@ Json JsonComments::parseLiteral(const std::string& inJsonContent)
 	}
 	catch (Json::out_of_range& e)
 	{
-		Diagnostic::errorAbort(e.what(), "JsonComments::parseLiteral: Error parsing provided content");
+		Diagnostic::errorAbort("JsonComments::parseLiteral: {}", e.what());
 		return Json();
 	}
 	catch (Json::parse_error& e)
 	{
-		Diagnostic::errorAbort(e.what(), "JsonComments::parseLiteral: Error parsing provided content");
+		Diagnostic::errorAbort("JsonComments::parseLiteral: {}", e.what());
 		return Json();
 	}
 }

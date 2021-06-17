@@ -5,7 +5,6 @@
 
 #include "Dependencies/DependencyManager.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "Terminal/Commands.hpp"
@@ -50,7 +49,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		if (destination.empty() || String::startsWith('.', destination) || String::startsWith('/', destination))
 		{
 			// This shouldn't occur, but would be pretty bad if it did
-			Diagnostic::error(fmt::format("The external dependency destination was blank for '{}'.", repository));
+			Diagnostic::error("The external dependency destination was blank for '{}'.", repository);
 			return false;
 		}
 

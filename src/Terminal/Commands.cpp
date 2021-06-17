@@ -16,7 +16,7 @@
 #endif
 
 #include "Core/CommandLineInputs.hpp"
-#include "Libraries/Format.hpp"
+
 #include "Libraries/Glob.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"

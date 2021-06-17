@@ -6,7 +6,7 @@
 #include "Compile/Toolchain/CompileToolchainApple.hpp"
 
 #include "Compile/CompilerConfig.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"

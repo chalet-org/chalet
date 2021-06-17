@@ -5,7 +5,6 @@
 
 #include "Compile/CompilerConfig.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -60,7 +59,7 @@ bool CompilerConfig::configureCompilerPaths()
 	auto language = m_language == CodeLanguage::CPlusPlus ? "C++" : "C";
 	if (exec.empty())
 	{
-		Diagnostic::error(fmt::format("Compiler executable was empty for language: '{}'", language));
+		Diagnostic::error("Compiler executable was empty for language: '{}'", language);
 		return false;
 	}
 
@@ -85,7 +84,7 @@ bool CompilerConfig::configureCompilerPaths()
 		}
 	}
 
-	Diagnostic::error(fmt::format("Invalid compiler structure (no 'bin' folder) found for language: '{}'", language));
+	Diagnostic::error("Invalid compiler structure (no 'bin' folder) found for language: '{}'", language);
 	return false;
 }
 

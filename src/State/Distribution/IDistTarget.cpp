@@ -5,7 +5,6 @@
 
 #include "State/Distribution/IDistTarget.hpp"
 
-#include "Libraries/Format.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 
@@ -30,7 +29,7 @@ IDistTarget::IDistTarget(const DistTargetType inType) :
 			break;
 	}
 
-	Diagnostic::errorAbort(fmt::format("Unimplemented DistTargetType requested for makeBundle: ", static_cast<int>(inType)));
+	Diagnostic::errorAbort("Unimplemented DistTargetType requested for makeBundle: ", static_cast<int>(inType));
 	return nullptr;
 }
 

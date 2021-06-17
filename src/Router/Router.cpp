@@ -8,7 +8,7 @@
 #include "Bundler/AppBundler.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -41,7 +41,7 @@ bool Router::run()
 
 	if (m_inputs.generator() == IdeType::Unknown)
 	{
-		Diagnostic::error(fmt::format("The requested IDE project generator '{}' was not recognized, or is not yet supported.", m_inputs.generatorRaw()));
+		Diagnostic::error("The requested IDE project generator '{}' was not recognized, or is not yet supported.", m_inputs.generatorRaw());
 		return false;
 	}
 
@@ -58,7 +58,7 @@ bool Router::run()
 	{
 		if (!Commands::pathExists(buildFile))
 		{
-			Diagnostic::error(fmt::format("Not a chalet project. '{}' was not found.", buildFile));
+			Diagnostic::error("Not a chalet project. '{}' was not found.", buildFile);
 			return false;
 		}
 
@@ -154,7 +154,7 @@ bool Router::cmdBundle(StatePrototype& inPrototype)
 	const auto& buildFile = m_inputs.buildFile();
 	if (inPrototype.requiredBuildConfigurations().size() == 0)
 	{
-		Diagnostic::error(fmt::format("{}: 'bundle' ran without any valid distribution bundles: missing 'configuration'", buildFile));
+		Diagnostic::error("{}: 'bundle' ran without any valid distribution bundles: missing 'configuration'", buildFile);
 		return false;
 	}
 
@@ -246,7 +246,7 @@ bool Router::parseEnvFile()
 
 		if (!Environment::parseVariablesFromFile(envFile))
 		{
-			Diagnostic::error(fmt::format("There was an error parsing the env file: {}", envFile));
+			Diagnostic::error("There was an error parsing the env file: {}", envFile);
 			return false;
 		}
 

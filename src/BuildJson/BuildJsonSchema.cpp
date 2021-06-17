@@ -6,7 +6,7 @@
 #include "BuildJson/BuildJsonSchema.hpp"
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
-#include "Libraries/Format.hpp"
+
 #include "Utility/String.hpp"
 #include "Utility/SuppressIntellisense.hpp"
 #include "Json/JsonComments.hpp"
@@ -88,7 +88,8 @@ Json Schema::getBuildJson()
 	// distribution
 	ret[kDefinitions]["distribution-configuration"] = R"json({
 		"type": "string",
-		"description": "The name of the build configuration to use for the distribution."
+		"description": "The name of the build configuration to use for the distribution.",
+		"default": "Release"
 	})json"_ojson;
 
 	ret[kDefinitions]["distribution-dependencies"] = R"json({

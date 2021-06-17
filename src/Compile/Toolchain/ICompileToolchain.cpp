@@ -7,7 +7,7 @@
 
 #include "Compile/CompilerConfig.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -51,7 +51,7 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const ProjectTar
 			break;
 	}
 
-	Diagnostic::errorAbort(fmt::format("Unimplemented ToolchainType requested: ", static_cast<int>(inType)));
+	Diagnostic::errorAbort("Unimplemented ToolchainType requested: ", static_cast<int>(inType));
 	return nullptr;
 }
 
@@ -77,7 +77,7 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const ProjectTar
 			break;
 	}
 
-	Diagnostic::errorAbort(fmt::format("Unimplemented ToolchainType requested: ", static_cast<int>(inCompilerType)));
+	Diagnostic::errorAbort("Unimplemented ToolchainType requested: ", static_cast<int>(inCompilerType));
 	return nullptr;
 }
 
@@ -109,7 +109,7 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 
 			if (!Commands::createFileWithContents(windowsManifestFile, manifestContents))
 			{
-				Diagnostic::error(fmt::format("Error creating windows manifest file: {}", windowsManifestFile));
+				Diagnostic::error("Error creating windows manifest file: {}", windowsManifestFile);
 				return false;
 			}
 		}
@@ -120,7 +120,7 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
 		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
 		{
-			Diagnostic::error(fmt::format("Error creating windows manifest resource file: {}", windowsManifestResourceFile));
+			Diagnostic::error("Error creating windows manifest resource file: {}", windowsManifestResourceFile);
 			return false;
 		}
 	}
@@ -145,7 +145,7 @@ bool ICompileToolchain::createWindowsApplicationIcon()
 
 		if (!Commands::pathExists(windowsIconFile))
 		{
-			Diagnostic::error(fmt::format("Windows icon does not exist: {}", windowsIconFile));
+			Diagnostic::error("Windows icon does not exist: {}", windowsIconFile);
 			return false;
 		}
 	}
@@ -155,7 +155,7 @@ bool ICompileToolchain::createWindowsApplicationIcon()
 		std::string rcContents = PlatformFileTemplates::windowsIconResource(windowsIconFile);
 		if (!Commands::createFileWithContents(windowsIconResourceFile, rcContents))
 		{
-			Diagnostic::error(fmt::format("Error creating windows icon resource file: {}", windowsIconResourceFile));
+			Diagnostic::error("Error creating windows icon resource file: {}", windowsIconResourceFile);
 			return false;
 		}
 	}

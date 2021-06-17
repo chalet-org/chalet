@@ -10,9 +10,6 @@
 
 namespace chalet
 {
-const std::string kDefaultWarning = u8"\u26A0  Warning";
-const std::string kDefaultError = "Error";
-
 struct Diagnostic
 {
 	Diagnostic() = delete;
@@ -20,16 +17,14 @@ struct Diagnostic
 	static void info(const std::string& inMessage, const bool inLineBreak = true);
 	static void printDone(const std::string& inExtra = std::string());
 
-	static void warn(const std::string& inMessage, const std::string& inTitle = kDefaultWarning);
-	static void error(const std::string& inMessage, const std::string& inTitle = kDefaultError);
+	template <typename... Args>
+	static void warn(std::string_view inFmt, Args&&... args);
 
-	static void warnHeader(const std::string& inTitle = kDefaultWarning);
-	static void warnMessage(const std::string& inMessage);
+	template <typename... Args>
+	static void error(std::string_view inFmt, Args&&... args);
 
-	static void errorHeader(const std::string& inTitle = kDefaultError);
-	static void errorMessage(const std::string& inMessage);
-
-	static void errorAbort(const std::string& inMessage, const std::string& inTitle = "Critical Error", const bool inThrow = true);
+	template <typename... Args>
+	static void errorAbort(std::string_view inFmt, Args&&... args);
 
 	static void customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber);
 	static bool assertionFailure() noexcept;
@@ -61,12 +56,14 @@ private:
 
 	static ErrorList* getErrorList();
 
-	static void showHeader(const Type inType, const std::string& inTitle);
-	static void showMessage(const Type inType, const std::string& inMessage);
-	static void showAsOneLine(const Type inType, const std::string& inTitle, const std::string& inMessage);
-	static void addError(const Type inType, const std::string& inMessage);
+	static void showErrorAndAbort(std::string&& inMessage);
+	static void showHeader(const Type inType, std::string&& inTitle);
+	static void showMessage(const Type inType, std::string&& inMessage);
+	static void addError(const Type inType, std::string&& inMessage);
 };
 }
+
+#include "Terminal/Diagnostic.inl"
 
 #ifdef NDEBUG
 	#define chalet_assert(expr, message)

@@ -19,7 +19,6 @@
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 
-#include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
@@ -190,7 +189,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			auto& project = static_cast<const ProjectTarget&>(*runProject);
 			if (!Commands::pathExists(m_state.paths.getTargetFilename(project)))
 			{
-				Diagnostic::error(fmt::format("Requested configuration '{}' must be built for run project: '{}'", m_state.info.buildConfiguration(), project.name()));
+				Diagnostic::error("Requested configuration '{}' must be built for run project: '{}'", m_state.info.buildConfiguration(), project.name());
 				return false;
 			}
 
@@ -210,7 +209,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		}
 		else
 		{
-			Diagnostic::error(fmt::format("Run project not found: '{}'", m_runProjectName));
+			Diagnostic::error("Run project not found: '{}'", m_runProjectName);
 			return false;
 		}
 	}
@@ -296,13 +295,13 @@ bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRou
 
 	if (!Commands::makeDirectories(outputs.directories))
 	{
-		Diagnostic::error(fmt::format("Error creating paths for project: {}", inProject.name()));
+		Diagnostic::error("Error creating paths for project: {}", inProject.name());
 		return false;
 	}
 
 	if (!buildToolchain->initialize())
 	{
-		Diagnostic::error(fmt::format("Error preparing the build for project: {}", inProject.name()));
+		Diagnostic::error("Error preparing the build for project: {}", inProject.name());
 		return false;
 	}
 
@@ -551,7 +550,7 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 
 			if (!copyRunDependencies(project))
 			{
-				Diagnostic::error(fmt::format("There was an error copying run dependencies for: {}", project.name()));
+				Diagnostic::error("There was an error copying run dependencies for: {}", project.name());
 				return false;
 			}
 		}

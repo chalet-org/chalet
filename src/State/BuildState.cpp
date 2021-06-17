@@ -9,7 +9,7 @@
 #include "Builder/BuildManager.hpp"
 #include "CacheJson/CacheToolchainParser.hpp"
 #include "Dependencies/DependencyManager.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/AncillaryTools.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/ProjectTarget.hpp"
@@ -97,7 +97,7 @@ bool BuildState::initializeBuildConfiguration()
 
 	if (buildConfigurations.find(config) == buildConfigurations.end())
 	{
-		Diagnostic::error(fmt::format("{}: The build configuration '{}' was not found.", m_inputs.buildFile(), config));
+		Diagnostic::error("{}: The build configuration '{}' was not found.", m_inputs.buildFile(), config);
 		return false;
 	}
 
@@ -155,7 +155,7 @@ bool BuildState::initializeBuild()
 				  m_inputs.targetArchitecture() :
 				  info.targetArchitectureString();
 
-			Diagnostic::error(fmt::format("Requested arch '{}' is not supported.", targetArch));
+			Diagnostic::error("Requested arch '{}' is not supported.", targetArch);
 			return false;
 		}
 	}
@@ -249,7 +249,7 @@ bool BuildState::validateState()
 		{
 			if (!Commands::changeWorkingDirectory(paths.workingDirectory()))
 			{
-				Diagnostic::error(fmt::format("Error changing directory to '{}'", paths.workingDirectory()));
+				Diagnostic::error("Error changing directory to '{}'", paths.workingDirectory());
 				return false;
 			}
 		}
@@ -263,7 +263,7 @@ bool BuildState::validateState()
 		const auto& makeExec = toolchain.make();
 		if (makeExec.empty() || !Commands::pathExists(makeExec))
 		{
-			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec));
+			Diagnostic::error("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec);
 			return false;
 		}
 	}
@@ -274,7 +274,7 @@ bool BuildState::validateState()
 		auto& ninjaExec = toolchain.ninja();
 		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
 		{
-			Diagnostic::error(fmt::format("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec));
+			Diagnostic::error("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
 			return false;
 		}
 	}
@@ -297,7 +297,7 @@ bool BuildState::validateState()
 	{
 		if (!toolchain.fetchCmakeVersion())
 		{
-			Diagnostic::error(fmt::format("The path to the CMake executable could not be resolved: {}", toolchain.cmake()));
+			Diagnostic::error("The path to the CMake executable could not be resolved: {}", toolchain.cmake());
 			return false;
 		}
 	}
@@ -305,7 +305,7 @@ bool BuildState::validateState()
 	{
 		if (!m_prototype.ancillaryTools.resolveOwnExecutable(m_inputs.appPath()))
 		{
-			Diagnostic::error(fmt::format("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.ancillaryTools.chalet()));
+			Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.ancillaryTools.chalet());
 			return false;
 		}
 	}
@@ -315,7 +315,7 @@ bool BuildState::validateState()
 		// must validate after cmake/sub-chalet check
 		if (!target->validate())
 		{
-			Diagnostic::error(fmt::format("Error validating the '{}' target.", target->name()));
+			Diagnostic::error("Error validating the '{}' target.", target->name());
 			return false;
 		}
 	}

@@ -5,7 +5,6 @@
 
 #include "FileTemplates/StarterFileTemplates.hpp"
 
-#include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Utility/List.hpp"

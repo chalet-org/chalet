@@ -6,7 +6,7 @@
 #include "State/Bundle/BundleMacOS.hpp"
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
-#include "Libraries/Format.hpp"
+
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
@@ -30,7 +30,7 @@ bool BundleMacOS::validate()
 	{
 		if (!String::endsWith({ ".png", ".icns" }, m_icon))
 		{
-			Diagnostic::error(fmt::format("bundle.macos.icon must end with '.png' or '.icns', but was '{}'.", m_icon));
+			Diagnostic::error("bundle.macos.icon must end with '.png' or '.icns', but was '{}'.", m_icon);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_icon))
@@ -44,7 +44,7 @@ bool BundleMacOS::validate()
 	{
 		if (!String::endsWith(".json", m_infoPropertyList))
 		{
-			Diagnostic::error(fmt::format("bundle.macos.infoPropertyList must end with '.plist' or '.json', but was '{}'.", m_infoPropertyList));
+			Diagnostic::error("bundle.macos.infoPropertyList must end with '.plist' or '.json', but was '{}'.", m_infoPropertyList);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_infoPropertyList))
@@ -57,7 +57,7 @@ bool BundleMacOS::validate()
 	{
 		if (!String::endsWith(".png", m_dmgBackground1x))
 		{
-			Diagnostic::error(fmt::format("bundle.macos.dmgBackground1x must end with '.png', but was '{}'.", m_dmgBackground1x));
+			Diagnostic::error("bundle.macos.dmgBackground1x must end with '.png', but was '{}'.", m_dmgBackground1x);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_dmgBackground1x))
@@ -71,7 +71,7 @@ bool BundleMacOS::validate()
 	{
 		if (!String::endsWith(".png", m_dmgBackground2x))
 		{
-			Diagnostic::error(fmt::format("bundle.macos.dmgBackground2x must end with '.png', but was '{}'.", m_dmgBackground2x));
+			Diagnostic::error("bundle.macos.dmgBackground2x must end with '.png', but was '{}'.", m_dmgBackground2x);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_dmgBackground2x))

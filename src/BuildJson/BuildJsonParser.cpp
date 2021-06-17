@@ -6,7 +6,7 @@
 #include "BuildJson/BuildJsonParser.hpp"
 
 #include "BuildJson/BuildJsonSchema.hpp"
-#include "Libraries/Format.hpp"
+
 #include "State/Bundle/BundleLinux.hpp"
 #include "State/Bundle/BundleMacOS.hpp"
 #include "State/Bundle/BundleWindows.hpp"
@@ -52,20 +52,20 @@ bool BuildJsonParser::serialize()
 	const Json& jRoot = m_buildJson.json;
 	if (!serializeFromJsonRoot(jRoot))
 	{
-		Diagnostic::error(fmt::format("{}: There was an error parsing the file.", m_filename));
+		Diagnostic::error("{}: There was an error parsing the file.", m_filename);
 		return false;
 	}
 
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	if (!validBuildRequested())
 	{
-		Diagnostic::error(fmt::format("{}: No valid projects to build in '{}' configuration. Check usage of 'onlyInConfiguration'", m_filename, buildConfiguration));
+		Diagnostic::error("{}: No valid projects to build in '{}' configuration. Check usage of 'onlyInConfiguration'", m_filename, buildConfiguration);
 		return false;
 	}
 
 	if (!validRunProjectRequestedFromInput())
 	{
-		Diagnostic::error(fmt::format("{}: Requested runProject of '{}' was not a valid project name.", m_filename, m_inputs.runProject()));
+		Diagnostic::error("{}: Requested runProject of '{}' was not a valid project name.", m_filename, m_inputs.runProject());
 		return false;
 	}
 
@@ -121,7 +121,7 @@ bool BuildJsonParser::validBuildRequested()
 			auto& project = static_cast<const ProjectTarget&>(*target);
 			if (project.language() == CodeLanguage::None)
 			{
-				Diagnostic::error(fmt::format("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project.name()), "Error parsing file");
+				Diagnostic::error("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project.name());
 				return false;
 			}
 		}
@@ -161,7 +161,7 @@ bool BuildJsonParser::parseRoot(const Json& inNode)
 {
 	if (!inNode.is_object())
 	{
-		Diagnostic::error(fmt::format("{}: Json root must be an object.", m_filename), "Error parsing file");
+		Diagnostic::error("{}: Json root must be an object.", m_filename);
 		return false;
 	}
 
@@ -203,7 +203,7 @@ bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
 	const Json& externalDependencies = inNode.at(kKeyExternalDependencies);
 	if (!externalDependencies.is_object() || externalDependencies.size() == 0)
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must contain at least one external dependency.", m_filename, kKeyExternalDependencies));
+		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_filename, kKeyExternalDependencies);
 		return false;
 	}
 
@@ -229,7 +229,7 @@ bool BuildJsonParser::parseGitDependency(GitDependency& outDependency, const Jso
 		outDependency.setRepository(std::move(val));
 	else
 	{
-		Diagnostic::error(fmt::format("{}: 'repository' is required for all  external dependencies.", m_filename));
+		Diagnostic::error("{}: 'repository' is required for all  external dependencies.", m_filename);
 		return false;
 	}
 
@@ -242,7 +242,7 @@ bool BuildJsonParser::parseGitDependency(GitDependency& outDependency, const Jso
 	{
 		if (!outDependency.tag().empty())
 		{
-			Diagnostic::error(fmt::format("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_filename, outDependency.repository()));
+			Diagnostic::error("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_filename, outDependency.repository());
 			return false;
 		}
 
@@ -263,14 +263,14 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 {
 	if (!inNode.contains(kKeyTargets))
 	{
-		Diagnostic::error(fmt::format("{}: '{}' is required, but was not found.", m_filename, kKeyTargets));
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_filename, kKeyTargets);
 		return false;
 	}
 
 	const Json& targets = inNode.at(kKeyTargets);
 	if (!targets.is_object() || targets.size() == 0)
 	{
-		Diagnostic::error(fmt::format("{}: '{}' must contain at least one project.", m_filename, kKeyTargets));
+		Diagnostic::error("{}: '{}' must contain at least one project.", m_filename, kKeyTargets);
 		return false;
 	}
 
@@ -284,7 +284,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 				auto abstractProject = std::make_unique<ProjectTarget>(m_state);
 				if (!parseProject(*abstractProject, templateJson, true))
 				{
-					Diagnostic::error(fmt::format("{}: Error parsing the '{}' abstract project.", m_filename, name));
+					Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_filename, name);
 					return false;
 				}
 
@@ -293,7 +293,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 			else
 			{
 				// not sure if this would actually get triggered?
-				Diagnostic::error(fmt::format("{}: project template '{}' already exists.", m_filename, name));
+				Diagnostic::error("{}: project template '{}' already exists.", m_filename, name);
 				return false;
 			}
 		}
@@ -307,7 +307,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 
 		if (!abstractJson.is_object())
 		{
-			Diagnostic::error(fmt::format("{}: abstract target '{}' must be an object.", m_filename, prefixedName));
+			Diagnostic::error("{}: abstract target '{}' must be an object.", m_filename, prefixedName);
 			return false;
 		}
 
@@ -319,7 +319,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 			auto abstractProject = std::make_unique<ProjectTarget>(m_state);
 			if (!parseProject(*abstractProject, abstractJson, true))
 			{
-				Diagnostic::error(fmt::format("{}: Error parsing the '{}' abstract project.", m_filename, name));
+				Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_filename, name);
 				return false;
 			}
 
@@ -328,7 +328,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		else
 		{
 			// not sure if this would actually get triggered?
-			Diagnostic::error(fmt::format("{}: project template '{}' already exists.", m_filename, name));
+			Diagnostic::error("{}: project template '{}' already exists.", m_filename, name);
 			return false;
 		}
 	}
@@ -337,7 +337,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 	{
 		if (!targetJson.is_object())
 		{
-			Diagnostic::error(fmt::format("{}: target '{}' must be an object.", m_filename, name));
+			Diagnostic::error("{}: target '{}' must be an object.", m_filename, name);
 			return false;
 		}
 
@@ -375,7 +375,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (type == BuildTargetType::Project && !String::equals("all", extends))
 			{
-				Diagnostic::error(fmt::format("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name));
+				Diagnostic::error("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name);
 				return false;
 			}
 
@@ -387,7 +387,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (!parseScript(static_cast<ScriptBuildTarget&>(*target), targetJson))
 			{
-				Diagnostic::error(fmt::format("{}: Error parsing the '{}' script target.", m_filename, name));
+				Diagnostic::error("{}: Error parsing the '{}' script target.", m_filename, name);
 				return false;
 			}
 		}
@@ -395,7 +395,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (!parseSubChaletTarget(static_cast<SubChaletTarget&>(*target), targetJson))
 			{
-				Diagnostic::error(fmt::format("{}: Error parsing the '{}' target of type 'Chalet'.", m_filename, name));
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'Chalet'.", m_filename, name);
 				return false;
 			}
 		}
@@ -403,7 +403,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (!parseCMakeProject(static_cast<CMakeTarget&>(*target), targetJson))
 			{
-				Diagnostic::error(fmt::format("{}: Error parsing the '{}' target of type 'CMake'.", m_filename, name));
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'CMake'.", m_filename, name);
 				return false;
 			}
 		}
@@ -411,7 +411,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (!parseProject(static_cast<ProjectTarget&>(*target), targetJson))
 			{
-				Diagnostic::error(fmt::format("{}: Error parsing the '{}' project target.", m_filename, name));
+				Diagnostic::error("{}: Error parsing the '{}' project target.", m_filename, name);
 				return false;
 			}
 		}
@@ -481,13 +481,13 @@ bool BuildJsonParser::parseProject(ProjectTarget& outProject, const Json& inNode
 
 		if (outProject.kind() == ProjectKind::None)
 		{
-			Diagnostic::error(fmt::format("{}: project '{}' must contain 'kind'.", m_filename, outProject.name()));
+			Diagnostic::error("{}: project '{}' must contain 'kind'.", m_filename, outProject.name());
 			return false;
 		}
 
 		if (!outProject.pch().empty() && !Commands::pathExists(outProject.pch()))
 		{
-			Diagnostic::error(fmt::format("{}: Precompiled header '{}' was not found.", m_filename, outProject.pch()));
+			Diagnostic::error("{}: Precompiled header '{}' was not found.", m_filename, outProject.pch());
 			return false;
 		}
 	}
@@ -686,13 +686,13 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectTarget& outProject, const Jso
 	bool locResult = parseProjectLocationOrFiles(outProject, inNode);
 	if (locResult && inAbstract)
 	{
-		Diagnostic::error(fmt::format("{}: '{}' cannot contain a location configuration.", m_filename, kKeyAbstracts));
+		Diagnostic::error("{}: '{}' cannot contain a location configuration.", m_filename, kKeyAbstracts);
 		return false;
 	}
 
 	if (!locResult && !inAbstract)
 	{
-		Diagnostic::error(fmt::format("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outProject.name()));
+		Diagnostic::error("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outProject.name());
 		return false;
 	}
 
@@ -701,13 +701,13 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectTarget& outProject, const Jso
 
 	if (!inAbstract && (outProject.fileExtensions().size() == 0 && outProject.files().size() == 0))
 	{
-		Diagnostic::error(fmt::format("{}: No file extensions set for project: {}\n  Aborting...", m_filename, outProject.name()));
+		Diagnostic::error("{}: No file extensions set for project: {}\n  Aborting...", m_filename, outProject.name());
 		return false;
 	}
 
 	/*if (!inAbstract && (outProject.files().size() > 0 && outProject.fileExtensions().size() > 0))
 	{
-		Diagnostic::warn(fmt::format("{}: 'fileExtensions' ignored since 'files' are explicitely declared in project: {}", m_filename, outProject.name()));
+		Diagnostic::warn("{}: 'fileExtensions' ignored since 'files' are explicitely declared in project: {}", m_filename, outProject.name());
 	}*/
 
 	return true;
@@ -735,7 +735,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(ProjectTarget& outProject, con
 
 	if (hasFiles)
 	{
-		Diagnostic::error(fmt::format("{}: Define either 'files' or 'location', not both.", m_filename));
+		Diagnostic::error("{}: Define either 'files' or 'location', not both.", m_filename);
 		return false;
 	}
 
