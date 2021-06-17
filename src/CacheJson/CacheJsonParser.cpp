@@ -135,6 +135,7 @@ bool CacheJsonParser::makeCache()
 
 	if (!settings.contains(kKeyLastToolchain))
 	{
+		m_inputs.detectToolchainPreference();
 		settings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
 		m_jsonFile.setDirty(true);
 	}
