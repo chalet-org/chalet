@@ -42,6 +42,13 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 				"pch": "src/PCH.hpp"
 			}
 		}
+	},
+	"distribution": {
+		"${project}": {
+			"projects": [
+				"${project}"
+			]
+		}
 	}
 }
 )json";
