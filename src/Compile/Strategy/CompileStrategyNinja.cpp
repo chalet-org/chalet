@@ -119,7 +119,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 	command.push_back("-f");
 	command.push_back(m_cacheFile);
 
-	if (m_state.toolchain.ninjaVersionMajor() >= 1 && m_state.toolchain.ninjaVersionMinor() > 10)
+	if (m_state.toolchain.ninjaVersionMajor() >= 1 && m_state.toolchain.ninjaVersionMinor() >= 10 && m_state.toolchain.ninjaVersionPatch() > 2)
 	{
 		// silences ninja status updates
 		command.push_back("--quiet"); // forthcoming (in ninja's master branch currently)

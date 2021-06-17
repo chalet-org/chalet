@@ -432,11 +432,17 @@ void CompilerTools::fetchNinjaVersion()
 			version = Commands::isolateVersion(version);
 
 			auto vals = String::split(version, '.');
-			if (vals.size() == 3)
+			if (vals.size() >= 3)
 			{
 				m_ninjaVersionMajor = std::stoi(vals[0]);
 				m_ninjaVersionMinor = std::stoi(vals[1]);
 				m_ninjaVersionPatch = std::stoi(vals[2]);
+
+				if (vals.size() > 3)
+				{
+					// .git (master build)
+					m_ninjaVersionPatch++;
+				}
 			}
 
 			m_ninjaAvailable = m_ninjaVersionMajor > 0 && m_ninjaVersionMinor > 0;
