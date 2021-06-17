@@ -76,6 +76,7 @@ const char* Unicode::heavyBallotX()
 		return u8"\u2718";
 }
 
+/*****************************************************************************/
 const char* Unicode::boldSaltire()
 {
 #if defined(CHALET_WIN32)
@@ -84,6 +85,17 @@ const char* Unicode::boldSaltire()
 	else
 #endif
 		return u8"\xF0\x9F\x9E\xAB";
+}
+
+/*****************************************************************************/
+const char* Unicode::warning()
+{
+#if defined(CHALET_WIN32)
+	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+		return "»";
+	else
+#endif
+		return u8"\u26A0";
 }
 
 /*****************************************************************************/

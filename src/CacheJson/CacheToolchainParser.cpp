@@ -70,44 +70,45 @@ bool CacheToolchainParser::serialize(Json& inNode)
 /*****************************************************************************/
 bool CacheToolchainParser::validatePaths()
 {
-	if (!Commands::pathExists(m_state.toolchain.cpp()))
+	bool result = true;
+	if (m_state.toolchain.cpp().empty() || !Commands::pathExists(m_state.toolchain.cpp()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 #endif
 		Diagnostic::error(fmt::format("{}: The toolchain's C++ compiler was blank or could not be found.", m_jsonFile.filename()));
-		return false;
+		result = false;
 	}
 
-	if (!Commands::pathExists(m_state.toolchain.cc()))
+	if (m_state.toolchain.cc().empty() || !Commands::pathExists(m_state.toolchain.cc()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 #endif
 		Diagnostic::error(fmt::format("{}: The toolchain's C compiler was blank or could not be found.", m_jsonFile.filename()));
-		return false;
+		result = false;
 	}
 
-	if (!Commands::pathExists(m_state.toolchain.archiver()))
+	if (m_state.toolchain.archiver().empty() || !Commands::pathExists(m_state.toolchain.archiver()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 #endif
 		Diagnostic::error(fmt::format("{}: The toolchain's archive utility was blank or could not be found.", m_jsonFile.filename()));
-		return false;
+		result = false;
 	}
 
-	if (!Commands::pathExists(m_state.toolchain.linker()))
+	if (m_state.toolchain.linker().empty() || !Commands::pathExists(m_state.toolchain.linker()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 #endif
 		Diagnostic::error(fmt::format("{}: The toolchain's linker was blank or could not be found.", m_jsonFile.filename()));
-		return false;
+		result = false;
 	}
 
 #if defined(CHALET_WIN32)
-	if (!Commands::pathExists(m_state.toolchain.rc()))
+	if (m_state.toolchain.rc().empty() || !Commands::pathExists(m_state.toolchain.rc()))
 	{
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -115,6 +116,11 @@ bool CacheToolchainParser::validatePaths()
 		Diagnostic::warn(fmt::format("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename()));
 	}
 #endif
+	if (!result)
+	{
+		auto& preference = m_inputs.toolchainPreferenceRaw();
+		Diagnostic::error(fmt::format("{}: The requested toolchain of '{}' could either not be detected, or had invalid tools.", m_jsonFile.filename(), preference));
+	}
 
 	/*
 	if (!Commands::pathExists(m_make))
@@ -127,7 +133,7 @@ bool CacheToolchainParser::validatePaths()
 	}
 	*/
 
-	return true;
+	return result;
 }
 
 /*****************************************************************************/

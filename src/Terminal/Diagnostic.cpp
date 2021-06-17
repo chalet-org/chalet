@@ -11,6 +11,7 @@
 #include "Libraries/Format.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Unicode.hpp"
 #include "Utility/SignalHandler.hpp"
 
 namespace chalet
@@ -274,21 +275,27 @@ void Diagnostic::printErrors()
 			}
 
 			sStartedInfo = false;
+			bool hasWarnings = false;
 			if (warnings.size() > 0)
 			{
 				Output::lineBreak();
-				Diagnostic::warnHeader(u8"\u26A0  Warnings");
+				Diagnostic::warnHeader(fmt::format("{}  Warnings", Unicode::warning()));
 
 				for (auto& message : warnings)
 				{
 					Diagnostic::warnMessage(message);
 				}
-				Output::lineBreak();
+				if (errors.size() == 0)
+					Output::lineBreak();
+
+				hasWarnings = true;
 			}
 			if (errors.size() > 0)
 			{
-				Output::lineBreakStderr();
-				Diagnostic::errorHeader("Errors");
+				if (!hasWarnings)
+					Output::lineBreakStderr();
+
+				Diagnostic::errorHeader(fmt::format("{}  Errors", Unicode::circledSaltire()));
 
 				for (auto& message : errors)
 				{

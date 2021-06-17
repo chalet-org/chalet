@@ -17,6 +17,7 @@ const char* diamond();
 const char* heavyCheckmark();
 const char* heavyBallotX();
 const char* boldSaltire();
+const char* warning();
 const char* circledSaltire();
 const char* heavyCurvedDownRightArrow();
 const char* heavyCurvedUpRightArrow();
