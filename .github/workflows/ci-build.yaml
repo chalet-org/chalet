@@ -56,7 +56,7 @@ jobs:
         uses: papeloto/action-zip@v1
         with:
           files: dist/chalet LICENSE.txt
-          dest: dist/chalet-linux.zip
+          dest: dist/chalet-linux-ubuntu.zip
       - name: "Upload binary"
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -64,8 +64,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.Release.outputs.upload_url }}
-          asset_path: ./dist/chalet-linux.zip
-          asset_name: chalet-linux.zip
+          asset_path: ./dist/chalet-linux-ubuntu.zip
+          asset_name: chalet-linux-ubuntu.zip
           asset_content_type: application/zip
   MacOS:
     needs: Release
@@ -89,8 +89,8 @@ jobs:
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
-          files: dist/Chalet.app/Contents/MacOS/chalet LICENSE.txt
-          dest: dist/chalet-macos.zip
+          files: dist/chalet LICENSE.txt
+          dest: dist/chalet-macos-universal.zip
       - name: "Upload binary"
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -98,8 +98,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.Release.outputs.upload_url }}
-          asset_path: ./dist/chalet-macos.zip
-          asset_name: chalet-macos.zip
+          asset_path: ./dist/chalet-macos-universal.zip
+          asset_name: chalet-macos-universal.zip
           asset_content_type: application/zip
   Windows-MSVC:
     needs: Release
