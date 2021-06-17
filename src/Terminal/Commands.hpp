@@ -40,7 +40,7 @@ bool copy(const std::string& inFrom, const std::string& inTo);
 bool copySilent(const std::string& inFrom, const std::string& inTo);
 bool copySkipExisting(const std::string& inFrom, const std::string& inTo);
 bool copyRename(const std::string& inFrom, const std::string& inTo);
-bool rename(const std::string& inFrom, const std::string& inTo);
+bool rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting = false);
 void forEachFileMatch(const std::string& inPath, const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
 void forEachFileMatch(const std::string& inPath, const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);
 void forEachFileMatch(const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);

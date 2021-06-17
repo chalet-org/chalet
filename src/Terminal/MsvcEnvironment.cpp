@@ -9,6 +9,7 @@
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -62,7 +63,7 @@ MsvcEnvironment::MsvcEnvironment(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool MsvcEnvironment::readCompilerVariables()
+bool MsvcEnvironment::create()
 {
 #if defined(CHALET_WIN32)
 	if (m_initialized)
@@ -96,25 +97,6 @@ bool MsvcEnvironment::readCompilerVariables()
 
 	if (!Commands::pathExists(m_varsFileMsvcDelta))
 	{
-		bool notUsingMsvc = false;
-		for (const auto& search : {
-				 "clang++",
-				 "clang",
-				 "g++",
-				 "gcc",
-				 "c++",
-				 "cc",
-				 "lld",
-				 "ld",
-				 "ar",
-				 "windres",
-			 })
-		{
-			notUsingMsvc |= !Commands::which(search).empty();
-		}
-		if (notUsingMsvc)
-			return true;
-
 		Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
 
 		m_vsAppIdDir = Commands::subprocessOutput({ s_vswhere, "-latest", "-property", "installationPath" });

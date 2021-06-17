@@ -88,12 +88,7 @@ void CompileToolchainLLVM::addProfileInformationCompileOption(StringList& outArg
 /*****************************************************************************/
 void CompileToolchainLLVM::addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
 {
-	if (specialization != CxxSpecialization::ObjectiveC)
-	{
-		std::string flag{ "-stdlib=libc++" };
-		if (isFlagSupported(flag))
-			List::addIfDoesNotExist(outArgList, std::move(flag));
-	}
+	UNUSED(outArgList, specialization);
 }
 
 /*****************************************************************************/
@@ -143,6 +138,12 @@ void CompileToolchainLLVM::addStripSymbolsOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void CompileToolchainLLVM::addThreadModelLinkerOption(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void CompileToolchainLLVM::addLinkerScripts(StringList& outArgList) const
 {
 	// TODO: Check if there's a clang/apple clang version of this
@@ -153,9 +154,7 @@ void CompileToolchainLLVM::addLinkerScripts(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainLLVM::addLibStdCppLinkerOption(StringList& outArgList) const
 {
-	std::string flag{ "-stdlib=libc++" };
-	if (isFlagSupported(flag))
-		List::addIfDoesNotExist(outArgList, std::move(flag));
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/

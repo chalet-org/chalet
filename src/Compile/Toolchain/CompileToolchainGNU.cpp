@@ -33,11 +33,6 @@ ToolchainType CompileToolchainGNU::type() const noexcept
 bool CompileToolchainGNU::initialize()
 {
 	const auto& targetArchString = m_state.info.targetArchitectureString();
-	if (!String::contains('-', targetArchString))
-	{
-		Diagnostic::error(fmt::format("Target architecture expected to be a triple, but was '{}'", targetArchString));
-		return false;
-	}
 
 	std::string macosVersion;
 	auto triple = String::split(targetArchString, '-');
@@ -117,34 +112,47 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 
 	addExectuable(ret, m_state.toolchain.rc());
 
-	ret.push_back("-J");
-	ret.push_back("rc");
-	ret.push_back("-O");
-	ret.push_back("coff");
-
-	if (generateDependency)
+	if (String::endsWith({ "llvm-rc.exe", "llvm-rc" }, m_state.toolchain.rc()))
 	{
-		// Note: The dependency generation args have to be passed into the preprocessor
-		//   The underlying preprocessor command is "gcc -E -xc-header -DRC_INVOKED"
-		//   This runs in C mode, so we don't want any c++ flags passed in
-		//   See: https://sourceware.org/binutils/docs/binutils/windres.html
+		// llvm-rc is basically rc.exe w/ GNU-style args
+		addDefines(ret);
+		addIncludes(ret);
 
-		ret.push_back("--preprocessor-arg=-MT");
-		ret.push_back(fmt::format("--preprocessor-arg={}", outputFile));
-		ret.push_back("--preprocessor-arg=-MMD");
-		ret.push_back("--preprocessor-arg=-MP");
-		ret.push_back("--preprocessor-arg=-MF");
-		ret.push_back(fmt::format("--preprocessor-arg={}", dependency));
+		ret.push_back("-Fo");
+		ret.push_back(outputFile);
+		ret.push_back(inputFile);
 	}
+	else
+	{
+		ret.push_back("-J");
+		ret.push_back("rc");
 
-	addDefines(ret);
-	addIncludes(ret);
-	addMacosSysRootOption(ret);
+		ret.push_back("-O");
+		ret.push_back("coff");
 
-	ret.push_back("-i");
-	ret.push_back(inputFile);
-	ret.push_back("-o");
-	ret.push_back(outputFile);
+		if (generateDependency)
+		{
+			// Note: The dependency generation args have to be passed into the preprocessor
+			//   The underlying preprocessor command is "gcc -E -xc-header -DRC_INVOKED"
+			//   This runs in C mode, so we don't want any c++ flags passed in
+			//   See: https://sourceware.org/binutils/docs/binutils/windres.html
+
+			ret.push_back("--preprocessor-arg=-MT");
+			ret.push_back(fmt::format("--preprocessor-arg={}", outputFile));
+			ret.push_back("--preprocessor-arg=-MMD");
+			ret.push_back("--preprocessor-arg=-MP");
+			ret.push_back("--preprocessor-arg=-MF");
+			ret.push_back(fmt::format("--preprocessor-arg={}", dependency));
+		}
+
+		addDefines(ret);
+		addIncludes(ret);
+
+		ret.push_back("-i");
+		ret.push_back(inputFile);
+		ret.push_back("-o");
+		ret.push_back(outputFile);
+	}
 
 	return ret;
 }

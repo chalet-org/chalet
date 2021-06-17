@@ -129,7 +129,13 @@ bool CacheJsonParser::makeCache()
 
 	if (!settings.contains(kKeyShowCommands) || !settings[kKeyShowCommands].is_boolean())
 	{
-		settings[kKeyShowCommands] = true;
+		settings[kKeyShowCommands] = false;
+		m_jsonFile.setDirty(true);
+	}
+
+	if (!settings.contains(kKeyLastToolchain) || !settings[kKeyLastToolchain].is_string())
+	{
+		settings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
 		m_jsonFile.setDirty(true);
 	}
 
@@ -311,6 +317,9 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 
 	if (ushort val = 0; m_jsonFile.assignFromKey(val, settings, kKeyMaxJobs))
 		m_prototype.environment.setMaxJobs(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, settings, kKeyLastToolchain))
+		m_inputs.setToolchainPreference(std::move(val));
 
 	return true;
 }

@@ -482,15 +482,15 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo)
 }
 
 /*****************************************************************************/
-bool Commands::rename(const std::string& inFrom, const std::string& inTo)
+bool Commands::rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting)
 {
 	try
 	{
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("rename: {} {}", inFrom, inTo));
 
-		if (fs::exists(inFrom))
-			return false;
+		if (!fs::exists(inFrom))
+			return inSkipNonExisting;
 
 		if (fs::exists(inTo))
 			fs::remove(inTo);

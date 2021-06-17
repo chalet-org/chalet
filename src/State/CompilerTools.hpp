@@ -16,12 +16,13 @@ namespace chalet
 {
 class BuildState;
 struct CommandLineInputs;
+struct JsonFile;
 
 struct CompilerTools
 {
-	explicit CompilerTools(const CommandLineInputs& inInputs, const BuildState& inState);
+	explicit CompilerTools(const CommandLineInputs& inInputs, BuildState& inState);
 
-	bool initialize(const BuildTargetList& inTargets);
+	bool initialize(const BuildTargetList& inTargets, JsonFile& inCacheJson);
 	void fetchCompilerVersions();
 
 	void fetchMakeVersion();
@@ -82,12 +83,13 @@ struct CompilerTools
 
 private:
 	bool initializeCompilerConfigs(const BuildTargetList& inTargets);
+	bool updateToolchainCacheNode(JsonFile& inCacheJson);
 
 	std::string parseVersionMSVC(const std::string& inExecutable) const;
 	std::string parseVersionGNU(const std::string& inExecutable, const std::string_view inEol = "\n") const;
 
 	const CommandLineInputs& m_inputs;
-	const BuildState& m_state;
+	BuildState& m_state;
 
 	mutable std::unordered_map<CodeLanguage, std::unique_ptr<CompilerConfig>> m_configs;
 

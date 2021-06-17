@@ -253,6 +253,10 @@
 			"description": "true to show the commands run during the build, false to just show the source file.",
 			"type": "boolean",
 			"default": false
+		},
+		"settings-toolchain": {
+			"description": "The toolchain id to use for building, if not the previous one.",
+			"type": "string"
 		}
 	},
 	"properties": {
@@ -391,7 +395,8 @@
 			"required": [
 				"dumpAssembly",
 				"maxJobs",
-				"showCommands"
+				"showCommands",
+				"toolchain"
 			],
 			"properties": {
 				"dumpAssembly": {
@@ -402,6 +407,9 @@
 				},
 				"showCommands": {
 					"$ref": "#/definitions/settings-showCommands"
+				},
+				"toolchain": {
+					"$ref": "#/definitions/settings-toolchain"
 				}
 			}
 		},

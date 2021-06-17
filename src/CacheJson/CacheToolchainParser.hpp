@@ -24,9 +24,6 @@ struct CacheToolchainParser
 
 private:
 	bool validatePaths();
-#if defined(CHALET_WIN32)
-	bool createMsvcEnvironment(const Json& inNode);
-#endif
 	bool makeToolchain(Json& toolchains, const ToolchainPreference& toolchain);
 	bool parseToolchain(Json& inNode);
 

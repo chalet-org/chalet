@@ -28,7 +28,8 @@ bool CompileStrategyNinja::initialize()
 		return false;
 
 	auto& name = "ninja";
-	m_cacheFile = m_state.cache.getHash(m_state.info.hash(), name, WorkspaceCache::Type::Local);
+	auto id = fmt::format("{}_{}", name, Output::showCommands() ? 1 : 0);
+	m_cacheFile = m_state.cache.getHash(m_state.info.hash(), id, WorkspaceCache::Type::Local);
 
 	auto& localConfig = m_state.cache.localConfig();
 	Json& buildCache = localConfig.json["data"];

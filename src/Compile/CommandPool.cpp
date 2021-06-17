@@ -76,7 +76,7 @@ bool executeCommandMsvc(StringList command, std::string renameFrom, std::string 
 	if (!renameFrom.empty() && !renameTo.empty())
 	{
 		std::unique_lock<std::mutex> lock(s_mutex);
-		return Commands::rename(renameFrom, renameTo);
+		return Commands::rename(renameFrom, renameTo, true);
 	}
 
 	return true;
@@ -94,7 +94,7 @@ bool executeCommand(StringList command, std::string renameFrom, std::string rena
 	if (!renameFrom.empty() && !renameTo.empty())
 	{
 		std::unique_lock<std::mutex> lock(s_mutex);
-		return Commands::rename(renameFrom, renameTo);
+		return Commands::rename(renameFrom, renameTo, true);
 	}
 
 	return true;
@@ -138,7 +138,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	};
 
 	Output::setQuietNonBuild(false);
-	Output::setShowCommandOverride(false);
+	// Output::setShowCommandOverride(false);
 
 	auto executeCommandFunc = msvcCommand ? executeCommandMsvc : executeCommand;
 
@@ -153,11 +153,14 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 		auto color = Output::getAnsiStyle(pre.color);
 
-		if (!printCommand(
-				color + pre.symbol + reset,
-				color + (showCommmands ? String::join(pre.command) : pre.output) + reset,
-				totalCompiles))
-			return onError();
+		if (!showCommmands)
+		{
+			if (!printCommand(
+					color + pre.symbol + reset,
+					color + (showCommmands ? String::join(pre.command) : pre.output) + reset,
+					totalCompiles))
+				return onError();
+		}
 
 		if (!executeCommandFunc(pre.command, pre.renameFrom, pre.renameTo, renameAfterCommand))
 			return onError();
@@ -169,11 +172,14 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	{
 		auto color = Output::getAnsiStyle(it.color);
 
-		threadResults.emplace_back(m_threadPool.enqueue(
-			printCommand,
-			color + it.symbol + reset,
-			color + (showCommmands ? String::join(it.command) : it.output) + reset,
-			totalCompiles));
+		if (!showCommmands)
+		{
+			threadResults.emplace_back(m_threadPool.enqueue(
+				printCommand,
+				color + it.symbol + reset,
+				color + (showCommmands ? String::join(it.command) : it.output) + reset,
+				totalCompiles));
+		}
 		threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, renameAfterCommand));
 	}
 
@@ -207,10 +213,13 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	{
 		auto color = Output::getAnsiStyle(post.color);
 
-		if (!printCommand(
-				color + post.symbol + reset,
-				color + (showCommmands ? String::join(post.command) : post.output) + reset))
-			return onError();
+		if (!showCommmands)
+		{
+			if (!printCommand(
+					color + post.symbol + reset,
+					color + (showCommmands ? String::join(post.command) : post.output) + reset))
+				return onError();
+		}
 
 		if (!executeCommandFunc(post.command, post.renameFrom, post.renameTo, renameAfterCommand))
 			return onError();
@@ -225,7 +234,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	}
 
 	Output::setQuietNonBuild(quiet);
-	Output::setShowCommandOverride(true);
+	// Output::setShowCommandOverride(true);
 
 	const bool completed = !m_canceled;
 	return completed;

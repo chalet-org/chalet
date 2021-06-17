@@ -44,6 +44,7 @@ private:
 	const std::string kKeyDumpAssembly = "dumpAssembly";
 	const std::string kKeyMaxJobs = "maxJobs";
 	const std::string kKeyShowCommands = "showCommands";
+	const std::string kKeyLastToolchain = "toolchain";
 	// const std::string kKeyTargetArchitecture = "targetArchitecture";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
 	const std::string kKeyExternalDependencies = "externalDependencies";

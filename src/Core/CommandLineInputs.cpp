@@ -35,8 +35,6 @@ void CommandLineInputs::detectToolchainPreference()
 #if defined(CHALET_WIN32)
 	if (!Commands::which("clang").empty())
 		m_toolchainPreference = getToolchainPreferenceFromString("llvm");
-	else if (!Commands::which("gcc").empty())
-		m_toolchainPreference = getToolchainPreferenceFromString("gcc");
 	else
 		m_toolchainPreference = getToolchainPreferenceFromString("msvc");
 #elif defined(CHALET_MACOS)

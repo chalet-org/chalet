@@ -23,7 +23,7 @@ public:
 
 	static bool exists();
 
-	bool readCompilerVariables();
+	bool create();
 
 	const StringList& include() const noexcept;
 	const StringList& lib() const noexcept;

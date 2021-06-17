@@ -47,28 +47,16 @@ bool CacheToolchainParser::serialize(Json& inNode)
 	if (!inNode.is_object())
 		return false;
 
+	auto& toolchain = m_inputs.toolchainPreference();
 #if defined(CHALET_WIN32)
-	if (!createMsvcEnvironment(inNode))
-		return false;
+	if (toolchain.type == ToolchainType::MSVC)
+	{
+		if (!m_state.msvcEnvironment.create())
+			return false;
+	}
 #endif
 
-	auto& toolchain = m_inputs.toolchainPreference();
-	// #if defined(CHALET_WIN32)
-	// 	if (!makeToolchain(inNode, toolchain))
-	// 	{
-	// 		if (toolchain.type == ToolchainType::MSVC)
-	// 		{
-	// 			m_inputs.setToolchainPreference("gcc"); // aka mingw
-	// 			if (!makeToolchain(inNode, toolchain))
-	// 			{
-	// 				m_inputs.setToolchainPreference("llvm"); // try once more for clang
-	// 				makeToolchain(inNode, toolchain);
-	// 			}
-	// 		}
-	// 	}
-	// #else
 	makeToolchain(inNode, toolchain);
-	// #endif
 
 	if (!parseToolchain(inNode))
 		return false;
@@ -139,100 +127,8 @@ bool CacheToolchainParser::validatePaths()
 	}
 	*/
 
-	Output::setShowCommandOverride(false);
-
-	auto& toolchain = m_inputs.toolchainPreference();
-
-	if (toolchain.type == ToolchainType::LLVM)
-	{
-		if (m_inputs.targetArchitecture().empty())
-		{
-			// also takes -dumpmachine
-			auto arch = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-print-target-triple" });
-#if defined(CHALET_MACOS)
-			// Strip out version in auto-detected mac triple
-			auto isDarwin = arch.find("apple-darwin");
-			if (isDarwin != std::string::npos)
-			{
-				arch = arch.substr(0, isDarwin + 12);
-			}
-#endif
-			m_state.info.setTargetArchitecture(arch);
-		}
-	}
-	else if (toolchain.type == ToolchainType::GNU)
-	{
-		auto arch = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-dumpmachine" });
-		m_state.info.setTargetArchitecture(arch);
-	}
-#if defined(CHALET_WIN32)
-	else if (toolchain.type == ToolchainType::MSVC)
-	{
-		const auto arch = m_state.info.targetArchitecture();
-		switch (arch)
-		{
-			case Arch::Cpu::X64:
-				m_state.info.setTargetArchitecture("x86_64-pc-windows-msvc");
-				break;
-
-			case Arch::Cpu::X86:
-				m_state.info.setTargetArchitecture("i686-pc-windows-msvc");
-				break;
-
-			case Arch::Cpu::ARM:
-			case Arch::Cpu::ARM64:
-			default:
-				break;
-		}
-	}
-#endif
-
-	Output::setShowCommandOverride(true);
-
 	return true;
 }
-
-/*****************************************************************************/
-#if defined(CHALET_WIN32)
-bool CacheToolchainParser::createMsvcEnvironment(const Json& inNode)
-{
-	bool readVariables = true;
-
-	if (inNode.is_object())
-	{
-		auto keyEndsWith = [&inNode](const std::string& inKey, std::string_view inExt) {
-			if (inNode.contains(inKey))
-			{
-				const Json& j = inNode[inKey];
-				const auto str = j.get<std::string>();
-				return String::endsWith(inExt, str);
-			}
-
-			return false;
-		};
-
-		auto& toolchain = m_inputs.toolchainPreference();
-
-		bool result = toolchain.type == ToolchainType::MSVC;
-		if (!result)
-		{
-			result |= keyEndsWith(kKeyCpp, "cl.exe");
-			result |= keyEndsWith(kKeyCc, "cl.exe");
-			result |= keyEndsWith(kKeyLinker, "link.exe");
-			result |= keyEndsWith(kKeyArchiver, "lib.exe");
-			result |= keyEndsWith(kKeyWindowsResource, "rc.exe");
-		}
-		readVariables = result;
-	}
-
-	if (readVariables)
-	{
-		return m_state.msvcEnvironment.readCompilerVariables();
-	}
-
-	return true;
-}
-#endif
 
 /*****************************************************************************/
 bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPreference& toolchain)
@@ -241,21 +137,7 @@ bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPrefer
 
 	if (!toolchains.contains(kKeyStrategy) || !toolchains[kKeyStrategy].is_string() || toolchains[kKeyStrategy].get<std::string>().empty())
 	{
-		// Note: this is only for validation. it gets changed later
-		if (toolchain.strategy == StrategyType::Makefile)
-		{
-			toolchains[kKeyStrategy] = "makefile";
-		}
-		else if (toolchain.strategy == StrategyType::Ninja)
-		{
-			toolchains[kKeyStrategy] = "ninja";
-		}
-		else if (toolchain.strategy == StrategyType::Native)
-		{
-			toolchains[kKeyStrategy] = "native-experimental";
-		}
-
-		m_jsonFile.setDirty(true);
+		toolchains[kKeyStrategy] = std::string();
 	}
 
 	std::string cpp;
@@ -277,8 +159,7 @@ bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPrefer
 		toolchains[kKeyCpp] = cpp;
 		m_jsonFile.setDirty(true);
 	}
-
-	if (!toolchains.contains(kKeyCc))
+	if (!toolchains.contains(kKeyCc) || !toolchains[kKeyCc].is_string() || toolchains[kKeyCc].get<std::string>().empty())
 	{
 		// auto varCC = Environment::get("CC");
 		// if (varCC != nullptr)
@@ -296,19 +177,19 @@ bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPrefer
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchains.contains(kKeyLinker))
+	if (!toolchains.contains(kKeyLinker) || !toolchains[kKeyLinker].is_string() || toolchains[kKeyLinker].get<std::string>().empty())
 	{
 		std::string link;
-		StringList linkers;
-		linkers.push_back(toolchain.linker);
+		StringList searches;
+		searches.push_back(toolchain.linker);
 		if (toolchain.type == ToolchainType::LLVM)
 		{
-			linkers.push_back("ld");
+			searches.push_back("ld");
 		}
 
-		for (const auto& linker : linkers)
+		for (const auto& search : searches)
 		{
-			link = Commands::which(linker);
+			link = Commands::which(search);
 			if (!link.empty())
 				break;
 		}
@@ -336,19 +217,23 @@ bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPrefer
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchains.contains(kKeyArchiver))
+	if (!toolchains.contains(kKeyArchiver) || !toolchains[kKeyArchiver].is_string() || toolchains[kKeyArchiver].get<std::string>().empty())
 	{
 		std::string ar;
-		StringList archivers;
+		StringList searches;
+		if (toolchain.type == ToolchainType::LLVM)
+		{
+			searches.push_back("llvm-ar");
+		}
 		if (toolchain.type == ToolchainType::LLVM || toolchain.type == ToolchainType::GNU)
 		{
-			archivers.push_back("libtool");
+			searches.push_back("libtool");
 		}
-		archivers.push_back(toolchain.archiver);
+		searches.push_back(toolchain.archiver);
 
-		for (const auto& archiver : archivers)
+		for (const auto& search : searches)
 		{
-			ar = Commands::which(archiver);
+			ar = Commands::which(search);
 			if (!ar.empty())
 				break;
 		}
@@ -360,27 +245,39 @@ bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPrefer
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchains.contains(kKeyWindowsResource))
+	if (!toolchains.contains(kKeyWindowsResource) || !toolchains[kKeyWindowsResource].is_string() || toolchains[kKeyWindowsResource].get<std::string>().empty())
 	{
 		std::string rc;
-		rc = Commands::which(toolchain.rc);
+		StringList searches;
+		if (toolchain.type == ToolchainType::LLVM)
+		{
+			searches.push_back("llvm-rc");
+		}
+		searches.push_back(toolchain.rc);
+
+		for (const auto& search : searches)
+		{
+			rc = Commands::which(search);
+			if (!rc.empty())
+				break;
+		}
 
 		parseArchitecture(rc);
 		toolchains[kKeyWindowsResource] = std::move(rc);
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!result)
-	{
-		toolchains.erase(kKeyCpp);
-		toolchains.erase(kKeyCc);
-		toolchains.erase(kKeyLinker);
-		toolchains.erase(kKeyArchiver);
-		toolchains.erase(kKeyWindowsResource);
-	}
+	// if (!result)
+	// {
+	// 	toolchains.erase(kKeyCpp);
+	// 	toolchains.erase(kKeyCc);
+	// 	toolchains.erase(kKeyLinker);
+	// 	toolchains.erase(kKeyArchiver);
+	// 	toolchains.erase(kKeyWindowsResource);
+	// }
 
 	auto whichAdd = [&](Json& inNode, const std::string& inKey) -> bool {
-		if (!inNode.contains(inKey))
+		if (!inNode.contains(inKey) || !inNode[inKey].is_string() || inNode[inKey].get<std::string>().empty())
 		{
 			auto path = Commands::which(inKey);
 			bool res = !path.empty();
@@ -393,27 +290,27 @@ bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPrefer
 	};
 	whichAdd(toolchains, kKeyCmake);
 
-	if (!toolchains.contains(kKeyMake))
+	if (!toolchains.contains(kKeyMake) || !toolchains[kKeyMake].is_string() || toolchains[kKeyMake].get<std::string>().empty())
 	{
 #if defined(CHALET_WIN32)
 		std::string make;
 
 		// jom.exe - Qt's parallel NMAKE
 		// nmake.exe - MSVC's make-ish build tool, alternative to MSBuild
-		StringList makeSearches;
+		StringList searches;
 		if (toolchain.type != ToolchainType::MSVC)
 		{
-			makeSearches.push_back("mingw32-make");
+			searches.push_back("mingw32-make");
 		}
 		else if (toolchain.type == ToolchainType::MSVC)
 		{
-			makeSearches.push_back("jom");
-			makeSearches.push_back("nmake");
+			searches.push_back("jom");
+			searches.push_back("nmake");
 		}
-		makeSearches.push_back(kKeyMake);
-		for (const auto& tool : makeSearches)
+		searches.push_back(kKeyMake);
+		for (const auto& search : searches)
 		{
-			make = Commands::which(tool);
+			make = Commands::which(search);
 			if (!make.empty())
 			{
 				break;
@@ -428,7 +325,51 @@ bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPrefer
 	}
 
 	whichAdd(toolchains, kKeyNinja);
-	whichAdd(toolchains, kKeyObjdump);
+
+	if (!toolchains.contains(kKeyObjdump) || !toolchains[kKeyObjdump].is_string() || toolchains[kKeyObjdump].get<std::string>().empty())
+	{
+		std::string objdump;
+		StringList searches;
+		if (toolchain.type == ToolchainType::LLVM)
+		{
+			searches.push_back("llvm-objdump");
+		}
+		searches.push_back(kKeyObjdump);
+
+		for (const auto& search : searches)
+		{
+			objdump = Commands::which(search);
+			if (!objdump.empty())
+				break;
+		}
+
+		parseArchitecture(objdump);
+		toolchains[kKeyObjdump] = std::move(objdump);
+		m_jsonFile.setDirty(true);
+	}
+
+	if (toolchains[kKeyStrategy].get<std::string>().empty())
+	{
+		auto make = toolchains.at(kKeyMake).get<std::string>();
+		auto ninja = toolchains.at(kKeyNinja).get<std::string>();
+		bool notNative = toolchain.strategy != StrategyType::Native;
+
+		// Note: this is only for validation. it gets changed later
+		if (!ninja.empty() && (toolchain.strategy == StrategyType::Ninja || (notNative && make.empty())))
+		{
+			toolchains[kKeyStrategy] = "ninja";
+		}
+		else if (!make.empty() && (toolchain.strategy == StrategyType::Makefile || (notNative && ninja.empty())))
+		{
+			toolchains[kKeyStrategy] = "makefile";
+		}
+		else if (toolchain.strategy == StrategyType::Native || (make.empty() && ninja.empty()))
+		{
+			toolchains[kKeyStrategy] = "native-experimental";
+		}
+
+		m_jsonFile.setDirty(true);
+	}
 
 	return result;
 }

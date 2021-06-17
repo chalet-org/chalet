@@ -332,6 +332,11 @@ Json Schema::getCacheJson()
 		"default": false
 	})json"_ojson;
 
+	ret[kDefinitions]["settings-toolchain"] = R"json({
+		"description": "The toolchain id to use for building, if not the previous one.",
+		"type": "string"
+	})json"_ojson;
+
 	//
 	const auto kProperties = "properties";
 	ret[kProperties] = Json::object();
@@ -476,7 +481,8 @@ Json Schema::getCacheJson()
 		"required": [
 			"dumpAssembly",
 			"maxJobs",
-			"showCommands"
+			"showCommands",
+			"toolchain"
 		],
 		"properties": {
 			"dumpAssembly": {
@@ -487,6 +493,9 @@ Json Schema::getCacheJson()
 			},
 			"showCommands": {
 				"$ref": "#/definitions/settings-showCommands"
+			},
+			"toolchain": {
+				"$ref": "#/definitions/settings-toolchain"
 			}
 		}
 	})json"_ojson;

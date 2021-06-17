@@ -15,21 +15,20 @@
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-CompilerTools::CompilerTools(const CommandLineInputs& inInputs, const BuildState& inState) :
+CompilerTools::CompilerTools(const CommandLineInputs& inInputs, BuildState& inState) :
 	m_inputs(inInputs),
 	m_state(inState)
 {
 }
 
 /*****************************************************************************/
-bool CompilerTools::initialize(const BuildTargetList& inTargets)
+bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCacheJson)
 {
-	fetchCompilerVersions();
-
 	// Note: Expensive!
 	if (!initializeCompilerConfigs(inTargets))
 	{
@@ -37,8 +36,12 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 		return false;
 	}
 
+	const auto& archFromInput = m_inputs.targetArchitecture();
+	const auto& targetArchString = m_state.info.targetArchitectureString();
+	Arch::Cpu targetArch = m_state.info.targetArchitecture();
+
 #if defined(CHALET_MACOS)
-	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalArm64_X64)
+	if (targetArch == Arch::Cpu::UniversalArm64_X64)
 		return true;
 #endif
 
@@ -46,43 +49,87 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 
 	if (toolchainType == ToolchainType::LLVM)
 	{
-		auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
-		if (!String::contains("error:", results))
+		if (archFromInput.empty())
 		{
-			auto split = String::split(results, String::eol());
-			bool valid = false;
-			// m_state.info.setTargetArchitecture(arch);
-			const auto& targetArch = m_state.info.targetArchitectureString();
-			for (auto& line : split)
+			// also takes -dumpmachine
+			// -print-effective-triple prints triple w/ version
+			// -print-target-triple prints triple w/o version (except on mac)
+			auto result = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-print-target-triple" });
+#if defined(CHALET_MACOS)
+			// Strip out version in auto-detected mac triple
+			auto darwin = result.find("apple-darwin");
+			if (darwin != std::string::npos)
 			{
-				auto start = line.find_first_not_of(' ');
-				auto end = line.find_first_of(' ', start);
-
-				auto arch = line.substr(start, end - start);
-				LOG("llvm | arch:", arch, targetArch);
-				if (String::startsWith(arch, targetArch))
-					valid = true;
+				result = result.substr(0, darwin + 12);
 			}
+#endif
+			m_state.info.setTargetArchitecture(result);
+		}
+		else
+		{
+			auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
+			if (!String::contains("error:", results))
+			{
+				auto split = String::split(results, "\n");
+				bool valid = false;
+				for (auto& line : split)
+				{
+					auto start = line.find_first_not_of(' ');
+					auto end = line.find_first_of(' ', start);
 
-			UNUSED(split);
-			return valid;
+					auto result = line.substr(start, end - start);
+					if (targetArch == Arch::Cpu::X64)
+					{
+						if (String::equals({ "x86-64", "x86_64", "x64" }, result))
+							valid = true;
+					}
+					else if (targetArch == Arch::Cpu::X86)
+					{
+						if (String::equals({ "i686", "x86" }, result))
+							valid = true;
+					}
+					else
+					{
+						if (String::startsWith(result, targetArchString))
+							valid = true;
+					}
+				}
+
+#if defined(CHALET_WIN32)
+				if (!String::contains('-', targetArchString))
+				{
+					// don't enforce pc-windows-gnu
+					// auto gcc = Commands::which("gcc");
+					// if (!gcc.empty())
+					// 	m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-gnu", targetArchString));
+					// else
+					m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", targetArchString));
+				}
+#endif
+
+				if (!valid)
+					return false;
+			}
 		}
 	}
 	else if (toolchainType == ToolchainType::GNU)
 	{
-		const auto& arch = m_inputs.targetArchitecture();
-		if (!arch.empty())
+		if (archFromInput.empty() || !String::contains('-', targetArchString))
 		{
-			const auto& targetArch = m_state.info.targetArchitectureString();
+			auto arch = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-dumpmachine" });
+			m_state.info.setTargetArchitecture(arch);
+		}
+		else
+		{
+			// Pass along and hope for the best
 
-			LOG("gcc | arch:", arch, targetArch);
-			return String::startsWith(arch, targetArch);
+			// if (!String::startsWith(archFromInput, targetArchString))
+			// 	return false;
 		}
 	}
 #if defined(CHALET_WIN32)
 	else if (toolchainType == ToolchainType::MSVC)
 	{
-		const auto& targetArch = m_state.info.targetArchitectureString();
 		auto arch = String::getPathFilename(String::getPathFolder(compiler()));
 
 		if (String::equals("x64", arch))
@@ -90,10 +137,39 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 		else if (String::equals("x86", arch))
 			arch = "i686";
 
-		LOG("msvc | arch:", arch, targetArch);
-		return String::startsWith(arch, targetArch);
+		if (!String::startsWith(arch, targetArchString))
+			return false;
+
+		// Note: pc-windows-msvc is used by LLVM, so we'll use "ms-" instead
+		//  to keep it distinct
+		switch (targetArch)
+		{
+			case Arch::Cpu::X64:
+				m_state.info.setTargetArchitecture("x86_64-ms-windows-msvc");
+				break;
+
+			case Arch::Cpu::X86:
+				m_state.info.setTargetArchitecture("i686-ms-windows-msvc");
+				break;
+
+			case Arch::Cpu::ARM64:
+				m_state.info.setTargetArchitecture("aarch64-ms-windows-msvc");
+				break;
+
+			case Arch::Cpu::ARM:
+				m_state.info.setTargetArchitecture("thumbv7a-ms-windows-msvc");
+				break;
+
+			default:
+				return false;
+		}
 	}
 #endif
+
+	if (!updateToolchainCacheNode(inCacheJson))
+		return false;
+
+	fetchCompilerVersions();
 
 	return true;
 }
@@ -187,6 +263,18 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 }
 
 /*****************************************************************************/
+bool CompilerTools::updateToolchainCacheNode(JsonFile& inCacheJson)
+{
+	const auto& preference = m_inputs.toolchainPreferenceRaw();
+	auto& settings = inCacheJson.json["settings"];
+
+	settings["toolchain"] = preference;
+	inCacheJson.setDirty(true);
+
+	return true;
+}
+
+/*****************************************************************************/
 std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) const
 {
 	std::string ret;
@@ -270,6 +358,10 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, cons
 			else if (String::startsWith("Apple clang", compilerRaw))
 			{
 				ret = fmt::format("Apple Clang {} Version {} [{}]", isCpp ? "C++" : "C", versionString, arch);
+			}
+			else if (String::startsWith("clang", compilerRaw))
+			{
+				ret = fmt::format("LLVM Clang {} Version {} [{}]", isCpp ? "C++" : "C", versionString, arch);
 			}
 		}
 		else

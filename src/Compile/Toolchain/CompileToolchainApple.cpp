@@ -10,6 +10,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 /*
@@ -120,6 +121,17 @@ bool CompileToolchainApple::addArchitecture(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void CompileToolchainApple::addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
+{
+	if (specialization != CxxSpecialization::ObjectiveC)
+	{
+		std::string flag{ "-stdlib=libc++" };
+		if (isFlagSupported(flag))
+			List::addIfDoesNotExist(outArgList, std::move(flag));
+	}
+}
+
+/*****************************************************************************/
 // Linking
 /*****************************************************************************/
 /*****************************************************************************/
@@ -131,7 +143,9 @@ void CompileToolchainApple::addProfileInformationLinkerOption(StringList& outArg
 /*****************************************************************************/
 void CompileToolchainApple::addLibStdCppLinkerOption(StringList& outArgList) const
 {
-	CompileToolchainLLVM::addLibStdCppLinkerOption(outArgList);
+	std::string flag{ "-stdlib=libc++" };
+	if (isFlagSupported(flag))
+		List::addIfDoesNotExist(outArgList, std::move(flag));
 
 	// TODO: Apple has a "-stdlib=libstdc++" flag that is pre-C++11 for compatibility
 }
