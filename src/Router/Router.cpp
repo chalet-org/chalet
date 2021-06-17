@@ -50,8 +50,6 @@ bool Router::run()
 	if (!parseEnvFile())
 		return false;
 
-	m_inputs.detectToolchainPreference();
-
 	std::unique_ptr<StatePrototype> prototype;
 	std::unique_ptr<BuildState> buildState;
 

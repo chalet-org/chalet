@@ -175,6 +175,31 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCac
 }
 
 /*****************************************************************************/
+void CompilerTools::detectToolchainFromPaths()
+{
+	auto& toolchain = m_inputs.toolchainPreference();
+	if (toolchain.type == ToolchainType::Unknown)
+	{
+#if defined(CHALET_WIN32)
+		if (String::endsWith("cl.exe", m_cpp) || String::endsWith("cl.exe", m_cc))
+		{
+			toolchain.setType(ToolchainType::MSVC);
+		}
+		else
+#endif
+			if (String::contains("clang", m_cpp) || String::contains("clang", m_cc))
+		{
+			toolchain.setType(ToolchainType::LLVM);
+		}
+		else
+		{
+			// Treat as some variant of GCC
+			toolchain.setType(ToolchainType::GNU);
+		}
+	}
+}
+
+/*****************************************************************************/
 void CompilerTools::fetchCompilerVersions()
 {
 	if (m_compilerVersionStringCpp.empty())

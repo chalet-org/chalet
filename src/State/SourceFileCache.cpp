@@ -139,7 +139,7 @@ bool SourceFileCache::add(const std::string& inFile) const
 		return false;
 
 	auto& fileData = getLastWrite(inFile);
-	if (lastWrite >= fileData.lastWrite && !fileData.needsUpdate)
+	if (lastWrite > fileData.lastWrite || !fileData.needsUpdate)
 		return false;
 
 	fileData.lastWrite = lastWrite;

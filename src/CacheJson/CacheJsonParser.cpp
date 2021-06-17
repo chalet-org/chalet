@@ -133,10 +133,29 @@ bool CacheJsonParser::makeCache()
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!settings.contains(kKeyLastToolchain) || !settings[kKeyLastToolchain].is_string())
+	if (!settings.contains(kKeyLastToolchain))
 	{
 		settings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
 		m_jsonFile.setDirty(true);
+	}
+	else
+	{
+		const auto& prefFromInput = m_inputs.toolchainPreferenceRaw();
+		auto value = settings[kKeyLastToolchain].get<std::string>();
+		if (!prefFromInput.empty() && value != prefFromInput)
+		{
+			settings[kKeyLastToolchain] = prefFromInput;
+			m_jsonFile.setDirty(true);
+		}
+		else
+		{
+			if (prefFromInput.empty() && value.empty())
+			{
+				m_inputs.detectToolchainPreference();
+				settings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
+				m_jsonFile.setDirty(true);
+			}
+		}
 	}
 
 	//

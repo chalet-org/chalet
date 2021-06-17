@@ -27,7 +27,7 @@ CommandLineInputs::CommandLineInputs() :
 }
 
 /*****************************************************************************/
-void CommandLineInputs::detectToolchainPreference()
+void CommandLineInputs::detectToolchainPreference() const
 {
 	if (!m_toolchainPreferenceRaw.empty())
 		return;
@@ -403,6 +403,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.rc = "windres";
 		ret.linker = "ld";
 		ret.archiver = "ar";
+	}
+	else
+	{
+		ret.type = ToolchainType::Unknown;
 	}
 
 	if (Environment::isContinuousIntegrationServer())

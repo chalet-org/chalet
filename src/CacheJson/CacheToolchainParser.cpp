@@ -135,6 +135,9 @@ bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPrefer
 {
 	bool result = true;
 
+	if (toolchain.type == ToolchainType::Unknown)
+		return result;
+
 	if (!toolchains.contains(kKeyStrategy) || !toolchains[kKeyStrategy].is_string() || toolchains[kKeyStrategy].get<std::string>().empty())
 	{
 		toolchains[kKeyStrategy] = std::string();
@@ -481,6 +484,18 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 #endif
 		m_state.toolchain.setObjdump(std::move(val));
 	}
+
+#if defined(CHALET_WIN32)
+	bool checkForMsvc = m_inputs.toolchainPreference().type == ToolchainType::Unknown;
+	m_state.toolchain.detectToolchainFromPaths();
+	if (checkForMsvc && m_inputs.toolchainPreference().type == ToolchainType::MSVC)
+	{
+		if (!m_state.msvcEnvironment.create())
+			return false;
+	}
+#else
+	m_state.toolchain.detectToolchainFromPaths();
+#endif
 
 	return true;
 }

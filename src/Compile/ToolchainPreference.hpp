@@ -13,13 +13,15 @@ namespace chalet
 {
 struct ToolchainPreference
 {
-	ToolchainType type = ToolchainType::Unknown;
+	mutable ToolchainType type = ToolchainType::Unknown;
 	StrategyType strategy = StrategyType::Makefile;
 	std::string cpp;
 	std::string cc;
 	std::string rc;
 	std::string linker;
 	std::string archiver;
+
+	void setType(const ToolchainType inType) const;
 };
 }
 

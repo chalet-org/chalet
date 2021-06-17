@@ -136,8 +136,15 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 			FMT_ARG(object),
 			FMT_ARG(target));
 #else
-		auto asmCommand = fmt::format("{objdump} -d -C -Mintel {object} > {target}",
-			fmt::arg("objdump", m_state.toolchain.objdump()),
+		const auto& objdump = m_state.toolchain.objdump();
+		std::string archArg;
+		if (!String::endsWith("llvm-objdump.exe", objdump))
+		{
+			archArg = "-Mintel ";
+		}
+		auto asmCommand = fmt::format("\"{objdump}\" -d -C {archArg}{object} > {target}",
+			FMT_ARG(objdump),
+			FMT_ARG(archArg),
 			FMT_ARG(object),
 			FMT_ARG(target));
 #endif

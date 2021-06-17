@@ -23,6 +23,7 @@ struct CompilerTools
 	explicit CompilerTools(const CommandLineInputs& inInputs, BuildState& inState);
 
 	bool initialize(const BuildTargetList& inTargets, JsonFile& inCacheJson);
+	void detectToolchainFromPaths();
 	void fetchCompilerVersions();
 
 	void fetchMakeVersion();

@@ -64,7 +64,7 @@ bool executeCommandMsvc(StringList command, std::string renameFrom, std::string 
 		if (String::startsWith(srcFile, inData))
 			return;
 
-		std::cout << inData << std::flush;
+		std::cout << std::move(inData) << std::flush;
 	};
 
 	if (Subprocess::run(command, std::move(options)) != EXIT_SUCCESS)
@@ -76,7 +76,21 @@ bool executeCommandMsvc(StringList command, std::string renameFrom, std::string 
 	if (!renameFrom.empty() && !renameTo.empty())
 	{
 		std::unique_lock<std::mutex> lock(s_mutex);
-		return Commands::rename(renameFrom, renameTo, true);
+		try
+		{
+			fs::path from(renameFrom);
+			if (!fs::exists(from))
+				return true;
+
+			fs::path to(renameTo);
+			if (fs::exists(to))
+				fs::remove(to);
+
+			fs::rename(from, to);
+		}
+		catch (const std::exception&)
+		{
+		}
 	}
 
 	return true;
@@ -85,7 +99,11 @@ bool executeCommandMsvc(StringList command, std::string renameFrom, std::string 
 /*****************************************************************************/
 bool executeCommand(StringList command, std::string renameFrom, std::string renameTo, bool generateDependencies)
 {
-	if (!Commands::subprocess(command))
+	SubprocessOptions options;
+	options.stdoutOption = PipeOption::StdOut;
+	options.stderrOption = PipeOption::StdErr;
+
+	if (Subprocess::run(command, std::move(options)) != EXIT_SUCCESS)
 		return false;
 
 	if (!generateDependencies)
@@ -94,7 +112,19 @@ bool executeCommand(StringList command, std::string renameFrom, std::string rena
 	if (!renameFrom.empty() && !renameTo.empty())
 	{
 		std::unique_lock<std::mutex> lock(s_mutex);
-		return Commands::rename(renameFrom, renameTo, true);
+		try
+		{
+			if (!fs::exists(renameFrom))
+				return true;
+
+			if (fs::exists(renameTo))
+				fs::remove(renameTo);
+
+			fs::rename(renameFrom, renameTo);
+		}
+		catch (const std::exception&)
+		{
+		}
 	}
 
 	return true;
@@ -153,14 +183,11 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 		auto color = Output::getAnsiStyle(pre.color);
 
-		if (!showCommmands)
-		{
-			if (!printCommand(
-					color + pre.symbol + reset,
-					color + (showCommmands ? String::join(pre.command) : pre.output) + reset,
-					totalCompiles))
-				return onError();
-		}
+		if (!printCommand(
+				color + pre.symbol + reset,
+				color + (showCommmands ? String::join(pre.command) : pre.output) + reset,
+				totalCompiles))
+			return onError();
 
 		if (!executeCommandFunc(pre.command, pre.renameFrom, pre.renameTo, renameAfterCommand))
 			return onError();
@@ -172,14 +199,12 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	{
 		auto color = Output::getAnsiStyle(it.color);
 
-		if (!showCommmands)
-		{
-			threadResults.emplace_back(m_threadPool.enqueue(
-				printCommand,
-				color + it.symbol + reset,
-				color + (showCommmands ? String::join(it.command) : it.output) + reset,
-				totalCompiles));
-		}
+		threadResults.emplace_back(m_threadPool.enqueue(
+			printCommand,
+			color + it.symbol + reset,
+			color + (showCommmands ? String::join(it.command) : it.output) + reset,
+			totalCompiles));
+
 		threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, renameAfterCommand));
 	}
 
@@ -213,13 +238,10 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	{
 		auto color = Output::getAnsiStyle(post.color);
 
-		if (!showCommmands)
-		{
-			if (!printCommand(
-					color + post.symbol + reset,
-					color + (showCommmands ? String::join(post.command) : post.output) + reset))
-				return onError();
-		}
+		if (!printCommand(
+				color + post.symbol + reset,
+				color + (showCommmands ? String::join(post.command) : post.output) + reset))
+			return onError();
 
 		if (!executeCommandFunc(post.command, post.renameFrom, post.renameTo, renameAfterCommand))
 			return onError();
