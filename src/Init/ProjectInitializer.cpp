@@ -57,7 +57,7 @@ bool ProjectInitializer::run()
 	props.workspaceName = String::getPathBaseName(m_rootPath);
 	{
 		auto& str = props.workspaceName;
-		std::string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+		std::string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890-_";
 		auto search = str.find_first_not_of(validChars.c_str());
 		if (search != std::string::npos)
 		{
@@ -237,7 +237,7 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 
 		if (Output::getUserInputYesNo("Run 'chalet configure'?", Color::Magenta))
 		{
-			if (!String::equals('.', m_inputs.initPath()))
+			if (!String::equals('.', m_inputs.initPath())) // TODO: init > configure from parent dir
 				return true;
 
 			auto appPath = m_inputs.appPath();
