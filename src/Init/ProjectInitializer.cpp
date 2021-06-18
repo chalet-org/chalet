@@ -12,6 +12,7 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -54,6 +55,17 @@ bool ProjectInitializer::run()
 
 	BuildJsonProps props;
 	props.workspaceName = String::getPathBaseName(m_rootPath);
+	{
+		auto& str = props.workspaceName;
+		std::string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+		auto search = str.find_first_not_of(validChars.c_str());
+		if (search != std::string::npos)
+		{
+			std::transform(str.begin(), str.end(), str.begin(), [&validChars](uchar c) -> uchar {
+				return String::contains(c, validChars) ? c : '_';
+			});
+		}
+	}
 	props.projectName = props.workspaceName;
 	props.version = "1.0.0";
 	props.location = "src";
@@ -63,33 +75,74 @@ bool ProjectInitializer::run()
 	Color inputColor = Color::Magenta;
 
 	Output::getUserInput("Workspace name:", props.workspaceName, inputColor);
-	Output::getUserInput("Version:", props.version, inputColor);
-	Output::getUserInput("Project target name:", props.projectName, inputColor);
-	Output::getUserInput("Code language:", language, inputColor);
+	Output::getUserInput("Version:", props.version, inputColor, [](std::string& input) {
+		return input.find_first_not_of("1234567890.") == std::string::npos;
+	});
+	Output::getUserInput("Project target name:", props.projectName, inputColor, [](std::string& input) {
+		auto lower = String::toLowerCase(input);
+		bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz-_") == std::string::npos;
+		return validChars;
+	});
+	Output::getUserInput("Code language:", language, inputColor, [](std::string& input) {
+		return String::equals({ "C", "C++" }, input);
+	});
 
+	StringList sourceExts;
 	if (String::equals("C", language))
 	{
 		props.language = CodeLanguage::C;
 		props.langStandard = "c17";
-		props.precompiledHeader = "pch.h";
-		props.mainSource = "main.c";
-		Output::getUserInput("C Standard:", props.langStandard, inputColor);
+		sourceExts.push_back(".c");
+		Output::getUserInput("C Standard:", props.langStandard, inputColor, [](std::string& input) {
+			return RegexPatterns::matchesGnuCStandard(input);
+		});
 	}
 	else
 	{
 		props.language = CodeLanguage::CPlusPlus;
 		props.langStandard = "c++17";
-		props.precompiledHeader = "pch.hpp";
-		props.mainSource = "main.cpp";
-		Output::getUserInput("C++ Standard:", props.langStandard, inputColor);
+		sourceExts.push_back(".cpp");
+		sourceExts.push_back(".cc");
+		Output::getUserInput("C++ Standard:", props.langStandard, inputColor, [](std::string& input) {
+			return RegexPatterns::matchesGnuCppStandard(input);
+		});
 	}
+	props.mainSource = fmt::format("main{}", sourceExts.front());
 
-	Output::getUserInput("Root source directory:", props.location, inputColor);
-	Output::getUserInput(fmt::format("Main source file:"), props.mainSource, inputColor);
+	Output::getUserInput("Root source directory:", props.location, inputColor, [](std::string& input) {
+		bool validChars = String::toLowerCase(input).find_first_not_of("abcdefghijklmnopqrstuvwxyz") == std::string::npos;
+		return validChars;
+	});
+	Output::getUserInput(fmt::format("Main source file:"), props.mainSource, inputColor, [&sourceExts](std::string& input) {
+		auto lower = String::toLowerCase(input);
+		bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz._") == std::string::npos;
+		if (validChars && !String::endsWith(sourceExts, lower))
+		{
+			input = String::getPathBaseName(input) + sourceExts.front();
+		}
+		return validChars;
+	});
 
 	if (Output::getUserInputYesNo("Use a precompiled header?", inputColor))
 	{
-		Output::getUserInput(fmt::format("Precompiled header:"), props.precompiledHeader, inputColor);
+		std::string headerExt;
+		if (props.language == CodeLanguage::C)
+			headerExt = ".h";
+		else
+			headerExt = ".hpp";
+
+		props.precompiledHeader = fmt::format("pch{}", headerExt);
+
+		Output::getUserInput(fmt::format("Precompiled header:"), props.precompiledHeader, inputColor, [&headerExt](std::string& input) {
+			auto lower = String::toLowerCase(input);
+			bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz._") == std::string::npos;
+			if (validChars && !String::endsWith(headerExt, lower))
+			{
+				input = String::getPathBaseName(input) + headerExt;
+				return true;
+			}
+			return validChars;
+		});
 	}
 
 	Commands::sleep(0.5);

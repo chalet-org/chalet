@@ -1,0 +1,44 @@
+/*
+	Distributed under the OSI-approved BSD 3-Clause License.
+	See accompanying file LICENSE.txt for details.
+*/
+
+#include "Utility/RegexPatterns.hpp"
+
+#include "Libraries/Regex.hpp"
+
+namespace chalet
+{
+/*****************************************************************************/
+bool RegexPatterns::matchesGnuCppStandard(const std::string& inValue)
+{
+#ifndef CHALET_MSVC
+	static constexpr auto regex = ctll::fixed_string{ "^(c|gnu)\\+\\+\\d[\\dxyzab]$" };
+	if (auto m = ctre::match<regex>(inValue))
+#else
+	static std::regex regex{ "^(c|gnu)\\+\\+\\d[\\dxyzab]$" };
+	if (std::regex_match(inValue, regex))
+#endif
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool RegexPatterns::matchesGnuCStandard(const std::string& inValue)
+{
+#ifndef CHALET_MSVC
+	static constexpr auto regex = ctll::fixed_string{ "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$" };
+	if (auto m = ctre::match<regex>(inValue))
+#else
+	static std::regex regex{ "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$" };
+	if (std::regex_match(inValue, regex))
+#endif
+	{
+		return true;
+	}
+
+	return false;
+}
+}

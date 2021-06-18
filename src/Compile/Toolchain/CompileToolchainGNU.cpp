@@ -7,12 +7,12 @@
 
 #include "Compile/CompilerConfig.hpp"
 
-#include "Libraries/Regex.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
+#include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -599,17 +599,21 @@ void CompileToolchainGNU::addLanguageStandard(StringList& outArgList, const CxxS
 
 	// TODO: Make this "dumber" so it only the allowed strings used by each compiler
 
-#ifndef CHALET_MSVC
-	static constexpr auto regex = ctll::fixed_string{ "^(((c|gnu)\\+\\+|gnu|c|iso9899:)(\\d[\\dzaxy]{1,3}|199409))$" };
-	if (auto m = ctre::match<regex>(ret))
-#else
-	static std::regex regex{ "^(((c|gnu)\\+\\+|gnu|c|iso9899:)(\\d[\\dzaxy]{1,3}|199409))$" };
-	if (std::regex_match(ret, regex))
-#endif
+	if (!useC)
 	{
-		ret = "-std=" + ret;
-
-		outArgList.push_back(std::move(ret));
+		if (RegexPatterns::matchesGnuCppStandard(ret))
+		{
+			ret = "-std=" + ret;
+			outArgList.push_back(std::move(ret));
+		}
+	}
+	else
+	{
+		if (RegexPatterns::matchesGnuCStandard(ret))
+		{
+			ret = "-std=" + ret;
+			outArgList.push_back(std::move(ret));
+		}
 	}
 }
 

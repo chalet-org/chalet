@@ -23,7 +23,7 @@ std::string ArgumentPatterns::getHelpCommand()
    clean [{config}]
    bundle
    configure
-   init {path})",
+   init [{path}])",
 		fmt::arg("config", ArgumentPatterns::kArgConfiguration),
 		fmt::arg("runProj", ArgumentPatterns::kArgRunProject),
 		fmt::arg("runArgs", ArgumentPatterns::kArgRunArguments),

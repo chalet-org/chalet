@@ -113,59 +113,41 @@ void Output::setShowCommandOverride(const bool inValue)
 }
 
 /*****************************************************************************/
-void Output::getUserInput(const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor)
+bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor, const std::function<bool(std::string&)>& onValidate)
 {
 	const auto color = Output::getAnsiStyle(Color::Black);
 	const auto answerColor = Output::getAnsiStyle(inAnswerColor, true);
 	const auto reset = Output::getAnsiReset();
-	const auto symbol = '>';
+	const char symbol = '>';
 	std::string output = fmt::format("{}{}  {}{} ({}) {}", color, symbol, reset, inUserQuery, outResult, answerColor);
 
 	std::cout << output;
 
+	bool result = false;
 	std::string input;
 	if (std::getline(std::cin, input))
 	{
-		if (!input.empty())
+		if (!input.empty() && onValidate(input))
 		{
 			outResult = std::move(input);
-			std::cout << reset << std::flush;
-		}
-		else
-		{
-			std::cout << fmt::format("{}[F{}{}{}", getEscapeChar(), output, outResult, reset) << std::endl;
+			result = true;
 		}
 	}
 
-	std::cout << reset << std::flush;
+	auto toOutput = fmt::format("{}[F{}{}{}", getEscapeChar(), output, outResult, reset);
+	toOutput.append(80 - toOutput.size(), ' ');
+	std::cout << toOutput << std::endl;
+
+	return result;
 }
 
 /*****************************************************************************/
 bool Output::getUserInputYesNo(const std::string& inUserQuery, const Color inAnswerColor)
 {
-	const auto color = Output::getAnsiStyle(Color::Black);
-	const auto answerColor = Output::getAnsiStyle(inAnswerColor, true);
-	const auto reset = Output::getAnsiReset();
-	const auto symbol = '>';
-	std::string output = fmt::format("{}{}  {}{} (yes) {}", color, symbol, reset, inUserQuery, answerColor);
-
-	std::cout << output;
-
-	std::string input;
-	if (std::getline(std::cin, input))
-	{
-		if (!input.empty() && String::equals({ "no", "n" }, String::toLowerCase(input)))
-		{
-			std::cout << reset << std::flush;
-			return false;
-		}
-		else
-		{
-			std::cout << fmt::format("{}[F{}yes{}", getEscapeChar(), output, reset) << std::endl;
-		}
-	}
-
-	return true;
+	std::string result{ "yes" };
+	return !getUserInput(inUserQuery, result, inAnswerColor, [](std::string& input) {
+		return String::equals({ "no", "n" }, String::toLowerCase(input));
+	});
 }
 
 /*****************************************************************************/

@@ -163,8 +163,7 @@ Thumbs.db
 # Build
 {build}
 dist
-chalet_external/
-)",
+chalet_external/)",
 		fmt::arg("build", inBuildFolder));
 
 	return ret;
@@ -182,17 +181,14 @@ std::string StarterFileTemplates::getDotEnv()
 	auto paths = String::split(Environment::getPath(), ";");
 	if (gitExists && !List::contains(paths, gitPath))
 	{
-		ret = R"(Path=%ProgramFiles%\Git\bin\;%Path%
-)";
+		ret = R"(Path=%ProgramFiles%\Git\bin\;%Path%)";
 	}
 	else
 	{
-		ret = R"(Path=%Path%
-)";
+		ret = R"(Path=%Path%)";
 	}
 #else
-	std::string ret = R"(PATH=$PATH
-)";
+	std::string ret = R"(PATH=$PATH)";
 #endif
 
 	return ret;
