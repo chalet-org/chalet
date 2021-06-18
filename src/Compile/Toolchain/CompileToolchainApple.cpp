@@ -163,7 +163,7 @@ void CompileToolchainApple::addLibStdCppCompileOption(StringList& outArgList, co
 {
 	if (specialization != CxxSpecialization::ObjectiveC)
 	{
-		if (m_project.language() == CodeLanguage::CPlusPlus)
+		// if (m_project.language() == CodeLanguage::CPlusPlus)
 		{
 			std::string flag{ "-stdlib=libc++" };
 			if (isFlagSupported(flag))
@@ -184,7 +184,7 @@ void CompileToolchainApple::addProfileInformationLinkerOption(StringList& outArg
 /*****************************************************************************/
 void CompileToolchainApple::addLibStdCppLinkerOption(StringList& outArgList) const
 {
-	if (m_project.language() == CodeLanguage::CPlusPlus)
+	// if (m_project.language() == CodeLanguage::CPlusPlus)
 	{
 		std::string flag{ "-stdlib=libc++" };
 		if (isFlagSupported(flag))

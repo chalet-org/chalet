@@ -59,9 +59,12 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getMainCpp()
+std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage)
 {
-	std::string ret = R"cpp(#include <iostream>
+	std::string ret;
+	if (inLanguage == CodeLanguage::CPlusPlus)
+	{
+		ret = R"cpp(#include <iostream>
 
 int main(const int argc, const char* const argv[])
 {
@@ -74,8 +77,25 @@ int main(const int argc, const char* const argv[])
 	}
 
 	return 0;
-}
-)cpp";
+})cpp";
+	}
+	else
+	{
+		ret = R"c(#include <stdio.h>
+
+int main(const int argc, const char* const argv[])
+{
+	printf("Hello, World!\n\n");
+	printf("Args:\n");
+
+	for (int i=0; i < argc; ++i)
+	{
+		printf("%s\n",argv[i]);
+	}
+
+	return 0;
+})c";
+	}
 
 	return ret;
 }
@@ -108,13 +128,12 @@ std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLa
 #include <string>
 #include <vector>
 
-#endif // {file}
-)cpp",
+#endif // {file})cpp",
 			FMT_ARG(file));
 	}
 	else
 	{
-		ret = fmt::format(R"cpp(#ifndef {file}
+		ret = fmt::format(R"c(#ifndef {file}
 #define {file}
 
 #include <ctype.h>
@@ -127,8 +146,7 @@ std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLa
 #include <time.h>
 #include <wctype.h>
 
-#endif // {file}
-)cpp",
+#endif // {file})c",
 			FMT_ARG(file));
 	}
 

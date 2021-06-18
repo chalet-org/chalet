@@ -57,7 +57,6 @@ bool ProjectInitializer::run()
 	props.projectName = props.workspaceName;
 	props.version = "1.0.0";
 	props.location = "src";
-	props.mainSource = "main.cpp";
 
 	std::string language = "C++";
 
@@ -73,6 +72,7 @@ bool ProjectInitializer::run()
 		props.language = CodeLanguage::C;
 		props.langStandard = "c17";
 		props.precompiledHeader = "pch.h";
+		props.mainSource = "main.c";
 		Output::getUserInput("C Standard:", props.langStandard, inputColor);
 	}
 	else
@@ -80,6 +80,7 @@ bool ProjectInitializer::run()
 		props.language = CodeLanguage::CPlusPlus;
 		props.langStandard = "c++17";
 		props.precompiledHeader = "pch.hpp";
+		props.mainSource = "main.cpp";
 		Output::getUserInput("C++ Standard:", props.langStandard, inputColor);
 	}
 
@@ -100,11 +101,11 @@ bool ProjectInitializer::run()
 		Output::print(Color::Reset, fmt::format("{}/{}", props.location, props.mainSource));
 		Output::lineBreak();
 
-		auto mainCpp = StarterFileTemplates::getMainCpp();
+		auto mainCpp = StarterFileTemplates::getMainCxx(props.language);
 		String::replaceAll(mainCpp, "\t", "   ");
 		std::cout << Output::getAnsiStyle(Color::Blue) << mainCpp << Output::getAnsiReset() << std::endl;
 
-		// Output::lineBreak();
+		Output::lineBreak();
 		Output::print(Color::Black, separator);
 	}
 
@@ -116,7 +117,7 @@ bool ProjectInitializer::run()
 		const auto pch = StarterFileTemplates::getPch(props.precompiledHeader, props.language);
 		std::cout << Output::getAnsiStyle(Color::Blue) << pch << Output::getAnsiReset() << std::endl;
 
-		// Output::lineBreak();
+		Output::lineBreak();
 		Output::print(Color::Black, separator);
 	}
 
@@ -228,7 +229,7 @@ bool ProjectInitializer::makeBuildJson(const BuildJsonProps& inProps)
 bool ProjectInitializer::makeMainCpp(const BuildJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.mainSource);
-	const auto contents = StarterFileTemplates::getMainCpp();
+	const auto contents = StarterFileTemplates::getMainCxx(inProps.language);
 
 	return Commands::createFileWithContents(outFile, contents);
 }
