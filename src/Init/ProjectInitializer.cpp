@@ -180,17 +180,20 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 		Diagnostic::printDone();
 		// Output::lineBreak();
 
-		if (!String::equals('.', m_inputs.initPath()))
-			return true;
-
-		auto appPath = m_inputs.appPath();
-		if (!Commands::pathExists(appPath))
+		if (Output::getUserInputYesNo("Run 'chalet configure'?", Color::Magenta))
 		{
-			appPath = Commands::which("chalet");
-		}
+			if (!String::equals('.', m_inputs.initPath()))
+				return true;
 
-		if (!Commands::subprocess({ std::move(appPath), "configure" }))
-			return false;
+			auto appPath = m_inputs.appPath();
+			if (!Commands::pathExists(appPath))
+			{
+				appPath = Commands::which("chalet");
+			}
+
+			if (!Commands::subprocess({ std::move(appPath), "configure" }))
+				return false;
+		}
 
 		Output::lineBreak();
 
@@ -250,7 +253,12 @@ bool ProjectInitializer::makeGitIgnore()
 /*****************************************************************************/
 bool ProjectInitializer::makeDotEnv()
 {
-	const auto outFile = fmt::format("{}/.env", m_rootPath);
+#if defined(CHALET_WIN32)
+	std::string env{ ".env.windows" };
+#else
+	std::string env{ ".env" };
+#endif
+	const auto outFile = fmt::format("{}/{}", m_rootPath, env);
 	const auto contents = StarterFileTemplates::getDotEnv();
 
 	return Commands::createFileWithContents(outFile, contents);
