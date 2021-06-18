@@ -81,7 +81,7 @@ int main(const int argc, const char* const argv[])
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getPch(const std::string& inFile)
+std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLanguage inLanguage)
 {
 	auto file = String::toUpperCase(String::getPathFilename(inFile));
 	String::replaceAll(file, '.', '_');
@@ -90,7 +90,10 @@ std::string StarterFileTemplates::getPch(const std::string& inFile)
 	}),
 		file.end());
 
-	std::string ret = fmt::format(R"cpp(#ifndef {file}
+	std::string ret;
+	if (inLanguage == CodeLanguage::CPlusPlus)
+	{
+		ret = fmt::format(R"cpp(#ifndef {file}
 #define {file}
 
 #include <algorithm>
@@ -107,7 +110,27 @@ std::string StarterFileTemplates::getPch(const std::string& inFile)
 
 #endif // {file}
 )cpp",
-		FMT_ARG(file));
+			FMT_ARG(file));
+	}
+	else
+	{
+		ret = fmt::format(R"cpp(#ifndef {file}
+#define {file}
+
+#include <ctype.h>
+#include <float.h>
+#include <limits.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <wctype.h>
+
+#endif // {file}
+)cpp",
+			FMT_ARG(file));
+	}
 
 	return ret;
 }

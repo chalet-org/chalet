@@ -72,12 +72,14 @@ bool ProjectInitializer::run()
 	{
 		props.language = CodeLanguage::C;
 		props.langStandard = "c17";
+		props.precompiledHeader = "pch.h";
 		Output::getUserInput("C Standard:", props.langStandard, inputColor);
 	}
 	else
 	{
 		props.language = CodeLanguage::CPlusPlus;
 		props.langStandard = "c++17";
+		props.precompiledHeader = "pch.hpp";
 		Output::getUserInput("C++ Standard:", props.langStandard, inputColor);
 	}
 
@@ -86,7 +88,6 @@ bool ProjectInitializer::run()
 
 	if (Output::getUserInputYesNo("Use a precompiled header?", inputColor))
 	{
-		props.precompiledHeader = "pch.hpp";
 		Output::getUserInput(fmt::format("Precompiled header:"), props.precompiledHeader, inputColor);
 	}
 
@@ -112,7 +113,7 @@ bool ProjectInitializer::run()
 		Output::print(Color::Reset, fmt::format("{}/{}", props.location, props.precompiledHeader));
 		Output::lineBreak();
 
-		const auto pch = StarterFileTemplates::getPch(props.precompiledHeader);
+		const auto pch = StarterFileTemplates::getPch(props.precompiledHeader, props.language);
 		std::cout << Output::getAnsiStyle(Color::Blue) << pch << Output::getAnsiReset() << std::endl;
 
 		// Output::lineBreak();
@@ -236,7 +237,7 @@ bool ProjectInitializer::makeMainCpp(const BuildJsonProps& inProps)
 bool ProjectInitializer::makePch(const BuildJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.precompiledHeader);
-	const auto contents = StarterFileTemplates::getPch("PCH.hpp");
+	const auto contents = StarterFileTemplates::getPch(inProps.precompiledHeader, inProps.language);
 
 	return Commands::createFileWithContents(outFile, contents);
 }

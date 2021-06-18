@@ -163,9 +163,12 @@ void CompileToolchainApple::addLibStdCppCompileOption(StringList& outArgList, co
 {
 	if (specialization != CxxSpecialization::ObjectiveC)
 	{
-		std::string flag{ "-stdlib=libc++" };
-		if (isFlagSupported(flag))
-			List::addIfDoesNotExist(outArgList, std::move(flag));
+		if (m_project.language() == CodeLanguage::CPlusPlus)
+		{
+			std::string flag{ "-stdlib=libc++" };
+			if (isFlagSupported(flag))
+				List::addIfDoesNotExist(outArgList, std::move(flag));
+		}
 	}
 }
 
@@ -181,11 +184,14 @@ void CompileToolchainApple::addProfileInformationLinkerOption(StringList& outArg
 /*****************************************************************************/
 void CompileToolchainApple::addLibStdCppLinkerOption(StringList& outArgList) const
 {
-	std::string flag{ "-stdlib=libc++" };
-	if (isFlagSupported(flag))
-		List::addIfDoesNotExist(outArgList, std::move(flag));
+	if (m_project.language() == CodeLanguage::CPlusPlus)
+	{
+		std::string flag{ "-stdlib=libc++" };
+		if (isFlagSupported(flag))
+			List::addIfDoesNotExist(outArgList, std::move(flag));
 
-	// TODO: Apple has a "-stdlib=libstdc++" flag that is pre-C++11 for compatibility
+		// TODO: Apple has a "-stdlib=libstdc++" flag that is pre-C++11 for compatibility
+	}
 }
 
 /*****************************************************************************/
