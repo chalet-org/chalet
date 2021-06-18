@@ -144,7 +144,10 @@ bool BuildState::initializeBuild()
 
 	Output::setShowCommandOverride(false);
 
-	Diagnostic::info("Initializing", false);
+	bool isConfigure = m_inputs.command() == Route::Configure;
+
+	if (!isConfigure)
+		Diagnostic::info("Initializing", false);
 
 	{
 		auto& cacheFile = m_prototype.cache.localConfig();
@@ -214,7 +217,8 @@ bool BuildState::initializeBuild()
 	if (!validateState())
 		return false;
 
-	Diagnostic::printDone(timer.asString());
+	if (!isConfigure)
+		Diagnostic::printDone(timer.asString());
 
 	Output::setShowCommandOverride(true);
 

@@ -20,6 +20,9 @@ bool showCommands();
 void setShowCommands(const bool inValue);
 void setShowCommandOverride(const bool inValue);
 
+void getUserInput(const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor);
+bool getUserInputYesNo(const std::string& inUserQuery, const Color inAnswerColor);
+
 std::string getAnsiStyle(const Color inColor, const bool inBold = false);
 std::string getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold = false);
 std::string getAnsiReset();
@@ -36,6 +39,7 @@ void msgFetchingDependency(const std::string& inGitUrl, const std::string& inBra
 void msgUpdatingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);
 void msgDisplayBlack(const std::string& inString);
 
+void msgConfigureCompleted();
 void msgBuildSuccess();
 void msgTargetUpToDate(const bool inMultiTarget, const std::string& inProjectName);
 void msgBuildFail();

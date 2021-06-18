@@ -121,10 +121,6 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 						m_inputs.setTargetArchitecture(std::move(value));
 					}
 				}
-				else if (key == patterns.argInitName())
-				{
-					m_inputs.setInitProjectName(std::move(value));
-				}
 				else if (key == patterns.argInitPath())
 				{
 					m_inputs.setInitPath(std::move(value));

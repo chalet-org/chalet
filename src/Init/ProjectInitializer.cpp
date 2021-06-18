@@ -12,6 +12,7 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -28,7 +29,7 @@ bool ProjectInitializer::run()
 	const auto& path = m_inputs.initPath();
 	if (!Commands::pathExists(path))
 	{
-		Diagnostic::error("Path '{}' does not exit. Please create it first.", path);
+		Diagnostic::error("Path '{}' does not exist. Please create it first.", path);
 		return false;
 	}
 
@@ -42,53 +43,177 @@ bool ProjectInitializer::run()
 
 	Path::sanitize(m_rootPath);
 
-	Output::print(Color::Yellow, fmt::format("Initializing a project called '{}'. This'll only take a moment...", m_inputs.initProjectName()));
+	std::string separator{ "--------------------------------------------------------------------------------" };
 
-	if (!makeBuildJson())
+	Output::lineBreak();
+	Output::print(Color::Reset, ".    `     .     .  `   ,    .    `    .   .    '       `    .   ,    '  .   ,  ");
+	Output::print(Color::Reset, "    .     `    .   ,  '    .   ,   .         ,   .    '   `    .       .   .    ");
+	Output::print(Color::Magenta, "                                   _▂▃▅▇▇▅▃▂_");
+	Output::print(Color::Reset, "▂▂▂▂▃▃▂▃▅▃▂▃▅▃▂▂▂▃▃▂▂▃▅▅▃▂▂▂▃▃▂▂▃▅▃▂ CHALET ▂▃▅▃▂▂▃▃▂▂▂▃▅▅▃▂▂▃▃▂▂▂▃▅▃▂▃▅▃▂▃▃▂▂▂▂");
+	Output::lineBreak();
+
+	BuildJsonProps props;
+	props.workspaceName = String::getPathBaseName(m_rootPath);
+	props.projectName = props.workspaceName;
+	props.version = "1.0.0";
+	props.location = "src";
+	props.mainSource = "main.cpp";
+
+	std::string language = "C++";
+
+	Color inputColor = Color::Magenta;
+
+	Output::getUserInput("Workspace name:", props.workspaceName, inputColor);
+	Output::getUserInput("Version:", props.version, inputColor);
+	Output::getUserInput("Project target name:", props.projectName, inputColor);
+	Output::getUserInput("Code language:", language, inputColor);
+
+	if (String::equals("C", language))
+	{
+		props.language = CodeLanguage::C;
+		props.langStandard = "c17";
+		Output::getUserInput("C Standard:", props.langStandard, inputColor);
+	}
+	else
+	{
+		props.language = CodeLanguage::CPlusPlus;
+		props.langStandard = "c++17";
+		Output::getUserInput("C++ Standard:", props.langStandard, inputColor);
+	}
+
+	Output::getUserInput("Root source directory:", props.location, inputColor);
+	Output::getUserInput(fmt::format("Main source file:"), props.mainSource, inputColor);
+
+	if (Output::getUserInputYesNo("Use a precompiled header?", inputColor))
+	{
+		props.precompiledHeader = "pch.hpp";
+		Output::getUserInput(fmt::format("Precompiled header:"), props.precompiledHeader, inputColor);
+	}
+
+	Commands::sleep(0.5);
+
+	Output::lineBreak();
+	Output::print(Color::Black, separator);
+
+	{
+		Output::print(Color::Reset, fmt::format("{}/{}", props.location, props.mainSource));
+		Output::lineBreak();
+
+		auto mainCpp = StarterFileTemplates::getMainCpp();
+		String::replaceAll(mainCpp, "\t", "   ");
+		std::cout << Output::getAnsiStyle(Color::Blue) << mainCpp << Output::getAnsiReset() << std::endl;
+
+		// Output::lineBreak();
+		Output::print(Color::Black, separator);
+	}
+
+	if (!props.precompiledHeader.empty())
+	{
+		Output::print(Color::Reset, fmt::format("{}/{}", props.location, props.precompiledHeader));
+		Output::lineBreak();
+
+		const auto pch = StarterFileTemplates::getPch(props.precompiledHeader);
+		std::cout << Output::getAnsiStyle(Color::Blue) << pch << Output::getAnsiReset() << std::endl;
+
+		// Output::lineBreak();
+		Output::print(Color::Black, separator);
+	}
+
+	{
+		Output::print(Color::Reset, "build.json");
+		Output::lineBreak();
+
+		auto jsonFile = StarterFileTemplates::getBuildJson(props);
+		std::cout << Output::getAnsiStyle(Color::Blue) << jsonFile.dump(3, ' ') << Output::getAnsiReset() << std::endl;
+
+		Output::lineBreak();
+		Output::print(Color::Black, separator);
+	}
+
+	Output::lineBreak();
+
+	if (Output::getUserInputYesNo("Does everything look okay?", inputColor))
+	{
+		return doRun(props);
+	}
+	else
+	{
+		Output::displayStyledSymbol(Color::Reset, " ", "Exiting...", false);
+		Output::lineBreak();
 		return false;
+	}
+}
 
-	Commands::makeDirectory(fmt::format("{}/src/", m_rootPath));
+/*****************************************************************************/
+bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
+{
+	Diagnostic::info(fmt::format("Initializing a new workspace called '{}'", inProps.workspaceName), false);
+	// Commands::sleep(1.5);
 
 	bool result = true;
 
-	if (!makeMainCpp())
-		result = false;
-
-	if (!makePch())
-		result = false;
-
-	if (!makeGitIgnore())
-		result = false;
-
-	if (!makeDotEnv())
+	if (!makeBuildJson(inProps))
 		result = false;
 
 	if (result)
 	{
-		auto symbol = Unicode::heavyCheckmark();
-		Output::displayStyledSymbol(Color::Green, symbol, "Done! Happy coding!");
+		Commands::makeDirectory(fmt::format("{}/{}", m_rootPath, inProps.location));
+
+		if (!makeMainCpp(inProps))
+			result = false;
+
+		if (!inProps.precompiledHeader.empty())
+		{
+			if (!makePch(inProps))
+				result = false;
+		}
+
+		if (!makeGitIgnore())
+			result = false;
+
+		if (!makeDotEnv())
+			result = false;
+	}
+
+	if (result)
+	{
+		Diagnostic::printDone();
+		// Output::lineBreak();
+
+		if (!String::equals('.', m_inputs.initPath()))
+			return true;
+
+		auto appPath = m_inputs.appPath();
+		if (!Commands::pathExists(appPath))
+		{
+			appPath = Commands::which("chalet");
+		}
+
+		if (!Commands::subprocess({ std::move(appPath), "configure" }))
+			return false;
+
+		Output::lineBreak();
+
+		auto symbol = Unicode::diamond();
+		Output::displayStyledSymbol(Color::Magenta, symbol, "Happy coding!");
+
+		Output::lineBreak();
 	}
 	else
 	{
-		auto symbol = Unicode::heavyBallotX();
-		Output::displayStyledSymbol(Color::Red, symbol, "There was an error creating the project files.");
+		Output::lineBreak();
+		Diagnostic::error("There was an error creating the project files.");
 	}
 
-	return true;
+	return result;
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::makeBuildJson()
+bool ProjectInitializer::makeBuildJson(const BuildJsonProps& inProps)
 {
 	const auto buildJsonPath = fmt::format("{}/build.json", m_rootPath);
 
-	BuildJsonProps props;
-	props.workspaceName = m_inputs.initProjectName();
-	props.projectName = props.workspaceName;
-	props.version = "0.0.1";
-	props.language = CodeLanguage::CPlusPlus;
-
-	auto jsonFile = StarterFileTemplates::getBuildJson(props);
+	auto jsonFile = StarterFileTemplates::getBuildJson(inProps);
 
 	JsonFile::saveToFile(jsonFile, buildJsonPath);
 
@@ -96,19 +221,19 @@ bool ProjectInitializer::makeBuildJson()
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::makeMainCpp()
+bool ProjectInitializer::makeMainCpp(const BuildJsonProps& inProps)
 {
-	const auto outFile = fmt::format("{}/src/main.cpp", m_rootPath);
+	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.mainSource);
 	const auto contents = StarterFileTemplates::getMainCpp();
 
 	return Commands::createFileWithContents(outFile, contents);
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::makePch()
+bool ProjectInitializer::makePch(const BuildJsonProps& inProps)
 {
-	const auto outFile = fmt::format("{}/src/PCH.hpp", m_rootPath);
-	const auto contents = StarterFileTemplates::getPch();
+	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.precompiledHeader);
+	const auto contents = StarterFileTemplates::getPch("PCH.hpp");
 
 	return Commands::createFileWithContents(outFile, contents);
 }

@@ -17,6 +17,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -31,7 +32,7 @@ Router::Router(CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool Router::run()
 {
-	const auto& command = m_inputs.command();
+	Route command = m_inputs.command();
 	if (command == Route::Unknown
 		|| static_cast<std::underlying_type_t<Route>>(command) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
 	{
@@ -144,7 +145,7 @@ bool Router::run()
 bool Router::cmdConfigure()
 {
 	// TODO: pass command to installDependencies & recheck them
-	Output::msgBuildSuccess();
+	Output::msgConfigureCompleted();
 	return true;
 }
 
@@ -181,7 +182,7 @@ bool Router::cmdInit()
 {
 	ProjectInitializer initializer{ m_inputs };
 	if (!initializer.run())
-		return false;
+		return true;
 
 	return true;
 }

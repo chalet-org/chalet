@@ -55,9 +55,6 @@ struct CommandLineInputs
 	const std::string& toolchainPreferenceRaw() const noexcept;
 	void setToolchainPreference(std::string&& inValue) const noexcept;
 
-	const std::string& initProjectName() const noexcept;
-	void setInitProjectName(std::string&& inValue) noexcept;
-
 	const std::string& initPath() const noexcept;
 	void setInitPath(std::string&& inValue) noexcept;
 
@@ -97,7 +94,6 @@ private:
 	std::string m_generatorRaw;
 	mutable std::string m_toolchainPreferenceRaw;
 
-	std::string m_initProjectName;
 	std::string m_initPath;
 	std::string m_envFile;
 	std::string m_archRaw;

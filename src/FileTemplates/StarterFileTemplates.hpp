@@ -15,7 +15,7 @@ namespace StarterFileTemplates
 {
 Json getBuildJson(const BuildJsonProps& inProps);
 std::string getMainCpp();
-std::string getPch();
+std::string getPch(const std::string& inFile);
 std::string getGitIgnore(const std::string& inBuildFolder);
 std::string getDotEnv();
 }

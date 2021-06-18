@@ -19,55 +19,49 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	const bool cpp = inProps.language == CodeLanguage::CPlusPlus;
 	const std::string language = cpp ? "C++" : "C";
 	const std::string langStandardKey = cpp ? "cppStandard" : "cStandard";
-	const std::string langStandardValue = cpp ? "c++17" : "c17";
+	const std::string project = inProps.projectName;
 
 	const std::string kind = "consoleApplication";
 
-	std::string ret = R"json({
-	"version": "${version}",
-	"workspace": "${workspace}",
-	"abstracts:all": {
-		"language": "${language}",
-		"settings:Cxx": {
-			"${langStandardKey}": "${langStandardValue}",
-			"warnings": "pedantic"
-		}
-	},
-	"targets": {
-		"${project}": {
-			"kind": "${kind}",
-			"location": "src",
-			"runProject": true,
-			"settings:Cxx": {
-				"pch": "src/PCH.hpp"
-			}
-		}
-	},
-	"distribution": {
-		"${project}": {
-			"projects": [
-				"${project}"
-			]
-		}
+	const std::string kAbstractsAll = "abstracts:all";
+	const std::string kSettingsCxx = "settings:Cxx";
+	const std::string kTargets = "targets";
+	const std::string kDistribution = "distribution";
+
+	Json ret;
+	ret["workspace"] = inProps.workspaceName;
+	ret["version"] = inProps.version;
+
+	ret[kAbstractsAll] = Json::object();
+	ret[kAbstractsAll]["language"] = language;
+	ret[kAbstractsAll][kSettingsCxx] = Json::object();
+	ret[kAbstractsAll][kSettingsCxx][langStandardKey] = inProps.langStandard;
+	ret[kAbstractsAll][kSettingsCxx]["warnings"] = "pedantic";
+
+	ret[kTargets] = Json::object();
+	ret[kTargets][project] = Json::object();
+	ret[kTargets][project]["kind"] = kind;
+	ret[kTargets][project]["location"] = inProps.location;
+	ret[kTargets][project]["runProject"] = true;
+
+	if (!inProps.precompiledHeader.empty())
+	{
+		ret[kTargets][project][kSettingsCxx] = Json::object();
+		ret[kTargets][project][kSettingsCxx]["pch"] = fmt::format("{}/{}", inProps.location, inProps.precompiledHeader);
 	}
-}
-)json";
 
-	String::replaceAll(ret, "${version}", inProps.version);
-	String::replaceAll(ret, "${workspace}", inProps.workspaceName);
-	String::replaceAll(ret, "${project}", inProps.projectName);
-	String::replaceAll(ret, "${language}", language);
-	String::replaceAll(ret, "${langStandardKey}", langStandardKey);
-	String::replaceAll(ret, "${langStandardValue}", langStandardValue);
-	String::replaceAll(ret, "${kind}", kind);
+	ret[kDistribution] = Json::object();
+	ret[kDistribution][project] = Json::object();
+	ret[kDistribution][project]["projects"] = Json::array();
+	ret[kDistribution][project]["projects"][0] = project;
 
-	return JsonComments::parseLiteral(ret);
+	return ret;
 }
 
 /*****************************************************************************/
 std::string StarterFileTemplates::getMainCpp()
 {
-	std::string ret = R"(#include <iostream>
+	std::string ret = R"cpp(#include <iostream>
 
 int main(const int argc, const char* const argv[])
 {
@@ -81,18 +75,23 @@ int main(const int argc, const char* const argv[])
 
 	return 0;
 }
-
-)";
+)cpp";
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getPch()
+std::string StarterFileTemplates::getPch(const std::string& inFile)
 {
+	auto file = String::toUpperCase(String::getPathFilename(inFile));
+	String::replaceAll(file, '.', '_');
+	file.erase(std::remove_if(file.begin(), file.end(), [](char c) {
+		return !isalpha(c) && c != '_';
+	}),
+		file.end());
 
-	std::string ret = R"(#ifndef PRECOMPILED_HEADER_HPP
-#define PRECOMPILED_HEADER_HPP
+	std::string ret = fmt::format(R"cpp(#ifndef {file}
+#define {file}
 
 #include <algorithm>
 #include <cstdio>
@@ -106,8 +105,9 @@ std::string StarterFileTemplates::getPch()
 #include <string>
 #include <vector>
 
-#endif // PRECOMPILED_HEADER_HPP
-)";
+#endif // {file}
+)cpp",
+		FMT_ARG(file));
 
 	return ret;
 }

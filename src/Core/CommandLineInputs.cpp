@@ -221,20 +221,6 @@ void CommandLineInputs::setToolchainPreference(std::string&& inValue) const noex
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::initProjectName() const noexcept
-{
-	return m_initProjectName;
-}
-
-void CommandLineInputs::setInitProjectName(std::string&& inValue) noexcept
-{
-	if (inValue.empty())
-		return;
-
-	m_initProjectName = std::move(inValue);
-}
-
-/*****************************************************************************/
 const std::string& CommandLineInputs::initPath() const noexcept
 {
 	return m_initPath;

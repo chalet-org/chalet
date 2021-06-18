@@ -15,6 +15,10 @@ struct BuildJsonProps
 	std::string workspaceName;
 	std::string version;
 	std::string projectName;
+	std::string location;
+	std::string mainSource;
+	std::string precompiledHeader;
+	std::string langStandard;
 	CodeLanguage language = CodeLanguage::None;
 };
 }

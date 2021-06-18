@@ -7,6 +7,7 @@
 #define CHALET_PROJECT_INITIALIZER_HPP
 
 #include "Core/CommandLineInputs.hpp"
+#include "Init/BuildJsonProps.hpp"
 
 namespace chalet
 {
@@ -18,9 +19,11 @@ public:
 	bool run();
 
 private:
-	bool makeBuildJson();
-	bool makeMainCpp();
-	bool makePch();
+	bool doRun(const BuildJsonProps& inProps);
+
+	bool makeBuildJson(const BuildJsonProps& inProps);
+	bool makeMainCpp(const BuildJsonProps& inProps);
+	bool makePch(const BuildJsonProps& inProps);
 	bool makeGitIgnore();
 	bool makeReadme();
 	bool makeDotEnv();

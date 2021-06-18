@@ -113,6 +113,62 @@ void Output::setShowCommandOverride(const bool inValue)
 }
 
 /*****************************************************************************/
+void Output::getUserInput(const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor)
+{
+	const auto color = Output::getAnsiStyle(Color::Black);
+	const auto answerColor = Output::getAnsiStyle(inAnswerColor, true);
+	const auto reset = Output::getAnsiReset();
+	const auto symbol = '>';
+	std::string output = fmt::format("{}{}  {}{} ({}) {}", color, symbol, reset, inUserQuery, outResult, answerColor);
+
+	std::cout << output;
+
+	std::string input;
+	if (std::getline(std::cin, input))
+	{
+		if (!input.empty())
+		{
+			outResult = std::move(input);
+			std::cout << reset << std::flush;
+		}
+		else
+		{
+			std::cout << fmt::format("{}[F{}{}{}", getEscapeChar(), output, outResult, reset) << std::endl;
+		}
+	}
+
+	std::cout << reset << std::flush;
+}
+
+/*****************************************************************************/
+bool Output::getUserInputYesNo(const std::string& inUserQuery, const Color inAnswerColor)
+{
+	const auto color = Output::getAnsiStyle(Color::Black);
+	const auto answerColor = Output::getAnsiStyle(inAnswerColor, true);
+	const auto reset = Output::getAnsiReset();
+	const auto symbol = '>';
+	std::string output = fmt::format("{}{}  {}{} (yes) {}", color, symbol, reset, inUserQuery, answerColor);
+
+	std::cout << output;
+
+	std::string input;
+	if (std::getline(std::cin, input))
+	{
+		if (!input.empty() && String::equals({ "no", "n" }, String::toLowerCase(input)))
+		{
+			std::cout << reset << std::flush;
+			return false;
+		}
+		else
+		{
+			std::cout << fmt::format("{}[F{}yes{}", getEscapeChar(), output, reset) << std::endl;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 {
 #if defined(CHALET_WIN32)
@@ -268,6 +324,13 @@ void Output::msgDisplayBlack(const std::string& inString)
 		const auto reset = getAnsiReset();
 		std::cout << color << fmt::format("   {}", inString) << reset << std::endl;
 	}
+}
+
+/*****************************************************************************/
+void Output::msgConfigureCompleted()
+{
+	auto symbol = Unicode::heavyCheckmark();
+	displayStyledSymbol(Color::Green, symbol, "Configured!");
 }
 
 /*****************************************************************************/

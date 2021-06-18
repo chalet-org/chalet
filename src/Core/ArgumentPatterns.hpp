@@ -24,7 +24,6 @@ public:
 	const std::string& argConfiguration() const noexcept;
 	const std::string& argRunProject() const noexcept;
 	const std::string& argRunArguments() const noexcept;
-	const std::string& argInitName() const noexcept;
 	const std::string& argInitPath() const noexcept;
 
 	bool parse(const StringList& inArguments);

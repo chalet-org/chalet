@@ -23,11 +23,10 @@ std::string ArgumentPatterns::getHelpCommand()
    clean [{config}]
    bundle
    configure
-   init {name} {path})",
+   init {path})",
 		fmt::arg("config", ArgumentPatterns::kArgConfiguration),
 		fmt::arg("runProj", ArgumentPatterns::kArgRunProject),
 		fmt::arg("runArgs", ArgumentPatterns::kArgRunArguments),
-		fmt::arg("name", ArgumentPatterns::kArgInitName),
 		fmt::arg("path", ArgumentPatterns::kArgInitPath));
 }
 
@@ -61,10 +60,6 @@ const std::string& ArgumentPatterns::argRunProject() const noexcept
 const std::string& ArgumentPatterns::argRunArguments() const noexcept
 {
 	return kArgRunArguments;
-}
-const std::string& ArgumentPatterns::argInitName() const noexcept
-{
-	return kArgInitName;
 }
 const std::string& ArgumentPatterns::argInitPath() const noexcept
 {
@@ -662,15 +657,9 @@ void ArgumentPatterns::commandInit()
 	addEnvFileArg();
 
 	//
-	m_parser.add_argument(kArgInitName)
-		.help(kHelpInitName)
-		.required();
-
-	m_argumentMap.push_back({ kArgInitName, Variant::Kind::String });
-
-	//
 	m_parser.add_argument(kArgInitPath)
 		.help(kHelpInitPath)
+		.default_value(std::string("."))
 		.required();
 
 	m_argumentMap.push_back({ kArgInitPath, Variant::Kind::String });

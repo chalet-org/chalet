@@ -12,6 +12,8 @@
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
+// https://stackoverflow.com/questions/43670731/programmatically-get-list-of-dlls-used-to-build-a-process-or-library-in-a-non-de
+
 namespace chalet
 {
 #if defined(CHALET_WIN32)
