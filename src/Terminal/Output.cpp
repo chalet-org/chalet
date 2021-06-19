@@ -120,11 +120,25 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 	const auto reset = Output::getAnsiReset();
 	const char symbol = '>';
 
-	auto lineUp = fmt::format("{}[F", getEscapeChar());
-	std::string cleanLine = fmt::format("                                                                                \n{}", lineUp);
-	std::string output = fmt::format("{}{}{}  {}{} ({}) {}", cleanLine, color, symbol, reset, inUserQuery, outResult, answerColor);
+	const auto lineUp = fmt::format("{}[F", getEscapeChar());
+	const std::string blankLine(80, ' ');
+	const std::string cleanLine = fmt::format("{}\n{}", blankLine, lineUp);
 
-	std::cout << fmt::format("\n   {color}{note}{reset}\n\n{lineUp}{lineUp}{lineUp}", FMT_ARG(color), FMT_ARG(reset), FMT_ARG(note), FMT_ARG(lineUp)) << output;
+	std::string output = fmt::format("{cleanLine}{color}{symbol}  {reset}{inUserQuery} ({outResult}) {answerColor}",
+		FMT_ARG(cleanLine),
+		FMT_ARG(color),
+		FMT_ARG(symbol),
+		FMT_ARG(reset),
+		FMT_ARG(inUserQuery),
+		FMT_ARG(outResult),
+		FMT_ARG(answerColor));
+
+	std::cout << fmt::format("\n   {color}{note}{reset}{lineUp}{output}",
+		FMT_ARG(color),
+		FMT_ARG(note),
+		FMT_ARG(reset),
+		FMT_ARG(lineUp),
+		FMT_ARG(output));
 
 	bool result = false;
 	std::string input;
@@ -137,7 +151,13 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 		}
 	}
 
-	auto toOutput = fmt::format("{}{}{}{}", lineUp, output, outResult, reset);
+	auto toOutput = fmt::format("{cleanLine}{lineUp}{output}{outResult}{reset}",
+		FMT_ARG(cleanLine),
+		FMT_ARG(lineUp),
+		FMT_ARG(output),
+		FMT_ARG(outResult),
+		FMT_ARG(reset));
+
 	// toOutput.append(80 - toOutput.size(), ' ');
 	std::cout << toOutput << std::endl;
 
