@@ -87,7 +87,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		Output::lineBreak();
 
 		m_strategy = ICompileStrategy::make(strategy, m_state);
-		if (!m_strategy->initialize())
+		if (!m_strategy->initialize(m_state.paths.allFileExtensions()))
 			return false;
 
 		for (auto& target : m_state.targets)

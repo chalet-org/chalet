@@ -76,7 +76,7 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 		ret.push_back(dependency);
 	}
 
-	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
+	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 	addOptimizationOption(ret);
 	addLanguageStandard(ret, specialization);
 	addWarnings(ret);
@@ -195,7 +195,7 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 	addIncludes(ret);
 	addMacosSysRootOption(ret);
 
-	if (specialization == CxxSpecialization::C || specialization == CxxSpecialization::Cpp)
+	if (specialization == CxxSpecialization::C || specialization == CxxSpecialization::CPlusPlus)
 		addPchInclude(ret);
 
 	ret.push_back("-o");
@@ -962,7 +962,7 @@ void CompileToolchainGNU::addObjectiveCxxCompileOption(StringList& outArgList, c
 /*****************************************************************************/
 void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const
 {
-	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
+	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCPlusPlus || specialization == CxxSpecialization::ObjectiveC;
 	if (isObjCxx)
 	{
 #if defined(CHALET_MACOS)

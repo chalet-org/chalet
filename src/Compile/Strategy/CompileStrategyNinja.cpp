@@ -21,13 +21,13 @@ CompileStrategyNinja::CompileStrategyNinja(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool CompileStrategyNinja::initialize()
+bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
 {
 	if (m_initialized)
 		return false;
 
 	auto& name = "ninja";
-	auto id = fmt::format("{}_{}", name, Output::showCommands() ? 1 : 0);
+	auto id = fmt::format("{}_{}_{}", name, Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
 	m_cacheFile = m_state.cache.getHash(m_state.info.hash(), id, WorkspaceCache::Type::Local);
 
 	auto& localConfig = m_state.cache.localConfig();

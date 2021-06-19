@@ -199,6 +199,8 @@ bool BuildState::initializeBuild()
 					project.resolveLinksFromProject(p.name(), staticLib);
 				}
 			}
+
+			paths.populateFileList(project);
 		}
 	}
 
@@ -228,13 +230,13 @@ bool BuildState::initializeBuild()
 /*****************************************************************************/
 void BuildState::initializeCache()
 {
-	m_prototype.cache.checkIfCompileStrategyChanged(m_inputs.toolchainPreferenceRaw());
+	// m_prototype.cache.checkIfCompileStrategyChanged(m_inputs.toolchainPreferenceRaw());
 	m_prototype.cache.checkIfWorkingDirectoryChanged();
 
 	m_prototype.cache.removeStaleProjectCaches(m_inputs.toolchainPreferenceRaw(), WorkspaceCache::Type::Local);
 
 	// TODO: Remove entirely?
-	// m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
+	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
 
 	m_prototype.cache.saveLocalConfig();
 

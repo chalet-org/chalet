@@ -207,9 +207,9 @@ void CompileToolchainApple::addObjectiveCxxLink(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainApple::addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
 {
-	const bool isObjCpp = specialization == CxxSpecialization::ObjectiveCpp;
+	const bool isObjCpp = specialization == CxxSpecialization::ObjectiveCPlusPlus;
 	const bool isObjC = specialization == CxxSpecialization::ObjectiveC;
-	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCpp || specialization == CxxSpecialization::ObjectiveC;
+	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCPlusPlus || specialization == CxxSpecialization::ObjectiveC;
 	if (m_project.objectiveCxx() && isObjCxx)
 	{
 		outArgList.push_back("-x");

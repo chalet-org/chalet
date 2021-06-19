@@ -11,8 +11,8 @@ namespace chalet
 enum CxxSpecialization : ushort
 {
 	C,
-	Cpp,
-	ObjectiveCpp,
+	CPlusPlus,
+	ObjectiveCPlusPlus,
 	ObjectiveC,
 };
 }

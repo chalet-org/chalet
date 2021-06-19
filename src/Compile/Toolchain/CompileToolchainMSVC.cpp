@@ -87,7 +87,7 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 	addThreadModelCompileOption(ret);
 	addOptimizationOption(ret);
 
-	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
+	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 	addLanguageStandard(ret, specialization);
 	addExceptionHandlingModel(ret);
 	addWarnings(ret);
@@ -579,7 +579,7 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const Cxx
 			outArgList.push_back("/std:c11");
 		}
 	}
-	else if (specialization == CxxSpecialization::Cpp)
+	else if (specialization == CxxSpecialization::CPlusPlus)
 	{
 		std::string langStandard = String::toLowerCase(m_project.cppStandard());
 		if (String::equals(langStandard, "c++20")

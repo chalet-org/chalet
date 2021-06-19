@@ -46,17 +46,17 @@ bool Router::run()
 		return false;
 	}
 
-	Output::lineBreak();
-
-	if (!parseEnvFile())
-		return false;
-
 	std::unique_ptr<StatePrototype> prototype;
 	std::unique_ptr<BuildState> buildState;
 
 	const auto& buildFile = m_inputs.buildFile();
 	if (command != Route::Init)
 	{
+		Output::lineBreak();
+
+		if (!parseEnvFile())
+			return false;
+
 		if (!Commands::pathExists(buildFile))
 		{
 			Diagnostic::error("Not a chalet project. '{}' was not found.", buildFile);

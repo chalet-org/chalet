@@ -113,15 +113,18 @@ void Output::setShowCommandOverride(const bool inValue)
 }
 
 /*****************************************************************************/
-bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor, const std::function<bool(std::string&)>& onValidate)
+bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor, std::string note, const std::function<bool(std::string&)>& onValidate)
 {
 	const auto color = Output::getAnsiStyle(Color::Black);
 	const auto answerColor = Output::getAnsiStyle(inAnswerColor, true);
 	const auto reset = Output::getAnsiReset();
 	const char symbol = '>';
-	std::string output = fmt::format("{}{}  {}{} ({}) {}", color, symbol, reset, inUserQuery, outResult, answerColor);
 
-	std::cout << output;
+	auto lineUp = fmt::format("{}[F", getEscapeChar());
+	std::string cleanLine = fmt::format("                                                                                \n{}", lineUp);
+	std::string output = fmt::format("{}{}{}  {}{} ({}) {}", cleanLine, color, symbol, reset, inUserQuery, outResult, answerColor);
+
+	std::cout << fmt::format("\n   {color}{note}{reset}\n\n{lineUp}{lineUp}{lineUp}", FMT_ARG(color), FMT_ARG(reset), FMT_ARG(note), FMT_ARG(lineUp)) << output;
 
 	bool result = false;
 	std::string input;
@@ -134,18 +137,18 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 		}
 	}
 
-	auto toOutput = fmt::format("{}[F{}{}{}", getEscapeChar(), output, outResult, reset);
-	toOutput.append(80 - toOutput.size(), ' ');
+	auto toOutput = fmt::format("{}{}{}{}", lineUp, output, outResult, reset);
+	// toOutput.append(80 - toOutput.size(), ' ');
 	std::cout << toOutput << std::endl;
 
 	return result;
 }
 
 /*****************************************************************************/
-bool Output::getUserInputYesNo(const std::string& inUserQuery, const Color inAnswerColor)
+bool Output::getUserInputYesNo(const std::string& inUserQuery, const Color inAnswerColor, std::string inNote)
 {
 	std::string result{ "yes" };
-	return !getUserInput(inUserQuery, result, inAnswerColor, [](std::string& input) {
+	return !getUserInput(inUserQuery, result, inAnswerColor, std::move(inNote), [](std::string& input) {
 		return String::equals({ "no", "n" }, String::toLowerCase(input));
 	});
 }

@@ -251,7 +251,7 @@ std::string NinjaGenerator::getCppRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 	const auto depFile = getDepFile(dependency);
 
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::Cpp));
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::CPlusPlus));
 
 	ret = fmt::format(R"ninja(
 rule cxx_{hash}
@@ -315,7 +315,7 @@ std::string NinjaGenerator::getObjcppRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 	const auto depFile = getDepFile(dependency);
 
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveCpp));
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveCPlusPlus));
 
 	ret = fmt::format(R"ninja(
 rule objcpp_{hash}

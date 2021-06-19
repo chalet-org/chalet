@@ -7,6 +7,7 @@
 #define CHALET_BUILD_JSON_PROPS_HPP
 
 #include "Compile/CodeLanguage.hpp"
+#include "Compile/Toolchain/CxxSpecialization.hpp"
 
 namespace chalet
 {
@@ -20,6 +21,11 @@ struct BuildJsonProps
 	std::string precompiledHeader;
 	std::string langStandard;
 	CodeLanguage language = CodeLanguage::None;
+	CxxSpecialization specialization = CxxSpecialization::CPlusPlus;
+	bool makeGitRepository = false;
+	bool useLocation = true;
+	bool defaultConfigs = true;
+	bool envFile = true;
 };
 }
 

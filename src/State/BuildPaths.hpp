@@ -30,6 +30,8 @@ struct BuildPaths
 	const std::string& asmDir() const noexcept;
 	const std::string& intermediateDir() const noexcept;
 
+	const StringList& allFileExtensions() const noexcept;
+
 	std::string getTargetFilename(const ProjectTarget& inProject) const;
 	std::string getTargetBasename(const ProjectTarget& inProject) const;
 	std::string getPrecompiledHeader(const ProjectTarget& inProject) const;
@@ -50,6 +52,7 @@ private:
 	explicit BuildPaths(const CommandLineInputs& inInputs, const BuildInfo& inInfo);
 
 	void initialize();
+	void populateFileList(const ProjectTarget& inProject);
 
 	struct SourceGroup
 	{
@@ -72,6 +75,9 @@ private:
 
 	mutable StringList m_fileListCache;
 	// mutable StringList m_directoryCache;
+
+	std::unordered_map<std::string, std::unique_ptr<SourceGroup>> m_fileList;
+	StringList m_allFileExtensions;
 
 	std::string m_workingDirectory;
 	std::string m_configuration;

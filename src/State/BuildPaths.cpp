@@ -45,6 +45,25 @@ void BuildPaths::initialize()
 }
 
 /*****************************************************************************/
+void BuildPaths::populateFileList(const ProjectTarget& inProject)
+{
+	if (m_fileList.find(inProject.name()) != m_fileList.end())
+		return;
+
+	SourceGroup files = getFiles(inProject);
+
+	for (auto& file : files.list)
+	{
+		auto ext = String::getPathSuffix(file);
+		List::addIfDoesNotExist(m_allFileExtensions, std::move(ext));
+	}
+
+	std::sort(m_allFileExtensions.begin(), m_allFileExtensions.end());
+
+	m_fileList.emplace(inProject.name(), std::make_unique<SourceGroup>(std::move(files)));
+}
+
+/*****************************************************************************/
 const std::string& BuildPaths::workingDirectory() const noexcept
 {
 	return m_workingDirectory;
@@ -127,11 +146,19 @@ const std::string& BuildPaths::intermediateDir() const noexcept
 }
 
 /*****************************************************************************/
+const StringList& BuildPaths::allFileExtensions() const noexcept
+{
+	return m_allFileExtensions;
+}
+
+/*****************************************************************************/
 SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inDumpAssembly, const bool inObjExtension) const
 {
 	SourceOutputs ret;
 
-	SourceGroup files = getFiles(inProject);
+	chalet_assert(m_fileList.find(inProject.name()) != m_fileList.end(), "");
+
+	SourceGroup files = std::move(*m_fileList.at(inProject.name()));
 	SourceGroup directories = getDirectories(inProject);
 
 	ret.objectListLinker = getObjectFilesList(files.list, inObjExtension);

@@ -354,7 +354,7 @@ std::string MakefileGeneratorGNU::getCppRecipe(const std::string& ext, const std
 
 		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
 
-		const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
+		const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 		auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
 		if (m_generateDependencies)
 		{
@@ -412,7 +412,7 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
 
 		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
 
-		const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCpp;
+		const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCPlusPlus;
 		auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
 		if (m_generateDependencies)
 		{

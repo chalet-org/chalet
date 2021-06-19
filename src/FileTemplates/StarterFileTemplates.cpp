@@ -27,6 +27,7 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	const std::string kSettingsCxx = "settings:Cxx";
 	const std::string kTargets = "targets";
 	const std::string kDistribution = "distribution";
+	const std::string kConfigurations = "configurations";
 
 	Json ret;
 	ret["workspace"] = inProps.workspaceName;
@@ -38,11 +39,39 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	ret[kAbstractsAll][kSettingsCxx][langStandardKey] = inProps.langStandard;
 	ret[kAbstractsAll][kSettingsCxx]["warnings"] = "pedantic";
 
+	if (inProps.defaultConfigs)
+	{
+		ret[kConfigurations] = Json::array();
+		ret[kConfigurations] = {
+			"Release",
+			"Debug",
+			"MinSizeRel",
+			"RelWithDebInfo",
+			"Profile",
+		};
+	}
+
+	if (inProps.specialization == CxxSpecialization::ObjectiveC || inProps.specialization == CxxSpecialization::ObjectiveCPlusPlus)
+	{
+		ret[kAbstractsAll][kSettingsCxx]["objectiveCxx"] = true;
+		ret[kAbstractsAll][kSettingsCxx]["macosFrameworks"] = Json::array();
+		ret[kAbstractsAll][kSettingsCxx]["macosFrameworks"][0] = "Foundation";
+	}
+
 	ret[kTargets] = Json::object();
 	ret[kTargets][project] = Json::object();
-	ret[kTargets][project]["kind"] = kind;
-	ret[kTargets][project]["location"] = inProps.location;
 	ret[kTargets][project]["runProject"] = true;
+	ret[kTargets][project]["kind"] = kind;
+
+	if (inProps.useLocation)
+	{
+		ret[kTargets][project]["location"] = inProps.location;
+	}
+	else
+	{
+		ret[kTargets][project]["files"] = Json::array();
+		ret[kTargets][project]["files"][0] = fmt::format("{}/{}", inProps.location, inProps.mainSource);
+	}
 
 	if (!inProps.precompiledHeader.empty())
 	{
@@ -59,12 +88,31 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage)
+std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage, const CxxSpecialization inSpecialization)
 {
 	std::string ret;
 	if (inLanguage == CodeLanguage::CPlusPlus)
 	{
-		ret = R"cpp(#include <iostream>
+		if (inSpecialization == CxxSpecialization::ObjectiveCPlusPlus)
+		{
+			ret = R"objc(#import <Foundation/Foundation.h>
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSLog(@"Hello, World!\n");
+		NSLog(@"Args:");
+
+		for (int i=0; i < argc; ++i)
+		{
+			NSLog(@"%@\n", @(argv[i]));
+		}
+    }
+    return 0;
+})objc";
+		}
+		else
+		{
+			ret = R"cpp(#include <iostream>
 
 int main(const int argc, const char* const argv[])
 {
@@ -78,10 +126,30 @@ int main(const int argc, const char* const argv[])
 
 	return 0;
 })cpp";
+		}
 	}
 	else
 	{
-		ret = R"c(#include <stdio.h>
+		if (inSpecialization == CxxSpecialization::ObjectiveC)
+		{
+			ret = R"objc(#import <Foundation/Foundation.h>
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSLog(@"Hello, World!\n");
+		NSLog(@"Args:");
+
+		for (int i=0; i < argc; ++i)
+		{
+			NSLog(@"%@\n", @(argv[i]));
+		}
+    }
+    return 0;
+})objc";
+		}
+		else
+		{
+			ret = R"c(#include <stdio.h>
 
 int main(const int argc, const char* const argv[])
 {
@@ -95,13 +163,14 @@ int main(const int argc, const char* const argv[])
 
 	return 0;
 })c";
+		}
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLanguage inLanguage)
+std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLanguage inLanguage, const CxxSpecialization inSpecialization)
 {
 	auto file = String::toUpperCase(String::getPathFilename(inFile));
 	String::replaceAll(file, '.', '_');
@@ -110,6 +179,7 @@ std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLa
 	}),
 		file.end());
 
+	UNUSED(inSpecialization);
 	std::string ret;
 	if (inLanguage == CodeLanguage::CPlusPlus)
 	{
@@ -163,7 +233,7 @@ Thumbs.db
 # Build
 {build}
 dist
-chalet_external/)",
+chalet_external)",
 		fmt::arg("build", inBuildFolder));
 
 	return ret;

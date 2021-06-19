@@ -345,7 +345,7 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	const auto quietFlag = getQuietFlag();
 
 	std::string dependency;
-	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::Cpp : CxxSpecialization::C;
+	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, dependency, specialization));
 
 	const auto compilerEcho = getCompileEchoSources(source);

@@ -274,6 +274,8 @@ void WorkspaceCache::makeAppVersionCheck(const std::string& inAppPath)
 		return;
 
 	Json& data = m_localConfig.json[kKeyData];
+	if (!data.is_object())
+		return;
 
 	const auto buildHash = getBuildHash(inAppPath);
 	std::string lastBuildHash;
@@ -282,12 +284,12 @@ void WorkspaceCache::makeAppVersionCheck(const std::string& inAppPath)
 		lastBuildHash = data.at(kKeyVer).get<std::string>();
 	}
 
-	if (buildHash == lastBuildHash)
-		return;
-
-	data[kKeyVer] = buildHash;
-	m_localConfig.setDirty(true);
-	m_appBuildChanged = true;
+	if (buildHash != lastBuildHash)
+	{
+		data[kKeyVer] = buildHash;
+		m_localConfig.setDirty(true);
+		m_appBuildChanged = true;
+	}
 }
 
 /*****************************************************************************/
@@ -303,35 +305,35 @@ void WorkspaceCache::checkIfCompileStrategyChanged(const std::string& inToolchai
 		return;
 
 	auto& toolchains = m_localConfig.json.at("toolchains");
-	if (!toolchains.is_object())
-		return;
-
-	auto& toolchainJson = toolchains[inToolchain];
-	if (!toolchainJson.is_object())
-		return;
-
-	auto& strategyJson = toolchainJson[kKeyStrategy];
-	if (!strategyJson.is_string())
-		return;
-
-	const auto strategy = strategyJson.get<std::string>();
-
-	const auto hashStrategy = Hash::string(strategy);
-
-	if (!data.contains(kKeyDataStrategy))
+	if (toolchains.is_object())
 	{
-		data[kKeyDataStrategy] = hashStrategy;
-		m_localConfig.setDirty(true);
-		return;
-	}
-	else
-	{
-		const auto dataStrategy = data[kKeyDataStrategy].get<std::string>();
-		if (dataStrategy != hashStrategy)
+		auto& toolchainJson = toolchains[inToolchain];
+		if (toolchainJson.is_object())
 		{
-			data[kKeyDataStrategy] = hashStrategy;
-			m_localConfig.setDirty(true);
-			// m_compileStrategyChanged = true;
+			auto& strategyJson = toolchainJson[kKeyStrategy];
+			if (strategyJson.is_string())
+			{
+				const auto strategy = strategyJson.get<std::string>();
+
+				const auto hashStrategy = Hash::string(strategy);
+
+				if (!data.contains(kKeyDataStrategy))
+				{
+					data[kKeyDataStrategy] = hashStrategy;
+					m_localConfig.setDirty(true);
+					return;
+				}
+				else
+				{
+					const auto dataStrategy = data[kKeyDataStrategy].get<std::string>();
+					if (dataStrategy != hashStrategy)
+					{
+						data[kKeyDataStrategy] = hashStrategy;
+						m_localConfig.setDirty(true);
+						// m_compileStrategyChanged = true;
+					}
+				}
+			}
 		}
 	}
 }
@@ -363,34 +365,34 @@ void WorkspaceCache::checkIfWorkingDirectoryChanged()
 
 	Json& workingDirJson = m_localConfig.json[kKeyWorkingDirectory];
 
-	if (!workingDirJson.is_string())
-		return;
-
-	const auto workingDirectory = workingDirJson.get<std::string>();
-
-	if (!m_localConfig.json.contains(kKeyData))
-		return;
-
-	Json& data = m_localConfig.json[kKeyData];
-	if (!data.is_object())
-		return;
-
-	const auto hashWorkingDir = Hash::string(workingDirectory);
-
-	if (!data.contains(kKeyDataWorkingDirectory))
+	if (workingDirJson.is_string())
 	{
-		data[kKeyDataWorkingDirectory] = hashWorkingDir;
-		m_localConfig.setDirty(true);
-		return;
-	}
-	else
-	{
-		const auto dataWorkingDir = data[kKeyDataWorkingDirectory].get<std::string>();
-		if (dataWorkingDir != hashWorkingDir)
+		const auto workingDirectory = workingDirJson.get<std::string>();
+
+		if (m_localConfig.json.contains(kKeyData))
 		{
-			data[kKeyDataWorkingDirectory] = hashWorkingDir;
-			m_localConfig.setDirty(true);
-			m_workingDirectoryChanged = true;
+			Json& data = m_localConfig.json[kKeyData];
+			if (data.is_object())
+			{
+				const auto hashWorkingDir = Hash::string(workingDirectory);
+
+				if (!data.contains(kKeyDataWorkingDirectory))
+				{
+					data[kKeyDataWorkingDirectory] = hashWorkingDir;
+					m_localConfig.setDirty(true);
+					return;
+				}
+				else
+				{
+					const auto dataWorkingDir = data[kKeyDataWorkingDirectory].get<std::string>();
+					if (dataWorkingDir != hashWorkingDir)
+					{
+						data[kKeyDataWorkingDirectory] = hashWorkingDir;
+						m_localConfig.setDirty(true);
+						m_workingDirectoryChanged = true;
+					}
+				}
+			}
 		}
 	}
 }

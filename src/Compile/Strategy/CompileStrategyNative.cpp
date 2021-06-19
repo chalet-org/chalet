@@ -26,8 +26,9 @@ CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::initialize()
+bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
 {
+	UNUSED(inFileExtensions);
 	return true;
 }
 
@@ -132,11 +133,11 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 		else if (String::endsWith({ ".res", ".obj" }, source))
 			source = source.substr(0, source.size() - 4);
 
-		CxxSpecialization specialization = CxxSpecialization::Cpp;
+		CxxSpecialization specialization = CxxSpecialization::CPlusPlus;
 		if (String::endsWith({ ".m", ".M" }, source))
 			specialization = CxxSpecialization::ObjectiveC;
 		else if (String::endsWith(".mm", source))
-			specialization = CxxSpecialization::ObjectiveCpp;
+			specialization = CxxSpecialization::ObjectiveCPlusPlus;
 
 		if (String::endsWith({ ".rc", ".RC" }, source))
 		{
