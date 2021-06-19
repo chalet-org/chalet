@@ -322,7 +322,7 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 			{
 				if (!Commands::subprocess({ git, "init", "--quiet" }))
 					result = false;
-				else if (!Commands::subprocess({ git, "branch", "-m", "main" }))
+				else if (!Commands::subprocess({ git, "checkout", "-b", "main", "--quiet" }))
 					result = false;
 			}
 		}
