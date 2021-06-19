@@ -211,8 +211,6 @@ bool BuildState::initializeBuild()
 					project.resolveLinksFromProject(p.name(), staticLib);
 				}
 			}
-
-			paths.populateFileList(project);
 		}
 	}
 
@@ -223,6 +221,11 @@ bool BuildState::initializeBuild()
 		for (auto& target : targets)
 		{
 			target->initialize();
+
+			if (target->isProject())
+			{
+				paths.populateFileList(static_cast<ProjectTarget&>(*target));
+			}
 		}
 
 		initializeCache();
