@@ -562,6 +562,8 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const Cxx
 {
 	if (specialization == CxxSpecialization::C)
 	{
+		outArgList.push_back("/TC"); // Treat code as C
+
 		std::string langStandard = String::toLowerCase(m_project.cStandard());
 		if (String::equals("gnu2x", langStandard)
 			|| String::equals("gnu18", langStandard)
@@ -581,6 +583,8 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const Cxx
 	}
 	else if (specialization == CxxSpecialization::CPlusPlus)
 	{
+		outArgList.push_back("/TP"); // Treat code as C++
+
 		std::string langStandard = String::toLowerCase(m_project.cppStandard());
 		if (String::equals(langStandard, "c++20")
 			|| String::equals(langStandard, "c++2a")

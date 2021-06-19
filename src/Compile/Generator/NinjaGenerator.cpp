@@ -27,8 +27,8 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState) :
 		{ "CXX", &NinjaGenerator::getCppRule },
 		{ "c++", &NinjaGenerator::getCppRule },
 		{ "C++", &NinjaGenerator::getCppRule },
-		{ "c", &NinjaGenerator::getCppRule },
-		{ "C", &NinjaGenerator::getCppRule },
+		{ "c", &NinjaGenerator::getCRule },
+		{ "C", &NinjaGenerator::getCRule },
 		{ "mm", &NinjaGenerator::getObjcppRule },
 		{ "m", &NinjaGenerator::getObjcRule },
 		{ "M", &NinjaGenerator::getObjcRule },
@@ -236,6 +236,38 @@ rule rc_{hash}
 }
 
 /*****************************************************************************/
+std::string NinjaGenerator::getCRule()
+{
+	chalet_assert(m_project != nullptr, "");
+	chalet_assert(m_toolchain != nullptr, "");
+
+	std::string ret;
+
+	const auto deps = getRuleDeps();
+	// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
+	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+
+	const auto& depDir = m_state.paths.depDir();
+	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+	const auto depFile = getDepFile(dependency);
+
+	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::C));
+
+	ret = fmt::format(R"ninja(
+rule cc_{hash}
+  deps = {deps}{depFile}
+  description = $in
+  command = {cppCompile}
+)ninja",
+		fmt::arg("hash", m_hash),
+		FMT_ARG(deps),
+		FMT_ARG(depFile),
+		FMT_ARG(cppCompile));
+
+	return ret;
+}
+
+/*****************************************************************************/
 std::string NinjaGenerator::getCppRule()
 {
 	chalet_assert(m_project != nullptr, "");
@@ -254,7 +286,7 @@ std::string NinjaGenerator::getCppRule()
 	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::CPlusPlus));
 
 	ret = fmt::format(R"ninja(
-rule cxx_{hash}
+rule cpp_{hash}
   deps = {deps}{depFile}
   description = $in
   command = {cppCompile}
@@ -421,8 +453,10 @@ std::string NinjaGenerator::getObjBuildRules(const StringList& inObjects, const 
 		else if (String::endsWith({ ".res", ".obj" }, source))
 			source = source.substr(0, source.size() - 4);
 
-		std::string rule = "cxx";
-		if (String::endsWith({ ".rc", ".RC" }, source))
+		std::string rule = "cpp";
+		if (String::endsWith({ ".c", ".C" }, source))
+			rule = "cc";
+		else if (String::endsWith({ ".rc", ".RC" }, source))
 			rule = "rc";
 		else if (String::endsWith({ ".m", ".M" }, source))
 			rule = "objc";

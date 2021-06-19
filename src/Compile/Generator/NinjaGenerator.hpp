@@ -33,6 +33,7 @@ private:
 	std::string getDependencyRule();
 	std::string getPchRule();
 	std::string getRcRule();
+	std::string getCRule();
 	std::string getCppRule();
 	std::string getObjcRule();
 	std::string getObjcppRule();
