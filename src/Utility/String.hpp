@@ -44,6 +44,7 @@ StringList excludeIf(const StringList& inFind, const StringList& inList);
 std::string getPathSuffix(const std::string& inPath);
 std::string getPathBaseName(const std::string& inPath);
 std::string getPathFolder(const std::string& inPath);
+std::string getRootFolder(const std::string& inPath);
 std::string getPathFilename(const std::string& inPath);
 std::string getPathFolderBaseName(const std::string& inPath);
 bool isWrapped(const std::string& inString, const std::string_view inStart, const std::string_view inEnd);

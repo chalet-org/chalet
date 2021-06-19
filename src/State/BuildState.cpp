@@ -17,6 +17,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -176,6 +177,17 @@ bool BuildState::initializeBuild()
 
 			if (!project.isStaticLibrary())
 			{
+				if (project.files().size() > 0)
+				{
+					StringList locations;
+					for (auto& file : project.files())
+					{
+						auto loc = String::getPathFolder(file);
+						List::addIfDoesNotExist(locations, std::move(loc));
+					}
+					project.addLocations(std::move(locations));
+				}
+
 				std::string intermediateDir = paths.intermediateDir();
 				project.addLocation(std::move(intermediateDir));
 			}

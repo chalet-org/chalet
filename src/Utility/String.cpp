@@ -360,7 +360,6 @@ std::string String::getPathBaseName(const std::string& inPath)
 		return inPath;
 
 	const auto& pathNoExt = inPath.substr(0, inPath.find_last_of('.'));
-
 	return pathNoExt.substr(pathNoExt.find_last_of('/') + 1);
 }
 
@@ -368,7 +367,13 @@ std::string String::getPathBaseName(const std::string& inPath)
 std::string String::getPathFolder(const std::string& inPath)
 {
 	auto end = inPath.find_last_of('/');
+	return end != std::string::npos ? inPath.substr(0, end) : "";
+}
 
+/*****************************************************************************/
+std::string String::getRootFolder(const std::string& inPath)
+{
+	auto end = inPath.find_first_of('/');
 	return end != std::string::npos ? inPath.substr(0, end) : "";
 }
 
@@ -382,7 +387,6 @@ std::string String::getPathFilename(const std::string& inPath)
 std::string String::getPathFolderBaseName(const std::string& inPath)
 {
 	auto end = inPath.find_last_of('.');
-
 	return end != std::string::npos ? inPath.substr(0, end) : inPath;
 }
 
