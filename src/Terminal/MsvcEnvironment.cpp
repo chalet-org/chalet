@@ -98,7 +98,7 @@ bool MsvcEnvironment::create()
 	{
 		Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
 
-		m_vsAppIdDir = Commands::subprocessOutput({ s_vswhere, "-latest", "-property", "installationPath" });
+		m_vsAppIdDir = Commands::subprocessOutput({ s_vswhere, "-latest", "-prerelease", "-property", "installationPath" });
 		if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: Error running vswhere.exe");
