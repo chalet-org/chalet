@@ -177,7 +177,7 @@ bool Output::getUserInputYesNo(const std::string& inUserQuery, const Color inAns
 std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
+	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
 	{
 		return std::string();
 	}
@@ -198,7 +198,7 @@ std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
+	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
 	{
 		return std::string();
 	}
@@ -220,7 +220,7 @@ std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBa
 std::string Output::getAnsiReset()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
+	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
 	{
 		return std::string();
 	}
