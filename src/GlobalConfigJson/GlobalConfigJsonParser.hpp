@@ -39,7 +39,9 @@ private:
 	const std::string kKeyMaxJobs = "maxJobs";
 	const std::string kKeyShowCommands = "showCommands";
 	const std::string kKeyLastToolchain = "toolchain";
+#if defined(CHALET_MACOS)
 	const std::string kKeyMacosCertSigningRequest = "macosCertSigningRequest";
+#endif
 };
 }
 
