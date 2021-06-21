@@ -60,8 +60,8 @@ private:
 
 	const CommandLineInputs& m_inputs;
 
-	JsonFile m_cacheLocal;
-	JsonFile m_cacheGlobal;
+	JsonFile m_localConfig;
+	JsonFile m_globalConfig;
 
 	const std::string kKeySettings{ "settings" };
 	const std::string kKeyStrategy{ "strategy" };
