@@ -72,10 +72,10 @@ bool GlobalConfigJsonParser::makeCache(GlobalConfigState& outState)
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!settings.contains(kKeyCertSigningRequest) || !settings[kKeyCertSigningRequest].is_string())
+	if (!settings.contains(kKeyMacosCertSigningRequest) || !settings[kKeyMacosCertSigningRequest].is_string())
 	{
-		outState.toolchainPreference = std::string();
-		settings[kKeyCertSigningRequest] = outState.toolchainPreference;
+		outState.macosCertSigningRequest = std::string();
+		settings[kKeyMacosCertSigningRequest] = outState.macosCertSigningRequest;
 		m_jsonFile.setDirty(true);
 	}
 
@@ -124,6 +124,9 @@ bool GlobalConfigJsonParser::parseSettings(const Json& inNode, GlobalConfigState
 
 	if (std::string val; m_jsonFile.assignFromKey(val, settings, kKeyLastToolchain))
 		outState.toolchainPreference = std::move(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, settings, kKeyMacosCertSigningRequest))
+		outState.macosCertSigningRequest = std::move(val);
 
 	return true;
 }

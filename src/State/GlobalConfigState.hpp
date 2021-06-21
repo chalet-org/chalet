@@ -14,7 +14,7 @@ struct GlobalConfigState
 {
 	Json toolchains;
 
-	std::string certSigningRequest;
+	std::string macosCertSigningRequest;
 	std::string toolchainPreference;
 	ushort maxJobs = 0;
 	bool showCommands = false;
