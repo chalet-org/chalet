@@ -116,6 +116,7 @@ void Output::setShowCommandOverride(const bool inValue)
 bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor, std::string note, const std::function<bool(std::string&)>& onValidate)
 {
 	const auto color = Output::getAnsiStyle(Color::Black);
+	const auto noteColor = Output::getAnsiStyle(Color::Blue);
 	const auto answerColor = Output::getAnsiStyle(inAnswerColor, true);
 	const auto reset = Output::getAnsiReset();
 	const char symbol = '>';
@@ -133,8 +134,8 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 		FMT_ARG(outResult),
 		FMT_ARG(answerColor));
 
-	std::cout << fmt::format("\n   {color}{note}{reset}{lineUp}{output}",
-		FMT_ARG(color),
+	std::cout << fmt::format("\n   {noteColor}{note}{reset}{lineUp}{output}",
+		FMT_ARG(noteColor),
 		FMT_ARG(note),
 		FMT_ARG(reset),
 		FMT_ARG(lineUp),
