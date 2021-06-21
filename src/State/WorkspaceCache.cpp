@@ -21,26 +21,27 @@ namespace chalet
 WorkspaceCache::WorkspaceCache(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
 {
-	m_localConfig.load(fmt::format("{}/chalet-cache.json", m_inputs.buildPath()));
-	m_removeOldCacheFolder = m_localConfig.json.empty();
 }
 
 /*****************************************************************************/
 const std::string& WorkspaceCache::getCacheRef(const Type inCacheType) const
 {
-	return inCacheType == Type::Global ? m_cacheGlobal : m_cacheLocal;
+	return inCacheType == Type::Global ? m_cacheFolderGlobal : m_cacheFolderLocal;
 }
 
 /*****************************************************************************/
-void WorkspaceCache::initialize(const std::string& inAppPath)
+bool WorkspaceCache::initialize()
 {
-	const auto userDir = Environment::getUserDirectory();
-	m_cacheGlobal = fmt::format("{}/.chalet", userDir);
+	m_cacheGlobal.load(fmt::format("{}/.chaletconfig", m_inputs.homeDirectory()));
+	m_cacheLocal.load(fmt::format("{}/chalet-cache.json", m_inputs.buildPath()));
+	m_removeOldCacheFolder = m_cacheLocal.json.empty();
+
+	m_cacheFolderGlobal = fmt::format("{}/.chalet", m_inputs.homeDirectory());
 
 	const auto& buildPath = m_inputs.buildPath();
-	m_cacheLocal = fmt::format("{}/.cache", buildPath);
+	m_cacheFolderLocal = fmt::format("{}/.cache", buildPath);
 
-	makeAppVersionCheck(inAppPath);
+	return true;
 }
 
 /*****************************************************************************/
@@ -68,7 +69,7 @@ bool WorkspaceCache::createCacheFolder(const Type inCacheType)
 bool WorkspaceCache::exists(const Type inCacheType) const
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
-	return Commands::pathExists(cacheRef) || Commands::pathExists(m_localConfig.filename());
+	return Commands::pathExists(cacheRef) || Commands::pathExists(m_cacheLocal.filename());
 }
 
 /*****************************************************************************/
@@ -119,13 +120,13 @@ std::string WorkspaceCache::getCacheKey(const std::string& inName, const std::st
 /*****************************************************************************/
 JsonFile& WorkspaceCache::localConfig() noexcept
 {
-	return m_localConfig;
+	return m_cacheLocal;
 }
 
 /*****************************************************************************/
 void WorkspaceCache::saveLocalConfig()
 {
-	m_localConfig.save();
+	m_cacheLocal.save();
 }
 
 /*****************************************************************************/
@@ -175,14 +176,14 @@ void WorkspaceCache::removeStaleProjectCaches(const std::string& inToolchain, co
 {
 	UNUSED(inToolchain);
 	// const auto& cacheRef = getCacheRef(inCacheType);
-	// if (!m_localConfig.json.contains(kKeyData) || !m_localConfig.json.contains(kKeySettings))
+	// if (!m_cacheLocal.json.contains(kKeyData) || !m_cacheLocal.json.contains(kKeySettings))
 	// 	return;
 
-	// Json& buildCache = m_localConfig.json.at(kKeyData);
+	// Json& buildCache = m_cacheLocal.json.at(kKeyData);
 	// if (!buildCache.is_object())
 	// 	return;
 
-	// auto& toolchains = m_localConfig.json.at("toolchains");
+	// auto& toolchains = m_cacheLocal.json.at("toolchains");
 	// if (!toolchains.is_object())
 	// 	return;
 
@@ -237,7 +238,7 @@ void WorkspaceCache::removeStaleProjectCaches(const std::string& inToolchain, co
 		if (!validForBuild)
 		{
 			it = buildCache.erase(it);
-			m_localConfig.setDirty(true);
+			m_cacheLocal.setDirty(true);
 		}
 		else
 		{
@@ -270,10 +271,10 @@ void WorkspaceCache::makeAppVersionCheck(const std::string& inAppPath)
 	UNUSED(kKeyDataVersionDebug);
 #endif
 
-	if (!m_localConfig.json.contains(kKeyData))
+	if (!m_cacheLocal.json.contains(kKeyData))
 		return;
 
-	Json& data = m_localConfig.json[kKeyData];
+	Json& data = m_cacheLocal.json[kKeyData];
 	if (!data.is_object())
 		return;
 
@@ -287,7 +288,7 @@ void WorkspaceCache::makeAppVersionCheck(const std::string& inAppPath)
 	if (buildHash != lastBuildHash)
 	{
 		data[kKeyVer] = buildHash;
-		m_localConfig.setDirty(true);
+		m_cacheLocal.setDirty(true);
 		m_appBuildChanged = true;
 	}
 }
@@ -297,14 +298,14 @@ void WorkspaceCache::checkIfCompileStrategyChanged(const std::string& inToolchai
 {
 	m_compileStrategyChanged = false;
 
-	if (!m_localConfig.json.contains(kKeyData))
+	if (!m_cacheLocal.json.contains(kKeyData))
 		return;
 
-	Json& data = m_localConfig.json[kKeyData];
+	Json& data = m_cacheLocal.json[kKeyData];
 	if (!data.is_object())
 		return;
 
-	auto& toolchains = m_localConfig.json.at("toolchains");
+	auto& toolchains = m_cacheLocal.json.at("toolchains");
 	if (toolchains.is_object())
 	{
 		auto& toolchainJson = toolchains[inToolchain];
@@ -320,7 +321,7 @@ void WorkspaceCache::checkIfCompileStrategyChanged(const std::string& inToolchai
 				if (!data.contains(kKeyDataStrategy))
 				{
 					data[kKeyDataStrategy] = hashStrategy;
-					m_localConfig.setDirty(true);
+					m_cacheLocal.setDirty(true);
 					return;
 				}
 				else
@@ -329,7 +330,7 @@ void WorkspaceCache::checkIfCompileStrategyChanged(const std::string& inToolchai
 					if (dataStrategy != hashStrategy)
 					{
 						data[kKeyDataStrategy] = hashStrategy;
-						m_localConfig.setDirty(true);
+						m_cacheLocal.setDirty(true);
 						// m_compileStrategyChanged = true;
 					}
 				}
@@ -341,17 +342,17 @@ void WorkspaceCache::checkIfCompileStrategyChanged(const std::string& inToolchai
 /*****************************************************************************/
 void WorkspaceCache::addSourceCache(const std::string& inHash)
 {
-	if (!m_localConfig.json.contains(kKeyData))
+	if (!m_cacheLocal.json.contains(kKeyData))
 		return;
 
-	Json& data = m_localConfig.json[kKeyData];
+	Json& data = m_cacheLocal.json[kKeyData];
 	if (!data.is_object())
 		return;
 
 	if (!data.contains(kKeyDataSourceList))
 	{
 		data[kKeyDataSourceList] = inHash;
-		m_localConfig.setDirty(true);
+		m_cacheLocal.setDirty(true);
 	}
 }
 
@@ -360,18 +361,18 @@ void WorkspaceCache::checkIfWorkingDirectoryChanged()
 {
 	m_workingDirectoryChanged = false;
 
-	if (!m_localConfig.json.contains(kKeyWorkingDirectory))
+	if (!m_cacheLocal.json.contains(kKeyWorkingDirectory))
 		return;
 
-	Json& workingDirJson = m_localConfig.json[kKeyWorkingDirectory];
+	Json& workingDirJson = m_cacheLocal.json[kKeyWorkingDirectory];
 
 	if (workingDirJson.is_string())
 	{
 		const auto workingDirectory = workingDirJson.get<std::string>();
 
-		if (m_localConfig.json.contains(kKeyData))
+		if (m_cacheLocal.json.contains(kKeyData))
 		{
-			Json& data = m_localConfig.json[kKeyData];
+			Json& data = m_cacheLocal.json[kKeyData];
 			if (data.is_object())
 			{
 				const auto hashWorkingDir = Hash::string(workingDirectory);
@@ -379,7 +380,7 @@ void WorkspaceCache::checkIfWorkingDirectoryChanged()
 				if (!data.contains(kKeyDataWorkingDirectory))
 				{
 					data[kKeyDataWorkingDirectory] = hashWorkingDir;
-					m_localConfig.setDirty(true);
+					m_cacheLocal.setDirty(true);
 					return;
 				}
 				else
@@ -388,7 +389,7 @@ void WorkspaceCache::checkIfWorkingDirectoryChanged()
 					if (dataWorkingDir != hashWorkingDir)
 					{
 						data[kKeyDataWorkingDirectory] = hashWorkingDir;
-						m_localConfig.setDirty(true);
+						m_cacheLocal.setDirty(true);
 						m_workingDirectoryChanged = true;
 					}
 				}

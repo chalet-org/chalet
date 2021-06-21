@@ -45,7 +45,7 @@ bool StatePrototype::initialize()
 	if (!validateBundleDestinations())
 		return false;
 
-	cache.initialize(m_inputs.appPath());
+	cache.makeAppVersionCheck(m_inputs.appPath());
 
 	if (!cache.createCacheFolder(WorkspaceCache::Type::Local))
 	{
@@ -177,6 +177,9 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 /*****************************************************************************/
 bool StatePrototype::parseCacheJson()
 {
+	if (!cache.initialize())
+		return false;
+
 	auto& cacheFile = cache.localConfig();
 	CacheJsonParser parser(m_inputs, *this, cacheFile);
 	return parser.serialize();

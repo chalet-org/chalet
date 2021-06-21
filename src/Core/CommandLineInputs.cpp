@@ -44,6 +44,15 @@ void CommandLineInputs::detectToolchainPreference() const
 #endif
 }
 
+const std::string& CommandLineInputs::homeDirectory() const noexcept
+{
+	if (m_homeDirectory.empty())
+	{
+		m_homeDirectory = Environment::getUserDirectory();
+	}
+	return m_homeDirectory;
+}
+
 /*****************************************************************************/
 const std::string& CommandLineInputs::buildFile() const noexcept
 {

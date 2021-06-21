@@ -52,7 +52,7 @@ private:
 	const std::string& getCacheRef(const Type inCacheType) const;
 	void removeCacheFolder(const Type inCacheType);
 
-	void initialize(const std::string& inAppPath);
+	bool initialize();
 	void makeAppVersionCheck(const std::string& inAppPath);
 	std::string getBuildHash(std::string appPath);
 
@@ -60,8 +60,8 @@ private:
 
 	const CommandLineInputs& m_inputs;
 
-	JsonFile m_localConfig;
-	JsonFile m_globalConfig;
+	JsonFile m_cacheLocal;
+	JsonFile m_cacheGlobal;
 
 	const std::string kKeySettings{ "settings" };
 	const std::string kKeyStrategy{ "strategy" };
@@ -75,8 +75,8 @@ private:
 	const std::string kKeyDataTargetArchitecture{ "04" };
 	const std::string kKeyDataSourceList{ "05" };
 
-	std::string m_cacheLocal;
-	std::string m_cacheGlobal;
+	std::string m_cacheFolderLocal;
+	std::string m_cacheFolderGlobal;
 
 	bool m_appBuildChanged = false;
 	bool m_compileStrategyChanged = false;

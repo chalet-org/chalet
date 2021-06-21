@@ -18,6 +18,7 @@ struct CommandLineInputs
 
 	void detectToolchainPreference() const;
 
+	const std::string& homeDirectory() const noexcept;
 	const std::string& defaultEnvFile() const noexcept;
 
 	const std::string& buildFile() const noexcept;
@@ -94,6 +95,7 @@ private:
 	std::string m_generatorRaw;
 	mutable std::string m_toolchainPreferenceRaw;
 
+	mutable std::string m_homeDirectory;
 	std::string m_initPath;
 	std::string m_envFile;
 	std::string m_archRaw;

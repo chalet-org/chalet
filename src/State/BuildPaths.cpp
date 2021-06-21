@@ -39,8 +39,6 @@ void BuildPaths::initialize()
 	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
 	m_intermediateDir = fmt::format("{}/chalet_intermediate", m_buildOutputDir);
 
-	m_homeDirectory = Environment::getUserDirectory();
-
 	m_initialized = true;
 }
 
@@ -269,12 +267,13 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 		String::replaceAll(outPath, "${name}", inName);
 	}
 
-	if (!m_homeDirectory.empty())
+	const auto& homeDirectory = m_inputs.homeDirectory();
+	if (!homeDirectory.empty())
 	{
-		String::replaceAll(outPath, "${home}", m_homeDirectory);
+		String::replaceAll(outPath, "${home}", homeDirectory);
 		if (String::startsWith("~/", outPath))
 		{
-			outPath = fmt::format("{}{}", m_homeDirectory, outPath.substr(1));
+			outPath = fmt::format("{}{}", homeDirectory, outPath.substr(1));
 		}
 	}
 
