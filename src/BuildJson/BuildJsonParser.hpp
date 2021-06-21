@@ -8,19 +8,18 @@
 
 #include "Libraries/Json.hpp"
 
-#include "Core/CommandLineInputs.hpp"
-#include "State/BuildState.hpp"
-#include "State/Dependency/GitDependency.hpp"
-
 namespace chalet
 {
-struct JsonFile;
 struct BundleTarget;
+struct CommandLineInputs;
 struct CMakeTarget;
+struct JsonFile;
 struct ProjectTarget;
 struct ScriptBuildTarget;
+struct GitDependency;
 struct SubChaletTarget;
 struct StatePrototype;
+class BuildState;
 
 struct BuildJsonParser
 {

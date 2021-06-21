@@ -3,14 +3,19 @@
 	See accompanying file LICENSE.txt for details.
 */
 
+// Note: mind the order
+#include "Core/CommandLineInputs.hpp"
+#include "State/BuildState.hpp"
+#include "Json/JsonFile.hpp"
+//
 #include "BuildJson/BuildJsonParser.hpp"
 
 #include "BuildJson/BuildJsonSchema.hpp"
-
 #include "State/Bundle/BundleLinux.hpp"
 #include "State/Bundle/BundleMacOS.hpp"
 #include "State/Bundle/BundleWindows.hpp"
 #include "State/Dependency/BuildDependencyType.hpp"
+#include "State/Dependency/GitDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/CMakeTarget.hpp"
@@ -24,7 +29,6 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
-#include "Json/JsonFile.hpp"
 
 namespace chalet
 {

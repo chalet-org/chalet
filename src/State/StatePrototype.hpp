@@ -18,8 +18,6 @@
 namespace chalet
 {
 struct CommandLineInputs;
-struct BundleTarget;
-struct ScriptDistTarget;
 
 struct StatePrototype
 {
@@ -37,11 +35,8 @@ struct StatePrototype
 	const std::string& releaseConfiguration() const noexcept;
 	const std::string& anyConfiguration() const noexcept;
 
-	const std::string kKeyConfigurations = "configurations";
-	const std::string kKeyDistribution = "distribution";
 	const std::string kKeyExternalDependencies = "externalDependencies";
 	const std::string kKeyTargets = "targets";
-
 	const std::string kKeyAbstracts = "abstracts";
 
 	WorkspaceEnvironment environment;
@@ -50,25 +45,18 @@ struct StatePrototype
 	DistributionTargetList distribution;
 
 private:
-	bool validateBundleDestinations();
+	friend struct BuildJsonProtoParser;
+
 	bool parseCacheJson();
-	bool parseRequired(const Json& inNode);
-	bool parseConfiguration(const Json& inNode);
-	bool parseDistribution(const Json& inNode);
-	bool parseScript(ScriptDistTarget& outScript, const Json& inNode);
-	bool parseBundle(BundleTarget& outBundle, const Json& inNode);
-	bool parseBundleLinux(BundleTarget& outBundle, const Json& inNode);
-	bool parseBundleMacOS(BundleTarget& outBundle, const Json& inNode);
-	bool parseBundleWindows(BundleTarget& outBundle, const Json& inNode);
+	bool parseBuildJson();
+
+	bool validateBundleDestinations();
 
 	bool makeDefaultBuildConfigurations();
 	bool getDefaultBuildConfiguration(BuildConfiguration& outConfig, const std::string& inName) const;
-
-	template <typename T>
-	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey);
-
-	bool assignStringFromConfig(std::string& outVariable, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
-	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey);
+	void addBuildConfiguration(const std::string&& inName, BuildConfiguration&& inConfig);
+	void setReleaseConfiguration(const std::string& inName);
+	void addRequiredArchitecture(std::string inArch);
 
 	BuildConfigurationMap m_buildConfigurations;
 
@@ -84,7 +72,5 @@ private:
 	std::unique_ptr<JsonFile> m_buildJson;
 };
 }
-
-#include "State/StatePrototype.inl"
 
 #endif // CHALET_BUILD_JSON_PARSER_LITE_HPP
