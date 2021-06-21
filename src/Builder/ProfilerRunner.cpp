@@ -43,8 +43,8 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 			and it superscedes the 'instruments' command-line util
 
 			CommandLineTools might not have access to instruments (at least in 12), or xcrun xctrace
-			'sample' will need to be used instead if only CommandLineTools is selected
-			sample require the PID (get from subprocess somehow), while both flavors of making an
+			'sample' will need to be used instead if only CommandLineTools is selected.
+			sample requires the PID (get from subprocess somehow), while both flavors of making an
 			Instruments trace can be passed the commands directly
 
 			... 🤡

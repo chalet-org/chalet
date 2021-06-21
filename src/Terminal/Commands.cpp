@@ -835,7 +835,17 @@ std::string Commands::which(const std::string& inExecutable)
 		auto& xcodePath = getXcodePath();
 		std::string withXcodePath = xcodePath + result;
 		if (Commands::pathExists(withXcodePath))
+		{
 			result = std::move(withXcodePath);
+		}
+		else
+		{
+			withXcodePath = fmt::format("{}/Toolchains/XcodeDefault.xctoolchain{}", xcodePath, result);
+			if (Commands::pathExists(withXcodePath))
+			{
+				result = std::move(withXcodePath);
+			}
+		}
 	}
 	#endif
 #endif

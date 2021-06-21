@@ -82,6 +82,7 @@ bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 void BuildState::saveCaches()
 {
 	m_prototype.cache.saveLocalConfig();
+	m_prototype.cache.saveGlobalConfig();
 	sourceCache.save();
 }
 
@@ -254,6 +255,7 @@ void BuildState::initializeCache()
 	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
 
 	m_prototype.cache.saveLocalConfig();
+	m_prototype.cache.saveGlobalConfig();
 
 	sourceCache.initialize();
 	sourceCache.save();

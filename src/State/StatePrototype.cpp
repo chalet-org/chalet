@@ -8,6 +8,7 @@
 #include "BuildJson/BuildJsonProtoParser.hpp"
 #include "CacheJson/CacheJsonParser.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "GlobalConfigJson/GlobalConfigJsonParser.hpp"
 
 #include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Output.hpp"
@@ -30,6 +31,12 @@ StatePrototype::StatePrototype(const CommandLineInputs& inInputs, std::string in
 /*****************************************************************************/
 bool StatePrototype::initialize()
 {
+	if (!cache.initialize())
+		return false;
+
+	if (!parseSettingsJson())
+		return false;
+
 	// Note: existence of m_filename is checked by Router (before the cache is made)
 	if (!parseCacheJson())
 		return false;
@@ -175,14 +182,19 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 }
 
 /*****************************************************************************/
+bool StatePrototype::parseSettingsJson()
+{
+	auto& cacheFile = cache.globalConfig();
+	GlobalConfigJsonParser parser(m_inputs, *this, cacheFile);
+	return parser.serialize(m_globalConfigState);
+}
+
+/*****************************************************************************/
 bool StatePrototype::parseCacheJson()
 {
-	if (!cache.initialize())
-		return false;
-
 	auto& cacheFile = cache.localConfig();
 	CacheJsonParser parser(m_inputs, *this, cacheFile);
-	return parser.serialize();
+	return parser.serialize(m_globalConfigState);
 }
 
 /*****************************************************************************/

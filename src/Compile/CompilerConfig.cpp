@@ -75,6 +75,7 @@ bool CompilerConfig::configureCompilerPaths()
 #if defined(CHALET_MACOS)
 			auto& xcodePath = Commands::getXcodePath();
 			String::replaceAll(path, xcodePath, "");
+			String::replaceAll(path, "/Toolchains/XcodeDefault.xctoolchain", "");
 #endif
 			m_compilerPathBin = path + binDir;
 			m_compilerPathLib = path + libDir;

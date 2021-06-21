@@ -44,6 +44,7 @@ void CommandLineInputs::detectToolchainPreference() const
 #endif
 }
 
+/*****************************************************************************/
 const std::string& CommandLineInputs::homeDirectory() const noexcept
 {
 	if (m_homeDirectory.empty())

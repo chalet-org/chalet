@@ -8,6 +8,7 @@
 #include "CacheJson/CacheJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Core/HostPlatform.hpp"
+#include "State/GlobalConfigState.hpp"
 
 #include "State/BuildState.hpp"
 #include "State/StatePrototype.hpp"
@@ -30,7 +31,7 @@ CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, StatePrototy
 }
 
 /*****************************************************************************/
-bool CacheJsonParser::serialize()
+bool CacheJsonParser::serialize(const GlobalConfigState& inState)
 {
 	Json cacheJsonSchema = Schema::getCacheJson();
 
@@ -50,7 +51,7 @@ bool CacheJsonParser::serialize()
 		Diagnostic::info(fmt::format("Creating Cache [{}]", m_jsonFile.filename()), false);
 	}
 
-	if (!makeCache())
+	if (!makeCache(inState))
 		return false;
 
 	if (!m_jsonFile.validate(std::move(cacheJsonSchema)))
@@ -88,19 +89,30 @@ bool CacheJsonParser::validatePaths()
 }
 
 /*****************************************************************************/
-bool CacheJsonParser::makeCache()
+bool CacheJsonParser::makeCache(const GlobalConfigState& inState)
 {
 	// TODO: Copy from global cache. If one doesn't exist, do this
 
 	// Create the json cache
 	m_jsonFile.makeNode(kKeyWorkingDirectory, JsonDataType::string);
 	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
-	m_jsonFile.makeNode(kKeyToolchains, JsonDataType::object);
+
+	if (!m_jsonFile.json.contains(kKeyToolchains))
+	{
+		if (inState.toolchains.is_object())
+		{
+			m_jsonFile.json[kKeyToolchains] = inState.toolchains;
+		}
+		else
+		{
+			m_jsonFile.json[kKeyToolchains] = Json::object();
+		}
+	}
+
 	m_jsonFile.makeNode(kKeyTools, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyApplePlatformSdks, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyExternalDependencies, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyData, JsonDataType::object);
-
 	{
 		Json& workingDirectoryJson = m_jsonFile.json[kKeyWorkingDirectory];
 		const auto workingDirectory = workingDirectoryJson.get<std::string>();
@@ -117,26 +129,33 @@ bool CacheJsonParser::makeCache()
 
 	if (!settings.contains(kKeyDumpAssembly) || !settings[kKeyDumpAssembly].is_boolean())
 	{
-		settings[kKeyDumpAssembly] = false;
+		settings[kKeyDumpAssembly] = inState.dumpAssembly;
 		m_jsonFile.setDirty(true);
 	}
 
 	if (!settings.contains(kKeyMaxJobs) || !settings[kKeyMaxJobs].is_number_integer())
 	{
-		settings[kKeyMaxJobs] = m_prototype.environment.processorCount();
+		settings[kKeyMaxJobs] = inState.maxJobs;
 		m_jsonFile.setDirty(true);
 	}
 
 	if (!settings.contains(kKeyShowCommands) || !settings[kKeyShowCommands].is_boolean())
 	{
-		settings[kKeyShowCommands] = false;
+		settings[kKeyShowCommands] = inState.showCommands;
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!settings.contains(kKeyLastToolchain))
+	if (!settings.contains(kKeyLastToolchain) || !settings[kKeyLastToolchain].is_string())
 	{
-		m_inputs.detectToolchainPreference();
-		settings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
+		if (inState.toolchainPreference.empty())
+		{
+			m_inputs.detectToolchainPreference();
+			settings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
+		}
+		else
+		{
+			settings[kKeyLastToolchain] = inState.toolchainPreference;
+		}
 		m_jsonFile.setDirty(true);
 	}
 	else
@@ -145,15 +164,25 @@ bool CacheJsonParser::makeCache()
 		auto value = settings[kKeyLastToolchain].get<std::string>();
 		if (!prefFromInput.empty() && value != prefFromInput)
 		{
-			settings[kKeyLastToolchain] = prefFromInput;
+			if (inState.toolchainPreference.empty())
+				settings[kKeyLastToolchain] = prefFromInput;
+			else
+				settings[kKeyLastToolchain] = inState.toolchainPreference;
 			m_jsonFile.setDirty(true);
 		}
 		else
 		{
 			if (prefFromInput.empty() && value.empty())
 			{
-				m_inputs.detectToolchainPreference();
-				settings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
+				if (inState.toolchainPreference.empty())
+				{
+					m_inputs.detectToolchainPreference();
+					settings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
+				}
+				else
+				{
+					settings[kKeyLastToolchain] = inState.toolchainPreference;
+				}
 				m_jsonFile.setDirty(true);
 			}
 		}

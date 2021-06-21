@@ -14,16 +14,17 @@ namespace chalet
 struct CommandLineInputs;
 struct JsonFile;
 struct StatePrototype;
+struct GlobalConfigState;
 
 struct CacheJsonParser
 {
 	explicit CacheJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
 
-	bool serialize();
+	bool serialize(const GlobalConfigState& inState);
 
 private:
 	bool validatePaths();
-	bool makeCache();
+	bool makeCache(const GlobalConfigState& inState);
 	bool serializeFromJsonRoot(Json& inJson);
 
 	bool parseSettings(const Json& inNode);

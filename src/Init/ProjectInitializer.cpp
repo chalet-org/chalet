@@ -202,6 +202,8 @@ bool ProjectInitializer::run()
 	Output::lineBreak();
 	Output::print(Color::Black, separator);
 
+	double stepTime = 0.125;
+
 	{
 		Output::print(Color::Reset, fmt::format("{}/{}", props.location, props.mainSource));
 		Output::lineBreak();
@@ -210,7 +212,7 @@ bool ProjectInitializer::run()
 		String::replaceAll(mainCpp, "\t", "   ");
 		std::cout << Output::getAnsiStyle(Color::Blue) << mainCpp << Output::getAnsiReset() << std::endl;
 
-		Commands::sleep(0.25);
+		Commands::sleep(stepTime);
 
 		Output::lineBreak();
 		Output::print(Color::Black, separator);
@@ -224,7 +226,7 @@ bool ProjectInitializer::run()
 		const auto pch = StarterFileTemplates::getPch(props.precompiledHeader, props.language, props.specialization);
 		std::cout << Output::getAnsiStyle(Color::Blue) << pch << Output::getAnsiReset() << std::endl;
 
-		Commands::sleep(0.25);
+		Commands::sleep(stepTime);
 
 		Output::lineBreak();
 		Output::print(Color::Black, separator);
@@ -238,7 +240,7 @@ bool ProjectInitializer::run()
 		const auto gitIgnore = StarterFileTemplates::getGitIgnore(m_inputs.buildPath());
 		std::cout << Output::getAnsiStyle(Color::Blue) << gitIgnore << Output::getAnsiReset() << std::endl;
 
-		Commands::sleep(0.25);
+		Commands::sleep(stepTime);
 
 		Output::lineBreak();
 		Output::print(Color::Black, separator);
@@ -257,7 +259,7 @@ bool ProjectInitializer::run()
 		const auto envFile = StarterFileTemplates::getDotEnv();
 		std::cout << Output::getAnsiStyle(Color::Blue) << envFile << Output::getAnsiReset() << std::endl;
 
-		Commands::sleep(0.25);
+		Commands::sleep(stepTime);
 
 		Output::lineBreak();
 		Output::print(Color::Black, separator);
@@ -270,7 +272,7 @@ bool ProjectInitializer::run()
 		auto jsonFile = StarterFileTemplates::getBuildJson(props);
 		std::cout << Output::getAnsiStyle(Color::Blue) << jsonFile.dump(3, ' ') << Output::getAnsiReset() << std::endl;
 
-		Commands::sleep(0.25);
+		Commands::sleep(stepTime);
 
 		Output::lineBreak();
 		Output::print(Color::Black, separator);

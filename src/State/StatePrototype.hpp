@@ -11,6 +11,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/Distribution/IDistTarget.hpp"
+#include "State/GlobalConfigState.hpp"
 #include "State/WorkspaceCache.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Json/JsonFile.hpp"
@@ -47,6 +48,7 @@ struct StatePrototype
 private:
 	friend struct BuildJsonProtoParser;
 
+	bool parseSettingsJson();
 	bool parseCacheJson();
 	bool parseBuildJson();
 
@@ -58,6 +60,7 @@ private:
 	void setReleaseConfiguration(const std::string& inName);
 	void addRequiredArchitecture(std::string inArch);
 
+	GlobalConfigState m_globalConfigState;
 	BuildConfigurationMap m_buildConfigurations;
 
 	const CommandLineInputs& m_inputs;

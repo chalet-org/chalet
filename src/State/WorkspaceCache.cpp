@@ -33,6 +33,7 @@ const std::string& WorkspaceCache::getCacheRef(const Type inCacheType) const
 bool WorkspaceCache::initialize()
 {
 	m_globalConfig.load(fmt::format("{}/.chaletconfig", m_inputs.homeDirectory()));
+
 	m_localConfig.load(fmt::format("{}/chalet-cache.json", m_inputs.buildPath()));
 	m_removeOldCacheFolder = m_localConfig.json.empty();
 
@@ -127,6 +128,18 @@ JsonFile& WorkspaceCache::localConfig() noexcept
 void WorkspaceCache::saveLocalConfig()
 {
 	m_localConfig.save();
+}
+
+/*****************************************************************************/
+JsonFile& WorkspaceCache::globalConfig() noexcept
+{
+	return m_globalConfig;
+}
+
+/*****************************************************************************/
+void WorkspaceCache::saveGlobalConfig()
+{
+	m_globalConfig.save();
 }
 
 /*****************************************************************************/

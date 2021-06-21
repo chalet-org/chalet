@@ -64,7 +64,7 @@ uint WorkspaceEnvironment::maxJobs() const noexcept
 
 void WorkspaceEnvironment::setMaxJobs(const uint inValue) noexcept
 {
-	m_maxJobs = std::min(inValue, processorCount());
+	m_maxJobs = std::clamp(inValue, 1U, processorCount());
 }
 
 /*****************************************************************************/

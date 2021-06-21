@@ -26,6 +26,8 @@ CacheToolchainParser::CacheToolchainParser(const CommandLineInputs& inInputs, Bu
 /*****************************************************************************/
 bool CacheToolchainParser::serialize()
 {
+	Output::setShowCommandOverride(false);
+
 	auto& rootNode = m_jsonFile.json;
 	if (std::string val; m_jsonFile.assignFromKey(val, rootNode, kKeyWorkingDirectory))
 		m_state.paths.setWorkingDirectory(std::move(val));
@@ -38,7 +40,12 @@ bool CacheToolchainParser::serialize()
 	}
 
 	auto& node = toolchains.at(preference);
-	return serialize(node);
+	if (!serialize(node))
+		return false;
+
+	Output::setShowCommandOverride(true);
+
+	return true;
 }
 
 /*****************************************************************************/

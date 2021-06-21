@@ -31,7 +31,7 @@ tags=(
 	'64dd67c7587ec36d1fc39a0f03619ea219968a95'
 	'v2.x'
 	'f6eba2662aac0284c1cb5c0dc19c72f47820b17b'
-	'dccddc2bdb15f29f7df7d99f78278248fb8097db'
+	'8.0.0'
 	'v1.5.6'
 	'master'
 	'master'
