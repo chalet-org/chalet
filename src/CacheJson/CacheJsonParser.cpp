@@ -51,6 +51,10 @@ bool CacheJsonParser::serialize(const GlobalConfigState& inState)
 		Diagnostic::info(fmt::format("Creating Cache [{}]", m_jsonFile.filename()), false);
 	}
 
+	// Note: this should never get cached locally
+	if (!addGlobalSettings(inState))
+		return false;
+
 	if (!makeCache(inState))
 		return false;
 
@@ -67,6 +71,14 @@ bool CacheJsonParser::serialize(const GlobalConfigState& inState)
 		return false;
 
 	Diagnostic::printDone(timer.asString());
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CacheJsonParser::addGlobalSettings(const GlobalConfigState& inState)
+{
+	m_prototype.ancillaryTools.setCertSigningRequest(inState.certSigningRequest);
 
 	return true;
 }

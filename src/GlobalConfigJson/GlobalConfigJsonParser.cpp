@@ -72,6 +72,13 @@ bool GlobalConfigJsonParser::makeCache(GlobalConfigState& outState)
 		m_jsonFile.setDirty(true);
 	}
 
+	if (!settings.contains(kKeyCertSigningRequest) || !settings[kKeyCertSigningRequest].is_string())
+	{
+		outState.toolchainPreference = std::string();
+		settings[kKeyCertSigningRequest] = outState.toolchainPreference;
+		m_jsonFile.setDirty(true);
+	}
+
 	return true;
 }
 

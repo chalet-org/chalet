@@ -31,6 +31,7 @@ struct AncillaryTools
 
 	const std::string& codesign() const noexcept;
 	void setCodesign(std::string&& inValue) noexcept;
+	void setCertSigningRequest(const std::string& inValue) noexcept;
 
 	const std::string& commandPrompt() const noexcept;
 	void setCommandPrompt(std::string&& inValue) noexcept;
@@ -156,6 +157,8 @@ private:
 	std::string m_xcodebuild;
 	std::string m_xcodegen;
 	std::string m_xcrun;
+
+	std::string m_certSigningRequest;
 
 	uint m_xcodeVersionMajor = 0;
 	uint m_xcodeVersionMinor = 0;

@@ -39,6 +39,7 @@ private:
 	const std::string kKeyMaxJobs = "maxJobs";
 	const std::string kKeyShowCommands = "showCommands";
 	const std::string kKeyLastToolchain = "toolchain";
+	const std::string kKeyCertSigningRequest = "certSigningRequest";
 };
 }
 

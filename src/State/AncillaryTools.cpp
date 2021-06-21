@@ -161,6 +161,12 @@ void AncillaryTools::setCodesign(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+void AncillaryTools::setCertSigningRequest(const std::string& inValue) noexcept
+{
+	m_certSigningRequest = inValue;
+}
+
+/*****************************************************************************/
 const std::string& AncillaryTools::commandPrompt() const noexcept
 {
 	return m_commandPrompt;

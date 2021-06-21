@@ -23,6 +23,7 @@ struct CacheJsonParser
 	bool serialize(const GlobalConfigState& inState);
 
 private:
+	bool addGlobalSettings(const GlobalConfigState& inState);
 	bool validatePaths();
 	bool makeCache(const GlobalConfigState& inState);
 	bool serializeFromJsonRoot(Json& inJson);
