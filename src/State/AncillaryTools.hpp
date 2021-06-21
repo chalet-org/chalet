@@ -8,11 +8,15 @@
 
 namespace chalet
 {
+struct CommandLineInputs;
+
 struct AncillaryTools
 {
-	AncillaryTools() = default;
+	explicit AncillaryTools(const CommandLineInputs& inInputs);
 
 	bool resolveOwnExecutable(const std::string& inAppPath);
+
+	bool validate();
 
 	void fetchBashVersion();
 	void fetchBrewVersion();
@@ -127,6 +131,8 @@ struct AncillaryTools
 	bool getExecutableDependencies(const std::string& inPath, StringList& outList) const;
 
 private:
+	const CommandLineInputs& m_inputs;
+
 	std::unordered_map<std::string, std::string> m_applePlatformSdk;
 
 	std::string m_chalet;
@@ -158,7 +164,7 @@ private:
 	std::string m_xcodegen;
 	std::string m_xcrun;
 
-	std::string m_certSigningRequest;
+	std::string m_macosCertSigningRequest;
 
 	uint m_xcodeVersionMajor = 0;
 	uint m_xcodeVersionMinor = 0;

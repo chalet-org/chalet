@@ -22,6 +22,7 @@ namespace chalet
 /*****************************************************************************/
 StatePrototype::StatePrototype(const CommandLineInputs& inInputs, std::string inFilename) :
 	cache(inInputs),
+	ancillaryTools(inInputs),
 	m_inputs(inInputs),
 	m_filename(std::move(inFilename)),
 	m_buildJson(std::make_unique<JsonFile>(m_filename))
@@ -117,8 +118,11 @@ bool StatePrototype::validateBundleDestinations()
 /*****************************************************************************/
 bool StatePrototype::validate()
 {
-	ancillaryTools.fetchBashVersion();
-	ancillaryTools.fetchBrewVersion();
+	if (!ancillaryTools.validate())
+	{
+		Diagnostic::error("Error validating ancillary tools.");
+		return false;
+	}
 
 	for (auto& target : distribution)
 	{

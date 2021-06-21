@@ -5,6 +5,7 @@
 
 #include "State/AncillaryTools.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/DependencyWalker.hpp"
@@ -14,6 +15,12 @@
 
 namespace chalet
 {
+/*****************************************************************************/
+AncillaryTools::AncillaryTools(const CommandLineInputs& inInputs) :
+	m_inputs(inInputs)
+{
+}
+
 /*****************************************************************************/
 bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
 {
@@ -28,6 +35,29 @@ bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
 				m_chalet.clear();
 		}
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AncillaryTools::validate()
+{
+	fetchBashVersion();
+	fetchBrewVersion();
+
+	const auto& homeDirectory = m_inputs.homeDirectory();
+	if (!homeDirectory.empty())
+	{
+		if (String::startsWith("~/", m_macosCertSigningRequest))
+		{
+			m_macosCertSigningRequest = fmt::format("{}{}", homeDirectory, m_macosCertSigningRequest.substr(1));
+		}
+		else
+		{
+			String::replaceAll(m_macosCertSigningRequest, "${home}", homeDirectory);
+		}
+	}
+	Path::sanitize(m_macosCertSigningRequest);
 
 	return true;
 }
@@ -163,7 +193,7 @@ void AncillaryTools::setCodesign(std::string&& inValue) noexcept
 /*****************************************************************************/
 void AncillaryTools::setCertSigningRequest(const std::string& inValue) noexcept
 {
-	m_certSigningRequest = inValue;
+	m_macosCertSigningRequest = inValue;
 }
 
 /*****************************************************************************/

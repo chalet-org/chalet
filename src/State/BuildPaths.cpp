@@ -270,10 +270,13 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 	const auto& homeDirectory = m_inputs.homeDirectory();
 	if (!homeDirectory.empty())
 	{
-		String::replaceAll(outPath, "${home}", homeDirectory);
 		if (String::startsWith("~/", outPath))
 		{
 			outPath = fmt::format("{}{}", homeDirectory, outPath.substr(1));
+		}
+		else
+		{
+			String::replaceAll(outPath, "${home}", homeDirectory);
 		}
 	}
 
