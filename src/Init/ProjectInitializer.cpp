@@ -44,8 +44,6 @@ bool ProjectInitializer::run()
 
 	Path::sanitize(m_rootPath);
 
-	std::string separator{ "--------------------------------------------------------------------------------" };
-
 	Output::lineBreak();
 	Output::print(Color::Reset, ".    `     .     .  `   ,    .    `    .   .    '       `    .   ,    '  .   ,  ");
 	Output::print(Color::Reset, "    .     `    .   ,  '    .   ,   .         ,   .    '   `    .       .   .    ");
@@ -75,7 +73,7 @@ bool ProjectInitializer::run()
 	Color inputColor = Color::Magenta;
 
 	Output::getUserInput("Workspace name:", props.workspaceName, inputColor, "This should identify the entire workspace, as opposed to a build target");
-	Output::getUserInput("Version:", props.version, inputColor, "The initial version of the application", [](std::string& input) {
+	Output::getUserInput("Version:", props.version, inputColor, "The initial version of the application or library", [](std::string& input) {
 		return input.find_first_not_of("1234567890.") == std::string::npos;
 	});
 	Output::getUserInput("Project target name:", props.projectName, inputColor, "Allowed characters: A-Z a-z 0-9 _+-.", [](std::string& input) {
@@ -122,18 +120,20 @@ bool ProjectInitializer::run()
 		props.specialization = CxxSpecialization::CPlusPlus;
 		props.langStandard = "c++17";
 		sourceExts.push_back(".cpp");
+		sourceExts.push_back(".cxx");
 		sourceExts.push_back(".cc");
 	}
 
-	if (props.language == CodeLanguage::CPlusPlus)
+	bool isC = props.language == CodeLanguage::C;
+	if (!isC)
 	{
-		Output::getUserInput("C++ Standard:", props.langStandard, inputColor, "Common choices: c++20 c++17 c++14 c++11 c++03 c++98", [](std::string& input) {
+		Output::getUserInput("C++ Standard:", props.langStandard, inputColor, "Common choices: c++20 c++17 c++14 c++11", [](std::string& input) {
 			return RegexPatterns::matchesGnuCppStandard(input);
 		});
 	}
 	else
 	{
-		Output::getUserInput("C Standard:", props.langStandard, inputColor, "Common choices: c17 c11 c99 c90", [](std::string& input) {
+		Output::getUserInput("C Standard:", props.langStandard, inputColor, "Common choices: c17 c11", [](std::string& input) {
 			return RegexPatterns::matchesGnuCStandard(input);
 		});
 	}
@@ -148,10 +148,10 @@ bool ProjectInitializer::run()
 
 	props.mainSource = fmt::format("main{}", sourceExts.front());
 
-	Output::getUserInput(fmt::format("Main source file:"), props.mainSource, inputColor, fmt::format("Must end in: {}", String::join(sourceExts, " ")), [&sourceExts](std::string& input) {
+	Output::getUserInput(fmt::format("Main source file:"), props.mainSource, inputColor, fmt::format("Must end in: {}", String::join(sourceExts, " ")), [&sourceExts, isC = isC](std::string& input) {
 		auto lower = String::toLowerCase(input);
 		bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
-		if (validChars && !String::endsWith(sourceExts, lower))
+		if (validChars && ((isC && !String::endsWith(sourceExts, input)) || (!isC && !String::endsWith(sourceExts, lower))))
 		{
 			input = String::getPathBaseName(input) + sourceExts.front();
 		}
@@ -162,33 +162,42 @@ bool ProjectInitializer::run()
 	{
 		if (Output::getUserInputYesNo("Use a precompiled header?", inputColor, "Precompiled headers are known to reduce compile times"))
 		{
-			std::string headerExt;
-			if (props.language == CodeLanguage::C)
-				headerExt = ".h";
+			StringList headerExts;
+			if (isC)
+			{
+				headerExts.push_back(".h");
+			}
 			else
-				headerExt = ".hpp";
+			{
+				headerExts.push_back(".hpp");
+				headerExts.push_back(".hxx");
+				headerExts.push_back(".hh");
+				headerExts.push_back(".h");
+			}
 
-			props.precompiledHeader = fmt::format("pch{}", headerExt);
+			props.precompiledHeader = fmt::format("pch{}", headerExts.front());
 
-			Output::getUserInput(fmt::format("Precompiled header:"), props.precompiledHeader, inputColor, fmt::format("Must end in: {}", headerExt), [&headerExt](std::string& input) {
+			Output::getUserInput(fmt::format("Precompiled header:"), props.precompiledHeader, inputColor, fmt::format("Must end in: {}", String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
 				auto lower = String::toLowerCase(input);
-				bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-") == std::string::npos;
-				if (validChars && !String::endsWith(headerExt, lower))
+				bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
+				if (validChars && ((isC && !String::endsWith(headerExts, input)) || (!isC && !String::endsWith(headerExts, lower))))
 				{
-					input = String::getPathBaseName(input) + headerExt;
-					return true;
+					input = String::getPathBaseName(input) + headerExts.front();
 				}
 				return validChars && input.size() >= 3;
 			});
 		}
 	}
 
-	props.defaultConfigs = Output::getUserInputYesNo("Include default build configurations in build file?", inputColor, "These are optional, but can be restricted or customized");
-	props.envFile = Output::getUserInputYesNo("Include a .env file?", inputColor, "Can be used to ensure some variables are set during the build");
+	props.defaultConfigs = Output::getUserInputYesNo("Include default build configurations in build file?", inputColor, "Optional, but can be customized or restricted to certain configurations");
+	props.envFile = Output::getUserInputYesNo("Include a .env file?", inputColor, "Optionally add environment variables or search paths to the build");
 	props.makeGitRepository = Output::getUserInputYesNo("Initialize a git repository?", inputColor, "This will also create a .gitignore file");
 
-	std::cout << "                                                                                " << std::flush;
+	const std::string blankLine(80, ' ');
+	std::cout << blankLine << std::flush;
 	// Commands::sleep(0.5);
+
+	const std::string separator(80, '-');
 
 	Output::lineBreak();
 	Output::print(Color::Black, separator);
