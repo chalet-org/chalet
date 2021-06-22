@@ -6,11 +6,13 @@
 #include "Settings/SettingsManager.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
 SettingsManager::SettingsManager(const CommandLineInputs& inInputs, const SettingsAction inAction) :
+	m_cache(inInputs),
 	m_key(inInputs.settingsKey()),
 	m_value(inInputs.settingsValue()),
 	m_action(inAction),
@@ -21,12 +23,80 @@ SettingsManager::SettingsManager(const CommandLineInputs& inInputs, const Settin
 /*****************************************************************************/
 bool SettingsManager::run()
 {
-	auto type = m_type == SettingsType::Local ? "local" : "global";
-	if (m_action == SettingsAction::Set)
-		LOG("set:", type, m_key, m_value);
-	else
-		LOG("get:", type, m_key, m_value);
+	if (!m_cache.initialize())
+		return false;
 
+	auto& config = m_type == SettingsType::Global ? m_cache.globalConfig() : m_cache.localConfig();
+
+	Json& node = config.json;
+	if (!node.is_object())
+	{
+		node = Json::object();
+		config.setDirty(true);
+	}
+
+	switch (m_action)
+	{
+		case SettingsAction::Get:
+			if (!runSettingsGet(node))
+				return false;
+			break;
+
+		case SettingsAction::Set:
+			if (!runSettingsSet(node))
+				return false;
+			break;
+
+		default:
+			break;
+	}
+
+	config.save();
+
+	return false;
+}
+
+/*****************************************************************************/
+bool SettingsManager::runSettingsGet(Json& node)
+{
+	if (!m_key.empty())
+	{
+		auto keySplit = String::split(m_key, '.');
+		for (auto& subKey : keySplit)
+		{
+			std::ptrdiff_t i = &subKey - &keySplit.front();
+			if (!node.contains(subKey))
+			{
+				auto loc = m_key.find(subKey);
+				std::string out = m_key.substr(0, loc + subKey.size());
+				Diagnostic::error("Not found: '{}'", out);
+				return false;
+			}
+
+			if (i < static_cast<std::ptrdiff_t>(keySplit.size()))
+			{
+				node = node.at(subKey);
+			}
+		}
+	}
+
+	if (node.is_string())
+	{
+		auto value = node.get<std::string>();
+		std::cout << value << std::endl;
+	}
+	else
+	{
+		std::cout << node.dump(3, ' ') << std::endl;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool SettingsManager::runSettingsSet(Json& node)
+{
+	UNUSED(node);
 	return true;
 }
 }

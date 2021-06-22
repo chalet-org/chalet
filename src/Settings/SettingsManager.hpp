@@ -8,6 +8,7 @@
 
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsType.hpp"
+#include "State/WorkspaceCache.hpp"
 
 namespace chalet
 {
@@ -20,6 +21,11 @@ struct SettingsManager
 	bool run();
 
 private:
+	bool runSettingsGet(Json& node);
+	bool runSettingsSet(Json& node);
+
+	WorkspaceCache m_cache;
+
 	std::string m_key;
 	std::string m_value;
 

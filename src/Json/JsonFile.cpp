@@ -204,8 +204,10 @@ void JsonFile::initializeDataType(Json& inJson, const JsonDataType inType)
 			break;
 
 		default:
-			break;
+			return;
 	}
+
+	setDirty(true);
 }
 
 /*****************************************************************************/

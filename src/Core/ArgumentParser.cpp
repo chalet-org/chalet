@@ -157,11 +157,13 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				}
 				else if (String::equals("--global", key))
 				{
-					m_inputs.setSettingsType(SettingsType::Global);
+					if (value)
+						m_inputs.setSettingsType(SettingsType::Global);
 				}
 				else if (String::equals("--local", key))
 				{
-					m_inputs.setSettingsType(SettingsType::Local);
+					if (value)
+						m_inputs.setSettingsType(SettingsType::Local);
 				}
 				break;
 			}

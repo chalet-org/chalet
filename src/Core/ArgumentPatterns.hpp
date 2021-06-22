@@ -58,7 +58,6 @@ private:
 	void addSaveSchemaArg();
 	void addQuietArgs();
 	void addSettingsTypeArg();
-	void addSettingsKeyArg();
 
 	void commandBuildRun();
 	void commandRun();

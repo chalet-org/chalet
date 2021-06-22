@@ -27,6 +27,8 @@ private:
 	bool serializeFromJsonRoot(Json& inJson, GlobalConfigState& outState);
 	bool parseSettings(const Json& inNode, GlobalConfigState& outState);
 	bool parseToolchains(const Json& inNode, GlobalConfigState& outState);
+	bool parseAncillaryTools(const Json& inNode, GlobalConfigState& outState);
+	bool parseApplePlatformSdks(const Json& inNode, GlobalConfigState& outState);
 
 	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
@@ -34,6 +36,8 @@ private:
 
 	const std::string kKeySettings = "settings";
 	const std::string kKeyToolchains = "toolchains";
+	const std::string kKeyAncillaryTools = "ancillaryTools";
+	const std::string kKeyApplePlatformSdks = "applePlatformSdks";
 
 	const std::string kKeyDumpAssembly = "dumpAssembly";
 	const std::string kKeyMaxJobs = "maxJobs";

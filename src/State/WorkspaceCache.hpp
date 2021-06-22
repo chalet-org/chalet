@@ -48,6 +48,7 @@ struct WorkspaceCache
 private:
 	friend class BuildState;
 	friend struct StatePrototype;
+	friend struct SettingsManager;
 
 	const std::string& getCacheRef(const Type inCacheType) const;
 	void removeCacheFolder(const Type inCacheType);

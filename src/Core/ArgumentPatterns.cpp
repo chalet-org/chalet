@@ -566,14 +566,6 @@ void ArgumentPatterns::addRunArgumentsArg()
 /*****************************************************************************/
 void ArgumentPatterns::addSettingsTypeArg()
 {
-	m_parser.add_argument("--global")
-		.help("use the global cache")
-		.nargs(1)
-		.default_value(false)
-		.implicit_value(true);
-
-	m_argumentMap.push_back({ "--global", Variant::Kind::Boolean });
-
 	m_parser.add_argument("--local")
 		.help("use the local cache")
 		.nargs(1)
@@ -581,16 +573,14 @@ void ArgumentPatterns::addSettingsTypeArg()
 		.implicit_value(true);
 
 	m_argumentMap.push_back({ "--local", Variant::Kind::Boolean });
-}
 
-/*****************************************************************************/
-void ArgumentPatterns::addSettingsKeyArg()
-{
-	m_parser.add_argument(kArgSettingsKey)
-		.help("The settings key to change")
-		.required();
+	m_parser.add_argument("--global")
+		.help("use the global cache")
+		.nargs(1)
+		.default_value(false)
+		.implicit_value(true);
 
-	m_argumentMap.push_back({ kArgSettingsKey, Variant::Kind::String });
+	m_argumentMap.push_back({ "--global", Variant::Kind::Boolean });
 }
 
 /*****************************************************************************/
@@ -721,7 +711,12 @@ void ArgumentPatterns::commandInit()
 void ArgumentPatterns::commandSettingsSet()
 {
 	addSettingsTypeArg();
-	addSettingsKeyArg();
+
+	m_parser.add_argument(kArgSettingsKey)
+		.help("The settings key to change")
+		.required();
+
+	m_argumentMap.push_back({ kArgSettingsKey, Variant::Kind::String });
 
 	m_parser.add_argument(kArgSettingsValue)
 		.help("The settings value to change to")
@@ -734,7 +729,12 @@ void ArgumentPatterns::commandSettingsSet()
 void ArgumentPatterns::commandSettingsGet()
 {
 	addSettingsTypeArg();
-	addSettingsKeyArg();
+
+	m_parser.add_argument(kArgSettingsKey)
+		.help("The settings key to change")
+		.default_value(std::string(""));
+
+	m_argumentMap.push_back({ kArgSettingsKey, Variant::Kind::String });
 }
 
 /*****************************************************************************/

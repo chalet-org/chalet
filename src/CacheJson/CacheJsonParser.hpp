@@ -39,7 +39,7 @@ private:
 	StatePrototype& m_prototype;
 	JsonFile& m_jsonFile;
 
-	const std::string kKeyTools = "ancillaryTools";
+	const std::string kKeyAncillaryTools = "ancillaryTools";
 	const std::string kKeySettings = "settings";
 	const std::string kKeyToolchains = "toolchains";
 	const std::string kKeyApplePlatformSdks = "applePlatformSdks";

@@ -42,6 +42,11 @@ bool GlobalConfigJsonParser::makeCache(GlobalConfigState& outState)
 	// Create the json cache
 	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyToolchains, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyAncillaryTools, JsonDataType::object);
+
+#if defined(CHALET_MACOS)
+	m_jsonFile.makeNode(kKeyApplePlatformSdks, JsonDataType::object);
+#endif
 
 	Json& settings = m_jsonFile.json[kKeySettings];
 
@@ -99,6 +104,14 @@ bool GlobalConfigJsonParser::serializeFromJsonRoot(Json& inJson, GlobalConfigSta
 	if (!parseToolchains(inJson, outState))
 		return false;
 
+	if (!parseAncillaryTools(inJson, outState))
+		return false;
+
+#if defined(CHALET_MACOS)
+	if (!parseApplePlatformSdks(inJson, outState))
+		return false;
+#endif
+
 	return true;
 }
 
@@ -149,6 +162,42 @@ bool GlobalConfigJsonParser::parseToolchains(const Json& inNode, GlobalConfigSta
 	}
 
 	outState.toolchains = settings;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool GlobalConfigJsonParser::parseAncillaryTools(const Json& inNode, GlobalConfigState& outState)
+{
+	if (!inNode.contains(kKeyAncillaryTools))
+		return true;
+
+	const Json& settings = inNode.at(kKeyAncillaryTools);
+	if (!settings.is_object())
+	{
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyAncillaryTools);
+		return false;
+	}
+
+	outState.ancillaryTools = settings;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool GlobalConfigJsonParser::parseApplePlatformSdks(const Json& inNode, GlobalConfigState& outState)
+{
+	if (!inNode.contains(kKeyApplePlatformSdks))
+		return true;
+
+	const Json& settings = inNode.at(kKeyApplePlatformSdks);
+	if (!settings.is_object())
+	{
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyApplePlatformSdks);
+		return false;
+	}
+
+	outState.applePlatformSdks = settings;
 
 	return true;
 }

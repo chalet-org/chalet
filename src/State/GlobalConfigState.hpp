@@ -13,6 +13,8 @@ namespace chalet
 struct GlobalConfigState
 {
 	Json toolchains;
+	Json ancillaryTools;
+	Json applePlatformSdks;
 
 	std::string macosCertSigningRequest;
 	std::string toolchainPreference;

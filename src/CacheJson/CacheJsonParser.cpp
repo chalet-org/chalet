@@ -111,18 +111,19 @@ bool CacheJsonParser::makeCache(const GlobalConfigState& inState)
 
 	if (!m_jsonFile.json.contains(kKeyToolchains))
 	{
-		if (inState.toolchains.is_object())
-		{
-			m_jsonFile.json[kKeyToolchains] = inState.toolchains;
-		}
-		else
-		{
-			m_jsonFile.json[kKeyToolchains] = Json::object();
-		}
+		m_jsonFile.json[kKeyToolchains] = inState.toolchains.is_object() ? inState.toolchains : Json::object();
 	}
 
-	m_jsonFile.makeNode(kKeyTools, JsonDataType::object);
-	m_jsonFile.makeNode(kKeyApplePlatformSdks, JsonDataType::object);
+	if (!m_jsonFile.json.contains(kKeyAncillaryTools))
+	{
+		m_jsonFile.json[kKeyAncillaryTools] = inState.ancillaryTools.is_object() ? inState.ancillaryTools : Json::object();
+	}
+
+	if (!m_jsonFile.json.contains(kKeyApplePlatformSdks))
+	{
+		m_jsonFile.json[kKeyApplePlatformSdks] = inState.applePlatformSdks.is_object() ? inState.applePlatformSdks : Json::object();
+	}
+
 	m_jsonFile.makeNode(kKeyExternalDependencies, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyData, JsonDataType::object);
 	{
@@ -232,7 +233,7 @@ bool CacheJsonParser::makeCache(const GlobalConfigState& inState)
 		return true;
 	};
 
-	Json& ancillaryTools = m_jsonFile.json[kKeyTools];
+	Json& ancillaryTools = m_jsonFile.json[kKeyAncillaryTools];
 
 	whichAdd(ancillaryTools, kKeyBash);
 	whichAdd(ancillaryTools, kKeyBrew, HostPlatform::MacOS);
@@ -388,16 +389,16 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 /*****************************************************************************/
 bool CacheJsonParser::parseTools(Json& inNode)
 {
-	if (!inNode.contains(kKeyTools))
+	if (!inNode.contains(kKeyAncillaryTools))
 	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyTools);
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyAncillaryTools);
 		return false;
 	}
 
-	Json& ancillaryTools = inNode.at(kKeyTools);
+	Json& ancillaryTools = inNode.at(kKeyAncillaryTools);
 	if (!ancillaryTools.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyTools);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyAncillaryTools);
 		return false;
 	}
 
