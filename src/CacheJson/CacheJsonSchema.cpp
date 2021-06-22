@@ -471,7 +471,7 @@ Json Schema::getCacheJson()
 	})json"_ojson;
 
 	ret[kProperties]["data"] = R"json({
-			"type": "object"
+		"type": "object"
 	})json"_ojson;
 
 	ret[kProperties]["settings"] = R"json({
@@ -509,6 +509,27 @@ Json Schema::getCacheJson()
 				"$ref": "#/definitions/toolchains"
 			}
 		}
+	})json"_ojson;
+
+	return ret;
+}
+
+/*****************************************************************************/
+Json Schema::getGlobalConfigJson()
+{
+	const auto kProperties = "properties";
+	const auto kSettings = "settings";
+	Json ret = Schema::getCacheJson();
+	ret[kProperties]["ancillaryTools"].erase("required");
+	ret[kProperties][kSettings]["required"] = {
+		"dumpAssembly",
+		"maxJobs",
+		"showCommands",
+		"toolchain",
+		"macosCertSigningRequest",
+	};
+	ret[kProperties][kSettings][kProperties]["macosCertSigningRequest"] = R"json({
+		"type": "string"
 	})json"_ojson;
 
 	return ret;

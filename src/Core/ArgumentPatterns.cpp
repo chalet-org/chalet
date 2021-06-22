@@ -720,7 +720,7 @@ void ArgumentPatterns::commandSettingsSet()
 
 	m_parser.add_argument(kArgSettingsValue)
 		.help("The settings value to change to")
-		.required();
+		.default_value(std::string(""));
 
 	m_argumentMap.push_back({ kArgSettingsValue, Variant::Kind::String });
 }

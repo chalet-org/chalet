@@ -24,6 +24,13 @@ private:
 	bool runSettingsGet(Json& node);
 	bool runSettingsSet(Json& node);
 
+	bool findRequestedNodeWithFailure(Json& inNode, Json*& outNode);
+	bool findRequestedNode(Json& inNode, std::string& outLastKey, Json*& outNode);
+
+	bool makeSetting(Json& inNode, Json*& outNode);
+
+	JsonFile& getConfig();
+
 	WorkspaceCache m_cache;
 
 	std::string m_key;
