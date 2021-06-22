@@ -18,7 +18,7 @@ struct GlobalConfigState
 
 	std::string macosCertSigningRequest;
 	std::string toolchainPreference;
-	ushort maxJobs = 0;
+	uint maxJobs = 0;
 	bool showCommands = false;
 	bool dumpAssembly = false;
 };
