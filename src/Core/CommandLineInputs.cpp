@@ -315,6 +315,39 @@ void CommandLineInputs::setSaveSchemaToFile(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+SettingsType CommandLineInputs::settingsType() const noexcept
+{
+	return m_settingsType;
+}
+
+void CommandLineInputs::setSettingsType(const SettingsType inValue) noexcept
+{
+	m_settingsType = inValue;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::settingsKey() const noexcept
+{
+	return m_settingsKey;
+}
+
+void CommandLineInputs::setSettingsKey(std::string&& inValue) noexcept
+{
+	m_settingsKey = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::settingsValue() const noexcept
+{
+	return m_settingsValue;
+}
+
+void CommandLineInputs::setSettingsValue(std::string&& inValue) noexcept
+{
+	m_settingsValue = std::move(inValue);
+}
+
+/*****************************************************************************/
 std::string CommandLineInputs::getPlatform() const noexcept
 {
 #if defined(CHALET_WIN32)

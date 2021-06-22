@@ -9,6 +9,7 @@
 #include "Compile/ToolchainPreference.hpp"
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
+#include "Settings/SettingsType.hpp"
 
 namespace chalet
 {
@@ -72,6 +73,15 @@ struct CommandLineInputs
 	bool saveSchemaToFile() const noexcept;
 	void setSaveSchemaToFile(const bool inValue) noexcept;
 
+	SettingsType settingsType() const noexcept;
+	void setSettingsType(const SettingsType inValue) noexcept;
+
+	const std::string& settingsKey() const noexcept;
+	void setSettingsKey(std::string&& inValue) noexcept;
+
+	const std::string& settingsValue() const noexcept;
+	void setSettingsValue(std::string&& inValue) noexcept;
+
 private:
 	std::string getPlatform() const noexcept;
 	StringList getNotPlatforms() const noexcept;
@@ -93,9 +103,12 @@ private:
 	std::string m_runProject;
 	std::string m_appPath;
 	std::string m_generatorRaw;
-	mutable std::string m_toolchainPreferenceRaw;
+	std::string m_settingsKey;
+	std::string m_settingsValue;
 
+	mutable std::string m_toolchainPreferenceRaw;
 	mutable std::string m_homeDirectory;
+
 	std::string m_initPath;
 	std::string m_envFile;
 	std::string m_archRaw;
@@ -104,6 +117,7 @@ private:
 
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
+	SettingsType m_settingsType = SettingsType::None;
 
 	bool m_saveSchemaToFile = false;
 };

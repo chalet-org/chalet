@@ -9,6 +9,8 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 
+#include "Settings/SettingsAction.hpp"
+#include "Settings/SettingsManager.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -50,7 +52,8 @@ bool Router::run()
 	std::unique_ptr<BuildState> buildState;
 
 	const auto& buildFile = m_inputs.buildFile();
-	if (command != Route::Init)
+	const bool isSettings = command == Route::SettingsGet || command == Route::SettingsSet;
+	if (command != Route::Init && !isSettings)
 	{
 		Output::lineBreak();
 
@@ -79,10 +82,13 @@ bool Router::run()
 		}
 	}
 
-	if (!managePathVariables(prototype.get()))
+	if (!isSettings)
 	{
-		Diagnostic::error("There was an error setting environment variables.");
-		return false;
+		if (!managePathVariables(prototype.get()))
+		{
+			Diagnostic::error("There was an error setting environment variables.");
+			return false;
+		}
 	}
 
 	if (m_inputs.generator() != IdeType::None)
@@ -118,6 +124,11 @@ bool Router::run()
 
 			case Route::Init:
 				result = cmdInit();
+				break;
+
+			case Route::SettingsGet:
+			case Route::SettingsSet:
+				result = cmdSettings(command);
 				break;
 
 			case Route::BuildRun:
@@ -180,8 +191,26 @@ bool Router::cmdBundle(StatePrototype& inPrototype)
 /*****************************************************************************/
 bool Router::cmdInit()
 {
-	ProjectInitializer initializer{ m_inputs };
+	ProjectInitializer initializer(m_inputs);
 	if (!initializer.run())
+		return true;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool Router::cmdSettings(const Route inRoute)
+{
+	if (m_inputs.settingsType() == SettingsType::None)
+	{
+		Diagnostic::error("There was an error determining the settings request");
+		return false;
+	}
+
+	SettingsAction action = inRoute == Route::SettingsSet ? SettingsAction::Set : SettingsAction::Get;
+
+	SettingsManager settingsMgr(m_inputs, action);
+	if (!settingsMgr.run())
 		return true;
 
 	return true;

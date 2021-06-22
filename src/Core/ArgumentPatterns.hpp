@@ -25,6 +25,8 @@ public:
 	const std::string& argRunProject() const noexcept;
 	const std::string& argRunArguments() const noexcept;
 	const std::string& argInitPath() const noexcept;
+	const std::string& argSettingsKey() const noexcept;
+	const std::string& argSettingsValue() const noexcept;
 
 	bool parse(const StringList& inArguments);
 	const ArgumentMap& arguments() const noexcept;
@@ -55,6 +57,8 @@ private:
 	void addRunArgumentsArg();
 	void addSaveSchemaArg();
 	void addQuietArgs();
+	void addSettingsTypeArg();
+	void addSettingsKeyArg();
 
 	void commandBuildRun();
 	void commandRun();
@@ -65,6 +69,8 @@ private:
 	// void commandInstall();
 	void commandConfigure();
 	void commandInit();
+	void commandSettingsSet();
+	void commandSettingsGet();
 
 #if defined(CHALET_DEBUG)
 	void commandDebug();
@@ -86,6 +92,8 @@ private:
 	const std::string kArgRunArguments = "[ARG...]";
 	const std::string kArgInitName = "<name>";
 	const std::string kArgInitPath = "<path>";
+	const std::string kArgSettingsKey = "<key>";
+	const std::string kArgSettingsValue = "<value>";
 
 	const std::string kHelpBuildConfiguration = "The build configuration";
 	const std::string kHelpRunProject = "A project to run";

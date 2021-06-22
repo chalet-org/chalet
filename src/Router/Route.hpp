@@ -19,6 +19,8 @@ enum class Route : ushort
 	Clean,
 	Configure,
 	Init,
+	SettingsGet,
+	SettingsSet,
 #if defined(CHALET_DEBUG)
 	Debug,
 #endif

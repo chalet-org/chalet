@@ -23,10 +23,14 @@ std::string ArgumentPatterns::getHelpCommand()
    clean [{config}]
    bundle
    configure
+   set {key} {value}
+   get {key}
    init [{path}])",
 		fmt::arg("config", ArgumentPatterns::kArgConfiguration),
 		fmt::arg("runProj", ArgumentPatterns::kArgRunProject),
 		fmt::arg("runArgs", ArgumentPatterns::kArgRunArguments),
+		fmt::arg("key", ArgumentPatterns::kArgSettingsKey),
+		fmt::arg("value", ArgumentPatterns::kArgSettingsValue),
 		fmt::arg("path", ArgumentPatterns::kArgInitPath));
 }
 
@@ -41,6 +45,8 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ Route::Bundle, &ArgumentPatterns::commandBundle },
 		{ Route::Configure, &ArgumentPatterns::commandConfigure },
 		{ Route::Init, &ArgumentPatterns::commandInit },
+		{ Route::SettingsGet, &ArgumentPatterns::commandSettingsGet },
+		{ Route::SettingsSet, &ArgumentPatterns::commandSettingsSet },
 	})
 {
 #if defined(CHALET_DEBUG)
@@ -64,6 +70,14 @@ const std::string& ArgumentPatterns::argRunArguments() const noexcept
 const std::string& ArgumentPatterns::argInitPath() const noexcept
 {
 	return kArgInitPath;
+}
+const std::string& ArgumentPatterns::argSettingsKey() const noexcept
+{
+	return kArgSettingsKey;
+}
+const std::string& ArgumentPatterns::argSettingsValue() const noexcept
+{
+	return kArgSettingsValue;
 }
 
 /*****************************************************************************/
@@ -185,6 +199,14 @@ Route ArgumentPatterns::getRouteFromString(const std::string& inValue)
 	else if (String::equals("init", inValue))
 	{
 		return Route::Init;
+	}
+	else if (String::equals("get", inValue))
+	{
+		return Route::SettingsGet;
+	}
+	else if (String::equals("set", inValue))
+	{
+		return Route::SettingsSet;
 	}
 #if defined(CHALET_DEBUG)
 	else if (String::equals("debug", inValue))
@@ -542,6 +564,36 @@ void ArgumentPatterns::addRunArgumentsArg()
 }
 
 /*****************************************************************************/
+void ArgumentPatterns::addSettingsTypeArg()
+{
+	m_parser.add_argument("--global")
+		.help("use the global cache")
+		.nargs(1)
+		.default_value(false)
+		.implicit_value(true);
+
+	m_argumentMap.push_back({ "--global", Variant::Kind::Boolean });
+
+	m_parser.add_argument("--local")
+		.help("use the local cache")
+		.nargs(1)
+		.default_value(true)
+		.implicit_value(true);
+
+	m_argumentMap.push_back({ "--local", Variant::Kind::Boolean });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addSettingsKeyArg()
+{
+	m_parser.add_argument(kArgSettingsKey)
+		.help("The settings key to change")
+		.required();
+
+	m_argumentMap.push_back({ kArgSettingsKey, Variant::Kind::String });
+}
+
+/*****************************************************************************/
 void ArgumentPatterns::commandBuildRun()
 {
 	addInputFileArg();
@@ -663,6 +715,26 @@ void ArgumentPatterns::commandInit()
 		.required();
 
 	m_argumentMap.push_back({ kArgInitPath, Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::commandSettingsSet()
+{
+	addSettingsTypeArg();
+	addSettingsKeyArg();
+
+	m_parser.add_argument(kArgSettingsValue)
+		.help("The settings value to change to")
+		.required();
+
+	m_argumentMap.push_back({ kArgSettingsValue, Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::commandSettingsGet()
+{
+	addSettingsTypeArg();
+	addSettingsKeyArg();
 }
 
 /*****************************************************************************/

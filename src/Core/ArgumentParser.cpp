@@ -125,6 +125,14 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					m_inputs.setInitPath(std::move(value));
 				}
+				else if (key == patterns.argSettingsKey())
+				{
+					m_inputs.setSettingsKey(std::move(value));
+				}
+				else if (key == patterns.argSettingsValue())
+				{
+					m_inputs.setSettingsValue(std::move(value));
+				}
 				break;
 			}
 
@@ -146,6 +154,14 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				else if (String::equals("--quieter", key))
 				{
 					Output::setQuietNonBuild(value);
+				}
+				else if (String::equals("--global", key))
+				{
+					m_inputs.setSettingsType(SettingsType::Global);
+				}
+				else if (String::equals("--local", key))
+				{
+					m_inputs.setSettingsType(SettingsType::Local);
 				}
 				break;
 			}
