@@ -164,9 +164,9 @@ bool SettingsManager::runSettingsSet(Json& node)
 		*ptr = value;
 		set = true;
 	}
-	else if (ptr->is_object())
+	else
 	{
-		Diagnostic::error("'{}' expects an object.", m_key);
+		Diagnostic::error("Unknown key: '{}'", m_key);
 		return false;
 	}
 
