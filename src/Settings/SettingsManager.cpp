@@ -6,6 +6,7 @@
 #include "Settings/SettingsManager.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -27,6 +28,14 @@ bool SettingsManager::run()
 		return false;
 
 	auto& config = m_type == SettingsType::Global ? m_cache.globalConfig() : m_cache.localConfig();
+	if (!Commands::pathExists(config.filename()))
+	{
+		if (m_type == SettingsType::Global)
+			Diagnostic::error("File '{}' doesn't exist.", config.filename());
+		else
+			Diagnostic::error("Not a chalet project, or a build hasn't been run yet.", config.filename());
+		return false;
+	}
 
 	Json& node = config.json;
 	if (!node.is_object())
