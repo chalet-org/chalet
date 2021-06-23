@@ -34,6 +34,7 @@ private:
 	bool setExecutablePaths() const;
 	bool createDmgImage() const;
 	bool signAppBundle() const;
+	bool signDmgImage(const std::string& inPath) const;
 
 	const std::string& m_buildFile;
 

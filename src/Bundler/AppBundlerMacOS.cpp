@@ -411,16 +411,12 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	Timer timer;
 
-	if (Output::cleanOutput())
+	const auto& universalBinaryArches = macosBundle.universalBinaryArches();
+	if (universalBinaryArches.size() < 2)
 	{
-		const auto& universalBinaryArches = macosBundle.universalBinaryArches();
-		if (universalBinaryArches.size() < 2)
-		{
-			Output::lineBreak();
-		}
-
-		Diagnostic::info("Creating the disk image for the application", false);
+		Output::lineBreak();
 	}
+	Diagnostic::info("Creating the distribution disk image", false);
 
 	const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);
 
@@ -476,12 +472,9 @@ bool AppBundlerMacOS::createDmgImage() const
 	if (!Commands::removeRecursively(tmpDmg))
 		return false;
 
-	if (Output::cleanOutput())
-	{
-		Diagnostic::printDone(timer.asString());
-	}
+	Diagnostic::printDone(timer.asString());
 
-	return true;
+	return signDmgImage(outDmgPath);
 }
 
 /*****************************************************************************/
@@ -543,6 +536,16 @@ bool AppBundlerMacOS::signAppBundle() const
 			}
 		}
 
+		if (String::endsWith(".app/Contents", m_bundlePath))
+		{
+			auto appPath = m_bundlePath.substr(0, m_bundlePath.size() - 9);
+			if (!m_state.ancillaryTools.macosCodeSignFile(appPath))
+			{
+				Diagnostic::error("Failed to sign: {}", appPath);
+				return false;
+			}
+		}
+
 		Diagnostic::printDone(timer.asString());
 
 		return true;
@@ -552,5 +555,22 @@ bool AppBundlerMacOS::signAppBundle() const
 		Diagnostic::error(err.what());
 		return false;
 	}
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::signDmgImage(const std::string& inPath) const
+{
+	Timer timer;
+	Diagnostic::info("Signing the disk image", false);
+
+	if (!m_state.ancillaryTools.macosCodeSignDiskImage(inPath))
+	{
+		Diagnostic::error("Failed to sign: {}", inPath);
+		return false;
+	}
+
+	Diagnostic::printDone(timer.asString());
+
+	return true;
 }
 }

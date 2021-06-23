@@ -532,6 +532,28 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath) const
 #endif
 }
 
+bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath) const
+{
+#if defined(CHALET_MACOS)
+	chalet_assert(String::endsWith(".dmg", inPath), "Must be a .dmg");
+
+	StringList cmd{ m_codesign, "-s", m_macosSigningIdentity };
+
+	bool showCommands = Output::showCommands();
+	if (showCommands)
+		cmd.push_back("-v");
+
+	cmd.push_back(inPath);
+	if (showCommands)
+		return Commands::subprocess(cmd);
+	else
+		return Commands::subprocessNoOutput(cmd);
+#else
+	UNUSED(inPath);
+	return false;
+#endif
+}
+
 /*****************************************************************************/
 bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId) const
 {

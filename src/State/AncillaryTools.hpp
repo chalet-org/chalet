@@ -128,6 +128,7 @@ struct AncillaryTools
 	bool resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const;
 
 	bool macosCodeSignFile(const std::string& inPath) const;
+	bool macosCodeSignDiskImage(const std::string& inPath) const;
 	bool macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId) const;
 
 	bool plistConvertToBinary(const std::string& inInput, const std::string& inOutput) const;
