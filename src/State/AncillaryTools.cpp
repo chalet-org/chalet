@@ -61,10 +61,11 @@ bool AncillaryTools::validate()
 		auto security = Commands::which("security");
 		if (!security.empty())
 		{
-			auto identities = Commands::subprocessOutput({ std::move(security), "find-identity", "-v", "-p", "codesigning" });
+			StringList cmd{ std::move(security), "find-identity", "-v", "-p", "codesigning" };
+			auto identities = Commands::subprocessOutput(cmd);
 			if (!String::contains(m_macosSigningIdentity, identities))
 			{
-				Diagnostic::error("macosSigningIdentity '{}' could not be verified with 'security find-identity -v -p codesigning'", m_macosSigningIdentity);
+				Diagnostic::error("macosSigningIdentity '{}' could not be verified with '{}'", m_macosSigningIdentity, String::join(cmd));
 				return false;
 			}
 		}
