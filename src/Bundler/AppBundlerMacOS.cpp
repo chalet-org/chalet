@@ -138,6 +138,9 @@ bool AppBundlerMacOS::bundleForPlatform()
 	if (!setExecutablePaths())
 		return false;
 
+	if (!signAppBundle())
+		return false;
+
 	if (!createDmgImage())
 		return false;
 
@@ -476,6 +479,24 @@ bool AppBundlerMacOS::createDmgImage() const
 /*****************************************************************************/
 bool AppBundlerMacOS::signAppBundle() const
 {
-	return true;
+	auto bundlePath = getBundlePath();
+
+	try
+	{
+		for (const fs::directory_entry& entry : fs::recursive_directory_iterator(bundlePath))
+		{
+			if (entry.is_regular_file())
+			{
+				LOG(entry.path().string());
+			}
+		}
+
+		return true;
+	}
+	catch (const fs::filesystem_error& err)
+	{
+		Diagnostic::error(err.what());
+		return false;
+	}
 }
 }

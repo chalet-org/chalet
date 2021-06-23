@@ -82,7 +82,7 @@ bool StatePrototype::validateBundleDestinations()
 		{
 			auto& bundle = static_cast<BundleTarget&>(*target);
 
-			if (bundle.configuration().empty() && !m_releaseConfiguration.empty())
+			if (!bundle.configuration().empty() && !m_releaseConfiguration.empty())
 			{
 				auto config = m_releaseConfiguration;
 				bundle.setConfiguration(std::move(config));

@@ -14,7 +14,20 @@
 			"preLaunchTask": "Build: Debug"
 		},
 		{
-			"name": "GDB/LLDB",
+			"name": "LLDB",
+			"type": "lldb",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"preLaunchTask": "Build: Debug",
+			"program": "${workspaceFolder}/build/Debug/chalet-debug",
+			"stopOnEntry": false,
+			"args": [
+				// "--generator=vscode",
+				"bundle"
+			],
+		},
+		{
+			"name": "GDB",
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
@@ -47,12 +60,6 @@
 				"miDebuggerPath": "/usr/bin/gdb",
 				"env": {
 					"PATH": "${config:terminal.integrated.env.linux.PATH}",
-				}
-			},
-			"osx": {
-				"MIMode": "lldb",
-				"env": {
-					"PATH": "${config:terminal.integrated.env.osx.PATH}",
 				}
 			}
 		}
