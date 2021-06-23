@@ -68,8 +68,9 @@ private:
 	// void commandInstall();
 	void commandConfigure();
 	void commandInit();
-	void commandSettingsSet();
 	void commandSettingsGet();
+	void commandSettingsSet();
+	void commandSettingsUnset();
 
 #if defined(CHALET_DEBUG)
 	void commandDebug();

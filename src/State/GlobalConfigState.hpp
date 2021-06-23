@@ -16,7 +16,7 @@ struct GlobalConfigState
 	Json ancillaryTools;
 	Json applePlatformSdks;
 
-	std::string macosCertSigningRequest;
+	std::string macosSigningIdentity;
 	std::string toolchainPreference;
 	uint maxJobs = 0;
 	bool showCommands = false;

@@ -23,8 +23,9 @@ std::string ArgumentPatterns::getHelpCommand()
    clean [{config}]
    bundle
    configure
-   set {key} {value}
    get {key}
+   set {key} {value}
+   unset {key}
    init [{path}])",
 		fmt::arg("config", ArgumentPatterns::kArgConfiguration),
 		fmt::arg("runProj", ArgumentPatterns::kArgRunProject),
@@ -47,6 +48,7 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ Route::Init, &ArgumentPatterns::commandInit },
 		{ Route::SettingsGet, &ArgumentPatterns::commandSettingsGet },
 		{ Route::SettingsSet, &ArgumentPatterns::commandSettingsSet },
+		{ Route::SettingsUnset, &ArgumentPatterns::commandSettingsUnset },
 	})
 {
 #if defined(CHALET_DEBUG)
@@ -207,6 +209,10 @@ Route ArgumentPatterns::getRouteFromString(const std::string& inValue)
 	else if (String::equals("set", inValue))
 	{
 		return Route::SettingsSet;
+	}
+	else if (String::equals("unset", inValue))
+	{
+		return Route::SettingsUnset;
 	}
 #if defined(CHALET_DEBUG)
 	else if (String::equals("debug", inValue))
@@ -708,6 +714,18 @@ void ArgumentPatterns::commandInit()
 }
 
 /*****************************************************************************/
+void ArgumentPatterns::commandSettingsGet()
+{
+	addSettingsTypeArg();
+
+	m_parser.add_argument(kArgSettingsKey)
+		.help("The settings key to get")
+		.default_value(std::string(""));
+
+	m_argumentMap.push_back({ kArgSettingsKey, Variant::Kind::String });
+}
+
+/*****************************************************************************/
 void ArgumentPatterns::commandSettingsSet()
 {
 	addSettingsTypeArg();
@@ -726,13 +744,13 @@ void ArgumentPatterns::commandSettingsSet()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandSettingsGet()
+void ArgumentPatterns::commandSettingsUnset()
 {
 	addSettingsTypeArg();
 
 	m_parser.add_argument(kArgSettingsKey)
-		.help("The settings key to change")
-		.default_value(std::string(""));
+		.help("The settings key to remove")
+		.required();
 
 	m_argumentMap.push_back({ kArgSettingsKey, Variant::Kind::String });
 }

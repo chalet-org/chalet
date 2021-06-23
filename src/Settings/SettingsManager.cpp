@@ -57,6 +57,11 @@ bool SettingsManager::run()
 				return false;
 			break;
 
+		case SettingsAction::Unset:
+			if (!runSettingsUnset(node))
+				return false;
+			break;
+
 		default:
 			break;
 	}
@@ -142,17 +147,6 @@ bool SettingsManager::runSettingsSet(Json& node)
 		*ptr = value;
 		set = true;
 	}
-	else if (ptr->is_number_unsigned())
-	{
-		if (m_value.find_first_not_of("1234567890") != std::string::npos)
-		{
-			Diagnostic::error("'{}' expects an unsigned integer, but found value of '{}'", m_key, m_value);
-			return false;
-		}
-		uint value = static_cast<uint>(std::stoul(m_value));
-		*ptr = value;
-		set = true;
-	}
 	else if (ptr->is_number_float())
 	{
 		if (m_value.find_first_not_of("1234567890-.") != std::string::npos)
@@ -164,6 +158,20 @@ bool SettingsManager::runSettingsSet(Json& node)
 		*ptr = value;
 		set = true;
 	}
+	else if (ptr->is_object())
+	{
+		try
+		{
+			*ptr = Json::parse(m_value);
+			set = true;
+		}
+		catch (const std::exception& err)
+		{
+			Diagnostic::error(err.what());
+			Diagnostic::error("Couldn't parse value: {}", m_value);
+			return false;
+		}
+	}
 	else
 	{
 		Diagnostic::error("Unknown key: '{}'", m_key);
@@ -172,7 +180,11 @@ bool SettingsManager::runSettingsSet(Json& node)
 
 	if (set)
 	{
-		std::cout << fmt::format("{}: {}", m_key, m_value) << std::endl;
+		if (ptr->is_object())
+			std::cout << fmt::format("\"{}\": {}", m_key, ptr->dump(3, ' ')) << std::endl;
+		else
+			std::cout << fmt::format("{}: {}", m_key, m_value) << std::endl;
+
 		config.setDirty(true);
 	}
 
@@ -185,6 +197,39 @@ bool SettingsManager::runSettingsSet(Json& node)
 			return false;
 		}
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool SettingsManager::runSettingsUnset(Json& node)
+{
+	Json* ptr = &node;
+	std::string lastKey;
+	auto keySplit = String::split(m_key, '.');
+	for (auto& subKey : keySplit)
+	{
+		std::ptrdiff_t i = &subKey - &keySplit.front();
+		bool notLast = i < static_cast<std::ptrdiff_t>(keySplit.size() - 1);
+		if (!ptr->contains(subKey) && notLast)
+		{
+			auto loc = m_key.find(subKey);
+			lastKey = m_key.substr(0, loc + subKey.size());
+			return false;
+		}
+
+		if (notLast)
+		{
+			ptr = &ptr->at(subKey);
+		}
+		lastKey = subKey;
+	}
+
+	auto& config = getConfig();
+	ptr->erase(lastKey);
+	config.setDirty(true);
+
+	std::cout << fmt::format("unset: {}", m_key) << std::endl;
 
 	return true;
 }
@@ -249,14 +294,27 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 		lastKey = subKey;
 	}
 
-	if (String::equals({ "true", "false", "0", "1" }, m_value))
+	if (String::startsWith("{", m_value) && String::endsWith("}", m_value))
+	{
+		(*outNode)[lastKey] = Json::object();
+	}
+	else if (String::equals({ "true", "false", "0", "1" }, m_value))
 	{
 		(*outNode)[lastKey] = false;
+	}
+	else if (m_value.find_first_not_of("1234567890-") == std::string::npos)
+	{
+		(*outNode)[lastKey] = 0;
+	}
+	else if (m_value.find_first_not_of("1234567890-.") == std::string::npos)
+	{
+		(*outNode)[lastKey] = 0.0f;
 	}
 	else
 	{
 		(*outNode)[lastKey] = std::string();
 	}
+
 	outNode = &outNode->at(lastKey);
 
 	return true;

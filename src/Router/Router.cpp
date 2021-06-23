@@ -52,7 +52,7 @@ bool Router::run()
 	std::unique_ptr<BuildState> buildState;
 
 	const auto& buildFile = m_inputs.buildFile();
-	const bool isSettings = command == Route::SettingsGet || command == Route::SettingsSet;
+	const bool isSettings = command == Route::SettingsGet || command == Route::SettingsSet || command == Route::SettingsUnset;
 	if (command != Route::Init && !isSettings)
 	{
 		Output::lineBreak();
@@ -128,6 +128,7 @@ bool Router::run()
 
 			case Route::SettingsGet:
 			case Route::SettingsSet:
+			case Route::SettingsUnset:
 				result = cmdSettings(command);
 				break;
 
@@ -207,7 +208,21 @@ bool Router::cmdSettings(const Route inRoute)
 		return false;
 	}
 
-	SettingsAction action = inRoute == Route::SettingsSet ? SettingsAction::Set : SettingsAction::Get;
+	SettingsAction action = SettingsAction::Get;
+	switch (inRoute)
+	{
+		case Route::SettingsSet:
+			action = SettingsAction::Set;
+			break;
+		case Route::SettingsGet:
+			action = SettingsAction::Get;
+			break;
+		case Route::SettingsUnset:
+			action = SettingsAction::Unset;
+			break;
+		default:
+			return false;
+	}
 
 	SettingsManager settingsMgr(m_inputs, action);
 	if (!settingsMgr.run())

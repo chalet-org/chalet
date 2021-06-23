@@ -23,6 +23,7 @@ struct SettingsManager
 private:
 	bool runSettingsGet(Json& node);
 	bool runSettingsSet(Json& node);
+	bool runSettingsUnset(Json& node);
 
 	bool findRequestedNodeWithFailure(Json& inNode, Json*& outNode);
 	bool findRequestedNode(Json& inNode, std::string& outLastKey, Json*& outNode);

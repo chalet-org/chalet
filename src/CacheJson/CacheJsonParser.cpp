@@ -78,7 +78,7 @@ bool CacheJsonParser::serialize(const GlobalConfigState& inState)
 /*****************************************************************************/
 bool CacheJsonParser::addGlobalSettings(const GlobalConfigState& inState)
 {
-	m_prototype.ancillaryTools.setCertSigningRequest(inState.macosCertSigningRequest);
+	m_prototype.ancillaryTools.setCertSigningRequest(inState.macosSigningIdentity);
 
 	return true;
 }

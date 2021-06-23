@@ -526,9 +526,9 @@ Json Schema::getGlobalConfigJson()
 		"maxJobs",
 		"showCommands",
 		"toolchain",
-		"macosCertSigningRequest",
+		"macosSigningIdentity",
 	};
-	ret[kProperties][kSettings][kProperties]["macosCertSigningRequest"] = R"json({
+	ret[kProperties][kSettings][kProperties]["macosSigningIdentity"] = R"json({
 		"type": "string"
 	})json"_ojson;
 

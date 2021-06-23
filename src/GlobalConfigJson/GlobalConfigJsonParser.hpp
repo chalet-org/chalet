@@ -44,7 +44,7 @@ private:
 	const std::string kKeyShowCommands = "showCommands";
 	const std::string kKeyLastToolchain = "toolchain";
 #if defined(CHALET_MACOS)
-	const std::string kKeyMacosCertSigningRequest = "macosCertSigningRequest";
+	const std::string kKeyMacosSigningIdentity = "macosSigningIdentity";
 #endif
 };
 }
