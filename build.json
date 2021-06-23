@@ -131,30 +131,30 @@
 			"onlyInConfiguration": "Release"
 		},
 		"script-bash": {
-			"script.!windows": "platform/script_shell.sh",
-			"script.windows": "platform/script_batch.bat"
+			"script.!windows": "scripts/script_shell.sh",
+			"script.windows": "scripts/script_batch.bat"
 		}
 		/*"script-batch": {
-			"script.windows": "platform/script_batch.bat"
+			"script.windows": "scripts/script_batch.bat"
 		},
 		"script-powershell": {
-			"script.windows": "platform/script_powershell.ps1"
-			// "script.macos": "platform/script_powershell.ps1"
+			"script.windows": "scripts/script_powershell.ps1"
+			// "script.macos": "scripts/script_powershell.ps1"
 		},
 		"script-bash-bad": {
-			"script": "platform/script_shell_bad.sh"
+			"script": "scripts/script_shell_bad.sh"
 		},
 		"script-python": {
-			"script": "platform/script_python.py"
+			"script": "scripts/script_python.py"
 		},
 		"script-ruby": {
-			"script": "platform/script_ruby.rb"
+			"script": "scripts/script_ruby.rb"
 		},
 		"script-perl": {
-			"script": "platform/script_perl.pl"
+			"script": "scripts/script_perl.pl"
 		},
 		"script-lua": {
-			"script": "platform/script_lua.lua"
+			"script": "scripts/script_lua.lua"
 		}*/
 	},
 	"distribution": {
@@ -201,8 +201,8 @@
 			}*/
 		},
 		"post-bundle": {
-			"script.!windows": "platform/script_shell.sh",
-			"script.windows": "platform/script_batch.bat"
+			"script.!windows": "scripts/script_shell.sh",
+			"script.windows": "scripts/script_batch.bat"
 		}
 	} /*,
 	"externalDependencies": {
