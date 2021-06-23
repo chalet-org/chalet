@@ -555,7 +555,7 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inF
 	else
 		return Commands::subprocessNoOutput(cmd);
 #else
-	UNUSED(inPath);
+	UNUSED(inPath, inForce);
 	return false;
 #endif
 }
