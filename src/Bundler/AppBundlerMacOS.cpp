@@ -57,45 +57,8 @@ bool AppBundlerMacOS::bundleForPlatform()
 	m_resourcePath = getResourcePath();
 	m_executablePath = getExecutablePath();
 
-	auto& bundleProjects = m_bundle.projects();
-	auto& mainProject = m_bundle.mainProject();
-
-	std::string lastOutput;
-
-	// Match mainProject if defined, otherwise get first executable
-	for (auto& target : m_state.targets)
-	{
-		if (target->isProject())
-		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
-			if (!List::contains(bundleProjects, project.name()))
-				continue;
-
-			if (project.isStaticLibrary())
-				continue;
-
-			lastOutput = project.outputFile();
-
-			if (!project.isExecutable())
-				continue;
-
-			if (!mainProject.empty() && !String::equals(mainProject, project.name()))
-				continue;
-
-			// LOG("Main exec:", project.name());
-			m_mainExecutable = project.outputFile();
-			break;
-		}
-	}
-
-	if (m_mainExecutable.empty())
-	{
-		m_mainExecutable = std::move(lastOutput);
-		// return false;
-	}
-
-	if (m_mainExecutable.empty())
-		return true;
+	if (!getMainExecutable())
+		return true; // No executable. we don't care
 
 	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
 

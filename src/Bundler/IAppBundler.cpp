@@ -7,6 +7,8 @@
 
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Bundler/AppBundlerWindows.hpp"
@@ -47,5 +49,47 @@ IAppBundler::IAppBundler(BuildState& inState, const BundleTarget& inBundle, Bina
 const BundleTarget& IAppBundler::bundle() const noexcept
 {
 	return m_bundle;
+}
+
+/*****************************************************************************/
+bool IAppBundler::getMainExecutable()
+{
+	auto& bundleProjects = m_bundle.projects();
+	auto& mainProject = m_bundle.mainProject();
+	std::string lastOutput;
+
+	// Match mainProject if defined, otherwise get first executable
+	for (auto& target : m_state.targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			if (!List::contains(bundleProjects, project.name()))
+				continue;
+
+			if (project.isStaticLibrary())
+				continue;
+
+			lastOutput = project.outputFile();
+
+			if (!project.isExecutable())
+				continue;
+
+			if (!mainProject.empty() && !String::equals(mainProject, project.name()))
+				continue;
+
+			// LOG("Main exec:", project.name());
+			m_mainExecutable = project.outputFile();
+			break;
+		}
+	}
+
+	if (m_mainExecutable.empty())
+	{
+		m_mainExecutable = std::move(lastOutput);
+		// return false;
+	}
+
+	return !m_mainExecutable.empty();
 }
 }

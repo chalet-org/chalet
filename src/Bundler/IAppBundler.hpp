@@ -19,6 +19,7 @@ struct IAppBundler
 	virtual ~IAppBundler() = default;
 
 	const BundleTarget& bundle() const noexcept;
+	bool getMainExecutable();
 
 	virtual bool removeOldFiles() = 0;
 	virtual bool bundleForPlatform() = 0;
@@ -33,6 +34,8 @@ protected:
 	BuildState& m_state;
 	const BundleTarget& m_bundle;
 	BinaryDependencyMap& m_dependencyMap;
+
+	std::string m_mainExecutable;
 };
 }
 

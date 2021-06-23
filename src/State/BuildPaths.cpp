@@ -61,6 +61,11 @@ void BuildPaths::populateFileList(const ProjectTarget& inProject)
 	m_fileList.emplace(inProject.name(), std::make_unique<SourceGroup>(std::move(files)));
 }
 
+const std::string& BuildPaths::homeDirectory() const noexcept
+{
+	return m_inputs.homeDirectory();
+}
+
 /*****************************************************************************/
 const std::string& BuildPaths::workingDirectory() const noexcept
 {

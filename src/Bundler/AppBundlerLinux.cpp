@@ -35,10 +35,9 @@ AppBundlerLinux::AppBundlerLinux(BuildState& inState, const BundleTarget& inBund
 {
 	const std::string kUserApplications{ ".local/share/applications" };
 
-	auto home = Environment::getUserDirectory();
-	m_home = fs::path{ home };
+	m_home = m_state.paths.homeDirectory();
 
-	m_applicationsPath = fs::path{ m_home / kUserApplications }.string();
+	m_applicationsPath = fmt::format("{}/{}", m_home, kUserApplications);
 }
 
 /*****************************************************************************/
@@ -57,8 +56,7 @@ bool AppBundlerLinux::removeOldFiles()
 			if (!project.isExecutable())
 				continue;
 
-			const auto& filename = fs::path{ project.outputFile() }.stem().string();
-			std::string outputFile = fmt::format("{}/{}.desktop", m_applicationsPath, filename);
+			const auto outputFile = fmt::format("{}/{}.desktop", m_applicationsPath, String::getPathBaseName(project.outputFile()));
 
 			static_cast<void>(Commands::remove(outputFile));
 		}
@@ -71,63 +69,46 @@ bool AppBundlerLinux::removeOldFiles()
 bool AppBundlerLinux::bundleForPlatform()
 {
 	const auto& icon = m_bundle.linuxBundle().icon();
-	if (icon.empty())
-		return false;
-
 	const auto& desktopEntry = m_bundle.linuxBundle().desktopEntry();
+	if (icon.empty() || desktopEntry.empty())
+		return true; // Nothing to do
+
+	if (!getMainExecutable())
+		return true; // No executable -- we don't care
+
+	Output::lineBreak();
+	Diagnostic::info("Creating the XDG Desktop Entry for the application");
+	Output::lineBreak();
+
 	const std::string bundlePath = getBundlePath();
 
-	UNUSED(desktopEntry);
-
-	bool result = true;
-	result &= Commands::copy(icon, bundlePath);
-
-	fs::path desktopEntryPath{ desktopEntry };
-	auto& bundleProjects = m_bundle.projects();
-	auto& mainProject = m_bundle.mainProject();
-
-	// Match mainProject if defined, otherwise get first executable
-
-	for (auto& target : m_state.targets)
+	if (!icon.empty())
 	{
-		if (target->isProject())
-		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
-			if (!List::contains(bundleProjects, project.name()))
-				continue;
-
-			if (!project.isExecutable())
-				continue;
-
-			if (!mainProject.empty() && !String::equals(mainProject, project.name()))
-				continue;
-
-			m_mainExecutable = project.outputFile();
-			break;
-		}
+		if (!Commands::copy(icon, bundlePath))
+			return false;
 	}
 
 	if (!m_mainExecutable.empty())
 	{
 		const auto filename = fmt::format("{}/{}", bundlePath, m_mainExecutable);
-		fs::path outDesktopEntry{ bundlePath / fs::path{ fs::path{ filename }.stem().string() + ".desktop" } };
-		std::string desktopEntryString = outDesktopEntry.string();
-		fs::path iconPath = bundlePath / fs::path{ icon }.filename();
 
-		result &= Commands::copyRename(desktopEntry, desktopEntryString);
+		const auto desktopEntryString = fmt::format("{}.desktop", String::getPathFolderBaseName(filename));
+		const auto iconPath = fmt::format("{}/{}", bundlePath, String::getPathFilename(icon));
 
-		result &= Commands::readFileAndReplace(outDesktopEntry, [&](std::string& fileContents) {
-			String::replaceAll(fileContents, "${mainProject}", fs::absolute(filename).string());
-			String::replaceAll(fileContents, "${path}", fs::absolute(bundlePath).string());
-			String::replaceAll(fileContents, "${name}", m_bundle.name());
-			String::replaceAll(fileContents, "${description}", m_bundle.description());
-			String::replaceAll(fileContents, "${icon}", fs::absolute(iconPath).string());
+		if (!Commands::copyRename(desktopEntry, desktopEntryString))
+			return false;
 
-			String::replaceAll(fileContents, '\\', '/');
-		});
+		if (!Commands::readFileAndReplace(desktopEntryString, [&](std::string& fileContents) {
+				String::replaceAll(fileContents, "${mainProject}", Commands::getAbsolutePath(filename));
+				String::replaceAll(fileContents, "${path}", Commands::getAbsolutePath(bundlePath));
+				String::replaceAll(fileContents, "${name}", m_bundle.name());
+				String::replaceAll(fileContents, "${description}", m_bundle.description());
+				String::replaceAll(fileContents, "${icon}", Commands::getAbsolutePath(iconPath));
+			}))
+			return false;
 
-		result &= Commands::setExecutableFlag(filename);
-		result &= Commands::setExecutableFlag(desktopEntryString);
+		if (!Commands::setExecutableFlag(desktopEntryString))
+			return false;
 
 		// TODO: Flag for this?
 		if (!Environment::isContinuousIntegrationServer())
@@ -136,9 +117,9 @@ bool AppBundlerLinux::bundleForPlatform()
 		}
 	}
 
-	Output::lineBreak();
+	// Output::lineBreak();
 
-	return result;
+	return true;
 }
 
 /*****************************************************************************/

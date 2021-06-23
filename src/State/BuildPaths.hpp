@@ -16,6 +16,8 @@ struct BuildInfo;
 
 struct BuildPaths
 {
+	const std::string& homeDirectory() const noexcept;
+
 	const std::string& workingDirectory() const noexcept;
 	void setWorkingDirectory(std::string&& inValue);
 

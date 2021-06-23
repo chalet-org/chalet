@@ -42,7 +42,6 @@ private:
 	std::string m_frameworkPath;
 	std::string m_resourcePath;
 	std::string m_executablePath;
-	std::string m_mainExecutable;
 	std::string m_executableOutputPath;
 	std::string m_iconBaseName;
 };
