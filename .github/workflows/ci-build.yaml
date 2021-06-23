@@ -76,7 +76,16 @@ jobs:
     env:
       MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
       MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+      MACOS_SIGNING_IDENTITY_PWD: ${{ secrets.MACOS_SIGNING_IDENTITY_PWD }}
     steps:
+      - name: "Prepare Environment for Signing"
+        run: |
+          echo $MACOS_CERTIFICATE | base64 —decode > certificate.p12
+          security create-keychain -p $MACOS_SIGNING_IDENTITY_PWD build.keychain security default-keychain -s build.keychain
+          security unlock-keychain -p $MACOS_SIGNING_IDENTITY_PWD build.keychain
+          security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $MACOS_SIGNING_IDENTITY_PWD build.keychain
       - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Fetch Dependencies"
@@ -85,6 +94,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Debug"
         run: bash ./build.sh Debug
+      - name: "Configure Chalet"
+        run: |
+          build/Debug/chalet-debug configure
+          build/Debug/chalet-debug set settings.macosSigningIdentity $MACOS_SIGNING_IDENTITY
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema bundle
       - name: "Run: Tests"
