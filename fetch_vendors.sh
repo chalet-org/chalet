@@ -82,6 +82,8 @@ for idx in 0 1 2 3 4 5 6 7 8 9 10; do
 		else
 			git clone --quiet -b "$tag" --depth 1 --config "advice.detachedHead=false" "https://github.com/$repo.git" "$path"
 		fi
+
+		rm -rf "$path/.git/"
 	fi
 done
 printf "\n"
