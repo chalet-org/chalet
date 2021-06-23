@@ -181,6 +181,10 @@ void AncillaryTools::setCodesign(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& AncillaryTools::macosSigningIdentity() const noexcept
+{
+	return m_macosSigningIdentity;
+}
 void AncillaryTools::setMacosSigningIdentity(const std::string& inValue) noexcept
 {
 	m_macosSigningIdentity = inValue;
@@ -504,6 +508,29 @@ bool AncillaryTools::updateGitRepositoryShallow(const std::string& inRepoPath) c
 bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const
 {
 	return Commands::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
+}
+
+/*****************************************************************************/
+bool AncillaryTools::macosCodeSignFile(const std::string& inPath) const
+{
+#if defined(CHALET_MACOS)
+	return Commands::subprocess({ m_codesign, "-s", m_macosSigningIdentity, "-v", inPath });
+#else
+	UNUSED(inPath);
+	return false;
+#endif
+}
+
+/*****************************************************************************/
+bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId) const
+{
+#if defined(CHALET_MACOS)
+	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
+	return Commands::subprocess({ m_codesign, "-s", m_macosSigningIdentity, fmt::format("-bundle-version={}", inVersionId), inFrameworkPath });
+#else
+	UNUSED(inFrameworkPath, inVersionId);
+	return false;
+#endif
 }
 
 /*****************************************************************************/

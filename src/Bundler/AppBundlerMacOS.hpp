@@ -31,6 +31,7 @@ private:
 	bool createPListAndUpdateCommonKeys() const;
 	bool setExecutablePaths() const;
 	bool createDmgImage() const;
+	bool signAppBundle() const;
 
 	const std::string& m_buildFile;
 

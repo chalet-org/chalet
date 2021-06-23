@@ -472,4 +472,10 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	return true;
 }
+
+/*****************************************************************************/
+bool AppBundlerMacOS::signAppBundle() const
+{
+	return true;
+}
 }
