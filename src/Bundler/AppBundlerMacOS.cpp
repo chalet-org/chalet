@@ -560,6 +560,12 @@ bool AppBundlerMacOS::signAppBundle() const
 /*****************************************************************************/
 bool AppBundlerMacOS::signDmgImage(const std::string& inPath) const
 {
+	if (m_state.ancillaryTools.macosSigningIdentity().empty())
+	{
+		Diagnostic::warn("dmg '{}' was not signed - macosSigningIdentity is not set, or was empty.", inPath);
+		return true;
+	}
+
 	Timer timer;
 	Diagnostic::info("Signing the disk image", false);
 

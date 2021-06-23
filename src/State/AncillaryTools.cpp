@@ -48,11 +48,28 @@ bool AncillaryTools::validate()
 	fetchBashVersion();
 	fetchBrewVersion();
 
+#if defined(CHALET_MACOS)
 	const auto& homeDirectory = m_inputs.homeDirectory();
 	Environment::replaceCommonVariables(m_macosSigningIdentity, homeDirectory);
 
 	// hash::SHA1 sha1;
 	// m_macosSigningIdentity = String::toUpperCase(sha1(m_macosSigningIdentity));
+
+	if (!m_macosSigningIdentity.empty())
+	{
+		// security find-identity -v -p codesigning
+		auto security = Commands::which("security");
+		if (!security.empty())
+		{
+			auto identities = Commands::subprocessOutput({ std::move(security), "find-identity", "-v", "-p", "codesigning" });
+			if (!String::contains(m_macosSigningIdentity, identities))
+			{
+				Diagnostic::error("macosSigningIdentity '{}' could not be verified with 'security find-identity -v -p codesigning'", m_macosSigningIdentity);
+				return false;
+			}
+		}
+	}
+#endif
 
 	return true;
 }
