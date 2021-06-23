@@ -14,6 +14,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -408,6 +409,8 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
 
+	Timer timer;
+
 	if (Output::cleanOutput())
 	{
 		const auto& universalBinaryArches = macosBundle.universalBinaryArches();
@@ -475,7 +478,7 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	if (Output::cleanOutput())
 	{
-		Diagnostic::printDone();
+		Diagnostic::printDone(timer.asString());
 	}
 
 	return true;
@@ -490,6 +493,7 @@ bool AppBundlerMacOS::signAppBundle() const
 		return true;
 	}
 
+	Timer timer;
 	Diagnostic::info("Signing the MacOS application bundle", false);
 
 	// TODO: Entitlements
@@ -539,7 +543,7 @@ bool AppBundlerMacOS::signAppBundle() const
 			}
 		}
 
-		Diagnostic::printDone();
+		Diagnostic::printDone(timer.asString());
 
 		return true;
 	}

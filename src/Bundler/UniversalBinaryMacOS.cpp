@@ -14,6 +14,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -34,6 +35,7 @@ bool UniversalBinaryMacOS::run(BuildState& inStateB, BuildState& inUniversalStat
 		return false;
 	}
 
+	Timer timer;
 	auto arches = String::join(m_bundle.macosBundle().universalBinaryArches());
 	Diagnostic::info(fmt::format("Creating MacOS univeral binaries (arch: {})", arches), false);
 
@@ -43,7 +45,7 @@ bool UniversalBinaryMacOS::run(BuildState& inStateB, BuildState& inUniversalStat
 	if (!createUniversalBinaries(m_state, inStateB, inUniversalState))
 		return false;
 
-	Diagnostic::printDone();
+	Diagnostic::printDone(timer.asString());
 	Output::lineBreak();
 
 	return true;
