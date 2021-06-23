@@ -75,7 +75,10 @@
 			"kind": "staticLibrary",
 			"location": {
 				"include": "vendor/hash-library",
-				"exclude": "vendor/hash-library/tests"
+				"exclude": [
+					"vendor/hash-library/tests",
+					"vendor/hash-library/digest.cpp"
+				]
 			}
 		},
 		"json-schema-validator": {

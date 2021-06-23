@@ -38,7 +38,6 @@ file(GLOB_RECURSE SOURCES
 	vendor/json-schema-validator/src/*.cpp
 	vendor/subprocess/src/cpp/*.cpp
 	vendor/hash-library/crc32.cpp
-	vendor/hash-library/digest.cpp
 	vendor/hash-library/keccak.cpp
 	vendor/hash-library/md5.cpp
 	vendor/hash-library/sha1.cpp
