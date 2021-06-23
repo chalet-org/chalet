@@ -19,12 +19,6 @@
 	"terminal.integrated.env.windows": {
 		"Path": "${env:Path}"
 	},
-	"terminal.integrated.env.linux": {
-		"PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-	},
-	"terminal.integrated.env.osx": {
-		"PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-	},
 	"json.schemas": [
 		{
 			"fileMatch": [

@@ -14,20 +14,6 @@
 			}
 		}
 	},
-	"linux": {
-		"options": {
-			"env": {
-				"PATH": "${config:terminal.integrated.env.linux.PATH}"
-			}
-		}
-	},
-	"osx": {
-		"options": {
-			"env": {
-				"PATH": "${config:terminal.integrated.env.osx.PATH}"
-			}
-		}
-	},
 	"presentation": {
 		"echo": false,
 		"reveal": "always",

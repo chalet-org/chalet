@@ -57,10 +57,7 @@
 			},
 			"linux": {
 				"MIMode": "gdb",
-				"miDebuggerPath": "/usr/bin/gdb",
-				"env": {
-					"PATH": "${config:terminal.integrated.env.linux.PATH}",
-				}
+				"miDebuggerPath": "/usr/bin/gdb"
 			}
 		}
 	]
