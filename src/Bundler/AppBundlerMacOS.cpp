@@ -113,9 +113,9 @@ bool AppBundlerMacOS::bundleForPlatform()
 	// treat it like linux/windows
 	if (macosBundle.bundleName().empty())
 	{
-		if (Output::showCommands())
-			Output::lineBreak();
-		return true;
+		Output::lineBreak();
+
+		return signAppBundle();
 	}
 
 	// TODO: Generalized version of this in AppBundler
@@ -490,39 +490,10 @@ bool AppBundlerMacOS::signAppBundle() const
 	Diagnostic::info("Signing the MacOS application bundle", false);
 
 	// TODO: Entitlements
+	bool isBundle = String::endsWith(".app/Contents", m_bundlePath);
 
 	try
 	{
-		if (m_frameworkPath != m_executablePath)
-		{
-			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_frameworkPath))
-			{
-				if (entry.is_regular_file())
-				{
-					auto path = entry.path().string();
-					if (!m_state.ancillaryTools.macosCodeSignFile(path))
-					{
-						Diagnostic::error("Failed to sign: {}", path);
-						return false;
-					}
-				}
-			}
-		}
-		if (m_resourcePath != m_executablePath)
-		{
-			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_resourcePath))
-			{
-				if (entry.is_regular_file())
-				{
-					auto path = entry.path().string();
-					if (!m_state.ancillaryTools.macosCodeSignFile(path))
-					{
-						Diagnostic::error("Failed to sign: {}", path);
-						return false;
-					}
-				}
-			}
-		}
 		for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_executablePath))
 		{
 			if (entry.is_regular_file())
@@ -536,8 +507,34 @@ bool AppBundlerMacOS::signAppBundle() const
 			}
 		}
 
-		if (String::endsWith(".app/Contents", m_bundlePath))
+		if (isBundle)
 		{
+			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_frameworkPath))
+			{
+				if (entry.is_regular_file())
+				{
+					auto path = entry.path().string();
+					if (!m_state.ancillaryTools.macosCodeSignFile(path))
+					{
+						Diagnostic::error("Failed to sign: {}", path);
+						return false;
+					}
+				}
+			}
+
+			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_resourcePath))
+			{
+				if (entry.is_regular_file())
+				{
+					auto path = entry.path().string();
+					if (!m_state.ancillaryTools.macosCodeSignFile(path))
+					{
+						Diagnostic::error("Failed to sign: {}", path);
+						return false;
+					}
+				}
+			}
+
 			auto appPath = m_bundlePath.substr(0, m_bundlePath.size() - 9);
 			if (!m_state.ancillaryTools.macosCodeSignFile(appPath))
 			{
