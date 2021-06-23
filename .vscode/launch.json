@@ -50,10 +50,7 @@
 			"windows": {
 				"program": "${workspaceFolder}/build/Debug/chalet-debug.exe",
 				"MIMode": "gdb",
-				"miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
-				"env": {
-					"Path": "${config:terminal.integrated.env.windows.Path}"
-				}
+				"miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe"
 			},
 			"linux": {
 				"MIMode": "gdb",

@@ -7,13 +7,6 @@
 			"CHALET_DEBUG": "build/Debug/chalet-debug"
 		}
 	},
-	"windows": {
-		"options": {
-			"env": {
-				"Path": "${config:terminal.integrated.env.windows.Path}"
-			}
-		}
-	},
 	"presentation": {
 		"echo": false,
 		"reveal": "always",

@@ -16,9 +16,6 @@
 		"vendor": true
 	},
 	"terminal.integrated.automationShell.windows": "C:/Program Files/Git/bin/bash.exe",
-	"terminal.integrated.env.windows": {
-		"Path": "${env:Path}"
-	},
 	"json.schemas": [
 		{
 			"fileMatch": [
