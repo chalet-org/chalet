@@ -27,6 +27,8 @@ public:
 	static bool changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile);
 
 private:
+	std::string getFrameworksPath() const;
+
 	bool createBundleIcon();
 	bool createPListAndUpdateCommonKeys() const;
 	bool setExecutablePaths() const;

@@ -36,7 +36,7 @@ struct AncillaryTools
 	const std::string& codesign() const noexcept;
 	void setCodesign(std::string&& inValue) noexcept;
 	const std::string& macosSigningIdentity() const noexcept;
-	void setMacosSigningIdentity(const std::string& inValue) noexcept;
+	void setMacosSigningIdentity(std::string&& inValue) noexcept;
 
 	const std::string& commandPrompt() const noexcept;
 	void setCommandPrompt(std::string&& inValue) noexcept;

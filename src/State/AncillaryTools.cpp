@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/DependencyWalker.hpp"
 #include "Utility/List.hpp"
@@ -185,9 +186,9 @@ const std::string& AncillaryTools::macosSigningIdentity() const noexcept
 {
 	return m_macosSigningIdentity;
 }
-void AncillaryTools::setMacosSigningIdentity(const std::string& inValue) noexcept
+void AncillaryTools::setMacosSigningIdentity(std::string&& inValue) noexcept
 {
-	m_macosSigningIdentity = inValue;
+	m_macosSigningIdentity = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -514,7 +515,17 @@ bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, c
 bool AncillaryTools::macosCodeSignFile(const std::string& inPath) const
 {
 #if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_codesign, "-s", m_macosSigningIdentity, "-v", inPath });
+	StringList cmd{ m_codesign, "--deep", "-f", "-s", m_macosSigningIdentity };
+
+	bool showCommands = Output::showCommands();
+	if (showCommands)
+		cmd.push_back("-v");
+
+	cmd.push_back(inPath);
+	if (showCommands)
+		return Commands::subprocess(cmd);
+	else
+		return Commands::subprocessNoOutput(cmd);
 #else
 	UNUSED(inPath);
 	return false;
@@ -526,7 +537,19 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 {
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
-	return Commands::subprocess({ m_codesign, "-s", m_macosSigningIdentity, fmt::format("-bundle-version={}", inVersionId), inFrameworkPath });
+
+	StringList cmd{ m_codesign, "--deep", "-f", "-s", m_macosSigningIdentity };
+	cmd.push_back(fmt::format("-bundle-version={}", inVersionId));
+
+	bool showCommands = Output::showCommands();
+	if (showCommands)
+		cmd.push_back("-v");
+
+	cmd.push_back(inFrameworkPath);
+	if (showCommands)
+		return Commands::subprocess(cmd);
+	else
+		return Commands::subprocessNoOutput(cmd);
 #else
 	UNUSED(inFrameworkPath, inVersionId);
 	return false;

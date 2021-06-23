@@ -64,8 +64,12 @@ void Diagnostic::info(const std::string& inMessage, const bool inLineBreak)
 		}
 		else
 		{
-			std::cout << fmt::format("{} ... {}", color, reset) << std::flush;
+			std::cout << fmt::format("{} ... {}", color, reset);
 			sStartedInfo = true;
+			if (Output::showCommands())
+				std::cout << std::endl;
+			else
+				std::cout << std::flush;
 		}
 	}
 }
@@ -79,13 +83,19 @@ void Diagnostic::printDone(const std::string& inExtra)
 		const auto reset = Output::getAnsiReset();
 
 		sStartedInfo = false;
+		std::string done;
+		if (Output::showCommands())
+			done = "... done";
+		else
+			done = "done";
+
 		if (!inExtra.empty())
 		{
-			std::cout << fmt::format("{}done ({}){}", color, inExtra, reset) << std::endl;
+			std::cout << fmt::format("{}{} ({}){}", color, done, inExtra, reset) << std::endl;
 		}
 		else
 		{
-			std::cout << fmt::format("{}done{}", color, reset) << std::endl;
+			std::cout << fmt::format("{}{}{}", color, done, reset) << std::endl;
 		}
 	}
 }

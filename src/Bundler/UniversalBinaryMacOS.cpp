@@ -34,11 +34,17 @@ bool UniversalBinaryMacOS::run(BuildState& inStateB, BuildState& inUniversalStat
 		return false;
 	}
 
+	auto arches = String::join(m_bundle.macosBundle().universalBinaryArches());
+	Diagnostic::info(fmt::format("Creating MacOS univeral binaries (arch: {})", arches), false);
+
 	if (!gatherDependencies(m_state, inStateB, inUniversalState))
 		return false;
 
 	if (!createUniversalBinaries(m_state, inStateB, inUniversalState))
 		return false;
+
+	Diagnostic::printDone();
+	Output::lineBreak();
 
 	return true;
 }

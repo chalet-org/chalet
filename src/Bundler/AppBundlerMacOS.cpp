@@ -52,7 +52,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 	auto& macosBundle = m_bundle.macosBundle();
 
 	m_bundlePath = getBundlePath();
-	m_frameworkPath = fmt::format("{}/Frameworks", m_bundlePath);
+	m_frameworkPath = getFrameworksPath();
 	m_resourcePath = getResourcePath();
 	m_executablePath = getExecutablePath();
 
@@ -119,13 +119,6 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	// TODO: Generalized version of this in AppBundler
 	Output::lineBreak();
-	Output::print(Color::Blue, "   Creating the MacOS application bundle...");
-
-	const auto& universalBinaryArches = macosBundle.universalBinaryArches();
-	if (universalBinaryArches.size() < 2)
-	{
-		Output::lineBreak();
-	}
 
 	Commands::makeDirectory(m_frameworkPath);
 
@@ -183,6 +176,20 @@ std::string AppBundlerMacOS::getResourcePath() const
 	if (!bundleName.empty())
 	{
 		return fmt::format("{}/Resources", getBundlePath());
+	}
+	else
+	{
+		return m_bundle.outDir();
+	}
+}
+
+/*****************************************************************************/
+std::string AppBundlerMacOS::getFrameworksPath() const
+{
+	const auto& bundleName = m_bundle.macosBundle().bundleName();
+	if (!bundleName.empty())
+	{
+		return fmt::format("{}/Frameworks", getBundlePath());
 	}
 	else
 	{
@@ -409,8 +416,7 @@ bool AppBundlerMacOS::createDmgImage() const
 			Output::lineBreak();
 		}
 
-		Output::print(Color::Blue, "   Creating the disk image for the application...");
-		Output::lineBreak();
+		Diagnostic::info("Creating the disk image for the application", false);
 	}
 
 	const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);
@@ -434,7 +440,7 @@ bool AppBundlerMacOS::createDmgImage() const
 	if (!Commands::subprocessNoOutput({ hdiutil, "attach", tmpDmg }))
 		return false;
 
-	if (!Commands::copy(appPath, volumePath))
+	if (!Commands::copySilent(appPath, volumePath))
 		return false;
 
 	const std::string backgroundPath = fmt::format("{}/.background", volumePath);
@@ -469,8 +475,7 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	if (Output::cleanOutput())
 	{
-		Output::lineBreak();
-		Output::print(Color::Blue, fmt::format("   Done! See '{}'", outDmgPath));
+		Diagnostic::printDone();
 	}
 
 	return true;
@@ -479,17 +484,62 @@ bool AppBundlerMacOS::createDmgImage() const
 /*****************************************************************************/
 bool AppBundlerMacOS::signAppBundle() const
 {
-	auto bundlePath = getBundlePath();
+	if (m_state.ancillaryTools.macosSigningIdentity().empty())
+	{
+		Diagnostic::warn("bundle '{}' was not signed - macosSigningIdentity is not set, or was empty.", m_bundle.name());
+		return true;
+	}
+
+	Diagnostic::info("Signing the MacOS application bundle", false);
+
+	// TODO: Entitlements
 
 	try
 	{
-		for (const fs::directory_entry& entry : fs::recursive_directory_iterator(bundlePath))
+		if (m_frameworkPath != m_executablePath)
+		{
+			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_frameworkPath))
+			{
+				if (entry.is_regular_file())
+				{
+					auto path = entry.path().string();
+					if (!m_state.ancillaryTools.macosCodeSignFile(path))
+					{
+						Diagnostic::error("Failed to sign: {}", path);
+						return false;
+					}
+				}
+			}
+		}
+		if (m_resourcePath != m_executablePath)
+		{
+			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_resourcePath))
+			{
+				if (entry.is_regular_file())
+				{
+					auto path = entry.path().string();
+					if (!m_state.ancillaryTools.macosCodeSignFile(path))
+					{
+						Diagnostic::error("Failed to sign: {}", path);
+						return false;
+					}
+				}
+			}
+		}
+		for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_executablePath))
 		{
 			if (entry.is_regular_file())
 			{
-				LOG(entry.path().string());
+				auto path = entry.path().string();
+				if (!m_state.ancillaryTools.macosCodeSignFile(path))
+				{
+					Diagnostic::error("Failed to sign: {}", path);
+					return false;
+				}
 			}
 		}
+
+		Diagnostic::printDone();
 
 		return true;
 	}
