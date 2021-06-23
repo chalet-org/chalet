@@ -37,6 +37,13 @@ file(GLOB_RECURSE SOURCES
 	src/*.rc
 	vendor/json-schema-validator/src/*.cpp
 	vendor/subprocess/src/cpp/*.cpp
+	vendor/hash-library/crc32.cpp
+	vendor/hash-library/digest.cpp
+	vendor/hash-library/keccak.cpp
+	vendor/hash-library/md5.cpp
+	vendor/hash-library/sha1.cpp
+	vendor/hash-library/sha256.cpp
+	vendor/hash-library/sha3.cpp
 )
 
 add_executable(${TARGET_NAME} ${SOURCES})
@@ -53,6 +60,7 @@ target_include_directories(${TARGET_NAME}
 		vendor/glob/single_include/
 		vendor/subprocess/src/cpp/
 		vendor/ust/
+		vendor/hash-library/
 		vendor/
 )
 

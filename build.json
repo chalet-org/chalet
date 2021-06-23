@@ -71,6 +71,13 @@
 		}
 	},
 	"targets": {
+		"hash-library": {
+			"kind": "staticLibrary",
+			"location": {
+				"include": "vendor/hash-library",
+				"exclude": "vendor/hash-library/tests"
+			}
+		},
 		"json-schema-validator": {
 			"kind": "staticLibrary",
 			"location": "vendor/json-schema-validator/src"
@@ -87,7 +94,8 @@
 				"windowsApplicationManifest": "platform/windows/app.manifest",
 				"staticLinks": [
 					"json-schema-validator",
-					"subprocess"
+					"subprocess",
+					"hash-library"
 				]
 			},
 			"runProject": true
@@ -105,7 +113,8 @@
 				"pch": "src/PCH.hpp",
 				"staticLinks": [
 					"json-schema-validator",
-					"subprocess"
+					"subprocess",
+					"hash-library"
 				],
 				"includeDirs": [
 					"vendor/catch2/single_include"

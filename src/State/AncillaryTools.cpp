@@ -6,6 +6,7 @@
 #include "State/AncillaryTools.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+// #include "Libraries/HashAlgorithm.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -49,6 +50,9 @@ bool AncillaryTools::validate()
 
 	const auto& homeDirectory = m_inputs.homeDirectory();
 	Environment::replaceCommonVariables(m_macosSigningIdentity, homeDirectory);
+
+	// hash::SHA1 sha1;
+	// m_macosSigningIdentity = String::toUpperCase(sha1(m_macosSigningIdentity));
 
 	return true;
 }
@@ -512,10 +516,16 @@ bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, c
 }
 
 /*****************************************************************************/
-bool AncillaryTools::macosCodeSignFile(const std::string& inPath) const
+bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inForce) const
 {
 #if defined(CHALET_MACOS)
-	StringList cmd{ m_codesign, "--deep", "-f", "-s", m_macosSigningIdentity };
+	StringList cmd{ m_codesign, "--strict", "--deep" };
+
+	if (inForce)
+		cmd.push_back("-f");
+
+	cmd.push_back("-s");
+	cmd.push_back(m_macosSigningIdentity);
 
 	bool showCommands = Output::showCommands();
 	if (showCommands)
@@ -532,12 +542,13 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath) const
 #endif
 }
 
+/*****************************************************************************/
 bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath) const
 {
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".dmg", inPath), "Must be a .dmg");
 
-	StringList cmd{ m_codesign, "-s", m_macosSigningIdentity };
+	StringList cmd{ m_codesign, "--strict", "-s", m_macosSigningIdentity };
 
 	bool showCommands = Output::showCommands();
 	if (showCommands)
@@ -560,7 +571,7 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
 
-	StringList cmd{ m_codesign, "--deep", "-f", "-s", m_macosSigningIdentity };
+	StringList cmd{ m_codesign, "--strict", "--deep", "-f", "-s", m_macosSigningIdentity };
 	cmd.push_back(fmt::format("-bundle-version={}", inVersionId));
 
 	bool showCommands = Output::showCommands();
