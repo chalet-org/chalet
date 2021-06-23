@@ -33,15 +33,21 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		std::string arg(argv[i] ? argv[i] : "");
 		// LOG('"', arg, '"');
 
-		if (arg.back() == '"')
-			arg.pop_back();
 		if (String::startsWith('"', arg))
+		{
 			arg = arg.substr(1);
 
-		if (arg.back() == '\'')
-			arg.pop_back();
+			if (arg.back() == '"')
+				arg.pop_back();
+		}
+
 		if (String::startsWith('\'', arg))
+		{
 			arg = arg.substr(1);
+
+			if (arg.back() == '\'')
+				arg.pop_back();
+		}
 
 		if (String::contains(' ', arg))
 		{

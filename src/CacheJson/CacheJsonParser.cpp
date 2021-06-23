@@ -51,10 +51,6 @@ bool CacheJsonParser::serialize(const GlobalConfigState& inState)
 		Diagnostic::info(fmt::format("Creating Cache [{}]", m_jsonFile.filename()), false);
 	}
 
-	// Note: this should never get cached locally
-	if (!addGlobalSettings(inState))
-		return false;
-
 	if (!makeCache(inState))
 		return false;
 
@@ -71,14 +67,6 @@ bool CacheJsonParser::serialize(const GlobalConfigState& inState)
 		return false;
 
 	Diagnostic::printDone(timer.asString());
-
-	return true;
-}
-
-/*****************************************************************************/
-bool CacheJsonParser::addGlobalSettings(const GlobalConfigState& inState)
-{
-	m_prototype.ancillaryTools.setCertSigningRequest(inState.macosSigningIdentity);
 
 	return true;
 }
@@ -199,6 +187,12 @@ bool CacheJsonParser::makeCache(const GlobalConfigState& inState)
 				m_jsonFile.setDirty(true);
 			}
 		}
+	}
+
+	if (!settings.contains(kKeyMacosSigningIdentity) || !settings[kKeyMacosSigningIdentity].is_string())
+	{
+		settings[kKeyMacosSigningIdentity] = inState.macosSigningIdentity;
+		m_jsonFile.setDirty(true);
 	}
 
 	//
@@ -382,6 +376,9 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, settings, kKeyLastToolchain))
 		m_inputs.setToolchainPreference(std::move(val));
+
+	if (std::string val; m_jsonFile.assignFromKey(val, settings, kKeyMacosSigningIdentity))
+		m_prototype.ancillaryTools.setMacosSigningIdentity(std::move(val));
 
 	return true;
 }

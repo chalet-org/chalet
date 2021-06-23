@@ -337,6 +337,11 @@ Json Schema::getCacheJson()
 		"type": "string"
 	})json"_ojson;
 
+	ret[kDefinitions]["settings-macosSigningIdentity"] = R"json({
+		"description": "The signing identity to use when bundling the macos application bundle.",
+		"type": "string"
+	})json"_ojson;
+
 	//
 	const auto kProperties = "properties";
 	ret[kProperties] = Json::object();
@@ -482,7 +487,8 @@ Json Schema::getCacheJson()
 			"dumpAssembly",
 			"maxJobs",
 			"showCommands",
-			"toolchain"
+			"toolchain",
+			"macosSigningIdentity"
 		],
 		"properties": {
 			"dumpAssembly": {
@@ -496,6 +502,9 @@ Json Schema::getCacheJson()
 			},
 			"toolchain": {
 				"$ref": "#/definitions/settings-toolchain"
+			},
+			"macosSigningIdentity": {
+				"$ref": "#/definitions/settings-macosSigningIdentity"
 			}
 		}
 	})json"_ojson;
@@ -518,19 +527,9 @@ Json Schema::getCacheJson()
 Json Schema::getGlobalConfigJson()
 {
 	const auto kProperties = "properties";
-	const auto kSettings = "settings";
+
 	Json ret = Schema::getCacheJson();
 	ret[kProperties]["ancillaryTools"].erase("required");
-	ret[kProperties][kSettings]["required"] = {
-		"dumpAssembly",
-		"maxJobs",
-		"showCommands",
-		"toolchain",
-		"macosSigningIdentity",
-	};
-	ret[kProperties][kSettings][kProperties]["macosSigningIdentity"] = R"json({
-		"type": "string"
-	})json"_ojson;
 
 	return ret;
 }

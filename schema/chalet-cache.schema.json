@@ -257,6 +257,10 @@
 		"settings-toolchain": {
 			"description": "The toolchain id to use for building, if not the previous one.",
 			"type": "string"
+		},
+		"settings-macosSigningIdentity": {
+			"description": "The signing identity to use when bundling the macos application bundle.",
+			"type": "string"
 		}
 	},
 	"properties": {
@@ -396,7 +400,8 @@
 				"dumpAssembly",
 				"maxJobs",
 				"showCommands",
-				"toolchain"
+				"toolchain",
+				"macosSigningIdentity"
 			],
 			"properties": {
 				"dumpAssembly": {
@@ -410,6 +415,9 @@
 				},
 				"toolchain": {
 					"$ref": "#/definitions/settings-toolchain"
+				},
+				"macosSigningIdentity": {
+					"$ref": "#/definitions/settings-macosSigningIdentity"
 				}
 			}
 		},

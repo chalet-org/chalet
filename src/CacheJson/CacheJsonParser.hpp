@@ -23,7 +23,6 @@ struct CacheJsonParser
 	bool serialize(const GlobalConfigState& inState);
 
 private:
-	bool addGlobalSettings(const GlobalConfigState& inState);
 	bool validatePaths();
 	bool makeCache(const GlobalConfigState& inState);
 	bool serializeFromJsonRoot(Json& inJson);
@@ -47,6 +46,7 @@ private:
 	const std::string kKeyMaxJobs = "maxJobs";
 	const std::string kKeyShowCommands = "showCommands";
 	const std::string kKeyLastToolchain = "toolchain";
+	const std::string kKeyMacosSigningIdentity = "macosSigningIdentity";
 	// const std::string kKeyTargetArchitecture = "targetArchitecture";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
 	const std::string kKeyExternalDependencies = "externalDependencies";

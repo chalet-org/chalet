@@ -77,14 +77,12 @@ bool GlobalConfigJsonParser::makeCache(GlobalConfigState& outState)
 		m_jsonFile.setDirty(true);
 	}
 
-#if defined(CHALET_MACOS)
 	if (!settings.contains(kKeyMacosSigningIdentity) || !settings[kKeyMacosSigningIdentity].is_string())
 	{
 		outState.macosSigningIdentity = std::string();
 		settings[kKeyMacosSigningIdentity] = outState.macosSigningIdentity;
 		m_jsonFile.setDirty(true);
 	}
-#endif
 
 	return true;
 }
@@ -140,10 +138,8 @@ bool GlobalConfigJsonParser::parseSettings(const Json& inNode, GlobalConfigState
 	if (std::string val; m_jsonFile.assignFromKey(val, settings, kKeyLastToolchain))
 		outState.toolchainPreference = std::move(val);
 
-#if defined(CHALET_MACOS)
 	if (std::string val; m_jsonFile.assignFromKey(val, settings, kKeyMacosSigningIdentity))
 		outState.macosSigningIdentity = std::move(val);
-#endif
 
 	return true;
 }

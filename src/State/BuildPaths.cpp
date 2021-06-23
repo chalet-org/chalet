@@ -268,19 +268,7 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 	}
 
 	const auto& homeDirectory = m_inputs.homeDirectory();
-	if (!homeDirectory.empty())
-	{
-		if (String::startsWith("~/", outPath))
-		{
-			outPath = fmt::format("{}{}", homeDirectory, outPath.substr(1));
-		}
-		else
-		{
-			String::replaceAll(outPath, "${home}", homeDirectory);
-		}
-	}
-
-	Path::sanitize(outPath);
+	Environment::replaceCommonVariables(outPath, homeDirectory);
 }
 
 /*****************************************************************************/

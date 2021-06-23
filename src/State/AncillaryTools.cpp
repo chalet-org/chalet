@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/DependencyWalker.hpp"
 #include "Utility/List.hpp"
@@ -46,18 +47,7 @@ bool AncillaryTools::validate()
 	fetchBrewVersion();
 
 	const auto& homeDirectory = m_inputs.homeDirectory();
-	if (!homeDirectory.empty())
-	{
-		if (String::startsWith("~/", m_macosCertSigningRequest))
-		{
-			m_macosCertSigningRequest = fmt::format("{}{}", homeDirectory, m_macosCertSigningRequest.substr(1));
-		}
-		else
-		{
-			String::replaceAll(m_macosCertSigningRequest, "${home}", homeDirectory);
-		}
-	}
-	Path::sanitize(m_macosCertSigningRequest);
+	Environment::replaceCommonVariables(m_macosSigningIdentity, homeDirectory);
 
 	return true;
 }
@@ -191,9 +181,9 @@ void AncillaryTools::setCodesign(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-void AncillaryTools::setCertSigningRequest(const std::string& inValue) noexcept
+void AncillaryTools::setMacosSigningIdentity(const std::string& inValue) noexcept
 {
-	m_macosCertSigningRequest = inValue;
+	m_macosSigningIdentity = inValue;
 }
 
 /*****************************************************************************/

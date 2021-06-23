@@ -7,6 +7,7 @@
 
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/MsvcEnvironment.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 
 #if defined(CHALET_WIN32)
@@ -411,6 +412,37 @@ void Environment::set(const char* inName, const std::string& inValue)
 	{
 		Diagnostic::errorAbort("Could not set {}", inName);
 	}
+}
+
+/*****************************************************************************/
+void Environment::replaceCommonVariables(std::string& outString, const std::string& inHomeDirectory)
+{
+	if (!inHomeDirectory.empty())
+	{
+		if (String::startsWith("~/", outString))
+		{
+			outString = fmt::format("{}{}", inHomeDirectory, outString.substr(1));
+		}
+		else
+		{
+			String::replaceAll(outString, "${home}", inHomeDirectory);
+		}
+	}
+
+	if (String::contains("${env:", outString))
+	{
+		auto begin = outString.find("${env:");
+		auto end = outString.find("}", begin);
+		if (end != std::string::npos)
+		{
+			auto replace = outString.substr(begin, (end + 1) - begin);
+			auto key = outString.substr(begin + 6, end - (begin + 6));
+			auto replaceTo = Environment::getAsString(key.c_str());
+			String::replaceAll(outString, replace, replaceTo);
+		}
+	}
+
+	Path::sanitize(outString);
 }
 
 /*****************************************************************************/
