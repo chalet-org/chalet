@@ -320,6 +320,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Resources", m_executableOutputPath }))
 		return false;
 
+	uint i = 0;
 	for (auto& target : m_state.targets)
 	{
 		if (target->isProject())
@@ -346,11 +347,15 @@ bool AppBundlerMacOS::setExecutablePaths() const
 					if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), m_executableOutputPath }))
 						return false;
 
+					++i;
+
 					break;
 				}
 			}
 		}
 	}
+	if (i > 0)
+		Output::lineBreak();
 
 	return true;
 }

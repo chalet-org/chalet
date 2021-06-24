@@ -534,10 +534,12 @@ bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, c
 }
 
 /*****************************************************************************/
+// TODO: remove "--deep" and figure out the proper Apple-approved way of doing things
+//
 bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inForce) const
 {
 #if defined(CHALET_MACOS)
-	StringList cmd{ m_codesign, "--strict", "--deep" };
+	StringList cmd{ m_codesign, "--strict", "--deep", "--continue" };
 
 	if (inForce)
 		cmd.push_back("-f");
@@ -566,7 +568,7 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath) const
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".dmg", inPath), "Must be a .dmg");
 
-	StringList cmd{ m_codesign, "--strict", "-s", m_macosSigningIdentity };
+	StringList cmd{ m_codesign, "--strict", "--continue", "-s", m_macosSigningIdentity };
 
 	bool showCommands = Output::showCommands();
 	if (showCommands)
@@ -589,7 +591,7 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
 
-	StringList cmd{ m_codesign, "--strict", "--deep", "-f", "-s", m_macosSigningIdentity };
+	StringList cmd{ m_codesign, "--strict", "--deep", "--continue", "-f", "-s", m_macosSigningIdentity };
 	cmd.push_back(fmt::format("-bundle-version={}", inVersionId));
 
 	bool showCommands = Output::showCommands();

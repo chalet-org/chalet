@@ -394,7 +394,67 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 }
 
 /*****************************************************************************/
-bool Commands::copy(const std::string& inFrom, const std::string& inTo)
+// NOTE: fs::copy_options::recursive follows all symlinks (bad!)
+//   This is a custom version that more or less does the same thing,
+//   but preserves symlinks (needed for copying frameworks)
+//
+bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_options inOptions)
+{
+	try
+	{
+		if (!fs::exists(source) || !fs::is_directory(source))
+		{
+			Diagnostic::error("Source directory {} does not exist or is not a directory.", source.string());
+			return false;
+		}
+		if (fs::exists(dest))
+		{
+			Diagnostic::error("Destination directory {} already exists.", dest.string());
+			return false;
+		}
+		if (!fs::create_directory(dest))
+		{
+			Diagnostic::error("Unable to create destination directory {}", dest.string());
+			return false;
+		}
+	}
+	catch (fs::filesystem_error& err)
+	{
+		Diagnostic::error(err.what());
+		return false;
+	}
+
+	for (const auto& file : fs::directory_iterator(source))
+	{
+		try
+		{
+			const auto& current = file.path();
+			if (file.is_symlink())
+			{
+				fs::copy_options options = inOptions | fs::copy_options::copy_symlinks;
+				fs::copy(current, dest / current.filename(), options);
+			}
+			else if (file.is_directory())
+			{
+				if (!copyDirectory(current, dest / current.filename(), inOptions))
+					return false;
+			}
+			else
+			{
+				fs::copy(current, dest / current.filename(), inOptions);
+			}
+		}
+		catch (const fs::filesystem_error& err)
+		{
+			Diagnostic::error(err.what());
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
 {
 	try
 	{
@@ -406,8 +466,10 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo)
 		else
 			Output::msgCopying(inFrom, inTo);
 
-		fs::copy(from, to, fs::copy_options::recursive);
+		if (fs::is_directory(from))
+			return copyDirectory(from, to, inOptions);
 
+		fs::copy(from, to, inOptions);
 		return true;
 	}
 	catch (const fs::filesystem_error& err)
@@ -425,8 +487,10 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
 		fs::path from{ inFrom };
 		fs::path to{ inTo / from.filename() };
 
-		fs::copy(from, to, fs::copy_options::recursive | fs::copy_options::overwrite_existing);
+		if (fs::is_directory(from))
+			return copyDirectory(from, to, fs::copy_options::overwrite_existing);
 
+		fs::copy(from, to, fs::copy_options::overwrite_existing);
 		return true;
 	}
 	catch (const fs::filesystem_error& err)
@@ -449,8 +513,10 @@ bool Commands::copySkipExisting(const std::string& inFrom, const std::string& in
 		else
 			Output::msgCopying(inFrom, inTo);
 
-		fs::copy(from, to, fs::copy_options::recursive | fs::copy_options::skip_existing);
+		if (fs::is_directory(from))
+			return copyDirectory(from, to, fs::copy_options::skip_existing);
 
+		fs::copy(from, to, fs::copy_options::skip_existing);
 		return true;
 	}
 	catch (const fs::filesystem_error& err)

@@ -36,7 +36,7 @@ bool removeRecursively(const std::string& inPath);
 bool setExecutableFlag(const std::string& inPath);
 bool createDirectorySymbolicLink(const std::string& inFrom, const std::string& inTo);
 bool createSymbolicLink(const std::string& inFrom, const std::string& inTo);
-bool copy(const std::string& inFrom, const std::string& inTo);
+bool copy(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions = fs::copy_options::none);
 bool copySilent(const std::string& inFrom, const std::string& inTo);
 bool copySkipExisting(const std::string& inFrom, const std::string& inTo);
 bool copyRename(const std::string& inFrom, const std::string& inTo);
