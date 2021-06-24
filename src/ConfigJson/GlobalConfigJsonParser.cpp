@@ -42,7 +42,7 @@ bool GlobalConfigJsonParser::makeCache(GlobalConfigState& outState)
 	// Create the json cache
 	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyToolchains, JsonDataType::object);
-	m_jsonFile.makeNode(kKeyAncillaryTools, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyTools, JsonDataType::object);
 
 #if defined(CHALET_MACOS)
 	m_jsonFile.makeNode(kKeyApplePlatformSdks, JsonDataType::object);
@@ -165,13 +165,13 @@ bool GlobalConfigJsonParser::parseToolchains(const Json& inNode, GlobalConfigSta
 /*****************************************************************************/
 bool GlobalConfigJsonParser::parseAncillaryTools(const Json& inNode, GlobalConfigState& outState)
 {
-	if (!inNode.contains(kKeyAncillaryTools))
+	if (!inNode.contains(kKeyTools))
 		return true;
 
-	const Json& settings = inNode.at(kKeyAncillaryTools);
+	const Json& settings = inNode.at(kKeyTools);
 	if (!settings.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyAncillaryTools);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyTools);
 		return false;
 	}
 

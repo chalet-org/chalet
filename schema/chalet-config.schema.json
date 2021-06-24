@@ -4,136 +4,136 @@
 	"additionalProperties": false,
 	"required": [
 		"settings",
-		"ancillaryTools",
+		"tools",
 		"toolchains"
 	],
 	"definitions": {
-		"ancillaryTools-bash": {
+		"tools-bash": {
 			"type": "string",
 			"description": "The executable path to GNU bash",
 			"default": "/usr/bin/bash"
 		},
-		"ancillaryTools-brew": {
+		"tools-brew": {
 			"type": "string",
 			"description": "The executable path to brew command-line utility (MacOS)",
 			"default": "/usr/local/bin/brew"
 		},
-		"ancillaryTools-command_prompt": {
+		"tools-command_prompt": {
 			"type": "string",
 			"description": "The executable path to Command Prompt (Windows)",
 			"default": "C:/Windows/System32/cmd.exe"
 		},
-		"ancillaryTools-codesign": {
+		"tools-codesign": {
 			"type": "string",
 			"description": "The executable path to codesign command-line utility (MacOS)",
 			"default": "/usr/bin/codesign"
 		},
-		"ancillaryTools-git": {
+		"tools-git": {
 			"type": "string",
 			"description": "The executable path to git.",
 			"default": "/usr/bin/git"
 		},
-		"ancillaryTools-gprof": {
+		"tools-gprof": {
 			"type": "string",
 			"description": "The executable path to gprof.",
 			"default": "/usr/bin/gprof"
 		},
-		"ancillaryTools-hdiutil": {
+		"tools-hdiutil": {
 			"type": "string",
 			"description": "The executable path to Apple's hdiutil command-line utility (MacOS)",
 			"default": "/usr/bin/hdiutil"
 		},
-		"ancillaryTools-install_name_tool": {
+		"tools-install_name_tool": {
 			"type": "string",
 			"description": "The executable path to Apple's install_name_tool command-line utility (MacOS)",
 			"default": "/usr/bin/install_name_tool"
 		},
-		"ancillaryTools-instruments": {
+		"tools-instruments": {
 			"type": "string",
 			"description": "The executable path to Apple's instruments command-line utility (MacOS)",
 			"default": "/usr/bin/instruments"
 		},
-		"ancillaryTools-ldd": {
+		"tools-ldd": {
 			"type": "string",
 			"description": "The executable path to ldd.",
 			"default": "/usr/bin/ldd"
 		},
-		"ancillaryTools-lipo": {
+		"tools-lipo": {
 			"type": "string",
 			"description": "The executable path to Apple's lipo utility (MacOS)",
 			"default": "/usr/bin/lipo"
 		},
-		"ancillaryTools-lua": {
+		"tools-lua": {
 			"type": "string",
 			"description": "The executable path to Lua",
 			"default": "/usr/local/bin/lua"
 		},
-		"ancillaryTools-osascript": {
+		"tools-osascript": {
 			"type": "string",
 			"description": "The executable path to Apple's osascript command-line utility (MacOS)",
 			"default": "/usr/bin/osascript"
 		},
-		"ancillaryTools-otool": {
+		"tools-otool": {
 			"type": "string",
 			"description": "The executable path to Apple's otool command-line utility (MacOS)",
 			"default": "/usr/bin/otool"
 		},
-		"ancillaryTools-perl": {
+		"tools-perl": {
 			"type": "string",
 			"description": "The executable path to Perl",
 			"default": "/usr/local/bin/perl"
 		},
-		"ancillaryTools-plutil": {
+		"tools-plutil": {
 			"type": "string",
 			"description": "The executable path to Apple's plutil command-line utility (MacOS)",
 			"default": "/usr/bin/plutil"
 		},
-		"ancillaryTools-powershell": {
+		"tools-powershell": {
 			"type": "string",
 			"description": "The executable path to Powershell (Windows)",
 			"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 		},
-		"ancillaryTools-python": {
+		"tools-python": {
 			"type": "string",
 			"description": "The executable path to Python 2",
 			"default": "/usr/bin/python"
 		},
-		"ancillaryTools-python3": {
+		"tools-python3": {
 			"type": "string",
 			"description": "The executable path to Python 3",
 			"default": "/usr/local/bin/python3"
 		},
-		"ancillaryTools-ruby": {
+		"tools-ruby": {
 			"type": "string",
 			"description": "The executable path to ruby.",
 			"default": "/usr/bin/ruby"
 		},
-		"ancillaryTools-sample": {
+		"tools-sample": {
 			"type": "string",
 			"description": "The executable path to Apple's sample command-line utility (MacOS)",
 			"default": "/usr/bin/sample"
 		},
-		"ancillaryTools-sips": {
+		"tools-sips": {
 			"type": "string",
 			"description": "The executable path to Apple's sips command-line utility (MacOS)",
 			"default": "/usr/bin/sips"
 		},
-		"ancillaryTools-tiffutil": {
+		"tools-tiffutil": {
 			"type": "string",
 			"description": "The executable path to tiffutil",
 			"default": "/usr/bin/tiffutil"
 		},
-		"ancillaryTools-xcodebuild": {
+		"tools-xcodebuild": {
 			"type": "string",
 			"description": "The executable path to Apple's xcodebuild command-line utility (MacOS)",
 			"default": "/usr/bin/xcodebuild"
 		},
-		"ancillaryTools-xcodegen": {
+		"tools-xcodegen": {
 			"type": "string",
 			"description": "The executable path to the xcodegen Homebrew application (MacOS)",
 			"default": "/usr/local/bin/xcodegen"
 		},
-		"ancillaryTools-xcrun": {
+		"tools-xcrun": {
 			"type": "string",
 			"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
 			"default": "/usr/bin/xcrun"
@@ -264,88 +264,88 @@
 		}
 	},
 	"properties": {
-		"ancillaryTools": {
+		"tools": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "The list of ancillaryTools for the platform",
+			"description": "The list of tools for the platform",
 			"properties": {
 				"bash": {
-					"$ref": "#/definitions/ancillaryTools-bash"
+					"$ref": "#/definitions/tools-bash"
 				},
 				"brew": {
-					"$ref": "#/definitions/ancillaryTools-brew"
+					"$ref": "#/definitions/tools-brew"
 				},
 				"command_prompt": {
-					"$ref": "#/definitions/ancillaryTools-command_prompt"
+					"$ref": "#/definitions/tools-command_prompt"
 				},
 				"codesign": {
-					"$ref": "#/definitions/ancillaryTools-codesign"
+					"$ref": "#/definitions/tools-codesign"
 				},
 				"git": {
-					"$ref": "#/definitions/ancillaryTools-git"
+					"$ref": "#/definitions/tools-git"
 				},
 				"gprof": {
-					"$ref": "#/definitions/ancillaryTools-gprof"
+					"$ref": "#/definitions/tools-gprof"
 				},
 				"hdiutil": {
-					"$ref": "#/definitions/ancillaryTools-hdiutil"
+					"$ref": "#/definitions/tools-hdiutil"
 				},
 				"install_name_tool": {
-					"$ref": "#/definitions/ancillaryTools-install_name_tool"
+					"$ref": "#/definitions/tools-install_name_tool"
 				},
 				"instruments": {
-					"$ref": "#/definitions/ancillaryTools-instruments"
+					"$ref": "#/definitions/tools-instruments"
 				},
 				"ldd": {
-					"$ref": "#/definitions/ancillaryTools-ldd"
+					"$ref": "#/definitions/tools-ldd"
 				},
 				"lipo": {
-					"$ref": "#/definitions/ancillaryTools-lipo"
+					"$ref": "#/definitions/tools-lipo"
 				},
 				"lua": {
-					"$ref": "#/definitions/ancillaryTools-lua"
+					"$ref": "#/definitions/tools-lua"
 				},
 				"osascript": {
-					"$ref": "#/definitions/ancillaryTools-osascript"
+					"$ref": "#/definitions/tools-osascript"
 				},
 				"otool": {
-					"$ref": "#/definitions/ancillaryTools-otool"
+					"$ref": "#/definitions/tools-otool"
 				},
 				"perl": {
-					"$ref": "#/definitions/ancillaryTools-perl"
+					"$ref": "#/definitions/tools-perl"
 				},
 				"plutil": {
-					"$ref": "#/definitions/ancillaryTools-plutil"
+					"$ref": "#/definitions/tools-plutil"
 				},
 				"powershell": {
-					"$ref": "#/definitions/ancillaryTools-powershell"
+					"$ref": "#/definitions/tools-powershell"
 				},
 				"python": {
-					"$ref": "#/definitions/ancillaryTools-python"
+					"$ref": "#/definitions/tools-python"
 				},
 				"python3": {
-					"$ref": "#/definitions/ancillaryTools-python3"
+					"$ref": "#/definitions/tools-python3"
 				},
 				"ruby": {
-					"$ref": "#/definitions/ancillaryTools-ruby"
+					"$ref": "#/definitions/tools-ruby"
 				},
 				"sample": {
-					"$ref": "#/definitions/ancillaryTools-sample"
+					"$ref": "#/definitions/tools-sample"
 				},
 				"sips": {
-					"$ref": "#/definitions/ancillaryTools-sips"
+					"$ref": "#/definitions/tools-sips"
 				},
 				"tiffutil": {
-					"$ref": "#/definitions/ancillaryTools-tiffutil"
+					"$ref": "#/definitions/tools-tiffutil"
 				},
 				"xcodebuild": {
-					"$ref": "#/definitions/ancillaryTools-xcodebuild"
+					"$ref": "#/definitions/tools-xcodebuild"
 				},
 				"xcodegen": {
-					"$ref": "#/definitions/ancillaryTools-xcodegen"
+					"$ref": "#/definitions/tools-xcodegen"
 				},
 				"xcrun": {
-					"$ref": "#/definitions/ancillaryTools-xcrun"
+					"$ref": "#/definitions/tools-xcrun"
 				}
 			}
 		},

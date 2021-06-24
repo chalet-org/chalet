@@ -15,7 +15,7 @@ struct IConfigJsonParser
 protected:
 	const std::string kKeySettings = "settings";
 	const std::string kKeyToolchains = "toolchains";
-	const std::string kKeyAncillaryTools = "ancillaryTools";
+	const std::string kKeyTools = "tools";
 	const std::string kKeyApplePlatformSdks = "applePlatformSdks";
 
 	const std::string kKeyDumpAssembly = "dumpAssembly";

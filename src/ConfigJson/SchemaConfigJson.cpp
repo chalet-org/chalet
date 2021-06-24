@@ -22,7 +22,7 @@ Json Schema::getConfigJson()
 	ret["additionalProperties"] = false;
 	ret["required"] = {
 		"settings",
-		"ancillaryTools",
+		"tools",
 		"toolchains"
 	};
 
@@ -30,157 +30,157 @@ Json Schema::getConfigJson()
 	const auto kDefinitions = "definitions";
 	ret[kDefinitions] = Json::object();
 
-	ret[kDefinitions]["ancillaryTools-bash"] = R"json({
+	ret[kDefinitions]["tools-bash"] = R"json({
 		"type": "string",
 		"description": "The executable path to GNU bash",
 		"default": "/usr/bin/bash"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-brew"] = R"json({
+	ret[kDefinitions]["tools-brew"] = R"json({
 		"type": "string",
 		"description": "The executable path to brew command-line utility (MacOS)",
 		"default": "/usr/local/bin/brew"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-command_prompt"] = R"json({
+	ret[kDefinitions]["tools-command_prompt"] = R"json({
 		"type": "string",
 		"description": "The executable path to Command Prompt (Windows)",
 		"default": "C:/Windows/System32/cmd.exe"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-codesign"] = R"json({
+	ret[kDefinitions]["tools-codesign"] = R"json({
 		"type": "string",
 		"description": "The executable path to codesign command-line utility (MacOS)",
 		"default": "/usr/bin/codesign"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-git"] = R"json({
+	ret[kDefinitions]["tools-git"] = R"json({
 		"type": "string",
 		"description": "The executable path to git.",
 		"default": "/usr/bin/git"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-gprof"] = R"json({
+	ret[kDefinitions]["tools-gprof"] = R"json({
 		"type": "string",
 		"description": "The executable path to gprof.",
 		"default": "/usr/bin/gprof"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-hdiutil"] = R"json({
+	ret[kDefinitions]["tools-hdiutil"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's hdiutil command-line utility (MacOS)",
 		"default": "/usr/bin/hdiutil"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-install_name_tool"] = R"json({
+	ret[kDefinitions]["tools-install_name_tool"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's install_name_tool command-line utility (MacOS)",
 		"default": "/usr/bin/install_name_tool"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-instruments"] = R"json({
+	ret[kDefinitions]["tools-instruments"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's instruments command-line utility (MacOS)",
 		"default": "/usr/bin/instruments"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-ldd"] = R"json({
+	ret[kDefinitions]["tools-ldd"] = R"json({
 		"type": "string",
 		"description": "The executable path to ldd.",
 		"default": "/usr/bin/ldd"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-lipo"] = R"json({
+	ret[kDefinitions]["tools-lipo"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's lipo utility (MacOS)",
 		"default": "/usr/bin/lipo"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-lua"] = R"json({
+	ret[kDefinitions]["tools-lua"] = R"json({
 		"type": "string",
 		"description": "The executable path to Lua",
 		"default": "/usr/local/bin/lua"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-osascript"] = R"json({
+	ret[kDefinitions]["tools-osascript"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's osascript command-line utility (MacOS)",
 		"default": "/usr/bin/osascript"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-otool"] = R"json({
+	ret[kDefinitions]["tools-otool"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's otool command-line utility (MacOS)",
 		"default": "/usr/bin/otool"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-perl"] = R"json({
+	ret[kDefinitions]["tools-perl"] = R"json({
 		"type": "string",
 		"description": "The executable path to Perl",
 		"default": "/usr/local/bin/perl"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-plutil"] = R"json({
+	ret[kDefinitions]["tools-plutil"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's plutil command-line utility (MacOS)",
 		"default": "/usr/bin/plutil"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-powershell"] = R"json({
+	ret[kDefinitions]["tools-powershell"] = R"json({
 		"type": "string",
 		"description": "The executable path to Powershell (Windows)",
 		"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-python"] = R"json({
+	ret[kDefinitions]["tools-python"] = R"json({
 		"type": "string",
 		"description": "The executable path to Python 2",
 		"default": "/usr/bin/python"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-python3"] = R"json({
+	ret[kDefinitions]["tools-python3"] = R"json({
 		"type": "string",
 		"description": "The executable path to Python 3",
 		"default": "/usr/local/bin/python3"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-ruby"] = R"json({
+	ret[kDefinitions]["tools-ruby"] = R"json({
 		"type": "string",
 		"description": "The executable path to ruby.",
 		"default": "/usr/bin/ruby"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-sample"] = R"json({
+	ret[kDefinitions]["tools-sample"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's sample command-line utility (MacOS)",
 		"default": "/usr/bin/sample"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-sips"] = R"json({
+	ret[kDefinitions]["tools-sips"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's sips command-line utility (MacOS)",
 		"default": "/usr/bin/sips"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-tiffutil"] = R"json({
+	ret[kDefinitions]["tools-tiffutil"] = R"json({
 		"type": "string",
 		"description": "The executable path to tiffutil",
 		"default": "/usr/bin/tiffutil"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-xcodebuild"] = R"json({
+	ret[kDefinitions]["tools-xcodebuild"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's xcodebuild command-line utility (MacOS)",
 		"default": "/usr/bin/xcodebuild"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-xcodegen"] = R"json({
+	ret[kDefinitions]["tools-xcodegen"] = R"json({
 		"type": "string",
 		"description": "The executable path to the xcodegen Homebrew application (MacOS)",
 		"default": "/usr/local/bin/xcodegen"
 	})json"_ojson;
 
-	ret[kDefinitions]["ancillaryTools-xcrun"] = R"json({
+	ret[kDefinitions]["tools-xcrun"] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
 		"default": "/usr/bin/xcrun"
@@ -234,7 +234,7 @@ Json Schema::getConfigJson()
 	})json"_ojson;
 
 	/*
-	// These ancillaryTools don't get called directly (yet), but might be useful to look into
+	// These don't get called directly (yet), but might be useful to look into
 	ret[kDefinitions]["toolchains-ranlib"] = R"json({
 		"type": "string",
 		"description": "The executable path to ranlib.",
@@ -346,88 +346,88 @@ Json Schema::getConfigJson()
 	const auto kProperties = "properties";
 	ret[kProperties] = Json::object();
 
-	ret[kProperties]["ancillaryTools"] = R"json({
+	ret[kProperties]["tools"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "The list of ancillaryTools for the platform",
+		"description": "The list of tools for the platform",
 		"properties": {
 			"bash": {
-				"$ref": "#/definitions/ancillaryTools-bash"
+				"$ref": "#/definitions/tools-bash"
 			},
 			"brew": {
-				"$ref": "#/definitions/ancillaryTools-brew"
+				"$ref": "#/definitions/tools-brew"
 			},
 			"command_prompt": {
-				"$ref": "#/definitions/ancillaryTools-command_prompt"
+				"$ref": "#/definitions/tools-command_prompt"
 			},
 			"codesign": {
-				"$ref": "#/definitions/ancillaryTools-codesign"
+				"$ref": "#/definitions/tools-codesign"
 			},
 			"git": {
-				"$ref": "#/definitions/ancillaryTools-git"
+				"$ref": "#/definitions/tools-git"
 			},
 			"gprof": {
-				"$ref": "#/definitions/ancillaryTools-gprof"
+				"$ref": "#/definitions/tools-gprof"
 			},
 			"hdiutil": {
-				"$ref": "#/definitions/ancillaryTools-hdiutil"
+				"$ref": "#/definitions/tools-hdiutil"
 			},
 			"install_name_tool": {
-				"$ref": "#/definitions/ancillaryTools-install_name_tool"
+				"$ref": "#/definitions/tools-install_name_tool"
 			},
 			"instruments": {
-				"$ref": "#/definitions/ancillaryTools-instruments"
+				"$ref": "#/definitions/tools-instruments"
 			},
 			"ldd": {
-				"$ref": "#/definitions/ancillaryTools-ldd"
+				"$ref": "#/definitions/tools-ldd"
 			},
 			"lipo": {
-				"$ref": "#/definitions/ancillaryTools-lipo"
+				"$ref": "#/definitions/tools-lipo"
 			},
 			"lua": {
-				"$ref": "#/definitions/ancillaryTools-lua"
+				"$ref": "#/definitions/tools-lua"
 			},
 			"osascript": {
-				"$ref": "#/definitions/ancillaryTools-osascript"
+				"$ref": "#/definitions/tools-osascript"
 			},
 			"otool": {
-				"$ref": "#/definitions/ancillaryTools-otool"
+				"$ref": "#/definitions/tools-otool"
 			},
 			"perl": {
-				"$ref": "#/definitions/ancillaryTools-perl"
+				"$ref": "#/definitions/tools-perl"
 			},
 			"plutil": {
-				"$ref": "#/definitions/ancillaryTools-plutil"
+				"$ref": "#/definitions/tools-plutil"
 			},
 			"powershell": {
-				"$ref": "#/definitions/ancillaryTools-powershell"
+				"$ref": "#/definitions/tools-powershell"
 			},
 			"python": {
-				"$ref": "#/definitions/ancillaryTools-python"
+				"$ref": "#/definitions/tools-python"
 			},
 			"python3": {
-				"$ref": "#/definitions/ancillaryTools-python3"
+				"$ref": "#/definitions/tools-python3"
 			},
 			"ruby": {
-				"$ref": "#/definitions/ancillaryTools-ruby"
+				"$ref": "#/definitions/tools-ruby"
 			},
 			"sample": {
-				"$ref": "#/definitions/ancillaryTools-sample"
+				"$ref": "#/definitions/tools-sample"
 			},
 			"sips": {
-				"$ref": "#/definitions/ancillaryTools-sips"
+				"$ref": "#/definitions/tools-sips"
 			},
 			"tiffutil": {
-				"$ref": "#/definitions/ancillaryTools-tiffutil"
+				"$ref": "#/definitions/tools-tiffutil"
 			},
 			"xcodebuild": {
-				"$ref": "#/definitions/ancillaryTools-xcodebuild"
+				"$ref": "#/definitions/tools-xcodebuild"
 			},
 			"xcodegen": {
-				"$ref": "#/definitions/ancillaryTools-xcodegen"
+				"$ref": "#/definitions/tools-xcodegen"
 			},
 			"xcrun": {
-				"$ref": "#/definitions/ancillaryTools-xcrun"
+				"$ref": "#/definitions/tools-xcrun"
 			}
 		}
 	})json"_ojson;

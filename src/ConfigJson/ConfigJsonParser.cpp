@@ -102,9 +102,9 @@ bool ConfigJsonParser::makeCache(const GlobalConfigState& inState)
 		m_jsonFile.json[kKeyToolchains] = inState.toolchains.is_object() ? inState.toolchains : Json::object();
 	}
 
-	if (!m_jsonFile.json.contains(kKeyAncillaryTools))
+	if (!m_jsonFile.json.contains(kKeyTools))
 	{
-		m_jsonFile.json[kKeyAncillaryTools] = inState.ancillaryTools.is_object() ? inState.ancillaryTools : Json::object();
+		m_jsonFile.json[kKeyTools] = inState.ancillaryTools.is_object() ? inState.ancillaryTools : Json::object();
 	}
 
 	if (!m_jsonFile.json.contains(kKeyApplePlatformSdks))
@@ -226,7 +226,7 @@ bool ConfigJsonParser::makeCache(const GlobalConfigState& inState)
 		return true;
 	};
 
-	Json& ancillaryTools = m_jsonFile.json[kKeyAncillaryTools];
+	Json& ancillaryTools = m_jsonFile.json[kKeyTools];
 
 	whichAdd(ancillaryTools, kKeyBash);
 	whichAdd(ancillaryTools, kKeyBrew, HostPlatform::MacOS);
@@ -385,16 +385,16 @@ bool ConfigJsonParser::parseSettings(const Json& inNode)
 /*****************************************************************************/
 bool ConfigJsonParser::parseTools(Json& inNode)
 {
-	if (!inNode.contains(kKeyAncillaryTools))
+	if (!inNode.contains(kKeyTools))
 	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyAncillaryTools);
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyTools);
 		return false;
 	}
 
-	Json& ancillaryTools = inNode.at(kKeyAncillaryTools);
+	Json& ancillaryTools = inNode.at(kKeyTools);
 	if (!ancillaryTools.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyAncillaryTools);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyTools);
 		return false;
 	}
 

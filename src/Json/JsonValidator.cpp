@@ -106,6 +106,8 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 
 	// LOG("outError.type: ", static_cast<int>(outError.type));
 
+	std::string parentKey = outError.key.empty() ? "(root)" : outError.key;
+
 	switch (outError.type)
 	{
 		case JsonSchemaError::schema_ref_unresolved:
@@ -118,7 +120,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return "the subschema has succeeded, but it is required to not validate";
 
 		case JsonSchemaError::logical_combination:
-			return fmt::format("Validation failed for a key or value inside of '{}'", outError.key);
+			return fmt::format("Validation failed for a key or value inside of '{}'", parentKey);
 
 		case JsonSchemaError::logical_combination_all_of: {
 			const auto msg = std::any_cast<std::pair<JsonSchemaError, std::any>>(data);
@@ -136,11 +138,11 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return "more than one subschema has succeeded, but exactly one of them is required to validate";
 
 		case JsonSchemaError::type_instance_unexpected_type:
-			return fmt::format("An invalid value was found in '{}'. Found {}", outError.key, outError.typeName);
+			return fmt::format("An invalid value was found in '{}'. Found {}", parentKey, outError.typeName);
 
 		case JsonSchemaError::type_instance_not_found_in_required_enum: {
 			// TODO: Logic to try to whitelist keys from throwing errors
-			return fmt::format("An invalid value was found in '{}'. Expected string enum", outError.key);
+			return fmt::format("An invalid value was found in '{}'. Expected string enum", parentKey);
 		}
 
 		case JsonSchemaError::type_instance_not_const:
@@ -171,7 +173,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			auto pattern = std::any_cast<std::string>(data);
 			std::string value = getValueFromDump(outError.value);
 
-			return fmt::format("An invalid value was found in '{}': '{}'. Expected the pattern '{}'", outError.key, value, pattern);
+			return fmt::format("An invalid value was found in '{}': '{}'. Expected the pattern '{}'", parentKey, value, pattern);
 		}
 
 		case JsonSchemaError::string_format_checker_not_provided:
@@ -206,9 +208,8 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 
 		case JsonSchemaError::required_property_not_found: {
 			auto property = std::any_cast<std::string>(data);
-			std::string key = outError.key.empty() ? "root" : outError.key;
 
-			return fmt::format("The property '{}' is required by {} '{}', but was not found.", property, outError.typeName, key);
+			return fmt::format("The property '{}' is required by {} '{}', but was not found.", property, outError.typeName, parentKey);
 		}
 
 		case JsonSchemaError::object_too_many_properties:
@@ -219,9 +220,8 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 
 		case JsonSchemaError::object_required_property_not_found: {
 			auto property = std::any_cast<std::string>(data);
-			std::string key = outError.key.empty() ? "root" : outError.key;
 
-			return fmt::format("The property '{}' is required by {} '{}', but was not found.", property, outError.typeName, key);
+			return fmt::format("The property '{}' is required by {} '{}', but was not found.", property, outError.typeName, parentKey);
 		}
 
 		case JsonSchemaError::object_additional_property_failed: {
@@ -232,14 +232,14 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			subError.data = std::move(std::get<1>(msg));
 			const auto& key = std::get<2>(msg);
 
-			return fmt::format("Validation failed on '{}' for additional property '{}': {}", outError.key, key, parseRawError(subError));
+			return fmt::format("Validation failed on '{}' for additional property '{}': {}", parentKey, key, parseRawError(subError));
 		}
 
 		case JsonSchemaError::array_too_many_items:
-			return fmt::format("Array property '{}' has too many items", outError.key);
+			return fmt::format("Array property '{}' has too many items", parentKey);
 
 		case JsonSchemaError::array_too_few_items:
-			return fmt::format("Array property '{}' has too few items", outError.key);
+			return fmt::format("Array property '{}' has too few items", parentKey);
 
 		case JsonSchemaError::array_items_must_be_unique:
 			return "items have to be unique for this array";
@@ -252,7 +252,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			break;
 	}
 
-	Diagnostic::error("{}: Schema failed validation for '{}' (expected {}). See details below.", m_file, outError.key, outError.typeName);
+	Diagnostic::error("{}: Schema failed validation for '{}' (expected {}). See details below.", m_file, parentKey, outError.typeName);
 	Output::msgDisplayBlack(fmt::format("   unhandled error: {}\n", static_cast<std::underlying_type<JsonSchemaError>::type>(outError.type)));
 
 	return std::string();
