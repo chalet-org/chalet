@@ -31,7 +31,7 @@ bool CompileStrategyMakefile::initialize(const StringList& inFileExtensions)
 
 	auto& name = "makefile";
 	auto id = fmt::format("{}_{}_{}", name, Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
-	m_cacheFile = m_state.cache.getHash(m_state.info.hash(), id, WorkspaceCache::Type::Local);
+	m_cacheFile = m_state.cache.getHash(id, WorkspaceCache::Type::Local);
 
 	auto& localConfig = m_state.cache.localConfig();
 	Json& buildCache = localConfig.json["data"];

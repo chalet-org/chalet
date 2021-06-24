@@ -83,9 +83,9 @@ void WorkspaceCache::removeCacheFolder(const Type inCacheType)
 }
 
 /*****************************************************************************/
-std::string WorkspaceCache::getHash(const std::size_t inWorkspaceHash, const std::string& inIdentifier, const Type inCacheType) const
+std::string WorkspaceCache::getHash(const std::string& inIdentifier, const Type inCacheType) const
 {
-	std::string toHash = fmt::format("{}_{}", inWorkspaceHash, inIdentifier);
+	std::string toHash = fmt::format("{}_{}", m_workspaceHash, inIdentifier);
 	std::string hash = Hash::string(toHash);
 
 	const auto& cacheRef = getCacheRef(inCacheType);
@@ -116,6 +116,12 @@ std::string WorkspaceCache::getPath(const std::string& inFolder, const Type inCa
 std::string WorkspaceCache::getCacheKey(const std::string& inName, const std::string& inConfig)
 {
 	return fmt::format("{}:{}", inConfig, inName);
+}
+
+/*****************************************************************************/
+void WorkspaceCache::setWorkspaceHash(const std::string& inToHash) noexcept
+{
+	m_workspaceHash = Hash::uint64(inToHash);
 }
 
 /*****************************************************************************/

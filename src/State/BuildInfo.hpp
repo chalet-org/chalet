@@ -21,9 +21,6 @@ struct BuildInfo
 	const std::string& version() const noexcept;
 	void setVersion(std::string&& inValue) noexcept;
 
-	std::size_t hash() const noexcept;
-	void setHash(const std::size_t inValue) noexcept;
-
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(const std::string& inValue) noexcept;
 
@@ -39,7 +36,6 @@ private:
 
 	std::string m_workspace;
 	std::string m_version;
-	std::size_t m_hash;
 
 	std::string m_buildConfiguration;
 

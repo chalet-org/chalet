@@ -25,7 +25,6 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
-#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -85,7 +84,7 @@ bool BuildJsonParser::serialize()
 		FMT_ARG(targetArch),
 		FMT_ARG(buildConfiguration));
 
-	m_state.info.setHash(Hash::uint64(toHash));
+	m_state.cache.setWorkspaceHash(toHash);
 
 	// Diagnostic::printDone(timer.asString());
 

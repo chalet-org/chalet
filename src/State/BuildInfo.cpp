@@ -41,16 +41,6 @@ void BuildInfo::setVersion(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-std::size_t BuildInfo::hash() const noexcept
-{
-	return m_hash;
-}
-void BuildInfo::setHash(const std::size_t inValue) noexcept
-{
-	m_hash = inValue;
-}
-
-/*****************************************************************************/
 const std::string& BuildInfo::buildConfiguration() const noexcept
 {
 	chalet_assert(!m_buildConfiguration.empty(), "Build configuration is empty");

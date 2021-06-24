@@ -27,9 +27,11 @@ struct WorkspaceCache
 
 	bool createCacheFolder(const Type inCacheType);
 	bool exists(const Type inCacheType = Type::Local) const;
-	std::string getHash(std::size_t inWorkspaceHash, const std::string& inIdentifier, const Type inCacheType) const;
+	std::string getHash(const std::string& inIdentifier, const Type inCacheType) const;
 	std::string getPath(const std::string& inFolder, const Type inCacheType) const;
 	std::string getCacheKey(const std::string& inName, const std::string& inConfig);
+
+	void setWorkspaceHash(const std::string& inToHash) noexcept;
 
 	JsonFile& localConfig() noexcept;
 	void saveLocalConfig();
@@ -78,6 +80,8 @@ private:
 
 	std::string m_cacheFolderLocal;
 	std::string m_cacheFolderGlobal;
+
+	std::size_t m_workspaceHash = 0;
 
 	bool m_appBuildChanged = false;
 	bool m_compileStrategyChanged = false;

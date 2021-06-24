@@ -718,7 +718,7 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 	}
 	catch (const std::runtime_error& err)
 	{
-		std::cout << err.what() << std::endl;
+		Diagnostic::error(err.what());
 		return false;
 	}
 #endif
