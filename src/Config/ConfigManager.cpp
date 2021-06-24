@@ -190,7 +190,7 @@ bool ConfigManager::runSettingsSet(Json& node)
 
 	if (validate)
 	{
-		Json cacheJsonSchema = m_type == ConfigType::Global ? Schema::getGlobalConfigJson() : Schema::getConfigJson();
+		Json cacheJsonSchema = Schema::getConfigJson();
 		if (!config.validate(std::move(cacheJsonSchema)))
 		{
 			config.setDirty(false);

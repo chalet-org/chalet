@@ -350,34 +350,6 @@ Json Schema::getConfigJson()
 		"type": "object",
 		"additionalProperties": false,
 		"description": "The list of ancillaryTools for the platform",
-		"required": [
-			"bash",
-			"brew",
-			"command_prompt",
-			"codesign",
-			"git",
-			"gprof",
-			"hdiutil",
-			"install_name_tool",
-			"instruments",
-			"ldd",
-			"lipo",
-			"lua",
-			"osascript",
-			"otool",
-			"perl",
-			"plutil",
-			"powershell",
-			"python",
-			"python3",
-			"ruby",
-			"sample",
-			"sips",
-			"tiffutil",
-			"xcodebuild",
-			"xcodegen",
-			"xcrun"
-		],
 		"properties": {
 			"bash": {
 				"$ref": "#/definitions/ancillaryTools-bash"
@@ -515,17 +487,6 @@ Json Schema::getConfigJson()
 			}
 		}
 	})json"_ojson;
-
-	return ret;
-}
-
-/*****************************************************************************/
-Json Schema::getGlobalConfigJson()
-{
-	const auto kProperties = "properties";
-
-	Json ret = Schema::getConfigJson();
-	ret[kProperties]["ancillaryTools"].erase("required");
 
 	return ret;
 }

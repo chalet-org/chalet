@@ -13,7 +13,6 @@ namespace chalet
 namespace Schema
 {
 Json getConfigJson();
-Json getGlobalConfigJson();
 }
 }
 
