@@ -83,6 +83,8 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssembli
 	const auto& objDir = m_state.paths.objDir();
 	const auto& asmDir = m_state.paths.asmDir();
 
+	auto& sourceCache = m_state.cache.file().sources();
+
 	for (auto& asmFile : inAssemblies)
 	{
 		if (asmFile.empty() || List::contains(m_cache, asmFile))
@@ -107,7 +109,7 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssembli
 		else if (String::endsWith({ ".res", ".obj" }, source))
 			source = source.substr(0, source.size() - 4);
 
-		if (m_state.sourceCache.fileChangedOrDoesNotExist(source, asmFile))
+		if (sourceCache.fileChangedOrDoesNotExist(source, asmFile))
 		{
 			CommandPool::Cmd out;
 			out.output = asmFile;

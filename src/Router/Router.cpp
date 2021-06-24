@@ -147,8 +147,8 @@ bool Router::run()
 		}
 	}
 
-	if (buildState != nullptr)
-		buildState->saveCaches();
+	if (prototype != nullptr)
+		prototype->saveCaches();
 
 	return result;
 }

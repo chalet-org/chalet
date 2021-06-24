@@ -93,10 +93,12 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 	if (m_project.isStaticLibrary())
 		return true;
 
+	auto& sourceCache = m_state.cache.file().sources();
+
 	const auto windowsManifestFile = m_state.paths.getWindowsManifestFilename(m_project);
 	const auto windowsManifestResourceFile = m_state.paths.getWindowsManifestResourceFilename(m_project);
 
-	if (!windowsManifestFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsManifestFile))
+	if (!windowsManifestFile.empty() && sourceCache.fileChangedOrDoesNotExist(windowsManifestFile))
 	{
 		// TODO: This is kind of a hack for now.
 		if (Commands::pathExists(windowsManifestResourceFile))
@@ -115,7 +117,7 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 		}
 	}
 
-	if (!windowsManifestResourceFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsManifestResourceFile))
+	if (!windowsManifestResourceFile.empty() && sourceCache.fileChangedOrDoesNotExist(windowsManifestResourceFile))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
 		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
@@ -134,10 +136,12 @@ bool ICompileToolchain::createWindowsApplicationIcon()
 	if (!m_project.isExecutable())
 		return true;
 
+	auto& sourceCache = m_state.cache.file().sources();
+
 	const auto& windowsIconFile = m_project.windowsApplicationIcon();
 	const auto windowsIconResourceFile = m_state.paths.getWindowsIconResourceFilename(m_project);
 
-	if (!windowsIconFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsIconFile))
+	if (!windowsIconFile.empty() && sourceCache.fileChangedOrDoesNotExist(windowsIconFile))
 	{
 		// TODO: This is kind of a hack for now.
 		if (Commands::pathExists(windowsIconResourceFile))
@@ -150,7 +154,7 @@ bool ICompileToolchain::createWindowsApplicationIcon()
 		}
 	}
 
-	if (!windowsIconResourceFile.empty() && m_state.sourceCache.fileChangedOrDoesNotExist(windowsIconResourceFile))
+	if (!windowsIconResourceFile.empty() && sourceCache.fileChangedOrDoesNotExist(windowsIconResourceFile))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsIconResource(windowsIconFile);
 		if (!Commands::createFileWithContents(windowsIconResourceFile, rcContents))

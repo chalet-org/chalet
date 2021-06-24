@@ -50,6 +50,7 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<CommandPool::Target>> m_targets;
 
 	bool m_generateDependencies = false;
+	bool m_initialized = false;
 };
 }
 

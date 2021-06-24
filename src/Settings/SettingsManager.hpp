@@ -6,9 +6,9 @@
 #ifndef CHALET_SETTINGS_MANAGER_HPP
 #define CHALET_SETTINGS_MANAGER_HPP
 
+#include "Cache/WorkspaceCache.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsType.hpp"
-#include "State/WorkspaceCache.hpp"
 
 namespace chalet
 {

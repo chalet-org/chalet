@@ -113,7 +113,6 @@ bool CacheJsonParser::makeCache(const GlobalConfigState& inState)
 	}
 
 	m_jsonFile.makeNode(kKeyExternalDependencies, JsonDataType::object);
-	m_jsonFile.makeNode(kKeyData, JsonDataType::object);
 	{
 		Json& workingDirectoryJson = m_jsonFile.json[kKeyWorkingDirectory];
 		const auto workingDirectory = workingDirectoryJson.get<std::string>();

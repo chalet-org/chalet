@@ -34,8 +34,7 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 	environment(m_prototype.environment), // copy
 	toolchain(m_inputs, *this),
 	paths(m_inputs, info),
-	msvcEnvironment(*this),
-	sourceCache(m_prototype.cache, info)
+	msvcEnvironment(*this)
 {
 }
 
@@ -76,14 +75,6 @@ bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 {
 	BuildManager mgr(m_inputs, *this);
 	return mgr.run(inRoute, inShowSuccess);
-}
-
-/*****************************************************************************/
-void BuildState::saveCaches()
-{
-	m_prototype.cache.saveLocalConfig();
-	m_prototype.cache.saveGlobalConfig();
-	sourceCache.save();
 }
 
 /*****************************************************************************/
@@ -246,19 +237,13 @@ bool BuildState::initializeBuild()
 /*****************************************************************************/
 void BuildState::initializeCache()
 {
-	// m_prototype.cache.checkIfCompileStrategyChanged(m_inputs.toolchainPreferenceRaw());
-	m_prototype.cache.checkIfWorkingDirectoryChanged();
-
-	m_prototype.cache.removeStaleProjectCaches(m_inputs.toolchainPreferenceRaw(), WorkspaceCache::Type::Local);
+	m_prototype.cache.file().checkIfWorkingDirectoryChanged(paths.workingDirectory());
 
 	// TODO: Remove entirely?
 	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
 
 	m_prototype.cache.saveLocalConfig();
 	m_prototype.cache.saveGlobalConfig();
-
-	sourceCache.initialize();
-	sourceCache.save();
 }
 
 /*****************************************************************************/

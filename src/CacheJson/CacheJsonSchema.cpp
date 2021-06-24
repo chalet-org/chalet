@@ -475,10 +475,6 @@ Json Schema::getCacheJson()
 		"description": "The external dependency cache"
 	})json"_ojson;
 
-	ret[kProperties]["data"] = R"json({
-		"type": "object"
-	})json"_ojson;
-
 	ret[kProperties]["settings"] = R"json({
 		"type": "object",
 		"additionalProperties": false,

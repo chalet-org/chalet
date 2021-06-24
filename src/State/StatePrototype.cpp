@@ -53,7 +53,7 @@ bool StatePrototype::initialize()
 	if (!validateBundleDestinations())
 		return false;
 
-	cache.makeAppVersionCheck(m_inputs.appPath());
+	cache.file().checkIfAppVersionChanged(m_inputs.appPath());
 
 	if (!cache.createCacheFolder(WorkspaceCache::Type::Local))
 	{
@@ -69,6 +69,16 @@ bool StatePrototype::initialize()
 	Output::setShowCommandOverride(true);
 
 	return true;
+}
+
+/*****************************************************************************/
+void StatePrototype::saveCaches()
+{
+	cache.saveLocalConfig();
+	cache.saveGlobalConfig();
+
+	cache.removeStaleProjectCaches();
+	cache.file().save();
 }
 
 /*****************************************************************************/

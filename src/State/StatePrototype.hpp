@@ -8,11 +8,11 @@
 
 #include "Libraries/Json.hpp"
 
+#include "Cache/WorkspaceCache.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/GlobalConfigState.hpp"
-#include "State/WorkspaceCache.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -26,6 +26,7 @@ struct StatePrototype
 
 	bool initialize();
 	bool validate();
+	void saveCaches();
 
 	JsonFile& jsonFile() noexcept;
 	const std::string& filename() const noexcept;

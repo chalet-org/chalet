@@ -50,7 +50,6 @@ private:
 	// const std::string kKeyTargetArchitecture = "targetArchitecture";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
 	const std::string kKeyExternalDependencies = "externalDependencies";
-	const std::string kKeyData = "data";
 
 	// should match executables
 	const std::string kKeyBash = "bash";

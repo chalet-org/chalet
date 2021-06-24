@@ -6,6 +6,7 @@
 #ifndef CHALET_BUILD_STATE_HPP
 #define CHALET_BUILD_STATE_HPP
 
+#include "Cache/WorkspaceCache.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
@@ -15,9 +16,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/Dependency/IBuildDependency.hpp"
 #include "State/Distribution/IDistTarget.hpp"
-#include "State/SourceFileCache.hpp"
 #include "State/Target/IBuildTarget.hpp"
-#include "State/WorkspaceCache.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/MsvcEnvironment.hpp"
 
@@ -47,12 +46,10 @@ public:
 	BuildConfiguration configuration;
 	BuildTargetList targets;
 	BuildDependencyList externalDependencies;
-	SourceFileCache sourceCache;
 
 	bool initialize(const bool inInstallDependencies);
 	bool doBuild(const bool inShowSuccess = true);
 	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
-	void saveCaches();
 
 private:
 	bool initializeBuildConfiguration();

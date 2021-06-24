@@ -389,9 +389,6 @@
 			"type": "object",
 			"description": "The external dependency cache"
 		},
-		"data": {
-			"type": "object"
-		},
 		"settings": {
 			"type": "object",
 			"additionalProperties": false,

@@ -29,30 +29,22 @@ bool CompileStrategyMakefile::initialize(const StringList& inFileExtensions)
 	if (m_initialized)
 		return false;
 
-	auto& name = "makefile";
-	auto id = fmt::format("{}_{}_{}", name, Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
-	m_cacheFile = m_state.cache.getHash(id, WorkspaceCache::Type::Local);
+	auto id = fmt::format("makefile_{}_{}", Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
+	m_cacheFile = m_state.cache.getHashPath(id, WorkspaceCache::Type::Local);
 
-	auto& localConfig = m_state.cache.localConfig();
-	Json& buildCache = localConfig.json["data"];
-	const auto key = m_state.cache.getCacheKey(name, m_state.paths.configuration());
+	auto& cacheFile = m_state.cache.file();
+	const auto& oldStrategyHash = cacheFile.hashStrategy();
 
 	const bool cacheExists = Commands::pathExists(m_cacheFile);
-	const bool appBuildChanged = m_state.cache.appBuildChanged();
-	const auto hash = String::getPathFilename(m_cacheFile);
+	const bool appVersionChanged = cacheFile.appVersionChanged();
+	auto strategyHash = String::getPathFilename(m_cacheFile);
+	cacheFile.setSourceCache(strategyHash);
 
-	std::string existingHash;
-	if (buildCache.contains(key))
-	{
-		existingHash = buildCache.at(key);
-	}
-
-	m_cacheNeedsUpdate = existingHash != hash || !cacheExists || appBuildChanged;
+	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged;
 
 	if (m_cacheNeedsUpdate)
 	{
-		buildCache[key] = hash;
-		localConfig.setDirty(true);
+		m_state.cache.file().setHashStrategy(std::move(strategyHash));
 	}
 
 	m_initialized = true;

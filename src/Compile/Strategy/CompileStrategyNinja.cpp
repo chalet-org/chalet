@@ -26,33 +26,29 @@ bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
 	if (m_initialized)
 		return false;
 
-	auto& name = "ninja";
-	auto id = fmt::format("{}_{}_{}", name, Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
-	m_cacheFile = m_state.cache.getHash(id, WorkspaceCache::Type::Local);
+	auto id = fmt::format("ninja_{}_{}", Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
+	m_cacheFile = m_state.cache.getHashPath(id, WorkspaceCache::Type::Local);
 
-	auto& localConfig = m_state.cache.localConfig();
-	Json& buildCache = localConfig.json["data"];
-	const auto key = m_state.cache.getCacheKey(name, m_state.paths.configuration());
+	auto& cacheFile = m_state.cache.file();
+	const auto& oldStrategyHash = cacheFile.hashStrategy();
 
 	// Note: The ninja cache folder must not change between build.json changes
-	m_cacheFolder = m_state.cache.getPath(String::split(key, ':').front(), WorkspaceCache::Type::Local);
-
-	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
-	const bool appBuildChanged = m_state.cache.appBuildChanged();
-	const auto hash = String::getPathFilename(m_cacheFile);
-
-	std::string existingHash;
-	if (buildCache.contains(key))
 	{
-		existingHash = buildCache.at(key);
+		auto configurationHash = Hash::string(m_state.paths.configuration());
+		m_cacheFolder = m_state.cache.getCachePath(configurationHash, WorkspaceCache::Type::Local);
+		cacheFile.addExtraHash(std::move(configurationHash));
 	}
 
-	m_cacheNeedsUpdate = existingHash != hash || !cacheExists || appBuildChanged;
+	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
+	const bool appVersionChanged = cacheFile.appVersionChanged();
+	auto strategyHash = String::getPathFilename(m_cacheFile);
+	cacheFile.setSourceCache(strategyHash);
+
+	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged;
 
 	if (m_cacheNeedsUpdate)
 	{
-		buildCache[key] = hash;
-		localConfig.setDirty(true);
+		m_state.cache.file().setHashStrategy(std::move(strategyHash));
 	}
 
 	if (!Commands::pathExists(m_cacheFolder))

@@ -81,8 +81,6 @@ bool AppBundler::runBuilds(const bool inInstallDependencies)
 
 		if (!state->doBuild(Route::Build, false))
 			return false;
-
-		state->saveCaches();
 	}
 
 	return true;

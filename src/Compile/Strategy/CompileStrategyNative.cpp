@@ -28,7 +28,28 @@ CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
 /*****************************************************************************/
 bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
 {
-	UNUSED(inFileExtensions);
+	if (m_initialized)
+		return false;
+
+	auto id = fmt::format("native_{}_{}", Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
+	std::string cachePath = m_state.cache.getHashPath(id, WorkspaceCache::Type::Local);
+
+	auto& cacheFile = m_state.cache.file();
+	const auto& oldStrategyHash = cacheFile.hashStrategy();
+
+	const bool appVersionChanged = cacheFile.appVersionChanged();
+	auto strategyHash = String::getPathFilename(cachePath);
+	cacheFile.setSourceCache(strategyHash);
+
+	bool cacheNeedsUpdate = oldStrategyHash != strategyHash || appVersionChanged;
+
+	if (cacheNeedsUpdate)
+	{
+		m_state.cache.file().setHashStrategy(std::move(strategyHash));
+	}
+
+	m_initialized = true;
+
 	return true;
 }
 
