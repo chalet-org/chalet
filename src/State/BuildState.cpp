@@ -7,7 +7,7 @@
 
 #include "BuildJson/BuildJsonParser.hpp"
 #include "Builder/BuildManager.hpp"
-#include "CacheJson/CacheToolchainParser.hpp"
+#include "ConfigJson/ConfigToolchainParser.hpp"
 #include "Dependencies/DependencyManager.hpp"
 
 #include "State/AncillaryTools.hpp"
@@ -104,7 +104,7 @@ bool BuildState::initializeBuildConfiguration()
 bool BuildState::parseCacheJson()
 {
 	auto& cacheFile = m_prototype.cache.localConfig();
-	CacheToolchainParser parser(m_inputs, *this, cacheFile);
+	ConfigToolchainParser parser(m_inputs, *this, cacheFile);
 	return parser.serialize();
 }
 

@@ -3,9 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "CacheJson/CacheJsonParser.hpp"
+#include "ConfigJson/ConfigJsonParser.hpp"
 
-#include "CacheJson/CacheJsonSchema.hpp"
+#include "ConfigJson/SchemaConfigJson.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Core/HostPlatform.hpp"
 #include "State/GlobalConfigState.hpp"
@@ -23,7 +23,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile) :
+ConfigJsonParser::ConfigJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile) :
 	m_inputs(inInputs),
 	m_prototype(inPrototype),
 	m_jsonFile(inJsonFile)
@@ -31,13 +31,13 @@ CacheJsonParser::CacheJsonParser(const CommandLineInputs& inInputs, StatePrototy
 }
 
 /*****************************************************************************/
-bool CacheJsonParser::serialize(const GlobalConfigState& inState)
+bool ConfigJsonParser::serialize(const GlobalConfigState& inState)
 {
-	Json cacheJsonSchema = Schema::getCacheJson();
+	Json cacheJsonSchema = Schema::getConfigJson();
 
 	if (m_inputs.saveSchemaToFile())
 	{
-		JsonFile::saveToFile(cacheJsonSchema, "schema/chalet-cache.schema.json");
+		JsonFile::saveToFile(cacheJsonSchema, "schema/chalet-config.schema.json");
 	}
 
 	Timer timer;
@@ -72,7 +72,7 @@ bool CacheJsonParser::serialize(const GlobalConfigState& inState)
 }
 
 /*****************************************************************************/
-bool CacheJsonParser::validatePaths()
+bool ConfigJsonParser::validatePaths()
 {
 #if defined(CHALET_MACOS)
 	if (!Commands::pathExists(m_prototype.ancillaryTools.applePlatformSdk("macosx")))
@@ -89,7 +89,7 @@ bool CacheJsonParser::validatePaths()
 }
 
 /*****************************************************************************/
-bool CacheJsonParser::makeCache(const GlobalConfigState& inState)
+bool ConfigJsonParser::makeCache(const GlobalConfigState& inState)
 {
 	// TODO: Copy from global cache. If one doesn't exist, do this
 
@@ -312,7 +312,7 @@ bool CacheJsonParser::makeCache(const GlobalConfigState& inState)
 }
 
 /*****************************************************************************/
-bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
+bool ConfigJsonParser::serializeFromJsonRoot(Json& inJson)
 {
 	if (!inJson.is_object())
 	{
@@ -349,7 +349,7 @@ bool CacheJsonParser::serializeFromJsonRoot(Json& inJson)
 }
 
 /*****************************************************************************/
-bool CacheJsonParser::parseSettings(const Json& inNode)
+bool ConfigJsonParser::parseSettings(const Json& inNode)
 {
 	if (!inNode.contains(kKeySettings))
 	{
@@ -383,7 +383,7 @@ bool CacheJsonParser::parseSettings(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool CacheJsonParser::parseTools(Json& inNode)
+bool ConfigJsonParser::parseTools(Json& inNode)
 {
 	if (!inNode.contains(kKeyAncillaryTools))
 	{
@@ -481,7 +481,7 @@ bool CacheJsonParser::parseTools(Json& inNode)
 
 #if defined(CHALET_MACOS)
 /*****************************************************************************/
-bool CacheJsonParser::parseAppleSdks(Json& inNode)
+bool ConfigJsonParser::parseAppleSdks(Json& inNode)
 {
 	if (!inNode.contains(kKeyApplePlatformSdks))
 	{

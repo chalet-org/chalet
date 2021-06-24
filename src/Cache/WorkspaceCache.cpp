@@ -35,7 +35,7 @@ const std::string& WorkspaceCache::getCacheRef(const Type inCacheType) const
 bool WorkspaceCache::initialize()
 {
 	m_globalConfig.load(fmt::format("{}/.chaletconfig", m_inputs.homeDirectory()));
-	m_localConfig.load(fmt::format("{}/chalet-cache.json", m_inputs.buildPath()));
+	m_localConfig.load(fmt::format("{}/chalet-config.json", m_inputs.buildPath()));
 
 	m_removeOldCacheFolder = m_localConfig.json.empty();
 
@@ -178,6 +178,8 @@ bool WorkspaceCache::removeStaleProjectCaches()
 	if (!Commands::pathExists(cacheRef) || ids.size() == 0)
 		return true;
 
+	Output::setShowCommandOverride(false);
+
 	for (auto& id : ids)
 	{
 		auto path = fmt::format("{}/{}", cacheRef, id);
@@ -216,6 +218,8 @@ bool WorkspaceCache::removeStaleProjectCaches()
 		Diagnostic::error(err.what());
 		result = false;
 	}
+
+	Output::setShowCommandOverride(true);
 
 	return result;
 }

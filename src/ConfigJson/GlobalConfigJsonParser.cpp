@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "GlobalConfigJson/GlobalConfigJsonParser.hpp"
+#include "ConfigJson/GlobalConfigJsonParser.hpp"
 
 #include "Core/CommandLineInputs.hpp"
 #include "State/GlobalConfigState.hpp"

@@ -6,6 +6,7 @@
 #ifndef CHALET_GLOBAL_CONFIG_JSON_PARSER_HPP
 #define CHALET_GLOBAL_CONFIG_JSON_PARSER_HPP
 
+#include "ConfigJson/IConfigJsonParser.hpp"
 #include "Libraries/Json.hpp"
 
 namespace chalet
@@ -15,7 +16,7 @@ struct JsonFile;
 struct StatePrototype;
 struct GlobalConfigState;
 
-struct GlobalConfigJsonParser
+struct GlobalConfigJsonParser final : IConfigJsonParser
 {
 	explicit GlobalConfigJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
 
@@ -33,17 +34,6 @@ private:
 	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
 	JsonFile& m_jsonFile;
-
-	const std::string kKeySettings = "settings";
-	const std::string kKeyToolchains = "toolchains";
-	const std::string kKeyAncillaryTools = "ancillaryTools";
-	const std::string kKeyApplePlatformSdks = "applePlatformSdks";
-
-	const std::string kKeyDumpAssembly = "dumpAssembly";
-	const std::string kKeyMaxJobs = "maxJobs";
-	const std::string kKeyShowCommands = "showCommands";
-	const std::string kKeyLastToolchain = "toolchain";
-	const std::string kKeyMacosSigningIdentity = "macosSigningIdentity";
 };
 }
 

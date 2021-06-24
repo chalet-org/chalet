@@ -3,10 +3,11 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CACHE_JSON_PARSER_HPP
-#define CHALET_CACHE_JSON_PARSER_HPP
+#ifndef CHALET_CONFIG_JSON_PARSER_HPP
+#define CHALET_CONFIG_JSON_PARSER_HPP
 
 #include "Compile/ToolchainPreference.hpp"
+#include "ConfigJson/IConfigJsonParser.hpp"
 #include "Libraries/Json.hpp"
 
 namespace chalet
@@ -16,9 +17,9 @@ struct JsonFile;
 struct StatePrototype;
 struct GlobalConfigState;
 
-struct CacheJsonParser
+struct ConfigJsonParser final : IConfigJsonParser
 {
-	explicit CacheJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
+	explicit ConfigJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
 
 	bool serialize(const GlobalConfigState& inState);
 
@@ -38,16 +39,6 @@ private:
 	StatePrototype& m_prototype;
 	JsonFile& m_jsonFile;
 
-	const std::string kKeyAncillaryTools = "ancillaryTools";
-	const std::string kKeySettings = "settings";
-	const std::string kKeyToolchains = "toolchains";
-	const std::string kKeyApplePlatformSdks = "applePlatformSdks";
-	const std::string kKeyDumpAssembly = "dumpAssembly";
-	const std::string kKeyMaxJobs = "maxJobs";
-	const std::string kKeyShowCommands = "showCommands";
-	const std::string kKeyLastToolchain = "toolchain";
-	const std::string kKeyMacosSigningIdentity = "macosSigningIdentity";
-	// const std::string kKeyTargetArchitecture = "targetArchitecture";
 	const std::string kKeyWorkingDirectory = "workingDirectory";
 	const std::string kKeyExternalDependencies = "externalDependencies";
 
@@ -81,4 +72,4 @@ private:
 };
 }
 
-#endif // CHALET_CACHE_JSON_PARSER_HPP
+#endif // CHALET_CONFIG_JSON_PARSER_HPP

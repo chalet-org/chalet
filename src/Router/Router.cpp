@@ -9,8 +9,8 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 
-#include "Settings/SettingsAction.hpp"
-#include "Settings/SettingsManager.hpp"
+#include "Config/ConfigAction.hpp"
+#include "Config/ConfigManager.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -202,29 +202,29 @@ bool Router::cmdInit()
 /*****************************************************************************/
 bool Router::cmdSettings(const Route inRoute)
 {
-	if (m_inputs.settingsType() == SettingsType::None)
+	if (m_inputs.settingsType() == ConfigType::None)
 	{
 		Diagnostic::error("There was an error determining the settings request");
 		return false;
 	}
 
-	SettingsAction action = SettingsAction::Get;
+	ConfigAction action = ConfigAction::Get;
 	switch (inRoute)
 	{
 		case Route::SettingsSet:
-			action = SettingsAction::Set;
+			action = ConfigAction::Set;
 			break;
 		case Route::SettingsGet:
-			action = SettingsAction::Get;
+			action = ConfigAction::Get;
 			break;
 		case Route::SettingsUnset:
-			action = SettingsAction::Unset;
+			action = ConfigAction::Unset;
 			break;
 		default:
 			return false;
 	}
 
-	SettingsManager settingsMgr(m_inputs, action);
+	ConfigManager settingsMgr(m_inputs, action);
 	if (!settingsMgr.run())
 		return true;
 

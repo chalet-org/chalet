@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "CacheJson/CacheJsonSchema.hpp"
+#include "ConfigJson/SchemaConfigJson.hpp"
 
 #include "Utility/String.hpp"
 #include "Utility/SuppressIntellisense.hpp"
@@ -12,7 +12,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-Json Schema::getCacheJson()
+Json Schema::getConfigJson()
 {
 	// Note: By parsing json from a string instead of _ojson literal, we can use ordered_json
 
@@ -524,7 +524,7 @@ Json Schema::getGlobalConfigJson()
 {
 	const auto kProperties = "properties";
 
-	Json ret = Schema::getCacheJson();
+	Json ret = Schema::getConfigJson();
 	ret[kProperties]["ancillaryTools"].erase("required");
 
 	return ret;

@@ -6,9 +6,9 @@
 #include "State/StatePrototype.hpp"
 
 #include "BuildJson/BuildJsonProtoParser.hpp"
-#include "CacheJson/CacheJsonParser.hpp"
+#include "ConfigJson/ConfigJsonParser.hpp"
+#include "ConfigJson/GlobalConfigJsonParser.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "GlobalConfigJson/GlobalConfigJsonParser.hpp"
 
 #include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Output.hpp"
@@ -92,12 +92,12 @@ bool StatePrototype::validateBundleDestinations()
 		{
 			auto& bundle = static_cast<BundleTarget&>(*target);
 
-			if (!bundle.configuration().empty() && !m_releaseConfiguration.empty())
+			if (bundle.configuration().empty() && !m_releaseConfiguration.empty())
 			{
 				auto config = m_releaseConfiguration;
 				bundle.setConfiguration(std::move(config));
-				List::addIfDoesNotExist(m_requiredBuildConfigurations, bundle.configuration());
 			}
+			List::addIfDoesNotExist(m_requiredBuildConfigurations, bundle.configuration());
 
 			for (auto& projectName : bundle.projects())
 			{
@@ -207,7 +207,7 @@ bool StatePrototype::parseSettingsJson()
 bool StatePrototype::parseCacheJson()
 {
 	auto& cacheFile = cache.localConfig();
-	CacheJsonParser parser(m_inputs, *this, cacheFile);
+	ConfigJsonParser parser(m_inputs, *this, cacheFile);
 	return parser.serialize(m_globalConfigState);
 }
 

@@ -3,20 +3,20 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SETTINGS_MANAGER_HPP
-#define CHALET_SETTINGS_MANAGER_HPP
+#ifndef CHALET_CONFIG_MANAGER_HPP
+#define CHALET_CONFIG_MANAGER_HPP
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Settings/SettingsAction.hpp"
-#include "Settings/SettingsType.hpp"
+#include "Config/ConfigAction.hpp"
+#include "Config/ConfigType.hpp"
 
 namespace chalet
 {
 struct CommandLineInputs;
 
-struct SettingsManager
+struct ConfigManager
 {
-	explicit SettingsManager(const CommandLineInputs& inInputs, const SettingsAction inAction);
+	explicit ConfigManager(const CommandLineInputs& inInputs, const ConfigAction inAction);
 
 	bool run();
 
@@ -37,9 +37,9 @@ private:
 	std::string m_key;
 	std::string m_value;
 
-	SettingsAction m_action = SettingsAction::Get;
-	SettingsType m_type = SettingsType::None;
+	ConfigAction m_action = ConfigAction::Get;
+	ConfigType m_type = ConfigType::None;
 };
 }
 
-#endif // CHALET_SETTINGS_MANAGER_HPP
+#endif // CHALET_CONFIG_MANAGER_HPP

@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SETTINGS_TYPE_HPP
-#define CHALET_SETTINGS_TYPE_HPP
+#ifndef CHALET_CONFIG_TYPE_HPP
+#define CHALET_CONFIG_TYPE_HPP
 
 namespace chalet
 {
-enum class SettingsType : ushort
+enum class ConfigType : ushort
 {
 	None,
 	Global,
@@ -16,4 +16,4 @@ enum class SettingsType : ushort
 };
 }
 
-#endif // CHALET_SETTINGS_TYPE_HPP
+#endif // CHALET_CONFIG_TYPE_HPP

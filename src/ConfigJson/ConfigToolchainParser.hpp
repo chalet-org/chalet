@@ -3,10 +3,11 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CACHE_TOOLCHAIN_PARSER_HPP
-#define CHALET_CACHE_TOOLCHAIN_PARSER_HPP
+#ifndef CHALET_CONFIG_TOOLCHAIN_PARSER_HPP
+#define CHALET_CONFIG_TOOLCHAIN_PARSER_HPP
 
 #include "Compile/ToolchainPreference.hpp"
+#include "ConfigJson/IConfigJsonParser.hpp"
 #include "Libraries/Json.hpp"
 
 namespace chalet
@@ -15,9 +16,9 @@ struct CommandLineInputs;
 class BuildState;
 struct JsonFile;
 
-struct CacheToolchainParser
+struct ConfigToolchainParser
 {
-	explicit CacheToolchainParser(const CommandLineInputs& inInputs, BuildState& inState, JsonFile& inJsonFile);
+	explicit ConfigToolchainParser(const CommandLineInputs& inInputs, BuildState& inState, JsonFile& inJsonFile);
 
 	bool serialize();
 	bool serialize(Json& inNode);
@@ -52,4 +53,4 @@ private:
 };
 }
 
-#endif // CHALET_CACHE_TOOLCHAIN_PARSER_HPP
+#endif // CHALET_CONFIG_TOOLCHAIN_PARSER_HPP

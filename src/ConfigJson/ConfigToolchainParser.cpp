@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "CacheJson/CacheToolchainParser.hpp"
+#include "ConfigJson/ConfigToolchainParser.hpp"
 
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
@@ -16,7 +16,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CacheToolchainParser::CacheToolchainParser(const CommandLineInputs& inInputs, BuildState& inState, JsonFile& inJsonFile) :
+ConfigToolchainParser::ConfigToolchainParser(const CommandLineInputs& inInputs, BuildState& inState, JsonFile& inJsonFile) :
 	m_inputs(inInputs),
 	m_state(inState),
 	m_jsonFile(inJsonFile)
@@ -24,7 +24,7 @@ CacheToolchainParser::CacheToolchainParser(const CommandLineInputs& inInputs, Bu
 }
 
 /*****************************************************************************/
-bool CacheToolchainParser::serialize()
+bool ConfigToolchainParser::serialize()
 {
 	Output::setShowCommandOverride(false);
 
@@ -49,7 +49,7 @@ bool CacheToolchainParser::serialize()
 }
 
 /*****************************************************************************/
-bool CacheToolchainParser::serialize(Json& inNode)
+bool ConfigToolchainParser::serialize(Json& inNode)
 {
 	if (!inNode.is_object())
 		return false;
@@ -75,7 +75,7 @@ bool CacheToolchainParser::serialize(Json& inNode)
 }
 
 /*****************************************************************************/
-bool CacheToolchainParser::validatePaths()
+bool ConfigToolchainParser::validatePaths()
 {
 	bool result = true;
 	if (m_state.toolchain.cpp().empty() || !Commands::pathExists(m_state.toolchain.cpp()))
@@ -144,7 +144,7 @@ bool CacheToolchainParser::validatePaths()
 }
 
 /*****************************************************************************/
-bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPreference& toolchain)
+bool ConfigToolchainParser::makeToolchain(Json& toolchains, const ToolchainPreference& toolchain)
 {
 	bool result = true;
 
@@ -391,7 +391,7 @@ bool CacheToolchainParser::makeToolchain(Json& toolchains, const ToolchainPrefer
 }
 
 /*****************************************************************************/
-bool CacheToolchainParser::parseToolchain(Json& inNode)
+bool ConfigToolchainParser::parseToolchain(Json& inNode)
 {
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyStrategy))
 		m_state.toolchain.setStrategy(val);
@@ -514,7 +514,7 @@ bool CacheToolchainParser::parseToolchain(Json& inNode)
 }
 
 /*****************************************************************************/
-bool CacheToolchainParser::parseArchitecture(std::string& outString) const
+bool ConfigToolchainParser::parseArchitecture(std::string& outString) const
 {
 	bool ret = true;
 #if defined(CHALET_WIN32)

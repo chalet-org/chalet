@@ -7,9 +7,9 @@
 #define CHALET_COMMAND_LINE_INPUTS_HPP
 
 #include "Compile/ToolchainPreference.hpp"
+#include "Config/ConfigType.hpp"
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
-#include "Settings/SettingsType.hpp"
 
 namespace chalet
 {
@@ -73,8 +73,8 @@ struct CommandLineInputs
 	bool saveSchemaToFile() const noexcept;
 	void setSaveSchemaToFile(const bool inValue) noexcept;
 
-	SettingsType settingsType() const noexcept;
-	void setSettingsType(const SettingsType inValue) noexcept;
+	ConfigType settingsType() const noexcept;
+	void setSettingsType(const ConfigType inValue) noexcept;
 
 	const std::string& settingsKey() const noexcept;
 	void setSettingsKey(std::string&& inValue) noexcept;
@@ -117,7 +117,7 @@ private:
 
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
-	SettingsType m_settingsType = SettingsType::None;
+	ConfigType m_settingsType = ConfigType::None;
 
 	bool m_saveSchemaToFile = false;
 };

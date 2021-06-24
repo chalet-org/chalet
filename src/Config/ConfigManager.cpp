@@ -3,9 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Settings/SettingsManager.hpp"
+#include "Config/ConfigManager.hpp"
 
-#include "CacheJson/CacheJsonSchema.hpp"
+#include "ConfigJson/SchemaConfigJson.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
@@ -13,7 +13,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-SettingsManager::SettingsManager(const CommandLineInputs& inInputs, const SettingsAction inAction) :
+ConfigManager::ConfigManager(const CommandLineInputs& inInputs, const ConfigAction inAction) :
 	m_cache(inInputs),
 	m_key(inInputs.settingsKey()),
 	m_value(inInputs.settingsValue()),
@@ -23,7 +23,7 @@ SettingsManager::SettingsManager(const CommandLineInputs& inInputs, const Settin
 }
 
 /*****************************************************************************/
-bool SettingsManager::run()
+bool ConfigManager::run()
 {
 	if (!m_cache.initialize())
 		return false;
@@ -31,7 +31,7 @@ bool SettingsManager::run()
 	auto& config = getConfig();
 	if (!Commands::pathExists(config.filename()))
 	{
-		if (m_type == SettingsType::Global)
+		if (m_type == ConfigType::Global)
 			Diagnostic::error("File '{}' doesn't exist.", config.filename());
 		else
 			Diagnostic::error("Not a chalet project, or a build hasn't been run yet.", config.filename());
@@ -47,17 +47,17 @@ bool SettingsManager::run()
 
 	switch (m_action)
 	{
-		case SettingsAction::Get:
+		case ConfigAction::Get:
 			if (!runSettingsGet(node))
 				return false;
 			break;
 
-		case SettingsAction::Set:
+		case ConfigAction::Set:
 			if (!runSettingsSet(node))
 				return false;
 			break;
 
-		case SettingsAction::Unset:
+		case ConfigAction::Unset:
 			if (!runSettingsUnset(node))
 				return false;
 			break;
@@ -72,7 +72,7 @@ bool SettingsManager::run()
 }
 
 /*****************************************************************************/
-bool SettingsManager::runSettingsGet(Json& node)
+bool ConfigManager::runSettingsGet(Json& node)
 {
 	Json* ptr = nullptr;
 	if (!findRequestedNodeWithFailure(node, ptr))
@@ -92,7 +92,7 @@ bool SettingsManager::runSettingsGet(Json& node)
 }
 
 /*****************************************************************************/
-bool SettingsManager::runSettingsSet(Json& node)
+bool ConfigManager::runSettingsSet(Json& node)
 {
 	if (m_key.empty())
 	{
@@ -190,7 +190,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 
 	if (validate)
 	{
-		Json cacheJsonSchema = m_type == SettingsType::Global ? Schema::getGlobalConfigJson() : Schema::getCacheJson();
+		Json cacheJsonSchema = m_type == ConfigType::Global ? Schema::getGlobalConfigJson() : Schema::getConfigJson();
 		if (!config.validate(std::move(cacheJsonSchema)))
 		{
 			config.setDirty(false);
@@ -202,7 +202,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 }
 
 /*****************************************************************************/
-bool SettingsManager::runSettingsUnset(Json& node)
+bool ConfigManager::runSettingsUnset(Json& node)
 {
 	Json* ptr = &node;
 	std::string lastKey;
@@ -235,7 +235,7 @@ bool SettingsManager::runSettingsUnset(Json& node)
 }
 
 /*****************************************************************************/
-bool SettingsManager::findRequestedNodeWithFailure(Json& inNode, Json*& outNode)
+bool ConfigManager::findRequestedNodeWithFailure(Json& inNode, Json*& outNode)
 {
 	std::string lastKey;
 	if (!findRequestedNode(inNode, lastKey, outNode))
@@ -248,7 +248,7 @@ bool SettingsManager::findRequestedNodeWithFailure(Json& inNode, Json*& outNode)
 }
 
 /*****************************************************************************/
-bool SettingsManager::findRequestedNode(Json& inNode, std::string& outLastKey, Json*& outNode)
+bool ConfigManager::findRequestedNode(Json& inNode, std::string& outLastKey, Json*& outNode)
 {
 	outNode = &inNode;
 
@@ -272,7 +272,7 @@ bool SettingsManager::findRequestedNode(Json& inNode, std::string& outLastKey, J
 }
 
 /*****************************************************************************/
-bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
+bool ConfigManager::makeSetting(Json& inNode, Json*& outNode)
 {
 	outNode = &inNode;
 
@@ -321,8 +321,8 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 }
 
 /*****************************************************************************/
-JsonFile& SettingsManager::getConfig()
+JsonFile& ConfigManager::getConfig()
 {
-	return m_type == SettingsType::Global ? m_cache.globalConfig() : m_cache.localConfig();
+	return m_type == ConfigType::Global ? m_cache.globalConfig() : m_cache.localConfig();
 }
 }

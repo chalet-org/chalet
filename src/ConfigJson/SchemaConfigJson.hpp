@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CACHE_JSON_SCHEMA_HPP
-#define CHALET_CACHE_JSON_SCHEMA_HPP
+#ifndef CHALET_SCHEMA_CONFIG_JSON_HPP
+#define CHALET_SCHEMA_CONFIG_JSON_HPP
 
 #include "Libraries/Json.hpp"
 
@@ -12,9 +12,9 @@ namespace chalet
 {
 namespace Schema
 {
-Json getCacheJson();
+Json getConfigJson();
 Json getGlobalConfigJson();
 }
 }
 
-#endif // CHALET_CACHE_JSON_SCHEMA_HPP
+#endif // CHALET_SCHEMA_CONFIG_JSON_HPP
