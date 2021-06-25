@@ -476,7 +476,7 @@ IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) cons
 /*****************************************************************************/
 void CommandLineInputs::clearWorkingDirectory(std::string& outValue)
 {
-	auto cwd = m_workingDirectory + '/';
+	auto cwd = workingDirectory() + '/';
 	Path::sanitize(cwd);
 
 	String::replaceAll(outValue, cwd, "");
