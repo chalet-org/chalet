@@ -42,6 +42,9 @@ bool StatePrototype::initialize()
 	if (!parseLocalSettingsJson())
 		return false;
 
+	if (m_inputs.command() == Route::Configure)
+		return true;
+
 	Output::setShowCommandOverride(false);
 
 	Timer timer;
@@ -77,8 +80,11 @@ void StatePrototype::saveCaches()
 	cache.saveSettings(SettingsType::Local);
 	cache.saveSettings(SettingsType::Global);
 
-	cache.removeStaleProjectCaches();
-	cache.file().save();
+	if (m_inputs.command() != Route::Configure)
+	{
+		cache.removeStaleProjectCaches();
+		cache.file().save();
+	}
 }
 
 /*****************************************************************************/

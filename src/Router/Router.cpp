@@ -71,7 +71,7 @@ bool Router::run()
 		if (!prototype->initialize())
 			return false;
 
-		if (command != Route::Bundle)
+		if (command != Route::Bundle && command != Route::Configure)
 		{
 			m_installDependencies = true;
 
