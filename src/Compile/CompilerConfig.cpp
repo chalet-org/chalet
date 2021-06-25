@@ -172,11 +172,12 @@ bool CompilerConfig::getSupportedCompilerFlags()
 	if (exec.empty())
 		return false;
 
-	auto& buildPath = m_state.paths.buildPath();
 	if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
-		m_flagsFile = buildPath + "/flags_x86.env";
+		m_flagsFile = m_state.cache.getHashPath("flags_x86.env", CacheType::Local);
 	else
-		m_flagsFile = buildPath + "/flags_x64.env";
+		m_flagsFile = m_state.cache.getHashPath("flags_x64.env", CacheType::Local);
+
+	m_state.cache.file().addExtraHash(String::getPathFilename(m_flagsFile));
 
 	if (!Commands::pathExists(m_flagsFile))
 	{

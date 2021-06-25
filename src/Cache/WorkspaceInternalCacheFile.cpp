@@ -129,7 +129,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 							Diagnostic::error("Empty key found in cache. Aborting.");
 							return false;
 						}
-						List::addIfDoesNotExist(m_extraHashes, id);
+						addExtraHash(std::move(id));
 					}
 					else if (String::startsWith('@', line))
 					{
@@ -234,7 +234,7 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 	std::ofstream(externalPath) << m_externalDependencies.asString()
 								<< std::endl;
 
-	List::addIfDoesNotExist(m_extraHashes, std::move(hash));
+	addExtraHash(std::move(hash));
 
 	return true;
 }

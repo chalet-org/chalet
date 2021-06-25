@@ -70,13 +70,15 @@ bool MsvcEnvironment::create()
 
 	auto& buildPath = m_state.paths.buildPath();
 
-	m_varsFileOriginal = buildPath + "/original.env";
-	m_varsFileMsvc = buildPath + "/msvc_all.env";
+	m_varsFileOriginal = m_state.cache.getCachePath("original.env", CacheType::Local);
+	m_varsFileMsvc = m_state.cache.getCachePath("msvc_all.env", CacheType::Local);
 
 	if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
-		m_varsFileMsvcDelta = buildPath + "/msvc_x86.env";
+		m_varsFileMsvcDelta = m_state.cache.getHashPath("msvc_x86.env", CacheType::Local);
 	else
-		m_varsFileMsvcDelta = buildPath + "/msvc_x64.env";
+		m_varsFileMsvcDelta = m_state.cache.getHashPath("msvc_x64.env", CacheType::Local);
+
+	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
 
 	m_initialized = true;
 
