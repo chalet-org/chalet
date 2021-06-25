@@ -218,7 +218,8 @@ bool WorkspaceInternalCacheFile::save()
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::loadExternalDependencies()
 {
-	auto externalPath = m_cache.getHashPath("chalet_external_dependencies_cache", CacheType::Local);
+	auto hash = Hash::string("chalet_external_dependencies_cache");
+	auto externalPath = m_cache.getCachePath(hash, CacheType::Local);
 	return m_externalDependencies.loadFromFilename(externalPath);
 }
 
@@ -227,12 +228,12 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 {
 	m_dirty |= m_externalDependencies.dirty();
 
-	auto externalPath = m_cache.getHashPath("chalet_external_dependencies_cache", CacheType::Local);
+	auto hash = Hash::string("chalet_external_dependencies_cache");
+	auto externalPath = m_cache.getCachePath(hash, CacheType::Local);
 
 	std::ofstream(externalPath) << m_externalDependencies.asString()
 								<< std::endl;
 
-	auto hash = String::getPathFilename(externalPath);
 	List::addIfDoesNotExist(m_extraHashes, std::move(hash));
 
 	return true;
