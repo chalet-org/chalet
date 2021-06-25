@@ -30,6 +30,39 @@ BuildJsonProtoParser::~BuildJsonProtoParser() = default;
 /*****************************************************************************/
 bool BuildJsonProtoParser::serialize()
 {
+	if (!validateAgainstSchema())
+		return false;
+
+	const Json& jRoot = m_buildJson.json;
+	if (!serializeRequiredFromJsonRoot(jRoot))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::serializeDependenciesOnly()
+{
+	if (!validateAgainstSchema())
+		return false;
+
+	const Json& jRoot = m_buildJson.json;
+
+	if (!jRoot.is_object())
+		return false;
+
+	if (!parseRoot(jRoot))
+		return false;
+
+	if (!parseExternalDependencies(jRoot))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::validateAgainstSchema()
+{
 	Json buildJsonSchema = Schema::getBuildJson();
 
 	if (m_inputs.saveSchemaToFile())
@@ -43,10 +76,6 @@ bool BuildJsonProtoParser::serialize()
 		Diagnostic::error("{}: There was an error validating the file against its schema.", m_filename);
 		return false;
 	}
-
-	const Json& jRoot = m_buildJson.json;
-	if (!serializeRequiredFromJsonRoot(jRoot))
-		return false;
 
 	return true;
 }

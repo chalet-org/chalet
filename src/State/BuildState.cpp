@@ -7,7 +7,6 @@
 
 #include "BuildJson/BuildJsonParser.hpp"
 #include "Builder/BuildManager.hpp"
-#include "Dependencies/DependencyManager.hpp"
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
 
 #include "State/AncillaryTools.hpp"
@@ -40,7 +39,7 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 }
 
 /*****************************************************************************/
-bool BuildState::initialize(const bool inInstallDependencies)
+bool BuildState::initialize()
 {
 	if (!parseToolchainFromSettingsJson())
 		return false;
@@ -52,12 +51,6 @@ bool BuildState::initialize(const bool inInstallDependencies)
 
 	if (!parseBuildJson())
 		return false;
-
-	if (inInstallDependencies)
-	{
-		if (!installDependencies())
-			return false;
-	}
 
 	if (!initializeBuild())
 		return false;
@@ -114,21 +107,6 @@ bool BuildState::parseBuildJson()
 {
 	BuildJsonParser parser(m_inputs, m_prototype, *this);
 	return parser.serialize();
-}
-
-/*****************************************************************************/
-bool BuildState::installDependencies()
-{
-	const auto& command = m_inputs.command();
-
-	DependencyManager depMgr(*this);
-	if (!depMgr.run(command == Route::Configure))
-	{
-		Diagnostic::error("There was an error creating the dependencies.");
-		return false;
-	}
-
-	return true;
 }
 
 /*****************************************************************************/

@@ -204,7 +204,7 @@
 			"script.!windows": "scripts/script_shell.sh",
 			"script.windows": "scripts/script_batch.bat"
 		}
-	} /*,
+	},
 	"externalDependencies": {
 		"catch2": {
 			"repository": "git@github.com:catchorg/Catch2.git",
@@ -225,5 +225,5 @@
 		"ust": {
 			"repository": "git@github.com:MisterTea/UniversalStacktrace.git"
 		}
-	}*/
+	}
 }

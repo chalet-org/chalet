@@ -24,8 +24,10 @@ struct BuildJsonProtoParser
 	~BuildJsonProtoParser();
 
 	bool serialize();
+	bool serializeDependenciesOnly();
 
 private:
+	bool validateAgainstSchema();
 	bool serializeRequiredFromJsonRoot(const Json& inNode);
 
 	bool parseRoot(const Json& inNode);

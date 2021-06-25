@@ -47,7 +47,7 @@ public:
 	BuildConfiguration configuration;
 	BuildTargetList targets;
 
-	bool initialize(const bool inInstallDependencies);
+	bool initialize();
 	bool doBuild(const bool inShowSuccess = true);
 	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
 
@@ -55,7 +55,6 @@ private:
 	bool initializeBuildConfiguration();
 	bool parseToolchainFromSettingsJson();
 	bool parseBuildJson();
-	bool installDependencies();
 
 	bool initializeBuild();
 	void initializeCache();

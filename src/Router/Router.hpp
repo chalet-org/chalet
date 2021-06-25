@@ -40,8 +40,6 @@ private:
 	bool managePathVariables(const StatePrototype* inPrototype);
 
 	CommandLineInputs& m_inputs;
-
-	bool m_installDependencies = false;
 };
 }
 

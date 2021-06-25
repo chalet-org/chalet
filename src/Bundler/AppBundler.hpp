@@ -23,7 +23,7 @@ struct AppBundler
 
 	explicit AppBundler(const CommandLineInputs& inInputs, StatePrototype& inPrototype);
 
-	bool runBuilds(const bool inInstallDependencies);
+	bool runBuilds();
 
 	bool run(const DistributionTarget& inTarget);
 

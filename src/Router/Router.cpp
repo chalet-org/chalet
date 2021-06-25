@@ -73,11 +73,9 @@ bool Router::run()
 
 		if (command != Route::Bundle && command != Route::Configure)
 		{
-			m_installDependencies = true;
-
 			chalet_assert(prototype != nullptr, "");
 			buildState = std::make_unique<BuildState>(m_inputs, *prototype);
-			if (!buildState->initialize(m_installDependencies))
+			if (!buildState->initialize())
 				return false;
 		}
 	}
@@ -176,8 +174,7 @@ bool Router::cmdBundle(StatePrototype& inPrototype)
 
 	AppBundler bundler(m_inputs, inPrototype);
 
-	m_installDependencies = true;
-	if (!bundler.runBuilds(m_installDependencies))
+	if (!bundler.runBuilds())
 		return false;
 
 	for (auto& target : inPrototype.distribution)

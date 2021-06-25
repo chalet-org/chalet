@@ -7,6 +7,7 @@
 
 #include "BuildJson/BuildJsonProtoParser.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Dependencies/DependencyManager.hpp"
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
 #include "SettingsJson/SettingsJsonParser.hpp"
 
@@ -42,10 +43,10 @@ bool StatePrototype::initialize()
 	if (!parseLocalSettingsJson())
 		return false;
 
+	Output::setShowCommandOverride(false);
+
 	if (m_inputs.command() != Route::Configure)
 	{
-		Output::setShowCommandOverride(false);
-
 		Timer timer;
 		Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
 
@@ -55,20 +56,49 @@ bool StatePrototype::initialize()
 		if (!validateBundleDestinations())
 			return false;
 
-		cache.file().checkIfAppVersionChanged(m_inputs.appPath());
-
-		if (!cache.createCacheFolder(CacheType::Local))
-		{
-			Diagnostic::error("There was an error creating the build cache.");
+		if (!createCache())
 			return false;
-		}
 
-		if (!validate())
+		if (!validateBuildFile())
 			return false;
 
 		Diagnostic::printDone(timer.asString());
+	}
+	else
+	{
+		{
+			BuildJsonProtoParser parser(m_inputs, *this);
+			if (!parser.serializeDependenciesOnly())
+				return false;
+		}
 
-		Output::setShowCommandOverride(true);
+		if (!externalDependencies.empty())
+		{
+			if (!createCache())
+				return false;
+
+			if (!validateDependencies())
+				return false;
+		}
+	}
+
+	Output::setShowCommandOverride(true);
+
+	if (!runDependencyManager())
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool StatePrototype::createCache()
+{
+	cache.file().checkIfAppVersionChanged(m_inputs.appPath());
+
+	if (!cache.createCacheFolder(CacheType::Local))
+	{
+		Diagnostic::error("There was an error creating the build cache.");
+		return false;
 	}
 
 	return true;
@@ -80,11 +110,23 @@ void StatePrototype::saveCaches()
 	cache.saveSettings(SettingsType::Local);
 	cache.saveSettings(SettingsType::Global);
 
-	if (m_inputs.command() != Route::Configure)
+	cache.removeStaleProjectCaches();
+	cache.file().save();
+}
+
+/*****************************************************************************/
+bool StatePrototype::runDependencyManager()
+{
+	bool configure = m_inputs.command() == Route::Configure;
+
+	DependencyManager depMgr(*this);
+	if (!depMgr.run(configure))
 	{
-		cache.removeStaleProjectCaches();
-		cache.file().save();
+		Diagnostic::error("There was an error creating the dependencies.");
+		return false;
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -132,14 +174,8 @@ bool StatePrototype::validateBundleDestinations()
 }
 
 /*****************************************************************************/
-bool StatePrototype::validate()
+bool StatePrototype::validateDependencies()
 {
-	if (!tools.validate())
-	{
-		Diagnostic::error("Error validating ancillary tools.");
-		return false;
-	}
-
 	for (auto& dependency : externalDependencies)
 	{
 		if (!dependency->validate())
@@ -148,6 +184,21 @@ bool StatePrototype::validate()
 			return false;
 		}
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool StatePrototype::validateBuildFile()
+{
+	if (!tools.validate())
+	{
+		Diagnostic::error("Error validating ancillary tools.");
+		return false;
+	}
+
+	if (!validateDependencies())
+		return false;
 
 	for (auto& target : distribution)
 	{

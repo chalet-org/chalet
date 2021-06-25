@@ -31,7 +31,7 @@ AppBundler::AppBundler(const CommandLineInputs& inInputs, StatePrototype& inProt
 }
 
 /*****************************************************************************/
-bool AppBundler::runBuilds(const bool inInstallDependencies)
+bool AppBundler::runBuilds()
 {
 	// Build all required configurations
 	m_detectedArch = m_inputs.targetArchitecture().empty() ? m_inputs.hostArchitecture() : m_inputs.targetArchitecture();
@@ -76,7 +76,7 @@ bool AppBundler::runBuilds(const bool inInstallDependencies)
 	// BuildState* stateArchA = nullptr;
 	for (auto& [config, state] : m_states)
 	{
-		if (!state->initialize(inInstallDependencies))
+		if (!state->initialize())
 			return false;
 
 		if (!state->doBuild(Route::Build, false))
@@ -564,7 +564,7 @@ std::unique_ptr<BuildState> AppBundler::getUniversalState(BuildState& inState, c
 	inputs.setBuildConfiguration(inBuildConfig);
 
 	auto buildState = std::make_unique<BuildState>(std::move(inputs), m_prototype);
-	if (!buildState->initialize(false))
+	if (!buildState->initialize())
 		return nullptr;
 
 	return buildState;

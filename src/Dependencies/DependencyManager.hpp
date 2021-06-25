@@ -6,19 +6,19 @@
 #ifndef CHALET_DEPENDENCY_MANAGER_HPP
 #define CHALET_DEPENDENCY_MANAGER_HPP
 
-#include "State/BuildState.hpp"
-
 namespace chalet
 {
+struct StatePrototype;
+
 class DependencyManager
 {
 public:
-	explicit DependencyManager(BuildState& inState);
+	explicit DependencyManager(StatePrototype& inPrototype);
 
-	bool run(const bool inInstallCmd);
+	bool run(const bool inConfigureCmd);
 
 private:
-	BuildState& m_state;
+	StatePrototype& m_prototype;
 };
 }
 

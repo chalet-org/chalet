@@ -7,6 +7,7 @@
 
 #include "State/AncillaryTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
+#include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
@@ -18,32 +19,34 @@
 namespace chalet
 {
 /*****************************************************************************/
-DependencyManager::DependencyManager(BuildState& inState) :
-	m_state(inState)
+DependencyManager::DependencyManager(StatePrototype& inPrototype) :
+	m_prototype(inPrototype)
 {
 }
 
 /*****************************************************************************/
-bool DependencyManager::run(const bool inInstallCmd)
+bool DependencyManager::run(const bool inConfigureCmd)
 {
-	if (m_state.tools.git().empty())
+	if (m_prototype.tools.git().empty())
 		return true;
 
-	const auto& externalDepDir = m_state.environment.externalDepDir();
-	// auto& localSettings = m_state.cache.getSettings(SettingsType::Local);
+	const auto& externalDepDir = m_prototype.environment.externalDepDir();
+	// auto& localSettings = m_prototype.cache.getSettings(SettingsType::Local);
 
-	if (!m_state.externalDependencies.empty())
+	if (!m_prototype.externalDependencies.empty())
 	{
-		m_state.cache.file().loadExternalDependencies();
+		m_prototype.cache.file().loadExternalDependencies();
+
+		Output::lineBreak();
 	}
 
-	auto& dependencyCache = m_state.cache.file().externalDependencies();
+	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
 
 	StringList destinationCache;
 
 	bool result = true;
 	int count = 0;
-	for (auto& dependency : m_state.externalDependencies)
+	for (auto& dependency : m_prototype.externalDependencies)
 	{
 		auto& git = static_cast<const GitDependency&>(*dependency);
 
@@ -56,14 +59,15 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 		// During the build, just continue if the path already exists
 		//   (the install command can be used for more complicated tasks)
+		LOG(destination);
 		if (Commands::pathExists(destination))
 		{
 			if (!dependencyCache.contains(destination))
 			{
-				auto commitHash = m_state.tools.getCurrentGitRepositoryHash(destination);
+				auto commitHash = m_prototype.tools.getCurrentGitRepositoryHash(destination);
 				dependencyCache.emplace(destination, std::move(commitHash));
 			}
-			if (!inInstallCmd)
+			if (!inConfigureCmd)
 				continue;
 
 			update = true;
@@ -75,15 +79,16 @@ bool DependencyManager::run(const bool inInstallCmd)
 		const auto& tag = git.tag();
 		const auto& commit = git.commit();
 
+		const bool branchValid = !branch.empty();
 		const bool tagValid = !tag.empty();
 		const bool commitValid = !commit.empty();
 
 		bool res = true;
 
-		if (update)
+		if (update && branchValid)
 		{
-			const std::string currentBranch = m_state.tools.getCurrentGitRepositoryBranch(destination);
-			// LOG('\'', currentBranch, "'  '", branch, '\'');
+			const std::string currentBranch = m_prototype.tools.getCurrentGitRepositoryBranch(destination);
+			LOG("branches", fmt::format("'{}'", currentBranch), fmt::format("'{}'", branch));
 
 			// in this case, HEAD means the branch is on a tag or commit
 			if ((currentBranch != "HEAD" || commitValid) && currentBranch != branch)
@@ -92,56 +97,58 @@ bool DependencyManager::run(const bool inInstallCmd)
 				result &= Commands::removeRecursively(destination);
 				update = false;
 			}
+		}
 
-			if (update && commitValid)
+		if (update && commitValid)
+		{
+			const std::string currentCommit = m_prototype.tools.getCurrentGitRepositoryHash(destination);
+			LOG("commits:", fmt::format("'{}'", currentCommit), fmt::format("'{}'", commit));
+
+			if (!String::startsWith(commit, currentCommit))
 			{
-				const std::string currentCommit = m_state.tools.getCurrentGitRepositoryHash(destination);
-				// LOG('\'', currentTag, "'  '", tag, '\'');
-
-				if (!String::startsWith(commit, currentCommit))
-				{
-					// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-					result &= Commands::removeRecursively(destination);
-					update = false;
-				}
+				// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
+				result &= Commands::removeRecursively(destination);
+				update = false;
 			}
+		}
 
-			if (update && tagValid)
+		if (update && tagValid)
+		{
+			const std::string currentTag = m_prototype.tools.getCurrentGitRepositoryTag(destination);
+			LOG("tags:", fmt::format("'{}'", currentTag), fmt::format("'{}'", tag));
+
+			if (currentTag != tag)
 			{
-				const std::string currentTag = m_state.tools.getCurrentGitRepositoryTag(destination);
-				// LOG('\'', currentTag, "'  '", tag, '\'');
-
-				if (currentTag != tag)
-				{
-					// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-					result &= Commands::removeRecursively(destination);
-					update = false;
-				}
+				// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
+				result &= Commands::removeRecursively(destination);
+				update = false;
 			}
+		}
 
-			if (update)
+		if (update)
+		{
+			LOG("update");
+			// if commit or tag was specified, we shouldn't update this way
+			if (commitValid || tagValid)
+				continue;
+
+			LOG(destination);
+			if (dependencyCache.contains(destination))
 			{
-				// if commit or tag was specified, we shouldn't update this way
-				if (commitValid || tagValid)
+				// We're using a shallow clone, so this only works if the branch hasn't changed
+				const std::string originHash = m_prototype.tools.getCurrentGitRepositoryHashFromRemote(destination, branch);
+				const auto& cachedHash = dependencyCache.get(destination);
+
+				if (cachedHash == originHash)
 					continue;
-
-				if (dependencyCache.contains(destination))
-				{
-					// We're using a shallow clone, so this only works if the branch hasn't changed
-					const std::string originHash = m_state.tools.getCurrentGitRepositoryHashFromRemote(destination, branch);
-					const auto& cachedHash = dependencyCache.get(destination);
-
-					if (cachedHash == originHash)
-						continue;
-				}
-
-				const auto& checkoutTo = tagValid ? tag : branch;
-
-				Output::msgUpdatingDependency(repository, checkoutTo);
-
-				res &= m_state.tools.updateGitRepositoryShallow(destination);
-				result &= res;
 			}
+
+			const auto& checkoutTo = tagValid ? tag : branch;
+
+			Output::msgUpdatingDependency(repository, checkoutTo);
+
+			res &= m_prototype.tools.updateGitRepositoryShallow(destination);
+			result &= res;
 		}
 
 		if (!update)
@@ -150,10 +157,10 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			Output::msgFetchingDependency(repository, checkoutTo);
 
-			uint maxJobs = m_state.environment.maxJobs();
+			uint maxJobs = m_prototype.environment.maxJobs();
 
 			StringList cmd;
-			cmd.push_back(m_state.tools.git());
+			cmd.push_back(m_prototype.tools.git());
 			cmd.push_back("clone");
 			cmd.push_back("--quiet");
 
@@ -191,7 +198,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			if (commitValid)
 			{
-				res &= m_state.tools.resetGitRepositoryToCommit(destination, commit);
+				res &= m_prototype.tools.resetGitRepositoryToCommit(destination, commit);
 			}
 
 			result &= res;
@@ -199,7 +206,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 		if (res)
 		{
-			auto commitHash = m_state.tools.getCurrentGitRepositoryHash(destination);
+			auto commitHash = m_prototype.tools.getCurrentGitRepositoryHash(destination);
 
 			// Output::msgDisplayBlack(commitHash); // useful for debugging
 			dependencyCache.set(destination, std::move(commitHash));
@@ -245,13 +252,10 @@ bool DependencyManager::run(const bool inInstallCmd)
 			result &= Commands::remove(externalDepDir);
 	}
 
-	if (!m_state.externalDependencies.empty())
+	if (!m_prototype.externalDependencies.empty())
 	{
-		m_state.cache.file().saveExternalDependencies();
+		m_prototype.cache.file().saveExternalDependencies();
 	}
-
-	if (count > 0)
-		Output::lineBreak();
 
 	return result;
 }

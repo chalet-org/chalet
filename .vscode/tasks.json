@@ -18,6 +18,18 @@
 	},
 	"tasks": [
 		{
+			"label": "Configure",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema configure",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+		},
+		{
 			"label": "Build & Run: Release",
 			"command": "${CHALET_DEBUG} --save-schema buildrun Release",
 			"type": "shell",
