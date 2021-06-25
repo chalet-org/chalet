@@ -3,29 +3,29 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CONFIG_JSON_PARSER_HPP
-#define CHALET_CONFIG_JSON_PARSER_HPP
+#ifndef CHALET_SETTINGS_JSON_PARSER_HPP
+#define CHALET_SETTINGS_JSON_PARSER_HPP
 
 #include "Compile/ToolchainPreference.hpp"
-#include "ConfigJson/IConfigJsonParser.hpp"
 #include "Libraries/Json.hpp"
+#include "SettingsJson/ISettingsJsonParser.hpp"
 
 namespace chalet
 {
 struct CommandLineInputs;
 struct JsonFile;
 struct StatePrototype;
-struct GlobalConfigState;
+struct GlobalSettingsState;
 
-struct ConfigJsonParser final : IConfigJsonParser
+struct SettingsJsonParser final : ISettingsJsonParser
 {
-	explicit ConfigJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
+	explicit SettingsJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
 
-	bool serialize(const GlobalConfigState& inState);
+	bool serialize(const GlobalSettingsState& inState);
 
 private:
 	bool validatePaths();
-	bool makeCache(const GlobalConfigState& inState);
+	bool makeSettingsJson(const GlobalSettingsState& inState);
 	bool serializeFromJsonRoot(Json& inJson);
 
 	bool parseSettings(const Json& inNode);
@@ -72,4 +72,4 @@ private:
 };
 }
 
-#endif // CHALET_CONFIG_JSON_PARSER_HPP
+#endif // CHALET_SETTINGS_JSON_PARSER_HPP

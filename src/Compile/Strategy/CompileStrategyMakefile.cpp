@@ -30,7 +30,7 @@ bool CompileStrategyMakefile::initialize(const StringList& inFileExtensions)
 		return false;
 
 	auto id = fmt::format("makefile_{}_{}", Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
-	m_cacheFile = m_state.cache.getHashPath(id, WorkspaceCache::Type::Local);
+	m_cacheFile = m_state.cache.getHashPath(id, CacheType::Local);
 
 	auto& cacheFile = m_state.cache.file();
 	const auto& oldStrategyHash = cacheFile.hashStrategy();

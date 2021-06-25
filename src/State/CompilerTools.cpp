@@ -27,7 +27,7 @@ CompilerTools::CompilerTools(const CommandLineInputs& inInputs, BuildState& inSt
 }
 
 /*****************************************************************************/
-bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCacheJson)
+bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inConfigJson)
 {
 	// Note: Expensive!
 	if (!initializeCompilerConfigs(inTargets))
@@ -174,7 +174,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCac
 	}
 #endif
 
-	if (!updateToolchainCacheNode(inCacheJson))
+	if (!updateToolchainCacheNode(inConfigJson))
 		return false;
 
 	fetchCompilerVersions();
@@ -296,13 +296,13 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 }
 
 /*****************************************************************************/
-bool CompilerTools::updateToolchainCacheNode(JsonFile& inCacheJson)
+bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 {
 	const auto& preference = m_inputs.toolchainPreferenceRaw();
-	auto& settings = inCacheJson.json["settings"];
+	auto& buildSettings = inConfigJson.json["build"];
 
-	settings["toolchain"] = preference;
-	inCacheJson.setDirty(true);
+	buildSettings["toolchain"] = preference;
+	inConfigJson.setDirty(true);
 
 	return true;
 }

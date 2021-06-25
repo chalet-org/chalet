@@ -3,18 +3,18 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_GLOBAL_CONFIG_STATE_HPP
-#define CHALET_GLOBAL_CONFIG_STATE_HPP
+#ifndef CHALET_GLOBAL_SETTINGS_STATE_HPP
+#define CHALET_GLOBAL_SETTINGS_STATE_HPP
 
 #include "Libraries/Json.hpp"
 
 namespace chalet
 {
-struct GlobalConfigState
+struct GlobalSettingsState
 {
 	Json toolchains;
-	Json ancillaryTools;
-	Json applePlatformSdks;
+	Json tools;
+	Json appleSdks;
 
 	std::string macosSigningIdentity;
 	std::string toolchainPreference;
@@ -24,4 +24,4 @@ struct GlobalConfigState
 };
 }
 
-#endif // CHALET_GLOBAL_CONFIG_STATE_HPP
+#endif // CHALET_GLOBAL_SETTINGS_STATE_HPP

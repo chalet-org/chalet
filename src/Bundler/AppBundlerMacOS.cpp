@@ -62,7 +62,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
 
-	auto& installNameTool = m_state.ancillaryTools.installNameTool();
+	auto& installNameTool = m_state.tools.installNameTool();
 	if (m_bundle.updateRPaths())
 	{
 		if (!changeRPathOfDependents(installNameTool, m_dependencyMap, m_executablePath))
@@ -210,7 +210,7 @@ bool AppBundlerMacOS::createBundleIcon()
 	if (!icon.empty())
 	{
 		std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
-		const auto& sips = m_state.ancillaryTools.sips();
+		const auto& sips = m_state.tools.sips();
 		bool sipsFound = !sips.empty();
 
 		if (String::endsWith(".png", icon) && sipsFound)
@@ -265,7 +265,7 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 
 	{
 		const auto& plistInput = !tmpInfoPlist.empty() ? tmpInfoPlist : infoPropertyList;
-		if (!m_state.ancillaryTools.plistConvertToBinary(plistInput, outInfoPropertyList))
+		if (!m_state.tools.plistConvertToBinary(plistInput, outInfoPropertyList))
 			return false;
 
 		if (!tmpInfoPlist.empty())
@@ -275,25 +275,25 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 		}
 	}
 
-	if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName))
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName))
 		return false;
 
 	if (!m_iconBaseName.empty())
 	{
-		if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", m_iconBaseName))
+		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", m_iconBaseName))
 			return false;
 	}
 
-	if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", name))
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", name))
 		return false;
 
-	// if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier))
+	// if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier))
 	// 	return false;
 
-	if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version))
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version))
 		return false;
 
-	if (!m_state.ancillaryTools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", m_mainExecutable))
+	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", m_mainExecutable))
 		return false;
 
 	return true;
@@ -302,7 +302,7 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 /*****************************************************************************/
 bool AppBundlerMacOS::setExecutablePaths() const
 {
-	auto& installNameTool = m_state.ancillaryTools.installNameTool();
+	auto& installNameTool = m_state.tools.installNameTool();
 
 	for (auto p : m_state.environment.path())
 	{
@@ -370,8 +370,8 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	const auto& outDir = m_bundle.outDir();
 
-	auto& hdiutil = m_state.ancillaryTools.hdiutil();
-	auto& tiffutil = m_state.ancillaryTools.tiffutil();
+	auto& hdiutil = m_state.tools.hdiutil();
+	auto& tiffutil = m_state.tools.tiffutil();
 	const std::string volumePath = fmt::format("/Volumes/{}", bundleName);
 	const std::string appPath = fmt::format("{}/{}.app", outDir, bundleName);
 
@@ -425,7 +425,7 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	const auto applescriptText = PlatformFileTemplates::macosDmgApplescript(bundleName);
 
-	if (!Commands::subprocess({ m_state.ancillaryTools.osascript(), "-e", applescriptText }))
+	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }))
 		return false;
 	if (!Commands::subprocess({ "rm", "-rf", fmt::format("{}/.fseventsd", volumePath) }))
 		return false;
@@ -448,7 +448,7 @@ bool AppBundlerMacOS::createDmgImage() const
 /*****************************************************************************/
 bool AppBundlerMacOS::signAppBundle() const
 {
-	if (m_state.ancillaryTools.macosSigningIdentity().empty())
+	if (m_state.tools.macosSigningIdentity().empty())
 	{
 		Diagnostic::warn("bundle '{}' was not signed - macosSigningIdentity is not set, or was empty.", m_bundle.name());
 		return true;
@@ -467,7 +467,7 @@ bool AppBundlerMacOS::signAppBundle() const
 			if (entry.is_regular_file())
 			{
 				auto path = entry.path().string();
-				if (!m_state.ancillaryTools.macosCodeSignFile(path))
+				if (!m_state.tools.macosCodeSignFile(path))
 				{
 					Diagnostic::error("Failed to sign: {}", path);
 					return false;
@@ -482,7 +482,7 @@ bool AppBundlerMacOS::signAppBundle() const
 				if (entry.is_regular_file())
 				{
 					auto path = entry.path().string();
-					if (!m_state.ancillaryTools.macosCodeSignFile(path))
+					if (!m_state.tools.macosCodeSignFile(path))
 					{
 						Diagnostic::error("Failed to sign: {}", path);
 						return false;
@@ -495,7 +495,7 @@ bool AppBundlerMacOS::signAppBundle() const
 				if (entry.is_regular_file())
 				{
 					auto path = entry.path().string();
-					if (!m_state.ancillaryTools.macosCodeSignFile(path))
+					if (!m_state.tools.macosCodeSignFile(path))
 					{
 						Diagnostic::error("Failed to sign: {}", path);
 						return false;
@@ -504,7 +504,7 @@ bool AppBundlerMacOS::signAppBundle() const
 			}
 
 			auto appPath = m_bundlePath.substr(0, m_bundlePath.size() - 9);
-			if (!m_state.ancillaryTools.macosCodeSignFile(appPath))
+			if (!m_state.tools.macosCodeSignFile(appPath))
 			{
 				Diagnostic::error("Failed to sign: {}", appPath);
 				return false;
@@ -525,7 +525,7 @@ bool AppBundlerMacOS::signAppBundle() const
 /*****************************************************************************/
 bool AppBundlerMacOS::signDmgImage(const std::string& inPath) const
 {
-	if (m_state.ancillaryTools.macosSigningIdentity().empty())
+	if (m_state.tools.macosSigningIdentity().empty())
 	{
 		Diagnostic::warn("dmg '{}' was not signed - macosSigningIdentity is not set, or was empty.", inPath);
 		return true;
@@ -534,7 +534,7 @@ bool AppBundlerMacOS::signDmgImage(const std::string& inPath) const
 	Timer timer;
 	Diagnostic::info("Signing the disk image", false);
 
-	if (!m_state.ancillaryTools.macosCodeSignDiskImage(inPath))
+	if (!m_state.tools.macosCodeSignDiskImage(inPath))
 	{
 		Diagnostic::error("Failed to sign: {}", inPath);
 		return false;

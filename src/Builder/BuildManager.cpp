@@ -94,7 +94,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			if (target->isProject())
 			{
-				if (!cacheRecipe(static_cast<const ProjectTarget&>(*target), inRoute))
+				if (!addProjectToBuild(static_cast<const ProjectTarget&>(*target), inRoute))
 					return false;
 			}
 		}
@@ -283,7 +283,7 @@ std::string BuildManager::getBuildStrategyName() const
 }
 
 /*****************************************************************************/
-bool BuildManager::cacheRecipe(const ProjectTarget& inProject, const Route inRoute)
+bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route inRoute)
 {
 	auto& compilerConfig = m_state.toolchain.getConfig(inProject.language());
 	auto compilerType = compilerConfig.compilerType();
@@ -487,7 +487,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_state.ancillaryTools, m_inputs.buildFile());
+	ScriptRunner scriptRunner(m_state.tools, m_inputs.buildFile());
 	if (!scriptRunner.run(scripts, inRunCommand))
 		return false;
 
@@ -585,7 +585,7 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 
 #if defined(CHALET_MACOS)
 	// This is required for profiling
-	auto& installNameTool = m_state.ancillaryTools.installNameTool();
+	auto& installNameTool = m_state.tools.installNameTool();
 	// install_name_tool -add_rpath @executable_path/chalet_external/SFML/lib
 	for (auto p : m_state.environment.path())
 	{

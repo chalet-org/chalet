@@ -34,7 +34,7 @@ class BuildState
 public:
 	explicit BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototype);
 
-	const AncillaryTools& ancillaryTools;
+	const AncillaryTools& tools;
 	const DistributionTargetList& distribution;
 	WorkspaceCache& cache;
 
@@ -53,7 +53,7 @@ public:
 
 private:
 	bool initializeBuildConfiguration();
-	bool parseCacheJson();
+	bool parseToolchainFromSettingsJson();
 	bool parseBuildJson();
 	bool installDependencies();
 

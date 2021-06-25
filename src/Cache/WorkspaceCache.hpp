@@ -6,8 +6,10 @@
 #ifndef CHALET_WORKSPACE_CACHE_HPP
 #define CHALET_WORKSPACE_CACHE_HPP
 
+#include "Cache/CacheType.hpp"
 #include "Cache/WorkspaceInternalCacheFile.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Settings/SettingsType.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -18,27 +20,18 @@ class BuildState;
 
 struct WorkspaceCache
 {
-	enum class Type
-	{
-		Local,
-		Global
-	};
-
 	explicit WorkspaceCache(const CommandLineInputs& inInputs);
 
-	bool createCacheFolder(const Type inCacheType);
-	bool exists(const Type inCacheType = Type::Local) const;
-	std::string getHashPath(const std::string& inIdentifier, const Type inCacheType) const;
-	std::string getCachePath(const std::string& inFolder, const Type inCacheType) const;
+	bool createCacheFolder(const CacheType inCacheType);
+	bool exists(const CacheType inCacheType = CacheType::Local) const;
+	std::string getHashPath(const std::string& inIdentifier, const CacheType inCacheType) const;
+	std::string getCachePath(const std::string& inFolder, const CacheType inCacheType) const;
 	void setWorkspaceHash(const std::string& inToHash) noexcept;
 
 	WorkspaceInternalCacheFile& file() noexcept;
 
-	JsonFile& localConfig() noexcept;
-	void saveLocalConfig();
-
-	JsonFile& globalConfig() noexcept;
-	void saveGlobalConfig();
+	JsonFile& getSettings(const SettingsType inType) noexcept;
+	void saveSettings(const SettingsType inType);
 
 	void removeBuildIfCacheChanged(const std::string& inBuildDir);
 	bool removeStaleProjectCaches();
@@ -46,10 +39,10 @@ struct WorkspaceCache
 private:
 	friend class BuildState;
 	friend struct StatePrototype;
-	friend struct ConfigManager;
+	friend struct SettingsManager;
 
-	const std::string& getCacheRef(const Type inCacheType) const;
-	void removeCacheFolder(const Type inCacheType);
+	const std::string& getCacheRef(const CacheType inCacheType) const;
+	void removeCacheFolder(const CacheType inCacheType);
 
 	bool initialize();
 
@@ -57,8 +50,8 @@ private:
 
 	WorkspaceInternalCacheFile m_cacheFile;
 
-	JsonFile m_localConfig;
-	JsonFile m_globalConfig;
+	JsonFile m_localSettings;
+	JsonFile m_globalSettings;
 
 	std::string m_cacheFolderLocal;
 	// std::string m_cacheFolderGlobal;

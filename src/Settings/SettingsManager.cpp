@@ -3,17 +3,17 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Config/ConfigManager.hpp"
+#include "Settings/SettingsManager.hpp"
 
-#include "ConfigJson/SchemaConfigJson.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "SettingsJson/SchemaSettingsJson.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-ConfigManager::ConfigManager(const CommandLineInputs& inInputs, const ConfigAction inAction) :
+SettingsManager::SettingsManager(const CommandLineInputs& inInputs, const SettingsAction inAction) :
 	m_cache(inInputs),
 	m_key(inInputs.settingsKey()),
 	m_value(inInputs.settingsValue()),
@@ -23,41 +23,41 @@ ConfigManager::ConfigManager(const CommandLineInputs& inInputs, const ConfigActi
 }
 
 /*****************************************************************************/
-bool ConfigManager::run()
+bool SettingsManager::run()
 {
 	if (!m_cache.initialize())
 		return false;
 
-	auto& config = getConfig();
-	if (!Commands::pathExists(config.filename()))
+	auto& settings = getSettings();
+	if (!Commands::pathExists(settings.filename()))
 	{
-		if (m_type == ConfigType::Global)
-			Diagnostic::error("File '{}' doesn't exist.", config.filename());
+		if (m_type == SettingsType::Global)
+			Diagnostic::error("File '{}' doesn't exist.", settings.filename());
 		else
-			Diagnostic::error("Not a chalet project, or a build hasn't been run yet.", config.filename());
+			Diagnostic::error("Not a chalet project, or a build hasn't been run yet.", settings.filename());
 		return false;
 	}
 
-	Json& node = config.json;
+	Json& node = settings.json;
 	if (!node.is_object())
 	{
 		node = Json::object();
-		config.setDirty(true);
+		settings.setDirty(true);
 	}
 
 	switch (m_action)
 	{
-		case ConfigAction::Get:
+		case SettingsAction::Get:
 			if (!runSettingsGet(node))
 				return false;
 			break;
 
-		case ConfigAction::Set:
+		case SettingsAction::Set:
 			if (!runSettingsSet(node))
 				return false;
 			break;
 
-		case ConfigAction::Unset:
+		case SettingsAction::Unset:
 			if (!runSettingsUnset(node))
 				return false;
 			break;
@@ -66,13 +66,13 @@ bool ConfigManager::run()
 			break;
 	}
 
-	config.save();
+	settings.save();
 
 	return false;
 }
 
 /*****************************************************************************/
-bool ConfigManager::runSettingsGet(Json& node)
+bool SettingsManager::runSettingsGet(Json& node)
 {
 	Json* ptr = nullptr;
 	if (!findRequestedNodeWithFailure(node, ptr))
@@ -92,7 +92,7 @@ bool ConfigManager::runSettingsGet(Json& node)
 }
 
 /*****************************************************************************/
-bool ConfigManager::runSettingsSet(Json& node)
+bool SettingsManager::runSettingsSet(Json& node)
 {
 	if (m_key.empty())
 	{
@@ -112,7 +112,7 @@ bool ConfigManager::runSettingsSet(Json& node)
 	}
 
 	bool set = false;
-	auto& config = getConfig();
+	auto& settings = getSettings();
 	if (ptr->is_string())
 	{
 		*ptr = m_value;
@@ -185,15 +185,15 @@ bool ConfigManager::runSettingsSet(Json& node)
 		else
 			std::cout << fmt::format("{}: {}", m_key, m_value) << std::endl;
 
-		config.setDirty(true);
+		settings.setDirty(true);
 	}
 
 	if (validate)
 	{
-		Json cacheJsonSchema = Schema::getConfigJson();
-		if (!config.validate(std::move(cacheJsonSchema)))
+		Json schema = Schema::getSettingsJson();
+		if (!settings.validate(std::move(schema)))
 		{
-			config.setDirty(false);
+			settings.setDirty(false);
 			return false;
 		}
 	}
@@ -202,7 +202,7 @@ bool ConfigManager::runSettingsSet(Json& node)
 }
 
 /*****************************************************************************/
-bool ConfigManager::runSettingsUnset(Json& node)
+bool SettingsManager::runSettingsUnset(Json& node)
 {
 	Json* ptr = &node;
 	std::string lastKey;
@@ -225,9 +225,9 @@ bool ConfigManager::runSettingsUnset(Json& node)
 		lastKey = subKey;
 	}
 
-	auto& config = getConfig();
+	auto& settings = getSettings();
 	ptr->erase(lastKey);
-	config.setDirty(true);
+	settings.setDirty(true);
 
 	std::cout << fmt::format("unset: {}", m_key) << std::endl;
 
@@ -235,7 +235,7 @@ bool ConfigManager::runSettingsUnset(Json& node)
 }
 
 /*****************************************************************************/
-bool ConfigManager::findRequestedNodeWithFailure(Json& inNode, Json*& outNode)
+bool SettingsManager::findRequestedNodeWithFailure(Json& inNode, Json*& outNode)
 {
 	std::string lastKey;
 	if (!findRequestedNode(inNode, lastKey, outNode))
@@ -248,7 +248,7 @@ bool ConfigManager::findRequestedNodeWithFailure(Json& inNode, Json*& outNode)
 }
 
 /*****************************************************************************/
-bool ConfigManager::findRequestedNode(Json& inNode, std::string& outLastKey, Json*& outNode)
+bool SettingsManager::findRequestedNode(Json& inNode, std::string& outLastKey, Json*& outNode)
 {
 	outNode = &inNode;
 
@@ -272,7 +272,7 @@ bool ConfigManager::findRequestedNode(Json& inNode, std::string& outLastKey, Jso
 }
 
 /*****************************************************************************/
-bool ConfigManager::makeSetting(Json& inNode, Json*& outNode)
+bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 {
 	outNode = &inNode;
 
@@ -321,8 +321,8 @@ bool ConfigManager::makeSetting(Json& inNode, Json*& outNode)
 }
 
 /*****************************************************************************/
-JsonFile& ConfigManager::getConfig()
+JsonFile& SettingsManager::getSettings()
 {
-	return m_type == ConfigType::Global ? m_cache.globalConfig() : m_cache.localConfig();
+	return m_cache.getSettings(m_type);
 }
 }

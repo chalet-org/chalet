@@ -27,7 +27,7 @@ bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
 		return false;
 
 	auto id = fmt::format("ninja_{}_{}", Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
-	m_cacheFile = m_state.cache.getHashPath(id, WorkspaceCache::Type::Local);
+	m_cacheFile = m_state.cache.getHashPath(id, CacheType::Local);
 
 	auto& cacheFile = m_state.cache.file();
 	const auto& oldStrategyHash = cacheFile.hashStrategy();
@@ -35,7 +35,7 @@ bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
 	// Note: The ninja cache folder must not change between build.json changes
 	{
 		auto configurationHash = Hash::string(m_state.paths.configuration());
-		m_cacheFolder = m_state.cache.getCachePath(configurationHash, WorkspaceCache::Type::Local);
+		m_cacheFolder = m_state.cache.getCachePath(configurationHash, CacheType::Local);
 		cacheFile.addExtraHash(std::move(configurationHash));
 	}
 

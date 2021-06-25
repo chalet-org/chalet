@@ -39,7 +39,7 @@ private:
 	bool doClean(const ProjectTarget& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean = false);
 	bool doLazyClean();
 
-	bool cacheRecipe(const ProjectTarget& inProject, const Route inRoute);
+	bool addProjectToBuild(const ProjectTarget& inProject, const Route inRoute);
 
 	// commands
 	bool cmdBuild(const ProjectTarget& inProject);

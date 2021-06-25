@@ -3,17 +3,16 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CONFIG_TYPE_HPP
-#define CHALET_CONFIG_TYPE_HPP
+#ifndef CHALET_CACHE_TYPE_HPP
+#define CHALET_CACHE_TYPE_HPP
 
 namespace chalet
 {
-enum class ConfigType : ushort
+enum class CacheType : ushort
 {
-	None,
 	Global,
 	Local,
 };
 }
 
-#endif // CHALET_CONFIG_TYPE_HPP
+#endif // CHALET_CACHE_TYPE_HPP

@@ -24,7 +24,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 {
 
 	auto& compilerConfig = m_state.toolchain.getConfig(m_project.language());
-	if (compilerConfig.isGcc() && !m_state.ancillaryTools.gprof().empty())
+	if (compilerConfig.isGcc() && !m_state.tools.gprof().empty())
 	{
 		return ProfilerRunner::runWithGprof(inCommand, inExecutable, inOutputFolder);
 	}
@@ -50,11 +50,11 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 			... 🤡
 		*/
 
-		const auto xctraceOutput = Commands::subprocessOutput({ m_state.ancillaryTools.xcrun(), "xctrace" });
+		const auto xctraceOutput = Commands::subprocessOutput({ m_state.tools.xcrun(), "xctrace" });
 		const bool xctraceAvailable = !String::contains("unable to find utility", xctraceOutput);
-		const bool useXcTrace = m_state.ancillaryTools.xcodeVersionMajor() >= 12 || xctraceAvailable;
+		const bool useXcTrace = m_state.tools.xcodeVersionMajor() >= 12 || xctraceAvailable;
 
-		const auto instrumentsOutput = Commands::subprocessOutput({ m_state.ancillaryTools.instruments() });
+		const auto instrumentsOutput = Commands::subprocessOutput({ m_state.tools.instruments() });
 		const bool instrumentsAvailable = !String::contains("requires Xcode", instrumentsOutput);
 
 		if (xctraceAvailable || instrumentsAvailable)
@@ -84,7 +84,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 	const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
 	Output::msgProfilerStartedGprof(profStatsFile);
 
-	if (!Commands::subprocessOutputToFile({ m_state.ancillaryTools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut))
+	if (!Commands::subprocessOutputToFile({ m_state.tools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut))
 	{
 		Diagnostic::error("{} failed to save.", profStatsFile);
 		return false;
@@ -114,7 +114,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 	// TODO: Could attach iPhone device here
 	if (inUseXcTrace)
 	{
-		StringList cmd{ m_state.ancillaryTools.xcrun(), "xctrace", "record", "--output", instrumentsTrace };
+		StringList cmd{ m_state.tools.xcrun(), "xctrace", "record", "--output", instrumentsTrace };
 
 		cmd.push_back("--template");
 		cmd.push_back(std::move(profile));
@@ -139,7 +139,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 	}
 	else
 	{
-		StringList cmd{ m_state.ancillaryTools.instruments(), "-t", std::move(profile), "-D", instrumentsTrace };
+		StringList cmd{ m_state.tools.instruments(), "-t", std::move(profile), "-D", instrumentsTrace };
 		for (auto& arg : inCommand)
 		{
 			cmd.push_back(arg);
@@ -173,7 +173,7 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 	auto onCreate = [&](int pid) -> void {
 		Output::msgProfilerStartedSample(inExecutable, sampleDuration, samplingInterval);
 
-		sampleResult = Commands::subprocess({ m_state.ancillaryTools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close);
+		sampleResult = Commands::subprocess({ m_state.tools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close);
 	};
 
 	bool result = Commands::subprocess(inCommand, std::move(onCreate));

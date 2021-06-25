@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "ConfigJson/SchemaConfigJson.hpp"
+#include "SettingsJson/SchemaSettingsJson.hpp"
 
 #include "Utility/String.hpp"
 #include "Utility/SuppressIntellisense.hpp"
@@ -12,16 +12,14 @@
 namespace chalet
 {
 /*****************************************************************************/
-Json Schema::getConfigJson()
+Json Schema::getSettingsJson()
 {
-	// Note: By parsing json from a string instead of _ojson literal, we can use ordered_json
-
 	Json ret;
 	ret["$schema"] = "http://json-schema.org/draft-07/schema";
 	ret["type"] = "object";
 	ret["additionalProperties"] = false;
 	ret["required"] = {
-		"settings",
+		"build",
 		"tools",
 		"toolchains"
 	};
@@ -314,30 +312,30 @@ Json Schema::getConfigJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["settings-dumpAssembly"] = R"json({
+	ret[kDefinitions]["build-dumpAssembly"] = R"json({
 		"type": "boolean",
 		"description": "true to use include an asm dump of each file in the build, false otherwise.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["settings-maxJobs"] = R"json({
+	ret[kDefinitions]["build-maxJobs"] = R"json({
 		"type": "integer",
 		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
 		"minimum": 1
 	})json"_ojson;
 
-	ret[kDefinitions]["settings-showCommands"] = R"json({
+	ret[kDefinitions]["build-showCommands"] = R"json({
 		"description": "true to show the commands run during the build, false to just show the source file.",
 		"type": "boolean",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["settings-toolchain"] = R"json({
+	ret[kDefinitions]["build-toolchain"] = R"json({
 		"description": "The toolchain id to use for building, if not the previous one.",
 		"type": "string"
 	})json"_ojson;
 
-	ret[kDefinitions]["settings-macosSigningIdentity"] = R"json({
+	ret[kDefinitions]["build-macosSigningIdentity"] = R"json({
 		"description": "The signing identity to use when bundling the macos application bundle.",
 		"type": "string"
 	})json"_ojson;
@@ -432,7 +430,7 @@ Json Schema::getConfigJson()
 		}
 	})json"_ojson;
 
-	ret[kProperties]["applePlatformSdks"] = R"json({
+	ret[kProperties]["appleSdks"] = R"json({
 		"type": "object",
 		"description": "A list of Apple platform SDK paths (MacOS)"
 	})json"_ojson;
@@ -447,10 +445,10 @@ Json Schema::getConfigJson()
 		"description": "The external dependency cache"
 	})json"_ojson;
 
-	ret[kProperties]["settings"] = R"json({
+	ret[kProperties]["build"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of settings central to the build",
+		"description": "A list of settings related to the build",
 		"required": [
 			"dumpAssembly",
 			"maxJobs",
@@ -460,19 +458,19 @@ Json Schema::getConfigJson()
 		],
 		"properties": {
 			"dumpAssembly": {
-				"$ref": "#/definitions/settings-dumpAssembly"
+				"$ref": "#/definitions/build-dumpAssembly"
 			},
 			"maxJobs": {
-				"$ref": "#/definitions/settings-maxJobs"
+				"$ref": "#/definitions/build-maxJobs"
 			},
 			"showCommands": {
-				"$ref": "#/definitions/settings-showCommands"
+				"$ref": "#/definitions/build-showCommands"
 			},
 			"toolchain": {
-				"$ref": "#/definitions/settings-toolchain"
+				"$ref": "#/definitions/build-toolchain"
 			},
 			"macosSigningIdentity": {
-				"$ref": "#/definitions/settings-macosSigningIdentity"
+				"$ref": "#/definitions/build-macosSigningIdentity"
 			}
 		}
 	})json"_ojson;

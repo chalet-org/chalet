@@ -21,12 +21,12 @@ class ArgumentPatterns
 public:
 	ArgumentPatterns();
 
-	const std::string& argConfiguration() const noexcept;
+	const std::string& argBuildConfiguration() const noexcept;
 	const std::string& argRunProject() const noexcept;
 	const std::string& argRunArguments() const noexcept;
 	const std::string& argInitPath() const noexcept;
-	const std::string& argSettingsKey() const noexcept;
-	const std::string& argSettingsValue() const noexcept;
+	const std::string& argConfigKey() const noexcept;
+	const std::string& argConfigValue() const noexcept;
 
 	bool parse(const StringList& inArguments);
 	const ArgumentMap& arguments() const noexcept;
@@ -87,13 +87,13 @@ private:
 
 	const std::string kCommand = "<command>";
 
-	const std::string kArgConfiguration = "<configuration>";
+	const std::string kArgBuildConfiguration = "<configuration>";
 	const std::string kArgRunProject = "[<runProject>]";
 	const std::string kArgRunArguments = "[ARG...]";
 	const std::string kArgInitName = "<name>";
 	const std::string kArgInitPath = "<path>";
-	const std::string kArgSettingsKey = "<key>";
-	const std::string kArgSettingsValue = "<value>";
+	const std::string kArgConfigKey = "<key>";
+	const std::string kArgConfigValue = "<value>";
 
 	const std::string kHelpBuildConfiguration = "The build configuration";
 	const std::string kHelpRunProject = "A project to run";

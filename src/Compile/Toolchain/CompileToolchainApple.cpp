@@ -248,7 +248,7 @@ void CompileToolchainApple::addMacosSysRootOption(StringList& outArgList) const
 	}
 
 	outArgList.push_back("-isysroot");
-	outArgList.push_back(m_state.ancillaryTools.applePlatformSdk(sdk));
+	outArgList.push_back(m_state.tools.applePlatformSdk(sdk));
 }
 
 }

@@ -7,8 +7,8 @@
 
 #include "BuildJson/BuildJsonParser.hpp"
 #include "Builder/BuildManager.hpp"
-#include "ConfigJson/ConfigToolchainParser.hpp"
 #include "Dependencies/DependencyManager.hpp"
+#include "SettingsJson/SettingsToolchainJsonParser.hpp"
 
 #include "State/AncillaryTools.hpp"
 #include "State/StatePrototype.hpp"
@@ -27,7 +27,7 @@ namespace chalet
 BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototype) :
 	m_inputs(std::move(inInputs)),
 	m_prototype(inJsonPrototype),
-	ancillaryTools(m_prototype.ancillaryTools),
+	tools(m_prototype.tools),
 	distribution(m_prototype.distribution),
 	cache(m_prototype.cache),
 	info(m_inputs),
@@ -41,7 +41,7 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 /*****************************************************************************/
 bool BuildState::initialize(const bool inInstallDependencies)
 {
-	if (!parseCacheJson())
+	if (!parseToolchainFromSettingsJson())
 		return false;
 
 	enforceArchitectureInPath();
@@ -101,10 +101,10 @@ bool BuildState::initializeBuildConfiguration()
 }
 
 /*****************************************************************************/
-bool BuildState::parseCacheJson()
+bool BuildState::parseToolchainFromSettingsJson()
 {
-	auto& cacheFile = m_prototype.cache.localConfig();
-	ConfigToolchainParser parser(m_inputs, *this, cacheFile);
+	auto& cacheFile = m_prototype.cache.getSettings(SettingsType::Local);
+	SettingsToolchainJsonParser parser(m_inputs, *this, cacheFile);
 	return parser.serialize();
 }
 
@@ -143,9 +143,9 @@ bool BuildState::initializeBuild()
 		Diagnostic::info("Initializing", false);
 
 	{
-		auto& cacheFile = m_prototype.cache.localConfig();
+		auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Local);
 		// Note: This is about as quick as it'll get (50ms in mingw)
-		if (!toolchain.initialize(targets, cacheFile))
+		if (!toolchain.initialize(targets, settingsFile))
 		{
 			const auto& targetArch = m_inputs.toolchainPreference().type == ToolchainType::GNU ?
 				  m_inputs.targetArchitecture() :
@@ -242,8 +242,8 @@ void BuildState::initializeCache()
 	// TODO: Remove entirely?
 	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
 
-	m_prototype.cache.saveLocalConfig();
-	m_prototype.cache.saveGlobalConfig();
+	m_prototype.cache.saveSettings(SettingsType::Local);
+	m_prototype.cache.saveSettings(SettingsType::Global);
 }
 
 /*****************************************************************************/
@@ -311,9 +311,9 @@ bool BuildState::validateState()
 	}
 	if (hasSubChaletTargets)
 	{
-		if (!m_prototype.ancillaryTools.resolveOwnExecutable(m_inputs.appPath()))
+		if (!m_prototype.tools.resolveOwnExecutable(m_inputs.appPath()))
 		{
-			Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.ancillaryTools.chalet());
+			Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.tools.chalet());
 			return false;
 		}
 	}
@@ -331,7 +331,7 @@ bool BuildState::validateState()
 	if (configuration.enableProfiling())
 	{
 #if defined(CHALET_MACOS)
-		m_prototype.ancillaryTools.fetchXcodeVersion();
+		m_prototype.tools.fetchXcodeVersion();
 #endif
 	}
 

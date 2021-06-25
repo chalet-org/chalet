@@ -105,14 +105,14 @@ std::string NinjaGenerator::getContents(const std::string& inPath) const
 #endif
 
 	std::string ninjaTemplate = fmt::format(R"ninja(
-builddir = {cacheDir}
+builddir = {buildCache}
 {msvcDepsPrefix}
 {recipes}
 build makebuild: phony
 
 default makebuild
 )ninja",
-		fmt::arg("cacheDir", inPath),
+		fmt::arg("buildCache", inPath),
 		FMT_ARG(msvcDepsPrefix),
 		FMT_ARG(recipes));
 

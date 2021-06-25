@@ -22,7 +22,7 @@ struct CompilerTools
 {
 	explicit CompilerTools(const CommandLineInputs& inInputs, BuildState& inState);
 
-	bool initialize(const BuildTargetList& inTargets, JsonFile& inCacheJson);
+	bool initialize(const BuildTargetList& inTargets, JsonFile& inConfigJson);
 	void detectToolchainFromPaths();
 	void fetchCompilerVersions();
 
@@ -84,7 +84,7 @@ struct CompilerTools
 
 private:
 	bool initializeCompilerConfigs(const BuildTargetList& inTargets);
-	bool updateToolchainCacheNode(JsonFile& inCacheJson);
+	bool updateToolchainCacheNode(JsonFile& inConfigJson);
 
 	std::string parseVersionMSVC(const std::string& inExecutable) const;
 	std::string parseVersionGNU(const std::string& inExecutable, const std::string_view inEol = "\n") const;

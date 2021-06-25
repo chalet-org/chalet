@@ -32,7 +32,7 @@ bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
 		return false;
 
 	auto id = fmt::format("native_{}_{}", Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
-	std::string cachePath = m_state.cache.getHashPath(id, WorkspaceCache::Type::Local);
+	std::string cachePath = m_state.cache.getHashPath(id, CacheType::Local);
 
 	auto& cacheFile = m_state.cache.file();
 	const auto& oldStrategyHash = cacheFile.hashStrategy();

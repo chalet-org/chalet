@@ -29,7 +29,7 @@ UniversalBinaryMacOS::UniversalBinaryMacOS(AppBundler& inBundler, BuildState& in
 /*****************************************************************************/
 bool UniversalBinaryMacOS::run(BuildState& inStateB, BuildState& inUniversalState)
 {
-	if (m_state.ancillaryTools.lipo().empty())
+	if (m_state.tools.lipo().empty())
 	{
 		Diagnostic::error("The tool 'lipo' was not found in PATH, but is required for universal bundles.");
 		return false;
@@ -184,7 +184,7 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 	auto& archA = inStateA.info.targetArchitectureString();
 	auto& archB = inStateB.info.targetArchitectureString();
 
-	auto& installNameTool = inUniversalState.ancillaryTools.installNameTool();
+	auto& installNameTool = inUniversalState.tools.installNameTool();
 
 	auto dependencyMap = m_bundler.dependencyMap();
 
@@ -233,7 +233,7 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 		// Example:
 		// lipo -create -output universal-apple-darwin_Release/chalet x86_64-apple-darwin_Release/chalet  arm64-apple-darwin_Release/chalet
 
-		if (!Commands::subprocess({ m_state.ancillaryTools.lipo(), "-create", "-output", fileUniversal, std::move(tmpFileA), std::move(tmpFileB) }))
+		if (!Commands::subprocess({ m_state.tools.lipo(), "-create", "-output", fileUniversal, std::move(tmpFileA), std::move(tmpFileB) }))
 		{
 			Diagnostic::error("There was an error making the binary: {}", fileUniversal);
 			return false;

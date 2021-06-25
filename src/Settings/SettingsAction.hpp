@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CONFIG_ACTION_HPP
-#define CHALET_CONFIG_ACTION_HPP
+#ifndef CHALET_SETTINGS_ACTION_HPP
+#define CHALET_SETTINGS_ACTION_HPP
 
 namespace chalet
 {
-enum class ConfigAction : ushort
+enum class SettingsAction : ushort
 {
 	Get,
 	Set,
@@ -16,4 +16,4 @@ enum class ConfigAction : ushort
 };
 }
 
-#endif // CHALET_CONFIG_ACTION_HPP
+#endif // CHALET_SETTINGS_ACTION_HPP

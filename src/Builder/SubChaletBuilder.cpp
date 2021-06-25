@@ -46,7 +46,7 @@ bool SubChaletBuilder::run()
 		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
 	}
 
-	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("executable: {}", m_state.ancillaryTools.chalet()), false);
+	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("executable: {}", m_state.tools.chalet()), false);
 	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("name: {}", name), false);
 	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("location: {}", location), false);
 	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
@@ -85,7 +85,7 @@ bool SubChaletBuilder::run()
 /*****************************************************************************/
 StringList SubChaletBuilder::getBuildCommand() const
 {
-	StringList cmd{ m_state.ancillaryTools.chalet() };
+	StringList cmd{ m_state.tools.chalet() };
 	cmd.push_back("--quieter");
 
 	if (!m_buildFile.empty())

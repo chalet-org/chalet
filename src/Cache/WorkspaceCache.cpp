@@ -24,7 +24,7 @@ WorkspaceCache::WorkspaceCache(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-const std::string& WorkspaceCache::getCacheRef(const Type inCacheType) const
+const std::string& WorkspaceCache::getCacheRef(const CacheType inCacheType) const
 {
 	// return inCacheType == Type::Global ? m_cacheFolderGlobal : m_cacheFolderLocal;
 	UNUSED(inCacheType);
@@ -34,17 +34,17 @@ const std::string& WorkspaceCache::getCacheRef(const Type inCacheType) const
 /*****************************************************************************/
 bool WorkspaceCache::initialize()
 {
-	m_globalConfig.load(fmt::format("{}/.chaletconfig", m_inputs.homeDirectory()));
-	m_localConfig.load(fmt::format("{}/chalet-config.json", m_inputs.buildPath()));
+	m_globalSettings.load(fmt::format("{}/.chaletrc", m_inputs.homeDirectory()));
+	m_localSettings.load(fmt::format("{}/chalet-settings.json", m_inputs.buildPath()));
 
-	m_removeOldCacheFolder = m_localConfig.json.empty();
+	m_removeOldCacheFolder = m_localSettings.json.empty();
 
 	// m_cacheFolderGlobal = fmt::format("{}/.chalet", m_inputs.homeDirectory());
 
 	const auto& buildPath = m_inputs.buildPath();
 	m_cacheFolderLocal = fmt::format("{}/.cache", buildPath);
 
-	if (!m_cacheFile.initialize(getHashPath("chalet_workspace_file", Type::Local)))
+	if (!m_cacheFile.initialize(getHashPath("chalet_workspace_file", CacheType::Local)))
 		return false;
 
 	if (!m_cacheFile.save())
@@ -57,7 +57,7 @@ bool WorkspaceCache::initialize()
 }
 
 /*****************************************************************************/
-bool WorkspaceCache::createCacheFolder(const Type inCacheType)
+bool WorkspaceCache::createCacheFolder(const CacheType inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 
@@ -78,14 +78,14 @@ bool WorkspaceCache::createCacheFolder(const Type inCacheType)
 }
 
 /*****************************************************************************/
-bool WorkspaceCache::exists(const Type inCacheType) const
+bool WorkspaceCache::exists(const CacheType inCacheType) const
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
-	return Commands::pathExists(cacheRef) || Commands::pathExists(m_localConfig.filename());
+	return Commands::pathExists(cacheRef) || Commands::pathExists(m_localSettings.filename());
 }
 
 /*****************************************************************************/
-void WorkspaceCache::removeCacheFolder(const Type inCacheType)
+void WorkspaceCache::removeCacheFolder(const CacheType inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 
@@ -94,7 +94,7 @@ void WorkspaceCache::removeCacheFolder(const Type inCacheType)
 }
 
 /*****************************************************************************/
-std::string WorkspaceCache::getHashPath(const std::string& inIdentifier, const Type inCacheType) const
+std::string WorkspaceCache::getHashPath(const std::string& inIdentifier, const CacheType inCacheType) const
 {
 	std::string toHash = fmt::format("{}_{}", m_workspaceHash, inIdentifier);
 	std::string hash = Hash::string(toHash);
@@ -108,7 +108,7 @@ std::string WorkspaceCache::getHashPath(const std::string& inIdentifier, const T
 }
 
 /*****************************************************************************/
-std::string WorkspaceCache::getCachePath(const std::string& inFolder, const Type inCacheType) const
+std::string WorkspaceCache::getCachePath(const std::string& inFolder, const CacheType inCacheType) const
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 	std::string ret;
@@ -136,27 +136,21 @@ WorkspaceInternalCacheFile& WorkspaceCache::file() noexcept
 }
 
 /*****************************************************************************/
-JsonFile& WorkspaceCache::localConfig() noexcept
+JsonFile& WorkspaceCache::getSettings(const SettingsType inType) noexcept
 {
-	return m_localConfig;
+	if (inType == SettingsType::Global)
+		return m_globalSettings;
+	else
+		return m_localSettings;
 }
 
 /*****************************************************************************/
-void WorkspaceCache::saveLocalConfig()
+void WorkspaceCache::saveSettings(const SettingsType inType)
 {
-	m_localConfig.save();
-}
-
-/*****************************************************************************/
-JsonFile& WorkspaceCache::globalConfig() noexcept
-{
-	return m_globalConfig;
-}
-
-/*****************************************************************************/
-void WorkspaceCache::saveGlobalConfig()
-{
-	m_globalConfig.save();
+	if (inType == SettingsType::Global)
+		m_globalSettings.save();
+	else
+		m_localSettings.save();
 }
 
 /*****************************************************************************/
@@ -172,7 +166,7 @@ void WorkspaceCache::removeBuildIfCacheChanged(const std::string& inBuildDir)
 /*****************************************************************************/
 bool WorkspaceCache::removeStaleProjectCaches()
 {
-	const auto& cacheRef = getCacheRef(Type::Local);
+	const auto& cacheRef = getCacheRef(CacheType::Local);
 	StringList ids = m_cacheFile.getCacheIds();
 
 	if (!Commands::pathExists(cacheRef) || ids.size() == 0)

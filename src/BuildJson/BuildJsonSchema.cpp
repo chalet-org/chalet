@@ -16,8 +16,6 @@ namespace chalet
 /*****************************************************************************/
 Json Schema::getBuildJson()
 {
-	// Note: By parsing json from a string instead of _ojson literal, we can use ordered_json
-
 	const std::string patternProjectName = R"(^[\w\-\+\.]{3,}$)";
 	const std::string patternProjectLinks = R"(^[\w\-\+\.]+$)";
 	const std::string patternDistributionName = R"(^[\w\-\+\.\ \(\)]{3,}$)";

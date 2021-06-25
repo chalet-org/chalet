@@ -9,10 +9,10 @@
 #include "Libraries/Json.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
+#include "SettingsJson/GlobalSettingsState.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/Distribution/IDistTarget.hpp"
-#include "State/GlobalConfigState.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -43,14 +43,14 @@ struct StatePrototype
 
 	WorkspaceEnvironment environment;
 	WorkspaceCache cache;
-	AncillaryTools ancillaryTools;
+	AncillaryTools tools;
 	DistributionTargetList distribution;
 
 private:
 	friend struct BuildJsonProtoParser;
 
-	bool parseSettingsJson();
-	bool parseCacheJson();
+	bool parseGlobalSettingsJson();
+	bool parseLocalSettingsJson();
 	bool parseBuildJson();
 
 	bool validateBundleDestinations();
@@ -61,7 +61,7 @@ private:
 	void setReleaseConfiguration(const std::string& inName);
 	void addRequiredArchitecture(std::string inArch);
 
-	GlobalConfigState m_globalConfigState;
+	GlobalSettingsState m_globalSettingsState;
 	BuildConfigurationMap m_buildConfigurations;
 
 	const CommandLineInputs& m_inputs;

@@ -16,22 +16,22 @@ namespace chalet
 std::string ArgumentPatterns::getHelpCommand()
 {
 	return fmt::format(R"(
-   buildrun {config} {runProj} {runArgs}
-   run {config} {runProj} {runArgs}
-   build {config}
-   rebuild {config}
-   clean [{config}]
+   buildrun {buildConfiguration} {runProject} {runArgs}
+   run {buildConfiguration} {runProject} {runArgs}
+   build {buildConfiguration}
+   rebuild {buildConfiguration}
+   clean [{buildConfiguration}]
    bundle
    configure
    get {key}
    set {key} {value}
    unset {key}
    init [{path}])",
-		fmt::arg("config", ArgumentPatterns::kArgConfiguration),
-		fmt::arg("runProj", ArgumentPatterns::kArgRunProject),
+		fmt::arg("buildConfiguration", ArgumentPatterns::kArgBuildConfiguration),
+		fmt::arg("runProject", ArgumentPatterns::kArgRunProject),
 		fmt::arg("runArgs", ArgumentPatterns::kArgRunArguments),
-		fmt::arg("key", ArgumentPatterns::kArgSettingsKey),
-		fmt::arg("value", ArgumentPatterns::kArgSettingsValue),
+		fmt::arg("key", ArgumentPatterns::kArgConfigKey),
+		fmt::arg("value", ArgumentPatterns::kArgConfigValue),
 		fmt::arg("path", ArgumentPatterns::kArgInitPath));
 }
 
@@ -57,9 +57,9 @@ ArgumentPatterns::ArgumentPatterns() :
 }
 
 /*****************************************************************************/
-const std::string& ArgumentPatterns::argConfiguration() const noexcept
+const std::string& ArgumentPatterns::argBuildConfiguration() const noexcept
 {
-	return kArgConfiguration;
+	return kArgBuildConfiguration;
 }
 const std::string& ArgumentPatterns::argRunProject() const noexcept
 {
@@ -73,13 +73,13 @@ const std::string& ArgumentPatterns::argInitPath() const noexcept
 {
 	return kArgInitPath;
 }
-const std::string& ArgumentPatterns::argSettingsKey() const noexcept
+const std::string& ArgumentPatterns::argConfigKey() const noexcept
 {
-	return kArgSettingsKey;
+	return kArgConfigKey;
 }
-const std::string& ArgumentPatterns::argSettingsValue() const noexcept
+const std::string& ArgumentPatterns::argConfigValue() const noexcept
 {
-	return kArgSettingsValue;
+	return kArgConfigValue;
 }
 
 /*****************************************************************************/
@@ -535,18 +535,18 @@ void ArgumentPatterns::addBuildConfigurationArg(const bool inOptional)
 {
 	if (inOptional)
 	{
-		m_parser.add_argument(kArgConfiguration)
+		m_parser.add_argument(kArgBuildConfiguration)
 			.help(kHelpBuildConfiguration)
 			.default_value(std::string(""));
 	}
 	else
 	{
-		m_parser.add_argument(kArgConfiguration)
+		m_parser.add_argument(kArgBuildConfiguration)
 			.help(kHelpBuildConfiguration)
 			.required();
 	}
 
-	m_argumentMap.push_back({ kArgConfiguration, Variant::Kind::String });
+	m_argumentMap.push_back({ kArgBuildConfiguration, Variant::Kind::String });
 }
 
 /*****************************************************************************/
@@ -718,11 +718,11 @@ void ArgumentPatterns::commandSettingsGet()
 {
 	addSettingsTypeArg();
 
-	m_parser.add_argument(kArgSettingsKey)
-		.help("The settings key to get")
+	m_parser.add_argument(kArgConfigKey)
+		.help("The config key to get")
 		.default_value(std::string(""));
 
-	m_argumentMap.push_back({ kArgSettingsKey, Variant::Kind::String });
+	m_argumentMap.push_back({ kArgConfigKey, Variant::Kind::String });
 }
 
 /*****************************************************************************/
@@ -730,17 +730,17 @@ void ArgumentPatterns::commandSettingsSet()
 {
 	addSettingsTypeArg();
 
-	m_parser.add_argument(kArgSettingsKey)
-		.help("The settings key to change")
+	m_parser.add_argument(kArgConfigKey)
+		.help("The config key to change")
 		.required();
 
-	m_argumentMap.push_back({ kArgSettingsKey, Variant::Kind::String });
+	m_argumentMap.push_back({ kArgConfigKey, Variant::Kind::String });
 
-	m_parser.add_argument(kArgSettingsValue)
-		.help("The settings value to change to")
+	m_parser.add_argument(kArgConfigValue)
+		.help("The config value to change to")
 		.default_value(std::string(""));
 
-	m_argumentMap.push_back({ kArgSettingsValue, Variant::Kind::String });
+	m_argumentMap.push_back({ kArgConfigValue, Variant::Kind::String });
 }
 
 /*****************************************************************************/
@@ -748,11 +748,11 @@ void ArgumentPatterns::commandSettingsUnset()
 {
 	addSettingsTypeArg();
 
-	m_parser.add_argument(kArgSettingsKey)
-		.help("The settings key to remove")
+	m_parser.add_argument(kArgConfigKey)
+		.help("The config key to remove")
 		.required();
 
-	m_argumentMap.push_back({ kArgSettingsKey, Variant::Kind::String });
+	m_argumentMap.push_back({ kArgConfigKey, Variant::Kind::String });
 }
 
 /*****************************************************************************/

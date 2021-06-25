@@ -315,12 +315,12 @@ void CommandLineInputs::setSaveSchemaToFile(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-ConfigType CommandLineInputs::settingsType() const noexcept
+SettingsType CommandLineInputs::settingsType() const noexcept
 {
 	return m_settingsType;
 }
 
-void CommandLineInputs::setSettingsType(const ConfigType inValue) noexcept
+void CommandLineInputs::setSettingsType(const SettingsType inValue) noexcept
 {
 	m_settingsType = inValue;
 }

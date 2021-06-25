@@ -26,15 +26,15 @@ AssemblyDumper::AssemblyDumper(BuildState& inState) :
 bool AssemblyDumper::addProject(const ProjectTarget& inProject, StringList&& inAssemblies)
 {
 #if defined(CHALET_MACOS)
-	if (m_state.ancillaryTools.otool().empty())
+	if (m_state.tools.otool().empty())
 	{
-		Diagnostic::error("dumpAssembly feature requires otool, which is blank in the toolchain cache.");
+		Diagnostic::error("dumpAssembly feature requires otool, which is blank in the toolchain settings.");
 		return false;
 	}
 #else
 	if (m_state.toolchain.objdump().empty())
 	{
-		Diagnostic::error("dumpAssembly feature requires objdump, which is blank in the toolchain cache.");
+		Diagnostic::error("dumpAssembly feature requires objdump, which is blank in the toolchain settings.");
 		return false;
 	}
 #endif
@@ -130,11 +130,11 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 {
 	StringList ret;
 
-	if (!m_state.ancillaryTools.bash().empty() && m_state.ancillaryTools.bashAvailable())
+	if (!m_state.tools.bash().empty() && m_state.tools.bashAvailable())
 	{
 #if defined(CHALET_MACOS)
 		auto asmCommand = fmt::format("{otool} -tvV {object} | c++filt > {target}",
-			fmt::arg("otool", m_state.ancillaryTools.otool()),
+			fmt::arg("otool", m_state.tools.otool()),
 			FMT_ARG(object),
 			FMT_ARG(target));
 #else
@@ -151,7 +151,7 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 			FMT_ARG(target));
 #endif
 
-		ret.push_back(m_state.ancillaryTools.bash());
+		ret.push_back(m_state.tools.bash());
 		ret.push_back("-c");
 		ret.push_back(std::move(asmCommand));
 	}

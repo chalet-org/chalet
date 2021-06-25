@@ -6,9 +6,9 @@
 #include "State/StatePrototype.hpp"
 
 #include "BuildJson/BuildJsonProtoParser.hpp"
-#include "ConfigJson/ConfigJsonParser.hpp"
-#include "ConfigJson/GlobalConfigJsonParser.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "SettingsJson/GlobalSettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonParser.hpp"
 
 #include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Output.hpp"
@@ -22,7 +22,7 @@ namespace chalet
 /*****************************************************************************/
 StatePrototype::StatePrototype(const CommandLineInputs& inInputs, std::string inFilename) :
 	cache(inInputs),
-	ancillaryTools(inInputs),
+	tools(inInputs),
 	m_inputs(inInputs),
 	m_filename(std::move(inFilename)),
 	m_buildJson(std::make_unique<JsonFile>(m_filename))
@@ -35,11 +35,11 @@ bool StatePrototype::initialize()
 	if (!cache.initialize())
 		return false;
 
-	if (!parseSettingsJson())
+	if (!parseGlobalSettingsJson())
 		return false;
 
 	// Note: existence of m_filename is checked by Router (before the cache is made)
-	if (!parseCacheJson())
+	if (!parseLocalSettingsJson())
 		return false;
 
 	Output::setShowCommandOverride(false);
@@ -55,7 +55,7 @@ bool StatePrototype::initialize()
 
 	cache.file().checkIfAppVersionChanged(m_inputs.appPath());
 
-	if (!cache.createCacheFolder(WorkspaceCache::Type::Local))
+	if (!cache.createCacheFolder(CacheType::Local))
 	{
 		Diagnostic::error("There was an error creating the build cache.");
 		return false;
@@ -74,8 +74,8 @@ bool StatePrototype::initialize()
 /*****************************************************************************/
 void StatePrototype::saveCaches()
 {
-	cache.saveLocalConfig();
-	cache.saveGlobalConfig();
+	cache.saveSettings(SettingsType::Local);
+	cache.saveSettings(SettingsType::Global);
 
 	cache.removeStaleProjectCaches();
 	cache.file().save();
@@ -128,7 +128,7 @@ bool StatePrototype::validateBundleDestinations()
 /*****************************************************************************/
 bool StatePrototype::validate()
 {
-	if (!ancillaryTools.validate())
+	if (!tools.validate())
 	{
 		Diagnostic::error("Error validating ancillary tools.");
 		return false;
@@ -196,19 +196,19 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 }
 
 /*****************************************************************************/
-bool StatePrototype::parseSettingsJson()
+bool StatePrototype::parseGlobalSettingsJson()
 {
-	auto& cacheFile = cache.globalConfig();
-	GlobalConfigJsonParser parser(m_inputs, *this, cacheFile);
-	return parser.serialize(m_globalConfigState);
+	auto& settingsFile = cache.getSettings(SettingsType::Global);
+	GlobalSettingsJsonParser parser(m_inputs, *this, settingsFile);
+	return parser.serialize(m_globalSettingsState);
 }
 
 /*****************************************************************************/
-bool StatePrototype::parseCacheJson()
+bool StatePrototype::parseLocalSettingsJson()
 {
-	auto& cacheFile = cache.localConfig();
-	ConfigJsonParser parser(m_inputs, *this, cacheFile);
-	return parser.serialize(m_globalConfigState);
+	auto& settingsFile = cache.getSettings(SettingsType::Local);
+	SettingsJsonParser parser(m_inputs, *this, settingsFile);
+	return parser.serialize(m_globalSettingsState);
 }
 
 /*****************************************************************************/

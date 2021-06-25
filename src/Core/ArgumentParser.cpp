@@ -94,7 +94,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		{
 			case Variant::Kind::String: {
 				auto value = rawValue.asString();
-				if (key == patterns.argConfiguration())
+				if (key == patterns.argBuildConfiguration())
 				{
 					m_inputs.setBuildFromCommandLine(std::move(value));
 				}
@@ -139,11 +139,11 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					m_inputs.setInitPath(std::move(value));
 				}
-				else if (key == patterns.argSettingsKey())
+				else if (key == patterns.argConfigKey())
 				{
 					m_inputs.setSettingsKey(std::move(value));
 				}
-				else if (key == patterns.argSettingsValue())
+				else if (key == patterns.argConfigValue())
 				{
 					m_inputs.setSettingsValue(std::move(value));
 				}
@@ -172,12 +172,12 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				else if (String::equals("--global", key))
 				{
 					if (value)
-						m_inputs.setSettingsType(ConfigType::Global);
+						m_inputs.setSettingsType(SettingsType::Global);
 				}
 				else if (String::equals("--local", key))
 				{
 					if (value)
-						m_inputs.setSettingsType(ConfigType::Local);
+						m_inputs.setSettingsType(SettingsType::Local);
 				}
 				break;
 			}

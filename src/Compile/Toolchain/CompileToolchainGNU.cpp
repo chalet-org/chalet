@@ -984,7 +984,7 @@ void CompileToolchainGNU::addMacosSysRootOption(StringList& outArgList) const
 #if defined(CHALET_MACOS)
 	// TODO: Test Homebrew LLVM/GCC with this
 	outArgList.push_back("-isysroot");
-	outArgList.push_back(m_state.ancillaryTools.applePlatformSdk("macosx"));
+	outArgList.push_back(m_state.tools.applePlatformSdk("macosx"));
 #else
 	UNUSED(outArgList);
 #endif

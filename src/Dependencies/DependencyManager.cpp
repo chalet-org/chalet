@@ -27,11 +27,11 @@ DependencyManager::DependencyManager(BuildState& inState) :
 /*****************************************************************************/
 bool DependencyManager::run(const bool inInstallCmd)
 {
-	if (m_state.ancillaryTools.git().empty())
+	if (m_state.tools.git().empty())
 		return true;
 
 	const auto& externalDepDir = m_state.paths.externalDepDir();
-	auto& localConfig = m_state.cache.localConfig();
+	auto& localConfig = m_state.cache.getSettings(SettingsType::Local);
 
 	Json& dependencyCache = localConfig.json["externalDependencies"];
 
@@ -63,7 +63,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 		{
 			if (!dependencyCache.contains(destination))
 			{
-				const std::string commitHash = m_state.ancillaryTools.getCurrentGitRepositoryHash(destination);
+				const std::string commitHash = m_state.tools.getCurrentGitRepositoryHash(destination);
 				dependencyCache[destination] = commitHash;
 				localConfig.setDirty(true);
 			}
@@ -86,7 +86,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 		if (update)
 		{
-			const std::string currentBranch = m_state.ancillaryTools.getCurrentGitRepositoryBranch(destination);
+			const std::string currentBranch = m_state.tools.getCurrentGitRepositoryBranch(destination);
 			// LOG('\'', currentBranch, "'  '", branch, '\'');
 
 			// in this case, HEAD means the branch is on a tag or commit
@@ -99,7 +99,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			if (update && commitValid)
 			{
-				const std::string currentCommit = m_state.ancillaryTools.getCurrentGitRepositoryHash(destination);
+				const std::string currentCommit = m_state.tools.getCurrentGitRepositoryHash(destination);
 				// LOG('\'', currentTag, "'  '", tag, '\'');
 
 				if (!String::startsWith(commit, currentCommit))
@@ -112,7 +112,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			if (update && tagValid)
 			{
-				const std::string currentTag = m_state.ancillaryTools.getCurrentGitRepositoryTag(destination);
+				const std::string currentTag = m_state.tools.getCurrentGitRepositoryTag(destination);
 				// LOG('\'', currentTag, "'  '", tag, '\'');
 
 				if (currentTag != tag)
@@ -132,7 +132,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 				if (dependencyCache.contains(destination))
 				{
 					// We're using a shallow clone, so this only works if the branch hasn't changed
-					const std::string originHash = m_state.ancillaryTools.getCurrentGitRepositoryHashFromRemote(destination, branch);
+					const std::string originHash = m_state.tools.getCurrentGitRepositoryHashFromRemote(destination, branch);
 					const std::string cachedHash = dependencyCache[destination].get<std::string>();
 
 					if (cachedHash == originHash)
@@ -143,7 +143,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 				Output::msgUpdatingDependency(repository, checkoutTo);
 
-				res &= m_state.ancillaryTools.updateGitRepositoryShallow(destination);
+				res &= m_state.tools.updateGitRepositoryShallow(destination);
 				result &= res;
 			}
 		}
@@ -157,7 +157,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 			uint maxJobs = m_state.environment.maxJobs();
 
 			StringList cmd;
-			cmd.push_back(m_state.ancillaryTools.git());
+			cmd.push_back(m_state.tools.git());
 			cmd.push_back("clone");
 			cmd.push_back("--quiet");
 
@@ -195,7 +195,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 			if (commitValid)
 			{
-				res &= m_state.ancillaryTools.resetGitRepositoryToCommit(destination, commit);
+				res &= m_state.tools.resetGitRepositoryToCommit(destination, commit);
 			}
 
 			result &= res;
@@ -203,7 +203,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 		if (res)
 		{
-			const std::string commitHash = m_state.ancillaryTools.getCurrentGitRepositoryHash(destination);
+			const std::string commitHash = m_state.tools.getCurrentGitRepositoryHash(destination);
 
 			// Output::msgDisplayBlack(commitHash); // useful for debugging
 			dependencyCache[destination] = commitHash;

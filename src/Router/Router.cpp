@@ -9,8 +9,8 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 
-#include "Config/ConfigAction.hpp"
-#include "Config/ConfigManager.hpp"
+#include "Settings/SettingsAction.hpp"
+#include "Settings/SettingsManager.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -202,29 +202,29 @@ bool Router::cmdInit()
 /*****************************************************************************/
 bool Router::cmdSettings(const Route inRoute)
 {
-	if (m_inputs.settingsType() == ConfigType::None)
+	if (m_inputs.settingsType() == SettingsType::None)
 	{
 		Diagnostic::error("There was an error determining the settings request");
 		return false;
 	}
 
-	ConfigAction action = ConfigAction::Get;
+	SettingsAction action = SettingsAction::Get;
 	switch (inRoute)
 	{
 		case Route::SettingsSet:
-			action = ConfigAction::Set;
+			action = SettingsAction::Set;
 			break;
 		case Route::SettingsGet:
-			action = ConfigAction::Get;
+			action = SettingsAction::Get;
 			break;
 		case Route::SettingsUnset:
-			action = ConfigAction::Unset;
+			action = SettingsAction::Unset;
 			break;
 		default:
 			return false;
 	}
 
-	ConfigManager settingsMgr(m_inputs, action);
+	SettingsManager settingsMgr(m_inputs, action);
 	if (!settingsMgr.run())
 		return true;
 
@@ -309,7 +309,7 @@ bool Router::xcodebuildRoute(BuildState& inState)
 	// Run xcodebuild from the command line if possible
 	// This would be a lightweight BuildManager
 
-	std::cout << "brew available: " << inState.ancillaryTools.brewAvailable() << "\n";
+	std::cout << "brew available: " << inState.tools.brewAvailable() << "\n";
 
 	// rm -rf build/Chalet.xcodeproj && xcodegen -s xcode-project.json -p build --use-cache
 

@@ -405,7 +405,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 						StringList dependencies;
 						if (!project.isStaticLibrary())
 						{
-							if (!inState.ancillaryTools.getExecutableDependencies(outputFilePath, dependencies))
+							if (!inState.tools.getExecutableDependencies(outputFilePath, dependencies))
 							{
 								Diagnostic::error("Dependencies not found for file: '{}'", outputFilePath);
 								return false;
@@ -435,7 +435,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 								if (m_dependencyMap.find(dep) == m_dependencyMap.end())
 								{
 									StringList depsOfDeps;
-									if (!inState.ancillaryTools.getExecutableDependencies(dep, depsOfDeps))
+									if (!inState.tools.getExecutableDependencies(dep, depsOfDeps))
 									{
 										Diagnostic::error("Dependencies not found for file: '{}'", dep);
 										return false;
@@ -500,7 +500,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_prototype.ancillaryTools, inBuildFile);
+	ScriptRunner scriptRunner(m_prototype.tools, inBuildFile);
 	bool showExitCode = false;
 	if (!scriptRunner.run(scripts, showExitCode))
 	{
