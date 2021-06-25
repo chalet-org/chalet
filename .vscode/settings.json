@@ -21,6 +21,7 @@
 		},
 		{
 			"fileMatch": [
+				".chaletrc",
 				"build/chalet-settings.json"
 			],
 			"url": "./schema/chalet-settings.schema.json"

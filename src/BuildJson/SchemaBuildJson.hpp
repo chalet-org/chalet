@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_JSON_SCHEMA_HPP
-#define CHALET_BUILD_JSON_SCHEMA_HPP
+#ifndef CHALET_SCHEMA_BUILD_JSON_HPP
+#define CHALET_SCHEMA_BUILD_JSON_HPP
 
 #include "Libraries/Json.hpp"
 
@@ -16,4 +16,4 @@ Json getBuildJson();
 }
 }
 
-#endif // CHALET_BUILD_JSON_SCHEMA_HPP
+#endif // CHALET_SCHEMA_BUILD_JSON_HPP

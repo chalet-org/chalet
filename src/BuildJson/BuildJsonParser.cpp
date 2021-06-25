@@ -10,7 +10,7 @@
 //
 #include "BuildJson/BuildJsonParser.hpp"
 
-#include "BuildJson/BuildJsonSchema.hpp"
+#include "BuildJson/SchemaBuildJson.hpp"
 #include "State/Bundle/BundleLinux.hpp"
 #include "State/Bundle/BundleMacOS.hpp"
 #include "State/Bundle/BundleWindows.hpp"

@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/BuildJsonSchema.hpp"
+#include "BuildJson/SchemaBuildJson.hpp"
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 

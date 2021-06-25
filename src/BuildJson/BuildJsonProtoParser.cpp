@@ -5,7 +5,7 @@
 
 #include "BuildJson/BuildJsonProtoParser.hpp"
 
-#include "BuildJson/BuildJsonSchema.hpp"
+#include "BuildJson/SchemaBuildJson.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
