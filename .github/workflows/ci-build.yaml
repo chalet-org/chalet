@@ -93,7 +93,7 @@ jobs:
         run: |
           build/Debug/chalet-debug configure
           build/Debug/chalet-debug set settings.showCommands true
-          build/Debug/chalet-debug set settings.macosSigningIdentity $MACOS_SIGNING_IDENTITY
+          build/Debug/chalet-debug set settings.signingIdentity $MACOS_SIGNING_IDENTITY
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema bundle
       - name: "Run: Tests"

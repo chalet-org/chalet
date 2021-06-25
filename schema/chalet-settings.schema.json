@@ -3,7 +3,7 @@
 	"type": "object",
 	"additionalProperties": false,
 	"required": [
-		"build",
+		"settings",
 		"tools",
 		"toolchains"
 	],
@@ -239,26 +239,26 @@
 				}
 			}
 		},
-		"build-dumpAssembly": {
+		"settings-dumpAssembly": {
 			"type": "boolean",
 			"description": "true to use include an asm dump of each file in the build, false otherwise.",
 			"default": false
 		},
-		"build-maxJobs": {
+		"settings-maxJobs": {
 			"type": "integer",
 			"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
 			"minimum": 1
 		},
-		"build-showCommands": {
+		"settings-showCommands": {
 			"description": "true to show the commands run during the build, false to just show the source file.",
 			"type": "boolean",
 			"default": false
 		},
-		"build-toolchain": {
+		"settings-toolchain": {
 			"description": "The toolchain id to use for building, if not the previous one.",
 			"type": "string"
 		},
-		"build-macosSigningIdentity": {
+		"settings-signingIdentity": {
 			"description": "The signing identity to use when bundling the macos application bundle.",
 			"type": "string"
 		}
@@ -357,7 +357,7 @@
 			"type": "string",
 			"description": "The working directory of the workspace"
 		},
-		"build": {
+		"settings": {
 			"type": "object",
 			"additionalProperties": false,
 			"description": "A list of settings related to the build",
@@ -366,23 +366,23 @@
 				"maxJobs",
 				"showCommands",
 				"toolchain",
-				"macosSigningIdentity"
+				"signingIdentity"
 			],
 			"properties": {
 				"dumpAssembly": {
-					"$ref": "#/definitions/build-dumpAssembly"
+					"$ref": "#/definitions/settings-dumpAssembly"
 				},
 				"maxJobs": {
-					"$ref": "#/definitions/build-maxJobs"
+					"$ref": "#/definitions/settings-maxJobs"
 				},
 				"showCommands": {
-					"$ref": "#/definitions/build-showCommands"
+					"$ref": "#/definitions/settings-showCommands"
 				},
 				"toolchain": {
-					"$ref": "#/definitions/build-toolchain"
+					"$ref": "#/definitions/settings-toolchain"
 				},
-				"macosSigningIdentity": {
-					"$ref": "#/definitions/build-macosSigningIdentity"
+				"signingIdentity": {
+					"$ref": "#/definitions/settings-signingIdentity"
 				}
 			}
 		},

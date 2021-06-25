@@ -299,7 +299,7 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 {
 	const auto& preference = m_inputs.toolchainPreferenceRaw();
-	auto& buildSettings = inConfigJson.json["build"];
+	auto& buildSettings = inConfigJson.json["settings"];
 
 	buildSettings["toolchain"] = preference;
 	inConfigJson.setDirty(true);

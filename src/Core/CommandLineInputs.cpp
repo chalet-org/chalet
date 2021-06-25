@@ -45,11 +45,23 @@ void CommandLineInputs::detectToolchainPreference() const
 }
 
 /*****************************************************************************/
+const std::string& CommandLineInputs::workingDirectory() const noexcept
+{
+	if (m_workingDirectory.empty())
+	{
+		m_workingDirectory = Commands::getWorkingDirectory();
+		Path::sanitize(m_workingDirectory, true);
+	}
+	return m_workingDirectory;
+}
+
+/*****************************************************************************/
 const std::string& CommandLineInputs::homeDirectory() const noexcept
 {
 	if (m_homeDirectory.empty())
 	{
 		m_homeDirectory = Environment::getUserDirectory();
+		Path::sanitize(m_homeDirectory, true);
 	}
 	return m_homeDirectory;
 }
@@ -67,7 +79,7 @@ void CommandLineInputs::setBuildFile(std::string&& inValue) noexcept
 	m_buildFile = std::move(inValue);
 
 	Path::sanitize(m_buildFile);
-	Path::clearWorkingDirectory(m_buildFile);
+	clearWorkingDirectory(m_buildFile);
 }
 
 /*****************************************************************************/
@@ -84,7 +96,7 @@ void CommandLineInputs::setBuildPath(std::string&& inValue) noexcept
 	m_buildPath = std::move(inValue);
 
 	Path::sanitize(m_buildPath);
-	Path::clearWorkingDirectory(m_buildPath);
+	clearWorkingDirectory(m_buildPath);
 }
 
 /*****************************************************************************/
@@ -257,7 +269,7 @@ void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 	m_envFile = std::move(inValue);
 
 	Path::sanitize(m_envFile);
-	Path::clearWorkingDirectory(m_envFile);
+	clearWorkingDirectory(m_envFile);
 }
 
 /*****************************************************************************/
@@ -460,4 +472,23 @@ IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) cons
 
 	return IdeType::None;
 }
+
+/*****************************************************************************/
+void CommandLineInputs::clearWorkingDirectory(std::string& outValue)
+{
+	auto cwd = m_workingDirectory + '/';
+	Path::sanitize(cwd);
+
+	String::replaceAll(outValue, cwd, "");
+
+#if defined(CHALET_WIN32)
+	if (::isalpha(cwd.front()) > 0)
+	{
+		cwd.front() = static_cast<char>(::tolower(cwd.front()));
+	}
+
+	String::replaceAll(outValue, cwd, "");
+#endif
+}
+
 }

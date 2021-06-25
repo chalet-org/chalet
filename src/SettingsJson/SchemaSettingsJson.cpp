@@ -19,7 +19,7 @@ Json Schema::getSettingsJson()
 	ret["type"] = "object";
 	ret["additionalProperties"] = false;
 	ret["required"] = {
-		"build",
+		"settings",
 		"tools",
 		"toolchains"
 	};
@@ -312,30 +312,30 @@ Json Schema::getSettingsJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["build-dumpAssembly"] = R"json({
+	ret[kDefinitions]["settings-dumpAssembly"] = R"json({
 		"type": "boolean",
 		"description": "true to use include an asm dump of each file in the build, false otherwise.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["build-maxJobs"] = R"json({
+	ret[kDefinitions]["settings-maxJobs"] = R"json({
 		"type": "integer",
 		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
 		"minimum": 1
 	})json"_ojson;
 
-	ret[kDefinitions]["build-showCommands"] = R"json({
+	ret[kDefinitions]["settings-showCommands"] = R"json({
 		"description": "true to show the commands run during the build, false to just show the source file.",
 		"type": "boolean",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["build-toolchain"] = R"json({
+	ret[kDefinitions]["settings-toolchain"] = R"json({
 		"description": "The toolchain id to use for building, if not the previous one.",
 		"type": "string"
 	})json"_ojson;
 
-	ret[kDefinitions]["build-macosSigningIdentity"] = R"json({
+	ret[kDefinitions]["settings-signingIdentity"] = R"json({
 		"description": "The signing identity to use when bundling the macos application bundle.",
 		"type": "string"
 	})json"_ojson;
@@ -440,7 +440,7 @@ Json Schema::getSettingsJson()
 		"description": "The working directory of the workspace"
 	})json"_ojson;
 
-	ret[kProperties]["build"] = R"json({
+	ret[kProperties]["settings"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A list of settings related to the build",
@@ -449,23 +449,23 @@ Json Schema::getSettingsJson()
 			"maxJobs",
 			"showCommands",
 			"toolchain",
-			"macosSigningIdentity"
+			"signingIdentity"
 		],
 		"properties": {
 			"dumpAssembly": {
-				"$ref": "#/definitions/build-dumpAssembly"
+				"$ref": "#/definitions/settings-dumpAssembly"
 			},
 			"maxJobs": {
-				"$ref": "#/definitions/build-maxJobs"
+				"$ref": "#/definitions/settings-maxJobs"
 			},
 			"showCommands": {
-				"$ref": "#/definitions/build-showCommands"
+				"$ref": "#/definitions/settings-showCommands"
 			},
 			"toolchain": {
-				"$ref": "#/definitions/build-toolchain"
+				"$ref": "#/definitions/settings-toolchain"
 			},
-			"macosSigningIdentity": {
-				"$ref": "#/definitions/build-macosSigningIdentity"
+			"signingIdentity": {
+				"$ref": "#/definitions/settings-signingIdentity"
 			}
 		}
 	})json"_ojson;

@@ -50,12 +50,12 @@ bool AncillaryTools::validate()
 
 #if defined(CHALET_MACOS)
 	const auto& homeDirectory = m_inputs.homeDirectory();
-	Environment::replaceCommonVariables(m_macosSigningIdentity, homeDirectory);
+	Environment::replaceCommonVariables(m_signingIdentity, homeDirectory);
 
 	// hash::SHA1 sha1;
-	// m_macosSigningIdentity = String::toUpperCase(sha1(m_macosSigningIdentity));
+	// m_signingIdentity = String::toUpperCase(sha1(m_signingIdentity));
 
-	if (!m_macosSigningIdentity.empty())
+	if (!m_signingIdentity.empty())
 	{
 		// security find-identity -v -p codesigning
 		auto security = Commands::which("security");
@@ -63,9 +63,9 @@ bool AncillaryTools::validate()
 		{
 			StringList cmd{ std::move(security), "find-identity", "-v", "-p", "codesigning" };
 			auto identities = Commands::subprocessOutput(cmd);
-			if (!String::contains(m_macosSigningIdentity, identities))
+			if (!String::contains(m_signingIdentity, identities))
 			{
-				Diagnostic::error("macosSigningIdentity '{}' could not be verified with '{}'", m_macosSigningIdentity, String::join(cmd));
+				Diagnostic::error("signingIdentity '{}' could not be verified with '{}'", m_signingIdentity, String::join(cmd));
 				return false;
 			}
 		}
@@ -204,13 +204,13 @@ void AncillaryTools::setCodesign(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& AncillaryTools::macosSigningIdentity() const noexcept
+const std::string& AncillaryTools::signingIdentity() const noexcept
 {
-	return m_macosSigningIdentity;
+	return m_signingIdentity;
 }
-void AncillaryTools::setMacosSigningIdentity(std::string&& inValue) noexcept
+void AncillaryTools::setSigningIdentity(std::string&& inValue) noexcept
 {
-	m_macosSigningIdentity = std::move(inValue);
+	m_signingIdentity = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -545,7 +545,7 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inF
 		cmd.push_back("-f");
 
 	cmd.push_back("-s");
-	cmd.push_back(m_macosSigningIdentity);
+	cmd.push_back(m_signingIdentity);
 
 	bool showCommands = Output::showCommands();
 	if (showCommands)
@@ -568,7 +568,7 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath) const
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".dmg", inPath), "Must be a .dmg");
 
-	StringList cmd{ m_codesign, "--strict", "--continue", "-s", m_macosSigningIdentity };
+	StringList cmd{ m_codesign, "--strict", "--continue", "-s", m_signingIdentity };
 
 	bool showCommands = Output::showCommands();
 	if (showCommands)
@@ -591,7 +591,7 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
 
-	StringList cmd{ m_codesign, "--strict", "--deep", "--continue", "-f", "-s", m_macosSigningIdentity };
+	StringList cmd{ m_codesign, "--strict", "--deep", "--continue", "-f", "-s", m_signingIdentity };
 	cmd.push_back(fmt::format("-bundle-version={}", inVersionId));
 
 	bool showCommands = Output::showCommands();

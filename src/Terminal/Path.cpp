@@ -54,22 +54,6 @@ void Path::sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine)
 }
 
 /*****************************************************************************/
-void Path::clearWorkingDirectory(std::string& outValue)
-{
-	auto cwd = Commands::getWorkingDirectory() + '\\';
-	Path::sanitize(cwd);
-	String::replaceAll(outValue, cwd, "");
-#if defined(CHALET_WIN32)
-	if (::isalpha(cwd.front()) > 0)
-	{
-		cwd.front() = static_cast<char>(::tolower(cwd.front()));
-	}
-
-	String::replaceAll(outValue, cwd, "");
-#endif
-}
-
-/*****************************************************************************/
 StringList Path::getOSPaths()
 {
 #if !defined(CHALET_WIN32)

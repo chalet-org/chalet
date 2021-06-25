@@ -34,7 +34,7 @@ bool CmakeBuilder::run()
 	Output::msgBuild(buildConfiguration, name);
 	Output::lineBreak();
 
-	auto cwd = Commands::getWorkingDirectory();
+	const auto& cwd = m_state.paths.workingDirectory();
 	auto location = fmt::format("{}/{}", cwd, m_target.location());
 	Path::sanitize(location);
 	if (!m_target.buildFile().empty())

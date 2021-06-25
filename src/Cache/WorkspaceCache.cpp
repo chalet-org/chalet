@@ -35,8 +35,9 @@ const std::string& WorkspaceCache::getCacheRef(const CacheType inCacheType) cons
 /*****************************************************************************/
 bool WorkspaceCache::initialize()
 {
+	const auto& cwd = m_inputs.workingDirectory();
+	m_localSettings.load(fmt::format("{}/.chaletrc", cwd));
 	m_globalSettings.load(fmt::format("{}/.chaletrc", m_inputs.homeDirectory()));
-	m_localSettings.load(fmt::format("{}/chalet-settings.json", m_inputs.buildPath()));
 
 	m_removeOldCacheFolder = m_localSettings.json.empty();
 

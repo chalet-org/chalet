@@ -6,6 +6,7 @@ vendor_test/
 vendor/
 
 # Chalet
+.chaletrc
 build
 dist
 chalet_external/

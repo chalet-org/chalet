@@ -35,8 +35,9 @@ struct AncillaryTools
 
 	const std::string& codesign() const noexcept;
 	void setCodesign(std::string&& inValue) noexcept;
-	const std::string& macosSigningIdentity() const noexcept;
-	void setMacosSigningIdentity(std::string&& inValue) noexcept;
+
+	const std::string& signingIdentity() const noexcept;
+	void setSigningIdentity(std::string&& inValue) noexcept;
 
 	const std::string& commandPrompt() const noexcept;
 	void setCommandPrompt(std::string&& inValue) noexcept;
@@ -169,7 +170,7 @@ private:
 	std::string m_xcodegen;
 	std::string m_xcrun;
 
-	std::string m_macosSigningIdentity;
+	std::string m_signingIdentity;
 
 	uint m_xcodeVersionMajor = 0;
 	uint m_xcodeVersionMinor = 0;

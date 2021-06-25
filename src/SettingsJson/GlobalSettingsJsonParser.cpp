@@ -40,7 +40,7 @@ bool GlobalSettingsJsonParser::serialize(GlobalSettingsState& outState)
 bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 {
 	// Create the json cache
-	m_jsonFile.makeNode(kKeyBuild, JsonDataType::object);
+	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyToolchains, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyTools, JsonDataType::object);
 
@@ -48,7 +48,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 	m_jsonFile.makeNode(kKeyAppleSdks, JsonDataType::object);
 #endif
 
-	Json& buildSettings = m_jsonFile.json[kKeyBuild];
+	Json& buildSettings = m_jsonFile.json[kKeySettings];
 
 	if (!buildSettings.contains(kKeyDumpAssembly) || !buildSettings[kKeyDumpAssembly].is_boolean())
 	{
@@ -77,10 +77,10 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!buildSettings.contains(kKeyMacosSigningIdentity) || !buildSettings[kKeyMacosSigningIdentity].is_string())
+	if (!buildSettings.contains(kKeySigningIdentity) || !buildSettings[kKeySigningIdentity].is_string())
 	{
-		outState.macosSigningIdentity = std::string();
-		buildSettings[kKeyMacosSigningIdentity] = outState.macosSigningIdentity;
+		outState.signingIdentity = std::string();
+		buildSettings[kKeySigningIdentity] = outState.signingIdentity;
 		m_jsonFile.setDirty(true);
 	}
 
@@ -116,13 +116,13 @@ bool GlobalSettingsJsonParser::serializeFromJsonRoot(Json& inJson, GlobalSetting
 /*****************************************************************************/
 bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsState& outState)
 {
-	if (!inNode.contains(kKeyBuild))
+	if (!inNode.contains(kKeySettings))
 		return true;
 
-	const Json& buildSettings = inNode.at(kKeyBuild);
+	const Json& buildSettings = inNode.at(kKeySettings);
 	if (!buildSettings.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyBuild);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeySettings);
 		return false;
 	}
 
@@ -138,8 +138,8 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
 		outState.toolchainPreference = std::move(val);
 
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyMacosSigningIdentity))
-		outState.macosSigningIdentity = std::move(val);
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeySigningIdentity))
+		outState.signingIdentity = std::move(val);
 
 	return true;
 }

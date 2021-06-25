@@ -16,7 +16,8 @@ namespace chalet
 {
 BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const BuildInfo& inInfo) :
 	m_inputs(inInputs),
-	m_info(inInfo)
+	m_info(inInfo),
+	m_workingDirectory(inInputs.workingDirectory())
 {
 }
 
@@ -74,18 +75,9 @@ const std::string& BuildPaths::workingDirectory() const noexcept
 
 void BuildPaths::setWorkingDirectory(std::string&& inValue)
 {
-	chalet_assert(m_workingDirectory.empty(), "");
-
 	if (Commands::pathExists(inValue))
 	{
 		m_workingDirectory = std::move(inValue);
-	}
-	else
-	{
-		auto workingDirectory = Commands::getWorkingDirectory();
-		Path::sanitize(workingDirectory, true);
-
-		m_workingDirectory = workingDirectory;
 	}
 }
 

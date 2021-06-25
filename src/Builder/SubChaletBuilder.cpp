@@ -36,9 +36,8 @@ bool SubChaletBuilder::run()
 	Output::lineBreak();
 
 	const auto oldPath = Environment::getPath();
-	const auto oldWorkingDirectory = Commands::getWorkingDirectory();
 
-	auto cwd = Commands::getWorkingDirectory();
+	const auto& cwd = m_state.paths.workingDirectory();
 	auto location = fmt::format("{}/{}", cwd, m_target.location());
 	Path::sanitize(location);
 	if (!m_target.buildFile().empty())

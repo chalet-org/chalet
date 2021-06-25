@@ -448,9 +448,9 @@ bool AppBundlerMacOS::createDmgImage() const
 /*****************************************************************************/
 bool AppBundlerMacOS::signAppBundle() const
 {
-	if (m_state.tools.macosSigningIdentity().empty())
+	if (m_state.tools.signingIdentity().empty())
 	{
-		Diagnostic::warn("bundle '{}' was not signed - macosSigningIdentity is not set, or was empty.", m_bundle.name());
+		Diagnostic::warn("bundle '{}' was not signed - signingIdentity is not set, or was empty.", m_bundle.name());
 		return true;
 	}
 
@@ -525,9 +525,9 @@ bool AppBundlerMacOS::signAppBundle() const
 /*****************************************************************************/
 bool AppBundlerMacOS::signDmgImage(const std::string& inPath) const
 {
-	if (m_state.tools.macosSigningIdentity().empty())
+	if (m_state.tools.signingIdentity().empty())
 	{
-		Diagnostic::warn("dmg '{}' was not signed - macosSigningIdentity is not set, or was empty.", inPath);
+		Diagnostic::warn("dmg '{}' was not signed - signingIdentity is not set, or was empty.", inPath);
 		return true;
 	}
 

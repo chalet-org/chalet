@@ -231,6 +231,7 @@ Thumbs.db
 .DS_Store
 
 # Build
+.chaletrc
 {build}
 dist
 chalet_external)",

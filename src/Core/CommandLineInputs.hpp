@@ -19,6 +19,7 @@ struct CommandLineInputs
 
 	void detectToolchainPreference() const;
 
+	const std::string& workingDirectory() const noexcept;
 	const std::string& homeDirectory() const noexcept;
 	const std::string& defaultEnvFile() const noexcept;
 
@@ -89,6 +90,8 @@ private:
 	ToolchainPreference getToolchainPreferenceFromString(const std::string& inValue) const;
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
 
+	void clearWorkingDirectory(std::string& outValue);
+
 	mutable ToolchainPreference m_toolchainPreference;
 
 	StringList m_runOptions;
@@ -107,6 +110,7 @@ private:
 	std::string m_settingsValue;
 
 	mutable std::string m_toolchainPreferenceRaw;
+	mutable std::string m_workingDirectory;
 	mutable std::string m_homeDirectory;
 
 	std::string m_initPath;

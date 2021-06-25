@@ -16,7 +16,7 @@ struct GlobalSettingsState
 	Json tools;
 	Json appleSdks;
 
-	std::string macosSigningIdentity;
+	std::string signingIdentity;
 	std::string toolchainPreference;
 	uint maxJobs = 0;
 	bool showCommands = false;
