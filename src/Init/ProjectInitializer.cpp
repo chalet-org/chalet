@@ -358,8 +358,10 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 			if (!Commands::subprocess({ std::move(appPath), "configure" }))
 				return false;
 		}
-
-		Output::lineBreak();
+		else
+		{
+			Output::lineBreak();
+		}
 
 		auto symbol = Unicode::diamond();
 		Output::displayStyledSymbol(Color::Magenta, symbol, "Happy coding!");
