@@ -42,34 +42,34 @@ bool StatePrototype::initialize()
 	if (!parseLocalSettingsJson())
 		return false;
 
-	if (m_inputs.command() == Route::Configure)
-		return true;
-
-	Output::setShowCommandOverride(false);
-
-	Timer timer;
-	Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
-
-	if (!parseBuildJson())
-		return false;
-
-	if (!validateBundleDestinations())
-		return false;
-
-	cache.file().checkIfAppVersionChanged(m_inputs.appPath());
-
-	if (!cache.createCacheFolder(CacheType::Local))
+	if (m_inputs.command() != Route::Configure)
 	{
-		Diagnostic::error("There was an error creating the build cache.");
-		return false;
+		Output::setShowCommandOverride(false);
+
+		Timer timer;
+		Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
+
+		if (!parseBuildJson())
+			return false;
+
+		if (!validateBundleDestinations())
+			return false;
+
+		cache.file().checkIfAppVersionChanged(m_inputs.appPath());
+
+		if (!cache.createCacheFolder(CacheType::Local))
+		{
+			Diagnostic::error("There was an error creating the build cache.");
+			return false;
+		}
+
+		if (!validate())
+			return false;
+
+		Diagnostic::printDone(timer.asString());
+
+		Output::setShowCommandOverride(true);
 	}
-
-	if (!validate())
-		return false;
-
-	Diagnostic::printDone(timer.asString());
-
-	Output::setShowCommandOverride(true);
 
 	return true;
 }
