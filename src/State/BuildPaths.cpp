@@ -37,7 +37,7 @@ void BuildPaths::initialize()
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
-	m_intermediateDir = fmt::format("{}/chalet_intermediate", m_buildOutputDir);
+	m_intermediateDir = fmt::format("{}/intermediate", buildPath);
 
 	m_initialized = true;
 }

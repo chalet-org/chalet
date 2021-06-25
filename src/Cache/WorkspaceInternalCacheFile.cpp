@@ -263,7 +263,8 @@ void WorkspaceInternalCacheFile::checkIfWorkingDirectoryChanged(const std::strin
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::appVersionChanged() const noexcept
 {
-	return m_appVersionChanged;
+	return false;
+	// return m_appVersionChanged;
 }
 
 /*****************************************************************************/
