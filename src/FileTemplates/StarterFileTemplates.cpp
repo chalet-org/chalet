@@ -97,7 +97,8 @@ std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage, cons
 		{
 			ret = R"objc(#import <Foundation/Foundation.h>
 
-int main(int argc, const char * argv[]) {
+int main(int argc, const char * argv[])
+{
 	@autoreleasepool {
 		NSLog(@"Hello, World!\n");
 		NSLog(@"Args:");
@@ -134,7 +135,8 @@ int main(const int argc, const char* const argv[])
 		{
 			ret = R"objc(#import <Foundation/Foundation.h>
 
-int main(int argc, const char * argv[]) {
+int main(int argc, const char * argv[])
+{
 	@autoreleasepool {
 		NSLog(@"Hello, World!\n");
 		NSLog(@"Args:");
