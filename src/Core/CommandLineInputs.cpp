@@ -360,6 +360,24 @@ void CommandLineInputs::setSettingsValue(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+void CommandLineInputs::clearWorkingDirectory(std::string& outValue) const
+{
+	auto cwd = workingDirectory() + '/';
+	Path::sanitize(cwd);
+
+	String::replaceAll(outValue, cwd, "");
+
+#if defined(CHALET_WIN32)
+	if (::isalpha(cwd.front()) > 0)
+	{
+		cwd.front() = static_cast<char>(::tolower(cwd.front()));
+	}
+
+	String::replaceAll(outValue, cwd, "");
+#endif
+}
+
+/*****************************************************************************/
 std::string CommandLineInputs::getPlatform() const noexcept
 {
 #if defined(CHALET_WIN32)
@@ -471,24 +489,6 @@ IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) cons
 	}
 
 	return IdeType::None;
-}
-
-/*****************************************************************************/
-void CommandLineInputs::clearWorkingDirectory(std::string& outValue)
-{
-	auto cwd = workingDirectory() + '/';
-	Path::sanitize(cwd);
-
-	String::replaceAll(outValue, cwd, "");
-
-#if defined(CHALET_WIN32)
-	if (::isalpha(cwd.front()) > 0)
-	{
-		cwd.front() = static_cast<char>(::tolower(cwd.front()));
-	}
-
-	String::replaceAll(outValue, cwd, "");
-#endif
 }
 
 }

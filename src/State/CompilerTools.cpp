@@ -218,14 +218,14 @@ void CompilerTools::fetchCompilerVersions()
 #if defined(CHALET_WIN32)
 			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 			{
-				version = parseVersionMSVC(m_cpp);
+				version = parseVersionMSVC(m_cpp, m_compilerDetectedArchCpp);
 			}
 			else
 			{
-				version = parseVersionGNU(m_cpp, String::eol());
+				version = parseVersionGNU(m_cpp, m_compilerDetectedArchCpp, String::eol());
 			}
 #else
-			version = parseVersionGNU(m_cpp);
+			version = parseVersionGNU(m_cpp, m_compilerDetectedArchCpp);
 #endif
 			m_compilerVersionStringCpp = std::move(version);
 		}
@@ -239,14 +239,14 @@ void CompilerTools::fetchCompilerVersions()
 #if defined(CHALET_WIN32)
 			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 			{
-				version = parseVersionMSVC(m_cc);
+				version = parseVersionMSVC(m_cc, m_compilerDetectedArchC);
 			}
 			else
 			{
-				version = parseVersionGNU(m_cc, String::eol());
+				version = parseVersionGNU(m_cc, m_compilerDetectedArchC, String::eol());
 			}
 #else
-			version = parseVersionGNU(m_cc);
+			version = parseVersionGNU(m_cc, m_compilerDetectedArchC);
 #endif
 			m_compilerVersionStringC = std::move(version);
 		}
@@ -308,7 +308,7 @@ bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 }
 
 /*****************************************************************************/
-std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) const
+std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std::string& outArch) const
 {
 	std::string ret;
 
@@ -323,8 +323,8 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) con
 		{
 			const auto versionString = splitOutput[1].substr(start, end - start);
 			// const auto arch = splitOutput[1].substr(end + 5);
-			const auto arch = m_state.info.targetArchitectureString();
-			ret = fmt::format("Microsoft{} Visual C/C++ {} [{}]", Unicode::registered(), versionString, arch);
+			outArch = m_state.info.targetArchitectureString();
+			ret = fmt::format("Microsoft{} Visual C/C++ {}", Unicode::registered(), versionString);
 		}
 	}
 
@@ -332,7 +332,7 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable) con
 }
 
 /*****************************************************************************/
-std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, const std::string_view inEol) const
+std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std::string& outArch, const std::string_view inEol) const
 {
 	std::string ret;
 
@@ -357,7 +357,6 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, cons
 	{
 		std::string versionString;
 		std::string compilerRaw;
-		std::string arch;
 		std::string threadModel;
 		for (auto& line : splitOutput)
 		{
@@ -372,7 +371,7 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, cons
 			}
 			else if (String::startsWith("Target:", line))
 			{
-				arch = line.substr(8);
+				outArch = line.substr(8);
 			}
 			/*else if (String::startsWith("Thread model:", line))
 			{
@@ -386,15 +385,15 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, cons
 		{
 			if (String::startsWith("gcc", compilerRaw))
 			{
-				ret = fmt::format("GNU Compiler Collection {} Version {} [{}]", isCpp ? "C++" : "C", versionString, arch);
+				ret = fmt::format("GNU Compiler Collection {} Version {}", isCpp ? "C++" : "C", versionString);
 			}
 			else if (String::startsWith("Apple clang", compilerRaw))
 			{
-				ret = fmt::format("Apple Clang {} Version {} [{}]", isCpp ? "C++" : "C", versionString, arch);
+				ret = fmt::format("Apple Clang {} Version {}", isCpp ? "C++" : "C", versionString);
 			}
 			else if (String::startsWith("clang", compilerRaw))
 			{
-				ret = fmt::format("LLVM Clang {} Version {} [{}]", isCpp ? "C++" : "C", versionString, arch);
+				ret = fmt::format("LLVM Clang {} Version {}", isCpp ? "C++" : "C", versionString);
 			}
 		}
 		else
@@ -527,6 +526,15 @@ const std::string& CompilerTools::compilerVersionStringCpp() const noexcept
 const std::string& CompilerTools::compilerVersionStringC() const noexcept
 {
 	return m_compilerVersionStringC;
+}
+
+const std::string& CompilerTools::compilerDetectedArchCpp() const noexcept
+{
+	return m_compilerDetectedArchCpp;
+}
+const std::string& CompilerTools::compilerDetectedArchC() const noexcept
+{
+	return m_compilerDetectedArchC;
 }
 
 /*****************************************************************************/

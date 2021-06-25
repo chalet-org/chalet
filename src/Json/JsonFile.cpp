@@ -28,7 +28,8 @@ void JsonFile::saveToFile(const Json& inJson, const std::string& outFilename)
 		return;
 
 	const auto folder = String::getPathFolder(outFilename);
-	Commands::makeDirectories({ folder });
+	if (!folder.empty() && !Commands::pathExists(folder))
+		Commands::makeDirectory(folder);
 
 	std::ofstream(outFilename) << inJson.dump(1, '\t') << std::endl;
 }

@@ -23,7 +23,8 @@
 			"stopOnEntry": false,
 			"args": [
 				// "--generator=vscode",
-				"bundle"
+				"build",
+				"Release"
 			],
 		},
 		{

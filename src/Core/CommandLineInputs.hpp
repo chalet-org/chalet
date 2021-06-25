@@ -83,14 +83,14 @@ struct CommandLineInputs
 	const std::string& settingsValue() const noexcept;
 	void setSettingsValue(std::string&& inValue) noexcept;
 
+	void clearWorkingDirectory(std::string& outValue) const;
+
 private:
 	std::string getPlatform() const noexcept;
 	StringList getNotPlatforms() const noexcept;
 
 	ToolchainPreference getToolchainPreferenceFromString(const std::string& inValue) const;
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
-
-	void clearWorkingDirectory(std::string& outValue);
 
 	mutable ToolchainPreference m_toolchainPreference;
 

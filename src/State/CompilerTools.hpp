@@ -37,6 +37,8 @@ struct CompilerTools
 
 	const std::string& compilerVersionStringCpp() const noexcept;
 	const std::string& compilerVersionStringC() const noexcept;
+	const std::string& compilerDetectedArchCpp() const noexcept;
+	const std::string& compilerDetectedArchC() const noexcept;
 
 	const std::string& archiver() const noexcept;
 	void setArchiver(std::string&& inValue) noexcept;
@@ -86,8 +88,8 @@ private:
 	bool initializeCompilerConfigs(const BuildTargetList& inTargets);
 	bool updateToolchainCacheNode(JsonFile& inConfigJson);
 
-	std::string parseVersionMSVC(const std::string& inExecutable) const;
-	std::string parseVersionGNU(const std::string& inExecutable, const std::string_view inEol = "\n") const;
+	std::string parseVersionMSVC(const std::string& inExecutable, std::string& outArch) const;
+	std::string parseVersionGNU(const std::string& inExecutable, std::string& outArch, const std::string_view inEol = "\n") const;
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
@@ -106,6 +108,8 @@ private:
 
 	std::string m_compilerVersionStringCpp;
 	std::string m_compilerVersionStringC;
+	std::string m_compilerDetectedArchCpp;
+	std::string m_compilerDetectedArchC;
 
 	uint m_cmakeVersionMajor = 0;
 	uint m_cmakeVersionMinor = 0;
