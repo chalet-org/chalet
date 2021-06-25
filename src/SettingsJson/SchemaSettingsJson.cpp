@@ -440,11 +440,6 @@ Json Schema::getSettingsJson()
 		"description": "The working directory of the workspace"
 	})json"_ojson;
 
-	ret[kProperties]["externalDependencies"] = R"json({
-		"type": "object",
-		"description": "The external dependency cache"
-	})json"_ojson;
-
 	ret[kProperties]["build"] = R"json({
 		"type": "object",
 		"additionalProperties": false,

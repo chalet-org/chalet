@@ -112,7 +112,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		m_jsonFile.json[kKeyAppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
 	}
 
-	m_jsonFile.makeNode(kKeyExternalDependencies, JsonDataType::object);
 	{
 		Json& workingDirectoryJson = m_jsonFile.json[kKeyWorkingDirectory];
 		const auto workingDirectory = workingDirectoryJson.get<std::string>();

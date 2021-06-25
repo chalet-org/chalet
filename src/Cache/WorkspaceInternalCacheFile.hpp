@@ -6,17 +6,25 @@
 #ifndef CHALET_WORKSPACE_SOURCE_CACHE_FILE_HPP
 #define CHALET_WORKSPACE_SOURCE_CACHE_FILE_HPP
 
+#include "Cache/ExternalDependencyCache.hpp"
 #include "Cache/SourceCache.hpp"
 
 namespace chalet
 {
+struct WorkspaceCache;
+
 struct WorkspaceInternalCacheFile
 {
+	explicit WorkspaceInternalCacheFile(WorkspaceCache& inCache);
+
 	const std::string& hashStrategy() const noexcept;
 	void setHashStrategy(std::string&& inValue) noexcept;
 
 	bool initialize(const std::string& inFilename);
 	bool save();
+
+	bool loadExternalDependencies();
+	bool saveExternalDependencies();
 
 	bool setSourceCache(const std::string& inId);
 	bool removeSourceCache(const std::string& inId);
@@ -30,11 +38,14 @@ struct WorkspaceInternalCacheFile
 	void addExtraHash(std::string&& inHash);
 
 	SourceCache& sources() const;
+	ExternalDependencyCache& externalDependencies();
 
 	StringList getCacheIds() const;
 
 private:
 	std::string getAppVersionHash(std::string appPath);
+
+	WorkspaceCache& m_cache;
 
 	StringList m_extraHashes;
 
@@ -49,6 +60,7 @@ private:
 
 	SourceCache* m_sources = nullptr;
 
+	ExternalDependencyCache m_externalDependencies;
 	mutable std::unordered_map<std::string, std::unique_ptr<SourceCache>> m_sourceCaches;
 
 	bool m_workingDirectoryChanged = false;

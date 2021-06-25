@@ -5,6 +5,7 @@
 
 #include "Cache/WorkspaceInternalCacheFile.hpp"
 
+#include "Cache/WorkspaceCache.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
@@ -13,6 +14,12 @@
 
 namespace chalet
 {
+/*****************************************************************************/
+WorkspaceInternalCacheFile::WorkspaceInternalCacheFile(WorkspaceCache& inCache) :
+	m_cache(inCache)
+{
+}
+
 /*****************************************************************************/
 const std::string& WorkspaceInternalCacheFile::hashStrategy() const noexcept
 {
@@ -30,6 +37,12 @@ SourceCache& WorkspaceInternalCacheFile::sources() const
 {
 	chalet_assert(m_sources != nullptr, "");
 	return *m_sources;
+}
+
+/*****************************************************************************/
+ExternalDependencyCache& WorkspaceInternalCacheFile::externalDependencies()
+{
+	return m_externalDependencies;
 }
 
 /*****************************************************************************/
@@ -198,6 +211,29 @@ bool WorkspaceInternalCacheFile::save()
 
 		return Commands::createFileWithContents(m_filename, contents);
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool WorkspaceInternalCacheFile::loadExternalDependencies()
+{
+	auto externalPath = m_cache.getHashPath("chalet_external_dependencies_cache", CacheType::Local);
+	return m_externalDependencies.loadFromFilename(externalPath);
+}
+
+/*****************************************************************************/
+bool WorkspaceInternalCacheFile::saveExternalDependencies()
+{
+	m_dirty |= m_externalDependencies.dirty();
+
+	auto externalPath = m_cache.getHashPath("chalet_external_dependencies_cache", CacheType::Local);
+
+	std::ofstream(externalPath) << m_externalDependencies.asString()
+								<< std::endl;
+
+	auto hash = String::getPathFilename(externalPath);
+	List::addIfDoesNotExist(m_extraHashes, std::move(hash));
 
 	return true;
 }

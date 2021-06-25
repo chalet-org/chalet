@@ -40,7 +40,6 @@ private:
 	JsonFile& m_jsonFile;
 
 	const std::string kKeyWorkingDirectory = "workingDirectory";
-	const std::string kKeyExternalDependencies = "externalDependencies";
 
 	// should match executables
 	const std::string kKeyBash = "bash";

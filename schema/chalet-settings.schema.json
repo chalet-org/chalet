@@ -357,10 +357,6 @@
 			"type": "string",
 			"description": "The working directory of the workspace"
 		},
-		"externalDependencies": {
-			"type": "object",
-			"description": "The external dependency cache"
-		},
 		"build": {
 			"type": "object",
 			"additionalProperties": false,

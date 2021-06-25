@@ -31,9 +31,14 @@ bool DependencyManager::run(const bool inInstallCmd)
 		return true;
 
 	const auto& externalDepDir = m_state.paths.externalDepDir();
-	auto& localConfig = m_state.cache.getSettings(SettingsType::Local);
+	// auto& localSettings = m_state.cache.getSettings(SettingsType::Local);
 
-	Json& dependencyCache = localConfig.json["externalDependencies"];
+	if (!m_state.externalDependencies.empty())
+	{
+		m_state.cache.file().loadExternalDependencies();
+	}
+
+	auto& dependencyCache = m_state.cache.file().externalDependencies();
 
 	StringList destinationCache;
 
@@ -63,9 +68,8 @@ bool DependencyManager::run(const bool inInstallCmd)
 		{
 			if (!dependencyCache.contains(destination))
 			{
-				const std::string commitHash = m_state.tools.getCurrentGitRepositoryHash(destination);
-				dependencyCache[destination] = commitHash;
-				localConfig.setDirty(true);
+				auto commitHash = m_state.tools.getCurrentGitRepositoryHash(destination);
+				dependencyCache.emplace(destination, std::move(commitHash));
 			}
 			if (!inInstallCmd)
 				continue;
@@ -133,7 +137,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 				{
 					// We're using a shallow clone, so this only works if the branch hasn't changed
 					const std::string originHash = m_state.tools.getCurrentGitRepositoryHashFromRemote(destination, branch);
-					const std::string cachedHash = dependencyCache[destination].get<std::string>();
+					const auto& cachedHash = dependencyCache.get(destination);
 
 					if (cachedHash == originHash)
 						continue;
@@ -203,11 +207,10 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 		if (res)
 		{
-			const std::string commitHash = m_state.tools.getCurrentGitRepositoryHash(destination);
+			auto commitHash = m_state.tools.getCurrentGitRepositoryHash(destination);
 
 			// Output::msgDisplayBlack(commitHash); // useful for debugging
-			dependencyCache[destination] = commitHash;
-			localConfig.setDirty(true);
+			dependencyCache.set(destination, std::move(commitHash));
 		}
 		else
 		{
@@ -220,7 +223,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 	if (result)
 	{
 		StringList eraseList;
-		for (auto& [key, value] : dependencyCache.items())
+		for (auto& [key, value] : dependencyCache)
 		{
 			if (!List::contains(destinationCache, key))
 				eraseList.push_back(key);
@@ -244,11 +247,15 @@ bool DependencyManager::run(const bool inInstallCmd)
 			}
 
 			dependencyCache.erase(it);
-			localConfig.setDirty(true);
 		}
 
 		if (Commands::pathIsEmpty(externalDepDir, {}, true))
 			result &= Commands::remove(externalDepDir);
+	}
+
+	if (!m_state.externalDependencies.empty())
+	{
+		m_state.cache.file().saveExternalDependencies();
 	}
 
 	if (count > 0)
