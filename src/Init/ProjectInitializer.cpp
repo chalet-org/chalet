@@ -202,7 +202,7 @@ bool ProjectInitializer::run()
 	Output::lineBreak();
 	Output::print(Color::Black, separator);
 
-	double stepTime = 0.125;
+	double stepTime = 0.1;
 
 	{
 		Output::print(Color::Reset, fmt::format("{}/{}", props.location, props.mainSource));
@@ -323,8 +323,11 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 				result = false;
 		}
 
-		if (!makeDotEnv())
-			result = false;
+		if (inProps.envFile)
+		{
+			if (!makeDotEnv())
+				result = false;
+		}
 
 		if (inProps.makeGitRepository)
 		{
