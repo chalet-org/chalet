@@ -16,7 +16,6 @@ struct CMakeTarget;
 struct JsonFile;
 struct ProjectTarget;
 struct ScriptBuildTarget;
-struct GitDependency;
 struct SubChaletTarget;
 struct StatePrototype;
 class BuildState;
@@ -32,12 +31,7 @@ struct BuildJsonParser
 private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
-	bool parseRoot(const Json& inNode);
-
 	bool makePathVariable();
-
-	bool parseExternalDependencies(const Json& inNode);
-	bool parseGitDependency(GitDependency& outDependency, const Json& inNode);
 
 	bool parseProjects(const Json& inNode);
 	bool parseProject(ProjectTarget& outProject, const Json& inNode, const bool inAbstract = false);
@@ -68,7 +62,6 @@ private:
 
 	const std::string& kKeyAbstracts;
 	const std::string& kKeyTargets;
-	const std::string& kKeyExternalDependencies;
 
 	std::unordered_map<std::string, std::unique_ptr<ProjectTarget>> m_abstractProjects;
 

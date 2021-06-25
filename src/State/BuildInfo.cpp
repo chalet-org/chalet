@@ -20,27 +20,6 @@ BuildInfo::BuildInfo(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-const std::string& BuildInfo::workspace() const noexcept
-{
-	return m_workspace;
-}
-
-void BuildInfo::setWorkspace(std::string&& inValue) noexcept
-{
-	m_workspace = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& BuildInfo::version() const noexcept
-{
-	return m_version;
-}
-void BuildInfo::setVersion(std::string&& inValue) noexcept
-{
-	m_version = std::move(inValue);
-}
-
-/*****************************************************************************/
 const std::string& BuildInfo::buildConfiguration() const noexcept
 {
 	chalet_assert(!m_buildConfiguration.empty(), "Build configuration is empty");

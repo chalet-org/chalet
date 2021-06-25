@@ -9,14 +9,31 @@
 
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/StatePrototype.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-GitDependency::GitDependency(const BuildState& inState) :
-	IBuildDependency(inState, BuildDependencyType::Git)
+GitDependency::GitDependency(const StatePrototype& inPrototype) :
+	IBuildDependency(inPrototype, BuildDependencyType::Git)
 {
+}
+
+/*****************************************************************************/
+bool GitDependency::validate()
+{
+	if (!parseDestination())
+		return false;
+
+	if (m_destination.empty() || String::startsWith('.', m_destination) || String::startsWith('/', m_destination))
+	{
+		// This shouldn't occur, but would be pretty bad if it did
+		Diagnostic::error("The external dependency destination was blank for '{}'.", m_repository);
+		return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -92,7 +109,7 @@ bool GitDependency::parseDestination()
 	if (!m_destination.empty())
 		return false;
 
-	const auto& externalDepDir = m_state.paths.externalDepDir();
+	const auto& externalDepDir = m_prototype.environment.externalDepDir();
 	chalet_assert(!externalDepDir.empty(), "externalDepDir can't be blank.");
 
 	auto& targetName = this->name();

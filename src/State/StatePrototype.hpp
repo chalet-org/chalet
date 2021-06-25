@@ -12,6 +12,7 @@
 #include "SettingsJson/GlobalSettingsState.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/Dependency/IBuildDependency.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Json/JsonFile.hpp"
@@ -37,7 +38,6 @@ struct StatePrototype
 	const std::string& releaseConfiguration() const noexcept;
 	const std::string& anyConfiguration() const noexcept;
 
-	const std::string kKeyExternalDependencies = "externalDependencies";
 	const std::string kKeyTargets = "targets";
 	const std::string kKeyAbstracts = "abstracts";
 
@@ -45,6 +45,7 @@ struct StatePrototype
 	WorkspaceCache cache;
 	AncillaryTools tools;
 	DistributionTargetList distribution;
+	BuildDependencyList externalDependencies;
 
 private:
 	friend struct BuildJsonProtoParser;

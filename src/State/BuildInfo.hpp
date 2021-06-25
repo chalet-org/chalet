@@ -15,12 +15,6 @@ struct BuildInfo
 {
 	explicit BuildInfo(const CommandLineInputs& inInputs);
 
-	const std::string& workspace() const noexcept;
-	void setWorkspace(std::string&& inValue) noexcept;
-
-	const std::string& version() const noexcept;
-	void setVersion(std::string&& inValue) noexcept;
-
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(const std::string& inValue) noexcept;
 
@@ -33,9 +27,6 @@ struct BuildInfo
 
 private:
 	const CommandLineInputs& m_inputs;
-
-	std::string m_workspace;
-	std::string m_version;
 
 	std::string m_buildConfiguration;
 

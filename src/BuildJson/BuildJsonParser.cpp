@@ -15,7 +15,6 @@
 #include "State/Bundle/BundleMacOS.hpp"
 #include "State/Bundle/BundleWindows.hpp"
 #include "State/Dependency/BuildDependencyType.hpp"
-#include "State/Dependency/GitDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/CMakeTarget.hpp"
@@ -38,8 +37,7 @@ BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, StatePrototy
 	m_filename(inPrototype.filename()),
 	m_state(inState),
 	kKeyAbstracts(inPrototype.kKeyAbstracts),
-	kKeyTargets(inPrototype.kKeyTargets),
-	kKeyExternalDependencies(inPrototype.kKeyExternalDependencies)
+	kKeyTargets(inPrototype.kKeyTargets)
 {
 }
 
@@ -96,13 +94,7 @@ bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 {
 	// order is important!
 
-	if (!parseRoot(inJson))
-		return false;
-
 	if (!makePathVariable())
-		return false;
-
-	if (!parseExternalDependencies(inJson))
 		return false;
 
 	if (!parseProjects(inJson))
@@ -160,30 +152,6 @@ bool BuildJsonParser::validRunProjectRequestedFromInput()
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseRoot(const Json& inNode)
-{
-	if (!inNode.is_object())
-	{
-		Diagnostic::error("{}: Json root must be an object.", m_filename);
-		return false;
-	}
-
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "workspace"))
-		m_state.info.setWorkspace(std::move(val));
-
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "version"))
-		m_state.info.setVersion(std::move(val));
-
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "externalDepDir"))
-		m_state.paths.setExternalDepDir(std::move(val));
-
-	if (StringList list; assignStringListFromConfig(list, inNode, "path"))
-		m_state.environment.addPaths(std::move(list));
-
-	return true;
-}
-
-/*****************************************************************************/
 bool BuildJsonParser::makePathVariable()
 {
 	auto rootPath = m_state.toolchain.getRootPathVariable();
@@ -192,71 +160,6 @@ bool BuildJsonParser::makePathVariable()
 	// // LOG(pathVariable);
 
 	Environment::setPath(pathVariable);
-
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseExternalDependencies(const Json& inNode)
-{
-	// don't care if there aren't any dependencies
-	if (!inNode.contains(kKeyExternalDependencies))
-		return true;
-
-	const Json& externalDependencies = inNode.at(kKeyExternalDependencies);
-	if (!externalDependencies.is_object() || externalDependencies.size() == 0)
-	{
-		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_filename, kKeyExternalDependencies);
-		return false;
-	}
-
-	BuildDependencyType type = BuildDependencyType::Git;
-	for (auto& [name, dependencyJson] : externalDependencies.items())
-	{
-		auto dependency = IBuildDependency::make(type, m_state);
-		dependency->setName(name);
-
-		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
-			return false;
-
-		m_state.externalDependencies.push_back(std::move(dependency));
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseGitDependency(GitDependency& outDependency, const Json& inNode)
-{
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "repository"))
-		outDependency.setRepository(std::move(val));
-	else
-	{
-		Diagnostic::error("{}: 'repository' is required for all  external dependencies.", m_filename);
-		return false;
-	}
-
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "branch"))
-		outDependency.setBranch(std::move(val));
-
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "tag"))
-		outDependency.setTag(std::move(val));
-	else if (m_buildJson.assignStringAndValidate(val, inNode, "commit"))
-	{
-		if (!outDependency.tag().empty())
-		{
-			Diagnostic::error("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_filename, outDependency.repository());
-			return false;
-		}
-
-		outDependency.setCommit(std::move(val));
-	}
-
-	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "submodules"))
-		outDependency.setSubmodules(val);
-
-	if (!outDependency.parseDestination())
-		return false;
 
 	return true;
 }

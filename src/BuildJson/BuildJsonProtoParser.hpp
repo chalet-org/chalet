@@ -13,6 +13,7 @@ namespace chalet
 struct CommandLineInputs;
 struct StatePrototype;
 struct JsonFile;
+struct GitDependency;
 struct BundleTarget;
 struct ScriptDistTarget;
 
@@ -26,13 +27,20 @@ struct BuildJsonProtoParser
 
 private:
 	bool serializeRequiredFromJsonRoot(const Json& inNode);
+
+	bool parseRoot(const Json& inNode);
+
 	bool parseConfiguration(const Json& inNode);
+
 	bool parseDistribution(const Json& inNode);
 	bool parseScript(ScriptDistTarget& outScript, const Json& inNode);
 	bool parseBundle(BundleTarget& outBundle, const Json& inNode);
 	bool parseBundleLinux(BundleTarget& outBundle, const Json& inNode);
 	bool parseBundleMacOS(BundleTarget& outBundle, const Json& inNode);
 	bool parseBundleWindows(BundleTarget& outBundle, const Json& inNode);
+
+	bool parseExternalDependencies(const Json& inNode);
+	bool parseGitDependency(GitDependency& outDependency, const Json& inNode);
 
 	//
 	template <typename T>
@@ -48,6 +56,7 @@ private:
 
 	const std::string kKeyDistribution = "distribution";
 	const std::string kKeyConfigurations = "configurations";
+	const std::string kKeyExternalDependencies = "externalDependencies";
 };
 }
 

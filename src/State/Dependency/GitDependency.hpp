@@ -10,9 +10,11 @@
 
 namespace chalet
 {
-struct GitDependency : public IBuildDependency
+struct GitDependency final : public IBuildDependency
 {
-	explicit GitDependency(const BuildState& inState);
+	explicit GitDependency(const StatePrototype& inPrototype);
+
+	virtual bool validate() final;
 
 	const std::string& repository() const noexcept;
 	void setRepository(std::string&& inValue) noexcept;
@@ -31,9 +33,9 @@ struct GitDependency : public IBuildDependency
 	bool submodules() const noexcept;
 	void setSubmodules(const bool inValue) noexcept;
 
+private:
 	bool parseDestination();
 
-private:
 	std::string m_repository;
 	std::string m_branch;
 	std::string m_tag;

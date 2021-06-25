@@ -183,51 +183,6 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 		}
 	}
 
-	// Timer timer;
-
-	// Crude & slow version
-
-	UNUSED(foundDepends);
-	/*if (foundDepends == 0)
-	{
-		std::string temp(bytes.data(), bytes.size());
-
-		auto first = temp.find(".dll");
-		auto last = temp.rfind(".dll") + 4;
-		if (first != std::string::npos && first >= 100 && last != std::string::npos)
-		{
-			auto begin = first - 100;
-			temp = temp.substr(begin, last - begin);
-
-			std::size_t pos = 0;
-			while ((pos = temp.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._+-", pos)) != std::string::npos)
-			{
-				temp.replace(pos, 1, "\n");
-				pos += 1;
-			}
-
-			const std::size_t maxSearchLength = 5; // ".dll" + at least 1 char
-			auto split = String::split(temp, '\n', maxSearchLength);
-			StringList searches{ ".dll", ".DLL" };
-			for (auto& line : split)
-			{
-				if (line.empty() || !String::contains('.', line))
-					continue;
-
-				if (!String::endsWith(searches, line))
-					continue;
-
-				if (!String::contains(ignoreList, line))
-				{
-					List::addIfDoesNotExist(outList, String::toLowerCase(line));
-				}
-			}
-		}
-	}*/
-
-	// Output::print(Color::Reset, fmt::format("   Dependency check time: {}", timer.asString()));
-	// Output::lineBreak();
-
 	return true;
 }
 

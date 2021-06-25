@@ -256,7 +256,7 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 		std::ofstream(tmpInfoPlist) << infoPropertyListContent << std::endl;
 	}
 
-	const auto& version = m_state.info.version();
+	const auto& version = m_state.environment.version();
 	const auto& name = m_bundle.name();
 	// const auto& bundleIdentifier = macosBundle.bundleIdentifier();
 	const auto& bundleName = macosBundle.bundleName();

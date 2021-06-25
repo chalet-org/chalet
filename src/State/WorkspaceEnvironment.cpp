@@ -79,6 +79,45 @@ void WorkspaceEnvironment::setDumpAssembly(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& WorkspaceEnvironment::workspace() const noexcept
+{
+	return m_workspace;
+}
+
+void WorkspaceEnvironment::setWorkspace(std::string&& inValue) noexcept
+{
+	m_workspace = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& WorkspaceEnvironment::version() const noexcept
+{
+	return m_version;
+}
+
+void WorkspaceEnvironment::setVersion(std::string&& inValue) noexcept
+{
+	m_version = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& WorkspaceEnvironment::externalDepDir() const noexcept
+{
+	return m_externalDepDir;
+}
+
+void WorkspaceEnvironment::setExternalDepDir(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_externalDepDir = std::move(inValue);
+
+	if (m_externalDepDir.back() == '/')
+		m_externalDepDir.pop_back();
+}
+
+/*****************************************************************************/
 const StringList& WorkspaceEnvironment::path() const noexcept
 {
 	return m_path;

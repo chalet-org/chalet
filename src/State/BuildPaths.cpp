@@ -6,6 +6,7 @@
 #include "State/BuildPaths.hpp"
 
 #include "State/BuildInfo.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -14,15 +15,15 @@
 
 namespace chalet
 {
-BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const BuildInfo& inInfo) :
+BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnvironment& inEnvironment) :
 	m_inputs(inInputs),
-	m_info(inInfo),
+	m_environment(inEnvironment),
 	m_workingDirectory(inInputs.workingDirectory())
 {
 }
 
 /*****************************************************************************/
-void BuildPaths::initialize()
+void BuildPaths::initialize(const BuildInfo& inInfo)
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
@@ -32,8 +33,8 @@ void BuildPaths::initialize()
 		Commands::makeDirectory(buildPath);
 	}
 
-	// m_configuration = fmt::format("{}_{}_{}", m_info.hostArchitectureString(), m_info.targetArchitectureString(), inBuildConfiguration);
-	m_configuration = fmt::format("{}_{}", m_info.targetArchitectureString(), m_info.buildConfiguration());
+	// m_configuration = fmt::format("{}_{}_{}", inInfo.hostArchitectureString(), inInfo.targetArchitectureString(), inBuildConfiguration);
+	m_configuration = fmt::format("{}_{}", inInfo.targetArchitectureString(), inInfo.buildConfiguration());
 	m_buildOutputDir = fmt::format("{}/{}", buildPath, m_configuration);
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
@@ -79,23 +80,6 @@ void BuildPaths::setWorkingDirectory(std::string&& inValue)
 	{
 		m_workingDirectory = std::move(inValue);
 	}
-}
-
-/*****************************************************************************/
-const std::string& BuildPaths::externalDepDir() const noexcept
-{
-	return m_externalDepDir;
-}
-
-void BuildPaths::setExternalDepDir(std::string&& inValue) noexcept
-{
-	if (inValue.empty())
-		return;
-
-	m_externalDepDir = std::move(inValue);
-
-	if (m_externalDepDir.back() == '/')
-		m_externalDepDir.pop_back();
 }
 
 /*****************************************************************************/
@@ -254,7 +238,7 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 
 	String::replaceAll(outPath, "${buildDir}", buildDir);
 
-	const auto& external = externalDepDir();
+	const auto& external = m_environment.externalDepDir();
 	if (!external.empty())
 	{
 		String::replaceAll(outPath, "${externalDepDir}", external);

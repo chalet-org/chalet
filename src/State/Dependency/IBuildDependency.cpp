@@ -5,26 +5,26 @@
 
 #include "State/Dependency/IBuildDependency.hpp"
 
-#include "State/BuildState.hpp"
 #include "State/Dependency/GitDependency.hpp"
+#include "State/StatePrototype.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-IBuildDependency::IBuildDependency(const BuildState& inState, const BuildDependencyType inType) :
-	m_state(inState),
+IBuildDependency::IBuildDependency(const StatePrototype& inPrototype, const BuildDependencyType inType) :
+	m_prototype(inPrototype),
 	m_type(inType)
 {
 }
 
 /*****************************************************************************/
-[[nodiscard]] BuildDependency IBuildDependency::make(const BuildDependencyType inType, const BuildState& inState)
+[[nodiscard]] BuildDependency IBuildDependency::make(const BuildDependencyType inType, const StatePrototype& inPrototype)
 {
 	switch (inType)
 	{
 		case BuildDependencyType::Git:
-			return std::make_unique<GitDependency>(inState);
+			return std::make_unique<GitDependency>(inPrototype);
 		case BuildDependencyType::SVN:
 		default:
 			break;

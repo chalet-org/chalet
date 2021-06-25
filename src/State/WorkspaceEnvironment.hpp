@@ -29,14 +29,26 @@ struct WorkspaceEnvironment
 	bool dumpAssembly() const noexcept;
 	void setDumpAssembly(const bool inValue) noexcept;
 
+	const std::string& workspace() const noexcept;
+	void setWorkspace(std::string&& inValue) noexcept;
+
+	const std::string& version() const noexcept;
+	void setVersion(std::string&& inValue) noexcept;
+
+	const std::string& externalDepDir() const noexcept;
+	void setExternalDepDir(std::string&& inValue) noexcept;
+
 	const StringList& path() const noexcept;
 	void addPaths(StringList&& inList);
 	void addPath(std::string&& inValue);
 	std::string makePathVariable(const std::string& inRootPath) const;
 
 private:
-	std::string m_externalDepDir{ "chalet_external" };
 	mutable StringList m_path;
+
+	std::string m_workspace;
+	std::string m_version;
+	std::string m_externalDepDir{ "chalet_external" };
 
 	std::string m_pathString;
 	StringList m_pathInternal;

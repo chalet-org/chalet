@@ -7,6 +7,7 @@
 
 #include "BuildJson/SchemaBuildJson.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "State/Dependency/GitDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -56,11 +57,41 @@ bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode)
 	if (!inNode.is_object())
 		return false;
 
+	if (!parseRoot(inNode))
+		return false;
+
 	if (!parseConfiguration(inNode))
 		return false;
 
 	if (!parseDistribution(inNode))
 		return false;
+
+	if (!parseExternalDependencies(inNode))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::parseRoot(const Json& inNode)
+{
+	if (!inNode.is_object())
+	{
+		Diagnostic::error("{}: Json root must be an object.", m_filename);
+		return false;
+	}
+
+	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "workspace"))
+		m_prototype.environment.setWorkspace(std::move(val));
+
+	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "version"))
+		m_prototype.environment.setVersion(std::move(val));
+
+	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "externalDepDir"))
+		m_prototype.environment.setExternalDepDir(std::move(val));
+
+	if (StringList list; assignStringListFromConfig(list, inNode, "path"))
+		m_prototype.environment.addPaths(std::move(list));
 
 	return true;
 }
@@ -432,6 +463,68 @@ bool BuildJsonProtoParser::parseBundleWindows(BundleTarget& outBundle, const Jso
 	// 	return false;
 
 	outBundle.setWindowsBundle(std::move(windowsBundle));
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode)
+{
+	// don't care if there aren't any dependencies
+	if (!inNode.contains(kKeyExternalDependencies))
+		return true;
+
+	const Json& externalDependencies = inNode.at(kKeyExternalDependencies);
+	if (!externalDependencies.is_object() || externalDependencies.size() == 0)
+	{
+		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_filename, kKeyExternalDependencies);
+		return false;
+	}
+
+	BuildDependencyType type = BuildDependencyType::Git;
+	for (auto& [name, dependencyJson] : externalDependencies.items())
+	{
+		auto dependency = IBuildDependency::make(type, m_prototype);
+		dependency->setName(name);
+
+		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
+			return false;
+
+		m_prototype.externalDependencies.push_back(std::move(dependency));
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::parseGitDependency(GitDependency& outDependency, const Json& inNode)
+{
+	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "repository"))
+		outDependency.setRepository(std::move(val));
+	else
+	{
+		Diagnostic::error("{}: 'repository' is required for all  external dependencies.", m_filename);
+		return false;
+	}
+
+	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "branch"))
+		outDependency.setBranch(std::move(val));
+
+	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "tag"))
+		outDependency.setTag(std::move(val));
+	else if (m_buildJson.assignStringAndValidate(val, inNode, "commit"))
+	{
+		if (!outDependency.tag().empty())
+		{
+			Diagnostic::error("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_filename, outDependency.repository());
+			return false;
+		}
+
+		outDependency.setCommit(std::move(val));
+	}
+
+	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "submodules"))
+		outDependency.setSubmodules(val);
 
 	return true;
 }

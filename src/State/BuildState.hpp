@@ -37,6 +37,7 @@ public:
 	const AncillaryTools& tools;
 	const DistributionTargetList& distribution;
 	WorkspaceCache& cache;
+	BuildDependencyList& externalDependencies;
 
 	BuildInfo info;
 	WorkspaceEnvironment environment;
@@ -45,7 +46,6 @@ public:
 	MsvcEnvironment msvcEnvironment;
 	BuildConfiguration configuration;
 	BuildTargetList targets;
-	BuildDependencyList externalDependencies;
 
 	bool initialize(const bool inInstallDependencies);
 	bool doBuild(const bool inShowSuccess = true);

@@ -30,10 +30,11 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 	tools(m_prototype.tools),
 	distribution(m_prototype.distribution),
 	cache(m_prototype.cache),
+	externalDependencies(m_prototype.externalDependencies),
 	info(m_inputs),
 	environment(m_prototype.environment), // copy
 	toolchain(m_inputs, *this),
-	paths(m_inputs, info),
+	paths(m_inputs, inJsonPrototype.environment),
 	msvcEnvironment(*this)
 {
 }
@@ -156,7 +157,7 @@ bool BuildState::initializeBuild()
 		}
 	}
 
-	paths.initialize();
+	paths.initialize(info);
 
 	// Note: < 1ms
 	for (auto& target : targets)

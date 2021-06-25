@@ -13,7 +13,6 @@
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
 
-// TODO: vcpkg, conan, buckaroo integration?
 // TODO: Implement ThreadPool
 
 namespace chalet
@@ -30,7 +29,7 @@ bool DependencyManager::run(const bool inInstallCmd)
 	if (m_state.tools.git().empty())
 		return true;
 
-	const auto& externalDepDir = m_state.paths.externalDepDir();
+	const auto& externalDepDir = m_state.environment.externalDepDir();
 	// auto& localSettings = m_state.cache.getSettings(SettingsType::Local);
 
 	if (!m_state.externalDependencies.empty())
@@ -50,13 +49,6 @@ bool DependencyManager::run(const bool inInstallCmd)
 
 		const auto& repository = git.repository();
 		const auto& destination = git.destination();
-
-		if (destination.empty() || String::startsWith('.', destination) || String::startsWith('/', destination))
-		{
-			// This shouldn't occur, but would be pretty bad if it did
-			Diagnostic::error("The external dependency destination was blank for '{}'.", repository);
-			return false;
-		}
 
 		destinationCache.push_back(destination);
 

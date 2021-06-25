@@ -140,6 +140,15 @@ bool StatePrototype::validate()
 		return false;
 	}
 
+	for (auto& dependency : externalDependencies)
+	{
+		if (!dependency->validate())
+		{
+			Diagnostic::error("Error validating the '{}' external dependency.", dependency->name());
+			return false;
+		}
+	}
+
 	for (auto& target : distribution)
 	{
 		if (!target->validate())
