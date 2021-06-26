@@ -183,7 +183,10 @@ bool GitRunner::needsUpdate()
 		const auto& refToCheck = !m_tag.empty() ? m_tag : m_lastCachedBranch;
 		auto latestRemote = m_prototype.tools.getLatestGitRepositoryHashWithoutClone(m_repository, refToCheck);
 		if (latestRemote != m_lastCachedCommit)
+		{
+			m_lastCachedCommit = latestRemote;
 			update = true;
+		}
 
 		Diagnostic::printDone();
 
@@ -195,10 +198,7 @@ bool GitRunner::needsUpdate()
 		if (!Commands::removeRecursively(m_destination))
 			return false;
 
-		displayFetchingMessageStart();
-
 		m_destinationExists = false;
-		update = false;
 	}
 
 	return update;
@@ -220,17 +220,13 @@ void GitRunner::displayFetchingMessageStart()
 /*****************************************************************************/
 bool GitRunner::updateDependencyCache()
 {
-	if (m_lastCachedCommit.empty())
-	{
-		m_lastCachedCommit = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
-	}
+	m_lastCachedCommit = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
 
 	if (m_lastCachedBranch.empty())
 	{
 		m_lastCachedBranch = m_prototype.tools.getCurrentGitRepositoryBranch(m_destination);
 	}
 
-	// LOG(m_lastCachedCommit);
 	auto lastBranch = m_lastCachedBranch.empty() ? "." : m_lastCachedBranch;
 	auto commit = m_commit.empty() ? "." : m_commit;
 	auto branch = m_branch.empty() ? "." : m_branch;
@@ -241,10 +237,14 @@ bool GitRunner::updateDependencyCache()
 	if (m_dependencyCache.contains(m_destination))
 	{
 		if (m_dependencyCache.get(m_destination) != value)
+		{
 			m_dependencyCache.set(m_destination, std::move(value));
+		}
 	}
 	else
+	{
 		m_dependencyCache.emplace(m_destination, std::move(value));
+	}
 
 	// Note: Some (bad) repos have source files in the root. using that as an include path
 	//   could result in trouble...
