@@ -86,6 +86,24 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 }
 
 /*****************************************************************************/
+bool WorkspaceInternalCacheFile::removeExtraCache(const std::string& inId)
+{
+	bool result = false;
+	auto itr = m_extraHashes.begin();
+	for (; itr < m_extraHashes.end(); ++itr)
+	{
+		if (*itr == inId)
+		{
+			itr = m_extraHashes.erase(itr);
+			m_dirty = true;
+			result = true;
+		}
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 {
 	m_filename = inFilename;
@@ -243,7 +261,15 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 	}
 
 	auto hash = String::getPathFilename(m_externalDependencyCachePath);
-	addExtraHash(std::move(hash));
+	if (!m_externalDependencies.empty())
+	{
+		addExtraHash(std::move(hash));
+	}
+	else
+	{
+		if (Commands::pathExists(m_externalDependencyCachePath))
+			Commands::remove(m_externalDependencyCachePath);
+	}
 
 	return true;
 }

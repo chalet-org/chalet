@@ -32,6 +32,12 @@ bool ExternalDependencyCache::dirty() const noexcept
 }
 
 /*****************************************************************************/
+bool ExternalDependencyCache::empty() const noexcept
+{
+	return m_cache.empty();
+}
+
+/*****************************************************************************/
 bool ExternalDependencyCache::contains(const std::string& inKey)
 {
 	return m_cache.find(inKey) != m_cache.end();

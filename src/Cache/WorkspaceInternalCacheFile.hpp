@@ -28,6 +28,7 @@ struct WorkspaceInternalCacheFile
 
 	bool setSourceCache(const std::string& inId);
 	bool removeSourceCache(const std::string& inId);
+	bool removeExtraCache(const std::string& inId);
 
 	bool workingDirectoryChanged() const noexcept;
 	void checkIfWorkingDirectoryChanged(const std::string& inWorkingDirectory);

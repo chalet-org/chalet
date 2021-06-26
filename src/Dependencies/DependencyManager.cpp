@@ -30,13 +30,9 @@ DependencyManager::DependencyManager(const CommandLineInputs& inInputs, StatePro
 /*****************************************************************************/
 bool DependencyManager::run()
 {
-	bool hasDependencies = !m_prototype.externalDependencies.empty();
-	if (hasDependencies)
-	{
-		m_prototype.cache.file().loadExternalDependencies(m_prototype.environment.externalDepDir());
+	m_prototype.cache.file().loadExternalDependencies(m_prototype.environment.externalDepDir());
 
-		Output::lineBreak();
-	}
+	Output::lineBreak();
 
 	m_fetched = false;
 
@@ -56,13 +52,10 @@ bool DependencyManager::run()
 	if (!removeExternalDependencyDirectoryIfEmpty())
 		return false;
 
-	if (hasDependencies)
-	{
-		if (!m_fetched)
-			Output::previousLine();
+	if (!m_fetched)
+		Output::previousLine();
 
-		m_prototype.cache.file().saveExternalDependencies();
-	}
+	m_prototype.cache.file().saveExternalDependencies();
 
 	return true;
 }

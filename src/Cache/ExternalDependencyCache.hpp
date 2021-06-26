@@ -18,6 +18,7 @@ public:
 	bool loadFromFilename(const std::string& inFilename);
 
 	bool dirty() const noexcept;
+	bool empty() const noexcept;
 	bool contains(const std::string& inKey);
 
 	const std::string& get(const std::string& inKey);
