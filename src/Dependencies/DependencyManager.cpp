@@ -38,6 +38,8 @@ bool DependencyManager::run()
 		Output::lineBreak();
 	}
 
+	m_fetched = false;
+
 	for (auto& dependency : m_prototype.externalDependencies)
 	{
 		if (dependency->isGit())
@@ -56,6 +58,9 @@ bool DependencyManager::run()
 
 	if (hasDependencies)
 	{
+		if (!m_fetched)
+			Output::previousLine();
+
 		m_prototype.cache.file().saveExternalDependencies();
 	}
 
@@ -77,6 +82,8 @@ bool DependencyManager::runGitDependency(const GitDependency& inDependency)
 		return false;
 	}
 
+	m_fetched |= git.fetched();
+
 	return true;
 }
 
@@ -96,7 +103,7 @@ StringList DependencyManager::getUnusedDependencies() const
 }
 
 /*****************************************************************************/
-bool DependencyManager::removeUnusedDependencies(const StringList& inList) const
+bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 {
 	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
 
@@ -111,6 +118,7 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList) const
 				String::replaceAll(name, fmt::format("{}/", externalDepDir), "");
 
 				Output::msgDisplayBlack(fmt::format("Removed unused dependency: '{}'", name));
+				m_fetched |= true;
 			}
 		}
 

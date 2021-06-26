@@ -277,6 +277,15 @@ void Output::lineBreakStderr()
 }
 
 /*****************************************************************************/
+void Output::previousLine()
+{
+	if (!s_quietNonBuild)
+	{
+		std::cout << fmt::format("{}[F", getEscapeChar()) << std::flush;
+	}
+}
+
+/*****************************************************************************/
 void Output::print(const Color inColor, const std::string& inText, const bool inBold)
 {
 	if (!s_quietNonBuild)

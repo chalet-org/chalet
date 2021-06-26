@@ -17,6 +17,8 @@ struct GitRunner
 
 	bool run(const bool inDoNotUpdate);
 
+	bool fetched() const noexcept;
+
 private:
 	StatePrototype& m_prototype;
 	const GitDependency& m_dependency;
@@ -29,6 +31,7 @@ private:
 
 	const bool m_submodules;
 	bool m_update = false;
+	bool m_fetched = false;
 };
 }
 

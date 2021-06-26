@@ -23,13 +23,15 @@ private:
 	bool runGitDependency(const GitDependency& inDependency);
 
 	StringList getUnusedDependencies() const;
-	bool removeUnusedDependencies(const StringList& inList) const;
+	bool removeUnusedDependencies(const StringList& inList);
 	bool removeExternalDependencyDirectoryIfEmpty() const;
 
 	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
 
 	StringList m_destinationCache;
+
+	bool m_fetched = false;
 };
 }
 

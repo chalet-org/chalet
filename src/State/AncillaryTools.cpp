@@ -503,7 +503,7 @@ std::string AncillaryTools::getCurrentGitRepositoryBranch(const std::string& inR
 /*****************************************************************************/
 std::string AncillaryTools::getCurrentGitRepositoryTag(const std::string& inRepoPath) const
 {
-	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "abbrev=0" }, PipeOption::Close);
+	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "--abbrev=0" }, PipeOption::Close);
 	return tag;
 }
 

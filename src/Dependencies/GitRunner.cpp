@@ -34,9 +34,11 @@ bool GitRunner::run(const bool inDoNotUpdate)
 
 	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
 
+	std::string currentBranch;
+
 	// During the build, just continue if the path already exists
 	//   (the install command can be used for more complicated tasks)
-	LOG(m_destination);
+	// LOG(m_destination);
 	if (Commands::pathExists(m_destination))
 	{
 		if (!dependencyCache.contains(m_destination))
@@ -47,18 +49,17 @@ bool GitRunner::run(const bool inDoNotUpdate)
 		if (inDoNotUpdate)
 			return true;
 
+		currentBranch = m_prototype.tools.getCurrentGitRepositoryBranch(m_destination);
 		m_update = true;
 	}
 
 	const bool branchValid = !m_branch.empty();
 	const bool tagValid = !m_tag.empty();
 	const bool commitValid = !m_commit.empty();
-	std::string currentBranch;
 
 	if (m_update && branchValid)
 	{
-		currentBranch = m_prototype.tools.getCurrentGitRepositoryBranch(m_destination);
-		LOG("branches", fmt::format("'{}'", currentBranch), fmt::format("'{}'", m_branch));
+		// LOG("branches", fmt::format("'{}'", currentBranch), fmt::format("'{}'", m_branch));
 
 		// in this case, HEAD means the branch is on a tag or commit
 		if (currentBranch != "HEAD" && currentBranch != m_branch)
@@ -71,8 +72,8 @@ bool GitRunner::run(const bool inDoNotUpdate)
 
 	if (m_update && commitValid)
 	{
-		const std::string currentCommit = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
-		LOG("commits:", fmt::format("'{}'", currentCommit), fmt::format("'{}'", m_commit));
+		auto currentCommit = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
+		// LOG("commits:", fmt::format("'{}'", currentCommit), fmt::format("'{}'", m_commit));
 
 		if (!String::startsWith(m_commit, currentCommit))
 		{
@@ -85,7 +86,7 @@ bool GitRunner::run(const bool inDoNotUpdate)
 	if (m_update && tagValid)
 	{
 		const std::string currentTag = m_prototype.tools.getCurrentGitRepositoryTag(m_destination);
-		LOG("tags:", fmt::format("'{}'", currentTag), fmt::format("'{}'", m_tag));
+		// LOG("tags:", fmt::format("'{}'", currentTag), fmt::format("'{}'", m_tag));
 
 		if (currentTag != m_tag)
 		{
@@ -94,6 +95,9 @@ bool GitRunner::run(const bool inDoNotUpdate)
 			m_update = false;
 		}
 	}
+
+	const auto& branch = !m_branch.empty() ? m_branch : currentBranch;
+	const auto& checkoutTo = tagValid ? m_tag : branch;
 
 	if (m_update)
 	{
@@ -104,30 +108,20 @@ bool GitRunner::run(const bool inDoNotUpdate)
 		if (dependencyCache.contains(m_destination))
 		{
 			// We're using a shallow clone, so this only works if the branch hasn't changed
-			const std::string originHash = m_prototype.tools.getCurrentGitRepositoryHashFromRemote(m_destination, m_branch);
+			const std::string originHash = m_prototype.tools.getCurrentGitRepositoryHashFromRemote(m_destination, branch);
 			const auto& cachedHash = dependencyCache.get(m_destination);
 
 			if (cachedHash == originHash)
 				return true;
 		}
 
-		std::string checkoutTo = tagValid ? m_tag : m_branch;
-		if (checkoutTo.empty())
-		{
-			if (currentBranch.empty())
-				currentBranch = m_prototype.tools.getCurrentGitRepositoryBranch(m_destination);
-
-			checkoutTo = std::move(currentBranch);
-		}
-
 		Output::msgUpdatingDependency(m_repository, checkoutTo);
 
 		result &= m_prototype.tools.updateGitRepositoryShallow(m_destination);
+		m_fetched = true;
 	}
 	else
 	{
-		const auto& checkoutTo = tagValid ? m_tag : m_branch;
-
 		Output::msgFetchingDependency(m_repository, checkoutTo);
 
 		uint maxJobs = m_prototype.environment.maxJobs();
@@ -165,14 +159,13 @@ bool GitRunner::run(const bool inDoNotUpdate)
 		cmd.push_back(m_repository);
 		cmd.push_back(m_destination);
 
-		// LOG(cmd);
-
 		result &= Commands::subprocess(cmd);
 
 		if (commitValid)
 		{
 			result &= m_prototype.tools.resetGitRepositoryToCommit(m_destination, m_commit);
 		}
+		m_fetched = true;
 	}
 
 	if (result)
@@ -188,5 +181,11 @@ bool GitRunner::run(const bool inDoNotUpdate)
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+bool GitRunner::fetched() const noexcept
+{
+	return m_fetched;
 }
 }
