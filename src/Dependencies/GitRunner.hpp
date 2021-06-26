@@ -10,6 +10,7 @@ namespace chalet
 {
 struct StatePrototype;
 struct GitDependency;
+class ExternalDependencyCache;
 
 struct GitRunner
 {
@@ -22,6 +23,8 @@ struct GitRunner
 private:
 	bool gitRepositoryShouldUpdate(const bool inDoNotUpdate);
 
+	StringList getGitCloneCommand(const std::string& inCheckoutTo);
+
 	bool checkBranchForUpdate();
 	bool checkCommitForUpdate();
 	bool checkTagForUpdate();
@@ -32,6 +35,7 @@ private:
 
 	StatePrototype& m_prototype;
 	const GitDependency& m_dependency;
+	ExternalDependencyCache& m_dependencyCache;
 
 	const std::string& m_repository;
 	const std::string& m_destination;

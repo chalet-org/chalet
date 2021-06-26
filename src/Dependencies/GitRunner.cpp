@@ -5,6 +5,7 @@
 
 #include "Dependencies/GitRunner.hpp"
 
+#include "Cache/ExternalDependencyCache.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
@@ -17,6 +18,7 @@ namespace chalet
 GitRunner::GitRunner(StatePrototype& inPrototype, const GitDependency& inDependency) :
 	m_prototype(inPrototype),
 	m_dependency(inDependency),
+	m_dependencyCache(m_prototype.cache.file().externalDependencies()),
 	m_repository(m_dependency.repository()),
 	m_destination(m_dependency.destination()),
 	m_branch(m_dependency.branch()),
@@ -39,8 +41,6 @@ bool GitRunner::run(const bool inDoNotUpdate)
 	result &= checkCommitForUpdate();
 	result &= checkTagForUpdate();
 
-	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
-
 	const bool tagValid = !m_tag.empty();
 	const bool commitValid = !m_commit.empty();
 
@@ -53,11 +53,11 @@ bool GitRunner::run(const bool inDoNotUpdate)
 		if (commitValid || tagValid)
 			return true;
 
-		if (dependencyCache.contains(m_destination))
+		if (m_dependencyCache.contains(m_destination))
 		{
 			// We're using a shallow clone, so this only works if the branch hasn't changed
 			const std::string originHash = m_prototype.tools.getCurrentGitRepositoryHashFromOrigin(m_destination, branch);
-			const auto& cachedHash = dependencyCache.get(m_destination);
+			const auto& cachedHash = m_dependencyCache.get(m_destination);
 
 			if (cachedHash == originHash)
 				return true;
@@ -72,41 +72,7 @@ bool GitRunner::run(const bool inDoNotUpdate)
 	{
 		Output::msgFetchingDependency(m_repository, checkoutTo);
 
-		uint maxJobs = m_prototype.environment.maxJobs();
-
-		StringList cmd;
-		cmd.push_back(m_prototype.tools.git());
-		cmd.push_back("clone");
-		cmd.push_back("--quiet");
-
-		if (!checkoutTo.empty())
-		{
-			cmd.push_back("-b");
-			cmd.push_back(checkoutTo);
-		}
-
-		if (commitValid)
-		{
-			cmd.push_back("--single-branch");
-		}
-		else
-		{
-			cmd.push_back("--depth");
-			cmd.push_back("1");
-		}
-		if (m_submodules)
-		{
-			cmd.push_back("--recurse-submodules");
-			cmd.push_back("--shallow-submodules");
-			cmd.push_back("--no-remote-submodules");
-			cmd.push_back("-j");
-			cmd.push_back(std::to_string(maxJobs));
-		}
-		cmd.push_back("--config");
-		cmd.push_back("advice.detachedHead=false");
-		cmd.push_back(m_repository);
-		cmd.push_back(m_destination);
-
+		StringList cmd = getGitCloneCommand(checkoutTo);
 		result &= Commands::subprocess(cmd);
 
 		if (commitValid)
@@ -120,7 +86,7 @@ bool GitRunner::run(const bool inDoNotUpdate)
 	{
 		auto newCommitHash = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
 		// LOG(newCommitHash);
-		dependencyCache.set(m_destination, std::move(newCommitHash));
+		m_dependencyCache.set(m_destination, std::move(newCommitHash));
 	}
 	else
 	{
@@ -139,15 +105,13 @@ bool GitRunner::fetched() const noexcept
 /*****************************************************************************/
 bool GitRunner::gitRepositoryShouldUpdate(const bool inDoNotUpdate)
 {
-	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
-
 	// During the build, just continue if the path already exists
 	if (Commands::pathExists(m_destination))
 	{
-		if (!dependencyCache.contains(m_destination))
+		if (!m_dependencyCache.contains(m_destination))
 		{
 			const auto& currentCommit = getCurrentCommit();
-			dependencyCache.emplace(m_destination, currentCommit);
+			m_dependencyCache.emplace(m_destination, currentCommit);
 		}
 		if (inDoNotUpdate)
 			return false;
@@ -156,6 +120,50 @@ bool GitRunner::gitRepositoryShouldUpdate(const bool inDoNotUpdate)
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
+{
+	StringList ret;
+
+	ret.push_back(m_prototype.tools.git());
+	ret.push_back("clone");
+	ret.push_back("--quiet");
+
+	if (!inCheckoutTo.empty())
+	{
+		ret.push_back("-b");
+		ret.push_back(inCheckoutTo);
+	}
+
+	if (!m_commit.empty())
+	{
+		ret.push_back("--single-branch");
+	}
+	else
+	{
+		ret.push_back("--depth");
+		ret.push_back("1");
+	}
+
+	if (m_submodules)
+	{
+		uint maxJobs = m_prototype.environment.maxJobs();
+
+		ret.push_back("--recurse-submodules");
+		ret.push_back("--shallow-submodules");
+		ret.push_back("--no-remote-submodules");
+		ret.push_back("-j");
+		ret.push_back(std::to_string(maxJobs));
+	}
+
+	ret.push_back("--config");
+	ret.push_back("advice.detachedHead=false");
+	ret.push_back(m_repository);
+	ret.push_back(m_destination);
+
+	return ret;
 }
 
 /*****************************************************************************/
