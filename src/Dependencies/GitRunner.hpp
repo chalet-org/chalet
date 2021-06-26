@@ -26,13 +26,11 @@ private:
 	bool fetchDependency();
 	StringList getGitCloneCommand(const std::string& inCheckoutTo);
 
-	bool checkBranchForUpdate();
-	bool checkCommitForUpdate();
-	bool checkTagForUpdate();
+	bool needsUpdate();
+	bool updateDependencyCache();
 
-	const std::string& getCurrentBranch();
-	const std::string& getCurrentCommit();
-	const std::string& getCurrentTag();
+	void displayCheckingForUpdates();
+	void displayFetchingMessageStart();
 
 	const std::string& getCheckoutTo();
 
@@ -46,15 +44,12 @@ private:
 	const std::string& m_tag;
 	const std::string& m_commit;
 
-	std::string m_currentBranch;
-	std::string m_currentCommit;
-	std::string m_currentTag;
-
+	std::string m_lastCachedCommit;
+	std::string m_lastCachedBranch;
 	std::string m_checkoutBranch;
 
 	const bool m_submodules;
 	bool m_destinationExists = false;
-	bool m_update = false;
 	bool m_fetched = false;
 };
 }

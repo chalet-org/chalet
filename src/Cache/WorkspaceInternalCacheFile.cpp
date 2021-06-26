@@ -229,10 +229,12 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 	m_dirty |= m_externalDependencies.dirty();
 
 	auto hash = Hash::string("chalet_external_dependencies_cache");
-	auto externalPath = m_cache.getCachePath(hash, CacheType::Local);
-
-	std::ofstream(externalPath) << m_externalDependencies.asString()
-								<< std::endl;
+	if (m_externalDependencies.dirty())
+	{
+		auto externalPath = m_cache.getCachePath(hash, CacheType::Local);
+		std::ofstream(externalPath) << m_externalDependencies.asString()
+									<< std::endl;
+	}
 
 	addExtraHash(std::move(hash));
 

@@ -521,6 +521,20 @@ std::string AncillaryTools::getCurrentGitRepositoryHashFromOrigin(const std::str
 	return originHash;
 }
 
+std::string AncillaryTools::getLatestGitRepositoryHashWithoutClone(const std::string& inRepoPath, const std::string& inBranch) const
+{
+	std::string result = Commands::subprocessOutput({ m_git, "ls-remote", inRepoPath, inBranch });
+	if (result.empty())
+		return result;
+
+	auto split = String::split(result, '\n');
+	if (split.front().empty())
+		return std::string();
+
+	auto ref = String::split(split.front(), '\t');
+	return ref.front();
+}
+
 /*****************************************************************************/
 bool AncillaryTools::updateGitRepositoryShallow(const std::string& inRepoPath) const
 {
