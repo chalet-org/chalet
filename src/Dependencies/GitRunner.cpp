@@ -10,6 +10,7 @@
 #include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -261,8 +262,19 @@ bool GitRunner::updateDependencyCache()
 		auto outPath = fmt::format("{}/{}", m_destination, path);
 		if (Commands::pathExists(outPath))
 		{
-			if (!Commands::removeRecursively(outPath))
-				return false;
+#if defined(CHALET_WIN32)
+			if (String::equals(".git", path))
+			{
+				Path::sanitizeForWindows(outPath);
+				if (!Commands::subprocess({ m_prototype.tools.commandPrompt(), "/c", fmt::format("rmdir /q /s {}", outPath) }))
+					return false;
+			}
+			else
+#endif
+			{
+				if (!Commands::removeRecursively(outPath))
+					return false;
+			}
 		}
 	}
 
