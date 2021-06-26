@@ -96,9 +96,11 @@ bool MsvcEnvironment::create()
 	auto appDataPath = Environment::getAsString("APPDATA");
 	std::string msvcInject = fmt::format("{}\\__CHALET_MSVC_INJECT__", appDataPath);
 
-	if (!Commands::pathExists(m_varsFileMsvcDelta))
+	bool deltaExists = Commands::pathExists(m_varsFileMsvcDelta);
+	if (!deltaExists)
 	{
-		Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
+		// Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
+		Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache", Unicode::registered()), false);
 
 		m_vsAppIdDir = Commands::subprocessOutput({ s_vswhere, "-latest", "-prerelease", "-property", "installationPath" });
 		if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
@@ -165,7 +167,8 @@ bool MsvcEnvironment::create()
 	}
 	else
 	{
-		Diagnostic::info(fmt::format("Reading Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
+		// Diagnostic::info(fmt::format("Reading Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
+		Diagnostic::info(fmt::format("Reading Microsoft{} Visual C++ Environment Cache", Unicode::registered()), false);
 	}
 
 	// Read delta to cache
