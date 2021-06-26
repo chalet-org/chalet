@@ -45,7 +45,7 @@ bool Application::runRouteConductor()
 	}
 	catch (const std::exception& err)
 	{
-		Diagnostic::errorAbort(err.what());
+		Diagnostic::error("Uncaught exception: {}", err.what());
 		return false;
 	}
 }

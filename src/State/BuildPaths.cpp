@@ -558,7 +558,8 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		Diagnostic::errorAbort(err.what());
+		Diagnostic::error(err.what());
+		ret.clear();
 		return ret;
 	}
 
@@ -662,7 +663,8 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 	}
 	catch (const fs::filesystem_error& err)
 	{
-		Diagnostic::errorAbort(err.what());
+		Diagnostic::error(err.what());
+		ret.clear();
 		return ret;
 	}
 
