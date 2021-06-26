@@ -515,7 +515,7 @@ std::string AncillaryTools::getCurrentGitRepositoryHash(const std::string& inRep
 }
 
 /*****************************************************************************/
-std::string AncillaryTools::getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch) const
+std::string AncillaryTools::getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const
 {
 	std::string originHash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) });
 	return originHash;

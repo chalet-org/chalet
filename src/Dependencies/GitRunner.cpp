@@ -108,7 +108,7 @@ bool GitRunner::run(const bool inDoNotUpdate)
 		if (dependencyCache.contains(m_destination))
 		{
 			// We're using a shallow clone, so this only works if the branch hasn't changed
-			const std::string originHash = m_prototype.tools.getCurrentGitRepositoryHashFromRemote(m_destination, branch);
+			const std::string originHash = m_prototype.tools.getCurrentGitRepositoryHashFromOrigin(m_destination, branch);
 			const auto& cachedHash = dependencyCache.get(m_destination);
 
 			if (cachedHash == originHash)

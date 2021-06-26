@@ -124,7 +124,7 @@ struct AncillaryTools
 	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath) const;
 	std::string getCurrentGitRepositoryTag(const std::string& inRepoPath) const;
 	std::string getCurrentGitRepositoryHash(const std::string& inRepoPath) const;
-	std::string getCurrentGitRepositoryHashFromRemote(const std::string& inRepoPath, const std::string& inBranch) const;
+	std::string getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const;
 	bool updateGitRepositoryShallow(const std::string& inRepoPath) const;
 	bool resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const;
 
