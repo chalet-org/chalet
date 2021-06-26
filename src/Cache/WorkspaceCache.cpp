@@ -177,7 +177,6 @@ bool WorkspaceCache::removeStaleProjectCaches()
 
 	for (auto& id : ids)
 	{
-		LOG(id);
 		auto path = fmt::format("{}/{}", cacheRef, id);
 		if (!Commands::pathExists(path))
 		{
