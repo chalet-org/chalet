@@ -24,8 +24,7 @@ struct IBuildDependency
 	virtual bool validate() = 0;
 
 	BuildDependencyType type() const noexcept;
-	bool isSourceControl() const noexcept;
-	bool isPackageManager() const noexcept;
+	bool isGit() const noexcept;
 
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;

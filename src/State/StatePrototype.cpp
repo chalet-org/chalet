@@ -117,10 +117,8 @@ void StatePrototype::saveCaches()
 /*****************************************************************************/
 bool StatePrototype::runDependencyManager()
 {
-	bool configure = m_inputs.command() == Route::Configure;
-
-	DependencyManager depMgr(*this);
-	if (!depMgr.run(configure))
+	DependencyManager depMgr(m_inputs, *this);
+	if (!depMgr.run())
 	{
 		Diagnostic::error("There was an error creating the dependencies.");
 		return false;

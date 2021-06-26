@@ -39,13 +39,11 @@ BuildDependencyType IBuildDependency::type() const noexcept
 {
 	return m_type;
 }
-bool IBuildDependency::isSourceControl() const noexcept
+
+/*****************************************************************************/
+bool IBuildDependency::isGit() const noexcept
 {
-	return m_type == BuildDependencyType::Git || m_type == BuildDependencyType::SVN;
-}
-bool IBuildDependency::isPackageManager() const noexcept
-{
-	return false;
+	return m_type == BuildDependencyType::Git;
 }
 
 /*****************************************************************************/

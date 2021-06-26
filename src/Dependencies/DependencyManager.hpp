@@ -9,16 +9,27 @@
 namespace chalet
 {
 struct StatePrototype;
+struct GitDependency;
+struct CommandLineInputs;
 
 class DependencyManager
 {
 public:
-	explicit DependencyManager(StatePrototype& inPrototype);
+	explicit DependencyManager(const CommandLineInputs& inInputs, StatePrototype& inPrototype);
 
-	bool run(const bool inConfigureCmd);
+	bool run();
 
 private:
+	bool runGitDependency(const GitDependency& inDependency);
+
+	StringList getUnusedDependencies() const;
+	bool removeUnusedDependencies(const StringList& inList) const;
+	bool removeExternalDependencyDirectoryIfEmpty() const;
+
+	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
+
+	StringList m_destinationCache;
 };
 }
 

@@ -5,6 +5,8 @@
 
 #include "Dependencies/DependencyManager.hpp"
 
+#include "Core/CommandLineInputs.hpp"
+#include "Dependencies/GitRunner.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/StatePrototype.hpp"
@@ -19,244 +21,118 @@
 namespace chalet
 {
 /*****************************************************************************/
-DependencyManager::DependencyManager(StatePrototype& inPrototype) :
+DependencyManager::DependencyManager(const CommandLineInputs& inInputs, StatePrototype& inPrototype) :
+	m_inputs(inInputs),
 	m_prototype(inPrototype)
 {
 }
 
 /*****************************************************************************/
-bool DependencyManager::run(const bool inConfigureCmd)
+bool DependencyManager::run()
 {
-	if (m_prototype.tools.git().empty())
-		return true;
-
-	const auto& externalDepDir = m_prototype.environment.externalDepDir();
-	// auto& localSettings = m_prototype.cache.getSettings(SettingsType::Local);
-
-	if (!m_prototype.externalDependencies.empty())
+	bool hasDependencies = !m_prototype.externalDependencies.empty();
+	if (hasDependencies)
 	{
 		m_prototype.cache.file().loadExternalDependencies();
 
 		Output::lineBreak();
 	}
 
-	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
-
-	StringList destinationCache;
-
-	bool result = true;
-	int count = 0;
 	for (auto& dependency : m_prototype.externalDependencies)
 	{
-		auto& git = static_cast<const GitDependency&>(*dependency);
-
-		const auto& repository = git.repository();
-		const auto& destination = git.destination();
-
-		destinationCache.push_back(destination);
-
-		bool update = false;
-
-		// During the build, just continue if the path already exists
-		//   (the install command can be used for more complicated tasks)
-		LOG(destination);
-		if (Commands::pathExists(destination))
+		if (dependency->isGit())
 		{
-			if (!dependencyCache.contains(destination))
-			{
-				auto commitHash = m_prototype.tools.getCurrentGitRepositoryHash(destination);
-				dependencyCache.emplace(destination, std::move(commitHash));
-			}
-			if (!inConfigureCmd)
-				continue;
-
-			update = true;
+			if (!runGitDependency(static_cast<const GitDependency&>(*dependency)))
+				return false;
 		}
-
-		const bool submodules = git.submodules();
-
-		const auto& branch = git.branch();
-		const auto& tag = git.tag();
-		const auto& commit = git.commit();
-
-		const bool branchValid = !branch.empty();
-		const bool tagValid = !tag.empty();
-		const bool commitValid = !commit.empty();
-
-		bool res = true;
-
-		if (update && branchValid)
-		{
-			const std::string currentBranch = m_prototype.tools.getCurrentGitRepositoryBranch(destination);
-			LOG("branches", fmt::format("'{}'", currentBranch), fmt::format("'{}'", branch));
-
-			// in this case, HEAD means the branch is on a tag or commit
-			if ((currentBranch != "HEAD" || commitValid) && currentBranch != branch)
-			{
-				// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-				result &= Commands::removeRecursively(destination);
-				update = false;
-			}
-		}
-
-		if (update && commitValid)
-		{
-			const std::string currentCommit = m_prototype.tools.getCurrentGitRepositoryHash(destination);
-			LOG("commits:", fmt::format("'{}'", currentCommit), fmt::format("'{}'", commit));
-
-			if (!String::startsWith(commit, currentCommit))
-			{
-				// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-				result &= Commands::removeRecursively(destination);
-				update = false;
-			}
-		}
-
-		if (update && tagValid)
-		{
-			const std::string currentTag = m_prototype.tools.getCurrentGitRepositoryTag(destination);
-			LOG("tags:", fmt::format("'{}'", currentTag), fmt::format("'{}'", tag));
-
-			if (currentTag != tag)
-			{
-				// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-				result &= Commands::removeRecursively(destination);
-				update = false;
-			}
-		}
-
-		if (update)
-		{
-			LOG("update");
-			// if commit or tag was specified, we shouldn't update this way
-			if (commitValid || tagValid)
-				continue;
-
-			LOG(destination);
-			if (dependencyCache.contains(destination))
-			{
-				// We're using a shallow clone, so this only works if the branch hasn't changed
-				const std::string originHash = m_prototype.tools.getCurrentGitRepositoryHashFromRemote(destination, branch);
-				const auto& cachedHash = dependencyCache.get(destination);
-
-				if (cachedHash == originHash)
-					continue;
-			}
-
-			const auto& checkoutTo = tagValid ? tag : branch;
-
-			Output::msgUpdatingDependency(repository, checkoutTo);
-
-			res &= m_prototype.tools.updateGitRepositoryShallow(destination);
-			result &= res;
-		}
-
-		if (!update)
-		{
-			const auto& checkoutTo = tagValid ? tag : branch;
-
-			Output::msgFetchingDependency(repository, checkoutTo);
-
-			uint maxJobs = m_prototype.environment.maxJobs();
-
-			StringList cmd;
-			cmd.push_back(m_prototype.tools.git());
-			cmd.push_back("clone");
-			cmd.push_back("--quiet");
-
-			if (!checkoutTo.empty())
-			{
-				cmd.push_back("-b");
-				cmd.push_back(checkoutTo);
-			}
-
-			if (commitValid)
-			{
-				cmd.push_back("--single-branch");
-			}
-			else
-			{
-				cmd.push_back("--depth");
-				cmd.push_back("1");
-			}
-			if (submodules)
-			{
-				cmd.push_back("--recurse-submodules");
-				cmd.push_back("--shallow-submodules");
-				cmd.push_back("--no-remote-submodules");
-				cmd.push_back("-j");
-				cmd.push_back(std::to_string(maxJobs));
-			}
-			cmd.push_back("--config");
-			cmd.push_back("advice.detachedHead=false");
-			cmd.push_back(repository);
-			cmd.push_back(destination);
-
-			// LOG(cmd);
-
-			res &= Commands::subprocess(cmd);
-
-			if (commitValid)
-			{
-				res &= m_prototype.tools.resetGitRepositoryToCommit(destination, commit);
-			}
-
-			result &= res;
-		}
-
-		if (res)
-		{
-			auto commitHash = m_prototype.tools.getCurrentGitRepositoryHash(destination);
-
-			// Output::msgDisplayBlack(commitHash); // useful for debugging
-			dependencyCache.set(destination, std::move(commitHash));
-		}
-		else
-		{
-			result &= Commands::removeRecursively(destination);
-		}
-
-		++count;
 	}
 
-	if (result)
-	{
-		StringList eraseList;
-		for (auto& [key, value] : dependencyCache)
-		{
-			if (!List::contains(destinationCache, key))
-				eraseList.push_back(key);
-		}
+	StringList eraseList = getUnusedDependencies();
+	if (!removeUnusedDependencies(eraseList))
+		return false;
 
-		for (auto& it : eraseList)
-		{
-			if (Commands::pathExists(it))
-			{
-				const bool removed = Commands::removeRecursively(it);
-				if (removed)
-				{
-					std::string name = it;
-					String::replaceAll(name, fmt::format("{}/", externalDepDir), "");
+	if (!removeExternalDependencyDirectoryIfEmpty())
+		return false;
 
-					Output::msgDisplayBlack(fmt::format("Removed unused dependency: '{}'", name));
-					++count;
-				}
-
-				result &= removed;
-			}
-
-			dependencyCache.erase(it);
-		}
-
-		if (Commands::pathIsEmpty(externalDepDir, {}, true))
-			result &= Commands::remove(externalDepDir);
-	}
-
-	if (!m_prototype.externalDependencies.empty())
+	if (hasDependencies)
 	{
 		m_prototype.cache.file().saveExternalDependencies();
 	}
 
-	return result;
+	return true;
+}
+
+/*****************************************************************************/
+bool DependencyManager::runGitDependency(const GitDependency& inDependency)
+{
+	m_destinationCache.push_back(inDependency.destination());
+
+	if (m_prototype.tools.git().empty())
+		return true;
+
+	GitRunner git(m_prototype, inDependency);
+	if (!git.run(m_inputs.command() != Route::Configure))
+	{
+		Diagnostic::error("Error fetching git dependency: {}", inDependency.name());
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+StringList DependencyManager::getUnusedDependencies() const
+{
+	StringList ret;
+
+	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
+	for (auto& [key, value] : dependencyCache)
+	{
+		if (!List::contains(m_destinationCache, key))
+			ret.push_back(key);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool DependencyManager::removeUnusedDependencies(const StringList& inList) const
+{
+	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
+
+	const auto& externalDepDir = m_prototype.environment.externalDepDir();
+	for (auto& it : inList)
+	{
+		if (Commands::pathExists(it))
+		{
+			if (Commands::removeRecursively(it))
+			{
+				std::string name = it;
+				String::replaceAll(name, fmt::format("{}/", externalDepDir), "");
+
+				Output::msgDisplayBlack(fmt::format("Removed unused dependency: '{}'", name));
+			}
+		}
+
+		dependencyCache.erase(it);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool DependencyManager::removeExternalDependencyDirectoryIfEmpty() const
+{
+	const auto& externalDepDir = m_prototype.environment.externalDepDir();
+	if (Commands::pathIsEmpty(externalDepDir, {}, true))
+	{
+		if (!Commands::remove(externalDepDir))
+		{
+			Diagnostic::error("Error removing folder: {}", externalDepDir);
+			return false;
+		}
+	}
+
+	return true;
 }
 }
