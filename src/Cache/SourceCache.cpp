@@ -97,9 +97,6 @@ bool SourceCache::add(const std::string& inFile) const
 		return false;
 
 	auto& fileData = getLastWrite(inFile);
-	if (lastWrite > fileData.lastWrite || !fileData.needsUpdate)
-		return false;
-
 	fileData.lastWrite = lastWrite;
 	fileData.needsUpdate = false;
 	m_dirty = true;

@@ -43,6 +43,12 @@ bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
 
 	bool cacheNeedsUpdate = oldStrategyHash != strategyHash || appVersionChanged;
 
+	if (!Commands::pathExists(cachePath))
+	{
+		std::ofstream(cachePath) << "native stub"
+								 << std::endl;
+	}
+
 	if (cacheNeedsUpdate)
 	{
 		m_state.cache.file().setHashStrategy(std::move(strategyHash));
@@ -122,13 +128,18 @@ CommandPool::Cmd CompileStrategyNative::getPchCommand(const std::string& pchTarg
 	{
 		std::string source = m_project->pch();
 
-		auto tmp = getPchCompile(source, pchTarget);
-		ret.output = std::move(source);
-		ret.command = std::move(tmp.command);
-		ret.renameFrom = std::move(tmp.renameFrom);
-		ret.renameTo = std::move(tmp.renameTo);
-		ret.color = Color::Blue;
-		ret.symbol = " ";
+		// auto& sourceCache = m_state.cache.file().sources();
+
+		// if (sourceCache.fileChangedOrDoesNotExist(source, pchTarget))
+		{
+			auto tmp = getPchCompile(source, pchTarget);
+			ret.output = std::move(source);
+			ret.command = std::move(tmp.command);
+			ret.renameFrom = std::move(tmp.renameFrom);
+			ret.renameTo = std::move(tmp.renameTo);
+			ret.color = Color::Blue;
+			ret.symbol = " ";
+		}
 	}
 
 	return ret;
@@ -138,6 +149,8 @@ CommandPool::Cmd CompileStrategyNative::getPchCommand(const std::string& pchTarg
 CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList& inObjects)
 {
 	const auto& objDir = fmt::format("{}/", m_state.paths.objDir());
+
+	// auto& sourceCache = m_state.cache.file().sources();
 
 	CommandPool::CmdList ret;
 
@@ -163,30 +176,36 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 		if (String::endsWith({ ".rc", ".RC" }, source))
 		{
 #if defined(CHALET_WIN32)
-			auto tmp = getRcCompile(source, target);
-			CommandPool::Cmd out;
-			out.output = std::move(source);
-			out.command = std::move(tmp.command);
-			out.renameFrom = std::move(tmp.renameFrom);
-			out.renameTo = std::move(tmp.renameTo);
-			out.color = Color::Blue;
-			out.symbol = " ";
-			ret.push_back(std::move(out));
+			// if (sourceCache.fileChangedOrDoesNotExist(source, target))
+			{
+				auto tmp = getRcCompile(source, target);
+				CommandPool::Cmd out;
+				out.output = std::move(source);
+				out.command = std::move(tmp.command);
+				out.renameFrom = std::move(tmp.renameFrom);
+				out.renameTo = std::move(tmp.renameTo);
+				out.color = Color::Blue;
+				out.symbol = " ";
+				ret.push_back(std::move(out));
+			}
 #else
 			continue;
 #endif
 		}
 		else
 		{
-			auto tmp = getCxxCompile(source, target, specialization);
-			CommandPool::Cmd out;
-			out.output = std::move(source);
-			out.command = std::move(tmp.command);
-			out.renameFrom = std::move(tmp.renameFrom);
-			out.renameTo = std::move(tmp.renameTo);
-			out.color = Color::Blue;
-			out.symbol = " ";
-			ret.push_back(std::move(out));
+			// if (sourceCache.fileChangedOrDoesNotExist(source, target))
+			{
+				auto tmp = getCxxCompile(source, target, specialization);
+				CommandPool::Cmd out;
+				out.output = std::move(source);
+				out.command = std::move(tmp.command);
+				out.renameFrom = std::move(tmp.renameFrom);
+				out.renameTo = std::move(tmp.renameTo);
+				out.color = Color::Blue;
+				out.symbol = " ";
+				ret.push_back(std::move(out));
+			}
 		}
 	}
 
