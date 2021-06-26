@@ -23,8 +23,7 @@
 			"stopOnEntry": false,
 			"args": [
 				// "--generator=vscode",
-				"build",
-				"Release"
+				"configure"
 			],
 		},
 		{

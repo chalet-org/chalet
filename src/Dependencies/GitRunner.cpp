@@ -32,76 +32,24 @@ bool GitRunner::run(const bool inDoNotUpdate)
 	bool result = true;
 	m_update = false;
 
+	if (!gitRepositoryShouldUpdate(inDoNotUpdate))
+		return true;
+
+	result &= checkBranchForUpdate();
+	result &= checkCommitForUpdate();
+	result &= checkTagForUpdate();
+
 	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
 
-	std::string currentBranch;
-
-	// During the build, just continue if the path already exists
-	//   (the install command can be used for more complicated tasks)
-	// LOG(m_destination);
-	if (Commands::pathExists(m_destination))
-	{
-		if (!dependencyCache.contains(m_destination))
-		{
-			auto commitHash = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
-			dependencyCache.emplace(m_destination, std::move(commitHash));
-		}
-		if (inDoNotUpdate)
-			return true;
-
-		currentBranch = m_prototype.tools.getCurrentGitRepositoryBranch(m_destination);
-		m_update = true;
-	}
-
-	const bool branchValid = !m_branch.empty();
 	const bool tagValid = !m_tag.empty();
 	const bool commitValid = !m_commit.empty();
 
-	if (m_update && branchValid)
-	{
-		// LOG("branches", fmt::format("'{}'", currentBranch), fmt::format("'{}'", m_branch));
-
-		// in this case, HEAD means the branch is on a tag or commit
-		if (currentBranch != "HEAD" && currentBranch != m_branch)
-		{
-			// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-			result &= Commands::removeRecursively(m_destination);
-			m_update = false;
-		}
-	}
-
-	if (m_update && commitValid)
-	{
-		auto currentCommit = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
-		// LOG("commits:", fmt::format("'{}'", currentCommit), fmt::format("'{}'", m_commit));
-
-		if (!String::startsWith(m_commit, currentCommit))
-		{
-			// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-			result &= Commands::removeRecursively(m_destination);
-			m_update = false;
-		}
-	}
-
-	if (m_update && tagValid)
-	{
-		const std::string currentTag = m_prototype.tools.getCurrentGitRepositoryTag(m_destination);
-		// LOG("tags:", fmt::format("'{}'", currentTag), fmt::format("'{}'", m_tag));
-
-		if (currentTag != m_tag)
-		{
-			// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
-			result &= Commands::removeRecursively(m_destination);
-			m_update = false;
-		}
-	}
-
-	const auto& branch = !m_branch.empty() ? m_branch : currentBranch;
+	const auto& branch = !m_branch.empty() ? m_branch : getCurrentBranch();
 	const auto& checkoutTo = tagValid ? m_tag : branch;
 
 	if (m_update)
 	{
-		// if commit or tag was specified, we shouldn't update this way
+		// commit & tag shouldn't update
 		if (commitValid || tagValid)
 			return true;
 
@@ -170,10 +118,9 @@ bool GitRunner::run(const bool inDoNotUpdate)
 
 	if (result)
 	{
-		auto commitHash = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
-
-		// Output::msgDisplayBlack(commitHash); // useful for debugging
-		dependencyCache.set(m_destination, std::move(commitHash));
+		auto newCommitHash = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
+		// LOG(newCommitHash);
+		dependencyCache.set(m_destination, std::move(newCommitHash));
 	}
 	else
 	{
@@ -187,5 +134,124 @@ bool GitRunner::run(const bool inDoNotUpdate)
 bool GitRunner::fetched() const noexcept
 {
 	return m_fetched;
+}
+
+/*****************************************************************************/
+bool GitRunner::gitRepositoryShouldUpdate(const bool inDoNotUpdate)
+{
+	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
+
+	// During the build, just continue if the path already exists
+	if (Commands::pathExists(m_destination))
+	{
+		if (!dependencyCache.contains(m_destination))
+		{
+			const auto& currentCommit = getCurrentCommit();
+			dependencyCache.emplace(m_destination, currentCommit);
+		}
+		if (inDoNotUpdate)
+			return false;
+
+		m_update = true;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool GitRunner::checkBranchForUpdate()
+{
+	const bool branchValid = !m_branch.empty();
+	if (m_update && branchValid)
+	{
+		const auto& currentBranch = getCurrentBranch();
+		// LOG("branches", fmt::format("'{}'", currentBranch), fmt::format("'{}'", m_branch));
+
+		// in this case, HEAD means the branch is on a tag or commit
+		if (currentBranch != "HEAD" && currentBranch != m_branch)
+		{
+			m_update = false;
+
+			// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
+			if (!Commands::removeRecursively(m_destination))
+				return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool GitRunner::checkCommitForUpdate()
+{
+	const bool commitValid = !m_commit.empty();
+	if (m_update && commitValid)
+	{
+		const auto& currentCommit = getCurrentCommit();
+		// LOG("commits:", fmt::format("'{}'", currentCommit), fmt::format("'{}'", m_commit));
+
+		if (!String::startsWith(m_commit, currentCommit))
+		{
+			m_update = false;
+
+			// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
+			if (!Commands::removeRecursively(m_destination))
+				return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool GitRunner::checkTagForUpdate()
+{
+	const bool tagValid = !m_tag.empty();
+	if (m_update && tagValid)
+	{
+		const auto& currentTag = getCurrentTag();
+		// LOG("tags:", fmt::format("'{}'", currentTag), fmt::format("'{}'", m_tag));
+
+		if (currentTag != m_tag)
+		{
+			m_update = false;
+
+			// we need to fetch a new branch (from a shallow clone), so it's easier to start fresh
+			if (!Commands::removeRecursively(m_destination))
+				return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+const std::string& GitRunner::getCurrentBranch()
+{
+	if (m_currentBranch.empty())
+	{
+		m_currentBranch = m_prototype.tools.getCurrentGitRepositoryBranch(m_destination);
+	}
+	return m_currentBranch;
+}
+
+/*****************************************************************************/
+const std::string& GitRunner::getCurrentCommit()
+{
+	if (m_currentCommit.empty())
+	{
+		m_currentCommit = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
+	}
+	return m_currentCommit;
+}
+
+/*****************************************************************************/
+const std::string& GitRunner::getCurrentTag()
+{
+	if (m_currentTag.empty())
+	{
+		m_currentTag = m_prototype.tools.getCurrentGitRepositoryTag(m_destination);
+	}
+	return m_currentTag;
 }
 }

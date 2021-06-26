@@ -51,6 +51,13 @@ void ExternalDependencyCache::set(const std::string& inKey, std::string&& inValu
 }
 
 /*****************************************************************************/
+void ExternalDependencyCache::emplace(const std::string& inKey, const std::string& inValue)
+{
+	m_cache.emplace(inKey, inValue);
+	m_dirty = true;
+}
+
+/*****************************************************************************/
 void ExternalDependencyCache::emplace(const std::string& inKey, std::string&& inValue)
 {
 	m_cache.emplace(inKey, std::move(inValue));

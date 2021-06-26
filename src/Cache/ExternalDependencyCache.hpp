@@ -23,6 +23,7 @@ public:
 	const std::string& get(const std::string& inKey);
 	void set(const std::string& inKey, std::string&& inValue);
 
+	void emplace(const std::string& inKey, const std::string& inValue);
 	void emplace(const std::string& inKey, std::string&& inValue);
 
 	void erase(const std::string& inKey);

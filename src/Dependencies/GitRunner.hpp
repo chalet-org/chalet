@@ -20,6 +20,16 @@ struct GitRunner
 	bool fetched() const noexcept;
 
 private:
+	bool gitRepositoryShouldUpdate(const bool inDoNotUpdate);
+
+	bool checkBranchForUpdate();
+	bool checkCommitForUpdate();
+	bool checkTagForUpdate();
+
+	const std::string& getCurrentBranch();
+	const std::string& getCurrentCommit();
+	const std::string& getCurrentTag();
+
 	StatePrototype& m_prototype;
 	const GitDependency& m_dependency;
 
@@ -28,6 +38,10 @@ private:
 	const std::string& m_branch;
 	const std::string& m_tag;
 	const std::string& m_commit;
+
+	std::string m_currentBranch;
+	std::string m_currentCommit;
+	std::string m_currentTag;
 
 	const bool m_submodules;
 	bool m_update = false;
