@@ -313,12 +313,13 @@ void Output::msgFetchingDependency(const std::string& inGitUrl, const std::strin
 	std::string path = getCleanGitPath(inGitUrl);
 	auto symbol = Unicode::heavyCurvedDownRightArrow();
 
-	if (!inBranchOrTag.empty())
+	if (!inBranchOrTag.empty() && !String::equals("HEAD", inBranchOrTag))
 		displayStyledSymbol(Color::Magenta, symbol, fmt::format("Fetching: {} ({})", path, inBranchOrTag));
 	else
 		displayStyledSymbol(Color::Magenta, symbol, fmt::format("Fetching: {}", path));
 }
 
+/*****************************************************************************/
 void Output::msgUpdatingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag)
 {
 	std::string path = getCleanGitPath(inGitUrl);

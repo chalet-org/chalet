@@ -23,6 +23,7 @@ struct GitRunner
 private:
 	bool gitRepositoryShouldUpdate(const bool inDoNotUpdate);
 
+	bool fetchDependency();
 	StringList getGitCloneCommand(const std::string& inCheckoutTo);
 
 	bool checkBranchForUpdate();
@@ -32,6 +33,8 @@ private:
 	const std::string& getCurrentBranch();
 	const std::string& getCurrentCommit();
 	const std::string& getCurrentTag();
+
+	const std::string& getCheckoutTo();
 
 	StatePrototype& m_prototype;
 	const GitDependency& m_dependency;
@@ -47,7 +50,10 @@ private:
 	std::string m_currentCommit;
 	std::string m_currentTag;
 
+	std::string m_checkoutBranch;
+
 	const bool m_submodules;
+	bool m_destinationExists = false;
 	bool m_update = false;
 	bool m_fetched = false;
 };
