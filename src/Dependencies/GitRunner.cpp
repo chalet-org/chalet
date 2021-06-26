@@ -180,7 +180,8 @@ bool GitRunner::needsUpdate()
 	{
 		displayCheckingForUpdates();
 
-		auto latestRemote = m_prototype.tools.getLatestGitRepositoryHashWithoutClone(m_repository, m_lastCachedBranch);
+		const auto& refToCheck = !m_tag.empty() ? m_tag : m_lastCachedBranch;
+		auto latestRemote = m_prototype.tools.getLatestGitRepositoryHashWithoutClone(m_repository, refToCheck);
 		if (latestRemote != m_lastCachedCommit)
 			update = true;
 
