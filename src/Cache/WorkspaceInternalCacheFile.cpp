@@ -18,6 +18,7 @@ namespace chalet
 WorkspaceInternalCacheFile::WorkspaceInternalCacheFile(WorkspaceCache& inCache) :
 	m_cache(inCache)
 {
+	UNUSED(m_cache);
 }
 
 /*****************************************************************************/
@@ -216,11 +217,15 @@ bool WorkspaceInternalCacheFile::save()
 }
 
 /*****************************************************************************/
-bool WorkspaceInternalCacheFile::loadExternalDependencies()
+bool WorkspaceInternalCacheFile::loadExternalDependencies(const std::string& inPath)
 {
 	auto hash = Hash::string("chalet_external_dependencies_cache");
-	auto externalPath = m_cache.getCachePath(hash, CacheType::Local);
-	return m_externalDependencies.loadFromFilename(externalPath);
+
+	UNUSED(inPath);
+
+	// m_externalDependencyCachePath = fmt::format("{}/{}", inPath, hash);
+	m_externalDependencyCachePath = m_cache.getCachePath(hash, CacheType::Local);
+	return m_externalDependencies.loadFromFilename(m_externalDependencyCachePath);
 }
 
 /*****************************************************************************/
@@ -228,14 +233,16 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 {
 	m_dirty |= m_externalDependencies.dirty();
 
-	auto hash = Hash::string("chalet_external_dependencies_cache");
+	chalet_assert(!m_externalDependencyCachePath.empty(), "");
+
 	if (m_externalDependencies.dirty())
 	{
-		auto externalPath = m_cache.getCachePath(hash, CacheType::Local);
-		std::ofstream(externalPath) << m_externalDependencies.asString()
-									<< std::endl;
+		// auto externalPath = m_cache.getCachePath(hash, CacheType::Local);
+		std::ofstream(m_externalDependencyCachePath) << m_externalDependencies.asString()
+													 << std::endl;
 	}
 
+	auto hash = String::getPathFilename(m_externalDependencyCachePath);
 	addExtraHash(std::move(hash));
 
 	return true;

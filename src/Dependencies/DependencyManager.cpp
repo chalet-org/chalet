@@ -33,7 +33,7 @@ bool DependencyManager::run()
 	bool hasDependencies = !m_prototype.externalDependencies.empty();
 	if (hasDependencies)
 	{
-		m_prototype.cache.file().loadExternalDependencies();
+		m_prototype.cache.file().loadExternalDependencies(m_prototype.environment.externalDepDir());
 
 		Output::lineBreak();
 	}

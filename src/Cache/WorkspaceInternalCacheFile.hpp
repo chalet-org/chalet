@@ -23,7 +23,7 @@ struct WorkspaceInternalCacheFile
 	bool initialize(const std::string& inFilename);
 	bool save();
 
-	bool loadExternalDependencies();
+	bool loadExternalDependencies(const std::string& inPath);
 	bool saveExternalDependencies();
 
 	bool setSourceCache(const std::string& inId);
@@ -61,6 +61,7 @@ private:
 	SourceCache* m_sources = nullptr;
 
 	ExternalDependencyCache m_externalDependencies;
+	std::string m_externalDependencyCachePath;
 	mutable std::unordered_map<std::string, std::unique_ptr<SourceCache>> m_sourceCaches;
 
 	bool m_workingDirectoryChanged = false;

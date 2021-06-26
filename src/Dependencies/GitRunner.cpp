@@ -11,6 +11,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -178,6 +179,7 @@ bool GitRunner::needsUpdate()
 	bool update = commitNeedsUpdate || branchNeedsUpdate || tagNeedsUpdate;
 	if (!update && !m_lastCachedBranch.empty())
 	{
+		Timer timer;
 		displayCheckingForUpdates();
 
 		const auto& refToCheck = !m_tag.empty() ? m_tag : m_lastCachedBranch;
@@ -188,7 +190,7 @@ bool GitRunner::needsUpdate()
 			update = true;
 		}
 
-		Diagnostic::printDone();
+		Diagnostic::printDone(timer.asString());
 
 		m_fetched = true;
 	}
