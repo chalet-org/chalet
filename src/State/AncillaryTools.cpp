@@ -672,7 +672,7 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 	}
 	#endif
 
-	try
+	CHALET_TRY
 	{
 		StringList cmd;
 	#if defined(CHALET_MACOS)
@@ -730,9 +730,9 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 
 		return true;
 	}
-	catch (const std::runtime_error& err)
+	CHALET_CATCH(const std::runtime_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what());
 		return false;
 	}
 #endif

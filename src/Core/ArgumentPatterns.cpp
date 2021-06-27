@@ -258,16 +258,16 @@ void ArgumentPatterns::makeParser()
 /*****************************************************************************/
 bool ArgumentPatterns::doParse(const StringList& inArguments)
 {
-	try
+	CHALET_TRY
 	{
 		if (inArguments.size() <= 1)
 		{
-			throw std::runtime_error("No arguments were given");
+			CHALET_THROW(std::runtime_error("No arguments were given"));
 		}
 
 		if (List::contains(inArguments, std::string("-h")) || List::contains(inArguments, std::string("--help")))
 		{
-			throw std::runtime_error("help");
+			CHALET_THROW(std::runtime_error("help"));
 		}
 
 		try
@@ -277,22 +277,22 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 		catch (const std::runtime_error& err)
 		{
 			if (strcmp(err.what(), "Unknown argument") != 0)
-				throw err;
+				CHALET_THROW(err);
 		}
 
 		if (m_routeString.empty())
 		{
-			throw std::runtime_error("No sub-command given");
+			CHALET_THROW(std::runtime_error("No sub-command given"));
 		}
 	}
-	catch (const std::runtime_error&)
+	CHALET_CATCH(const std::runtime_error&)
 	{
 		std::string help = getHelp();
 		// std::cout << err.what() << std::endl;
 		std::cout << help << std::endl;
 		return false;
 	}
-	catch (const std::exception& err)
+	CHALET_CATCH(const std::exception& err)
 	{
 		Diagnostic::error("There was an unhandled exception during argument parsing: {}", err.what());
 		return false;

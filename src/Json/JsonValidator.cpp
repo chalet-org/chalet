@@ -273,14 +273,14 @@ JsonValidator::~JsonValidator() = default;
 /*****************************************************************************/
 bool JsonValidator::setSchema(Json&& inSchema)
 {
-	try
+	CHALET_TRY
 	{
 		m_impl->validator.set_root_schema(std::move(inSchema));
 		return true;
 	}
-	catch (const std::exception& err)
+	CHALET_CATCH(const std::exception& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what());
 		return false;
 	}
 }

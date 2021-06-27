@@ -73,7 +73,7 @@ int Subprocess::getLastExitCode()
 /*****************************************************************************/
 int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 {
-	try
+	CHALET_TRY
 	{
 		auto process = sp::RunBuilder(const_cast<StringList&>(inCmd))
 						   .cerr(static_cast<sp::PipeOption>(inOptions.stderrOption))
@@ -148,7 +148,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 
 		return process.returncode;
 	}
-	catch (const std::exception& err)
+	CHALET_CATCH(const std::exception& err)
 	{
 		std::string error(err.what());
 		Diagnostic::error("subprocess error: " + error);

@@ -37,7 +37,7 @@ tags=(
 	'v1.5.6'
 	'master'
 	'master'
-	'v3.9.1'
+	'6471a63115239a0b6458ad25e2eb8d828c22fb34'
 	'master'
 	'e6ca24525f28556dd4847443b07dd4b9a4affa9d'
 	'master'
@@ -51,7 +51,7 @@ commits=(
 	0
 	0
 	0
-	0
+	1
 	0
 	1
 	0

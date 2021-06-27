@@ -75,7 +75,7 @@ bool executeCommandMsvc(StringList command, std::string renameFrom, std::string 
 	if (!renameFrom.empty() && !renameTo.empty())
 	{
 		std::unique_lock<std::mutex> lock(s_mutex);
-		try
+		CHALET_TRY
 		{
 			fs::path from(renameFrom);
 			if (!fs::exists(from))
@@ -87,7 +87,7 @@ bool executeCommandMsvc(StringList command, std::string renameFrom, std::string 
 
 			fs::rename(from, to);
 		}
-		catch (const std::exception&)
+		CHALET_CATCH(const std::exception&)
 		{
 		}
 	}
@@ -111,7 +111,7 @@ bool executeCommand(StringList command, std::string renameFrom, std::string rena
 	if (!renameFrom.empty() && !renameTo.empty())
 	{
 		std::unique_lock<std::mutex> lock(s_mutex);
-		try
+		CHALET_TRY
 		{
 			if (!fs::exists(renameFrom))
 				return true;
@@ -121,7 +121,7 @@ bool executeCommand(StringList command, std::string renameFrom, std::string rena
 
 			fs::rename(renameFrom, renameTo);
 		}
-		catch (const std::exception&)
+		CHALET_CATCH(const std::exception&)
 		{
 		}
 	}
@@ -209,7 +209,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 	for (auto& tr : threadResults)
 	{
-		try
+		CHALET_TRY
 		{
 			if (!tr.get())
 			{
@@ -218,9 +218,9 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 				break;
 			}
 		}
-		catch (std::future_error& err)
+		CHALET_CATCH(std::future_error & err)
 		{
-			Diagnostic::error(err.what());
+			CHALET_EXCEPT_ERROR(err.what());
 			return onError();
 		}
 	}

@@ -160,14 +160,14 @@ bool SettingsManager::runSettingsSet(Json& node)
 	}
 	else if (ptr->is_object())
 	{
-		try
+		CHALET_TRY
 		{
 			*ptr = Json::parse(m_value);
 			set = true;
 		}
-		catch (const std::exception& err)
+		CHALET_CATCH(const std::exception& err)
 		{
-			Diagnostic::error(err.what());
+			CHALET_EXCEPT_ERROR(err.what());
 			Diagnostic::error("Couldn't parse value: {}", m_value);
 			return false;
 		}

@@ -6,7 +6,9 @@
 #ifndef CHALET_JSON_HPP
 #define CHALET_JSON_HPP
 
-#include <nlohmann/json.hpp>
+#if !defined(CHALET_EXCEPTIONS)
+	#define JSON_NOEXCEPTION
+#endif
 
 #ifdef CHALET_MSVC
 	// #pragma warning(push)
@@ -14,7 +16,10 @@
 #else
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpedantic"
+	#pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
+
+#include <nlohmann/json.hpp>
 
 #include <nlohmann/json-schema.hpp>
 

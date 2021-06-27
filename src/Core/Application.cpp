@@ -38,14 +38,14 @@ int Application::run(const int argc, const char* const argv[])
 /*****************************************************************************/
 bool Application::runRouteConductor()
 {
-	try
+	CHALET_TRY
 	{
 		Router routes(m_inputs);
 		return routes.run();
 	}
-	catch (const std::exception& err)
+	CHALET_CATCH(const std::exception& err)
 	{
-		Diagnostic::error("Uncaught exception: {}", err.what());
+		CHALET_EXCEPT_ERROR("Uncaught exception: {}", err.what());
 		return false;
 	}
 }

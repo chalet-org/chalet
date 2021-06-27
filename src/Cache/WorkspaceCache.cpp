@@ -187,7 +187,7 @@ bool WorkspaceCache::removeStaleProjectCaches()
 
 	bool result = true;
 
-	try
+	CHALET_TRY
 	{
 		for (auto& it : fs::directory_iterator(cacheRef))
 		{
@@ -209,9 +209,9 @@ bool WorkspaceCache::removeStaleProjectCaches()
 			}
 		}
 	}
-	catch (const std::exception& err)
+	CHALET_CATCH(const std::exception& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what());
 		result = false;
 	}
 

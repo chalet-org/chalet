@@ -502,7 +502,7 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 
 	StringList ret;
 
-	try
+	CHALET_TRY
 	{
 		for (auto& locRaw : locations)
 		{
@@ -556,9 +556,9 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 			// 	m_fileListCache.push_back(source);
 		}
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what());
 		ret.clear();
 		return ret;
 	}
@@ -580,7 +580,7 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 {
 	StringList ret;
 
-	try
+	CHALET_TRY
 	{
 		if (inProject.usesPch())
 		{
@@ -661,9 +661,9 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 			// 	m_directoryCache.push_back(loc);
 		}
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what());
 		ret.clear();
 		return ret;
 	}

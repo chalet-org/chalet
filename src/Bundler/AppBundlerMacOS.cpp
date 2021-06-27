@@ -460,7 +460,7 @@ bool AppBundlerMacOS::signAppBundle() const
 	// TODO: Entitlements
 	bool isBundle = String::endsWith(".app/Contents", m_bundlePath);
 
-	try
+	CHALET_TRY
 	{
 		for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_executablePath))
 		{
@@ -515,9 +515,9 @@ bool AppBundlerMacOS::signAppBundle() const
 
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what());
 		return false;
 	}
 }

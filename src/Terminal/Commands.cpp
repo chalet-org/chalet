@@ -68,7 +68,7 @@ std::time_t timePointToTime(T tp)
 //
 bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_options inOptions)
 {
-	try
+	CHALET_TRY
 	{
 		if (!fs::exists(source) || !fs::is_directory(source))
 		{
@@ -86,15 +86,15 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 			return false;
 		}
 	}
-	catch (fs::filesystem_error& err)
+	CHALET_CATCH(fs::filesystem_error & err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 
 	for (const auto& file : fs::directory_iterator(source))
 	{
-		try
+		CHALET_TRY
 		{
 			const auto& current = file.path();
 			if (file.is_symlink())
@@ -112,9 +112,9 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 				fs::copy(current, dest / current.filename(), inOptions);
 			}
 		}
-		catch (const fs::filesystem_error& err)
+		CHALET_CATCH(const fs::filesystem_error& err)
 		{
-			Diagnostic::error(err.what());
+			CHALET_EXCEPT_ERROR(err.what())
 		}
 	}
 
@@ -125,15 +125,15 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 /*****************************************************************************/
 std::int64_t Commands::getLastWriteTime(const std::string& inFile)
 {
-	try
+	CHALET_TRY
 	{
 		auto lastWrite = fs::last_write_time(inFile);
 		auto outTime = timePointToTime(lastWrite);
 		return static_cast<std::int64_t>(outTime);
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return 0;
 	}
 }
@@ -141,14 +141,14 @@ std::int64_t Commands::getLastWriteTime(const std::string& inFile)
 /*****************************************************************************/
 std::string Commands::getWorkingDirectory()
 {
-	try
+	CHALET_TRY
 	{
 		auto cwd = fs::current_path();
 		return cwd.string();
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return std::string();
 	}
 }
@@ -156,14 +156,14 @@ std::string Commands::getWorkingDirectory()
 /*****************************************************************************/
 fs::path Commands::getWorkingDirectoryPath()
 {
-	try
+	CHALET_TRY
 	{
 		auto cwd = fs::current_path();
 		return cwd;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return fs::path{ "" };
 	}
 }
@@ -171,15 +171,15 @@ fs::path Commands::getWorkingDirectoryPath()
 /*****************************************************************************/
 bool Commands::changeWorkingDirectory(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		std::error_code errorCode;
 		fs::current_path(inPath, errorCode);
 		return errorCode.operator bool();
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -187,13 +187,13 @@ bool Commands::changeWorkingDirectory(const std::string& inPath)
 /*****************************************************************************/
 bool Commands::pathIsFile(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		return fs::is_regular_file(inPath);
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -201,13 +201,13 @@ bool Commands::pathIsFile(const std::string& inPath)
 /*****************************************************************************/
 bool Commands::pathIsDirectory(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		return fs::is_directory(inPath);
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -215,13 +215,13 @@ bool Commands::pathIsDirectory(const std::string& inPath)
 /*****************************************************************************/
 bool Commands::pathIsSymLink(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		return fs::is_symlink(inPath);
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -229,16 +229,16 @@ bool Commands::pathIsSymLink(const std::string& inPath)
 /*****************************************************************************/
 std::string Commands::getCanonicalPath(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		auto path = fs::canonical(inPath);
 		std::string ret = path.string();
 		Path::sanitize(ret);
 		return ret;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return inPath;
 	}
 }
@@ -246,16 +246,16 @@ std::string Commands::getCanonicalPath(const std::string& inPath)
 /*****************************************************************************/
 std::string Commands::getAbsolutePath(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		auto path = fs::absolute(inPath);
 		std::string ret = path.string();
 		Path::sanitize(ret);
 		return ret;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return inPath;
 	}
 }
@@ -263,15 +263,15 @@ std::string Commands::getAbsolutePath(const std::string& inPath)
 /*****************************************************************************/
 std::string Commands::resolveSymlink(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		auto path = fs::read_symlink(inPath);
 		auto out = path.string();
 		return out;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return inPath;
 	}
 }
@@ -279,7 +279,7 @@ std::string Commands::resolveSymlink(const std::string& inPath)
 /*****************************************************************************/
 std::uintmax_t Commands::getPathSize(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("get directory size: {}", inPath));
@@ -296,9 +296,9 @@ std::uintmax_t Commands::getPathSize(const std::string& inPath)
 
 		return ret;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return 0;
 	}
 }
@@ -306,7 +306,7 @@ std::uintmax_t Commands::getPathSize(const std::string& inPath)
 /*****************************************************************************/
 bool Commands::makeDirectory(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("make directory: {}", inPath));
@@ -315,9 +315,9 @@ bool Commands::makeDirectory(const std::string& inPath)
 
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -340,7 +340,7 @@ bool Commands::makeDirectories(const StringList& inPaths)
 /*****************************************************************************/
 bool Commands::remove(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		if (!fs::exists(inPath))
 			return true;
@@ -351,9 +351,9 @@ bool Commands::remove(const std::string& inPath)
 		bool result = fs::remove(inPath);
 		return result;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -361,7 +361,7 @@ bool Commands::remove(const std::string& inPath)
 /*****************************************************************************/
 bool Commands::removeRecursively(const std::string& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("remove recursively: {}", inPath));
@@ -369,9 +369,9 @@ bool Commands::removeRecursively(const std::string& inPath)
 		bool result = fs::remove_all(inPath) > 0;
 		return result;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -383,7 +383,7 @@ bool Commands::setExecutableFlag(const std::string& inPath)
 	UNUSED(inPath);
 	return true;
 #else
-	try
+	CHALET_TRY
 	{
 		// if (inPath.front() == '/')
 		// 	return false;
@@ -397,7 +397,7 @@ bool Commands::setExecutableFlag(const std::string& inPath)
 
 		return true;
 	}
-	catch (const fs::filesystem_error&)
+	CHALET_CATCH(const fs::filesystem_error&)
 	{
 		// std::cout << err.what() << std::endl;
 		return false;
@@ -412,7 +412,7 @@ bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std:
 	UNUSED(inFrom, inTo);
 	return true;
 #else
-	try
+	CHALET_TRY
 	{
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("create directory symlink: {} {}", inFrom, inTo));
@@ -421,9 +421,9 @@ bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std:
 
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 #endif
@@ -436,7 +436,7 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 	UNUSED(inFrom, inTo);
 	return true;
 #else
-	try
+	CHALET_TRY
 	{
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("create symlink: {} {}", inFrom, inTo));
@@ -445,9 +445,9 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 #endif
@@ -456,7 +456,7 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 /*****************************************************************************/
 bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
 {
-	try
+	CHALET_TRY
 	{
 		fs::path from{ inFrom };
 		fs::path to{ inTo / from.filename() };
@@ -472,9 +472,9 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs
 		fs::copy(from, to, inOptions);
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -482,7 +482,7 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs
 /*****************************************************************************/
 bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
 {
-	try
+	CHALET_TRY
 	{
 		fs::path from{ inFrom };
 		fs::path to{ inTo / from.filename() };
@@ -493,9 +493,9 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
 		fs::copy(from, to, fs::copy_options::overwrite_existing);
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -503,7 +503,7 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
 /*****************************************************************************/
 bool Commands::copySkipExisting(const std::string& inFrom, const std::string& inTo)
 {
-	try
+	CHALET_TRY
 	{
 		fs::path from{ inFrom };
 		fs::path to{ inTo / from.filename() };
@@ -519,9 +519,9 @@ bool Commands::copySkipExisting(const std::string& inFrom, const std::string& in
 		fs::copy(from, to, fs::copy_options::skip_existing);
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -529,7 +529,7 @@ bool Commands::copySkipExisting(const std::string& inFrom, const std::string& in
 /*****************************************************************************/
 bool Commands::copyRename(const std::string& inFrom, const std::string& inTo)
 {
-	try
+	CHALET_TRY
 	{
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("copy: {} {}", inFrom, inTo));
@@ -540,9 +540,9 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo)
 
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -550,7 +550,7 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo)
 /*****************************************************************************/
 bool Commands::rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting)
 {
-	try
+	CHALET_TRY
 	{
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("rename: {} {}", inFrom, inTo));
@@ -565,9 +565,9 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 
 		return true;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -575,14 +575,14 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 /*****************************************************************************/
 bool Commands::pathExists(const fs::path& inPath)
 {
-	try
+	CHALET_TRY
 	{
 		bool result = fs::exists(inPath);
 		return result;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }
@@ -590,14 +590,14 @@ bool Commands::pathExists(const fs::path& inPath)
 /*****************************************************************************/
 bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& inExceptions, const bool inCheckExists)
 {
-	try
+	CHALET_TRY
 	{
 		if (inCheckExists && !fs::exists(inPath))
 			return false;
 
 		if (!fs::is_directory(inPath))
 		{
-			throw std::runtime_error("Not a directory");
+			CHALET_THROW(std::runtime_error("Not a directory"));
 		}
 
 		bool result = fs::is_directory(inPath);
@@ -637,14 +637,14 @@ bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& 
 
 		return result;
 	}
-	catch (const fs::filesystem_error& err)
+	CHALET_CATCH(const fs::filesystem_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
-	catch (const std::runtime_error& err)
+	CHALET_CATCH(const std::runtime_error& err)
 	{
-		Diagnostic::error(err.what());
+		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
 }

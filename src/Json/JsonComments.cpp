@@ -19,7 +19,7 @@ Json JsonComments::parse(const std::string& inFilename)
 	std::string lines;
 	std::ifstream fileStream(inFilename);
 
-	try
+	CHALET_TRY
 	{
 		nlohmann::detail::parser_callback_t<Json> cb = nullptr;
 		bool allow_exceptions = true;
@@ -27,14 +27,14 @@ Json JsonComments::parse(const std::string& inFilename)
 
 		return Json::parse(fileStream, cb, allow_exceptions, ignore_comments);
 	}
-	catch (Json::out_of_range& err)
+	CHALET_CATCH(Json::out_of_range & err)
 	{
-		Diagnostic::error("{}", err.what());
+		CHALET_EXCEPT_ERROR("{}", err.what());
 		return Json();
 	}
-	catch (Json::parse_error& err)
+	CHALET_CATCH(Json::parse_error & err)
 	{
-		Diagnostic::error("{}", err.what());
+		CHALET_EXCEPT_ERROR("{}", err.what());
 		return Json();
 	}
 }
@@ -42,7 +42,7 @@ Json JsonComments::parse(const std::string& inFilename)
 /*****************************************************************************/
 Json JsonComments::parseLiteral(const std::string& inJsonContent)
 {
-	try
+	CHALET_TRY
 	{
 		nlohmann::detail::parser_callback_t<Json> cb = nullptr;
 		bool allow_exceptions = true;
@@ -50,14 +50,14 @@ Json JsonComments::parseLiteral(const std::string& inJsonContent)
 
 		return Json::parse(inJsonContent, cb, allow_exceptions, ignore_comments);
 	}
-	catch (Json::out_of_range& err)
+	CHALET_CATCH(Json::out_of_range & err)
 	{
-		Diagnostic::error("{}", err.what());
+		CHALET_EXCEPT_ERROR("{}", err.what());
 		return Json();
 	}
-	catch (Json::parse_error& err)
+	CHALET_CATCH(Json::parse_error & err)
 	{
-		Diagnostic::error("{}", err.what());
+		CHALET_EXCEPT_ERROR("{}", err.what());
 		return Json();
 	}
 }

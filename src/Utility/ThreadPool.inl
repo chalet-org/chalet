@@ -47,7 +47,7 @@ std::future<typename std::invoke_result_t<T, Args...>> ThreadPool::enqueue(T&& f
 		std::unique_lock<std::mutex> lock(m_queueMutex);
 
 		if (m_stop)
-			throw std::runtime_error("enqueue on stopped ThreadPool");
+			CHALET_THROW(std::runtime_error("enqueue on stopped ThreadPool"));
 
 		m_tasks.emplace([task]() {
 			(*task)();
