@@ -56,6 +56,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId)
 	}
 	else
 	{
+		chalet_assert(m_initializedTime != 0, "");
 		auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_initializedTime, m_lastBuildTime));
 		if (!success)
 		{
@@ -108,6 +109,8 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 {
 	m_filename = inFilename;
 	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+	chalet_assert(m_initializedTime != 0, "");
 
 	if (Commands::pathExists(m_filename))
 	{

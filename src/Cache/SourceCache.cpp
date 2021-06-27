@@ -33,7 +33,7 @@ std::string SourceCache::asString() const
 			continue;
 
 		if (fileData.needsUpdate)
-			add(file);
+			add(file, fileData);
 
 		ret += fmt::format("{}|{}\n", fileData.lastWrite, file);
 	}
@@ -42,9 +42,9 @@ std::string SourceCache::asString() const
 }
 
 /*****************************************************************************/
-void SourceCache::addLastWrite(std::string inFile, const std::string& inRawHash)
+void SourceCache::addLastWrite(std::string inFile, const std::string& inRaw)
 {
-	std::time_t lastWrite = strtoll(inRawHash.c_str(), NULL, 0);
+	std::time_t lastWrite = strtoll(inRaw.c_str(), NULL, 0);
 	auto& fileData = m_lastWrites[std::move(inFile)];
 	fileData.lastWrite = lastWrite;
 	fileData.needsUpdate = true;
@@ -64,7 +64,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 
 	auto& fileData = getLastWrite(inFile);
 	if (fileData.needsUpdate)
-		return add(inFile);
+		return add(inFile, fileData);
 
 	// TODO: Older file should also restat, but need to check values more closely '!=' seemed to always restat
 	return fileData.lastWrite > m_lastBuildTime;
@@ -83,22 +83,21 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std
 
 	auto& fileData = getLastWrite(inFile);
 	if (fileData.needsUpdate)
-		return add(inFile);
+		return add(inFile, fileData);
 
 	// TODO: Older file should also restat, but need to check values more closely '!=' seemed to always restat
 	return fileData.lastWrite > m_lastBuildTime;
 }
 
 /*****************************************************************************/
-bool SourceCache::add(const std::string& inFile) const
+bool SourceCache::add(const std::string& inFile, LastWrite& outFileData) const
 {
 	auto lastWrite = Commands::getLastWriteTime(inFile);
 	if (lastWrite == 0)
-		return false;
+		lastWrite = m_initializedTime;
 
-	auto& fileData = getLastWrite(inFile);
-	fileData.lastWrite = lastWrite;
-	fileData.needsUpdate = false;
+	outFileData.lastWrite = lastWrite;
+	outFileData.needsUpdate = false;
 	m_dirty = true;
 
 	return true;

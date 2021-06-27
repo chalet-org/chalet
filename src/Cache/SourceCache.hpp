@@ -17,13 +17,13 @@ struct SourceCache
 	bool dirty() const;
 	std::string asString() const;
 
-	void addLastWrite(std::string inFile, const std::string& inRawHash);
+	void addLastWrite(std::string inFile, const std::string& inRaw);
 
 	bool fileChangedOrDoesNotExist(const std::string& inFile) const;
 	bool fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const;
 
 private:
-	bool add(const std::string& inFile) const;
+	bool add(const std::string& inFile, LastWrite& outFileData) const;
 	LastWrite& getLastWrite(const std::string& inFile) const;
 
 	mutable std::unordered_map<std::string, LastWrite> m_lastWrites;
