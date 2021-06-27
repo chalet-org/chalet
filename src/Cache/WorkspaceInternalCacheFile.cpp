@@ -240,12 +240,13 @@ bool WorkspaceInternalCacheFile::save()
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::loadExternalDependencies(const std::string& inPath)
 {
-	auto hash = Hash::string("chalet_external_dependencies_cache");
+	// auto hash = Hash::string("chalet_external_dependencies_cache");
 
 	UNUSED(inPath);
 
 	// m_externalDependencyCachePath = fmt::format("{}/{}", inPath, hash);
-	m_externalDependencyCachePath = m_cache.getCachePath(hash, CacheType::Local);
+	m_externalDependencyCachePath = fmt::format("{}/.chalet_git", inPath);
+	// m_externalDependencyCachePath = m_cache.getCachePath(hash, CacheType::Local);
 	return m_externalDependencies.loadFromFilename(m_externalDependencyCachePath);
 }
 
@@ -258,17 +259,16 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 
 	if (m_externalDependencies.dirty())
 	{
-		// auto externalPath = m_cache.getCachePath(hash, CacheType::Local);
 		std::ofstream(m_externalDependencyCachePath) << m_externalDependencies.asString()
 													 << std::endl;
 	}
 
-	auto hash = String::getPathFilename(m_externalDependencyCachePath);
-	if (!m_externalDependencies.empty())
-	{
-		addExtraHash(std::move(hash));
-	}
-	else
+	// auto hash = String::getPathFilename(m_externalDependencyCachePath);
+	// if (!m_externalDependencies.empty())
+	// {
+	// 	addExtraHash(std::move(hash));
+	// }
+	if (m_externalDependencies.empty())
 	{
 		if (Commands::pathExists(m_externalDependencyCachePath))
 			Commands::remove(m_externalDependencyCachePath);
