@@ -104,7 +104,7 @@ if(MSVC)
 else()
 	target_compile_options(${TARGET_NAME}
 		PRIVATE
-			-Wall -Werror -Wextra -Wpedantic -Wshadow -Wunreachable-code -Wunused -Wignored-qualifiers -Wcast-align -Wdouble-promotion -Wformat-nonliteral -Wformat=2 -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wredundant-decls -Wodr -fno-rtti -fno-exceptions -fdiagnostics-color=always
+			-Wall -Werror -Wextra -Wpedantic -Wshadow -Wunreachable-code -Wunused -Wignored-qualifiers -Wcast-align -Wdouble-promotion -Wformat-nonliteral -Wformat=2 -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wredundant-decls -Wodr -fno-rtti -fdiagnostics-color=always
 		)
 endif()
 

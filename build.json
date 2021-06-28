@@ -41,7 +41,6 @@
 		"settings:Cxx": {
 			"cppStandard": "c++17",
 			"rtti": false,
-			"exceptions": false,
 			"staticLinking": true,
 			"warnings": "strict",
 			// "compileOptions": [],

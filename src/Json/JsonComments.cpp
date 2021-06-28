@@ -27,12 +27,12 @@ Json JsonComments::parse(const std::string& inFilename)
 
 		return Json::parse(fileStream, cb, allow_exceptions, ignore_comments);
 	}
-	CHALET_CATCH(Json::out_of_range & err)
+	CHALET_CATCH(const Json::out_of_range& err)
 	{
 		CHALET_EXCEPT_ERROR("{}", err.what());
 		return Json();
 	}
-	CHALET_CATCH(Json::parse_error & err)
+	CHALET_CATCH(const Json::parse_error& err)
 	{
 		CHALET_EXCEPT_ERROR("{}", err.what());
 		return Json();
@@ -50,12 +50,12 @@ Json JsonComments::parseLiteral(const std::string& inJsonContent)
 
 		return Json::parse(inJsonContent, cb, allow_exceptions, ignore_comments);
 	}
-	CHALET_CATCH(Json::out_of_range & err)
+	CHALET_CATCH(const Json::out_of_range& err)
 	{
 		CHALET_EXCEPT_ERROR("{}", err.what());
 		return Json();
 	}
-	CHALET_CATCH(Json::parse_error & err)
+	CHALET_CATCH(const Json::parse_error& err)
 	{
 		CHALET_EXCEPT_ERROR("{}", err.what());
 		return Json();
