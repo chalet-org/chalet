@@ -35,6 +35,8 @@
 // Defines
 #include "Utility/DefinesCompiler.hpp"
 #include "Utility/DefinesPlatform.hpp"
+//
+#include "Utility/DefinesExceptions.hpp"
 
 // Utils
 #include "Utility/Types.hpp"
