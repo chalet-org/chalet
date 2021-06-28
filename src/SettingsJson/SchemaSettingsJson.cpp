@@ -11,6 +11,56 @@
 
 namespace chalet
 {
+namespace
+{
+enum class Defs : ushort
+{
+	// Tools
+	Bash,
+	Brew,
+	CommandPrompt,
+	CodeSign,
+	Git,
+	GProf,
+	HdiUtil,
+	InstallNameTool,
+	Instruments,
+	Ldd,
+	Lipo,
+	Lua,
+	OsaScript,
+	Otool,
+	Perl,
+	PlUtil,
+	Powershell,
+	Python,
+	Python3,
+	Ruby,
+	Sample,
+	Sips,
+	TiffUtil,
+	XcodeBuild,
+	XcodeGen,
+	XcRun,
+	// Toolchains
+	CppCompiler,
+	CCompiler,
+	WinResourceCompiler,
+	Archiver,
+	Linker,
+	Make,
+	CMake,
+	Ninja,
+	ObjDump,
+	ToolchainStrategy,
+	// Settings
+	DumpAssembly,
+	MaxJobs,
+	ShowCommands,
+	Toolchain,
+	SigningIdentity,
+};
+}
 /*****************************************************************************/
 Json Schema::getSettingsJson()
 {
@@ -25,233 +75,234 @@ Json Schema::getSettingsJson()
 	};
 
 	//
-	const auto kDefinitions = "definitions";
-	ret[kDefinitions] = Json::object();
+	// const auto kDefinitions = "definitions";
+	// ret[kDefinitions] = Json::object();
+	std::unordered_map<Defs, Json> defs;
 
-	ret[kDefinitions]["tools-bash"] = R"json({
+	defs[Defs::Bash] = R"json({
 		"type": "string",
 		"description": "The executable path to GNU bash",
 		"default": "/usr/bin/bash"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-brew"] = R"json({
+	defs[Defs::Brew] = R"json({
 		"type": "string",
 		"description": "The executable path to brew command-line utility (MacOS)",
 		"default": "/usr/local/bin/brew"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-command_prompt"] = R"json({
+	defs[Defs::CommandPrompt] = R"json({
 		"type": "string",
 		"description": "The executable path to Command Prompt (Windows)",
 		"default": "C:/Windows/System32/cmd.exe"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-codesign"] = R"json({
+	defs[Defs::CodeSign] = R"json({
 		"type": "string",
 		"description": "The executable path to codesign command-line utility (MacOS)",
 		"default": "/usr/bin/codesign"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-git"] = R"json({
+	defs[Defs::Git] = R"json({
 		"type": "string",
 		"description": "The executable path to git.",
 		"default": "/usr/bin/git"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-gprof"] = R"json({
+	defs[Defs::GProf] = R"json({
 		"type": "string",
 		"description": "The executable path to gprof.",
 		"default": "/usr/bin/gprof"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-hdiutil"] = R"json({
+	defs[Defs::HdiUtil] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's hdiutil command-line utility (MacOS)",
 		"default": "/usr/bin/hdiutil"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-install_name_tool"] = R"json({
+	defs[Defs::InstallNameTool] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's install_name_tool command-line utility (MacOS)",
 		"default": "/usr/bin/install_name_tool"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-instruments"] = R"json({
+	defs[Defs::Instruments] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's instruments command-line utility (MacOS)",
 		"default": "/usr/bin/instruments"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-ldd"] = R"json({
+	defs[Defs::Ldd] = R"json({
 		"type": "string",
 		"description": "The executable path to ldd.",
 		"default": "/usr/bin/ldd"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-lipo"] = R"json({
+	defs[Defs::Lipo] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's lipo utility (MacOS)",
 		"default": "/usr/bin/lipo"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-lua"] = R"json({
+	defs[Defs::Lua] = R"json({
 		"type": "string",
 		"description": "The executable path to Lua",
 		"default": "/usr/local/bin/lua"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-osascript"] = R"json({
+	defs[Defs::OsaScript] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's osascript command-line utility (MacOS)",
 		"default": "/usr/bin/osascript"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-otool"] = R"json({
+	defs[Defs::Otool] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's otool command-line utility (MacOS)",
 		"default": "/usr/bin/otool"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-perl"] = R"json({
+	defs[Defs::Perl] = R"json({
 		"type": "string",
 		"description": "The executable path to Perl",
 		"default": "/usr/local/bin/perl"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-plutil"] = R"json({
+	defs[Defs::PlUtil] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's plutil command-line utility (MacOS)",
 		"default": "/usr/bin/plutil"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-powershell"] = R"json({
+	defs[Defs::Powershell] = R"json({
 		"type": "string",
 		"description": "The executable path to Powershell (Windows)",
 		"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-python"] = R"json({
+	defs[Defs::Python] = R"json({
 		"type": "string",
 		"description": "The executable path to Python 2",
 		"default": "/usr/bin/python"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-python3"] = R"json({
+	defs[Defs::Python3] = R"json({
 		"type": "string",
 		"description": "The executable path to Python 3",
 		"default": "/usr/local/bin/python3"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-ruby"] = R"json({
+	defs[Defs::Ruby] = R"json({
 		"type": "string",
 		"description": "The executable path to ruby.",
 		"default": "/usr/bin/ruby"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-sample"] = R"json({
+	defs[Defs::Sample] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's sample command-line utility (MacOS)",
 		"default": "/usr/bin/sample"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-sips"] = R"json({
+	defs[Defs::Sips] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's sips command-line utility (MacOS)",
 		"default": "/usr/bin/sips"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-tiffutil"] = R"json({
+	defs[Defs::TiffUtil] = R"json({
 		"type": "string",
 		"description": "The executable path to tiffutil",
 		"default": "/usr/bin/tiffutil"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-xcodebuild"] = R"json({
+	defs[Defs::XcodeBuild] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's xcodebuild command-line utility (MacOS)",
 		"default": "/usr/bin/xcodebuild"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-xcodegen"] = R"json({
+	defs[Defs::XcodeGen] = R"json({
 		"type": "string",
 		"description": "The executable path to the xcodegen Homebrew application (MacOS)",
 		"default": "/usr/local/bin/xcodegen"
 	})json"_ojson;
 
-	ret[kDefinitions]["tools-xcrun"] = R"json({
+	defs[Defs::XcRun] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
 		"default": "/usr/bin/xcrun"
 	})json"_ojson;
 
 	// libtool (macOS), ar (Linux / macOS / MinGW), lib.exe (Win)
-	ret[kDefinitions]["toolchains-archiver"] = R"json({
+	defs[Defs::Archiver] = R"json({
 		"type": "string",
 		"description": "The executable path to the toolchain's static library archive utility",
 		"default": "/usr/bin/ar"
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains-cpp"] = R"json({
+	defs[Defs::CppCompiler] = R"json({
 		"type": "string",
 		"description": "The executable path to the toolchain's C++ compiler",
 		"default": "/usr/bin/c++"
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains-c"] = R"json({
+	defs[Defs::CCompiler] = R"json({
 		"type": "string",
 		"description": "The executable path to the toolchain's C compiler",
 		"default": "/usr/bin/cc"
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains-cmake"] = R"json({
+	defs[Defs::CMake] = R"json({
 		"type": "string",
 		"description": "The executable path to CMake",
 		"default": "/usr/local/bin/cmake"
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains-linker"] = R"json({
+	defs[Defs::Linker] = R"json({
 		"type": "string",
 		"description": "The executable path to the toolchain's linker",
 		"default": "/usr/bin/ld"
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains-make"] = R"json({
+	defs[Defs::Make] = R"json({
 		"type": "string",
 		"description": "The executable path to GNU make utility.",
 		"default": "/usr/bin/make"
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains-ninja"] = R"json({
+	defs[Defs::Ninja] = R"json({
 		"type": "string",
 		"description": "The executable path to ninja."
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains-objdump"] = R"json({
+	defs[Defs::ObjDump] = R"json({
 		"type": "string",
 		"description": "The executable path to objdump."
 	})json"_ojson;
 
 	/*
 	// These don't get called directly (yet), but might be useful to look into
-	ret[kDefinitions]["toolchains-ranlib"] = R"json({
+	defs[Defs::RanLib] = R"json({
 		"type": "string",
 		"description": "The executable path to ranlib.",
 		"default": "/usr/bin/ranlib"
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains-strip"] = R"json({
+	defs[Defs::Strip] = R"json({
 		"type": "string",
 		"description": "The executable path to strip.",
 		"default": "/usr/bin/strip"
 	})json"_ojson;
 	*/
 
-	ret[kDefinitions]["toolchains-windowsResource"] = R"json({
+	defs[Defs::WinResourceCompiler] = R"json({
 		"type": "string",
 		"description": "The executable path to the resource compiler (Windows)"
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains-strategy"] = R"json({
+	defs[Defs::ToolchainStrategy] = R"json({
 		"type": "string",
 		"description": "The build strategy to use.",
 		"enum": [
@@ -262,7 +313,39 @@ Json Schema::getSettingsJson()
 		"default": "makefile"
 	})json"_ojson;
 
-	ret[kDefinitions]["toolchains"] = R"json({
+	defs[Defs::DumpAssembly] = R"json({
+		"type": "boolean",
+		"description": "true to use include an asm dump of each file in the build, false otherwise.",
+		"default": false
+	})json"_ojson;
+
+	defs[Defs::MaxJobs] = R"json({
+		"type": "integer",
+		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
+		"minimum": 1
+	})json"_ojson;
+
+	defs[Defs::ShowCommands] = R"json({
+		"description": "true to show the commands run during the build, false to just show the source file.",
+		"type": "boolean",
+		"default": false
+	})json"_ojson;
+
+	defs[Defs::Toolchain] = R"json({
+		"description": "The toolchain id to use for building, if not the previous one.",
+		"type": "string"
+	})json"_ojson;
+
+	defs[Defs::SigningIdentity] = R"json({
+		"description": "The signing identity to use when bundling the macos application bundle.",
+		"type": "string"
+	})json"_ojson;
+
+	//
+
+	const auto kProperties = "properties";
+
+	auto toolchains = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "The list of compilers for the platform",
@@ -277,158 +360,54 @@ Json Schema::getSettingsJson()
 			"ninja",
 			"strategy",
 			"windowsResource"
-		],
-		"properties": {
-			"strategy": {
-				"$ref": "#/definitions/toolchains-strategy"
-			},
-			"archiver": {
-				"$ref": "#/definitions/toolchains-archiver"
-			},
-			"C++": {
-				"$ref": "#/definitions/toolchains-cpp"
-			},
-			"C": {
-				"$ref": "#/definitions/toolchains-c"
-			},
-			"cmake": {
-				"$ref": "#/definitions/toolchains-cmake"
-			},
-			"linker": {
-				"$ref": "#/definitions/toolchains-linker"
-			},
-			"make": {
-				"$ref": "#/definitions/toolchains-make"
-			},
-			"ninja": {
-				"$ref": "#/definitions/toolchains-ninja"
-			},
-			"objdump": {
-				"$ref": "#/definitions/toolchains-objdump"
-			},
-			"windowsResource": {
-				"$ref": "#/definitions/toolchains-windowsResource"
-			}
-		}
+		]
 	})json"_ojson;
-
-	ret[kDefinitions]["settings-dumpAssembly"] = R"json({
-		"type": "boolean",
-		"description": "true to use include an asm dump of each file in the build, false otherwise.",
-		"default": false
-	})json"_ojson;
-
-	ret[kDefinitions]["settings-maxJobs"] = R"json({
-		"type": "integer",
-		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
-		"minimum": 1
-	})json"_ojson;
-
-	ret[kDefinitions]["settings-showCommands"] = R"json({
-		"description": "true to show the commands run during the build, false to just show the source file.",
-		"type": "boolean",
-		"default": false
-	})json"_ojson;
-
-	ret[kDefinitions]["settings-toolchain"] = R"json({
-		"description": "The toolchain id to use for building, if not the previous one.",
-		"type": "string"
-	})json"_ojson;
-
-	ret[kDefinitions]["settings-signingIdentity"] = R"json({
-		"description": "The signing identity to use when bundling the macos application bundle.",
-		"type": "string"
-	})json"_ojson;
+	toolchains[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
+	toolchains[kProperties]["archiver"] = defs[Defs::Archiver];
+	toolchains[kProperties]["C++"] = defs[Defs::CppCompiler];
+	toolchains[kProperties]["C"] = defs[Defs::CCompiler];
+	toolchains[kProperties]["cmake"] = defs[Defs::CMake];
+	toolchains[kProperties]["linker"] = defs[Defs::Linker];
+	toolchains[kProperties]["make"] = defs[Defs::Make];
+	toolchains[kProperties]["ninja"] = defs[Defs::Ninja];
+	toolchains[kProperties]["objdump"] = defs[Defs::ObjDump];
+	toolchains[kProperties]["windowsResource"] = defs[Defs::WinResourceCompiler];
 
 	//
-	const auto kProperties = "properties";
 	ret[kProperties] = Json::object();
 
-	ret[kProperties]["tools"] = R"json({
+	const auto kTools = "tools";
+	ret[kProperties][kTools] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "The list of tools for the platform",
-		"properties": {
-			"bash": {
-				"$ref": "#/definitions/tools-bash"
-			},
-			"brew": {
-				"$ref": "#/definitions/tools-brew"
-			},
-			"command_prompt": {
-				"$ref": "#/definitions/tools-command_prompt"
-			},
-			"codesign": {
-				"$ref": "#/definitions/tools-codesign"
-			},
-			"git": {
-				"$ref": "#/definitions/tools-git"
-			},
-			"gprof": {
-				"$ref": "#/definitions/tools-gprof"
-			},
-			"hdiutil": {
-				"$ref": "#/definitions/tools-hdiutil"
-			},
-			"install_name_tool": {
-				"$ref": "#/definitions/tools-install_name_tool"
-			},
-			"instruments": {
-				"$ref": "#/definitions/tools-instruments"
-			},
-			"ldd": {
-				"$ref": "#/definitions/tools-ldd"
-			},
-			"lipo": {
-				"$ref": "#/definitions/tools-lipo"
-			},
-			"lua": {
-				"$ref": "#/definitions/tools-lua"
-			},
-			"osascript": {
-				"$ref": "#/definitions/tools-osascript"
-			},
-			"otool": {
-				"$ref": "#/definitions/tools-otool"
-			},
-			"perl": {
-				"$ref": "#/definitions/tools-perl"
-			},
-			"plutil": {
-				"$ref": "#/definitions/tools-plutil"
-			},
-			"powershell": {
-				"$ref": "#/definitions/tools-powershell"
-			},
-			"python": {
-				"$ref": "#/definitions/tools-python"
-			},
-			"python3": {
-				"$ref": "#/definitions/tools-python3"
-			},
-			"ruby": {
-				"$ref": "#/definitions/tools-ruby"
-			},
-			"sample": {
-				"$ref": "#/definitions/tools-sample"
-			},
-			"sips": {
-				"$ref": "#/definitions/tools-sips"
-			},
-			"tiffutil": {
-				"$ref": "#/definitions/tools-tiffutil"
-			},
-			"xcodebuild": {
-				"$ref": "#/definitions/tools-xcodebuild"
-			},
-			"xcodegen": {
-				"$ref": "#/definitions/tools-xcodegen"
-			},
-			"xcrun": {
-				"$ref": "#/definitions/tools-xcrun"
-			}
-		}
+		"description": "The list of tools for the platform"
 	})json"_ojson;
+	ret[kProperties][kTools][kProperties]["bash"] = defs[Defs::Bash];
+	ret[kProperties][kTools][kProperties]["brew"] = defs[Defs::Brew];
+	ret[kProperties][kTools][kProperties]["command_prompt"] = defs[Defs::CommandPrompt];
+	ret[kProperties][kTools][kProperties]["codesign"] = defs[Defs::CodeSign];
+	ret[kProperties][kTools][kProperties]["git"] = defs[Defs::Git];
+	ret[kProperties][kTools][kProperties]["gprof"] = defs[Defs::GProf];
+	ret[kProperties][kTools][kProperties]["hdiutil"] = defs[Defs::HdiUtil];
+	ret[kProperties][kTools][kProperties]["install_name_tool"] = defs[Defs::InstallNameTool];
+	ret[kProperties][kTools][kProperties]["instruments"] = defs[Defs::Instruments];
+	ret[kProperties][kTools][kProperties]["ldd"] = defs[Defs::Ldd];
+	ret[kProperties][kTools][kProperties]["lipo"] = defs[Defs::Lipo];
+	ret[kProperties][kTools][kProperties]["lua"] = defs[Defs::Lua];
+	ret[kProperties][kTools][kProperties]["osascript"] = defs[Defs::OsaScript];
+	ret[kProperties][kTools][kProperties]["otool"] = defs[Defs::Otool];
+	ret[kProperties][kTools][kProperties]["perl"] = defs[Defs::Perl];
+	ret[kProperties][kTools][kProperties]["plutil"] = defs[Defs::PlUtil];
+	ret[kProperties][kTools][kProperties]["powershell"] = defs[Defs::Powershell];
+	ret[kProperties][kTools][kProperties]["python"] = defs[Defs::Python];
+	ret[kProperties][kTools][kProperties]["python3"] = defs[Defs::Python3];
+	ret[kProperties][kTools][kProperties]["ruby"] = defs[Defs::Ruby];
+	ret[kProperties][kTools][kProperties]["sample"] = defs[Defs::Sample];
+	ret[kProperties][kTools][kProperties]["sips"] = defs[Defs::Sips];
+	ret[kProperties][kTools][kProperties]["tiffutil"] = defs[Defs::TiffUtil];
+	ret[kProperties][kTools][kProperties]["xcodebuild"] = defs[Defs::XcodeBuild];
+	ret[kProperties][kTools][kProperties]["xcodegen"] = defs[Defs::XcodeGen];
+	ret[kProperties][kTools][kProperties]["xcrun"] = defs[Defs::XcRun];
 
 	ret[kProperties]["appleSdks"] = R"json({
 		"type": "object",
@@ -440,7 +419,8 @@ Json Schema::getSettingsJson()
 		"description": "The working directory of the workspace"
 	})json"_ojson;
 
-	ret[kProperties]["settings"] = R"json({
+	const auto kSettings = "settings";
+	ret[kProperties][kSettings] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A list of settings related to the build",
@@ -450,36 +430,21 @@ Json Schema::getSettingsJson()
 			"showCommands",
 			"toolchain",
 			"signingIdentity"
-		],
-		"properties": {
-			"dumpAssembly": {
-				"$ref": "#/definitions/settings-dumpAssembly"
-			},
-			"maxJobs": {
-				"$ref": "#/definitions/settings-maxJobs"
-			},
-			"showCommands": {
-				"$ref": "#/definitions/settings-showCommands"
-			},
-			"toolchain": {
-				"$ref": "#/definitions/settings-toolchain"
-			},
-			"signingIdentity": {
-				"$ref": "#/definitions/settings-signingIdentity"
-			}
-		}
+		]
 	})json"_ojson;
+	ret[kProperties][kSettings][kProperties]["dumpAssembly"] = defs[Defs::DumpAssembly];
+	ret[kProperties][kSettings][kProperties]["maxJobs"] = defs[Defs::MaxJobs];
+	ret[kProperties][kSettings][kProperties]["showCommands"] = defs[Defs::ShowCommands];
+	ret[kProperties][kSettings][kProperties]["toolchain"] = defs[Defs::Toolchain];
+	ret[kProperties][kSettings][kProperties]["signingIdentity"] = defs[Defs::SigningIdentity];
 
-	ret[kProperties]["toolchains"] = R"json({
+	const auto kToolchains = "toolchains";
+	ret[kProperties][kToolchains] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of compiler toolchains, mapped to the ids: msvc, llvm, or gcc",
-		"patternProperties": {
-			"^[\\w\\-\\+\\.]{3,}$": {
-				"$ref": "#/definitions/toolchains"
-			}
-		}
+		"description": "A list of compiler toolchains, mapped to the ids: msvc, llvm, or gcc"
 	})json"_ojson;
+	ret[kProperties][kToolchains]["patternProperties"][R"(^[\w\-\+\.]{3,}$)"] = toolchains;
 
 	return ret;
 }
