@@ -76,6 +76,7 @@ enum class Defs : ushort
 	TargetProjectCxxPrecompiledHeader,
 	TargetProjectCxxThreads,
 	TargetProjectCxxRunTimeTypeInfo,
+	TargetProjectCxxExceptions,
 	TargetProjectCxxStaticLinking,
 	TargetProjectCxxStaticLinks,
 	TargetProjectCxxWarnings,
@@ -722,6 +723,12 @@ Json Schema::getBuildJson()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::TargetProjectCxxExceptions] = R"json({
+		"type": "boolean",
+		"description": "true to use exceptions (default), false to turn off exceptions.",
+		"default": true
+	})json"_ojson;
+
 	defs[Defs::TargetProjectCxxStaticLinking] = R"json({
 		"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 		"type": "boolean",
@@ -1103,6 +1110,7 @@ Json Schema::getBuildJson()
 	projectSettingsCxx[kProperties]["pch"] = defs[Defs::TargetProjectCxxPrecompiledHeader];
 	projectSettingsCxx[kProperties]["threads"] = defs[Defs::TargetProjectCxxThreads];
 	projectSettingsCxx[kProperties]["rtti"] = defs[Defs::TargetProjectCxxRunTimeTypeInfo];
+	projectSettingsCxx[kProperties]["exceptions"] = defs[Defs::TargetProjectCxxExceptions];
 	projectSettingsCxx[kProperties]["staticLinking"] = defs[Defs::TargetProjectCxxStaticLinking];
 	projectSettingsCxx[kProperties]["staticLinks"] = defs[Defs::TargetProjectCxxStaticLinks];
 	projectSettingsCxx[kProperties]["warnings"] = defs[Defs::TargetProjectCxxWarnings];
@@ -1124,6 +1132,7 @@ Json Schema::getBuildJson()
 	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinks{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxStaticLinks];
 	projectSettingsCxx[kPatternProperties][fmt::format("^threads{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxThreads];
 	projectSettingsCxx[kPatternProperties][fmt::format("^rtti{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxRunTimeTypeInfo];
+	projectSettingsCxx[kPatternProperties][fmt::format("^exceptions{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxExceptions];
 	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxStaticLinking];
 
 	auto targetProject = R"json({

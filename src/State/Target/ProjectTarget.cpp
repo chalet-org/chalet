@@ -610,6 +610,15 @@ void ProjectTarget::setRtti(const bool inValue) noexcept
 	m_rtti = inValue;
 }
 
+bool ProjectTarget::exceptions() const noexcept
+{
+	return m_exceptions;
+}
+void ProjectTarget::setExceptions(const bool inValue) noexcept
+{
+	m_exceptions = inValue;
+}
+
 /*****************************************************************************/
 bool ProjectTarget::runProject() const noexcept
 {

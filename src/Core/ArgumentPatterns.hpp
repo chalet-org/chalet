@@ -41,6 +41,7 @@ private:
 
 	void makeParser();
 	bool doParse(const StringList& inArguments);
+	bool showHelp();
 	bool populateArgumentMap(const StringList& inArguments);
 	// void populateArgumentMap(const StringList& inArguments);
 	std::string getHelp();

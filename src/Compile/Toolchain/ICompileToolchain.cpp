@@ -258,6 +258,12 @@ void ICompileToolchain::addNoRunTimeTypeInformationOption(StringList& outArgList
 }
 
 /*****************************************************************************/
+void ICompileToolchain::addNoExceptionsOption(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void ICompileToolchain::addThreadModelCompileOption(StringList& outArgList) const
 {
 	UNUSED(outArgList);

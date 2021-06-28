@@ -55,6 +55,7 @@ protected:
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const;
+	virtual void addNoExceptionsOption(StringList& outArgList) const;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const;
 	virtual bool addArchitecture(StringList& outArgList) const;
 

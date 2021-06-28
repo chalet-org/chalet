@@ -534,6 +534,9 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectTarget& outProject, const 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "rtti"))
 		outProject.setRtti(val);
 
+	if (bool val = false; parseKeyFromConfig(val, inNode, "exceptions"))
+		outProject.setExceptions(val);
+
 	if (bool val = false; parseKeyFromConfig(val, inNode, "staticLinking"))
 		outProject.setStaticLinking(val);
 

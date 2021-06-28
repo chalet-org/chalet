@@ -262,12 +262,14 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 	{
 		if (inArguments.size() <= 1)
 		{
-			CHALET_THROW(std::runtime_error("No arguments were given"));
+			// CHALET_THROW(std::runtime_error("No arguments were given"));
+			return showHelp();
 		}
 
 		if (List::contains(inArguments, std::string("-h")) || List::contains(inArguments, std::string("--help")))
 		{
-			CHALET_THROW(std::runtime_error("help"));
+			// CHALET_THROW(std::runtime_error("help"));
+			return showHelp();
 		}
 
 		CHALET_TRY
@@ -284,15 +286,13 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 
 		if (m_routeString.empty())
 		{
-			CHALET_THROW(std::runtime_error("No sub-command given"));
+			// CHALET_THROW(std::runtime_error("No sub-command given"));
+			return showHelp();
 		}
 	}
 	CHALET_CATCH(const std::runtime_error&)
 	{
-		std::string help = getHelp();
-		// std::cout << err.what() << std::endl;
-		std::cout << help << std::endl;
-		return false;
+		return showHelp();
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
@@ -301,6 +301,14 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 	}
 
 	return populateArgumentMap(inArguments);
+}
+/*****************************************************************************/
+bool ArgumentPatterns::showHelp()
+{
+	std::string help = getHelp();
+	// std::cout << err.what() << std::endl;
+	std::cout << help << std::endl;
+	return false;
 }
 
 /*****************************************************************************/

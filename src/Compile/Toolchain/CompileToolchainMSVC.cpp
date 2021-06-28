@@ -89,7 +89,7 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 	addLanguageStandard(ret, specialization);
-	addExceptionHandlingModel(ret);
+	addNoExceptionsOption(ret);
 	addWarnings(ret);
 
 	ret.push_back("/utf-8");
@@ -158,7 +158,7 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	addThreadModelCompileOption(ret);
 	addOptimizationOption(ret);
 	addLanguageStandard(ret, specialization);
-	addExceptionHandlingModel(ret);
+	addNoExceptionsOption(ret);
 	addWarnings(ret);
 
 	ret.push_back("/utf-8");
@@ -453,16 +453,6 @@ void CompileToolchainMSVC::addResourceDefines(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addExceptionHandlingModel(StringList& outArgList) const
-{
-	// /EH - Exception handling model
-	// s - standard C++ stack unwinding
-	// c - functions declared as extern "C" never throw
-
-	outArgList.push_back("/EHsc");
-}
-
-/*****************************************************************************/
 void CompileToolchainMSVC::addPchInclude(StringList& outArgList) const
 {
 	// TODO: Potential for more than one pch?
@@ -627,6 +617,24 @@ void CompileToolchainMSVC::addNoRunTimeTypeInformationOption(StringList& outArgL
 	if (!m_project.rtti())
 	{
 		List::addIfDoesNotExist(outArgList, "/GR-");
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addNoExceptionsOption(StringList& outArgList) const
+{
+	// /EH - Exception handling model
+	// s - standard C++ stack unwinding
+	// c - functions declared as extern "C" never throw
+
+	if (!m_project.exceptions())
+	{
+		List::addIfDoesNotExist(outArgList, "/GR-"); // must also disable rtti
+		List::addIfDoesNotExist(outArgList, "/D_HAS_EXCEPTIONS=0");
+	}
+	else
+	{
+		List::addIfDoesNotExist(outArgList, "/EHsc");
 	}
 }
 

@@ -133,6 +133,11 @@
 									"description": "true to include run-time type information (default), false to exclude.",
 									"default": true
 								},
+								"exceptions": {
+									"type": "boolean",
+									"description": "true to use exceptions (default), false to turn off exceptions.",
+									"default": true
+								},
 								"staticLinking": {
 									"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 									"type": "boolean",
@@ -586,6 +591,11 @@
 								"^rtti(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 									"type": "boolean",
 									"description": "true to include run-time type information (default), false to exclude.",
+									"default": true
+								},
+								"^exceptions(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+									"type": "boolean",
+									"description": "true to use exceptions (default), false to turn off exceptions.",
 									"default": true
 								},
 								"^staticLinking(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
@@ -1287,6 +1297,11 @@
 											"description": "true to include run-time type information (default), false to exclude.",
 											"default": true
 										},
+										"exceptions": {
+											"type": "boolean",
+											"description": "true to use exceptions (default), false to turn off exceptions.",
+											"default": true
+										},
 										"staticLinking": {
 											"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 											"type": "boolean",
@@ -1740,6 +1755,11 @@
 										"^rtti(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 											"type": "boolean",
 											"description": "true to include run-time type information (default), false to exclude.",
+											"default": true
+										},
+										"^exceptions(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+											"type": "boolean",
+											"description": "true to use exceptions (default), false to turn off exceptions.",
 											"default": true
 										},
 										"^staticLinking(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
@@ -2478,6 +2498,11 @@
 							"description": "true to include run-time type information (default), false to exclude.",
 							"default": true
 						},
+						"exceptions": {
+							"type": "boolean",
+							"description": "true to use exceptions (default), false to turn off exceptions.",
+							"default": true
+						},
 						"staticLinking": {
 							"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 							"type": "boolean",
@@ -2931,6 +2956,11 @@
 						"^rtti(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 							"type": "boolean",
 							"description": "true to include run-time type information (default), false to exclude.",
+							"default": true
+						},
+						"^exceptions(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+							"type": "boolean",
+							"description": "true to use exceptions (default), false to turn off exceptions.",
 							"default": true
 						},
 						"^staticLinking(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {

@@ -87,6 +87,7 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 	addObjectiveCxxRuntimeOption(ret, specialization);
 	addDiagnosticColorOption(ret);
 	addNoRunTimeTypeInformationOption(ret);
+	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
 	addArchitecture(ret);
 
@@ -185,6 +186,7 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 	addObjectiveCxxRuntimeOption(ret, specialization);
 	addDiagnosticColorOption(ret);
 	addNoRunTimeTypeInformationOption(ret);
+	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
 	addArchitecture(ret);
 
@@ -685,6 +687,17 @@ void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& outArgLi
 		std::string noRtti{ "-fno-rtti" };
 		if (isFlagSupported(noRtti))
 			List::addIfDoesNotExist(outArgList, std::move(noRtti));
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainGNU::addNoExceptionsOption(StringList& outArgList) const
+{
+	if (!m_project.exceptions())
+	{
+		std::string noExceptions{ "-fno-exceptions" };
+		if (isFlagSupported(noExceptions))
+			List::addIfDoesNotExist(outArgList, std::move(noExceptions));
 	}
 }
 

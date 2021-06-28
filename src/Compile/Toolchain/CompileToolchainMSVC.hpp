@@ -35,7 +35,6 @@ private:
 	virtual void addWarnings(StringList& outArgList) const final;
 	virtual void addDefines(StringList& outArgList) const final;
 	void addResourceDefines(StringList& outArgList) const;
-	void addExceptionHandlingModel(StringList& outArgList) const;
 	virtual void addPchInclude(StringList& outArgList) const final;
 	virtual void addOptimizationOption(StringList& outArgList) const final;
 	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const final;
@@ -43,6 +42,7 @@ private:
 	//
 	virtual void addCompileOptions(StringList& outArgList) const final;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const final;
+	virtual void addNoExceptionsOption(StringList& outArgList) const final;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const final;
 	void addWholeProgramOptimization(StringList& outArgList) const;
 
