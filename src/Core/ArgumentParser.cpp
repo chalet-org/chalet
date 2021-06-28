@@ -95,6 +95,9 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		{
 			case Variant::Kind::String: {
 				auto value = rawValue.asString();
+				if (value.empty())
+					continue;
+
 				if (key == patterns.argBuildConfiguration())
 				{
 					m_inputs.setBuildFromCommandLine(std::move(value));

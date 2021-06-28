@@ -30,23 +30,23 @@ CompilerTools::CompilerTools(const CommandLineInputs& inInputs, BuildState& inSt
 /*****************************************************************************/
 bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inConfigJson)
 {
+	ToolchainType toolchainType = m_inputs.toolchainPreference().type;
+	Arch::Cpu targetArch = m_state.info.targetArchitecture();
+
 	// Note: Expensive!
 	if (!initializeCompilerConfigs(inTargets))
 	{
-		Diagnostic::error("Compiler Configs failed to initialize");
+		Diagnostic::error("Compiler was not recognized.");
 		return false;
 	}
 
 	const auto& archFromInput = m_inputs.targetArchitecture();
 	const auto& targetArchString = m_state.info.targetArchitectureString();
-	Arch::Cpu targetArch = m_state.info.targetArchitecture();
 
 #if defined(CHALET_MACOS)
 	if (targetArch == Arch::Cpu::UniversalArm64_X64)
 		return true;
 #endif
-
-	ToolchainType toolchainType = m_inputs.toolchainPreference().type;
 
 	if (toolchainType == ToolchainType::LLVM)
 	{
@@ -139,21 +139,35 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 #if defined(CHALET_WIN32)
 	else if (toolchainType == ToolchainType::MSVC)
 	{
-		auto allowedArches = Arch::getAllowedMsvcArchitectures();
-		if (!String::equals(allowedArches, targetArchString))
-			return false;
-
-		std::string host;
-		std::string target = targetArchString;
-		if (String::contains('_', target))
 		{
-			auto split = String::split(target, '_');
-			host = split.front();
-			target = split.back();
-		}
+			auto allowedArches = Arch::getAllowedMsvcArchitectures();
+			if (!String::equals(allowedArches, targetArchString))
+				return false;
 
-		m_state.info.setHostArchitecture(host);
-		m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", targetArchString));
+			std::string host;
+			std::string target = targetArchString;
+			if (String::contains('_', target))
+			{
+				auto split = String::split(target, '_');
+				host = split.front();
+				target = split.back();
+			}
+			else
+			{
+				host = target;
+			}
+
+			std::string lower = String::toLowerCase(!m_cpp.empty() ? m_cpp : m_cc);
+			auto search = lower.find(fmt::format("/host{}/{}/", host, target));
+			if (search == std::string::npos)
+			{
+				Diagnostic::error("MSVC Compiler for target architecture '{}' was not found (missing build tools)", target);
+				return false;
+			}
+
+			m_state.info.setHostArchitecture(host);
+			m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", targetArchString));
+		}
 	}
 #endif
 

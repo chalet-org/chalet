@@ -373,7 +373,10 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 		m_prototype.environment.setMaxJobs(val);
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
-		m_inputs.setToolchainPreference(std::move(val));
+	{
+		if (m_inputs.toolchainPreferenceRaw().empty() || String::equals("auto", m_inputs.toolchainPreferenceRaw()))
+			m_inputs.setToolchainPreference(std::move(val));
+	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeySigningIdentity))
 		m_prototype.tools.setSigningIdentity(std::move(val));

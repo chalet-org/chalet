@@ -415,24 +415,23 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #if defined(CHALET_WIN32)
 	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
 	allowedArchesWin.push_back("x86_64");
+	allowedArchesWin.push_back("x64_x64");
 	allowedArchesWin.push_back("i686");
+	allowedArchesWin.push_back("x86_x86");
 	auto splitValue = String::split(inValue, '-');
 	bool isPlainMSVC = String::equals("msvc", inValue);
 
 	if (isPlainMSVC || (String::equals("msvc", splitValue.front()) && String::equals(allowedArchesWin, splitValue.back())))
 	{
-		if (emptyTarget)
+		if (String::equals({ "x86_64", "x64_x64" }, arch))
 		{
-			if (String::equals("x86_64", arch))
-			{
-				arch = "x64";
-				setTargetArchitecture("x64");
-			}
-			else if (String::equals("i686", arch)) // This implies the host is x86
-			{
-				arch = "x86";
-				setTargetArchitecture("x86");
-			}
+			arch = "x64";
+			setTargetArchitecture("x64");
+		}
+		else if (String::equals({ "i686", "x86_x86" }, arch)) // This implies the host is x86
+		{
+			arch = "x86";
+			setTargetArchitecture("x86");
 		}
 
 		if (isPlainMSVC)
@@ -483,11 +482,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 	if (ret.type != ToolchainType::MSVC)
 	{
-		if (String::equals("x64", arch))
+		if (String::equals("x64", m_targetArchitecture))
 		{
 			setTargetArchitecture("x86_64");
 		}
-		else if (String::equals("x86", arch))
+		else if (String::equals("x86", m_targetArchitecture))
 		{
 			setTargetArchitecture("i686");
 		}

@@ -109,7 +109,7 @@ bool MsvcEnvironment::create()
 		// Read the current environment and save it to a file
 		if (!saveOriginalEnvironment())
 		{
-			Diagnostic::error("MSVC Environment could not be fetched: Error reading from the inherited environment.");
+			Diagnostic::error("MSVC Environment could not be fetched.");
 			return false;
 		}
 

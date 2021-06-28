@@ -49,7 +49,7 @@ StringList Arch::getAllowedMsvcArchitectures() noexcept
 		"x86_arm64",				// any host, ARM64 target
 		//
 		"x64", "amd64",				// x64 host, x64 target
-		"x64_x86", "amd64_x86"		// x64 host, x86 target
+		"x64_x86", "amd64_x86",		// x64 host, x86 target
 		"x64_arm", "amd64_arm",		// x64 host, ARM target
 		"x64_arm64", "amd64_arm64",	// x64 host, ARMG64 target
 	};
