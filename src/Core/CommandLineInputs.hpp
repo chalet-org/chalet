@@ -69,7 +69,7 @@ struct CommandLineInputs
 
 	const std::string& hostArchitecture() const noexcept;
 	const std::string& targetArchitecture() const noexcept;
-	void setTargetArchitecture(std::string&& inValue) noexcept;
+	void setTargetArchitecture(std::string&& inValue) const noexcept;
 
 	bool saveSchemaToFile() const noexcept;
 	void setSaveSchemaToFile(const bool inValue) noexcept;
@@ -117,7 +117,7 @@ private:
 	std::string m_envFile;
 	std::string m_archRaw;
 	std::string m_hostArchitecture;
-	std::string m_targetArchitecture;
+	mutable std::string m_targetArchitecture;
 
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;

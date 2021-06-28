@@ -42,6 +42,14 @@ const std::string& BuildInfo::hostArchitectureString() const noexcept
 	return m_hostArchitecture.str;
 }
 
+void BuildInfo::setHostArchitecture(const std::string& inValue) noexcept
+{
+	if (!inValue.empty())
+	{
+		m_hostArchitecture.set(inValue);
+	}
+}
+
 /*****************************************************************************/
 Arch::Cpu BuildInfo::targetArchitecture() const noexcept
 {

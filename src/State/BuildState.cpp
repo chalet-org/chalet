@@ -320,7 +320,8 @@ bool BuildState::validateState()
 /*****************************************************************************/
 void BuildState::enforceArchitectureInPath()
 {
-#if defined(CHALET_WIN32)
+// #if defined(CHALET_WIN32)
+#if 0
 	Arch::Cpu targetArch = info.targetArchitecture();
 	auto path = Environment::getPath();
 	if (String::contains({ "/mingw64/", "/mingw32/" }, path))

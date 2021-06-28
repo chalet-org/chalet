@@ -34,6 +34,10 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				// "--generator=vscode",
+				"-t",
+				"msvc",
+				"-a",
+				"x86",
 				"build",
 				"Release"
 			],

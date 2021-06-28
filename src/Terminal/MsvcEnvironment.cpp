@@ -5,6 +5,7 @@
 
 #include "Terminal/MsvcEnvironment.hpp"
 
+#include "Core/Arch.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -282,30 +283,22 @@ bool MsvcEnvironment::saveOriginalEnvironment()
 /*****************************************************************************/
 bool MsvcEnvironment::saveMsvcEnvironment()
 {
-	// TODO: MS SDK version, ARM
+	// TODO: MS SDK version
 #if defined(CHALET_WIN32)
-	std::string vcvarsFile{ "vcvars64" };
-	auto hostArch = m_state.info.hostArchitecture();
-	auto targetArch = m_state.info.targetArchitecture();
-	if (hostArch == Arch::Cpu::X86 && targetArch == Arch::Cpu::X86)
+	std::string vcvarsFile{ "vcvarsall" };
+	const auto& targetArch = m_state.info.targetArchitectureString();
+	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
+
+	if (!String::equals(allowedArchesWin, targetArch))
 	{
-		vcvarsFile = "vcvars32";
+		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", targetArch, vcvarsFile);
+		return false;
 	}
-	else if (hostArch == Arch::Cpu::X64 && targetArch == Arch::Cpu::X64)
-	{
-		vcvarsFile = "vcvars64";
-	}
-	else if (hostArch == Arch::Cpu::X64 && targetArch == Arch::Cpu::X86)
-	{
-		vcvarsFile = "vcvarsamd64_x86";
-	}
-	else if (hostArch == Arch::Cpu::X86 && targetArch == Arch::Cpu::X64)
-	{
-		vcvarsFile = "vcvarsx86_amd64";
-	}
+
 	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
 	StringList cmd{
 		vcVarsAll,
+		m_state.info.targetArchitectureString(),
 		">",
 		"nul",
 		"&&",

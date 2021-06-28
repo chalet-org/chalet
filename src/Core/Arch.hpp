@@ -22,6 +22,9 @@ struct Arch
 	Cpu val = Cpu::Unknown;
 
 	static std::string getHostCpuArchitecture();
+#if defined(CHALET_WIN32)
+	static StringList getAllowedMsvcArchitectures() noexcept;
+#endif
 
 	void set(const std::string& inValue) noexcept;
 };

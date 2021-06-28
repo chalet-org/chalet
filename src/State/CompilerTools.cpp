@@ -5,6 +5,7 @@
 
 #include "State/CompilerTools.hpp"
 
+#include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 
 #include "State/BuildState.hpp"
@@ -138,39 +139,21 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 #if defined(CHALET_WIN32)
 	else if (toolchainType == ToolchainType::MSVC)
 	{
-		auto arch = String::getPathFilename(String::getPathFolder(compiler()));
-
-		if (String::equals("x64", arch))
-			arch = "x86_64";
-		else if (String::equals("x86", arch))
-			arch = "i686";
-
-		if (!String::startsWith(arch, targetArchString))
+		auto allowedArches = Arch::getAllowedMsvcArchitectures();
+		if (!String::equals(allowedArches, targetArchString))
 			return false;
 
-		// Note: pc-windows-msvc is used by LLVM, so we'll use "ms-" instead
-		//  to keep it distinct
-		switch (targetArch)
+		std::string host;
+		std::string target = targetArchString;
+		if (String::contains('_', target))
 		{
-			case Arch::Cpu::X64:
-				m_state.info.setTargetArchitecture("x86_64-ms-windows-msvc");
-				break;
-
-			case Arch::Cpu::X86:
-				m_state.info.setTargetArchitecture("i686-ms-windows-msvc");
-				break;
-
-			case Arch::Cpu::ARM64:
-				m_state.info.setTargetArchitecture("aarch64-ms-windows-msvc");
-				break;
-
-			case Arch::Cpu::ARM:
-				m_state.info.setTargetArchitecture("thumbv7a-ms-windows-msvc");
-				break;
-
-			default:
-				return false;
+			auto split = String::split(target, '_');
+			host = split.front();
+			target = split.back();
 		}
+
+		m_state.info.setHostArchitecture(host);
+		m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", targetArchString));
 	}
 #endif
 

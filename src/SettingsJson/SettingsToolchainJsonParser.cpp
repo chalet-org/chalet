@@ -517,7 +517,8 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 bool SettingsToolchainJsonParser::parseArchitecture(std::string& outString) const
 {
 	bool ret = true;
-#if defined(CHALET_WIN32)
+// #if defined(CHALET_WIN32)
+#if 0
 	if (String::contains({ "/mingw64/", "/mingw32/" }, outString))
 	{
 		std::string lower = String::toLowerCase(outString);
@@ -580,47 +581,6 @@ bool SettingsToolchainJsonParser::parseArchitecture(std::string& outString) cons
 				{
 					outString = tmp;
 				}
-				ret = false;
-			}
-		}
-	}
-	else if (String::endsWith({ "cl.exe", "link.exe", "lib.exe" }, outString))
-	{
-		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.hostArchitecture() == Arch::Cpu::X64)
-		{
-			auto start = lower.find("/hostx86/");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outString, outString.substr(start, 9), "/HostX64/");
-				ret = false;
-			}
-		}
-		else if (m_state.info.hostArchitecture() == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/hostx64/");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outString, outString.substr(start, 9), "/HostX86/");
-				ret = false;
-			}
-		}
-
-		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
-		{
-			auto start = lower.find("/x86/");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outString, outString.substr(start, 5), "/x64/");
-				ret = false;
-			}
-		}
-		else if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/x64/");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outString, outString.substr(start, 5), "/x86/");
 				ret = false;
 			}
 		}

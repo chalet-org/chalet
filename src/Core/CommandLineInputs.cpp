@@ -291,7 +291,7 @@ const std::string& CommandLineInputs::targetArchitecture() const noexcept
 {
 	return m_targetArchitecture;
 }
-void CommandLineInputs::setTargetArchitecture(std::string&& inValue) noexcept
+void CommandLineInputs::setTargetArchitecture(std::string&& inValue) const noexcept
 {
 	if (inValue.empty())
 		return;
@@ -303,15 +303,6 @@ void CommandLineInputs::setTargetArchitecture(std::string&& inValue) noexcept
 	else
 	{
 		m_targetArchitecture = std::move(inValue);
-
-		if (String::equals("x64", m_targetArchitecture))
-		{
-			m_targetArchitecture = "x86_64";
-		}
-		else if (String::equals("x86", m_targetArchitecture))
-		{
-			m_targetArchitecture = "i686";
-		}
 	}
 }
 
@@ -418,9 +409,38 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 {
 	ToolchainPreference ret;
 
-	if (String::equals("msvc", inValue))
+	bool emptyTarget = m_targetArchitecture.empty();
+	auto arch = emptyTarget ? m_hostArchitecture : m_targetArchitecture;
+#if defined(CHALET_WIN32)
+	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
+	allowedArchesWin.push_back("x86_64");
+	allowedArchesWin.push_back("i686");
+	auto splitValue = String::split(inValue, '-');
+	bool isPlainMsvc = String::equals("msvc", inValue);
+
+	if (isPlainMsvc || (String::equals("msvc", splitValue.front()) && String::equals(allowedArchesWin, splitValue.back())))
 	{
-		m_toolchainPreferenceRaw = inValue;
+		if (emptyTarget)
+		{
+			if (String::equals("x86_64", arch))
+			{
+				arch = "x64";
+				setTargetArchitecture("x64");
+			}
+			else if (String::equals("i686", arch)) // This implies the host is x86
+			{
+				arch = "x86";
+				setTargetArchitecture("x64");
+			}
+		}
+
+		if (isPlainMsvc)
+			m_toolchainPreferenceRaw = fmt::format("{}-{}", inValue, arch);
+		else if (splitValue.size() > 1 && splitValue.back() != arch)
+			m_toolchainPreferenceRaw = fmt::format("msvc-{}", arch);
+		else
+			m_toolchainPreferenceRaw = inValue;
+
 		ret.type = ToolchainType::MSVC;
 		ret.strategy = StrategyType::Ninja;
 		ret.cpp = "cl";
@@ -429,7 +449,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.linker = "link";
 		ret.archiver = "lib";
 	}
-	else if (String::equals("llvm", inValue))
+	else
+#endif
+		if (String::equals("llvm", inValue))
 	{
 		m_toolchainPreferenceRaw = inValue;
 		ret.type = ToolchainType::LLVM;
@@ -442,7 +464,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 	else if (String::equals("gcc", inValue))
 	{
-		m_toolchainPreferenceRaw = inValue;
+		m_toolchainPreferenceRaw = inValue; // generic gcc
 		ret.type = ToolchainType::GNU;
 		ret.strategy = StrategyType::Makefile;
 		ret.cpp = "g++";

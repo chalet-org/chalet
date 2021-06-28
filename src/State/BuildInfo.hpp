@@ -20,6 +20,7 @@ struct BuildInfo
 
 	Arch::Cpu hostArchitecture() const noexcept;
 	const std::string& hostArchitectureString() const noexcept;
+	void setHostArchitecture(const std::string& inValue) noexcept;
 
 	Arch::Cpu targetArchitecture() const noexcept;
 	const std::string& targetArchitectureString() const noexcept;

@@ -87,6 +87,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	Route command = patterns.route();
 	m_inputs.setCommand(command);
 
+	std::string toolchainPreference;
 	for (auto& [key, rawValue] : patterns.arguments())
 	{
 		auto kind = rawValue.kind();
@@ -112,7 +113,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				}
 				else if (String::equals({ "-t", "--toolchain" }, key))
 				{
-					m_inputs.setToolchainPreference(std::move(value));
+					toolchainPreference = std::move(value);
 				}
 				else if (String::equals({ "-g", "--generator" }, key))
 				{
@@ -185,6 +186,9 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				break;
 		}
 	}
+
+	// must do at the end (after arch & toolchain have been parsed)
+	m_inputs.setToolchainPreference(std::move(toolchainPreference));
 
 	return true;
 }
