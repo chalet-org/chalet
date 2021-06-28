@@ -375,10 +375,10 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 		outArgList.push_back(getPathCommand(option, outDir));
 	}
 
-	for (const auto& dir : m_state.msvcEnvironment.include())
+	/*for (const auto& dir : m_state.msvcEnvironment.include())
 	{
 		outArgList.push_back(getPathCommand(option, dir));
-	}
+	}*/
 }
 
 /*****************************************************************************/
@@ -684,10 +684,10 @@ void CompileToolchainMSVC::addLibDirs(StringList& outArgList) const
 
 	outArgList.push_back(getPathCommand(option, m_state.paths.buildOutputDir()));
 
-	for (const auto& dir : m_state.msvcEnvironment.lib())
+	/*for (const auto& dir : m_state.msvcEnvironment.lib())
 	{
 		outArgList.push_back(getPathCommand(option, dir));
-	}
+	}*/
 }
 
 /*****************************************************************************/

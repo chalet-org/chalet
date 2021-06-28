@@ -411,14 +411,15 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 	bool emptyTarget = m_targetArchitecture.empty();
 	auto arch = emptyTarget ? m_hostArchitecture : m_targetArchitecture;
+
 #if defined(CHALET_WIN32)
 	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
 	allowedArchesWin.push_back("x86_64");
 	allowedArchesWin.push_back("i686");
 	auto splitValue = String::split(inValue, '-');
-	bool isPlainMsvc = String::equals("msvc", inValue);
+	bool isPlainMSVC = String::equals("msvc", inValue);
 
-	if (isPlainMsvc || (String::equals("msvc", splitValue.front()) && String::equals(allowedArchesWin, splitValue.back())))
+	if (isPlainMSVC || (String::equals("msvc", splitValue.front()) && String::equals(allowedArchesWin, splitValue.back())))
 	{
 		if (emptyTarget)
 		{
@@ -430,11 +431,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			else if (String::equals("i686", arch)) // This implies the host is x86
 			{
 				arch = "x86";
-				setTargetArchitecture("x64");
+				setTargetArchitecture("x86");
 			}
 		}
 
-		if (isPlainMsvc)
+		if (isPlainMSVC)
 			m_toolchainPreferenceRaw = fmt::format("{}-{}", inValue, arch);
 		else if (splitValue.size() > 1 && splitValue.back() != arch)
 			m_toolchainPreferenceRaw = fmt::format("msvc-{}", arch);
@@ -454,6 +455,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		if (String::equals("llvm", inValue))
 	{
 		m_toolchainPreferenceRaw = inValue;
+
 		ret.type = ToolchainType::LLVM;
 		ret.strategy = StrategyType::Makefile;
 		ret.cpp = "clang++";
@@ -464,7 +466,8 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 	else if (String::equals("gcc", inValue))
 	{
-		m_toolchainPreferenceRaw = inValue; // generic gcc
+		m_toolchainPreferenceRaw = inValue;
+
 		ret.type = ToolchainType::GNU;
 		ret.strategy = StrategyType::Makefile;
 		ret.cpp = "g++";
@@ -476,6 +479,18 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	else
 	{
 		ret.type = ToolchainType::Unknown;
+	}
+
+	if (ret.type != ToolchainType::MSVC)
+	{
+		if (String::equals("x64", arch))
+		{
+			setTargetArchitecture("x86_64");
+		}
+		else if (String::equals("x86", arch))
+		{
+			setTargetArchitecture("i686");
+		}
 	}
 
 	if (Environment::isContinuousIntegrationServer())

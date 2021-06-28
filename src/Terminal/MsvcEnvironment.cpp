@@ -74,10 +74,7 @@ bool MsvcEnvironment::create()
 	m_varsFileOriginal = m_state.cache.getCachePath("original.env", CacheType::Local);
 	m_varsFileMsvc = m_state.cache.getCachePath("msvc_all.env", CacheType::Local);
 
-	if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
-		m_varsFileMsvcDelta = m_state.cache.getHashPath("msvc_x86.env", CacheType::Local);
-	else
-		m_varsFileMsvcDelta = m_state.cache.getHashPath("msvc_x64.env", CacheType::Local);
+	m_varsFileMsvcDelta = m_state.cache.getHashPath(fmt::format("msvc_{}.env", m_state.info.targetArchitectureString()), CacheType::Local);
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
 
@@ -159,6 +156,7 @@ bool MsvcEnvironment::create()
 					{
 						String::replaceAll(line, path, "");
 					}
+					String::replaceAll(line, "\\\\", "\\");
 					outContents += line + "\n";
 				}
 			}
@@ -213,19 +211,26 @@ bool MsvcEnvironment::create()
 		}
 	}
 
-	auto include = m_variables.find("INCLUDE");
+	/*auto include = m_variables.find("INCLUDE");
 	if (include != m_variables.end())
 	{
 		String::replaceAll(include->second, "\\", "/");
 		m_include = String::split(include->second, ";");
-	}
+	}*/
 
-	auto lib = m_variables.find("LIB");
+	/*auto lib = m_variables.find("LIB");
 	if (lib != m_variables.end())
 	{
 		String::replaceAll(lib->second, "\\", "/");
 		m_lib = String::split(lib->second, ";");
-	}
+	}*/
+
+	/*auto libPath = m_variables.find("LIBPATH");
+	if (libPath != m_variables.end())
+	{
+		String::replaceAll(libPath->second, "\\", "/");
+		m_libPath = String::split(libPath->second, ";");
+	}*/
 
 	// Commands::remove(m_varsFileMsvcDelta);
 
@@ -245,6 +250,12 @@ const StringList& MsvcEnvironment::lib() const noexcept
 {
 	return m_lib;
 }
+
+/*****************************************************************************/
+/*const StringList& MsvcEnvironment::libPath() const noexcept
+{
+	return m_libPath;
+}*/
 
 /*****************************************************************************/
 bool MsvcEnvironment::setVariableToPath(const char* inName)
@@ -298,7 +309,7 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
 	StringList cmd{
 		vcVarsAll,
-		m_state.info.targetArchitectureString(),
+		targetArch,
 		">",
 		"nul",
 		"&&",

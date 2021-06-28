@@ -41,10 +41,10 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 /*****************************************************************************/
 bool BuildState::initialize()
 {
+	enforceArchitectureInPath();
+
 	if (!parseToolchainFromSettingsJson())
 		return false;
-
-	enforceArchitectureInPath();
 
 	if (!initializeBuildConfiguration())
 		return false;
@@ -320,54 +320,62 @@ bool BuildState::validateState()
 /*****************************************************************************/
 void BuildState::enforceArchitectureInPath()
 {
-// #if defined(CHALET_WIN32)
+	// works, but probably not a good idea
+	//
+	// #if defined(CHALET_WIN32)
 #if 0
 	Arch::Cpu targetArch = info.targetArchitecture();
+	auto toolchainType = m_inputs.toolchainPreference().type;
 	auto path = Environment::getPath();
-	if (String::contains({ "/mingw64/", "/mingw32/" }, path))
+	if (toolchainType == ToolchainType::GNU)
 	{
-
-		std::string lower = String::toLowerCase(path);
-		if (targetArch == Arch::Cpu::X64)
+		if (String::contains({ "/mingw64/", "/mingw32/" }, path))
 		{
-			auto start = lower.find("/mingw32/");
-			if (start != std::string::npos)
+			std::string lower = String::toLowerCase(path);
+			if (targetArch == Arch::Cpu::X64)
 			{
-				String::replaceAll(path, path.substr(start, 9), "/mingw64/");
-				Environment::setPath(path);
+				auto start = lower.find("/mingw32/");
+				if (start != std::string::npos)
+				{
+					String::replaceAll(path, path.substr(start, 9), "/mingw64/");
+					Environment::setPath(path);
+				}
 			}
-		}
-		else if (targetArch == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/mingw64/");
-			if (start != std::string::npos)
+			else if (targetArch == Arch::Cpu::X86)
 			{
-				String::replaceAll(path, path.substr(start, 9), "/mingw32/");
-				Environment::setPath(path);
+				auto start = lower.find("/mingw64/");
+				if (start != std::string::npos)
+				{
+					String::replaceAll(path, path.substr(start, 9), "/mingw32/");
+					Environment::setPath(path);
+				}
 			}
 		}
 	}
-	else if (String::contains({ "/clang64/", "/clang32/" }, path))
+	else if (toolchainType == ToolchainType::LLVM)
 	{
-		// TODO: clangarm64
+		if (String::contains({ "/clang64/", "/clang32/" }, path))
+		{
+			// TODO: clangarm64
 
-		std::string lower = String::toLowerCase(path);
-		if (targetArch == Arch::Cpu::X64)
-		{
-			auto start = lower.find("/clang32/");
-			if (start != std::string::npos)
+			std::string lower = String::toLowerCase(path);
+			if (targetArch == Arch::Cpu::X64)
 			{
-				String::replaceAll(path, path.substr(start, 9), "/clang64/");
-				Environment::setPath(path);
+				auto start = lower.find("/clang32/");
+				if (start != std::string::npos)
+				{
+					String::replaceAll(path, path.substr(start, 9), "/clang64/");
+					Environment::setPath(path);
+				}
 			}
-		}
-		else if (targetArch == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/clang64/");
-			if (start != std::string::npos)
+			else if (targetArch == Arch::Cpu::X86)
 			{
-				String::replaceAll(path, path.substr(start, 9), "/clang32/");
-				Environment::setPath(path);
+				auto start = lower.find("/clang64/");
+				if (start != std::string::npos)
+				{
+					String::replaceAll(path, path.substr(start, 9), "/clang32/");
+					Environment::setPath(path);
+				}
 			}
 		}
 	}

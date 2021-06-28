@@ -27,6 +27,7 @@ public:
 
 	const StringList& include() const noexcept;
 	const StringList& lib() const noexcept;
+	// const StringList& libPath() const noexcept;
 
 private:
 #if defined(CHALET_WIN32)
@@ -54,6 +55,7 @@ private:
 #endif
 	StringList m_include;
 	StringList m_lib;
+	// StringList m_libPath;
 };
 }
 

@@ -129,17 +129,6 @@ bool SettingsToolchainJsonParser::validatePaths()
 		Diagnostic::error("{}: The requested toolchain of '{}' could either not be detected, or had invalid tools.", m_jsonFile.filename(), preference);
 	}
 
-	/*
-	if (!Commands::pathExists(m_make))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
-		Diagnostic::error("{}: 'make' could not be found.", m_jsonFile.filename());
-		return false;
-	}
-	*/
-
 	return result;
 }
 
@@ -169,7 +158,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 			cpp = Commands::which(toolchain.cpp);
 		}
 
-		parseArchitecture(cpp);
 		result &= !cpp.empty();
 
 		toolchains[kKeyCpp] = cpp;
@@ -186,7 +174,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 			cc = Commands::which(toolchain.cc);
 		}
 
-		parseArchitecture(cc);
 		result &= !cc.empty();
 
 		toolchains[kKeyCc] = cc;
@@ -226,7 +213,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		}
 #endif
 
-		parseArchitecture(link);
 		result &= !link.empty();
 
 		toolchains[kKeyLinker] = std::move(link);
@@ -254,7 +240,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 				break;
 		}
 
-		parseArchitecture(ar);
 		result &= !ar.empty();
 
 		toolchains[kKeyArchiver] = std::move(ar);
@@ -278,7 +263,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 				break;
 		}
 
-		parseArchitecture(rc);
 		toolchains[kKeyWindowsResource] = std::move(rc);
 		m_jsonFile.setDirty(true);
 	}
@@ -359,7 +343,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 				break;
 		}
 
-		parseArchitecture(objdump);
 		toolchains[kKeyObjdump] = std::move(objdump);
 		m_jsonFile.setDirty(true);
 	}
@@ -397,110 +380,38 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 		m_state.toolchain.setStrategy(val);
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyArchiver))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			inNode[kKeyArchiver] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_state.toolchain.setArchiver(std::move(val));
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCpp))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			inNode[kKeyCpp] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_state.toolchain.setCpp(std::move(val));
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCc))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			inNode[kKeyCc] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_state.toolchain.setCc(std::move(val));
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyLinker))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			inNode[kKeyLinker] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_state.toolchain.setLinker(std::move(val));
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyWindowsResource))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			inNode[kKeyWindowsResource] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_state.toolchain.setRc(std::move(val));
-	}
 
 	//
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCmake))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			inNode[kKeyCmake] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_state.toolchain.setCmake(std::move(val));
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyMake))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			inNode[kKeyMake] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_state.toolchain.setMake(std::move(val));
-		m_make = std::move(val);
-	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyNinja))
 		m_state.toolchain.setNinja(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyObjdump))
-	{
-#if defined(CHALET_WIN32)
-		if (!parseArchitecture(val))
-		{
-			inNode[kKeyObjdump] = val;
-			m_jsonFile.setDirty(true);
-		}
-#endif
 		m_state.toolchain.setObjdump(std::move(val));
-	}
 
 #if defined(CHALET_WIN32)
 	bool checkForMsvc = m_inputs.toolchainPreference().type == ToolchainType::Unknown;
 	m_state.toolchain.detectToolchainFromPaths();
+
 	if (checkForMsvc && m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 	{
 		if (!m_state.msvcEnvironment.create())
@@ -511,85 +422,5 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 #endif
 
 	return true;
-}
-
-/*****************************************************************************/
-bool SettingsToolchainJsonParser::parseArchitecture(std::string& outString) const
-{
-	bool ret = true;
-// #if defined(CHALET_WIN32)
-#if 0
-	if (String::contains({ "/mingw64/", "/mingw32/" }, outString))
-	{
-		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
-		{
-			auto start = lower.find("/mingw32/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/mingw64/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-		else if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/mingw64/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/mingw32/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-	}
-	else if (String::contains({ "/clang64/", "/clang32/" }, outString))
-	{
-		// TODO: clangarm64
-
-		std::string lower = String::toLowerCase(outString);
-		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
-		{
-			auto start = lower.find("/clang32/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/clang64/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-		else if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
-		{
-			auto start = lower.find("/clang64/");
-			if (start != std::string::npos)
-			{
-				std::string tmp = outString;
-				String::replaceAll(tmp, tmp.substr(start, 9), "/clang32/");
-				if (Commands::pathExists(tmp))
-				{
-					outString = tmp;
-				}
-				ret = false;
-			}
-		}
-	}
-
-#else
-	UNUSED(outString);
-#endif
-
-	return ret;
 }
 }

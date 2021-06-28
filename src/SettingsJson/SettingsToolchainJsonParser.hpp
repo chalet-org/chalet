@@ -28,8 +28,6 @@ private:
 	bool makeToolchain(Json& toolchains, const ToolchainPreference& toolchain);
 	bool parseToolchain(Json& inNode);
 
-	bool parseArchitecture(std::string& outString) const;
-
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 	JsonFile& m_jsonFile;
@@ -48,8 +46,6 @@ private:
 	const std::string kKeyMake = "make";
 	const std::string kKeyNinja = "ninja";
 	const std::string kKeyObjdump = "objdump";
-
-	std::string m_make;
 };
 }
 
