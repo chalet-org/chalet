@@ -74,9 +74,6 @@ Json Schema::getSettingsJson()
 		"toolchains"
 	};
 
-	//
-	// const auto kDefinitions = "definitions";
-	// ret[kDefinitions] = Json::object();
 	std::unordered_map<Defs, Json> defs;
 
 	defs[Defs::Bash] = R"json({
@@ -362,6 +359,7 @@ Json Schema::getSettingsJson()
 			"windowsResource"
 		]
 	})json"_ojson;
+	toolchains[kProperties] = Json::object();
 	toolchains[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
 	toolchains[kProperties]["archiver"] = defs[Defs::Archiver];
 	toolchains[kProperties]["C++"] = defs[Defs::CppCompiler];
@@ -382,6 +380,7 @@ Json Schema::getSettingsJson()
 		"additionalProperties": false,
 		"description": "The list of tools for the platform"
 	})json"_ojson;
+	ret[kProperties][kTools][kProperties] = Json::object();
 	ret[kProperties][kTools][kProperties]["bash"] = defs[Defs::Bash];
 	ret[kProperties][kTools][kProperties]["brew"] = defs[Defs::Brew];
 	ret[kProperties][kTools][kProperties]["command_prompt"] = defs[Defs::CommandPrompt];
@@ -432,6 +431,7 @@ Json Schema::getSettingsJson()
 			"signingIdentity"
 		]
 	})json"_ojson;
+	ret[kProperties][kSettings][kProperties] = Json::object();
 	ret[kProperties][kSettings][kProperties]["dumpAssembly"] = defs[Defs::DumpAssembly];
 	ret[kProperties][kSettings][kProperties]["maxJobs"] = defs[Defs::MaxJobs];
 	ret[kProperties][kSettings][kProperties]["showCommands"] = defs[Defs::ShowCommands];

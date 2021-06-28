@@ -13,6 +13,91 @@
 
 namespace chalet
 {
+namespace
+{
+enum class Defs : ushort
+{
+	ConfigDebugSymbols,
+	ConfigEnableProfiling,
+	ConfigLinkTimeOptimizations,
+	ConfigOptimizationLevel,
+	ConfigStripSymbols,
+	//
+	DistConfiguration,
+	DistDependencies,
+	DistDescription,
+	DistExclude,
+	DistIncludeDependentSharedLibs,
+	DistLinux,
+	DistMacos,
+	DistMainProject,
+	DistOutDirectory,
+	DistProjects,
+	DistWindows,
+	//
+	ExtGitRepository,
+	ExtGitBranch,
+	ExtGitCommit,
+	ExtGitTag,
+	ExtGitSubmodules,
+	//
+	EnumPlatform,
+	//
+	EnvironmentPath,
+	//
+	TargetDescription,
+	TargetType,
+	TargetNotInConfiguration,
+	TargetNotInPlatform,
+	TargetOnlyInConfiguration,
+	TargetOnlyInPlatform,
+	//
+	TargetProjectExtends,
+	TargetProjectFiles,
+	TargetProjectKind,
+	TargetProjectLocation,
+	TargetProjectLanguage,
+	TargetProjectRunProject,
+	TargetProjectRunArguments,
+	TargetProjectRunDependencies,
+	//
+	TargetProjectCxxCStandard,
+	TargetProjectCxxCppStandard,
+	TargetProjectCxxCompileOptions,
+	TargetProjectCxxDefines,
+	TargetProjectCxxIncludeDirs,
+	TargetProjectCxxLibDirs,
+	TargetProjectCxxLinkerScript,
+	TargetProjectCxxLinkerOptions,
+	TargetProjectCxxLinks,
+	TargetProjectCxxMacOsFrameworkPaths,
+	TargetProjectCxxMacOsFrameworks,
+	TargetProjectCxxObjectiveCxx,
+	TargetProjectCxxPrecompiledHeader,
+	TargetProjectCxxThreads,
+	TargetProjectCxxRunTimeTypeInfo,
+	TargetProjectCxxStaticLinking,
+	TargetProjectCxxStaticLinks,
+	TargetProjectCxxWarnings,
+	TargetProjectCxxWindowsAppManifest,
+	TargetProjectCxxWindowsAppIcon,
+	TargetProjectCxxWindowsOutputDef,
+	TargetProjectCxxWindowsPrefixOutputFilename,
+	//
+	TargetScriptScript,
+	//
+	TargetCMakeLocation,
+	TargetCMakeBuildFile,
+	TargetCMakeDefines,
+	TargetCMakeRecheck,
+	TargetCMakeToolset,
+	//
+	TargetChaletLocation,
+	TargetChaletBuildFile,
+	TargetChaletRecheck,
+};
+}
+
 /*****************************************************************************/
 Json Schema::getBuildJson()
 {
@@ -35,35 +120,37 @@ Json Schema::getBuildJson()
 
 	//
 	const auto kItems = "items";
+	const auto kProperties = "properties";
 	const auto kPattern = "pattern";
 	const auto kPatternProperties = "patternProperties";
+	const auto kDescription = "description";
 	const auto kEnum = "enum";
 	const auto kAnyOf = "anyOf";
+	const auto kAllOf = "allOf";
+	const auto kOneOf = "oneOf";
 
-	//
-	const auto kDefinitions = "definitions";
-	ret[kDefinitions] = Json::object();
+	std::unordered_map<Defs, Json> defs;
 
 	// configurations
-	ret[kDefinitions]["configurations-debugSymbols"] = R"json({
+	defs[Defs::ConfigDebugSymbols] = R"json({
 		"type": "boolean",
 		"description": "true to include debug symbols, false otherwise.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["configurations-enableProfiling"] = R"json({
+	defs[Defs::ConfigEnableProfiling] = R"json({
 		"type": "boolean",
 		"description": "true to enable profiling for this configuration, false otherwise.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["configurations-linkTimeOptimization"] = R"json({
+	defs[Defs::ConfigLinkTimeOptimizations] = R"json({
 		"type": "boolean",
 		"description": "true to use link-time optimization, false otherwise.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["configurations-optimizations"] = R"json({
+	defs[Defs::ConfigOptimizationLevel] = R"json({
 		"type": "string",
 		"description": "The optimization level of the build.",
 		"enum": [
@@ -77,20 +164,20 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["configurations-stripSymbols"] = R"json({
+	defs[Defs::ConfigStripSymbols] = R"json({
 		"type": "boolean",
 		"description": "true to strip symbols from the build, false otherwise.",
 		"default": false
 	})json"_ojson;
 
 	// distribution
-	ret[kDefinitions]["distribution-configuration"] = R"json({
+	defs[Defs::DistConfiguration] = R"json({
 		"type": "string",
 		"description": "The name of the build configuration to use for the distribution.",
 		"default": "Release"
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-dependencies"] = R"json({
+	defs[Defs::DistDependencies] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -99,11 +186,11 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-description"] = R"json({
+	defs[Defs::DistDescription] = R"json({
 		"type": "string"
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-exclude"] = R"json({
+	defs[Defs::DistExclude] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -112,12 +199,12 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-includeDependentSharedLibraries"] = R"json({
+	defs[Defs::DistIncludeDependentSharedLibs] = R"json({
 		"type": "boolean",
 		"default": true
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-linux"] = R"json({
+	defs[Defs::DistLinux] = R"json({
 		"type": "object",
 		"description": "Variables to describe the linux application.",
 		"additionalProperties": false,
@@ -137,7 +224,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-macos"] = R"json({
+	defs[Defs::DistMacos] = R"json({
 		"type": "object",
 		"description": "Variables to describe the macos application bundle.",
 		"additionalProperties": false,
@@ -191,20 +278,20 @@ Json Schema::getBuildJson()
 			}
 		}
 	})json"_ojson;
-	ret[kDefinitions]["distribution-macos"]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
+	defs[Defs::DistMacos]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
 
-	ret[kDefinitions]["distribution-mainProject"] = R"json({
+	defs[Defs::DistMainProject] = R"json({
 		"type": "string",
 		"description": "The main executable project."
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-outDir"] = R"json({
+	defs[Defs::DistOutDirectory] = R"json({
 		"type": "string",
 		"description": "The output folder to place the final build along with all of its dependencies.",
 		"default": "dist"
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-projects"] = R"json({
+	defs[Defs::DistProjects] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "An array of projects to include",
@@ -214,9 +301,9 @@ Json Schema::getBuildJson()
 			"description": "The name of the project"
 		}
 	})json"_ojson;
-	ret[kDefinitions]["distribution-projects"][kItems][kPattern] = patternProjectName;
+	defs[Defs::DistProjects][kItems][kPattern] = patternProjectName;
 
-	ret[kDefinitions]["distribution-windows"] = R"json({
+	defs[Defs::DistWindows] = R"json({
 		"type": "object",
 		"description": "Variables to describe the windows application.",
 		"additionalProperties": false,
@@ -224,80 +311,55 @@ Json Schema::getBuildJson()
 		"properties": {}
 	})json"_ojson;
 
-	ret[kDefinitions]["distribution-bundle"] = R"json({
+	auto distributionBundle = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "Variables to describe the final output build.",
-		"properties": {
-			"configuration": {
-				"$ref": "#/definitions/distribution-configuration"
-			},
-			"dependencies": {
-				"$ref": "#/definitions/distribution-dependencies"
-			},
-			"description": {
-				"$ref": "#/definitions/distribution-description"
-			},
-			"exclude": {
-				"$ref": "#/definitions/distribution-exclude"
-			},
-			"includeDependentSharedLibraries": {
-				"$ref": "#/definitions/distribution-includeDependentSharedLibraries"
-			},
-			"linux": {
-				"$ref": "#/definitions/distribution-linux"
-			},
-			"macos": {
-				"$ref": "#/definitions/distribution-macos"
-			},
-			"mainProject": {
-				"$ref": "#/definitions/distribution-mainProject"
-			},
-			"outDir": {
-				"$ref": "#/definitions/distribution-outDir"
-			},
-			"projects": {
-				"$ref": "#/definitions/distribution-projects"
-			}
-		}
+		"description": "Variables to describe the final output build."
 	})json"_ojson;
-	ret[kDefinitions]["distribution-bundle"][kPatternProperties][fmt::format("^dependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/distribution-dependencies"
-	})json"_ojson;
-	ret[kDefinitions]["distribution-bundle"][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/distribution-exclude"
-	})json"_ojson;
+	distributionBundle[kProperties] = Json::object();
+	distributionBundle[kProperties]["configuration"] = defs[Defs::DistConfiguration];
+	distributionBundle[kProperties]["dependencies"] = defs[Defs::DistDependencies];
+	distributionBundle[kProperties]["description"] = defs[Defs::DistDescription];
+	distributionBundle[kProperties]["exclude"] = defs[Defs::DistExclude];
+	distributionBundle[kProperties]["includeDependentSharedLibraries"] = defs[Defs::DistIncludeDependentSharedLibs];
+	distributionBundle[kProperties]["linux"] = defs[Defs::DistLinux];
+	distributionBundle[kProperties]["macos"] = defs[Defs::DistMacos];
+	distributionBundle[kProperties]["mainProject"] = defs[Defs::DistMainProject];
+	distributionBundle[kProperties]["outDir"] = defs[Defs::DistOutDirectory];
+	distributionBundle[kProperties]["projects"] = defs[Defs::DistProjects];
+	distributionBundle[kPatternProperties][fmt::format("^dependencies{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::DistDependencies];
+	distributionBundle[kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::DistExclude];
 
 	// externalDependency
-	ret[kDefinitions]["externalDependency-repository"] = R"json({
+	defs[Defs::ExtGitRepository] = R"json({
 		"type": "string",
 		"description": "The url of the git repository.",
 		"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
 	})json"_ojson;
 
-	ret[kDefinitions]["externalDependency-branch"] = R"json({
+	defs[Defs::ExtGitBranch] = R"json({
 		"type": "string",
 		"description": "The branch to checkout. Uses the repository's default if not set."
 	})json"_ojson;
 
-	ret[kDefinitions]["externalDependency-commit"] = R"json({
+	defs[Defs::ExtGitCommit] = R"json({
 		"type": "string",
 		"description": "The SHA1 hash of the commit to checkout.",
 		"pattern": "^[0-9a-f]{7,40}$"
 	})json"_ojson;
 
-	ret[kDefinitions]["externalDependency-tag"] = R"json({
+	defs[Defs::ExtGitTag] = R"json({
 		"type": "string",
 		"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
 	})json"_ojson;
 
-	ret[kDefinitions]["externalDependency-submodules"] = R"json({
+	defs[Defs::ExtGitSubmodules] = R"json({
 		"type": "boolean",
 		"description": "Do submodules need to be cloned?",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["externalDependency"] = R"json({
+	auto externalDependency = R"json({
 		"type": "object",
 		"oneOf": [
 			{
@@ -305,43 +367,28 @@ Json Schema::getBuildJson()
 				"required": [
 					"repository",
 					"tag"
-				],
-				"properties": {
-					"repository": {
-						"$ref": "#/definitions/externalDependency-repository"
-					},
-					"submodules": {
-						"$ref": "#/definitions/externalDependency-submodules"
-					},
-					"tag": {
-						"$ref": "#/definitions/externalDependency-tag"
-					}
-				}
+				]
 			},
 			{
 				"additionalProperties": false,
 				"required": [
 					"repository"
-				],
-				"properties": {
-					"repository": {
-						"$ref": "#/definitions/externalDependency-repository"
-					},
-					"submodules": {
-						"$ref": "#/definitions/externalDependency-submodules"
-					},
-					"branch": {
-						"$ref": "#/definitions/externalDependency-branch"
-					},
-					"commit": {
-						"$ref": "#/definitions/externalDependency-commit"
-					}
-				}
+				]
 			}
 		]
 	})json"_ojson;
+	externalDependency[kOneOf][0][kProperties] = Json::object();
+	externalDependency[kOneOf][0][kProperties]["repository"] = defs[Defs::ExtGitRepository];
+	externalDependency[kOneOf][0][kProperties]["submodules"] = defs[Defs::ExtGitSubmodules];
+	externalDependency[kOneOf][0][kProperties]["tag"] = defs[Defs::ExtGitTag];
 
-	ret[kDefinitions]["enum-platform"] = R"json({
+	externalDependency[kOneOf][1][kProperties] = Json::object();
+	externalDependency[kOneOf][1][kProperties]["repository"] = defs[Defs::ExtGitRepository];
+	externalDependency[kOneOf][1][kProperties]["submodules"] = defs[Defs::ExtGitSubmodules];
+	externalDependency[kOneOf][1][kProperties]["branch"] = defs[Defs::ExtGitBranch];
+	externalDependency[kOneOf][1][kProperties]["commit"] = defs[Defs::ExtGitCommit];
+
+	defs[Defs::EnumPlatform] = R"json({
 		"type": "string",
 		"enum": [
 			"windows",
@@ -350,7 +397,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["environment-path"] = R"json({
+	defs[Defs::EnvironmentPath] = R"json({
 		"type": "array",
 		"description": "Any additional paths to include.",
 		"uniqueItems": true,
@@ -360,12 +407,12 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["target-description"] = R"json({
+	defs[Defs::TargetDescription] = R"json({
 		"type": "string",
 		"description": "A description of the target to display during the build."
 	})json"_ojson;
 
-	ret[kDefinitions]["target-notInConfiguration"] = R"json({
+	defs[Defs::TargetNotInConfiguration] = R"json({
 		"description": "Don't compile this project in specific build configuration(s)",
 		"oneOf": [
 			{
@@ -382,24 +429,23 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["target-notInPlatform"] = R"json({
+	defs[Defs::TargetNotInPlatform] = R"json({
 		"description": "Don't compile this project on specific platform(s)",
 		"oneOf": [
 			{
-				"$ref": "#/definitions/enum-platform"
+				"type": "object"
 			},
 			{
 				"type": "array",
 				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"$ref": "#/definitions/enum-platform"
-				}
+				"minItems": 1
 			}
 		]
 	})json"_ojson;
+	defs[Defs::TargetNotInPlatform][kOneOf][0] = defs[Defs::EnumPlatform];
+	defs[Defs::TargetNotInPlatform][kOneOf][1][kItems] = defs[Defs::EnumPlatform];
 
-	ret[kDefinitions]["target-onlyInConfiguration"] = R"json({
+	defs[Defs::TargetOnlyInConfiguration] = R"json({
 		"description": "Only compile this project in specific build configuration(s)",
 		"oneOf": [
 			{
@@ -416,243 +462,30 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["target-onlyInPlatform"] = R"json({
+	defs[Defs::TargetOnlyInPlatform] = R"json({
 		"description": "Only compile this project on specific platform(s)",
 		"oneOf": [
 			{
-				"$ref": "#/definitions/enum-platform"
+				"type": "object"
 			},
 			{
 				"type": "array",
 				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"$ref": "#/definitions/enum-platform"
-				}
+				"minItems": 1
 			}
 		]
 	})json"_ojson;
+	defs[Defs::TargetOnlyInPlatform][kOneOf][0] = defs[Defs::EnumPlatform];
+	defs[Defs::TargetOnlyInPlatform][kOneOf][1][kItems] = defs[Defs::EnumPlatform];
 
-	ret[kDefinitions]["target-project-settings-cxx"] = R"json({
-		"type": "object",
-		"additionalProperties": false,
-		"properties": {
-			"cStandard": {
-				"$ref": "#/definitions/target-project-cxx-cStandard"
-			},
-			"compileOptions": {
-				"$ref": "#/definitions/target-project-cxx-compileOptions"
-			},
-			"cppStandard": {
-				"$ref": "#/definitions/target-project-cxx-cppStandard"
-			},
-			"defines": {
-				"$ref": "#/definitions/target-project-cxx-defines"
-			},
-			"includeDirs": {
-				"$ref": "#/definitions/target-project-cxx-includeDirs"
-			},
-			"libDirs": {
-				"$ref": "#/definitions/target-project-cxx-libDirs"
-			},
-			"linkerScript": {
-				"$ref": "#/definitions/target-project-cxx-linkerScript"
-			},
-			"linkerOptions": {
-				"$ref": "#/definitions/target-project-cxx-linkerOptions"
-			},
-			"links": {
-				"$ref": "#/definitions/target-project-cxx-links"
-			},
-			"macosFrameworkPaths": {
-				"$ref": "#/definitions/target-project-cxx-macosFrameworkPaths"
-			},
-			"macosFrameworks": {
-				"$ref": "#/definitions/target-project-cxx-macosFrameworks"
-			},
-			"objectiveCxx": {
-				"$ref": "#/definitions/target-project-cxx-objectiveCxx"
-			},
-			"pch": {
-				"$ref": "#/definitions/target-project-cxx-pch"
-			},
-			"threads": {
-				"$ref": "#/definitions/target-project-cxx-threads"
-			},
-			"rtti": {
-				"$ref": "#/definitions/target-project-cxx-rtti"
-			},
-			"staticLinking": {
-				"$ref": "#/definitions/target-project-cxx-staticLinking"
-			},
-			"staticLinks": {
-				"$ref": "#/definitions/target-project-cxx-staticLinks"
-			},
-			"warnings": {
-				"$ref": "#/definitions/target-project-cxx-warnings"
-			},
-			"windowsPrefixOutputFilename": {
-				"$ref": "#/definitions/target-project-cxx-windowsPrefixOutputFilename"
-			},
-			"windowsOutputDef": {
-				"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
-			},
-			"windowsApplicationIcon": {
-				"$ref": "#/definitions/target-project-cxx-windowsApplicationIcon"
-			},
-			"windowsApplicationManifest": {
-				"$ref": "#/definitions/target-project-cxx-windowsApplicationManifest"
-			}
-		}
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^cStandard{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-cStandard"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^cppStandard{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-cppStandard"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^compileOptions{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-compileOptions"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-defines"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^includeDirs{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-includeDirs"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^libDirs{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-libDirs"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^linkerScript{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-linkerScript"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^linkerOptions{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-linkerOptions"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^links{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-links"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^objectiveCxx{}$", patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-objectiveCxx"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^staticLinks{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-staticLinks"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^threads{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-threads"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^rtti{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-rtti"
-	})json"_ojson;
-	ret[kDefinitions]["target-project-settings-cxx"][kPatternProperties][fmt::format("^staticLinking{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-cxx-staticLinking"
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project"] = R"json({
-		"type": "object",
-		"additionalProperties": false,
-		"properties": {
-			"settings:Cxx": {
-				"$ref": "#/definitions/target-project-settings-cxx"
-			},
-			"extends": {
-				"$ref": "#/definitions/target-project-extends"
-			},
-			"files": {
-				"$ref": "#/definitions/target-project-files"
-			},
-			"kind": {
-				"$ref": "#/definitions/target-project-kind"
-			},
-			"language": {
-				"$ref": "#/definitions/target-project-language"
-			},
-			"location": {
-				"$ref": "#/definitions/target-project-location"
-			},
-			"onlyInConfiguration": {
-				"$ref": "#/definitions/target-onlyInConfiguration"
-			},
-			"notInConfiguration": {
-				"$ref": "#/definitions/target-notInConfiguration"
-			},
-			"onlyInPlatform": {
-				"$ref": "#/definitions/target-onlyInPlatform"
-			},
-			"notInPlatform": {
-				"$ref": "#/definitions/target-notInPlatform"
-			},
-			"runProject": {
-				"$ref": "#/definitions/target-project-runProject"
-			},
-			"runArguments": {
-				"$ref": "#/definitions/target-project-runArguments"
-			},
-			"runDependencies": {
-				"$ref": "#/definitions/target-project-runDependencies"
-			}
-		}
-	})json"_ojson;
-	ret[kDefinitions]["target-project"][kPatternProperties][fmt::format("^runProject{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-runProject"
-	})json"_ojson;
-	ret[kDefinitions]["target-project"][kPatternProperties][fmt::format("^runDependencies{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-project-runDependencies"
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-cxx-cStandard"] = R"json({
-		"type": "string",
-		"description": "The C standard to use in the compilation",
-		"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
-		"default": "c11"
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-cxx-compileOptions"] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
-		"description": "Options to add during the compilation step.",
-		"items": {
-			"type": "string"
-		}
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-cxx-cppStandard"] = R"json({
-		"type": "string",
-		"description": "The C++ standard to use in the compilation",
-		"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
-		"default": "c++17"
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-cxx-defines"] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
-		"description": "Macro definitions to be used by the preprocessor",
-		"items": {
-			"type": "string"
-		}
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-cxx-includeDirs"] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
-		"description": "A list of directories to include with the project.",
-		"items": {
-			"type": "string"
-		}
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-extends"] = R"json({
+	defs[Defs::TargetProjectExtends] = R"json({
 		"type": "string",
 		"description": "A project template to extend. Defaults to 'all' implicitly.",
 		"pattern": "^[A-Za-z_-]+$",
 		"default": "all"
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-files"] = R"json({
+	defs[Defs::TargetProjectFiles] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -662,7 +495,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-kind"] = R"json({
+	defs[Defs::TargetProjectKind] = R"json({
 		"type": "string",
 		"description": "The type of the project's compiled binary.",
 		"enum": [
@@ -673,7 +506,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-language"] = R"json({
+	defs[Defs::TargetProjectLanguage] = R"json({
 		"type": "string",
 		"description": "The target language of the project.",
 		"enum": [
@@ -683,7 +516,76 @@ Json Schema::getBuildJson()
 		"default": "C++"
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-libDirs"] = R"json({
+	defs[Defs::TargetProjectRunProject] = R"json({
+		"type": "boolean",
+		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
+		"default": false
+	})json"_ojson;
+
+	defs[Defs::TargetProjectRunArguments] = R"json({
+		"type": "array",
+		"description": "If the project is the run target, a string of arguments to pass to the run command.",
+		"minItems": 1,
+		"items": {
+			"type": "string"
+		}
+	})json"_ojson;
+
+	defs[Defs::TargetProjectRunDependencies] = R"json({
+		"type": "array",
+		"uniqueItems": true,
+		"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
+		"minItems": 1,
+		"items": {
+			"type": "string"
+		}
+	})json"_ojson;
+
+	defs[Defs::TargetProjectCxxCStandard] = R"json({
+		"type": "string",
+		"description": "The C standard to use in the compilation",
+		"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
+		"default": "c11"
+	})json"_ojson;
+
+	defs[Defs::TargetProjectCxxCompileOptions] = R"json({
+		"type": "array",
+		"uniqueItems": true,
+		"minItems": 1,
+		"description": "Options to add during the compilation step.",
+		"items": {
+			"type": "string"
+		}
+	})json"_ojson;
+
+	defs[Defs::TargetProjectCxxCppStandard] = R"json({
+		"type": "string",
+		"description": "The C++ standard to use in the compilation",
+		"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
+		"default": "c++17"
+	})json"_ojson;
+
+	defs[Defs::TargetProjectCxxDefines] = R"json({
+		"type": "array",
+		"uniqueItems": true,
+		"minItems": 1,
+		"description": "Macro definitions to be used by the preprocessor",
+		"items": {
+			"type": "string"
+		}
+	})json"_ojson;
+
+	defs[Defs::TargetProjectCxxIncludeDirs] = R"json({
+		"type": "array",
+		"uniqueItems": true,
+		"minItems": 1,
+		"description": "A list of directories to include with the project.",
+		"items": {
+			"type": "string"
+		}
+	})json"_ojson;
+
+	defs[Defs::TargetProjectCxxLibDirs] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -693,12 +595,12 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-linkerScript"] = R"json({
+	defs[Defs::TargetProjectCxxLinkerScript] = R"json({
 		"type": "string",
 		"description": "An LD linker script path (.ld file) to pass to the linker command"
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-linkerOptions"] = R"json({
+	defs[Defs::TargetProjectCxxLinkerOptions] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -708,7 +610,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-links"] = R"json({
+	defs[Defs::TargetProjectCxxLinks] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -717,9 +619,9 @@ Json Schema::getBuildJson()
 			"type": "string"
 		}
 	})json"_ojson;
-	ret[kDefinitions]["target-project-cxx-links"][kItems][kPattern] = patternProjectLinks;
+	defs[Defs::TargetProjectCxxLinks][kItems][kPattern] = patternProjectLinks;
 
-	ret[kDefinitions]["target-project-location"] = R"json({
+	defs[Defs::TargetProjectLocation] = R"json({
 		"description": "The root path of the source files, relative to the working directory.",
 		"oneOf": [
 			{
@@ -742,7 +644,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	ret[kDefinitions]["target-project-location"]["oneOf"][2][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+	defs[Defs::TargetProjectLocation][kOneOf][2][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -757,7 +659,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	ret[kDefinitions]["target-project-location"]["oneOf"][2][kPatternProperties][fmt::format("^include{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+	defs[Defs::TargetProjectLocation][kOneOf][2][kPatternProperties][fmt::format("^include{}{}$", patternConfigurations, patternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -773,7 +675,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-macosFrameworkPaths"] = R"json({
+	defs[Defs::TargetProjectCxxMacOsFrameworkPaths] = R"json({
 		"type": "array",
 		"description": "A list of paths to search for MacOS Frameworks",
 		"uniqueItems": true,
@@ -783,7 +685,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-macosFrameworks"] = R"json({
+	defs[Defs::TargetProjectCxxMacOsFrameworks] = R"json({
 		"type": "array",
 		"description": "A list of MacOS Frameworks to link to the project",
 		"uniqueItems": true,
@@ -793,24 +695,18 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	// ret[kDefinitions]["project-name"] = R"json({
-	// 	"type": "string",
-	// 	"description": "The name of the project."
-	// })json"_ojson;
-	// ret[kDefinitions]["project-name"][kPattern] = patternProjectName;
-
-	ret[kDefinitions]["target-project-cxx-objectiveCxx"] = R"json({
+	defs[Defs::TargetProjectCxxObjectiveCxx] = R"json({
 		"type": "boolean",
 		"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-pch"] = R"json({
+	defs[Defs::TargetProjectCxxPrecompiledHeader] = R"json({
 		"type": "string",
 		"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-threads"] = R"json({
+	defs[Defs::TargetProjectCxxThreads] = R"json({
 		"type": "string",
 		"enum": [
 			"auto",
@@ -820,60 +716,19 @@ Json Schema::getBuildJson()
 		"default": "auto"
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-rtti"] = R"json({
+	defs[Defs::TargetProjectCxxRunTimeTypeInfo] = R"json({
 		"type": "boolean",
 		"description": "true to include run-time type information (default), false to exclude.",
 		"default": true
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-runProject"] = R"json({
-		"type": "boolean",
-		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
-		"default": false
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-runArguments"] = R"json({
-		"type": "array",
-		"description": "If the project is the run target, a string of arguments to pass to the run command.",
-		"minItems": 1,
-		"items": {
-			"type": "string"
-		}
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-runDependencies"] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
-		"minItems": 1,
-		"items": {
-			"type": "string"
-		}
-	})json"_ojson;
-
-	ret[kDefinitions]["target-script-script"] = R"json({
-		"anyOf": [
-			{
-				"type": "string"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"type": "string"
-				}
-			}
-		]
-	})json"_ojson;
-
-	ret[kDefinitions]["target-project-cxx-staticLinking"] = R"json({
+	defs[Defs::TargetProjectCxxStaticLinking] = R"json({
 		"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 		"type": "boolean",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-staticLinks"] = R"json({
+	defs[Defs::TargetProjectCxxStaticLinks] = R"json({
 		"type": "array",
 		"description": "A list of static links to use with the linker",
 		"uniqueItems": true,
@@ -882,9 +737,9 @@ Json Schema::getBuildJson()
 			"type": "string"
 		}
 	})json"_ojson;
-	ret[kDefinitions]["target-project-cxx-staticLinks"][kItems][kPattern] = patternProjectLinks;
+	defs[Defs::TargetProjectCxxStaticLinks][kItems][kPattern] = patternProjectLinks;
 
-	ret[kDefinitions]["target-project-cxx-warnings"] = R"json({
+	defs[Defs::TargetProjectCxxWarnings] = R"json({
 		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
 		"anyOf": [
 			{
@@ -910,7 +765,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-warnings"][kAnyOf][1][kItems][kEnum] = {
+	defs[Defs::TargetProjectCxxWarnings][kAnyOf][1][kItems][kEnum] = {
 		"abi",
 		"absolute-value",
 		"address",
@@ -1206,66 +1061,138 @@ Json Schema::getBuildJson()
 		"zero-length-bounds"
 	};
 
-	ret[kDefinitions]["target-project-cxx-windowsApplicationManifest"] = R"json({
+	defs[Defs::TargetProjectCxxWindowsAppManifest] = R"json({
 		"description": "The path to a Windows application manifest. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
 		"type": "string"
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-windowsApplicationIcon"] = R"json({
+	defs[Defs::TargetProjectCxxWindowsAppIcon] = R"json({
 		"type": "string",
 		"description": "The windows icon to use for the project. Only applies to application targets (kind=[consoleApplication|desktopApplication])"
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-windowsOutputDef"] = R"json({
+	defs[Defs::TargetProjectCxxWindowsOutputDef] = R"json({
 		"type": "boolean",
 		"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["target-project-cxx-windowsPrefixOutputFilename"] = R"json({
+	defs[Defs::TargetProjectCxxWindowsPrefixOutputFilename] = R"json({
 		"type": "boolean",
 		"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
 		"default": true
 	})json"_ojson;
 
-	ret[kDefinitions]["target-script"] = R"json({
+	auto projectSettingsCxx = R"json({
 		"type": "object",
-		"additionalProperties": false,
-		"properties": {
-			"script": {
-				"description": "Script(s) to run during this build step.",
-				"$ref": "#/definitions/target-script-script"
+		"additionalProperties": false
+	})json"_ojson;
+	projectSettingsCxx[kProperties]["cStandard"] = defs[Defs::TargetProjectCxxCStandard];
+	projectSettingsCxx[kProperties]["compileOptions"] = defs[Defs::TargetProjectCxxCompileOptions];
+	projectSettingsCxx[kProperties]["cppStandard"] = defs[Defs::TargetProjectCxxCppStandard];
+	projectSettingsCxx[kProperties]["defines"] = defs[Defs::TargetProjectCxxDefines];
+	projectSettingsCxx[kProperties]["includeDirs"] = defs[Defs::TargetProjectCxxIncludeDirs];
+	projectSettingsCxx[kProperties]["libDirs"] = defs[Defs::TargetProjectCxxLibDirs];
+	projectSettingsCxx[kProperties]["linkerScript"] = defs[Defs::TargetProjectCxxLinkerScript];
+	projectSettingsCxx[kProperties]["linkerOptions"] = defs[Defs::TargetProjectCxxLinkerOptions];
+	projectSettingsCxx[kProperties]["links"] = defs[Defs::TargetProjectCxxLinks];
+	projectSettingsCxx[kProperties]["macosFrameworkPaths"] = defs[Defs::TargetProjectCxxMacOsFrameworkPaths];
+
+	projectSettingsCxx[kProperties]["macosFrameworks"] = defs[Defs::TargetProjectCxxMacOsFrameworks];
+	projectSettingsCxx[kProperties]["objectiveCxx"] = defs[Defs::TargetProjectCxxObjectiveCxx];
+	projectSettingsCxx[kProperties]["pch"] = defs[Defs::TargetProjectCxxPrecompiledHeader];
+	projectSettingsCxx[kProperties]["threads"] = defs[Defs::TargetProjectCxxThreads];
+	projectSettingsCxx[kProperties]["rtti"] = defs[Defs::TargetProjectCxxRunTimeTypeInfo];
+	projectSettingsCxx[kProperties]["staticLinking"] = defs[Defs::TargetProjectCxxStaticLinking];
+	projectSettingsCxx[kProperties]["staticLinks"] = defs[Defs::TargetProjectCxxStaticLinks];
+	projectSettingsCxx[kProperties]["warnings"] = defs[Defs::TargetProjectCxxWarnings];
+	projectSettingsCxx[kProperties]["windowsPrefixOutputFilename"] = defs[Defs::TargetProjectCxxWindowsPrefixOutputFilename];
+	projectSettingsCxx[kProperties]["windowsOutputDef"] = defs[Defs::TargetProjectCxxWindowsOutputDef];
+	projectSettingsCxx[kProperties]["windowsApplicationIcon"] = defs[Defs::TargetProjectCxxWindowsAppIcon];
+	projectSettingsCxx[kProperties]["windowsApplicationManifest"] = defs[Defs::TargetProjectCxxWindowsAppManifest];
+
+	projectSettingsCxx[kPatternProperties][fmt::format("^cStandard{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxCStandard];
+	projectSettingsCxx[kPatternProperties][fmt::format("^cppStandard{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxCppStandard];
+	projectSettingsCxx[kPatternProperties][fmt::format("^compileOptions{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxCompileOptions];
+	projectSettingsCxx[kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxDefines];
+	projectSettingsCxx[kPatternProperties][fmt::format("^includeDirs{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxIncludeDirs];
+	projectSettingsCxx[kPatternProperties][fmt::format("^libDirs{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxLibDirs];
+	projectSettingsCxx[kPatternProperties][fmt::format("^linkerScript{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxLinkerScript];
+	projectSettingsCxx[kPatternProperties][fmt::format("^linkerOptions{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxLinkerOptions];
+	projectSettingsCxx[kPatternProperties][fmt::format("^links{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxLinks];
+	projectSettingsCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxObjectiveCxx];
+	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinks{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxStaticLinks];
+	projectSettingsCxx[kPatternProperties][fmt::format("^threads{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxThreads];
+	projectSettingsCxx[kPatternProperties][fmt::format("^rtti{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxRunTimeTypeInfo];
+	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxStaticLinking];
+
+	auto targetProject = R"json({
+		"type": "object",
+		"additionalProperties": false
+	})json"_ojson;
+	targetProject[kProperties]["settings:Cxx"] = std::move(projectSettingsCxx);
+	targetProject[kProperties]["extends"] = defs[Defs::TargetProjectExtends];
+	targetProject[kProperties]["files"] = defs[Defs::TargetProjectFiles];
+	targetProject[kProperties]["kind"] = defs[Defs::TargetProjectKind];
+	targetProject[kProperties]["language"] = defs[Defs::TargetProjectLanguage];
+	targetProject[kProperties]["location"] = defs[Defs::TargetProjectLocation];
+	targetProject[kProperties]["onlyInConfiguration"] = defs[Defs::TargetOnlyInConfiguration];
+	targetProject[kProperties]["notInConfiguration"] = defs[Defs::TargetNotInConfiguration];
+	targetProject[kProperties]["onlyInPlatform"] = defs[Defs::TargetOnlyInPlatform];
+	targetProject[kProperties]["notInPlatform"] = defs[Defs::TargetNotInPlatform];
+	targetProject[kProperties]["runProject"] = defs[Defs::TargetProjectRunProject];
+	targetProject[kProperties]["runArguments"] = defs[Defs::TargetProjectRunArguments];
+	targetProject[kProperties]["runDependencies"] = defs[Defs::TargetProjectRunDependencies];
+	targetProject[kPatternProperties][fmt::format("^runProject{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectRunProject];
+	targetProject[kPatternProperties][fmt::format("^runDependencies{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectRunDependencies];
+
+	defs[Defs::TargetScriptScript] = R"json({
+		"anyOf": [
+			{
+				"type": "string"
 			},
-			"description": {
-				"$ref": "#/definitions/target-description"
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"minItems": 1,
+				"items": {
+					"type": "string"
+				}
 			}
-		}
-	})json"_ojson;
-	ret[kDefinitions]["target-script"][kPatternProperties][fmt::format("^script{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"description": "Script(s) to run during this build step.",
-		"$ref": "#/definitions/target-script-script"
-	})json"_ojson;
-	ret[kDefinitions]["target-script"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-description"
+		]
 	})json"_ojson;
 
-	ret[kDefinitions]["target-type"] = R"json({
+	auto targetScript = R"json({
+		"type": "object",
+		"additionalProperties": false
+	})json"_ojson;
+	targetScript[kProperties]["script"] = defs[Defs::TargetScriptScript];
+	targetScript[kProperties]["script"][kDescription] = "Script(s) to run during this build step.";
+	targetScript[kProperties]["description"] = defs[Defs::TargetDescription];
+	{
+		auto scriptPattern = fmt::format("^script{}{}$", patternConfigurations, patternPlatforms);
+		targetScript[kPatternProperties][scriptPattern] = defs[Defs::TargetScriptScript];
+		targetScript[kPatternProperties][scriptPattern][kDescription] = "Script(s) to run during this build step.";
+	}
+	targetScript[kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetDescription];
+
+	defs[Defs::TargetType] = R"json({
 		"type": "string",
 		"description": "The target type, if not a local project or script.",
 		"enum": ["CMake", "Chalet"]
 	})json"_ojson;
 
-	ret[kDefinitions]["target-cmake-location"] = R"json({
+	defs[Defs::TargetCMakeLocation] = R"json({
 		"type": "string",
 		"description": "The folder path of the root CMakeLists.txt for the project."
 	})json"_ojson;
 
-	ret[kDefinitions]["target-cmake-buildFile"] = R"json({
+	defs[Defs::TargetCMakeBuildFile] = R"json({
 		"type": "string",
 		"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)"
 	})json"_ojson;
 
-	ret[kDefinitions]["target-cmake-defines"] = R"json({
+	defs[Defs::TargetCMakeDefines] = R"json({
 		"type": "array",
 		"description": "Macro definitions to be passed into CMake. (-D)",
 		"uniqueItems": true,
@@ -1275,155 +1202,92 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	ret[kDefinitions]["target-cmake-recheck"] = R"json({
+	defs[Defs::TargetCMakeRecheck] = R"json({
 		"type": "boolean",
 		"description": "If true, CMake will be invoked each time during the build.",
 		"default": false
 	})json"_ojson;
 
-	ret[kDefinitions]["target-cmake-toolset"] = R"json({
+	defs[Defs::TargetCMakeToolset] = R"json({
 		"type": "string",
 		"description": "A toolset to be passed to CMake with the -T option."
 	})json"_ojson;
 
-	ret[kDefinitions]["target-cmake"] = R"json({
+	auto targetCMake = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"required": [
 			"type",
 			"location"
 		],
-		"description": "Build the location with cmake",
-		"properties": {
-			"description": {
-				"$ref": "#/definitions/target-description"
-			},
-			"location": {
-				"$ref": "#/definitions/target-cmake-location"
-			},
-			"buildFile": {
-				"$ref": "#/definitions/target-cmake-buildFile"
-			},
-			"defines": {
-				"$ref": "#/definitions/target-cmake-defines"
-			},
-			"toolset": {
-				"$ref": "#/definitions/target-cmake-toolset"
-			},
-			"recheck": {
-				"$ref": "#/definitions/target-cmake-recheck"
-			},
-			"type": {
-				"$ref": "#/definitions/target-type"
-			},
-			"onlyInConfiguration": {
-				"$ref": "#/definitions/target-onlyInConfiguration"
-			},
-			"notInConfiguration": {
-				"$ref": "#/definitions/target-notInConfiguration"
-			},
-			"onlyInPlatform": {
-				"$ref": "#/definitions/target-onlyInPlatform"
-			},
-			"notInPlatform": {
-				"$ref": "#/definitions/target-notInPlatform"
-			}
-		}
+		"description": "Build the location with cmake"
 	})json"_ojson;
-	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-description"
-	})json"_ojson;
-	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^buildFile{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-cmake-buildFile"
-	})json"_ojson;
-	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-cmake-defines"
-	})json"_ojson;
-	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^toolset{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-cmake-toolset"
-	})json"_ojson;
+	targetCMake[kProperties]["description"] = defs[Defs::TargetDescription];
+	targetCMake[kProperties]["location"] = defs[Defs::TargetCMakeLocation];
+	targetCMake[kProperties]["buildFile"] = defs[Defs::TargetCMakeBuildFile];
+	targetCMake[kProperties]["defines"] = defs[Defs::TargetCMakeDefines];
+	targetCMake[kProperties]["toolset"] = defs[Defs::TargetCMakeToolset];
+	targetCMake[kProperties]["recheck"] = defs[Defs::TargetCMakeRecheck];
+	targetCMake[kProperties]["type"] = defs[Defs::TargetType];
+	targetCMake[kProperties]["onlyInConfiguration"] = defs[Defs::TargetOnlyInConfiguration];
+	targetCMake[kProperties]["notInConfiguration"] = defs[Defs::TargetNotInConfiguration];
+	targetCMake[kProperties]["onlyInPlatform"] = defs[Defs::TargetOnlyInPlatform];
+	targetCMake[kProperties]["notInPlatform"] = defs[Defs::TargetNotInPlatform];
+	targetCMake[kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetDescription];
+	targetCMake[kPatternProperties][fmt::format("^buildFile{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetCMakeBuildFile];
+	targetCMake[kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetCMakeDefines];
+	targetCMake[kPatternProperties][fmt::format("^toolset{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetCMakeToolset];
 
-	ret[kDefinitions]["target-chalet-location"] = R"json({
+	defs[Defs::TargetChaletLocation] = R"json({
 		"type": "string",
 		"description": "The folder path of the root build.json for the project."
 	})json"_ojson;
 
-	ret[kDefinitions]["target-chalet-buildFile"] = R"json({
+	defs[Defs::TargetChaletBuildFile] = R"json({
 		"type": "string",
 		"description": "The build file to use, if not build.json, relative to the location."
 	})json"_ojson;
 
-	ret[kDefinitions]["target-chalet-recheck"] = R"json({
+	defs[Defs::TargetChaletRecheck] = R"json({
 		"type": "boolean",
 		"description": "If true, Chalet will be invoked each time during the build."
 	})json"_ojson;
 
-	ret[kDefinitions]["target-chalet"] = R"json({
+	auto targetChalet = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"required": [
 			"type",
 			"location"
 		],
-		"description": "Build the location with cmake",
-		"properties": {
-			"description": {
-				"$ref": "#/definitions/target-description"
-			},
-			"location": {
-				"$ref": "#/definitions/target-chalet-location"
-			},
-			"buildFile": {
-				"$ref": "#/definitions/target-chalet-buildFile"
-			},
-			"recheck": {
-				"$ref": "#/definitions/target-chalet-recheck"
-			},
-			"type": {
-				"$ref": "#/definitions/target-type"
-			},
-			"onlyInConfiguration": {
-				"$ref": "#/definitions/target-onlyInConfiguration"
-			},
-			"notInConfiguration": {
-				"$ref": "#/definitions/target-notInConfiguration"
-			},
-			"onlyInPlatform": {
-				"$ref": "#/definitions/target-onlyInPlatform"
-			},
-			"notInPlatform": {
-				"$ref": "#/definitions/target-notInPlatform"
-			}
-		}
+		"description": "Build the location with cmake"
 	})json"_ojson;
-	ret[kDefinitions]["target-chalet"][kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-description"
-	})json"_ojson;
-	ret[kDefinitions]["target-cmake"][kPatternProperties][fmt::format("^buildFile{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/target-chalet-buildFile"
-	})json"_ojson;
+	targetChalet[kProperties]["description"] = defs[Defs::TargetDescription];
+	targetChalet[kProperties]["location"] = defs[Defs::TargetChaletLocation];
+	targetChalet[kProperties]["buildFile"] = defs[Defs::TargetChaletBuildFile];
+	targetChalet[kProperties]["recheck"] = defs[Defs::TargetChaletRecheck];
+	targetChalet[kProperties]["type"] = defs[Defs::TargetType];
+	targetChalet[kProperties]["onlyInConfiguration"] = defs[Defs::TargetOnlyInConfiguration];
+	targetChalet[kProperties]["notInConfiguration"] = defs[Defs::TargetNotInConfiguration];
+	targetChalet[kProperties]["onlyInPlatform"] = defs[Defs::TargetOnlyInPlatform];
+	targetChalet[kProperties]["notInPlatform"] = defs[Defs::TargetNotInPlatform];
+	targetChalet[kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetDescription];
+	targetChalet[kPatternProperties][fmt::format("^buildFile{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetChaletBuildFile];
 
 	//
-	const auto kProperties = "properties";
 	ret[kProperties] = Json::object();
 	ret[kPatternProperties] = Json::object();
 
-	ret[kPatternProperties]["^abstracts:[a-z]+$"] = R"json({
-		"description": "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project",
-		"$ref": "#/definitions/target-project"
-	})json"_ojson;
+	ret[kPatternProperties]["^abstracts:[a-z]+$"] = targetProject;
+	ret[kPatternProperties]["^abstracts:[a-z]+$"][kDescription] = "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project";
 
 	ret[kProperties]["abstracts"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of abstract build projects",
-		"patternProperties": {
-			"^[A-Za-z_-]+$": {
-				"description": "An abstract build project. 'all' is implicitely added to each project.",
-				"$ref": "#/definitions/target-project"
-			}
-		}
+		"description": "A list of abstract build projects"
 	})json"_ojson;
+	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"] = targetProject;
+	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"][kDescription] = "An abstract build project. 'all' is implicitely added to each project.";
 
 	ret[kProperties]["distribution"] = R"json({
 		"type": "object",
@@ -1431,46 +1295,27 @@ Json Schema::getBuildJson()
 		"description": "A list of bundle descriptors for the distribution."
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][patternDistributionName] = R"json({
-		"description": "A single bundle or script.",
-		"oneOf": [
-			{
-				"$ref": "#/definitions/target-script"
-			},
-			{
-				"$ref": "#/definitions/distribution-bundle"
-			}
-		]
+		"description": "A single bundle or script."
 	})json"_ojson;
+	ret[kProperties]["distribution"][kPatternProperties][patternDistributionName][kOneOf][0] = targetScript;
+	ret[kProperties]["distribution"][kPatternProperties][patternDistributionName][kOneOf][1] = distributionBundle;
+
+	auto configuration = R"json({
+		"type": "object",
+		"additionalProperties": false
+	})json"_ojson;
+	configuration[kProperties]["debugSymbols"] = defs[Defs::ConfigDebugSymbols];
+	configuration[kProperties]["enableProfiling"] = defs[Defs::ConfigEnableProfiling];
+	configuration[kProperties]["linkTimeOptimization"] = defs[Defs::ConfigLinkTimeOptimizations];
+	configuration[kProperties]["optimizations"] = defs[Defs::ConfigOptimizationLevel];
+	configuration[kProperties]["stripSymbols"] = defs[Defs::ConfigStripSymbols];
 
 	ret[kProperties]["configurations"] = R"json({
 		"anyOf": [
 			{
 				"type": "object",
 				"additionalProperties": false,
-				"description": "A list of allowed build configurations",
-				"patternProperties": {
-					"^[A-Za-z]{3,}$": {
-						"type": "object",
-						"additionalProperties": false,
-						"properties": {
-							"debugSymbols": {
-								"$ref": "#/definitions/configurations-debugSymbols"
-							},
-							"enableProfiling": {
-								"$ref": "#/definitions/configurations-enableProfiling"
-							},
-							"linkTimeOptimization": {
-								"$ref": "#/definitions/configurations-linkTimeOptimization"
-							},
-							"optimizations": {
-								"$ref": "#/definitions/configurations-optimizations"
-							},
-							"stripSymbols": {
-								"$ref": "#/definitions/configurations-stripSymbols"
-							}
-						}
-					}
-				}
+				"description": "A list of allowed build configurations"
 			},
 			{
 				"type": "array",
@@ -1491,59 +1336,55 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
+	ret[kProperties]["configurations"][kAnyOf][0][kPatternProperties][R"(^[A-Za-z]{3,}$)"] = configuration;
 
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined in 'externalDepDir'."
 	})json"_ojson;
-	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-\\+\\.]{3,100}$"] = R"json({
-		"description": "A single external dependency.",
-		"$ref": "#/definitions/externalDependency"
-	})json"_ojson;
+	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-\\+\\.]{3,100}$"] = externalDependency;
 
-	ret[kProperties]["targets"] = R"json({
+	const auto kTargets = "targets";
+	ret[kProperties][kTargets] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A sequential list of projects, cmake projects, or scripts."
 	})json"_ojson;
-	ret[kProperties]["targets"][kPatternProperties][patternProjectName] = R"json({
+	ret[kProperties][kTargets][kPatternProperties][patternProjectName] = R"json({
 		"description": "A single build target or script.",
 		"oneOf": [
 			{
-				"$ref": "#/definitions/target-project"
+				"type": "object"
 			},
 			{
-				"$ref": "#/definitions/target-script"
+				"type": "object"
 			},
 			{
 				"type": "object",
-				"properties": {
-					"type": {
-						"$ref": "#/definitions/target-type"
-					}
-				},
+				"properties": {},
 				 "allOf": [
 					{
 						"if": {
 							"properties": { "type": { "const": "CMake" } }
 						},
-						"then": {
-							"$ref": "#/definitions/target-cmake"
-						}
+						"then": {}
 					},
 					{
 						"if": {
 							"properties": { "type": { "const": "Chalet" } }
 						},
-						"then": {
-							"$ref": "#/definitions/target-chalet"
-						}
+						"then": {}
 					}
 				]
 			}
 		]
 	})json"_ojson;
+	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][0] = targetProject;
+	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][1] = targetScript;
+	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][2][kProperties]["type"] = defs[Defs::TargetType];
+	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][2][kAllOf][0]["then"] = targetCMake;
+	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][2][kAllOf][1]["then"] = targetChalet;
 
 	ret[kProperties]["version"] = R"json({
 		"type": "string",
@@ -1563,13 +1404,8 @@ Json Schema::getBuildJson()
 		"default": "chalet_external"
 	})json"_ojson;
 
-	ret[kProperties]["path"] = R"json({
-		"$ref": "#/definitions/environment-path"
-	})json"_ojson;
-
-	ret[kPatternProperties][fmt::format("^path{}{}$", patternConfigurations, patternPlatforms)] = R"json({
-		"$ref": "#/definitions/environment-path"
-	})json"_ojson;
+	ret[kProperties]["path"] = defs[Defs::EnvironmentPath];
+	ret[kPatternProperties][fmt::format("^path{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::EnvironmentPath];
 
 	return ret;
 }
