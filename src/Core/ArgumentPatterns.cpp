@@ -270,14 +270,16 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 			CHALET_THROW(std::runtime_error("help"));
 		}
 
-		try
+		CHALET_TRY
 		{
 			m_parser.parse_args(inArguments);
 		}
-		catch (const std::runtime_error& err)
+		CHALET_CATCH(const std::runtime_error& err)
 		{
+#if defined(CHALET_EXCEPTIONS)
 			if (strcmp(err.what(), "Unknown argument") != 0)
 				CHALET_THROW(err);
+#endif
 		}
 
 		if (m_routeString.empty())
@@ -294,7 +296,7 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
-		Diagnostic::error("There was an unhandled exception during argument parsing: {}", err.what());
+		CHALET_EXCEPT_ERROR("There was an unhandled exception during argument parsing: {}", err.what());
 		return false;
 	}
 
@@ -346,7 +348,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		if (String::startsWith('-', key) && !List::contains(inArguments, key) && value.kind() != Variant::Kind::Boolean)
 			continue;
 
-		try
+		CHALET_TRY
 		{
 			switch (value.kind())
 			{
@@ -364,13 +366,13 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					break;
 
 				case Variant::Kind::StringList: {
-					try
+					CHALET_TRY
 					{
 						value = m_parser.get<StringList>(key);
 					}
-					catch (std::exception& e)
+					CHALET_CATCH(std::exception & err)
 					{
-						std::cout << e.what() << std::endl;
+						CHALET_EXCEPT_ERROR(err.what());
 					}
 					return true;
 				}
@@ -384,7 +386,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					break;
 			}
 		}
-		catch (const std::exception&)
+		CHALET_CATCH(const std::exception&)
 		{
 			Diagnostic::error("An invalid set of arguments were found.\n   Aborting...");
 			return false;

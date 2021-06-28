@@ -17,20 +17,20 @@ vendors=(
 )
 
 repositories=(
-	'p-ranav/argparse'
+	'chalet-org/argparse'
 	'catchorg/Catch2'
 	'hanickadot/compile-time-regular-expressions'
 	'fmtlib/fmt'
 	'gulrak/filesystem'
-	'andrew-r-king/glob'
-	'andrew-r-king/json-schema-validator'
+	'chalet-org/glob'
+	'chalet-org/json-schema-validator'
 	'nlohmann/json'
-	'andrew-r-king/subprocess'
-	'MisterTea/UniversalStacktrace'
-	'andrew-r-king/hash-library'
+	'chalet-org/subprocess'
+	'chalet-org/UniversalStacktrace'
+	'chalet-org/hash-library'
 )
 tags=(
-	'64dd67c7587ec36d1fc39a0f03619ea219968a95'
+	'master'
 	'v2.x'
 	'f6eba2662aac0284c1cb5c0dc19c72f47820b17b'
 	'8.0.0'
@@ -39,21 +39,21 @@ tags=(
 	'master'
 	'6471a63115239a0b6458ad25e2eb8d828c22fb34'
 	'master'
-	'e6ca24525f28556dd4847443b07dd4b9a4affa9d'
+	'master'
 	'master'
 )
 
 commits=(
-	1
-	0
-	1
-	0
-	0
 	0
 	0
 	1
 	0
+	0
+	0
+	0
 	1
+	0
+	0
 	0
 )
 

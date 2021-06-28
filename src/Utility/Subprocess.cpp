@@ -150,8 +150,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
-		std::string error(err.what());
-		Diagnostic::error("subprocess error: " + error);
+		CHALET_EXCEPT_ERROR("subprocess error: {}", err.what());
 		return -1;
 	}
 }
