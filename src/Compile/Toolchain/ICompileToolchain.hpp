@@ -58,6 +58,7 @@ protected:
 	virtual void addNoExceptionsOption(StringList& outArgList) const;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const;
 	virtual bool addArchitecture(StringList& outArgList) const;
+	virtual bool addArchitectureOptions(StringList& outArgList) const;
 
 	// Linking
 	virtual void addLibDirs(StringList& outArgList) const;

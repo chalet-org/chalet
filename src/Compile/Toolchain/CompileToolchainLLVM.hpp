@@ -24,6 +24,7 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList) const override;
+	virtual bool addArchitectureOptions(StringList& outArgList) const override;
 
 	// Linking
 	virtual void addStripSymbolsOption(StringList& outArgList) const override;

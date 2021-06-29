@@ -276,6 +276,13 @@ bool ICompileToolchain::addArchitecture(StringList& outArgList) const
 	return true;
 }
 
+bool ICompileToolchain::addArchitectureOptions(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+
+	return true;
+}
+
 /*****************************************************************************/
 // Linking
 /*****************************************************************************/

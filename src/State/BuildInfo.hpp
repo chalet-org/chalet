@@ -26,6 +26,8 @@ struct BuildInfo
 	const std::string& targetArchitectureString() const noexcept;
 	void setTargetArchitecture(const std::string& inValue) noexcept;
 
+	const StringList& archOptions() const noexcept;
+
 private:
 	const CommandLineInputs& m_inputs;
 

@@ -74,4 +74,10 @@ void BuildInfo::setTargetArchitecture(const std::string& inValue) noexcept
 	}
 }
 
+/*****************************************************************************/
+const StringList& BuildInfo::archOptions() const noexcept
+{
+	return m_inputs.archOptions();
+}
+
 }

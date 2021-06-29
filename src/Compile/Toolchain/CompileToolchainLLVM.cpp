@@ -68,23 +68,43 @@ void CompileToolchainLLVM::addThreadModelCompileOption(StringList& outArgList) c
 /*****************************************************************************/
 bool CompileToolchainLLVM::addArchitecture(StringList& outArgList) const
 {
-	UNUSED(outArgList);
-
 	// https://clang.llvm.org/docs/CrossCompilation.html
-	// TOOD: -mcpu, -mfpu, -mfloat
 
 	// clang -print-supported-cpus
 
-	auto hostArch = m_state.info.hostArchitecture();
-	auto targetArch = m_state.info.targetArchitecture();
+	Arch::Cpu hostArch = m_state.info.hostArchitecture();
+	Arch::Cpu targetArch = m_state.info.targetArchitecture();
+	const auto& archOptions = m_state.info.archOptions();
 
-	if (hostArch == targetArch && targetArch != Arch::Cpu::Unknown)
+	if (hostArch == targetArch && targetArch != Arch::Cpu::Unknown && archOptions.empty())
 		return false;
 
 	const auto& targetArchString = m_state.info.targetArchitectureString();
 
 	outArgList.push_back("-target");
 	outArgList.push_back(targetArchString);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CompileToolchainLLVM::addArchitectureOptions(StringList& outArgList) const
+{
+	// https://clang.llvm.org/docs/CrossCompilation.html
+
+	Arch::Cpu hostArch = m_state.info.hostArchitecture();
+	Arch::Cpu targetArch = m_state.info.targetArchitecture();
+	const auto& archOptions = m_state.info.archOptions();
+
+	if (hostArch == targetArch && targetArch != Arch::Cpu::Unknown && archOptions.empty())
+		return false;
+
+	if (!archOptions.empty() && archOptions.size() == 3) // <cpu-name>,<fpu-name>,<fabi>
+	{
+		outArgList.push_back(fmt::format("-mcpu={}", archOptions[0]));
+		outArgList.push_back(fmt::format("-mfpu={}", archOptions[1]));
+		outArgList.push_back(fmt::format("-mfloat-abi={}", archOptions[2]));
+	}
 
 	return true;
 }

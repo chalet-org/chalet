@@ -90,6 +90,7 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
 	addArchitecture(ret);
+	addArchitectureOptions(ret);
 
 	addDebuggingInformationOption(ret);
 	addProfileInformationCompileOption(ret);
@@ -189,6 +190,7 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
 	addArchitecture(ret);
+	addArchitectureOptions(ret);
 
 	addDebuggingInformationOption(ret);
 	addProfileInformationCompileOption(ret);
@@ -263,6 +265,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
 	addArchitecture(ret);
+	addArchitectureOptions(ret);
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
@@ -331,6 +334,7 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
 	addArchitecture(ret);
+	addArchitectureOptions(ret);
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);

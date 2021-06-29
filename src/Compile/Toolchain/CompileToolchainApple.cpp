@@ -113,6 +113,7 @@ StringList CompileToolchainApple::getDynamicLibTargetCommand(const std::string& 
 	addLinkTimeOptimizationOption(ret);
 	addThreadModelLinkerOption(ret);
 	addArchitecture(ret);
+	addArchitectureOptions(ret);
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
