@@ -17,4 +17,15 @@ bool BundleWindows::validate()
 {
 	return true;
 }
+
+/*****************************************************************************/
+const std::string& BundleWindows::nsisScript() const noexcept
+{
+	return m_nsisScript;
+}
+
+void BundleWindows::setNsisScript(std::string&& inValue)
+{
+	m_nsisScript = std::move(inValue);
+}
 }

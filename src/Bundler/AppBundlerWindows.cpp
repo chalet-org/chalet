@@ -24,6 +24,12 @@ bool AppBundlerWindows::removeOldFiles()
 /*****************************************************************************/
 bool AppBundlerWindows::bundleForPlatform()
 {
+	const auto& nsisScript = m_bundle.windowsBundle().nsisScript();
+	if (!nsisScript.empty())
+	{
+		LOG(nsisScript);
+	}
+
 	return true;
 }
 

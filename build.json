@@ -172,6 +172,9 @@
 				"Thumbs.db",
 				".DS_Store"
 			],
+			"windows": {
+				"nsisScript": "windows_installer.nsi"
+			},
 			"macos": {
 				/*"bundleName": "Chalet",
 				"icon": "platform/chalet-logo.png",

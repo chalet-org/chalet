@@ -14,7 +14,13 @@ struct BundleWindows
 
 	bool validate();
 
+	const std::string& nsisScript() const noexcept;
+	void setNsisScript(std::string&& inValue);
+
+	// nsisScript
+
 private:
+	std::string m_nsisScript;
 };
 }
 

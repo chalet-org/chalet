@@ -481,6 +481,9 @@ bool BuildJsonProtoParser::parseBundleWindows(BundleTarget& outBundle, const Jso
 
 	BundleWindows windowsBundle;
 
+	if (std::string val; m_buildJson.assignStringAndValidate(val, windowsNode, "nsisScript"))
+		windowsBundle.setNsisScript(std::move(val));
+
 	// int assigned = 0;
 	// if (std::string val; m_buildJson.assignStringAndValidate(val, windowsNode, "icon"))
 	// {
