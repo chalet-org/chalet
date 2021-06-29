@@ -350,18 +350,19 @@ StringList CompileToolchainGNU::getLinkExclusions() const
 bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 {
 	// if (m_config.isGcc())
-	/*{
+	{
 		if (String::contains('=', inFlag))
 		{
 			auto cutoff = inFlag.find('=');
-			std::string flag = inFlag.substr(cutoff + 1);
+			// std::string flag = inFlag.substr(cutoff + 1);
+			std::string flag = inFlag.substr(0, cutoff);
 			return m_config.isFlagSupported(String::toLowerCase(flag));
 		}
 		else
 		{
 			return m_config.isFlagSupported(String::toLowerCase(inFlag));
 		}
-	}*/
+	}
 
 	UNUSED(inFlag);
 
@@ -449,15 +450,15 @@ void CompileToolchainGNU::addWarnings(StringList& outArgList) const
 			out = prefix + warning;
 		}
 
-		if (isFlagSupported(out))
-			outArgList.push_back(std::move(out));
+		// if (isFlagSupported(out))
+		outArgList.push_back(std::move(out));
 	}
 
 	if (m_project.usesPch())
 	{
 		std::string invalidPch = prefix + "invalid-pch";
-		if (isFlagSupported(invalidPch))
-			List::addIfDoesNotExist(outArgList, std::move(invalidPch));
+		// if (isFlagSupported(invalidPch))
+		List::addIfDoesNotExist(outArgList, std::move(invalidPch));
 	}
 }
 
@@ -639,8 +640,8 @@ void CompileToolchainGNU::addProfileInformationCompileOption(StringList& outArgL
 		if (!m_project.isSharedLibrary())
 		{
 			std::string profileInfo{ "-pg" };
-			if (isFlagSupported(profileInfo))
-				outArgList.push_back(std::move(profileInfo));
+			// if (isFlagSupported(profileInfo))
+			outArgList.push_back(std::move(profileInfo));
 		}
 	}
 }
@@ -674,8 +675,8 @@ void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& outArgLis
 	if (!m_config.isMingw())
 	{
 		std::string fpic{ "-fPIC" };
-		if (isFlagSupported(fpic))
-			List::addIfDoesNotExist(outArgList, std::move(fpic));
+		// if (isFlagSupported(fpic))
+		List::addIfDoesNotExist(outArgList, std::move(fpic));
 	}
 }
 
@@ -685,8 +686,8 @@ void CompileToolchainGNU::addNoRunTimeTypeInformationOption(StringList& outArgLi
 	if (!m_project.rtti())
 	{
 		std::string noRtti{ "-fno-rtti" };
-		if (isFlagSupported(noRtti))
-			List::addIfDoesNotExist(outArgList, std::move(noRtti));
+		// if (isFlagSupported(noRtti))
+		List::addIfDoesNotExist(outArgList, std::move(noRtti));
 	}
 }
 
@@ -696,8 +697,8 @@ void CompileToolchainGNU::addNoExceptionsOption(StringList& outArgList) const
 	if (!m_project.exceptions())
 	{
 		std::string noExceptions{ "-fno-exceptions" };
-		if (isFlagSupported(noExceptions))
-			List::addIfDoesNotExist(outArgList, std::move(noExceptions));
+		// if (isFlagSupported(noExceptions))
+		List::addIfDoesNotExist(outArgList, std::move(noExceptions));
 	}
 }
 
@@ -708,8 +709,8 @@ void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) co
 	if (threadType == ThreadType::Posix || threadType == ThreadType::Auto)
 	{
 		std::string pthread{ "-pthread" };
-		if (isFlagSupported(pthread))
-			List::addIfDoesNotExist(outArgList, std::move(pthread));
+		// if (isFlagSupported(pthread))
+		List::addIfDoesNotExist(outArgList, std::move(pthread));
 	}
 }
 
@@ -766,21 +767,21 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	if (!arch.empty())
 	{
 		auto archFlag = fmt::format("-march={}", arch);
-		if (isFlagSupported(archFlag))
-			outArgList.push_back(std::move(archFlag));
+		// if (isFlagSupported(archFlag))
+		outArgList.push_back(std::move(archFlag));
 	}
 
 	if (!tune.empty())
 	{
 		auto tuneFlag = fmt::format("-mtune={}", tune);
-		if (isFlagSupported(tuneFlag))
-			outArgList.push_back(std::move(tuneFlag));
+		// if (isFlagSupported(tuneFlag))
+		outArgList.push_back(std::move(tuneFlag));
 	}
 
 	if (!flags.empty())
 	{
-		if (isFlagSupported(flags))
-			outArgList.push_back(std::move(flags));
+		// if (isFlagSupported(flags))
+		outArgList.push_back(std::move(flags));
 	}
 
 	return true;
@@ -792,8 +793,8 @@ void CompileToolchainGNU::addStripSymbolsOption(StringList& outArgList) const
 	if (m_state.configuration.stripSymbols())
 	{
 		std::string strip{ "-s" };
-		if (isFlagSupported(strip))
-			outArgList.push_back(std::move(strip));
+		// if (isFlagSupported(strip))
+		outArgList.push_back(std::move(strip));
 	}
 }
 
@@ -802,8 +803,8 @@ void CompileToolchainGNU::addLinkerOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.linkerOptions())
 	{
-		if (isFlagSupported(option))
-			outArgList.push_back(option);
+		// if (isFlagSupported(option))
+		outArgList.push_back(option);
 	}
 }
 
@@ -816,8 +817,8 @@ void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& outArgLi
 		outArgList.push_back("-Wl,--allow-multiple-definition");
 
 		std::string profileInfo{ "-pg" };
-		if (isFlagSupported(profileInfo))
-			outArgList.push_back(std::move(profileInfo));
+		// if (isFlagSupported(profileInfo))
+		outArgList.push_back(std::move(profileInfo));
 	}
 }
 
@@ -831,8 +832,8 @@ void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& outArgList) 
 	if (!enableProfiling && !debugSymbols && configuration.linkTimeOptimization())
 	{
 		std::string lto{ "-flto" };
-		if (isFlagSupported(lto))
-			List::addIfDoesNotExist(outArgList, std::move(lto));
+		// if (isFlagSupported(lto))
+		List::addIfDoesNotExist(outArgList, std::move(lto));
 	}
 }
 
@@ -881,8 +882,8 @@ void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& outArgList
 	if (m_project.staticLinking())
 	{
 		auto addFlag = [&](std::string flag) {
-			if (isFlagSupported(flag))
-				List::addIfDoesNotExist(outArgList, std::move(flag));
+			// if (isFlagSupported(flag))
+			List::addIfDoesNotExist(outArgList, std::move(flag));
 		};
 
 		addFlag("-static-libgcc");
@@ -905,8 +906,8 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& outArgList) 
 		{
 			// TODO: check other windows specific options
 			std::string mWindows{ "-mwindows" };
-			if (isFlagSupported(mWindows))
-				List::addIfDoesNotExist(outArgList, std::move(mWindows));
+			// if (isFlagSupported(mWindows))
+			List::addIfDoesNotExist(outArgList, std::move(mWindows));
 		}
 	}
 }
@@ -983,8 +984,8 @@ void CompileToolchainGNU::addObjectiveCxxRuntimeOption(StringList& outArgList, c
 #else
 		std::string objcRuntime{ "-fgnu-runtime" };
 #endif
-		if (isFlagSupported(objcRuntime))
-			List::addIfDoesNotExist(outArgList, std::move(objcRuntime));
+		// if (isFlagSupported(objcRuntime))
+		List::addIfDoesNotExist(outArgList, std::move(objcRuntime));
 	}
 }
 

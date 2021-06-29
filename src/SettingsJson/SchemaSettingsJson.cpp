@@ -21,7 +21,6 @@ enum class Defs : ushort
 	CommandPrompt,
 	CodeSign,
 	Git,
-	GProf,
 	HdiUtil,
 	InstallNameTool,
 	Instruments,
@@ -48,6 +47,7 @@ enum class Defs : ushort
 	WinResourceCompiler,
 	Archiver,
 	Linker,
+	Profiler,
 	Make,
 	CMake,
 	Ninja,
@@ -104,12 +104,6 @@ Json Schema::getSettingsJson()
 		"type": "string",
 		"description": "The executable path to git.",
 		"default": "/usr/bin/git"
-	})json"_ojson;
-
-	defs[Defs::GProf] = R"json({
-		"type": "string",
-		"description": "The executable path to gprof.",
-		"default": "/usr/bin/gprof"
 	})json"_ojson;
 
 	defs[Defs::HdiUtil] = R"json({
@@ -263,6 +257,12 @@ Json Schema::getSettingsJson()
 		"default": "/usr/bin/ld"
 	})json"_ojson;
 
+	defs[Defs::Profiler] = R"json({
+		"type": "string",
+		"description": "The executable path to the toochain's command-line profiler (if applicable).",
+		"default": "/usr/bin/gprof"
+	})json"_ojson;
+
 	defs[Defs::Make] = R"json({
 		"type": "string",
 		"description": "The executable path to GNU make utility.",
@@ -352,6 +352,7 @@ Json Schema::getSettingsJson()
 			"C",
 			"cmake",
 			"linker",
+			"profiler",
 			"make",
 			"objdump",
 			"ninja",
@@ -366,6 +367,7 @@ Json Schema::getSettingsJson()
 	toolchains[kProperties]["C"] = defs[Defs::CCompiler];
 	toolchains[kProperties]["cmake"] = defs[Defs::CMake];
 	toolchains[kProperties]["linker"] = defs[Defs::Linker];
+	toolchains[kProperties]["profiler"] = defs[Defs::Profiler];
 	toolchains[kProperties]["make"] = defs[Defs::Make];
 	toolchains[kProperties]["ninja"] = defs[Defs::Ninja];
 	toolchains[kProperties]["objdump"] = defs[Defs::ObjDump];
@@ -386,7 +388,6 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kTools][kProperties]["command_prompt"] = defs[Defs::CommandPrompt];
 	ret[kProperties][kTools][kProperties]["codesign"] = defs[Defs::CodeSign];
 	ret[kProperties][kTools][kProperties]["git"] = defs[Defs::Git];
-	ret[kProperties][kTools][kProperties]["gprof"] = defs[Defs::GProf];
 	ret[kProperties][kTools][kProperties]["hdiutil"] = defs[Defs::HdiUtil];
 	ret[kProperties][kTools][kProperties]["install_name_tool"] = defs[Defs::InstallNameTool];
 	ret[kProperties][kTools][kProperties]["instruments"] = defs[Defs::Instruments];

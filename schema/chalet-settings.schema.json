@@ -38,11 +38,6 @@
 					"description": "The executable path to git.",
 					"default": "/usr/bin/git"
 				},
-				"gprof": {
-					"type": "string",
-					"description": "The executable path to gprof.",
-					"default": "/usr/bin/gprof"
-				},
 				"hdiutil": {
 					"type": "string",
 					"description": "The executable path to Apple's hdiutil command-line utility (MacOS)",
@@ -205,6 +200,7 @@
 						"C",
 						"cmake",
 						"linker",
+						"profiler",
 						"make",
 						"objdump",
 						"ninja",
@@ -246,6 +242,11 @@
 							"type": "string",
 							"description": "The executable path to the toolchain's linker",
 							"default": "/usr/bin/ld"
+						},
+						"profiler": {
+							"type": "string",
+							"description": "The executable path to the toochain's command-line profiler (if applicable).",
+							"default": "/usr/bin/gprof"
 						},
 						"make": {
 							"type": "string",

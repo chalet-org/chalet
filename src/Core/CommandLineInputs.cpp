@@ -448,6 +448,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.rc = "rc";
 		ret.linker = "link";
 		ret.archiver = "lib";
+		ret.profiler = ""; // TODO
 	}
 	else
 #endif
@@ -459,9 +460,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.strategy = StrategyType::Makefile;
 		ret.cpp = "clang++";
 		ret.cc = "clang";
-		ret.rc = "windres"; // TODO: verify this
+		ret.rc = "llvm-rc";
 		ret.linker = "lld";
 		ret.archiver = "ar";
+		ret.profiler = ""; // TODO
 	}
 	else if (String::equals("gcc", inValue))
 	{
@@ -474,6 +476,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.rc = "windres";
 		ret.linker = "ld";
 		ret.archiver = "ar";
+		ret.profiler = "gprof";
 	}
 	else
 	{

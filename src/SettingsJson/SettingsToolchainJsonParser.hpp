@@ -39,6 +39,7 @@ private:
 	const std::string kKeyCpp = "C++";
 	const std::string kKeyCc = "C";
 	const std::string kKeyLinker = "linker";
+	const std::string kKeyProfiler = "profiler";
 	const std::string kKeyWindowsResource = "windowsResource";
 
 	//

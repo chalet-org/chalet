@@ -244,7 +244,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	}
 
 	whichAdd(tools, kKeyGit);
-	whichAdd(tools, kKeyGprof);
 	whichAdd(tools, kKeyHdiutil, HostPlatform::MacOS);
 	whichAdd(tools, kKeyInstallNameTool, HostPlatform::MacOS);
 	whichAdd(tools, kKeyInstruments, HostPlatform::MacOS);
@@ -414,9 +413,6 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyGit))
 		m_prototype.tools.setGit(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyGprof))
-		m_prototype.tools.setGprof(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyHdiutil))
 		m_prototype.tools.setHdiutil(std::move(val));

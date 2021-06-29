@@ -75,9 +75,11 @@ bool BuildJsonParser::serialize()
 	std::string jsonDump = jRoot.dump();
 	const auto& hostArch = m_state.info.hostArchitectureString();
 	const auto& targetArch = m_state.info.targetArchitectureString();
+	const auto toolchain = m_inputs.toolchainPreferenceRaw();
 
-	std::string toHash = fmt::format("{jsonDump}_{hostArch}_{targetArch}_{buildConfiguration}",
+	std::string toHash = fmt::format("{jsonDump}_{toolchain}_{hostArch}_{targetArch}_{buildConfiguration}",
 		FMT_ARG(jsonDump),
+		FMT_ARG(toolchain),
 		FMT_ARG(hostArch),
 		FMT_ARG(targetArch),
 		FMT_ARG(buildConfiguration));

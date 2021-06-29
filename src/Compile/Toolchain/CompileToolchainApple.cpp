@@ -166,8 +166,8 @@ void CompileToolchainApple::addLibStdCppCompileOption(StringList& outArgList, co
 		if (m_project.language() == CodeLanguage::CPlusPlus)
 		{
 			std::string flag{ "-stdlib=libc++" };
-			if (isFlagSupported(flag))
-				List::addIfDoesNotExist(outArgList, std::move(flag));
+			// if (isFlagSupported(flag))
+			List::addIfDoesNotExist(outArgList, std::move(flag));
 		}
 	}
 }
@@ -187,8 +187,8 @@ void CompileToolchainApple::addLibStdCppLinkerOption(StringList& outArgList) con
 	if (m_project.language() == CodeLanguage::CPlusPlus)
 	{
 		std::string flag{ "-stdlib=libc++" };
-		if (isFlagSupported(flag))
-			List::addIfDoesNotExist(outArgList, std::move(flag));
+		// if (isFlagSupported(flag))
+		List::addIfDoesNotExist(outArgList, std::move(flag));
 
 		// TODO: Apple has a "-stdlib=libstdc++" flag that is pre-C++11 for compatibility
 	}

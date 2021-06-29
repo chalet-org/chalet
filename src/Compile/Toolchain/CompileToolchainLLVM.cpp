@@ -125,8 +125,8 @@ void CompileToolchainLLVM::addStaticCompilerLibraryOptions(StringList& outArgLis
 	if (m_project.staticLinking())
 	{
 		std::string flag{ "-static-libsan" };
-		if (isFlagSupported(flag))
-			List::addIfDoesNotExist(outArgList, std::move(flag));
+		// if (isFlagSupported(flag))
+		List::addIfDoesNotExist(outArgList, std::move(flag));
 
 		// TODO: Investigate for other -static candidates on clang/mac
 	}

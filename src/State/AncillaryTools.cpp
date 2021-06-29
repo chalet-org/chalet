@@ -235,16 +235,6 @@ void AncillaryTools::setGit(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& AncillaryTools::gprof() const noexcept
-{
-	return m_gprof;
-}
-void AncillaryTools::setGprof(std::string&& inValue) noexcept
-{
-	m_gprof = std::move(inValue);
-}
-
-/*****************************************************************************/
 const std::string& AncillaryTools::hdiutil() const noexcept
 {
 	return m_hdiutil;

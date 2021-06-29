@@ -24,12 +24,9 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 {
 
 	auto& compilerConfig = m_state.toolchain.getConfig(m_project.language());
-	if (compilerConfig.isGcc() && !m_state.tools.gprof().empty())
-	{
-		return ProfilerRunner::runWithGprof(inCommand, inExecutable, inOutputFolder);
-	}
+
 #if defined(CHALET_MACOS)
-	else if (compilerConfig.isAppleClang())
+	if (compilerConfig.isAppleClang())
 	{
 		/*
 			Notes:
@@ -67,11 +64,16 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 		}
 	}
 #endif
-	else
+	if (compilerConfig.isGcc() && !m_state.toolchain.profiler().empty())
 	{
-		Diagnostic::error("Profiling is not been implemented on this compiler yet");
-		return false;
+		if (m_state.toolchain.isProfilerGprof())
+		{
+			return ProfilerRunner::runWithGprof(inCommand, inExecutable, inOutputFolder);
+		}
 	}
+
+	Diagnostic::error("A profiler was either not found, or profiling on this toolchain is not yet supported.");
+	return false;
 }
 
 /*****************************************************************************/
@@ -84,7 +86,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 	const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
 	Output::msgProfilerStartedGprof(profStatsFile);
 
-	if (!Commands::subprocessOutputToFile({ m_state.tools.gprof(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut))
+	if (!Commands::subprocessOutputToFile({ m_state.toolchain.profiler(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut))
 	{
 		Diagnostic::error("{} failed to save.", profStatsFile);
 		return false;

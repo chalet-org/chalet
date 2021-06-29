@@ -47,7 +47,6 @@ private:
 	const std::string kKeyCodesign = "codesign";
 	const std::string kKeyCommandPrompt = "command_prompt";
 	const std::string kKeyGit = "git";
-	const std::string kKeyGprof = "gprof";
 	const std::string kKeyHdiutil = "hdiutil";
 	const std::string kKeyInstallNameTool = "install_name_tool";
 	const std::string kKeyInstruments = "instruments";

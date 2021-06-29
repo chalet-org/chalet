@@ -6,8 +6,6 @@
 #ifndef CHALET_COMPILER_CONFIG_HPP
 #define CHALET_COMPILER_CONFIG_HPP
 
-#include <unordered_map>
-
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
 

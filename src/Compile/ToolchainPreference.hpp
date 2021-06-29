@@ -20,6 +20,7 @@ struct ToolchainPreference
 	std::string rc;
 	std::string linker;
 	std::string archiver;
+	std::string profiler;
 
 	void setType(const ToolchainType inType) const;
 };

@@ -662,6 +662,26 @@ bool CompilerTools::ninjaAvailable() const noexcept
 }
 
 /*****************************************************************************/
+const std::string& CompilerTools::profiler() const noexcept
+{
+	return m_profiler;
+}
+void CompilerTools::setProfiler(std::string&& inValue) noexcept
+{
+	m_profiler = std::move(inValue);
+
+#if defined(CHALET_WIN32)
+	m_isProfilerGprof = String::endsWith("gprof.exe", m_profiler);
+#else
+	m_isProfilerGprof = String::endsWith("gprof", m_profiler);
+#endif
+}
+bool CompilerTools::isProfilerGprof() const noexcept
+{
+	return m_isProfilerGprof;
+}
+
+/*****************************************************************************/
 const std::string& CompilerTools::objdump() const noexcept
 {
 	return m_objdump;

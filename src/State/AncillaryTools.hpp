@@ -45,9 +45,6 @@ struct AncillaryTools
 	const std::string& git() const noexcept;
 	void setGit(std::string&& inValue) noexcept;
 
-	const std::string& gprof() const noexcept;
-	void setGprof(std::string&& inValue) noexcept;
-
 	const std::string& hdiutil() const noexcept;
 	void setHdiutil(std::string&& inValue) noexcept;
 

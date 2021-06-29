@@ -67,6 +67,10 @@ struct CompilerTools
 	bool makeIsNMake() const noexcept;
 	bool makeIsJom() const noexcept;
 
+	const std::string& profiler() const noexcept;
+	void setProfiler(std::string&& inValue) noexcept;
+	bool isProfilerGprof() const noexcept;
+
 	const std::string& objdump() const noexcept;
 	void setObjdump(std::string&& inValue) noexcept;
 
@@ -103,6 +107,7 @@ private:
 	std::string m_linker;
 	std::string m_make;
 	std::string m_ninja;
+	std::string m_profiler;
 	std::string m_objdump;
 	std::string m_rc;
 
@@ -125,6 +130,8 @@ private:
 	StrategyType m_strategy = StrategyType::Makefile;
 
 	bool m_isArchiverLibTool = false;
+	bool m_isProfilerGprof = false;
+
 	bool m_ccDetected = false;
 	bool m_cmakeAvailable = false;
 	bool m_ninjaAvailable = false;

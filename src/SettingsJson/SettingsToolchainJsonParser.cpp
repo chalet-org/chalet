@@ -246,14 +246,29 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		m_jsonFile.setDirty(true);
 	}
 
+	if (!toolchains.contains(kKeyProfiler) || !toolchains[kKeyProfiler].is_string() || toolchains[kKeyProfiler].get<std::string>().empty())
+	{
+		std::string prof;
+		StringList searches;
+		searches.push_back(toolchain.profiler);
+
+		for (const auto& search : searches)
+		{
+			prof = Commands::which(search);
+			if (!prof.empty())
+				break;
+		}
+
+		result &= !prof.empty();
+
+		toolchains[kKeyProfiler] = std::move(prof);
+		m_jsonFile.setDirty(true);
+	}
+
 	if (!toolchains.contains(kKeyWindowsResource) || !toolchains[kKeyWindowsResource].is_string() || toolchains[kKeyWindowsResource].get<std::string>().empty())
 	{
 		std::string rc;
 		StringList searches;
-		if (toolchain.type == ToolchainType::LLVM)
-		{
-			searches.push_back("llvm-rc");
-		}
 		searches.push_back(toolchain.rc);
 
 		for (const auto& search : searches)
@@ -390,6 +405,9 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyLinker))
 		m_state.toolchain.setLinker(std::move(val));
+
+	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyProfiler))
+		m_state.toolchain.setProfiler(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyWindowsResource))
 		m_state.toolchain.setRc(std::move(val));
