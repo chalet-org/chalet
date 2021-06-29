@@ -133,9 +133,9 @@ jobs:
       - name: "Build: Debug"
         run: ./build.bat Debug
       - name: "Build: Release"
-        run: build/Debug/chalet-debug --save-schema -t msvc bundle
+        run: build/Debug/chalet-debug --save-schema -t msvc -a x64 bundle
       - name: "Run: Tests"
-        run: build/x86_64-ms-windows-msvc_Release/chalet run Release tests_chalet
+        run: build/x64-ms-windows-msvc_Release/chalet run Release tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
