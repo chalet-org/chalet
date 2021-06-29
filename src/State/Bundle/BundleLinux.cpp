@@ -26,7 +26,7 @@ bool BundleLinux::validate()
 		}
 		else if (!Commands::pathExists(m_icon))
 		{
-			Diagnostic::error("bundle.linux.icon was not found.");
+			Diagnostic::error("bundle.linux.icon '{}' was not found.", m_icon);
 			result = false;
 		}
 	}

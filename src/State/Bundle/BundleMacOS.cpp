@@ -35,7 +35,7 @@ bool BundleMacOS::validate()
 		}
 		else if (!Commands::pathExists(m_icon))
 		{
-			Diagnostic::error("bundle.macos.icon was not found.");
+			Diagnostic::error("bundle.macos.icon '{}' was not found.", m_icon);
 			result = false;
 		}
 	}
@@ -62,7 +62,7 @@ bool BundleMacOS::validate()
 		}
 		else if (!Commands::pathExists(m_dmgBackground1x))
 		{
-			Diagnostic::error("bundle.macos.dmgBackground1x was not found.");
+			Diagnostic::error("bundle.macos.dmgBackground1x '{}' was not found.", m_dmgBackground1x);
 			result = false;
 		}
 	}
@@ -76,7 +76,7 @@ bool BundleMacOS::validate()
 		}
 		else if (!Commands::pathExists(m_dmgBackground2x))
 		{
-			Diagnostic::error("bundle.macos.dmgBackground2x was not found.");
+			Diagnostic::error("bundle.macos.dmgBackground2x '{}' was not found.", m_dmgBackground2x);
 			result = false;
 		}
 	}

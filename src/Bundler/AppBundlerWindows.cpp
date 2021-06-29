@@ -5,7 +5,11 @@
 
 #include "Bundler/AppBundlerWindows.hpp"
 
+#include "State/AncillaryTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "Terminal/Commands.hpp"
+#include "Terminal/Output.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -24,11 +28,8 @@ bool AppBundlerWindows::removeOldFiles()
 /*****************************************************************************/
 bool AppBundlerWindows::bundleForPlatform()
 {
-	const auto& nsisScript = m_bundle.windowsBundle().nsisScript();
-	if (!nsisScript.empty())
-	{
-		LOG(nsisScript);
-	}
+	if (!createWindowsInstaller())
+		return false;
 
 	return true;
 }
@@ -49,6 +50,41 @@ std::string AppBundlerWindows::getExecutablePath() const
 std::string AppBundlerWindows::getResourcePath() const
 {
 	return m_bundle.outDir();
+}
+
+/*****************************************************************************/
+bool AppBundlerWindows::createWindowsInstaller() const
+{
+	const auto& nsisScript = m_bundle.windowsBundle().nsisScript();
+	if (!nsisScript.empty())
+	{
+		Output::lineBreak();
+
+		Timer timer;
+		Diagnostic::info("Creating the Windows installer executable", Output::showCommands());
+
+		StringList cmd{ m_state.tools.makeNsis() };
+		cmd.push_back("/WX");
+		cmd.push_back("/V3");
+		cmd.push_back("/NOCD");
+		cmd.push_back(nsisScript);
+
+		bool result = false;
+		if (Output::showCommands())
+			result = Commands::subprocess(cmd);
+		else
+			result = Commands::subprocess(cmd, PipeOption::Close, PipeOption::StdOut);
+
+		if (!result)
+		{
+			Diagnostic::error("NSIS Installer failed to compile: {}", nsisScript);
+			return false;
+		}
+
+		Diagnostic::printDone(timer.asString());
+	}
+
+	return true;
 }
 
 }

@@ -15,7 +15,23 @@ namespace chalet
 /*****************************************************************************/
 bool BundleWindows::validate()
 {
-	return true;
+	bool result = true;
+
+	if (!m_nsisScript.empty())
+	{
+		if (!String::endsWith("nsi", m_nsisScript))
+		{
+			Diagnostic::error("bundle.windows.nsisScript must end with '.nsi', but was '{}'.", m_nsisScript);
+			result = false;
+		}
+		else if (!Commands::pathExists(m_nsisScript))
+		{
+			Diagnostic::error("bundle.windows.nsisScript '{}' was not found.", m_nsisScript);
+			result = false;
+		}
+	}
+
+	return result;
 }
 
 /*****************************************************************************/

@@ -22,6 +22,9 @@ public:
 	virtual std::string getBundlePath() const final;
 	virtual std::string getExecutablePath() const final;
 	virtual std::string getResourcePath() const final;
+
+private:
+	bool createWindowsInstaller() const;
 };
 }
 
