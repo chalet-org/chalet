@@ -243,6 +243,12 @@ void CommandLineInputs::setToolchainPreference(std::string&& inValue) const noex
 }
 
 /*****************************************************************************/
+bool CommandLineInputs::isMsvcPreRelease() const noexcept
+{
+	return m_isMsvcPreRelease;
+}
+
+/*****************************************************************************/
 const std::string& CommandLineInputs::initPath() const noexcept
 {
 	return m_initPath;
@@ -304,6 +310,35 @@ void CommandLineInputs::setTargetArchitecture(std::string&& inValue) const noexc
 	{
 		m_targetArchitecture = std::move(inValue);
 	}
+}
+
+/*****************************************************************************/
+const StringList& CommandLineInputs::archOptions() const noexcept
+{
+	return m_archOptions;
+}
+
+void CommandLineInputs::setArchOptions(StringList&& inList) noexcept
+{
+	m_archOptions = std::move(inList);
+}
+
+std::string CommandLineInputs::getArchWithOptionsAsString(const std::string& inArchBase) const
+{
+	std::string ret = inArchBase;
+	if (!m_archOptions.empty())
+	{
+		auto options = String::join(m_archOptions, '_');
+		String::replaceAll(options, ',', '_');
+		String::replaceAll(options, "-", "");
+#if defined(CHALET_WIN32)
+		String::replaceAll(options, '=', '_');
+#endif
+
+		ret += fmt::format("_{}", options);
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -419,10 +454,13 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	allowedArchesWin.push_back("i686");
 	allowedArchesWin.push_back("x86_x86");
 	auto splitValue = String::split(inValue, '-');
-	bool isPlainMSVC = String::equals("msvc", inValue);
+	StringList msvcSearches{ "msvc", "msvcpre" };
+	bool isPlainMSVC = String::equals(msvcSearches, inValue);
 
-	if (isPlainMSVC || (String::equals("msvc", splitValue.front()) && String::equals(allowedArchesWin, splitValue.back())))
+	if (isPlainMSVC || (String::equals(msvcSearches, splitValue.front()) && String::equals(allowedArchesWin, splitValue.back())))
 	{
+		m_isMsvcPreRelease = String::equals("msvcpre", splitValue.front());
+
 		if (String::equals({ "x86_64", "x64_x64" }, arch))
 		{
 			arch = "x64";
@@ -437,7 +475,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		if (isPlainMSVC)
 			m_toolchainPreferenceRaw = fmt::format("{}-{}", inValue, arch);
 		else if (splitValue.size() > 1 && splitValue.back() != arch)
-			m_toolchainPreferenceRaw = fmt::format("msvc-{}", arch);
+			m_toolchainPreferenceRaw = fmt::format("{}-{}", splitValue.front(), arch);
 		else
 			m_toolchainPreferenceRaw = inValue;
 

@@ -131,8 +131,11 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 					m_inputs.setArchRaw(value);
 					if (String::contains(',', value))
 					{
-						auto split = String::split(value, ',');
-						m_inputs.setTargetArchitecture(std::move(split.front()));
+						auto firstComma = value.find(',');
+						auto arch = value.substr(0, firstComma);
+						auto options = String::split(value.substr(firstComma + 1), ',');
+						m_inputs.setTargetArchitecture(std::move(arch));
+						m_inputs.setArchOptions(std::move(options));
 					}
 					else
 					{

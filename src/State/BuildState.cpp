@@ -34,7 +34,7 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 	environment(m_prototype.environment), // copy
 	toolchain(m_inputs, *this),
 	paths(m_inputs, inJsonPrototype.environment),
-	msvcEnvironment(*this)
+	msvcEnvironment(m_inputs, *this)
 {
 }
 

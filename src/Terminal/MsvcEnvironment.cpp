@@ -6,6 +6,7 @@
 #include "Terminal/MsvcEnvironment.hpp"
 
 #include "Core/Arch.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -54,11 +55,12 @@ bool MsvcEnvironment::exists()
 }
 
 /*****************************************************************************/
-MsvcEnvironment::MsvcEnvironment(BuildState& inState) :
+MsvcEnvironment::MsvcEnvironment(const CommandLineInputs& inInputs, BuildState& inState) :
+	m_inputs(inInputs),
 	m_state(inState)
 {
 #if !defined(CHALET_WIN32)
-	UNUSED(m_state);
+	UNUSED(m_inputs, m_state);
 #endif
 }
 
@@ -74,7 +76,11 @@ bool MsvcEnvironment::create()
 	m_varsFileOriginal = m_state.cache.getCachePath("original.env", CacheType::Local);
 	m_varsFileMsvc = m_state.cache.getCachePath("msvc_all.env", CacheType::Local);
 
-	m_varsFileMsvcDelta = m_state.cache.getHashPath(fmt::format("msvc_{}.env", m_state.info.targetArchitectureString()), CacheType::Local);
+	{
+		auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureString());
+		archString += fmt::format("_{}", m_inputs.toolchainPreferenceRaw());
+		m_varsFileMsvcDelta = m_state.cache.getHashPath(fmt::format("msvc_{}.env", archString), CacheType::Local);
+	}
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
 
@@ -100,7 +106,16 @@ bool MsvcEnvironment::create()
 		// Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
 		Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache", Unicode::registered()), false);
 
-		m_vsAppIdDir = Commands::subprocessOutput({ s_vswhere, "-latest", "-prerelease", "-property", "installationPath" });
+		{
+			StringList vswhereCmd{ s_vswhere, "-latest" };
+			if (m_inputs.isMsvcPreRelease())
+			{
+				vswhereCmd.push_back("-prerelease");
+			}
+			vswhereCmd.push_back("-property");
+			vswhereCmd.push_back("installationPath");
+			m_vsAppIdDir = Commands::subprocessOutput(vswhereCmd);
+		}
 		if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: Error running vswhere.exe");
@@ -294,7 +309,6 @@ bool MsvcEnvironment::saveOriginalEnvironment()
 /*****************************************************************************/
 bool MsvcEnvironment::saveMsvcEnvironment()
 {
-	// TODO: MS SDK version
 #if defined(CHALET_WIN32)
 	std::string vcvarsFile{ "vcvarsall" };
 	const auto& targetArch = m_state.info.targetArchitectureString();
@@ -306,17 +320,22 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 		return false;
 	}
 
+	// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
 	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
-	StringList cmd{
-		vcVarsAll,
-		targetArch,
-		">",
-		"nul",
-		"&&",
-		"SET",
-		">",
-		m_varsFileMsvc
-	};
+	StringList cmd{ vcVarsAll, targetArch };
+
+	for (auto& arg : m_inputs.archOptions())
+	{
+		cmd.push_back(arg);
+	}
+
+	cmd.push_back(">");
+	cmd.push_back("nul");
+	cmd.push_back("&&");
+	cmd.push_back("SET");
+	cmd.push_back(">");
+	cmd.push_back(m_varsFileMsvc);
+
 	bool result = std::system(String::join(cmd).c_str()) == EXIT_SUCCESS;
 	return result;
 #else

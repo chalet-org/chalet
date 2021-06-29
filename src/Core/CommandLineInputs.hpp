@@ -57,6 +57,7 @@ struct CommandLineInputs
 	const ToolchainPreference& toolchainPreference() const noexcept;
 	const std::string& toolchainPreferenceRaw() const noexcept;
 	void setToolchainPreference(std::string&& inValue) const noexcept;
+	bool isMsvcPreRelease() const noexcept;
 
 	const std::string& initPath() const noexcept;
 	void setInitPath(std::string&& inValue) noexcept;
@@ -70,6 +71,10 @@ struct CommandLineInputs
 	const std::string& hostArchitecture() const noexcept;
 	const std::string& targetArchitecture() const noexcept;
 	void setTargetArchitecture(std::string&& inValue) const noexcept;
+
+	const StringList& archOptions() const noexcept;
+	void setArchOptions(StringList&& inList) noexcept;
+	std::string getArchWithOptionsAsString(const std::string& inArchBase) const;
 
 	bool saveSchemaToFile() const noexcept;
 	void setSaveSchemaToFile(const bool inValue) noexcept;
@@ -96,6 +101,7 @@ private:
 
 	StringList m_runOptions;
 	StringList m_notPlatforms;
+	StringList m_archOptions;
 
 	const std::string kDefaultEnvFile;
 	std::string m_buildFile;
@@ -124,6 +130,7 @@ private:
 	SettingsType m_settingsType = SettingsType::None;
 
 	bool m_saveSchemaToFile = false;
+	mutable bool m_isMsvcPreRelease = false;
 };
 }
 

@@ -27,12 +27,12 @@ std::string ArgumentPatterns::getHelpCommand()
    set {key} {value}
    unset {key}
    init [{path}])",
-		fmt::arg("buildConfiguration", ArgumentPatterns::kArgBuildConfiguration),
-		fmt::arg("runProject", ArgumentPatterns::kArgRunProject),
-		fmt::arg("runArgs", ArgumentPatterns::kArgRunArguments),
-		fmt::arg("key", ArgumentPatterns::kArgConfigKey),
-		fmt::arg("value", ArgumentPatterns::kArgConfigValue),
-		fmt::arg("path", ArgumentPatterns::kArgInitPath));
+		fmt::arg("buildConfiguration", kArgBuildConfiguration),
+		fmt::arg("runProject", kArgRunProject),
+		fmt::arg("runArgs", kArgRunArguments),
+		fmt::arg("key", kArgConfigKey),
+		fmt::arg("value", kArgConfigValue),
+		fmt::arg("path", kArgInitPath));
 }
 
 /*****************************************************************************/
@@ -407,6 +407,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 /*****************************************************************************/
 std::string ArgumentPatterns::getHelp()
 {
+	std::string title = "Chalet: A build system for C & C++";
 	std::string help = m_parser.help().str();
 	String::replaceAll(help, "Usage: ", "Usage:\n   ");
 	String::replaceAll(help, "Positional arguments:", "Commands:");
@@ -417,7 +418,7 @@ std::string ArgumentPatterns::getHelp()
 	String::replaceAll(help, "[default: \"\"]", "");
 	String::replaceAll(help, "[default: true]", "");
 
-	return fmt::format("JSON C++ Build System\n\n{help}", FMT_ARG(help));
+	return fmt::format("{title}\n\n{help}", FMT_ARG(title), FMT_ARG(help));
 }
 
 /*****************************************************************************/
@@ -468,7 +469,11 @@ void ArgumentPatterns::addProjectGeneratorArg()
 void ArgumentPatterns::addToolchainArg()
 {
 	m_parser.add_argument("-t", "--toolchain")
+#if defined(CHALET_WIN32)
 		.help("Toolchain preference [msvc,llvm,gcc,...]")
+#else
+		.help("Toolchain preference [msvc,llvm,gcc,...]")
+#endif
 		.nargs(1)
 		.default_value(std::string());
 
@@ -499,7 +504,15 @@ void ArgumentPatterns::addArchArg()
 			// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 			// Either parsed later (if MSVC) or passed directly to GNU compiler
 			if (std::all_of(value.begin(), value.end(), [](char c) {
-					return ::isalpha(c) || ::isdigit(c) || c == '-' || c == ',' || c == '.' || c == '_';
+					return ::isalpha(c)
+						|| ::isdigit(c)
+						|| c == '-'
+						|| c == ','
+						|| c == '.'
+#if defined(CHALET_WIN32)
+						|| c == '='
+#endif
+						|| c == '_';
 				}))
 			{
 				return value;

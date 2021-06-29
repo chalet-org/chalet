@@ -34,7 +34,9 @@ void BuildPaths::initialize(const BuildInfo& inInfo)
 	}
 
 	// m_configuration = fmt::format("{}_{}_{}", inInfo.hostArchitectureString(), inInfo.targetArchitectureString(), inBuildConfiguration);
-	m_configuration = fmt::format("{}_{}", inInfo.targetArchitectureString(), inInfo.buildConfiguration());
+	auto arch = m_inputs.getArchWithOptionsAsString(inInfo.targetArchitectureString());
+
+	m_configuration = fmt::format("{}_{}", arch, inInfo.buildConfiguration());
 	m_buildOutputDir = fmt::format("{}/{}", buildPath, m_configuration);
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);

@@ -235,13 +235,23 @@ void BuildManager::printBuildInformation()
 
 	if (usingCpp && !m_state.toolchain.compilerVersionStringCpp().empty())
 	{
+		auto arch = m_state.toolchain.compilerDetectedArchCpp();
+		if (!m_inputs.archOptions().empty())
+		{
+			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
+		}
 		Diagnostic::info(fmt::format("C++ Compiler: {}", m_state.toolchain.compilerVersionStringCpp()));
-		Diagnostic::info(fmt::format("Target Architecture: {}", m_state.toolchain.compilerDetectedArchCpp()));
+		Diagnostic::info(fmt::format("Target Architecture: {}", arch));
 	}
 	if (usingCc && !m_state.toolchain.compilerVersionStringC().empty())
 	{
+		auto arch = m_state.toolchain.compilerDetectedArchC();
+		if (!m_inputs.archOptions().empty())
+		{
+			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
+		}
 		Diagnostic::info(fmt::format("C Compiler: {}", m_state.toolchain.compilerVersionStringC()));
-		Diagnostic::info(fmt::format("Target Architecture: {}", m_state.toolchain.compilerDetectedArchC()));
+		Diagnostic::info(fmt::format("Target Architecture: {}", arch));
 	}
 
 	const auto strategy = getBuildStrategyName();
