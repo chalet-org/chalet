@@ -68,6 +68,11 @@
 					"description": "The executable path to Lua",
 					"default": "/usr/local/bin/lua"
 				},
+				"makensis": {
+					"type": "string",
+					"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler",
+					"default": "C:/Program Files (x86)/NSIS/makensis.exe"
+				},
 				"osascript": {
 					"type": "string",
 					"description": "The executable path to Apple's osascript command-line utility (MacOS)",

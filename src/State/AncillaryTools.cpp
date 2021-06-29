@@ -158,6 +158,16 @@ void AncillaryTools::fetchXcodeGenVersion()
 }
 
 /*****************************************************************************/
+const std::string& AncillaryTools::applePlatformSdk(const std::string& inKey) const
+{
+	return m_applePlatformSdk.at(inKey);
+}
+void AncillaryTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
+{
+	m_applePlatformSdk[inKey] = std::move(inValue);
+}
+
+/*****************************************************************************/
 const std::string& AncillaryTools::chalet() const noexcept
 {
 	return m_chalet;
@@ -295,13 +305,13 @@ void AncillaryTools::setLua(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& AncillaryTools::applePlatformSdk(const std::string& inKey) const
+const std::string& AncillaryTools::makeNsis() const noexcept
 {
-	return m_applePlatformSdk.at(inKey);
+	return m_makeNsis;
 }
-void AncillaryTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
+void AncillaryTools::setMakeNsis(std::string&& inValue) noexcept
 {
-	m_applePlatformSdk[inKey] = std::move(inValue);
+	m_makeNsis = std::move(inValue);
 }
 
 /*****************************************************************************/

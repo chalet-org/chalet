@@ -996,6 +996,18 @@
 										}
 									}
 								},
+								"windows": {
+									"type": "object",
+									"description": "Variables to describe the windows application.",
+									"additionalProperties": false,
+									"required": [],
+									"properties": {
+										"nsisScript": {
+											"type": "string",
+											"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target."
+										}
+									}
+								},
 								"mainProject": {
 									"type": "string",
 									"description": "The main executable project."

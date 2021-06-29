@@ -53,6 +53,7 @@ private:
 	const std::string kKeyLdd = "ldd";
 	const std::string kKeyLipo = "lipo";
 	const std::string kKeyLua = "lua";
+	const std::string kKeyMakeNsis = "makensis";
 	const std::string kKeyOsascript = "osascript";
 	const std::string kKeyOtool = "otool";
 	const std::string kKeyPerl = "perl";

@@ -250,6 +250,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	whichAdd(tools, kKeyLdd);
 	whichAdd(tools, kKeyLipo, HostPlatform::MacOS);
 	whichAdd(tools, kKeyLua);
+	whichAdd(tools, kKeyMakeNsis, HostPlatform::Windows);
 
 	whichAdd(tools, kKeyOsascript, HostPlatform::MacOS);
 	whichAdd(tools, kKeyOtool, HostPlatform::MacOS);
@@ -431,6 +432,9 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLua))
 		m_prototype.tools.setLua(std::move(val));
+
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyMakeNsis))
+		m_prototype.tools.setMakeNsis(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyOsascript))
 		m_prototype.tools.setOsascript(std::move(val));

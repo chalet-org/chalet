@@ -29,7 +29,7 @@ enum class Defs : ushort
 	DistExclude,
 	DistIncludeDependentSharedLibs,
 	DistLinux,
-	DistMacos,
+	DistMacOS,
 	DistMainProject,
 	DistOutDirectory,
 	DistProjects,
@@ -225,7 +225,7 @@ Json Schema::getBuildJson()
 		}
 	})json"_ojson;
 
-	defs[Defs::DistMacos] = R"json({
+	defs[Defs::DistMacOS] = R"json({
 		"type": "object",
 		"description": "Variables to describe the macos application bundle.",
 		"additionalProperties": false,
@@ -279,7 +279,7 @@ Json Schema::getBuildJson()
 			}
 		}
 	})json"_ojson;
-	defs[Defs::DistMacos]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
+	defs[Defs::DistMacOS]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
 
 	defs[Defs::DistMainProject] = R"json({
 		"type": "string",
@@ -309,7 +309,12 @@ Json Schema::getBuildJson()
 		"description": "Variables to describe the windows application.",
 		"additionalProperties": false,
 		"required": [],
-		"properties": {}
+		"properties": {
+			"nsisScript": {
+				"type": "string",
+				"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target."
+			}
+		}
 	})json"_ojson;
 
 	auto distributionBundle = R"json({
@@ -324,7 +329,8 @@ Json Schema::getBuildJson()
 	distributionBundle[kProperties]["exclude"] = defs[Defs::DistExclude];
 	distributionBundle[kProperties]["includeDependentSharedLibraries"] = defs[Defs::DistIncludeDependentSharedLibs];
 	distributionBundle[kProperties]["linux"] = defs[Defs::DistLinux];
-	distributionBundle[kProperties]["macos"] = defs[Defs::DistMacos];
+	distributionBundle[kProperties]["macos"] = defs[Defs::DistMacOS];
+	distributionBundle[kProperties]["windows"] = defs[Defs::DistWindows];
 	distributionBundle[kProperties]["mainProject"] = defs[Defs::DistMainProject];
 	distributionBundle[kProperties]["outDir"] = defs[Defs::DistOutDirectory];
 	distributionBundle[kProperties]["projects"] = defs[Defs::DistProjects];

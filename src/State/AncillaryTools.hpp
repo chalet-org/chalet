@@ -23,6 +23,9 @@ struct AncillaryTools
 	void fetchXcodeVersion();
 	void fetchXcodeGenVersion();
 
+	const std::string& applePlatformSdk(const std::string& inKey) const;
+	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
+
 	const std::string& chalet() const noexcept;
 
 	const std::string& bash() const noexcept;
@@ -63,8 +66,8 @@ struct AncillaryTools
 	const std::string& lua() const noexcept;
 	void setLua(std::string&& inValue) noexcept;
 
-	const std::string& applePlatformSdk(const std::string& inKey) const;
-	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
+	const std::string& makeNsis() const noexcept;
+	void setMakeNsis(std::string&& inValue) noexcept;
 
 	const std::string osascript() const noexcept;
 	void setOsascript(std::string&& inValue) noexcept;
@@ -153,6 +156,7 @@ private:
 	std::string m_ldd;
 	std::string m_lipo;
 	std::string m_lua;
+	std::string m_makeNsis;
 	std::string m_osascript;
 	std::string m_otool;
 	std::string m_perl;

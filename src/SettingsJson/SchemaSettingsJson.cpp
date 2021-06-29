@@ -27,6 +27,7 @@ enum class Defs : ushort
 	Ldd,
 	Lipo,
 	Lua,
+	MakeNsis,
 	OsaScript,
 	Otool,
 	Perl,
@@ -140,6 +141,12 @@ Json Schema::getSettingsJson()
 		"type": "string",
 		"description": "The executable path to Lua",
 		"default": "/usr/local/bin/lua"
+	})json"_ojson;
+
+	defs[Defs::MakeNsis] = R"json({
+		"type": "string",
+		"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler",
+		"default": "C:/Program Files (x86)/NSIS/makensis.exe"
 	})json"_ojson;
 
 	defs[Defs::OsaScript] = R"json({
@@ -394,6 +401,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kTools][kProperties]["ldd"] = defs[Defs::Ldd];
 	ret[kProperties][kTools][kProperties]["lipo"] = defs[Defs::Lipo];
 	ret[kProperties][kTools][kProperties]["lua"] = defs[Defs::Lua];
+	ret[kProperties][kTools][kProperties]["makensis"] = defs[Defs::MakeNsis];
 	ret[kProperties][kTools][kProperties]["osascript"] = defs[Defs::OsaScript];
 	ret[kProperties][kTools][kProperties]["otool"] = defs[Defs::Otool];
 	ret[kProperties][kTools][kProperties]["perl"] = defs[Defs::Perl];
