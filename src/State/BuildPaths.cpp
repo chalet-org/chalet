@@ -586,10 +586,9 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 	{
 		if (inProject.usesPch())
 		{
-			fs::path pch{ inProject.pch() };
-			if (Commands::pathExists(pch))
+			if (Commands::pathExists(inProject.pch()))
 			{
-				std::string outPath = pch.parent_path().string();
+				std::string outPath = String::getPathFolder(inProject.pch());
 				Path::sanitize(outPath, true);
 
 				ret.emplace_back(std::move(outPath));
@@ -601,11 +600,10 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 		{
 			for (auto& file : files)
 			{
-				fs::path path{ file };
-				if (!Commands::pathExists(path))
+				if (!Commands::pathExists(file))
 					continue;
 
-				std::string outPath = path.parent_path().string();
+				std::string outPath = String::getPathFolder(file);
 				Path::sanitize(outPath, true);
 
 				ret.emplace_back(std::move(outPath));

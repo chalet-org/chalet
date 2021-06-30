@@ -66,7 +66,6 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 	if (fileData.needsUpdate)
 		return add(inFile, fileData);
 
-	// TODO: Older file should also restat, but need to check values more closely '!=' seemed to always restat
 	return fileData.lastWrite > m_lastBuildTime;
 }
 
@@ -81,12 +80,29 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std
 		return true;
 	}
 
+	bool result = false;
+
 	auto& fileData = getLastWrite(inFile);
 	if (fileData.needsUpdate)
-		return add(inFile, fileData);
+	{
+		result = add(inFile, fileData);
+	}
+	else
+	{
+		result = fileData.lastWrite > m_lastBuildTime;
+	}
 
-	// TODO: Older file should also restat, but need to check values more closely '!=' seemed to always restat
-	return fileData.lastWrite > m_lastBuildTime;
+	// auto& depData = getLastWrite(inDependency);
+	// if (depData.needsUpdate)
+	// {
+	// 	result |= add(inDependency, depData);
+	// }
+	// else
+	// {
+	// 	result |= fileData.lastWrite > depData.lastWrite;
+	// }
+
+	return result;
 }
 
 /*****************************************************************************/

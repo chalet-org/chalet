@@ -46,11 +46,11 @@ void forEachFileMatch(const std::string& inPath, const StringList& inPatterns, c
 void forEachFileMatch(const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
 void forEachFileMatch(const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);
 
-bool readFileAndReplace(const fs::path& inFile, const std::function<void(std::string&)>& onReplace);
-std::string readShebangFromFile(const fs::path& inFile);
+bool readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace);
+std::string readShebangFromFile(const std::string& inFile);
 void sleep(const double inSeconds);
 
-bool pathExists(const fs::path& inPath);
+bool pathExists(const std::string& inFile);
 bool pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& inExceptions = {}, const bool inCheckExists = false);
 
 bool createFileWithContents(const std::string& inFile, const std::string& inContents);

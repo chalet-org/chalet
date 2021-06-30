@@ -7,6 +7,7 @@
 
 #include <array>
 #include <chrono>
+#include <sys/stat.h>
 #include <thread>
 
 #include "Libraries/WindowsApi.hpp"
@@ -39,6 +40,8 @@ std::string kCygPath;
 #elif defined(CHALET_MACOS)
 std::string kXcodePath;
 #endif
+
+struct stat statBuffer;
 
 /*****************************************************************************/
 void stripLastEndLine(std::string& inString)
@@ -342,7 +345,7 @@ bool Commands::remove(const std::string& inPath)
 {
 	CHALET_TRY
 	{
-		if (!fs::exists(inPath))
+		if (!Commands::pathExists(inPath))
 			return true;
 
 		if (Output::showCommands())
@@ -555,10 +558,10 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 		if (Output::showCommands())
 			Output::print(Color::Blue, fmt::format("rename: {} {}", inFrom, inTo));
 
-		if (!fs::exists(inFrom))
+		if (!Commands::pathExists(inFrom))
 			return inSkipNonExisting;
 
-		if (fs::exists(inTo))
+		if (Commands::pathExists(inTo))
 			fs::remove(inTo);
 
 		fs::rename(inFrom, inTo);
@@ -573,18 +576,13 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 }
 
 /*****************************************************************************/
-bool Commands::pathExists(const fs::path& inPath)
+bool Commands::pathExists(const std::string& inFile)
 {
-	CHALET_TRY
-	{
-		bool result = fs::exists(inPath);
-		return result;
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+#if defined(CHALET_MSVC)
+	return _stat(inFile.c_str(), &statBuffer) == 0;
+#else
+	return stat(inFile.c_str(), &statBuffer) == 0;
+#endif
 }
 
 /*****************************************************************************/
@@ -708,7 +706,7 @@ void Commands::forEachFileMatch(const StringList& inPatterns, const std::functio
 /*****************************************************************************/
 // TODO: This doesn't quite fit here
 //
-bool Commands::readFileAndReplace(const fs::path& inFile, const std::function<void(std::string&)>& onReplace)
+bool Commands::readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace)
 {
 	if (!Commands::pathExists(inFile))
 		return false;
@@ -730,7 +728,7 @@ bool Commands::readFileAndReplace(const fs::path& inFile, const std::function<vo
 }
 
 /*****************************************************************************/
-std::string Commands::readShebangFromFile(const fs::path& inFile)
+std::string Commands::readShebangFromFile(const std::string& inFile)
 {
 	std::string ret;
 

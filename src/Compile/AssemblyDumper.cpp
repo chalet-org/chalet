@@ -70,6 +70,8 @@ bool AssemblyDumper::dumpProject(const ProjectTarget& inProject, const bool inFo
 			Diagnostic::error("There was a problem dumping asm files for: {}", inProject.name());
 			return false;
 		}
+
+		Output::lineBreak();
 	}
 
 	return true;

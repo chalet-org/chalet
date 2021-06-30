@@ -231,10 +231,10 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		return onError();
 	}
 
-	Output::lineBreak();
-
 	if (!post.command.empty())
 	{
+		Output::lineBreak();
+
 		auto color = Output::getAnsiStyle(post.color);
 
 		if (!printCommand(

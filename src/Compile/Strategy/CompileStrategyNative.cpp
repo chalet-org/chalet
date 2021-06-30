@@ -65,6 +65,9 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
 
+	m_pchChanged = false;
+	m_sourcesChanged = false;
+
 	chalet_assert(m_project != nullptr, "");
 
 	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
@@ -76,7 +79,10 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 	target->pre = getPchCommand(pchTarget);
 	target->list = getCompileCommands(inOutputs.objectList);
 	// target->assemblies = getAsmCommands(inOutputs.assemblyList);
-	target->post = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
+	if (m_sourcesChanged || m_pchChanged)
+	{
+		target->post = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
+	}
 
 	auto& name = inProject.name();
 
@@ -128,9 +134,11 @@ CommandPool::Cmd CompileStrategyNative::getPchCommand(const std::string& pchTarg
 	{
 		std::string source = m_project->pch();
 
-		// auto& sourceCache = m_state.cache.file().sources();
+		auto& sourceCache = m_state.cache.file().sources();
 
-		// if (sourceCache.fileChangedOrDoesNotExist(source, pchTarget))
+		m_pchChanged = sourceCache.fileChangedOrDoesNotExist(source, pchTarget);
+		m_sourcesChanged |= m_pchChanged;
+		if (m_pchChanged)
 		{
 			auto tmp = getPchCompile(source, pchTarget);
 			ret.output = std::move(source);
@@ -150,7 +158,7 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 {
 	const auto& objDir = fmt::format("{}/", m_state.paths.objDir());
 
-	// auto& sourceCache = m_state.cache.file().sources();
+	auto& sourceCache = m_state.cache.file().sources();
 
 	CommandPool::CmdList ret;
 
@@ -176,7 +184,9 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 		if (String::endsWith({ ".rc", ".RC" }, source))
 		{
 #if defined(CHALET_WIN32)
-			// if (sourceCache.fileChangedOrDoesNotExist(source, target))
+			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
+			m_sourcesChanged |= sourceChanged;
+			if (sourceChanged || m_pchChanged)
 			{
 				auto tmp = getRcCompile(source, target);
 				CommandPool::Cmd out;
@@ -194,7 +204,9 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 		}
 		else
 		{
-			// if (sourceCache.fileChangedOrDoesNotExist(source, target))
+			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
+			m_sourcesChanged |= sourceChanged;
+			if (sourceChanged || m_pchChanged)
 			{
 				auto tmp = getCxxCompile(source, target, specialization);
 				CommandPool::Cmd out;
