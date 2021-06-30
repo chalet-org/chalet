@@ -92,7 +92,6 @@ jobs:
       - name: "Configure Chalet"
         run: |
           build/Debug/chalet-debug configure
-          build/Debug/chalet-debug set settings.showCommands true
           build/Debug/chalet-debug set settings.signingIdentity $MACOS_SIGNING_IDENTITY
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema bundle
@@ -135,7 +134,7 @@ jobs:
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema -t msvc -a x64 bundle
       - name: "Run: Tests"
-        run: build/x64-ms-windows-msvc_Release/chalet run Release tests_chalet
+        run: build/x64-pc-windows-msvc_Release/chalet run Release tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
@@ -145,10 +144,9 @@ jobs:
         uses: joncloud/makensis-action@v3.5
         with:
           script-file: "platform/windows/installer/install_script.nsi"
-          additional-plugin-paths: platform/windows/installer/plugins
+          additional-plugin-paths: platform/windows/installer/plugins/Plugins
           arguments: "/WX /V3 /NOCD"
       - name: "Upload zip"
-        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,7 +156,6 @@ jobs:
           asset_name: chalet-windows-msvc64.zip
           asset_content_type: application/zip
       - name: "Upload installer"
-        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -205,10 +202,9 @@ jobs:
         uses: joncloud/makensis-action@v3.5
         with:
           script-file: "platform/windows/installer/install_script.nsi"
-          additional-plugin-paths: platform/windows/installer/plugins
+          additional-plugin-paths: platform/windows/installer/plugins/Plugins
           arguments: "/WX /V3 /NOCD"
-      - name: "Upload binary"
-        id: upload-release-asset
+      - name: "Upload assets"
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -218,7 +214,6 @@ jobs:
           asset_name: chalet-windows-mingw64.zip
           asset_content_type: application/zip
       - name: "Upload installer"
-        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
