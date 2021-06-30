@@ -29,6 +29,7 @@
 #ifdef CHALET_MSVC
 	#define popen _popen
 	#define pclose _pclose
+	#define stat _state
 #endif
 
 namespace chalet
@@ -41,11 +42,7 @@ std::string kCygPath;
 std::string kXcodePath;
 #endif
 
-#if defined(CHALET_MSVC)
-struct _stat statBuffer;
-#else
 struct stat statBuffer;
-#endif
 
 /*****************************************************************************/
 void stripLastEndLine(std::string& inString)
@@ -132,15 +129,12 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 /*****************************************************************************/
 std::int64_t Commands::getLastWriteTime(const std::string& inFile)
 {
-	CHALET_TRY
+	if (stat(inFile.c_str(), &statBuffer) == 0)
 	{
-		auto lastWrite = fs::last_write_time(inFile);
-		auto outTime = timePointToTime(lastWrite);
-		return static_cast<std::int64_t>(outTime);
+		return statBuffer.st_mtime;
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	else
 	{
-		CHALET_EXCEPT_ERROR(err.what())
 		return 0;
 	}
 }
@@ -582,11 +576,7 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 /*****************************************************************************/
 bool Commands::pathExists(const std::string& inFile)
 {
-#if defined(CHALET_MSVC)
-	return _stat(inFile.c_str(), &statBuffer) == 0;
-#else
 	return stat(inFile.c_str(), &statBuffer) == 0;
-#endif
 }
 
 /*****************************************************************************/
