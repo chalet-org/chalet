@@ -92,7 +92,6 @@ jobs:
       - name: "Configure Chalet"
         run: |
           build/Debug/chalet-debug configure
-          build/Debug/chalet-debug set settings.showCommands true
           build/Debug/chalet-debug set settings.signingIdentity $MACOS_SIGNING_IDENTITY
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema bundle
@@ -145,7 +144,7 @@ jobs:
         uses: joncloud/makensis-action@v3.5
         with:
           script-file: "platform/windows/installer/install_script.nsi"
-          additional-plugin-paths: platform/windows/installer/plugins
+          additional-plugin-paths: platform/windows/installer/plugins/Plugins
           arguments: "/WX /V3 /NOCD"
       - name: "Upload zip"
         uses: actions/upload-release-asset@v1
@@ -203,7 +202,7 @@ jobs:
         uses: joncloud/makensis-action@v3.5
         with:
           script-file: "platform/windows/installer/install_script.nsi"
-          additional-plugin-paths: platform/windows/installer/plugins
+          additional-plugin-paths: platform/windows/installer/plugins/Plugins
           arguments: "/WX /V3 /NOCD"
       - name: "Upload assets"
         uses: actions/upload-release-asset@v1
