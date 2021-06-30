@@ -92,22 +92,25 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std
 /*****************************************************************************/
 bool SourceCache::add(const std::string& inFile, LastWrite& outFileData) const
 {
-	outFileData.needsUpdate = false;
-
+	bool result = true;
 	auto lastWrite = Commands::getLastWriteTime(inFile);
 	if (lastWrite >= m_initializedTime)
 	{
 		outFileData.lastWrite = m_initializedTime;
-		return false;
+		result = false;
+	}
+	else
+	{
+		if (lastWrite == 0)
+			lastWrite = m_initializedTime;
+
+		outFileData.lastWrite = lastWrite;
 	}
 
-	if (lastWrite == 0)
-		lastWrite = m_initializedTime;
-
-	outFileData.lastWrite = lastWrite;
+	outFileData.needsUpdate = false;
 	m_dirty = true;
 
-	return true;
+	return result;
 }
 
 /*****************************************************************************/
