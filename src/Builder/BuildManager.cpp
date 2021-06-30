@@ -142,7 +142,10 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				break;
 			}
 
-			Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+			auto res = buildTimer.stop();
+			if (res > 0)
+				Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+
 			Output::lineBreak();
 		}
 		else
@@ -158,7 +161,10 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				}
 
 				Output::msgTargetUpToDate(multiTarget, name);
-				Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+				auto res = buildTimer.stop();
+				if (res > 0)
+					Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+
 				Output::lineBreak();
 			}
 		}

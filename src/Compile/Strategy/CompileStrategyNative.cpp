@@ -78,20 +78,22 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 	auto target = std::make_unique<CommandPool::Target>();
 	target->pre = getPchCommand(pchTarget);
 	target->list = getCompileCommands(inOutputs.objectList);
-	// target->assemblies = getAsmCommands(inOutputs.assemblyList);
-	if (m_sourcesChanged || m_pchChanged)
+
+	if (!target->list.empty())
 	{
-		target->post = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
+		if (m_sourcesChanged || m_pchChanged)
+		{
+			target->post = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
+		}
+
+		const auto& name = inProject.name();
+
+		if (m_targets.find(name) == m_targets.end())
+		{
+			m_targets.emplace(name, std::move(target));
+		}
+		m_outputs[name] = std::move(inOutputs);
 	}
-
-	auto& name = inProject.name();
-
-	if (m_targets.find(name) == m_targets.end())
-	{
-		m_targets.emplace(name, std::move(target));
-	}
-
-	m_outputs[name] = std::move(inOutputs);
 
 	m_toolchain = nullptr;
 	m_project = nullptr;
@@ -109,7 +111,7 @@ bool CompileStrategyNative::saveBuildFile() const
 bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 {
 	if (m_targets.find(inProject.name()) == m_targets.end())
-		return false;
+		return true;
 
 	auto& target = *m_targets.at(inProject.name());
 
