@@ -15,7 +15,6 @@ namespace Commands
 using CreateSubprocessFunc = std::function<void(int /* pid */)>;
 
 std::string getWorkingDirectory();
-fs::path getWorkingDirectoryPath();
 bool changeWorkingDirectory(const std::string& inPath);
 
 bool pathIsFile(const std::string& inPath);

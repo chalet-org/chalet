@@ -155,21 +155,6 @@ std::string Commands::getWorkingDirectory()
 }
 
 /*****************************************************************************/
-fs::path Commands::getWorkingDirectoryPath()
-{
-	CHALET_TRY
-	{
-		auto cwd = fs::current_path();
-		return cwd;
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return fs::path{ "" };
-	}
-}
-
-/*****************************************************************************/
 bool Commands::changeWorkingDirectory(const std::string& inPath)
 {
 	CHALET_TRY

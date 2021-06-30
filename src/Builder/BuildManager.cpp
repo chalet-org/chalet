@@ -184,7 +184,9 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		if (!runCommand && inShowSuccess)
 		{
 			Output::msgBuildSuccess();
-			Output::lineBreak();
+
+			if (inRoute != Route::BuildRun)
+				Output::lineBreak();
 		}
 	}
 
