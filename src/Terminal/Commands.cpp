@@ -743,11 +743,16 @@ std::string Commands::readShebangFromFile(const fs::path& inFile)
 		{
 			ret = ret.substr(2);
 
-			// TODO: For now, don't support this kind of stuff
-			// example: https://github.com/google/zx
-			auto space = ret.find_first_of(" ");
-			if (space != std::string::npos)
-				ret = std::string();
+			if (String::startsWith("/usr/bin/env ", ret))
+			{
+				// we'll parse the rest later
+			}
+			else
+			{
+				auto space = ret.find_first_of(" ");
+				if (space != std::string::npos)
+					ret = std::string();
+			}
 		}
 		else
 			ret = std::string();

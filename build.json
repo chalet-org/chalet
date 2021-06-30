@@ -131,30 +131,30 @@
 			"onlyInConfiguration": "Release"
 		},
 		"script-bash": {
-			"script.!windows": "scripts/script_shell.sh",
+			"script.!windows": "scripts/script_shell_env.sh",
 			"script.windows": "scripts/script_batch.bat"
-		}
-		/*"script-batch": {
+		} /*,
+		"script-batch": {
 			"script.windows": "scripts/script_batch.bat"
 		},
 		"script-powershell": {
-			"script.windows": "scripts/script_powershell.ps1"
-			// "script.macos": "scripts/script_powershell.ps1"
+			"script.windows": "scripts/script_powershell.ps1",
+			"script.macos": "scripts/script_powershell_env.ps1"
 		},
 		"script-bash-bad": {
 			"script": "scripts/script_shell_bad.sh"
 		},
 		"script-python": {
-			"script": "scripts/script_python.py"
+			"script": "scripts/script_python_env.py"
 		},
 		"script-ruby": {
-			"script": "scripts/script_ruby.rb"
+			"script": "scripts/script_ruby_env.rb"
 		},
 		"script-perl": {
-			"script": "scripts/script_perl.pl"
+			"script": "scripts/script_perl_env.pl"
 		},
 		"script-lua": {
-			"script": "scripts/script_lua.lua"
+			"script": "scripts/script_lua_env.lua"
 		}*/
 	},
 	"distribution": {

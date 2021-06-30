@@ -1,2 +1,2 @@
 
-echo "💩 This is a bad shell script without a shebang"
+echo "💩 This is a bad shell script without a shebang."

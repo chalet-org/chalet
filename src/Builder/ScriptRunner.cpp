@@ -75,26 +75,39 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 		shebang = Commands::readShebangFromFile(outScriptPath);
 		if (!shebang.empty())
 		{
-			shell = shebang;
-			shellFound = Commands::pathExists(shell);
-
-			if (!shellFound)
+			if (String::startsWith("/usr/bin/env ", shebang))
 			{
-				if (String::startsWith("/bin", shell))
+				auto space = shebang.find(' ');
+				auto search = shebang.substr(space + 1);
+				if (!search.empty())
 				{
-					shell = fmt::format("/usr{}", shell);
-					shellFound = Commands::pathExists(shell);
-
-					if (!shellFound)
-					{
-						shell = fmt::format("/usr/local{}", shebang);
-						shellFound = Commands::pathExists(shell);
-					}
-				}
-				else
-				{
-					shell = Environment::getShell();
+					shell = Commands::which(shebang.substr(space + 1));
 					shellFound = !shell.empty();
+				}
+			}
+			else
+			{
+				shell = shebang;
+				shellFound = Commands::pathExists(shell);
+
+				if (!shellFound)
+				{
+					if (String::startsWith("/bin", shell))
+					{
+						shell = fmt::format("/usr{}", shell);
+						shellFound = Commands::pathExists(shell);
+
+						if (!shellFound)
+						{
+							shell = fmt::format("/usr/local{}", shebang);
+							shellFound = Commands::pathExists(shell);
+						}
+					}
+					else
+					{
+						shell = Environment::getShell();
+						shellFound = !shell.empty();
+					}
 				}
 			}
 		}

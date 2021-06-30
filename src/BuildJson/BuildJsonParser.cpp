@@ -293,11 +293,9 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 
 		if (target->isScript())
 		{
+			// A script could be only for a specific platform
 			if (!parseScript(static_cast<ScriptBuildTarget&>(*target), targetJson))
-			{
-				Diagnostic::error("{}: Error parsing the '{}' script target.", m_filename, name);
-				return false;
-			}
+				continue;
 		}
 		else if (target->isSubChalet())
 		{
