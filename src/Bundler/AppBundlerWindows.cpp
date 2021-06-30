@@ -8,6 +8,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Timer.hpp"
 
@@ -55,6 +56,13 @@ std::string AppBundlerWindows::getResourcePath() const
 /*****************************************************************************/
 bool AppBundlerWindows::createWindowsInstaller() const
 {
+	// TODO: ignore on CI for now
+	//   plugins will need to be defined as well as the script, and then the plugins
+	//   will need to be copied to the NSIS install directory (it's that old school)
+	//
+	if (Environment::isContinuousIntegrationServer())
+		return true;
+
 	const auto& nsisScript = m_bundle.windowsBundle().nsisScript();
 	if (!nsisScript.empty())
 	{

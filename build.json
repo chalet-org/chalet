@@ -194,6 +194,9 @@
 					"1x": "platform/osx/dmg-background.png",
 					"2x": "platform/osx/dmg-background@2x.png"
 				}*/
+			},
+			"windows": {
+				"nsisScript": "platform/windows/installer/install_script.nsi"
 			} /*,
 			"linux": {
 				"icon": "platform/chalet-logo.png",
