@@ -353,24 +353,17 @@ StringList CompileToolchainGNU::getLinkExclusions() const
 /*****************************************************************************/
 bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 {
-	// if (m_config.isGcc())
+	if (String::contains('=', inFlag))
 	{
-		if (String::contains('=', inFlag))
-		{
-			auto cutoff = inFlag.find('=');
-			// std::string flag = inFlag.substr(cutoff + 1);
-			std::string flag = inFlag.substr(0, cutoff);
-			return m_config.isFlagSupported(String::toLowerCase(flag));
-		}
-		else
-		{
-			return m_config.isFlagSupported(String::toLowerCase(inFlag));
-		}
+		auto cutoff = inFlag.find('=');
+		// std::string flag = inFlag.substr(cutoff + 1);
+		std::string flag = inFlag.substr(0, cutoff);
+		return m_config.isFlagSupported(String::toLowerCase(flag));
 	}
-
-	UNUSED(inFlag);
-
-	return true;
+	else
+	{
+		return m_config.isFlagSupported(String::toLowerCase(inFlag));
+	}
 }
 
 /*****************************************************************************/
