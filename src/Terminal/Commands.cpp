@@ -29,7 +29,7 @@
 #ifdef CHALET_MSVC
 	#define popen _popen
 	#define pclose _pclose
-	#define stat _state
+	#define stat _stat
 #endif
 
 namespace chalet
