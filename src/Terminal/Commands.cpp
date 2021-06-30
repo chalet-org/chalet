@@ -41,7 +41,11 @@ std::string kCygPath;
 std::string kXcodePath;
 #endif
 
+#if defined(CHALET_MSVC)
+struct _stat statBuffer;
+#else
 struct stat statBuffer;
+#endif
 
 /*****************************************************************************/
 void stripLastEndLine(std::string& inString)
