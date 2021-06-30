@@ -377,7 +377,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 		auto resolved = fmt::format("{}/{}", compilerPathBin, dep);
 		if (Commands::pathExists(resolved))
 		{
-			ret.push_back(std::move(resolved));
+			ret.emplace_back(std::move(resolved));
 			continue;
 		}
 
@@ -386,7 +386,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 			resolved = fmt::format("{}/{}", path, dep);
 			if (Commands::pathExists(resolved))
 			{
-				ret.push_back(std::move(resolved));
+				ret.emplace_back(std::move(resolved));
 				break;
 			}
 		}

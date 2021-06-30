@@ -173,7 +173,7 @@ void ICompileToolchain::addExectuable(StringList& outArgList, const std::string&
 	if (m_isNative)
 		outArgList.push_back(inExecutable);
 	else
-		outArgList.push_back(fmt::format("\"{}\"", inExecutable));
+		outArgList.emplace_back(fmt::format("\"{}\"", inExecutable));
 }
 
 /*****************************************************************************/

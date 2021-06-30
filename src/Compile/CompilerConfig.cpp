@@ -199,7 +199,7 @@ bool CompilerConfig::getSupportedCompilerFlags()
 				StringList cmd{ exec, "-Q" };
 				for (auto& help : helps)
 				{
-					cmd.push_back(fmt::format("--help={}", help));
+					cmd.emplace_back(fmt::format("--help={}", help));
 				}
 				parseGnuHelpList(cmd);
 			}
@@ -415,7 +415,7 @@ bool CompilerConfig::isLinkSupported(const std::string& inLink, const StringList
 		{
 			cmd.push_back(dir);
 		}
-		cmd.push_back(fmt::format("-print-file-name={}", file));
+		cmd.emplace_back(fmt::format("-print-file-name={}", file));
 
 		auto raw = Commands::subprocessOutput(cmd);
 		// auto split = String::split(raw, String::eol());

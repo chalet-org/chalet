@@ -256,7 +256,7 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode)
 				return false;
 		}
 
-		m_prototype.distribution.push_back(std::move(target));
+		m_prototype.distribution.emplace_back(std::move(target));
 	}
 
 	return true;
@@ -522,7 +522,7 @@ bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode)
 		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
 			return false;
 
-		m_prototype.externalDependencies.push_back(std::move(dependency));
+		m_prototype.externalDependencies.emplace_back(std::move(dependency));
 	}
 
 	return true;

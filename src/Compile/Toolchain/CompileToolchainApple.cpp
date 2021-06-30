@@ -100,9 +100,9 @@ StringList CompileToolchainApple::getDynamicLibTargetCommand(const std::string& 
 
 	addExectuable(ret, m_config.compilerExecutable());
 
-	ret.push_back("-dynamiclib");
-	// ret.push_back("-fPIC");
-	// ret.push_back("-flat_namespace");
+	ret.emplace_back("-dynamiclib");
+	// ret.emplace_back("-fPIC");
+	// ret.emplace_back("-flat_namespace");
 
 	UNUSED(outputFileBase);
 
@@ -122,7 +122,7 @@ StringList CompileToolchainApple::getDynamicLibTargetCommand(const std::string& 
 
 	addLibDirs(ret);
 
-	ret.push_back("-o");
+	ret.emplace_back("-o");
 	ret.push_back(outputFile);
 	addSourceObjects(ret, sourceObjs);
 
@@ -147,12 +147,12 @@ bool CompileToolchainApple::addArchitecture(StringList& outArgList) const
 		if (String::equals("macosx", m_osTarget))
 		{
 			// -mmacosx-version-min=
-			outArgList.push_back(fmt::format("-mmacosx-version-min={}", m_osTargetVersion));
+			outArgList.emplace_back(fmt::format("-mmacosx-version-min={}", m_osTargetVersion));
 		}
 		else if (String::equals("ios", m_osTarget))
 		{
 			// -mmacosx-version-min=
-			outArgList.push_back(fmt::format("-mios-version-min={}", m_osTargetVersion));
+			outArgList.emplace_back(fmt::format("-mios-version-min={}", m_osTargetVersion));
 		}
 	}
 
@@ -213,11 +213,11 @@ void CompileToolchainApple::addObjectiveCxxCompileOption(StringList& outArgList,
 	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCPlusPlus || specialization == CxxSpecialization::ObjectiveC;
 	if (m_project.objectiveCxx() && isObjCxx)
 	{
-		outArgList.push_back("-x");
+		outArgList.emplace_back("-x");
 		if (isObjCpp)
-			outArgList.push_back("objective-c++");
+			outArgList.emplace_back("objective-c++");
 		else if (isObjC)
-			outArgList.push_back("objective-c");
+			outArgList.emplace_back("objective-c");
 	}
 }
 
@@ -248,7 +248,7 @@ void CompileToolchainApple::addMacosSysRootOption(StringList& outArgList) const
 		sdk = "appletvos";
 	}
 
-	outArgList.push_back("-isysroot");
+	outArgList.emplace_back("-isysroot");
 	outArgList.push_back(m_state.tools.applePlatformSdk(sdk));
 }
 

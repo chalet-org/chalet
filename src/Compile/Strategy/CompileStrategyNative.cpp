@@ -186,7 +186,7 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 				out.renameTo = std::move(tmp.renameTo);
 				out.color = Color::Blue;
 				out.symbol = " ";
-				ret.push_back(std::move(out));
+				ret.emplace_back(std::move(out));
 			}
 #else
 			continue;
@@ -204,7 +204,7 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 				out.renameTo = std::move(tmp.renameTo);
 				out.color = Color::Blue;
 				out.symbol = " ";
-				ret.push_back(std::move(out));
+				ret.emplace_back(std::move(out));
 			}
 		}
 	}

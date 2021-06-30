@@ -325,7 +325,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		if (!target->includeInBuild())
 			continue;
 
-		m_state.targets.push_back(std::move(target));
+		m_state.targets.emplace_back(std::move(target));
 	}
 
 	return true;

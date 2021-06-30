@@ -556,14 +556,14 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inF
 	StringList cmd{ m_codesign, "--strict", "--deep", "--continue" };
 
 	if (inForce)
-		cmd.push_back("-f");
+		cmd.emplace_back("-f");
 
-	cmd.push_back("-s");
+	cmd.emplace_back("-s");
 	cmd.push_back(m_signingIdentity);
 
 	bool showCommands = Output::showCommands();
 	if (showCommands)
-		cmd.push_back("-v");
+		cmd.emplace_back("-v");
 
 	cmd.push_back(inPath);
 	if (showCommands)
@@ -586,7 +586,7 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath) const
 
 	bool showCommands = Output::showCommands();
 	if (showCommands)
-		cmd.push_back("-v");
+		cmd.emplace_back("-v");
 
 	cmd.push_back(inPath);
 	if (showCommands)
@@ -606,11 +606,11 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
 
 	StringList cmd{ m_codesign, "--strict", "--deep", "--continue", "-f", "-s", m_signingIdentity };
-	cmd.push_back(fmt::format("-bundle-version={}", inVersionId));
+	cmd.emplace_back(fmt::format("-bundle-version={}", inVersionId));
 
 	bool showCommands = Output::showCommands();
 	if (showCommands)
-		cmd.push_back("-v");
+		cmd.emplace_back("-v");
 
 	cmd.push_back(inFrameworkPath);
 	if (showCommands)

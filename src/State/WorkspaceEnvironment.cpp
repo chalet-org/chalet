@@ -151,7 +151,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 		auto path = Commands::getCanonicalPath(p); // for any relative paths
 
 		if (!String::contains(path, inRootPath))
-			outList.push_back(std::move(path));
+			outList.emplace_back(std::move(path));
 	}
 
 	outList.push_back(inRootPath);

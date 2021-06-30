@@ -72,10 +72,10 @@ bool AppBundlerWindows::createWindowsInstaller() const
 		Diagnostic::info("Creating the Windows installer executable", Output::showCommands());
 
 		StringList cmd{ m_state.tools.makeNsis() };
-		cmd.push_back("/WX");
-		cmd.push_back("/V3");
-		cmd.push_back("/NOCD");
-		cmd.push_back(nsisScript);
+		cmd.emplace_back("/WX");
+		cmd.emplace_back("/V3");
+		cmd.emplace_back("/NOCD");
+		cmd.emplace_back(nsisScript);
 
 		bool result = false;
 		if (Output::showCommands())

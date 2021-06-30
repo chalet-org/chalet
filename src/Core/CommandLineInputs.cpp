@@ -449,10 +449,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 #if defined(CHALET_WIN32)
 	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
-	allowedArchesWin.push_back("x86_64");
-	allowedArchesWin.push_back("x64_x64");
-	allowedArchesWin.push_back("i686");
-	allowedArchesWin.push_back("x86_x86");
+	allowedArchesWin.emplace_back("x86_64");
+	allowedArchesWin.emplace_back("x64_x64");
+	allowedArchesWin.emplace_back("i686");
+	allowedArchesWin.emplace_back("x86_x86");
 	auto splitValue = String::split(inValue, '-');
 	StringList msvcSearches{ "msvc", "msvcpre" };
 	bool isPlainMSVC = String::equals(msvcSearches, inValue);

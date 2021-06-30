@@ -48,7 +48,7 @@ build_{hash}: {target}
 		FMT_ARG(buildRecipes),
 		FMT_ARG(target));
 
-	m_targetRecipes.push_back(std::move(makeTemplate));
+	m_targetRecipes.emplace_back(std::move(makeTemplate));
 
 	m_toolchain = nullptr;
 	m_project = nullptr;

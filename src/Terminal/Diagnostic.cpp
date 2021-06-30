@@ -211,9 +211,9 @@ void Diagnostic::printErrors()
 					continue;
 
 				if (err.type == Type::Warning)
-					warnings.push_back(std::move(err.message));
+					warnings.emplace_back(std::move(err.message));
 				else
-					errors.push_back(std::move(err.message));
+					errors.emplace_back(std::move(err.message));
 			}
 
 			sStartedInfo = false;

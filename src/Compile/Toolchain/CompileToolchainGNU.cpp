@@ -68,11 +68,11 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 
 	if (generateDependency)
 	{
-		ret.push_back("-MT");
+		ret.emplace_back("-MT");
 		ret.push_back(outputFile);
-		ret.push_back("-MMD");
-		ret.push_back("-MP");
-		ret.push_back("-MF");
+		ret.emplace_back("-MMD");
+		ret.emplace_back("-MP");
+		ret.emplace_back("-MF");
 		ret.push_back(dependency);
 	}
 
@@ -99,9 +99,9 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 	addIncludes(ret);
 	addMacosSysRootOption(ret);
 
-	ret.push_back("-o");
+	ret.emplace_back("-o");
 	ret.push_back(outputFile);
-	ret.push_back("-c");
+	ret.emplace_back("-c");
 	ret.push_back(inputFile);
 
 	return ret;
@@ -120,17 +120,17 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 		addDefines(ret);
 		addIncludes(ret);
 
-		ret.push_back("-Fo");
+		ret.emplace_back("-Fo");
 		ret.push_back(outputFile);
 		ret.push_back(inputFile);
 	}
 	else
 	{
-		ret.push_back("-J");
-		ret.push_back("rc");
+		ret.emplace_back("-J");
+		ret.emplace_back("rc");
 
-		ret.push_back("-O");
-		ret.push_back("coff");
+		ret.emplace_back("-O");
+		ret.emplace_back("coff");
 
 		if (generateDependency)
 		{
@@ -139,20 +139,20 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 			//   This runs in C mode, so we don't want any c++ flags passed in
 			//   See: https://sourceware.org/binutils/docs/binutils/windres.html
 
-			ret.push_back("--preprocessor-arg=-MT");
-			ret.push_back(fmt::format("--preprocessor-arg={}", outputFile));
-			ret.push_back("--preprocessor-arg=-MMD");
-			ret.push_back("--preprocessor-arg=-MP");
-			ret.push_back("--preprocessor-arg=-MF");
-			ret.push_back(fmt::format("--preprocessor-arg={}", dependency));
+			ret.emplace_back("--preprocessor-arg=-MT");
+			ret.emplace_back(fmt::format("--preprocessor-arg={}", outputFile));
+			ret.emplace_back("--preprocessor-arg=-MMD");
+			ret.emplace_back("--preprocessor-arg=-MP");
+			ret.emplace_back("--preprocessor-arg=-MF");
+			ret.emplace_back(fmt::format("--preprocessor-arg={}", dependency));
 		}
 
 		addDefines(ret);
 		addIncludes(ret);
 
-		ret.push_back("-i");
+		ret.emplace_back("-i");
 		ret.push_back(inputFile);
-		ret.push_back("-o");
+		ret.emplace_back("-o");
 		ret.push_back(outputFile);
 	}
 
@@ -168,11 +168,11 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 
 	if (generateDependency)
 	{
-		ret.push_back("-MT");
+		ret.emplace_back("-MT");
 		ret.push_back(outputFile);
-		ret.push_back("-MMD");
-		ret.push_back("-MP");
-		ret.push_back("-MF");
+		ret.emplace_back("-MMD");
+		ret.emplace_back("-MP");
+		ret.emplace_back("-MF");
 		ret.push_back(dependency);
 	}
 
@@ -202,9 +202,9 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 	if (specialization == CxxSpecialization::C || specialization == CxxSpecialization::CPlusPlus)
 		addPchInclude(ret);
 
-	ret.push_back("-o");
+	ret.emplace_back("-o");
 	ret.push_back(outputFile);
-	ret.push_back("-c");
+	ret.emplace_back("-c");
 	ret.push_back(inputFile);
 
 	return ret;
@@ -240,7 +240,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 
 	addExectuable(ret, m_config.compilerExecutable());
 
-	ret.push_back("-shared");
+	ret.emplace_back("-shared");
 	if (m_config.isMingw())
 	{
 		std::string mingwLinkerOptions;
@@ -249,9 +249,9 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 			mingwLinkerOptions = fmt::format("-Wl,--output-def={}.def", outputFileBase);
 		}
 		mingwLinkerOptions += fmt::format("-Wl,--out-implib={}.a", outputFileBase);
-		ret.push_back(std::move(mingwLinkerOptions));
+		ret.emplace_back(std::move(mingwLinkerOptions));
 
-		ret.push_back("-Wl,--dll");
+		ret.emplace_back("-Wl,--dll");
 	}
 	else
 	{
@@ -274,7 +274,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 
 	addLibDirs(ret);
 
-	ret.push_back("-o");
+	ret.emplace_back("-o");
 	ret.push_back(outputFile);
 	addSourceObjects(ret, sourceObjs);
 
@@ -293,15 +293,15 @@ StringList CompileToolchainGNU::getStaticLibTargetCommand(const std::string& out
 
 	if (m_state.toolchain.isArchiverLibTool())
 	{
-		ret.push_back("-static");
-		ret.push_back("-no_warning_for_no_symbols");
-		ret.push_back("-o");
+		ret.emplace_back("-static");
+		ret.emplace_back("-no_warning_for_no_symbols");
+		ret.emplace_back("-o");
 	}
 	else
 	{
-		ret.push_back("-c");
-		ret.push_back("-r");
-		ret.push_back("-s");
+		ret.emplace_back("-c");
+		ret.emplace_back("-r");
+		ret.emplace_back("-s");
 	}
 
 	ret.push_back(outputFile);
@@ -319,7 +319,7 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 
 	addLibDirs(ret);
 
-	ret.push_back("-o");
+	ret.emplace_back("-o");
 	ret.push_back(outputFile);
 
 	addRunPath(ret);
@@ -401,11 +401,11 @@ void CompileToolchainGNU::addIncludes(StringList& outArgList) const
 	const std::string prefix{ "-I" };
 	for (const auto& dir : m_project.includeDirs())
 	{
-		outArgList.push_back(getPathCommand(prefix, dir));
+		outArgList.emplace_back(getPathCommand(prefix, dir));
 	}
 	for (const auto& dir : m_project.locations())
 	{
-		outArgList.push_back(getPathCommand(prefix, dir));
+		outArgList.emplace_back(getPathCommand(prefix, dir));
 	}
 
 #if !defined(CHALET_WIN32)
@@ -420,10 +420,10 @@ void CompileToolchainGNU::addLibDirs(StringList& outArgList) const
 	const std::string prefix{ "-L" };
 	for (const auto& dir : m_project.libDirs())
 	{
-		outArgList.push_back(getPathCommand(prefix, dir));
+		outArgList.emplace_back(getPathCommand(prefix, dir));
 	}
 
-	outArgList.push_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
+	outArgList.emplace_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
 
 #if !defined(CHALET_WIN32)
 	// must be last
@@ -448,7 +448,7 @@ void CompileToolchainGNU::addWarnings(StringList& outArgList) const
 		}
 
 		// if (isFlagSupported(out))
-		outArgList.push_back(std::move(out));
+		outArgList.emplace_back(std::move(out));
 	}
 
 	if (m_project.usesPch())
@@ -465,7 +465,7 @@ void CompileToolchainGNU::addDefines(StringList& outArgList) const
 	const std::string prefix{ "-D" };
 	for (auto& define : m_project.defines())
 	{
-		outArgList.push_back(prefix + define);
+		outArgList.emplace_back(prefix + define);
 	}
 }
 
@@ -483,7 +483,7 @@ void CompileToolchainGNU::addLinks(StringList& outArgList) const
 		for (auto& staticLink : m_project.staticLinks())
 		{
 			if (isLinkSupported(staticLink))
-				outArgList.push_back(prefix + staticLink);
+				outArgList.emplace_back(prefix + staticLink);
 		}
 
 		endStaticLinkGroup(outArgList);
@@ -502,7 +502,7 @@ void CompileToolchainGNU::addLinks(StringList& outArgList) const
 				continue;
 
 			if (isLinkSupported(link))
-				outArgList.push_back(prefix + link);
+				outArgList.emplace_back(prefix + link);
 		}
 	}
 }
@@ -515,8 +515,8 @@ void CompileToolchainGNU::addPchInclude(StringList& outArgList) const
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
 
-		outArgList.push_back("-include");
-		outArgList.push_back(getPathCommand("", objDirPch));
+		outArgList.emplace_back("-include");
+		outArgList.emplace_back(getPathCommand("", objDirPch));
 	}
 }
 
@@ -577,14 +577,14 @@ void CompileToolchainGNU::addOptimizationOption(StringList& outArgList) const
 	if (opt.empty())
 		return;
 
-	outArgList.push_back(std::move(opt));
+	outArgList.emplace_back(std::move(opt));
 }
 
 /*****************************************************************************/
 void CompileToolchainGNU::addRunPath(StringList& outArgList) const
 {
 #if defined(CHALET_LINUX)
-	outArgList.push_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
+	outArgList.emplace_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
 #else
 	UNUSED(outArgList);
 #endif
@@ -604,7 +604,7 @@ void CompileToolchainGNU::addLanguageStandard(StringList& outArgList, const CxxS
 		if (RegexPatterns::matchesGnuCppStandard(ret))
 		{
 			ret = "-std=" + ret;
-			outArgList.push_back(std::move(ret));
+			outArgList.emplace_back(std::move(ret));
 		}
 	}
 	else
@@ -612,7 +612,7 @@ void CompileToolchainGNU::addLanguageStandard(StringList& outArgList, const CxxS
 		if (RegexPatterns::matchesGnuCStandard(ret))
 		{
 			ret = "-std=" + ret;
-			outArgList.push_back(std::move(ret));
+			outArgList.emplace_back(std::move(ret));
 		}
 	}
 }
@@ -623,7 +623,7 @@ void CompileToolchainGNU::addDebuggingInformationOption(StringList& outArgList) 
 	// TODO: Control debugging information level (g, g0-g3) from configurations
 	if (m_state.configuration.debugSymbols())
 	{
-		outArgList.push_back("-g3");
+		outArgList.emplace_back("-g3");
 	}
 }
 
@@ -638,7 +638,7 @@ void CompileToolchainGNU::addProfileInformationCompileOption(StringList& outArgL
 		{
 			std::string profileInfo{ "-pg" };
 			// if (isFlagSupported(profileInfo))
-			outArgList.push_back(std::move(profileInfo));
+			outArgList.emplace_back(std::move(profileInfo));
 		}
 	}
 }
@@ -765,20 +765,20 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	{
 		auto archFlag = fmt::format("-march={}", arch);
 		// if (isFlagSupported(archFlag))
-		outArgList.push_back(std::move(archFlag));
+		outArgList.emplace_back(std::move(archFlag));
 	}
 
 	if (!tune.empty())
 	{
 		auto tuneFlag = fmt::format("-mtune={}", tune);
 		// if (isFlagSupported(tuneFlag))
-		outArgList.push_back(std::move(tuneFlag));
+		outArgList.emplace_back(std::move(tuneFlag));
 	}
 
 	if (!flags.empty())
 	{
 		// if (isFlagSupported(flags))
-		outArgList.push_back(std::move(flags));
+		outArgList.emplace_back(std::move(flags));
 	}
 
 	return true;
@@ -791,7 +791,7 @@ void CompileToolchainGNU::addStripSymbolsOption(StringList& outArgList) const
 	{
 		std::string strip{ "-s" };
 		// if (isFlagSupported(strip))
-		outArgList.push_back(std::move(strip));
+		outArgList.emplace_back(std::move(strip));
 	}
 }
 
@@ -811,11 +811,11 @@ void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& outArgLi
 	const bool enableProfiling = m_state.configuration.enableProfiling();
 	if (enableProfiling && m_project.isExecutable())
 	{
-		outArgList.push_back("-Wl,--allow-multiple-definition");
+		outArgList.emplace_back("-Wl,--allow-multiple-definition");
 
 		std::string profileInfo{ "-pg" };
 		// if (isFlagSupported(profileInfo))
-		outArgList.push_back(std::move(profileInfo));
+		outArgList.emplace_back(std::move(profileInfo));
 	}
 }
 
@@ -842,9 +842,9 @@ void CompileToolchainGNU::addThreadModelLinkerOption(StringList& outArgList) con
 	{
 		if (m_config.isMingw() && m_project.staticLinking())
 		{
-			outArgList.push_back("-Wl,-Bstatic,--whole-archive");
-			outArgList.push_back("-lwinpthread");
-			outArgList.push_back("-Wl,--no-whole-archive");
+			outArgList.emplace_back("-Wl,-Bstatic,--whole-archive");
+			outArgList.emplace_back("-lwinpthread");
+			outArgList.emplace_back("-Wl,--no-whole-archive");
 		}
 		else
 		{
@@ -859,7 +859,7 @@ void CompileToolchainGNU::addLinkerScripts(StringList& outArgList) const
 	const auto& linkerScript = m_project.linkerScript();
 	if (!linkerScript.empty())
 	{
-		outArgList.push_back("-T");
+		outArgList.emplace_back("-T");
 		outArgList.push_back(linkerScript);
 	}
 }
@@ -915,20 +915,20 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& outArgList) 
 /*****************************************************************************/
 void CompileToolchainGNU::startStaticLinkGroup(StringList& outArgList) const
 {
-	outArgList.push_back("-Wl,--copy-dt-needed-entries");
-	outArgList.push_back("-Wl,-Bstatic");
-	outArgList.push_back("-Wl,--start-group");
+	outArgList.emplace_back("-Wl,--copy-dt-needed-entries");
+	outArgList.emplace_back("-Wl,-Bstatic");
+	outArgList.emplace_back("-Wl,--start-group");
 }
 
 void CompileToolchainGNU::endStaticLinkGroup(StringList& outArgList) const
 {
-	outArgList.push_back("-Wl,--end-group");
+	outArgList.emplace_back("-Wl,--end-group");
 }
 
 /*****************************************************************************/
 void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& outArgList) const
 {
-	outArgList.push_back("-Wl,-Bdynamic");
+	outArgList.emplace_back("-Wl,-Bdynamic");
 }
 
 /*****************************************************************************/
@@ -938,10 +938,10 @@ void CompileToolchainGNU::addCompilerSearchPaths(StringList& outArgList) const
 	const std::string prefix{ "-B" };
 	for (const auto& dir : m_project.libDirs())
 	{
-		outArgList.push_back(getPathCommand(prefix, dir));
+		outArgList.emplace_back(getPathCommand(prefix, dir));
 	}
 
-	outArgList.push_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
+	outArgList.emplace_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
 
 #if !defined(CHALET_WIN32)
 	// must be last
@@ -994,7 +994,7 @@ void CompileToolchainGNU::addMacosSysRootOption(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
 	// TODO: Test Homebrew LLVM/GCC with this
-	outArgList.push_back("-isysroot");
+	outArgList.emplace_back("-isysroot");
 	outArgList.push_back(m_state.tools.applePlatformSdk("macosx"));
 #else
 	UNUSED(outArgList);
@@ -1010,11 +1010,11 @@ void CompileToolchainGNU::addMacosFrameworkOptions(StringList& outArgList) const
 		const std::string prefix = "-F";
 		for (auto& path : m_project.libDirs())
 		{
-			outArgList.push_back(prefix + path);
+			outArgList.emplace_back(prefix + path);
 		}
 		for (auto& path : m_project.macosFrameworkPaths())
 		{
-			outArgList.push_back(prefix + path);
+			outArgList.emplace_back(prefix + path);
 		}
 		List::addIfDoesNotExist(outArgList, prefix + "/Library/Frameworks");
 	}
@@ -1022,9 +1022,9 @@ void CompileToolchainGNU::addMacosFrameworkOptions(StringList& outArgList) const
 		// const std::string suffix = ".framework";
 		for (auto& framework : m_project.macosFrameworks())
 		{
-			outArgList.push_back("-framework");
+			outArgList.emplace_back("-framework");
 			outArgList.push_back(framework);
-			// outArgList.push_back(framework + suffix);
+			// outArgList.emplace_back(framework + suffix);
 		}
 	}
 #else
@@ -1132,7 +1132,7 @@ void CompileToolchainGNU::initializeSupportedLinks()
 			{
 				file += "-s";
 			}
-			projectLinks.push_back(std::move(file));
+			projectLinks.emplace_back(std::move(file));
 		}
 		else if (target->isCMake())
 		{

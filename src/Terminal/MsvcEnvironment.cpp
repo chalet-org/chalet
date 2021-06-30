@@ -110,10 +110,10 @@ bool MsvcEnvironment::create()
 			StringList vswhereCmd{ s_vswhere, "-latest" };
 			if (m_inputs.isMsvcPreRelease())
 			{
-				vswhereCmd.push_back("-prerelease");
+				vswhereCmd.emplace_back("-prerelease");
 			}
-			vswhereCmd.push_back("-property");
-			vswhereCmd.push_back("installationPath");
+			vswhereCmd.emplace_back("-property");
+			vswhereCmd.emplace_back("installationPath");
 			m_vsAppIdDir = Commands::subprocessOutput(vswhereCmd);
 		}
 		if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
@@ -329,11 +329,11 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 		cmd.push_back(arg);
 	}
 
-	cmd.push_back(">");
-	cmd.push_back("nul");
-	cmd.push_back("&&");
-	cmd.push_back("SET");
-	cmd.push_back(">");
+	cmd.emplace_back(">");
+	cmd.emplace_back("nul");
+	cmd.emplace_back("&&");
+	cmd.emplace_back("SET");
+	cmd.emplace_back(">");
 	cmd.push_back(m_varsFileMsvc);
 
 	bool result = std::system(String::join(cmd).c_str()) == EXIT_SUCCESS;

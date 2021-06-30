@@ -96,7 +96,7 @@ bool ProjectInitializer::run()
 		props.language = CodeLanguage::C;
 		props.specialization = CxxSpecialization::C;
 		props.langStandard = "c17";
-		sourceExts.push_back(".c");
+		sourceExts.emplace_back(".c");
 	}
 #if defined(CHALET_MACOS)
 	else if (String::equals("Objective-C", language))
@@ -104,14 +104,14 @@ bool ProjectInitializer::run()
 		props.language = CodeLanguage::C;
 		props.specialization = CxxSpecialization::ObjectiveC;
 		props.langStandard = "c17";
-		sourceExts.push_back(".m");
+		sourceExts.emplace_back(".m");
 	}
 	else if (String::equals("Objective-C++", language))
 	{
 		props.language = CodeLanguage::CPlusPlus;
 		props.specialization = CxxSpecialization::ObjectiveCPlusPlus;
 		props.langStandard = "c++17";
-		sourceExts.push_back(".mm");
+		sourceExts.emplace_back(".mm");
 	}
 #endif
 	else
@@ -119,9 +119,9 @@ bool ProjectInitializer::run()
 		props.language = CodeLanguage::CPlusPlus;
 		props.specialization = CxxSpecialization::CPlusPlus;
 		props.langStandard = "c++17";
-		sourceExts.push_back(".cpp");
-		sourceExts.push_back(".cxx");
-		sourceExts.push_back(".cc");
+		sourceExts.emplace_back(".cpp");
+		sourceExts.emplace_back(".cxx");
+		sourceExts.emplace_back(".cc");
 	}
 
 	bool isC = props.language == CodeLanguage::C;
@@ -165,14 +165,14 @@ bool ProjectInitializer::run()
 			StringList headerExts;
 			if (isC)
 			{
-				headerExts.push_back(".h");
+				headerExts.emplace_back(".h");
 			}
 			else
 			{
-				headerExts.push_back(".hpp");
-				headerExts.push_back(".hxx");
-				headerExts.push_back(".hh");
-				headerExts.push_back(".h");
+				headerExts.emplace_back(".hpp");
+				headerExts.emplace_back(".hxx");
+				headerExts.emplace_back(".hh");
+				headerExts.emplace_back(".h");
 			}
 
 			props.precompiledHeader = fmt::format("pch{}", headerExts.front());

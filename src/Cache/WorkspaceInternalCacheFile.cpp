@@ -353,7 +353,7 @@ std::string WorkspaceInternalCacheFile::getAppVersionHash(std::string appPath)
 StringList WorkspaceInternalCacheFile::getCacheIds() const
 {
 	StringList ret;
-	ret.push_back(String::getPathFilename(m_filename));
+	ret.emplace_back(String::getPathFilename(m_filename));
 
 	for (auto& id : m_extraHashes)
 	{

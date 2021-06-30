@@ -116,38 +116,38 @@ StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
 	StringList ret;
 
 	ret.push_back(m_prototype.tools.git());
-	ret.push_back("clone");
-	ret.push_back("--quiet");
+	ret.emplace_back("clone");
+	ret.emplace_back("--quiet");
 
 	if (!inCheckoutTo.empty() && !String::equals("HEAD", inCheckoutTo))
 	{
-		ret.push_back("-b");
+		ret.emplace_back("-b");
 		ret.push_back(inCheckoutTo);
 	}
 
 	if (!m_commit.empty())
 	{
-		ret.push_back("--single-branch");
+		ret.emplace_back("--single-branch");
 	}
 	else
 	{
-		ret.push_back("--depth");
-		ret.push_back("1");
+		ret.emplace_back("--depth");
+		ret.emplace_back("1");
 	}
 
 	if (m_submodules)
 	{
 		uint maxJobs = m_prototype.environment.maxJobs();
 
-		ret.push_back("--recurse-submodules");
-		ret.push_back("--shallow-submodules");
-		ret.push_back("--no-remote-submodules");
-		ret.push_back("-j");
-		ret.push_back(std::to_string(maxJobs));
+		ret.emplace_back("--recurse-submodules");
+		ret.emplace_back("--shallow-submodules");
+		ret.emplace_back("--no-remote-submodules");
+		ret.emplace_back("-j");
+		ret.emplace_back(std::to_string(maxJobs));
 	}
 
-	ret.push_back("--config");
-	ret.push_back("advice.detachedHead=false");
+	ret.emplace_back("--config");
+	ret.emplace_back("advice.detachedHead=false");
 	ret.push_back(m_repository);
 	ret.push_back(m_destination);
 

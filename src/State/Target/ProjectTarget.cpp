@@ -521,7 +521,7 @@ void ProjectTarget::addRunArguments(StringList&& inList)
 
 void ProjectTarget::addRunArgument(std::string&& inValue)
 {
-	m_runArguments.push_back(std::move(inValue));
+	m_runArguments.emplace_back(std::move(inValue));
 }
 
 /*****************************************************************************/
@@ -766,29 +766,29 @@ StringList ProjectTarget::parseWarnings(const std::string& inValue)
 		return ret;
 	}
 
-	ret.push_back("all");
+	ret.emplace_back("all");
 	if (String::equals("minimal", inValue))
 	{
 		m_warningsPreset = ProjectWarnings::Minimal;
 		return ret;
 	}
 
-	ret.push_back("extra");
+	ret.emplace_back("extra");
 	if (String::equals("extra", inValue))
 	{
 		m_warningsPreset = ProjectWarnings::Extra;
 		return ret;
 	}
 
-	ret.push_back("error");
+	ret.emplace_back("error");
 	if (String::equals("error", inValue))
 	{
 		m_warningsPreset = ProjectWarnings::Error;
 		return ret;
 	}
 
-	ret.push_back("pedantic");
-	// ret.push_back("pedantic-errors"); // Not on OSX?
+	ret.emplace_back("pedantic");
+	// ret.emplace_back("pedantic-errors"); // Not on OSX?
 
 	if (String::equals("pedantic", inValue))
 	{
@@ -796,15 +796,15 @@ StringList ProjectTarget::parseWarnings(const std::string& inValue)
 		return ret;
 	}
 
-	ret.push_back("unused");
-	ret.push_back("cast-align");
-	ret.push_back("double-promotion");
-	ret.push_back("format=2");
-	ret.push_back("missing-declarations");
-	ret.push_back("missing-include-dirs");
-	ret.push_back("non-virtual-dtor");
-	ret.push_back("redundant-decls");
-	ret.push_back("odr");
+	ret.emplace_back("unused");
+	ret.emplace_back("cast-align");
+	ret.emplace_back("double-promotion");
+	ret.emplace_back("format=2");
+	ret.emplace_back("missing-declarations");
+	ret.emplace_back("missing-include-dirs");
+	ret.emplace_back("non-virtual-dtor");
+	ret.emplace_back("redundant-decls");
+	ret.emplace_back("odr");
 
 	if (String::equals("strict", inValue))
 	{
@@ -812,8 +812,8 @@ StringList ProjectTarget::parseWarnings(const std::string& inValue)
 		return ret;
 	}
 
-	ret.push_back("unreachable-code"); // clang only
-	ret.push_back("shadow");
+	ret.emplace_back("unreachable-code"); // clang only
+	ret.emplace_back("shadow");
 
 	if (String::equals("strictPedantic", inValue))
 	{
@@ -821,17 +821,17 @@ StringList ProjectTarget::parseWarnings(const std::string& inValue)
 		return ret;
 	}
 
-	ret.push_back("noexcept");
-	ret.push_back("undef");
-	ret.push_back("conversion");
-	ret.push_back("cast-qual");
-	ret.push_back("float-equal");
-	ret.push_back("inline");
-	ret.push_back("old-style-cast");
-	ret.push_back("strict-null-sentinel");
-	ret.push_back("overloaded-virtual");
-	ret.push_back("sign-conversion");
-	ret.push_back("sign-promo");
+	ret.emplace_back("noexcept");
+	ret.emplace_back("undef");
+	ret.emplace_back("conversion");
+	ret.emplace_back("cast-qual");
+	ret.emplace_back("float-equal");
+	ret.emplace_back("inline");
+	ret.emplace_back("old-style-cast");
+	ret.emplace_back("strict-null-sentinel");
+	ret.emplace_back("overloaded-virtual");
+	ret.emplace_back("sign-conversion");
+	ret.emplace_back("sign-promo");
 
 	if (String::equals("veryStrict", inValue))
 	{
@@ -841,7 +841,7 @@ StringList ProjectTarget::parseWarnings(const std::string& inValue)
 
 	// More?
 	// can't be ignored in GCC 10.2.0, so best not to use it at all
-	// ret.push_back("switch-default");
+	// ret.emplace_back("switch-default");
 
 	m_invalidWarningPreset = true;
 

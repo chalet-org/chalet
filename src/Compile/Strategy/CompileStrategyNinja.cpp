@@ -109,15 +109,15 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 	command.push_back(ninjaExec);
 
 	if (Output::showCommands())
-		command.push_back("-v");
+		command.emplace_back("-v");
 
-	command.push_back("-f");
+	command.emplace_back("-f");
 	command.push_back(m_cacheFile);
 
 	if (m_state.toolchain.ninjaVersionMajor() >= 1 && m_state.toolchain.ninjaVersionMinor() >= 10 && m_state.toolchain.ninjaVersionPatch() > 2)
 	{
 		// silences ninja status updates
-		command.push_back("--quiet"); // forthcoming (in ninja's master branch currently)
+		command.emplace_back("--quiet"); // forthcoming (in ninja's master branch currently)
 	}
 
 	auto& hash = m_hashes.at(inProject.name());
@@ -125,7 +125,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 	{
 		std::cout << Output::getAnsiStyle(Color::Blue) << std::flush;
 
-		command.push_back(fmt::format("build_{}", hash));
+		command.emplace_back(fmt::format("build_{}", hash));
 		bool result = subprocessNinja(command);
 
 		if (!result)

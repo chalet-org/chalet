@@ -28,8 +28,8 @@ void List::sort(Container& inList)
 template <typename VectorType>
 void List::addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue)
 {
-	if (!contains(outList, inValue))
-		outList.push_back(std::forward<VectorType>(inValue));
+	if (std::find(outList.begin(), outList.end(), inValue) == outList.end())
+		outList.emplace_back(std::forward<VectorType>(inValue));
 }
 
 /*****************************************************************************/

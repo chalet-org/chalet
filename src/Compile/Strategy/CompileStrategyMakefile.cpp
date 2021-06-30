@@ -129,12 +129,12 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 		{
 			command.push_back(jobs);
 		}
-		// m_makeCmd.push_back("-d");
-		command.push_back("-C");
-		command.push_back(".");
-		command.push_back("-f");
+		// command.emplace_back("-d");
+		command.emplace_back("-C");
+		command.emplace_back(".");
+		command.emplace_back("-f");
 		command.push_back(m_cacheFile);
-		command.push_back("--no-print-directory");
+		command.emplace_back("--no-print-directory");
 	}
 
 	auto& hash = m_hashes.at(inProject.name());
@@ -148,7 +148,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 
 	{
 
-		command.push_back(fmt::format("build_{}", hash));
+		command.emplace_back(fmt::format("build_{}", hash));
 		bool result = subprocessMakefile(command);
 
 		if (!result)
@@ -172,8 +172,8 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 	{
 		command.clear();
 		command.push_back(makeExec);
-		command.push_back("/NOLOGO");
-		command.push_back("/F");
+		command.emplace_back("/NOLOGO");
+		command.emplace_back("/F");
 		command.push_back(m_cacheFile);
 	}
 
@@ -181,8 +181,8 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 	{
 		const auto maxJobs = m_state.environment.maxJobs();
 
-		command.push_back("/J" + std::to_string(maxJobs));
-		// command.push_back(std::to_string(maxJobs));
+		command.emplace_back("/J" + std::to_string(maxJobs));
+		// command.emplace_back(std::to_string(maxJobs));
 	}
 
 	auto& hash = m_hashes.at(inProject.name());
@@ -191,7 +191,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 	std::cout << Output::getAnsiStyle(Color::Blue);
 	#endif
 
-	command.push_back(std::string());
+	command.emplace_back(std::string());
 
 	if (inProject.usesPch())
 	{

@@ -166,7 +166,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 		if (shellFound)
 		{
 			// LOG(shell);
-			command.push_back(std::move(shell));
+			command.emplace_back(std::move(shell));
 		}
 	}
 
@@ -185,7 +185,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 			if (isBatchScript && !cmd.empty())
 			{
 				command.push_back(cmd);
-				command.push_back("/c");
+				command.emplace_back("/c");
 			}
 			else if (!powershell.empty())
 			{
@@ -232,7 +232,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 		return false;
 	}
 
-	command.push_back(std::move(outScriptPath));
+	command.emplace_back(std::move(outScriptPath));
 
 	bool result = Commands::subprocess(command);
 	auto exitCode = Subprocess::getLastExitCode();

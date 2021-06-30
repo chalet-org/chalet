@@ -152,7 +152,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool 
 			auto pchTarget = getPrecompiledHeaderTarget(inProject, true);
 			String::replaceAll(pchTarget, ".pch", ".obj");
 
-			ret.objectListLinker.push_back(std::move(pchTarget));
+			ret.objectListLinker.emplace_back(std::move(pchTarget));
 		}
 	}
 #else
@@ -392,12 +392,12 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const bool 
 	{
 		if (!String::endsWith(".rc", file))
 		{
-			ret.push_back(fmt::format("{}/{}.{}", m_objDir, file, ext));
+			ret.emplace_back(fmt::format("{}/{}.{}", m_objDir, file, ext));
 		}
 		else
 		{
 #if defined(CHALET_WIN32)
-			ret.push_back(fmt::format("{}/{}.res", m_objDir, file));
+			ret.emplace_back(fmt::format("{}/{}.res", m_objDir, file));
 #endif
 		}
 	}
@@ -414,11 +414,11 @@ StringList BuildPaths::getDependencyFilesList(const SourceGroup& inFiles) const
 		if (file.empty())
 			continue;
 
-		ret.push_back(fmt::format("{}/{}.d", m_depDir, file));
+		ret.emplace_back(fmt::format("{}/{}.d", m_depDir, file));
 	}
 
 	if (!inFiles.pch.empty())
-		ret.push_back(fmt::format("{}/{}.d", m_depDir, inFiles.pch));
+		ret.emplace_back(fmt::format("{}/{}.d", m_depDir, inFiles.pch));
 
 	return ret;
 }
@@ -432,7 +432,7 @@ StringList BuildPaths::getAssemblyFilesList(const SourceGroup& inFiles, const bo
 	{
 		if (!String::endsWith(".rc", file))
 		{
-			ret.push_back(fmt::format("{}/{}.{}.asm", m_asmDir, file, ext));
+			ret.emplace_back(fmt::format("{}/{}.{}.asm", m_asmDir, file, ext));
 		}
 	}
 
@@ -592,7 +592,7 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 				std::string outPath = pch.parent_path().string();
 				Path::sanitize(outPath, true);
 
-				ret.push_back(std::move(outPath));
+				ret.emplace_back(std::move(outPath));
 			}
 		}
 
@@ -608,7 +608,7 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 				std::string outPath = path.parent_path().string();
 				Path::sanitize(outPath, true);
 
-				ret.push_back(std::move(outPath));
+				ret.emplace_back(std::move(outPath));
 			}
 
 			return ret;

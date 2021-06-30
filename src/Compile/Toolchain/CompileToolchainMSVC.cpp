@@ -76,12 +76,12 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 	StringList ret;
 
 	addExectuable(ret, m_config.compilerExecutable());
-	ret.push_back("/nologo");
-	ret.push_back("/diagnostics:caret");
+	ret.emplace_back("/nologo");
+	ret.emplace_back("/diagnostics:caret");
 
 	if (generateDependency && m_isNinja)
 	{
-		ret.push_back("/showIncludes");
+		ret.emplace_back("/showIncludes");
 	}
 
 	addThreadModelCompileOption(ret);
@@ -92,7 +92,7 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 	addNoExceptionsOption(ret);
 	addWarnings(ret);
 
-	ret.push_back("/utf-8");
+	ret.emplace_back("/utf-8");
 
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
@@ -104,13 +104,13 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 	std::string pchObject = outputFile;
 	String::replaceAll(pchObject, ".pch", ".obj");
 
-	ret.push_back(getPathCommand("/Fp", outputFile));
+	ret.emplace_back(getPathCommand("/Fp", outputFile));
 
-	ret.push_back(getPathCommand("/Fo", pchObject));
+	ret.emplace_back(getPathCommand("/Fo", pchObject));
 	UNUSED(inputFile);
 
-	ret.push_back("/c");
-	ret.push_back(getPathCommand("/Yc", m_pchMinusLocation));
+	ret.emplace_back("/c");
+	ret.emplace_back(getPathCommand("/Yc", m_pchMinusLocation));
 	ret.push_back(m_pchSource);
 
 	return ret;
@@ -124,12 +124,12 @@ StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFil
 	StringList ret;
 
 	addExectuable(ret, m_state.toolchain.rc());
-	ret.push_back("/nologo");
+	ret.emplace_back("/nologo");
 
 	addResourceDefines(ret);
 	addIncludes(ret);
 
-	ret.push_back(getPathCommand("/Fo", outputFile));
+	ret.emplace_back(getPathCommand("/Fo", outputFile));
 
 	ret.push_back(inputFile);
 
@@ -146,13 +146,13 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	StringList ret;
 
 	addExectuable(ret, m_config.compilerExecutable());
-	ret.push_back("/nologo");
-	ret.push_back("/diagnostics:caret");
-	ret.push_back("/MP");
+	ret.emplace_back("/nologo");
+	ret.emplace_back("/diagnostics:caret");
+	ret.emplace_back("/MP");
 
 	if (generateDependency && m_isNinja)
 	{
-		ret.push_back("/showIncludes");
+		ret.emplace_back("/showIncludes");
 	}
 
 	addThreadModelCompileOption(ret);
@@ -161,7 +161,7 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	addNoExceptionsOption(ret);
 	addWarnings(ret);
 
-	ret.push_back("/utf-8");
+	ret.emplace_back("/utf-8");
 
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
@@ -172,9 +172,9 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	addDefines(ret);
 	addIncludes(ret);
 
-	ret.push_back(getPathCommand("/Fo", outputFile));
+	ret.emplace_back(getPathCommand("/Fo", outputFile));
 
-	ret.push_back("/c");
+	ret.emplace_back("/c");
 	addPchInclude(ret);
 	ret.push_back(inputFile);
 
@@ -211,8 +211,8 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 	StringList ret;
 
 	addExectuable(ret, m_state.toolchain.linker());
-	ret.push_back("/nologo");
-	ret.push_back("/dll");
+	ret.emplace_back("/nologo");
+	ret.emplace_back("/dll");
 
 	addTargetPlatformArch(ret);
 	addSubSystem(ret);
@@ -223,33 +223,33 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 	if (m_state.configuration.linkTimeOptimization())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
-		// ret.push_back("/LTCG");
+		// ret.emplace_back("/LTCG");
 
 		// Note: These are also tied to /INCREMENTAL (implied with /debug)
 		if (debugSymbols)
-			ret.push_back("/opt:NOREF,NOICF,NOLBR");
+			ret.emplace_back("/opt:NOREF,NOICF,NOLBR");
 		else
-			ret.push_back("/opt:REF,ICF,LBR");
+			ret.emplace_back("/opt:REF,ICF,LBR");
 
 		// OPT:LBR - relates to arm binaries
 	}
 
 	if (debugSymbols)
 	{
-		ret.push_back("/debug");
-		ret.push_back("/INCREMENTAL");
+		ret.emplace_back("/debug");
+		ret.emplace_back("/INCREMENTAL");
 
-		ret.push_back(fmt::format("/pdb:{}.pdb", outputFileBase));
+		ret.emplace_back(fmt::format("/pdb:{}.pdb", outputFileBase));
 	}
 	else
 	{
-		ret.push_back("/INCREMENTAL:NO");
+		ret.emplace_back("/INCREMENTAL:NO");
 	}
 
 	// TODO /version
-	ret.push_back("/version:0.0");
+	ret.emplace_back("/version:0.0");
 
-	ret.push_back(fmt::format("/out:{}", outputFile));
+	ret.emplace_back(fmt::format("/out:{}", outputFile));
 
 	addPrecompiledHeaderLink(ret);
 	addSourceObjects(ret, sourceObjs);
@@ -268,26 +268,26 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 	StringList ret;
 
 	addExectuable(ret, m_state.toolchain.archiver());
-	ret.push_back("/nologo");
+	ret.emplace_back("/nologo");
 
 	addTargetPlatformArch(ret);
 
 	/*if (m_state.configuration.linkTimeOptimization())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
-		ret.push_back("/LTCG");
+		ret.emplace_back("/LTCG");
 	}*/
 
 	if (m_project.warningsTreatedAsErrors())
-		ret.push_back("/WX");
+		ret.emplace_back("/WX");
 
 	// const auto& objDir = m_state.paths.objDir();
-	// ret.push_back(fmt::format("/DEF:{}/{}.def", objDir, outputFileBase));
+	// ret.emplace_back(fmt::format("/DEF:{}/{}.def", objDir, outputFileBase));
 	UNUSED(outputFileBase);
 
 	// TODO: /SUBSYSTEM
 
-	ret.push_back(fmt::format("/out:{}", outputFile));
+	ret.emplace_back(fmt::format("/out:{}", outputFile));
 
 	addSourceObjects(ret, sourceObjs);
 
@@ -304,7 +304,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 	StringList ret;
 
 	addExectuable(ret, m_state.toolchain.linker());
-	ret.push_back("/nologo");
+	ret.emplace_back("/nologo");
 
 	addTargetPlatformArch(ret);
 	addSubSystem(ret);
@@ -315,33 +315,33 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 	if (m_state.configuration.linkTimeOptimization())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
-		// ret.push_back("/LTCG");
+		// ret.emplace_back("/LTCG");
 
 		// Note: These are also tied to /INCREMENTAL (implied with /debug)
 		if (debugSymbols)
-			ret.push_back("/opt:NOREF,NOICF,NOLBR");
+			ret.emplace_back("/opt:NOREF,NOICF,NOLBR");
 		else
-			ret.push_back("/opt:REF,ICF,LBR");
+			ret.emplace_back("/opt:REF,ICF,LBR");
 
 		// OPT:LBR - relates to arm binaries
 	}
 
 	if (debugSymbols)
 	{
-		ret.push_back("/debug");
-		ret.push_back("/INCREMENTAL");
+		ret.emplace_back("/debug");
+		ret.emplace_back("/INCREMENTAL");
 
-		ret.push_back(fmt::format("/pdb:{}.pdb", outputFileBase));
+		ret.emplace_back(fmt::format("/pdb:{}.pdb", outputFileBase));
 	}
 	else
 	{
-		ret.push_back("/INCREMENTAL:NO");
+		ret.emplace_back("/INCREMENTAL:NO");
 	}
 
 	// TODO /version
-	ret.push_back("/version:0.0");
+	ret.emplace_back("/version:0.0");
 
-	ret.push_back(fmt::format("/out:{}", outputFile));
+	ret.emplace_back(fmt::format("/out:{}", outputFile));
 
 	addPrecompiledHeaderLink(ret);
 	addSourceObjects(ret, sourceObjs);
@@ -353,7 +353,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 /*****************************************************************************/
 void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 {
-	// outArgList.push_back("/X"); // ignore "Path"
+	// outArgList.emplace_back("/X"); // ignore "Path"
 
 	const std::string option{ "/I" };
 
@@ -363,7 +363,7 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 		if (String::endsWith('/', outDir))
 			outDir.pop_back();
 
-		outArgList.push_back(getPathCommand(option, outDir));
+		outArgList.emplace_back(getPathCommand(option, outDir));
 	}
 
 	for (const auto& dir : m_project.locations())
@@ -372,12 +372,12 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 		if (String::endsWith('/', outDir))
 			outDir.pop_back();
 
-		outArgList.push_back(getPathCommand(option, outDir));
+		outArgList.emplace_back(getPathCommand(option, outDir));
 	}
 
 	/*for (const auto& dir : m_state.msvcEnvironment.include())
 	{
-		outArgList.push_back(getPathCommand(option, dir));
+		outArgList.emplace_back(getPathCommand(option, dir));
 	}*/
 }
 
@@ -395,39 +395,39 @@ void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
 	switch (m_project.warningsPreset())
 	{
 		case ProjectWarnings::Minimal:
-			outArgList.push_back("/W1");
+			outArgList.emplace_back("/W1");
 			break;
 
 		case ProjectWarnings::Extra:
-			outArgList.push_back("/W2");
+			outArgList.emplace_back("/W2");
 			break;
 
 		case ProjectWarnings::Error: {
-			outArgList.push_back("/W2");
-			outArgList.push_back("/WX");
+			outArgList.emplace_back("/W2");
+			outArgList.emplace_back("/WX");
 			break;
 		}
 		case ProjectWarnings::Pedantic: {
-			outArgList.push_back("/W3");
-			outArgList.push_back("/WX");
+			outArgList.emplace_back("/W3");
+			outArgList.emplace_back("/WX");
 			break;
 		}
 		case ProjectWarnings::Strict:
 		case ProjectWarnings::StrictPedantic: {
-			outArgList.push_back("/W4");
-			outArgList.push_back("/WX");
+			outArgList.emplace_back("/W4");
+			outArgList.emplace_back("/WX");
 			break;
 		}
 		case ProjectWarnings::VeryStrict: {
-			outArgList.push_back("/Wall");
-			outArgList.push_back("/WX");
+			outArgList.emplace_back("/Wall");
+			outArgList.emplace_back("/WX");
 			break;
 		}
 
 		case ProjectWarnings::Custom:
 		case ProjectWarnings::None:
 		default:
-			outArgList.push_back("/W3");
+			outArgList.emplace_back("/W3");
 			break;
 	}
 }
@@ -438,7 +438,7 @@ void CompileToolchainMSVC::addDefines(StringList& outArgList) const
 	const std::string prefix = "/D";
 	for (auto& define : m_project.defines())
 	{
-		outArgList.push_back(prefix + define);
+		outArgList.emplace_back(prefix + define);
 	}
 }
 
@@ -448,7 +448,7 @@ void CompileToolchainMSVC::addResourceDefines(StringList& outArgList) const
 	const std::string prefix = "/d";
 	for (auto& define : m_project.defines())
 	{
-		outArgList.push_back(prefix + define);
+		outArgList.emplace_back(prefix + define);
 	}
 }
 
@@ -460,13 +460,13 @@ void CompileToolchainMSVC::addPchInclude(StringList& outArgList) const
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project);
 
-		outArgList.push_back(getPathCommand("/Yu", m_pchMinusLocation));
+		outArgList.emplace_back(getPathCommand("/Yu", m_pchMinusLocation));
 
 		// /Fp specifies the location of the PCH object file
-		outArgList.push_back(getPathCommand("/Fp", objDirPch));
+		outArgList.emplace_back(getPathCommand("/Fp", objDirPch));
 
 		// /FI force-includes the PCH source file so one doesn't need to use the #include directive in every file
-		outArgList.push_back(getPathCommand("/FI", m_pchMinusLocation));
+		outArgList.emplace_back(getPathCommand("/FI", m_pchMinusLocation));
 	}
 }
 
@@ -529,21 +529,21 @@ void CompileToolchainMSVC::addOptimizationOption(StringList& outArgList) const
 	if (opt.empty())
 		return;
 
-	outArgList.push_back(std::move(opt));
+	outArgList.emplace_back(std::move(opt));
 
 	if (configuration.debugSymbols())
 	{
 		auto buildDir = m_state.paths.buildOutputDir() + '/';
-		outArgList.push_back("/Zi"); // separate pdb
-		outArgList.push_back("/FS"); // Force Synchronous PDB Writes
-		outArgList.push_back(getPathCommand("/Fd", buildDir));
-		outArgList.push_back(std::move(opt));
-		outArgList.push_back("/Ob0");  // disable inline expansion
-		outArgList.push_back("/RTC1"); // Enables stack frame run-time error checking, uninitialized variables
+		outArgList.emplace_back("/Zi"); // separate pdb
+		outArgList.emplace_back("/FS"); // Force Synchronous PDB Writes
+		outArgList.emplace_back(getPathCommand("/Fd", buildDir));
+		outArgList.emplace_back(std::move(opt));
+		outArgList.emplace_back("/Ob0");  // disable inline expansion
+		outArgList.emplace_back("/RTC1"); // Enables stack frame run-time error checking, uninitialized variables
 	}
 	else
 	{
-		outArgList.push_back(std::move(opt));
+		outArgList.emplace_back(std::move(opt));
 	}
 }
 
@@ -552,7 +552,7 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const Cxx
 {
 	if (specialization == CxxSpecialization::C)
 	{
-		outArgList.push_back("/TC"); // Treat code as C
+		outArgList.emplace_back("/TC"); // Treat code as C
 
 		std::string langStandard = String::toLowerCase(m_project.cStandard());
 		if (String::equals("gnu2x", langStandard)
@@ -564,16 +564,16 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const Cxx
 			|| String::equals(langStandard, "iso9899:2018")
 			|| String::equals(langStandard, "iso9899:2017"))
 		{
-			outArgList.push_back("/std:c17");
+			outArgList.emplace_back("/std:c17");
 		}
 		else
 		{
-			outArgList.push_back("/std:c11");
+			outArgList.emplace_back("/std:c11");
 		}
 	}
 	else if (specialization == CxxSpecialization::CPlusPlus)
 	{
-		outArgList.push_back("/TP"); // Treat code as C++
+		outArgList.emplace_back("/TP"); // Treat code as C++
 
 		std::string langStandard = String::toLowerCase(m_project.cppStandard());
 		if (String::equals(langStandard, "c++20")
@@ -581,18 +581,18 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const Cxx
 			|| String::equals(langStandard, "gnu++20")
 			|| String::equals(langStandard, "gnu++2a"))
 		{
-			outArgList.push_back("/std:c++latest");
+			outArgList.emplace_back("/std:c++latest");
 		}
 		else if (String::equals(langStandard, "c++17")
 			|| String::equals(langStandard, "c++1z")
 			|| String::equals(langStandard, "gnu++17")
 			|| String::equals(langStandard, "gnu++1z"))
 		{
-			outArgList.push_back("/std:c++17");
+			outArgList.emplace_back("/std:c++17");
 		}
 		else
 		{
-			outArgList.push_back("/std:c++14");
+			outArgList.emplace_back("/std:c++14");
 		}
 	}
 }
@@ -651,16 +651,16 @@ void CompileToolchainMSVC::addThreadModelCompileOption(StringList& outArgList) c
 	if (m_project.isSharedLibrary())
 	{
 		if (m_state.configuration.debugSymbols())
-			outArgList.push_back("/MDd");
+			outArgList.emplace_back("/MDd");
 		else
-			outArgList.push_back("/MD");
+			outArgList.emplace_back("/MD");
 	}
 	else
 	{
 		if (m_state.configuration.debugSymbols())
-			outArgList.push_back("/MTd");
+			outArgList.emplace_back("/MTd");
 		else
-			outArgList.push_back("/MT");
+			outArgList.emplace_back("/MT");
 	}
 }
 
@@ -669,7 +669,7 @@ void CompileToolchainMSVC::addWholeProgramOptimization(StringList& outArgList) c
 {
 	if (m_state.configuration.linkTimeOptimization())
 	{
-		outArgList.push_back("/GL");
+		outArgList.emplace_back("/GL");
 	}
 }
 
@@ -679,14 +679,14 @@ void CompileToolchainMSVC::addLibDirs(StringList& outArgList) const
 	std::string option{ "/LIBPATH:" };
 	for (const auto& dir : m_project.libDirs())
 	{
-		outArgList.push_back(getPathCommand(option, dir));
+		outArgList.emplace_back(getPathCommand(option, dir));
 	}
 
-	outArgList.push_back(getPathCommand(option, m_state.paths.buildOutputDir()));
+	outArgList.emplace_back(getPathCommand(option, m_state.paths.buildOutputDir()));
 
 	/*for (const auto& dir : m_state.msvcEnvironment.lib())
 	{
-		outArgList.push_back(getPathCommand(option, dir));
+		outArgList.emplace_back(getPathCommand(option, dir));
 	}*/
 }
 
@@ -735,7 +735,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 						if (String::endsWith(".dll", outputFile))
 						{
 							String::replaceAll(outputFile, ".dll", ".lib");
-							outArgList.push_back(std::move(outputFile));
+							outArgList.emplace_back(std::move(outputFile));
 							found = true;
 							break;
 						}
@@ -745,7 +745,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 
 			if (!found)
 			{
-				outArgList.push_back(fmt::format("{}.lib", link));
+				outArgList.emplace_back(fmt::format("{}.lib", link));
 			}
 		}
 	}
@@ -777,7 +777,7 @@ void CompileToolchainMSVC::addCgThreads(StringList& outArgList) const
 	if (maxJobs > 4)
 	{
 		maxJobs = std::min<uint>(maxJobs, 8);
-		outArgList.push_back(fmt::format("/cgthreads:{}", maxJobs));
+		outArgList.emplace_back(fmt::format("/cgthreads:{}", maxJobs));
 	}
 }
 
@@ -793,7 +793,7 @@ void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
 
 		case ProjectKind::DesktopApplication:
 			subsystem = "windows";
-			outArgList.push_back("/ENTRY:mainCRTStartup");
+			outArgList.emplace_back("/ENTRY:mainCRTStartup");
 			break;
 
 		default: break;
@@ -805,7 +805,7 @@ void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
 	if (subsystem.empty())
 		return;
 
-	outArgList.push_back(fmt::format("/subsystem:{}", subsystem));
+	outArgList.emplace_back(fmt::format("/subsystem:{}", subsystem));
 }
 
 /*****************************************************************************/
@@ -816,15 +816,15 @@ void CompileToolchainMSVC::addTargetPlatformArch(StringList& outArgList) const
 	switch (arch)
 	{
 		case Arch::Cpu::X64:
-			outArgList.push_back("/machine:x64");
+			outArgList.emplace_back("/machine:x64");
 			break;
 
 		case Arch::Cpu::X86:
-			outArgList.push_back("/machine:x86");
+			outArgList.emplace_back("/machine:x86");
 			break;
 
 		case Arch::Cpu::ARM:
-			outArgList.push_back("/machine:arm");
+			outArgList.emplace_back("/machine:arm");
 			break;
 
 		case Arch::Cpu::ARM64:
@@ -862,8 +862,8 @@ void CompileToolchainMSVC::addPrecompiledHeaderLink(StringList outArgList) const
 		std::string pchObject = fmt::format("{}/{}.obj", objDir, pch);
 		std::string pchInclude = fmt::format("{}/{}.pch", objDir, pch);
 
-		outArgList.push_back(std::move(pchObject));
-		outArgList.push_back(std::move(pchInclude));
+		outArgList.emplace_back(std::move(pchObject));
+		outArgList.emplace_back(std::move(pchInclude));
 	}
 }
 

@@ -81,7 +81,7 @@ bool UniversalBinaryMacOS::gatherDependencies(BuildState& inStateA, BuildState& 
 			for (std::string dep : deps)
 			{
 				String::replaceAll(dep, archABuildDir, universalBuildDir);
-				outDeps.push_back(std::move(dep));
+				outDeps.emplace_back(std::move(dep));
 			}
 			newDeps.emplace(file, std::move(outDeps));
 		}

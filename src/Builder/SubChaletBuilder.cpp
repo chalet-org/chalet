@@ -85,17 +85,17 @@ bool SubChaletBuilder::run()
 StringList SubChaletBuilder::getBuildCommand() const
 {
 	StringList cmd{ m_state.tools.chalet() };
-	cmd.push_back("--quieter");
+	cmd.emplace_back("--quieter");
 
 	if (!m_buildFile.empty())
 	{
-		cmd.push_back("--input-file");
+		cmd.emplace_back("--input-file");
 		cmd.push_back(m_buildFile);
 	}
 
 	if (!m_inputs.toolchainPreferenceRaw().empty())
 	{
-		cmd.push_back("--toolchain");
+		cmd.emplace_back("--toolchain");
 		cmd.push_back(m_inputs.toolchainPreferenceRaw());
 	}
 
@@ -104,18 +104,18 @@ StringList SubChaletBuilder::getBuildCommand() const
 		if (Commands::pathExists(m_inputs.envFile()))
 		{
 			auto envAbsolute = Commands::getAbsolutePath(m_inputs.envFile());
-			cmd.push_back("--envfile");
+			cmd.emplace_back("--envfile");
 			cmd.push_back(envAbsolute);
 		}
 	}
 
 	if (!m_inputs.archRaw().empty())
 	{
-		cmd.push_back("--arch");
+		cmd.emplace_back("--arch");
 		cmd.push_back(m_inputs.archRaw());
 	}
 
-	cmd.push_back("build");
+	cmd.emplace_back("build");
 	cmd.push_back(m_state.info.buildConfiguration());
 
 	return cmd;

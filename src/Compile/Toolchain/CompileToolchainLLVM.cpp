@@ -81,7 +81,7 @@ bool CompileToolchainLLVM::addArchitecture(StringList& outArgList) const
 
 	const auto& targetArchString = m_state.info.targetArchitectureString();
 
-	outArgList.push_back("-target");
+	outArgList.emplace_back("-target");
 	outArgList.push_back(targetArchString);
 
 	return true;
@@ -101,9 +101,9 @@ bool CompileToolchainLLVM::addArchitectureOptions(StringList& outArgList) const
 
 	if (!archOptions.empty() && archOptions.size() == 3) // <cpu-name>,<fpu-name>,<fabi>
 	{
-		outArgList.push_back(fmt::format("-mcpu={}", archOptions[0]));
-		outArgList.push_back(fmt::format("-mfpu={}", archOptions[1]));
-		outArgList.push_back(fmt::format("-mfloat-abi={}", archOptions[2]));
+		outArgList.emplace_back(fmt::format("-mcpu={}", archOptions[0]));
+		outArgList.emplace_back(fmt::format("-mfpu={}", archOptions[1]));
+		outArgList.emplace_back(fmt::format("-mfloat-abi={}", archOptions[2]));
 	}
 
 	return true;

@@ -33,7 +33,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		std::string arg(argv[i] ? argv[i] : "");
 		if (i == 0)
 		{
-			arguments.push_back(std::move(arg));
+			arguments.emplace_back(std::move(arg));
 			continue;
 		}
 
@@ -58,7 +58,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 			auto list = String::split(arg);
 			for (auto& it : list)
 			{
-				arguments.push_back(std::move(it));
+				arguments.emplace_back(std::move(it));
 			}
 		}
 		else
@@ -68,12 +68,12 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				auto list = String::split(arg, '=');
 				for (auto& it : list)
 				{
-					arguments.push_back(std::move(it));
+					arguments.emplace_back(std::move(it));
 				}
 			}
 			else
 			{
-				arguments.push_back(std::move(arg));
+				arguments.emplace_back(std::move(arg));
 			}
 		}
 	}

@@ -118,19 +118,19 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 	{
 		StringList cmd{ m_state.tools.xcrun(), "xctrace", "record", "--output", instrumentsTrace };
 
-		cmd.push_back("--template");
-		cmd.push_back(std::move(profile));
+		cmd.emplace_back("--template");
+		cmd.emplace_back(std::move(profile));
 
 		// device
 
-		cmd.push_back("--target-stdout");
-		cmd.push_back("-");
+		cmd.emplace_back("--target-stdout");
+		cmd.emplace_back("-");
 
-		cmd.push_back("--target-stdin");
-		cmd.push_back("-");
+		cmd.emplace_back("--target-stdin");
+		cmd.emplace_back("-");
 
-		cmd.push_back("--launch");
-		cmd.push_back("--");
+		cmd.emplace_back("--launch");
+		cmd.emplace_back("--");
 		for (auto& arg : inCommand)
 		{
 			cmd.push_back(arg);

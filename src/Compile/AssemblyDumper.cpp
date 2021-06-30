@@ -116,7 +116,7 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssembli
 			out.command = getAsmGenerate(object, asmFile);
 			out.color = Color::Magenta;
 			out.symbol = " ";
-			ret.push_back(std::move(out));
+			ret.emplace_back(std::move(out));
 		}
 
 		m_cache.push_back(asmFile);
@@ -152,8 +152,8 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 #endif
 
 		ret.push_back(m_state.tools.bash());
-		ret.push_back("-c");
-		ret.push_back(std::move(asmCommand));
+		ret.emplace_back("-c");
+		ret.emplace_back(std::move(asmCommand));
 	}
 
 	return ret;

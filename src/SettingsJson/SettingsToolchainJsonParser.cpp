@@ -187,7 +187,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		searches.push_back(toolchain.linker);
 		if (toolchain.type == ToolchainType::LLVM)
 		{
-			searches.push_back("ld");
+			searches.emplace_back("ld");
 		}
 
 		for (const auto& search : searches)
@@ -225,11 +225,11 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		StringList searches;
 		if (toolchain.type == ToolchainType::LLVM)
 		{
-			searches.push_back("llvm-ar");
+			searches.emplace_back("llvm-ar");
 		}
 		if (toolchain.type == ToolchainType::LLVM || toolchain.type == ToolchainType::GNU)
 		{
-			searches.push_back("libtool");
+			searches.emplace_back("libtool");
 		}
 		searches.push_back(toolchain.archiver);
 
@@ -315,12 +315,12 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		StringList searches;
 		if (toolchain.type != ToolchainType::MSVC)
 		{
-			searches.push_back("mingw32-make");
+			searches.emplace_back("mingw32-make");
 		}
 		else if (toolchain.type == ToolchainType::MSVC)
 		{
-			searches.push_back("jom");
-			searches.push_back("nmake");
+			searches.emplace_back("jom");
+			searches.emplace_back("nmake");
 		}
 		searches.push_back(kKeyMake);
 		for (const auto& search : searches)
@@ -347,7 +347,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		StringList searches;
 		if (toolchain.type == ToolchainType::LLVM)
 		{
-			searches.push_back("llvm-objdump");
+			searches.emplace_back("llvm-objdump");
 		}
 		searches.push_back(kKeyObjdump);
 

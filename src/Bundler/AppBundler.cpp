@@ -381,7 +381,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 		if (target->isProject())
 		{
 			auto& project = static_cast<const ProjectTarget&>(*target);
-			projectNames.push_back(String::getPathFilename(project.outputFile()));
+			projectNames.emplace_back(String::getPathFilename(project.outputFile()));
 		}
 	}*/
 

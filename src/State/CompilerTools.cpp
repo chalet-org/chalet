@@ -710,10 +710,10 @@ std::string CompilerTools::getRootPathVariable()
 	StringList outList;
 
 	if (auto ccRoot = String::getPathFolder(m_cc); !List::contains(outList, ccRoot))
-		outList.push_back(std::move(ccRoot));
+		outList.emplace_back(std::move(ccRoot));
 
 	if (auto cppRoot = String::getPathFolder(m_cpp); !List::contains(outList, cppRoot))
-		outList.push_back(std::move(cppRoot));
+		outList.emplace_back(std::move(cppRoot));
 
 	for (auto& p : Path::getOSPaths())
 	{

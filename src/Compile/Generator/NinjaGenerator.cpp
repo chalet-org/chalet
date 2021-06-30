@@ -84,7 +84,7 @@ build build_{hash}: phony | {target}
 
 	//
 
-	m_targetRecipes.push_back(std::move(ninjaTemplate));
+	m_targetRecipes.emplace_back(std::move(ninjaTemplate));
 
 	m_toolchain = nullptr;
 	m_project = nullptr;

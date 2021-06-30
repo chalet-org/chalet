@@ -159,36 +159,36 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 	std::string platform = getPlatform();
 	if (!platform.empty())
 	{
-		ret.push_back("-A");
+		ret.emplace_back("-A");
 		ret.push_back(platform);
 	}
 
 	if (!m_buildFile.empty())
 	{
-		ret.push_back("-C");
+		ret.emplace_back("-C");
 		ret.push_back(m_buildFile);
 	}
 
 	const auto& toolset = m_target.toolset();
 	if (!toolset.empty())
 	{
-		ret.push_back("-T");
+		ret.emplace_back("-T");
 		ret.push_back(toolset);
 	}
 
 	for (auto& define : m_target.defines())
 	{
-		ret.push_back("-D" + define);
+		ret.emplace_back("-D" + define);
 	}
-	ret.push_back("-DCMAKE_BUILD_TYPE=" + buildConfiguration);
+	ret.emplace_back("-DCMAKE_BUILD_TYPE=" + buildConfiguration);
 #if defined(CHALET_MACOS)
-	ret.push_back("-DCMAKE_OSX_ARCHITECTURES=" + targetArch);
+	ret.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + targetArch);
 #endif
 
-	ret.push_back("-S");
+	ret.emplace_back("-S");
 	ret.push_back(inLocation);
 
-	ret.push_back("-B");
+	ret.emplace_back("-B");
 	ret.push_back(m_outputLocation);
 
 	return ret;
@@ -206,8 +206,8 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 
 	if (isMake && m_state.toolchain.makeVersionMajor() >= 4)
 	{
-		ret.push_back("--");
-		ret.push_back("--output-sync=target");
+		ret.emplace_back("--");
+		ret.emplace_back("--output-sync=target");
 	}
 
 	LOG(String::join(ret));
