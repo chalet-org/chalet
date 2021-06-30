@@ -143,21 +143,23 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 
 	bool skipOutput = false;
 	std::string noWork{ "ninja: no work to do.\n" };
-	Subprocess::PipeFunc onStdOut = [&noWork, &skipOutput](std::string inData) {
+	Subprocess::PipeFunc onStdOut = [](std::string inData) {
 #if defined(CHALET_WIN32)
 		String::replaceAll(inData, "\r\n", "\n");
 #endif
 
-		// #if defined(CHALET_WIN32)
-		// Not much we can do about mingw/msys output
-		// 		if (skipOutput || String::endsWith(noWork, inData) || String::equals('n', inData))
-		// #else
+		/*
+#if defined(CHALET_WIN32)
+		// the n & inja split is a weird MinGW thing, although it seems consistent?
+		if (skipOutput || String::endsWith(noWork, inData) || String::equals('n', inData))
+#else
 		if (skipOutput || String::endsWith(noWork, inData))
-		// #endif
+#endif
 		{
 			skipOutput = true;
 			return;
 		}
+		*/
 
 		std::cout << inData << std::flush;
 	};
