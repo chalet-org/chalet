@@ -7,7 +7,9 @@ Unicode true
 ; folders
 	!define FOLDERS_DIST "dist"
 	!define FOLDERS_SCHEMA "schema"
+	!define FOLDERS_BIN "bin"
 	!define FOLDERS_PLATFORM "platform\windows\installer"
+	!define FOLDERS_IMAGES "${FOLDERS_PLATFORM}\images"
 
 	!include "${FOLDERS_PLATFORM}\pages\InstallOptions.nsh"
 	!include "${FOLDERS_PLATFORM}\pages\ReadyToInstall.nsh"
@@ -40,14 +42,15 @@ Unicode true
 
 ; MUI Settings
 	!define MUI_HEADERIMAGE
-	!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange.bmp"
-	!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\orange.bmp"
-	!define MUI_HEADERIMAGE_BITMAP_RTL "${NSISDIR}\Contrib\Graphics\Header\orange-r.bmp"
-	!define MUI_HEADERIMAGE_UNBITMAP "${NSISDIR}\Contrib\Graphics\Header\orange-uninstall.bmp"
-	!define MUI_HEADERIMAGE_UNBITMAP_RTL "${NSISDIR}\Contrib\Graphics\Header\orange-uninstall-r.bmp"
+	!define MUI_WELCOMEFINISHPAGE_BITMAP "${FOLDERS_IMAGES}\welcome_install.bmp"
+	; !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${FOLDERS_IMAGES}\welcome_uninstall.bmp"
+	!define MUI_HEADERIMAGE_BITMAP "${FOLDERS_IMAGES}\header_install.bmp"
+	!define MUI_HEADERIMAGE_BITMAP_RTL "${FOLDERS_IMAGES}\header_install_right.bmp"
+	!define MUI_HEADERIMAGE_UNBITMAP "${FOLDERS_IMAGES}\header_install.bmp"
+	!define MUI_HEADERIMAGE_UNBITMAP_RTL "${FOLDERS_IMAGES}\header_install_right.bmp"
 	!define MUI_ABORTWARNING
-	!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install-colorful.ico"
-	!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall-blue-full.ico"
+	!define MUI_ICON "${FOLDERS_IMAGES}\msi.ico"
+	!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\win-uninstall.ico"
 	!define MUI_FINISHPAGE_NOAUTOCLOSE
 	!define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
@@ -77,6 +80,7 @@ Unicode true
 	!insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
+	; !insertmacro MUI_UNPAGE_WELCOME
 	!insertmacro MUI_UNPAGE_INSTFILES
 
 ; Language files
@@ -175,20 +179,26 @@ FunctionEnd
 LangString PAGE_TITLE ${LANG_ENGLISH} "Title"
 LangString PAGE_SUBTITLE ${LANG_ENGLISH} "Subtitle"
 
+!define OUT_BIN "$INSTDIR\${FOLDERS_BIN}"
+
 Section "MainSection" SEC01
-	SetOutPath "$INSTDIR"
-	SetOverwrite ifnewer
-	File "${FOLDERS_DIST}\${FILES_MAIN}"
-	CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
-	; CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk" "$INSTDIR\${FILES_MAIN}"
-	; CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${FILES_MAIN}"
-	SetOutPath "$INSTDIR\${FOLDERS_SCHEMA}"
-	File "${FILES_SCHEMA_BUILD}"
-	File "${FILES_SCHEMA_SETTINGS}"
+	SetOverwrite on
 	SetOutPath "$INSTDIR"
 	File "${FILES_README}"
 	File "${FILES_LICENSE}"
+
+	SetOutPath "${OUT_BIN}"
 	File "${FOLDERS_PLATFORM}\${FILES_CMD}"
+	File "${FOLDERS_DIST}\${FILES_MAIN}"
+
+	SetOutPath "$INSTDIR\${FOLDERS_SCHEMA}"
+	File "${FILES_SCHEMA_BUILD}"
+	File "${FILES_SCHEMA_SETTINGS}"
+
+; Shortcuts
+	; CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
+	; CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk" "$INSTDIR\${FILES_MAIN}"
+	; CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${FILES_MAIN}"
 
 	${If} $chalet.InstallOptionsPage.RadioState == 2 ; PATH for all users
 		; Set to HKLM (set Path for all users)
@@ -197,10 +207,10 @@ Section "MainSection" SEC01
 		EnVar::Check "NULL" "NULL"
 		Pop $0
 		${If} $0 == 0
-			EnVar::AddValue "Path" "$INSTDIR"
-			DetailPrint "Added '$INSTDIR' to 'Path' system environment variable."
+			EnVar::AddValue "Path" "${OUT_BIN}"
+			DetailPrint "Added '${OUT_BIN}' to 'Path' system environment variable."
 		${Else}
-			DetailPrint "Error adding '$INSTDIR' to 'Path' system environment variable."
+			DetailPrint "Error adding '${OUT_BIN}' to 'Path' system environment variable."
 		${EndIf}
 		EnVar::SetHKCU
 	${ElseIf} $chalet.InstallOptionsPage.RadioState == 3 ; PATH for current user
@@ -210,10 +220,10 @@ Section "MainSection" SEC01
 		EnVar::Check "NULL" "NULL"
 		Pop $0
 		${If} $0 == 0
-			EnVar::AddValue "Path" "$INSTDIR"
-			DetailPrint "Added '$INSTDIR' to 'Path' environment variable."
+			EnVar::AddValue "Path" "${OUT_BIN}"
+			DetailPrint "Added '${OUT_BIN}' to 'Path' environment variable."
 		${Else}
-			DetailPrint "Error adding '$INSTDIR' to 'Path' environment variable."
+			DetailPrint "Error adding '${OUT_BIN}' to 'Path' environment variable."
 		${EndIf}
 	${EndIf}
 
@@ -256,13 +266,13 @@ Section Uninstall
 	EnVar::Check "NULL" "NULL"
 	Pop $0
 	${If} $0 == 0
-		EnVar::DeleteValue "Path" "$INSTDIR"
-		DetailPrint "Removed '$INSTDIR' from 'Path' system environment variable."
+		EnVar::DeleteValue "Path" "${OUT_BIN}"
+		DetailPrint "Removed '${OUT_BIN}' from 'Path' system environment variable."
 		EnVar::SetHKCU
-		EnVar::DeleteValue "Path" "$INSTDIR"
-		DetailPrint "Removed '$INSTDIR' from 'Path' environment variable."
+		EnVar::DeleteValue "Path" "${OUT_BIN}"
+		DetailPrint "Removed '${OUT_BIN}' from 'Path' environment variable."
 	${Else}
-		DetailPrint "Error removing '$INSTDIR' from 'Path' environment variable."
+		DetailPrint "Error removing '${OUT_BIN}' from 'Path' environment variable."
 		EnVar::SetHKCU
 	${EndIf}
 
@@ -272,15 +282,18 @@ Section Uninstall
 	Delete "$INSTDIR\${FILES_README}"
 	Delete "$INSTDIR\${FILES_SCHEMA_SETTINGS}"
 	Delete "$INSTDIR\${FILES_SCHEMA_BUILD}"
-	Delete "$INSTDIR\${FILES_MAIN}"
-	Delete "$INSTDIR\${FILES_CMD}"
+	Delete "${OUT_BIN}\${FILES_MAIN}"
+	Delete "${OUT_BIN}\${FILES_CMD}"
 
 	Delete "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk"
 	Delete "$SMPROGRAMS\${PRODUCT_NAME}\Website.lnk"
+
+	; Shortcuts
 	; Delete "$DESKTOP\${PRODUCT_NAME}.lnk"
 	; Delete "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk"
+	; RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
 
-	RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
+	RMDir "${OUT_BIN}"
 	RMDir "$INSTDIR\${FOLDERS_SCHEMA}"
 	RMDir "$INSTDIR"
 
