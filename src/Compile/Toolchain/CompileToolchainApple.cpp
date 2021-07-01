@@ -174,6 +174,15 @@ void CompileToolchainApple::addLibStdCppCompileOption(StringList& outArgList, co
 }
 
 /*****************************************************************************/
+void CompileToolchainApple::addDiagnosticColorOption(StringList& outArgList) const
+{
+	// Until the compiler argument parser works correctly on mac
+	std::string diagnosticColor{ "-fdiagnostics-color=always" };
+	// if (isFlagSupported(diagnosticColor))
+	List::addIfDoesNotExist(outArgList, std::move(diagnosticColor));
+}
+
+/*****************************************************************************/
 // Linking
 /*****************************************************************************/
 /*****************************************************************************/

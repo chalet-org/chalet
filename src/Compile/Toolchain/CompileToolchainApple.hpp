@@ -21,6 +21,7 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 	// Compiling
 	virtual bool addArchitecture(StringList& outArgList) const final;
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const final;
+	virtual void addDiagnosticColorOption(StringList& outArgList) const final;
 
 	// Linking
 	virtual void addProfileInformationLinkerOption(StringList& outArgList) const final;

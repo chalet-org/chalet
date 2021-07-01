@@ -39,7 +39,7 @@ void CommandLineInputs::detectToolchainPreference() const
 	else
 		m_toolchainPreference = getToolchainPreferenceFromString("msvc");
 #elif defined(CHALET_MACOS)
-	m_toolchainPreference = getToolchainPreferenceFromString("llvm");
+	m_toolchainPreference = getToolchainPreferenceFromString("applellvm");
 #else
 	m_toolchainPreference = getToolchainPreferenceFromString("gcc");
 #endif
@@ -528,7 +528,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 	else
 #endif
-		if (String::equals("llvm", inValue))
+#if defined(CHALET_MACOS)
+		if (String::equals({ "applellvm", "llvm" }, inValue))
+#else
+	if (String::equals("llvm", inValue))
+#endif
 	{
 		m_toolchainPreferenceRaw = inValue;
 
