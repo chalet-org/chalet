@@ -1,4 +1,4 @@
-Chalet - Cross Platform JSON-based Meta-Build Tool
+Chalet - Cross Platform JSON-based Project & Meta-Build Tool
 Copyright 2020-2021 ChaletOrg and Contributors
 All rights reserved.
 

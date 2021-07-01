@@ -39,8 +39,6 @@ private:
 	StatePrototype& m_prototype;
 	JsonFile& m_jsonFile;
 
-	const std::string kKeyWorkingDirectory = "workingDirectory";
-
 	// should match executables
 	const std::string kKeyBash = "bash";
 	const std::string kKeyBrew = "brew";

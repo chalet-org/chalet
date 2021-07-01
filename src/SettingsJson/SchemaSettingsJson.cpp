@@ -422,11 +422,6 @@ Json Schema::getSettingsJson()
 		"description": "A list of Apple platform SDK paths (MacOS)"
 	})json"_ojson;
 
-	ret[kProperties]["workingDirectory"] = R"json({
-		"type": "string",
-		"description": "The working directory of the workspace"
-	})json"_ojson;
-
 	const auto kSettings = "settings";
 	ret[kProperties][kSettings] = R"json({
 		"type": "object",

@@ -26,8 +26,11 @@ int Application::run(const int argc, const char* const argv[])
 	{
 		ArgumentParser argParser{ m_inputs };
 		if (!argParser.run(argc, argv))
-			return onExit(Status::Success);
+			return onExit(Status::Failure);
 	}
+
+	if (m_inputs.command() == Route::Help)
+		return onExit(Status::Success);
 
 	if (!runRouteConductor())
 		return onExit(Status::Failure);
@@ -87,7 +90,6 @@ int Application::onExit(const Status inStatus)
 	else
 	{
 		// This exit method just means we've handled the error elsewhere and displayed it
-		// Commands::sleep(3.0);
 		return EXIT_FAILURE;
 	}
 }

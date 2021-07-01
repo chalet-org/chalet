@@ -94,7 +94,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	// TODO: Copy from global cache. If one doesn't exist, do this
 
 	// Create the json cache
-	m_jsonFile.makeNode(kKeyWorkingDirectory, JsonDataType::string);
 	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
 
 	if (!m_jsonFile.json.contains(kKeyToolchains))
@@ -110,18 +109,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	if (!m_jsonFile.json.contains(kKeyAppleSdks))
 	{
 		m_jsonFile.json[kKeyAppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
-	}
-
-	{
-		Json& workingDirectoryJson = m_jsonFile.json[kKeyWorkingDirectory];
-		const auto workingDirectory = workingDirectoryJson.get<std::string>();
-
-		if (workingDirectory.empty())
-		{
-			auto cwd = m_inputs.workingDirectory();
-			Path::sanitize(cwd, true);
-			workingDirectoryJson = std::move(cwd);
-		}
 	}
 
 	Json& buildSettings = m_jsonFile.json[kKeySettings];

@@ -23,6 +23,7 @@ bool pathIsSymLink(const std::string& inPath);
 
 std::string getCanonicalPath(const std::string& inPath);
 std::string getAbsolutePath(const std::string& inPath);
+std::string getProximatePath(const std::string& inPath, const std::string& inBase);
 std::string resolveSymlink(const std::string& inPath);
 
 std::uintmax_t getPathSize(const std::string& inPath);

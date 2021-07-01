@@ -20,7 +20,7 @@ public:
 	bool run();
 
 private:
-	StringList getBuildCommand() const;
+	StringList getBuildCommand(const std::string& inLocation) const;
 
 	const BuildState& m_state;
 	const SubChaletTarget& m_target;

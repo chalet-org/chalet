@@ -89,7 +89,7 @@ bool AppBundler::runBuilds()
 /*****************************************************************************/
 bool AppBundler::run(const DistributionTarget& inTarget)
 {
-	const auto& buildFile = m_inputs.buildFile();
+	const auto& inputFile = m_inputs.inputFile();
 
 	if (inTarget->isDistributionBundle())
 	{
@@ -150,7 +150,7 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 				return false;
 		}
 
-		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, buildFile);
+		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, inputFile);
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget->name());
@@ -176,7 +176,7 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 	{
 		Timer buildTimer;
 
-		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget), buildFile))
+		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget), inputFile))
 			return false;
 
 		Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
@@ -487,7 +487,7 @@ void AppBundler::addDependencies(std::string&& inFile, StringList&& inDependenci
 }
 
 /*****************************************************************************/
-bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::string& inBuildFile)
+bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::string& inInputFile)
 {
 	const auto& scripts = inScript.scripts();
 	if (scripts.empty())
@@ -500,7 +500,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_prototype.tools, inBuildFile);
+	ScriptRunner scriptRunner(m_prototype.tools, inInputFile);
 	bool showExitCode = false;
 	if (!scriptRunner.run(scripts, showExitCode))
 	{

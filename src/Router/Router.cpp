@@ -51,7 +51,7 @@ bool Router::run()
 	std::unique_ptr<StatePrototype> prototype;
 	std::unique_ptr<BuildState> buildState;
 
-	const auto& buildFile = m_inputs.buildFile();
+	const auto& inputFile = m_inputs.inputFile();
 	const bool isSettings = command == Route::SettingsGet || command == Route::SettingsSet || command == Route::SettingsUnset;
 	if (command != Route::Init && !isSettings)
 	{
@@ -60,13 +60,13 @@ bool Router::run()
 		if (!parseEnvFile())
 			return false;
 
-		if (!Commands::pathExists(buildFile))
+		if (!Commands::pathExists(inputFile))
 		{
-			Diagnostic::error("Not a chalet project. '{}' was not found.", buildFile);
+			Diagnostic::error("Not a chalet project. '{}' was not found.", inputFile);
 			return false;
 		}
 
-		prototype = std::make_unique<StatePrototype>(m_inputs, buildFile);
+		prototype = std::make_unique<StatePrototype>(m_inputs, inputFile);
 
 		if (!prototype->initialize())
 			return false;
@@ -165,10 +165,10 @@ bool Router::cmdConfigure()
 /*****************************************************************************/
 bool Router::cmdBundle(StatePrototype& inPrototype)
 {
-	const auto& buildFile = m_inputs.buildFile();
+	const auto& inputFile = m_inputs.inputFile();
 	if (inPrototype.requiredBuildConfigurations().size() == 0)
 	{
-		Diagnostic::error("{}: 'bundle' ran without any valid distribution bundles: missing 'configuration'", buildFile);
+		Diagnostic::error("{}: 'bundle' ran without any valid distribution bundles: missing 'configuration'", inputFile);
 		return false;
 	}
 

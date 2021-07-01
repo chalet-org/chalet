@@ -23,11 +23,17 @@ struct CommandLineInputs
 	const std::string& homeDirectory() const noexcept;
 	const std::string& defaultEnvFile() const noexcept;
 
-	const std::string& buildFile() const noexcept;
-	void setBuildFile(std::string&& inValue) noexcept;
+	const std::string& inputFile() const noexcept;
+	void setInputFile(std::string&& inValue) noexcept;
 
-	const std::string& buildPath() const noexcept;
-	void setBuildPath(std::string&& inValue) noexcept;
+	const std::string& settingsFile() const noexcept;
+	void setSettingsFile(std::string&& inValue) noexcept;
+
+	const std::string& rootDirectory() const noexcept;
+	void setRootDirectory(std::string&& inValue) noexcept;
+
+	const std::string& outputDirectory() const noexcept;
+	void setOutputDirectory(std::string&& inValue) noexcept;
 
 	Route command() const noexcept;
 	void setCommand(const Route inValue) noexcept;
@@ -104,8 +110,10 @@ private:
 	StringList m_archOptions;
 
 	const std::string kDefaultEnvFile;
-	std::string m_buildFile;
-	std::string m_buildPath;
+	std::string m_inputFile;
+	std::string m_settingsFile;
+	std::string m_rootDirectory;
+	std::string m_outputDirectory;
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
 	std::string m_platform;

@@ -34,16 +34,16 @@ bool CmakeBuilder::run()
 	Output::msgBuild(buildConfiguration, name);
 	Output::lineBreak();
 
-	const auto& cwd = m_state.paths.workingDirectory();
-	auto location = fmt::format("{}/{}", cwd, m_target.location());
+	auto location = Commands::getAbsolutePath(m_target.location());
 	Path::sanitize(location);
+
 	if (!m_target.buildFile().empty())
 	{
 		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
 	}
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	m_outputLocation = fmt::format("{}/{}/{}", cwd, buildOutputDir, m_target.location());
+	m_outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.location());
 	Path::sanitize(m_outputLocation);
 
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
@@ -51,7 +51,6 @@ bool CmakeBuilder::run()
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{
-
 		if (outDirectoryDoesNotExist)
 			Commands::makeDirectory(m_outputLocation);
 

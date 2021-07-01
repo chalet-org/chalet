@@ -18,8 +18,9 @@ namespace chalet
 CommandLineInputs::CommandLineInputs() :
 	m_notPlatforms(getNotPlatforms()),
 	kDefaultEnvFile(".env"),
-	m_buildFile("build.json"),
-	m_buildPath("build"),
+	m_inputFile("build.json"),
+	m_settingsFile(".chaletrc"),
+	m_outputDirectory("build"),
 	m_platform(getPlatform()),
 	m_envFile(kDefaultEnvFile),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
@@ -67,36 +68,72 @@ const std::string& CommandLineInputs::homeDirectory() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::buildFile() const noexcept
+const std::string& CommandLineInputs::inputFile() const noexcept
 {
-	return m_buildFile;
+	return m_inputFile;
 }
-void CommandLineInputs::setBuildFile(std::string&& inValue) noexcept
+void CommandLineInputs::setInputFile(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
 		return;
 
-	m_buildFile = std::move(inValue);
+	m_inputFile = std::move(inValue);
 
-	Path::sanitize(m_buildFile);
-	clearWorkingDirectory(m_buildFile);
+	Path::sanitize(m_inputFile);
+	// clearWorkingDirectory(m_inputFile);
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::buildPath() const noexcept
+const std::string& CommandLineInputs::settingsFile() const noexcept
 {
-	chalet_assert(!m_buildPath.empty(), "buildPath was not defined");
-	return m_buildPath;
+	return m_settingsFile;
 }
-void CommandLineInputs::setBuildPath(std::string&& inValue) noexcept
+void CommandLineInputs::setSettingsFile(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
 		return;
 
-	m_buildPath = std::move(inValue);
+	m_settingsFile = std::move(inValue);
 
-	Path::sanitize(m_buildPath);
-	clearWorkingDirectory(m_buildPath);
+	Path::sanitize(m_settingsFile);
+	// clearWorkingDirectory(m_settingsFile);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::rootDirectory() const noexcept
+{
+	return m_rootDirectory;
+}
+void CommandLineInputs::setRootDirectory(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_rootDirectory = std::move(inValue);
+	Path::sanitize(m_rootDirectory);
+
+	if (Commands::pathExists(m_rootDirectory))
+	{
+		Commands::changeWorkingDirectory(m_rootDirectory);
+		m_workingDirectory = Commands::getAbsolutePath(m_rootDirectory);
+	}
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::outputDirectory() const noexcept
+{
+	chalet_assert(!m_outputDirectory.empty(), "outputDirectory was not defined");
+	return m_outputDirectory;
+}
+void CommandLineInputs::setOutputDirectory(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_outputDirectory = std::move(inValue);
+
+	Path::sanitize(m_outputDirectory);
+	// clearWorkingDirectory(m_outputDirectory);
 }
 
 /*****************************************************************************/
@@ -275,7 +312,7 @@ void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 	m_envFile = std::move(inValue);
 
 	Path::sanitize(m_envFile);
-	clearWorkingDirectory(m_envFile);
+	// clearWorkingDirectory(m_envFile);
 }
 
 /*****************************************************************************/
@@ -388,8 +425,9 @@ void CommandLineInputs::setSettingsValue(std::string&& inValue) noexcept
 /*****************************************************************************/
 void CommandLineInputs::clearWorkingDirectory(std::string& outValue) const
 {
-	auto cwd = workingDirectory() + '/';
+	auto cwd = workingDirectory();
 	Path::sanitize(cwd);
+	cwd += '/';
 
 	String::replaceAll(outValue, cwd, "");
 

@@ -13,14 +13,14 @@ struct AncillaryTools;
 class ScriptRunner
 {
 public:
-	explicit ScriptRunner(const AncillaryTools& inTools, const std::string& inBuildFile);
+	explicit ScriptRunner(const AncillaryTools& inTools, const std::string& inInputFile);
 
 	bool run(const StringList& inScripts, const bool inShowExitCode);
 	bool run(const std::string& inScript, const bool inShowExitCode);
 
 private:
 	const AncillaryTools& m_tools;
-	const std::string& m_buildFile;
+	const std::string& m_inputFile;
 };
 }
 

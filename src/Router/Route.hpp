@@ -11,6 +11,7 @@ namespace chalet
 enum class Route : ushort
 {
 	Unknown,
+	Help,
 	BuildRun,
 	Build,
 	Rebuild,

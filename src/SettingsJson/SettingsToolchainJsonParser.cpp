@@ -29,8 +29,6 @@ bool SettingsToolchainJsonParser::serialize()
 	Output::setShowCommandOverride(false);
 
 	auto& rootNode = m_jsonFile.json;
-	if (std::string val; m_jsonFile.assignFromKey(val, rootNode, kKeyWorkingDirectory))
-		m_state.paths.setWorkingDirectory(std::move(val));
 
 	const auto& preference = m_inputs.toolchainPreferenceRaw();
 	auto& toolchains = rootNode["toolchains"];

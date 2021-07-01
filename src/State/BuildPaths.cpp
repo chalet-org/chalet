@@ -17,8 +17,7 @@ namespace chalet
 {
 BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnvironment& inEnvironment) :
 	m_inputs(inInputs),
-	m_environment(inEnvironment),
-	m_workingDirectory(inInputs.workingDirectory())
+	m_environment(inEnvironment)
 {
 }
 
@@ -27,21 +26,26 @@ void BuildPaths::initialize(const BuildInfo& inInfo)
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
-	const auto& buildPath = m_inputs.buildPath();
-	if (!Commands::pathExists(buildPath))
+	const auto& outputDirectory = m_inputs.outputDirectory();
+	if (!Commands::pathExists(outputDirectory))
 	{
-		Commands::makeDirectory(buildPath);
+		Commands::makeDirectory(outputDirectory);
 	}
 
 	// m_configuration = fmt::format("{}_{}_{}", inInfo.hostArchitectureString(), inInfo.targetArchitectureString(), inBuildConfiguration);
 	auto arch = m_inputs.getArchWithOptionsAsString(inInfo.targetArchitectureString());
 
 	m_configuration = fmt::format("{}_{}", arch, inInfo.buildConfiguration());
-	m_buildOutputDir = fmt::format("{}/{}", buildPath, m_configuration);
+	m_buildOutputDir = fmt::format("{}/{}", outputDirectory, m_configuration);
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
-	m_intermediateDir = fmt::format("{}/intermediate", buildPath);
+	m_intermediateDir = fmt::format("{}/intermediate", outputDirectory);
+
+	{
+		auto search = m_intermediateDir.find_first_not_of("./"); // if it's relative
+		m_intermediateDir = m_intermediateDir.substr(search);
+	}
 
 	m_initialized = true;
 }
@@ -71,23 +75,9 @@ const std::string& BuildPaths::homeDirectory() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& BuildPaths::workingDirectory() const noexcept
+const std::string& BuildPaths::outputDirectory() const
 {
-	return m_workingDirectory;
-}
-
-void BuildPaths::setWorkingDirectory(std::string&& inValue)
-{
-	if (Commands::pathExists(inValue))
-	{
-		m_workingDirectory = std::move(inValue);
-	}
-}
-
-/*****************************************************************************/
-const std::string& BuildPaths::buildPath() const
-{
-	return m_inputs.buildPath();
+	return m_inputs.outputDirectory();
 }
 
 const std::string& BuildPaths::buildOutputDir() const noexcept
@@ -330,6 +320,7 @@ std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectTarget& inProje
 /*****************************************************************************/
 std::string BuildPaths::getWindowsManifestFilename(const ProjectTarget& inProject) const
 {
+#if defined(CHALET_WIN32)
 	if (inProject.windowsApplicationManifest().empty())
 	{
 		std::string ret;
@@ -341,6 +332,10 @@ std::string BuildPaths::getWindowsManifestFilename(const ProjectTarget& inProjec
 	}
 
 	return inProject.windowsApplicationManifest();
+#else
+	UNUSED(inProject);
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/

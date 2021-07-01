@@ -84,7 +84,7 @@ bool BuildState::initializeBuildConfiguration()
 
 	if (buildConfigurations.find(config) == buildConfigurations.end())
 	{
-		Diagnostic::error("{}: The build configuration '{}' was not found.", m_inputs.buildFile(), config);
+		Diagnostic::error("{}: The build configuration '{}' was not found.", m_inputs.inputFile(), config);
 		return false;
 	}
 
@@ -216,7 +216,7 @@ bool BuildState::initializeBuild()
 /*****************************************************************************/
 void BuildState::initializeCache()
 {
-	m_prototype.cache.file().checkIfWorkingDirectoryChanged(paths.workingDirectory());
+	// m_prototype.cache.file().checkIfWorkingDirectoryChanged(m_inputs.workingDirectory());
 
 	// TODO: Remove entirely?
 	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
@@ -232,11 +232,11 @@ bool BuildState::validateState()
 		auto workingDirectory = Commands::getWorkingDirectory();
 		Path::sanitize(workingDirectory, true);
 
-		if (String::toLowerCase(paths.workingDirectory()) != String::toLowerCase(workingDirectory))
+		if (String::toLowerCase(m_inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
 		{
-			if (!Commands::changeWorkingDirectory(paths.workingDirectory()))
+			if (!Commands::changeWorkingDirectory(m_inputs.workingDirectory()))
 			{
-				Diagnostic::error("Error changing directory to '{}'", paths.workingDirectory());
+				Diagnostic::error("Error changing directory to '{}'", m_inputs.workingDirectory());
 				return false;
 			}
 		}

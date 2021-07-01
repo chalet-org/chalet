@@ -83,15 +83,23 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	if (!result)
 		return false;
 
+	Route command = patterns.route();
+	m_inputs.setCommand(command);
+	if (command == Route::Help)
+		return true;
+
 	if (patterns.arguments().size() == 0)
 		return false;
 
 	m_inputs.setAppPath(arguments.front());
 
-	Route command = patterns.route();
-	m_inputs.setCommand(command);
-
 	std::string toolchainPreference;
+	std::string inputFile;
+	std::string settingsFile;
+	std::string rootDirectory;
+	std::string outputDirectory;
+	std::string envFile;
+
 	for (auto& [key, rawValue] : patterns.arguments())
 	{
 		auto kind = rawValue.kind();
@@ -112,23 +120,31 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				}
 				else if (String::equals({ "-i", "--input-file" }, key))
 				{
-					m_inputs.setBuildFile(std::move(value));
+					inputFile = std::move(value);
 				}
-				else if (String::equals({ "-o", "--output-path" }, key))
+				else if (String::equals({ "-s", "--settings-file" }, key))
 				{
-					m_inputs.setBuildPath(std::move(value));
+					settingsFile = std::move(value);
+				}
+				else if (String::equals({ "-r", "--root-dir" }, key))
+				{
+					rootDirectory = std::move(value);
+				}
+				else if (String::equals({ "-o", "--output-dir" }, key))
+				{
+					outputDirectory = std::move(value);
 				}
 				else if (String::equals({ "-t", "--toolchain" }, key))
 				{
 					toolchainPreference = std::move(value);
 				}
-				else if (String::equals({ "-g", "--generator" }, key))
+				/*else if (String::equals({ "-p", "--project-gen" }, key))
 				{
 					m_inputs.setGenerator(std::move(value));
-				}
-				else if (String::equals({ "-e", "--envfile" }, key))
+				}*/
+				else if (String::equals({ "-e", "--env-file" }, key))
 				{
-					m_inputs.setEnvFile(std::move(value));
+					envFile = std::move(value);
 				}
 				else if (String::equals({ "-a", "--arch" }, key))
 				{
@@ -180,12 +196,12 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					Output::setQuietNonBuild(value);
 				}
-				else if (String::equals("--global", key))
+				else if (String::equals({ "-g", "--global" }, key))
 				{
 					if (value)
 						m_inputs.setSettingsType(SettingsType::Global);
 				}
-				else if (String::equals("--local", key))
+				else if (String::equals({ "-g", "--local" }, key))
 				{
 					if (value)
 						m_inputs.setSettingsType(SettingsType::Local);
@@ -196,6 +212,14 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				break;
 		}
 	}
+
+	// root must be first
+	m_inputs.setRootDirectory(std::move(rootDirectory));
+	//
+	m_inputs.setOutputDirectory(std::move(outputDirectory));
+	m_inputs.setInputFile(std::move(inputFile));
+	m_inputs.setSettingsFile(std::move(settingsFile));
+	m_inputs.setEnvFile(std::move(envFile));
 
 	// must do at the end (after arch & toolchain have been parsed)
 	m_inputs.setToolchainPreference(std::move(toolchainPreference));

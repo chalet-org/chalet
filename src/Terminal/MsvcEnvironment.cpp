@@ -71,7 +71,7 @@ bool MsvcEnvironment::create()
 	if (m_initialized)
 		return true;
 
-	// auto& buildPath = m_state.paths.buildPath();
+	// auto& outputDirectory = m_state.paths.outputDirectory();
 
 	m_varsFileOriginal = m_state.cache.getCachePath("original.env", CacheType::Local);
 	m_varsFileMsvc = m_state.cache.getCachePath("msvc_all.env", CacheType::Local);

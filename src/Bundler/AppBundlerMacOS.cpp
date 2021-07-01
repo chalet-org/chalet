@@ -35,9 +35,9 @@ namespace chalet
 */
 
 /*****************************************************************************/
-AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile) :
+AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile) :
 	IAppBundler(inState, inBundle, inDependencyMap),
-	m_buildFile(inBuildFile)
+	m_inputFile(inInputFile)
 {
 }
 
@@ -227,7 +227,7 @@ bool AppBundlerMacOS::createBundleIcon()
 		{
 			if (!icon.empty() && !sipsFound)
 			{
-				Diagnostic::warn("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", m_buildFile, icon);
+				Diagnostic::warn("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", m_inputFile, icon);
 			}
 		}
 	}

@@ -48,8 +48,10 @@ private:
 
 	void populateMainArguments();
 	void addInputFileArg();
-	void addOutPathArg();
-	void addProjectGeneratorArg();
+	void addSettingsFileArg();
+	void addRootDirArg();
+	void addOutputDirArg();
+	void addProjectGenArg();
 	void addToolchainArg();
 	void addEnvFileArg();
 	void addArchArg();

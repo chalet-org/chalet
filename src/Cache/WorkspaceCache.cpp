@@ -35,15 +35,15 @@ const std::string& WorkspaceCache::getCacheRef(const CacheType inCacheType) cons
 /*****************************************************************************/
 bool WorkspaceCache::initialize()
 {
-	m_localSettings.load(".chaletrc");
+	m_localSettings.load(m_inputs.settingsFile());
 	m_globalSettings.load(fmt::format("{}/.chaletrc", m_inputs.homeDirectory()));
 
 	m_removeOldCacheFolder = m_localSettings.json.empty();
 
 	// m_cacheFolderGlobal = fmt::format("{}/.chalet", m_inputs.homeDirectory());
 
-	const auto& buildPath = m_inputs.buildPath();
-	m_cacheFolderLocal = fmt::format("{}/.cache", buildPath);
+	const auto& outputDirectory = m_inputs.outputDirectory();
+	m_cacheFolderLocal = fmt::format("{}/.cache", outputDirectory);
 
 	if (!m_cacheFile.initialize(getHashPath("chalet_workspace_file", CacheType::Local)))
 		return false;

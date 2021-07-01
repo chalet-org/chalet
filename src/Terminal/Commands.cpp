@@ -247,6 +247,23 @@ std::string Commands::getAbsolutePath(const std::string& inPath)
 }
 
 /*****************************************************************************/
+std::string Commands::getProximatePath(const std::string& inPath, const std::string& inBase)
+{
+	CHALET_TRY
+	{
+		auto path = fs::proximate(inPath, inBase);
+		std::string ret = path.string();
+		Path::sanitize(ret);
+		return ret;
+	}
+	CHALET_CATCH(const fs::filesystem_error& err)
+	{
+		CHALET_EXCEPT_ERROR(err.what())
+		return inPath;
+	}
+}
+
+/*****************************************************************************/
 std::string Commands::resolveSymlink(const std::string& inPath)
 {
 	CHALET_TRY

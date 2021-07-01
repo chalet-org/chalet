@@ -32,8 +32,6 @@ private:
 	BuildState& m_state;
 	JsonFile& m_jsonFile;
 
-	const std::string kKeyWorkingDirectory = "workingDirectory";
-
 	const std::string kKeyStrategy = "strategy";
 	const std::string kKeyArchiver = "archiver";
 	const std::string kKeyCpp = "C++";

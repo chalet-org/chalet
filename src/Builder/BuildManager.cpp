@@ -344,12 +344,11 @@ bool BuildManager::copyRunDependencies(const ProjectTarget& inProject)
 {
 	bool result = true;
 
-	const auto& workingDirectory = m_state.paths.workingDirectory();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	auto& compilerConfig = m_state.toolchain.getConfig(inProject.language());
 	auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
 
-	auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);
+	auto outputFolder = Commands::getAbsolutePath(buildOutputDir);
 
 	int copied = 0;
 	for (auto& dep : runDependencies)
@@ -414,14 +413,14 @@ bool BuildManager::runProfiler(const ProjectTarget& inProject, const StringList&
 bool BuildManager::doLazyClean()
 {
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	const auto& buildPath = m_state.paths.buildPath();
+	const auto& outputDirectory = m_state.paths.outputDirectory();
 
 	const auto& inputBuild = m_inputs.buildConfiguration();
 	// const auto& build = m_state.buildConfiguration();
 
 	std::string dirToClean;
 	if (inputBuild.empty())
-		dirToClean = buildPath;
+		dirToClean = outputDirectory;
 	else
 		dirToClean = buildOutputDir;
 
@@ -507,7 +506,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_state.tools, m_inputs.buildFile());
+	ScriptRunner scriptRunner(m_state.tools, m_inputs.inputFile());
 	if (!scriptRunner.run(scripts, inRunCommand))
 		return false;
 
@@ -580,28 +579,26 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 	if (outputFile.empty())
 		return false;
 
-	const auto& workingDirectory = m_state.paths.workingDirectory();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& runOptions = m_inputs.runOptions();
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
 	const auto& runArguments = inProject.runArguments();
 
-	// LOG(workingDirectory);
-
-	auto outputFolder = fmt::format("{}/{}", workingDirectory, buildOutputDir);
-
 	Output::msgRun(buildConfiguration, outputFile);
 	Output::lineBreak();
 	// LOG(runOptions);
 	// LOG(runArguments);
 
-	auto file = fmt::format("{}/{}", outputFolder, outputFile);
+	auto file = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), outputFile);
 
-	// LOG(file);
+	LOG(file);
 
 	if (!Commands::pathExists(file))
+	{
+		Diagnostic::error("Couldn't find file: {}", file);
 		return false;
+	}
 
 #if defined(CHALET_MACOS)
 	// This is required for profiling

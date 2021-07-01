@@ -34,7 +34,7 @@ struct AppBundler
 
 private:
 	bool runBundleTarget(IAppBundler& inBundler, BuildState& inState);
-	bool runScriptTarget(const ScriptDistTarget& inScript, const std::string& inBuildFile);
+	bool runScriptTarget(const ScriptDistTarget& inScript, const std::string& inInputFile);
 	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath);
 	std::unique_ptr<BuildState> getUniversalState(BuildState& inState, const std::string& inBuildConfig) const;

@@ -18,9 +18,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-ScriptRunner::ScriptRunner(const AncillaryTools& inTools, const std::string& inBuildFile) :
+ScriptRunner::ScriptRunner(const AncillaryTools& inTools, const std::string& inInputFile) :
 	m_tools(inTools),
-	m_buildFile(inBuildFile)
+	m_inputFile(inInputFile)
 {
 }
 
@@ -59,7 +59,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 
 	if (!Commands::pathExists(outScriptPath))
 	{
-		Diagnostic::error("{}: The script '{}' was not found. Aborting.", m_buildFile, inScript);
+		Diagnostic::error("{}: The script '{}' was not found. Aborting.", m_inputFile, inScript);
 		return false;
 	}
 
@@ -193,12 +193,12 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 			}
 			else if (isBatchScript)
 			{
-				Diagnostic::error("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", m_buildFile, inScript);
+				Diagnostic::error("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", m_inputFile, inScript);
 				return false;
 			}
 			else
 			{
-				Diagnostic::error("{}: The script '{}' requires powershell, but it was not found in 'Path'.", m_buildFile, inScript);
+				Diagnostic::error("{}: The script '{}' requires powershell, but it was not found in 'Path'.", m_inputFile, inScript);
 				return false;
 			}
 
@@ -214,7 +214,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 			}
 			else
 			{
-				Diagnostic::error("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", m_buildFile, inScript);
+				Diagnostic::error("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", m_inputFile, inScript);
 				return false;
 			}
 
@@ -226,9 +226,9 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 	if (!shellFound)
 	{
 		if (shebang.empty())
-			Diagnostic::error("{}: The script '{}' was not recognized.", m_buildFile, inScript);
+			Diagnostic::error("{}: The script '{}' was not recognized.", m_inputFile, inScript);
 		else
-			Diagnostic::error("{}: The script '{}' requires the shell '{}', but it was not found.", m_buildFile, inScript, shebang);
+			Diagnostic::error("{}: The script '{}' requires the shell '{}', but it was not found.", m_inputFile, inScript, shebang);
 		return false;
 	}
 

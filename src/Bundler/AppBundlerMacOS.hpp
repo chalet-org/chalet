@@ -14,7 +14,7 @@ namespace chalet
 class AppBundlerMacOS : public IAppBundler
 {
 public:
-	explicit AppBundlerMacOS(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inBuildFile);
+	explicit AppBundlerMacOS(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile);
 
 	virtual bool removeOldFiles() final;
 	virtual bool bundleForPlatform() final;
@@ -36,7 +36,7 @@ private:
 	bool signAppBundle() const;
 	bool signDmgImage(const std::string& inPath) const;
 
-	const std::string& m_buildFile;
+	const std::string& m_inputFile;
 
 	std::string m_bundlePath;
 	std::string m_frameworkPath;

@@ -149,10 +149,6 @@
 			"type": "object",
 			"description": "A list of Apple platform SDK paths (MacOS)"
 		},
-		"workingDirectory": {
-			"type": "string",
-			"description": "The working directory of the workspace"
-		},
 		"settings": {
 			"type": "object",
 			"additionalProperties": false,

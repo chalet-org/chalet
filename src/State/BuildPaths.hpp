@@ -19,10 +19,7 @@ struct BuildPaths
 {
 	const std::string& homeDirectory() const noexcept;
 
-	const std::string& workingDirectory() const noexcept;
-	void setWorkingDirectory(std::string&& inValue);
-
-	const std::string& buildPath() const;
+	const std::string& outputDirectory() const;
 	const std::string& buildOutputDir() const noexcept;
 	const std::string& configuration() const noexcept;
 	const std::string& objDir() const noexcept;
@@ -79,7 +76,6 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<SourceGroup>> m_fileList;
 	StringList m_allFileExtensions;
 
-	std::string m_workingDirectory;
 	std::string m_configuration;
 	std::string m_buildOutputDir;
 	std::string m_objDir;

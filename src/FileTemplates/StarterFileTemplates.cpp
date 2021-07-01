@@ -226,17 +226,18 @@ std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLa
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getGitIgnore(const std::string& inBuildFolder)
+std::string StarterFileTemplates::getGitIgnore(const std::string& inBuildFolder, const std::string& inSettingsFile)
 {
 	std::string ret = fmt::format(R"(# General
 Thumbs.db
 .DS_Store
 
 # Build
-.chaletrc
+{settings}
 {build}
 dist
 chalet_external)",
+		fmt::arg("settings", inSettingsFile),
 		fmt::arg("build", inBuildFolder));
 
 	return ret;

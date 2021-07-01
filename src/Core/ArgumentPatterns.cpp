@@ -16,17 +16,17 @@ namespace chalet
 std::string ArgumentPatterns::getHelpCommand()
 {
 	return fmt::format(R"(
+   init [{path}]
+   configure
    buildrun {buildConfiguration} {runProject} {runArgs}
    run {buildConfiguration} {runProject} {runArgs}
    build {buildConfiguration}
    rebuild {buildConfiguration}
    clean [{buildConfiguration}]
    bundle
-   configure
    get {key}
    set {key} {value}
-   unset {key}
-   init [{path}])",
+   unset {key})",
 		fmt::arg("buildConfiguration", kArgBuildConfiguration),
 		fmt::arg("runProject", kArgRunProject),
 		fmt::arg("runArgs", kArgRunArguments),
@@ -147,11 +147,15 @@ ushort ArgumentPatterns::parseOption(const std::string& inString)
 	// clang-format off
 	if (String::equals({
 		"-i", "--input-file",
-		"-o", "--output-path",
+		"-s", "--settings-file",
+		"-r", "--root-dir",
+		"-o", "--output-dir",
 		"-t", "--toolchain",
-		"-g", "--generator",
-		"-e", "--envfile",
+		// "-p", "--project-gen",
+		"-e", "--env-file",
 		"-a", "--arch",
+		"-l", "--local",
+		"-g", "--global",
 	}, inString))
 	// clang-format on
 	{
@@ -308,7 +312,8 @@ bool ArgumentPatterns::showHelp()
 	std::string help = getHelp();
 	// std::cout << err.what() << std::endl;
 	std::cout << help << std::endl;
-	return false;
+	m_route = Route::Help;
+	return true;
 }
 
 /*****************************************************************************/
@@ -407,7 +412,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 /*****************************************************************************/
 std::string ArgumentPatterns::getHelp()
 {
-	std::string title = "Chalet: A build system for C & C++";
+	std::string title = "Chalet - Cross Platform JSON-based Project & Meta-Build Tool";
 	std::string help = m_parser.help().str();
 	String::replaceAll(help, "Usage: ", "Usage:\n   ");
 	String::replaceAll(help, "Positional arguments:", "Commands:");
@@ -433,7 +438,7 @@ void ArgumentPatterns::populateMainArguments()
 void ArgumentPatterns::addInputFileArg()
 {
 	m_parser.add_argument("-i", "--input-file")
-		.help("Input file")
+		.help("An input build file to use")
 		.nargs(1)
 		.default_value(std::string("build.json"));
 
@@ -442,27 +447,54 @@ void ArgumentPatterns::addInputFileArg()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::addOutPathArg()
+void ArgumentPatterns::addSettingsFileArg()
 {
-	m_parser.add_argument("-o", "--output-path")
-		.help("Output build path")
+	m_parser.add_argument("-s", "--settings-file")
+		.help("The path to a settings file to use")
+		.nargs(1)
+		.default_value(std::string(".chaletrc"));
+
+	m_argumentMap.push_back({ "-s", Variant::Kind::String });
+	m_argumentMap.push_back({ "--settings-file", Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addRootDirArg()
+{
+	m_parser.add_argument("-r", "--root-dir")
+		.help("The root directory to run the build from")
+		.nargs(1)
+		.default_value(std::string());
+
+	m_argumentMap.push_back({ "-r", Variant::Kind::String });
+	m_argumentMap.push_back({ "--root-dir", Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addOutputDirArg()
+{
+	m_parser.add_argument("-o", "--output-dir")
+		.help("The output directory of the build")
 		.nargs(1)
 		.default_value(std::string("build"));
 
 	m_argumentMap.push_back({ "-o", Variant::Kind::String });
-	m_argumentMap.push_back({ "--output-path", Variant::Kind::String });
+	m_argumentMap.push_back({ "--output-dir", Variant::Kind::String });
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::addProjectGeneratorArg()
+void ArgumentPatterns::addProjectGenArg()
 {
-	m_parser.add_argument("-g", "--generator")
+	// future
+#if 0
+	m_parser.add_argument("-p", "--project-gen")
 		.help("Project file generator [vs2019,vscode,xcode]")
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-g", Variant::Kind::String });
-	m_argumentMap.push_back({ "--generator", Variant::Kind::String });
+	m_argumentMap.push_back({ "-p", Variant::Kind::String });
+	m_argumentMap.push_back({ "--project-gen", Variant::Kind::String });
+#endif
 }
 
 /*****************************************************************************/
@@ -484,13 +516,13 @@ void ArgumentPatterns::addToolchainArg()
 /*****************************************************************************/
 void ArgumentPatterns::addEnvFileArg()
 {
-	m_parser.add_argument("-e", "--envfile")
-		.help("File to load environment variables from")
+	m_parser.add_argument("-e", "--env-file")
+		.help("A file to load environment variables from")
 		.nargs(1)
 		.default_value(std::string());
 
 	m_argumentMap.push_back({ "-e", Variant::Kind::String });
-	m_argumentMap.push_back({ "--envfile", Variant::Kind::String });
+	m_argumentMap.push_back({ "--env-file", Variant::Kind::String });
 }
 
 /*****************************************************************************/
@@ -595,20 +627,22 @@ void ArgumentPatterns::addRunArgumentsArg()
 /*****************************************************************************/
 void ArgumentPatterns::addSettingsTypeArg()
 {
-	m_parser.add_argument("--local")
-		.help("use the local cache")
+	m_parser.add_argument("-l", "--local")
+		.help("Use the local settings [.chaletrc]")
 		.nargs(1)
 		.default_value(true)
 		.implicit_value(true);
 
+	m_argumentMap.push_back({ "-l", Variant::Kind::Boolean });
 	m_argumentMap.push_back({ "--local", Variant::Kind::Boolean });
 
-	m_parser.add_argument("--global")
-		.help("use the global cache")
+	m_parser.add_argument("-g", "--global")
+		.help("Use the global settings [~/.chaletrc]")
 		.nargs(1)
 		.default_value(false)
 		.implicit_value(true);
 
+	m_argumentMap.push_back({ "-g", Variant::Kind::Boolean });
 	m_argumentMap.push_back({ "--global", Variant::Kind::Boolean });
 }
 
@@ -616,9 +650,11 @@ void ArgumentPatterns::addSettingsTypeArg()
 void ArgumentPatterns::commandBuildRun()
 {
 	addInputFileArg();
-	addOutPathArg();
+	addSettingsFileArg();
+	addRootDirArg();
+	addOutputDirArg();
 	addToolchainArg();
-	addProjectGeneratorArg();
+	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
@@ -633,9 +669,11 @@ void ArgumentPatterns::commandBuildRun()
 void ArgumentPatterns::commandRun()
 {
 	addInputFileArg();
-	addOutPathArg();
+	addSettingsFileArg();
+	addRootDirArg();
+	addOutputDirArg();
 	addToolchainArg();
-	addProjectGeneratorArg();
+	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
@@ -650,9 +688,11 @@ void ArgumentPatterns::commandRun()
 void ArgumentPatterns::commandBuild()
 {
 	addInputFileArg();
-	addOutPathArg();
+	addSettingsFileArg();
+	addRootDirArg();
+	addOutputDirArg();
 	addToolchainArg();
-	addProjectGeneratorArg();
+	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
@@ -665,9 +705,11 @@ void ArgumentPatterns::commandBuild()
 void ArgumentPatterns::commandRebuild()
 {
 	addInputFileArg();
-	addOutPathArg();
+	addSettingsFileArg();
+	addRootDirArg();
+	addOutputDirArg();
 	addToolchainArg();
-	addProjectGeneratorArg();
+	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
@@ -680,9 +722,11 @@ void ArgumentPatterns::commandRebuild()
 void ArgumentPatterns::commandClean()
 {
 	addInputFileArg();
-	addOutPathArg();
+	addSettingsFileArg();
+	addRootDirArg();
+	addOutputDirArg();
 	addToolchainArg();
-	addProjectGeneratorArg();
+	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
@@ -696,9 +740,11 @@ void ArgumentPatterns::commandClean()
 void ArgumentPatterns::commandBundle()
 {
 	addInputFileArg();
-	addOutPathArg();
+	addSettingsFileArg();
+	addRootDirArg();
+	addOutputDirArg();
 	addToolchainArg();
-	addProjectGeneratorArg();
+	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
@@ -709,9 +755,11 @@ void ArgumentPatterns::commandBundle()
 void ArgumentPatterns::commandConfigure()
 {
 	addInputFileArg();
-	addOutPathArg();
+	addSettingsFileArg();
+	addRootDirArg();
+	addOutputDirArg();
 	addToolchainArg();
-	addProjectGeneratorArg();
+	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
@@ -721,12 +769,6 @@ void ArgumentPatterns::commandConfigure()
 /*****************************************************************************/
 void ArgumentPatterns::commandInit()
 {
-	addInputFileArg();
-	// addOutPathArg();
-	addToolchainArg();
-	addProjectGeneratorArg();
-	addEnvFileArg();
-
 	//
 	m_parser.add_argument(kArgInitPath)
 		.help(kHelpInitPath)
@@ -739,6 +781,7 @@ void ArgumentPatterns::commandInit()
 /*****************************************************************************/
 void ArgumentPatterns::commandSettingsGet()
 {
+	addSettingsFileArg();
 	addSettingsTypeArg();
 
 	m_parser.add_argument(kArgConfigKey)
@@ -751,6 +794,7 @@ void ArgumentPatterns::commandSettingsGet()
 /*****************************************************************************/
 void ArgumentPatterns::commandSettingsSet()
 {
+	addSettingsFileArg();
 	addSettingsTypeArg();
 
 	m_parser.add_argument(kArgConfigKey)
@@ -769,6 +813,7 @@ void ArgumentPatterns::commandSettingsSet()
 /*****************************************************************************/
 void ArgumentPatterns::commandSettingsUnset()
 {
+	addSettingsFileArg();
 	addSettingsTypeArg();
 
 	m_parser.add_argument(kArgConfigKey)
@@ -783,8 +828,10 @@ void ArgumentPatterns::commandSettingsUnset()
 void ArgumentPatterns::commandDebug()
 {
 	addInputFileArg();
-	addOutPathArg();
-	addProjectGeneratorArg();
+	addSettingsFileArg();
+	addRootDirArg();
+	addOutputDirArg();
+	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();
 }

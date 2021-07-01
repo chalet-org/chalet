@@ -37,9 +37,9 @@ bool SubChaletBuilder::run()
 
 	const auto oldPath = Environment::getPath();
 
-	const auto& cwd = m_state.paths.workingDirectory();
-	auto location = fmt::format("{}/{}", cwd, m_target.location());
+	auto location = Commands::getAbsolutePath(m_target.location());
 	Path::sanitize(location);
+
 	if (!m_target.buildFile().empty())
 	{
 		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
@@ -65,8 +65,8 @@ bool SubChaletBuilder::run()
 
 		// Commands::changeWorkingDirectory(workingDirectory);
 
-		StringList cmd = getBuildCommand();
-		result = Commands::subprocess(cmd, location);
+		StringList cmd = getBuildCommand(location);
+		result = Commands::subprocess(cmd);
 
 		// Commands::changeWorkingDirectory(oldWorkingDirectory);
 		Environment::setPath(oldPath);
@@ -82,16 +82,29 @@ bool SubChaletBuilder::run()
 }
 
 /*****************************************************************************/
-StringList SubChaletBuilder::getBuildCommand() const
+StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) const
 {
 	StringList cmd{ m_state.tools.chalet() };
 	cmd.emplace_back("--quieter");
+
+	auto proximateOutput = Commands::getProximatePath(m_inputs.outputDirectory(), inLocation);
+	auto proximateSettings = Commands::getProximatePath(m_inputs.settingsFile(), inLocation);
+	LOG(proximateSettings);
+
+	cmd.emplace_back("--root-dir");
+	cmd.push_back(inLocation);
 
 	if (!m_buildFile.empty())
 	{
 		cmd.emplace_back("--input-file");
 		cmd.push_back(m_buildFile);
 	}
+
+	cmd.emplace_back("--settings-file");
+	cmd.emplace_back(std::move(proximateSettings));
+
+	cmd.emplace_back("--output-dir");
+	cmd.push_back(fmt::format("{}/{}", proximateOutput, m_target.name()));
 
 	if (!m_inputs.toolchainPreferenceRaw().empty())
 	{
@@ -104,7 +117,7 @@ StringList SubChaletBuilder::getBuildCommand() const
 		if (Commands::pathExists(m_inputs.envFile()))
 		{
 			auto envAbsolute = Commands::getAbsolutePath(m_inputs.envFile());
-			cmd.emplace_back("--envfile");
+			cmd.emplace_back("--env-file");
 			cmd.push_back(envAbsolute);
 		}
 	}
