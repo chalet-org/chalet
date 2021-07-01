@@ -116,7 +116,7 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssembli
 			CommandPool::Cmd out;
 			out.output = asmFile;
 			out.command = getAsmGenerate(object, asmFile);
-			out.color = Color::Magenta;
+			out.color = Output::theme().alt;
 			out.symbol = " ";
 			ret.emplace_back(std::move(out));
 		}

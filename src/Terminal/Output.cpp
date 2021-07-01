@@ -79,6 +79,17 @@ char getEscapeChar()
 	// 	return '\x1b';
 }
 }
+static ColorTheme sTheme;
+
+/*****************************************************************************/
+void Output::setTheme(const ColorTheme& inTheme)
+{
+	sTheme = inTheme;
+}
+const ColorTheme& Output::theme()
+{
+	return sTheme;
+}
 
 /*****************************************************************************/
 bool Output::quietNonBuild()
@@ -115,8 +126,8 @@ void Output::setShowCommandOverride(const bool inValue)
 /*****************************************************************************/
 bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor, std::string note, const std::function<bool(std::string&)>& onValidate)
 {
-	const auto color = Output::getAnsiStyle(Color::Black);
-	const auto noteColor = Output::getAnsiStyle(Color::Blue);
+	const auto color = Output::getAnsiStyle(sTheme.flair);
+	const auto noteColor = Output::getAnsiStyle(sTheme.note);
 	const auto answerColor = Output::getAnsiStyle(inAnswerColor, true);
 	const auto reset = Output::getAnsiReset();
 	const char symbol = '>';
@@ -218,6 +229,25 @@ std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBa
 }
 
 /*****************************************************************************/
+std::string Output::getAnsiStyleUnescaped(const Color inColor, const bool inBold)
+{
+	const char style = inBold ? '1' : '0';
+	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
+
+	return fmt::format("{style};{color}", FMT_ARG(style), FMT_ARG(color));
+}
+
+/*****************************************************************************/
+std::string Output::getAnsiStyleUnescaped(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
+{
+	const char style = inBold ? '1' : '0';
+	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
+	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
+
+	return fmt::format("{style};{fgColor};{bgColor}", FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
+}
+
+/*****************************************************************************/
 std::string Output::getAnsiReset()
 {
 #if defined(CHALET_WIN32)
@@ -308,15 +338,59 @@ void Output::print(const Color inColor, const StringList& inList, const bool inB
 }
 
 /*****************************************************************************/
+void Output::printCommand(const std::string& inText)
+{
+	if (!s_quietNonBuild)
+	{
+		const auto color = getAnsiStyle(sTheme.build, false);
+		const auto reset = getAnsiReset();
+		std::cout << color << inText << reset << std::endl;
+	}
+}
+
+/*****************************************************************************/
+void Output::printCommand(const StringList& inList)
+{
+	if (!s_quietNonBuild)
+	{
+		const auto color = getAnsiStyle(sTheme.build, false);
+		const auto reset = getAnsiReset();
+		std::cout << color << String::join(inList) << reset << std::endl;
+	}
+}
+
+/*****************************************************************************/
+void Output::printInfo(const std::string& inText)
+{
+	if (!s_quietNonBuild)
+	{
+		const auto color = getAnsiStyle(sTheme.info, false);
+		const auto reset = getAnsiReset();
+		std::cout << color << inText << reset << std::endl;
+	}
+}
+
+/*****************************************************************************/
+void Output::printFlair(const std::string& inText)
+{
+	if (!s_quietNonBuild)
+	{
+		const auto color = getAnsiStyle(sTheme.flair, false);
+		const auto reset = getAnsiReset();
+		std::cout << color << inText << reset << std::endl;
+	}
+}
+
+/*****************************************************************************/
 void Output::msgFetchingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag)
 {
 	std::string path = getCleanGitPath(inGitUrl);
 	auto symbol = Unicode::heavyCurvedDownRightArrow();
 
 	if (!inBranchOrTag.empty() && !String::equals("HEAD", inBranchOrTag))
-		displayStyledSymbol(Color::Magenta, symbol, fmt::format("Fetching: {} ({})", path, inBranchOrTag));
+		displayStyledSymbol(sTheme.alt, symbol, fmt::format("Fetching: {} ({})", path, inBranchOrTag));
 	else
-		displayStyledSymbol(Color::Magenta, symbol, fmt::format("Fetching: {}", path));
+		displayStyledSymbol(sTheme.alt, symbol, fmt::format("Fetching: {}", path));
 }
 
 /*****************************************************************************/
@@ -326,9 +400,9 @@ void Output::msgUpdatingDependency(const std::string& inGitUrl, const std::strin
 	auto symbol = Unicode::heavyCurvedDownRightArrow();
 
 	if (!inBranchOrTag.empty())
-		displayStyledSymbol(Color::Magenta, symbol, fmt::format("Updating: {} ({})", path, inBranchOrTag));
+		displayStyledSymbol(sTheme.alt, symbol, fmt::format("Updating: {} ({})", path, inBranchOrTag));
 	else
-		displayStyledSymbol(Color::Magenta, symbol, fmt::format("Updating: {}", path));
+		displayStyledSymbol(sTheme.alt, symbol, fmt::format("Updating: {}", path));
 }
 
 /*****************************************************************************/
@@ -336,7 +410,7 @@ void Output::msgDisplayBlack(const std::string& inString)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(Color::Black, true);
+		const auto color = getAnsiStyle(sTheme.flair, true);
 		const auto reset = getAnsiReset();
 		std::cout << color << fmt::format("   {}", inString) << reset << std::endl;
 	}
@@ -346,14 +420,14 @@ void Output::msgDisplayBlack(const std::string& inString)
 void Output::msgConfigureCompleted()
 {
 	auto symbol = Unicode::heavyCheckmark();
-	displayStyledSymbol(Color::Green, symbol, "Configured!");
+	displayStyledSymbol(sTheme.success, symbol, "Configured!");
 }
 
 /*****************************************************************************/
 void Output::msgBuildSuccess()
 {
 	auto symbol = Unicode::heavyCheckmark();
-	displayStyledSymbol(Color::Green, symbol, "Succeeded!");
+	displayStyledSymbol(sTheme.success, symbol, "Succeeded!");
 }
 
 /*****************************************************************************/
@@ -363,9 +437,9 @@ void Output::msgTargetUpToDate(const bool inMultiTarget, const std::string& inPr
 	{
 		std::string successText = "Target is up to date.";
 		if (inMultiTarget)
-			print(Color::Blue, fmt::format("   {}: {}", inProjectName, successText));
+			print(sTheme.build, fmt::format("   {}: {}", inProjectName, successText));
 		else
-			print(Color::Blue, fmt::format("   {}", successText));
+			print(sTheme.build, fmt::format("   {}", successText));
 	}
 }
 
@@ -373,61 +447,61 @@ void Output::msgTargetUpToDate(const bool inMultiTarget, const std::string& inPr
 void Output::msgBuildFail()
 {
 	auto symbol = Unicode::heavyBallotX();
-	displayStyledSymbol(Color::Red, symbol, "Failed!");
-	displayStyledSymbol(Color::Red, " ", "Review the errors above.");
+	displayStyledSymbol(sTheme.error, symbol, "Failed!");
+	displayStyledSymbol(sTheme.error, " ", "Review the errors above.");
 	// exit 1
 }
 
 /*****************************************************************************/
 void Output::msgCleaning()
 {
-	print(Color::Blue, "   Removing build files & folders...");
+	print(sTheme.build, "   Removing build files & folders...");
 }
 
 /*****************************************************************************/
 void Output::msgNothingToClean()
 {
-	print(Color::Blue, "   Nothing to clean...");
+	print(sTheme.build, "   Nothing to clean...");
 }
 
 /*****************************************************************************/
 void Output::msgCleaningRebuild()
 {
-	print(Color::Blue, "   Removing previous build files & folders...");
+	print(sTheme.build, "   Removing previous build files & folders...");
 }
 
 /*****************************************************************************/
 void Output::msgBuildProdError(const std::string& inBuildConfiguration)
 {
 	auto symbol = Unicode::circledSaltire();
-	displayStyledSymbol(Color::Red, symbol, fmt::format("Error: 'bundle' must be run on '{}' build.", inBuildConfiguration));
+	displayStyledSymbol(sTheme.error, symbol, fmt::format("Error: 'bundle' must be run on '{}' build.", inBuildConfiguration));
 	// exit 1
 }
 
 /*****************************************************************************/
 void Output::msgProfilerStartedGprof(const std::string& inProfileAnalysis)
 {
-	print(Color::Gray, fmt::format("   Writing profiling analysis to {}. This may take a while...\n", inProfileAnalysis));
+	Diagnostic::info("Writing profiling analysis to {}. This may take a while...", inProfileAnalysis);
 }
 
 /*****************************************************************************/
 void Output::msgProfilerStartedSample(const std::string& inExecutable, const uint inDuration, const uint inSamplingInterval)
 {
-	print(Color::Gray, fmt::format("   Sampling {} for {} seconds with {} millisecond of run time between samples", inExecutable, inDuration, inSamplingInterval));
+	Diagnostic::info("Sampling {} for {} seconds with {} millisecond of run time between samples", inExecutable, inDuration, inSamplingInterval);
 }
 
 /*****************************************************************************/
 void Output::msgProfilerDone(const std::string& inProfileAnalysis)
 {
 	auto symbol = Unicode::diamond();
-	displayStyledSymbol(Color::Magenta, symbol, fmt::format("Profiler Completed! View {} for details.", inProfileAnalysis));
+	displayStyledSymbol(sTheme.alt, symbol, fmt::format("Profiler Completed! View {} for details.", inProfileAnalysis));
 }
 
 /*****************************************************************************/
 void Output::msgProfilerDoneInstruments(const std::string& inProfileAnalysis)
 {
 	auto symbol = Unicode::diamond();
-	displayStyledSymbol(Color::Magenta, symbol, fmt::format("Profiler Completed! Launching {} in Instruments.", inProfileAnalysis));
+	displayStyledSymbol(sTheme.alt, symbol, fmt::format("Profiler Completed! Launching {} in Instruments.", inProfileAnalysis));
 }
 
 // Leave the commands as separate functions in case symbols and things change
@@ -438,23 +512,23 @@ void Output::msgClean(const std::string& inBuildConfiguration)
 {
 	auto symbol = Unicode::triangle();
 	if (!inBuildConfiguration.empty())
-		displayStyledSymbol(Color::Yellow, symbol, "Clean: " + inBuildConfiguration);
+		displayStyledSymbol(sTheme.header, symbol, "Clean: " + inBuildConfiguration);
 	else
-		displayStyledSymbol(Color::Yellow, symbol, "Clean: All");
+		displayStyledSymbol(sTheme.header, symbol, "Clean: All");
 }
 
 /*****************************************************************************/
 void Output::msgBuild(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(Color::Yellow, symbol, "Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(sTheme.header, symbol, "Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgRebuild(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(Color::Yellow, symbol, "Rebuild: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(sTheme.header, symbol, "Rebuild: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
@@ -475,21 +549,21 @@ void Output::msgScriptDescription(const std::string& inDescription, const Color 
 void Output::msgRun(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(Color::Green, symbol, "Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(sTheme.success, symbol, "Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgBuildProd(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(Color::Yellow, symbol, "Production Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(sTheme.header, symbol, "Production Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
 void Output::msgProfile(const std::string& inBuildConfiguration, const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(Color::Yellow, symbol, "Profile: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(sTheme.header, symbol, "Profile: " + getFormattedBuildTarget(inBuildConfiguration, inName));
 }
 
 /*****************************************************************************/
@@ -498,7 +572,7 @@ void Output::msgCopying(const std::string& inFrom, const std::string& inTo)
 	auto symbol = Unicode::heavyCurvedUpRightArrow();
 	std::string message = fmt::format("Copying: '{}' to '{}'", inFrom, inTo);
 
-	displayStyledSymbol(Color::Blue, symbol, message, false);
+	displayStyledSymbol(sTheme.build, symbol, message, false);
 }
 
 }

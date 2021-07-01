@@ -179,7 +179,7 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget), inputFile))
 			return false;
 
-		Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+		Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
 	}
 
 	Output::lineBreak();
@@ -494,9 +494,9 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 		return false;
 
 	if (!inScript.description().empty())
-		Output::msgScriptDescription(inScript.description());
+		Output::msgScriptDescription(inScript.description(), Output::theme().header);
 	else
-		Output::msgScript(inScript.name());
+		Output::msgScript(inScript.name(), Output::theme().header);
 
 	Output::lineBreak();
 

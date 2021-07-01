@@ -9,6 +9,22 @@ namespace chalet
 {
 /*****************************************************************************/
 template <typename... Args>
+void Diagnostic::info(std::string_view inFmt, Args&&... args)
+{
+	bool lineBreak = true;
+	Diagnostic::showInfo(fmt::format(std::move(inFmt), (std::forward<Args>(args))...), lineBreak);
+}
+
+/*****************************************************************************/
+template <typename... Args>
+void Diagnostic::infoEllipsis(std::string_view inFmt, Args&&... args)
+{
+	bool lineBreak = false;
+	Diagnostic::showInfo(fmt::format(std::move(inFmt), (std::forward<Args>(args))...), lineBreak);
+}
+
+/*****************************************************************************/
+template <typename... Args>
 void Diagnostic::warn(std::string_view inFmt, Args&&... args)
 {
 	auto type = Type::Warning;

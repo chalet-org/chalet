@@ -45,10 +45,10 @@ bool SubChaletBuilder::run()
 		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
 	}
 
-	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("executable: {}", m_state.tools.chalet()), false);
-	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("name: {}", name), false);
-	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("location: {}", location), false);
-	// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
+	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.tools.chalet()), false);
+	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("name: {}", name), false);
+	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("location: {}", location), false);
+	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	m_outputLocation = fmt::format("{}/{}", location, buildOutputDir);
@@ -61,7 +61,7 @@ bool SubChaletBuilder::run()
 
 	if (outDirectoryDoesNotExist || recheckChalet)
 	{
-		// Output::displayStyledSymbol(Color::Blue, " ", fmt::format("new cwd: {}", cwd), false);
+		// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("new cwd: {}", cwd), false);
 
 		// Commands::changeWorkingDirectory(workingDirectory);
 

@@ -384,7 +384,7 @@ bool AppBundlerMacOS::createDmgImage() const
 	{
 		Output::lineBreak();
 	}
-	Diagnostic::info("Creating the distribution disk image", false);
+	Diagnostic::infoEllipsis("Creating the distribution disk image");
 
 	const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);
 
@@ -455,7 +455,7 @@ bool AppBundlerMacOS::signAppBundle() const
 	}
 
 	Timer timer;
-	Diagnostic::info("Signing the MacOS application bundle", false);
+	Diagnostic::infoEllipsis("Signing the MacOS application bundle");
 
 	// TODO: Entitlements
 	bool isBundle = String::endsWith(".app/Contents", m_bundlePath);
@@ -532,7 +532,7 @@ bool AppBundlerMacOS::signDmgImage(const std::string& inPath) const
 	}
 
 	Timer timer;
-	Diagnostic::info("Signing the disk image", false);
+	Diagnostic::infoEllipsis("Signing the disk image");
 
 	if (!m_state.tools.macosCodeSignDiskImage(inPath))
 	{

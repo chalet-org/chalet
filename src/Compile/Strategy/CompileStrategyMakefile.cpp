@@ -37,10 +37,11 @@ bool CompileStrategyMakefile::initialize(const StringList& inFileExtensions)
 
 	const bool cacheExists = Commands::pathExists(m_cacheFile);
 	const bool appVersionChanged = cacheFile.appVersionChanged();
+	const bool themeChanged = cacheFile.themeChanged();
 	auto strategyHash = String::getPathFilename(m_cacheFile);
 	cacheFile.setSourceCache(strategyHash);
 
-	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged;
+	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged || themeChanged;
 
 	if (m_cacheNeedsUpdate)
 	{
@@ -143,7 +144,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 	m_state.paths.setBuildEnvironment(outputs, hash);
 
 #if defined(CHALET_WIN32)
-	std::cout << Output::getAnsiStyle(Color::Blue);
+	std::cout << Output::getAnsiStyle(Output::theme().build);
 #endif
 
 	{
@@ -188,7 +189,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 	auto& hash = m_hashes.at(inProject.name());
 
 	#if defined(CHALET_WIN32)
-	std::cout << Output::getAnsiStyle(Color::Blue);
+	std::cout << Output::getAnsiStyle(Output::theme().build);
 	#endif
 
 	command.emplace_back(std::string());
@@ -221,7 +222,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::string inCwd) const
 {
 	// if (Output::showCommands())
-	// 	Output::print(Color::Blue, inCmd);
+	// 	Output::print(Output::theme().build, inCmd);
 
 	std::string errorOutput;
 	Subprocess::PipeFunc onStdErr = [&errorOutput](std::string inData) {

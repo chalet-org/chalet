@@ -210,7 +210,7 @@ bool GitRunner::needsUpdate()
 /*****************************************************************************/
 void GitRunner::displayCheckingForUpdates()
 {
-	Diagnostic::info(fmt::format("Checking remote for updates: {}", m_destination), false);
+	Diagnostic::infoEllipsis("Checking remote for updates: {}", m_destination);
 }
 
 /*****************************************************************************/

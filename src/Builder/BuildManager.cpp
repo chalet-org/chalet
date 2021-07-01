@@ -144,7 +144,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 			auto res = buildTimer.stop();
 			if (res > 0)
-				Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
 
 			Output::lineBreak();
 		}
@@ -163,7 +163,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				Output::msgTargetUpToDate(multiTarget, name);
 				auto res = buildTimer.stop();
 				if (res > 0)
-					Output::print(Color::Reset, fmt::format("   Time: {}", buildTimer.asString()));
+					Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
 
 				Output::lineBreak();
 			}
@@ -248,8 +248,8 @@ void BuildManager::printBuildInformation()
 		{
 			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
 		}
-		Diagnostic::info(fmt::format("C++ Compiler: {}", m_state.toolchain.compilerVersionStringCpp()));
-		Diagnostic::info(fmt::format("Target Architecture: {}", arch));
+		Diagnostic::info("C++ Compiler: {}", m_state.toolchain.compilerVersionStringCpp());
+		Diagnostic::info("Target Architecture: {}", arch);
 	}
 	if (usingCc && !m_state.toolchain.compilerVersionStringC().empty())
 	{
@@ -258,12 +258,12 @@ void BuildManager::printBuildInformation()
 		{
 			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
 		}
-		Diagnostic::info(fmt::format("C Compiler: {}", m_state.toolchain.compilerVersionStringC()));
-		Diagnostic::info(fmt::format("Target Architecture: {}", arch));
+		Diagnostic::info("C Compiler: {}", m_state.toolchain.compilerVersionStringC());
+		Diagnostic::info("Target Architecture: {}", arch);
 	}
 
 	const auto strategy = getBuildStrategyName();
-	Diagnostic::info(fmt::format("Build Strategy: {}", strategy));
+	Diagnostic::info("Build Strategy: {}", strategy);
 }
 
 /*****************************************************************************/
@@ -497,7 +497,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 		return false;
 
 	const bool isRun = m_inputs.command() == Route::Run || inRunCommand;
-	const Color color = isRun ? Color::Green : Color::Yellow;
+	const Color color = isRun ? Output::theme().success : Output::theme().header;
 
 	if (!inScript.description().empty())
 		Output::msgScriptDescription(inScript.description(), color);
@@ -592,8 +592,6 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 
 	auto file = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), outputFile);
 
-	LOG(file);
-
 	if (!Commands::pathExists(file))
 	{
 		Diagnostic::error("Couldn't find file: {}", file);
@@ -626,7 +624,7 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 		auto message = fmt::format("{} exited with code: {}", outFile, Subprocess::getLastExitCode());
 
 		Output::lineBreak();
-		Output::print(result ? Color::Reset : Color::Red, message, true);
+		Output::print(result ? Output::theme().info : Output::theme().error, message, true);
 
 		return result;
 	}
@@ -678,7 +676,7 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 
 	if (result > 0)
 	{
-		Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
+		Output::printInfo(fmt::format("   Build time: {}ms", result));
 	}
 	Output::lineBreak();
 
@@ -698,7 +696,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 
 	if (result > 0)
 	{
-		Output::print(Color::Reset, fmt::format("   Build time: {}ms", result));
+		Output::printInfo(fmt::format("   Build time: {}ms", result));
 	}
 	Output::lineBreak();
 

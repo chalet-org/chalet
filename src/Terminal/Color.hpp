@@ -17,8 +17,8 @@ enum class Color : char
 	Blue = 34,
 	Magenta = 35,
 	Cyan = 36,
-	Gray = 37,
-	Reset = 39
+	White = 37,
+	Reset = 0
 };
 }
 

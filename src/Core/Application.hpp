@@ -7,6 +7,7 @@
 #define CHALET_APPLICATION_HPP
 
 #include "Core/CommandLineInputs.hpp"
+#include "Terminal/ColorTheme.hpp"
 #include "Terminal/OSTerminal.hpp"
 
 namespace chalet

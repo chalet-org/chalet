@@ -41,10 +41,11 @@ bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
 
 	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
 	const bool appVersionChanged = cacheFile.appVersionChanged();
+	const bool themeChanged = cacheFile.themeChanged();
 	auto strategyHash = String::getPathFilename(m_cacheFile);
 	cacheFile.setSourceCache(strategyHash);
 
-	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged;
+	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged || themeChanged;
 
 	if (m_cacheNeedsUpdate)
 	{
@@ -123,7 +124,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 	auto& hash = m_hashes.at(inProject.name());
 
 	{
-		std::cout << Output::getAnsiStyle(Color::Blue) << std::flush;
+		std::cout << Output::getAnsiStyle(Output::theme().build) << std::flush;
 
 		command.emplace_back(fmt::format("build_{}", hash));
 		bool result = subprocessNinja(command);
@@ -139,7 +140,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string inCwd) const
 {
 	// if (Output::showCommands())
-	// 	Output::print(Color::Blue, inCmd);
+	// 	Output::print(Output::theme().build, inCmd);
 
 	bool skipOutput = false;
 	std::string noWork{ "ninja: no work to do.\n" };

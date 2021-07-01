@@ -70,7 +70,7 @@ bool ProjectInitializer::run()
 
 	std::string language = "C++";
 
-	Color inputColor = Color::Magenta;
+	Color inputColor = Output::theme().alt;
 
 	Output::getUserInput("Workspace name:", props.workspaceName, inputColor, "This should identify the entire workspace, as opposed to a build target");
 	Output::getUserInput("Version:", props.version, inputColor, "The initial version of the application or library", [](std::string& input) {
@@ -200,50 +200,50 @@ bool ProjectInitializer::run()
 	const std::string separator(80, '-');
 
 	Output::lineBreak();
-	Output::print(Color::Black, separator);
+	Output::printFlair(separator);
 
 	double stepTime = 0.1;
 
 	{
-		Output::print(Color::Reset, fmt::format("{}/{}", props.location, props.mainSource));
+		Output::printInfo(fmt::format("{}/{}", props.location, props.mainSource));
 		Output::lineBreak();
 
 		auto mainCpp = StarterFileTemplates::getMainCxx(props.language, props.specialization);
 		String::replaceAll(mainCpp, "\t", "   ");
-		std::cout << Output::getAnsiStyle(Color::Blue) << mainCpp << Output::getAnsiReset() << std::endl;
+		std::cout << Output::getAnsiStyle(Output::theme().build) << mainCpp << Output::getAnsiReset() << std::endl;
 
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::print(Color::Black, separator);
+		Output::printFlair(separator);
 	}
 
 	if (!props.precompiledHeader.empty())
 	{
-		Output::print(Color::Reset, fmt::format("{}/{}", props.location, props.precompiledHeader));
+		Output::printInfo(fmt::format("{}/{}", props.location, props.precompiledHeader));
 		Output::lineBreak();
 
 		const auto pch = StarterFileTemplates::getPch(props.precompiledHeader, props.language, props.specialization);
-		std::cout << Output::getAnsiStyle(Color::Blue) << pch << Output::getAnsiReset() << std::endl;
+		std::cout << Output::getAnsiStyle(Output::theme().build) << pch << Output::getAnsiReset() << std::endl;
 
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::print(Color::Black, separator);
+		Output::printFlair(separator);
 	}
 
 	if (props.makeGitRepository)
 	{
-		Output::print(Color::Reset, ".gitignore");
+		Output::printInfo(".gitignore");
 		Output::lineBreak();
 
 		const auto gitIgnore = StarterFileTemplates::getGitIgnore(m_inputs.outputDirectory(), m_inputs.settingsFile());
-		std::cout << Output::getAnsiStyle(Color::Blue) << gitIgnore << Output::getAnsiReset() << std::endl;
+		std::cout << Output::getAnsiStyle(Output::theme().build) << gitIgnore << Output::getAnsiReset() << std::endl;
 
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::print(Color::Black, separator);
+		Output::printFlair(separator);
 	}
 
 	if (props.envFile)
@@ -253,29 +253,29 @@ bool ProjectInitializer::run()
 #else
 		std::string env{ ".env" };
 #endif
-		Output::print(Color::Reset, env);
+		Output::printInfo(env);
 		Output::lineBreak();
 
 		const auto envFile = StarterFileTemplates::getDotEnv();
-		std::cout << Output::getAnsiStyle(Color::Blue) << envFile << Output::getAnsiReset() << std::endl;
+		std::cout << Output::getAnsiStyle(Output::theme().build) << envFile << Output::getAnsiReset() << std::endl;
 
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::print(Color::Black, separator);
+		Output::printFlair(separator);
 	}
 
 	{
-		Output::print(Color::Reset, "chalet.json");
+		Output::printInfo("chalet.json");
 		Output::lineBreak();
 
 		auto jsonFile = StarterFileTemplates::getBuildJson(props);
-		std::cout << Output::getAnsiStyle(Color::Blue) << jsonFile.dump(3, ' ') << Output::getAnsiReset() << std::endl;
+		std::cout << Output::getAnsiStyle(Output::theme().build) << jsonFile.dump(3, ' ') << Output::getAnsiReset() << std::endl;
 
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::print(Color::Black, separator);
+		Output::printFlair(separator);
 	}
 
 	Output::lineBreak();
@@ -287,7 +287,7 @@ bool ProjectInitializer::run()
 	else
 	{
 		Output::lineBreak();
-		Output::displayStyledSymbol(Color::Reset, " ", "Exiting...", false);
+		Output::displayStyledSymbol(Output::theme().info, " ", "Exiting...", false);
 		Output::lineBreak();
 		return false;
 	}
@@ -296,7 +296,7 @@ bool ProjectInitializer::run()
 /*****************************************************************************/
 bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 {
-	Diagnostic::info(fmt::format("Initializing a new workspace called '{}'", inProps.workspaceName), false);
+	Diagnostic::infoEllipsis("Initializing a new workspace called '{}'", inProps.workspaceName);
 	// Commands::sleep(1.5);
 
 	bool result = true;
@@ -347,7 +347,7 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 		Diagnostic::printDone();
 		// Output::lineBreak();
 
-		if (Output::getUserInputYesNo("Run 'chalet configure'?", Color::Magenta))
+		if (Output::getUserInputYesNo("Run 'chalet configure'?", Output::theme().alt))
 		{
 			if (!String::equals('.', m_inputs.initPath())) // TODO: init > configure from parent dir
 				return true;
@@ -367,7 +367,7 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 		}
 
 		auto symbol = Unicode::diamond();
-		Output::displayStyledSymbol(Color::Magenta, symbol, "Happy coding!");
+		Output::displayStyledSymbol(Output::theme().alt, symbol, "Happy coding!");
 
 		Output::lineBreak();
 	}

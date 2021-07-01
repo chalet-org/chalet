@@ -44,11 +44,11 @@ bool SettingsJsonParser::serialize(const GlobalSettingsState& inState)
 	bool cacheExists = m_prototype.cache.exists();
 	if (cacheExists)
 	{
-		Diagnostic::info(fmt::format("Reading Settings [{}]", m_jsonFile.filename()), false);
+		Diagnostic::infoEllipsis("Reading Settings [{}]", m_jsonFile.filename());
 	}
 	else
 	{
-		Diagnostic::info(fmt::format("Creating Settings [{}]", m_jsonFile.filename()), false);
+		Diagnostic::infoEllipsis("Creating Settings [{}]", m_jsonFile.filename());
 	}
 
 	if (!makeSettingsJson(inState))

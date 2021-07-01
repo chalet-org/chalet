@@ -14,8 +14,13 @@ struct Diagnostic
 {
 	Diagnostic() = delete;
 
-	static void info(const std::string& inMessage, const bool inLineBreak = true);
 	static void printDone(const std::string& inExtra = std::string());
+
+	template <typename... Args>
+	static void info(std::string_view inFmt, Args&&... args);
+
+	template <typename... Args>
+	static void infoEllipsis(std::string_view inFmt, Args&&... args);
 
 	template <typename... Args>
 	static void warn(std::string_view inFmt, Args&&... args);
@@ -57,6 +62,7 @@ private:
 
 	static ErrorList* getErrorList();
 
+	static void showInfo(std::string&& inMessage, const bool inLineBreak);
 	static void showErrorAndAbort(std::string&& inMessage);
 	static void showHeader(const Type inType, std::string&& inTitle);
 	static void showMessage(const Type inType, std::string&& inMessage);

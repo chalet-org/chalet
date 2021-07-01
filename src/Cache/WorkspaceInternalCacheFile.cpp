@@ -130,6 +130,10 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 					break;
 				}
 				case 2: {
+					m_hashTheme = std::move(line);
+					break;
+				}
+				case 3: {
 					auto splitVar = String::split(line, '|');
 					if (splitVar.size() == 2)
 					{
@@ -138,7 +142,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 					}
 					break;
 				}
-				case 3: {
+				case 4: {
 					m_lastBuildTime = strtoll(line.c_str(), NULL, 0);
 					break;
 				}
@@ -215,6 +219,7 @@ bool WorkspaceInternalCacheFile::save()
 		std::string contents;
 		contents += fmt::format("{}\n", m_hashWorkingDirectory);
 		contents += fmt::format("{}\n", m_hashStrategy);
+		contents += fmt::format("{}\n", m_hashTheme);
 		contents += fmt::format("{}|{}\n", m_hashVersion, m_hashVersionDebug);
 		contents += fmt::format("{}\n", m_initializedTime);
 
@@ -278,18 +283,35 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 }
 
 /*****************************************************************************/
+bool WorkspaceInternalCacheFile::themeChanged() const noexcept
+{
+	return m_themeChanged;
+}
+
+void WorkspaceInternalCacheFile::checkIfThemeChanged()
+{
+	m_themeChanged = false;
+
+	auto themeHash = Hash::string(Output::theme().asString());
+	if (themeHash != m_hashTheme)
+	{
+		m_hashTheme = std::move(themeHash);
+		m_themeChanged = true;
+		m_dirty = true;
+	}
+}
+
+/*****************************************************************************/
 bool WorkspaceInternalCacheFile::workingDirectoryChanged() const noexcept
 {
 	return m_workingDirectoryChanged;
 }
 
-/*****************************************************************************/
 void WorkspaceInternalCacheFile::checkIfWorkingDirectoryChanged(const std::string& inWorkingDirectory)
 {
 	m_workingDirectoryChanged = false;
 
 	auto workingDirectoryHash = Hash::string(inWorkingDirectory);
-
 	if (workingDirectoryHash != m_hashWorkingDirectory)
 	{
 		m_hashWorkingDirectory = std::move(workingDirectoryHash);
@@ -305,7 +327,6 @@ bool WorkspaceInternalCacheFile::appVersionChanged() const noexcept
 	// return m_appVersionChanged;
 }
 
-/*****************************************************************************/
 void WorkspaceInternalCacheFile::checkIfAppVersionChanged(const std::string& inAppPath)
 {
 	m_appVersionChanged = false;

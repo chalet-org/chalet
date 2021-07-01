@@ -179,7 +179,7 @@ bool CompilerConfig::getSupportedCompilerFlags()
 	if (exec.empty())
 		return false;
 
-	m_flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", m_state.info.targetArchitectureString()), CacheType::Local);
+	m_flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", exec), CacheType::Local);
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_flagsFile));
 

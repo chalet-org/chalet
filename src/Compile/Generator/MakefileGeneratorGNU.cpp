@@ -189,16 +189,16 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 /*****************************************************************************/
 std::string MakefileGeneratorGNU::getCompileEchoSources() const
 {
-	const auto blue = getColorBlue();
+	const auto color = getBuildColor();
 	std::string printer;
 
 	if (Output::cleanOutput())
 	{
-		printer = getPrinter(fmt::format("   {}$<", blue), true);
+		printer = getPrinter(fmt::format("   {}$<", color), true);
 	}
 	else
 	{
-		printer = getPrinter(std::string(blue));
+		printer = getPrinter(std::string(color));
 	}
 
 	return fmt::format("@{}", printer);
@@ -207,7 +207,7 @@ std::string MakefileGeneratorGNU::getCompileEchoSources() const
 /*****************************************************************************/
 std::string MakefileGeneratorGNU::getCompileEchoLinker() const
 {
-	const auto blue = getColorBlue();
+	const auto color = getBuildColor();
 	std::string printer;
 
 	if (Output::cleanOutput())
@@ -215,11 +215,11 @@ std::string MakefileGeneratorGNU::getCompileEchoLinker() const
 		const auto arrow = unicodeRightwardsTripleArrow();
 		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 
-		printer = getPrinter(fmt::format("{blue}{arrow}  {description} $@", FMT_ARG(blue), FMT_ARG(arrow), FMT_ARG(description)), true);
+		printer = getPrinter(fmt::format("{color}{arrow}  {description} $@", FMT_ARG(color), FMT_ARG(arrow), FMT_ARG(description)), true);
 	}
 	else
 	{
-		printer = getPrinter(std::string(blue));
+		printer = getPrinter(std::string(color));
 	}
 
 	return fmt::format("@{}", printer);
@@ -578,13 +578,13 @@ std::string MakefileGeneratorGNU::getPrinter(const std::string& inPrint, const b
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getColorBlue() const
+std::string MakefileGeneratorGNU::getBuildColor() const
 {
+	auto color = Output::getAnsiStyleUnescaped(Output::theme().build);
 #if defined(CHALET_WIN32)
-	// return Environment::isBash() ? "\033[0;34m" : "\x1b[0;34m";
-	return "\x1b[0;34m";
+	return fmt::format("\x1b[{}m", color);
 #else
-	return "\\033[0;34m";
+	return fmt::format("\\033[{}m", color);
 #endif
 }
 

@@ -47,12 +47,20 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 			... 🤡
 		*/
 
-		const auto xctraceOutput = Commands::subprocessOutput({ m_state.tools.xcrun(), "xctrace" });
-		const bool xctraceAvailable = !String::contains("unable to find utility", xctraceOutput);
+		bool xctraceAvailable = false;
+		if (!m_state.tools.xcrun().empty())
+		{
+			const auto xctraceOutput = Commands::subprocessOutput({ m_state.tools.xcrun(), "xctrace" });
+			xctraceAvailable = !String::contains("unable to find utility", xctraceOutput);
+		}
 		const bool useXcTrace = m_state.tools.xcodeVersionMajor() >= 12 || xctraceAvailable;
 
-		const auto instrumentsOutput = Commands::subprocessOutput({ m_state.tools.instruments() });
-		const bool instrumentsAvailable = !String::contains("requires Xcode", instrumentsOutput);
+		bool instrumentsAvailable = false;
+		if (!m_state.tools.instruments().empty())
+		{
+			const auto instrumentsOutput = Commands::subprocessOutput({ m_state.tools.instruments() });
+			instrumentsAvailable = !String::contains("requires Xcode", instrumentsOutput);
+		}
 
 		if (xctraceAvailable || instrumentsAvailable)
 		{
@@ -81,10 +89,11 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 {
 	const bool result = Commands::subprocess(inCommand);
 
-	Output::print(Color::Gray, "   Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
+	Diagnostic::info("Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
 
 	const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
 	Output::msgProfilerStartedGprof(profStatsFile);
+	Output::lineBreak();
 
 	if (!Commands::subprocessOutputToFile({ m_state.toolchain.profiler(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut))
 	{
@@ -92,6 +101,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 		return false;
 	}
 
+	Output::lineBreak();
 	Output::msgProfilerDone(profStatsFile);
 	Output::lineBreak();
 
@@ -147,7 +157,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 			cmd.push_back(arg);
 		}
 
-		Output::print(Color::Gray, fmt::format("   Running {} through instruments without output...", inExecutable));
+		Diagnostic::info("Running {} through instruments without output...", inExecutable);
 		Output::lineBreak();
 
 		if (!Commands::subprocess(cmd))
@@ -166,22 +176,25 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 /*****************************************************************************/
 bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
-	uint sampleDuration = 300;
-	uint samplingInterval = 1;
 
 	auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
 
-	bool sampleResult = false;
+	bool sampleResult = true;
 	auto onCreate = [&](int pid) -> void {
+		uint sampleDuration = 300;
+		uint samplingInterval = 1;
 		Output::msgProfilerStartedSample(inExecutable, sampleDuration, samplingInterval);
+		Output::lineBreak();
 
-		sampleResult = Commands::subprocess({ m_state.tools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close);
+		sampleResult =
+			Commands::subprocess({ m_state.tools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close);
 	};
 
 	bool result = Commands::subprocess(inCommand, std::move(onCreate));
 	if (!sampleResult)
-		return false;
+		Diagnostic::error("Error running sample...");
 
+	Output::lineBreak();
 	Output::msgProfilerDone(profStatsFile);
 	Output::lineBreak();
 

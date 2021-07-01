@@ -20,7 +20,7 @@ struct CommandPool
 		std::string symbol = " ";
 		std::string renameFrom;
 		std::string renameTo;
-		Color color = Color::Blue;
+		Color color = Color::Red;
 	};
 	using CmdList = std::vector<Cmd>;
 

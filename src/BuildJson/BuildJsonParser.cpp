@@ -48,7 +48,7 @@ BuildJsonParser::~BuildJsonParser() = default;
 bool BuildJsonParser::serialize()
 {
 	// Timer timer;
-	// Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
+	// Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
 
 	const Json& jRoot = m_buildJson.json;
 	if (!serializeFromJsonRoot(jRoot))

@@ -45,7 +45,7 @@ void SignalHandler::handler(const int inSignal)
 	bool exceptionThrown = std::current_exception() != nullptr;
 	bool assertionFailure = Diagnostic::assertionFailure();
 
-	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
+	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
 	const auto reset = Output::getAnsiReset();
 
 	std::cerr << '\n'
@@ -100,7 +100,7 @@ void SignalHandler::handler(const int inSignal)
 /*****************************************************************************/
 void SignalHandler::printError(const std::string& inType, const std::string& inDescription, const bool inPrintStackTrace)
 {
-	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
+	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
 	std::cerr << boldRed << inType + '\n';
 
 	if (!inDescription.empty())
@@ -124,10 +124,10 @@ void SignalHandler::printStackTrace()
 	Path::sanitize(workingDirectory);
 #endif
 
-	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
-	const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
-	const auto redHighlight = Output::getAnsiStyle(Color::Reset, Color::Red, true);
-	const auto blue = Output::getAnsiStyle(Color::Blue);
+	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
+	const auto boldBlack = Output::getAnsiStyle(Output::theme().flair, true);
+	const auto redHighlight = Output::getAnsiStyle(Output::theme().info, Output::theme().error, true);
+	const auto blue = Output::getAnsiStyle(Output::theme().build);
 	const auto reset = Output::getAnsiReset();
 
 	auto thisClassName = CHALET_REFLECT(SignalHandler);

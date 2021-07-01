@@ -69,7 +69,10 @@ bool AppBundlerWindows::createWindowsInstaller() const
 		Output::lineBreak();
 
 		Timer timer;
-		Diagnostic::info("Creating the Windows installer executable", Output::showCommands());
+		if (Output::showCommands())
+			Diagnostic::info("Creating the Windows installer executable");
+		else
+			Diagnostic::infoEllipsis("Creating the Windows installer executable");
 
 		StringList cmd{ m_state.tools.makeNsis() };
 		cmd.emplace_back("/WX");

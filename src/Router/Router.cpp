@@ -241,7 +241,7 @@ bool Router::cmdDebug()
 		Commands::subprocess({ "echo", "Hello World!" });
 
 		auto result = timer.stop();
-		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
+		Output::printInfo(fmt::format("time: {}ms\n", result));
 	}
 
 	{
@@ -260,7 +260,7 @@ bool Router::cmdDebug()
 		// LOG(output);
 
 		auto result = timer.stop();
-		Output::print(Color::Reset, fmt::format("time: {}ms\n", result));
+		Output::printInfo(fmt::format("time: {}ms\n", result));
 	}
 
 	return true;
@@ -287,7 +287,7 @@ bool Router::parseEnvFile()
 	if (Commands::pathExists(envFile))
 	{
 		Timer timer;
-		Diagnostic::info(fmt::format("Reading Environment [{}]", envFile), false);
+		Diagnostic::infoEllipsis("Reading Environment [{}]", envFile);
 
 		if (!Environment::parseVariablesFromFile(envFile))
 		{

@@ -9,6 +9,7 @@
 namespace chalet
 {
 struct AncillaryTools;
+struct ColorTheme;
 
 class ScriptRunner
 {

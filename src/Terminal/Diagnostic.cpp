@@ -49,37 +49,11 @@ Diagnostic::ErrorList* Diagnostic::getErrorList()
 }
 
 /*****************************************************************************/
-void Diagnostic::info(const std::string& inMessage, const bool inLineBreak)
-{
-	if (!Output::quietNonBuild())
-	{
-		const auto color = Output::getAnsiStyle(Color::Black);
-		const auto reset = Output::getAnsiReset();
-		const auto symbol = '>';
-
-		std::cout << fmt::format("{}{}  {}{}", color, symbol, reset, inMessage);
-		if (inLineBreak)
-		{
-			std::cout << std::endl;
-		}
-		else
-		{
-			std::cout << fmt::format("{} ... {}", color, reset);
-			sStartedInfo = true;
-			if (Output::showCommands())
-				std::cout << std::endl;
-			else
-				std::cout << std::flush;
-		}
-	}
-}
-
-/*****************************************************************************/
 void Diagnostic::printDone(const std::string& inExtra)
 {
 	if (!Output::quietNonBuild())
 	{
-		const auto color = Output::getAnsiStyle(Color::Black);
+		const auto color = Output::getAnsiStyle(Output::theme().flair);
 		const auto reset = Output::getAnsiReset();
 
 		sStartedInfo = false;
@@ -101,6 +75,32 @@ void Diagnostic::printDone(const std::string& inExtra)
 }
 
 /*****************************************************************************/
+void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
+{
+	if (!Output::quietNonBuild())
+	{
+		const auto color = Output::getAnsiStyle(Output::theme().flair);
+		const auto reset = Output::getAnsiReset();
+		const auto symbol = '>';
+
+		std::cout << fmt::format("{}{}  {}{}", color, symbol, reset, inMessage);
+		if (inLineBreak)
+		{
+			std::cout << std::endl;
+		}
+		else
+		{
+			std::cout << fmt::format("{} ... {}", color, reset);
+			sStartedInfo = true;
+			if (Output::showCommands())
+				std::cout << std::endl;
+			else
+				std::cout << std::flush;
+		}
+	}
+}
+
+/*****************************************************************************/
 void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 {
 	if (sExceptionThrown)
@@ -111,7 +111,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 
 	if (Environment::isBashOrWindowsConPTY())
 	{
-		const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
+		const auto boldBlack = Output::getAnsiStyle(Output::theme().flair, true);
 		std::cerr << boldBlack;
 	}
 
@@ -129,9 +129,9 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 		sStartedInfo = false;
 	}
 
-	const auto boldRed = Output::getAnsiStyle(Color::Red, true);
-	const auto boldBlack = Output::getAnsiStyle(Color::Black, true);
-	const auto blue = Output::getAnsiStyle(Color::Blue);
+	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
+	const auto boldBlack = Output::getAnsiStyle(Output::theme().flair, true);
+	const auto blue = Output::getAnsiStyle(Output::theme().build);
 	const auto reset = Output::getAnsiReset();
 
 	std::cerr << '\n'
@@ -165,7 +165,7 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 		sStartedInfo = false;
 	}
 
-	const auto color = Output::getAnsiStyle(inType == Type::Error ? Color::Red : Color::Yellow, true);
+	const auto color = Output::getAnsiStyle(inType == Type::Error ? Output::theme().error : Output::theme().warning, true);
 	const auto reset = Output::getAnsiReset();
 
 	out << color << std::move(inTitle) << ':' << reset << std::endl;

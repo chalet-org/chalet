@@ -48,7 +48,7 @@ bool StatePrototype::initialize()
 	if (m_inputs.command() != Route::Configure)
 	{
 		Timer timer;
-		Diagnostic::info(fmt::format("Reading Build File [{}]", m_filename), false);
+		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
 
 		if (!parseBuildJson())
 			return false;

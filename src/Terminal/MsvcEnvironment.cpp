@@ -103,8 +103,8 @@ bool MsvcEnvironment::create()
 	bool deltaExists = Commands::pathExists(m_varsFileMsvcDelta);
 	if (!deltaExists)
 	{
-		// Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
-		Diagnostic::info(fmt::format("Creating Microsoft{} Visual C++ Environment Cache", Unicode::registered()), false);
+		// Diagnostic::infoEllipsis("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta);
+		Diagnostic::infoEllipsis("Creating Microsoft{} Visual C++ Environment Cache", Unicode::registered());
 
 		{
 			StringList vswhereCmd{ s_vswhere, "-latest" };
@@ -181,8 +181,8 @@ bool MsvcEnvironment::create()
 	}
 	else
 	{
-		// Diagnostic::info(fmt::format("Reading Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta), false);
-		Diagnostic::info(fmt::format("Reading Microsoft{} Visual C++ Environment Cache", Unicode::registered()), false);
+		// Diagnostic::infoEllipsis("Reading Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta);
+		Diagnostic::infoEllipsis("Reading Microsoft{} Visual C++ Environment Cache", Unicode::registered());
 	}
 
 	// Read delta to cache

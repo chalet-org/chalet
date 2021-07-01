@@ -37,7 +37,7 @@ bool UniversalBinaryMacOS::run(BuildState& inStateB, BuildState& inUniversalStat
 
 	Timer timer;
 	auto arches = String::join(m_bundle.macosBundle().universalBinaryArches());
-	Diagnostic::info(fmt::format("Creating MacOS univeral binaries (arch: {})", arches), false);
+	Diagnostic::infoEllipsis("Creating MacOS univeral binaries (arch: {})", arches);
 
 	if (!gatherDependencies(m_state, inStateB, inUniversalState))
 		return false;

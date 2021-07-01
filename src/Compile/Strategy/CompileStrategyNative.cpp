@@ -147,7 +147,7 @@ CommandPool::Cmd CompileStrategyNative::getPchCommand(const std::string& pchTarg
 			ret.command = std::move(tmp.command);
 			ret.renameFrom = std::move(tmp.renameFrom);
 			ret.renameTo = std::move(tmp.renameTo);
-			ret.color = Color::Blue;
+			ret.color = Output::theme().build;
 			ret.symbol = " ";
 		}
 	}
@@ -196,7 +196,7 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 				out.command = std::move(tmp.command);
 				out.renameFrom = std::move(tmp.renameFrom);
 				out.renameTo = std::move(tmp.renameTo);
-				out.color = Color::Blue;
+				out.color = Output::theme().build;
 				out.symbol = " ";
 				ret.emplace_back(std::move(out));
 			}
@@ -216,7 +216,7 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 				out.command = std::move(tmp.command);
 				out.renameFrom = std::move(tmp.renameFrom);
 				out.renameTo = std::move(tmp.renameTo);
-				out.color = Color::Blue;
+				out.color = Output::theme().build;
 				out.symbol = " ";
 				ret.emplace_back(std::move(out));
 			}
@@ -239,7 +239,7 @@ CommandPool::Cmd CompileStrategyNative::getLinkCommand(const std::string& inTarg
 	CommandPool::Cmd ret;
 	ret.command = m_toolchain->getLinkerTargetCommand(inTarget, inObjects, targetBasename);
 	ret.output = fmt::format("{} {}", description, inTarget);
-	ret.color = Color::Blue;
+	ret.color = Output::theme().build;
 	ret.symbol = Unicode::rightwardsTripleArrow();
 
 	return ret;

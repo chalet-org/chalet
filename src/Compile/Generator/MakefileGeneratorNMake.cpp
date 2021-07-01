@@ -106,7 +106,7 @@ SHELL = {shell}
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& file) const
 {
-	const auto blue = getColorBlue();
+	const auto blue = getBuildColor();
 	std::string printer;
 
 	if (Output::cleanOutput())
@@ -125,7 +125,7 @@ std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& fil
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& file) const
 {
-	const auto blue = getColorBlue();
+	const auto blue = getBuildColor();
 	std::string printer;
 
 	if (Output::cleanOutput())
@@ -408,9 +408,10 @@ std::string MakefileGeneratorNMake::getPrinter(const std::string& inPrint) const
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getColorBlue() const
+std::string MakefileGeneratorNMake::getBuildColor() const
 {
-	return "\x1b[0;34m";
+	auto color = Output::getAnsiStyleUnescaped(Output::theme().build);
+	return fmt::format("\x1b[{}m", color);
 }
 
 #else

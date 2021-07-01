@@ -119,7 +119,7 @@ bool BuildState::initializeBuild()
 	bool isConfigure = m_inputs.command() == Route::Configure;
 
 	if (!isConfigure)
-		Diagnostic::info("Initializing", false);
+		Diagnostic::infoEllipsis("Initializing");
 
 	{
 		auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Local);
@@ -217,6 +217,7 @@ bool BuildState::initializeBuild()
 void BuildState::initializeCache()
 {
 	// m_prototype.cache.file().checkIfWorkingDirectoryChanged(m_inputs.workingDirectory());
+	m_prototype.cache.file().checkIfThemeChanged();
 
 	// TODO: Remove entirely?
 	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());

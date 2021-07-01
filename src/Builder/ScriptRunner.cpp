@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 
 #include "State/AncillaryTools.hpp"
+#include "Terminal/ColorTheme.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -241,7 +242,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 	if (inShowExitCode || !result)
 	{
 		Output::lineBreak();
-		Output::print(result ? Color::Reset : Color::Red, message, true);
+		Output::print(result ? Output::theme().info : Output::theme().error, message, true);
 
 		if (!inShowExitCode && !result)
 			Output::lineBreak();
