@@ -89,7 +89,6 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 
 	auto proximateOutput = Commands::getProximatePath(m_inputs.outputDirectory(), inLocation);
 	auto proximateSettings = Commands::getProximatePath(m_inputs.settingsFile(), inLocation);
-	LOG(proximateSettings);
 
 	cmd.emplace_back("--root-dir");
 	cmd.push_back(inLocation);
