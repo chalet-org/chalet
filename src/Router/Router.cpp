@@ -11,6 +11,7 @@
 
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
+#include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -34,6 +35,9 @@ Router::Router(CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool Router::run()
 {
+	if (!parseTheme())
+		return false;
+
 	Route command = m_inputs.command();
 	if (command == Route::Unknown
 		|| static_cast<std::underlying_type_t<Route>>(command) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
@@ -266,6 +270,19 @@ bool Router::cmdDebug()
 	return true;
 }
 #endif
+
+/*****************************************************************************/
+bool Router::parseTheme()
+{
+	ThemeSettingsJsonParser themeParser(m_inputs);
+	if (!themeParser.serialize())
+	{
+		Diagnostic::error("Error parsing theme.");
+		return false;
+	}
+
+	return true;
+}
 
 /*****************************************************************************/
 bool Router::parseEnvFile()

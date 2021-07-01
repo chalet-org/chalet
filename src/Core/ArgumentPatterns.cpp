@@ -427,6 +427,8 @@ std::string ArgumentPatterns::getHelp()
 	String::replaceAll(help, "[default: \"\"]", "");
 	String::replaceAll(help, "[default: true]", "");
 
+	// TODO: swap <command> and [options] via regex
+
 	return fmt::format("{title}\n\n{help}", FMT_ARG(title), FMT_ARG(help));
 }
 

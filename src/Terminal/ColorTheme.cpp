@@ -26,7 +26,11 @@ ColorTheme::ColorTheme() :
 /*****************************************************************************/
 bool ColorTheme::parseColorFromString(const std::string& inString, Color& outColor)
 {
-	if (String::equals("black", inString))
+	if (String::equals("reset", inString))
+	{
+		outColor = Color::Reset;
+	}
+	else if (String::equals("black", inString))
 	{
 		outColor = Color::Black;
 	}
@@ -58,16 +62,95 @@ bool ColorTheme::parseColorFromString(const std::string& inString, Color& outCol
 	{
 		outColor = Color::White;
 	}
-	else if (String::equals("reset", inString))
-	{
-		outColor = Color::Reset;
-	}
 	else
 	{
 		return false;
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string ColorTheme::getStringFromColor(const Color inColor)
+{
+	std::string ret;
+	switch (inColor)
+	{
+		case Color::Reset:
+			ret = "reset";
+			break;
+
+		case Color::Black:
+			ret = "black";
+			break;
+
+		case Color::Red:
+			ret = "red";
+			break;
+
+		case Color::Green:
+			ret = "green";
+			break;
+
+		case Color::Yellow:
+			ret = "yellow";
+			break;
+
+		case Color::Blue:
+			ret = "blue";
+			break;
+
+		case Color::Magenta:
+			ret = "magenta";
+			break;
+
+		case Color::Cyan:
+			ret = "cyan";
+			break;
+
+		case Color::White:
+			ret = "white";
+			break;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList ColorTheme::getKeys()
+{
+	return {
+		"info",
+		"error",
+		"warning",
+		"success",
+		"flair",
+		"header",
+		"build",
+		"alt",
+		"note",
+	};
+}
+
+/*****************************************************************************/
+bool ColorTheme::set(const std::string& inKey, const std::string& inValue)
+{
+	Color* color = getColorFromString(inKey);
+	if (color != nullptr)
+		return parseColorFromString(inValue, *color);
+
+	return false;
+}
+
+/*****************************************************************************/
+std::string ColorTheme::getAsString(const std::string& inKey)
+{
+
+	const Color* color = getColorFromString(inKey);
+	if (color != nullptr)
+		return ColorTheme::getStringFromColor(*color);
+
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -85,4 +168,66 @@ std::string ColorTheme::asString() const
 		static_cast<short>(note));
 }
 
+/*****************************************************************************/
+bool ColorTheme::operator==(const ColorTheme& rhs) const
+{
+	return error == rhs.error
+		&& warning == rhs.warning
+		&& success == rhs.success
+		&& flair == rhs.flair
+		&& info == rhs.info
+		&& header == rhs.header
+		&& build == rhs.build
+		&& alt == rhs.alt
+		&& note == rhs.note;
+}
+bool ColorTheme::operator!=(const ColorTheme& rhs) const
+{
+	return !operator==(rhs);
+}
+
+/*****************************************************************************/
+Color* ColorTheme::getColorFromString(const std::string& inKey)
+{
+	Color* color = nullptr;
+
+	if (String::equals("info", inKey))
+	{
+		color = &info;
+	}
+	else if (String::equals("error", inKey))
+	{
+		color = &error;
+	}
+	else if (String::equals("warning", inKey))
+	{
+		color = &warning;
+	}
+	else if (String::equals("success", inKey))
+	{
+		color = &success;
+	}
+	else if (String::equals("flair", inKey))
+	{
+		color = &flair;
+	}
+	else if (String::equals("header", inKey))
+	{
+		color = &header;
+	}
+	else if (String::equals("build", inKey))
+	{
+		color = &build;
+	}
+	else if (String::equals("alt", inKey))
+	{
+		color = &alt;
+	}
+	else if (String::equals("note", inKey))
+	{
+		color = &note;
+	}
+
+	return color;
+}
 }

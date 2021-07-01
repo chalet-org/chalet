@@ -26,8 +26,18 @@ struct ColorTheme
 	Color note;
 
 	static bool parseColorFromString(const std::string& inString, Color& outColor);
+	static std::string getStringFromColor(const Color inColor);
+	static StringList getKeys();
 
+	bool set(const std::string& inKey, const std::string& inValue);
+	std::string getAsString(const std::string& inKey);
 	std::string asString() const;
+
+	bool operator==(const ColorTheme& rhs) const;
+	bool operator!=(const ColorTheme& rhs) const;
+
+private:
+	Color* getColorFromString(const std::string& inKey);
 };
 }
 

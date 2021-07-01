@@ -17,6 +17,7 @@ protected:
 	const std::string kKeyToolchains = "toolchains";
 	const std::string kKeyTools = "tools";
 	const std::string kKeyAppleSdks = "appleSdks";
+	const std::string kKeyTheme = "theme";
 
 	const std::string kKeyDumpAssembly = "dumpAssembly";
 	const std::string kKeyMaxJobs = "maxJobs";

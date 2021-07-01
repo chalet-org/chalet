@@ -5,6 +5,7 @@
 
 #include "SettingsJson/SchemaSettingsJson.hpp"
 
+#include "Terminal/ColorTheme.hpp"
 #include "Utility/String.hpp"
 #include "Utility/SuppressIntellisense.hpp"
 #include "Json/JsonComments.hpp"
@@ -60,6 +61,8 @@ enum class Defs : ushort
 	ShowCommands,
 	Toolchain,
 	SigningIdentity,
+	// Theme
+	ThemeColor
 };
 }
 /*****************************************************************************/
@@ -345,6 +348,22 @@ Json Schema::getSettingsJson()
 		"type": "string"
 	})json"_ojson;
 
+	defs[Defs::ThemeColor] = R"json({
+		"type": "string",
+		"description": "An ANSI color to apply.",
+		"enum": [
+			"reset",
+			"black",
+			"red",
+			"green",
+			"yellow",
+			"blue",
+			"magenta",
+			"cyan",
+			"white"
+		]
+	})json"_ojson;
+
 	//
 
 	const auto kProperties = "properties";
@@ -449,6 +468,19 @@ Json Schema::getSettingsJson()
 		"description": "A list of compiler toolchains, mapped to the ids: msvc, llvm, or gcc"
 	})json"_ojson;
 	ret[kProperties][kToolchains]["patternProperties"][R"(^[\w\-\+\.]{3,}$)"] = toolchains;
+
+	const auto kTheme = "theme";
+	ret[kProperties][kTheme] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"description": "The color theme to give to Chalet"
+	})json"_ojson;
+	ret[kProperties][kTheme][kProperties] = Json::object();
+
+	for (const auto& key : ColorTheme::getKeys())
+	{
+		ret[kProperties][kTheme][kProperties][key] = defs[Defs::ThemeColor];
+	}
 
 	return ret;
 }

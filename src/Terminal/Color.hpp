@@ -10,6 +10,7 @@ namespace chalet
 {
 enum class Color : char
 {
+	Reset = 0,
 	Black = 30,
 	Red = 31,
 	Green = 32,
@@ -18,7 +19,6 @@ enum class Color : char
 	Magenta = 35,
 	Cyan = 36,
 	White = 37,
-	Reset = 0
 };
 }
 

@@ -84,7 +84,10 @@ static ColorTheme sTheme;
 /*****************************************************************************/
 void Output::setTheme(const ColorTheme& inTheme)
 {
-	sTheme = inTheme;
+	if (inTheme != sTheme)
+	{
+		sTheme = inTheme;
+	}
 }
 const ColorTheme& Output::theme()
 {

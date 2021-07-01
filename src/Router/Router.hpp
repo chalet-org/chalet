@@ -34,6 +34,7 @@ private:
 	bool cmdDebug();
 #endif
 
+	bool parseTheme();
 	bool parseEnvFile();
 	bool xcodebuildRoute(BuildState& inState);
 

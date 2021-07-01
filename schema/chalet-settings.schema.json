@@ -269,6 +269,148 @@
 					}
 				}
 			}
+		},
+		"theme": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "The color theme to give to Chalet",
+			"properties": {
+				"info": {
+					"type": "string",
+					"description": "An ANSI color to apply.",
+					"enum": [
+						"reset",
+						"black",
+						"red",
+						"green",
+						"yellow",
+						"blue",
+						"magenta",
+						"cyan",
+						"white"
+					]
+				},
+				"error": {
+					"type": "string",
+					"description": "An ANSI color to apply.",
+					"enum": [
+						"reset",
+						"black",
+						"red",
+						"green",
+						"yellow",
+						"blue",
+						"magenta",
+						"cyan",
+						"white"
+					]
+				},
+				"warning": {
+					"type": "string",
+					"description": "An ANSI color to apply.",
+					"enum": [
+						"reset",
+						"black",
+						"red",
+						"green",
+						"yellow",
+						"blue",
+						"magenta",
+						"cyan",
+						"white"
+					]
+				},
+				"success": {
+					"type": "string",
+					"description": "An ANSI color to apply.",
+					"enum": [
+						"reset",
+						"black",
+						"red",
+						"green",
+						"yellow",
+						"blue",
+						"magenta",
+						"cyan",
+						"white"
+					]
+				},
+				"flair": {
+					"type": "string",
+					"description": "An ANSI color to apply.",
+					"enum": [
+						"reset",
+						"black",
+						"red",
+						"green",
+						"yellow",
+						"blue",
+						"magenta",
+						"cyan",
+						"white"
+					]
+				},
+				"header": {
+					"type": "string",
+					"description": "An ANSI color to apply.",
+					"enum": [
+						"reset",
+						"black",
+						"red",
+						"green",
+						"yellow",
+						"blue",
+						"magenta",
+						"cyan",
+						"white"
+					]
+				},
+				"build": {
+					"type": "string",
+					"description": "An ANSI color to apply.",
+					"enum": [
+						"reset",
+						"black",
+						"red",
+						"green",
+						"yellow",
+						"blue",
+						"magenta",
+						"cyan",
+						"white"
+					]
+				},
+				"alt": {
+					"type": "string",
+					"description": "An ANSI color to apply.",
+					"enum": [
+						"reset",
+						"black",
+						"red",
+						"green",
+						"yellow",
+						"blue",
+						"magenta",
+						"cyan",
+						"white"
+					]
+				},
+				"note": {
+					"type": "string",
+					"description": "An ANSI color to apply.",
+					"enum": [
+						"reset",
+						"black",
+						"red",
+						"green",
+						"yellow",
+						"blue",
+						"magenta",
+						"cyan",
+						"white"
+					]
+				}
+			}
 		}
 	}
 }

@@ -28,6 +28,7 @@ struct CommandLineInputs
 
 	const std::string& settingsFile() const noexcept;
 	void setSettingsFile(std::string&& inValue) noexcept;
+	const std::string& globalSettingsFile() const noexcept;
 
 	const std::string& rootDirectory() const noexcept;
 	void setRootDirectory(std::string&& inValue) noexcept;
@@ -126,6 +127,7 @@ private:
 	mutable std::string m_toolchainPreferenceRaw;
 	mutable std::string m_workingDirectory;
 	mutable std::string m_homeDirectory;
+	mutable std::string m_globalSettingsFile;
 
 	std::string m_initPath;
 	std::string m_envFile;

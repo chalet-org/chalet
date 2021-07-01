@@ -96,17 +96,17 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	// Create the json cache
 	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
 
-	if (!m_jsonFile.json.contains(kKeyToolchains))
+	if (!m_jsonFile.json.contains(kKeyToolchains) || !m_jsonFile.json[kKeyToolchains].is_object())
 	{
 		m_jsonFile.json[kKeyToolchains] = inState.toolchains.is_object() ? inState.toolchains : Json::object();
 	}
 
-	if (!m_jsonFile.json.contains(kKeyTools))
+	if (!m_jsonFile.json.contains(kKeyTools) || !m_jsonFile.json[kKeyTools].is_object())
 	{
 		m_jsonFile.json[kKeyTools] = inState.tools.is_object() ? inState.tools : Json::object();
 	}
 
-	if (!m_jsonFile.json.contains(kKeyAppleSdks))
+	if (!m_jsonFile.json.contains(kKeyAppleSdks) || !m_jsonFile.json[kKeyAppleSdks].is_object())
 	{
 		m_jsonFile.json[kKeyAppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
 	}

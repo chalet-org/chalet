@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/GlobalSettingsState.hpp"
 #include "State/StatePrototype.hpp"
+#include "Terminal/Output.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -47,6 +48,22 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 #if defined(CHALET_MACOS)
 	m_jsonFile.makeNode(kKeyAppleSdks, JsonDataType::object);
 #endif
+
+	m_jsonFile.makeNode(kKeyTheme, JsonDataType::object);
+
+	ColorTheme theme = Output::theme();
+	Json& themeJson = m_jsonFile.json[kKeyTheme];
+	auto makeThemeKeyValueFromTheme = [&](const std::string& inKey) {
+		if (!themeJson.contains(inKey) || !themeJson[inKey].is_string())
+		{
+			themeJson[inKey] = theme.getAsString(inKey);
+		}
+	};
+
+	for (const auto& key : ColorTheme::getKeys())
+	{
+		makeThemeKeyValueFromTheme(key);
+	}
 
 	Json& buildSettings = m_jsonFile.json[kKeySettings];
 
