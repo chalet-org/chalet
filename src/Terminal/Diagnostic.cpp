@@ -79,14 +79,16 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 {
 	if (!Output::quietNonBuild())
 	{
-		const auto color = Output::getAnsiStyle(Output::theme().flair);
+		auto& theme = Output::theme();
+		const auto color = Output::getAnsiStyle(theme.flair);
+		const auto infoColor = Output::getAnsiStyle(theme.info);
 		const auto reset = Output::getAnsiReset();
 		const auto symbol = '>';
 
-		std::cout << fmt::format("{}{}  {}{}", color, symbol, reset, inMessage);
+		std::cout << fmt::format("{}{}  {}{}", color, symbol, infoColor, inMessage);
 		if (inLineBreak)
 		{
-			std::cout << std::endl;
+			std::cout << reset << std::endl;
 		}
 		else
 		{
