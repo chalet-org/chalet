@@ -444,7 +444,7 @@ void ArgumentPatterns::addInputFileArg()
 	m_parser.add_argument("-i", "--input-file")
 		.help("An input build file to use")
 		.nargs(1)
-		.default_value(std::string("build.json"));
+		.default_value(std::string("chalet.json"));
 
 	m_argumentMap.push_back({ "-i", Variant::Kind::String });
 	m_argumentMap.push_back({ "--input-file", Variant::Kind::String });

@@ -14,8 +14,8 @@
 	"json.schemas": [
 		{
 			"fileMatch": [
-				"build.json",
-				"build-*.json"
+				"chalet.json",
+				"chalet-*.json"
 			],
 			"url": "./schema/chalet.schema.json"
 		},

@@ -32,7 +32,7 @@ bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
 	auto& cacheFile = m_state.cache.file();
 	const auto& oldStrategyHash = cacheFile.hashStrategy();
 
-	// Note: The ninja cache folder must not change between build.json changes
+	// Note: The ninja cache folder must not change between chalet.json changes
 	{
 		auto configurationHash = Hash::string(m_state.paths.configuration());
 		m_cacheFolder = m_state.cache.getCachePath(configurationHash, CacheType::Local);

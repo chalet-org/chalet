@@ -266,7 +266,7 @@ bool ProjectInitializer::run()
 	}
 
 	{
-		Output::print(Color::Reset, "build.json");
+		Output::print(Color::Reset, "chalet.json");
 		Output::lineBreak();
 
 		auto jsonFile = StarterFileTemplates::getBuildJson(props);
@@ -383,7 +383,7 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 /*****************************************************************************/
 bool ProjectInitializer::makeBuildJson(const BuildJsonProps& inProps)
 {
-	const auto buildJsonPath = fmt::format("{}/build.json", m_rootPath);
+	const auto buildJsonPath = fmt::format("{}/chalet.json", m_rootPath);
 
 	auto jsonFile = StarterFileTemplates::getBuildJson(inProps);
 

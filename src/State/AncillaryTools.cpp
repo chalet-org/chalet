@@ -679,7 +679,7 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 		cmd = { m_otool, "-L", inPath };
 	#else
 		// This block detects the dependencies of each target and adds them to a list
-		// The list resolves each path, favoring the paths supplied by build.json
+		// The list resolves each path, favoring the paths supplied by chalet.json
 		// Note: this doesn't seem to work in standalone builds of GCC (tested 7.3.0)
 		//   but works fine w/ MSYS2
 		cmd = { m_ldd, inPath };

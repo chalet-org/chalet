@@ -18,7 +18,7 @@ namespace chalet
 CommandLineInputs::CommandLineInputs() :
 	m_notPlatforms(getNotPlatforms()),
 	kDefaultEnvFile(".env"),
-	m_inputFile("build.json"),
+	m_inputFile("chalet.json"),
 	m_settingsFile(".chaletrc"),
 	m_outputDirectory("build"),
 	m_platform(getPlatform()),

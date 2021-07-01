@@ -1255,12 +1255,12 @@ Json Schema::getBuildJson()
 
 	defs[Defs::TargetChaletLocation] = R"json({
 		"type": "string",
-		"description": "The folder path of the root build.json for the project."
+		"description": "The folder path of the root chalet.json for the project."
 	})json"_ojson;
 
 	defs[Defs::TargetChaletBuildFile] = R"json({
 		"type": "string",
-		"description": "The build file to use, if not build.json, relative to the location."
+		"description": "The build file to use, if not chalet.json, relative to the location."
 	})json"_ojson;
 
 	defs[Defs::TargetChaletRecheck] = R"json({

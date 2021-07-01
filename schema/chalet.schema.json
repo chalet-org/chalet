@@ -2243,11 +2243,11 @@
 											},
 											"location": {
 												"type": "string",
-												"description": "The folder path of the root build.json for the project."
+												"description": "The folder path of the root chalet.json for the project."
 											},
 											"buildFile": {
 												"type": "string",
-												"description": "The build file to use, if not build.json, relative to the location."
+												"description": "The build file to use, if not chalet.json, relative to the location."
 											},
 											"recheck": {
 												"type": "boolean",
@@ -2353,7 +2353,7 @@
 											},
 											"^buildFile(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
 												"type": "string",
-												"description": "The build file to use, if not build.json, relative to the location."
+												"description": "The build file to use, if not chalet.json, relative to the location."
 											}
 										}
 									}
