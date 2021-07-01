@@ -30,6 +30,7 @@ struct Diagnostic
 	static bool assertionFailure() noexcept;
 
 	static void printErrors();
+	static void throwCriticalError();
 
 private:
 	enum class Type : ushort

@@ -53,9 +53,9 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				arg.pop_back();
 		}
 
-		if (String::contains(' ', arg))
+		if (String::startsWith("--", arg) && String::contains('=', arg))
 		{
-			auto list = String::split(arg);
+			auto list = String::split(arg, '=');
 			for (auto& it : list)
 			{
 				arguments.emplace_back(std::move(it));
@@ -63,18 +63,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		}
 		else
 		{
-			if (String::startsWith("--", arg) && String::contains('=', arg))
-			{
-				auto list = String::split(arg, '=');
-				for (auto& it : list)
-				{
-					arguments.emplace_back(std::move(it));
-				}
-			}
-			else
-			{
-				arguments.emplace_back(std::move(arg));
-			}
+			arguments.emplace_back(std::move(arg));
 		}
 	}
 
@@ -96,6 +85,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	std::string toolchainPreference;
 	std::string inputFile;
 	std::string settingsFile;
+	std::string file;
 	std::string rootDirectory;
 	std::string outputDirectory;
 	std::string envFile;
@@ -125,6 +115,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				else if (String::equals({ "-s", "--settings-file" }, key))
 				{
 					settingsFile = std::move(value);
+				}
+				else if (String::equals({ "-f", "--file" }, key))
+				{
+					file = std::move(value);
 				}
 				else if (String::equals({ "-r", "--root-dir" }, key))
 				{
@@ -196,15 +190,15 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					Output::setQuietNonBuild(value);
 				}
+				else if (String::equals({ "-l", "--local" }, key))
+				{
+					if (value)
+						m_inputs.setSettingsType(SettingsType::Local);
+				}
 				else if (String::equals({ "-g", "--global" }, key))
 				{
 					if (value)
 						m_inputs.setSettingsType(SettingsType::Global);
-				}
-				else if (String::equals({ "-g", "--local" }, key))
-				{
-					if (value)
-						m_inputs.setSettingsType(SettingsType::Local);
 				}
 				break;
 			}
@@ -218,7 +212,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	//
 	m_inputs.setOutputDirectory(std::move(outputDirectory));
 	m_inputs.setInputFile(std::move(inputFile));
-	m_inputs.setSettingsFile(std::move(settingsFile));
+	if (!file.empty())
+		m_inputs.setSettingsFile(std::move(file));
+	else
+		m_inputs.setSettingsFile(std::move(settingsFile));
 	m_inputs.setEnvFile(std::move(envFile));
 
 	// must do at the end (after arch & toolchain have been parsed)

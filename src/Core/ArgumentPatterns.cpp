@@ -148,6 +148,7 @@ ushort ArgumentPatterns::parseOption(const std::string& inString)
 	if (String::equals({
 		"-i", "--input-file",
 		"-s", "--settings-file",
+		"-f", "--file",
 		"-r", "--root-dir",
 		"-o", "--output-dir",
 		"-t", "--toolchain",
@@ -283,8 +284,7 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 		CHALET_CATCH(const std::runtime_error& err)
 		{
 #if defined(CHALET_EXCEPTIONS)
-			if (strcmp(err.what(), "Unknown argument") != 0)
-				CHALET_THROW(err);
+			CHALET_THROW(err);
 #endif
 		}
 
@@ -294,9 +294,12 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 			return showHelp();
 		}
 	}
-	CHALET_CATCH(const std::runtime_error&)
+	CHALET_CATCH(const std::runtime_error& err)
 	{
-		return showHelp();
+		// LOG(err.what());
+		showHelp();
+		CHALET_EXCEPT_ERROR("{}", err.what());
+		return false;
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
@@ -344,9 +347,10 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		keys.push_back(key);
 	}
 
+	bool isRun = m_route == Route::Run || m_route == Route::BuildRun;
 	for (auto& arg : inArguments)
 	{
-		if (arg.front() == '-' && !List::contains(keys, arg))
+		if (arg.front() == '-' && !List::contains(keys, arg) && !isRun)
 		{
 			Diagnostic::error("An invalid argument was found: '{}'", arg);
 			return false;
@@ -456,6 +460,18 @@ void ArgumentPatterns::addSettingsFileArg()
 
 	m_argumentMap.push_back({ "-s", Variant::Kind::String });
 	m_argumentMap.push_back({ "--settings-file", Variant::Kind::String });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addFileArg()
+{
+	m_parser.add_argument("-f", "--file")
+		.help("The path to a JSON file to examine, if not the local/global settings")
+		.nargs(1)
+		.default_value(std::string());
+
+	m_argumentMap.push_back({ "-f", Variant::Kind::String });
+	m_argumentMap.push_back({ "--file", Variant::Kind::String });
 }
 
 /*****************************************************************************/
@@ -781,7 +797,7 @@ void ArgumentPatterns::commandInit()
 /*****************************************************************************/
 void ArgumentPatterns::commandSettingsGet()
 {
-	addSettingsFileArg();
+	addFileArg();
 	addSettingsTypeArg();
 
 	m_parser.add_argument(kArgConfigKey)
@@ -794,7 +810,7 @@ void ArgumentPatterns::commandSettingsGet()
 /*****************************************************************************/
 void ArgumentPatterns::commandSettingsSet()
 {
-	addSettingsFileArg();
+	addFileArg();
 	addSettingsTypeArg();
 
 	m_parser.add_argument(kArgConfigKey)
@@ -813,7 +829,7 @@ void ArgumentPatterns::commandSettingsSet()
 /*****************************************************************************/
 void ArgumentPatterns::commandSettingsUnset()
 {
-	addSettingsFileArg();
+	addFileArg();
 	addSettingsTypeArg();
 
 	m_parser.add_argument(kArgConfigKey)

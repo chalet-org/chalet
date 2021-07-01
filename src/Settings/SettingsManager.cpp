@@ -5,6 +5,7 @@
 
 #include "Settings/SettingsManager.hpp"
 
+#include "BuildJson/SchemaBuildJson.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/SchemaSettingsJson.hpp"
 #include "Terminal/Commands.hpp"
@@ -14,6 +15,7 @@ namespace chalet
 {
 /*****************************************************************************/
 SettingsManager::SettingsManager(const CommandLineInputs& inInputs, const SettingsAction inAction) :
+	m_inputs(inInputs),
 	m_cache(inInputs),
 	m_key(inInputs.settingsKey()),
 	m_value(inInputs.settingsValue()),
@@ -190,11 +192,23 @@ bool SettingsManager::runSettingsSet(Json& node)
 
 	if (validate)
 	{
-		Json schema = Schema::getSettingsJson();
-		if (!settings.validate(std::move(schema)))
+		if (String::endsWith(settings.filename(), ".chaletrc"))
 		{
-			settings.setDirty(false);
-			return false;
+			Json schema = Schema::getSettingsJson();
+			if (!settings.validate(std::move(schema)))
+			{
+				settings.setDirty(false);
+				return false;
+			}
+		}
+		else if (String::endsWith(settings.filename(), m_inputs.inputFile()))
+		{
+			Json schema = Schema::getBuildJson();
+			if (!settings.validate(std::move(schema)))
+			{
+				settings.setDirty(false);
+				return false;
+			}
 		}
 	}
 
@@ -204,29 +218,69 @@ bool SettingsManager::runSettingsSet(Json& node)
 /*****************************************************************************/
 bool SettingsManager::runSettingsUnset(Json& node)
 {
+
+	auto onNotFound = [](const std::string& inLastKey) -> bool {
+		Diagnostic::error("Not found: '{}'", inLastKey);
+		return false;
+	};
+
 	Json* ptr = &node;
 	std::string lastKey;
+	std::string idxRaw;
+	std::string subKeyRaw;
 	auto keySplit = String::split(m_key, '.');
 	for (auto& subKey : keySplit)
 	{
 		std::ptrdiff_t i = &subKey - &keySplit.front();
 		bool notLast = i < static_cast<std::ptrdiff_t>(keySplit.size() - 1);
+		getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw);
+
 		if (!ptr->contains(subKey) && notLast)
 		{
 			auto loc = m_key.find(subKey);
 			lastKey = m_key.substr(0, loc + subKey.size());
-			return false;
+			return onNotFound(lastKey);
 		}
 
-		if (notLast)
+		if (!idxRaw.empty())
 		{
+			ptr = &ptr->at(subKey);
+			std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+			if (val >= ptr->size())
+			{
+				auto loc = m_key.find(subKey);
+				lastKey = m_key.substr(0, loc + subKey.size());
+				return onNotFound(lastKey);
+			}
+
+			if (notLast)
+			{
+				ptr = &(*ptr)[val];
+				idxRaw.clear();
+				subKeyRaw.clear();
+			}
+		}
+		else if (notLast)
+		{
+
 			ptr = &ptr->at(subKey);
 		}
 		lastKey = subKey;
 	}
 
 	auto& settings = getSettings();
-	ptr->erase(lastKey);
+	if (ptr->is_array())
+	{
+		std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+		ptr->erase(val);
+	}
+	else
+	{
+		if (!ptr->contains(lastKey))
+			return onNotFound(lastKey);
+
+		ptr->erase(lastKey);
+	}
 	settings.setDirty(true);
 
 	std::cout << fmt::format("unset: {}", m_key) << std::endl;
@@ -254,17 +308,47 @@ bool SettingsManager::findRequestedNode(Json& inNode, std::string& outLastKey, J
 
 	if (!m_key.empty())
 	{
-		auto keySplit = String::split(m_key, '.');
+		bool fail = false;
+		StringList keySplit = String::split(m_key, '.');
+		std::string idxRaw;
+		std::string subKeyRaw;
 		for (auto& subKey : keySplit)
 		{
+			if (!getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw))
+			{
+				fail = true;
+			}
+
 			if (!outNode->contains(subKey))
 			{
-				auto loc = m_key.find(subKey);
-				outLastKey = m_key.substr(0, loc + subKey.size());
+				fail = true;
+			}
+
+			if (fail)
+			{
+				auto& key = !subKeyRaw.empty() ? subKeyRaw : subKey;
+				auto loc = m_key.find(key);
+				outLastKey = m_key.substr(0, loc + key.size());
 				return false;
 			}
 
 			outNode = &outNode->at(subKey);
+
+			if (outNode->is_array() && !idxRaw.empty())
+			{
+				std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+				if (val < outNode->size())
+				{
+					outNode = &(*outNode)[val];
+				}
+				else
+				{
+					auto& key = !subKeyRaw.empty() ? subKeyRaw : subKey;
+					auto loc = m_key.find(key);
+					outLastKey = m_key.substr(0, loc + key.size());
+					return false;
+				}
+			}
 		}
 	}
 
@@ -277,45 +361,81 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 	outNode = &inNode;
 
 	std::string lastKey;
+	std::string idxRaw;
+	std::string subKeyRaw;
 	auto keySplit = String::split(m_key, '.');
 	for (auto& subKey : keySplit)
 	{
 		std::ptrdiff_t i = &subKey - &keySplit.front();
 		bool notLast = i < static_cast<std::ptrdiff_t>(keySplit.size() - 1);
+		getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw);
+
 		if (!outNode->contains(subKey) && notLast)
 		{
 			(*outNode)[subKey] = Json::object();
 		}
 
-		if (notLast)
+		if (!idxRaw.empty())
+		{
+			outNode = &outNode->at(subKey);
+			LOG("idxRaw:", idxRaw);
+			std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+			while (val >= outNode->size())
+			{
+				outNode->push_back(nullptr);
+			}
+
+			if (notLast)
+			{
+				outNode = &(*outNode)[val];
+				idxRaw.clear();
+				subKeyRaw.clear();
+			}
+		}
+		else if (notLast)
 		{
 			outNode = &outNode->at(subKey);
 		}
 		lastKey = subKey;
 	}
 
+	Json value;
+
 	if (String::startsWith("{", m_value) && String::endsWith("}", m_value))
 	{
-		(*outNode)[lastKey] = Json::object();
+		value = Json::object();
 	}
 	else if (String::equals({ "true", "false", "0", "1" }, m_value))
 	{
-		(*outNode)[lastKey] = false;
+		value = false;
 	}
 	else if (m_value.find_first_not_of("1234567890-") == std::string::npos)
 	{
-		(*outNode)[lastKey] = 0;
+		value = 0;
 	}
 	else if (m_value.find_first_not_of("1234567890-.") == std::string::npos)
 	{
-		(*outNode)[lastKey] = 0.0f;
+		value = 0.0f;
 	}
 	else
 	{
-		(*outNode)[lastKey] = std::string();
+		value = std::string();
 	}
 
-	outNode = &outNode->at(lastKey);
+	if (outNode->is_array())
+	{
+		std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+		if (val < outNode->size())
+		{
+			(*outNode)[val] = std::move(value);
+			outNode = &(*outNode)[val];
+		}
+	}
+	else
+	{
+		(*outNode)[lastKey] = std::move(value);
+		outNode = &outNode->at(lastKey);
+	}
 
 	return true;
 }
@@ -325,4 +445,26 @@ JsonFile& SettingsManager::getSettings()
 {
 	return m_cache.getSettings(m_type);
 }
+
+/*****************************************************************************/
+bool SettingsManager::getArrayKeyWithIndex(std::string& inKey, std::string& outRawKey, std::string& outIndex)
+{
+	auto openBracket = inKey.find('[');
+	if (openBracket != std::string::npos)
+	{
+		auto closeBracket = inKey.find(']', openBracket);
+		if (closeBracket != std::string::npos)
+		{
+			outRawKey = inKey;
+			outIndex = inKey.substr(openBracket + 1, closeBracket - (openBracket + 1));
+			inKey = inKey.substr(0, openBracket);
+			auto valid = outIndex.find_first_not_of("0123456789") == std::string::npos;
+			if (!valid)
+				return false;
+		}
+	}
+
+	return true;
+}
+
 }

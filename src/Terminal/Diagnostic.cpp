@@ -256,4 +256,10 @@ void Diagnostic::printErrors()
 	s_Printed = true;
 }
 
+/*****************************************************************************/
+void Diagnostic::throwCriticalError()
+{
+	CHALET_THROW(kCriticalError);
+}
+
 }

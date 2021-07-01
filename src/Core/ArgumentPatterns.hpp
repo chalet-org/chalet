@@ -49,6 +49,7 @@ private:
 	void populateMainArguments();
 	void addInputFileArg();
 	void addSettingsFileArg();
+	void addFileArg();
 	void addRootDirArg();
 	void addOutputDirArg();
 	void addProjectGenArg();

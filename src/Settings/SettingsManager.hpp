@@ -29,8 +29,11 @@ private:
 	bool findRequestedNode(Json& inNode, std::string& outLastKey, Json*& outNode);
 
 	bool makeSetting(Json& inNode, Json*& outNode);
+	bool getArrayKeyWithIndex(std::string& inKey, std::string& outRawKey, std::string& outIndex);
 
 	JsonFile& getSettings();
+
+	const CommandLineInputs& m_inputs;
 
 	WorkspaceCache m_cache;
 
