@@ -68,7 +68,7 @@ private:
 	std::string m_externalDependencyCachePath;
 	mutable std::unordered_map<std::string, std::unique_ptr<SourceCache>> m_sourceCaches;
 
-	bool m_workingDirectoryChanged = false;
+	// bool m_workingDirectoryChanged = false;
 	bool m_themeChanged = false;
 	bool m_appVersionChanged = false;
 	bool m_dirty = false;

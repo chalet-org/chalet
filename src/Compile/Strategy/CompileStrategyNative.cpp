@@ -11,7 +11,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
-#include "UtilitY/List.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Subprocess.hpp"
 
