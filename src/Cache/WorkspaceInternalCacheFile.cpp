@@ -57,7 +57,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId)
 	else
 	{
 		chalet_assert(m_initializedTime != 0, "");
-		auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_initializedTime, m_lastBuildTime));
+		auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_initializedTime, m_initializedTime));
 		if (!success)
 		{
 			Diagnostic::error("Error creating cache for {}", inId);
@@ -122,28 +122,20 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 			switch (i)
 			{
 				case 0: {
-					m_hashWorkingDirectory = std::move(line);
-					break;
-				}
-				case 1: {
 					m_hashStrategy = std::move(line);
 					break;
 				}
-				case 2: {
+				case 1: {
 					m_hashTheme = std::move(line);
 					break;
 				}
-				case 3: {
+				case 2: {
 					auto splitVar = String::split(line, '|');
 					if (splitVar.size() == 2)
 					{
 						m_hashVersion = std::move(splitVar.front());
 						m_hashVersionDebug = std::move(splitVar.back());
 					}
-					break;
-				}
-				case 4: {
-					m_lastBuildTime = strtoll(line.c_str(), NULL, 0);
 					break;
 				}
 				default: {
@@ -159,8 +151,16 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 					}
 					else if (String::startsWith('@', line))
 					{
-						std::string id = line.substr(1);
-						if (id.empty())
+						auto split = String::split(line.substr(1), '|');
+						if (split.size() != 2)
+						{
+							Diagnostic::error("Bad key found in cache. Aborting.");
+							return false;
+						}
+						const auto& id = split.front();
+						const auto& lastBuildRaw = split.back();
+
+						if (id.empty() || lastBuildRaw.empty())
 						{
 							Diagnostic::error("Empty key found in cache. Aborting.");
 							return false;
@@ -170,7 +170,8 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 							Diagnostic::error("Duplicate key found in cache: {}", id);
 							return false;
 						}
-						auto [it, success] = m_sourceCaches.emplace(id, std::make_unique<SourceCache>(m_initializedTime, m_lastBuildTime));
+						std::time_t lastBuild = strtoll(lastBuildRaw.c_str(), NULL, 0);
+						auto [it, success] = m_sourceCaches.emplace(id, std::make_unique<SourceCache>(m_initializedTime, lastBuild));
 						if (!success)
 						{
 							Diagnostic::error("Error creating cache for {}", id);
@@ -217,11 +218,9 @@ bool WorkspaceInternalCacheFile::save()
 	if (m_dirty)
 	{
 		std::string contents;
-		contents += fmt::format("{}\n", m_hashWorkingDirectory);
 		contents += fmt::format("{}\n", m_hashStrategy);
 		contents += fmt::format("{}\n", m_hashTheme);
 		contents += fmt::format("{}|{}\n", m_hashVersion, m_hashVersionDebug);
-		contents += fmt::format("{}\n", m_initializedTime);
 
 		for (auto& hash : m_extraHashes)
 		{
@@ -230,8 +229,7 @@ bool WorkspaceInternalCacheFile::save()
 
 		for (auto& [id, sourceCache] : m_sourceCaches)
 		{
-			contents += fmt::format("@{}\n", id);
-			contents += sourceCache->asString();
+			contents += sourceCache->asString(id);
 		}
 
 		m_dirty = false;
@@ -304,10 +302,11 @@ void WorkspaceInternalCacheFile::checkIfThemeChanged()
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::workingDirectoryChanged() const noexcept
 {
-	return m_workingDirectoryChanged;
+	// return m_workingDirectoryChanged;
+	return false;
 }
 
-void WorkspaceInternalCacheFile::checkIfWorkingDirectoryChanged(const std::string& inWorkingDirectory)
+/*void WorkspaceInternalCacheFile::checkIfWorkingDirectoryChanged(const std::string& inWorkingDirectory)
 {
 	m_workingDirectoryChanged = false;
 
@@ -318,7 +317,7 @@ void WorkspaceInternalCacheFile::checkIfWorkingDirectoryChanged(const std::strin
 		m_workingDirectoryChanged = true;
 		m_dirty = true;
 	}
-}
+}*/
 
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::appVersionChanged() const noexcept

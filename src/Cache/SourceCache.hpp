@@ -12,10 +12,10 @@ namespace chalet
 {
 struct SourceCache
 {
-	explicit SourceCache(const std::time_t& inInitializedTime, const std::time_t& inLastBuildTime);
+	explicit SourceCache(const std::time_t inInitializedTime, const std::time_t inLastBuildTime);
 
 	bool dirty() const;
-	std::string asString() const;
+	std::string asString(const std::string& inId) const;
 
 	void addLastWrite(std::string inFile, const std::string& inRaw);
 
@@ -23,13 +23,13 @@ struct SourceCache
 	bool fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const;
 
 private:
-	bool add(const std::string& inFile, LastWrite& outFileData) const;
+	void add(const std::string& inFile, LastWrite& outFileData) const;
 	LastWrite& getLastWrite(const std::string& inFile) const;
 
 	mutable std::unordered_map<std::string, LastWrite> m_lastWrites;
 
-	const std::time_t& m_initializedTime;
-	const std::time_t& m_lastBuildTime;
+	std::time_t m_initializedTime;
+	std::time_t m_lastBuildTime;
 
 	mutable bool m_dirty = false;
 };

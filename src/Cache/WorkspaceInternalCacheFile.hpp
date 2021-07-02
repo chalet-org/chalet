@@ -34,7 +34,7 @@ struct WorkspaceInternalCacheFile
 	void checkIfThemeChanged();
 
 	bool workingDirectoryChanged() const noexcept;
-	void checkIfWorkingDirectoryChanged(const std::string& inWorkingDirectory);
+	// void checkIfWorkingDirectoryChanged(const std::string& inWorkingDirectory);
 
 	bool appVersionChanged() const noexcept;
 	void checkIfAppVersionChanged(const std::string& inAppPath);
@@ -58,9 +58,8 @@ private:
 	std::string m_hashTheme;
 	std::string m_hashVersion;
 	std::string m_hashVersionDebug;
-	std::string m_hashWorkingDirectory;
+	// std::string m_hashWorkingDirectory;
 
-	std::time_t m_lastBuildTime = 0;
 	std::time_t m_initializedTime = 0;
 
 	SourceCache* m_sources = nullptr;

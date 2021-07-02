@@ -10,7 +10,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-SourceCache::SourceCache(const std::time_t& inInitializedTime, const std::time_t& inLastBuildTime) :
+SourceCache::SourceCache(const std::time_t inInitializedTime, const std::time_t inLastBuildTime) :
 	m_initializedTime(inInitializedTime),
 	m_lastBuildTime(inLastBuildTime)
 {
@@ -23,9 +23,11 @@ bool SourceCache::dirty() const
 }
 
 /*****************************************************************************/
-std::string SourceCache::asString() const
+std::string SourceCache::asString(const std::string& inId) const
 {
 	std::string ret;
+
+	ret += fmt::format("@{}|{}\n", inId, m_dirty ? m_initializedTime : m_lastBuildTime);
 
 	for (auto& [file, fileData] : m_lastWrites)
 	{
@@ -64,7 +66,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 
 	auto& fileData = getLastWrite(inFile);
 	if (fileData.needsUpdate)
-		return add(inFile, fileData);
+		add(inFile, fileData);
 
 	return fileData.lastWrite > m_lastBuildTime;
 }
@@ -80,40 +82,20 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std
 		return true;
 	}
 
-	bool result = false;
-
 	auto& fileData = getLastWrite(inFile);
 	if (fileData.needsUpdate)
-	{
-		result = add(inFile, fileData);
-	}
-	else
-	{
-		result = fileData.lastWrite > m_lastBuildTime;
-	}
+		add(inFile, fileData);
 
-	// auto& depData = getLastWrite(inDependency);
-	// if (depData.needsUpdate)
-	// {
-	// 	result |= add(inDependency, depData);
-	// }
-	// else
-	// {
-	// 	result |= fileData.lastWrite > depData.lastWrite;
-	// }
-
-	return result;
+	return fileData.lastWrite > m_lastBuildTime;
 }
 
 /*****************************************************************************/
-bool SourceCache::add(const std::string& inFile, LastWrite& outFileData) const
+void SourceCache::add(const std::string& inFile, LastWrite& outFileData) const
 {
-	bool result = true;
 	auto lastWrite = Commands::getLastWriteTime(inFile);
 	if (lastWrite >= m_initializedTime)
 	{
 		outFileData.lastWrite = m_initializedTime;
-		result = false;
 	}
 	else
 	{
@@ -125,8 +107,6 @@ bool SourceCache::add(const std::string& inFile, LastWrite& outFileData) const
 
 	outFileData.needsUpdate = false;
 	m_dirty = true;
-
-	return result;
 }
 
 /*****************************************************************************/

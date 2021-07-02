@@ -9,6 +9,7 @@
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -179,7 +180,8 @@ bool CompilerConfig::getSupportedCompilerFlags()
 	if (exec.empty())
 		return false;
 
-	m_flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", exec), CacheType::Local);
+	auto hash = Hash::string(fmt::format("flags_{}.env", exec));
+	m_flagsFile = m_state.cache.getCachePath(hash, CacheType::Local);
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_flagsFile));
 
