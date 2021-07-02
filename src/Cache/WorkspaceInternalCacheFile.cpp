@@ -47,8 +47,11 @@ ExternalDependencyCache& WorkspaceInternalCacheFile::externalDependencies()
 }
 
 /*****************************************************************************/
-bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId)
+bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const bool inNative)
 {
+	if (inNative)
+		List::addIfDoesNotExist(m_doNotRemoves, inId);
+
 	auto itr = m_sourceCaches.find(inId);
 	if (itr != m_sourceCaches.end())
 	{
@@ -370,18 +373,24 @@ std::string WorkspaceInternalCacheFile::getAppVersionHash(std::string appPath)
 }
 
 /*****************************************************************************/
-StringList WorkspaceInternalCacheFile::getCacheIds() const
+StringList WorkspaceInternalCacheFile::getCacheIdsForRemoval() const
 {
 	StringList ret;
 	ret.emplace_back(String::getPathFilename(m_filename));
 
 	for (auto& id : m_extraHashes)
 	{
+		if (List::contains(m_doNotRemoves, id))
+			continue;
+
 		ret.push_back(id);
 	}
 
 	for (auto& [id, _] : m_sourceCaches)
 	{
+		if (List::contains(m_doNotRemoves, id))
+			continue;
+
 		ret.push_back(id);
 	}
 

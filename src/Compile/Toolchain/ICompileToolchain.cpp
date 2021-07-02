@@ -100,8 +100,7 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 
 	if (!windowsManifestFile.empty() && sources.fileChangedOrDoesNotExist(windowsManifestFile))
 	{
-		// TODO: This is kind of a hack for now.
-		if (Commands::pathExists(windowsManifestResourceFile))
+		if (!m_isNative && Commands::pathExists(windowsManifestResourceFile))
 			Commands::remove(windowsManifestResourceFile);
 
 		if (!Commands::pathExists(windowsManifestFile))
@@ -117,7 +116,7 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 		}
 	}
 
-	if (!windowsManifestResourceFile.empty() && sources.fileChangedOrDoesNotExist(windowsManifestResourceFile))
+	if (!windowsManifestResourceFile.empty() && sources.fileChangedOrDoesNotExist(windowsManifestResourceFile, windowsManifestFile))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
 		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
@@ -143,8 +142,7 @@ bool ICompileToolchain::createWindowsApplicationIcon()
 
 	if (!windowsIconFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconFile))
 	{
-		// TODO: This is kind of a hack for now.
-		if (Commands::pathExists(windowsIconResourceFile))
+		if (!m_isNative && Commands::pathExists(windowsIconResourceFile))
 			Commands::remove(windowsIconResourceFile);
 
 		if (!Commands::pathExists(windowsIconFile))
@@ -154,7 +152,7 @@ bool ICompileToolchain::createWindowsApplicationIcon()
 		}
 	}
 
-	if (!windowsIconResourceFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconResourceFile))
+	if (!windowsIconResourceFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconResourceFile, windowsIconFile))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsIconResource(windowsIconFile);
 		if (!Commands::createFileWithContents(windowsIconResourceFile, rcContents))

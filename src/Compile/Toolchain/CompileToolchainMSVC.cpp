@@ -242,6 +242,7 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 	}
 	else
 	{
+		ret.emplace_back("/release");
 		ret.emplace_back("/INCREMENTAL:NO");
 	}
 
@@ -334,6 +335,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 	}
 	else
 	{
+		ret.emplace_back("/release");
 		ret.emplace_back("/INCREMENTAL:NO");
 	}
 

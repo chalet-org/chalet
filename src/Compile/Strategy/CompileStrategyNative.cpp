@@ -40,15 +40,9 @@ bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
 
 	const bool appVersionChanged = cacheFile.appVersionChanged();
 	auto strategyHash = String::getPathFilename(cachePath);
-	cacheFile.setSourceCache(strategyHash);
+	cacheFile.setSourceCache(strategyHash, true);
 
 	bool cacheNeedsUpdate = oldStrategyHash != strategyHash || appVersionChanged;
-
-	if (!Commands::pathExists(cachePath))
-	{
-		std::ofstream(cachePath) << "native compile stub"
-								 << std::endl;
-	}
 
 	if (cacheNeedsUpdate)
 	{

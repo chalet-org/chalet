@@ -35,7 +35,7 @@ std::string SourceCache::asString(const std::string& inId) const
 			continue;
 
 		if (fileData.needsUpdate)
-			add(file, fileData);
+			makeUpdate(file, fileData);
 
 		ret += fmt::format("{}|{}\n", fileData.lastWrite, file);
 	}
@@ -66,7 +66,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 
 	auto& fileData = getLastWrite(inFile);
 	if (fileData.needsUpdate)
-		add(inFile, fileData);
+		makeUpdate(inFile, fileData);
 
 	return fileData.lastWrite > m_lastBuildTime;
 }
@@ -74,7 +74,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
 {
-	if (!Commands::pathExists(inFile) || !Commands::pathExists(inDependency))
+	if (!Commands::pathExists(inFile) || fileChangedOrDoesNotExist(inDependency))
 	{
 		m_lastWrites[inFile].lastWrite = m_initializedTime;
 		m_lastWrites[inFile].needsUpdate = true;
@@ -84,13 +84,13 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std
 
 	auto& fileData = getLastWrite(inFile);
 	if (fileData.needsUpdate)
-		add(inFile, fileData);
+		makeUpdate(inFile, fileData);
 
 	return fileData.lastWrite > m_lastBuildTime;
 }
 
 /*****************************************************************************/
-void SourceCache::add(const std::string& inFile, LastWrite& outFileData) const
+void SourceCache::makeUpdate(const std::string& inFile, LastWrite& outFileData) const
 {
 	auto lastWrite = Commands::getLastWriteTime(inFile);
 	if (lastWrite >= m_initializedTime)

@@ -168,7 +168,7 @@ void WorkspaceCache::removeBuildIfCacheChanged(const std::string& inBuildDir)
 bool WorkspaceCache::removeStaleProjectCaches()
 {
 	const auto& cacheRef = getCacheRef(CacheType::Local);
-	StringList ids = m_cacheFile.getCacheIds();
+	StringList ids = m_cacheFile.getCacheIdsForRemoval();
 
 	if (!Commands::pathExists(cacheRef) || ids.size() == 0)
 		return true;
