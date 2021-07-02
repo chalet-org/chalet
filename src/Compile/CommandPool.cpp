@@ -233,13 +233,13 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 	if (!post.command.empty())
 	{
-		Output::lineBreak();
+		// Output::lineBreak();
 
 		auto color = Output::getAnsiStyle(post.color);
 
 		if (!printCommand(
 				color + post.symbol + reset,
-				color + (showCommmands ? String::join(post.command) : post.output) + reset))
+				post.label + ' ' + color + (showCommmands ? String::join(post.command) : post.output) + reset))
 			return onError();
 
 		if (!executeCommandFunc(post.command, post.renameFrom, post.renameTo, renameAfterCommand))

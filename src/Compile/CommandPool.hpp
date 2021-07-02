@@ -17,6 +17,7 @@ struct CommandPool
 	{
 		std::string output;
 		StringList command;
+		std::string label;
 		std::string symbol = " ";
 		std::string renameFrom;
 		std::string renameTo;

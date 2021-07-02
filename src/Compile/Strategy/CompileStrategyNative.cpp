@@ -45,7 +45,7 @@ bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
 
 	if (!Commands::pathExists(cachePath))
 	{
-		std::ofstream(cachePath) << "native stub"
+		std::ofstream(cachePath) << "native compile stub"
 								 << std::endl;
 	}
 
@@ -234,13 +234,15 @@ CommandPool::Cmd CompileStrategyNative::getLinkCommand(const std::string& inTarg
 
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 
-	const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+	const std::string description = m_project->isStaticLibrary() ? "ARCHIVE" : "LINK";
 
 	CommandPool::Cmd ret;
 	ret.command = m_toolchain->getLinkerTargetCommand(inTarget, inObjects, targetBasename);
-	ret.output = fmt::format("{} {}", description, inTarget);
+	ret.label = std::move(description);
+	ret.output = inTarget;
 	ret.color = Output::theme().build;
-	ret.symbol = Unicode::rightwardsTripleArrow();
+	ret.symbol = " ";
+	// ret.symbol = Unicode::rightwardsTripleArrow();
 
 	return ret;
 }
