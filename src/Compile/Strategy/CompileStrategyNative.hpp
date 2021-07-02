@@ -44,6 +44,8 @@ private:
 
 	CommandPool m_commandPool;
 
+	StringList m_fileCache;
+
 	const ProjectTarget* m_project = nullptr;
 	ICompileToolchain* m_toolchain = nullptr;
 

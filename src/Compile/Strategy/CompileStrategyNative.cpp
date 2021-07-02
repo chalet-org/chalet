@@ -11,6 +11,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
+#include "UtilitY/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Subprocess.hpp"
 
@@ -83,7 +84,12 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 	{
 		if (m_sourcesChanged || m_pchChanged)
 		{
-			target->post = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
+			if (!List::contains(m_fileCache, inOutputs.target))
+			{
+				m_fileCache.push_back(inOutputs.target);
+
+				target->post = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
+			}
 		}
 
 		const auto& name = inProject.name();
@@ -142,13 +148,18 @@ CommandPool::Cmd CompileStrategyNative::getPchCommand(const std::string& pchTarg
 		m_sourcesChanged |= m_pchChanged;
 		if (m_pchChanged)
 		{
-			auto tmp = getPchCompile(source, pchTarget);
-			ret.output = std::move(source);
-			ret.command = std::move(tmp.command);
-			ret.renameFrom = std::move(tmp.renameFrom);
-			ret.renameTo = std::move(tmp.renameTo);
-			ret.color = Output::theme().build;
-			ret.symbol = " ";
+			if (!List::contains(m_fileCache, source))
+			{
+				m_fileCache.push_back(source);
+
+				auto tmp = getPchCompile(source, pchTarget);
+				ret.output = std::move(source);
+				ret.command = std::move(tmp.command);
+				ret.renameFrom = std::move(tmp.renameFrom);
+				ret.renameTo = std::move(tmp.renameTo);
+				ret.color = Output::theme().build;
+				ret.symbol = " ";
+			}
 		}
 	}
 
@@ -190,15 +201,20 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 			m_sourcesChanged |= sourceChanged;
 			if (sourceChanged || m_pchChanged)
 			{
-				auto tmp = getRcCompile(source, target);
-				CommandPool::Cmd out;
-				out.output = std::move(source);
-				out.command = std::move(tmp.command);
-				out.renameFrom = std::move(tmp.renameFrom);
-				out.renameTo = std::move(tmp.renameTo);
-				out.color = Output::theme().build;
-				out.symbol = " ";
-				ret.emplace_back(std::move(out));
+				if (!List::contains(m_fileCache, source))
+				{
+					m_fileCache.push_back(source);
+
+					auto tmp = getRcCompile(source, target);
+					CommandPool::Cmd out;
+					out.output = std::move(source);
+					out.command = std::move(tmp.command);
+					out.renameFrom = std::move(tmp.renameFrom);
+					out.renameTo = std::move(tmp.renameTo);
+					out.color = Output::theme().build;
+					out.symbol = " ";
+					ret.emplace_back(std::move(out));
+				}
 			}
 #else
 			continue;
@@ -210,15 +226,20 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList&
 			m_sourcesChanged |= sourceChanged;
 			if (sourceChanged || m_pchChanged)
 			{
-				auto tmp = getCxxCompile(source, target, specialization);
-				CommandPool::Cmd out;
-				out.output = std::move(source);
-				out.command = std::move(tmp.command);
-				out.renameFrom = std::move(tmp.renameFrom);
-				out.renameTo = std::move(tmp.renameTo);
-				out.color = Output::theme().build;
-				out.symbol = " ";
-				ret.emplace_back(std::move(out));
+				if (!List::contains(m_fileCache, source))
+				{
+					m_fileCache.push_back(source);
+
+					auto tmp = getCxxCompile(source, target, specialization);
+					CommandPool::Cmd out;
+					out.output = std::move(source);
+					out.command = std::move(tmp.command);
+					out.renameFrom = std::move(tmp.renameFrom);
+					out.renameTo = std::move(tmp.renameTo);
+					out.color = Output::theme().build;
+					out.symbol = " ";
+					ret.emplace_back(std::move(out));
+				}
 			}
 		}
 	}
