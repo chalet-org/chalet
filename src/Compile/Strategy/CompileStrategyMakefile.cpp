@@ -29,26 +29,20 @@ bool CompileStrategyMakefile::initialize(const StringList& inFileExtensions)
 	if (m_initialized)
 		return false;
 
-	auto id = fmt::format("makefile_{}_{}", Output::showCommands() ? 1 : 0, String::join(inFileExtensions));
-	m_cacheFile = m_state.cache.getHashPath(id, CacheType::Local);
+	const auto uniqueId = m_state.getUniqueIdForState(inFileExtensions);
+	m_cacheFile = m_state.cache.getCachePath(uniqueId, CacheType::Local);
 
 	auto& cacheFile = m_state.cache.file();
-	const auto& oldStrategyHash = cacheFile.hashStrategy();
+	auto strategyHash = String::getPathFilename(m_cacheFile);
+	cacheFile.setSourceCache(strategyHash);
 
 	const bool cacheExists = Commands::pathExists(m_cacheFile);
 	const bool appVersionChanged = cacheFile.appVersionChanged();
 	const bool themeChanged = cacheFile.themeChanged();
 	const bool buildFileChanged = cacheFile.buildFileChanged();
+	const bool buildHashChanged = cacheFile.buildHashChanged();
 
-	auto strategyHash = String::getPathFilename(m_cacheFile);
-	cacheFile.setSourceCache(strategyHash);
-
-	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged || themeChanged || buildFileChanged;
-
-	if (m_cacheNeedsUpdate)
-	{
-		m_state.cache.file().setHashStrategy(std::move(strategyHash));
-	}
+	m_cacheNeedsUpdate = !cacheExists || appVersionChanged || buildHashChanged || buildFileChanged || themeChanged;
 
 	m_initialized = true;
 

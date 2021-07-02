@@ -51,6 +51,8 @@ public:
 	bool doBuild(const bool inShowSuccess = true);
 	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
 
+	std::string getUniqueIdForState(const StringList& inOther) const;
+
 private:
 	bool initializeBuildConfiguration();
 	bool parseToolchainFromSettingsJson();

@@ -31,6 +31,7 @@ struct CompilerTools
 	void fetchNinjaVersion();
 
 	StrategyType strategy() const noexcept;
+	const std::string& strategyString() const noexcept;
 	void setStrategy(const std::string& inValue) noexcept;
 
 	const std::string& compiler() const noexcept;
@@ -115,6 +116,8 @@ private:
 	std::string m_compilerVersionStringC;
 	std::string m_compilerDetectedArchCpp;
 	std::string m_compilerDetectedArchC;
+
+	std::string m_strategyString;
 
 	uint m_cmakeVersionMajor = 0;
 	uint m_cmakeVersionMinor = 0;

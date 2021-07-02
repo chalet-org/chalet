@@ -16,6 +16,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -69,6 +70,21 @@ bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 {
 	BuildManager mgr(m_inputs, *this);
 	return mgr.run(inRoute, inShowSuccess);
+}
+
+/*****************************************************************************/
+std::string BuildState::getUniqueIdForState(const StringList& inOther) const
+{
+	std::string ret;
+	const auto& hostArch = info.hostArchitectureString();
+	const auto targetArch = m_inputs.getArchWithOptionsAsString(info.targetArchitectureString());
+	const auto& toolchainPref = m_inputs.toolchainPreferenceRaw();
+	const auto& strategy = toolchain.strategyString();
+	const auto& buildConfig = info.buildConfiguration();
+
+	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, toolchainPref, strategy, buildConfig, Output::showCommands() ? 1 : 0, String::join(inOther, '_'));
+
+	return Hash::string(ret);
 }
 
 /*****************************************************************************/

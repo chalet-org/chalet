@@ -21,16 +21,11 @@ WorkspaceInternalCacheFile::WorkspaceInternalCacheFile(WorkspaceCache& inCache) 
 	UNUSED(m_cache);
 }
 
-/*****************************************************************************/
-const std::string& WorkspaceInternalCacheFile::hashStrategy() const noexcept
+void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue) noexcept
 {
-	return m_hashStrategy;
-}
-
-void WorkspaceInternalCacheFile::setHashStrategy(std::string&& inValue) noexcept
-{
-	m_dirty |= m_hashStrategy != inValue;
-	m_hashStrategy = std::move(inValue);
+	m_buildHashChanged = m_buildHash != inValue;
+	m_dirty |= m_buildHashChanged;
+	m_buildHash = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -49,6 +44,8 @@ ExternalDependencyCache& WorkspaceInternalCacheFile::externalDependencies()
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const bool inNative)
 {
+	setBuildHash(inId);
+
 	if (inNative)
 		List::addIfDoesNotExist(m_doNotRemoves, inId);
 
@@ -136,14 +133,14 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 					if (split.size() != 2)
 						return onError();
 
-					const auto& hashStrategy = split.front();
+					const auto& buildHash = split.front();
 					const auto& lastBuildRaw = split.back();
 
-					if (hashStrategy.empty() || lastBuildRaw.empty())
+					if (buildHash.empty() || lastBuildRaw.empty())
 						return onError();
 
 					std::time_t lastBuildFileWrite = strtoll(lastBuildRaw.c_str(), NULL, 0);
-					m_hashStrategy = std::move(hashStrategy);
+					m_buildHash = std::move(buildHash);
 					m_buildFileChanged = lastBuildFileWrite != m_lastBuildFileWrite;
 					break;
 				}
@@ -243,7 +240,7 @@ bool WorkspaceInternalCacheFile::save()
 	if (m_dirty)
 	{
 		std::string contents;
-		contents += fmt::format("{}|{}\n", m_hashStrategy, m_lastBuildFileWrite);
+		contents += fmt::format("{}|{}\n", m_buildHash, m_lastBuildFileWrite);
 		contents += fmt::format("{}\n", m_hashTheme);
 
 		if (!m_hashVersionDebug.empty())
@@ -311,6 +308,12 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool WorkspaceInternalCacheFile::buildHashChanged() const noexcept
+{
+	return m_buildHashChanged;
 }
 
 /*****************************************************************************/

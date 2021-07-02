@@ -17,9 +17,6 @@ struct WorkspaceInternalCacheFile
 {
 	explicit WorkspaceInternalCacheFile(WorkspaceCache& inCache);
 
-	const std::string& hashStrategy() const noexcept;
-	void setHashStrategy(std::string&& inValue) noexcept;
-
 	bool initialize(const std::string& inFilename, const std::string& inBuildFile);
 	bool save();
 
@@ -30,6 +27,7 @@ struct WorkspaceInternalCacheFile
 	bool removeSourceCache(const std::string& inId);
 	bool removeExtraCache(const std::string& inId);
 
+	bool buildHashChanged() const noexcept;
 	bool buildFileChanged() const noexcept;
 
 	bool themeChanged() const noexcept;
@@ -46,6 +44,8 @@ struct WorkspaceInternalCacheFile
 	StringList getCacheIdsForRemoval() const;
 
 private:
+	void setBuildHash(const std::string& inValue) noexcept;
+
 	std::string getAppVersionHash(std::string appPath);
 
 	WorkspaceCache& m_cache;
@@ -54,7 +54,7 @@ private:
 	StringList m_extraHashes;
 
 	std::string m_filename;
-	std::string m_hashStrategy;
+	std::string m_buildHash;
 	std::string m_hashTheme;
 	std::string m_hashVersion;
 	std::string m_hashVersionDebug;
@@ -69,6 +69,7 @@ private:
 	mutable std::unordered_map<std::string, std::unique_ptr<SourceCache>> m_sourceCaches;
 	SourceLastWriteMap m_lastWrites;
 
+	bool m_buildHashChanged = false;
 	bool m_buildFileChanged = false;
 	bool m_themeChanged = false;
 	bool m_appVersionChanged = false;

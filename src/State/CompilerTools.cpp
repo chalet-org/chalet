@@ -485,8 +485,14 @@ StrategyType CompilerTools::strategy() const noexcept
 	return m_strategy;
 }
 
+const std::string& CompilerTools::strategyString() const noexcept
+{
+	return m_strategyString;
+}
+
 void CompilerTools::setStrategy(const std::string& inValue) noexcept
 {
+	m_strategyString = inValue;
 	if (String::equals("makefile", inValue))
 	{
 		m_strategy = StrategyType::Makefile;

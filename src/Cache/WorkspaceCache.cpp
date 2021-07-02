@@ -107,6 +107,22 @@ std::string WorkspaceCache::getHashPath(const std::string& inIdentifier, const C
 }
 
 /*****************************************************************************/
+std::string WorkspaceCache::getCachePath(const std::string& inIdentifier, const CacheType inCacheType) const
+{
+	const auto& cacheRef = getCacheRef(inCacheType);
+	std::string ret;
+
+	if (inIdentifier.empty())
+		ret = cacheRef;
+	else
+		ret = fmt::format("{}/{}", cacheRef, inIdentifier);
+
+	// LOG(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
 WorkspaceInternalCacheFile& WorkspaceCache::file() noexcept
 {
 	return m_cacheFile;
