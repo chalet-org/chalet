@@ -8,6 +8,7 @@
 // #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "Utility/List.hpp"
+#include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -416,8 +417,9 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 /*****************************************************************************/
 std::string ArgumentPatterns::getHelp()
 {
-	std::string title = "Chalet - Cross Platform JSON-based Project & Meta-Build Tool";
+	std::string title = "Chalet - A cross-platform JSON-based project & build tool";
 	std::string help = m_parser.help().str();
+	String::replaceAll(help, " [options] <command>", " <subcommand> [options]");
 	String::replaceAll(help, "Usage: ", "Usage:\n   ");
 	String::replaceAll(help, "Positional arguments:", "Commands:");
 	String::replaceAll(help, "Optional arguments:", "Options:");
@@ -427,9 +429,19 @@ std::string ArgumentPatterns::getHelp()
 	String::replaceAll(help, "[default: \"\"]", "");
 	String::replaceAll(help, "[default: true]", "");
 
-	// TODO: swap <command> and [options] via regex
+	std::string ret = fmt::format("{title}\n\n{help}", FMT_ARG(title), FMT_ARG(help));
+	if (m_route == Route::Unknown)
+	{
+		ret += "\nAdditional help is available in each subcommand";
+	}
+	else
+	{
+		RegexPatterns::matchAndReplace(ret, "(\\[options\\]) (\\w+)", "$& [opts]");
+		String::replaceAll(ret, " [options]", "");
+		String::replaceAll(ret, "[opts]", "[options]");
+	}
 
-	return fmt::format("{title}\n\n{help}", FMT_ARG(title), FMT_ARG(help));
+	return ret;
 }
 
 /*****************************************************************************/

@@ -7,7 +7,6 @@
 
 #include "Core/CommandLineInputs.hpp"
 
-#include "Libraries/Regex.hpp"
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"

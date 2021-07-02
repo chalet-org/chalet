@@ -26,6 +26,7 @@ bool RegexPatterns::matchesGnuCppStandard(const std::string& inValue)
 	return false;
 }
 
+/*****************************************************************************/
 bool RegexPatterns::matchesGnuCStandard(const std::string& inValue)
 {
 #ifndef CHALET_MSVC
@@ -40,5 +41,15 @@ bool RegexPatterns::matchesGnuCStandard(const std::string& inValue)
 	}
 
 	return false;
+}
+
+/*****************************************************************************/
+bool RegexPatterns::matchAndReplace(std::string& outText, const std::string& inValue, const std::string& inReplaceValue)
+{
+	// replace value needs $& syntax
+	std::regex vowel_re(inValue);
+	outText = std::regex_replace(outText, vowel_re, inReplaceValue);
+
+	return true;
 }
 }

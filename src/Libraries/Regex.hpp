@@ -6,6 +6,8 @@
 #ifndef CHALET_REGEX_HPP
 #define CHALET_REGEX_HPP
 
+#include <regex>
+
 #ifdef CHALET_MSVC
 	#pragma warning(push)
 #else

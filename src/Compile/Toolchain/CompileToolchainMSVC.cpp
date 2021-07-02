@@ -5,7 +5,6 @@
 
 #include "Compile/Toolchain/CompileToolchainMSVC.hpp"
 
-#include "Libraries/Regex.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
