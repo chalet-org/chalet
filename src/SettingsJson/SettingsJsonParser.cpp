@@ -105,11 +105,39 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	{
 		m_jsonFile.json[kKeyTools] = inState.tools.is_object() ? inState.tools : Json::object();
 	}
+	else
+	{
+		if (inState.tools.is_object())
+		{
+			for (auto& [key, value] : inState.tools.items())
+			{
+				if (!m_jsonFile.json[kKeyTools].contains(key))
+				{
+					m_jsonFile.json[kKeyTools][key] = value;
+				}
+			}
+		}
+	}
 
+	// #if defined(CHALET_MACOS)
 	if (!m_jsonFile.json.contains(kKeyAppleSdks) || !m_jsonFile.json[kKeyAppleSdks].is_object())
 	{
 		m_jsonFile.json[kKeyAppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
 	}
+	else
+	{
+		if (inState.appleSdks.is_object())
+		{
+			for (auto& [key, value] : inState.appleSdks.items())
+			{
+				if (!m_jsonFile.json[kKeyAppleSdks].contains(key))
+				{
+					m_jsonFile.json[kKeyAppleSdks][key] = value;
+				}
+			}
+		}
+	}
+	// #endif
 
 	Json& buildSettings = m_jsonFile.json[kKeySettings];
 
@@ -215,34 +243,44 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	Json& tools = m_jsonFile.json[kKeyTools];
 
 	whichAdd(tools, kKeyBash);
+#if defined(CHALET_MACOS)
 	whichAdd(tools, kKeyBrew, HostPlatform::MacOS);
 	whichAdd(tools, kKeyCodesign, HostPlatform::MacOS);
+#endif
 
+#if defined(CHALET_WIN32)
 	if (!tools.contains(kKeyCommandPrompt))
 	{
-#if defined(CHALET_WIN32)
 		auto res = Commands::which("cmd");
 		String::replaceAll(res, "WINDOWS/SYSTEM32", "Windows/System32");
 		tools[kKeyCommandPrompt] = std::move(res);
-#else
-		tools[kKeyCommandPrompt] = std::string();
-#endif
 		m_jsonFile.setDirty(true);
 	}
+#endif
 
 	whichAdd(tools, kKeyGit);
+#if defined(CHALET_MACOS)
 	whichAdd(tools, kKeyHdiutil, HostPlatform::MacOS);
 	whichAdd(tools, kKeyInstallNameTool, HostPlatform::MacOS);
 	whichAdd(tools, kKeyInstruments, HostPlatform::MacOS);
+#endif
 	whichAdd(tools, kKeyLdd);
+#if defined(CHALET_MACOS)
 	whichAdd(tools, kKeyLipo, HostPlatform::MacOS);
+#endif
 	whichAdd(tools, kKeyLua);
+#if defined(CHALET_WIN32)
 	whichAdd(tools, kKeyMakeNsis, HostPlatform::Windows);
+#endif
 
+#if defined(CHALET_MACOS)
 	whichAdd(tools, kKeyOsascript, HostPlatform::MacOS);
 	whichAdd(tools, kKeyOtool, HostPlatform::MacOS);
+#endif
 	whichAdd(tools, kKeyPerl);
+#if defined(CHALET_MACOS)
 	whichAdd(tools, kKeyPlutil, HostPlatform::MacOS);
+#endif
 	whichAdd(tools, kKeyPython);
 	whichAdd(tools, kKeyPython3);
 
@@ -258,12 +296,15 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	}
 
 	whichAdd(tools, kKeyRuby);
+
+#if defined(CHALET_MACOS)
 	whichAdd(tools, kKeySample, HostPlatform::MacOS);
 	whichAdd(tools, kKeySips, HostPlatform::MacOS);
 	whichAdd(tools, kKeyTiffutil, HostPlatform::MacOS);
 	whichAdd(tools, kKeyXcodebuild, HostPlatform::MacOS);
 	whichAdd(tools, kKeyXcodegen, HostPlatform::MacOS);
 	whichAdd(tools, kKeyXcrun, HostPlatform::MacOS);
+#endif
 
 #if defined(CHALET_MACOS)
 	// AppleTVOS.platform/
