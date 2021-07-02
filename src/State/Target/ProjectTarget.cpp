@@ -397,6 +397,12 @@ const std::string& ProjectTarget::outputFile() const noexcept
 }
 
 /*****************************************************************************/
+const std::string& ProjectTarget::outputFileNoPrefix() const noexcept
+{
+	return m_outputFileNoPrefix;
+}
+
+/*****************************************************************************/
 const std::string& ProjectTarget::cStandard() const noexcept
 {
 	return m_cStandard;
@@ -655,11 +661,6 @@ void ProjectTarget::setWindowsPrefixOutputFilename(const bool inValue) noexcept
 	m_setWindowsPrefixOutputFilename = true;
 }
 
-bool ProjectTarget::setWindowsPrefixOutputFilename() const noexcept
-{
-	return m_setWindowsPrefixOutputFilename;
-}
-
 /*****************************************************************************/
 bool ProjectTarget::windowsOutputDef() const noexcept
 {
@@ -734,6 +735,7 @@ void ProjectTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 		case ProjectKind::ConsoleApplication:
 		case ProjectKind::DesktopApplication: {
 			m_outputFile = projectName + executableExtension;
+			m_outputFileNoPrefix = m_outputFile;
 			break;
 		}
 		case ProjectKind::SharedLibrary:
@@ -741,10 +743,12 @@ void ProjectTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 			if (!windowsPrefixOutputFilename() || (inConfig.isMsvc() && !m_setWindowsPrefixOutputFilename) || inConfig.isWindowsClang())
 			{
 				m_outputFile = projectName + libraryExtension;
+				m_outputFileNoPrefix = m_outputFile;
 			}
 			else
 			{
-				m_outputFile = "lib" + projectName + libraryExtension;
+				m_outputFileNoPrefix = projectName + libraryExtension;
+				m_outputFile = "lib" + m_outputFileNoPrefix;
 			}
 			break;
 		}

@@ -86,6 +86,7 @@ struct ProjectTarget final : public IBuildTarget
 	void parseOutputFilename(const CompilerConfig& inConfig) noexcept;
 
 	const std::string& outputFile() const noexcept;
+	const std::string& outputFileNoPrefix() const noexcept;
 
 	CodeLanguage language() const noexcept;
 	void setLanguage(const std::string& inValue) noexcept;
@@ -151,7 +152,6 @@ struct ProjectTarget final : public IBuildTarget
 
 	bool windowsPrefixOutputFilename() const noexcept;
 	void setWindowsPrefixOutputFilename(const bool inValue) noexcept;
-	bool setWindowsPrefixOutputFilename() const noexcept;
 
 	bool windowsOutputDef() const noexcept;
 	void setWindowsOutputDef(const bool inValue) noexcept;
@@ -184,6 +184,7 @@ private:
 	std::string m_productionExcludes;
 	std::string m_warningsPresetString{ "none" };
 	std::string m_outputFile;
+	std::string m_outputFileNoPrefix;
 	std::string m_cStandard;
 	std::string m_cppStandard;
 	std::string m_pch;

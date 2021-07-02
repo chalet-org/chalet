@@ -10,7 +10,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-SourceCache::SourceCache(const std::time_t inInitializedTime, const std::time_t inLastBuildTime) :
+SourceCache::SourceCache(SourceLastWriteMap& inLastWrites, const std::time_t inInitializedTime, const std::time_t inLastBuildTime) :
+	m_lastWrites(inLastWrites),
 	m_initializedTime(inInitializedTime),
 	m_lastBuildTime(inLastBuildTime)
 {
@@ -28,17 +29,6 @@ std::string SourceCache::asString(const std::string& inId) const
 	std::string ret;
 
 	ret += fmt::format("@{}|{}\n", inId, m_dirty ? m_initializedTime : m_lastBuildTime);
-
-	for (auto& [file, fileData] : m_lastWrites)
-	{
-		if (!Commands::pathExists(file))
-			continue;
-
-		if (fileData.needsUpdate)
-			makeUpdate(file, fileData);
-
-		ret += fmt::format("{}|{}\n", fileData.lastWrite, file);
-	}
 
 	return ret;
 }
@@ -73,6 +63,24 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
+{
+	if (!Commands::pathExists(inFile) || !Commands::pathExists(inDependency))
+	{
+		m_lastWrites[inFile].lastWrite = m_initializedTime;
+		m_lastWrites[inFile].needsUpdate = true;
+		m_dirty = true;
+		return true;
+	}
+
+	auto& fileData = getLastWrite(inFile);
+	if (fileData.needsUpdate)
+		makeUpdate(inFile, fileData);
+
+	return fileData.lastWrite > m_lastBuildTime;
+}
+
+/*****************************************************************************/
+bool SourceCache::fileChangedOrDependantChanged(const std::string& inFile, const std::string& inDependency) const
 {
 	if (!Commands::pathExists(inFile) || fileChangedOrDoesNotExist(inDependency))
 	{

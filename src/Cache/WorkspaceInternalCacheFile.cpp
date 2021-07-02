@@ -60,7 +60,8 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 	else
 	{
 		chalet_assert(m_initializedTime != 0, "");
-		auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_initializedTime, m_initializedTime));
+
+		auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_lastWrites, m_initializedTime, m_initializedTime));
 		if (!success)
 		{
 			Diagnostic::error("Error creating cache for {}", inId);
@@ -151,11 +152,18 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 					break;
 				}
 				case 2: {
-					auto splitVar = String::split(line, '|');
-					if (splitVar.size() == 2)
+					if (String::contains('|', line))
 					{
-						m_hashVersion = std::move(splitVar.front());
-						m_hashVersionDebug = std::move(splitVar.back());
+						auto split = String::split(line, '|');
+						if (split.size() != 2)
+							return onError();
+
+						m_hashVersion = std::move(split.front());
+						m_hashVersionDebug = std::move(split.back());
+					}
+					else
+					{
+						m_hashVersion = std::move(line);
 					}
 					break;
 				}
@@ -185,8 +193,9 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 							Diagnostic::error("Duplicate key found in cache: {}", id);
 							return false;
 						}
+
 						std::time_t lastBuild = strtoll(lastBuildRaw.c_str(), NULL, 0);
-						auto [it, success] = m_sourceCaches.emplace(id, std::make_unique<SourceCache>(m_initializedTime, lastBuild));
+						auto [it, success] = m_sourceCaches.emplace(id, std::make_unique<SourceCache>(m_lastWrites, m_initializedTime, lastBuild));
 						if (!success)
 						{
 							Diagnostic::error("Error creating cache for {}", id);
@@ -236,7 +245,11 @@ bool WorkspaceInternalCacheFile::save()
 		std::string contents;
 		contents += fmt::format("{}|{}\n", m_hashStrategy, m_lastBuildFileWrite);
 		contents += fmt::format("{}\n", m_hashTheme);
-		contents += fmt::format("{}|{}\n", m_hashVersion, m_hashVersionDebug);
+
+		if (!m_hashVersionDebug.empty())
+			contents += fmt::format("{}|{}\n", m_hashVersion, m_hashVersionDebug);
+		else
+			contents += fmt::format("{}\n", m_hashVersion);
 
 		for (auto& hash : m_extraHashes)
 		{
@@ -247,6 +260,19 @@ bool WorkspaceInternalCacheFile::save()
 		{
 			contents += sourceCache->asString(id);
 		}
+
+		SourceCache* sourceCache = m_sourceCaches.begin()->second.get();
+		for (auto& [file, fileData] : m_lastWrites)
+		{
+			if (!Commands::pathExists(file))
+				continue;
+
+			if (fileData.needsUpdate)
+				sourceCache->makeUpdate(file, fileData);
+
+			contents += fmt::format("{}|{}\n", fileData.lastWrite, file);
+		}
+		sourceCache = nullptr;
 
 		m_dirty = false;
 

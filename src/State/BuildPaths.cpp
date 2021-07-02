@@ -327,7 +327,7 @@ std::string BuildPaths::getWindowsManifestFilename(const ProjectTarget& inProjec
 
 		if (!inProject.isStaticLibrary())
 		{
-			const auto& outputFile = inProject.outputFile();
+			auto outputFile = inProject.outputFileNoPrefix();
 
 			// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
 			ret = fmt::format("{}/{}.manifest", m_intermediateDir, outputFile);

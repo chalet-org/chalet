@@ -67,6 +67,7 @@ private:
 	ExternalDependencyCache m_externalDependencies;
 	std::string m_externalDependencyCachePath;
 	mutable std::unordered_map<std::string, std::unique_ptr<SourceCache>> m_sourceCaches;
+	SourceLastWriteMap m_lastWrites;
 
 	bool m_buildFileChanged = false;
 	bool m_themeChanged = false;

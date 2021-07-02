@@ -163,6 +163,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 	auto onError = [quiet = quiet]() -> bool {
 		Output::setQuietNonBuild(quiet);
+		Diagnostic::error("Build error...");
 		return false;
 	};
 
@@ -227,6 +228,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 	if (buildFailed)
 	{
+		m_threadPool.stop();
 		threadResults.clear();
 		return onError();
 	}

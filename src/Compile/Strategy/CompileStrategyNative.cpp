@@ -43,7 +43,6 @@ bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
 	cacheFile.setSourceCache(strategyHash, true);
 
 	bool cacheNeedsUpdate = oldStrategyHash != strategyHash || appVersionChanged;
-
 	if (cacheNeedsUpdate)
 	{
 		m_state.cache.file().setHashStrategy(std::move(strategyHash));

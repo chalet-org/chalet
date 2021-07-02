@@ -116,7 +116,7 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 		}
 	}
 
-	if (!windowsManifestResourceFile.empty() && sources.fileChangedOrDoesNotExist(windowsManifestResourceFile, windowsManifestFile))
+	if (!windowsManifestResourceFile.empty() && sources.fileChangedOrDependantChanged(windowsManifestResourceFile, windowsManifestFile))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
 		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
@@ -152,7 +152,7 @@ bool ICompileToolchain::createWindowsApplicationIcon()
 		}
 	}
 
-	if (!windowsIconResourceFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconResourceFile, windowsIconFile))
+	if (!windowsIconResourceFile.empty() && sources.fileChangedOrDependantChanged(windowsIconResourceFile, windowsIconFile))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsIconResource(windowsIconFile);
 		if (!Commands::createFileWithContents(windowsIconResourceFile, rcContents))
