@@ -222,7 +222,11 @@ bool CompilerConfig::getSupportedCompilerFlags()
 		{
 			outContents += flag + "\n";
 		}
-		std::ofstream(m_flagsFile) << outContents;
+
+		if (!outContents.empty())
+		{
+			std::ofstream(m_flagsFile) << outContents;
+		}
 	}
 	else
 	{

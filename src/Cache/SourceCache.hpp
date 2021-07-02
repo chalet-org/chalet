@@ -23,7 +23,7 @@ struct SourceCache
 	bool fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const;
 
 private:
-	void add(const std::string& inFile, LastWrite& outFileData) const;
+	void makeUpdate(const std::string& inFile, LastWrite& outFileData) const;
 	LastWrite& getLastWrite(const std::string& inFile) const;
 
 	mutable std::unordered_map<std::string, LastWrite> m_lastWrites;

@@ -26,7 +26,7 @@ struct WorkspaceInternalCacheFile
 	bool loadExternalDependencies(const std::string& inPath);
 	bool saveExternalDependencies();
 
-	bool setSourceCache(const std::string& inId);
+	bool setSourceCache(const std::string& inId, const bool inNative = false);
 	bool removeSourceCache(const std::string& inId);
 	bool removeExtraCache(const std::string& inId);
 
@@ -44,13 +44,14 @@ struct WorkspaceInternalCacheFile
 	SourceCache& sources() const;
 	ExternalDependencyCache& externalDependencies();
 
-	StringList getCacheIds() const;
+	StringList getCacheIdsForRemoval() const;
 
 private:
 	std::string getAppVersionHash(std::string appPath);
 
 	WorkspaceCache& m_cache;
 
+	StringList m_doNotRemoves;
 	StringList m_extraHashes;
 
 	std::string m_filename;

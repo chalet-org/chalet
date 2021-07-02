@@ -39,7 +39,12 @@ void OSTerminal::initialize()
 		// UNUSED(result);
 	}
 
-	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+	// Note: Ninja takes advantage of the priority, so setting it above normal
+	//   will slow down OS performance
+	//
+	// SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
+	// SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+	// SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 
 #endif
 	{

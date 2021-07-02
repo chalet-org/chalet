@@ -324,10 +324,14 @@ std::string BuildPaths::getWindowsManifestFilename(const ProjectTarget& inProjec
 	if (inProject.windowsApplicationManifest().empty())
 	{
 		std::string ret;
-		const auto& outputFile = inProject.outputFile();
 
-		// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
-		ret = fmt::format("{}/{}.manifest", m_intermediateDir, outputFile);
+		if (!inProject.isStaticLibrary())
+		{
+			const auto& outputFile = inProject.outputFile();
+
+			// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
+			ret = fmt::format("{}/{}.manifest", m_intermediateDir, outputFile);
+		}
 		return ret;
 	}
 
