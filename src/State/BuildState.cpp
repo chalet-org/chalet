@@ -216,11 +216,7 @@ bool BuildState::initializeBuild()
 /*****************************************************************************/
 void BuildState::initializeCache()
 {
-	// m_prototype.cache.file().checkIfWorkingDirectoryChanged(m_inputs.workingDirectory());
 	m_prototype.cache.file().checkIfThemeChanged();
-
-	// TODO: Remove entirely?
-	m_prototype.cache.removeBuildIfCacheChanged(paths.buildOutputDir());
 
 	m_prototype.cache.saveSettings(SettingsType::Local);
 	m_prototype.cache.saveSettings(SettingsType::Global);

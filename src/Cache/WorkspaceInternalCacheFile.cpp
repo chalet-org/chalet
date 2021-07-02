@@ -108,10 +108,16 @@ bool WorkspaceInternalCacheFile::removeExtraCache(const std::string& inId)
 }
 
 /*****************************************************************************/
-bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
+bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const std::string& inBuildFile)
 {
 	m_filename = inFilename;
 	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	m_lastBuildFileWrite = Commands::getLastWriteTime(inBuildFile);
+
+	auto onError = []() -> bool {
+		Diagnostic::error("Invalid key found in cache. Aborting.");
+		return false;
+	};
 
 	chalet_assert(m_initializedTime != 0, "");
 
@@ -125,7 +131,19 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 			switch (i)
 			{
 				case 0: {
-					m_hashStrategy = std::move(line);
+					auto split = String::split(line, '|');
+					if (split.size() != 2)
+						return onError();
+
+					const auto& hashStrategy = split.front();
+					const auto& lastBuildRaw = split.back();
+
+					if (hashStrategy.empty() || lastBuildRaw.empty())
+						return onError();
+
+					std::time_t lastBuildFileWrite = strtoll(lastBuildRaw.c_str(), NULL, 0);
+					m_hashStrategy = std::move(hashStrategy);
+					m_buildFileChanged = lastBuildFileWrite != m_lastBuildFileWrite;
 					break;
 				}
 				case 1: {
@@ -146,28 +164,22 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 					{
 						std::string id = line.substr(1);
 						if (id.empty())
-						{
-							Diagnostic::error("Empty key found in cache. Aborting.");
-							return false;
-						}
+							return onError();
+
 						addExtraHash(std::move(id));
 					}
 					else if (String::startsWith('@', line))
 					{
 						auto split = String::split(line.substr(1), '|');
 						if (split.size() != 2)
-						{
-							Diagnostic::error("Bad key found in cache. Aborting.");
-							return false;
-						}
+							return onError();
+
 						const auto& id = split.front();
 						const auto& lastBuildRaw = split.back();
 
 						if (id.empty() || lastBuildRaw.empty())
-						{
-							Diagnostic::error("Empty key found in cache. Aborting.");
-							return false;
-						}
+							return onError();
+
 						if (m_sourceCaches.find(id) != m_sourceCaches.end())
 						{
 							Diagnostic::error("Duplicate key found in cache: {}", id);
@@ -180,6 +192,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename)
 							Diagnostic::error("Error creating cache for {}", id);
 							return false;
 						}
+
 						sourceCache = it->second.get();
 					}
 					else
@@ -221,7 +234,7 @@ bool WorkspaceInternalCacheFile::save()
 	if (m_dirty)
 	{
 		std::string contents;
-		contents += fmt::format("{}\n", m_hashStrategy);
+		contents += fmt::format("{}|{}\n", m_hashStrategy, m_lastBuildFileWrite);
 		contents += fmt::format("{}\n", m_hashTheme);
 		contents += fmt::format("{}|{}\n", m_hashVersion, m_hashVersionDebug);
 
@@ -246,13 +259,9 @@ bool WorkspaceInternalCacheFile::save()
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::loadExternalDependencies(const std::string& inPath)
 {
-	// auto hash = Hash::string("chalet_external_dependencies_cache");
-
 	UNUSED(inPath);
 
-	// m_externalDependencyCachePath = fmt::format("{}/{}", inPath, hash);
 	m_externalDependencyCachePath = fmt::format("{}/.chalet_git", inPath);
-	// m_externalDependencyCachePath = m_cache.getCachePath(hash, CacheType::Local);
 	return m_externalDependencies.loadFromFilename(m_externalDependencyCachePath);
 }
 
@@ -269,11 +278,6 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 													 << std::endl;
 	}
 
-	// auto hash = String::getPathFilename(m_externalDependencyCachePath);
-	// if (!m_externalDependencies.empty())
-	// {
-	// 	addExtraHash(std::move(hash));
-	// }
 	if (m_externalDependencies.empty())
 	{
 		if (Commands::pathExists(m_externalDependencyCachePath))
@@ -281,6 +285,12 @@ bool WorkspaceInternalCacheFile::saveExternalDependencies()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool WorkspaceInternalCacheFile::buildFileChanged() const noexcept
+{
+	return m_buildFileChanged;
 }
 
 /*****************************************************************************/
@@ -303,30 +313,10 @@ void WorkspaceInternalCacheFile::checkIfThemeChanged()
 }
 
 /*****************************************************************************/
-bool WorkspaceInternalCacheFile::workingDirectoryChanged() const noexcept
-{
-	// return m_workingDirectoryChanged;
-	return false;
-}
-
-/*void WorkspaceInternalCacheFile::checkIfWorkingDirectoryChanged(const std::string& inWorkingDirectory)
-{
-	m_workingDirectoryChanged = false;
-
-	auto workingDirectoryHash = Hash::string(inWorkingDirectory);
-	if (workingDirectoryHash != m_hashWorkingDirectory)
-	{
-		m_hashWorkingDirectory = std::move(workingDirectoryHash);
-		m_workingDirectoryChanged = true;
-		m_dirty = true;
-	}
-}*/
-
-/*****************************************************************************/
 bool WorkspaceInternalCacheFile::appVersionChanged() const noexcept
 {
-	return false;
-	// return m_appVersionChanged;
+	// return false;
+	return m_appVersionChanged;
 }
 
 void WorkspaceInternalCacheFile::checkIfAppVersionChanged(const std::string& inAppPath)

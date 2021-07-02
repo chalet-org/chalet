@@ -34,18 +34,19 @@ bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
 
 	// Note: The ninja cache folder must not change between chalet.json changes
 	{
-		auto configurationHash = Hash::string(m_state.paths.configuration());
-		m_cacheFolder = m_state.cache.getCachePath(configurationHash, CacheType::Local);
-		cacheFile.addExtraHash(std::move(configurationHash));
+		m_cacheFolder = m_state.cache.getHashPath(m_state.paths.configuration(), CacheType::Local);
+		cacheFile.addExtraHash(String::getPathFilename(m_cacheFolder));
 	}
 
 	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
 	const bool appVersionChanged = cacheFile.appVersionChanged();
 	const bool themeChanged = cacheFile.themeChanged();
+	const bool buildFileChanged = cacheFile.buildFileChanged();
+
 	auto strategyHash = String::getPathFilename(m_cacheFile);
 	cacheFile.setSourceCache(strategyHash);
 
-	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged || themeChanged;
+	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged || themeChanged || buildFileChanged;
 
 	if (m_cacheNeedsUpdate)
 	{

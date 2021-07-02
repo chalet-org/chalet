@@ -20,7 +20,7 @@ struct WorkspaceInternalCacheFile
 	const std::string& hashStrategy() const noexcept;
 	void setHashStrategy(std::string&& inValue) noexcept;
 
-	bool initialize(const std::string& inFilename);
+	bool initialize(const std::string& inFilename, const std::string& inBuildFile);
 	bool save();
 
 	bool loadExternalDependencies(const std::string& inPath);
@@ -30,11 +30,10 @@ struct WorkspaceInternalCacheFile
 	bool removeSourceCache(const std::string& inId);
 	bool removeExtraCache(const std::string& inId);
 
+	bool buildFileChanged() const noexcept;
+
 	bool themeChanged() const noexcept;
 	void checkIfThemeChanged();
-
-	bool workingDirectoryChanged() const noexcept;
-	// void checkIfWorkingDirectoryChanged(const std::string& inWorkingDirectory);
 
 	bool appVersionChanged() const noexcept;
 	void checkIfAppVersionChanged(const std::string& inAppPath);
@@ -59,9 +58,9 @@ private:
 	std::string m_hashTheme;
 	std::string m_hashVersion;
 	std::string m_hashVersionDebug;
-	// std::string m_hashWorkingDirectory;
 
 	std::time_t m_initializedTime = 0;
+	std::time_t m_lastBuildFileWrite = 0;
 
 	SourceCache* m_sources = nullptr;
 
@@ -69,7 +68,7 @@ private:
 	std::string m_externalDependencyCachePath;
 	mutable std::unordered_map<std::string, std::unique_ptr<SourceCache>> m_sourceCaches;
 
-	// bool m_workingDirectoryChanged = false;
+	bool m_buildFileChanged = false;
 	bool m_themeChanged = false;
 	bool m_appVersionChanged = false;
 	bool m_dirty = false;

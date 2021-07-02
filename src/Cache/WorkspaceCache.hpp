@@ -25,15 +25,12 @@ struct WorkspaceCache
 	bool createCacheFolder(const CacheType inCacheType);
 	bool exists(const CacheType inCacheType = CacheType::Local) const;
 	std::string getHashPath(const std::string& inIdentifier, const CacheType inCacheType) const;
-	std::string getCachePath(const std::string& inFolder, const CacheType inCacheType) const;
-	void setWorkspaceHash(const std::string& inToHash) noexcept;
 
 	WorkspaceInternalCacheFile& file() noexcept;
 
 	JsonFile& getSettings(const SettingsType inType) noexcept;
 	void saveSettings(const SettingsType inType);
 
-	void removeBuildIfCacheChanged(const std::string& inBuildDir);
 	bool removeStaleProjectCaches();
 
 private:
@@ -55,8 +52,6 @@ private:
 
 	std::string m_cacheFolderLocal;
 	// std::string m_cacheFolderGlobal;
-
-	std::size_t m_workspaceHash = 0;
 
 	bool m_removeOldCacheFolder = false;
 };

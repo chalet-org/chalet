@@ -73,8 +73,8 @@ bool MsvcEnvironment::create()
 
 	// auto& outputDirectory = m_state.paths.outputDirectory();
 
-	m_varsFileOriginal = m_state.cache.getCachePath("original.env", CacheType::Local);
-	m_varsFileMsvc = m_state.cache.getCachePath("msvc_all.env", CacheType::Local);
+	m_varsFileOriginal = m_state.cache.getHashPath("original.env", CacheType::Local);
+	m_varsFileMsvc = m_state.cache.getHashPath("msvc_all.env", CacheType::Local);
 
 	{
 		auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureString());

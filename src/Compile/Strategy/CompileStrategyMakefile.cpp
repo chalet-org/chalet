@@ -38,10 +38,12 @@ bool CompileStrategyMakefile::initialize(const StringList& inFileExtensions)
 	const bool cacheExists = Commands::pathExists(m_cacheFile);
 	const bool appVersionChanged = cacheFile.appVersionChanged();
 	const bool themeChanged = cacheFile.themeChanged();
+	const bool buildFileChanged = cacheFile.buildFileChanged();
+
 	auto strategyHash = String::getPathFilename(m_cacheFile);
 	cacheFile.setSourceCache(strategyHash);
 
-	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged || themeChanged;
+	m_cacheNeedsUpdate = oldStrategyHash != strategyHash || !cacheExists || appVersionChanged || themeChanged || buildFileChanged;
 
 	if (m_cacheNeedsUpdate)
 	{
