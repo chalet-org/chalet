@@ -240,7 +240,7 @@ CommandPool::Cmd CompileStrategyNative::getLinkCommand(const std::string& inTarg
 
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 
-	const std::string description = m_project->isStaticLibrary() ? "ARCHIVE" : "LINK";
+	const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 
 	CommandPool::Cmd ret;
 	ret.command = m_toolchain->getLinkerTargetCommand(inTarget, inObjects, targetBasename);

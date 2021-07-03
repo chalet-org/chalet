@@ -28,7 +28,7 @@ std::string SourceCache::asString(const std::string& inId) const
 {
 	std::string ret;
 
-	ret += fmt::format("@{}|{}\n", inId, m_dirty ? m_initializedTime : m_lastBuildTime);
+	ret += fmt::format("@{}\t{}\n", inId, m_dirty ? m_initializedTime : m_lastBuildTime);
 
 	return ret;
 }

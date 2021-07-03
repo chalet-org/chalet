@@ -55,6 +55,8 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		return true;
 #endif
 
+	m_timer.restart();
+
 	m_removeCache.clear();
 
 	if (inRoute == Route::Clean)
@@ -184,6 +186,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		if (!runCommand && inShowSuccess)
 		{
 			Output::msgBuildSuccess();
+			Output::printInfo(fmt::format("   Total Time: {}", m_timer.asString()));
 
 			if (inRoute != Route::BuildRun)
 				Output::lineBreak();
@@ -201,8 +204,8 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				return false;
 			}
 
-			if (runCommand)
-				Output::lineBreak();
+			// if (runCommand)
+			Output::lineBreak();
 
 			return cmdRun(project);
 		}
@@ -210,8 +213,8 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			auto& script = static_cast<const ScriptBuildTarget&>(*runProject);
 
-			if (runCommand)
-				Output::lineBreak();
+			// if (runCommand)
+			Output::lineBreak();
 
 			return runScriptTarget(script, true);
 		}

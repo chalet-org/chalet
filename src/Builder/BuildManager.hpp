@@ -66,6 +66,8 @@ private:
 	CompileStrategy m_strategy;
 	AssemblyDumper m_asmDumper;
 
+	Timer m_timer;
+
 	// ProjectTarget* m_project = nullptr;
 
 	std::string m_runProjectName;

@@ -129,7 +129,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 			switch (i)
 			{
 				case 0: {
-					auto split = String::split(line, '|');
+					auto split = String::split(line, '\t');
 					if (split.size() != 2)
 						return onError();
 
@@ -149,9 +149,9 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 					break;
 				}
 				case 2: {
-					if (String::contains('|', line))
+					if (String::contains('\t', line))
 					{
-						auto split = String::split(line, '|');
+						auto split = String::split(line, '\t');
 						if (split.size() != 2)
 							return onError();
 
@@ -175,7 +175,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 					}
 					else if (String::startsWith('@', line))
 					{
-						auto split = String::split(line.substr(1), '|');
+						auto split = String::split(line.substr(1), '\t');
 						if (split.size() != 2)
 							return onError();
 
@@ -204,7 +204,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 					else
 					{
 
-						auto splitVar = String::split(line, '|');
+						auto splitVar = String::split(line, '\t');
 						if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
 						{
 							chalet_assert(sourceCache != nullptr, "");
@@ -240,11 +240,11 @@ bool WorkspaceInternalCacheFile::save()
 	if (m_dirty)
 	{
 		std::string contents;
-		contents += fmt::format("{}|{}\n", m_buildHash, m_lastBuildFileWrite);
+		contents += fmt::format("{}\t{}\n", m_buildHash, m_lastBuildFileWrite);
 		contents += fmt::format("{}\n", m_hashTheme);
 
 		if (!m_hashVersionDebug.empty())
-			contents += fmt::format("{}|{}\n", m_hashVersion, m_hashVersionDebug);
+			contents += fmt::format("{}\t{}\n", m_hashVersion, m_hashVersionDebug);
 		else
 			contents += fmt::format("{}\n", m_hashVersion);
 
@@ -269,7 +269,7 @@ bool WorkspaceInternalCacheFile::save()
 				if (fileData.needsUpdate)
 					sourceCache->makeUpdate(file, fileData);
 
-				contents += fmt::format("{}|{}\n", fileData.lastWrite, file);
+				contents += fmt::format("{}\t{}\n", fileData.lastWrite, file);
 			}
 			sourceCache = nullptr;
 		}
