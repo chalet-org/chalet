@@ -104,7 +104,7 @@ SHELL = {shell}
 }
 
 /*****************************************************************************/
-void MakefileGeneratorGNU::reset()
+void MakefileGeneratorNMake::reset()
 {
 	m_targetRecipes.clear();
 	m_fileExtensions.clear();

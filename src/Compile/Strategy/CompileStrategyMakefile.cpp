@@ -171,6 +171,8 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 
 	StringList command;
 
+	auto& buildFile = m_buildFiles.at(inProject.name());
+
 	const bool makeIsNMake = m_state.toolchain.makeIsNMake();
 	const bool makeIsJom = m_state.toolchain.makeIsJom();
 	if (makeIsNMake)
@@ -179,7 +181,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 		command.push_back(makeExec);
 		command.emplace_back("/NOLOGO");
 		command.emplace_back("/F");
-		command.push_back(m_cacheFile);
+		command.push_back(buildFile);
 	}
 
 	if (makeIsJom)
