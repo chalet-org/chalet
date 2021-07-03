@@ -93,16 +93,16 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 
 SHELL := {shell}
 
-NOOP := @{printer}
-{recipes}
+NOOP := @{printer}{recipes}
 {depDir}/%.d: ;
 .PRECIOUS: {depDir}/%.d
 
--include $(wildcard $(SOURCE_DEPS))
+-include $(DEPS_{hash})
 
 .DEFAULT:
 	$(NOOP)
 )makefile",
+		fmt::arg("hash", m_hash),
 		FMT_ARG(suffixes),
 		FMT_ARG(shell),
 		FMT_ARG(printer),
@@ -110,6 +110,13 @@ NOOP := @{printer}
 		FMT_ARG(depDir));
 
 	return makeTemplate;
+}
+
+/*****************************************************************************/
+void MakefileGeneratorGNU::reset()
+{
+	m_targetRecipes.clear();
+	m_fileExtensions.clear();
 }
 
 /*****************************************************************************/
@@ -470,7 +477,7 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 	const auto preReqs = getLinkerPreReqs();
 
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(*m_project);
-	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, { fmt::format("$(SOURCE_OBJS_{})", m_hash) }, linkerTargetBase));
+	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, { fmt::format("$(OBJS_{})", m_hash) }, linkerTargetBase));
 	const auto compileEcho = getCompileEchoLinker();
 	const auto printer = getPrinter("\\n");
 
@@ -507,7 +514,7 @@ std::string MakefileGeneratorGNU::getLinkerPreReqs() const
 {
 	chalet_assert(m_project != nullptr, "");
 
-	std::string ret = fmt::format("$(SOURCE_OBJS_{})", m_hash);
+	std::string ret = fmt::format("$(OBJS_{})", m_hash);
 
 	uint count = 0;
 	for (auto& target : m_state.targets)

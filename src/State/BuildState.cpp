@@ -82,7 +82,13 @@ std::string BuildState::getUniqueIdForState(const StringList& inOther) const
 	const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
 
-	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, toolchainPref, strategy, buildConfig, Output::showCommands() ? 1 : 0, String::join(inOther, '_'));
+	std::string showCmds;
+	if (toolchain.strategy() != StrategyType::Ninja)
+	{
+		showCmds = std::to_string(Output::showCommands() ? 1 : 0);
+	}
+
+	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, toolchainPref, strategy, buildConfig, showCmds, String::join(inOther, '_'));
 
 	return Hash::string(ret);
 }

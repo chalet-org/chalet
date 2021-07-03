@@ -44,6 +44,12 @@ IStrategyGenerator::IStrategyGenerator(const BuildState& inState) :
 	Diagnostic::errorAbort("Unimplemented StrategyGenerator requested: ", static_cast<int>(inType));
 	return nullptr;
 }
+
+/*****************************************************************************/
+void IStrategyGenerator::reset()
+{
+}
+
 /*****************************************************************************/
 bool IStrategyGenerator::hasProjectRecipes() const
 {

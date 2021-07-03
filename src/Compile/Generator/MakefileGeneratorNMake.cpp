@@ -104,6 +104,13 @@ SHELL = {shell}
 }
 
 /*****************************************************************************/
+void MakefileGeneratorGNU::reset()
+{
+	m_targetRecipes.clear();
+	m_fileExtensions.clear();
+}
+
+/*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& file) const
 {
 	const auto blue = getBuildColor();

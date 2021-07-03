@@ -27,18 +27,12 @@ bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
 		return false;
 
 	const auto uniqueId = m_state.getUniqueIdForState(inFileExtensions);
-	m_cacheFile = m_state.cache.getCachePath(uniqueId, CacheType::Local);
 
 	auto& cacheFile = m_state.cache.file();
+	m_cacheFolder = m_state.cache.getCachePath(uniqueId, CacheType::Local);
+	m_cacheFile = fmt::format("{}/build.ninja", m_cacheFolder);
 
-	// Note: The ninja cache folder must not change between chalet.json changes
-	{
-		m_cacheFolder = m_state.cache.getHashPath(m_state.paths.configuration(), CacheType::Local);
-		cacheFile.addExtraHash(String::getPathFilename(m_cacheFolder));
-	}
-
-	auto strategyHash = String::getPathFilename(m_cacheFile);
-	cacheFile.setSourceCache(strategyHash);
+	cacheFile.setSourceCache(uniqueId);
 
 	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
 	const bool appVersionChanged = cacheFile.appVersionChanged();

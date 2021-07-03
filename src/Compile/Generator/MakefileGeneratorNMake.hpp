@@ -21,6 +21,8 @@ struct MakefileGeneratorNMake final : IStrategyGenerator
 	virtual void addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) final;
 	virtual std::string getContents(const std::string& inPath) const final;
 
+	virtual void reset() override;
+
 private:
 	std::string getBuildRecipes(const SourceOutputs& inOutputs);
 	std::string getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget);
@@ -44,8 +46,6 @@ private:
 	std::string getBuildColor() const;
 
 	StringList m_fileExtensions;
-	// StringList m_dependencies;
-	StringList m_assemblies;
 };
 #else
 struct MakefileGeneratorNMake

@@ -30,19 +30,22 @@ bool CompileStrategyMakefile::initialize(const StringList& inFileExtensions)
 		return false;
 
 	const auto uniqueId = m_state.getUniqueIdForState(inFileExtensions);
-	m_cacheFile = m_state.cache.getCachePath(uniqueId, CacheType::Local);
 
 	auto& cacheFile = m_state.cache.file();
-	auto strategyHash = String::getPathFilename(m_cacheFile);
-	cacheFile.setSourceCache(strategyHash);
+	m_cacheFolder = m_state.cache.getCachePath(uniqueId, CacheType::Local);
 
-	const bool cacheExists = Commands::pathExists(m_cacheFile);
+	cacheFile.setSourceCache(uniqueId);
+
+	const bool cacheExists = Commands::pathExists(m_cacheFolder);
 	const bool appVersionChanged = cacheFile.appVersionChanged();
 	const bool themeChanged = cacheFile.themeChanged();
 	const bool buildFileChanged = cacheFile.buildFileChanged();
 	const bool buildHashChanged = cacheFile.buildHashChanged();
 
 	m_cacheNeedsUpdate = !cacheExists || appVersionChanged || buildHashChanged || buildFileChanged || themeChanged;
+
+	if (!Commands::pathExists(m_cacheFolder))
+		Commands::makeDirectory(m_cacheFolder);
 
 	m_initialized = true;
 
@@ -60,11 +63,21 @@ bool CompileStrategyMakefile::addProject(const ProjectTarget& inProject, SourceO
 	{
 		m_hashes.emplace(name, Hash::string(inOutputs.target));
 	}
+	if (m_buildFiles.find(name) == m_buildFiles.end())
+	{
+		m_buildFiles.emplace(name, fmt::format("{}/{}.mk", m_cacheFolder, inProject.name()));
+	}
 
-	if (m_cacheNeedsUpdate)
+	auto& buildFile = m_buildFiles.at(name);
+	if (m_cacheNeedsUpdate || !Commands::pathExists(buildFile))
 	{
 		auto& hash = m_hashes.at(name);
 		m_generator->addProjectRecipes(inProject, inOutputs, inToolchain, hash);
+
+		std::ofstream(buildFile) << m_generator->getContents(buildFile)
+								 << std::endl;
+
+		m_generator->reset();
 	}
 
 	m_outputs[name] = std::move(inOutputs);
@@ -77,12 +90,6 @@ bool CompileStrategyMakefile::saveBuildFile() const
 {
 	if (!m_initialized || !m_generator->hasProjectRecipes())
 		return false;
-
-	if (m_cacheNeedsUpdate)
-	{
-		std::ofstream(m_cacheFile) << m_generator->getContents(m_cacheFile)
-								   << std::endl;
-	}
 
 	return true;
 }
@@ -114,6 +121,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 	const auto& makeExec = m_state.toolchain.make();
 	StringList command;
 
+	auto& buildFile = m_buildFiles.at(inProject.name());
 	{
 		std::string jobs;
 		const auto maxJobs = m_state.environment.maxJobs();
@@ -130,7 +138,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 		command.emplace_back("-C");
 		command.emplace_back(".");
 		command.emplace_back("-f");
-		command.push_back(m_cacheFile);
+		command.push_back(buildFile);
 		command.emplace_back("--no-print-directory");
 	}
 

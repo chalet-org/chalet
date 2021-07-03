@@ -33,12 +33,11 @@ bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
 		return false;
 
 	const auto uniqueId = m_state.getUniqueIdForState(inFileExtensions);
-	std::string cachePath = m_state.cache.getHashPath(uniqueId, CacheType::Local);
+	std::string cachePath = m_state.cache.getCachePath(uniqueId, CacheType::Local);
 
 	auto& cacheFile = m_state.cache.file();
 
-	auto buildHash = String::getPathFilename(cachePath);
-	cacheFile.setSourceCache(buildHash, true);
+	cacheFile.setSourceCache(uniqueId, true);
 
 	m_initialized = true;
 
@@ -64,10 +63,11 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 	auto target = std::make_unique<CommandPool::Target>();
 	target->pre = getPchCommand(pchTarget);
 	target->list = getCompileCommands(inOutputs.objectList);
+	bool targetExists = Commands::pathExists(inOutputs.target);
 
-	if (!target->list.empty())
+	if (!target->list.empty() || !targetExists)
 	{
-		if (m_sourcesChanged || m_pchChanged)
+		if (m_sourcesChanged || m_pchChanged || !targetExists)
 		{
 			if (!List::contains(m_fileCache, inOutputs.target))
 			{

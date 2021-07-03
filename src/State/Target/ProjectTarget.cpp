@@ -504,9 +504,6 @@ const std::string& ProjectTarget::pch() const noexcept
 void ProjectTarget::setPch(std::string&& inValue) noexcept
 {
 	m_pch = std::move(inValue);
-
-	std::string path = String::getPathFolder(m_pch);
-	addLocation(std::move(path));
 }
 
 bool ProjectTarget::usesPch() const noexcept

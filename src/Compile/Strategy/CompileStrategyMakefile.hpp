@@ -30,9 +30,10 @@ private:
 
 	bool subprocessMakefile(const StringList& inCmd, std::string inCwd = std::string()) const;
 
-	std::string m_cacheFile;
+	std::string m_cacheFolder;
 
 	std::unordered_map<std::string, std::string> m_hashes;
+	std::unordered_map<std::string, std::string> m_buildFiles;
 
 	bool m_initialized = false;
 	bool m_cacheNeedsUpdate = false;

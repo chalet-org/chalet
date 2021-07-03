@@ -258,18 +258,21 @@ bool WorkspaceInternalCacheFile::save()
 			contents += sourceCache->asString(id);
 		}
 
-		SourceCache* sourceCache = m_sourceCaches.begin()->second.get();
-		for (auto& [file, fileData] : m_lastWrites)
+		if (m_sourceCaches.size() > 0)
 		{
-			if (!Commands::pathExists(file))
-				continue;
+			SourceCache* sourceCache = m_sourceCaches.begin()->second.get();
+			for (auto& [file, fileData] : m_lastWrites)
+			{
+				if (!Commands::pathExists(file))
+					continue;
 
-			if (fileData.needsUpdate)
-				sourceCache->makeUpdate(file, fileData);
+				if (fileData.needsUpdate)
+					sourceCache->makeUpdate(file, fileData);
 
-			contents += fmt::format("{}|{}\n", fileData.lastWrite, file);
+				contents += fmt::format("{}|{}\n", fileData.lastWrite, file);
+			}
+			sourceCache = nullptr;
 		}
-		sourceCache = nullptr;
 
 		m_dirty = false;
 
