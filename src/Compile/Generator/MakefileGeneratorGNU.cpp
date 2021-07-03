@@ -117,6 +117,7 @@ void MakefileGeneratorGNU::reset()
 {
 	m_targetRecipes.clear();
 	m_fileExtensions.clear();
+	m_locationCache.clear();
 }
 
 /*****************************************************************************/
