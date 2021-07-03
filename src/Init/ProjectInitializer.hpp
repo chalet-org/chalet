@@ -28,6 +28,9 @@ private:
 	bool makeReadme();
 	bool makeDotEnv();
 
+	std::string getBannerV1() const;
+	std::string getBannerV2() const;
+
 	const CommandLineInputs& m_inputs;
 
 	std::string m_rootPath;

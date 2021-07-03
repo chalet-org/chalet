@@ -44,12 +44,7 @@ bool ProjectInitializer::run()
 
 	Path::sanitize(m_rootPath);
 
-	Output::lineBreak();
-	Output::print(Color::Reset, ".    `     .     .  `   ,    .    `    .   .    '       `    .   ,    '  .   ,  ");
-	Output::print(Color::Reset, "    .     `    .   ,  '    .   ,   .         ,   .    '   `    .       .   .    ");
-	Output::print(Color::Magenta, "                                   _▂▃▅▇▇▅▃▂_");
-	Output::print(Color::Reset, "▂▂▂▂▃▃▂▃▅▃▂▃▅▃▂▂▂▃▃▂▂▃▅▅▃▂▂▂▃▃▂▂▃▅▃▂ CHALET ▂▃▅▃▂▂▃▃▂▂▂▃▅▅▃▂▂▃▃▂▂▂▃▅▃▂▃▅▃▂▃▃▂▂▂▂");
-	Output::lineBreak();
+	Output::print(Color::Reset, getBannerV1());
 
 	BuildJsonProps props;
 	props.workspaceName = String::getPathBaseName(m_rootPath);
@@ -431,5 +426,31 @@ bool ProjectInitializer::makeDotEnv()
 	const auto contents = StarterFileTemplates::getDotEnv();
 
 	return Commands::createFileWithContents(outFile, contents);
+}
+
+/*****************************************************************************/
+std::string ProjectInitializer::getBannerV1() const
+{
+	auto color = Output::getAnsiStyle(Color::Magenta);
+	auto reset = Output::getAnsiReset();
+	return fmt::format(R"art(
+.    `     .     .  `   ,    .    `    .   .    '       `    .   ,    '  .   ,
+    .     `    .   ,  '    .   ,   .         ,   .    '   `    .       .   .
+                                   {color}_▂▃▅▇▇▅▃▂_{reset}
+▂▂▂▂▃▃▂▃▅▃▂▃▅▃▂▂▂▃▃▂▂▃▅▅▃▂▂▂▃▃▂▂▃▅▃▂ CHALET ▂▃▅▃▂▂▃▃▂▂▂▃▅▅▃▂▂▃▃▂▂▂▃▅▃▂▃▅▃▂▃▃▂▂▂▂
+)art",
+		FMT_ARG(color),
+		FMT_ARG(reset));
+}
+
+/*****************************************************************************/
+std::string ProjectInitializer::getBannerV2() const
+{
+	return R"art(
+.    `     .     .  `   ,    .    `    .   .    '       `    .   ,    '  .   ,
+    .     `    .   ,  '    .   ,   .         ,   .    '   `    .       .   .
+                                   _▂▃▅▇▇▅▃▂_
+▂▂▂▂▃▃▂▃▅▃▂▃▅▃▂▂▂▃▃▂▂▃▅▅▃▂▂▂▃▃▂▂▃▅▃▂ CHALET ▂▃▅▃▂▂▃▃▂▂▂▃▅▅▃▂▂▃▃▂▂▂▃▅▃▂▃▅▃▂▃▃▂▂▂▂
+)art";
 }
 }
