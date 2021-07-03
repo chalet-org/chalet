@@ -55,11 +55,11 @@ std::string Timer::asString()
 	auto sec = fmt::format("{:0>2}", seconds);
 
 	if (minutes < 60)
-		return fmt::format("{}:{}.{}", minutes, sec, ms);
+		return fmt::format("{}:{}.{}m", minutes, sec, ms);
 
 	uint hours = minutes / 60;
 	minutes %= 60;
 	auto min = fmt::format("{:0>2}", minutes);
-	return fmt::format("{}:{}:{}.{}", hours, min, sec, ms);
+	return fmt::format("{}:{}:{}.{}h", hours, min, sec, ms);
 }
 }
