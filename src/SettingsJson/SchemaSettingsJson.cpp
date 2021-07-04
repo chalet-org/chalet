@@ -44,9 +44,9 @@ enum class Defs : ushort
 	XcodeGen,
 	XcRun,
 	// Toolchains
-	CppCompiler,
-	CCompiler,
-	WinResourceCompiler,
+	CompilerCpp,
+	CompilerC,
+	CompilerWindowsResource,
 	Archiver,
 	Linker,
 	Profiler,
@@ -243,13 +243,13 @@ Json Schema::getSettingsJson()
 		"default": "/usr/bin/ar"
 	})json"_ojson;
 
-	defs[Defs::CppCompiler] = R"json({
+	defs[Defs::CompilerCpp] = R"json({
 		"type": "string",
 		"description": "The executable path to the toolchain's C++ compiler",
 		"default": "/usr/bin/c++"
 	})json"_ojson;
 
-	defs[Defs::CCompiler] = R"json({
+	defs[Defs::CompilerC] = R"json({
 		"type": "string",
 		"description": "The executable path to the toolchain's C compiler",
 		"default": "/usr/bin/cc"
@@ -304,7 +304,7 @@ Json Schema::getSettingsJson()
 	})json"_ojson;
 	*/
 
-	defs[Defs::WinResourceCompiler] = R"json({
+	defs[Defs::CompilerWindowsResource] = R"json({
 		"type": "string",
 		"description": "The executable path to the resource compiler (Windows)"
 	})json"_ojson;
@@ -374,30 +374,30 @@ Json Schema::getSettingsJson()
 		"description": "The list of compilers for the platform",
 		"required": [
 			"archiver",
+			"cmake",
 			"compilerCpp",
 			"compilerC",
-			"cmake",
+			"compilerWindowsResource",
 			"linker",
 			"profiler",
 			"make",
 			"objdump",
 			"ninja",
 			"strategy",
-			"windowsResource"
 		]
 	})json"_ojson;
 	toolchains[kProperties] = Json::object();
 	toolchains[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
 	toolchains[kProperties]["archiver"] = defs[Defs::Archiver];
-	toolchains[kProperties]["compilerCpp"] = defs[Defs::CppCompiler];
-	toolchains[kProperties]["compilerC"] = defs[Defs::CCompiler];
+	toolchains[kProperties]["compilerCpp"] = defs[Defs::CompilerCpp];
+	toolchains[kProperties]["compilerC"] = defs[Defs::CompilerC];
+	toolchains[kProperties]["compilerWindowsResource"] = defs[Defs::CompilerWindowsResource];
 	toolchains[kProperties]["cmake"] = defs[Defs::CMake];
 	toolchains[kProperties]["linker"] = defs[Defs::Linker];
 	toolchains[kProperties]["profiler"] = defs[Defs::Profiler];
 	toolchains[kProperties]["make"] = defs[Defs::Make];
 	toolchains[kProperties]["ninja"] = defs[Defs::Ninja];
 	toolchains[kProperties]["objdump"] = defs[Defs::ObjDump];
-	toolchains[kProperties]["windowsResource"] = defs[Defs::WinResourceCompiler];
 
 	//
 	ret[kProperties] = Json::object();

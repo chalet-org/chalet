@@ -36,9 +36,9 @@ private:
 	const std::string kKeyArchiver = "archiver";
 	const std::string kKeyCompilerCpp = "compilerCpp";
 	const std::string kKeyCompilerC = "compilerC";
+	const std::string kKeyCompilerWindowsResource = "compilerWindowsResource";
 	const std::string kKeyLinker = "linker";
 	const std::string kKeyProfiler = "profiler";
-	const std::string kKeyWindowsResource = "windowsResource";
 
 	//
 	const std::string kKeyCmake = "cmake";

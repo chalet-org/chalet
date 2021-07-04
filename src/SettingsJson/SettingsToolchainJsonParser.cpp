@@ -178,6 +178,23 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		m_jsonFile.setDirty(true);
 	}
 
+	if (!toolchains.contains(kKeyCompilerWindowsResource) || !toolchains[kKeyCompilerWindowsResource].is_string() || toolchains[kKeyCompilerWindowsResource].get<std::string>().empty())
+	{
+		std::string rc;
+		StringList searches;
+		searches.push_back(toolchain.rc);
+
+		for (const auto& search : searches)
+		{
+			rc = Commands::which(search);
+			if (!rc.empty())
+				break;
+		}
+
+		toolchains[kKeyCompilerWindowsResource] = std::move(rc);
+		m_jsonFile.setDirty(true);
+	}
+
 	if (!toolchains.contains(kKeyLinker) || !toolchains[kKeyLinker].is_string() || toolchains[kKeyLinker].get<std::string>().empty())
 	{
 		std::string link;
@@ -263,30 +280,13 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchains.contains(kKeyWindowsResource) || !toolchains[kKeyWindowsResource].is_string() || toolchains[kKeyWindowsResource].get<std::string>().empty())
-	{
-		std::string rc;
-		StringList searches;
-		searches.push_back(toolchain.rc);
-
-		for (const auto& search : searches)
-		{
-			rc = Commands::which(search);
-			if (!rc.empty())
-				break;
-		}
-
-		toolchains[kKeyWindowsResource] = std::move(rc);
-		m_jsonFile.setDirty(true);
-	}
-
 	// if (!result)
 	// {
 	// 	toolchains.erase(kKeyCompilerCpp);
 	// 	toolchains.erase(kKeyCompilerC);
 	// 	toolchains.erase(kKeyLinker);
 	// 	toolchains.erase(kKeyArchiver);
-	// 	toolchains.erase(kKeyWindowsResource);
+	// 	toolchains.erase(kKeyCompilerWindowsResource);
 	// }
 
 	auto whichAdd = [&](Json& inNode, const std::string& inKey) -> bool {
@@ -401,14 +401,14 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCompilerC))
 		m_state.toolchain.setCompilerC(std::move(val));
 
+	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCompilerWindowsResource))
+		m_state.toolchain.setCompilerWindowsResource(std::move(val));
+
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyLinker))
 		m_state.toolchain.setLinker(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyProfiler))
 		m_state.toolchain.setProfiler(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyWindowsResource))
-		m_state.toolchain.setCompilerWindowsResource(std::move(val));
 
 	//
 
