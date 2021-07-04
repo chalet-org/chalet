@@ -76,7 +76,7 @@ bool SettingsToolchainJsonParser::serialize(Json& inNode)
 bool SettingsToolchainJsonParser::validatePaths()
 {
 	bool result = true;
-	if (m_state.toolchain.cpp().empty() || !Commands::pathExists(m_state.toolchain.cpp()))
+	if (m_state.toolchain.compilerCpp().empty() || !Commands::pathExists(m_state.toolchain.compilerCpp()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -85,7 +85,7 @@ bool SettingsToolchainJsonParser::validatePaths()
 		result = false;
 	}
 
-	if (m_state.toolchain.cc().empty() || !Commands::pathExists(m_state.toolchain.cc()))
+	if (m_state.toolchain.compilerC().empty() || !Commands::pathExists(m_state.toolchain.compilerC()))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -113,7 +113,7 @@ bool SettingsToolchainJsonParser::validatePaths()
 	}
 
 #if defined(CHALET_WIN32)
-	if (m_state.toolchain.rc().empty() || !Commands::pathExists(m_state.toolchain.rc()))
+	if (m_state.toolchain.compilerWindowsResource().empty() || !Commands::pathExists(m_state.toolchain.compilerWindowsResource()))
 	{
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -396,10 +396,10 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 		m_state.toolchain.setArchiver(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCompilerCpp))
-		m_state.toolchain.setCpp(std::move(val));
+		m_state.toolchain.setCompilerCpp(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCompilerC))
-		m_state.toolchain.setCc(std::move(val));
+		m_state.toolchain.setCompilerC(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyLinker))
 		m_state.toolchain.setLinker(std::move(val));
@@ -408,7 +408,7 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 		m_state.toolchain.setProfiler(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyWindowsResource))
-		m_state.toolchain.setRc(std::move(val));
+		m_state.toolchain.setCompilerWindowsResource(std::move(val));
 
 	//
 

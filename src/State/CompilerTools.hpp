@@ -34,7 +34,7 @@ struct CompilerTools
 	const std::string& strategyString() const noexcept;
 	void setStrategy(const std::string& inValue) noexcept;
 
-	const std::string& compiler() const noexcept;
+	const std::string& compilerCxx() const noexcept;
 
 	const std::string& compilerVersionStringCpp() const noexcept;
 	const std::string& compilerVersionStringC() const noexcept;
@@ -45,11 +45,11 @@ struct CompilerTools
 	void setArchiver(std::string&& inValue) noexcept;
 	bool isArchiverLibTool() const noexcept;
 
-	const std::string& cpp() const noexcept;
-	void setCpp(std::string&& inValue) noexcept;
+	const std::string& compilerCpp() const noexcept;
+	void setCompilerCpp(std::string&& inValue) noexcept;
 
-	const std::string& cc() const noexcept;
-	void setCc(std::string&& inValue) noexcept;
+	const std::string& compilerC() const noexcept;
+	void setCompilerC(std::string&& inValue) noexcept;
 
 	const std::string& cmake() const noexcept;
 	void setCmake(std::string&& inValue) noexcept;
@@ -82,8 +82,8 @@ struct CompilerTools
 	uint ninjaVersionPatch() const noexcept;
 	bool ninjaAvailable() const noexcept;
 
-	const std::string& rc() const noexcept;
-	void setRc(std::string&& inValue) noexcept;
+	const std::string& compilerWindowsResource() const noexcept;
+	void setCompilerWindowsResource(std::string&& inValue) noexcept;
 
 	std::string getRootPathVariable();
 
@@ -102,15 +102,15 @@ private:
 	mutable std::unordered_map<CodeLanguage, std::unique_ptr<CompilerConfig>> m_configs;
 
 	std::string m_archiver;
-	std::string m_cpp;
-	std::string m_cc;
+	std::string m_compilerCpp;
+	std::string m_compilerC;
+	std::string m_compilerWindowsResource;
 	std::string m_cmake;
 	std::string m_linker;
 	std::string m_make;
 	std::string m_ninja;
 	std::string m_profiler;
 	std::string m_objdump;
-	std::string m_rc;
 
 	std::string m_compilerVersionStringCpp;
 	std::string m_compilerVersionStringC;

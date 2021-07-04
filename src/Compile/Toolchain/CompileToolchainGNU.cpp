@@ -112,9 +112,9 @@ StringList CompileToolchainGNU::getRcCompileCommand(const std::string& inputFile
 {
 	StringList ret;
 
-	addExectuable(ret, m_state.toolchain.rc());
+	addExectuable(ret, m_state.toolchain.compilerWindowsResource());
 
-	if (String::endsWith({ "llvm-rc.exe", "llvm-rc" }, m_state.toolchain.rc()))
+	if (String::endsWith({ "llvm-rc.exe", "llvm-rc" }, m_state.toolchain.compilerWindowsResource()))
 	{
 		// llvm-rc is basically rc.exe w/ GNU-style args
 		addDefines(ret);

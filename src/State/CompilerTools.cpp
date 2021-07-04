@@ -55,7 +55,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 			// also takes -dumpmachine
 			// -print-effective-triple prints triple w/ version
 			// -print-target-triple prints triple w/o version (except on mac)
-			auto result = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-print-target-triple" });
+			auto result = Commands::subprocessOutput({ compilerCxx(), "-print-target-triple" });
 #if defined(CHALET_MACOS)
 			// Strip out version in auto-detected mac triple
 			auto darwin = result.find("apple-darwin");
@@ -68,7 +68,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 		}
 		else
 		{
-			auto results = Commands::subprocessOutput({ compiler(), "-print-targets" });
+			auto results = Commands::subprocessOutput({ compilerCxx(), "-print-targets" });
 			if (!String::contains("error:", results))
 			{
 				auto split = String::split(results, "\n");
@@ -117,7 +117,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	{
 		if (archFromInput.empty() || !String::contains('-', targetArchString))
 		{
-			auto result = Commands::subprocessOutput({ m_state.toolchain.compiler(), "-dumpmachine" });
+			auto result = Commands::subprocessOutput({ compilerCxx(), "-dumpmachine" });
 #if defined(CHALET_MACOS)
 			// Strip out version in auto-detected mac triple
 			auto darwin = result.find("apple-darwin");
@@ -157,7 +157,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 				host = target;
 			}
 
-			std::string lower = String::toLowerCase(!m_cpp.empty() ? m_cpp : m_cc);
+			std::string lower = String::toLowerCase(!m_compilerCpp.empty() ? m_compilerCpp : m_compilerC);
 			auto search = lower.find(fmt::format("/host{}/{}/", host, target));
 			if (search == std::string::npos)
 			{
@@ -186,13 +186,13 @@ void CompilerTools::detectToolchainFromPaths()
 	if (toolchain.type == ToolchainType::Unknown)
 	{
 #if defined(CHALET_WIN32)
-		if (String::endsWith("cl.exe", m_cpp) || String::endsWith("cl.exe", m_cc))
+		if (String::endsWith("cl.exe", m_compilerCpp) || String::endsWith("cl.exe", m_compilerC))
 		{
 			toolchain.setType(ToolchainType::MSVC);
 		}
 		else
 #endif
-			if (String::contains("clang", m_cpp) || String::contains("clang", m_cc))
+			if (String::contains("clang", m_compilerCpp) || String::contains("clang", m_compilerC))
 		{
 			toolchain.setType(ToolchainType::LLVM);
 		}
@@ -209,20 +209,20 @@ void CompilerTools::fetchCompilerVersions()
 {
 	if (m_compilerVersionStringCpp.empty())
 	{
-		if (!m_cpp.empty() && Commands::pathExists(m_cpp))
+		if (!m_compilerCpp.empty() && Commands::pathExists(m_compilerCpp))
 		{
 			std::string version;
 #if defined(CHALET_WIN32)
 			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 			{
-				version = parseVersionMSVC(m_cpp, m_compilerDetectedArchCpp);
+				version = parseVersionMSVC(m_compilerCpp, m_compilerDetectedArchCpp);
 			}
 			else
 			{
-				version = parseVersionGNU(m_cpp, m_compilerDetectedArchCpp, String::eol());
+				version = parseVersionGNU(m_compilerCpp, m_compilerDetectedArchCpp, String::eol());
 			}
 #else
-			version = parseVersionGNU(m_cpp, m_compilerDetectedArchCpp);
+			version = parseVersionGNU(m_compilerCpp, m_compilerDetectedArchCpp);
 #endif
 			m_compilerVersionStringCpp = std::move(version);
 		}
@@ -230,20 +230,20 @@ void CompilerTools::fetchCompilerVersions()
 
 	if (m_compilerVersionStringC.empty())
 	{
-		if (!m_cc.empty() && Commands::pathExists(m_cc))
+		if (!m_compilerC.empty() && Commands::pathExists(m_compilerC))
 		{
 			std::string version;
 #if defined(CHALET_WIN32)
 			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 			{
-				version = parseVersionMSVC(m_cc, m_compilerDetectedArchC);
+				version = parseVersionMSVC(m_compilerC, m_compilerDetectedArchC);
 			}
 			else
 			{
-				version = parseVersionGNU(m_cc, m_compilerDetectedArchC, String::eol());
+				version = parseVersionGNU(m_compilerC, m_compilerDetectedArchC, String::eol());
 			}
 #else
-			version = parseVersionGNU(m_cc, m_compilerDetectedArchC);
+			version = parseVersionGNU(m_compilerC, m_compilerDetectedArchC);
 #endif
 			m_compilerVersionStringC = std::move(version);
 		}
@@ -512,12 +512,12 @@ void CompilerTools::setStrategy(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::compiler() const noexcept
+const std::string& CompilerTools::compilerCxx() const noexcept
 {
 	if (m_ccDetected)
-		return m_cc;
+		return m_compilerC;
 	else
-		return m_cpp;
+		return m_compilerCpp;
 }
 
 /*****************************************************************************/
@@ -557,23 +557,23 @@ bool CompilerTools::isArchiverLibTool() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::cpp() const noexcept
+const std::string& CompilerTools::compilerCpp() const noexcept
 {
-	return m_cpp;
+	return m_compilerCpp;
 }
-void CompilerTools::setCpp(std::string&& inValue) noexcept
+void CompilerTools::setCompilerCpp(std::string&& inValue) noexcept
 {
-	m_cpp = std::move(inValue);
+	m_compilerCpp = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::cc() const noexcept
+const std::string& CompilerTools::compilerC() const noexcept
 {
-	return m_cc;
+	return m_compilerC;
 }
-void CompilerTools::setCc(std::string&& inValue) noexcept
+void CompilerTools::setCompilerC(std::string&& inValue) noexcept
 {
-	m_cc = std::move(inValue);
+	m_compilerC = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -698,13 +698,13 @@ void CompilerTools::setObjdump(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::rc() const noexcept
+const std::string& CompilerTools::compilerWindowsResource() const noexcept
 {
-	return m_rc;
+	return m_compilerWindowsResource;
 }
-void CompilerTools::setRc(std::string&& inValue) noexcept
+void CompilerTools::setCompilerWindowsResource(std::string&& inValue) noexcept
 {
-	m_rc = std::move(inValue);
+	m_compilerWindowsResource = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -715,10 +715,10 @@ std::string CompilerTools::getRootPathVariable()
 
 	StringList outList;
 
-	if (auto ccRoot = String::getPathFolder(m_cc); !List::contains(outList, ccRoot))
+	if (auto ccRoot = String::getPathFolder(m_compilerC); !List::contains(outList, ccRoot))
 		outList.emplace_back(std::move(ccRoot));
 
-	if (auto cppRoot = String::getPathFolder(m_cpp); !List::contains(outList, cppRoot))
+	if (auto cppRoot = String::getPathFolder(m_compilerCpp); !List::contains(outList, cppRoot))
 		outList.emplace_back(std::move(cppRoot));
 
 	for (auto& p : Path::getOSPaths())

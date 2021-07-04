@@ -122,7 +122,7 @@ StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFil
 
 	StringList ret;
 
-	addExectuable(ret, m_state.toolchain.rc());
+	addExectuable(ret, m_state.toolchain.compilerWindowsResource());
 	ret.emplace_back("/nologo");
 
 	addResourceDefines(ret);
