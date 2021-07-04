@@ -197,16 +197,16 @@
 					"description": "The list of compilers for the platform",
 					"required": [
 						"archiver",
+						"cmake",
 						"compilerCpp",
 						"compilerC",
-						"cmake",
+						"compilerWindowsResource",
 						"linker",
 						"profiler",
 						"make",
 						"objdump",
 						"ninja",
-						"strategy",
-						"windowsResource"
+						"strategy"
 					],
 					"properties": {
 						"strategy": {
@@ -233,6 +233,10 @@
 							"type": "string",
 							"description": "The executable path to the toolchain's C compiler",
 							"default": "/usr/bin/cc"
+						},
+						"compilerWindowsResource": {
+							"type": "string",
+							"description": "The executable path to the resource compiler (Windows)"
 						},
 						"cmake": {
 							"type": "string",
@@ -261,10 +265,6 @@
 						"objdump": {
 							"type": "string",
 							"description": "The executable path to objdump."
-						},
-						"windowsResource": {
-							"type": "string",
-							"description": "The executable path to the resource compiler (Windows)"
 						}
 					}
 				}

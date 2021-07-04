@@ -383,7 +383,7 @@ Json Schema::getSettingsJson()
 			"make",
 			"objdump",
 			"ninja",
-			"strategy",
+			"strategy"
 		]
 	})json"_ojson;
 	toolchains[kProperties] = Json::object();
