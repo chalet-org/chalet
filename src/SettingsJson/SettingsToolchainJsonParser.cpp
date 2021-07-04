@@ -145,7 +145,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 
 	std::string cpp;
 	std::string cc;
-	if (!toolchains.contains(kKeyCpp))
+	if (!toolchains.contains(kKeyCompilerCpp))
 	{
 		// auto varCXX = Environment::get("CXX");
 		// if (varCXX != nullptr)
@@ -158,10 +158,10 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 
 		result &= !cpp.empty();
 
-		toolchains[kKeyCpp] = cpp;
+		toolchains[kKeyCompilerCpp] = cpp;
 		m_jsonFile.setDirty(true);
 	}
-	if (!toolchains.contains(kKeyCc) || !toolchains[kKeyCc].is_string() || toolchains[kKeyCc].get<std::string>().empty())
+	if (!toolchains.contains(kKeyCompilerC) || !toolchains[kKeyCompilerC].is_string() || toolchains[kKeyCompilerC].get<std::string>().empty())
 	{
 		// auto varCC = Environment::get("CC");
 		// if (varCC != nullptr)
@@ -174,7 +174,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 
 		result &= !cc.empty();
 
-		toolchains[kKeyCc] = cc;
+		toolchains[kKeyCompilerC] = cc;
 		m_jsonFile.setDirty(true);
 	}
 
@@ -282,8 +282,8 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 
 	// if (!result)
 	// {
-	// 	toolchains.erase(kKeyCpp);
-	// 	toolchains.erase(kKeyCc);
+	// 	toolchains.erase(kKeyCompilerCpp);
+	// 	toolchains.erase(kKeyCompilerC);
 	// 	toolchains.erase(kKeyLinker);
 	// 	toolchains.erase(kKeyArchiver);
 	// 	toolchains.erase(kKeyWindowsResource);
@@ -395,10 +395,10 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyArchiver))
 		m_state.toolchain.setArchiver(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCpp))
+	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCompilerCpp))
 		m_state.toolchain.setCpp(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCc))
+	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCompilerC))
 		m_state.toolchain.setCc(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyLinker))

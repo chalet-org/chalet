@@ -374,8 +374,8 @@ Json Schema::getSettingsJson()
 		"description": "The list of compilers for the platform",
 		"required": [
 			"archiver",
-			"C++",
-			"C",
+			"compilerCpp",
+			"compilerC",
 			"cmake",
 			"linker",
 			"profiler",
@@ -389,8 +389,8 @@ Json Schema::getSettingsJson()
 	toolchains[kProperties] = Json::object();
 	toolchains[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
 	toolchains[kProperties]["archiver"] = defs[Defs::Archiver];
-	toolchains[kProperties]["C++"] = defs[Defs::CppCompiler];
-	toolchains[kProperties]["C"] = defs[Defs::CCompiler];
+	toolchains[kProperties]["compilerCpp"] = defs[Defs::CppCompiler];
+	toolchains[kProperties]["compilerC"] = defs[Defs::CCompiler];
 	toolchains[kProperties]["cmake"] = defs[Defs::CMake];
 	toolchains[kProperties]["linker"] = defs[Defs::Linker];
 	toolchains[kProperties]["profiler"] = defs[Defs::Profiler];

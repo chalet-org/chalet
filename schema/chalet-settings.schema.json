@@ -197,8 +197,8 @@
 					"description": "The list of compilers for the platform",
 					"required": [
 						"archiver",
-						"C++",
-						"C",
+						"compilerCpp",
+						"compilerC",
 						"cmake",
 						"linker",
 						"profiler",
@@ -224,12 +224,12 @@
 							"description": "The executable path to the toolchain's static library archive utility",
 							"default": "/usr/bin/ar"
 						},
-						"C++": {
+						"compilerCpp": {
 							"type": "string",
 							"description": "The executable path to the toolchain's C++ compiler",
 							"default": "/usr/bin/c++"
 						},
-						"C": {
+						"compilerC": {
 							"type": "string",
 							"description": "The executable path to the toolchain's C compiler",
 							"default": "/usr/bin/cc"
