@@ -101,7 +101,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			}
 		}
 
-		m_strategy->saveBuildFile();
+		m_strategy->save();
 	}
 
 	bool multiTarget = m_state.targets.size() > 1;

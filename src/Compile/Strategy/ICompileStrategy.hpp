@@ -30,7 +30,7 @@ struct ICompileStrategy
 	virtual bool initialize(const StringList& inFileExtensions) = 0;
 	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
 
-	virtual bool saveBuildFile() const = 0;
+	virtual bool save() const = 0;
 	virtual bool buildProject(const ProjectTarget& inProject) const = 0;
 
 protected:

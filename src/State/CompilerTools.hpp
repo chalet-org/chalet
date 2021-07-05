@@ -51,6 +51,10 @@ struct CompilerTools
 	const std::string& compilerC() const noexcept;
 	void setCompilerC(std::string&& inValue) noexcept;
 
+	const std::string& compilerWindowsResource() const noexcept;
+	void setCompilerWindowsResource(std::string&& inValue) noexcept;
+	bool usingLlvmRc() const noexcept;
+
 	const std::string& cmake() const noexcept;
 	void setCmake(std::string&& inValue) noexcept;
 	uint cmakeVersionMajor() const noexcept;
@@ -81,9 +85,6 @@ struct CompilerTools
 	uint ninjaVersionMinor() const noexcept;
 	uint ninjaVersionPatch() const noexcept;
 	bool ninjaAvailable() const noexcept;
-
-	const std::string& compilerWindowsResource() const noexcept;
-	void setCompilerWindowsResource(std::string&& inValue) noexcept;
 
 	std::string getRootPathVariable();
 
@@ -136,6 +137,7 @@ private:
 	bool m_isProfilerGprof = false;
 
 	bool m_ccDetected = false;
+	bool m_usingLlvmRc = false;
 	bool m_cmakeAvailable = false;
 	bool m_ninjaAvailable = false;
 	bool m_makeIsNMake = false;

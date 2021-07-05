@@ -86,7 +86,7 @@ bool CompileStrategyMakefile::addProject(const ProjectTarget& inProject, SourceO
 }
 
 /*****************************************************************************/
-bool CompileStrategyMakefile::saveBuildFile() const
+bool CompileStrategyMakefile::save() const
 {
 	if (!m_initialized || !m_generator->hasProjectRecipes())
 		return false;

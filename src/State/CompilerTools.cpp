@@ -705,6 +705,12 @@ const std::string& CompilerTools::compilerWindowsResource() const noexcept
 void CompilerTools::setCompilerWindowsResource(std::string&& inValue) noexcept
 {
 	m_compilerWindowsResource = std::move(inValue);
+
+	m_usingLlvmRc = String::endsWith({ "llvm-rc.exe", "llvm-rc" }, m_compilerWindowsResource);
+}
+bool CompilerTools::usingLlvmRc() const noexcept
+{
+	return m_usingLlvmRc;
 }
 
 /*****************************************************************************/

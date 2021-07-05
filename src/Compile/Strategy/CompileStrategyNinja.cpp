@@ -75,7 +75,7 @@ bool CompileStrategyNinja::addProject(const ProjectTarget& inProject, SourceOutp
 }
 
 /*****************************************************************************/
-bool CompileStrategyNinja::saveBuildFile() const
+bool CompileStrategyNinja::save() const
 {
 	if (!m_initialized || !m_generator->hasProjectRecipes())
 		return false;

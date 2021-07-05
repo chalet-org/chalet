@@ -308,7 +308,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
 
 		auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
-		if (m_generateDependencies && !String::endsWith({ "llvm-rc.exe", "llvm-rc" }, m_state.toolchain.compilerWindowsResource()))
+		if (m_generateDependencies && !m_state.toolchain.usingLlvmRc())
 		{
 			rcCompile += fmt::format(" && {}", moveDependencies);
 		}

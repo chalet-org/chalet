@@ -30,7 +30,7 @@ public:
 	virtual bool initialize(const StringList& inFileExtensions) final;
 	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
 
-	virtual bool saveBuildFile() const final;
+	virtual bool save() const final;
 	virtual bool buildProject(const ProjectTarget& inProject) const final;
 
 private:
