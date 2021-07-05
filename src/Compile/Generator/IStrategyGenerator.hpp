@@ -26,6 +26,7 @@ struct IStrategyGenerator
 
 	virtual void addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) = 0;
 	virtual std::string getContents(const std::string& inPath) const = 0;
+	virtual bool saveDependencies() const;
 	virtual void reset();
 
 	bool hasProjectRecipes() const;

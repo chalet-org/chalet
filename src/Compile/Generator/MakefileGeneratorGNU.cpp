@@ -113,6 +113,13 @@ NOOP := @{printer}{recipes}
 }
 
 /*****************************************************************************/
+bool MakefileGeneratorGNU::saveDependencies() const
+{
+	// LOG("Save some stuffs?");
+	return true;
+}
+
+/*****************************************************************************/
 void MakefileGeneratorGNU::reset()
 {
 	m_targetRecipes.clear();
@@ -308,7 +315,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
 
 		auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
-		if (m_generateDependencies && !m_state.toolchain.usingLlvmRc())
+		if (m_generateDependencies && !m_state.toolchain.usingLlvmRC())
 		{
 			rcCompile += fmt::format(" && {}", moveDependencies);
 		}

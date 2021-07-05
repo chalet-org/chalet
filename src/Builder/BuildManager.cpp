@@ -101,7 +101,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			}
 		}
 
-		m_strategy->save();
+		m_strategy->saveBuildFile();
 	}
 
 	bool multiTarget = m_state.targets.size() > 1;
@@ -185,6 +185,12 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	{
 		if (!runCommand && inShowSuccess)
 		{
+			if (!m_strategy->doPostBuild())
+			{
+				Diagnostic::error("The post-build step encountered a problem.");
+				return false;
+			}
+
 			Output::msgBuildSuccess();
 			Output::printInfo(fmt::format("   Total Time: {}", m_timer.asString()));
 

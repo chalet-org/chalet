@@ -49,4 +49,10 @@ StrategyType ICompileStrategy::type() const noexcept
 {
 	return m_type;
 }
+
+/*****************************************************************************/
+bool ICompileStrategy::doPostBuild() const
+{
+	return true;
+}
 }

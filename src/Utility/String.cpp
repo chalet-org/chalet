@@ -17,7 +17,7 @@ bool String::equals(const std::string_view inCompare, const std::string& inStrin
 }
 
 /*****************************************************************************/
-bool String::equals(const char inCompare, const std::string& inString)
+bool String::equals(const char inCompare, const std::string& inString) noexcept
 {
 	return inString.size() == 1 && inString.front() == inCompare;
 }
@@ -41,7 +41,7 @@ bool String::contains(const std::string_view inFind, const std::string& inString
 }
 
 /*****************************************************************************/
-bool String::contains(const char inFind, const std::string& inString)
+bool String::contains(const char inFind, const std::string& inString) noexcept
 {
 	return inString.find(inFind) != std::string::npos;
 }
@@ -67,7 +67,7 @@ bool String::startsWith(const std::string_view inStart, const std::string& inStr
 }
 
 /*****************************************************************************/
-bool String::startsWith(const char inStart, const std::string& inString)
+bool String::startsWith(const char inStart, const std::string& inString) noexcept
 {
 	if (inString.empty())
 		return false;
@@ -96,7 +96,7 @@ bool String::endsWith(const std::string_view inEnd, const std::string& inString)
 }
 
 /*****************************************************************************/
-bool String::endsWith(const char inEnd, const std::string& inString)
+bool String::endsWith(const char inEnd, const std::string& inString) noexcept
 {
 	if (inString.empty())
 		return false;

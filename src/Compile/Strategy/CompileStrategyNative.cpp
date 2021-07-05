@@ -93,7 +93,7 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::save() const
+bool CompileStrategyNative::saveBuildFile() const
 {
 	return true;
 }

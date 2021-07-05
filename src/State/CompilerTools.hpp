@@ -53,7 +53,7 @@ struct CompilerTools
 
 	const std::string& compilerWindowsResource() const noexcept;
 	void setCompilerWindowsResource(std::string&& inValue) noexcept;
-	bool usingLlvmRc() const noexcept;
+	bool usingLlvmRC() const noexcept;
 
 	const std::string& cmake() const noexcept;
 	void setCmake(std::string&& inValue) noexcept;
@@ -137,7 +137,7 @@ private:
 	bool m_isProfilerGprof = false;
 
 	bool m_ccDetected = false;
-	bool m_usingLlvmRc = false;
+	bool m_usingLlvmRC = false;
 	bool m_cmakeAvailable = false;
 	bool m_ninjaAvailable = false;
 	bool m_makeIsNMake = false;

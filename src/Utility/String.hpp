@@ -11,19 +11,19 @@ namespace chalet
 namespace String
 {
 bool equals(const std::string_view inCompare, const std::string& inString);
-bool equals(const char inCompare, const std::string& inString);
+bool equals(const char inCompare, const std::string& inString) noexcept;
 bool equals(const StringList& inFind, const std::string& inString);
 
 bool contains(const std::string_view inFind, const std::string& inString);
-bool contains(const char inFind, const std::string& inString);
+bool contains(const char inFind, const std::string& inString) noexcept;
 bool contains(const StringList& inFind, const std::string& inString);
 
 bool startsWith(const std::string_view inFind, const std::string& inString);
-bool startsWith(const char inFind, const std::string& inString);
+bool startsWith(const char inFind, const std::string& inString) noexcept;
 bool startsWith(const StringList& inFind, const std::string& inString);
 
 bool endsWith(const std::string_view inFind, const std::string& inString);
-bool endsWith(const char inFind, const std::string& inString);
+bool endsWith(const char inFind, const std::string& inString) noexcept;
 bool endsWith(const StringList& inFind, const std::string& inString);
 
 bool onlyContainsCharacters(const std::string& inChars, const std::string& inString);
