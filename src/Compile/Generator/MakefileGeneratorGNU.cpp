@@ -113,13 +113,6 @@ NOOP := @{printer}{recipes}
 }
 
 /*****************************************************************************/
-bool MakefileGeneratorGNU::saveDependencies() const
-{
-	// LOG("Save some stuffs?");
-	return true;
-}
-
-/*****************************************************************************/
 void MakefileGeneratorGNU::reset()
 {
 	m_targetRecipes.clear();

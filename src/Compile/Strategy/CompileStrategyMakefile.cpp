@@ -118,8 +118,13 @@ bool CompileStrategyMakefile::buildProject(const ProjectTarget& inProject) const
 /*****************************************************************************/
 bool CompileStrategyMakefile::doPostBuild() const
 {
-	if (!m_generator->saveDependencies())
-		return false;
+	for (auto& [target, sources] : m_outputs)
+	{
+		for (auto& source : sources.objectList)
+		{
+			LOG(source);
+		}
+	}
 
 	return true;
 }

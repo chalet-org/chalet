@@ -46,12 +46,6 @@ IStrategyGenerator::IStrategyGenerator(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool IStrategyGenerator::saveDependencies() const
-{
-	return true;
-}
-
-/*****************************************************************************/
 void IStrategyGenerator::reset()
 {
 }
