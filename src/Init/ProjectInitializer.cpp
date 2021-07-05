@@ -44,7 +44,7 @@ bool ProjectInitializer::run()
 
 	Path::sanitize(m_rootPath);
 
-	Output::print(Color::Reset, getBannerV1());
+	Output::print(Color::Reset, getBannerV2());
 
 	BuildJsonProps props;
 	props.workspaceName = String::getPathBaseName(m_rootPath);
@@ -446,11 +446,28 @@ std::string ProjectInitializer::getBannerV1() const
 /*****************************************************************************/
 std::string ProjectInitializer::getBannerV2() const
 {
-	return R"art(
-.    `     .     .  `   ,    .    `    .   .    '       `    .   ,    '  .   ,
-    .     `    .   ,  '    .   ,   .         ,   .    '   `    .       .   .
-                                   _▂▃▅▇▇▅▃▂_
-▂▂▂▂▃▃▂▃▅▃▂▃▅▃▂▂▂▃▃▂▂▃▅▅▃▂▂▂▃▃▂▂▃▅▃▂ CHALET ▂▃▅▃▂▂▃▃▂▂▂▃▅▅▃▂▂▃▃▂▂▂▃▅▃▂▃▅▃▂▃▃▂▂▂▂
-)art";
+	auto& theme = Output::theme();
+	auto c1 = Output::getAnsiStyle(theme.header);
+	auto c2 = Output::getAnsiStyle(theme.flair);
+	auto c3 = Output::getAnsiStyle(theme.info);
+	auto reset = Output::getAnsiReset();
+	return fmt::format(R"art(
+                                      {c1}./\.{reset}
+                                   {c1}./J/''\L\.{reset}
+                                {c1}./J/'{c3}======{c1}'\L\.{reset}
+                             {c1}./J/' {c3}/'  ¦¦  '\ {c1}'\L\.{reset}
+                          {c1}./J/'{c3}¦ '     ¦¦     ' ¦{c1} '\L\.{reset}
+                       {c1}./J/'{c3}==¦¦================¦¦=={c1}'\L\.{reset}
+                    {c1}./J/'{c3}¦¦   ¦¦ /'          '\ ¦¦   ¦¦{c1}'\L\.{reset}
+                 {c1}./J/'{c3}   ¦¦===¦¦{c2}     {c1}CHALET{c3}     {c3}¦¦===¦¦   {c1}'\L\.{reset}
+             {c1}./:''{c2}  |  U {c3}¦¦   ¦¦{c2}    ___  ___    {c3}¦¦   ¦¦{c2} U  |  {c1}'':\.{reset}
+         {c1}./:''{c3}.{c2} O U | O  {c3}¦¦   ¦¦{c2}   |   ||   |   {c3}¦¦   ¦¦{c2}  O | U O {c3}.{c1}'':\.{reset}
+             {c3}||{c2}  O  |  U {c3}MMMMMMM{c2}   |   ||o  |   {c3}MMMMMMM{c2} U  |  O  {c3}||{reset}
+             {c3}||{c2}_____|____{c3}MMMMMMM{c2}___|___||___|___{c3}MMMMMMM{c2}____|_____{c3}||{reset}
+)art",
+		FMT_ARG(c1),
+		FMT_ARG(c2),
+		FMT_ARG(c3),
+		FMT_ARG(reset));
 }
 }
