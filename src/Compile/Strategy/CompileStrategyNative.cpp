@@ -62,7 +62,7 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 
 	auto target = std::make_unique<CommandPool::Target>();
 	target->pre = getPchCommand(pchTarget);
-	target->list = getCompileCommands(inOutputs.objectList);
+	target->list = getCompileCommands(inOutputs.groups);
 	bool targetExists = Commands::pathExists(inOutputs.target);
 
 	if (!target->list.empty() || !targetExists)
@@ -152,80 +152,84 @@ CommandPool::Cmd CompileStrategyNative::getPchCommand(const std::string& pchTarg
 }
 
 /*****************************************************************************/
-CommandPool::CmdList CompileStrategyNative::getCompileCommands(const StringList& inObjects)
+CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileGroupList& inGroups)
 {
-	const auto& objDir = fmt::format("{}/", m_state.paths.objDir());
-
 	auto& sourceCache = m_state.cache.file().sources();
 
 	CommandPool::CmdList ret;
 
-	for (auto& target : inObjects)
+	for (auto& group : inGroups)
 	{
-		if (target.empty())
+		const auto& source = group->sourceFile;
+		const auto& target = group->objectFile;
+
+		if (source.empty())
 			continue;
 
-		std::string source = target;
-		String::replaceAll(source, objDir, "");
-
-		if (String::endsWith(".o", source))
-			source = source.substr(0, source.size() - 2);
-		else if (String::endsWith({ ".res", ".obj" }, source))
-			source = source.substr(0, source.size() - 4);
-
-		CxxSpecialization specialization = CxxSpecialization::CPlusPlus;
-		if (String::endsWith({ ".m", ".M" }, source))
-			specialization = CxxSpecialization::ObjectiveC;
-		else if (String::endsWith(".mm", source))
-			specialization = CxxSpecialization::ObjectiveCPlusPlus;
-
-		if (String::endsWith({ ".rc", ".RC" }, source))
+		switch (group->type)
 		{
+			case SourceType::WindowsResource: {
 #if defined(CHALET_WIN32)
-			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
-			m_sourcesChanged |= sourceChanged;
-			if (sourceChanged || m_pchChanged)
-			{
-				if (!List::contains(m_fileCache, source))
+				bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
+				m_sourcesChanged |= sourceChanged;
+				if (sourceChanged || m_pchChanged)
 				{
-					m_fileCache.push_back(source);
+					if (!List::contains(m_fileCache, source))
+					{
+						m_fileCache.push_back(source);
 
-					auto tmp = getRcCompile(source, target);
-					CommandPool::Cmd out;
-					out.output = std::move(source);
-					out.command = std::move(tmp.command);
-					out.renameFrom = std::move(tmp.renameFrom);
-					out.renameTo = std::move(tmp.renameTo);
-					out.color = Output::theme().build;
-					out.symbol = " ";
-					ret.emplace_back(std::move(out));
+						auto tmp = getRcCompile(source, target);
+						CommandPool::Cmd out;
+						out.output = std::move(source);
+						out.command = std::move(tmp.command);
+						out.renameFrom = std::move(tmp.renameFrom);
+						out.renameTo = std::move(tmp.renameTo);
+						out.color = Output::theme().build;
+						out.symbol = " ";
+						ret.emplace_back(std::move(out));
+					}
 				}
-			}
 #else
-			continue;
+				continue;
 #endif
-		}
-		else
-		{
-			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
-			m_sourcesChanged |= sourceChanged;
-			if (sourceChanged || m_pchChanged)
-			{
-				if (!List::contains(m_fileCache, source))
-				{
-					m_fileCache.push_back(source);
-
-					auto tmp = getCxxCompile(source, target, specialization);
-					CommandPool::Cmd out;
-					out.output = std::move(source);
-					out.command = std::move(tmp.command);
-					out.renameFrom = std::move(tmp.renameFrom);
-					out.renameTo = std::move(tmp.renameTo);
-					out.color = Output::theme().build;
-					out.symbol = " ";
-					ret.emplace_back(std::move(out));
-				}
+				break;
 			}
+			case SourceType::C:
+			case SourceType::CPlusPlus:
+			case SourceType::ObjectiveC:
+			case SourceType::ObjectiveCPlusPlus: {
+				CxxSpecialization specialization = CxxSpecialization::CPlusPlus;
+				if (group->type == SourceType::ObjectiveC)
+					specialization = CxxSpecialization::ObjectiveC;
+				else if (group->type == SourceType::ObjectiveCPlusPlus)
+					specialization = CxxSpecialization::ObjectiveCPlusPlus;
+
+				bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
+				m_sourcesChanged |= sourceChanged;
+				if (sourceChanged || m_pchChanged)
+				{
+					if (!List::contains(m_fileCache, source))
+					{
+						m_fileCache.push_back(source);
+
+						auto tmp = getCxxCompile(source, target, specialization);
+						CommandPool::Cmd out;
+						out.output = std::move(source);
+						out.command = std::move(tmp.command);
+						out.renameFrom = std::move(tmp.renameFrom);
+						out.renameTo = std::move(tmp.renameTo);
+						out.color = Output::theme().build;
+						out.symbol = " ";
+						ret.emplace_back(std::move(out));
+					}
+				}
+				break;
+			}
+
+			case SourceType::CxxPrecompiledHeader:
+			case SourceType::Unknown:
+			default:
+				break;
 		}
 	}
 

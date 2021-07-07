@@ -36,7 +36,7 @@ private:
 
 	bool copyRunDependencies(const ProjectTarget& inProject);
 	StringList getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig);
-	bool doClean(const ProjectTarget& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean = false);
+	bool doClean(const ProjectTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean = false);
 	bool doLazyClean();
 
 	bool addProjectToBuild(const ProjectTarget& inProject, const Route inRoute);

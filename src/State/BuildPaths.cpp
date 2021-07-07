@@ -5,6 +5,7 @@
 
 #include "State/BuildPaths.hpp"
 
+#include "Compile/CompilerConfig.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
@@ -17,7 +18,11 @@ namespace chalet
 {
 BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnvironment& inEnvironment) :
 	m_inputs(inInputs),
-	m_environment(inEnvironment)
+	m_environment(inEnvironment),
+	m_cExts({ ".c", ".C" }),
+	m_resourceExts({ ".rc", ".RC" }),
+	m_objectiveCExts({ ".m", ".M" }),
+	m_objectiveCppExts({ ".mm" })
 {
 }
 
@@ -123,7 +128,7 @@ const StringList& BuildPaths::allFileExtensions() const noexcept
 }
 
 /*****************************************************************************/
-SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inDumpAssembly, const bool inObjExtension) const
+SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const
 {
 	SourceOutputs ret;
 
@@ -132,54 +137,39 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool 
 	SourceGroup files = std::move(*m_fileList.at(inProject.name()));
 	SourceGroup directories = getDirectories(inProject);
 
-	ret.objectListLinker = getObjectFilesList(files.list, inObjExtension);
-
-#if defined(CHALET_WIN32)
-	if (inIsMsvc)
-	{
-		if (inProject.usesPch())
-		{
-			auto pchTarget = getPrecompiledHeaderTarget(inProject, true);
-			String::replaceAll(pchTarget, ".pch", ".obj");
-
-			ret.objectListLinker.emplace_back(std::move(pchTarget));
-		}
-	}
-#else
-	UNUSED(inIsMsvc);
-#endif
-
-	ret.objectList = getObjectFilesList(String::excludeIf(m_fileListCache, files.list), inObjExtension);
-
 	for (const auto& file : files.list)
 	{
 		auto ext = String::getPathSuffix(file);
 		List::addIfDoesNotExist(ret.fileExtensions, std::move(ext));
+	}
 
-		if (m_useCache && !List::contains(m_fileListCache, file))
-			m_fileListCache.push_back(file);
+	const bool isMsvc = inConfig.isMsvc();
+	const bool isNotMsvc = !isMsvc;
+	ret.objectListLinker = getObjectFilesList(files.list, inProject, isMsvc);
+	files.list = String::excludeIf(m_fileListCache, files.list);
+	ret.groups = getSourceFileGroupList(std::move(files), inProject, inConfig, inDumpAssembly);
+	for (auto& group : ret.groups)
+	{
+		auto type = group->type;
+		List::addIfDoesNotExist(ret.types, std::move(type));
 	}
 
 	StringList objSubDirs = getOutputDirectoryList(directories, m_objDir);
-
-	ret.dependencyList = getDependencyFilesList(files);
 	StringList depSubDirs = getOutputDirectoryList(directories, m_depDir);
 
 	StringList asmSubDirs;
 	if (inDumpAssembly)
 	{
-		ret.assemblyList = getAssemblyFilesList(files, inObjExtension);
-
 		asmSubDirs = getOutputDirectoryList(directories, m_asmDir);
 
-		if (!inIsMsvc)
+		if (isNotMsvc)
 			ret.directories.reserve(4 + objSubDirs.size() + depSubDirs.size() + asmSubDirs.size());
 		else
 			ret.directories.reserve(4 + objSubDirs.size() + asmSubDirs.size());
 	}
 	else
 	{
-		if (!inIsMsvc)
+		if (isNotMsvc)
 			ret.directories.reserve(3 + objSubDirs.size() + depSubDirs.size());
 		else
 			ret.directories.reserve(3 + objSubDirs.size());
@@ -196,7 +186,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const bool 
 
 	ret.directories.insert(ret.directories.end(), objSubDirs.begin(), objSubDirs.end());
 
-	if (!inIsMsvc)
+	if (isNotMsvc)
 	{
 		ret.directories.push_back(m_depDir);
 		ret.directories.insert(ret.directories.end(), depSubDirs.begin(), depSubDirs.end());
@@ -219,7 +209,13 @@ void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::s
 	auto objects = String::join(inOutput.objectListLinker);
 	Environment::set(fmt::format("OBJS_{}", inHash).c_str(), objects);
 
-	auto depdendencies = String::join(inOutput.dependencyList);
+	StringList depends;
+	for (auto& group : inOutput.groups)
+	{
+		depends.push_back(group->dependencyFile);
+	}
+
+	auto depdendencies = String::join(depends);
 	Environment::set(fmt::format("DEPS_{}", inHash).c_str(), depdendencies);
 }
 
@@ -383,13 +379,122 @@ std::string BuildPaths::getWindowsIconResourceFilename(const ProjectTarget& inPr
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const bool inObjExtension) const
+SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const
+{
+	SourceFileGroupList ret;
+	bool isMsvc = inConfig.isMsvc();
+
+	for (auto& file : inFiles.list)
+	{
+		if (file.empty())
+			continue;
+
+		auto group = std::make_unique<SourceFileGroup>();
+
+		if (m_useCache && !List::contains(m_fileListCache, file))
+			m_fileListCache.push_back(file);
+
+		group->type = getSourceType(file);
+		group->objectFile = getObjectFile(file, isMsvc);
+		group->dependencyFile = getDependencyFile(file);
+		group->sourceFile = std::move(file);
+
+		ret.push_back(std::move(group));
+	}
+
+	// don't do this for the pch
+	if (inDumpAssembly)
+	{
+		for (auto& group : ret)
+		{
+			group->assemblyFile = getAssemblyFile(group->sourceFile, isMsvc);
+		}
+	}
+
+	// add the pch
+	if (!inFiles.pch.empty())
+	{
+		auto group = std::make_unique<SourceFileGroup>();
+
+		group->type = SourceType::CxxPrecompiledHeader;
+		group->objectFile = getPrecompiledHeaderTarget(inProject, inConfig.isClangOrMsvc());
+		group->dependencyFile = getDependencyFile(inFiles.pch);
+		group->sourceFile = std::move(inFiles.pch);
+
+		ret.push_back(std::move(group));
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getObjectFile(const std::string& inSource, const bool inIsMsvc) const
+{
+	if (String::endsWith(m_resourceExts, inSource))
+	{
+#if defined(CHALET_WIN32)
+		return fmt::format("{}/{}.res", m_objDir, inSource);
+#endif
+	}
+	else
+	{
+		return fmt::format("{}/{}.{}", m_objDir, inSource, inIsMsvc ? "obj" : "o");
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getAssemblyFile(const std::string& inSource, const bool inIsMsvc) const
+{
+	if (String::endsWith(m_resourceExts, inSource))
+	{
+	}
+	else
+	{
+		return fmt::format("{}/{}.{}.asm", m_asmDir, inSource, inIsMsvc ? "obj" : "o");
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.d", m_depDir, inSource);
+}
+
+/*****************************************************************************/
+SourceType BuildPaths::getSourceType(const std::string& inSource) const
+{
+	if (String::endsWith(m_cExts, inSource))
+	{
+		return SourceType::C;
+	}
+	else if (String::endsWith(m_resourceExts, inSource))
+	{
+		return SourceType::WindowsResource;
+	}
+	else if (String::endsWith(m_objectiveCExts, inSource))
+	{
+		return SourceType::ObjectiveC;
+	}
+	else if (String::endsWith(m_objectiveCppExts, inSource))
+	{
+		return SourceType::ObjectiveCPlusPlus;
+	}
+
+	return SourceType::Unknown;
+}
+
+/*****************************************************************************/
+StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const ProjectTarget& inProject, const bool inIsMsvc) const
 {
 	StringList ret;
-	auto ext = inObjExtension ? "obj" : "o";
+	auto ext = inIsMsvc ? "obj" : "o";
 	for (const auto& file : inFiles)
 	{
-		if (!String::endsWith(".rc", file))
+		if (!String::endsWith(m_resourceExts, file))
 		{
 			ret.emplace_back(fmt::format("{}/{}.{}", m_objDir, file, ext));
 		}
@@ -401,39 +506,20 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const bool 
 		}
 	}
 
-	return ret;
-}
-
-/*****************************************************************************/
-StringList BuildPaths::getDependencyFilesList(const SourceGroup& inFiles) const
-{
-	StringList ret;
-	for (const auto& file : inFiles.list)
+#if defined(CHALET_WIN32)
+	if (inIsMsvc)
 	{
-		if (file.empty())
-			continue;
-
-		ret.emplace_back(fmt::format("{}/{}.d", m_depDir, file));
-	}
-
-	if (!inFiles.pch.empty())
-		ret.emplace_back(fmt::format("{}/{}.d", m_depDir, inFiles.pch));
-
-	return ret;
-}
-
-/*****************************************************************************/
-StringList BuildPaths::getAssemblyFilesList(const SourceGroup& inFiles, const bool inObjExtension) const
-{
-	StringList ret;
-	auto ext = inObjExtension ? "obj" : "o";
-	for (auto& file : inFiles.list)
-	{
-		if (!String::endsWith(".rc", file))
+		if (inProject.usesPch())
 		{
-			ret.emplace_back(fmt::format("{}/{}.{}.asm", m_asmDir, file, ext));
+			auto pchTarget = getPrecompiledHeaderTarget(inProject, true);
+			String::replaceAll(pchTarget, ".pch", ".obj");
+
+			ret.emplace_back(std::move(pchTarget));
 		}
 	}
+#else
+	UNUSED(inProject, inIsMsvc);
+#endif
 
 	return ret;
 }

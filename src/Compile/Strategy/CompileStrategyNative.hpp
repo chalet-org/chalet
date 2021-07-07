@@ -35,7 +35,7 @@ public:
 
 private:
 	CommandPool::Cmd getPchCommand(const std::string& pchTarget);
-	CommandPool::CmdList getCompileCommands(const StringList& inObjects);
+	CommandPool::CmdList getCompileCommands(const SourceFileGroupList& inGroups);
 	CommandPool::Cmd getLinkCommand(const std::string& inTarget, const StringList& inObjects);
 
 	CmdTemp getPchCompile(const std::string& source, const std::string& target) const;

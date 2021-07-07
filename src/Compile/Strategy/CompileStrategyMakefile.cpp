@@ -118,13 +118,13 @@ bool CompileStrategyMakefile::buildProject(const ProjectTarget& inProject) const
 /*****************************************************************************/
 bool CompileStrategyMakefile::doPostBuild() const
 {
-	for (auto& [target, sources] : m_outputs)
+	/*for (auto& [target, sources] : m_outputs)
 	{
-		for (auto& source : sources.objectList)
+		for (auto& group : sources.groups)
 		{
-			LOG(source);
+			LOG(group);
 		}
-	}
+	}*/
 
 	return true;
 }

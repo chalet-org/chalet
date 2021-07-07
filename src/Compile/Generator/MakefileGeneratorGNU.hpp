@@ -31,9 +31,9 @@ private:
 	std::string getCompileEchoSources() const;
 	std::string getCompileEchoLinker() const;
 
-	std::string getPchRecipe(const std::string& pchTarget);
+	std::string getPchRecipe(const std::string& source, const std::string& object);
 	std::string getRcRecipe(const std::string& ext, const std::string& pchTarget) const;
-	std::string getCppRecipe(const std::string& ext, const std::string& pchTarget) const;
+	std::string getCxxRecipe(const std::string& ext, const std::string& pchTarget) const;
 	std::string getObjcRecipe(const std::string& ext) const;
 
 	std::string getTargetRecipe(const std::string& linkerTarget) const;

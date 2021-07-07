@@ -13,7 +13,6 @@
 
 namespace chalet
 {
-#if defined(CHALET_WIN32)
 struct MakefileGeneratorNMake final : IStrategyGenerator
 {
 	explicit MakefileGeneratorNMake(const BuildState& inState);
@@ -25,16 +24,16 @@ struct MakefileGeneratorNMake final : IStrategyGenerator
 
 private:
 	std::string getBuildRecipes(const SourceOutputs& inOutputs);
-	std::string getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget);
+	std::string getObjBuildRecipes(const SourceFileGroupList& inGroups);
 
 	std::string getCompileEchoSources(const std::string& source) const;
 	std::string getCompileEchoLinker(const std::string& target) const;
 
-	std::string getPchBuildRecipe(const std::string& pchTarget) const;
+	std::string getPchBuildRecipe(const StringList& inPches) const;
 
-	std::string getPchRecipe(const std::string& pchTarget);
+	std::string getPchRecipe(const std::string& source, const std::string& object);
 	std::string getRcRecipe(const std::string& source, const std::string& object) const;
-	std::string getCppRecipe(const std::string& source, const std::string& object, const std::string& pchTarget) const;
+	std::string getCppRecipe(const std::string& source, const std::string& object) const;
 
 	std::string getTargetRecipe(const std::string& linkerTarget, const StringList& objects) const;
 
@@ -47,12 +46,6 @@ private:
 
 	StringList m_fileExtensions;
 };
-#else
-struct MakefileGeneratorNMake
-{
-	MakefileGeneratorNMake();
-};
-#endif
 }
 
 #endif // CHALET_MAKEFILE_GENERATOR_NMAKE_HPP

@@ -319,8 +319,7 @@ bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route
 
 	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
 
-	const bool objExtension = compilerType == CppCompilerType::VisualStudio;
-	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig.isMsvc(), m_state.environment.dumpAssembly(), objExtension);
+	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig, m_state.environment.dumpAssembly());
 
 	if (!Commands::makeDirectories(outputs.directories))
 	{
@@ -336,12 +335,17 @@ bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route
 
 	if (inRoute == Route::Rebuild)
 	{
-		doClean(inProject, outputs.target, outputs.objectList, outputs.dependencyList);
+		doClean(inProject, outputs.target, outputs.groups);
 	}
 
 	if (m_state.environment.dumpAssembly())
 	{
-		if (!m_asmDumper.addProject(inProject, std::move(outputs.assemblyList)))
+		StringList assemblyList;
+		for (auto& group : outputs.groups)
+		{
+			assemblyList.push_back(std::move(group->assemblyFile));
+		}
+		if (!m_asmDumper.addProject(inProject, std::move(assemblyList)))
 			return false;
 	}
 
@@ -459,7 +463,7 @@ bool BuildManager::doLazyClean()
 }
 
 /*****************************************************************************/
-bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& inTarget, const StringList& inObjectList, const StringList& inDepList, const bool inFullClean)
+bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean)
 {
 	// const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
@@ -472,18 +476,18 @@ bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& in
 
 	auto pch = m_state.paths.getPrecompiledHeader(inProject);
 
-	auto cacheAndRemove = [=](const StringList& inList, StringList& outCache) -> void {
-		for (auto& item : inList)
-		{
-			if (!inFullClean && (inProject.usesPch() && String::contains(pch, item)))
-				continue;
+	auto cacheAndRemove = [=](const std::string& inFile, StringList& outCache) -> void {
+		if (inFile.empty())
+			return;
 
-			if (List::contains(outCache, item))
-				continue;
+		if (!inFullClean && (inProject.usesPch() && String::contains(pch, inFile)))
+			return;
 
-			outCache.push_back(item);
-			Commands::remove(item);
-		}
+		if (List::contains(outCache, inFile))
+			return;
+
+		outCache.push_back(inFile);
+		Commands::remove(inFile);
 	};
 
 	if (!List::contains(m_removeCache, inTarget))
@@ -492,8 +496,11 @@ bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& in
 		Commands::remove(inTarget);
 	}
 
-	cacheAndRemove(inObjectList, m_removeCache);
-	cacheAndRemove(inDepList, m_removeCache);
+	for (auto& group : inGroups)
+	{
+		cacheAndRemove(group->objectFile, m_removeCache);
+		cacheAndRemove(group->dependencyFile, m_removeCache);
+	}
 
 	return true;
 }

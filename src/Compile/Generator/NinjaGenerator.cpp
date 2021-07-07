@@ -18,21 +18,12 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
 	m_rules = {
-		{ "cpp", &NinjaGenerator::getCppRule },
-		{ "CPP", &NinjaGenerator::getCppRule },
-		{ "cc", &NinjaGenerator::getCppRule },
-		{ "CC", &NinjaGenerator::getCppRule },
-		{ "cxx", &NinjaGenerator::getCppRule },
-		{ "CXX", &NinjaGenerator::getCppRule },
-		{ "c++", &NinjaGenerator::getCppRule },
-		{ "C++", &NinjaGenerator::getCppRule },
-		{ "c", &NinjaGenerator::getCRule },
-		{ "C", &NinjaGenerator::getCRule },
-		{ "mm", &NinjaGenerator::getObjcppRule },
-		{ "m", &NinjaGenerator::getObjcRule },
-		{ "M", &NinjaGenerator::getObjcRule },
-		{ "rc", &NinjaGenerator::getRcRule },
-		{ "RC", &NinjaGenerator::getRcRule },
+		{ SourceType::CPlusPlus, &NinjaGenerator::getCppRule },
+		{ SourceType::C, &NinjaGenerator::getCRule },
+		{ SourceType::CxxPrecompiledHeader, &NinjaGenerator::getPchRule },
+		{ SourceType::ObjectiveCPlusPlus, &NinjaGenerator::getObjcppRule },
+		{ SourceType::ObjectiveC, &NinjaGenerator::getObjcRule },
+		{ SourceType::WindowsResource, &NinjaGenerator::getRcRule },
 	};
 	// m_generateDependencies = !Environment::isContinuousIntegrationServer();
 	m_generateDependencies = true;
@@ -48,7 +39,7 @@ void NinjaGenerator::addProjectRecipes(const ProjectTarget& inProject, const Sou
 	const auto& config = m_state.toolchain.getConfig(m_project->language());
 	m_needsMsvcDepsPrefix |= config.isMsvc();
 
-	const std::string rules = getRules(inOutputs.fileExtensions);
+	const std::string rules = getRules(inOutputs.types);
 	const std::string buildRules = getBuildRules(inOutputs);
 
 	auto objects = String::join(inOutputs.objectListLinker);
@@ -135,23 +126,20 @@ std::string NinjaGenerator::getDepFile(const std::string& inDependency)
 }
 
 /*****************************************************************************/
-std::string NinjaGenerator::getRules(const StringList& inExtensions)
+std::string NinjaGenerator::getRules(const SourceTypeList& inTypes)
 {
-	std::string rules = getPchRule();
-	for (auto& inExt : inExtensions)
+	std::string rules;
+	for (auto& type : inTypes)
 	{
-		auto ext = String::toLowerCase(inExt);
-		if (m_rules.find(ext) == m_rules.end())
-		{
+		if (m_rules.find(type) == m_rules.end())
 			continue;
-		}
 
 #if !defined(CHALET_WIN32)
-		if (String::equals("rc", ext))
+		if (type == SourceType::WindowsResource)
 			continue;
 #endif
 
-		rules += m_rules[ext](*this);
+		rules += m_rules[type](*this);
 	}
 
 	rules += getLinkRule();
@@ -164,13 +152,18 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 {
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+	std::string rules;
+	for (auto& group : inOutputs.groups)
+	{
+		if (group->type == SourceType::CxxPrecompiledHeader)
+		{
+			if (group->objectFile.empty())
+				continue;
 
-	std::string rules = getPchBuildRule(pchTarget);
-	rules += '\n';
-
-	rules += getObjBuildRules(inOutputs.objectList, pchTarget);
+			rules += getPchBuildRule(group->objectFile);
+		}
+	}
+	rules += getObjBuildRules(inOutputs.groups);
 
 	return rules;
 }
@@ -243,8 +236,6 @@ std::string NinjaGenerator::getCRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
@@ -275,8 +266,6 @@ std::string NinjaGenerator::getCppRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
@@ -307,8 +296,6 @@ std::string NinjaGenerator::getObjcRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
@@ -339,8 +326,6 @@ std::string NinjaGenerator::getObjcppRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
@@ -370,10 +355,7 @@ std::string NinjaGenerator::getLinkRule()
 
 	std::string ret;
 
-	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
-
 	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand("$out", { "$in" }, targetBasename));
 
 	const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
@@ -427,44 +409,64 @@ build {pchObj}: phony {pchTarget}
 }
 
 /*****************************************************************************/
-std::string NinjaGenerator::getObjBuildRules(const StringList& inObjects, const std::string& pchTarget)
+std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups)
 {
 	std::string ret;
 
-	const auto& objDir = fmt::format("{}/", m_state.paths.objDir());
-
-	std::string pchImplicitDep;
-	if (m_project->usesPch())
+	StringList pches;
+	for (auto& group : inGroups)
 	{
-		pchImplicitDep = fmt::format(" | {}", pchTarget);
+		if (group->type == SourceType::CxxPrecompiledHeader)
+		{
+			pches.push_back(group->objectFile);
+		}
 	}
 
-	for (auto& obj : inObjects)
+	std::string pchImplicitDep;
+	if (!pches.empty())
 	{
-		if (obj.empty())
+		pchImplicitDep = fmt::format(" | {}", String::join(pches));
+	}
+
+	for (auto& group : inGroups)
+	{
+		const auto& source = group->sourceFile;
+		const auto& object = group->objectFile;
+		if (source.empty())
 			continue;
 
-		std::string source = obj;
-		String::replaceAll(source, objDir, "");
+		std::string rule;
+		switch (group->type)
+		{
+			case SourceType::C:
+				rule = "cc";
+				break;
+			case SourceType::CPlusPlus:
+				rule = "cpp";
+				break;
+			case SourceType::ObjectiveC:
+				rule = "objc";
+				break;
+			case SourceType::ObjectiveCPlusPlus:
+				rule = "objcpp";
+				break;
+			case SourceType::WindowsResource:
+				rule = "rc";
+				break;
 
-		if (String::endsWith(".o", source))
-			source = source.substr(0, source.size() - 2);
-		else if (String::endsWith({ ".res", ".obj" }, source))
-			source = source.substr(0, source.size() - 4);
+			case SourceType::CxxPrecompiledHeader:
+			case SourceType::Unknown:
+			default: {
+				break;
+			}
+		}
 
-		std::string rule = "cpp";
-		if (String::endsWith({ ".c", ".C" }, source))
-			rule = "cc";
-		else if (String::endsWith({ ".rc", ".RC" }, source))
-			rule = "rc";
-		else if (String::endsWith({ ".m", ".M" }, source))
-			rule = "objc";
-		else if (String::endsWith(".mm", source))
-			rule = "objcpp";
+		if (rule.empty())
+			continue;
 
-		ret += fmt::format("build {obj}: {rule}_{hash} {source}{pchImplicitDep}\n",
+		ret += fmt::format("build {object}: {rule}_{hash} {source}{pchImplicitDep}\n",
 			fmt::arg("hash", m_hash),
-			FMT_ARG(obj),
+			FMT_ARG(object),
 			FMT_ARG(rule),
 			FMT_ARG(source),
 			FMT_ARG(pchImplicitDep));

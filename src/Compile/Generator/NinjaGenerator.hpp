@@ -16,7 +16,7 @@ namespace chalet
 class NinjaGenerator final : public IStrategyGenerator
 {
 	using NinjaRule = std::function<std::string(NinjaGenerator&)>;
-	using NinjaRuleList = std::unordered_map<std::string, NinjaRule>;
+	using NinjaRuleList = std::unordered_map<SourceType, NinjaRule>;
 
 public:
 	explicit NinjaGenerator(const BuildState& inState);
@@ -27,7 +27,7 @@ public:
 private:
 	std::string getDepFile(const std::string& inDependency);
 
-	std::string getRules(const StringList& inExtensions);
+	std::string getRules(const SourceTypeList& inTypes);
 	std::string getBuildRules(const SourceOutputs& inOutputs);
 
 	std::string getDependencyRule();
@@ -41,7 +41,7 @@ private:
 	std::string getLinkRule();
 
 	std::string getPchBuildRule(const std::string& pchTarget);
-	std::string getObjBuildRules(const StringList& inObjects, const std::string& pchTarget);
+	std::string getObjBuildRules(const SourceFileGroupList& inGroups);
 
 	std::string getRuleDeps() const;
 

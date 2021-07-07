@@ -105,7 +105,7 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 
 	ret.emplace_back(getPathCommand("/Fp", outputFile));
 
-	ret.emplace_back(getPathCommand("/Fo", pchObject));
+	ret.emplace_back(getPathCommand("/Fo", outputFile));
 	UNUSED(inputFile);
 
 	ret.emplace_back("/c");

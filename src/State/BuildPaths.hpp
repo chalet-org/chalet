@@ -14,6 +14,7 @@ namespace chalet
 struct CommandLineInputs;
 struct BuildInfo;
 struct WorkspaceEnvironment;
+struct CompilerConfig;
 
 struct BuildPaths
 {
@@ -38,7 +39,7 @@ struct BuildPaths
 	std::string getWindowsManifestResourceFilename(const ProjectTarget& inProject) const;
 	std::string getWindowsIconResourceFilename(const ProjectTarget& inProject) const;
 
-	SourceOutputs getOutputs(const ProjectTarget& inProject, const bool inIsMsvc, const bool inDumpAssembly, const bool inObjExtension = false) const;
+	SourceOutputs getOutputs(const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const;
 
 	void replaceVariablesInPath(std::string& outPath, const std::string& inName = std::string()) const;
@@ -57,9 +58,12 @@ private:
 		StringList list;
 	};
 
-	StringList getObjectFilesList(const StringList& inFiles, const bool inObjExtension) const;
-	StringList getDependencyFilesList(const SourceGroup& inFiles) const;
-	StringList getAssemblyFilesList(const SourceGroup& inFiles, const bool inObjExtension) const;
+	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const;
+	std::string getObjectFile(const std::string& inSource, const bool inIsMsvc) const;
+	std::string getAssemblyFile(const std::string& inSource, const bool inIsMsvc) const;
+	std::string getDependencyFile(const std::string& inSource) const;
+	SourceType getSourceType(const std::string& inSource) const;
+	StringList getObjectFilesList(const StringList& inFiles, const ProjectTarget& inProject, const bool inIsMsvc) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
 	std::string getPrecompiledHeaderDirectory(const ProjectTarget& inProject) const;
 	SourceGroup getFiles(const ProjectTarget& inProject) const;
@@ -69,6 +73,11 @@ private:
 
 	const CommandLineInputs& m_inputs;
 	const WorkspaceEnvironment& m_environment;
+
+	const StringList m_cExts;
+	const StringList m_resourceExts;
+	const StringList m_objectiveCExts;
+	const StringList m_objectiveCppExts;
 
 	mutable StringList m_fileListCache;
 	// mutable StringList m_directoryCache;
