@@ -118,13 +118,25 @@ bool CompileStrategyMakefile::buildProject(const ProjectTarget& inProject) const
 /*****************************************************************************/
 bool CompileStrategyMakefile::doPostBuild() const
 {
-	/*for (auto& [target, sources] : m_outputs)
+	if (m_state.toolchain.usingLlvmRC())
 	{
-		for (auto& group : sources.groups)
+		auto& sources = m_state.cache.file().sources();
+		for (auto& [target, sourceOutputs] : m_outputs)
 		{
-			LOG(group);
+			for (auto& group : sourceOutputs.groups)
+			{
+				if (group->type == SourceType::WindowsResource)
+				{
+					// Check if the object changed
+					if (sources.fileChangedOrDoesNotExist(group->objectFile))
+					{
+						// This isn't going to read for headers or anything, but it's better than nothing
+						std::ofstream(group->dependencyFile) << fmt::format("{}: \\\n {}", group->objectFile, group->sourceFile);
+					}
+				}
+			}
 		}
-	}*/
+	}
 
 	return true;
 }

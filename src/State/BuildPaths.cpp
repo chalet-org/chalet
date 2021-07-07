@@ -394,6 +394,10 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 			m_fileListCache.push_back(file);
 
 		SourceType type = getSourceType(file);
+
+		if (type == SourceType::Unknown)
+			continue;
+
 #if !defined(CHALET_WIN32)
 		if (type == SourceType::WindowsResource)
 			continue;
