@@ -136,12 +136,10 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 
 	std::string recipes = getPchRecipe(pch, pchTarget);
 
-#if defined(CHALET_WIN32)
 	for (auto& ext : String::filterIf({ "rc", "RC" }, inOutputs.fileExtensions))
 	{
 		recipes += getRcRecipe(ext, pchTarget);
 	}
-#endif
 
 	for (auto& ext : String::filterIf({ "cpp", "CPP", "cc", "CC", "cxx", "CXX", "c++", "C++", "c", "C" }, inOutputs.fileExtensions))
 	{

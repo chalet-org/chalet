@@ -20,6 +20,7 @@ BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnviron
 	m_inputs(inInputs),
 	m_environment(inEnvironment),
 	m_cExts({ ".c", ".C" }),
+	m_cppExts({ ".cpp", ".cc", ".cxx", ".c++", ".CPP", ".CC", ".CXX", ".C++" }),
 	m_resourceExts({ ".rc", ".RC" }),
 	m_objectiveCExts({ ".m", ".M" }),
 	m_objectiveCppExts({ ".mm" })
@@ -150,7 +151,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const Compi
 	ret.groups = getSourceFileGroupList(std::move(files), inProject, inConfig, inDumpAssembly);
 	for (auto& group : ret.groups)
 	{
-		auto type = group->type;
+		SourceType type = group->type;
 		List::addIfDoesNotExist(ret.types, std::move(type));
 	}
 
@@ -389,12 +390,16 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		if (file.empty())
 			continue;
 
-		auto group = std::make_unique<SourceFileGroup>();
-
-		if (m_useCache && !List::contains(m_fileListCache, file))
+		if (m_useCache)
 			m_fileListCache.push_back(file);
 
-		group->type = getSourceType(file);
+		SourceType type = getSourceType(file);
+#if !defined(CHALET_WIN32)
+		if (type == SourceType::WindowsResource)
+			continue;
+#endif
+		auto group = std::make_unique<SourceFileGroup>();
+		group->type = type;
 		group->objectFile = getObjectFile(file, isMsvc);
 		group->dependencyFile = getDependencyFile(file);
 		group->sourceFile = std::move(file);
@@ -432,9 +437,7 @@ std::string BuildPaths::getObjectFile(const std::string& inSource, const bool in
 {
 	if (String::endsWith(m_resourceExts, inSource))
 	{
-#if defined(CHALET_WIN32)
 		return fmt::format("{}/{}.res", m_objDir, inSource);
-#endif
 	}
 	else
 	{
@@ -467,7 +470,11 @@ std::string BuildPaths::getDependencyFile(const std::string& inSource) const
 /*****************************************************************************/
 SourceType BuildPaths::getSourceType(const std::string& inSource) const
 {
-	if (String::endsWith(m_cExts, inSource))
+	if (String::endsWith(m_cppExts, inSource))
+	{
+		return SourceType::CPlusPlus;
+	}
+	else if (String::endsWith(m_cExts, inSource))
 	{
 		return SourceType::C;
 	}

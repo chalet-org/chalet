@@ -75,6 +75,7 @@ private:
 	const WorkspaceEnvironment& m_environment;
 
 	const StringList m_cExts;
+	const StringList m_cppExts;
 	const StringList m_resourceExts;
 	const StringList m_objectiveCExts;
 	const StringList m_objectiveCppExts;

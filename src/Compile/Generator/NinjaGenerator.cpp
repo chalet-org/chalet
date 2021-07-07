@@ -134,11 +134,6 @@ std::string NinjaGenerator::getRules(const SourceTypeList& inTypes)
 		if (m_rules.find(type) == m_rules.end())
 			continue;
 
-#if !defined(CHALET_WIN32)
-		if (type == SourceType::WindowsResource)
-			continue;
-#endif
-
 		rules += m_rules[type](*this);
 	}
 
