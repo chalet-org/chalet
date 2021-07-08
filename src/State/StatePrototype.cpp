@@ -33,6 +33,8 @@ StatePrototype::StatePrototype(const CommandLineInputs& inInputs, std::string in
 /*****************************************************************************/
 bool StatePrototype::initialize()
 {
+	m_inputs.clearWorkingDirectory(m_filename);
+
 	if (!cache.initialize())
 		return false;
 
