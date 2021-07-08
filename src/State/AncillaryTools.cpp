@@ -553,7 +553,7 @@ bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, c
 bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inForce) const
 {
 #if defined(CHALET_MACOS)
-	StringList cmd{ m_codesign, "--strict", "--deep", "--continue" };
+	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--deep", "--continue" };
 
 	if (inForce)
 		cmd.emplace_back("-f");
@@ -582,7 +582,7 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath) const
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".dmg", inPath), "Must be a .dmg");
 
-	StringList cmd{ m_codesign, "--strict", "--continue", "-s", m_signingIdentity };
+	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--continue", "-s", m_signingIdentity };
 
 	bool showCommands = Output::showCommands();
 	if (showCommands)
@@ -605,7 +605,7 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
 
-	StringList cmd{ m_codesign, "--strict", "--deep", "--continue", "-f", "-s", m_signingIdentity };
+	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--deep", "--continue", "-f", "-s", m_signingIdentity };
 	cmd.emplace_back(fmt::format("-bundle-version={}", inVersionId));
 
 	bool showCommands = Output::showCommands();
