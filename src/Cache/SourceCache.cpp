@@ -10,7 +10,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-SourceCache::SourceCache(SourceLastWriteMap& inLastWrites, const std::time_t inInitializedTime, const std::time_t inLastBuildTime) :
+SourceCache::SourceCache(SourceLastWriteMap& inLastWrites, const std::time_t& inInitializedTime, const std::time_t inLastBuildTime) :
 	m_lastWrites(inLastWrites),
 	m_initializedTime(inInitializedTime),
 	m_lastBuildTime(inLastBuildTime)

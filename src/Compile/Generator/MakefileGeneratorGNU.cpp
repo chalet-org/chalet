@@ -253,12 +253,12 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
-		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
 		const auto compileEcho = getCompileEchoSources();
 
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
 		if (m_generateDependencies)
 		{
+			const auto moveDependencies = getMoveCommand(tempDependency, dependency);
 			pchCompile += fmt::format(" && {}", moveDependencies);
 		}
 
@@ -303,12 +303,21 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
-		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-
 		auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
-		if (m_generateDependencies && !m_state.toolchain.usingLlvmRC())
+		if (m_generateDependencies)
 		{
-			rcCompile += fmt::format(" && {}", moveDependencies);
+#if defined(CHALET_WIN32)
+			if (m_state.toolchain.usingLlvmRC())
+			{
+				const auto fallback = getFallbackMakeDependsCommand(dependency, "$<", "$@");
+				rcCompile += fmt::format(" && {}", fallback);
+			}
+			else
+#endif
+			{
+				const auto moveDependencies = getMoveCommand(tempDependency, dependency);
+				rcCompile += fmt::format(" && {}", moveDependencies);
+			}
 		}
 
 		ret += fmt::format(R"makefile(
@@ -358,12 +367,11 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
-		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-
 		const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 		auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
 		if (m_generateDependencies)
 		{
+			const auto moveDependencies = getMoveCommand(tempDependency, dependency);
 			cppCompile += fmt::format(" && {}", moveDependencies);
 		}
 
@@ -416,12 +424,11 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
 		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
-		const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-
 		const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCPlusPlus;
 		auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
 		if (m_generateDependencies)
 		{
+			const auto moveDependencies = getMoveCommand(tempDependency, dependency);
 			objcCompile += fmt::format(" && {}", moveDependencies);
 		}
 
@@ -550,14 +557,25 @@ std::string MakefileGeneratorGNU::getQuietFlag() const
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getMoveCommand(std::string inInput, std::string inOutput) const
+std::string MakefileGeneratorGNU::getMoveCommand(const std::string& inInput, const std::string& inOutput) const
 {
 	if (Environment::isBash())
 		return fmt::format("mv -f {} {}", inInput, inOutput);
 	else
 	{
-		return fmt::format("del /f /q \"$(subst /,\\\\,{inOutput})\" 2> nul && rename \"$(subst /,\\\\,{inInput})\" \"$(notdir {inOutput})\"", FMT_ARG(inInput), FMT_ARG(inOutput));
+		return fmt::format("del /f /q \"$(subst /,\\\\,{inOutput})\" 2> nul && rename \"$(subst /,\\\\,{inInput})\" \"$(notdir {inOutput})\"",
+			FMT_ARG(inInput),
+			FMT_ARG(inOutput));
 	}
+}
+
+/*****************************************************************************/
+std::string MakefileGeneratorGNU::getFallbackMakeDependsCommand(const std::string& inDependencyFile, const std::string& object, const std::string& source) const
+{
+	std::string contents = fmt::format("{}: \\\\\\n  {}\\n", object, source);
+	return fmt::format("echo \"{contents}\" > \"{inDependencyFile}\"",
+		FMT_ARG(contents),
+		FMT_ARG(inDependencyFile));
 }
 
 /*****************************************************************************/

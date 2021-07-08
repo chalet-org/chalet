@@ -14,7 +14,7 @@ using SourceLastWriteMap = std::unordered_map<std::string, LastWrite>;
 
 struct SourceCache
 {
-	explicit SourceCache(SourceLastWriteMap& inLastWrites, const std::time_t inInitializedTime, const std::time_t inLastBuildTime);
+	explicit SourceCache(SourceLastWriteMap& inLastWrites, const std::time_t& inInitializedTime, const std::time_t inLastBuildTime);
 
 	bool dirty() const;
 	std::string asString(const std::string& inId) const;
@@ -33,7 +33,7 @@ private:
 
 	SourceLastWriteMap& m_lastWrites;
 
-	std::time_t m_initializedTime;
+	const std::time_t& m_initializedTime;
 	std::time_t m_lastBuildTime;
 
 	mutable bool m_dirty = false;
