@@ -458,8 +458,6 @@ std::string BuildPaths::getObjectFile(const std::string& inSource, const bool in
 	{
 		return fmt::format("{}/{}.{}", m_objDir, inSource, inIsMsvc ? "obj" : "o");
 	}
-
-	return std::string();
 }
 
 /*****************************************************************************/
@@ -467,13 +465,12 @@ std::string BuildPaths::getAssemblyFile(const std::string& inSource, const bool 
 {
 	if (String::endsWith(m_resourceExts, inSource))
 	{
+		return std::string();
 	}
 	else
 	{
 		return fmt::format("{}/{}.{}.asm", m_asmDir, inSource, inIsMsvc ? "obj" : "o");
 	}
-
-	return std::string();
 }
 
 /*****************************************************************************/
