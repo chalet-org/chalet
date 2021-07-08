@@ -91,14 +91,17 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 bool WorkspaceInternalCacheFile::removeExtraCache(const std::string& inId)
 {
 	bool result = false;
-	auto itr = m_extraHashes.begin();
-	for (; itr < m_extraHashes.end(); ++itr)
+	for (auto itr = m_extraHashes.begin(); itr != m_extraHashes.end();)
 	{
 		if (*itr == inId)
 		{
 			itr = m_extraHashes.erase(itr);
 			m_dirty = true;
 			result = true;
+		}
+		else
+		{
+			++itr;
 		}
 	}
 
