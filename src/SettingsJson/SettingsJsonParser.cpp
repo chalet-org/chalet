@@ -119,7 +119,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		}
 	}
 
-	// #if defined(CHALET_MACOS)
+#if defined(CHALET_MACOS)
 	if (!m_jsonFile.json.contains(kKeyAppleSdks) || !m_jsonFile.json[kKeyAppleSdks].is_object())
 	{
 		m_jsonFile.json[kKeyAppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
@@ -137,7 +137,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 			}
 		}
 	}
-	// #endif
+#endif
 
 	Json& buildSettings = m_jsonFile.json[kKeySettings];
 

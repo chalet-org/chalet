@@ -507,7 +507,35 @@ void CompilerTools::setStrategy(const std::string& inValue) noexcept
 	}
 	else
 	{
-		chalet_assert(false, "Invalid strategy type");
+		Diagnostic::error("Invalid toolchain strategy type: {}", inValue);
+	}
+}
+
+/*****************************************************************************/
+BuildPathStyle CompilerTools::buildPathStyle() const noexcept
+{
+	return m_buildPathStyle;
+}
+
+const std::string& CompilerTools::buildPathStyleString() const noexcept
+{
+	return m_buildPathStyleString;
+}
+
+void CompilerTools::setBuildPathStyle(const std::string& inValue) noexcept
+{
+	m_buildPathStyleString = inValue;
+	if (String::equals("target-triple", inValue))
+	{
+		m_buildPathStyle = BuildPathStyle::TargetTriple;
+	}
+	else if (String::equals(inValue, "toolchain-name"))
+	{
+		m_buildPathStyle = BuildPathStyle::ToolchainName;
+	}
+	else
+	{
+		Diagnostic::error("Invalid toolchain buildPathStyle type: {}", inValue);
 	}
 }
 

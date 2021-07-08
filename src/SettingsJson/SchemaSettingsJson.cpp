@@ -55,6 +55,7 @@ enum class Defs : ushort
 	Ninja,
 	ObjDump,
 	ToolchainStrategy,
+	BuildPathStyle,
 	// Settings
 	DumpAssembly,
 	MaxJobs,
@@ -320,6 +321,16 @@ Json Schema::getSettingsJson()
 		"default": "makefile"
 	})json"_ojson;
 
+	defs[Defs::BuildPathStyle] = R"json({
+		"type": "string",
+		"description": "The build path style. ex: build/(prefix)_Debug, build/(prefix)_Release",
+		"enum": [
+			"target-triple",
+			"toolchain-name"
+		],
+		"default": "target-triple"
+	})json"_ojson;
+
 	defs[Defs::DumpAssembly] = R"json({
 		"type": "boolean",
 		"description": "true to use include an asm dump of each file in the build, false otherwise.",
@@ -388,6 +399,7 @@ Json Schema::getSettingsJson()
 	})json"_ojson;
 	toolchains[kProperties] = Json::object();
 	toolchains[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
+	toolchains[kProperties]["buildPathStyle"] = defs[Defs::BuildPathStyle];
 	toolchains[kProperties]["archiver"] = defs[Defs::Archiver];
 	toolchains[kProperties]["compilerCpp"] = defs[Defs::CompilerCpp];
 	toolchains[kProperties]["compilerC"] = defs[Defs::CompilerC];

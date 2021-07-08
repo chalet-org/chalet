@@ -490,6 +490,7 @@ StringList CommandLineInputs::getNotPlatforms() const noexcept
 ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const std::string& inValue) const
 {
 	ToolchainPreference ret;
+	ret.buildPathStyle = BuildPathStyle::TargetTriple;
 
 	bool emptyTarget = m_targetArchitecture.empty();
 	auto arch = emptyTarget ? m_hostArchitecture : m_targetArchitecture;

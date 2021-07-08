@@ -157,7 +157,7 @@ bool BuildState::initializeBuild()
 		}
 	}
 
-	paths.initialize(info);
+	paths.initialize(info, toolchain);
 
 	// Note: < 1ms
 	for (auto& target : targets)

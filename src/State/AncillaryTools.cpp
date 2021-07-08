@@ -738,4 +738,27 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 #endif
 }
 
+/*****************************************************************************/
+std::string AncillaryTools::getPathToGit()
+{
+	auto git = Commands::which("git");
+#if defined(CHALET_WIN32)
+	if (git.empty())
+	{
+		auto programs = Environment::getAsString("ProgramFiles");
+		if (!programs.empty())
+		{
+			auto gitPath = fmt::format("{}/Git/bin/git.exe", programs);
+			Path::sanitize(gitPath);
+			if (Commands::pathExists(gitPath))
+			{
+				git = std::move(gitPath);
+			}
+		}
+	}
+#endif
+
+	return git;
+}
+
 }

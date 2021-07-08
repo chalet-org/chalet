@@ -6,6 +6,7 @@
 #ifndef CHALET_COMPILER_TOOLS_HPP
 #define CHALET_COMPILER_TOOLS_HPP
 
+#include "Compile/BuildPathStyle.hpp"
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
@@ -33,6 +34,10 @@ struct CompilerTools
 	StrategyType strategy() const noexcept;
 	const std::string& strategyString() const noexcept;
 	void setStrategy(const std::string& inValue) noexcept;
+
+	BuildPathStyle buildPathStyle() const noexcept;
+	const std::string& buildPathStyleString() const noexcept;
+	void setBuildPathStyle(const std::string& inValue) noexcept;
 
 	const std::string& compilerCxx() const noexcept;
 
@@ -119,6 +124,7 @@ private:
 	std::string m_compilerDetectedArchC;
 
 	std::string m_strategyString;
+	std::string m_buildPathStyleString;
 
 	uint m_cmakeVersionMajor = 0;
 	uint m_cmakeVersionMinor = 0;
@@ -132,6 +138,7 @@ private:
 	uint m_ninjaVersionPatch = 0;
 
 	StrategyType m_strategy = StrategyType::Makefile;
+	BuildPathStyle m_buildPathStyle = BuildPathStyle::TargetTriple;
 
 	bool m_isArchiverLibTool = false;
 	bool m_isProfilerGprof = false;

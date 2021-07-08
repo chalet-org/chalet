@@ -11,6 +11,7 @@
 
 namespace chalet
 {
+struct CompilerTools;
 struct CommandLineInputs;
 struct BuildInfo;
 struct WorkspaceEnvironment;
@@ -49,7 +50,7 @@ private:
 
 	explicit BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnvironment& inEnvironment);
 
-	void initialize(const BuildInfo& inInfo);
+	void initialize(const BuildInfo& inInfo, const CompilerTools& inToolchain);
 	void populateFileList(const ProjectTarget& inProject);
 
 	struct SourceGroup

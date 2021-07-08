@@ -5,8 +5,10 @@
 
 #include "FileTemplates/StarterFileTemplates.hpp"
 
+#include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
@@ -248,14 +250,18 @@ std::string StarterFileTemplates::getDotEnv()
 {
 #if defined(CHALET_WIN32)
 	std::string ret;
-	const auto programFiles = Environment::getAsString("ProgramFiles");
-	std::string gitPath = fmt::format("{}/Git/bin", programFiles);
-	const bool gitExists = !programFiles.empty() && Commands::pathExists(gitPath);
+	const auto git = AncillaryTools::getPathToGit();
+	auto gitPath = String::getPathFolder(git);
+	const bool gitExists = !git.empty();
 
 	auto paths = String::split(Environment::getPath(), ";");
 	if (gitExists && !List::contains(paths, gitPath))
 	{
-		ret = R"(Path=%ProgramFiles%\Git\bin\;%Path%)";
+		auto programFiles = Environment::getAsString("ProgramFiles");
+		Path::sanitize(programFiles);
+		String::replaceAll(gitPath, programFiles, "%ProgramFiles%");
+		Path::sanitizeForWindows(gitPath);
+		ret = fmt::format(R"path(Path={};%Path%)path", gitPath);
 	}
 	else
 	{

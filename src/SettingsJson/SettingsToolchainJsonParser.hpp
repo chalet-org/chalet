@@ -33,6 +33,7 @@ private:
 	JsonFile& m_jsonFile;
 
 	const std::string kKeyStrategy = "strategy";
+	const std::string kKeyBuildPathStyle = "buildPathStyle";
 	const std::string kKeyArchiver = "archiver";
 	const std::string kKeyCompilerCpp = "compilerCpp";
 	const std::string kKeyCompilerC = "compilerC";

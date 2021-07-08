@@ -7,6 +7,7 @@
 
 #include "Compile/CompilerConfig.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -28,7 +29,7 @@ BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnviron
 }
 
 /*****************************************************************************/
-void BuildPaths::initialize(const BuildInfo& inInfo)
+void BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inToolchain)
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
@@ -42,7 +43,17 @@ void BuildPaths::initialize(const BuildInfo& inInfo)
 	auto arch = m_inputs.getArchWithOptionsAsString(inInfo.targetArchitectureString());
 
 	m_configuration = fmt::format("{}_{}", arch, inInfo.buildConfiguration());
-	m_buildOutputDir = fmt::format("{}/{}", outputDirectory, m_configuration);
+
+	auto style = inToolchain.buildPathStyle();
+	if (style == BuildPathStyle::ToolchainName && !m_inputs.toolchainPreferenceRaw().empty())
+	{
+		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, m_inputs.toolchainPreferenceRaw(), inInfo.buildConfiguration());
+	}
+	else
+	{
+		m_buildOutputDir = fmt::format("{}/{}", outputDirectory, m_configuration);
+	}
+
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);

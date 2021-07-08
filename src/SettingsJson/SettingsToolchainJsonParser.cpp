@@ -143,6 +143,13 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		toolchains[kKeyStrategy] = std::string();
 	}
 
+	if (!toolchains.contains(kKeyBuildPathStyle) || !toolchains[kKeyBuildPathStyle].is_string() || toolchains[kKeyBuildPathStyle].get<std::string>().empty())
+	{
+		toolchains[kKeyBuildPathStyle] = std::string();
+	}
+
+	// kKeyBuildPathStyle
+
 	std::string cpp;
 	std::string cc;
 	if (!toolchains.contains(kKeyCompilerCpp))
@@ -383,6 +390,21 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		m_jsonFile.setDirty(true);
 	}
 
+	if (toolchains[kKeyBuildPathStyle].get<std::string>().empty())
+	{
+		// Note: this is only for validation. it gets changed later
+		if (toolchain.buildPathStyle == BuildPathStyle::TargetTriple)
+		{
+			toolchains[kKeyBuildPathStyle] = "target-triple";
+		}
+		else if (toolchain.buildPathStyle == BuildPathStyle::ToolchainName)
+		{
+			toolchains[kKeyBuildPathStyle] = "toolchain-name";
+		}
+
+		m_jsonFile.setDirty(true);
+	}
+
 	return result;
 }
 
@@ -391,6 +413,9 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 {
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyStrategy))
 		m_state.toolchain.setStrategy(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyBuildPathStyle))
+		m_state.toolchain.setBuildPathStyle(val);
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyArchiver))
 		m_state.toolchain.setArchiver(std::move(val));

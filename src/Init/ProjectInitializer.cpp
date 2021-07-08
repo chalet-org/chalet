@@ -7,6 +7,7 @@
 
 #include "FileTemplates/StarterFileTemplates.hpp"
 
+#include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Diagnostic.hpp"
 #include "Terminal/Environment.hpp"
@@ -325,22 +326,7 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 
 		if (inProps.makeGitRepository)
 		{
-			auto git = Commands::which("git");
-#if defined(CHALET_WIN32)
-			if (git.empty())
-			{
-				auto programs = Environment::getAsString("PROGRAMFILES");
-				if (!programs.empty())
-				{
-					auto gitPath = fmt::format("{}/Git/bin/git.exe");
-					if (Commands::pathExists(gitPath))
-					{
-						git = std::move(gitPath);
-					}
-				}
-			}
-#endif
-
+			auto git = AncillaryTools::getPathToGit();
 			if (!git.empty())
 			{
 				if (!Commands::subprocess({ git, "init", "--quiet" }))

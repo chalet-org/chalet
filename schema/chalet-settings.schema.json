@@ -219,6 +219,15 @@
 							],
 							"default": "makefile"
 						},
+						"buildPathStyle": {
+							"type": "string",
+							"description": "The build path style. ex: build/(prefix)_Debug, build/(prefix)_Release",
+							"enum": [
+								"target-triple",
+								"toolchain-name"
+							],
+							"default": "target-triple"
+						},
 						"archiver": {
 							"type": "string",
 							"description": "The executable path to the toolchain's static library archive utility",
