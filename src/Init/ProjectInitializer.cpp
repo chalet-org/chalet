@@ -9,6 +9,7 @@
 
 #include "Terminal/Commands.hpp"
 #include "Terminal/Diagnostic.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
@@ -325,12 +326,31 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 		if (inProps.makeGitRepository)
 		{
 			auto git = Commands::which("git");
+#if defined(CHALET_WIN32)
+			if (git.empty())
+			{
+				auto programs = Environment::getAsString("PROGRAMFILES");
+				if (!programs.empty())
+				{
+					auto gitPath = fmt::format("{}/Git/bin/git.exe");
+					if (Commands::pathExists(gitPath))
+					{
+						git = std::move(gitPath);
+					}
+				}
+			}
+#endif
+
 			if (!git.empty())
 			{
 				if (!Commands::subprocess({ git, "init", "--quiet" }))
 					result = false;
 				else if (!Commands::subprocess({ git, "checkout", "-b", "main", "--quiet" }))
 					result = false;
+			}
+			else
+			{
+				Diagnostic::warn("A git repository was not be created, because git was not found.");
 			}
 		}
 	}
