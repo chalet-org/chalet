@@ -12,6 +12,10 @@
 #include "Terminal/Output.hpp"
 #include "Utility/SignalHandler.hpp"
 
+#if defined(CHALET_MSVC)
+	#include "Libraries/WindowsApi.hpp"
+#endif
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -64,7 +68,16 @@ bool Application::initialize()
 
 	m_osTerminal.initialize();
 
-#ifdef CHALET_DEBUG
+#if defined(CHALET_DEBUG) && defined(CHALET_MSVC)
+	{
+		_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+		_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+		_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+		_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+	}
+#endif
+
+#if defined(CHALET_DEBUG)
 	priv::SignalHandler::start([this]() noexcept {
 		Diagnostic::printErrors();
 		this->cleanup();

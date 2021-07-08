@@ -5,13 +5,12 @@
 			"name": "MSVC",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/Debug/chalet-debug.exe",
+			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
 			"console": "integratedTerminal",
-			"envFile": "${workspaceFolder}/.env.windows",
-			"preLaunchTask": "Build: Debug"
+			"envFile": "${workspaceFolder}/.env.windows"
 		},
 		{
 			"name": "LLDB",
