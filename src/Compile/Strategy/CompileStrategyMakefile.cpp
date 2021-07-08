@@ -116,27 +116,6 @@ bool CompileStrategyMakefile::buildProject(const ProjectTarget& inProject) const
 }
 
 /*****************************************************************************/
-bool CompileStrategyMakefile::doPostBuild() const
-{
-	/*if (m_state.toolchain.usingLlvmRC())
-	{
-		auto& sources = m_state.cache.file().sources();
-		for (auto& [target, outputs] : m_outputs)
-		{
-			for (auto& group : outputs.groups)
-			{
-				if (sources.fileChangedOrDoesNotExist(group->objectFile, group->dependencyFile))
-				{
-					std::ofstream(group->dependencyFile) << fmt::format("{}: \\\n  {}\n", group->objectFile, group->sourceFile);
-				}
-			}
-		}
-	}*/
-
-	return true;
-}
-
-/*****************************************************************************/
 bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 {
 	const auto& makeExec = m_state.toolchain.make();

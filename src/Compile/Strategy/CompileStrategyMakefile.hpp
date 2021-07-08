@@ -21,7 +21,6 @@ struct CompileStrategyMakefile final : ICompileStrategy
 
 	virtual bool saveBuildFile() const final;
 	virtual bool buildProject(const ProjectTarget& inProject) const final;
-	virtual bool doPostBuild() const final;
 
 private:
 	bool buildMake(const ProjectTarget& inProject) const;

@@ -192,7 +192,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			}
 
 			Output::msgBuildSuccess();
-			Output::printInfo(fmt::format("   Total Time: {}", m_timer.asString()));
+			Output::printInfo(fmt::format("   Total: {}", m_timer.asString()));
 
 			if (inRoute != Route::BuildRun)
 				Output::lineBreak();
@@ -602,9 +602,11 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 	const auto& runArguments = inProject.runArguments();
 
 	Output::msgRun(buildConfiguration, outputFile);
-	Output::lineBreak();
 	// LOG(runOptions);
 	// LOG(runArguments);
+	// Output::lineBreak();
+	Output::printSeparator();
+	// Output::lineBreak();
 
 	auto file = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), outputFile);
 
@@ -635,11 +637,14 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 
 	if (!m_state.configuration.enableProfiling())
 	{
+
 		bool result = Commands::subprocess(cmd);
+
 		auto outFile = fmt::format("{}/{}", buildOutputDir, outputFile);
 		auto message = fmt::format("{} exited with code: {}", outFile, Subprocess::getLastExitCode());
 
-		Output::lineBreak();
+		// Output::lineBreak();
+		Output::printSeparator();
 		Output::print(result ? Output::theme().info : Output::theme().error, message, true);
 
 		return result;

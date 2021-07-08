@@ -47,6 +47,7 @@ void printCommand(const std::string& inText);
 void printCommand(const StringList& inList);
 void printInfo(const std::string& inText);
 void printFlair(const std::string& inText);
+void printSeparator(const char inChar = '-');
 
 void msgFetchingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);
 void msgUpdatingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);

@@ -31,6 +31,7 @@ public:
 	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
 
 	virtual bool saveBuildFile() const final;
+	virtual bool doPostBuild() const final;
 	virtual bool buildProject(const ProjectTarget& inProject) const final;
 
 private:

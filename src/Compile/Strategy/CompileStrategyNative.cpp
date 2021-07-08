@@ -99,6 +99,27 @@ bool CompileStrategyNative::saveBuildFile() const
 }
 
 /*****************************************************************************/
+bool CompileStrategyNative::doPostBuild() const
+{
+	/*if (m_generateDependencies)
+	{
+		auto& sources = m_state.cache.file().sources();
+		for (auto& [target, outputs] : m_outputs)
+		{
+			for (auto& group : outputs.groups)
+			{
+				if (sources.fileChangedOrDoesNotExist(group->objectFile, group->dependencyFile))
+				{
+					// std::ofstream(group->dependencyFile) << fmt::format("{}: \\\n  {}\n", group->objectFile, group->sourceFile);
+				}
+			}
+		}
+	}*/
+
+	return true;
+}
+
+/*****************************************************************************/
 bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 {
 	if (m_targets.find(inProject.name()) == m_targets.end())

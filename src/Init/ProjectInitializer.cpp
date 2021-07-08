@@ -192,10 +192,8 @@ bool ProjectInitializer::run()
 	std::cout << blankLine << std::flush;
 	// Commands::sleep(0.5);
 
-	const std::string separator(80, '-');
-
 	Output::lineBreak();
-	Output::printFlair(separator);
+	Output::printSeparator();
 
 	double stepTime = 0.1;
 
@@ -210,7 +208,7 @@ bool ProjectInitializer::run()
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::printFlair(separator);
+		Output::printSeparator();
 	}
 
 	if (!props.precompiledHeader.empty())
@@ -224,7 +222,7 @@ bool ProjectInitializer::run()
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::printFlair(separator);
+		Output::printSeparator();
 	}
 
 	if (props.makeGitRepository)
@@ -238,7 +236,7 @@ bool ProjectInitializer::run()
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::printFlair(separator);
+		Output::printSeparator();
 	}
 
 	if (props.envFile)
@@ -257,7 +255,7 @@ bool ProjectInitializer::run()
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::printFlair(separator);
+		Output::printSeparator();
 	}
 
 	{
@@ -270,7 +268,7 @@ bool ProjectInitializer::run()
 		Commands::sleep(stepTime);
 
 		Output::lineBreak();
-		Output::printFlair(separator);
+		Output::printSeparator();
 	}
 
 	Output::lineBreak();

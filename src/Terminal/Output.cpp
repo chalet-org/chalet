@@ -384,6 +384,17 @@ void Output::printFlair(const std::string& inText)
 }
 
 /*****************************************************************************/
+void Output::printSeparator(const char inChar)
+{
+	if (!s_quietNonBuild)
+	{
+		const auto color = getAnsiStyle(sTheme.flair, false);
+		const auto reset = getAnsiReset();
+		std::cout << color << std::string(80, inChar) << reset << std::endl;
+	}
+}
+
+/*****************************************************************************/
 void Output::msgFetchingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag)
 {
 	std::string path = getCleanGitPath(inGitUrl);
