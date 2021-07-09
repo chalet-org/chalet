@@ -13,6 +13,10 @@ namespace chalet
 {
 namespace Output
 {
+#if defined(CHALET_WIN32)
+bool ansiColorsSupportedInComSpec();
+#endif
+
 void setTheme(const ColorTheme& inTheme);
 const ColorTheme& theme();
 

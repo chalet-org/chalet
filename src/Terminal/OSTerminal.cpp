@@ -7,6 +7,7 @@
 
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 
 #if defined(CHALET_WIN32)
 	#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -60,7 +61,7 @@ void OSTerminal::initialize()
 void OSTerminal::reset()
 {
 #if defined(CHALET_WIN32)
-	if (!Environment::isBashOrWindowsConPTY())
+	if (!Environment::isBashOrWindowsConPTY() && Output::ansiColorsSupportedInComSpec())
 	{
 		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (hOut != INVALID_HANDLE_VALUE)

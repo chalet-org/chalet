@@ -81,10 +81,12 @@ char getEscapeChar()
 	// else
 	// 	return '\x1b';
 }
+}
+static ColorTheme sTheme;
 
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
-bool ansiColorsSupportedInComSpec()
+bool Output::ansiColorsSupportedInComSpec()
 {
 	if (s_commandPromptVersion == -1)
 	{
@@ -98,9 +100,6 @@ bool ansiColorsSupportedInComSpec()
 	return s_commandPromptVersion > 1438128000000;
 }
 #endif
-}
-static ColorTheme sTheme;
-
 /*****************************************************************************/
 void Output::setTheme(const ColorTheme& inTheme)
 {
