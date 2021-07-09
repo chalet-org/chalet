@@ -37,12 +37,12 @@ namespace chalet
 namespace
 {
 #if defined(CHALET_WIN32)
-DWORD getParentProcessId()
+DWORD getParentProcessId(DWORD inPid = 0)
 {
 	HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (handle != INVALID_HANDLE_VALUE)
 	{
-		DWORD pid = GetCurrentProcessId();
+		DWORD pid = inPid == 0 ? GetCurrentProcessId() : inPid;
 		PROCESSENTRY32 pe;
 		pe.dwSize = sizeof(PROCESSENTRY32);
 
@@ -96,11 +96,18 @@ std::string getProcessPath(DWORD inPid)
 #endif
 
 /*****************************************************************************/
+#if defined(CHALET_WIN32)
+std::pair<std::string, std::string> getParentProcessPaths()
+#else
 std::string getParentProcessPath()
+#endif
 {
 #if defined(CHALET_WIN32)
 	DWORD pid = getParentProcessId();
-	return getProcessPath(pid);
+	std::string parent = getProcessPath(pid);
+	DWORD ppid = getParentProcessId(pid);
+	std::string pparent = getProcessPath(ppid);
+	return std::make_pair<std::string, std::string>(std::move(parent), std::move(pparent));
 #else
 	// pid_t pid = getpid();
 	pid_t pid = getParentProcessId();
@@ -225,8 +232,13 @@ void Environment::setTerminalType()
 	// Powershell needs to be detected from the parent PID
 	// Note: env is identical to command prompt. It uses its own env for things like $PSHOME
 	{
-		auto parentPath = getParentProcessPath();
-		if (String::endsWith("pwsh.exe", parentPath))
+		const auto& [parentPath, parentParentPath] = getParentProcessPaths();
+		if (String::endsWith("WindowsTerminal.exe", parentParentPath))
+		{
+			s_terminalType = ShellType::WindowsConPTY;
+			return printTermType();
+		}
+		else if (String::endsWith("pwsh.exe", parentPath))
 		{
 			s_terminalType = ShellType::PowershellOpenSource;
 			return printTermType();
