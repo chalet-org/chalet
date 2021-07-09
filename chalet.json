@@ -159,7 +159,7 @@
 	},
 	"distribution": {
 		"Chalet": {
-			"description": "A Modern C/C++ Build System",
+			"description": "A cross-platform JSON-based project & build tool",
 			"outDir": "dist",
 			"configuration": "Release",
 			"projects": [

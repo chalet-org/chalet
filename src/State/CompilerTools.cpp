@@ -33,7 +33,6 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	ToolchainType toolchainType = m_inputs.toolchainPreference().type;
 	Arch::Cpu targetArch = m_state.info.targetArchitecture();
 
-	// Note: Expensive!
 	if (!initializeCompilerConfigs(inTargets))
 	{
 		Diagnostic::error("Compiler was not recognized.");
@@ -174,6 +173,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	if (!updateToolchainCacheNode(inConfigJson))
 		return false;
 
+	// Note: Expensive!
 	fetchCompilerVersions();
 
 	return true;
@@ -295,7 +295,7 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 /*****************************************************************************/
 bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 {
-	const auto& preference = m_inputs.toolchainPreferenceRaw();
+	const auto& preference = m_inputs.toolchainPreferenceName();
 	auto& buildSettings = inConfigJson.json["settings"];
 
 	buildSettings["toolchain"] = preference;
@@ -532,6 +532,14 @@ void CompilerTools::setBuildPathStyle(const std::string& inValue) noexcept
 	else if (String::equals(inValue, "toolchain-name"))
 	{
 		m_buildPathStyle = BuildPathStyle::ToolchainName;
+	}
+	else if (String::equals(inValue, "configuration"))
+	{
+		m_buildPathStyle = BuildPathStyle::Configuration;
+	}
+	else if (String::equals(inValue, "arch-configuration"))
+	{
+		m_buildPathStyle = BuildPathStyle::ArchConfiguration;
 	}
 	else
 	{

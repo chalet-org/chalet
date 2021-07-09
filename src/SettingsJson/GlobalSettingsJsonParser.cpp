@@ -89,7 +89,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 	if (!buildSettings.contains(kKeyLastToolchain) || !buildSettings[kKeyLastToolchain].is_string())
 	{
 		m_inputs.detectToolchainPreference();
-		outState.toolchainPreference = m_inputs.toolchainPreferenceRaw();
+		outState.toolchainPreference = m_inputs.toolchainPreferenceName();
 		buildSettings[kKeyLastToolchain] = outState.toolchainPreference;
 		m_jsonFile.setDirty(true);
 	}

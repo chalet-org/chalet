@@ -532,9 +532,11 @@ void ArgumentPatterns::addToolchainArg()
 {
 	m_parser.add_argument("-t", "--toolchain")
 #if defined(CHALET_WIN32)
-		.help("Toolchain preference [msvc,msvcpre,llvm,gcc,...]")
+		.help("Toolchain preference [msvc, msvc-pre, llvm, gcc, ...]")
+#elif defined(CHALET_MACOS)
+		.help("Toolchain preference [apple-llvm, llvm, gcc, ...]")
 #else
-		.help("Toolchain preference [llvm,gcc,...]")
+		.help("Toolchain preference [llvm, gcc, ...]")
 #endif
 		.nargs(1)
 		.default_value(std::string());

@@ -325,6 +325,8 @@ Json Schema::getSettingsJson()
 		"type": "string",
 		"description": "The build path style. ex: build/(prefix)_Debug, build/(prefix)_Release",
 		"enum": [
+			"configuration",
+			"arch-configuration",
 			"target-triple",
 			"toolchain-name"
 		],
@@ -477,7 +479,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kToolchains] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of compiler toolchains, mapped to the ids: msvc, llvm, or gcc"
+		"description": "A list of compiler toolchains"
 	})json"_ojson;
 	ret[kProperties][kToolchains]["patternProperties"][R"(^[\w\-\+\.]{3,}$)"] = toolchains;
 

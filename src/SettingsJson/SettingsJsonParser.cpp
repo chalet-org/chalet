@@ -164,7 +164,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		if (inState.toolchainPreference.empty())
 		{
 			m_inputs.detectToolchainPreference();
-			buildSettings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
+			buildSettings[kKeyLastToolchain] = m_inputs.toolchainPreferenceName();
 		}
 		else
 		{
@@ -174,7 +174,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	}
 	else
 	{
-		const auto& prefFromInput = m_inputs.toolchainPreferenceRaw();
+		const auto& prefFromInput = m_inputs.toolchainPreferenceName();
 		auto value = buildSettings[kKeyLastToolchain].get<std::string>();
 		if (!prefFromInput.empty() && value != prefFromInput)
 		{
@@ -191,7 +191,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 				if (inState.toolchainPreference.empty())
 				{
 					m_inputs.detectToolchainPreference();
-					buildSettings[kKeyLastToolchain] = m_inputs.toolchainPreferenceRaw();
+					buildSettings[kKeyLastToolchain] = m_inputs.toolchainPreferenceName();
 				}
 				else
 				{
@@ -402,7 +402,7 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
 	{
-		if (m_inputs.toolchainPreferenceRaw().empty() || String::equals("auto", m_inputs.toolchainPreferenceRaw()))
+		if (m_inputs.toolchainPreferenceName().empty() || String::equals("auto", m_inputs.toolchainPreferenceName()))
 			m_inputs.setToolchainPreference(std::move(val));
 	}
 

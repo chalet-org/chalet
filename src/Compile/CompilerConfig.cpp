@@ -17,21 +17,6 @@ namespace chalet
 {
 /*****************************************************************************/
 CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState) :
-	kCompilerStructures({
-#if defined(CHALET_WIN32)
-		{ "/bin/hostx64/x64", "/lib/x64" },
-			{ "/bin/hostx64/x86", "/lib/x86" },
-			{ "/bin/hostx64/arm64", "/lib/arm64" },
-			{ "/bin/hostx64/arm", "/lib/arm" },
-			//
-			{ "/bin/hostx86/x86", "/lib/x86" },
-			{ "/bin/hostx86/x64", "/lib/x64" },
-			{ "/bin/hostx86/arm64", "/lib/arm64" },
-			{ "/bin/hostx86/arm", "/lib/arm" },
-	// { "/bin/hostx64/x64", "/lib/64" }, // TODO: Not sure what makes this different from /lib/x64
-#endif
-			{ "/bin", "/lib" },
-	}),
 	m_state(inState),
 	m_language(inLanguage)
 {
@@ -74,7 +59,24 @@ bool CompilerConfig::configureCompilerPaths()
 	std::string path = String::getPathFolder(exec);
 	const std::string lowercasePath = String::toLowerCase(path);
 
-	for (const auto& [binDir, libDir] : kCompilerStructures)
+	const std::unordered_map<std::string, std::string> cmpilerStructures
+	{
+#if defined(CHALET_WIN32)
+		{ "/bin/hostx64/x64", "/lib/x64" },
+			{ "/bin/hostx64/x86", "/lib/x86" },
+			{ "/bin/hostx64/arm64", "/lib/arm64" },
+			{ "/bin/hostx64/arm", "/lib/arm" },
+			//
+			{ "/bin/hostx86/x86", "/lib/x86" },
+			{ "/bin/hostx86/x64", "/lib/x64" },
+			{ "/bin/hostx86/arm64", "/lib/arm64" },
+			{ "/bin/hostx86/arm", "/lib/arm" },
+		// { "/bin/hostx64/x64", "/lib/64" }, // TODO: Not sure what makes this different from /lib/x64
+#endif
+			{ "/bin", "/lib" },
+	};
+
+	for (const auto& [binDir, libDir] : cmpilerStructures)
 	{
 		if (String::endsWith(binDir, lowercasePath))
 		{

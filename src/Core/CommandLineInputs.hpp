@@ -62,8 +62,9 @@ struct CommandLineInputs
 	void setGenerator(std::string&& inValue) noexcept;
 
 	const ToolchainPreference& toolchainPreference() const noexcept;
-	const std::string& toolchainPreferenceRaw() const noexcept;
 	void setToolchainPreference(std::string&& inValue) const noexcept;
+	const std::string& toolchainPreferenceName() const noexcept;
+	void setToolchainPreferenceNameFromCompiler(const std::string& inExecutable) const noexcept;
 	bool isMsvcPreRelease() const noexcept;
 
 	const std::string& initPath() const noexcept;
@@ -124,7 +125,7 @@ private:
 	std::string m_settingsKey;
 	std::string m_settingsValue;
 
-	mutable std::string m_toolchainPreferenceRaw;
+	mutable std::string m_toolchainPreferenceName;
 	mutable std::string m_workingDirectory;
 	mutable std::string m_homeDirectory;
 	mutable std::string m_globalSettingsFile;

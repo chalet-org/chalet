@@ -10,6 +10,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -30,7 +31,7 @@ CommandLineInputs::CommandLineInputs() :
 /*****************************************************************************/
 void CommandLineInputs::detectToolchainPreference() const
 {
-	if (!m_toolchainPreferenceRaw.empty())
+	if (!m_toolchainPreferenceName.empty())
 		return;
 
 #if defined(CHALET_WIN32)
@@ -39,7 +40,7 @@ void CommandLineInputs::detectToolchainPreference() const
 	else
 		m_toolchainPreference = getToolchainPreferenceFromString("msvc");
 #elif defined(CHALET_MACOS)
-	m_toolchainPreference = getToolchainPreferenceFromString("applellvm");
+	m_toolchainPreference = getToolchainPreferenceFromString("apple-llvm");
 #else
 	m_toolchainPreference = getToolchainPreferenceFromString("gcc");
 #endif
@@ -273,19 +274,58 @@ const ToolchainPreference& CommandLineInputs::toolchainPreference() const noexce
 	return m_toolchainPreference;
 }
 
-const std::string& CommandLineInputs::toolchainPreferenceRaw() const noexcept
-{
-	return m_toolchainPreferenceRaw;
-}
-
 void CommandLineInputs::setToolchainPreference(std::string&& inValue) const noexcept
 {
 	if (inValue.empty())
 		return;
 
-	m_toolchainPreferenceRaw = std::move(inValue);
+	m_toolchainPreferenceName = std::move(inValue);
 
-	m_toolchainPreference = getToolchainPreferenceFromString(m_toolchainPreferenceRaw);
+	m_toolchainPreference = getToolchainPreferenceFromString(m_toolchainPreferenceName);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::toolchainPreferenceName() const noexcept
+{
+	return m_toolchainPreferenceName;
+}
+
+void CommandLineInputs::setToolchainPreferenceNameFromCompiler(const std::string& inExecutable) const noexcept
+{
+	if (inExecutable.empty())
+		return;
+
+		// Only allowed with MSVC - where version won't be known until env is initialized
+#if defined(CHALET_WIN32)
+	if (m_toolchainPreference.type == ToolchainType::MSVC)
+	{
+		auto cl = Commands::which("cl");
+		auto output = Commands::subprocessOutput({ cl });
+		auto splitOutput = String::split(output, String::eol());
+		for (auto& line : splitOutput)
+		{
+			if (String::startsWith("Microsoft (R)", line))
+			{
+				auto pos = line.find("Version");
+				if (pos != std::string::npos)
+				{
+					pos += 8;
+					line = line.substr(pos);
+					pos = line.find_first_of(" ");
+					if (pos != std::string::npos)
+					{
+						line = line.substr(0, pos);
+						if (!line.empty())
+						{
+							m_toolchainPreferenceName = fmt::format("{}-msvc{}", m_targetArchitecture, line);
+						}
+					}
+				}
+				break;
+			}
+		}
+	}
+#endif
 }
 
 /*****************************************************************************/
@@ -492,43 +532,16 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	ToolchainPreference ret;
 	ret.buildPathStyle = BuildPathStyle::TargetTriple;
 
-	bool emptyTarget = m_targetArchitecture.empty();
-	auto arch = emptyTarget ? m_hostArchitecture : m_targetArchitecture;
-
 #if defined(CHALET_WIN32)
-	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
-	allowedArchesWin.emplace_back("x86_64");
-	allowedArchesWin.emplace_back("x64_x64");
-	allowedArchesWin.emplace_back("i686");
-	allowedArchesWin.emplace_back("x86_x86");
-	auto splitValue = String::split(inValue, '-');
-	StringList msvcSearches{ "msvc", "msvcpre" };
-	bool isPlainMSVC = String::equals(msvcSearches, inValue);
-
-	if (isPlainMSVC || (String::equals(msvcSearches, splitValue.front()) && String::equals(allowedArchesWin, splitValue.back())))
+	if (String::equals({ "msvc", "msvc-pre" }, inValue))
 	{
-		m_isMsvcPreRelease = String::equals("msvcpre", splitValue.front());
+		m_isMsvcPreRelease = String::equals("msvc-pre", inValue);
 
-		if (String::equals({ "x86_64", "x64_x64" }, arch))
-		{
-			arch = "x64";
-			setTargetArchitecture("x64");
-		}
-		else if (String::equals({ "i686", "x86_x86" }, arch)) // This implies the host is x86
-		{
-			arch = "x86";
-			setTargetArchitecture("x86");
-		}
-
-		if (isPlainMSVC)
-			m_toolchainPreferenceRaw = fmt::format("{}-{}", inValue, arch);
-		else if (splitValue.size() > 1 && splitValue.back() != arch)
-			m_toolchainPreferenceRaw = fmt::format("{}-{}", splitValue.front(), arch);
-		else
-			m_toolchainPreferenceRaw = inValue;
+		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::MSVC;
 		ret.strategy = StrategyType::Ninja;
+		ret.buildPathStyle = BuildPathStyle::ToolchainName;
 		ret.cpp = "cl";
 		ret.cc = "cl";
 		ret.rc = "rc";
@@ -539,12 +552,12 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	else
 #endif
 #if defined(CHALET_MACOS)
-		if (String::equals({ "applellvm", "llvm" }, inValue))
+		if (String::equals({ "apple-llvm", "llvm" }, inValue))
 #else
 	if (String::equals("llvm", inValue))
 #endif
 	{
-		m_toolchainPreferenceRaw = inValue;
+		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::LLVM;
 		ret.strategy = StrategyType::Makefile;
@@ -557,7 +570,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 	else if (String::equals("gcc", inValue))
 	{
-		m_toolchainPreferenceRaw = inValue;
+		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::GNU;
 		ret.strategy = StrategyType::Makefile;

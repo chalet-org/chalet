@@ -105,10 +105,10 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 	cmd.emplace_back("--output-dir");
 	cmd.push_back(fmt::format("{}/{}", proximateOutput, m_target.name()));
 
-	if (!m_inputs.toolchainPreferenceRaw().empty())
+	if (!m_inputs.toolchainPreferenceName().empty())
 	{
 		cmd.emplace_back("--toolchain");
-		cmd.push_back(m_inputs.toolchainPreferenceRaw());
+		cmd.push_back(m_inputs.toolchainPreferenceName());
 	}
 
 	if (!m_inputs.envFile().empty())

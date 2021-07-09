@@ -47,8 +47,6 @@ private:
 	void parseGnuHelpList(const StringList& inCommand);
 	void parseClangHelpList();
 
-	const std::unordered_map<std::string, std::string> kCompilerStructures;
-
 	const BuildState& m_state;
 
 	std::string m_compilerPath{ "/usr" };

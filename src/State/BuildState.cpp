@@ -78,7 +78,7 @@ std::string BuildState::getUniqueIdForState(const StringList& inOther) const
 	std::string ret;
 	const auto& hostArch = info.hostArchitectureString();
 	const auto targetArch = m_inputs.getArchWithOptionsAsString(info.targetArchitectureString());
-	const auto& toolchainPref = m_inputs.toolchainPreferenceRaw();
+	const auto& toolchainPref = m_inputs.toolchainPreferenceName();
 	const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
 

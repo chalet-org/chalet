@@ -71,18 +71,26 @@ bool MsvcEnvironment::create()
 	if (m_initialized)
 		return true;
 
+	bool emptyTarget = m_inputs.targetArchitecture().empty();
+	auto arch = emptyTarget ? m_inputs.hostArchitecture() : m_inputs.targetArchitecture();
+	if (String::equals({ "x86_64", "x64_x64" }, arch))
+	{
+		arch = "x64";
+		m_inputs.setTargetArchitecture(std::move(arch));
+		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
+	}
+	else if (String::equals({ "i686", "x86_x86" }, arch))
+	{
+		arch = "x86";
+		m_inputs.setTargetArchitecture(std::move(arch));
+		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
+	}
+
 	// auto& outputDirectory = m_state.paths.outputDirectory();
 
 	m_varsFileOriginal = m_state.cache.getHashPath("original.env", CacheType::Local);
 	m_varsFileMsvc = m_state.cache.getHashPath("msvc_all.env", CacheType::Local);
-
-	{
-		auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureString());
-		archString += fmt::format("_{}", m_inputs.toolchainPreferenceRaw());
-		m_varsFileMsvcDelta = m_state.cache.getHashPath(fmt::format("msvc_{}.env", archString), CacheType::Local);
-	}
-
-	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
+	m_varsFileMsvcDelta = getMsvcVarsPath();
 
 	m_initialized = true;
 
@@ -186,14 +194,17 @@ bool MsvcEnvironment::create()
 	}
 
 	// Read delta to cache
-	std::ifstream input(m_varsFileMsvcDelta);
-	for (std::string line; std::getline(input, line);)
 	{
-		auto splitVar = String::split(line, '=');
-		if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
+		std::ifstream input(m_varsFileMsvcDelta);
+		for (std::string line; std::getline(input, line);)
 		{
-			m_variables[std::move(splitVar.front())] = splitVar.back();
+			auto splitVar = String::split(line, '=');
+			if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
+			{
+				m_variables[std::move(splitVar.front())] = splitVar.back();
+			}
 		}
+		input.close();
 	}
 
 	StringList pathSearch{ "Path", "PATH" };
@@ -247,7 +258,17 @@ bool MsvcEnvironment::create()
 		m_libPath = String::split(libPath->second, ";");
 	}*/
 
-	// Commands::remove(m_varsFileMsvcDelta);
+	// we got here from "msvc" "msvc-pre" etc from the command line
+	if (String::equals({ "msvc", "msvc-pre" }, m_inputs.toolchainPreferenceName()))
+	{
+		auto cl = Commands::which("cl");
+		m_inputs.setToolchainPreferenceNameFromCompiler(cl);
+		auto old = m_varsFileMsvcDelta;
+		m_varsFileMsvcDelta = getMsvcVarsPath();
+		Commands::rename(old, m_varsFileMsvcDelta);
+	}
+
+	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
 
 	Diagnostic::printDone(timer.asString());
 #endif
@@ -311,18 +332,18 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 {
 #if defined(CHALET_WIN32)
 	std::string vcvarsFile{ "vcvarsall" };
-	const auto& targetArch = m_state.info.targetArchitectureString();
+	const auto& arch = m_state.info.targetArchitectureString();
 	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
 
-	if (!String::equals(allowedArchesWin, targetArch))
+	if (!String::equals(allowedArchesWin, arch))
 	{
-		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", targetArch, vcvarsFile);
+		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", arch, vcvarsFile);
 		return false;
 	}
 
 	// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
 	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
-	StringList cmd{ vcVarsAll, targetArch };
+	StringList cmd{ vcVarsAll, arch };
 
 	for (auto& arg : m_inputs.archOptions())
 	{
@@ -341,5 +362,13 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 #else
 	return false;
 #endif
+}
+
+/*****************************************************************************/
+std::string MsvcEnvironment::getMsvcVarsPath() const
+{
+	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureString());
+	archString += fmt::format("_{}", m_inputs.toolchainPreferenceName());
+	return m_state.cache.getHashPath(fmt::format("msvc_{}.env", archString), CacheType::Local);
 }
 }

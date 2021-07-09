@@ -28,9 +28,18 @@ bool SettingsToolchainJsonParser::serialize()
 {
 	Output::setShowCommandOverride(false);
 
+#if defined(CHALET_WIN32)
+	auto& toolchain = m_inputs.toolchainPreference();
+	if (toolchain.type == ToolchainType::MSVC)
+	{
+		if (!m_state.msvcEnvironment.create())
+			return false;
+	}
+#endif
+
 	auto& rootNode = m_jsonFile.json;
 
-	const auto& preference = m_inputs.toolchainPreferenceRaw();
+	const auto& preference = m_inputs.toolchainPreferenceName();
 	auto& toolchains = rootNode["toolchains"];
 	if (!toolchains.contains(preference))
 	{
@@ -53,14 +62,6 @@ bool SettingsToolchainJsonParser::serialize(Json& inNode)
 		return false;
 
 	auto& toolchain = m_inputs.toolchainPreference();
-#if defined(CHALET_WIN32)
-	if (toolchain.type == ToolchainType::MSVC)
-	{
-		if (!m_state.msvcEnvironment.create())
-			return false;
-	}
-#endif
-
 	makeToolchain(inNode, toolchain);
 
 	if (!parseToolchain(inNode))
@@ -123,7 +124,7 @@ bool SettingsToolchainJsonParser::validatePaths()
 #endif
 	if (!result)
 	{
-		auto& preference = m_inputs.toolchainPreferenceRaw();
+		auto& preference = m_inputs.toolchainPreferenceName();
 		Diagnostic::error("{}: The requested toolchain of '{}' could either not be detected, or had invalid tools.", m_jsonFile.filename(), preference);
 	}
 
@@ -318,15 +319,16 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		// jom.exe - Qt's parallel NMAKE
 		// nmake.exe - MSVC's make-ish build tool, alternative to MSBuild
 		StringList searches;
-		if (toolchain.type != ToolchainType::MSVC)
-		{
-			searches.emplace_back("mingw32-make");
-		}
-		else if (toolchain.type == ToolchainType::MSVC)
+		if (toolchain.type == ToolchainType::MSVC)
 		{
 			searches.emplace_back("jom");
 			searches.emplace_back("nmake");
 		}
+		else
+		{
+			searches.emplace_back("mingw32-make");
+		}
+
 		searches.push_back(kKeyMake);
 		for (const auto& search : searches)
 		{
@@ -400,6 +402,14 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		else if (toolchain.buildPathStyle == BuildPathStyle::ToolchainName)
 		{
 			toolchains[kKeyBuildPathStyle] = "toolchain-name";
+		}
+		else if (toolchain.buildPathStyle == BuildPathStyle::Configuration)
+		{
+			toolchains[kKeyBuildPathStyle] = "configuration";
+		}
+		else if (toolchain.buildPathStyle == BuildPathStyle::ArchConfiguration)
+		{
+			toolchains[kKeyBuildPathStyle] = "arch-configuration";
 		}
 
 		m_jsonFile.setDirty(true);

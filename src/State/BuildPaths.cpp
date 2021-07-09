@@ -39,19 +39,28 @@ void BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inTool
 		Commands::makeDirectory(outputDirectory);
 	}
 
-	// m_configuration = fmt::format("{}_{}_{}", inInfo.hostArchitectureString(), inInfo.targetArchitectureString(), inBuildConfiguration);
 	auto arch = m_inputs.getArchWithOptionsAsString(inInfo.targetArchitectureString());
-
-	m_configuration = fmt::format("{}_{}", arch, inInfo.buildConfiguration());
+	const auto& buildConfig = inInfo.buildConfiguration();
+	const auto& toolchainPreference = m_inputs.toolchainPreferenceName();
 
 	auto style = inToolchain.buildPathStyle();
-	if (style == BuildPathStyle::ToolchainName && !m_inputs.toolchainPreferenceRaw().empty())
+	if (style == BuildPathStyle::ToolchainName && !toolchainPreference.empty())
 	{
-		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, m_inputs.toolchainPreferenceRaw(), inInfo.buildConfiguration());
+		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, toolchainPreference, buildConfig);
+	}
+	else if (style == BuildPathStyle::Configuration)
+	{
+		m_buildOutputDir = fmt::format("{}/{}", outputDirectory, buildConfig);
+	}
+	else if (style == BuildPathStyle::ArchConfiguration)
+	{
+		auto split = String::split(inInfo.targetArchitectureString(), '-');
+		arch = std::move(split.front());
+		m_buildOutputDir = fmt::format("{}/{}-{}", outputDirectory, arch, buildConfig);
 	}
 	else
 	{
-		m_buildOutputDir = fmt::format("{}/{}", outputDirectory, m_configuration);
+		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
 	}
 
 	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
@@ -101,12 +110,6 @@ const std::string& BuildPaths::buildOutputDir() const noexcept
 {
 	chalet_assert(m_initialized, "BuildPaths::buildOutputDir() called before BuildPaths::initialize().");
 	return m_buildOutputDir;
-}
-
-const std::string& BuildPaths::configuration() const noexcept
-{
-	chalet_assert(m_initialized, "BuildPaths::configuration() called before BuildPaths::initialize().");
-	return m_configuration;
 }
 
 const std::string& BuildPaths::objDir() const noexcept

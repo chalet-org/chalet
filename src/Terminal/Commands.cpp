@@ -789,7 +789,7 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 }
 
 /*****************************************************************************/
-std::string Commands::subprocessOutput(const StringList& inCmd, const PipeOption inStdErr)
+std::string Commands::subprocessOutput(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr)
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
@@ -798,14 +798,19 @@ std::string Commands::subprocessOutput(const StringList& inCmd, const PipeOption
 
 	SubprocessOptions options;
 	options.cwd = getWorkingDirectory();
-	options.stdoutOption = PipeOption::Pipe;
+	options.stdoutOption = inStdOut;
 	options.stderrOption = inStdErr;
-	options.onStdOut = [&ret](std::string inData) {
-		ret += std::move(inData);
-	};
+	if (options.stdoutOption == PipeOption::Pipe)
+	{
+		options.onStdOut = [&ret](std::string inData) {
+			ret += std::move(inData);
+		};
+	}
 	if (options.stderrOption == PipeOption::Pipe)
 	{
-		options.onStdErr = options.onStdOut;
+		options.onStdErr = [&ret](std::string inData) {
+			ret += std::move(inData);
+		};
 	}
 
 	UNUSED(Subprocess::run(inCmd, std::move(options)));
