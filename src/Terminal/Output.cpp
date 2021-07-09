@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 
 #include "Libraries/WindowsApi.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
@@ -21,6 +22,9 @@ namespace
 static bool s_quietNonBuild = false;
 static bool s_showCommands = false;
 static bool s_allowCommandsToShow = true;
+#if defined(CHALET_WIN32)
+static std::int64_t s_commandPromptVersion = -1;
+#endif
 
 /*****************************************************************************/
 std::string getFormattedBuildTarget(const std::string& inBuildConfiguration, const std::string& inName)
@@ -77,6 +81,23 @@ char getEscapeChar()
 	// else
 	// 	return '\x1b';
 }
+
+#if defined(CHALET_WIN32)
+/*****************************************************************************/
+bool ansiColorsSupportedInComSpec()
+{
+	if (s_commandPromptVersion == -1)
+	{
+		s_commandPromptVersion = Commands::getLastWriteTime(Environment::getAsString("COMSPEC"));
+		if (s_commandPromptVersion > 0)
+			s_commandPromptVersion *= 1000;
+	}
+
+	// Note: ANSI terminal colors were added somewhere between Windows 10 build 10240 and 10586
+	//   So we approximate based on the date of the first release of Windows 10 (build 10240, July 29, 2015)
+	return s_commandPromptVersion > 1438128000000;
+}
+#endif
 }
 static ColorTheme sTheme;
 
@@ -190,50 +211,72 @@ bool Output::getUserInputYesNo(const std::string& inUserQuery, const Color inAns
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 {
+	const auto esc = getEscapeChar();
+	char style = inBold ? '1' : '0';
+	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
+
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
 	{
-		return std::string();
+		if (ansiColorsSupportedInComSpec())
+		{
+			// Note: Use the bright colors since they aren't as harsh
+			//   Command Prompt bolding is all or nothing
+			style = '1';
+			return fmt::format("{esc}[{style}m{esc}[{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
+		}
+		else
+		{
+			return std::string();
+		}
 	}
 	else
+#endif
 	{
-#endif
-		const auto esc = getEscapeChar();
-		const char style = inBold ? '1' : '0';
-		const int color = static_cast<std::underlying_type_t<Color>>(inColor);
-
 		return fmt::format("{esc}[{style};{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
-#if defined(CHALET_WIN32)
 	}
-#endif
 }
 
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
 {
+	const auto esc = getEscapeChar();
+	char style = inBold ? '1' : '0';
+	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
+	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
 	{
-		return std::string();
+		if (ansiColorsSupportedInComSpec())
+		{
+			// Note: Use the bright colors since they aren't as harsh
+			//   Command Prompt bolding is all or nothing
+			style = '1';
+			return fmt::format("{esc}[{style}m{esc}[{fgColor}m{esc}[{bgColor}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
+		}
+		else
+		{
+			return std::string();
+		}
 	}
 	else
+#endif
 	{
-#endif
-		const auto esc = getEscapeChar();
-		const char style = inBold ? '1' : '0';
-		const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
-		const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
-
 		return fmt::format("{esc}[{style};{fgColor};{bgColor}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
-#if defined(CHALET_WIN32)
 	}
-#endif
 }
 
 /*****************************************************************************/
 std::string Output::getAnsiStyleUnescaped(const Color inColor, const bool inBold)
 {
-	const char style = inBold ? '1' : '0';
+	char style = inBold ? '1' : '0';
+#if defined(CHALET_WIN32)
+	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	{
+		if (ansiColorsSupportedInComSpec())
+			style = '1';
+	}
+#endif
 	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
 
 	return fmt::format("{style};{color}", FMT_ARG(style), FMT_ARG(color));
@@ -242,7 +285,14 @@ std::string Output::getAnsiStyleUnescaped(const Color inColor, const bool inBold
 /*****************************************************************************/
 std::string Output::getAnsiStyleUnescaped(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
 {
-	const char style = inBold ? '1' : '0';
+	char style = inBold ? '1' : '0';
+#if defined(CHALET_WIN32)
+	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	{
+		if (ansiColorsSupportedInComSpec())
+			style = '1';
+	}
+#endif
 	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
 	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
 
@@ -255,16 +305,15 @@ std::string Output::getAnsiReset()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
 	{
-		return std::string();
-	}
-	else
-	{
-#endif
-		const auto esc = getEscapeChar();
-		return fmt::format("{esc}[0m", FMT_ARG(esc));
-#if defined(CHALET_WIN32)
+		if (!ansiColorsSupportedInComSpec())
+		{
+			return std::string();
+		}
 	}
 #endif
+
+	const auto esc = getEscapeChar();
+	return fmt::format("{esc}[0m", FMT_ARG(esc));
 }
 
 /*****************************************************************************/
@@ -587,5 +636,4 @@ void Output::msgCopying(const std::string& inFrom, const std::string& inTo)
 
 	displayStyledSymbol(sTheme.build, symbol, message, false);
 }
-
 }

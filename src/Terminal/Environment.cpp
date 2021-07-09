@@ -95,6 +95,7 @@ std::string getProcessPath(DWORD inPid)
 }
 #endif
 
+/*****************************************************************************/
 std::string getParentProcessPath()
 {
 #if defined(CHALET_WIN32)
