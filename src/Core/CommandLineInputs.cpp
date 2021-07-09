@@ -290,42 +290,12 @@ const std::string& CommandLineInputs::toolchainPreferenceName() const noexcept
 	return m_toolchainPreferenceName;
 }
 
-void CommandLineInputs::setToolchainPreferenceNameFromCompiler(const std::string& inExecutable) const noexcept
+void CommandLineInputs::setToolchainPreferenceName(std::string&& inValue) const noexcept
 {
-	if (inExecutable.empty())
+	if (inValue.empty())
 		return;
 
-		// Only allowed with MSVC - where version won't be known until env is initialized
-#if defined(CHALET_WIN32)
-	if (m_toolchainPreference.type == ToolchainType::MSVC)
-	{
-		auto cl = Commands::which("cl");
-		auto output = Commands::subprocessOutput({ cl });
-		auto splitOutput = String::split(output, String::eol());
-		for (auto& line : splitOutput)
-		{
-			if (String::startsWith("Microsoft (R)", line))
-			{
-				auto pos = line.find("Version");
-				if (pos != std::string::npos)
-				{
-					pos += 8;
-					line = line.substr(pos);
-					pos = line.find_first_of(" ");
-					if (pos != std::string::npos)
-					{
-						line = line.substr(0, pos);
-						if (!line.empty())
-						{
-							m_toolchainPreferenceName = fmt::format("{}-msvc{}", m_targetArchitecture, line);
-						}
-					}
-				}
-				break;
-			}
-		}
-	}
-#endif
+	m_toolchainPreferenceName = std::move(inValue);
 }
 
 /*****************************************************************************/

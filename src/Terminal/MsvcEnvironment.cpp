@@ -262,10 +262,37 @@ bool MsvcEnvironment::create()
 	if (String::equals({ "msvc", "msvc-pre" }, m_inputs.toolchainPreferenceName()))
 	{
 		auto cl = Commands::which("cl");
-		m_inputs.setToolchainPreferenceNameFromCompiler(cl);
+		auto output = Commands::subprocessOutput({ cl });
+		auto splitOutput = String::split(output, String::eol());
+		for (auto& line : splitOutput)
+		{
+			if (String::startsWith("Microsoft (R)", line))
+			{
+				auto pos = line.find("Version");
+				if (pos != std::string::npos)
+				{
+					pos += 8;
+					line = line.substr(pos);
+					pos = line.find_first_of(" ");
+					if (pos != std::string::npos)
+					{
+						line = line.substr(0, pos);
+						if (!line.empty())
+						{
+							m_inputs.setToolchainPreferenceName(fmt::format("{}-pc-msvc{}", m_inputs.targetArchitecture(), line));
+						}
+					}
+				}
+				break;
+			}
+		}
+
 		auto old = m_varsFileMsvcDelta;
 		m_varsFileMsvcDelta = getMsvcVarsPath();
-		Commands::rename(old, m_varsFileMsvcDelta);
+		if (m_varsFileMsvcDelta != old)
+		{
+			Commands::rename(old, m_varsFileMsvcDelta);
+		}
 	}
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));

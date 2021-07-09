@@ -64,7 +64,7 @@ struct CommandLineInputs
 	const ToolchainPreference& toolchainPreference() const noexcept;
 	void setToolchainPreference(std::string&& inValue) const noexcept;
 	const std::string& toolchainPreferenceName() const noexcept;
-	void setToolchainPreferenceNameFromCompiler(const std::string& inExecutable) const noexcept;
+	void setToolchainPreferenceName(std::string&& inValue) const noexcept;
 	bool isMsvcPreRelease() const noexcept;
 
 	const std::string& initPath() const noexcept;
