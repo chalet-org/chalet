@@ -228,11 +228,12 @@ bool SettingsManager::runSettingsUnset(Json& node)
 	std::string lastKey;
 	std::string idxRaw;
 	std::string subKeyRaw;
-	auto keySplit = String::split(m_key, '.');
-	for (auto& subKey : keySplit)
+
+	StringList subKeys = parseKey();
+	for (auto& subKey : subKeys)
 	{
-		std::ptrdiff_t i = &subKey - &keySplit.front();
-		bool notLast = i < static_cast<std::ptrdiff_t>(keySplit.size() - 1);
+		std::ptrdiff_t i = &subKey - &subKeys.front();
+		bool notLast = i < static_cast<std::ptrdiff_t>(subKeys.size() - 1);
 		getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw);
 
 		if (!ptr->contains(subKey) && notLast)
@@ -309,10 +310,10 @@ bool SettingsManager::findRequestedNode(Json& inNode, std::string& outLastKey, J
 	if (!m_key.empty())
 	{
 		bool fail = false;
-		StringList keySplit = String::split(m_key, '.');
+		StringList subKeys = parseKey();
 		std::string idxRaw;
 		std::string subKeyRaw;
-		for (auto& subKey : keySplit)
+		for (auto& subKey : subKeys)
 		{
 			if (!getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw))
 			{
@@ -363,11 +364,12 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 	std::string lastKey;
 	std::string idxRaw;
 	std::string subKeyRaw;
-	auto keySplit = String::split(m_key, '.');
-	for (auto& subKey : keySplit)
+
+	StringList subKeys = parseKey();
+	for (auto& subKey : subKeys)
 	{
-		std::ptrdiff_t i = &subKey - &keySplit.front();
-		bool notLast = i < static_cast<std::ptrdiff_t>(keySplit.size() - 1);
+		std::ptrdiff_t i = &subKey - &subKeys.front();
+		bool notLast = i < static_cast<std::ptrdiff_t>(subKeys.size() - 1);
 		getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw);
 
 		if (!outNode->contains(subKey) && notLast)
@@ -378,7 +380,7 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 		if (!idxRaw.empty())
 		{
 			outNode = &outNode->at(subKey);
-			LOG("idxRaw:", idxRaw);
+
 			std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
 			while (val >= outNode->size())
 			{
@@ -465,6 +467,29 @@ bool SettingsManager::getArrayKeyWithIndex(std::string& inKey, std::string& outR
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+StringList SettingsManager::parseKey() const
+{
+	StringList ret;
+	auto split = String::split(m_key, '.');
+	std::string tmp;
+	for (auto& key : split)
+	{
+		if (String::endsWith('\\', key))
+		{
+			key.pop_back();
+			key += ".";
+			tmp += key;
+		}
+		else
+		{
+			tmp += key;
+			ret.push_back(std::move(tmp));
+		}
+	}
+	return ret;
 }
 
 }

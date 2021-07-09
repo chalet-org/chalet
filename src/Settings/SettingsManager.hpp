@@ -30,6 +30,7 @@ private:
 
 	bool makeSetting(Json& inNode, Json*& outNode);
 	bool getArrayKeyWithIndex(std::string& inKey, std::string& outRawKey, std::string& outIndex);
+	StringList parseKey() const;
 
 	JsonFile& getSettings();
 
