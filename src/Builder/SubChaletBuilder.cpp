@@ -121,10 +121,10 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 		}
 	}
 
-	if (!m_inputs.archRaw().empty())
+	if (!m_inputs.architectureRaw().empty())
 	{
 		cmd.emplace_back("--arch");
-		cmd.push_back(m_inputs.archRaw());
+		cmd.push_back(m_inputs.architectureRaw());
 	}
 
 	cmd.emplace_back("build");

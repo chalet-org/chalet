@@ -73,8 +73,8 @@ struct CommandLineInputs
 	const std::string& envFile() const noexcept;
 	void setEnvFile(std::string&& inValue) noexcept;
 
-	const std::string& archRaw() const noexcept;
-	void setArchRaw(const std::string& inValue) noexcept;
+	const std::string& architectureRaw() const noexcept;
+	void setArchitectureRaw(const std::string& inValue) noexcept;
 
 	const std::string& hostArchitecture() const noexcept;
 	const std::string& targetArchitecture() const noexcept;
@@ -132,7 +132,7 @@ private:
 
 	std::string m_initPath;
 	std::string m_envFile;
-	std::string m_archRaw;
+	std::string m_architectureRaw;
 	std::string m_hostArchitecture;
 	mutable std::string m_targetArchitecture;
 

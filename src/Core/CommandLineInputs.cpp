@@ -335,13 +335,13 @@ void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::archRaw() const noexcept
+const std::string& CommandLineInputs::architectureRaw() const noexcept
 {
-	return m_archRaw;
+	return m_architectureRaw;
 }
-void CommandLineInputs::setArchRaw(const std::string& inValue) noexcept
+void CommandLineInputs::setArchitectureRaw(const std::string& inValue) noexcept
 {
-	m_archRaw = inValue;
+	m_architectureRaw = inValue;
 }
 
 /*****************************************************************************/

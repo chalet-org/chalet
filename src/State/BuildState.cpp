@@ -152,7 +152,8 @@ bool BuildState::initializeBuild()
 				  m_inputs.targetArchitecture() :
 				  info.targetArchitectureString();
 
-			Diagnostic::error("Requested arch '{}' is not supported.", targetArch);
+			auto& toolchainName = m_inputs.toolchainPreferenceName();
+			Diagnostic::error("Requested arch '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
 			return false;
 		}
 	}

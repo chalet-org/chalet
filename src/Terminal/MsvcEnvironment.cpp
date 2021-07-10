@@ -71,20 +71,7 @@ bool MsvcEnvironment::create()
 	if (m_initialized)
 		return true;
 
-	bool emptyTarget = m_inputs.targetArchitecture().empty();
-	auto arch = emptyTarget ? m_inputs.hostArchitecture() : m_inputs.targetArchitecture();
-	if (String::equals({ "x86_64", "x64_x64" }, arch))
-	{
-		arch = "x64";
-		m_inputs.setTargetArchitecture(std::move(arch));
-		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
-	}
-	else if (String::equals({ "i686", "x86_x86" }, arch))
-	{
-		arch = "x86";
-		m_inputs.setTargetArchitecture(std::move(arch));
-		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
-	}
+	makeArchitectureCorrections();
 
 	// auto& outputDirectory = m_state.paths.outputDirectory();
 
@@ -389,6 +376,46 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 #else
 	return false;
 #endif
+}
+
+/*****************************************************************************/
+void MsvcEnvironment::makeArchitectureCorrections()
+{
+	auto host = m_inputs.hostArchitecture();
+	if (String::equals("x86_64", host))
+		host = "x64";
+	else if (String::equals("i686", host))
+		host = "x86";
+
+	bool changed = false;
+	bool emptyTarget = m_inputs.targetArchitecture().empty();
+	auto arch = emptyTarget ? m_inputs.hostArchitecture() : m_inputs.targetArchitecture();
+	if (String::equals({ "x86_64", "x64_x64" }, arch))
+	{
+		arch = "x64";
+		changed = true;
+	}
+	else if (String::equals({ "i686", "x86_x86" }, arch))
+	{
+		arch = "x86";
+		changed = true;
+	}
+	else if (String::equals("arm64", arch))
+	{
+		arch = fmt::format("{}_arm64", host);
+		changed = true;
+	}
+	else if (String::equals("arm", arch))
+	{
+		arch = fmt::format("{}_arm", host);
+		changed = true;
+	}
+
+	if (changed)
+	{
+		m_inputs.setTargetArchitecture(std::move(arch));
+		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
+	}
 }
 
 /*****************************************************************************/

@@ -156,11 +156,12 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 				host = target;
 			}
 
-			std::string lower = String::toLowerCase(!m_compilerCpp.empty() ? m_compilerCpp : m_compilerC);
+			auto& compiler = !m_compilerCpp.empty() ? m_compilerCpp : m_compilerC;
+			std::string lower = String::toLowerCase(compiler);
 			auto search = lower.find(fmt::format("/host{}/{}/", host, target));
 			if (search == std::string::npos)
 			{
-				Diagnostic::error("MSVC Compiler for target architecture '{}' was not found (missing build tools)", target);
+				Diagnostic::error("Target architecture '{}' was not found in compiler path: {}", target, compiler);
 				return false;
 			}
 

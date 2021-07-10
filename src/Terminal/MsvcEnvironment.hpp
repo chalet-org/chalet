@@ -39,6 +39,7 @@ private:
 	bool setVariableToPath(const char* inName);
 	bool saveOriginalEnvironment();
 	bool saveMsvcEnvironment();
+	void makeArchitectureCorrections();
 	std::string getMsvcVarsPath() const;
 
 	const CommandLineInputs& m_inputs;

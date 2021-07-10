@@ -60,7 +60,7 @@ enum class Defs : ushort
 	DumpAssembly,
 	MaxJobs,
 	ShowCommands,
-	Toolchain,
+	LastToolchain,
 	SigningIdentity,
 	// Theme
 	ThemeColor
@@ -351,7 +351,7 @@ Json Schema::getSettingsJson()
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::Toolchain] = R"json({
+	defs[Defs::LastToolchain] = R"json({
 		"description": "The toolchain id to use for building, if not the previous one.",
 		"type": "string"
 	})json"_ojson;
@@ -472,7 +472,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kSettings][kProperties]["dumpAssembly"] = defs[Defs::DumpAssembly];
 	ret[kProperties][kSettings][kProperties]["maxJobs"] = defs[Defs::MaxJobs];
 	ret[kProperties][kSettings][kProperties]["showCommands"] = defs[Defs::ShowCommands];
-	ret[kProperties][kSettings][kProperties]["toolchain"] = defs[Defs::Toolchain];
+	ret[kProperties][kSettings][kProperties]["toolchain"] = defs[Defs::LastToolchain];
 	ret[kProperties][kSettings][kProperties]["signingIdentity"] = defs[Defs::SigningIdentity];
 
 	const auto kToolchains = "toolchains";
