@@ -29,6 +29,7 @@ private:
 	friend struct WorkspaceInternalCacheFile;
 
 	void makeUpdate(const std::string& inFile, LastWrite& outFileData) const;
+	void forceUpdate(const std::string& inFile, LastWrite& outFileData) const;
 	LastWrite& getLastWrite(const std::string& inFile) const;
 
 	SourceLastWriteMap& m_lastWrites;

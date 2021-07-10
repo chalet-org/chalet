@@ -118,6 +118,16 @@ void SourceCache::makeUpdate(const std::string& inFile, LastWrite& outFileData) 
 }
 
 /*****************************************************************************/
+void SourceCache::forceUpdate(const std::string& inFile, LastWrite& outFileData) const
+{
+	auto lastWrite = Commands::getLastWriteTime(inFile);
+	if (lastWrite == 0)
+		lastWrite = m_initializedTime;
+
+	outFileData.lastWrite = lastWrite;
+}
+
+/*****************************************************************************/
 LastWrite& SourceCache::getLastWrite(const std::string& inFile) const
 {
 	if (m_lastWrites.find(inFile) == m_lastWrites.end())

@@ -270,7 +270,7 @@ bool WorkspaceInternalCacheFile::save()
 					continue;
 
 				if (fileData.needsUpdate)
-					sourceCache->makeUpdate(file, fileData);
+					sourceCache->forceUpdate(file, fileData);
 
 				contents += fmt::format("{}\t{}\n", fileData.lastWrite, file);
 			}
