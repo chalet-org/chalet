@@ -39,7 +39,7 @@ bool createSymbolicLink(const std::string& inFrom, const std::string& inTo);
 bool copy(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions = fs::copy_options::none);
 bool copySilent(const std::string& inFrom, const std::string& inTo);
 bool copySkipExisting(const std::string& inFrom, const std::string& inTo);
-bool copyRename(const std::string& inFrom, const std::string& inTo);
+bool copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent = false);
 bool rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting = false);
 void forEachFileMatch(const std::string& inPath, const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
 void forEachFileMatch(const std::string& inPath, const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);

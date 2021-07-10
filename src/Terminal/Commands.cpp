@@ -530,16 +530,19 @@ bool Commands::copySkipExisting(const std::string& inFrom, const std::string& in
 }
 
 /*****************************************************************************/
-bool Commands::copyRename(const std::string& inFrom, const std::string& inTo)
+bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent)
 {
 	CHALET_TRY
 	{
-		if (Output::showCommands())
-			Output::printCommand(fmt::format("copy: {} {}", inFrom, inTo));
-		else
-			Output::msgCopying(inFrom, inTo);
+		if (!inSilent)
+		{
+			if (Output::showCommands())
+				Output::printCommand(fmt::format("copy: {} {}", inFrom, inTo));
+			else
+				Output::msgCopying(inFrom, inTo);
+		}
 
-		fs::copy(inFrom, inTo);
+		fs::copy(inFrom, inTo, fs::copy_options::skip_existing);
 
 		return true;
 	}

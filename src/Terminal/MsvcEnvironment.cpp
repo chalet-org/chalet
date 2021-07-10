@@ -79,6 +79,8 @@ bool MsvcEnvironment::create()
 	m_varsFileMsvc = m_state.cache.getHashPath("msvc_all.env", CacheType::Local);
 	m_varsFileMsvcDelta = getMsvcVarsPath();
 
+	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
+
 	m_initialized = true;
 
 	// This sets s_vswhere
@@ -278,7 +280,7 @@ bool MsvcEnvironment::create()
 		m_varsFileMsvcDelta = getMsvcVarsPath();
 		if (m_varsFileMsvcDelta != old)
 		{
-			Commands::rename(old, m_varsFileMsvcDelta);
+			Commands::copyRename(old, m_varsFileMsvcDelta, true);
 		}
 	}
 
@@ -389,7 +391,25 @@ void MsvcEnvironment::makeArchitectureCorrections()
 
 	bool changed = false;
 	bool emptyTarget = m_inputs.targetArchitecture().empty();
-	auto arch = emptyTarget ? m_inputs.hostArchitecture() : m_inputs.targetArchitecture();
+	auto arch = m_inputs.targetArchitecture();
+	if (emptyTarget)
+	{
+		if (String::startsWith({ "x64", "x86", "arm" }, m_inputs.toolchainPreferenceName()))
+		{
+			arch = m_inputs.toolchainPreferenceName().substr(0, 3);
+			changed = true;
+		}
+		else if (String::startsWith("arm64", m_inputs.toolchainPreferenceName()))
+		{
+			arch = "arm64";
+			changed = true;
+		}
+		else
+		{
+			arch = m_inputs.hostArchitecture();
+			changed = true;
+		}
+	}
 	if (String::equals({ "x86_64", "x64_x64" }, arch))
 	{
 		arch = "x64";
