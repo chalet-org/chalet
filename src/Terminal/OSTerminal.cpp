@@ -61,7 +61,7 @@ void OSTerminal::initialize()
 void OSTerminal::reset()
 {
 #if defined(CHALET_WIN32)
-	if (!Environment::isBashOrWindowsConPTY() && Output::ansiColorsSupportedInComSpec())
+	if (Output::ansiColorsSupportedInComSpec())
 	{
 		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (hOut != INVALID_HANDLE_VALUE)
