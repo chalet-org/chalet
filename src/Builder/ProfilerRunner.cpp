@@ -9,6 +9,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -89,6 +90,15 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 {
 	const bool result = Commands::subprocess(inCommand);
 
+	const auto& outputFile = m_project.outputFile();
+	auto outFile = fmt::format("{}/{}", inOutputFolder, outputFile);
+	auto message = fmt::format("{} exited with code: {}", outFile, Subprocess::getLastExitCode());
+
+	// Output::lineBreak();
+	Output::printSeparator();
+	Output::print(result ? Output::theme().info : Output::theme().error, message, true);
+	Output::lineBreak();
+
 	Diagnostic::info("Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
 
 	const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
@@ -101,9 +111,8 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 		return false;
 	}
 
-	Output::lineBreak();
+	// Output::lineBreak();
 	Output::msgProfilerDone(profStatsFile);
-	Output::lineBreak();
 
 	return result;
 }
