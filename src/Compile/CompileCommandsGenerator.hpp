@@ -6,17 +6,27 @@
 #ifndef CHALET_COMPILE_COMMANDS_GENERATOR_HPP
 #define CHALET_COMPILE_COMMANDS_GENERATOR_HPP
 
+#include "Compile/Toolchain/ICompileToolchain.hpp"
+
 namespace chalet
 {
+struct ProjectTarget;
+struct SourceOutputs;
+
 struct CompileCommandsGenerator
 {
 	CompileCommandsGenerator();
+	CHALET_DISALLOW_COPY_MOVE(CompileCommandsGenerator);
 	~CompileCommandsGenerator();
 
-	void addCompileCommand(const std::string& inFile, const StringList& inCommand);
-	void addCompileCommand(const std::string& inFile, const std::string& inCommand);
+	bool addCompileCommands(CompileToolchain& inToolchain, SourceOutputs& inOutputs);
+
+	bool save(const std::string& inOutputFolder) const;
 
 private:
+	void addCompileCommand(const std::string& inFile, StringList&& inCommand);
+	void addCompileCommand(const std::string& inFile, std::string&& inCommand);
+
 	struct CompileCommand;
 	std::vector<std::unique_ptr<CompileCommand>> m_compileCommands;
 };

@@ -191,6 +191,15 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				return false;
 			}
 
+			if (m_state.tools.generateCompileCommands())
+			{
+				if (!m_strategy->saveCompileCommands())
+				{
+					Diagnostic::error("The post-build step encountered a problem.");
+					return false;
+				}
+			}
+
 			Output::msgBuildSuccess();
 			Output::printInfo(fmt::format("   Total: {}", m_timer.asString()));
 
@@ -345,11 +354,21 @@ bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route
 		{
 			assemblyList.push_back(std::move(group->assemblyFile));
 		}
+
 		if (!m_asmDumper.addProject(inProject, std::move(assemblyList)))
 			return false;
 	}
 
-	return m_strategy->addProject(inProject, std::move(outputs), buildToolchain);
+	if (!m_strategy->addProject(inProject, std::move(outputs), buildToolchain))
+		return false;
+
+	if (m_state.tools.generateCompileCommands())
+	{
+		if (!m_strategy->addCompileCommands(inProject, buildToolchain))
+			return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/

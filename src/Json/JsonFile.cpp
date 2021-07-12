@@ -22,16 +22,20 @@ JsonFile::JsonFile(std::string inFilename) :
 }
 
 /*****************************************************************************/
-void JsonFile::saveToFile(const Json& inJson, const std::string& outFilename)
+bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename)
 {
 	if (outFilename.empty())
-		return;
+		return false;
 
 	const auto folder = String::getPathFolder(outFilename);
 	if (!folder.empty() && !Commands::pathExists(folder))
-		Commands::makeDirectory(folder);
+	{
+		if (!Commands::makeDirectory(folder))
+			return false;
+	}
 
 	std::ofstream(outFilename) << inJson.dump(1, '\t') << std::endl;
+	return true;
 }
 
 /*****************************************************************************/
@@ -50,12 +54,15 @@ void JsonFile::load(std::string inFilename)
 }
 
 /*****************************************************************************/
-void JsonFile::save()
+bool JsonFile::save()
 {
 	if (!m_filename.empty() && m_dirty)
 	{
-		JsonFile::saveToFile(json, m_filename);
+		return JsonFile::saveToFile(json, m_filename);
 	}
+
+	// if there's nothing to save, we don't care
+	return true;
 }
 
 /*****************************************************************************/

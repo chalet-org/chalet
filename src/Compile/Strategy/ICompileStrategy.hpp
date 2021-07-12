@@ -28,6 +28,9 @@ struct ICompileStrategy
 
 	StrategyType type() const noexcept;
 
+	bool addCompileCommands(const ProjectTarget& inProject, CompileToolchain& inToolchain);
+	bool saveCompileCommands() const;
+
 	virtual bool initialize(const StringList& inFileExtensions) = 0;
 	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
 

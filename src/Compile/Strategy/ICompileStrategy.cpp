@@ -13,10 +13,6 @@
 
 namespace chalet
 {
-namespace
-{
-}
-
 /*****************************************************************************/
 ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inState) :
 	m_state(inState),
@@ -48,6 +44,29 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 StrategyType ICompileStrategy::type() const noexcept
 {
 	return m_type;
+}
+
+/*****************************************************************************/
+bool ICompileStrategy::addCompileCommands(const ProjectTarget& inProject, CompileToolchain& inToolchain)
+{
+	const auto& name = inProject.name();
+	if (m_outputs.find(name) != m_outputs.end())
+	{
+		auto& outputs = m_outputs.at(name);
+		return m_compileCommandsGenerator.addCompileCommands(inToolchain, outputs);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ICompileStrategy::saveCompileCommands() const
+{
+	const auto& buildDir = m_state.paths.buildOutputDir();
+	if (!m_compileCommandsGenerator.save(buildDir))
+		return false;
+
+	return true;
 }
 
 /*****************************************************************************/

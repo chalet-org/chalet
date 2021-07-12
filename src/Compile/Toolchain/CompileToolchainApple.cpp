@@ -65,6 +65,9 @@ CompileToolchainApple::CompileToolchainApple(const BuildState& inState, const Pr
 /*****************************************************************************/
 bool CompileToolchainApple::initialize()
 {
+	if (!CompileToolchainGNU::initialize())
+		return false;
+
 	const auto& targetArchString = m_state.info.targetArchitectureString();
 	std::string macosVersion;
 	auto triple = String::split(targetArchString, '-');
