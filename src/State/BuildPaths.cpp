@@ -230,7 +230,7 @@ void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::s
 		depends.push_back(group->dependencyFile);
 	}
 
-	auto depdendencies = String::join(depends);
+	auto depdendencies = String::join(std::move(depends));
 	Environment::set(fmt::format("DEPS_{}", inHash).c_str(), depdendencies);
 }
 

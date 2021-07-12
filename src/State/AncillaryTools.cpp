@@ -65,7 +65,7 @@ bool AncillaryTools::validate()
 			auto identities = Commands::subprocessOutput(cmd);
 			if (!String::contains(m_signingIdentity, identities))
 			{
-				Diagnostic::error("signingIdentity '{}' could not be verified with '{}'", m_signingIdentity, String::join(cmd));
+				Diagnostic::error("signingIdentity '{}' could not be verified with '{}'", m_signingIdentity, String::join(std::move(cmd)));
 				return false;
 			}
 		}
@@ -473,6 +473,16 @@ const std::string& AncillaryTools::xcrun() const noexcept
 void AncillaryTools::setXcrun(std::string&& inValue) noexcept
 {
 	m_xcrun = std::move(inValue);
+}
+
+/*****************************************************************************/
+bool AncillaryTools::generateCompileCommands() const noexcept
+{
+	return m_generateCompileCommands;
+}
+void AncillaryTools::setGenerateCompileCommands(const bool inValue) noexcept
+{
+	m_generateCompileCommands = inValue;
 }
 
 /*****************************************************************************/

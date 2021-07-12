@@ -780,7 +780,7 @@ std::string CompilerTools::getRootPathVariable()
 		List::addIfDoesNotExist(outList, std::move(path));
 	}
 
-	std::string ret = String::join(outList, separator);
+	std::string ret = String::join(std::move(outList), separator);
 	Path::sanitize(ret);
 
 	return ret;

@@ -156,7 +156,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 
 	outList.push_back(inRootPath);
 
-	std::string ret = String::join(outList, separator);
+	std::string ret = String::join(std::move(outList), separator);
 	Path::sanitize(ret);
 
 	return ret;

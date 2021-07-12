@@ -83,7 +83,6 @@ build build_{hash}: phony | {target}
 /*****************************************************************************/
 std::string NinjaGenerator::getContents(const std::string& inPath) const
 {
-
 	auto recipes = String::join(m_targetRecipes);
 
 	std::string msvcDepsPrefix;
@@ -420,7 +419,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 	std::string pchImplicitDep;
 	if (!pches.empty())
 	{
-		pchImplicitDep = fmt::format(" | {}", String::join(pches));
+		pchImplicitDep = fmt::format(" | {}", String::join(std::move(pches)));
 	}
 
 	for (auto& group : inGroups)

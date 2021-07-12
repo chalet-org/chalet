@@ -22,6 +22,7 @@ struct GlobalSettingsState
 	uint maxJobs = 0;
 	bool showCommands = false;
 	bool dumpAssembly = false;
+	bool generateCompileCommands = false;
 };
 }
 

@@ -356,7 +356,7 @@ bool Router::managePathVariables(const StatePrototype* inPrototype)
 
 				p = Commands::getCanonicalPath(p);
 			}
-			std::string appendedPath = String::join(outPaths, Path::getSeparator());
+			std::string appendedPath = String::join(std::move(outPaths), Path::getSeparator());
 
 			// Note: Not needed on mac: @rpath stuff is done instead
 #if defined(CHALET_LINUX)

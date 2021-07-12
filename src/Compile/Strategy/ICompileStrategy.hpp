@@ -6,6 +6,7 @@
 #ifndef CHALET_ICOMPILE_STRATEGY_HPP
 #define CHALET_ICOMPILE_STRATEGY_HPP
 
+#include "Compile/CompileCommandsGenerator.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
@@ -40,6 +41,7 @@ protected:
 	std::unordered_map<std::string, SourceOutputs> m_outputs;
 
 	StrategyGenerator m_generator;
+	CompileCommandsGenerator m_compileCommandsGenerator;
 
 	StrategyType m_type;
 };

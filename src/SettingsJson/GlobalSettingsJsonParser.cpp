@@ -73,6 +73,12 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		m_jsonFile.setDirty(true);
 	}
 
+	if (!buildSettings.contains(kKeyGenerateCompileCommands) || !buildSettings[kKeyGenerateCompileCommands].is_boolean())
+	{
+		buildSettings[kKeyGenerateCompileCommands] = outState.generateCompileCommands;
+		m_jsonFile.setDirty(true);
+	}
+
 	if (!buildSettings.contains(kKeyMaxJobs) || !buildSettings[kKeyMaxJobs].is_number_integer())
 	{
 		outState.maxJobs = m_prototype.environment.processorCount();

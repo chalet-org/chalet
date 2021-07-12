@@ -190,6 +190,26 @@ std::string String::join(const StringList& inList, const char inSeparator)
 }
 
 /*****************************************************************************/
+std::string String::join(StringList&& inList, const char inSeparator = ' ')
+{
+	std::string ret;
+
+	for (auto& item : inList)
+	{
+		if (item.empty())
+			continue;
+
+		std::ptrdiff_t i = &item - &inList.front();
+		if (i > 0)
+			ret += inSeparator;
+
+		ret += std::move(item);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 std::string String::join(const StringList& inList, const std::string_view inSeparator)
 {
 	std::string ret;
@@ -204,6 +224,26 @@ std::string String::join(const StringList& inList, const std::string_view inSepa
 			ret += inSeparator;
 
 		ret += item;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string String::join(StringList&& inList, const std::string_view inSeparator)
+{
+	std::string ret;
+
+	for (auto& item : inList)
+	{
+		if (item.empty())
+			continue;
+
+		std::ptrdiff_t i = &item - &inList.front();
+		if (i > 0)
+			ret += inSeparator;
+
+		ret += std::move(item);
 	}
 
 	return ret;

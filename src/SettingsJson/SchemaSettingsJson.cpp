@@ -57,6 +57,7 @@ enum class Defs : ushort
 	ToolchainStrategy,
 	BuildPathStyle,
 	// Settings
+	GenerateCompileCommands,
 	DumpAssembly,
 	MaxJobs,
 	ShowCommands,
@@ -340,6 +341,12 @@ Json Schema::getSettingsJson()
 		"default": false
 	})json"_ojson;
 
+	defs[Defs::GenerateCompileCommands] = R"json({
+		"type": "boolean",
+		"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise.",
+		"default": false
+	})json"_ojson;
+
 	defs[Defs::MaxJobs] = R"json({
 		"type": "integer",
 		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
@@ -477,6 +484,7 @@ Json Schema::getSettingsJson()
 	})json"_ojson;
 	ret[kProperties][kSettings][kProperties] = Json::object();
 	ret[kProperties][kSettings][kProperties]["dumpAssembly"] = defs[Defs::DumpAssembly];
+	ret[kProperties][kSettings][kProperties]["generateCompileCommands"] = defs[Defs::GenerateCompileCommands];
 	ret[kProperties][kSettings][kProperties]["maxJobs"] = defs[Defs::MaxJobs];
 	ret[kProperties][kSettings][kProperties]["showCommands"] = defs[Defs::ShowCommands];
 	ret[kProperties][kSettings][kProperties]["toolchain"] = defs[Defs::LastToolchain];

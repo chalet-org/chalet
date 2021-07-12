@@ -147,6 +147,12 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		m_jsonFile.setDirty(true);
 	}
 
+	if (!buildSettings.contains(kKeyGenerateCompileCommands) || !buildSettings[kKeyGenerateCompileCommands].is_boolean())
+	{
+		buildSettings[kKeyGenerateCompileCommands] = inState.generateCompileCommands;
+		m_jsonFile.setDirty(true);
+	}
+
 	if (!buildSettings.contains(kKeyMaxJobs) || !buildSettings[kKeyMaxJobs].is_number_integer())
 	{
 		buildSettings[kKeyMaxJobs] = inState.maxJobs;
@@ -422,6 +428,9 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 
 	if (ushort val = 0; m_jsonFile.assignFromKey(val, buildSettings, kKeyMaxJobs))
 		m_prototype.environment.setMaxJobs(val);
+
+	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))
+		m_prototype.tools.setGenerateCompileCommands(val);
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
 	{
