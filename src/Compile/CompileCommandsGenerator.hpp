@@ -11,6 +11,7 @@ namespace chalet
 struct CompileCommandsGenerator
 {
 	CompileCommandsGenerator();
+	~CompileCommandsGenerator();
 
 	void addCompileCommand(const std::string& inFile, const StringList& inCommand);
 	void addCompileCommand(const std::string& inFile, const std::string& inCommand);
@@ -18,8 +19,6 @@ struct CompileCommandsGenerator
 private:
 	struct CompileCommand;
 	std::vector<std::unique_ptr<CompileCommand>> m_compileCommands;
-
-	bool m_generate = false;
 };
 }
 

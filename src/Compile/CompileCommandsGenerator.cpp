@@ -19,6 +19,9 @@ struct CompileCommandsGenerator::CompileCommand
 CompileCommandsGenerator::CompileCommandsGenerator() = default;
 
 /*****************************************************************************/
+CompileCommandsGenerator::~CompileCommandsGenerator() = default;
+
+/*****************************************************************************/
 void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, const StringList& inCommand)
 {
 	auto command = String::join(inCommand);
@@ -28,7 +31,10 @@ void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, cons
 /*****************************************************************************/
 void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, const std::string& inCommand)
 {
-	m_compileCommands.push_back(std::make_unique<CompileCommand>(inFile, inCommand));
+	auto compileCommand = std::make_unique<CompileCommand>();
+	compileCommand->file = inFile;
+	compileCommand->command = inCommand;
+	m_compileCommands.push_back(std::move(compileCommand));
 }
 
 }

@@ -22,7 +22,7 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 	m_state(inState),
 	m_type(inType)
 {
-	m_generator = IStrategyGenerator::make(inType, inState, m_compileCommandsGenerator);
+	m_generator = IStrategyGenerator::make(inType, inState);
 }
 
 /*****************************************************************************/

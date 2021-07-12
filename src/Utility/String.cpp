@@ -190,7 +190,7 @@ std::string String::join(const StringList& inList, const char inSeparator)
 }
 
 /*****************************************************************************/
-std::string String::join(StringList&& inList, const char inSeparator = ' ')
+std::string String::join(StringList&& inList, const char inSeparator)
 {
 	std::string ret;
 

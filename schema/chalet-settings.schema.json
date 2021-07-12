@@ -167,6 +167,11 @@
 					"description": "true to use include an asm dump of each file in the build, false otherwise.",
 					"default": false
 				},
+				"generateCompileCommands": {
+					"type": "boolean",
+					"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise.",
+					"default": false
+				},
 				"maxJobs": {
 					"type": "integer",
 					"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
