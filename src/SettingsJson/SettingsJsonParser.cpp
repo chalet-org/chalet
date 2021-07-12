@@ -162,14 +162,15 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	// LOG(fmt::format("toolchain: '{}' '{}'", inState.toolchainPreference, m_inputs.toolchainPreferenceName()));
 	if (!buildSettings.contains(kKeyLastToolchain) || !buildSettings[kKeyLastToolchain].is_string())
 	{
-		if (inState.toolchainPreference.empty())
+		auto& toolchainName = m_inputs.toolchainPreferenceName();
+		if (toolchainName.empty())
 		{
-			m_inputs.detectToolchainPreference();
-			buildSettings[kKeyLastToolchain] = m_inputs.toolchainPreferenceName();
+			buildSettings[kKeyLastToolchain] = inState.toolchainPreference;
 		}
 		else
 		{
-			buildSettings[kKeyLastToolchain] = inState.toolchainPreference;
+			m_inputs.detectToolchainPreference();
+			buildSettings[kKeyLastToolchain] = toolchainName;
 		}
 		m_jsonFile.setDirty(true);
 	}
@@ -199,10 +200,8 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 
 	if (!buildSettings.contains(kKeyLastArchitecture) || !buildSettings[kKeyLastArchitecture].is_string())
 	{
-		if (inState.architecturePreference.empty())
-			buildSettings[kKeyLastArchitecture] = m_inputs.architectureRaw();
-		else
-			buildSettings[kKeyLastArchitecture] = inState.architecturePreference;
+		auto& archRaw = m_inputs.architectureRaw();
+		buildSettings[kKeyLastArchitecture] = archRaw.empty() ? inState.architecturePreference : archRaw;
 
 		m_jsonFile.setDirty(true);
 	}
