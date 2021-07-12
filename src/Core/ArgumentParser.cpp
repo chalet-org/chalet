@@ -27,45 +27,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	if (argc < 1)
 		return false;
 
-	StringList arguments;
-	for (int i = 0; i < argc; ++i)
-	{
-		std::string arg(argv[i] ? argv[i] : "");
-		if (i == 0)
-		{
-			arguments.emplace_back(std::move(arg));
-			continue;
-		}
-
-		if (String::startsWith('"', arg))
-		{
-			arg = arg.substr(1);
-
-			if (arg.back() == '"')
-				arg.pop_back();
-		}
-
-		if (String::startsWith('\'', arg))
-		{
-			arg = arg.substr(1);
-
-			if (arg.back() == '\'')
-				arg.pop_back();
-		}
-
-		if (String::startsWith("--", arg) && String::contains('=', arg))
-		{
-			auto list = String::split(arg, '=');
-			for (auto& it : list)
-			{
-				arguments.emplace_back(std::move(it));
-			}
-		}
-		else
-		{
-			arguments.emplace_back(std::move(arg));
-		}
-	}
+	StringList arguments = parseRawArguments(argc, argv);
 
 	ArgumentPatterns patterns;
 	bool result = patterns.parse(arguments);
@@ -83,6 +45,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	m_inputs.setAppPath(arguments.front());
 
 	std::string toolchainPreference;
+	std::string architecturePreference;
 	std::string inputFile;
 	std::string settingsFile;
 	std::string file;
@@ -142,19 +105,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				}
 				else if (String::equals({ "-a", "--arch" }, key))
 				{
-					m_inputs.setArchitectureRaw(value);
-					if (String::contains(',', value))
-					{
-						auto firstComma = value.find(',');
-						auto arch = value.substr(0, firstComma);
-						auto options = String::split(value.substr(firstComma + 1), ',');
-						m_inputs.setTargetArchitecture(std::move(arch));
-						m_inputs.setArchOptions(std::move(options));
-					}
-					else
-					{
-						m_inputs.setTargetArchitecture(std::move(value));
-					}
+					architecturePreference = std::move(value);
 				}
 				else if (key == patterns.argInitPath())
 				{
@@ -220,7 +171,55 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 	// must do at the end (after arch & toolchain have been parsed)
 	m_inputs.setToolchainPreference(std::move(toolchainPreference));
+	m_inputs.setArchitectureRaw(std::move(architecturePreference));
 
 	return true;
+}
+
+/*****************************************************************************/
+StringList ArgumentParser::parseRawArguments(const int argc, const char* const argv[])
+{
+	StringList ret;
+
+	for (int i = 0; i < argc; ++i)
+	{
+		std::string arg(argv[i] ? argv[i] : "");
+		if (i == 0)
+		{
+			ret.emplace_back(std::move(arg));
+			continue;
+		}
+
+		if (String::startsWith('"', arg))
+		{
+			arg = arg.substr(1);
+
+			if (arg.back() == '"')
+				arg.pop_back();
+		}
+
+		if (String::startsWith('\'', arg))
+		{
+			arg = arg.substr(1);
+
+			if (arg.back() == '\'')
+				arg.pop_back();
+		}
+
+		if (String::startsWith("--", arg) && String::contains('=', arg))
+		{
+			auto list = String::split(arg, '=');
+			for (auto& it : list)
+			{
+				ret.emplace_back(std::move(it));
+			}
+		}
+		else
+		{
+			ret.emplace_back(std::move(arg));
+		}
+	}
+
+	return ret;
 }
 }

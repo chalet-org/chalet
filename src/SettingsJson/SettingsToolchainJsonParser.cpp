@@ -125,7 +125,7 @@ bool SettingsToolchainJsonParser::validatePaths()
 	if (!result)
 	{
 		auto& preference = m_inputs.toolchainPreferenceName();
-		Diagnostic::error("{}: The requested toolchain of '{}' could either not be detected, or had invalid tools.", m_jsonFile.filename(), preference);
+		Diagnostic::error("{}: The requested toolchain of '{}' could either not be detected from {}, or contained invalid tools.", m_jsonFile.filename(), preference, Environment::getPathKey());
 	}
 
 	return result;

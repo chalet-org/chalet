@@ -339,9 +339,22 @@ const std::string& CommandLineInputs::architectureRaw() const noexcept
 {
 	return m_architectureRaw;
 }
-void CommandLineInputs::setArchitectureRaw(const std::string& inValue) noexcept
+void CommandLineInputs::setArchitectureRaw(std::string&& inValue) const noexcept
 {
-	m_architectureRaw = inValue;
+	m_architectureRaw = std::move(inValue);
+
+	if (String::contains(',', m_architectureRaw))
+	{
+		auto firstComma = m_architectureRaw.find(',');
+		auto arch = m_architectureRaw.substr(0, firstComma);
+		auto options = String::split(m_architectureRaw.substr(firstComma + 1), ',');
+		setTargetArchitecture(arch);
+		setArchOptions(std::move(options));
+	}
+	else
+	{
+		setTargetArchitecture(m_architectureRaw);
+	}
 }
 
 /*****************************************************************************/
@@ -353,7 +366,7 @@ const std::string& CommandLineInputs::targetArchitecture() const noexcept
 {
 	return m_targetArchitecture;
 }
-void CommandLineInputs::setTargetArchitecture(std::string&& inValue) const noexcept
+void CommandLineInputs::setTargetArchitecture(const std::string& inValue) const noexcept
 {
 	if (inValue.empty())
 		return;
@@ -364,7 +377,7 @@ void CommandLineInputs::setTargetArchitecture(std::string&& inValue) const noexc
 	}
 	else
 	{
-		m_targetArchitecture = std::move(inValue);
+		m_targetArchitecture = inValue;
 	}
 }
 
@@ -374,7 +387,7 @@ const StringList& CommandLineInputs::archOptions() const noexcept
 	return m_archOptions;
 }
 
-void CommandLineInputs::setArchOptions(StringList&& inList) noexcept
+void CommandLineInputs::setArchOptions(StringList&& inList) const noexcept
 {
 	m_archOptions = std::move(inList);
 }

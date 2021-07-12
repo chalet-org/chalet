@@ -61,6 +61,7 @@ enum class Defs : ushort
 	MaxJobs,
 	ShowCommands,
 	LastToolchain,
+	LastArchitecture,
 	SigningIdentity,
 	// Theme
 	ThemeColor
@@ -356,6 +357,11 @@ Json Schema::getSettingsJson()
 		"type": "string"
 	})json"_ojson;
 
+	defs[Defs::LastArchitecture] = R"json({
+		"description": "The architecture id to use for building, if not the previous one.",
+		"type": "string"
+	})json"_ojson;
+
 	defs[Defs::SigningIdentity] = R"json({
 		"description": "The signing identity to use when bundling the macos application bundle.",
 		"type": "string"
@@ -465,6 +471,7 @@ Json Schema::getSettingsJson()
 			"maxJobs",
 			"showCommands",
 			"toolchain",
+			"architecture",
 			"signingIdentity"
 		]
 	})json"_ojson;
@@ -473,6 +480,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kSettings][kProperties]["maxJobs"] = defs[Defs::MaxJobs];
 	ret[kProperties][kSettings][kProperties]["showCommands"] = defs[Defs::ShowCommands];
 	ret[kProperties][kSettings][kProperties]["toolchain"] = defs[Defs::LastToolchain];
+	ret[kProperties][kSettings][kProperties]["architecture"] = defs[Defs::LastArchitecture];
 	ret[kProperties][kSettings][kProperties]["signingIdentity"] = defs[Defs::SigningIdentity];
 
 	const auto kToolchains = "toolchains";

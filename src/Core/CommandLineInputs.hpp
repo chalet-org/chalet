@@ -74,14 +74,14 @@ struct CommandLineInputs
 	void setEnvFile(std::string&& inValue) noexcept;
 
 	const std::string& architectureRaw() const noexcept;
-	void setArchitectureRaw(const std::string& inValue) noexcept;
+	void setArchitectureRaw(std::string&& inValue) const noexcept;
 
 	const std::string& hostArchitecture() const noexcept;
 	const std::string& targetArchitecture() const noexcept;
-	void setTargetArchitecture(std::string&& inValue) const noexcept;
+	void setTargetArchitecture(const std::string& inValue) const noexcept;
 
 	const StringList& archOptions() const noexcept;
-	void setArchOptions(StringList&& inList) noexcept;
+	void setArchOptions(StringList&& inList) const noexcept;
 	std::string getArchWithOptionsAsString(const std::string& inArchBase) const;
 
 	bool saveSchemaToFile() const noexcept;
@@ -109,7 +109,7 @@ private:
 
 	StringList m_runOptions;
 	StringList m_notPlatforms;
-	StringList m_archOptions;
+	mutable StringList m_archOptions;
 
 	const std::string kDefaultEnvFile;
 	std::string m_inputFile;
@@ -132,7 +132,7 @@ private:
 
 	std::string m_initPath;
 	std::string m_envFile;
-	std::string m_architectureRaw;
+	mutable std::string m_architectureRaw;
 	std::string m_hostArchitecture;
 	mutable std::string m_targetArchitecture;
 

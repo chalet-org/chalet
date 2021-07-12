@@ -94,6 +94,13 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		m_jsonFile.setDirty(true);
 	}
 
+	if (!buildSettings.contains(kKeyLastArchitecture) || !buildSettings[kKeyLastArchitecture].is_string())
+	{
+		outState.architecturePreference = m_inputs.architectureRaw();
+		buildSettings[kKeyLastArchitecture] = outState.architecturePreference;
+		m_jsonFile.setDirty(true);
+	}
+
 	if (!buildSettings.contains(kKeySigningIdentity) || !buildSettings[kKeySigningIdentity].is_string())
 	{
 		outState.signingIdentity = std::string();
@@ -154,6 +161,9 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
 		outState.toolchainPreference = std::move(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastArchitecture))
+		outState.architecturePreference = std::move(val);
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeySigningIdentity))
 		outState.signingIdentity = std::move(val);

@@ -570,11 +570,7 @@ std::string Environment::getPath()
 #endif
 	if (path == nullptr)
 	{
-#if defined(CHALET_WIN32)
-		Diagnostic::errorAbort("Could not retrieve Path");
-#else
-		Diagnostic::errorAbort("Could not retrieve PATH");
-#endif
+		Diagnostic::errorAbort("Could not retrieve {}", Environment::getPathKey());
 		return std::string();
 	}
 	return std::string(path);

@@ -433,7 +433,7 @@ void MsvcEnvironment::makeArchitectureCorrections()
 
 	if (changed)
 	{
-		m_inputs.setTargetArchitecture(std::move(arch));
+		m_inputs.setTargetArchitecture(arch);
 		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 	}
 }

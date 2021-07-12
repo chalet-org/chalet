@@ -158,6 +158,7 @@
 				"maxJobs",
 				"showCommands",
 				"toolchain",
+				"architecture",
 				"signingIdentity"
 			],
 			"properties": {
@@ -178,6 +179,10 @@
 				},
 				"toolchain": {
 					"description": "The toolchain id to use for building, if not the previous one.",
+					"type": "string"
+				},
+				"architecture": {
+					"description": "The architecture id to use for building, if not the previous one.",
 					"type": "string"
 				},
 				"signingIdentity": {

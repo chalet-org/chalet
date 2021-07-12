@@ -42,7 +42,7 @@ bool AppBundler::runBuilds()
 		{
 			CommandLineInputs inputs = m_inputs;
 			inputs.setBuildConfiguration(inConfig);
-			inputs.setTargetArchitecture(std::move(arch));
+			inputs.setTargetArchitecture(arch);
 			auto state = std::make_unique<BuildState>(std::move(inputs), m_prototype);
 
 			m_states.emplace(configName, std::move(state));
@@ -560,7 +560,7 @@ std::unique_ptr<BuildState> AppBundler::getUniversalState(BuildState& inState, c
 	arch = fmt::format("universal-{}", arch.substr(firstDash + 1));
 
 	CommandLineInputs inputs = m_inputs;
-	inputs.setTargetArchitecture(std::move(arch));
+	inputs.setTargetArchitecture(arch);
 	inputs.setBuildConfiguration(inBuildConfig);
 
 	auto buildState = std::make_unique<BuildState>(std::move(inputs), m_prototype);

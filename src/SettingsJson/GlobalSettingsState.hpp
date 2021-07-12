@@ -18,6 +18,7 @@ struct GlobalSettingsState
 
 	std::string signingIdentity;
 	std::string toolchainPreference;
+	std::string architecturePreference;
 	uint maxJobs = 0;
 	bool showCommands = false;
 	bool dumpAssembly = false;
