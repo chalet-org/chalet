@@ -132,6 +132,8 @@ bool StatePrototype::runDependencyManager()
 /*****************************************************************************/
 bool StatePrototype::validateBundleDestinations()
 {
+	auto& bundleDirectory = m_inputs.bundleDirectory();
+
 	std::unordered_map<std::string, std::string> locations;
 	bool result = true;
 	for (auto& target : distribution)
@@ -146,6 +148,12 @@ bool StatePrototype::validateBundleDestinations()
 				bundle.setConfiguration(std::move(config));
 			}
 			List::addIfDoesNotExist(m_requiredBuildConfigurations, bundle.configuration());
+
+			if (!bundleDirectory.empty())
+			{
+				auto& outDir = bundle.outDir();
+				bundle.setOutDir(fmt::format("{}/{}", bundleDirectory, outDir));
+			}
 
 			for (auto& projectName : bundle.projects())
 			{

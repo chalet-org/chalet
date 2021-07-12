@@ -36,6 +36,9 @@ struct CommandLineInputs
 	const std::string& outputDirectory() const noexcept;
 	void setOutputDirectory(std::string&& inValue) noexcept;
 
+	const std::string& bundleDirectory() const noexcept;
+	void setBundleDirectory(std::string&& inValue) noexcept;
+
 	Route command() const noexcept;
 	void setCommand(const Route inValue) noexcept;
 
@@ -116,6 +119,7 @@ private:
 	std::string m_settingsFile;
 	std::string m_rootDirectory;
 	std::string m_outputDirectory;
+	std::string m_bundleDirectory;
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
 	std::string m_platform;

@@ -114,6 +114,7 @@ const std::string& CommandLineInputs::rootDirectory() const noexcept
 {
 	return m_rootDirectory;
 }
+
 void CommandLineInputs::setRootDirectory(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
@@ -135,6 +136,7 @@ const std::string& CommandLineInputs::outputDirectory() const noexcept
 	chalet_assert(!m_outputDirectory.empty(), "outputDirectory was not defined");
 	return m_outputDirectory;
 }
+
 void CommandLineInputs::setOutputDirectory(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
@@ -144,6 +146,25 @@ void CommandLineInputs::setOutputDirectory(std::string&& inValue) noexcept
 
 	Path::sanitize(m_outputDirectory);
 	// clearWorkingDirectory(m_outputDirectory);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::bundleDirectory() const noexcept
+{
+	return m_bundleDirectory;
+}
+
+void CommandLineInputs::setBundleDirectory(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_bundleDirectory = std::move(inValue);
+
+	Path::sanitize(m_bundleDirectory);
+	// clearWorkingDirectory(m_bundleDirectory);
+
+	LOG(m_bundleDirectory);
 }
 
 /*****************************************************************************/
@@ -157,6 +178,7 @@ Route CommandLineInputs::command() const noexcept
 {
 	return m_command;
 }
+
 void CommandLineInputs::setCommand(const Route inValue) noexcept
 {
 	m_command = inValue;

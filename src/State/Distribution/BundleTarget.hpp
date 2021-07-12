@@ -69,7 +69,7 @@ private:
 	StringList m_dependencies;
 	StringList m_excludes;
 
-	std::string m_distDir{ "dist" };
+	std::string m_outDir;
 	std::string m_configuration;
 	std::string m_mainProject;
 

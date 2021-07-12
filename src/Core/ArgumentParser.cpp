@@ -51,6 +51,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	std::string file;
 	std::string rootDirectory;
 	std::string outputDirectory;
+	std::string bundleDirectory;
 	std::string envFile;
 
 	for (auto& [key, rawValue] : patterns.arguments())
@@ -90,6 +91,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				else if (String::equals({ "-o", "--output-dir" }, key))
 				{
 					outputDirectory = std::move(value);
+				}
+				else if (String::equals({ "-b", "--bundle-dir" }, key))
+				{
+					bundleDirectory = std::move(value);
 				}
 				else if (String::equals({ "-t", "--toolchain" }, key))
 				{
@@ -160,13 +165,17 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 	// root must be first
 	m_inputs.setRootDirectory(std::move(rootDirectory));
+
 	//
 	m_inputs.setOutputDirectory(std::move(outputDirectory));
 	m_inputs.setInputFile(std::move(inputFile));
+	m_inputs.setBundleDirectory(std::move(bundleDirectory));
+
 	if (!file.empty())
 		m_inputs.setSettingsFile(std::move(file));
 	else
 		m_inputs.setSettingsFile(std::move(settingsFile));
+
 	m_inputs.setEnvFile(std::move(envFile));
 
 	// must do at the end (after arch & toolchain have been parsed)

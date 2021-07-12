@@ -52,6 +52,7 @@ private:
 	void addFileArg();
 	void addRootDirArg();
 	void addOutputDirArg();
+	void addBundleDirArg();
 	void addProjectGenArg();
 	void addToolchainArg();
 	void addEnvFileArg();

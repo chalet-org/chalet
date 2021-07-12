@@ -152,6 +152,7 @@ ushort ArgumentPatterns::parseOption(const std::string& inString)
 		"-f", "--file",
 		"-r", "--root-dir",
 		"-o", "--output-dir",
+		"-b", "--bundle-dir",
 		"-t", "--toolchain",
 		// "-p", "--project-gen",
 		"-e", "--env-file",
@@ -513,6 +514,18 @@ void ArgumentPatterns::addOutputDirArg()
 }
 
 /*****************************************************************************/
+void ArgumentPatterns::addBundleDirArg()
+{
+	m_parser.add_argument("-b", "--bundle-dir")
+		.help("The root directory of the distribution bundle")
+		.nargs(1)
+		.default_value(std::string());
+
+	m_argumentMap.push_back({ "-b", Variant::Kind::String });
+	m_argumentMap.push_back({ "--bundle-dir", Variant::Kind::String });
+}
+
+/*****************************************************************************/
 void ArgumentPatterns::addProjectGenArg()
 {
 	// future
@@ -775,6 +788,7 @@ void ArgumentPatterns::commandBundle()
 	addSettingsFileArg();
 	addRootDirArg();
 	addOutputDirArg();
+	addBundleDirArg();
 	addToolchainArg();
 	addProjectGenArg();
 	addEnvFileArg();
