@@ -26,6 +26,13 @@ protected:
 	const std::string kKeyLastToolchain = "toolchain";
 	const std::string kKeyLastArchitecture = "architecture";
 	const std::string kKeySigningIdentity = "signingIdentity";
+
+	const std::string kKeyInputFile = "inputFile";
+	const std::string kKeySettingsFile = "settingsFile";
+	const std::string kKeyEnvFile = "envFile";
+	const std::string kKeyRootDirectory = "rootDir";
+	const std::string kKeyOutputDirectory = "outputDir";
+	const std::string kKeyBundleDirectory = "bundleDir";
 };
 }
 

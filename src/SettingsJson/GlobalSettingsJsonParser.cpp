@@ -95,6 +95,36 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		return outState.architecturePreference;
 	});
 
+	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyInputFile, [&]() {
+		outState.inputFile = m_inputs.inputFile();
+		return outState.inputFile;
+	});
+
+	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeySettingsFile, [&]() {
+		outState.settingsFile = m_inputs.settingsFile();
+		return outState.settingsFile;
+	});
+
+	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyEnvFile, [&]() {
+		outState.envFile = m_inputs.envFile();
+		return outState.envFile;
+	});
+
+	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyRootDirectory, [&]() {
+		outState.rootDirectory = m_inputs.rootDirectory();
+		return outState.rootDirectory;
+	});
+
+	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyOutputDirectory, [&]() {
+		outState.outputDirectory = m_inputs.outputDirectory();
+		return outState.rootDirectory;
+	});
+
+	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyBundleDirectory, [&]() {
+		outState.bundleDirectory = m_inputs.bundleDirectory();
+		return outState.bundleDirectory;
+	});
+
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeySigningIdentity, [&]() {
 		outState.signingIdentity = std::string();
 		return outState.signingIdentity;

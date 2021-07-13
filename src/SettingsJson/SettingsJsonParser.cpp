@@ -163,6 +163,13 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
 
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyInputFile, m_inputs.inputFile(), inState.inputFile);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeySettingsFile, m_inputs.settingsFile(), inState.settingsFile);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyEnvFile, m_inputs.envFile(), inState.envFile);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyBundleDirectory, m_inputs.bundleDirectory(), inState.bundleDirectory);
+
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeySigningIdentity, [&]() {
 		return inState.signingIdentity;
 	});

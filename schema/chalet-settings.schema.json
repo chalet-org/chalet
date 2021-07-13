@@ -193,6 +193,30 @@
 				"signingIdentity": {
 					"description": "The signing identity to use when bundling the macos application bundle.",
 					"type": "string"
+				},
+				"inputFile": {
+					"description": "An input build file to use",
+					"type": "string"
+				},
+				"settingsFile": {
+					"description": "The path to a settings file to use",
+					"type": "string"
+				},
+				"envFile": {
+					"description": "A file to load environment variables from",
+					"type": "string"
+				},
+				"rootDir": {
+					"description": "The root directory to run the build from",
+					"type": "string"
+				},
+				"outputDir": {
+					"description": "The output directory of the build",
+					"type": "string"
+				},
+				"bundleDir": {
+					"description": "The root directory of all distribution bundles",
+					"type": "string"
 				}
 			}
 		},

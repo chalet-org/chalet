@@ -19,6 +19,13 @@ struct GlobalSettingsState
 	std::string signingIdentity;
 	std::string toolchainPreference;
 	std::string architecturePreference;
+	std::string inputFile;
+	std::string settingsFile;
+	std::string envFile;
+	std::string rootDirectory;
+	std::string outputDirectory;
+	std::string bundleDirectory;
+
 	uint maxJobs = 0;
 	bool showCommands = false;
 	bool dumpAssembly = false;

@@ -517,7 +517,7 @@ void ArgumentPatterns::addOutputDirArg()
 void ArgumentPatterns::addBundleDirArg()
 {
 	m_parser.add_argument("-b", "--bundle-dir")
-		.help("The root directory of the distribution bundle")
+		.help("The root directory of all distribution bundles")
 		.nargs(1)
 		.default_value(std::string());
 

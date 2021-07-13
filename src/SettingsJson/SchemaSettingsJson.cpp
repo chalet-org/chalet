@@ -57,13 +57,19 @@ enum class Defs : ushort
 	ToolchainStrategy,
 	BuildPathStyle,
 	// Settings
-	GenerateCompileCommands,
 	DumpAssembly,
+	GenerateCompileCommands,
 	MaxJobs,
 	ShowCommands,
 	LastToolchain,
 	LastArchitecture,
 	SigningIdentity,
+	InputFile,
+	SettingsFile,
+	EnvFile,
+	RootDir,
+	OutputDir,
+	BundleDir,
 	// Theme
 	ThemeColor
 };
@@ -374,6 +380,36 @@ Json Schema::getSettingsJson()
 		"type": "string"
 	})json"_ojson;
 
+	defs[Defs::InputFile] = R"json({
+		"description": "An input build file to use",
+		"type": "string"
+	})json"_ojson;
+
+	defs[Defs::SettingsFile] = R"json({
+		"description": "The path to a settings file to use",
+		"type": "string"
+	})json"_ojson;
+
+	defs[Defs::EnvFile] = R"json({
+		"description": "A file to load environment variables from",
+		"type": "string"
+	})json"_ojson;
+
+	defs[Defs::RootDir] = R"json({
+		"description": "The root directory to run the build from",
+		"type": "string"
+	})json"_ojson;
+
+	defs[Defs::OutputDir] = R"json({
+		"description": "The output directory of the build",
+		"type": "string"
+	})json"_ojson;
+
+	defs[Defs::BundleDir] = R"json({
+		"description": "The root directory of all distribution bundles",
+		"type": "string"
+	})json"_ojson;
+
 	defs[Defs::ThemeColor] = R"json({
 		"type": "string",
 		"description": "An ANSI color to apply.",
@@ -490,6 +526,13 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kSettings][kProperties]["toolchain"] = defs[Defs::LastToolchain];
 	ret[kProperties][kSettings][kProperties]["architecture"] = defs[Defs::LastArchitecture];
 	ret[kProperties][kSettings][kProperties]["signingIdentity"] = defs[Defs::SigningIdentity];
+
+	ret[kProperties][kSettings][kProperties]["inputFile"] = defs[Defs::InputFile];
+	ret[kProperties][kSettings][kProperties]["settingsFile"] = defs[Defs::SettingsFile];
+	ret[kProperties][kSettings][kProperties]["envFile"] = defs[Defs::EnvFile];
+	ret[kProperties][kSettings][kProperties]["rootDir"] = defs[Defs::RootDir];
+	ret[kProperties][kSettings][kProperties]["outputDir"] = defs[Defs::OutputDir];
+	ret[kProperties][kSettings][kProperties]["bundleDir"] = defs[Defs::BundleDir];
 
 	const auto kToolchains = "toolchains";
 	ret[kProperties][kToolchains] = R"json({
