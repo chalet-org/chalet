@@ -268,7 +268,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	whichAdd(tools, kKeySips, HostPlatform::MacOS);
 	whichAdd(tools, kKeyTiffutil, HostPlatform::MacOS);
 	whichAdd(tools, kKeyXcodebuild, HostPlatform::MacOS);
-	whichAdd(tools, kKeyXcodegen, HostPlatform::MacOS);
+	// whichAdd(tools, kKeyXcodegen, HostPlatform::MacOS);
 	whichAdd(tools, kKeyXcrun, HostPlatform::MacOS);
 #endif
 

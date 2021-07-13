@@ -16,7 +16,7 @@ namespace
 {
 enum class Defs : ushort
 {
-	// Tools
+	/* Tools */
 	Bash,
 	Brew,
 	CommandPrompt,
@@ -41,9 +41,10 @@ enum class Defs : ushort
 	Sips,
 	TiffUtil,
 	XcodeBuild,
-	XcodeGen,
+	// XcodeGen,
 	XcRun,
-	// Toolchains
+
+	/* Toolchains */
 	CompilerCpp,
 	CompilerC,
 	CompilerWindowsResource,
@@ -56,7 +57,8 @@ enum class Defs : ushort
 	ObjDump,
 	ToolchainStrategy,
 	BuildPathStyle,
-	// Settings
+
+	/* Settings */
 	DumpAssembly,
 	GenerateCompileCommands,
 	MaxJobs,
@@ -70,7 +72,8 @@ enum class Defs : ushort
 	RootDir,
 	OutputDir,
 	BundleDir,
-	// Theme
+
+	/* Theme */
 	ThemeColor
 };
 }
@@ -91,49 +94,49 @@ Json Schema::getSettingsJson()
 
 	defs[Defs::Bash] = R"json({
 		"type": "string",
-		"description": "The executable path to GNU bash",
+		"description": "The executable path to GNU Bourne-Again SHell.",
 		"default": "/usr/bin/bash"
 	})json"_ojson;
 
 	defs[Defs::Brew] = R"json({
 		"type": "string",
-		"description": "The executable path to brew command-line utility (MacOS)",
+		"description": "The executable path to the Homebrew package manager. (MacOS)",
 		"default": "/usr/local/bin/brew"
 	})json"_ojson;
 
 	defs[Defs::CommandPrompt] = R"json({
 		"type": "string",
-		"description": "The executable path to Command Prompt (Windows)",
+		"description": "The executable path to Command Prompt. (Windows)",
 		"default": "C:/Windows/System32/cmd.exe"
 	})json"_ojson;
 
 	defs[Defs::CodeSign] = R"json({
 		"type": "string",
-		"description": "The executable path to codesign command-line utility (MacOS)",
+		"description": "The executable path to Apple's codesign command-line utility. (MacOS)",
 		"default": "/usr/bin/codesign"
 	})json"_ojson;
 
 	defs[Defs::Git] = R"json({
 		"type": "string",
-		"description": "The executable path to git.",
+		"description": "The executable path to Git.",
 		"default": "/usr/bin/git"
 	})json"_ojson;
 
 	defs[Defs::HdiUtil] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's hdiutil command-line utility (MacOS)",
+		"description": "The executable path to Apple's hdiutil command-line utility. (MacOS)",
 		"default": "/usr/bin/hdiutil"
 	})json"_ojson;
 
 	defs[Defs::InstallNameTool] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's install_name_tool command-line utility (MacOS)",
+		"description": "The executable path to Apple's install_name_tool command-line utility. (MacOS)",
 		"default": "/usr/bin/install_name_tool"
 	})json"_ojson;
 
 	defs[Defs::Instruments] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's instruments command-line utility (MacOS)",
+		"description": "The executable path to Apple's instruments command-line utility. (MacOS)",
 		"default": "/usr/bin/instruments"
 	})json"_ojson;
 
@@ -145,152 +148,152 @@ Json Schema::getSettingsJson()
 
 	defs[Defs::Lipo] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's lipo utility (MacOS)",
+		"description": "The executable path to Apple's lipo utility. (MacOS)",
 		"default": "/usr/bin/lipo"
 	})json"_ojson;
 
 	defs[Defs::Lua] = R"json({
 		"type": "string",
-		"description": "The executable path to Lua",
+		"description": "The executable path to Lua.",
 		"default": "/usr/local/bin/lua"
 	})json"_ojson;
 
 	defs[Defs::MakeNsis] = R"json({
 		"type": "string",
-		"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler",
+		"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler. (Windows)",
 		"default": "C:/Program Files (x86)/NSIS/makensis.exe"
 	})json"_ojson;
 
 	defs[Defs::OsaScript] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's osascript command-line utility (MacOS)",
+		"description": "The executable path to Apple's osascript command-line utility. (MacOS)",
 		"default": "/usr/bin/osascript"
 	})json"_ojson;
 
 	defs[Defs::Otool] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's otool command-line utility (MacOS)",
+		"description": "The executable path to Apple's otool command-line utility. (MacOS)",
 		"default": "/usr/bin/otool"
 	})json"_ojson;
 
 	defs[Defs::Perl] = R"json({
 		"type": "string",
-		"description": "The executable path to Perl",
+		"description": "The executable path to Perl.",
 		"default": "/usr/local/bin/perl"
 	})json"_ojson;
 
 	defs[Defs::PlUtil] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's plutil command-line utility (MacOS)",
+		"description": "The executable path to Apple's plutil command-line utility. (MacOS)",
 		"default": "/usr/bin/plutil"
 	})json"_ojson;
 
 	defs[Defs::Powershell] = R"json({
 		"type": "string",
-		"description": "The executable path to Powershell (Windows)",
+		"description": "The executable path to Powershell. (Windows)",
 		"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 	})json"_ojson;
 
 	defs[Defs::Python] = R"json({
 		"type": "string",
-		"description": "The executable path to Python 2",
+		"description": "The executable path to Python 2.",
 		"default": "/usr/bin/python"
 	})json"_ojson;
 
 	defs[Defs::Python3] = R"json({
 		"type": "string",
-		"description": "The executable path to Python 3",
+		"description": "The executable path to Python 3.",
 		"default": "/usr/local/bin/python3"
 	})json"_ojson;
 
 	defs[Defs::Ruby] = R"json({
 		"type": "string",
-		"description": "The executable path to ruby.",
+		"description": "The executable path to Ruby.",
 		"default": "/usr/bin/ruby"
 	})json"_ojson;
 
 	defs[Defs::Sample] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's sample command-line utility (MacOS)",
+		"description": "The executable path to Apple's sample command-line utility. (MacOS)",
 		"default": "/usr/bin/sample"
 	})json"_ojson;
 
 	defs[Defs::Sips] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's sips command-line utility (MacOS)",
+		"description": "The executable path to Apple's sips command-line utility. (MacOS)",
 		"default": "/usr/bin/sips"
 	})json"_ojson;
 
 	defs[Defs::TiffUtil] = R"json({
 		"type": "string",
-		"description": "The executable path to tiffutil",
+		"description": "The executable path to Apple's tiffutil command-line utility. (MacOS)",
 		"default": "/usr/bin/tiffutil"
 	})json"_ojson;
 
 	defs[Defs::XcodeBuild] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's xcodebuild command-line utility (MacOS)",
+		"description": "The executable path to Apple's xcodebuild command-line utility. (MacOS)",
 		"default": "/usr/bin/xcodebuild"
 	})json"_ojson;
 
-	defs[Defs::XcodeGen] = R"json({
+	/*defs[Defs::XcodeGen] = R"json({
 		"type": "string",
 		"description": "The executable path to the xcodegen Homebrew application (MacOS)",
 		"default": "/usr/local/bin/xcodegen"
-	})json"_ojson;
+	})json"_ojson;*/
 
 	defs[Defs::XcRun] = R"json({
 		"type": "string",
-		"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
+		"description": "The executable path to Apple's xcrun command-line utility. (MacOS)",
 		"default": "/usr/bin/xcrun"
 	})json"_ojson;
 
 	// libtool (macOS), ar (Linux / macOS / MinGW), lib.exe (Win)
 	defs[Defs::Archiver] = R"json({
 		"type": "string",
-		"description": "The executable path to the toolchain's static library archive utility",
+		"description": "The executable path to the toolchain's static library archive utility - typically ar with GCC, libtool on MacOS, or lib.exe with Visual Studio.",
 		"default": "/usr/bin/ar"
 	})json"_ojson;
 
 	defs[Defs::CompilerCpp] = R"json({
 		"type": "string",
-		"description": "The executable path to the toolchain's C++ compiler",
+		"description": "The executable path to the toolchain's C++ compiler.",
 		"default": "/usr/bin/c++"
 	})json"_ojson;
 
 	defs[Defs::CompilerC] = R"json({
 		"type": "string",
-		"description": "The executable path to the toolchain's C compiler",
+		"description": "The executable path to the toolchain's C compiler.",
 		"default": "/usr/bin/cc"
 	})json"_ojson;
 
 	defs[Defs::CMake] = R"json({
 		"type": "string",
-		"description": "The executable path to CMake",
+		"description": "The executable path to CMake.",
 		"default": "/usr/local/bin/cmake"
 	})json"_ojson;
 
 	defs[Defs::Linker] = R"json({
 		"type": "string",
-		"description": "The executable path to the toolchain's linker",
+		"description": "The executable path to the toolchain's linker - typically ld with GCC, lld with LLVM, or link.exe with Visual Studio.",
 		"default": "/usr/bin/ld"
 	})json"_ojson;
 
 	defs[Defs::Profiler] = R"json({
 		"type": "string",
-		"description": "The executable path to the toochain's command-line profiler (if applicable).",
+		"description": "The executable path to the toochain's command-line profiler (if applicable) - for instance, gprof with GCC.",
 		"default": "/usr/bin/gprof"
 	})json"_ojson;
 
 	defs[Defs::Make] = R"json({
 		"type": "string",
-		"description": "The executable path to GNU make utility.",
+		"description": "The executable path to GNU make, or NMAKE/Qt Jom with Visual Studio.",
 		"default": "/usr/bin/make"
 	})json"_ojson;
 
 	defs[Defs::Ninja] = R"json({
 		"type": "string",
-		"description": "The executable path to ninja."
+		"description": "The executable path to Ninja."
 	})json"_ojson;
 
 	defs[Defs::ObjDump] = R"json({
@@ -315,12 +318,12 @@ Json Schema::getSettingsJson()
 
 	defs[Defs::CompilerWindowsResource] = R"json({
 		"type": "string",
-		"description": "The executable path to the resource compiler (Windows)"
+		"description": "The executable path to the resource compiler. (Windows)"
 	})json"_ojson;
 
 	defs[Defs::ToolchainStrategy] = R"json({
 		"type": "string",
-		"description": "The build strategy to use.",
+		"description": "The strategy to use during the build.",
 		"enum": [
 			"makefile",
 			"native-experimental",
@@ -331,7 +334,7 @@ Json Schema::getSettingsJson()
 
 	defs[Defs::BuildPathStyle] = R"json({
 		"type": "string",
-		"description": "The build path style. ex: build/(prefix)_Debug, build/(prefix)_Release",
+		"description": "The build path style. ex: build/Debug, build/(arch)_Debug, build/(triple)_Debug, build/(toolchain)_Debug",
 		"enum": [
 			"configuration",
 			"arch-configuration",
@@ -381,32 +384,32 @@ Json Schema::getSettingsJson()
 	})json"_ojson;
 
 	defs[Defs::InputFile] = R"json({
-		"description": "An input build file to use",
+		"description": "An input build file to use.",
 		"type": "string"
 	})json"_ojson;
 
 	defs[Defs::SettingsFile] = R"json({
-		"description": "The path to a settings file to use",
+		"description": "The path to a settings file to use.",
 		"type": "string"
 	})json"_ojson;
 
 	defs[Defs::EnvFile] = R"json({
-		"description": "A file to load environment variables from",
+		"description": "A file to load environment variables from.",
 		"type": "string"
 	})json"_ojson;
 
 	defs[Defs::RootDir] = R"json({
-		"description": "The root directory to run the build from",
+		"description": "The root directory to run the build from.",
 		"type": "string"
 	})json"_ojson;
 
 	defs[Defs::OutputDir] = R"json({
-		"description": "The output directory of the build",
+		"description": "The output directory of the build.",
 		"type": "string"
 	})json"_ojson;
 
 	defs[Defs::BundleDir] = R"json({
-		"description": "The root directory of all distribution bundles",
+		"description": "The root directory of all distribution bundles.",
 		"type": "string"
 	})json"_ojson;
 
@@ -433,7 +436,7 @@ Json Schema::getSettingsJson()
 	auto toolchains = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "The list of compilers for the platform",
+		"description": "A list of compilers and tools needing for the build itself.",
 		"required": [
 			"archiver",
 			"cmake",
@@ -469,7 +472,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kTools] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "The list of tools for the platform"
+		"description": "A list of additional tools for the platform."
 	})json"_ojson;
 	ret[kProperties][kTools][kProperties] = Json::object();
 	ret[kProperties][kTools][kProperties]["bash"] = defs[Defs::Bash];
@@ -496,26 +499,32 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kTools][kProperties]["sips"] = defs[Defs::Sips];
 	ret[kProperties][kTools][kProperties]["tiffutil"] = defs[Defs::TiffUtil];
 	ret[kProperties][kTools][kProperties]["xcodebuild"] = defs[Defs::XcodeBuild];
-	ret[kProperties][kTools][kProperties]["xcodegen"] = defs[Defs::XcodeGen];
+	// ret[kProperties][kTools][kProperties]["xcodegen"] = defs[Defs::XcodeGen];
 	ret[kProperties][kTools][kProperties]["xcrun"] = defs[Defs::XcRun];
 
 	ret[kProperties]["appleSdks"] = R"json({
 		"type": "object",
-		"description": "A list of Apple platform SDK paths (MacOS)"
+		"description": "A list of Apple platform SDK paths. (MacOS)"
 	})json"_ojson;
 
 	const auto kSettings = "settings";
 	ret[kProperties][kSettings] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of settings related to the build",
+		"description": "A list of settings related to the build.",
 		"required": [
 			"dumpAssembly",
 			"maxJobs",
 			"showCommands",
 			"toolchain",
 			"architecture",
-			"signingIdentity"
+			"signingIdentity",
+			"inputFile",
+			"settingsFile",
+			"envFile",
+			"rootDir",
+			"outputDir",
+			"bundleDir"
 		]
 	})json"_ojson;
 	ret[kProperties][kSettings][kProperties] = Json::object();
@@ -538,7 +547,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kToolchains] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of compiler toolchains"
+		"description": "A list of toolchains."
 	})json"_ojson;
 	ret[kProperties][kToolchains]["patternProperties"][R"(^[\w\-\+\.]{3,}$)"] = toolchains;
 

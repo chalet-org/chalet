@@ -64,7 +64,7 @@ private:
 	const std::string kKeySips = "sips";
 	const std::string kKeyTiffutil = "tiffutil";
 	const std::string kKeyXcodebuild = "xcodebuild";
-	const std::string kKeyXcodegen = "xcodegen";
+	// const std::string kKeyXcodegen = "xcodegen";
 	const std::string kKeyXcrun = "xcrun";
 };
 }
