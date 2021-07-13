@@ -23,6 +23,67 @@ bool JsonFile::assignFromKey(T& outVariable, const Json& inNode, const std::stri
 
 /*****************************************************************************/
 template <typename T>
+bool JsonFile::assignNodeIfEmpty(Json& outNode, const std::string& inKey, const std::function<T()>& onAssign)
+{
+	bool result = false;
+	bool notFound = !outNode.contains(inKey);
+
+	using Type = std::decay_t<T>;
+	if constexpr (std::is_same_v<Type, std::string>)
+	{
+		if (notFound || !outNode.at(inKey).is_string())
+		{
+			outNode[inKey] = onAssign();
+			result = true;
+		}
+	}
+	else if constexpr (std::is_same_v<Type, bool>)
+	{
+		if (notFound || !outNode.at(inKey).is_boolean())
+		{
+			outNode[inKey] = onAssign();
+			result = true;
+		}
+	}
+	else if constexpr (std::is_unsigned_v<Type>)
+	{
+		if (notFound || !outNode.at(inKey).is_number_unsigned())
+		{
+			outNode[inKey] = onAssign();
+			result = true;
+		}
+	}
+	else if constexpr (std::is_floating_point_v<Type>)
+	{
+		if (notFound || !outNode.at(inKey).is_number_float())
+		{
+			outNode[inKey] = onAssign();
+			result = true;
+		}
+	}
+	else if constexpr (std::is_integral_v<Type>)
+	{
+		if (notFound || !outNode.at(inKey).is_number_integer())
+		{
+			outNode[inKey] = onAssign();
+			result = true;
+		}
+	}
+	else
+	{
+		chalet_assert(false, "JsonFile::assignNodeIfEmpty - invalid type");
+	}
+
+	if (result)
+	{
+		setDirty(true);
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
+template <typename T>
 bool JsonFile::containsKeyForType(const Json& inNode, const std::string& inKey)
 {
 	if (!inNode.contains(inKey))
@@ -84,6 +145,10 @@ bool JsonFile::containsKeyForType(const Json& inNode, const std::string& inKey)
 			Diagnostic::error("{}: An invalid value was found in '{}'. Expected integer", m_filename, inKey);
 			return false;
 		}
+	}
+	else
+	{
+		chalet_assert(false, "JsonFile::containsKeyForType - invalid type");
 	}
 
 	return true;

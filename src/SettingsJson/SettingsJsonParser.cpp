@@ -141,101 +141,31 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 
 	Json& buildSettings = m_jsonFile.json[kKeySettings];
 
-	if (!buildSettings.contains(kKeyDumpAssembly) || !buildSettings[kKeyDumpAssembly].is_boolean())
-	{
-		buildSettings[kKeyDumpAssembly] = inState.dumpAssembly;
-		m_jsonFile.setDirty(true);
-	}
+	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyDumpAssembly, [&]() {
+		return inState.dumpAssembly;
+	});
 
-	if (!buildSettings.contains(kKeyGenerateCompileCommands) || !buildSettings[kKeyGenerateCompileCommands].is_boolean())
-	{
-		buildSettings[kKeyGenerateCompileCommands] = inState.generateCompileCommands;
-		m_jsonFile.setDirty(true);
-	}
+	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyGenerateCompileCommands, [&]() {
+		return inState.generateCompileCommands;
+	});
 
-	if (!buildSettings.contains(kKeyMaxJobs) || !buildSettings[kKeyMaxJobs].is_number_integer())
-	{
-		buildSettings[kKeyMaxJobs] = inState.maxJobs;
-		m_jsonFile.setDirty(true);
-	}
+	m_jsonFile.assignNodeIfEmpty<uint>(buildSettings, kKeyMaxJobs, [&]() {
+		return inState.maxJobs;
+	});
 
-	if (!buildSettings.contains(kKeyShowCommands) || !buildSettings[kKeyShowCommands].is_boolean())
-	{
-		buildSettings[kKeyShowCommands] = inState.showCommands;
-		m_jsonFile.setDirty(true);
-	}
+	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyShowCommands, [&]() {
+		return inState.showCommands;
+	});
 
-	// LOG(fmt::format("toolchain: '{}' '{}'", inState.toolchainPreference, m_inputs.toolchainPreferenceName()));
-	if (!buildSettings.contains(kKeyLastToolchain) || !buildSettings[kKeyLastToolchain].is_string())
-	{
-		auto& toolchainName = m_inputs.toolchainPreferenceName();
-		if (toolchainName.empty())
-		{
-			buildSettings[kKeyLastToolchain] = inState.toolchainPreference;
-		}
-		else
-		{
-			m_inputs.detectToolchainPreference();
-			buildSettings[kKeyLastToolchain] = toolchainName;
-		}
-		m_jsonFile.setDirty(true);
-	}
-	else
-	{
-		const auto& prefFromInput = m_inputs.toolchainPreferenceName();
-		auto value = buildSettings[kKeyLastToolchain].get<std::string>();
-		if (!prefFromInput.empty() && value != prefFromInput)
-		{
-			buildSettings[kKeyLastToolchain] = prefFromInput;
-			m_jsonFile.setDirty(true);
-		}
-		else if (prefFromInput.empty() && value.empty())
-		{
-			if (inState.toolchainPreference.empty())
-			{
-				m_inputs.detectToolchainPreference();
-				buildSettings[kKeyLastToolchain] = m_inputs.toolchainPreferenceName();
-			}
-			else
-			{
-				buildSettings[kKeyLastToolchain] = inState.toolchainPreference;
-			}
-			m_jsonFile.setDirty(true);
-		}
-	}
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference, [&]() {
+		m_inputs.detectToolchainPreference();
+	});
 
-	if (!buildSettings.contains(kKeyLastArchitecture) || !buildSettings[kKeyLastArchitecture].is_string())
-	{
-		auto& archRaw = m_inputs.architectureRaw();
-		buildSettings[kKeyLastArchitecture] = archRaw.empty() ? inState.architecturePreference : archRaw;
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
 
-		m_jsonFile.setDirty(true);
-	}
-	else
-	{
-		const auto& prefFromInput = m_inputs.architectureRaw();
-		auto value = buildSettings[kKeyLastArchitecture].get<std::string>();
-		if (!prefFromInput.empty() && value != prefFromInput)
-		{
-			buildSettings[kKeyLastArchitecture] = prefFromInput;
-			m_jsonFile.setDirty(true);
-		}
-		else if (prefFromInput.empty() && value.empty())
-		{
-			if (inState.architecturePreference.empty())
-				buildSettings[kKeyLastArchitecture] = m_inputs.architectureRaw();
-			else
-				buildSettings[kKeyLastArchitecture] = inState.architecturePreference;
-
-			m_jsonFile.setDirty(true);
-		}
-	}
-
-	if (!buildSettings.contains(kKeySigningIdentity) || !buildSettings[kKeySigningIdentity].is_string())
-	{
-		buildSettings[kKeySigningIdentity] = inState.signingIdentity;
-		m_jsonFile.setDirty(true);
-	}
+	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeySigningIdentity, [&]() {
+		return inState.signingIdentity;
+	});
 
 	//
 

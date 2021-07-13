@@ -36,8 +36,13 @@ struct JsonFile
 	template <typename T>
 	bool assignFromKey(T& outVariable, const Json& inNode, const std::string& inKey);
 
+	template <typename T>
+	bool assignNodeIfEmpty(Json& outNode, const std::string& inKey, const std::function<T()>& onAssign);
+
 	bool assignStringAndValidate(std::string& outString, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
 	bool assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey);
+
+	bool assignStringIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA = nullptr);
 
 	template <typename T>
 	bool containsKeyForType(const Json& inNode, const std::string& inKey);

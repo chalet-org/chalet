@@ -138,6 +138,58 @@ bool JsonFile::assignStringListAndValidate(StringList& outList, const Json& inNo
 }
 
 /*****************************************************************************/
+bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA)
+{
+	bool result = false;
+	if (!outNode.contains(inKey) || !outNode.at(inKey).is_string())
+	{
+		if (inValueA.empty())
+		{
+			outNode[inKey] = inValueB;
+		}
+		else
+		{
+			if (onAssignA != nullptr)
+				onAssignA();
+
+			outNode[inKey] = inValueA;
+		}
+		result = true;
+	}
+	else
+	{
+		auto value = outNode.at(inKey).get<std::string>();
+		if (!inValueA.empty() && value != inValueA)
+		{
+			outNode[inKey] = inValueA;
+			result = true;
+		}
+		else if (inValueA.empty() && value.empty())
+		{
+			if (inValueB.empty())
+			{
+				if (onAssignA != nullptr)
+					onAssignA();
+
+				outNode[inKey] = inValueA;
+			}
+			else
+			{
+				outNode[inKey] = inValueB;
+			}
+			result = true;
+		}
+	}
+
+	if (result)
+	{
+		setDirty(true);
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 bool JsonFile::containsKeyThatStartsWith(const Json& inNode, const std::string& inFind)
 {
 	bool res = false;
