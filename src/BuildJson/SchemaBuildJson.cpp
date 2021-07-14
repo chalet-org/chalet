@@ -125,7 +125,8 @@ Json Schema::getBuildJson()
 	const auto kPattern = "pattern";
 	const auto kPatternProperties = "patternProperties";
 	const auto kDescription = "description";
-	const auto kEnum = "enum";
+	// const auto kEnum = "enum";
+	const auto kExamples = "examples";
 	const auto kAnyOf = "anyOf";
 	const auto kAllOf = "allOf";
 	const auto kOneOf = "oneOf";
@@ -778,7 +779,7 @@ Json Schema::getBuildJson()
 		]
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxWarnings][kAnyOf][1][kItems][kEnum] = {
+	defs[Defs::TargetProjectCxxWarnings][kAnyOf][1][kItems][kExamples] = {
 		"abi",
 		"absolute-value",
 		"address",

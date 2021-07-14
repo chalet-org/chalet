@@ -174,7 +174,7 @@
 												"type": "string",
 												"uniqueItems": true,
 												"minItems": 1,
-												"enum": [
+												"examples": [
 													"abi",
 													"absolute-value",
 													"address",
@@ -1350,7 +1350,7 @@
 														"type": "string",
 														"uniqueItems": true,
 														"minItems": 1,
-														"enum": [
+														"examples": [
 															"abi",
 															"absolute-value",
 															"address",
@@ -2551,7 +2551,7 @@
 										"type": "string",
 										"uniqueItems": true,
 										"minItems": 1,
-										"enum": [
+										"examples": [
 											"abi",
 											"absolute-value",
 											"address",

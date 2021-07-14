@@ -96,7 +96,6 @@ bool ProjectTarget::validate()
 		}
 	}
 
-	m_warnings = parseWarnings(m_warningsPresetString);
 	if (m_invalidWarningPreset)
 	{
 		Diagnostic::error("Unrecognized or invalid preset for 'warnings': {}", m_warningsPresetString);
@@ -298,7 +297,7 @@ void ProjectTarget::addWarnings(StringList&& inList)
 
 void ProjectTarget::addWarning(std::string&& inValue)
 {
-	if (String::equals(inValue.substr(0, 2), "-W"))
+	if (String::equals("-W", inValue.substr(0, 2)))
 	{
 		Diagnostic::warn("Removing '-W' prefix from '{}'", inValue);
 		inValue = inValue.substr(2);
@@ -307,9 +306,11 @@ void ProjectTarget::addWarning(std::string&& inValue)
 	List::addIfDoesNotExist(m_warnings, std::move(inValue));
 }
 
+/*****************************************************************************/
 void ProjectTarget::setWarningPreset(std::string&& inValue)
 {
 	m_warningsPresetString = std::move(inValue);
+	m_warnings = parseWarnings(m_warningsPresetString);
 }
 
 ProjectWarnings ProjectTarget::warningsPreset() const noexcept
