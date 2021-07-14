@@ -475,8 +475,8 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcodebuild))
 		m_prototype.tools.setXcodebuild(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcodegen))
-		m_prototype.tools.setXcodegen(std::move(val));
+	// if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcodegen))
+	// 	m_prototype.tools.setXcodegen(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcrun))
 		m_prototype.tools.setXcrun(std::move(val));

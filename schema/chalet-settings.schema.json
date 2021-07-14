@@ -11,46 +11,46 @@
 		"tools": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "The list of tools for the platform",
+			"description": "A list of additional tools for the platform.",
 			"properties": {
 				"bash": {
 					"type": "string",
-					"description": "The executable path to GNU bash",
+					"description": "The executable path to GNU Bourne-Again SHell.",
 					"default": "/usr/bin/bash"
 				},
 				"brew": {
 					"type": "string",
-					"description": "The executable path to brew command-line utility (MacOS)",
+					"description": "The executable path to the Homebrew package manager. (MacOS)",
 					"default": "/usr/local/bin/brew"
 				},
 				"command_prompt": {
 					"type": "string",
-					"description": "The executable path to Command Prompt (Windows)",
+					"description": "The executable path to Command Prompt. (Windows)",
 					"default": "C:/Windows/System32/cmd.exe"
 				},
 				"codesign": {
 					"type": "string",
-					"description": "The executable path to codesign command-line utility (MacOS)",
+					"description": "The executable path to Apple's codesign command-line utility. (MacOS)",
 					"default": "/usr/bin/codesign"
 				},
 				"git": {
 					"type": "string",
-					"description": "The executable path to git.",
+					"description": "The executable path to Git.",
 					"default": "/usr/bin/git"
 				},
 				"hdiutil": {
 					"type": "string",
-					"description": "The executable path to Apple's hdiutil command-line utility (MacOS)",
+					"description": "The executable path to Apple's hdiutil command-line utility. (MacOS)",
 					"default": "/usr/bin/hdiutil"
 				},
 				"install_name_tool": {
 					"type": "string",
-					"description": "The executable path to Apple's install_name_tool command-line utility (MacOS)",
+					"description": "The executable path to Apple's install_name_tool command-line utility. (MacOS)",
 					"default": "/usr/bin/install_name_tool"
 				},
 				"instruments": {
 					"type": "string",
-					"description": "The executable path to Apple's instruments command-line utility (MacOS)",
+					"description": "The executable path to Apple's instruments command-line utility. (MacOS)",
 					"default": "/usr/bin/instruments"
 				},
 				"ldd": {
@@ -60,106 +60,107 @@
 				},
 				"lipo": {
 					"type": "string",
-					"description": "The executable path to Apple's lipo utility (MacOS)",
+					"description": "The executable path to Apple's lipo utility. (MacOS)",
 					"default": "/usr/bin/lipo"
 				},
 				"lua": {
 					"type": "string",
-					"description": "The executable path to Lua",
+					"description": "The executable path to Lua.",
 					"default": "/usr/local/bin/lua"
 				},
 				"makensis": {
 					"type": "string",
-					"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler",
+					"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler. (Windows)",
 					"default": "C:/Program Files (x86)/NSIS/makensis.exe"
 				},
 				"osascript": {
 					"type": "string",
-					"description": "The executable path to Apple's osascript command-line utility (MacOS)",
+					"description": "The executable path to Apple's osascript command-line utility. (MacOS)",
 					"default": "/usr/bin/osascript"
 				},
 				"otool": {
 					"type": "string",
-					"description": "The executable path to Apple's otool command-line utility (MacOS)",
+					"description": "The executable path to Apple's otool command-line utility. (MacOS)",
 					"default": "/usr/bin/otool"
 				},
 				"perl": {
 					"type": "string",
-					"description": "The executable path to Perl",
+					"description": "The executable path to Perl.",
 					"default": "/usr/local/bin/perl"
 				},
 				"plutil": {
 					"type": "string",
-					"description": "The executable path to Apple's plutil command-line utility (MacOS)",
+					"description": "The executable path to Apple's plutil command-line utility. (MacOS)",
 					"default": "/usr/bin/plutil"
 				},
 				"powershell": {
 					"type": "string",
-					"description": "The executable path to Powershell (Windows)",
+					"description": "The executable path to Powershell. (Windows)",
 					"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 				},
 				"python": {
 					"type": "string",
-					"description": "The executable path to Python 2",
+					"description": "The executable path to Python 2.",
 					"default": "/usr/bin/python"
 				},
 				"python3": {
 					"type": "string",
-					"description": "The executable path to Python 3",
+					"description": "The executable path to Python 3.",
 					"default": "/usr/local/bin/python3"
 				},
 				"ruby": {
 					"type": "string",
-					"description": "The executable path to ruby.",
+					"description": "The executable path to Ruby.",
 					"default": "/usr/bin/ruby"
 				},
 				"sample": {
 					"type": "string",
-					"description": "The executable path to Apple's sample command-line utility (MacOS)",
+					"description": "The executable path to Apple's sample command-line utility. (MacOS)",
 					"default": "/usr/bin/sample"
 				},
 				"sips": {
 					"type": "string",
-					"description": "The executable path to Apple's sips command-line utility (MacOS)",
+					"description": "The executable path to Apple's sips command-line utility. (MacOS)",
 					"default": "/usr/bin/sips"
 				},
 				"tiffutil": {
 					"type": "string",
-					"description": "The executable path to tiffutil",
+					"description": "The executable path to Apple's tiffutil command-line utility. (MacOS)",
 					"default": "/usr/bin/tiffutil"
 				},
 				"xcodebuild": {
 					"type": "string",
-					"description": "The executable path to Apple's xcodebuild command-line utility (MacOS)",
+					"description": "The executable path to Apple's xcodebuild command-line utility. (MacOS)",
 					"default": "/usr/bin/xcodebuild"
-				},
-				"xcodegen": {
-					"type": "string",
-					"description": "The executable path to the xcodegen Homebrew application (MacOS)",
-					"default": "/usr/local/bin/xcodegen"
 				},
 				"xcrun": {
 					"type": "string",
-					"description": "The executable path to Apple's xcrun command-line utility (MacOS)",
+					"description": "The executable path to Apple's xcrun command-line utility. (MacOS)",
 					"default": "/usr/bin/xcrun"
 				}
 			}
 		},
 		"appleSdks": {
 			"type": "object",
-			"description": "A list of Apple platform SDK paths (MacOS)"
+			"description": "A list of Apple platform SDK paths. (MacOS)"
 		},
 		"settings": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "A list of settings related to the build",
+			"description": "A list of settings related to the build.",
 			"required": [
 				"dumpAssembly",
 				"maxJobs",
 				"showCommands",
 				"toolchain",
 				"architecture",
-				"signingIdentity"
+				"signingIdentity",
+				"inputFile",
+				"settingsFile",
+				"envFile",
+				"rootDir",
+				"outputDir",
+				"bundleDir"
 			],
 			"properties": {
 				"dumpAssembly": {
@@ -195,27 +196,27 @@
 					"type": "string"
 				},
 				"inputFile": {
-					"description": "An input build file to use",
+					"description": "An input build file to use.",
 					"type": "string"
 				},
 				"settingsFile": {
-					"description": "The path to a settings file to use",
+					"description": "The path to a settings file to use.",
 					"type": "string"
 				},
 				"envFile": {
-					"description": "A file to load environment variables from",
+					"description": "A file to load environment variables from.",
 					"type": "string"
 				},
 				"rootDir": {
-					"description": "The root directory to run the build from",
+					"description": "The root directory to run the build from.",
 					"type": "string"
 				},
 				"outputDir": {
-					"description": "The output directory of the build",
+					"description": "The output directory of the build.",
 					"type": "string"
 				},
 				"bundleDir": {
-					"description": "The root directory of all distribution bundles",
+					"description": "The root directory of all distribution bundles.",
 					"type": "string"
 				}
 			}
@@ -223,12 +224,12 @@
 		"toolchains": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "A list of compiler toolchains",
+			"description": "A list of toolchains.",
 			"patternProperties": {
 				"^[\\w\\-\\+\\.]{3,}$": {
 					"type": "object",
 					"additionalProperties": false,
-					"description": "The list of compilers for the platform",
+					"description": "A list of compilers and tools needing for the build itself.",
 					"required": [
 						"archiver",
 						"cmake",
@@ -245,7 +246,7 @@
 					"properties": {
 						"strategy": {
 							"type": "string",
-							"description": "The build strategy to use.",
+							"description": "The strategy to use during the build.",
 							"enum": [
 								"makefile",
 								"native-experimental",
@@ -255,7 +256,7 @@
 						},
 						"buildPathStyle": {
 							"type": "string",
-							"description": "The build path style. ex: build/(prefix)_Debug, build/(prefix)_Release",
+							"description": "The build path style. ex: build/Debug, build/(arch)_Debug, build/(triple)_Debug, build/(toolchain)_Debug",
 							"enum": [
 								"configuration",
 								"arch-configuration",
@@ -266,46 +267,46 @@
 						},
 						"archiver": {
 							"type": "string",
-							"description": "The executable path to the toolchain's static library archive utility",
+							"description": "The executable path to the toolchain's static library archive utility - typically ar with GCC, libtool on MacOS, or lib.exe with Visual Studio.",
 							"default": "/usr/bin/ar"
 						},
 						"compilerCpp": {
 							"type": "string",
-							"description": "The executable path to the toolchain's C++ compiler",
+							"description": "The executable path to the toolchain's C++ compiler.",
 							"default": "/usr/bin/c++"
 						},
 						"compilerC": {
 							"type": "string",
-							"description": "The executable path to the toolchain's C compiler",
+							"description": "The executable path to the toolchain's C compiler.",
 							"default": "/usr/bin/cc"
 						},
 						"compilerWindowsResource": {
 							"type": "string",
-							"description": "The executable path to the resource compiler (Windows)"
+							"description": "The executable path to the resource compiler. (Windows)"
 						},
 						"cmake": {
 							"type": "string",
-							"description": "The executable path to CMake",
+							"description": "The executable path to CMake.",
 							"default": "/usr/local/bin/cmake"
 						},
 						"linker": {
 							"type": "string",
-							"description": "The executable path to the toolchain's linker",
+							"description": "The executable path to the toolchain's linker - typically ld with GCC, lld with LLVM, or link.exe with Visual Studio.",
 							"default": "/usr/bin/ld"
 						},
 						"profiler": {
 							"type": "string",
-							"description": "The executable path to the toochain's command-line profiler (if applicable).",
+							"description": "The executable path to the toochain's command-line profiler (if applicable) - for instance, gprof with GCC.",
 							"default": "/usr/bin/gprof"
 						},
 						"make": {
 							"type": "string",
-							"description": "The executable path to GNU make utility.",
+							"description": "The executable path to GNU make, or NMAKE/Qt Jom with Visual Studio.",
 							"default": "/usr/bin/make"
 						},
 						"ninja": {
 							"type": "string",
-							"description": "The executable path to ninja."
+							"description": "The executable path to Ninja."
 						},
 						"objdump": {
 							"type": "string",
