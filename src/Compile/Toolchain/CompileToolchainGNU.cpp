@@ -425,11 +425,25 @@ void CompileToolchainGNU::addIncludes(StringList& outArgList) const
 	const std::string prefix{ "-I" };
 	for (const auto& dir : m_project.includeDirs())
 	{
-		outArgList.emplace_back(getPathCommand(prefix, dir));
+		std::string outDir = dir;
+		if (String::endsWith('/', outDir))
+			outDir.pop_back();
+
+		outArgList.emplace_back(getPathCommand(prefix, outDir));
 	}
 	for (const auto& dir : m_project.locations())
 	{
-		outArgList.emplace_back(getPathCommand(prefix, dir));
+		std::string outDir = dir;
+		if (String::endsWith('/', outDir))
+			outDir.pop_back();
+
+		outArgList.emplace_back(getPathCommand(prefix, outDir));
+	}
+
+	if (m_project.usesPch())
+	{
+		auto outDir = String::getPathFolder(m_project.pch());
+		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, outDir));
 	}
 
 #if !defined(CHALET_WIN32)

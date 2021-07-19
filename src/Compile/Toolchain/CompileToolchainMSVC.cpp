@@ -40,14 +40,7 @@ bool CompileToolchainMSVC::initialize()
 		const auto& pch = m_project.pch();
 		m_pchSource = fmt::format("{}/{}.cpp", objDir, pch);
 
-		m_pchMinusLocation = pch;
-		for (std::string loc : m_project.locations())
-		{
-			if (loc.back() != '/')
-				loc.push_back('/');
-
-			String::replaceAll(m_pchMinusLocation, loc, "");
-		}
+		m_pchMinusLocation = String::getPathFilename(pch);
 
 		if (!Commands::pathExists(m_pchSource))
 		{
@@ -374,6 +367,12 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 			outDir.pop_back();
 
 		outArgList.emplace_back(getPathCommand(option, outDir));
+	}
+
+	if (m_project.usesPch())
+	{
+		auto outDir = String::getPathFolder(m_project.pch());
+		List::addIfDoesNotExist(outArgList, getPathCommand(option, outDir));
 	}
 
 	/*for (const auto& dir : m_state.msvcEnvironment.include())
