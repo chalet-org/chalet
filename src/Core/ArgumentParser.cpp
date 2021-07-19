@@ -168,19 +168,19 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 	//
 	m_inputs.setOutputDirectory(std::move(outputDirectory));
-	m_inputs.setInputFile(std::move(inputFile));
 	m_inputs.setBundleDirectory(std::move(bundleDirectory));
+	m_inputs.setInputFile(std::move(inputFile));
+	m_inputs.setEnvFile(std::move(envFile));
 
 	if (!file.empty())
 		m_inputs.setSettingsFile(std::move(file));
 	else
 		m_inputs.setSettingsFile(std::move(settingsFile));
 
-	m_inputs.setEnvFile(std::move(envFile));
+	m_inputs.setArchitectureRaw(std::move(architecturePreference));
 
 	// must do at the end (after arch & toolchain have been parsed)
 	m_inputs.setToolchainPreference(std::move(toolchainPreference));
-	m_inputs.setArchitectureRaw(std::move(architecturePreference));
 
 	return true;
 }

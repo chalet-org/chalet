@@ -138,36 +138,34 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 #if defined(CHALET_WIN32)
 	else if (toolchainType == ToolchainType::MSVC)
 	{
+		auto allowedArches = Arch::getAllowedMsvcArchitectures();
+		if (!String::equals(allowedArches, targetArchString))
+			return false;
+
+		std::string host;
+		std::string target = targetArchString;
+		if (String::contains('_', target))
 		{
-			auto allowedArches = Arch::getAllowedMsvcArchitectures();
-			if (!String::equals(allowedArches, targetArchString))
-				return false;
-
-			std::string host;
-			std::string target = targetArchString;
-			if (String::contains('_', target))
-			{
-				auto split = String::split(target, '_');
-				host = split.front();
-				target = split.back();
-			}
-			else
-			{
-				host = target;
-			}
-
-			auto& compiler = !m_compilerCpp.empty() ? m_compilerCpp : m_compilerC;
-			std::string lower = String::toLowerCase(compiler);
-			auto search = lower.find(fmt::format("/host{}/{}/", host, target));
-			if (search == std::string::npos)
-			{
-				Diagnostic::error("Target architecture '{}' was not found in compiler path: {}", target, compiler);
-				return false;
-			}
-
-			m_state.info.setHostArchitecture(host);
-			m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", targetArchString));
+			auto split = String::split(target, '_');
+			host = split.front();
+			target = split.back();
 		}
+		else
+		{
+			host = target;
+		}
+
+		auto& compiler = !m_compilerCpp.empty() ? m_compilerCpp : m_compilerC;
+		std::string lower = String::toLowerCase(compiler);
+		auto search = lower.find(fmt::format("/host{}/{}/", host, target));
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("Target architecture '{}' was not found in compiler path: {}", target, compiler);
+			return false;
+		}
+
+		m_state.info.setHostArchitecture(host);
+		m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", targetArchString));
 	}
 #endif
 

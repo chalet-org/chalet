@@ -340,33 +340,32 @@ bool BuildState::validateState()
 /*****************************************************************************/
 void BuildState::enforceArchitectureInPath()
 {
-	// works, but probably not a good idea
-	//
-	// #if defined(CHALET_WIN32)
-#if 0
+// works, but probably not a good idea
+//
+#if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
 	auto toolchainType = m_inputs.toolchainPreference().type;
 	auto path = Environment::getPath();
 	if (toolchainType == ToolchainType::GNU)
 	{
-		if (String::contains({ "/mingw64/", "/mingw32/" }, path))
+		if (String::contains({ "\\mingw64\\", "\\mingw32\\" }, path))
 		{
 			std::string lower = String::toLowerCase(path);
 			if (targetArch == Arch::Cpu::X64)
 			{
-				auto start = lower.find("/mingw32/");
+				auto start = lower.find("\\mingw32\\");
 				if (start != std::string::npos)
 				{
-					String::replaceAll(path, path.substr(start, 9), "/mingw64/");
+					String::replaceAll(path, path.substr(start, 9), "\\mingw64\\");
 					Environment::setPath(path);
 				}
 			}
 			else if (targetArch == Arch::Cpu::X86)
 			{
-				auto start = lower.find("/mingw64/");
+				auto start = lower.find("\\mingw64\\");
 				if (start != std::string::npos)
 				{
-					String::replaceAll(path, path.substr(start, 9), "/mingw32/");
+					String::replaceAll(path, path.substr(start, 9), "\\mingw32\\");
 					Environment::setPath(path);
 				}
 			}
@@ -374,32 +373,31 @@ void BuildState::enforceArchitectureInPath()
 	}
 	else if (toolchainType == ToolchainType::LLVM)
 	{
-		if (String::contains({ "/clang64/", "/clang32/" }, path))
+		if (String::contains({ "\\clang64\\", "\\clang32\\" }, path))
 		{
 			// TODO: clangarm64
 
 			std::string lower = String::toLowerCase(path);
 			if (targetArch == Arch::Cpu::X64)
 			{
-				auto start = lower.find("/clang32/");
+				auto start = lower.find("\\clang32\\");
 				if (start != std::string::npos)
 				{
-					String::replaceAll(path, path.substr(start, 9), "/clang64/");
+					String::replaceAll(path, path.substr(start, 9), "\\clang64\\");
 					Environment::setPath(path);
 				}
 			}
 			else if (targetArch == Arch::Cpu::X86)
 			{
-				auto start = lower.find("/clang64/");
+				auto start = lower.find("\\clang64\\");
 				if (start != std::string::npos)
 				{
-					String::replaceAll(path, path.substr(start, 9), "/clang32/");
+					String::replaceAll(path, path.substr(start, 9), "\\clang32\\");
 					Environment::setPath(path);
 				}
 			}
 		}
 	}
-#else
 #endif
 }
 }

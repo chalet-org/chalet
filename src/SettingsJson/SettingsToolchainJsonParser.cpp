@@ -37,6 +37,19 @@ bool SettingsToolchainJsonParser::serialize()
 	}
 #endif
 
+	// TODO: Move
+	if (String::equals("gcc", m_inputs.toolchainPreferenceName()))
+	{
+		std::string arch = m_state.info.targetArchitectureString();
+		if (String::contains('-', arch))
+		{
+			auto split = String::split(arch, '-');
+			arch = std::move(split.front());
+		}
+
+		m_inputs.setToolchainPreferenceName(fmt::format("{}-gcc", arch));
+	}
+
 	auto& rootNode = m_jsonFile.json;
 
 	const auto& preference = m_inputs.toolchainPreferenceName();
