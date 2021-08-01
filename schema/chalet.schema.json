@@ -8,6 +8,419 @@
 		"targets"
 	],
 	"definitions": {
+		"target-chalet": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"type",
+				"location"
+			],
+			"description": "Build the location with cmake",
+			"properties": {
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"location": {
+					"$ref": "#/definitions/target-chalet-location"
+				},
+				"buildFile": {
+					"$ref": "#/definitions/target-chalet-buildFile"
+				},
+				"recheck": {
+					"$ref": "#/definitions/target-chalet-recheck"
+				},
+				"type": {
+					"$ref": "#/definitions/target-type"
+				},
+				"onlyInConfiguration": {
+					"$ref": "#/definitions/target-onlyInConfiguration"
+				},
+				"notInConfiguration": {
+					"$ref": "#/definitions/target-notInConfiguration"
+				},
+				"onlyInPlatform": {
+					"$ref": "#/definitions/target-onlyInPlatform"
+				},
+				"notInPlatform": {
+					"$ref": "#/definitions/target-notInPlatform"
+				}
+			},
+			"patternProperties": {
+				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^buildFile(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-chalet-buildFile"
+				}
+			}
+		},
+		"target-cmake": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"type",
+				"location"
+			],
+			"description": "Build the location with cmake",
+			"properties": {
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"location": {
+					"$ref": "#/definitions/target-cmake-location"
+				},
+				"buildFile": {
+					"$ref": "#/definitions/target-cmake-buildFile"
+				},
+				"defines": {
+					"$ref": "#/definitions/target-cmake-defines"
+				},
+				"toolset": {
+					"$ref": "#/definitions/target-cmake-toolset"
+				},
+				"recheck": {
+					"$ref": "#/definitions/target-cmake-recheck"
+				},
+				"type": {
+					"$ref": "#/definitions/target-type"
+				},
+				"onlyInConfiguration": {
+					"$ref": "#/definitions/target-onlyInConfiguration"
+				},
+				"notInConfiguration": {
+					"$ref": "#/definitions/target-notInConfiguration"
+				},
+				"onlyInPlatform": {
+					"$ref": "#/definitions/target-onlyInPlatform"
+				},
+				"notInPlatform": {
+					"$ref": "#/definitions/target-notInPlatform"
+				}
+			},
+			"patternProperties": {
+				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^buildFile(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-cmake-buildFile"
+				},
+				"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-cmake-defines"
+				},
+				"^toolset(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-cmake-toolset"
+				}
+			}
+		},
+		"target-script": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"script": {
+					"$ref": "#/definitions/target-script-script",
+					"description": "Script(s) to run during this build step."
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				}
+			},
+			"patternProperties": {
+				"^script(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-script-script",
+					"description": "Script(s) to run during this build step."
+				},
+				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-description"
+				}
+			}
+		},
+		"target-project": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"settings:Cxx": {
+					"$ref": "#/definitions/target-project-cxx"
+				},
+				"extends": {
+					"$ref": "#/definitions/target-project-extends"
+				},
+				"files": {
+					"$ref": "#/definitions/target-project-files"
+				},
+				"kind": {
+					"$ref": "#/definitions/target-project-kind"
+				},
+				"language": {
+					"$ref": "#/definitions/target-project-language"
+				},
+				"location": {
+					"$ref": "#/definitions/target-project-location"
+				},
+				"onlyInConfiguration": {
+					"$ref": "#/definitions/target-onlyInConfiguration"
+				},
+				"notInConfiguration": {
+					"$ref": "#/definitions/target-notInConfiguration"
+				},
+				"onlyInPlatform": {
+					"$ref": "#/definitions/target-onlyInPlatform"
+				},
+				"notInPlatform": {
+					"$ref": "#/definitions/target-notInPlatform"
+				},
+				"runProject": {
+					"$ref": "#/definitions/target-project-runProject"
+				},
+				"runArguments": {
+					"$ref": "#/definitions/target-project-runArguments"
+				},
+				"runDependencies": {
+					"$ref": "#/definitions/target-project-runDependencies"
+				}
+			},
+			"patternProperties": {
+				"^runProject(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-runProject"
+				},
+				"^runDependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-runDependencies"
+				}
+			}
+		},
+		"target-project-cxx": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"cStandard": {
+					"$ref": "#/definitions/target-project-cxx-cStandard"
+				},
+				"compileOptions": {
+					"$ref": "#/definitions/target-project-cxx-compileOptions"
+				},
+				"cppStandard": {
+					"$ref": "#/definitions/target-project-cxx-cppStandard"
+				},
+				"defines": {
+					"$ref": "#/definitions/target-project-cxx-defines"
+				},
+				"includeDirs": {
+					"$ref": "#/definitions/target-project-cxx-includeDirs"
+				},
+				"libDirs": {
+					"$ref": "#/definitions/target-project-cxx-libDirs"
+				},
+				"linkerScript": {
+					"$ref": "#/definitions/target-project-cxx-linkerScript"
+				},
+				"linkerOptions": {
+					"$ref": "#/definitions/target-project-cxx-linkerOptions"
+				},
+				"links": {
+					"$ref": "#/definitions/target-project-cxx-links"
+				},
+				"macosFrameworkPaths": {
+					"$ref": "#/definitions/target-project-cxx-macosFrameworkPaths"
+				},
+				"macosFrameworks": {
+					"$ref": "#/definitions/target-project-cxx-macosFrameworks"
+				},
+				"objectiveCxx": {
+					"$ref": "#/definitions/target-project-cxx-objectiveCxx"
+				},
+				"pch": {
+					"$ref": "#/definitions/target-project-cxx-pch"
+				},
+				"threads": {
+					"$ref": "#/definitions/target-project-cxx-threads"
+				},
+				"rtti": {
+					"$ref": "#/definitions/target-project-cxx-rtti"
+				},
+				"exceptions": {
+					"$ref": "#/definitions/target-project-cxx-exceptions"
+				},
+				"staticLinking": {
+					"$ref": "#/definitions/target-project-cxx-staticLinking"
+				},
+				"staticLinks": {
+					"$ref": "#/definitions/target-project-cxx-staticLinks"
+				},
+				"warnings": {
+					"$ref": "#/definitions/target-project-cxx-warnings"
+				},
+				"windowsPrefixOutputFilename": {
+					"$ref": "#/definitions/target-project-cxx-windowsPrefixOutputFilename"
+				},
+				"windowsOutputDef": {
+					"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
+				},
+				"windowsApplicationIcon": {
+					"$ref": "#/definitions/target-project-cxx-windowsAppIcon"
+				},
+				"windowsApplicationManifest": {
+					"$ref": "#/definitions/target-project-cxx-windowsAppManifest"
+				}
+			},
+			"patternProperties": {
+				"^cStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-cStandard"
+				},
+				"^cppStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-cppStandard"
+				},
+				"^compileOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-compileOptions"
+				},
+				"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-defines"
+				},
+				"^includeDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-includeDirs"
+				},
+				"^libDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-libDirs"
+				},
+				"^linkerScript(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-linkerScript"
+				},
+				"^linkerOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-linkerOptions"
+				},
+				"^links(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-links"
+				},
+				"^objectiveCxx(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-objectiveCxx"
+				},
+				"^staticLinks(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-staticLinks"
+				},
+				"^threads(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-threads"
+				},
+				"^rtti(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-rtti"
+				},
+				"^exceptions(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-exceptions"
+				},
+				"^staticLinking(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/target-project-cxx-staticLinking"
+				}
+			}
+		},
+		"external-dependency": {
+			"type": "object",
+			"oneOf": [
+				{
+					"additionalProperties": false,
+					"required": [
+						"repository",
+						"tag"
+					],
+					"properties": {
+						"repository": {
+							"$ref": "#/definitions/external-git-repository"
+						},
+						"submodules": {
+							"$ref": "#/definitions/external-git-submodules"
+						},
+						"tag": {
+							"$ref": "#/definitions/external-git-tag"
+						}
+					}
+				},
+				{
+					"additionalProperties": false,
+					"required": [
+						"repository"
+					],
+					"properties": {
+						"repository": {
+							"$ref": "#/definitions/external-git-repository"
+						},
+						"submodules": {
+							"$ref": "#/definitions/external-git-submodules"
+						},
+						"branch": {
+							"$ref": "#/definitions/external-git-branch"
+						},
+						"commit": {
+							"$ref": "#/definitions/external-git-commit"
+						}
+					}
+				}
+			]
+		},
+		"distribution": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Variables to describe the final output build.",
+			"properties": {
+				"configuration": {
+					"$ref": "#/definitions/dist-configuration"
+				},
+				"dependencies": {
+					"$ref": "#/definitions/dist-dependencies"
+				},
+				"description": {
+					"$ref": "#/definitions/dist-description"
+				},
+				"exclude": {
+					"$ref": "#/definitions/dist-exclude"
+				},
+				"includeDependentSharedLibraries": {
+					"$ref": "#/definitions/dist-includeDependentSharedLibs"
+				},
+				"linux": {
+					"$ref": "#/definitions/dist-linux"
+				},
+				"macos": {
+					"$ref": "#/definitions/dist-macos"
+				},
+				"windows": {
+					"$ref": "#/definitions/dist-windows"
+				},
+				"mainProject": {
+					"$ref": "#/definitions/dist-mainProject"
+				},
+				"outDir": {
+					"$ref": "#/definitions/dist-outDir"
+				},
+				"projects": {
+					"$ref": "#/definitions/dist-projects"
+				}
+			},
+			"patternProperties": {
+				"^dependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/dist-dependencies"
+				},
+				"^exclude(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+					"$ref": "#/definitions/dist-exclude"
+				}
+			}
+		},
+		"configuration": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"debugSymbols": {
+					"$ref": "#/definitions/config-debugSymbols"
+				},
+				"enableProfiling": {
+					"$ref": "#/definitions/config-enableProfiling"
+				},
+				"linkTimeOptimization": {
+					"$ref": "#/definitions/config-linkTimeOptimizations"
+				},
+				"optimizations": {
+					"$ref": "#/definitions/config-optimizationLevel"
+				},
+				"stripSymbols": {
+					"$ref": "#/definitions/config-stripSymbols"
+				}
+			}
+		},
 		"target-chalet-recheck": {
 			"type": "boolean",
 			"description": "If true, Chalet will be invoked each time during the build."
@@ -450,15 +863,6 @@
 			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 			"default": false
 		},
-		"target-project-cxx-macosFrameworkPaths": {
-			"type": "array",
-			"description": "A list of paths to search for MacOS Frameworks",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string"
-			}
-		},
 		"target-project-location": {
 			"description": "The root path of the source files, relative to the working directory.",
 			"oneOf": [
@@ -513,29 +917,6 @@
 					}
 				}
 			]
-		},
-		"target-project-cxx-links": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
-			"description": "A list of dynamic links to use with the linker",
-			"items": {
-				"type": "string",
-				"pattern": "^[\\w\\-\\+\\.]+$"
-			}
-		},
-		"target-project-cxx-linkerOptions": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
-			"description": "Options to add during the linking step.",
-			"items": {
-				"type": "string"
-			}
-		},
-		"target-project-cxx-linkerScript": {
-			"type": "string",
-			"description": "An LD linker script path (.ld file) to pass to the linker command"
 		},
 		"target-project-cxx-libDirs": {
 			"type": "array",
@@ -729,23 +1110,6 @@
 			"type": "string",
 			"description": "A description of the target to display during the build."
 		},
-		"environment-path": {
-			"type": "array",
-			"description": "Any additional paths to include.",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string"
-			}
-		},
-		"enum-platform": {
-			"type": "string",
-			"enum": [
-				"windows",
-				"macos",
-				"linux"
-			]
-		},
 		"external-git-submodules": {
 			"type": "boolean",
 			"description": "Do submodules need to be cloned?",
@@ -868,25 +1232,6 @@
 				}
 			}
 		},
-		"dist-linux": {
-			"type": "object",
-			"description": "Variables to describe the linux application.",
-			"additionalProperties": false,
-			"required": [
-				"icon",
-				"desktopEntry"
-			],
-			"properties": {
-				"desktopEntry": {
-					"type": "string",
-					"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated."
-				},
-				"icon": {
-					"type": "string",
-					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
-				}
-			}
-		},
 		"dist-includeDependentSharedLibs": {
 			"type": "boolean",
 			"default": true
@@ -915,10 +1260,28 @@
 			"description": "The name of the build configuration to use for the distribution.",
 			"default": "Release"
 		},
+		"target-project-cxx-macosFrameworks": {
+			"type": "array",
+			"description": "A list of MacOS Frameworks to link to the project",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string"
+			}
+		},
 		"config-stripSymbols": {
 			"type": "boolean",
 			"description": "true to strip symbols from the build, false otherwise.",
 			"default": false
+		},
+		"target-project-cxx-macosFrameworkPaths": {
+			"type": "array",
+			"description": "A list of paths to search for MacOS Frameworks",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string"
+			}
 		},
 		"config-optimizationLevel": {
 			"type": "string",
@@ -933,24 +1296,74 @@
 				"fast"
 			]
 		},
+		"target-project-cxx-links": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "A list of dynamic links to use with the linker",
+			"items": {
+				"type": "string",
+				"pattern": "^[\\w\\-\\+\\.]+$"
+			}
+		},
 		"config-linkTimeOptimizations": {
 			"type": "boolean",
 			"description": "true to use link-time optimization, false otherwise.",
 			"default": false
+		},
+		"environment-path": {
+			"type": "array",
+			"description": "Any additional paths to include.",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string"
+			}
+		},
+		"target-project-cxx-linkerOptions": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "Options to add during the linking step.",
+			"items": {
+				"type": "string"
+			}
 		},
 		"config-enableProfiling": {
 			"type": "boolean",
 			"description": "true to enable profiling for this configuration, false otherwise.",
 			"default": false
 		},
-		"target-project-cxx-macosFrameworks": {
-			"type": "array",
-			"description": "A list of MacOS Frameworks to link to the project",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string"
+		"dist-linux": {
+			"type": "object",
+			"description": "Variables to describe the linux application.",
+			"additionalProperties": false,
+			"required": [
+				"icon",
+				"desktopEntry"
+			],
+			"properties": {
+				"desktopEntry": {
+					"type": "string",
+					"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated."
+				},
+				"icon": {
+					"type": "string",
+					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
+				}
 			}
+		},
+		"enum-platform": {
+			"type": "string",
+			"enum": [
+				"windows",
+				"macos",
+				"linux"
+			]
+		},
+		"target-project-cxx-linkerScript": {
+			"type": "string",
+			"description": "An LD linker script path (.ld file) to pass to the linker command"
 		},
 		"config-debugSymbols": {
 			"type": "boolean",
@@ -965,176 +1378,7 @@
 			"description": "A list of abstract build projects",
 			"patternProperties": {
 				"^[A-Za-z_-]+$": {
-					"type": "object",
-					"additionalProperties": false,
-					"properties": {
-						"settings:Cxx": {
-							"type": "object",
-							"additionalProperties": false,
-							"properties": {
-								"cStandard": {
-									"$ref": "#/definitions/target-project-cxx-cStandard"
-								},
-								"compileOptions": {
-									"$ref": "#/definitions/target-project-cxx-compileOptions"
-								},
-								"cppStandard": {
-									"$ref": "#/definitions/target-project-cxx-cppStandard"
-								},
-								"defines": {
-									"$ref": "#/definitions/target-project-cxx-defines"
-								},
-								"includeDirs": {
-									"$ref": "#/definitions/target-project-cxx-includeDirs"
-								},
-								"libDirs": {
-									"$ref": "#/definitions/target-project-cxx-libDirs"
-								},
-								"linkerScript": {
-									"$ref": "#/definitions/target-project-cxx-linkerScript"
-								},
-								"linkerOptions": {
-									"$ref": "#/definitions/target-project-cxx-linkerOptions"
-								},
-								"links": {
-									"$ref": "#/definitions/target-project-cxx-links"
-								},
-								"macosFrameworkPaths": {
-									"$ref": "#/definitions/target-project-cxx-macosFrameworkPaths"
-								},
-								"macosFrameworks": {
-									"$ref": "#/definitions/target-project-cxx-macosFrameworks"
-								},
-								"objectiveCxx": {
-									"$ref": "#/definitions/target-project-cxx-objectiveCxx"
-								},
-								"pch": {
-									"$ref": "#/definitions/target-project-cxx-pch"
-								},
-								"threads": {
-									"$ref": "#/definitions/target-project-cxx-threads"
-								},
-								"rtti": {
-									"$ref": "#/definitions/target-project-cxx-rtti"
-								},
-								"exceptions": {
-									"$ref": "#/definitions/target-project-cxx-exceptions"
-								},
-								"staticLinking": {
-									"$ref": "#/definitions/target-project-cxx-staticLinking"
-								},
-								"staticLinks": {
-									"$ref": "#/definitions/target-project-cxx-staticLinks"
-								},
-								"warnings": {
-									"$ref": "#/definitions/target-project-cxx-warnings"
-								},
-								"windowsPrefixOutputFilename": {
-									"$ref": "#/definitions/target-project-cxx-windowsPrefixOutputFilename"
-								},
-								"windowsOutputDef": {
-									"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
-								},
-								"windowsApplicationIcon": {
-									"$ref": "#/definitions/target-project-cxx-windowsAppIcon"
-								},
-								"windowsApplicationManifest": {
-									"$ref": "#/definitions/target-project-cxx-windowsAppManifest"
-								}
-							},
-							"patternProperties": {
-								"^cStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-cStandard"
-								},
-								"^cppStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-cppStandard"
-								},
-								"^compileOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-compileOptions"
-								},
-								"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-defines"
-								},
-								"^includeDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-includeDirs"
-								},
-								"^libDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-libDirs"
-								},
-								"^linkerScript(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-linkerScript"
-								},
-								"^linkerOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-linkerOptions"
-								},
-								"^links(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-links"
-								},
-								"^objectiveCxx(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-objectiveCxx"
-								},
-								"^staticLinks(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-staticLinks"
-								},
-								"^threads(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-threads"
-								},
-								"^rtti(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-rtti"
-								},
-								"^exceptions(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-exceptions"
-								},
-								"^staticLinking(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-cxx-staticLinking"
-								}
-							}
-						},
-						"extends": {
-							"$ref": "#/definitions/target-project-extends"
-						},
-						"files": {
-							"$ref": "#/definitions/target-project-files"
-						},
-						"kind": {
-							"$ref": "#/definitions/target-project-kind"
-						},
-						"language": {
-							"$ref": "#/definitions/target-project-language"
-						},
-						"location": {
-							"$ref": "#/definitions/target-project-location"
-						},
-						"onlyInConfiguration": {
-							"$ref": "#/definitions/target-onlyInConfiguration"
-						},
-						"notInConfiguration": {
-							"$ref": "#/definitions/target-notInConfiguration"
-						},
-						"onlyInPlatform": {
-							"$ref": "#/definitions/target-onlyInPlatform"
-						},
-						"notInPlatform": {
-							"$ref": "#/definitions/target-notInPlatform"
-						},
-						"runProject": {
-							"$ref": "#/definitions/target-project-runProject"
-						},
-						"runArguments": {
-							"$ref": "#/definitions/target-project-runArguments"
-						},
-						"runDependencies": {
-							"$ref": "#/definitions/target-project-runDependencies"
-						}
-					},
-					"patternProperties": {
-						"^runProject(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-runProject"
-						},
-						"^runDependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-runDependencies"
-						}
-					},
+					"$ref": "#/definitions/target-project",
 					"description": "An abstract build project. 'all' is implicitely added to each project."
 				}
 			}
@@ -1148,74 +1392,10 @@
 					"description": "A single bundle or script.",
 					"oneOf": [
 						{
-							"type": "object",
-							"additionalProperties": false,
-							"properties": {
-								"script": {
-									"$ref": "#/definitions/target-script-script",
-									"description": "Script(s) to run during this build step."
-								},
-								"description": {
-									"$ref": "#/definitions/target-description"
-								}
-							},
-							"patternProperties": {
-								"^script(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-script-script",
-									"description": "Script(s) to run during this build step."
-								},
-								"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-description"
-								}
-							}
+							"$ref": "#/definitions/target-script"
 						},
 						{
-							"type": "object",
-							"additionalProperties": false,
-							"description": "Variables to describe the final output build.",
-							"properties": {
-								"configuration": {
-									"$ref": "#/definitions/dist-configuration"
-								},
-								"dependencies": {
-									"$ref": "#/definitions/dist-dependencies"
-								},
-								"description": {
-									"$ref": "#/definitions/dist-description"
-								},
-								"exclude": {
-									"$ref": "#/definitions/dist-exclude"
-								},
-								"includeDependentSharedLibraries": {
-									"$ref": "#/definitions/dist-includeDependentSharedLibs"
-								},
-								"linux": {
-									"$ref": "#/definitions/dist-linux"
-								},
-								"macos": {
-									"$ref": "#/definitions/dist-macos"
-								},
-								"windows": {
-									"$ref": "#/definitions/dist-windows"
-								},
-								"mainProject": {
-									"$ref": "#/definitions/dist-mainProject"
-								},
-								"outDir": {
-									"$ref": "#/definitions/dist-outDir"
-								},
-								"projects": {
-									"$ref": "#/definitions/dist-projects"
-								}
-							},
-							"patternProperties": {
-								"^dependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/dist-dependencies"
-								},
-								"^exclude(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/dist-exclude"
-								}
-							}
+							"$ref": "#/definitions/distribution"
 						}
 					]
 				}
@@ -1229,25 +1409,7 @@
 					"description": "A list of allowed build configurations",
 					"patternProperties": {
 						"^[A-Za-z]{3,}$": {
-							"type": "object",
-							"additionalProperties": false,
-							"properties": {
-								"debugSymbols": {
-									"$ref": "#/definitions/config-debugSymbols"
-								},
-								"enableProfiling": {
-									"$ref": "#/definitions/config-enableProfiling"
-								},
-								"linkTimeOptimization": {
-									"$ref": "#/definitions/config-linkTimeOptimizations"
-								},
-								"optimizations": {
-									"$ref": "#/definitions/config-optimizationLevel"
-								},
-								"stripSymbols": {
-									"$ref": "#/definitions/config-stripSymbols"
-								}
-							}
+							"$ref": "#/definitions/configuration"
 						}
 					}
 				},
@@ -1276,47 +1438,7 @@
 			"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined in 'externalDepDir'.",
 			"patternProperties": {
 				"^[\\w\\-\\+\\.]{3,100}$": {
-					"type": "object",
-					"oneOf": [
-						{
-							"additionalProperties": false,
-							"required": [
-								"repository",
-								"tag"
-							],
-							"properties": {
-								"repository": {
-									"$ref": "#/definitions/external-git-repository"
-								},
-								"submodules": {
-									"$ref": "#/definitions/external-git-submodules"
-								},
-								"tag": {
-									"$ref": "#/definitions/external-git-tag"
-								}
-							}
-						},
-						{
-							"additionalProperties": false,
-							"required": [
-								"repository"
-							],
-							"properties": {
-								"repository": {
-									"$ref": "#/definitions/external-git-repository"
-								},
-								"submodules": {
-									"$ref": "#/definitions/external-git-submodules"
-								},
-								"branch": {
-									"$ref": "#/definitions/external-git-branch"
-								},
-								"commit": {
-									"$ref": "#/definitions/external-git-commit"
-								}
-							}
-						}
-					]
+					"$ref": "#/definitions/external-dependency"
 				}
 			}
 		},
@@ -1329,198 +1451,10 @@
 					"description": "A single build target or script.",
 					"oneOf": [
 						{
-							"type": "object",
-							"additionalProperties": false,
-							"properties": {
-								"settings:Cxx": {
-									"type": "object",
-									"additionalProperties": false,
-									"properties": {
-										"cStandard": {
-											"$ref": "#/definitions/target-project-cxx-cStandard"
-										},
-										"compileOptions": {
-											"$ref": "#/definitions/target-project-cxx-compileOptions"
-										},
-										"cppStandard": {
-											"$ref": "#/definitions/target-project-cxx-cppStandard"
-										},
-										"defines": {
-											"$ref": "#/definitions/target-project-cxx-defines"
-										},
-										"includeDirs": {
-											"$ref": "#/definitions/target-project-cxx-includeDirs"
-										},
-										"libDirs": {
-											"$ref": "#/definitions/target-project-cxx-libDirs"
-										},
-										"linkerScript": {
-											"$ref": "#/definitions/target-project-cxx-linkerScript"
-										},
-										"linkerOptions": {
-											"$ref": "#/definitions/target-project-cxx-linkerOptions"
-										},
-										"links": {
-											"$ref": "#/definitions/target-project-cxx-links"
-										},
-										"macosFrameworkPaths": {
-											"$ref": "#/definitions/target-project-cxx-macosFrameworkPaths"
-										},
-										"macosFrameworks": {
-											"$ref": "#/definitions/target-project-cxx-macosFrameworks"
-										},
-										"objectiveCxx": {
-											"$ref": "#/definitions/target-project-cxx-objectiveCxx"
-										},
-										"pch": {
-											"$ref": "#/definitions/target-project-cxx-pch"
-										},
-										"threads": {
-											"$ref": "#/definitions/target-project-cxx-threads"
-										},
-										"rtti": {
-											"$ref": "#/definitions/target-project-cxx-rtti"
-										},
-										"exceptions": {
-											"$ref": "#/definitions/target-project-cxx-exceptions"
-										},
-										"staticLinking": {
-											"$ref": "#/definitions/target-project-cxx-staticLinking"
-										},
-										"staticLinks": {
-											"$ref": "#/definitions/target-project-cxx-staticLinks"
-										},
-										"warnings": {
-											"$ref": "#/definitions/target-project-cxx-warnings"
-										},
-										"windowsPrefixOutputFilename": {
-											"$ref": "#/definitions/target-project-cxx-windowsPrefixOutputFilename"
-										},
-										"windowsOutputDef": {
-											"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
-										},
-										"windowsApplicationIcon": {
-											"$ref": "#/definitions/target-project-cxx-windowsAppIcon"
-										},
-										"windowsApplicationManifest": {
-											"$ref": "#/definitions/target-project-cxx-windowsAppManifest"
-										}
-									},
-									"patternProperties": {
-										"^cStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-cStandard"
-										},
-										"^cppStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-cppStandard"
-										},
-										"^compileOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-compileOptions"
-										},
-										"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-defines"
-										},
-										"^includeDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-includeDirs"
-										},
-										"^libDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-libDirs"
-										},
-										"^linkerScript(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-linkerScript"
-										},
-										"^linkerOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-linkerOptions"
-										},
-										"^links(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-links"
-										},
-										"^objectiveCxx(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-objectiveCxx"
-										},
-										"^staticLinks(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-staticLinks"
-										},
-										"^threads(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-threads"
-										},
-										"^rtti(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-rtti"
-										},
-										"^exceptions(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-exceptions"
-										},
-										"^staticLinking(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-											"$ref": "#/definitions/target-project-cxx-staticLinking"
-										}
-									}
-								},
-								"extends": {
-									"$ref": "#/definitions/target-project-extends"
-								},
-								"files": {
-									"$ref": "#/definitions/target-project-files"
-								},
-								"kind": {
-									"$ref": "#/definitions/target-project-kind"
-								},
-								"language": {
-									"$ref": "#/definitions/target-project-language"
-								},
-								"location": {
-									"$ref": "#/definitions/target-project-location"
-								},
-								"onlyInConfiguration": {
-									"$ref": "#/definitions/target-onlyInConfiguration"
-								},
-								"notInConfiguration": {
-									"$ref": "#/definitions/target-notInConfiguration"
-								},
-								"onlyInPlatform": {
-									"$ref": "#/definitions/target-onlyInPlatform"
-								},
-								"notInPlatform": {
-									"$ref": "#/definitions/target-notInPlatform"
-								},
-								"runProject": {
-									"$ref": "#/definitions/target-project-runProject"
-								},
-								"runArguments": {
-									"$ref": "#/definitions/target-project-runArguments"
-								},
-								"runDependencies": {
-									"$ref": "#/definitions/target-project-runDependencies"
-								}
-							},
-							"patternProperties": {
-								"^runProject(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-runProject"
-								},
-								"^runDependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-project-runDependencies"
-								}
-							}
+							"$ref": "#/definitions/target-project"
 						},
 						{
-							"type": "object",
-							"additionalProperties": false,
-							"properties": {
-								"script": {
-									"$ref": "#/definitions/target-script-script",
-									"description": "Script(s) to run during this build step."
-								},
-								"description": {
-									"$ref": "#/definitions/target-description"
-								}
-							},
-							"patternProperties": {
-								"^script(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-script-script",
-									"description": "Script(s) to run during this build step."
-								},
-								"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-									"$ref": "#/definitions/target-description"
-								}
-							}
+							"$ref": "#/definitions/target-script"
 						},
 						{
 							"type": "object",
@@ -1539,62 +1473,7 @@
 										}
 									},
 									"then": {
-										"type": "object",
-										"additionalProperties": false,
-										"required": [
-											"type",
-											"location"
-										],
-										"description": "Build the location with cmake",
-										"properties": {
-											"description": {
-												"$ref": "#/definitions/target-description"
-											},
-											"location": {
-												"$ref": "#/definitions/target-cmake-location"
-											},
-											"buildFile": {
-												"$ref": "#/definitions/target-cmake-buildFile"
-											},
-											"defines": {
-												"$ref": "#/definitions/target-cmake-defines"
-											},
-											"toolset": {
-												"$ref": "#/definitions/target-cmake-toolset"
-											},
-											"recheck": {
-												"$ref": "#/definitions/target-cmake-recheck"
-											},
-											"type": {
-												"$ref": "#/definitions/target-type"
-											},
-											"onlyInConfiguration": {
-												"$ref": "#/definitions/target-onlyInConfiguration"
-											},
-											"notInConfiguration": {
-												"$ref": "#/definitions/target-notInConfiguration"
-											},
-											"onlyInPlatform": {
-												"$ref": "#/definitions/target-onlyInPlatform"
-											},
-											"notInPlatform": {
-												"$ref": "#/definitions/target-notInPlatform"
-											}
-										},
-										"patternProperties": {
-											"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-												"$ref": "#/definitions/target-description"
-											},
-											"^buildFile(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-												"$ref": "#/definitions/target-cmake-buildFile"
-											},
-											"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-												"$ref": "#/definitions/target-cmake-defines"
-											},
-											"^toolset(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-												"$ref": "#/definitions/target-cmake-toolset"
-											}
-										}
+										"$ref": "#/definitions/target-cmake"
 									}
 								},
 								{
@@ -1606,50 +1485,7 @@
 										}
 									},
 									"then": {
-										"type": "object",
-										"additionalProperties": false,
-										"required": [
-											"type",
-											"location"
-										],
-										"description": "Build the location with cmake",
-										"properties": {
-											"description": {
-												"$ref": "#/definitions/target-description"
-											},
-											"location": {
-												"$ref": "#/definitions/target-chalet-location"
-											},
-											"buildFile": {
-												"$ref": "#/definitions/target-chalet-buildFile"
-											},
-											"recheck": {
-												"$ref": "#/definitions/target-chalet-recheck"
-											},
-											"type": {
-												"$ref": "#/definitions/target-type"
-											},
-											"onlyInConfiguration": {
-												"$ref": "#/definitions/target-onlyInConfiguration"
-											},
-											"notInConfiguration": {
-												"$ref": "#/definitions/target-notInConfiguration"
-											},
-											"onlyInPlatform": {
-												"$ref": "#/definitions/target-onlyInPlatform"
-											},
-											"notInPlatform": {
-												"$ref": "#/definitions/target-notInPlatform"
-											}
-										},
-										"patternProperties": {
-											"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-												"$ref": "#/definitions/target-description"
-											},
-											"^buildFile(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-												"$ref": "#/definitions/target-chalet-buildFile"
-											}
-										}
+										"$ref": "#/definitions/target-chalet"
 									}
 								}
 							]
@@ -1679,176 +1515,7 @@
 	},
 	"patternProperties": {
 		"^abstracts:[a-z]+$": {
-			"type": "object",
-			"additionalProperties": false,
-			"properties": {
-				"settings:Cxx": {
-					"type": "object",
-					"additionalProperties": false,
-					"properties": {
-						"cStandard": {
-							"$ref": "#/definitions/target-project-cxx-cStandard"
-						},
-						"compileOptions": {
-							"$ref": "#/definitions/target-project-cxx-compileOptions"
-						},
-						"cppStandard": {
-							"$ref": "#/definitions/target-project-cxx-cppStandard"
-						},
-						"defines": {
-							"$ref": "#/definitions/target-project-cxx-defines"
-						},
-						"includeDirs": {
-							"$ref": "#/definitions/target-project-cxx-includeDirs"
-						},
-						"libDirs": {
-							"$ref": "#/definitions/target-project-cxx-libDirs"
-						},
-						"linkerScript": {
-							"$ref": "#/definitions/target-project-cxx-linkerScript"
-						},
-						"linkerOptions": {
-							"$ref": "#/definitions/target-project-cxx-linkerOptions"
-						},
-						"links": {
-							"$ref": "#/definitions/target-project-cxx-links"
-						},
-						"macosFrameworkPaths": {
-							"$ref": "#/definitions/target-project-cxx-macosFrameworkPaths"
-						},
-						"macosFrameworks": {
-							"$ref": "#/definitions/target-project-cxx-macosFrameworks"
-						},
-						"objectiveCxx": {
-							"$ref": "#/definitions/target-project-cxx-objectiveCxx"
-						},
-						"pch": {
-							"$ref": "#/definitions/target-project-cxx-pch"
-						},
-						"threads": {
-							"$ref": "#/definitions/target-project-cxx-threads"
-						},
-						"rtti": {
-							"$ref": "#/definitions/target-project-cxx-rtti"
-						},
-						"exceptions": {
-							"$ref": "#/definitions/target-project-cxx-exceptions"
-						},
-						"staticLinking": {
-							"$ref": "#/definitions/target-project-cxx-staticLinking"
-						},
-						"staticLinks": {
-							"$ref": "#/definitions/target-project-cxx-staticLinks"
-						},
-						"warnings": {
-							"$ref": "#/definitions/target-project-cxx-warnings"
-						},
-						"windowsPrefixOutputFilename": {
-							"$ref": "#/definitions/target-project-cxx-windowsPrefixOutputFilename"
-						},
-						"windowsOutputDef": {
-							"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
-						},
-						"windowsApplicationIcon": {
-							"$ref": "#/definitions/target-project-cxx-windowsAppIcon"
-						},
-						"windowsApplicationManifest": {
-							"$ref": "#/definitions/target-project-cxx-windowsAppManifest"
-						}
-					},
-					"patternProperties": {
-						"^cStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-cStandard"
-						},
-						"^cppStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-cppStandard"
-						},
-						"^compileOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-compileOptions"
-						},
-						"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-defines"
-						},
-						"^includeDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-includeDirs"
-						},
-						"^libDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-libDirs"
-						},
-						"^linkerScript(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-linkerScript"
-						},
-						"^linkerOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-linkerOptions"
-						},
-						"^links(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-links"
-						},
-						"^objectiveCxx(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-objectiveCxx"
-						},
-						"^staticLinks(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-staticLinks"
-						},
-						"^threads(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-threads"
-						},
-						"^rtti(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-rtti"
-						},
-						"^exceptions(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-exceptions"
-						},
-						"^staticLinking(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-							"$ref": "#/definitions/target-project-cxx-staticLinking"
-						}
-					}
-				},
-				"extends": {
-					"$ref": "#/definitions/target-project-extends"
-				},
-				"files": {
-					"$ref": "#/definitions/target-project-files"
-				},
-				"kind": {
-					"$ref": "#/definitions/target-project-kind"
-				},
-				"language": {
-					"$ref": "#/definitions/target-project-language"
-				},
-				"location": {
-					"$ref": "#/definitions/target-project-location"
-				},
-				"onlyInConfiguration": {
-					"$ref": "#/definitions/target-onlyInConfiguration"
-				},
-				"notInConfiguration": {
-					"$ref": "#/definitions/target-notInConfiguration"
-				},
-				"onlyInPlatform": {
-					"$ref": "#/definitions/target-onlyInPlatform"
-				},
-				"notInPlatform": {
-					"$ref": "#/definitions/target-notInPlatform"
-				},
-				"runProject": {
-					"$ref": "#/definitions/target-project-runProject"
-				},
-				"runArguments": {
-					"$ref": "#/definitions/target-project-runArguments"
-				},
-				"runDependencies": {
-					"$ref": "#/definitions/target-project-runDependencies"
-				}
-			},
-			"patternProperties": {
-				"^runProject(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/target-project-runProject"
-				},
-				"^runDependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
-					"$ref": "#/definitions/target-project-runDependencies"
-				}
-			},
+			"$ref": "#/definitions/target-project",
 			"description": "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project"
 		},
 		"^path(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {

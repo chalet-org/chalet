@@ -14,12 +14,15 @@ class SchemaBuildJson
 {
 	enum class Defs : ushort
 	{
+		//
+		Configuration,
 		ConfigDebugSymbols,
 		ConfigEnableProfiling,
 		ConfigLinkTimeOptimizations,
 		ConfigOptimizationLevel,
 		ConfigStripSymbols,
 		//
+		Dist,
 		DistConfiguration,
 		DistDependencies,
 		DistDescription,
@@ -32,6 +35,7 @@ class SchemaBuildJson
 		DistProjects,
 		DistWindows,
 		//
+		ExternalDependency,
 		ExtGitRepository,
 		ExtGitBranch,
 		ExtGitCommit,
@@ -49,6 +53,7 @@ class SchemaBuildJson
 		TargetOnlyInConfiguration,
 		TargetOnlyInPlatform,
 		//
+		TargetProject,
 		TargetProjectExtends,
 		TargetProjectFiles,
 		TargetProjectKind,
@@ -58,6 +63,7 @@ class SchemaBuildJson
 		TargetProjectRunArguments,
 		TargetProjectRunDependencies,
 		//
+		TargetProjectCxx,
 		TargetProjectCxxCStandard,
 		TargetProjectCxxCppStandard,
 		TargetProjectCxxCompileOptions,
@@ -82,14 +88,17 @@ class SchemaBuildJson
 		TargetProjectCxxWindowsOutputDef,
 		TargetProjectCxxWindowsPrefixOutputFilename,
 		//
+		TargetScript,
 		TargetScriptScript,
 		//
+		TargetCMake,
 		TargetCMakeLocation,
 		TargetCMakeBuildFile,
 		TargetCMakeDefines,
 		TargetCMakeRecheck,
 		TargetCMakeToolset,
 		//
+		TargetChalet,
 		TargetChaletLocation,
 		TargetChaletBuildFile,
 		TargetChaletRecheck,

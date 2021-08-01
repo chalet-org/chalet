@@ -22,6 +22,7 @@
 			"stopOnEntry": false,
 			"args": [
 				// "--generator=vscode",
+				"--save-schema",
 				"build",
 				"Release"
 			],
