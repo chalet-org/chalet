@@ -10,10 +10,119 @@
 
 namespace chalet
 {
-namespace Schema
+class SchemaBuildJson
 {
-Json getBuildJson();
-}
+	enum class Defs : ushort
+	{
+		ConfigDebugSymbols,
+		ConfigEnableProfiling,
+		ConfigLinkTimeOptimizations,
+		ConfigOptimizationLevel,
+		ConfigStripSymbols,
+		//
+		DistConfiguration,
+		DistDependencies,
+		DistDescription,
+		DistExclude,
+		DistIncludeDependentSharedLibs,
+		DistLinux,
+		DistMacOS,
+		DistMainProject,
+		DistOutDirectory,
+		DistProjects,
+		DistWindows,
+		//
+		ExtGitRepository,
+		ExtGitBranch,
+		ExtGitCommit,
+		ExtGitTag,
+		ExtGitSubmodules,
+		//
+		EnumPlatform,
+		//
+		EnvironmentPath,
+		//
+		TargetDescription,
+		TargetType,
+		TargetNotInConfiguration,
+		TargetNotInPlatform,
+		TargetOnlyInConfiguration,
+		TargetOnlyInPlatform,
+		//
+		TargetProjectExtends,
+		TargetProjectFiles,
+		TargetProjectKind,
+		TargetProjectLocation,
+		TargetProjectLanguage,
+		TargetProjectRunProject,
+		TargetProjectRunArguments,
+		TargetProjectRunDependencies,
+		//
+		TargetProjectCxxCStandard,
+		TargetProjectCxxCppStandard,
+		TargetProjectCxxCompileOptions,
+		TargetProjectCxxDefines,
+		TargetProjectCxxIncludeDirs,
+		TargetProjectCxxLibDirs,
+		TargetProjectCxxLinkerScript,
+		TargetProjectCxxLinkerOptions,
+		TargetProjectCxxLinks,
+		TargetProjectCxxMacOsFrameworkPaths,
+		TargetProjectCxxMacOsFrameworks,
+		TargetProjectCxxObjectiveCxx,
+		TargetProjectCxxPrecompiledHeader,
+		TargetProjectCxxThreads,
+		TargetProjectCxxRunTimeTypeInfo,
+		TargetProjectCxxExceptions,
+		TargetProjectCxxStaticLinking,
+		TargetProjectCxxStaticLinks,
+		TargetProjectCxxWarnings,
+		TargetProjectCxxWindowsAppManifest,
+		TargetProjectCxxWindowsAppIcon,
+		TargetProjectCxxWindowsOutputDef,
+		TargetProjectCxxWindowsPrefixOutputFilename,
+		//
+		TargetScriptScript,
+		//
+		TargetCMakeLocation,
+		TargetCMakeBuildFile,
+		TargetCMakeDefines,
+		TargetCMakeRecheck,
+		TargetCMakeToolset,
+		//
+		TargetChaletLocation,
+		TargetChaletBuildFile,
+		TargetChaletRecheck,
+	};
+
+public:
+	SchemaBuildJson();
+
+	Json get();
+
+private:
+	std::unordered_map<SchemaBuildJson::Defs, Json> getDefinitions();
+
+	std::unordered_map<SchemaBuildJson::Defs, Json> m_defs;
+
+	const std::string kItems;
+	const std::string kProperties;
+	const std::string kPattern;
+	const std::string kPatternProperties;
+	const std::string kDescription;
+	// const std::string kEnum = "enum";
+	const std::string kExamples;
+	const std::string kAnyOf;
+	const std::string kAllOf;
+	const std::string kOneOf;
+
+	//
+	const std::string kPatternProjectName;
+	const std::string kPatternProjectLinks;
+	const std::string kPatternDistributionName;
+	const std::string kPatternConfigurations;
+	const std::string kPatternPlatforms;
+};
 }
 
 #endif // CHALET_SCHEMA_BUILD_JSON_HPP

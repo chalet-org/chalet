@@ -63,7 +63,8 @@ bool BuildJsonProtoParser::serializeDependenciesOnly()
 /*****************************************************************************/
 bool BuildJsonProtoParser::validateAgainstSchema()
 {
-	Json buildJsonSchema = Schema::getBuildJson();
+	SchemaBuildJson schemaBuilder;
+	Json buildJsonSchema = schemaBuilder.get();
 
 	if (m_inputs.saveSchemaToFile())
 	{

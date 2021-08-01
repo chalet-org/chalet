@@ -203,7 +203,8 @@ bool SettingsManager::runSettingsSet(Json& node)
 		}
 		else if (String::endsWith(settings.filename(), m_inputs.inputFile()))
 		{
-			Json schema = Schema::getBuildJson();
+			SchemaBuildJson schemaBuilder;
+			Json schema = schemaBuilder.get();
 			if (!settings.validate(std::move(schema)))
 			{
 				settings.setDirty(false);

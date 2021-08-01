@@ -6,8 +6,14 @@
 #ifndef CHALET_JSON_HPP
 #define CHALET_JSON_HPP
 
+// Exceptions will throw during schema construction otherwise
 #if !defined(CHALET_EXCEPTIONS)
-	#define JSON_NOEXCEPTION
+	#ifndef JSON_NOEXCEPTION
+		#define JSON_NOEXCEPTION
+	#endif
+	#ifndef JSONSV_NOEXCEPTION
+		#define JSONSV_NOEXCEPTION
+	#endif
 #endif
 
 #ifdef CHALET_MSVC

@@ -46,6 +46,7 @@ file(GLOB_RECURSE SOURCES
 )
 
 add_executable(${TARGET_NAME} ${SOURCES})
+add_definitions(-DJSON_NOEXCEPTION -DJSONSV_NOEXCEPTION)
 
 target_precompile_headers(${TARGET_NAME} PRIVATE src/PCH.hpp)
 

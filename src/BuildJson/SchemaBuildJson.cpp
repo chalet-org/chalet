@@ -13,124 +13,29 @@
 
 namespace chalet
 {
-namespace
+/*****************************************************************************/
+SchemaBuildJson::SchemaBuildJson() :
+	kItems("items"),
+	kProperties("properties"),
+	kPattern("pattern"),
+	kPatternProperties("patternProperties"),
+	kDescription("description"),
+	// kEnum("enum"),
+	kExamples("examples"),
+	kAnyOf("anyOf"),
+	kAllOf("allOf"),
+	kOneOf("oneOf"),
+	kPatternProjectName(R"(^[\w\-\+\.]{3,}$)"),
+	kPatternProjectLinks(R"(^[\w\-\+\.]+$)"),
+	kPatternDistributionName(R"(^[\w\-\+\.\ \(\)]{3,}$)"),
+	kPatternConfigurations(R"((:debug|:!debug|))"),
+	kPatternPlatforms(R"((\.windows|\.macos|\.linux|\.\!windows|\.\!macos|\.\!linux|))")
 {
-enum class Defs : ushort
-{
-	ConfigDebugSymbols,
-	ConfigEnableProfiling,
-	ConfigLinkTimeOptimizations,
-	ConfigOptimizationLevel,
-	ConfigStripSymbols,
-	//
-	DistConfiguration,
-	DistDependencies,
-	DistDescription,
-	DistExclude,
-	DistIncludeDependentSharedLibs,
-	DistLinux,
-	DistMacOS,
-	DistMainProject,
-	DistOutDirectory,
-	DistProjects,
-	DistWindows,
-	//
-	ExtGitRepository,
-	ExtGitBranch,
-	ExtGitCommit,
-	ExtGitTag,
-	ExtGitSubmodules,
-	//
-	EnumPlatform,
-	//
-	EnvironmentPath,
-	//
-	TargetDescription,
-	TargetType,
-	TargetNotInConfiguration,
-	TargetNotInPlatform,
-	TargetOnlyInConfiguration,
-	TargetOnlyInPlatform,
-	//
-	TargetProjectExtends,
-	TargetProjectFiles,
-	TargetProjectKind,
-	TargetProjectLocation,
-	TargetProjectLanguage,
-	TargetProjectRunProject,
-	TargetProjectRunArguments,
-	TargetProjectRunDependencies,
-	//
-	TargetProjectCxxCStandard,
-	TargetProjectCxxCppStandard,
-	TargetProjectCxxCompileOptions,
-	TargetProjectCxxDefines,
-	TargetProjectCxxIncludeDirs,
-	TargetProjectCxxLibDirs,
-	TargetProjectCxxLinkerScript,
-	TargetProjectCxxLinkerOptions,
-	TargetProjectCxxLinks,
-	TargetProjectCxxMacOsFrameworkPaths,
-	TargetProjectCxxMacOsFrameworks,
-	TargetProjectCxxObjectiveCxx,
-	TargetProjectCxxPrecompiledHeader,
-	TargetProjectCxxThreads,
-	TargetProjectCxxRunTimeTypeInfo,
-	TargetProjectCxxExceptions,
-	TargetProjectCxxStaticLinking,
-	TargetProjectCxxStaticLinks,
-	TargetProjectCxxWarnings,
-	TargetProjectCxxWindowsAppManifest,
-	TargetProjectCxxWindowsAppIcon,
-	TargetProjectCxxWindowsOutputDef,
-	TargetProjectCxxWindowsPrefixOutputFilename,
-	//
-	TargetScriptScript,
-	//
-	TargetCMakeLocation,
-	TargetCMakeBuildFile,
-	TargetCMakeDefines,
-	TargetCMakeRecheck,
-	TargetCMakeToolset,
-	//
-	TargetChaletLocation,
-	TargetChaletBuildFile,
-	TargetChaletRecheck,
-};
 }
 
 /*****************************************************************************/
-Json Schema::getBuildJson()
+std::unordered_map<SchemaBuildJson::Defs, Json> SchemaBuildJson::getDefinitions()
 {
-	const std::string patternProjectName = R"(^[\w\-\+\.]{3,}$)";
-	const std::string patternProjectLinks = R"(^[\w\-\+\.]+$)";
-	const std::string patternDistributionName = R"(^[\w\-\+\.\ \(\)]{3,}$)";
-
-	const std::string patternConfigurations = R"((:debug|:!debug|))";
-	const std::string patternPlatforms = R"((\.windows|\.macos|\.linux|\.\!windows|\.\!macos|\.\!linux|))";
-
-	Json ret;
-	ret["$schema"] = "http://json-schema.org/draft-07/schema";
-	ret["type"] = "object";
-	ret["additionalProperties"] = false;
-	ret["required"] = {
-		"version",
-		"workspace",
-		"targets"
-	};
-
-	//
-	const auto kItems = "items";
-	const auto kProperties = "properties";
-	const auto kPattern = "pattern";
-	const auto kPatternProperties = "patternProperties";
-	const auto kDescription = "description";
-	// const auto kEnum = "enum";
-	const auto kExamples = "examples";
-	const auto kAnyOf = "anyOf";
-	const auto kAllOf = "allOf";
-	const auto kOneOf = "oneOf";
-
 	std::unordered_map<Defs, Json> defs;
 
 	// configurations
@@ -303,7 +208,7 @@ Json Schema::getBuildJson()
 			"description": "The name of the project"
 		}
 	})json"_ojson;
-	defs[Defs::DistProjects][kItems][kPattern] = patternProjectName;
+	defs[Defs::DistProjects][kItems][kPattern] = kPatternProjectName;
 
 	defs[Defs::DistWindows] = R"json({
 		"type": "object",
@@ -317,26 +222,6 @@ Json Schema::getBuildJson()
 			}
 		}
 	})json"_ojson;
-
-	auto distributionBundle = R"json({
-		"type": "object",
-		"additionalProperties": false,
-		"description": "Variables to describe the final output build."
-	})json"_ojson;
-	distributionBundle[kProperties] = Json::object();
-	distributionBundle[kProperties]["configuration"] = defs[Defs::DistConfiguration];
-	distributionBundle[kProperties]["dependencies"] = defs[Defs::DistDependencies];
-	distributionBundle[kProperties]["description"] = defs[Defs::DistDescription];
-	distributionBundle[kProperties]["exclude"] = defs[Defs::DistExclude];
-	distributionBundle[kProperties]["includeDependentSharedLibraries"] = defs[Defs::DistIncludeDependentSharedLibs];
-	distributionBundle[kProperties]["linux"] = defs[Defs::DistLinux];
-	distributionBundle[kProperties]["macos"] = defs[Defs::DistMacOS];
-	distributionBundle[kProperties]["windows"] = defs[Defs::DistWindows];
-	distributionBundle[kProperties]["mainProject"] = defs[Defs::DistMainProject];
-	distributionBundle[kProperties]["outDir"] = defs[Defs::DistOutDirectory];
-	distributionBundle[kProperties]["projects"] = defs[Defs::DistProjects];
-	distributionBundle[kPatternProperties][fmt::format("^dependencies{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::DistDependencies];
-	distributionBundle[kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::DistExclude];
 
 	// externalDependency
 	defs[Defs::ExtGitRepository] = R"json({
@@ -366,35 +251,6 @@ Json Schema::getBuildJson()
 		"description": "Do submodules need to be cloned?",
 		"default": false
 	})json"_ojson;
-
-	auto externalDependency = R"json({
-		"type": "object",
-		"oneOf": [
-			{
-				"additionalProperties": false,
-				"required": [
-					"repository",
-					"tag"
-				]
-			},
-			{
-				"additionalProperties": false,
-				"required": [
-					"repository"
-				]
-			}
-		]
-	})json"_ojson;
-	externalDependency[kOneOf][0][kProperties] = Json::object();
-	externalDependency[kOneOf][0][kProperties]["repository"] = defs[Defs::ExtGitRepository];
-	externalDependency[kOneOf][0][kProperties]["submodules"] = defs[Defs::ExtGitSubmodules];
-	externalDependency[kOneOf][0][kProperties]["tag"] = defs[Defs::ExtGitTag];
-
-	externalDependency[kOneOf][1][kProperties] = Json::object();
-	externalDependency[kOneOf][1][kProperties]["repository"] = defs[Defs::ExtGitRepository];
-	externalDependency[kOneOf][1][kProperties]["submodules"] = defs[Defs::ExtGitSubmodules];
-	externalDependency[kOneOf][1][kProperties]["branch"] = defs[Defs::ExtGitBranch];
-	externalDependency[kOneOf][1][kProperties]["commit"] = defs[Defs::ExtGitCommit];
 
 	defs[Defs::EnumPlatform] = R"json({
 		"type": "string",
@@ -450,8 +306,8 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	defs[Defs::TargetNotInPlatform][kOneOf][0] = defs[Defs::EnumPlatform];
-	defs[Defs::TargetNotInPlatform][kOneOf][1][kItems] = defs[Defs::EnumPlatform];
+	defs[Defs::TargetNotInPlatform][kOneOf][0] = defs.at(Defs::EnumPlatform);
+	defs[Defs::TargetNotInPlatform][kOneOf][1][kItems] = defs.at(Defs::EnumPlatform);
 
 	defs[Defs::TargetOnlyInConfiguration] = R"json({
 		"description": "Only compile this project in specific build configuration(s)",
@@ -483,8 +339,8 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	defs[Defs::TargetOnlyInPlatform][kOneOf][0] = defs[Defs::EnumPlatform];
-	defs[Defs::TargetOnlyInPlatform][kOneOf][1][kItems] = defs[Defs::EnumPlatform];
+	defs[Defs::TargetOnlyInPlatform][kOneOf][0] = defs.at(Defs::EnumPlatform);
+	defs[Defs::TargetOnlyInPlatform][kOneOf][1][kItems] = defs.at(Defs::EnumPlatform);
 
 	defs[Defs::TargetProjectExtends] = R"json({
 		"type": "string",
@@ -627,7 +483,7 @@ Json Schema::getBuildJson()
 			"type": "string"
 		}
 	})json"_ojson;
-	defs[Defs::TargetProjectCxxLinks][kItems][kPattern] = patternProjectLinks;
+	defs[Defs::TargetProjectCxxLinks][kItems][kPattern] = kPatternProjectLinks;
 
 	defs[Defs::TargetProjectLocation] = R"json({
 		"description": "The root path of the source files, relative to the working directory.",
@@ -652,7 +508,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	defs[Defs::TargetProjectLocation][kOneOf][2][kPatternProperties][fmt::format("^exclude{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+	defs[Defs::TargetProjectLocation][kOneOf][2][kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -667,7 +523,7 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	defs[Defs::TargetProjectLocation][kOneOf][2][kPatternProperties][fmt::format("^include{}{}$", patternConfigurations, patternPlatforms)] = R"json({
+	defs[Defs::TargetProjectLocation][kOneOf][2][kPatternProperties][fmt::format("^include{}{}$", kPatternConfigurations, kPatternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -751,7 +607,7 @@ Json Schema::getBuildJson()
 			"type": "string"
 		}
 	})json"_ojson;
-	defs[Defs::TargetProjectCxxStaticLinks][kItems][kPattern] = patternProjectLinks;
+	defs[Defs::TargetProjectCxxStaticLinks][kItems][kPattern] = kPatternProjectLinks;
 
 	defs[Defs::TargetProjectCxxWarnings] = R"json({
 		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
@@ -1097,71 +953,6 @@ Json Schema::getBuildJson()
 		"default": true
 	})json"_ojson;
 
-	auto projectSettingsCxx = R"json({
-		"type": "object",
-		"additionalProperties": false
-	})json"_ojson;
-	projectSettingsCxx[kProperties]["cStandard"] = defs[Defs::TargetProjectCxxCStandard];
-	projectSettingsCxx[kProperties]["compileOptions"] = defs[Defs::TargetProjectCxxCompileOptions];
-	projectSettingsCxx[kProperties]["cppStandard"] = defs[Defs::TargetProjectCxxCppStandard];
-	projectSettingsCxx[kProperties]["defines"] = defs[Defs::TargetProjectCxxDefines];
-	projectSettingsCxx[kProperties]["includeDirs"] = defs[Defs::TargetProjectCxxIncludeDirs];
-	projectSettingsCxx[kProperties]["libDirs"] = defs[Defs::TargetProjectCxxLibDirs];
-	projectSettingsCxx[kProperties]["linkerScript"] = defs[Defs::TargetProjectCxxLinkerScript];
-	projectSettingsCxx[kProperties]["linkerOptions"] = defs[Defs::TargetProjectCxxLinkerOptions];
-	projectSettingsCxx[kProperties]["links"] = defs[Defs::TargetProjectCxxLinks];
-	projectSettingsCxx[kProperties]["macosFrameworkPaths"] = defs[Defs::TargetProjectCxxMacOsFrameworkPaths];
-
-	projectSettingsCxx[kProperties]["macosFrameworks"] = defs[Defs::TargetProjectCxxMacOsFrameworks];
-	projectSettingsCxx[kProperties]["objectiveCxx"] = defs[Defs::TargetProjectCxxObjectiveCxx];
-	projectSettingsCxx[kProperties]["pch"] = defs[Defs::TargetProjectCxxPrecompiledHeader];
-	projectSettingsCxx[kProperties]["threads"] = defs[Defs::TargetProjectCxxThreads];
-	projectSettingsCxx[kProperties]["rtti"] = defs[Defs::TargetProjectCxxRunTimeTypeInfo];
-	projectSettingsCxx[kProperties]["exceptions"] = defs[Defs::TargetProjectCxxExceptions];
-	projectSettingsCxx[kProperties]["staticLinking"] = defs[Defs::TargetProjectCxxStaticLinking];
-	projectSettingsCxx[kProperties]["staticLinks"] = defs[Defs::TargetProjectCxxStaticLinks];
-	projectSettingsCxx[kProperties]["warnings"] = defs[Defs::TargetProjectCxxWarnings];
-	projectSettingsCxx[kProperties]["windowsPrefixOutputFilename"] = defs[Defs::TargetProjectCxxWindowsPrefixOutputFilename];
-	projectSettingsCxx[kProperties]["windowsOutputDef"] = defs[Defs::TargetProjectCxxWindowsOutputDef];
-	projectSettingsCxx[kProperties]["windowsApplicationIcon"] = defs[Defs::TargetProjectCxxWindowsAppIcon];
-	projectSettingsCxx[kProperties]["windowsApplicationManifest"] = defs[Defs::TargetProjectCxxWindowsAppManifest];
-
-	projectSettingsCxx[kPatternProperties][fmt::format("^cStandard{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxCStandard];
-	projectSettingsCxx[kPatternProperties][fmt::format("^cppStandard{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxCppStandard];
-	projectSettingsCxx[kPatternProperties][fmt::format("^compileOptions{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxCompileOptions];
-	projectSettingsCxx[kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxDefines];
-	projectSettingsCxx[kPatternProperties][fmt::format("^includeDirs{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxIncludeDirs];
-	projectSettingsCxx[kPatternProperties][fmt::format("^libDirs{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxLibDirs];
-	projectSettingsCxx[kPatternProperties][fmt::format("^linkerScript{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxLinkerScript];
-	projectSettingsCxx[kPatternProperties][fmt::format("^linkerOptions{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxLinkerOptions];
-	projectSettingsCxx[kPatternProperties][fmt::format("^links{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxLinks];
-	projectSettingsCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", patternPlatforms)] = defs[Defs::TargetProjectCxxObjectiveCxx];
-	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinks{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxStaticLinks];
-	projectSettingsCxx[kPatternProperties][fmt::format("^threads{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxThreads];
-	projectSettingsCxx[kPatternProperties][fmt::format("^rtti{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxRunTimeTypeInfo];
-	projectSettingsCxx[kPatternProperties][fmt::format("^exceptions{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxExceptions];
-	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectCxxStaticLinking];
-
-	auto targetProject = R"json({
-		"type": "object",
-		"additionalProperties": false
-	})json"_ojson;
-	targetProject[kProperties]["settings:Cxx"] = std::move(projectSettingsCxx);
-	targetProject[kProperties]["extends"] = defs[Defs::TargetProjectExtends];
-	targetProject[kProperties]["files"] = defs[Defs::TargetProjectFiles];
-	targetProject[kProperties]["kind"] = defs[Defs::TargetProjectKind];
-	targetProject[kProperties]["language"] = defs[Defs::TargetProjectLanguage];
-	targetProject[kProperties]["location"] = defs[Defs::TargetProjectLocation];
-	targetProject[kProperties]["onlyInConfiguration"] = defs[Defs::TargetOnlyInConfiguration];
-	targetProject[kProperties]["notInConfiguration"] = defs[Defs::TargetNotInConfiguration];
-	targetProject[kProperties]["onlyInPlatform"] = defs[Defs::TargetOnlyInPlatform];
-	targetProject[kProperties]["notInPlatform"] = defs[Defs::TargetNotInPlatform];
-	targetProject[kProperties]["runProject"] = defs[Defs::TargetProjectRunProject];
-	targetProject[kProperties]["runArguments"] = defs[Defs::TargetProjectRunArguments];
-	targetProject[kProperties]["runDependencies"] = defs[Defs::TargetProjectRunDependencies];
-	targetProject[kPatternProperties][fmt::format("^runProject{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectRunProject];
-	targetProject[kPatternProperties][fmt::format("^runDependencies{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetProjectRunDependencies];
-
 	defs[Defs::TargetScriptScript] = R"json({
 		"anyOf": [
 			{
@@ -1177,20 +968,6 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-
-	auto targetScript = R"json({
-		"type": "object",
-		"additionalProperties": false
-	})json"_ojson;
-	targetScript[kProperties]["script"] = defs[Defs::TargetScriptScript];
-	targetScript[kProperties]["script"][kDescription] = "Script(s) to run during this build step.";
-	targetScript[kProperties]["description"] = defs[Defs::TargetDescription];
-	{
-		auto scriptPattern = fmt::format("^script{}{}$", patternConfigurations, patternPlatforms);
-		targetScript[kPatternProperties][scriptPattern] = defs[Defs::TargetScriptScript];
-		targetScript[kPatternProperties][scriptPattern][kDescription] = "Script(s) to run during this build step.";
-	}
-	targetScript[kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetDescription];
 
 	defs[Defs::TargetType] = R"json({
 		"type": "string",
@@ -1229,31 +1006,6 @@ Json Schema::getBuildJson()
 		"description": "A toolset to be passed to CMake with the -T option."
 	})json"_ojson;
 
-	auto targetCMake = R"json({
-		"type": "object",
-		"additionalProperties": false,
-		"required": [
-			"type",
-			"location"
-		],
-		"description": "Build the location with cmake"
-	})json"_ojson;
-	targetCMake[kProperties]["description"] = defs[Defs::TargetDescription];
-	targetCMake[kProperties]["location"] = defs[Defs::TargetCMakeLocation];
-	targetCMake[kProperties]["buildFile"] = defs[Defs::TargetCMakeBuildFile];
-	targetCMake[kProperties]["defines"] = defs[Defs::TargetCMakeDefines];
-	targetCMake[kProperties]["toolset"] = defs[Defs::TargetCMakeToolset];
-	targetCMake[kProperties]["recheck"] = defs[Defs::TargetCMakeRecheck];
-	targetCMake[kProperties]["type"] = defs[Defs::TargetType];
-	targetCMake[kProperties]["onlyInConfiguration"] = defs[Defs::TargetOnlyInConfiguration];
-	targetCMake[kProperties]["notInConfiguration"] = defs[Defs::TargetNotInConfiguration];
-	targetCMake[kProperties]["onlyInPlatform"] = defs[Defs::TargetOnlyInPlatform];
-	targetCMake[kProperties]["notInPlatform"] = defs[Defs::TargetNotInPlatform];
-	targetCMake[kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetDescription];
-	targetCMake[kPatternProperties][fmt::format("^buildFile{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetCMakeBuildFile];
-	targetCMake[kPatternProperties][fmt::format("^defines{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetCMakeDefines];
-	targetCMake[kPatternProperties][fmt::format("^toolset{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetCMakeToolset];
-
 	defs[Defs::TargetChaletLocation] = R"json({
 		"type": "string",
 		"description": "The folder path of the root chalet.json for the project."
@@ -1269,6 +1021,182 @@ Json Schema::getBuildJson()
 		"description": "If true, Chalet will be invoked each time during the build."
 	})json"_ojson;
 
+	return defs;
+}
+
+/*****************************************************************************/
+Json SchemaBuildJson::get()
+{
+	Json ret;
+	ret["$schema"] = "http://json-schema.org/draft-07/schema";
+	ret["type"] = "object";
+	ret["additionalProperties"] = false;
+	ret["required"] = {
+		"version",
+		"workspace",
+		"targets"
+	};
+
+	//
+
+	if (m_defs.empty())
+	{
+		m_defs = getDefinitions();
+	}
+
+	auto distributionBundle = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"description": "Variables to describe the final output build."
+	})json"_ojson;
+	distributionBundle[kProperties] = Json::object();
+	distributionBundle[kProperties]["configuration"] = m_defs.at(Defs::DistConfiguration);
+	distributionBundle[kProperties]["dependencies"] = m_defs.at(Defs::DistDependencies);
+	distributionBundle[kProperties]["description"] = m_defs.at(Defs::DistDescription);
+	distributionBundle[kProperties]["exclude"] = m_defs.at(Defs::DistExclude);
+	distributionBundle[kProperties]["includeDependentSharedLibraries"] = m_defs.at(Defs::DistIncludeDependentSharedLibs);
+	distributionBundle[kProperties]["linux"] = m_defs.at(Defs::DistLinux);
+	distributionBundle[kProperties]["macos"] = m_defs.at(Defs::DistMacOS);
+	distributionBundle[kProperties]["windows"] = m_defs.at(Defs::DistWindows);
+	distributionBundle[kProperties]["mainProject"] = m_defs.at(Defs::DistMainProject);
+	distributionBundle[kProperties]["outDir"] = m_defs.at(Defs::DistOutDirectory);
+	distributionBundle[kProperties]["projects"] = m_defs.at(Defs::DistProjects);
+	distributionBundle[kPatternProperties][fmt::format("^dependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::DistDependencies);
+	distributionBundle[kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::DistExclude);
+
+	auto externalDependency = R"json({
+		"type": "object",
+		"oneOf": [
+			{
+				"additionalProperties": false,
+				"required": [
+					"repository",
+					"tag"
+				]
+			},
+			{
+				"additionalProperties": false,
+				"required": [
+					"repository"
+				]
+			}
+		]
+	})json"_ojson;
+	externalDependency[kOneOf][0][kProperties] = Json::object();
+	externalDependency[kOneOf][0][kProperties]["repository"] = m_defs.at(Defs::ExtGitRepository);
+	externalDependency[kOneOf][0][kProperties]["submodules"] = m_defs.at(Defs::ExtGitSubmodules);
+	externalDependency[kOneOf][0][kProperties]["tag"] = m_defs.at(Defs::ExtGitTag);
+
+	externalDependency[kOneOf][1][kProperties] = Json::object();
+	externalDependency[kOneOf][1][kProperties]["repository"] = m_defs.at(Defs::ExtGitRepository);
+	externalDependency[kOneOf][1][kProperties]["submodules"] = m_defs.at(Defs::ExtGitSubmodules);
+	externalDependency[kOneOf][1][kProperties]["branch"] = m_defs.at(Defs::ExtGitBranch);
+	externalDependency[kOneOf][1][kProperties]["commit"] = m_defs.at(Defs::ExtGitCommit);
+
+	auto projectSettingsCxx = R"json({
+		"type": "object",
+		"additionalProperties": false
+	})json"_ojson;
+	projectSettingsCxx[kProperties]["cStandard"] = m_defs.at(Defs::TargetProjectCxxCStandard);
+	projectSettingsCxx[kProperties]["compileOptions"] = m_defs.at(Defs::TargetProjectCxxCompileOptions);
+	projectSettingsCxx[kProperties]["cppStandard"] = m_defs.at(Defs::TargetProjectCxxCppStandard);
+	projectSettingsCxx[kProperties]["defines"] = m_defs.at(Defs::TargetProjectCxxDefines);
+	projectSettingsCxx[kProperties]["includeDirs"] = m_defs.at(Defs::TargetProjectCxxIncludeDirs);
+	projectSettingsCxx[kProperties]["libDirs"] = m_defs.at(Defs::TargetProjectCxxLibDirs);
+	projectSettingsCxx[kProperties]["linkerScript"] = m_defs.at(Defs::TargetProjectCxxLinkerScript);
+	projectSettingsCxx[kProperties]["linkerOptions"] = m_defs.at(Defs::TargetProjectCxxLinkerOptions);
+	projectSettingsCxx[kProperties]["links"] = m_defs.at(Defs::TargetProjectCxxLinks);
+	projectSettingsCxx[kProperties]["macosFrameworkPaths"] = m_defs.at(Defs::TargetProjectCxxMacOsFrameworkPaths);
+
+	projectSettingsCxx[kProperties]["macosFrameworks"] = m_defs.at(Defs::TargetProjectCxxMacOsFrameworks);
+	projectSettingsCxx[kProperties]["objectiveCxx"] = m_defs.at(Defs::TargetProjectCxxObjectiveCxx);
+	projectSettingsCxx[kProperties]["pch"] = m_defs.at(Defs::TargetProjectCxxPrecompiledHeader);
+	projectSettingsCxx[kProperties]["threads"] = m_defs.at(Defs::TargetProjectCxxThreads);
+	projectSettingsCxx[kProperties]["rtti"] = m_defs.at(Defs::TargetProjectCxxRunTimeTypeInfo);
+	projectSettingsCxx[kProperties]["exceptions"] = m_defs.at(Defs::TargetProjectCxxExceptions);
+	projectSettingsCxx[kProperties]["staticLinking"] = m_defs.at(Defs::TargetProjectCxxStaticLinking);
+	projectSettingsCxx[kProperties]["staticLinks"] = m_defs.at(Defs::TargetProjectCxxStaticLinks);
+	projectSettingsCxx[kProperties]["warnings"] = m_defs.at(Defs::TargetProjectCxxWarnings);
+	projectSettingsCxx[kProperties]["windowsPrefixOutputFilename"] = m_defs.at(Defs::TargetProjectCxxWindowsPrefixOutputFilename);
+	projectSettingsCxx[kProperties]["windowsOutputDef"] = m_defs.at(Defs::TargetProjectCxxWindowsOutputDef);
+	projectSettingsCxx[kProperties]["windowsApplicationIcon"] = m_defs.at(Defs::TargetProjectCxxWindowsAppIcon);
+	projectSettingsCxx[kProperties]["windowsApplicationManifest"] = m_defs.at(Defs::TargetProjectCxxWindowsAppManifest);
+
+	projectSettingsCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxCStandard);
+	projectSettingsCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxCppStandard);
+	projectSettingsCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxCompileOptions);
+	projectSettingsCxx[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxDefines);
+	projectSettingsCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxIncludeDirs);
+	projectSettingsCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxLibDirs);
+	projectSettingsCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxLinkerScript);
+	projectSettingsCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxLinkerOptions);
+	projectSettingsCxx[kPatternProperties][fmt::format("^links{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxLinks);
+	projectSettingsCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxObjectiveCxx);
+	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinks{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxStaticLinks);
+	projectSettingsCxx[kPatternProperties][fmt::format("^threads{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxThreads);
+	projectSettingsCxx[kPatternProperties][fmt::format("^rtti{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxRunTimeTypeInfo);
+	projectSettingsCxx[kPatternProperties][fmt::format("^exceptions{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxExceptions);
+	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxStaticLinking);
+
+	auto targetProject = R"json({
+		"type": "object",
+		"additionalProperties": false
+	})json"_ojson;
+	targetProject[kProperties]["settings:Cxx"] = std::move(projectSettingsCxx);
+	targetProject[kProperties]["extends"] = m_defs.at(Defs::TargetProjectExtends);
+	targetProject[kProperties]["files"] = m_defs.at(Defs::TargetProjectFiles);
+	targetProject[kProperties]["kind"] = m_defs.at(Defs::TargetProjectKind);
+	targetProject[kProperties]["language"] = m_defs.at(Defs::TargetProjectLanguage);
+	targetProject[kProperties]["location"] = m_defs.at(Defs::TargetProjectLocation);
+	targetProject[kProperties]["onlyInConfiguration"] = m_defs.at(Defs::TargetOnlyInConfiguration);
+	targetProject[kProperties]["notInConfiguration"] = m_defs.at(Defs::TargetNotInConfiguration);
+	targetProject[kProperties]["onlyInPlatform"] = m_defs.at(Defs::TargetOnlyInPlatform);
+	targetProject[kProperties]["notInPlatform"] = m_defs.at(Defs::TargetNotInPlatform);
+	targetProject[kProperties]["runProject"] = m_defs.at(Defs::TargetProjectRunProject);
+	targetProject[kProperties]["runArguments"] = m_defs.at(Defs::TargetProjectRunArguments);
+	targetProject[kProperties]["runDependencies"] = m_defs.at(Defs::TargetProjectRunDependencies);
+	targetProject[kPatternProperties][fmt::format("^runProject{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectRunProject);
+	targetProject[kPatternProperties][fmt::format("^runDependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectRunDependencies);
+
+	auto targetScript = R"json({
+		"type": "object",
+		"additionalProperties": false
+	})json"_ojson;
+	targetScript[kProperties]["script"] = m_defs.at(Defs::TargetScriptScript);
+	targetScript[kProperties]["script"][kDescription] = "Script(s) to run during this build step.";
+	targetScript[kProperties]["description"] = m_defs.at(Defs::TargetDescription);
+	{
+		auto scriptPattern = fmt::format("^script{}{}$", kPatternConfigurations, kPatternPlatforms);
+		targetScript[kPatternProperties][scriptPattern] = m_defs.at(Defs::TargetScriptScript);
+		targetScript[kPatternProperties][scriptPattern][kDescription] = "Script(s) to run during this build step.";
+	}
+	targetScript[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetDescription);
+
+	auto targetCMake = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"required": [
+			"type",
+			"location"
+		],
+		"description": "Build the location with cmake"
+	})json"_ojson;
+	targetCMake[kProperties]["description"] = m_defs.at(Defs::TargetDescription);
+	targetCMake[kProperties]["location"] = m_defs.at(Defs::TargetCMakeLocation);
+	targetCMake[kProperties]["buildFile"] = m_defs.at(Defs::TargetCMakeBuildFile);
+	targetCMake[kProperties]["defines"] = m_defs.at(Defs::TargetCMakeDefines);
+	targetCMake[kProperties]["toolset"] = m_defs.at(Defs::TargetCMakeToolset);
+	targetCMake[kProperties]["recheck"] = m_defs.at(Defs::TargetCMakeRecheck);
+	targetCMake[kProperties]["type"] = m_defs.at(Defs::TargetType);
+	targetCMake[kProperties]["onlyInConfiguration"] = m_defs.at(Defs::TargetOnlyInConfiguration);
+	targetCMake[kProperties]["notInConfiguration"] = m_defs.at(Defs::TargetNotInConfiguration);
+	targetCMake[kProperties]["onlyInPlatform"] = m_defs.at(Defs::TargetOnlyInPlatform);
+	targetCMake[kProperties]["notInPlatform"] = m_defs.at(Defs::TargetNotInPlatform);
+	targetCMake[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetDescription);
+	targetCMake[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetCMakeBuildFile);
+	targetCMake[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetCMakeDefines);
+	targetCMake[kPatternProperties][fmt::format("^toolset{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetCMakeToolset);
+
 	auto targetChalet = R"json({
 		"type": "object",
 		"additionalProperties": false,
@@ -1278,17 +1206,17 @@ Json Schema::getBuildJson()
 		],
 		"description": "Build the location with cmake"
 	})json"_ojson;
-	targetChalet[kProperties]["description"] = defs[Defs::TargetDescription];
-	targetChalet[kProperties]["location"] = defs[Defs::TargetChaletLocation];
-	targetChalet[kProperties]["buildFile"] = defs[Defs::TargetChaletBuildFile];
-	targetChalet[kProperties]["recheck"] = defs[Defs::TargetChaletRecheck];
-	targetChalet[kProperties]["type"] = defs[Defs::TargetType];
-	targetChalet[kProperties]["onlyInConfiguration"] = defs[Defs::TargetOnlyInConfiguration];
-	targetChalet[kProperties]["notInConfiguration"] = defs[Defs::TargetNotInConfiguration];
-	targetChalet[kProperties]["onlyInPlatform"] = defs[Defs::TargetOnlyInPlatform];
-	targetChalet[kProperties]["notInPlatform"] = defs[Defs::TargetNotInPlatform];
-	targetChalet[kPatternProperties][fmt::format("^description{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetDescription];
-	targetChalet[kPatternProperties][fmt::format("^buildFile{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::TargetChaletBuildFile];
+	targetChalet[kProperties]["description"] = m_defs.at(Defs::TargetDescription);
+	targetChalet[kProperties]["location"] = m_defs.at(Defs::TargetChaletLocation);
+	targetChalet[kProperties]["buildFile"] = m_defs.at(Defs::TargetChaletBuildFile);
+	targetChalet[kProperties]["recheck"] = m_defs.at(Defs::TargetChaletRecheck);
+	targetChalet[kProperties]["type"] = m_defs.at(Defs::TargetType);
+	targetChalet[kProperties]["onlyInConfiguration"] = m_defs.at(Defs::TargetOnlyInConfiguration);
+	targetChalet[kProperties]["notInConfiguration"] = m_defs.at(Defs::TargetNotInConfiguration);
+	targetChalet[kProperties]["onlyInPlatform"] = m_defs.at(Defs::TargetOnlyInPlatform);
+	targetChalet[kProperties]["notInPlatform"] = m_defs.at(Defs::TargetNotInPlatform);
+	targetChalet[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetDescription);
+	targetChalet[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetChaletBuildFile);
 
 	//
 	ret[kProperties] = Json::object();
@@ -1310,21 +1238,21 @@ Json Schema::getBuildJson()
 		"additionalProperties": false,
 		"description": "A list of bundle descriptors for the distribution."
 	})json"_ojson;
-	ret[kProperties]["distribution"][kPatternProperties][patternDistributionName] = R"json({
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName] = R"json({
 		"description": "A single bundle or script."
 	})json"_ojson;
-	ret[kProperties]["distribution"][kPatternProperties][patternDistributionName][kOneOf][0] = targetScript;
-	ret[kProperties]["distribution"][kPatternProperties][patternDistributionName][kOneOf][1] = distributionBundle;
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = targetScript;
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = distributionBundle;
 
 	auto configuration = R"json({
 		"type": "object",
 		"additionalProperties": false
 	})json"_ojson;
-	configuration[kProperties]["debugSymbols"] = defs[Defs::ConfigDebugSymbols];
-	configuration[kProperties]["enableProfiling"] = defs[Defs::ConfigEnableProfiling];
-	configuration[kProperties]["linkTimeOptimization"] = defs[Defs::ConfigLinkTimeOptimizations];
-	configuration[kProperties]["optimizations"] = defs[Defs::ConfigOptimizationLevel];
-	configuration[kProperties]["stripSymbols"] = defs[Defs::ConfigStripSymbols];
+	configuration[kProperties]["debugSymbols"] = m_defs.at(Defs::ConfigDebugSymbols);
+	configuration[kProperties]["enableProfiling"] = m_defs.at(Defs::ConfigEnableProfiling);
+	configuration[kProperties]["linkTimeOptimization"] = m_defs.at(Defs::ConfigLinkTimeOptimizations);
+	configuration[kProperties]["optimizations"] = m_defs.at(Defs::ConfigOptimizationLevel);
+	configuration[kProperties]["stripSymbols"] = m_defs.at(Defs::ConfigStripSymbols);
 
 	ret[kProperties]["configurations"] = R"json({
 		"anyOf": [
@@ -1361,13 +1289,13 @@ Json Schema::getBuildJson()
 	})json"_ojson;
 	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-\\+\\.]{3,100}$"] = externalDependency;
 
-	const auto kTargets = "targets";
-	ret[kProperties][kTargets] = R"json({
+	const auto targets = "targets";
+	ret[kProperties][targets] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A sequential list of projects, cmake projects, or scripts."
 	})json"_ojson;
-	ret[kProperties][kTargets][kPatternProperties][patternProjectName] = R"json({
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName] = R"json({
 		"description": "A single build target or script.",
 		"oneOf": [
 			{
@@ -1396,11 +1324,11 @@ Json Schema::getBuildJson()
 			}
 		]
 	})json"_ojson;
-	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][0] = targetProject;
-	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][1] = targetScript;
-	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][2][kProperties]["type"] = defs[Defs::TargetType];
-	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][2][kAllOf][0]["then"] = targetCMake;
-	ret[kProperties][kTargets][kPatternProperties][patternProjectName][kOneOf][2][kAllOf][1]["then"] = targetChalet;
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][0] = targetProject;
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][1] = targetScript;
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kProperties]["type"] = m_defs.at(Defs::TargetType);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][0]["then"] = targetCMake;
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][1]["then"] = targetChalet;
 
 	ret[kProperties]["version"] = R"json({
 		"type": "string",
@@ -1420,8 +1348,8 @@ Json Schema::getBuildJson()
 		"default": "chalet_external"
 	})json"_ojson;
 
-	ret[kProperties]["path"] = defs[Defs::EnvironmentPath];
-	ret[kPatternProperties][fmt::format("^path{}{}$", patternConfigurations, patternPlatforms)] = defs[Defs::EnvironmentPath];
+	ret[kProperties]["path"] = m_defs.at(Defs::EnvironmentPath);
+	ret[kPatternProperties][fmt::format("^path{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::EnvironmentPath);
 
 	return ret;
 }

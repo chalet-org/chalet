@@ -46,7 +46,8 @@
 			// "compileOptions": [],
 			// "linkerOptions": [],
 			"defines:debug": [
-				"_DEBUG"
+				"_DEBUG",
+				"JSON_NOEXCEPTION"
 			],
 			"includeDirs": [
 				"vendor/nlohmann/single_include",
