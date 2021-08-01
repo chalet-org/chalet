@@ -94,6 +94,7 @@ class SchemaBuildJson
 		TargetChaletBuildFile,
 		TargetChaletRecheck,
 	};
+	using DefinitionMap = std::unordered_map<Defs, Json>;
 
 public:
 	SchemaBuildJson();
@@ -101,10 +102,11 @@ public:
 	Json get();
 
 private:
-	std::unordered_map<SchemaBuildJson::Defs, Json> getDefinitions();
+	DefinitionMap getDefinitions();
+	std::string getDefinitionName(const Defs inDef);
+	Json getDefinition(const Defs inDef);
 
-	std::unordered_map<SchemaBuildJson::Defs, Json> m_defs;
-
+	const std::string kDefinitions;
 	const std::string kItems;
 	const std::string kProperties;
 	const std::string kPattern;
@@ -122,6 +124,9 @@ private:
 	const std::string kPatternDistributionName;
 	const std::string kPatternConfigurations;
 	const std::string kPatternPlatforms;
+
+	DefinitionMap m_defs;
+	bool m_useRefs = true;
 };
 }
 

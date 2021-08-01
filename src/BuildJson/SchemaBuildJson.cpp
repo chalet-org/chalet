@@ -15,6 +15,7 @@ namespace chalet
 {
 /*****************************************************************************/
 SchemaBuildJson::SchemaBuildJson() :
+	kDefinitions("definitions"),
 	kItems("items"),
 	kProperties("properties"),
 	kPattern("pattern"),
@@ -34,9 +35,9 @@ SchemaBuildJson::SchemaBuildJson() :
 }
 
 /*****************************************************************************/
-std::unordered_map<SchemaBuildJson::Defs, Json> SchemaBuildJson::getDefinitions()
+SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 {
-	std::unordered_map<Defs, Json> defs;
+	DefinitionMap defs;
 
 	// configurations
 	defs[Defs::ConfigDebugSymbols] = R"json({
@@ -1025,6 +1026,118 @@ std::unordered_map<SchemaBuildJson::Defs, Json> SchemaBuildJson::getDefinitions(
 }
 
 /*****************************************************************************/
+std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
+{
+	std::string ret;
+
+	switch (inDef)
+	{
+		case Defs::ConfigDebugSymbols: ret = "config-debugSymbols"; break;
+		case Defs::ConfigEnableProfiling: ret = "config-enableProfiling"; break;
+		case Defs::ConfigLinkTimeOptimizations: ret = "config-linkTimeOptimizations"; break;
+		case Defs::ConfigOptimizationLevel: ret = "config-optimizationLevel"; break;
+		case Defs::ConfigStripSymbols: ret = "config-stripSymbols"; break;
+		//
+		case Defs::DistConfiguration: ret = "dist-configuration"; break;
+		case Defs::DistDependencies: ret = "dist-dependencies"; break;
+		case Defs::DistDescription: ret = "dist-description"; break;
+		case Defs::DistExclude: ret = "dist-exclude"; break;
+		case Defs::DistIncludeDependentSharedLibs: ret = "dist-includeDependentSharedLibs"; break;
+		case Defs::DistLinux: ret = "dist-linux"; break;
+		case Defs::DistMacOS: ret = "dist-macos"; break;
+		case Defs::DistMainProject: ret = "dist-mainProject"; break;
+		case Defs::DistOutDirectory: ret = "dist-outDir"; break;
+		case Defs::DistProjects: ret = "dist-projects"; break;
+		case Defs::DistWindows: ret = "dist-windows"; break;
+		//
+		case Defs::ExtGitRepository: ret = "external-git-repository"; break;
+		case Defs::ExtGitBranch: ret = "external-git-branch"; break;
+		case Defs::ExtGitCommit: ret = "external-git-commit"; break;
+		case Defs::ExtGitTag: ret = "external-git-tag"; break;
+		case Defs::ExtGitSubmodules: ret = "external-git-submodules"; break;
+		//
+		case Defs::EnumPlatform: ret = "enum-platform"; break;
+		//
+		case Defs::EnvironmentPath: ret = "environment-path"; break;
+		//
+		case Defs::TargetDescription: ret = "target-description"; break;
+		case Defs::TargetType: ret = "target-type"; break;
+		case Defs::TargetNotInConfiguration: ret = "target-notInConfiguration"; break;
+		case Defs::TargetNotInPlatform: ret = "target-notInPlatform"; break;
+		case Defs::TargetOnlyInConfiguration: ret = "target-onlyInConfiguration"; break;
+		case Defs::TargetOnlyInPlatform: ret = "target-onlyInPlatform"; break;
+		//
+		case Defs::TargetProjectExtends: ret = "target-project-extends"; break;
+		case Defs::TargetProjectFiles: ret = "target-project-files"; break;
+		case Defs::TargetProjectKind: ret = "target-project-kind"; break;
+		case Defs::TargetProjectLocation: ret = "target-project-location"; break;
+		case Defs::TargetProjectLanguage: ret = "target-project-language"; break;
+		case Defs::TargetProjectRunProject: ret = "target-project-runProject"; break;
+		case Defs::TargetProjectRunArguments: ret = "target-project-runArguments"; break;
+		case Defs::TargetProjectRunDependencies: ret = "target-project-runDependencies"; break;
+		//
+		case Defs::TargetProjectCxxCStandard: ret = "target-project-cxx-cStandard"; break;
+		case Defs::TargetProjectCxxCppStandard: ret = "target-project-cxx-cppStandard"; break;
+		case Defs::TargetProjectCxxCompileOptions: ret = "target-project-cxx-compileOptions"; break;
+		case Defs::TargetProjectCxxDefines: ret = "target-project-cxx-defines"; break;
+		case Defs::TargetProjectCxxIncludeDirs: ret = "target-project-cxx-includeDirs"; break;
+		case Defs::TargetProjectCxxLibDirs: ret = "target-project-cxx-libDirs"; break;
+		case Defs::TargetProjectCxxLinkerScript: ret = "target-project-cxx-linkerScript"; break;
+		case Defs::TargetProjectCxxLinkerOptions: ret = "target-project-cxx-linkerOptions"; break;
+		case Defs::TargetProjectCxxLinks: ret = "target-project-cxx-links"; break;
+		case Defs::TargetProjectCxxMacOsFrameworkPaths: ret = "target-project-cxx-macosFrameworkPaths"; break;
+		case Defs::TargetProjectCxxMacOsFrameworks: ret = "target-project-cxx-macosFrameworks"; break;
+		case Defs::TargetProjectCxxObjectiveCxx: ret = "target-project-cxx-objectiveCxx"; break;
+		case Defs::TargetProjectCxxPrecompiledHeader: ret = "target-project-cxx-pch"; break;
+		case Defs::TargetProjectCxxThreads: ret = "target-project-cxx-threads"; break;
+		case Defs::TargetProjectCxxRunTimeTypeInfo: ret = "target-project-cxx-rtti"; break;
+		case Defs::TargetProjectCxxExceptions: ret = "target-project-cxx-exceptions"; break;
+		case Defs::TargetProjectCxxStaticLinking: ret = "target-project-cxx-staticLinking"; break;
+		case Defs::TargetProjectCxxStaticLinks: ret = "target-project-cxx-staticLinks"; break;
+		case Defs::TargetProjectCxxWarnings: ret = "target-project-cxx-warnings"; break;
+		case Defs::TargetProjectCxxWindowsAppManifest: ret = "target-project-cxx-windowsAppManifest"; break;
+		case Defs::TargetProjectCxxWindowsAppIcon: ret = "target-project-cxx-windowsAppIcon"; break;
+		case Defs::TargetProjectCxxWindowsOutputDef: ret = "target-project-cxx-windowsOutputDef"; break;
+		case Defs::TargetProjectCxxWindowsPrefixOutputFilename: ret = "target-project-cxx-windowsPrefixOutputFilename"; break;
+		//
+		case Defs::TargetScriptScript: ret = "target-script-script"; break;
+		//
+		case Defs::TargetCMakeLocation: ret = "target-cmake-location"; break;
+		case Defs::TargetCMakeBuildFile: ret = "target-cmake-buildFile"; break;
+		case Defs::TargetCMakeDefines: ret = "target-cmake-defines"; break;
+		case Defs::TargetCMakeRecheck: ret = "target-cmake-recheck"; break;
+		case Defs::TargetCMakeToolset: ret = "target-cmake-toolset"; break;
+		//
+		case Defs::TargetChaletLocation: ret = "target-chalet-location"; break;
+		case Defs::TargetChaletBuildFile: ret = "target-chalet-buildFile"; break;
+		case Defs::TargetChaletRecheck: ret = "target-chalet-recheck"; break;
+
+		default: break;
+	}
+
+	chalet_assert(!ret.empty(), "");
+
+	return ret;
+}
+
+/*****************************************************************************/
+Json SchemaBuildJson::getDefinition(const Defs inDef)
+{
+	if (m_useRefs)
+	{
+		const auto name = getDefinitionName(inDef);
+		Json ret = Json::object();
+		ret["$ref"] = fmt::format("#/definitions/{}", name);
+
+		return ret;
+	}
+	else
+	{
+		return m_defs.at(inDef);
+	}
+}
+
+/*****************************************************************************/
 Json SchemaBuildJson::get()
 {
 	Json ret;
@@ -1037,11 +1150,17 @@ Json SchemaBuildJson::get()
 		"targets"
 	};
 
-	//
-
 	if (m_defs.empty())
-	{
 		m_defs = getDefinitions();
+
+	if (m_useRefs)
+	{
+		ret[kDefinitions] = Json::object();
+		for (auto& [def, defJson] : m_defs)
+		{
+			const auto name = getDefinitionName(def);
+			ret[kDefinitions][name] = defJson;
+		}
 	}
 
 	auto distributionBundle = R"json({
@@ -1050,19 +1169,19 @@ Json SchemaBuildJson::get()
 		"description": "Variables to describe the final output build."
 	})json"_ojson;
 	distributionBundle[kProperties] = Json::object();
-	distributionBundle[kProperties]["configuration"] = m_defs.at(Defs::DistConfiguration);
-	distributionBundle[kProperties]["dependencies"] = m_defs.at(Defs::DistDependencies);
-	distributionBundle[kProperties]["description"] = m_defs.at(Defs::DistDescription);
-	distributionBundle[kProperties]["exclude"] = m_defs.at(Defs::DistExclude);
-	distributionBundle[kProperties]["includeDependentSharedLibraries"] = m_defs.at(Defs::DistIncludeDependentSharedLibs);
-	distributionBundle[kProperties]["linux"] = m_defs.at(Defs::DistLinux);
-	distributionBundle[kProperties]["macos"] = m_defs.at(Defs::DistMacOS);
-	distributionBundle[kProperties]["windows"] = m_defs.at(Defs::DistWindows);
-	distributionBundle[kProperties]["mainProject"] = m_defs.at(Defs::DistMainProject);
-	distributionBundle[kProperties]["outDir"] = m_defs.at(Defs::DistOutDirectory);
-	distributionBundle[kProperties]["projects"] = m_defs.at(Defs::DistProjects);
-	distributionBundle[kPatternProperties][fmt::format("^dependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::DistDependencies);
-	distributionBundle[kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::DistExclude);
+	distributionBundle[kProperties]["configuration"] = getDefinition(Defs::DistConfiguration);
+	distributionBundle[kProperties]["dependencies"] = getDefinition(Defs::DistDependencies);
+	distributionBundle[kProperties]["description"] = getDefinition(Defs::DistDescription);
+	distributionBundle[kProperties]["exclude"] = getDefinition(Defs::DistExclude);
+	distributionBundle[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistIncludeDependentSharedLibs);
+	distributionBundle[kProperties]["linux"] = getDefinition(Defs::DistLinux);
+	distributionBundle[kProperties]["macos"] = getDefinition(Defs::DistMacOS);
+	distributionBundle[kProperties]["windows"] = getDefinition(Defs::DistWindows);
+	distributionBundle[kProperties]["mainProject"] = getDefinition(Defs::DistMainProject);
+	distributionBundle[kProperties]["outDir"] = getDefinition(Defs::DistOutDirectory);
+	distributionBundle[kProperties]["projects"] = getDefinition(Defs::DistProjects);
+	distributionBundle[kPatternProperties][fmt::format("^dependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistDependencies);
+	distributionBundle[kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistExclude);
 
 	auto externalDependency = R"json({
 		"type": "object",
@@ -1083,94 +1202,94 @@ Json SchemaBuildJson::get()
 		]
 	})json"_ojson;
 	externalDependency[kOneOf][0][kProperties] = Json::object();
-	externalDependency[kOneOf][0][kProperties]["repository"] = m_defs.at(Defs::ExtGitRepository);
-	externalDependency[kOneOf][0][kProperties]["submodules"] = m_defs.at(Defs::ExtGitSubmodules);
-	externalDependency[kOneOf][0][kProperties]["tag"] = m_defs.at(Defs::ExtGitTag);
+	externalDependency[kOneOf][0][kProperties]["repository"] = getDefinition(Defs::ExtGitRepository);
+	externalDependency[kOneOf][0][kProperties]["submodules"] = getDefinition(Defs::ExtGitSubmodules);
+	externalDependency[kOneOf][0][kProperties]["tag"] = getDefinition(Defs::ExtGitTag);
 
 	externalDependency[kOneOf][1][kProperties] = Json::object();
-	externalDependency[kOneOf][1][kProperties]["repository"] = m_defs.at(Defs::ExtGitRepository);
-	externalDependency[kOneOf][1][kProperties]["submodules"] = m_defs.at(Defs::ExtGitSubmodules);
-	externalDependency[kOneOf][1][kProperties]["branch"] = m_defs.at(Defs::ExtGitBranch);
-	externalDependency[kOneOf][1][kProperties]["commit"] = m_defs.at(Defs::ExtGitCommit);
+	externalDependency[kOneOf][1][kProperties]["repository"] = getDefinition(Defs::ExtGitRepository);
+	externalDependency[kOneOf][1][kProperties]["submodules"] = getDefinition(Defs::ExtGitSubmodules);
+	externalDependency[kOneOf][1][kProperties]["branch"] = getDefinition(Defs::ExtGitBranch);
+	externalDependency[kOneOf][1][kProperties]["commit"] = getDefinition(Defs::ExtGitCommit);
 
 	auto projectSettingsCxx = R"json({
 		"type": "object",
 		"additionalProperties": false
 	})json"_ojson;
-	projectSettingsCxx[kProperties]["cStandard"] = m_defs.at(Defs::TargetProjectCxxCStandard);
-	projectSettingsCxx[kProperties]["compileOptions"] = m_defs.at(Defs::TargetProjectCxxCompileOptions);
-	projectSettingsCxx[kProperties]["cppStandard"] = m_defs.at(Defs::TargetProjectCxxCppStandard);
-	projectSettingsCxx[kProperties]["defines"] = m_defs.at(Defs::TargetProjectCxxDefines);
-	projectSettingsCxx[kProperties]["includeDirs"] = m_defs.at(Defs::TargetProjectCxxIncludeDirs);
-	projectSettingsCxx[kProperties]["libDirs"] = m_defs.at(Defs::TargetProjectCxxLibDirs);
-	projectSettingsCxx[kProperties]["linkerScript"] = m_defs.at(Defs::TargetProjectCxxLinkerScript);
-	projectSettingsCxx[kProperties]["linkerOptions"] = m_defs.at(Defs::TargetProjectCxxLinkerOptions);
-	projectSettingsCxx[kProperties]["links"] = m_defs.at(Defs::TargetProjectCxxLinks);
-	projectSettingsCxx[kProperties]["macosFrameworkPaths"] = m_defs.at(Defs::TargetProjectCxxMacOsFrameworkPaths);
+	projectSettingsCxx[kProperties]["cStandard"] = getDefinition(Defs::TargetProjectCxxCStandard);
+	projectSettingsCxx[kProperties]["compileOptions"] = getDefinition(Defs::TargetProjectCxxCompileOptions);
+	projectSettingsCxx[kProperties]["cppStandard"] = getDefinition(Defs::TargetProjectCxxCppStandard);
+	projectSettingsCxx[kProperties]["defines"] = getDefinition(Defs::TargetProjectCxxDefines);
+	projectSettingsCxx[kProperties]["includeDirs"] = getDefinition(Defs::TargetProjectCxxIncludeDirs);
+	projectSettingsCxx[kProperties]["libDirs"] = getDefinition(Defs::TargetProjectCxxLibDirs);
+	projectSettingsCxx[kProperties]["linkerScript"] = getDefinition(Defs::TargetProjectCxxLinkerScript);
+	projectSettingsCxx[kProperties]["linkerOptions"] = getDefinition(Defs::TargetProjectCxxLinkerOptions);
+	projectSettingsCxx[kProperties]["links"] = getDefinition(Defs::TargetProjectCxxLinks);
+	projectSettingsCxx[kProperties]["macosFrameworkPaths"] = getDefinition(Defs::TargetProjectCxxMacOsFrameworkPaths);
 
-	projectSettingsCxx[kProperties]["macosFrameworks"] = m_defs.at(Defs::TargetProjectCxxMacOsFrameworks);
-	projectSettingsCxx[kProperties]["objectiveCxx"] = m_defs.at(Defs::TargetProjectCxxObjectiveCxx);
-	projectSettingsCxx[kProperties]["pch"] = m_defs.at(Defs::TargetProjectCxxPrecompiledHeader);
-	projectSettingsCxx[kProperties]["threads"] = m_defs.at(Defs::TargetProjectCxxThreads);
-	projectSettingsCxx[kProperties]["rtti"] = m_defs.at(Defs::TargetProjectCxxRunTimeTypeInfo);
-	projectSettingsCxx[kProperties]["exceptions"] = m_defs.at(Defs::TargetProjectCxxExceptions);
-	projectSettingsCxx[kProperties]["staticLinking"] = m_defs.at(Defs::TargetProjectCxxStaticLinking);
-	projectSettingsCxx[kProperties]["staticLinks"] = m_defs.at(Defs::TargetProjectCxxStaticLinks);
-	projectSettingsCxx[kProperties]["warnings"] = m_defs.at(Defs::TargetProjectCxxWarnings);
-	projectSettingsCxx[kProperties]["windowsPrefixOutputFilename"] = m_defs.at(Defs::TargetProjectCxxWindowsPrefixOutputFilename);
-	projectSettingsCxx[kProperties]["windowsOutputDef"] = m_defs.at(Defs::TargetProjectCxxWindowsOutputDef);
-	projectSettingsCxx[kProperties]["windowsApplicationIcon"] = m_defs.at(Defs::TargetProjectCxxWindowsAppIcon);
-	projectSettingsCxx[kProperties]["windowsApplicationManifest"] = m_defs.at(Defs::TargetProjectCxxWindowsAppManifest);
+	projectSettingsCxx[kProperties]["macosFrameworks"] = getDefinition(Defs::TargetProjectCxxMacOsFrameworks);
+	projectSettingsCxx[kProperties]["objectiveCxx"] = getDefinition(Defs::TargetProjectCxxObjectiveCxx);
+	projectSettingsCxx[kProperties]["pch"] = getDefinition(Defs::TargetProjectCxxPrecompiledHeader);
+	projectSettingsCxx[kProperties]["threads"] = getDefinition(Defs::TargetProjectCxxThreads);
+	projectSettingsCxx[kProperties]["rtti"] = getDefinition(Defs::TargetProjectCxxRunTimeTypeInfo);
+	projectSettingsCxx[kProperties]["exceptions"] = getDefinition(Defs::TargetProjectCxxExceptions);
+	projectSettingsCxx[kProperties]["staticLinking"] = getDefinition(Defs::TargetProjectCxxStaticLinking);
+	projectSettingsCxx[kProperties]["staticLinks"] = getDefinition(Defs::TargetProjectCxxStaticLinks);
+	projectSettingsCxx[kProperties]["warnings"] = getDefinition(Defs::TargetProjectCxxWarnings);
+	projectSettingsCxx[kProperties]["windowsPrefixOutputFilename"] = getDefinition(Defs::TargetProjectCxxWindowsPrefixOutputFilename);
+	projectSettingsCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::TargetProjectCxxWindowsOutputDef);
+	projectSettingsCxx[kProperties]["windowsApplicationIcon"] = getDefinition(Defs::TargetProjectCxxWindowsAppIcon);
+	projectSettingsCxx[kProperties]["windowsApplicationManifest"] = getDefinition(Defs::TargetProjectCxxWindowsAppManifest);
 
-	projectSettingsCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxCStandard);
-	projectSettingsCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxCppStandard);
-	projectSettingsCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxCompileOptions);
-	projectSettingsCxx[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxDefines);
-	projectSettingsCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxIncludeDirs);
-	projectSettingsCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxLibDirs);
-	projectSettingsCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxLinkerScript);
-	projectSettingsCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxLinkerOptions);
-	projectSettingsCxx[kPatternProperties][fmt::format("^links{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxLinks);
-	projectSettingsCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxObjectiveCxx);
-	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinks{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxStaticLinks);
-	projectSettingsCxx[kPatternProperties][fmt::format("^threads{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxThreads);
-	projectSettingsCxx[kPatternProperties][fmt::format("^rtti{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxRunTimeTypeInfo);
-	projectSettingsCxx[kPatternProperties][fmt::format("^exceptions{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxExceptions);
-	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectCxxStaticLinking);
+	projectSettingsCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxCStandard);
+	projectSettingsCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxCppStandard);
+	projectSettingsCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxCompileOptions);
+	projectSettingsCxx[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxDefines);
+	projectSettingsCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxIncludeDirs);
+	projectSettingsCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxLibDirs);
+	projectSettingsCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxLinkerScript);
+	projectSettingsCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxLinkerOptions);
+	projectSettingsCxx[kPatternProperties][fmt::format("^links{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxLinks);
+	projectSettingsCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxObjectiveCxx);
+	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinks{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxStaticLinks);
+	projectSettingsCxx[kPatternProperties][fmt::format("^threads{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxThreads);
+	projectSettingsCxx[kPatternProperties][fmt::format("^rtti{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxRunTimeTypeInfo);
+	projectSettingsCxx[kPatternProperties][fmt::format("^exceptions{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxExceptions);
+	projectSettingsCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxStaticLinking);
 
 	auto targetProject = R"json({
 		"type": "object",
 		"additionalProperties": false
 	})json"_ojson;
 	targetProject[kProperties]["settings:Cxx"] = std::move(projectSettingsCxx);
-	targetProject[kProperties]["extends"] = m_defs.at(Defs::TargetProjectExtends);
-	targetProject[kProperties]["files"] = m_defs.at(Defs::TargetProjectFiles);
-	targetProject[kProperties]["kind"] = m_defs.at(Defs::TargetProjectKind);
-	targetProject[kProperties]["language"] = m_defs.at(Defs::TargetProjectLanguage);
-	targetProject[kProperties]["location"] = m_defs.at(Defs::TargetProjectLocation);
-	targetProject[kProperties]["onlyInConfiguration"] = m_defs.at(Defs::TargetOnlyInConfiguration);
-	targetProject[kProperties]["notInConfiguration"] = m_defs.at(Defs::TargetNotInConfiguration);
-	targetProject[kProperties]["onlyInPlatform"] = m_defs.at(Defs::TargetOnlyInPlatform);
-	targetProject[kProperties]["notInPlatform"] = m_defs.at(Defs::TargetNotInPlatform);
-	targetProject[kProperties]["runProject"] = m_defs.at(Defs::TargetProjectRunProject);
-	targetProject[kProperties]["runArguments"] = m_defs.at(Defs::TargetProjectRunArguments);
-	targetProject[kProperties]["runDependencies"] = m_defs.at(Defs::TargetProjectRunDependencies);
-	targetProject[kPatternProperties][fmt::format("^runProject{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectRunProject);
-	targetProject[kPatternProperties][fmt::format("^runDependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetProjectRunDependencies);
+	targetProject[kProperties]["extends"] = getDefinition(Defs::TargetProjectExtends);
+	targetProject[kProperties]["files"] = getDefinition(Defs::TargetProjectFiles);
+	targetProject[kProperties]["kind"] = getDefinition(Defs::TargetProjectKind);
+	targetProject[kProperties]["language"] = getDefinition(Defs::TargetProjectLanguage);
+	targetProject[kProperties]["location"] = getDefinition(Defs::TargetProjectLocation);
+	targetProject[kProperties]["onlyInConfiguration"] = getDefinition(Defs::TargetOnlyInConfiguration);
+	targetProject[kProperties]["notInConfiguration"] = getDefinition(Defs::TargetNotInConfiguration);
+	targetProject[kProperties]["onlyInPlatform"] = getDefinition(Defs::TargetOnlyInPlatform);
+	targetProject[kProperties]["notInPlatform"] = getDefinition(Defs::TargetNotInPlatform);
+	targetProject[kProperties]["runProject"] = getDefinition(Defs::TargetProjectRunProject);
+	targetProject[kProperties]["runArguments"] = getDefinition(Defs::TargetProjectRunArguments);
+	targetProject[kProperties]["runDependencies"] = getDefinition(Defs::TargetProjectRunDependencies);
+	targetProject[kPatternProperties][fmt::format("^runProject{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectRunProject);
+	targetProject[kPatternProperties][fmt::format("^runDependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectRunDependencies);
 
 	auto targetScript = R"json({
 		"type": "object",
 		"additionalProperties": false
 	})json"_ojson;
-	targetScript[kProperties]["script"] = m_defs.at(Defs::TargetScriptScript);
+	targetScript[kProperties]["script"] = getDefinition(Defs::TargetScriptScript);
 	targetScript[kProperties]["script"][kDescription] = "Script(s) to run during this build step.";
-	targetScript[kProperties]["description"] = m_defs.at(Defs::TargetDescription);
+	targetScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 	{
 		auto scriptPattern = fmt::format("^script{}{}$", kPatternConfigurations, kPatternPlatforms);
-		targetScript[kPatternProperties][scriptPattern] = m_defs.at(Defs::TargetScriptScript);
+		targetScript[kPatternProperties][scriptPattern] = getDefinition(Defs::TargetScriptScript);
 		targetScript[kPatternProperties][scriptPattern][kDescription] = "Script(s) to run during this build step.";
 	}
-	targetScript[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetDescription);
+	targetScript[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
 
 	auto targetCMake = R"json({
 		"type": "object",
@@ -1181,21 +1300,21 @@ Json SchemaBuildJson::get()
 		],
 		"description": "Build the location with cmake"
 	})json"_ojson;
-	targetCMake[kProperties]["description"] = m_defs.at(Defs::TargetDescription);
-	targetCMake[kProperties]["location"] = m_defs.at(Defs::TargetCMakeLocation);
-	targetCMake[kProperties]["buildFile"] = m_defs.at(Defs::TargetCMakeBuildFile);
-	targetCMake[kProperties]["defines"] = m_defs.at(Defs::TargetCMakeDefines);
-	targetCMake[kProperties]["toolset"] = m_defs.at(Defs::TargetCMakeToolset);
-	targetCMake[kProperties]["recheck"] = m_defs.at(Defs::TargetCMakeRecheck);
-	targetCMake[kProperties]["type"] = m_defs.at(Defs::TargetType);
-	targetCMake[kProperties]["onlyInConfiguration"] = m_defs.at(Defs::TargetOnlyInConfiguration);
-	targetCMake[kProperties]["notInConfiguration"] = m_defs.at(Defs::TargetNotInConfiguration);
-	targetCMake[kProperties]["onlyInPlatform"] = m_defs.at(Defs::TargetOnlyInPlatform);
-	targetCMake[kProperties]["notInPlatform"] = m_defs.at(Defs::TargetNotInPlatform);
-	targetCMake[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetDescription);
-	targetCMake[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetCMakeBuildFile);
-	targetCMake[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetCMakeDefines);
-	targetCMake[kPatternProperties][fmt::format("^toolset{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetCMakeToolset);
+	targetCMake[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+	targetCMake[kProperties]["location"] = getDefinition(Defs::TargetCMakeLocation);
+	targetCMake[kProperties]["buildFile"] = getDefinition(Defs::TargetCMakeBuildFile);
+	targetCMake[kProperties]["defines"] = getDefinition(Defs::TargetCMakeDefines);
+	targetCMake[kProperties]["toolset"] = getDefinition(Defs::TargetCMakeToolset);
+	targetCMake[kProperties]["recheck"] = getDefinition(Defs::TargetCMakeRecheck);
+	targetCMake[kProperties]["type"] = getDefinition(Defs::TargetType);
+	targetCMake[kProperties]["onlyInConfiguration"] = getDefinition(Defs::TargetOnlyInConfiguration);
+	targetCMake[kProperties]["notInConfiguration"] = getDefinition(Defs::TargetNotInConfiguration);
+	targetCMake[kProperties]["onlyInPlatform"] = getDefinition(Defs::TargetOnlyInPlatform);
+	targetCMake[kProperties]["notInPlatform"] = getDefinition(Defs::TargetNotInPlatform);
+	targetCMake[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
+	targetCMake[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetCMakeBuildFile);
+	targetCMake[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetCMakeDefines);
+	targetCMake[kPatternProperties][fmt::format("^toolset{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetCMakeToolset);
 
 	auto targetChalet = R"json({
 		"type": "object",
@@ -1206,17 +1325,17 @@ Json SchemaBuildJson::get()
 		],
 		"description": "Build the location with cmake"
 	})json"_ojson;
-	targetChalet[kProperties]["description"] = m_defs.at(Defs::TargetDescription);
-	targetChalet[kProperties]["location"] = m_defs.at(Defs::TargetChaletLocation);
-	targetChalet[kProperties]["buildFile"] = m_defs.at(Defs::TargetChaletBuildFile);
-	targetChalet[kProperties]["recheck"] = m_defs.at(Defs::TargetChaletRecheck);
-	targetChalet[kProperties]["type"] = m_defs.at(Defs::TargetType);
-	targetChalet[kProperties]["onlyInConfiguration"] = m_defs.at(Defs::TargetOnlyInConfiguration);
-	targetChalet[kProperties]["notInConfiguration"] = m_defs.at(Defs::TargetNotInConfiguration);
-	targetChalet[kProperties]["onlyInPlatform"] = m_defs.at(Defs::TargetOnlyInPlatform);
-	targetChalet[kProperties]["notInPlatform"] = m_defs.at(Defs::TargetNotInPlatform);
-	targetChalet[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetDescription);
-	targetChalet[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::TargetChaletBuildFile);
+	targetChalet[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+	targetChalet[kProperties]["location"] = getDefinition(Defs::TargetChaletLocation);
+	targetChalet[kProperties]["buildFile"] = getDefinition(Defs::TargetChaletBuildFile);
+	targetChalet[kProperties]["recheck"] = getDefinition(Defs::TargetChaletRecheck);
+	targetChalet[kProperties]["type"] = getDefinition(Defs::TargetType);
+	targetChalet[kProperties]["onlyInConfiguration"] = getDefinition(Defs::TargetOnlyInConfiguration);
+	targetChalet[kProperties]["notInConfiguration"] = getDefinition(Defs::TargetNotInConfiguration);
+	targetChalet[kProperties]["onlyInPlatform"] = getDefinition(Defs::TargetOnlyInPlatform);
+	targetChalet[kProperties]["notInPlatform"] = getDefinition(Defs::TargetNotInPlatform);
+	targetChalet[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
+	targetChalet[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetChaletBuildFile);
 
 	//
 	ret[kProperties] = Json::object();
@@ -1248,11 +1367,11 @@ Json SchemaBuildJson::get()
 		"type": "object",
 		"additionalProperties": false
 	})json"_ojson;
-	configuration[kProperties]["debugSymbols"] = m_defs.at(Defs::ConfigDebugSymbols);
-	configuration[kProperties]["enableProfiling"] = m_defs.at(Defs::ConfigEnableProfiling);
-	configuration[kProperties]["linkTimeOptimization"] = m_defs.at(Defs::ConfigLinkTimeOptimizations);
-	configuration[kProperties]["optimizations"] = m_defs.at(Defs::ConfigOptimizationLevel);
-	configuration[kProperties]["stripSymbols"] = m_defs.at(Defs::ConfigStripSymbols);
+	configuration[kProperties]["debugSymbols"] = getDefinition(Defs::ConfigDebugSymbols);
+	configuration[kProperties]["enableProfiling"] = getDefinition(Defs::ConfigEnableProfiling);
+	configuration[kProperties]["linkTimeOptimization"] = getDefinition(Defs::ConfigLinkTimeOptimizations);
+	configuration[kProperties]["optimizations"] = getDefinition(Defs::ConfigOptimizationLevel);
+	configuration[kProperties]["stripSymbols"] = getDefinition(Defs::ConfigStripSymbols);
 
 	ret[kProperties]["configurations"] = R"json({
 		"anyOf": [
@@ -1326,7 +1445,7 @@ Json SchemaBuildJson::get()
 	})json"_ojson;
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][0] = targetProject;
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][1] = targetScript;
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kProperties]["type"] = m_defs.at(Defs::TargetType);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kProperties]["type"] = getDefinition(Defs::TargetType);
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][0]["then"] = targetCMake;
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][1]["then"] = targetChalet;
 
@@ -1348,8 +1467,8 @@ Json SchemaBuildJson::get()
 		"default": "chalet_external"
 	})json"_ojson;
 
-	ret[kProperties]["path"] = m_defs.at(Defs::EnvironmentPath);
-	ret[kPatternProperties][fmt::format("^path{}{}$", kPatternConfigurations, kPatternPlatforms)] = m_defs.at(Defs::EnvironmentPath);
+	ret[kProperties]["path"] = getDefinition(Defs::EnvironmentPath);
+	ret[kPatternProperties][fmt::format("^path{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::EnvironmentPath);
 
 	return ret;
 }
