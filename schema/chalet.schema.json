@@ -1383,24 +1383,6 @@
 				}
 			}
 		},
-		"distribution": {
-			"type": "object",
-			"additionalProperties": false,
-			"description": "A list of bundle descriptors for the distribution.",
-			"patternProperties": {
-				"^[\\w\\-\\+\\.\\ \\(\\)]{3,}$": {
-					"description": "A single bundle or script.",
-					"oneOf": [
-						{
-							"$ref": "#/definitions/target-script"
-						},
-						{
-							"$ref": "#/definitions/distribution"
-						}
-					]
-				}
-			}
-		},
 		"configurations": {
 			"anyOf": [
 				{
@@ -1432,6 +1414,29 @@
 				}
 			]
 		},
+		"distribution": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "A list of bundle descriptors for the distribution.",
+			"patternProperties": {
+				"^[\\w\\-\\+\\.\\ \\(\\)]{3,}$": {
+					"description": "A single bundle or script.",
+					"oneOf": [
+						{
+							"$ref": "#/definitions/target-script"
+						},
+						{
+							"$ref": "#/definitions/distribution"
+						}
+					]
+				}
+			}
+		},
+		"externalDepDir": {
+			"type": "string",
+			"description": "The path to install external dependencies into (see externalDependencies).",
+			"default": "chalet_external"
+		},
 		"externalDependencies": {
 			"type": "object",
 			"additionalProperties": false,
@@ -1441,6 +1446,9 @@
 					"$ref": "#/definitions/external-dependency"
 				}
 			}
+		},
+		"path": {
+			"$ref": "#/definitions/environment-path"
 		},
 		"targets": {
 			"type": "object",
@@ -1503,14 +1511,6 @@
 			"type": "string",
 			"description": "The name of the workspace.",
 			"pattern": "^[\\w\\-\\+ ]+$"
-		},
-		"externalDepDir": {
-			"type": "string",
-			"description": "The path to install external dependencies into (see externalDependencies).",
-			"default": "chalet_external"
-		},
-		"path": {
-			"$ref": "#/definitions/environment-path"
 		}
 	},
 	"patternProperties": {

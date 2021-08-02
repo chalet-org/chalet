@@ -1397,17 +1397,6 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"] = getDefinition(Defs::TargetProject);
 	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"][kDescription] = "An abstract build project. 'all' is implicitely added to each project.";
 
-	ret[kProperties]["distribution"] = R"json({
-		"type": "object",
-		"additionalProperties": false,
-		"description": "A list of bundle descriptors for the distribution."
-	})json"_ojson;
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName] = R"json({
-		"description": "A single bundle or script."
-	})json"_ojson;
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::TargetScript);
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::Dist);
-
 	ret[kProperties]["configurations"] = R"json({
 		"anyOf": [
 			{
@@ -1436,12 +1425,32 @@ Json SchemaBuildJson::get()
 	})json"_ojson;
 	ret[kProperties]["configurations"][kAnyOf][0][kPatternProperties][R"(^[A-Za-z]{3,}$)"] = getDefinition(Defs::Configuration);
 
+	ret[kProperties]["distribution"] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"description": "A list of bundle descriptors for the distribution."
+	})json"_ojson;
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName] = R"json({
+		"description": "A single bundle or script."
+	})json"_ojson;
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::TargetScript);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::Dist);
+
+	ret[kProperties]["externalDepDir"] = R"json({
+		"type": "string",
+		"description": "The path to install external dependencies into (see externalDependencies).",
+		"default": "chalet_external"
+	})json"_ojson;
+
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined in 'externalDepDir'."
 	})json"_ojson;
 	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-\\+\\.]{3,100}$"] = getDefinition(Defs::ExternalDependency);
+
+	ret[kProperties]["path"] = getDefinition(Defs::EnvironmentPath);
+	ret[kPatternProperties][fmt::format("^path{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::EnvironmentPath);
 
 	const auto targets = "targets";
 	ret[kProperties][targets] = R"json({
@@ -1495,15 +1504,6 @@ Json SchemaBuildJson::get()
 		"description": "The name of the workspace.",
 		"pattern": "^[\\w\\-\\+ ]+$"
 	})json"_ojson;
-
-	ret[kProperties]["externalDepDir"] = R"json({
-		"type": "string",
-		"description": "The path to install external dependencies into (see externalDependencies).",
-		"default": "chalet_external"
-	})json"_ojson;
-
-	ret[kProperties]["path"] = getDefinition(Defs::EnvironmentPath);
-	ret[kPatternProperties][fmt::format("^path{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::EnvironmentPath);
 
 	return ret;
 }
