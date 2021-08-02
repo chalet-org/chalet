@@ -29,8 +29,8 @@ SchemaBuildJson::SchemaBuildJson() :
 	kPatternProjectName(R"(^[\w\-\+\.]{3,}$)"),
 	kPatternProjectLinks(R"(^[\w\-\+\.]+$)"),
 	kPatternDistributionName(R"(^[\w\-\+\.\ \(\)]{3,}$)"),
-	kPatternConfigurations(R"((:debug|:!debug|))"),
-	kPatternPlatforms(R"((\.windows|\.macos|\.linux|\.\!windows|\.\!macos|\.\!linux|))")
+	kPatternConfigurations(R"((:!?debug|))"),
+	kPatternPlatforms(R"((\.!?windows|\.!?macos|\.!?linux|))")
 {
 }
 

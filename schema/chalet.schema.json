@@ -46,10 +46,10 @@
 				}
 			},
 			"patternProperties": {
-				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^buildFile(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^buildFile(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-chalet-buildFile"
 				}
 			}
@@ -98,16 +98,16 @@
 				}
 			},
 			"patternProperties": {
-				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^buildFile(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^buildFile(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-cmake-buildFile"
 				},
-				"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^defines(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-cmake-defines"
 				},
-				"^toolset(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^toolset(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-cmake-toolset"
 				}
 			}
@@ -125,11 +125,11 @@
 				}
 			},
 			"patternProperties": {
-				"^script(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^script(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-script-script",
 					"description": "Script(s) to run during this build step."
 				},
-				"^description(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-description"
 				}
 			}
@@ -179,10 +179,10 @@
 				}
 			},
 			"patternProperties": {
-				"^runProject(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^runProject(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-runProject"
 				},
-				"^runDependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^runDependencies(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-runDependencies"
 				}
 			}
@@ -262,49 +262,49 @@
 				}
 			},
 			"patternProperties": {
-				"^cStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^cStandard(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-cStandard"
 				},
-				"^cppStandard(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^cppStandard(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-cppStandard"
 				},
-				"^compileOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^compileOptions(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-compileOptions"
 				},
-				"^defines(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^defines(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-defines"
 				},
-				"^includeDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^includeDirs(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-includeDirs"
 				},
-				"^libDirs(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^libDirs(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-libDirs"
 				},
-				"^linkerScript(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^linkerScript(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-linkerScript"
 				},
-				"^linkerOptions(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^linkerOptions(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-linkerOptions"
 				},
-				"^links(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^links(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-links"
 				},
-				"^objectiveCxx(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^objectiveCxx(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-objectiveCxx"
 				},
-				"^staticLinks(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^staticLinks(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-staticLinks"
 				},
-				"^threads(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^threads(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-threads"
 				},
-				"^rtti(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^rtti(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-rtti"
 				},
-				"^exceptions(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^exceptions(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-exceptions"
 				},
-				"^staticLinking(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^staticLinking(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-cxx-staticLinking"
 				}
 			}
@@ -392,10 +392,10 @@
 				}
 			},
 			"patternProperties": {
-				"^dependencies(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^dependencies(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/dist-dependencies"
 				},
-				"^exclude(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+				"^exclude(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/dist-exclude"
 				}
 			}
@@ -884,7 +884,7 @@
 						"include"
 					],
 					"patternProperties": {
-						"^exclude(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+						"^exclude(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 							"anyOf": [
 								{
 									"type": "string"
@@ -899,7 +899,7 @@
 								}
 							]
 						},
-						"^include(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+						"^include(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 							"anyOf": [
 								{
 									"type": "string"
@@ -1518,7 +1518,7 @@
 			"$ref": "#/definitions/target-project",
 			"description": "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project"
 		},
-		"^path(:debug|:!debug|)(\\.windows|\\.macos|\\.linux|\\.\\!windows|\\.\\!macos|\\.\\!linux|)$": {
+		"^path(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 			"$ref": "#/definitions/environment-path"
 		}
 	}
