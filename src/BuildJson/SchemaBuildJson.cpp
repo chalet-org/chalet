@@ -1190,7 +1190,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 				"type",
 				"location"
 			],
-			"description": "Build the location with cmake"
+			"description": "Build the location with CMake"
 		})json"_ojson;
 		targetCMake[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		targetCMake[kProperties]["location"] = getDefinition(Defs::TargetCMakeLocation);
@@ -1219,7 +1219,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 				"type",
 				"location"
 			],
-			"description": "Build the location with cmake"
+			"description": "Build the location with Chalet"
 		})json"_ojson;
 		targetChalet[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		targetChalet[kProperties]["location"] = getDefinition(Defs::TargetChaletLocation);
