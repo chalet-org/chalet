@@ -15,7 +15,7 @@
 				"type",
 				"location"
 			],
-			"description": "Build the location with cmake",
+			"description": "Build the location with Chalet",
 			"properties": {
 				"description": {
 					"$ref": "#/definitions/target-description"
@@ -61,7 +61,7 @@
 				"type",
 				"location"
 			],
-			"description": "Build the location with cmake",
+			"description": "Build the location with CMake",
 			"properties": {
 				"description": {
 					"$ref": "#/definitions/target-description"
