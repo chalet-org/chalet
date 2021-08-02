@@ -215,7 +215,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"type": "object",
 		"description": "Variables to describe the windows application.",
 		"additionalProperties": false,
-		"required": [],
 		"properties": {
 			"nsisScript": {
 				"type": "string",
