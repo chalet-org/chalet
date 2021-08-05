@@ -5,14 +5,14 @@
 
 ### Features
 
-* Initial release ([3104643](https://github.com/chalet-org/chalet-dev))
+* Initial release [commit](https://github.com/chalet-org/chalet-dev/commit/2a4752a84319b4f3627d43606bdcd68bbfb6b8f6)
 
 ## [0.2.2] [2021-07-08]
 
 ### Bug Fixes
 
-* Numerous
+* Fixed a big ol' bug [issue](https://github.com/chalet-org/chalet-dev/issues/77)
 
 ### Features
 
-* Dev stuff ([f37deea](https://github.com/chalet-org/chalet-dev/commit/f37deea1fdef223bee3dc5436bcf6e472160a8ae))
+* Dev stuff [commit](https://github.com/chalet-org/chalet-dev/commit/f37deea1fdef223bee3dc5436bcf6e472160a8ae)
