@@ -29,11 +29,21 @@ ProjectInitializer::ProjectInitializer(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool ProjectInitializer::run()
 {
+	Color inputColor = Output::theme().alt;
+
 	const auto& path = m_inputs.initPath();
 	if (!Commands::pathExists(path))
 	{
-		Diagnostic::error("Path '{}' does not exist. Please create it first.", path);
-		return false;
+		if (Output::getUserInputYesNo(fmt::format("Directory '{}' does not exist. Create it?", path), inputColor))
+		{
+			if (!Commands::makeDirectory(path))
+			{
+				Diagnostic::error("Error creating directory '{}'", path);
+				return false;
+			}
+		}
+		else
+			return false;
 	}
 
 	// At the moment, only initialize an empty path
@@ -66,8 +76,6 @@ bool ProjectInitializer::run()
 	props.location = "src";
 
 	std::string language = "C++";
-
-	Color inputColor = Output::theme().alt;
 
 	Output::getUserInput("Workspace name:", props.workspaceName, inputColor, "This should identify the entire workspace, as opposed to a build target");
 	Output::getUserInput("Version:", props.version, inputColor, "The initial version of the application or library", [](std::string& input) {
@@ -301,7 +309,8 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 
 	if (result)
 	{
-		Commands::makeDirectory(fmt::format("{}/{}", m_rootPath, inProps.location));
+		auto location = fmt::format("{}/{}", m_rootPath, inProps.location); // src directory
+		Commands::makeDirectory(location);
 
 		if (!makeMainCpp(inProps))
 			result = false;
@@ -329,9 +338,9 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 			auto git = AncillaryTools::getPathToGit();
 			if (!git.empty())
 			{
-				if (!Commands::subprocess({ git, "init", "--quiet" }))
+				if (!Commands::subprocess({ git, "-C", m_rootPath, "init", "--quiet" }))
 					result = false;
-				else if (!Commands::subprocess({ git, "checkout", "-b", "main", "--quiet" }))
+				else if (!Commands::subprocess({ git, "-C", m_rootPath, "checkout", "-b", "main", "--quiet" }))
 					result = false;
 			}
 			else
@@ -348,16 +357,16 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 
 		if (Output::getUserInputYesNo("Run 'chalet configure'?", Output::theme().alt))
 		{
-			if (!String::equals('.', m_inputs.initPath())) // TODO: init > configure from parent dir
-				return true;
-
 			auto appPath = m_inputs.appPath();
 			if (!Commands::pathExists(appPath))
 			{
 				appPath = Commands::which("chalet");
 			}
 
-			if (!Commands::subprocess({ std::move(appPath), "configure" }))
+			auto inputFile = fmt::format("{}/chalet.json", m_rootPath);
+			auto settingsFile = fmt::format("{}/.chaletrc", m_rootPath);
+			auto outputDir = fmt::format("{}/build", m_rootPath);
+			if (!Commands::subprocess({ std::move(appPath), "configure", "--input-file", std::move(inputFile), "--settings-file", std::move(settingsFile), "--output-dir", std::move(outputDir) }))
 				return false;
 		}
 		else
