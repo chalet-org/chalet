@@ -87,7 +87,7 @@ if(WIN32)
 elseif (CLANG)
 	target_link_libraries(${TARGET_NAME} Threads::Threads)
 else()
-	target_link_libraries(${TARGET_NAME} Threads::Threads stdc++fs)
+	target_link_libraries(${TARGET_NAME} Threads::Threads stdc++fs unwind)
 endif()
 
 if(MSVC)

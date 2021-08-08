@@ -263,10 +263,12 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		{
 			searches.emplace_back("llvm-ar");
 		}
+#if defined(CHALET_MACOS)
 		if (toolchain.type == ToolchainType::LLVM || toolchain.type == ToolchainType::GNU)
 		{
 			searches.emplace_back("libtool");
 		}
+#endif
 		searches.push_back(toolchain.archiver);
 
 		for (const auto& search : searches)
