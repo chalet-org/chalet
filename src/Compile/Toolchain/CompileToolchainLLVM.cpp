@@ -56,7 +56,16 @@ void CompileToolchainLLVM::addLibStdCppCompileOption(StringList& outArgList, con
 /*****************************************************************************/
 void CompileToolchainLLVM::addPositionIndependentCodeOption(StringList& outArgList) const
 {
+#if defined(CHALET_LINUX)
+	// if (!m_config.isMingw())
+	{
+		std::string fpic{ "-fPIC" };
+		// if (isFlagSupported(fpic))
+		List::addIfDoesNotExist(outArgList, std::move(fpic));
+	}
+#else
 	UNUSED(outArgList);
+#endif
 }
 
 /*****************************************************************************/
