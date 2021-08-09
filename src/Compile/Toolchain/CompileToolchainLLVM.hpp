@@ -28,7 +28,6 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 
 	// Linking
 	virtual void addStripSymbolsOption(StringList& outArgList) const override;
-	virtual void addThreadModelLinkerOption(StringList& outArgList) const override;
 	virtual void addLinkerScripts(StringList& outArgList) const override;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;
 	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const override;
