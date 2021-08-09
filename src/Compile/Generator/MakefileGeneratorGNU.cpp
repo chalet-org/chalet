@@ -58,7 +58,6 @@ void MakefileGeneratorGNU::addProjectRecipes(const ProjectTarget& inProject, con
 
 build_{hash}: {target}
 	$(NOOP)
-.DELETE_ON_ERROR: build_{hash}
 )makefile",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(buildRecipes),
@@ -80,12 +79,9 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 	const auto printer = getPrinter();
 
 #if defined(CHALET_WIN32)
-	const auto shell = R"(
-SHELL := cmd.exe
-)";
+	const auto shell = "cmd.exe";
 #else
-	// const auto shell = "/bin/sh";
-	std::string shell;
+	const auto shell = "/bin/sh";
 #endif
 
 	auto recipes = String::join(m_targetRecipes);
@@ -93,7 +89,9 @@ SHELL := cmd.exe
 	std::string makeTemplate = fmt::format(R"makefile(
 .SUFFIXES:
 .SUFFIXES: {suffixes}
-{shell}
+
+SHELL := {shell}
+
 NOOP := @{printer}{recipes}
 {depDir}/%.d: ;
 .PRECIOUS: {depDir}/%.d
