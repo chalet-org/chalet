@@ -87,11 +87,15 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		printBuildInformation();
 
 		Output::lineBreak();
+	}
 
-		m_strategy = ICompileStrategy::make(strategy, m_state);
-		if (!m_strategy->initialize(m_state.paths.allFileExtensions()))
-			return false;
+	// Note: We still have to initialize the build when the command is "run"
+	m_strategy = ICompileStrategy::make(strategy, m_state);
+	if (!m_strategy->initialize(m_state.paths.allFileExtensions()))
+		return false;
 
+	if (!runCommand)
+	{
 		for (auto& target : m_state.targets)
 		{
 			if (target->isProject())
@@ -100,9 +104,9 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 					return false;
 			}
 		}
-
-		m_strategy->saveBuildFile();
 	}
+
+	m_strategy->saveBuildFile();
 
 	bool multiTarget = m_state.targets.size() > 1;
 
