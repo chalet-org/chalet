@@ -482,23 +482,139 @@
 				}
 			]
 		},
-		"target-project-cxx-windowsPrefixOutputFilename": {
-			"type": "boolean",
-			"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
-			"default": true
+		"target-notInPlatform": {
+			"description": "Don't compile this project on specific platform(s)",
+			"oneOf": [
+				{
+					"type": "string",
+					"enum": [
+						"windows",
+						"macos",
+						"linux"
+					]
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"enum": [
+							"windows",
+							"macos",
+							"linux"
+						]
+					}
+				}
+			]
 		},
-		"target-project-cxx-windowsOutputDef": {
+		"target-notInConfiguration": {
+			"description": "Don't compile this project in specific build configuration(s)",
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string"
+					}
+				}
+			]
+		},
+		"target-description": {
+			"type": "string",
+			"description": "A description of the target to display during the build."
+		},
+		"environment-path": {
+			"type": "array",
+			"description": "Any additional paths to include.",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string"
+			}
+		},
+		"enum-platform": {
+			"type": "string",
+			"enum": [
+				"windows",
+				"macos",
+				"linux"
+			]
+		},
+		"external-git-submodules": {
 			"type": "boolean",
-			"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
+			"description": "Do submodules need to be cloned?",
 			"default": false
 		},
-		"target-project-cxx-windowsAppIcon": {
+		"external-git-tag": {
 			"type": "string",
-			"description": "The windows icon to use for the project. Only applies to application targets (kind=[consoleApplication|desktopApplication])"
+			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
 		},
-		"target-project-cxx-windowsAppManifest": {
-			"description": "The path to a Windows application manifest. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
-			"type": "string"
+		"external-git-commit": {
+			"type": "string",
+			"description": "The SHA1 hash of the commit to checkout.",
+			"pattern": "^[0-9a-f]{7,40}$"
+		},
+		"external-git-branch": {
+			"type": "string",
+			"description": "The branch to checkout. Uses the repository's default if not set."
+		},
+		"external-git-repository": {
+			"type": "string",
+			"description": "The url of the git repository.",
+			"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
+		},
+		"dist-windows": {
+			"type": "object",
+			"description": "Variables to describe the windows application.",
+			"additionalProperties": false,
+			"properties": {
+				"nsisScript": {
+					"type": "string",
+					"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target."
+				}
+			}
+		},
+		"dist-projects": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "An array of projects to include",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"description": "The name of the project",
+				"pattern": "^[\\w\\-\\+\\.]{3,}$"
+			}
+		},
+		"dist-outDir": {
+			"type": "string",
+			"description": "The output folder to place the final build along with all of its dependencies.",
+			"default": "dist"
+		},
+		"target-onlyInConfiguration": {
+			"description": "Only compile this project in specific build configuration(s)",
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string"
+					}
+				}
+			]
+		},
+		"config-debugSymbols": {
+			"type": "boolean",
+			"description": "true to include debug symbols, false otherwise.",
+			"default": false
 		},
 		"target-project-cxx-warnings": {
 			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
@@ -820,207 +936,9 @@
 				}
 			]
 		},
-		"target-project-cxx-staticLinks": {
-			"type": "array",
-			"description": "A list of static links to use with the linker",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"pattern": "^[\\w\\-\\+\\.]+$"
-			}
-		},
-		"target-project-cxx-staticLinking": {
-			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
-			"type": "boolean",
-			"default": false
-		},
-		"target-project-cxx-exceptions": {
-			"type": "boolean",
-			"description": "true to use exceptions (default), false to turn off exceptions.",
-			"default": true
-		},
-		"target-project-cxx-rtti": {
-			"type": "boolean",
-			"description": "true to include run-time type information (default), false to exclude.",
-			"default": true
-		},
-		"target-project-cxx-threads": {
+		"dist-mainProject": {
 			"type": "string",
-			"enum": [
-				"auto",
-				"posix",
-				"none"
-			],
-			"default": "auto"
-		},
-		"target-project-cxx-pch": {
-			"type": "string",
-			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
-		},
-		"target-project-cxx-objectiveCxx": {
-			"type": "boolean",
-			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
-			"default": false
-		},
-		"target-project-location": {
-			"description": "The root path of the source files, relative to the working directory.",
-			"oneOf": [
-				{
-					"type": "string"
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string"
-					}
-				},
-				{
-					"type": "object",
-					"additionalProperties": false,
-					"required": [
-						"include"
-					],
-					"patternProperties": {
-						"^exclude(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "array",
-									"uniqueItems": true,
-									"minItems": 1,
-									"items": {
-										"type": "string"
-									}
-								}
-							]
-						},
-						"^include(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "array",
-									"uniqueItems": true,
-									"minItems": 1,
-									"items": {
-										"type": "string"
-									}
-								}
-							]
-						}
-					}
-				}
-			]
-		},
-		"target-project-cxx-libDirs": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
-			"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
-			"items": {
-				"type": "string"
-			}
-		},
-		"target-project-cxx-includeDirs": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
-			"description": "A list of directories to include with the project.",
-			"items": {
-				"type": "string"
-			}
-		},
-		"target-project-cxx-defines": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
-			"description": "Macro definitions to be used by the preprocessor",
-			"items": {
-				"type": "string"
-			}
-		},
-		"target-project-cxx-cppStandard": {
-			"type": "string",
-			"description": "The C++ standard to use in the compilation",
-			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
-			"default": "c++17"
-		},
-		"target-project-cxx-compileOptions": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
-			"description": "Options to add during the compilation step.",
-			"items": {
-				"type": "string"
-			}
-		},
-		"target-project-cxx-cStandard": {
-			"type": "string",
-			"description": "The C standard to use in the compilation",
-			"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
-			"default": "c11"
-		},
-		"target-project-runDependencies": {
-			"type": "array",
-			"uniqueItems": true,
-			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
-			"minItems": 1,
-			"items": {
-				"type": "string"
-			}
-		},
-		"target-project-runArguments": {
-			"type": "array",
-			"description": "If the project is the run target, a string of arguments to pass to the run command.",
-			"minItems": 1,
-			"items": {
-				"type": "string"
-			}
-		},
-		"target-project-runProject": {
-			"type": "boolean",
-			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
-			"default": false
-		},
-		"target-project-language": {
-			"type": "string",
-			"description": "The target language of the project.",
-			"enum": [
-				"C",
-				"C++"
-			],
-			"default": "C++"
-		},
-		"target-project-kind": {
-			"type": "string",
-			"description": "The type of the project's compiled binary.",
-			"enum": [
-				"staticLibrary",
-				"sharedLibrary",
-				"consoleApplication",
-				"desktopApplication"
-			]
-		},
-		"target-project-files": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
-			"description": "Explicitly define the source files, relative to the working directory.",
-			"items": {
-				"type": "string"
-			}
-		},
-		"target-project-extends": {
-			"type": "string",
-			"description": "A project template to extend. Defaults to 'all' implicitly.",
-			"pattern": "^[A-Za-z_-]+$",
-			"default": "all"
+			"description": "The main executable project."
 		},
 		"target-onlyInPlatform": {
 			"description": "Only compile this project on specific platform(s)",
@@ -1048,121 +966,104 @@
 				}
 			]
 		},
-		"target-onlyInConfiguration": {
-			"description": "Only compile this project in specific build configuration(s)",
-			"oneOf": [
-				{
-					"type": "string"
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string"
-					}
-				}
-			]
-		},
-		"target-notInPlatform": {
-			"description": "Don't compile this project on specific platform(s)",
-			"oneOf": [
-				{
-					"type": "string",
-					"enum": [
-						"windows",
-						"macos",
-						"linux"
-					]
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"enum": [
-							"windows",
-							"macos",
-							"linux"
-						]
-					}
-				}
-			]
-		},
-		"target-notInConfiguration": {
-			"description": "Don't compile this project in specific build configuration(s)",
-			"oneOf": [
-				{
-					"type": "string"
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string"
-					}
-				}
-			]
-		},
-		"target-description": {
-			"type": "string",
-			"description": "A description of the target to display during the build."
-		},
-		"external-git-submodules": {
+		"config-enableProfiling": {
 			"type": "boolean",
-			"description": "Do submodules need to be cloned?",
+			"description": "true to enable profiling for this configuration, false otherwise.",
 			"default": false
 		},
-		"external-git-tag": {
+		"target-project-cxx-windowsAppManifest": {
+			"description": "The path to a Windows application manifest. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
+			"type": "string"
+		},
+		"config-linkTimeOptimizations": {
+			"type": "boolean",
+			"description": "true to use link-time optimization, false otherwise.",
+			"default": false
+		},
+		"target-project-cxx-windowsAppIcon": {
 			"type": "string",
-			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
+			"description": "The windows icon to use for the project. Only applies to application targets (kind=[consoleApplication|desktopApplication])"
 		},
-		"external-git-commit": {
+		"target-project-extends": {
 			"type": "string",
-			"description": "The SHA1 hash of the commit to checkout.",
-			"pattern": "^[0-9a-f]{7,40}$"
+			"description": "A project template to extend. Defaults to 'all' implicitly.",
+			"pattern": "^[A-Za-z_-]+$",
+			"default": "all"
 		},
-		"external-git-branch": {
+		"config-optimizationLevel": {
 			"type": "string",
-			"description": "The branch to checkout. Uses the repository's default if not set."
+			"description": "The optimization level of the build.",
+			"enum": [
+				"0",
+				"1",
+				"2",
+				"3",
+				"debug",
+				"size",
+				"fast"
+			]
 		},
-		"external-git-repository": {
+		"target-project-cxx-windowsOutputDef": {
+			"type": "boolean",
+			"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
+			"default": false
+		},
+		"config-stripSymbols": {
+			"type": "boolean",
+			"description": "true to strip symbols from the build, false otherwise.",
+			"default": false
+		},
+		"target-project-cxx-windowsPrefixOutputFilename": {
+			"type": "boolean",
+			"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
+			"default": true
+		},
+		"dist-configuration": {
 			"type": "string",
-			"description": "The url of the git repository.",
-			"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
+			"description": "The name of the build configuration to use for the distribution.",
+			"default": "Release"
 		},
-		"dist-windows": {
-			"type": "object",
-			"description": "Variables to describe the windows application.",
-			"additionalProperties": false,
-			"properties": {
-				"nsisScript": {
-					"type": "string",
-					"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target."
-				}
-			}
-		},
-		"dist-projects": {
+		"dist-dependencies": {
 			"type": "array",
 			"uniqueItems": true,
-			"description": "An array of projects to include",
 			"minItems": 1,
 			"items": {
-				"type": "string",
-				"description": "The name of the project",
-				"pattern": "^[\\w\\-\\+\\.]{3,}$"
+				"type": "string"
 			}
 		},
-		"dist-outDir": {
-			"type": "string",
-			"description": "The output folder to place the final build along with all of its dependencies.",
-			"default": "dist"
+		"dist-description": {
+			"type": "string"
 		},
-		"dist-mainProject": {
-			"type": "string",
-			"description": "The main executable project."
+		"dist-exclude": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string"
+			}
+		},
+		"dist-includeDependentSharedLibs": {
+			"type": "boolean",
+			"default": true
+		},
+		"dist-linux": {
+			"type": "object",
+			"description": "Variables to describe the linux application.",
+			"additionalProperties": false,
+			"required": [
+				"icon",
+				"desktopEntry"
+			],
+			"properties": {
+				"desktopEntry": {
+					"type": "string",
+					"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated."
+				},
+				"icon": {
+					"type": "string",
+					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
+				}
+			}
 		},
 		"dist-macos": {
 			"type": "object",
@@ -1231,69 +1132,116 @@
 				}
 			}
 		},
-		"dist-includeDependentSharedLibs": {
-			"type": "boolean",
-			"default": true
-		},
-		"dist-exclude": {
+		"target-project-files": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
+			"description": "Explicitly define the source files, relative to the working directory.",
 			"items": {
 				"type": "string"
 			}
 		},
-		"dist-description": {
-			"type": "string"
-		},
-		"dist-dependencies": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string"
-			}
-		},
-		"dist-configuration": {
+		"target-project-kind": {
 			"type": "string",
-			"description": "The name of the build configuration to use for the distribution.",
-			"default": "Release"
+			"description": "The type of the project's compiled binary.",
+			"enum": [
+				"staticLibrary",
+				"sharedLibrary",
+				"consoleApplication",
+				"desktopApplication"
+			]
 		},
-		"target-project-cxx-macosFrameworks": {
-			"type": "array",
-			"description": "A list of MacOS Frameworks to link to the project",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string"
-			}
+		"target-project-language": {
+			"type": "string",
+			"description": "The target language of the project.",
+			"enum": [
+				"C",
+				"C++"
+			],
+			"default": "C++"
 		},
-		"config-stripSymbols": {
+		"target-project-runProject": {
 			"type": "boolean",
-			"description": "true to strip symbols from the build, false otherwise.",
+			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
 			"default": false
 		},
-		"target-project-cxx-macosFrameworkPaths": {
+		"target-project-runArguments": {
 			"type": "array",
-			"description": "A list of paths to search for MacOS Frameworks",
-			"uniqueItems": true,
+			"description": "If the project is the run target, a string of arguments to pass to the run command.",
 			"minItems": 1,
 			"items": {
 				"type": "string"
 			}
 		},
-		"config-optimizationLevel": {
+		"target-project-runDependencies": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
+			"minItems": 1,
+			"items": {
+				"type": "string"
+			}
+		},
+		"target-project-cxx-cStandard": {
 			"type": "string",
-			"description": "The optimization level of the build.",
-			"enum": [
-				"0",
-				"1",
-				"2",
-				"3",
-				"debug",
-				"size",
-				"fast"
-			]
+			"description": "The C standard to use in the compilation",
+			"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
+			"default": "c11"
+		},
+		"target-project-cxx-compileOptions": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "Options to add during the compilation step.",
+			"items": {
+				"type": "string"
+			}
+		},
+		"target-project-cxx-cppStandard": {
+			"type": "string",
+			"description": "The C++ standard to use in the compilation",
+			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
+			"default": "c++17"
+		},
+		"target-project-cxx-defines": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "Macro definitions to be used by the preprocessor",
+			"items": {
+				"type": "string"
+			}
+		},
+		"target-project-cxx-includeDirs": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "A list of directories to include with the project.",
+			"items": {
+				"type": "string"
+			}
+		},
+		"target-project-cxx-libDirs": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
+			"items": {
+				"type": "string"
+			}
+		},
+		"target-project-cxx-linkerScript": {
+			"type": "string",
+			"description": "An LD linker script path (.ld file) to pass to the linker command"
+		},
+		"target-project-cxx-linkerOptions": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "Options to add during the linking step.",
+			"items": {
+				"type": "string"
+			}
 		},
 		"target-project-cxx-links": {
 			"type": "array",
@@ -1305,69 +1253,121 @@
 				"pattern": "^[\\w\\-\\+\\.]+$"
 			}
 		},
-		"config-linkTimeOptimizations": {
-			"type": "boolean",
-			"description": "true to use link-time optimization, false otherwise.",
-			"default": false
-		},
-		"environment-path": {
-			"type": "array",
-			"description": "Any additional paths to include.",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string"
-			}
-		},
-		"target-project-cxx-linkerOptions": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
-			"description": "Options to add during the linking step.",
-			"items": {
-				"type": "string"
-			}
-		},
-		"config-enableProfiling": {
-			"type": "boolean",
-			"description": "true to enable profiling for this configuration, false otherwise.",
-			"default": false
-		},
-		"dist-linux": {
-			"type": "object",
-			"description": "Variables to describe the linux application.",
-			"additionalProperties": false,
-			"required": [
-				"icon",
-				"desktopEntry"
-			],
-			"properties": {
-				"desktopEntry": {
-					"type": "string",
-					"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated."
+		"target-project-location": {
+			"description": "The root path of the source files, relative to the working directory.",
+			"oneOf": [
+				{
+					"type": "string"
 				},
-				"icon": {
-					"type": "string",
-					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string"
+					}
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": [
+						"include"
+					],
+					"patternProperties": {
+						"^exclude(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"minItems": 1,
+									"items": {
+										"type": "string"
+									}
+								}
+							]
+						},
+						"^include(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"minItems": 1,
+									"items": {
+										"type": "string"
+									}
+								}
+							]
+						}
+					}
 				}
-			}
-		},
-		"enum-platform": {
-			"type": "string",
-			"enum": [
-				"windows",
-				"macos",
-				"linux"
 			]
 		},
-		"target-project-cxx-linkerScript": {
-			"type": "string",
-			"description": "An LD linker script path (.ld file) to pass to the linker command"
+		"target-project-cxx-macosFrameworkPaths": {
+			"type": "array",
+			"description": "A list of paths to search for MacOS Frameworks",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string"
+			}
 		},
-		"config-debugSymbols": {
+		"target-project-cxx-macosFrameworks": {
+			"type": "array",
+			"description": "A list of MacOS Frameworks to link to the project",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string"
+			}
+		},
+		"target-project-cxx-objectiveCxx": {
 			"type": "boolean",
-			"description": "true to include debug symbols, false otherwise.",
+			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 			"default": false
+		},
+		"target-project-cxx-pch": {
+			"type": "string",
+			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
+		},
+		"target-project-cxx-threads": {
+			"type": "string",
+			"enum": [
+				"auto",
+				"posix",
+				"none"
+			],
+			"default": "auto"
+		},
+		"target-project-cxx-rtti": {
+			"type": "boolean",
+			"description": "true to include run-time type information (default), false to exclude.",
+			"default": true
+		},
+		"target-project-cxx-exceptions": {
+			"type": "boolean",
+			"description": "true to use exceptions (default), false to turn off exceptions.",
+			"default": true
+		},
+		"target-project-cxx-staticLinking": {
+			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
+			"type": "boolean",
+			"default": false
+		},
+		"target-project-cxx-staticLinks": {
+			"type": "array",
+			"description": "A list of static links to use with the linker",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"pattern": "^[\\w\\-\\+\\.]+$"
+			}
 		}
 	},
 	"properties": {

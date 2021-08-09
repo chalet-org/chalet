@@ -58,6 +58,7 @@ void MakefileGeneratorGNU::addProjectRecipes(const ProjectTarget& inProject, con
 
 build_{hash}: {target}
 	$(NOOP)
+.PHONY: build_{hash}
 )makefile",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(buildRecipes),
@@ -98,8 +99,6 @@ NOOP := @{printer}{recipes}
 
 -include $(DEPS_{hash})
 
-.DEFAULT:
-	$(NOOP)
 )makefile",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(suffixes),
