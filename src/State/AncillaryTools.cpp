@@ -70,6 +70,8 @@ bool AncillaryTools::validate()
 			}
 		}
 	}
+#else
+	UNUSED(m_inputs);
 #endif
 
 	return true;
