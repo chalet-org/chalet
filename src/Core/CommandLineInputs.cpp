@@ -565,7 +565,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::LLVM;
+#if defined(CHALET_LINUX)
+		ret.strategy = StrategyType::Ninja;
+#else
 		ret.strategy = StrategyType::Makefile;
+#endif
 		ret.cpp = "clang++";
 		ret.cc = "clang";
 		ret.rc = "llvm-rc";
