@@ -80,9 +80,12 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 	const auto printer = getPrinter();
 
 #if defined(CHALET_WIN32)
-	const auto shell = "cmd.exe";
+	const auto shell = R"(
+SHELL := cmd.exe
+)";
 #else
-	const auto shell = "/bin/sh";
+	// const auto shell = "/bin/sh";
+	std::string shell;
 #endif
 
 	auto recipes = String::join(m_targetRecipes);
@@ -90,9 +93,7 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 	std::string makeTemplate = fmt::format(R"makefile(
 .SUFFIXES:
 .SUFFIXES: {suffixes}
-
-SHELL := {shell}
-
+{shell}
 NOOP := @{printer}{recipes}
 {depDir}/%.d: ;
 .PRECIOUS: {depDir}/%.d
