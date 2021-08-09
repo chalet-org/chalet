@@ -131,7 +131,11 @@ void CompileToolchainLLVM::addStripSymbolsOption(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainLLVM::addThreadModelLinkerOption(StringList& outArgList) const
 {
+#if defined(CHALET_LINUX)
+	CompileToolchainGNU::addThreadModelLinkerOption(outArgList);
+#else
 	UNUSED(outArgList);
+#endif
 }
 
 /*****************************************************************************/

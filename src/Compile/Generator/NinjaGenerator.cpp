@@ -56,17 +56,20 @@ void NinjaGenerator::addProjectRecipes(const ProjectTarget& inProject, const Sou
 		}
 	}
 
+	const std::string keyword = m_project->isStaticLibrary() ? "archive" : "link";
+
 	//
 	//
 	//
 	//
 	// ==============================================================================
 	std::string ninjaTemplate = fmt::format(R"ninja({rules}{buildRules}
-build {target}: link_{hash} {objects}
+build {target}: {keyword}_{hash} {objects}
 
 build build_{hash}: phony | {target}
 )ninja",
 		fmt::arg("hash", m_hash),
+		FMT_ARG(keyword),
 		FMT_ARG(rules),
 		FMT_ARG(buildRules),
 		FMT_ARG(objects),
@@ -137,6 +140,7 @@ std::string NinjaGenerator::getRules(const SourceTypeList& inTypes)
 	}
 
 	rules += getLinkRule();
+	rules += '\n';
 
 	return rules;
 }
@@ -367,13 +371,15 @@ std::string NinjaGenerator::getLinkRule()
 	if (!linkerCommand.empty())
 	{
 		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+		const std::string keyword = m_project->isStaticLibrary() ? "archive" : "link";
 
 		ret = fmt::format(R"ninja(
-rule link_{hash}
+rule {keyword}_{hash}
   description = {description} $out
   command = {linkerCommand}
 )ninja",
 			fmt::arg("hash", m_hash),
+			FMT_ARG(keyword),
 			FMT_ARG(description),
 			FMT_ARG(linkerCommand));
 	}

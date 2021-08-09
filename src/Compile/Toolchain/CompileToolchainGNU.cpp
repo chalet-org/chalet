@@ -910,7 +910,6 @@ void CompileToolchainGNU::addThreadModelLinkerOption(StringList& outArgList) con
 		}
 		else
 		{
-			List::addIfDoesNotExist(outArgList, "-lpthread");
 			List::addIfDoesNotExist(outArgList, "-pthread");
 		}
 	}
