@@ -103,7 +103,7 @@ class SchemaBuildJson
 		TargetChaletBuildFile,
 		TargetChaletRecheck,
 	};
-	using DefinitionMap = std::unordered_map<Defs, Json>;
+	using DefinitionMap = std::map<Defs, Json>;
 
 public:
 	SchemaBuildJson();
