@@ -240,12 +240,14 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 	std::string ret;
 
 	const bool usePch = m_project->usesPch();
+	const auto& objDir = m_state.paths.objDir();
 
-	if (usePch && !List::contains(m_precompiledHeaders, source))
+	auto intermediateSource = fmt::format("{}/{}", objDir, source);
+	if (usePch && !List::contains(m_precompiledHeaders, intermediateSource))
 	{
 		const auto quietFlag = getQuietFlag();
 		const auto& depDir = m_state.paths.depDir();
-		m_precompiledHeaders.push_back(source);
+		m_precompiledHeaders.push_back(intermediateSource);
 
 		auto dependency = fmt::format("{}/{}", depDir, source);
 
@@ -254,25 +256,30 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 
 		const auto compileEcho = getCompileEchoSources();
 
-		auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
-		if (m_generateDependencies)
+		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(fmt::format("{}.cxx", intermediateSource), "$@", m_generateDependencies, tempDependency));
+		if (!pchCompile.empty())
 		{
-			const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-			pchCompile += fmt::format(" && {}", moveDependencies);
-		}
+			std::string moveDependencies;
+			if (m_generateDependencies)
+			{
+				moveDependencies = getMoveCommand(tempDependency, dependency);
+			}
 
-		ret = fmt::format(R"makefile(
-{object}: {source}
-{object}: {source} {dependency}
+			ret = fmt::format(R"makefile(
+{object}: {intermediateSource}
+{object}: {intermediateSource} {intermediateSource}.cxx {dependency}
 	{compileEcho}
 	{quietFlag}{pchCompile}
+	{quietFlag}{moveDependencies}
 )makefile",
-			FMT_ARG(object),
-			FMT_ARG(source),
-			FMT_ARG(compileEcho),
-			FMT_ARG(quietFlag),
-			FMT_ARG(pchCompile),
-			FMT_ARG(dependency));
+				FMT_ARG(object),
+				FMT_ARG(intermediateSource),
+				FMT_ARG(compileEcho),
+				FMT_ARG(quietFlag),
+				FMT_ARG(pchCompile),
+				FMT_ARG(moveDependencies),
+				FMT_ARG(dependency));
+		}
 	}
 
 	return ret;
@@ -290,7 +297,6 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
 	const auto compileEcho = getCompileEchoSources();
-	const auto pchPreReq = getPchOrderOnlyPreReq();
 
 	for (auto& location : m_project->locations())
 	{
@@ -303,40 +309,43 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 		dependency += ".d";
 
 		auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
-		if (m_generateDependencies)
+		std::string moveDependencies;
+		if (!rcCompile.empty())
 		{
+			if (m_generateDependencies)
+			{
 #if defined(CHALET_WIN32)
-			if (m_state.toolchain.usingLlvmRC())
-			{
-				const auto fallback = getFallbackMakeDependsCommand(dependency, "$<", "$@");
-				rcCompile += fmt::format(" && {}", fallback);
-			}
-			else
+				if (m_state.toolchain.usingLlvmRC())
+				{
+					moveDependencies = getFallbackMakeDependsCommand(dependency, "$<", "$@");
+				}
+				else
 #endif
-			{
-				const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-				rcCompile += fmt::format(" && {}", moveDependencies);
+				{
+					moveDependencies = getMoveCommand(tempDependency, dependency);
+				}
 			}
-		}
 
-		ret += fmt::format(R"makefile(
+			ret += fmt::format(R"makefile(
 {objDir}/{location}/%.{ext}.res: {location}/%.{ext}
-{objDir}/{location}/%.{ext}.res: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d{pchPreReq}
+{objDir}/{location}/%.{ext}.res: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{rcCompile}
+	{quietFlag}{moveDependencies}
 )makefile",
-			FMT_ARG(objDir),
-			FMT_ARG(depDir),
-			FMT_ARG(ext),
-			FMT_ARG(location),
-			FMT_ARG(pchTarget),
-			FMT_ARG(dependency),
-			FMT_ARG(pchPreReq),
-			FMT_ARG(compileEcho),
-			FMT_ARG(quietFlag),
-			FMT_ARG(rcCompile));
+				FMT_ARG(objDir),
+				FMT_ARG(depDir),
+				FMT_ARG(ext),
+				FMT_ARG(location),
+				FMT_ARG(pchTarget),
+				FMT_ARG(dependency),
+				FMT_ARG(compileEcho),
+				FMT_ARG(quietFlag),
+				FMT_ARG(rcCompile),
+				FMT_ARG(moveDependencies));
 
-		m_locationCache[location].push_back(ext);
+			m_locationCache[location].push_back(ext);
+		}
 	}
 
 	return ret;
@@ -354,7 +363,6 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
 	const auto compileEcho = getCompileEchoSources();
-	const auto pchPreReq = getPchOrderOnlyPreReq();
 
 	for (auto& location : m_project->locations())
 	{
@@ -368,30 +376,34 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 
 		const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 		auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
-		if (m_generateDependencies)
+		if (!cppCompile.empty())
 		{
-			const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-			cppCompile += fmt::format(" && {}", moveDependencies);
-		}
+			std::string moveDependencies;
+			if (m_generateDependencies)
+			{
+				moveDependencies = getMoveCommand(tempDependency, dependency);
+			}
 
-		ret += fmt::format(R"makefile(
+			ret += fmt::format(R"makefile(
 {objDir}/{location}/%.{ext}.o: {location}/%.{ext}
-{objDir}/{location}/%.{ext}.o: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d{pchPreReq}
+{objDir}/{location}/%.{ext}.o: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{cppCompile}
+	{quietFlag}{moveDependencies}
 )makefile",
-			FMT_ARG(objDir),
-			FMT_ARG(depDir),
-			FMT_ARG(ext),
-			FMT_ARG(location),
-			FMT_ARG(pchTarget),
-			FMT_ARG(dependency),
-			FMT_ARG(pchPreReq),
-			FMT_ARG(compileEcho),
-			FMT_ARG(quietFlag),
-			FMT_ARG(cppCompile));
+				FMT_ARG(objDir),
+				FMT_ARG(depDir),
+				FMT_ARG(ext),
+				FMT_ARG(location),
+				FMT_ARG(pchTarget),
+				FMT_ARG(dependency),
+				FMT_ARG(compileEcho),
+				FMT_ARG(quietFlag),
+				FMT_ARG(moveDependencies),
+				FMT_ARG(cppCompile));
 
-		m_locationCache[location].push_back(ext);
+			m_locationCache[location].push_back(ext);
+		}
 	}
 
 	return ret;
@@ -411,7 +423,6 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
 	const auto compileEcho = getCompileEchoSources();
-	const auto pchPreReq = getPchOrderOnlyPreReq();
 
 	for (auto& location : m_project->locations())
 	{
@@ -425,29 +436,33 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
 
 		const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCPlusPlus;
 		auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
-		if (m_generateDependencies)
+		if (!objcCompile.empty())
 		{
-			const auto moveDependencies = getMoveCommand(tempDependency, dependency);
-			objcCompile += fmt::format(" && {}", moveDependencies);
-		}
+			std::string moveDependencies;
+			if (m_generateDependencies)
+			{
+				moveDependencies = getMoveCommand(tempDependency, dependency);
+			}
 
-		ret += fmt::format(R"makefile(
+			ret += fmt::format(R"makefile(
 {objDir}/{location}/%.{ext}.o: {location}/%.{ext}
-{objDir}/{location}/%.{ext}.o: {location}/%.{ext} {depDir}/{location}/%.{ext}.d{pchPreReq}
+{objDir}/{location}/%.{ext}.o: {location}/%.{ext} {depDir}/{location}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{objcCompile}
+	{quietFlag}{moveDependencies}
 )makefile",
-			FMT_ARG(objDir),
-			FMT_ARG(depDir),
-			FMT_ARG(ext),
-			FMT_ARG(location),
-			FMT_ARG(dependency),
-			FMT_ARG(pchPreReq),
-			FMT_ARG(compileEcho),
-			FMT_ARG(quietFlag),
-			FMT_ARG(objcCompile));
+				FMT_ARG(objDir),
+				FMT_ARG(depDir),
+				FMT_ARG(ext),
+				FMT_ARG(location),
+				FMT_ARG(dependency),
+				FMT_ARG(compileEcho),
+				FMT_ARG(quietFlag),
+				FMT_ARG(objcCompile),
+				FMT_ARG(moveDependencies));
 
-		m_locationCache[location].push_back(ext);
+			m_locationCache[location].push_back(ext);
+		}
 	}
 
 	return ret;
@@ -483,33 +498,24 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(*m_project);
 	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, { fmt::format("$(OBJS_{})", m_hash) }, linkerTargetBase));
-	const auto compileEcho = getCompileEchoLinker();
-	const auto printer = getPrinter("\\n");
+	if (!linkerCommand.empty())
+	{
+		const auto compileEcho = getCompileEchoLinker();
+		const auto printer = getPrinter("\\n");
 
-	ret = fmt::format(R"makefile(
+		ret = fmt::format(R"makefile(
 {linkerTarget}: {preReqs}
 	{compileEcho}
 	{quietFlag}{linkerCommand}
 	@{printer}
 )makefile",
-		FMT_ARG(linkerTarget),
-		FMT_ARG(preReqs),
-		FMT_ARG(compileEcho),
-		FMT_ARG(quietFlag),
-		FMT_ARG(linkerCommand),
-		FMT_ARG(printer));
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string MakefileGeneratorGNU::getPchOrderOnlyPreReq() const
-{
-	chalet_assert(m_project != nullptr, "");
-
-	std::string ret;
-	// if (m_project->usesPch())
-	// 	ret = " | makepch";
+			FMT_ARG(linkerTarget),
+			FMT_ARG(preReqs),
+			FMT_ARG(compileEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(linkerCommand),
+			FMT_ARG(printer));
+	}
 
 	return ret;
 }

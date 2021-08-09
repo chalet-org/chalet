@@ -38,7 +38,6 @@ private:
 
 	std::string getTargetRecipe(const std::string& linkerTarget) const;
 
-	std::string getPchOrderOnlyPreReq() const;
 	std::string getLinkerPreReqs() const;
 
 	std::string getQuietFlag() const;

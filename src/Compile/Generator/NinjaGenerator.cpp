@@ -179,17 +179,19 @@ std::string NinjaGenerator::getPchRule()
 
 		// Have to pass in pchTarget here because MSVC's PCH compile command is wack
 		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", pchTarget, m_generateDependencies, dependency));
-
-		ret = fmt::format(R"ninja(
+		if (!pchCompile.empty())
+		{
+			ret = fmt::format(R"ninja(
 rule pch_{hash}
   deps = {deps}{depFile}
   description = $in
   command = {pchCompile}
 )ninja",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(deps),
-			FMT_ARG(depFile),
-			FMT_ARG(pchCompile));
+				fmt::arg("hash", m_hash),
+				FMT_ARG(deps),
+				FMT_ARG(depFile),
+				FMT_ARG(pchCompile));
+		}
 	}
 
 	return ret;
@@ -206,17 +208,19 @@ std::string NinjaGenerator::getRcRule()
 	const auto depFile = getDepFile(dependency);
 
 	const auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$in", "$out", m_generateDependencies, dependency));
-
-	ret = fmt::format(R"ninja(
+	if (!rcCompile.empty())
+	{
+		ret = fmt::format(R"ninja(
 rule rc_{hash}
   deps = {deps}{depFile}
   description = $in
   command = {rcCompile}
 )ninja",
-		fmt::arg("hash", m_hash),
-		FMT_ARG(deps),
-		FMT_ARG(depFile),
-		FMT_ARG(rcCompile));
+			fmt::arg("hash", m_hash),
+			FMT_ARG(deps),
+			FMT_ARG(depFile),
+			FMT_ARG(rcCompile));
+	}
 
 	return ret;
 }
@@ -236,17 +240,19 @@ std::string NinjaGenerator::getCRule()
 	const auto depFile = getDepFile(dependency);
 
 	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::C));
-
-	ret = fmt::format(R"ninja(
+	if (!cppCompile.empty())
+	{
+		ret = fmt::format(R"ninja(
 rule cc_{hash}
   deps = {deps}{depFile}
   description = $in
   command = {cppCompile}
 )ninja",
-		fmt::arg("hash", m_hash),
-		FMT_ARG(deps),
-		FMT_ARG(depFile),
-		FMT_ARG(cppCompile));
+			fmt::arg("hash", m_hash),
+			FMT_ARG(deps),
+			FMT_ARG(depFile),
+			FMT_ARG(cppCompile));
+	}
 
 	return ret;
 }
@@ -266,17 +272,19 @@ std::string NinjaGenerator::getCppRule()
 	const auto depFile = getDepFile(dependency);
 
 	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::CPlusPlus));
-
-	ret = fmt::format(R"ninja(
+	if (!cppCompile.empty())
+	{
+		ret = fmt::format(R"ninja(
 rule cpp_{hash}
   deps = {deps}{depFile}
   description = $in
   command = {cppCompile}
 )ninja",
-		fmt::arg("hash", m_hash),
-		FMT_ARG(deps),
-		FMT_ARG(depFile),
-		FMT_ARG(cppCompile));
+			fmt::arg("hash", m_hash),
+			FMT_ARG(deps),
+			FMT_ARG(depFile),
+			FMT_ARG(cppCompile));
+	}
 
 	return ret;
 }
@@ -296,17 +304,19 @@ std::string NinjaGenerator::getObjcRule()
 	const auto depFile = getDepFile(dependency);
 
 	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveC));
-
-	ret = fmt::format(R"ninja(
+	if (!cppCompile.empty())
+	{
+		ret = fmt::format(R"ninja(
 rule objc_{hash}
   deps = {deps}{depFile}
   description = $in
   command = {cppCompile}
 )ninja",
-		fmt::arg("hash", m_hash),
-		FMT_ARG(deps),
-		FMT_ARG(depFile),
-		FMT_ARG(cppCompile));
+			fmt::arg("hash", m_hash),
+			FMT_ARG(deps),
+			FMT_ARG(depFile),
+			FMT_ARG(cppCompile));
+	}
 
 	return ret;
 }
@@ -326,17 +336,19 @@ std::string NinjaGenerator::getObjcppRule()
 	const auto depFile = getDepFile(dependency);
 
 	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveCPlusPlus));
-
-	ret = fmt::format(R"ninja(
+	if (!cppCompile.empty())
+	{
+		ret = fmt::format(R"ninja(
 rule objcpp_{hash}
   deps = {deps}{depFile}
   description = $in
   command = {cppCompile}
 )ninja",
-		fmt::arg("hash", m_hash),
-		FMT_ARG(deps),
-		FMT_ARG(depFile),
-		FMT_ARG(cppCompile));
+			fmt::arg("hash", m_hash),
+			FMT_ARG(deps),
+			FMT_ARG(depFile),
+			FMT_ARG(cppCompile));
+	}
 
 	return ret;
 }
@@ -352,16 +364,19 @@ std::string NinjaGenerator::getLinkRule()
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand("$out", { "$in" }, targetBasename));
 
-	const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+	if (!linkerCommand.empty())
+	{
+		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 
-	ret = fmt::format(R"ninja(
+		ret = fmt::format(R"ninja(
 rule link_{hash}
   description = {description} $out
   command = {linkerCommand}
 )ninja",
-		fmt::arg("hash", m_hash),
-		FMT_ARG(description),
-		FMT_ARG(linkerCommand));
+			fmt::arg("hash", m_hash),
+			FMT_ARG(description),
+			FMT_ARG(linkerCommand));
+	}
 
 	return ret;
 }

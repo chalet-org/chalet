@@ -43,6 +43,7 @@ bool CompileStrategyMakefile::initialize(const StringList& inFileExtensions)
 	const bool buildHashChanged = cacheFile.buildHashChanged();
 
 	m_cacheNeedsUpdate = !cacheExists || appVersionChanged || buildHashChanged || buildFileChanged || themeChanged;
+	m_cacheNeedsUpdate = false;
 
 	if (!Commands::pathExists(m_cacheFolder))
 		Commands::makeDirectory(m_cacheFolder);

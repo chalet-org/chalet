@@ -67,6 +67,9 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 
 	StringList ret;
 
+	if (m_config.compilerExecutable().empty())
+		return ret;
+
 	addExectuable(ret, m_config.compilerExecutable());
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/diagnostics:caret");
@@ -115,6 +118,9 @@ StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFil
 
 	StringList ret;
 
+	if (m_state.toolchain.compilerWindowsResource().empty())
+		return ret;
+
 	addExectuable(ret, m_state.toolchain.compilerWindowsResource());
 	ret.emplace_back("/nologo");
 
@@ -136,6 +142,9 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 	chalet_assert(!outputFile.empty(), "");
 
 	StringList ret;
+
+	if (m_config.compilerExecutable().empty())
+		return ret;
 
 	addExectuable(ret, m_config.compilerExecutable());
 	ret.emplace_back("/nologo");
@@ -202,6 +211,9 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 
 	StringList ret;
 
+	if (m_state.toolchain.linker().empty())
+		return ret;
+
 	addExectuable(ret, m_state.toolchain.linker());
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/dll");
@@ -260,6 +272,9 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 
 	StringList ret;
 
+	if (m_state.toolchain.archiver().empty())
+		return ret;
+
 	addExectuable(ret, m_state.toolchain.archiver());
 	ret.emplace_back("/nologo");
 
@@ -295,6 +310,9 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 	chalet_assert(!outputFile.empty() && sourceObjs.size() > 0, "");
 
 	StringList ret;
+
+	if (m_state.toolchain.linker().empty())
+		return ret;
 
 	addExectuable(ret, m_state.toolchain.linker());
 	ret.emplace_back("/nologo");

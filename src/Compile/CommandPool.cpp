@@ -197,15 +197,18 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	std::vector<std::future<bool>> threadResults;
 	for (auto& it : list)
 	{
-		auto color = Output::getAnsiStyle(it.color);
+		if (!it.command.empty())
+		{
+			auto color = Output::getAnsiStyle(it.color);
 
-		threadResults.emplace_back(m_threadPool.enqueue(
-			printCommand,
-			color + it.symbol + reset,
-			color + (showCommmands ? String::join(it.command) : it.output) + reset,
-			totalCompiles));
+			threadResults.emplace_back(m_threadPool.enqueue(
+				printCommand,
+				color + it.symbol + reset,
+				color + (showCommmands ? String::join(it.command) : it.output) + reset,
+				totalCompiles));
 
-		threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, renameAfterCommand));
+			threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, renameAfterCommand));
+		}
 	}
 
 	for (auto& tr : threadResults)

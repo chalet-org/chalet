@@ -253,21 +253,25 @@ std::string MakefileGeneratorNMake::getTargetRecipe(const std::string& linkerTar
 
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(*m_project);
 	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, objects, linkerTargetBase));
-	const auto compileEcho = getCompileEchoLinker(linkerTarget);
-	const auto printer = getPrinter("\\n");
 
-	ret = fmt::format(R"makefile(
+	if (!linkerCommand.empty())
+	{
+		const auto compileEcho = getCompileEchoLinker(linkerTarget);
+		const auto printer = getPrinter("\\n");
+
+		ret = fmt::format(R"makefile(
 {linkerTarget}: {preReqs}
 	{compileEcho}
 	{quietFlag}{linkerCommand}
 	@{printer}
 )makefile",
-		FMT_ARG(linkerTarget),
-		FMT_ARG(preReqs),
-		FMT_ARG(compileEcho),
-		FMT_ARG(quietFlag),
-		FMT_ARG(linkerCommand),
-		FMT_ARG(printer));
+			FMT_ARG(linkerTarget),
+			FMT_ARG(preReqs),
+			FMT_ARG(compileEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(linkerCommand),
+			FMT_ARG(printer));
+	}
 
 	return ret;
 }
@@ -289,18 +293,21 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 		// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(source, object, m_generateDependencies, std::string()));
+		if (!pchCompile.empty())
+		{
 
-		const auto compilerEcho = getCompileEchoSources(object);
+			const auto compilerEcho = getCompileEchoSources(object);
 
-		ret = fmt::format(R"makefile(
+			ret = fmt::format(R"makefile(
 {object}: {source}
 	{quietFlag}{pchCompile}
 )makefile",
-			FMT_ARG(object),
-			FMT_ARG(source),
-			FMT_ARG(compilerEcho),
-			FMT_ARG(quietFlag),
-			FMT_ARG(pchCompile));
+				FMT_ARG(object),
+				FMT_ARG(source),
+				FMT_ARG(compilerEcho),
+				FMT_ARG(quietFlag),
+				FMT_ARG(pchCompile));
+		}
 	}
 
 	return ret;
@@ -315,19 +322,21 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 
 	std::string dependency;
 	auto rcCompile = String::join(m_toolchain->getRcCompileCommand(source, object, m_generateDependencies, dependency));
+	if (!rcCompile.empty())
+	{
+		const auto compilerEcho = getCompileEchoSources(source);
 
-	const auto compilerEcho = getCompileEchoSources(source);
-
-	ret = fmt::format(R"makefile(
+		ret = fmt::format(R"makefile(
 {object}: {source}
 	{compilerEcho}
 	{quietFlag}{rcCompile} 1>nul
 )makefile",
-		FMT_ARG(object),
-		FMT_ARG(source),
-		FMT_ARG(compilerEcho),
-		FMT_ARG(quietFlag),
-		FMT_ARG(rcCompile));
+			FMT_ARG(object),
+			FMT_ARG(source),
+			FMT_ARG(compilerEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(rcCompile));
+	}
 
 	return ret;
 }
@@ -344,18 +353,20 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	std::string dependency;
 	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, dependency, specialization));
+	if (!cppCompile.empty())
+	{
+		const auto compilerEcho = getCompileEchoSources(source);
 
-	const auto compilerEcho = getCompileEchoSources(source);
-
-	ret = fmt::format(R"makefile(
+		ret = fmt::format(R"makefile(
 {object}: {source}
 	{quietFlag}{cppCompile}
 )makefile",
-		FMT_ARG(source),
-		FMT_ARG(compilerEcho),
-		FMT_ARG(quietFlag),
-		FMT_ARG(cppCompile),
-		FMT_ARG(object));
+			FMT_ARG(source),
+			FMT_ARG(compilerEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(cppCompile),
+			FMT_ARG(object));
+	}
 
 	return ret;
 }

@@ -101,6 +101,9 @@ StringList CompileToolchainApple::getDynamicLibTargetCommand(const std::string& 
 {
 	StringList ret;
 
+	if (m_config.compilerExecutable().empty())
+		return ret;
+
 	addExectuable(ret, m_config.compilerExecutable());
 
 	ret.emplace_back("-dynamiclib");
