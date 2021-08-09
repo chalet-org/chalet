@@ -32,7 +32,7 @@ repositories=(
 tags=(
 	'master'
 	'v2.x'
-	'f6eba2662aac0284c1cb5c0dc19c72f47820b17b'
+	'82ce68b9e2b705a83d107d842f51fde42a03133b'
 	'8.0.0'
 	'v1.5.6'
 	'master'
