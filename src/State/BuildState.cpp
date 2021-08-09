@@ -355,7 +355,7 @@ void BuildState::manageLibraryPathVariables()
 		auto outPath = environment.makePathVariable(path);
 		if (outPath.size() > path.size())
 		{
-			LOG(inKey, outPath);
+			// LOG(inKey, outPath);
 			Environment::set(inKey, outPath);
 		}
 	};
