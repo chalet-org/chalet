@@ -84,15 +84,6 @@ bool Router::run()
 		}
 	}
 
-	if (!isSettings)
-	{
-		if (!managePathVariables(prototype.get()))
-		{
-			Diagnostic::error("There was an error setting environment variables.");
-			return false;
-		}
-	}
-
 	if (m_inputs.generator() != IdeType::None)
 	{
 		std::cout << fmt::format("generator: '{}'", m_inputs.generatorRaw()) << std::endl;
@@ -336,69 +327,6 @@ bool Router::xcodebuildRoute(BuildState& inState)
 	Diagnostic::error("Xcode project generation (-g xcode) is only available on MacOS");
 	return false;
 #endif
-}
-
-/*****************************************************************************/
-bool Router::managePathVariables(const StatePrototype* inPrototype)
-{
-	Environment::set("CLICOLOR_FORCE", "1");
-
-	if (inPrototype != nullptr)
-	{
-		StringList outPaths = inPrototype->environment.path();
-
-		if (outPaths.size() > 0)
-		{
-			for (auto& p : outPaths)
-			{
-				if (!Commands::pathExists(p))
-					continue;
-
-				p = Commands::getCanonicalPath(p);
-			}
-			std::string appendedPath = String::join(std::move(outPaths), Path::getSeparator());
-
-			// Note: Not needed on mac: @rpath stuff is done instead
-#if defined(CHALET_LINUX)
-			// This is needed on linux to look for additional libraries at runtime
-			// TODO: This might actually vary between distros. Figure out if any of this is needed?
-
-			// This is needed so ldd can resolve the correct file dependencies
-
-			// LD_LIBRARY_PATH - dynamic link paths
-			// LIBRARY_PATH - static link paths
-			// For now, just use the same paths for both
-			const auto kLdLibraryPath = "LD_LIBRARY_PATH";
-			const auto kLibraryPath = "LIBRARY_PATH";
-
-			{
-				std::string libraryPath = appendedPath;
-				std::string ldLibraryPath = appendedPath;
-
-				auto oldLd = Environment::getAsString(kLdLibraryPath);
-				if (!oldLd.empty())
-				{
-					ldLibraryPath = ldLibraryPath.empty() ? oldLd : fmt::format("{}:{}", ldLibraryPath, oldLd);
-				}
-
-				auto old = Environment::getAsString(kLibraryPath);
-				if (!old.empty())
-				{
-					libraryPath = libraryPath.empty() ? oldLd : fmt::format("{}:{}", libraryPath, old);
-				}
-
-				LOG(kLdLibraryPath, ldLibraryPath);
-				LOG(kLibraryPath, libraryPath);
-
-				Environment::set(kLdLibraryPath, ldLibraryPath);
-				Environment::set(kLibraryPath, libraryPath);
-			}
-#else
-			UNUSED(appendedPath);
-#endif
-		}
-	}
-	return true;
 }
 
 }

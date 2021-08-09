@@ -38,8 +38,6 @@ private:
 	bool parseEnvFile();
 	bool xcodebuildRoute(BuildState& inState);
 
-	bool managePathVariables(const StatePrototype* inPrototype);
-
 	CommandLineInputs& m_inputs;
 };
 }

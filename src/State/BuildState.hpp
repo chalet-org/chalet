@@ -62,6 +62,7 @@ private:
 	void initializeCache();
 	bool validateState();
 
+	void manageLibraryPathVariables();
 	void enforceArchitectureInPath();
 };
 }
