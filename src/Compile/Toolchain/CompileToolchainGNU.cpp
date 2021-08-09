@@ -79,7 +79,7 @@ bool CompileToolchainGNU::initialize()
 
 #include "{pchIncludeAbsolute}"
 
-typedef int _chalet_build_precompiled_header_iso_compilers_workaround;
+#include "linked.h"
 )cpp",
 				FMT_ARG(pchIncludeAbsolute));
 
