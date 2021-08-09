@@ -8,6 +8,12 @@
 
 #include <regex>
 
+#if !defined(CHALET_MSVC) && !(defined(CHALET_CLANG) && defined(CHALET_LINUX))
+	#ifndef CHALET_REGEX_CTRE
+		#define CHALET_REGEX_CTRE
+	#endif
+#endif
+
 #ifdef CHALET_MSVC
 	#pragma warning(push)
 #else
@@ -19,9 +25,10 @@
 
 #define CTRE_STRING_IS_UTF8 0
 
-#include <ctre/single-header/ctre.hpp>
+#ifdef CHALET_REGEX_CTRE
 
-#ifdef CHALET_MSVC
+	#include <ctre/single-header/ctre.hpp>
+
 template <auto& ptn>
 constexpr bool re()
 {

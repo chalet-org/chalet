@@ -12,7 +12,7 @@ namespace chalet
 /*****************************************************************************/
 bool RegexPatterns::matchesGnuCppStandard(const std::string& inValue)
 {
-#if !defined(CHALET_MSVC) && !(defined(CHALET_CLANG) && defined(CHALET_LINUX))
+#ifdef CHALET_REGEX_CTRE
 	static constexpr auto regex = ctll::fixed_string{ "^(c|gnu)\\+\\+\\d[\\dxyzab]$" };
 	if (auto m = ctre::match<regex>(inValue))
 #else
@@ -29,7 +29,7 @@ bool RegexPatterns::matchesGnuCppStandard(const std::string& inValue)
 /*****************************************************************************/
 bool RegexPatterns::matchesGnuCStandard(const std::string& inValue)
 {
-#if !defined(CHALET_MSVC) && !(defined(CHALET_CLANG) && defined(CHALET_LINUX))
+#ifdef CHALET_REGEX_CTRE
 	static constexpr auto regex = ctll::fixed_string{ "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$" };
 	if (auto m = ctre::match<regex>(inValue))
 #else
