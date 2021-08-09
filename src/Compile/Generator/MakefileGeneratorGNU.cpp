@@ -47,6 +47,7 @@ void MakefileGeneratorGNU::addProjectRecipes(const ProjectTarget& inProject, con
 	const auto& target = inOutputs.target;
 
 	const std::string buildRecipes = getBuildRecipes(inOutputs);
+	const auto printer = getPrinter();
 
 	//
 	//
@@ -57,10 +58,11 @@ void MakefileGeneratorGNU::addProjectRecipes(const ProjectTarget& inProject, con
 {buildRecipes}
 
 build_{hash}: {target}
-	$(NOOP)
+	@{printer}
 .PHONY: build_{hash}
 )makefile",
 		fmt::arg("hash", m_hash),
+		FMT_ARG(printer),
 		FMT_ARG(buildRecipes),
 		FMT_ARG(target));
 
@@ -77,7 +79,6 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto suffixes = String::getPrefixed(m_fileExtensions, ".");
-	const auto printer = getPrinter();
 
 #if defined(CHALET_WIN32)
 	const auto shell = "cmd.exe";
@@ -92,8 +93,7 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 .SUFFIXES: {suffixes}
 
 SHELL := {shell}
-
-NOOP := @{printer}{recipes}
+{recipes}
 {depDir}/%.d: ;
 .PRECIOUS: {depDir}/%.d
 
@@ -103,7 +103,6 @@ NOOP := @{printer}{recipes}
 		fmt::arg("hash", m_hash),
 		FMT_ARG(suffixes),
 		FMT_ARG(shell),
-		FMT_ARG(printer),
 		FMT_ARG(recipes),
 		FMT_ARG(depDir));
 
@@ -266,7 +265,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 
 			ret = fmt::format(R"makefile(
 {object}: {intermediateSource}
-{object}: {intermediateSource} {intermediateSource}.cxx {dependency}
+{object}: {intermediateSource} {dependency}
 	{compileEcho}
 	{quietFlag}{pchCompile}
 	{quietFlag}{moveDependencies}

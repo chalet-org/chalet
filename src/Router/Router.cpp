@@ -375,15 +375,20 @@ bool Router::managePathVariables(const StatePrototype* inPrototype)
 				std::string libraryPath = appendedPath;
 				std::string ldLibraryPath = appendedPath;
 
-				auto oldLd = Environment::get(kLdLibraryPath);
-				if (oldLd != nullptr)
+				auto oldLd = Environment::getAsString(kLdLibraryPath);
+				if (!oldLd.empty())
+				{
 					ldLibraryPath = ldLibraryPath.empty() ? oldLd : fmt::format("{}:{}", ldLibraryPath, oldLd);
+				}
 
-				auto old = Environment::get(kLibraryPath);
-				if (old != nullptr)
+				auto old = Environment::getAsString(kLibraryPath);
+				if (!old.empty())
+				{
 					libraryPath = libraryPath.empty() ? oldLd : fmt::format("{}:{}", libraryPath, old);
+				}
 
-				// LOG(ldLibraryPath);
+				LOG(kLdLibraryPath, ldLibraryPath);
+				LOG(kLibraryPath, libraryPath);
 
 				Environment::set(kLdLibraryPath, ldLibraryPath);
 				Environment::set(kLibraryPath, libraryPath);

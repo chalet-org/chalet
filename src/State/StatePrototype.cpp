@@ -38,6 +38,9 @@ bool StatePrototype::initialize()
 	if (!cache.initialize())
 		return false;
 
+	// if (!environment.initialize())
+	// 	return false;
+
 	if (!parseGlobalSettingsJson())
 		return false;
 
