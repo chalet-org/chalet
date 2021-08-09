@@ -352,11 +352,11 @@ void BuildState::manageLibraryPathVariables()
 
 	auto addEnvironmentPath = [this](const char* inKey) {
 		auto path = Environment::getAsString(inKey);
-		path = environment.makePathVariable(path);
-		if (!path.empty())
+		auto outPath = environment.makePathVariable(path);
+		if (outPath.size() > path.size())
 		{
-			LOG(inKey, path);
-			Environment::set(inKey, path);
+			LOG(inKey, outPath);
+			Environment::set(inKey, outPath);
 		}
 	};
 

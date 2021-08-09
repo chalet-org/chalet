@@ -147,7 +147,10 @@ bool BuildJsonParser::makePathVariable()
 
 	// // LOG(pathVariable);
 
-	Environment::setPath(pathVariable);
+	if (pathVariable.size() > rootPath.size())
+	{
+		Environment::setPath(pathVariable);
+	}
 
 	return true;
 }

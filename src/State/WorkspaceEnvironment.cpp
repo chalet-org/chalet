@@ -156,6 +156,9 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 			outList.emplace_back(std::move(path));
 	}
 
+	if (outList.empty())
+		return inRootPath;
+
 	if (!inRootPath.empty())
 	{
 		outList.push_back(inRootPath);
