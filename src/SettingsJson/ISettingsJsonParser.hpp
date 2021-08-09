@@ -28,7 +28,6 @@ protected:
 	const std::string kKeySigningIdentity = "signingIdentity";
 
 	const std::string kKeyInputFile = "inputFile";
-	const std::string kKeySettingsFile = "settingsFile";
 	const std::string kKeyEnvFile = "envFile";
 	const std::string kKeyRootDirectory = "rootDir";
 	const std::string kKeyOutputDirectory = "outputDir";

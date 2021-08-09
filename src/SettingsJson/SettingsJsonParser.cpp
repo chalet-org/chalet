@@ -23,7 +23,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-SettingsJsonParser::SettingsJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile) :
+SettingsJsonParser::SettingsJsonParser(CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile) :
 	m_inputs(inInputs),
 	m_prototype(inPrototype),
 	m_jsonFile(inJsonFile)
@@ -164,7 +164,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
 
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyInputFile, m_inputs.inputFile(), inState.inputFile);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeySettingsFile, m_inputs.settingsFile(), inState.settingsFile);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyEnvFile, m_inputs.envFile(), inState.envFile);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
@@ -383,6 +382,36 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeySigningIdentity))
 		m_prototype.tools.setSigningIdentity(std::move(val));
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyInputFile))
+	{
+		if (m_inputs.inputFile().empty() || !String::equals({ m_inputs.inputFile(), m_inputs.defaultInputFile() }, val))
+			m_inputs.setInputFile(std::move(val));
+	}
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyEnvFile))
+	{
+		if (m_inputs.envFile().empty() || !String::equals({ m_inputs.envFile(), m_inputs.defaultEnvFile() }, val))
+			m_inputs.setEnvFile(std::move(val));
+	}
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyRootDirectory))
+	{
+		if (m_inputs.rootDirectory().empty() || !String::equals(m_inputs.rootDirectory(), val))
+			m_inputs.setRootDirectory(std::move(val));
+	}
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyOutputDirectory))
+	{
+		if (m_inputs.outputDirectory().empty() || !String::equals({ m_inputs.outputDirectory(), m_inputs.defaultOutputDirectory() }, val))
+			m_inputs.setOutputDirectory(std::move(val));
+	}
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyBundleDirectory))
+	{
+		if (m_inputs.bundleDirectory().empty() || !String::equals(m_inputs.bundleDirectory(), val))
+			m_inputs.setBundleDirectory(std::move(val));
+	}
 
 	return true;
 }

@@ -100,11 +100,6 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		return outState.inputFile;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeySettingsFile, [&]() {
-		outState.settingsFile = m_inputs.settingsFile();
-		return outState.settingsFile;
-	});
-
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyEnvFile, [&]() {
 		outState.envFile = m_inputs.envFile();
 		return outState.envFile;

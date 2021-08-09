@@ -19,7 +19,7 @@ struct GlobalSettingsState;
 
 struct SettingsJsonParser final : ISettingsJsonParser
 {
-	explicit SettingsJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
+	explicit SettingsJsonParser(CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
 
 	bool serialize(const GlobalSettingsState& inState);
 
@@ -35,7 +35,7 @@ private:
 	bool parseAppleSdks(Json& inNode);
 #endif
 
-	const CommandLineInputs& m_inputs;
+	CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
 	JsonFile& m_jsonFile;
 

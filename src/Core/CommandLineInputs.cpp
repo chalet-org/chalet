@@ -18,10 +18,12 @@ namespace chalet
 /*****************************************************************************/
 CommandLineInputs::CommandLineInputs() :
 	m_notPlatforms(getNotPlatforms()),
+	kDefaultInputFile("chalet.json"),
 	kDefaultEnvFile(".env"),
-	m_inputFile("chalet.json"),
+	kDefaultOutputDirectory("build"),
+	m_inputFile(kDefaultInputFile),
 	m_settingsFile(".chaletrc"),
-	m_outputDirectory("build"),
+	m_outputDirectory(kDefaultOutputDirectory),
 	m_platform(getPlatform()),
 	m_envFile(kDefaultEnvFile),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
@@ -166,11 +168,21 @@ void CommandLineInputs::setBundleDirectory(std::string&& inValue) noexcept
 
 	LOG(m_bundleDirectory);
 }
+/*****************************************************************************/
+const std::string& CommandLineInputs::defaultInputFile() const noexcept
+{
+	return kDefaultInputFile;
+}
 
 /*****************************************************************************/
 const std::string& CommandLineInputs::defaultEnvFile() const noexcept
 {
 	return kDefaultEnvFile;
+}
+
+const std::string& CommandLineInputs::defaultOutputDirectory() const noexcept
+{
+	return kDefaultOutputDirectory;
 }
 
 /*****************************************************************************/

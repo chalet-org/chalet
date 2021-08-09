@@ -21,7 +21,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-StatePrototype::StatePrototype(const CommandLineInputs& inInputs, std::string inFilename) :
+StatePrototype::StatePrototype(CommandLineInputs& inInputs, std::string inFilename) :
 	cache(inInputs),
 	tools(inInputs),
 	m_inputs(inInputs),

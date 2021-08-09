@@ -388,11 +388,6 @@ Json Schema::getSettingsJson()
 		"type": "string"
 	})json"_ojson;
 
-	defs[Defs::SettingsFile] = R"json({
-		"description": "The path to a settings file to use.",
-		"type": "string"
-	})json"_ojson;
-
 	defs[Defs::EnvFile] = R"json({
 		"description": "A file to load environment variables from.",
 		"type": "string"
@@ -520,7 +515,6 @@ Json Schema::getSettingsJson()
 			"architecture",
 			"signingIdentity",
 			"inputFile",
-			"settingsFile",
 			"envFile",
 			"rootDir",
 			"outputDir",
@@ -537,7 +531,6 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kSettings][kProperties]["signingIdentity"] = defs[Defs::SigningIdentity];
 
 	ret[kProperties][kSettings][kProperties]["inputFile"] = defs[Defs::InputFile];
-	ret[kProperties][kSettings][kProperties]["settingsFile"] = defs[Defs::SettingsFile];
 	ret[kProperties][kSettings][kProperties]["envFile"] = defs[Defs::EnvFile];
 	ret[kProperties][kSettings][kProperties]["rootDir"] = defs[Defs::RootDir];
 	ret[kProperties][kSettings][kProperties]["outputDir"] = defs[Defs::OutputDir];

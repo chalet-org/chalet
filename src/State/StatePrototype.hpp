@@ -23,7 +23,7 @@ struct CommandLineInputs;
 
 struct StatePrototype
 {
-	explicit StatePrototype(const CommandLineInputs& inInputs, std::string inFilename);
+	explicit StatePrototype(CommandLineInputs& inInputs, std::string inFilename);
 
 	bool initialize();
 	bool validateDependencies();
@@ -69,7 +69,7 @@ private:
 	GlobalSettingsState m_globalSettingsState;
 	BuildConfigurationMap m_buildConfigurations;
 
-	const CommandLineInputs& m_inputs;
+	CommandLineInputs& m_inputs;
 
 	StringList m_allowedBuildConfigurations;
 	StringList m_requiredBuildConfigurations;

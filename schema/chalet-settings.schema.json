@@ -156,7 +156,6 @@
 				"architecture",
 				"signingIdentity",
 				"inputFile",
-				"settingsFile",
 				"envFile",
 				"rootDir",
 				"outputDir",
@@ -197,10 +196,6 @@
 				},
 				"inputFile": {
 					"description": "An input build file to use.",
-					"type": "string"
-				},
-				"settingsFile": {
-					"description": "The path to a settings file to use.",
 					"type": "string"
 				},
 				"envFile": {
