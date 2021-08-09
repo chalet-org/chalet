@@ -220,10 +220,16 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 	{
 		std::string link;
 		StringList searches;
-		searches.push_back(toolchain.linker);
 		if (toolchain.type == ToolchainType::LLVM)
 		{
+			searches.push_back(toolchain.linker); // lld
+			searches.emplace_back("llvm-link");
+			searches.emplace_back("llvm-ld");
 			searches.emplace_back("ld");
+		}
+		else
+		{
+			searches.push_back(toolchain.linker);
 		}
 
 		for (const auto& search : searches)
