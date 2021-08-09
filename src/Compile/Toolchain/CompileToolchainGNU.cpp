@@ -141,7 +141,10 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 	addMacosSysRootOption(ret);
 
 	ret.emplace_back("-x");
-	ret.emplace_back("c++-header");
+	if (specialization == CxxSpecialization::C)
+		ret.emplace_back("c-header");
+	else
+		ret.emplace_back("c++-header");
 
 	ret.emplace_back("-o");
 	ret.push_back(outputFile);
