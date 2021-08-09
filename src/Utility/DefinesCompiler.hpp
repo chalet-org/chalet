@@ -6,8 +6,10 @@
 #ifndef CHALET_DEFINES_COMPILER_HPP
 #define CHALET_DEFINES_COMPILER_HPP
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 	#define CHALET_MSVC
+#elif defined(__clang__)
+	#define CHALET_CLANG
 #endif
 
 #endif // CHALET_DEFINES_COMPILER_HPP
