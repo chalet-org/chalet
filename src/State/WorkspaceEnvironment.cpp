@@ -139,8 +139,10 @@ void WorkspaceEnvironment::addPath(std::string&& inValue)
 /*****************************************************************************/
 std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath) const
 {
-	auto separator = Path::getSeparator();
+	if (m_path.empty())
+		return inRootPath;
 
+	auto separator = Path::getSeparator();
 	StringList outList;
 
 	for (auto& p : m_path)
@@ -154,7 +156,10 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 			outList.emplace_back(std::move(path));
 	}
 
-	outList.push_back(inRootPath);
+	if (!inRootPath.empty())
+	{
+		outList.push_back(inRootPath);
+	}
 
 	std::string ret = String::join(std::move(outList), separator);
 	Path::sanitize(ret);

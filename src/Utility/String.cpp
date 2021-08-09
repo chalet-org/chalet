@@ -49,6 +49,9 @@ bool String::contains(const char inFind, const std::string& inString) noexcept
 /*****************************************************************************/
 bool String::contains(const StringList& inFind, const std::string& inString)
 {
+	if (inString.empty())
+		return false;
+
 	for (auto& item : inFind)
 	{
 		if (contains(item, inString))
@@ -78,6 +81,9 @@ bool String::startsWith(const char inStart, const std::string& inString) noexcep
 /*****************************************************************************/
 bool String::startsWith(const StringList& inFind, const std::string& inString)
 {
+	if (inString.empty())
+		return false;
+
 	for (auto& item : inFind)
 	{
 		if (startsWith(item, inString))
@@ -107,6 +113,9 @@ bool String::endsWith(const char inEnd, const std::string& inString) noexcept
 /*****************************************************************************/
 bool String::endsWith(const StringList& inFind, const std::string& inString)
 {
+	if (inString.empty())
+		return false;
+
 	for (auto& item : inFind)
 	{
 		if (endsWith(item, inString))

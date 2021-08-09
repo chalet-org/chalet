@@ -345,54 +345,24 @@ void BuildState::manageLibraryPathVariables()
 	Environment::set("CLICOLOR_FORCE", "1");
 
 #if defined(CHALET_LINUX)
-	StringList outPaths = environment.path();
+	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
+	// Note: Not needed on mac: @rpath stuff is done instead
 
-	if (outPaths.size() > 0)
-	{
-		for (auto& p : outPaths)
+	// TODO: This might actually vary between distros? Test as many as possible
+
+	auto addEnvironmentPath = [this](const char* inKey) {
+		auto path = Environment::getAsString(inKey);
+		path = environment.makePathVariable(path);
+		if (!path.empty())
 		{
-			if (!Commands::pathExists(p))
-				continue;
-
-			p = Commands::getCanonicalPath(p);
+			LOG(inKey, path);
+			Environment::set(inKey, path);
 		}
-		std::string appendedPath = String::join(std::move(outPaths), Path::getSeparator());
+	};
 
-		// Note: Not needed on mac: @rpath stuff is done instead
-		// This is needed on linux to look for additional libraries at runtime
-		// TODO: This might actually vary between distros. Figure out if any of this is needed?
+	addEnvironmentPath("LD_LIBRARY_PATH");
+	addEnvironmentPath("LIBRARY_PATH");
 
-		// This is needed so ldd can resolve the correct file dependencies
-
-		// LD_LIBRARY_PATH - dynamic link paths
-		// LIBRARY_PATH - static link paths
-		// For now, just use the same paths for both
-		const auto kLdLibraryPath = "LD_LIBRARY_PATH";
-		const auto kLibraryPath = "LIBRARY_PATH";
-
-		{
-			std::string libraryPath = appendedPath;
-			std::string ldLibraryPath = appendedPath;
-
-			auto oldLd = Environment::getAsString(kLdLibraryPath);
-			if (!oldLd.empty())
-			{
-				ldLibraryPath = ldLibraryPath.empty() ? oldLd : fmt::format("{}:{}", ldLibraryPath, oldLd);
-			}
-
-			auto old = Environment::getAsString(kLibraryPath);
-			if (!old.empty())
-			{
-				libraryPath = libraryPath.empty() ? oldLd : fmt::format("{}:{}", libraryPath, old);
-			}
-
-			LOG(kLdLibraryPath, ldLibraryPath);
-			LOG(kLibraryPath, libraryPath);
-
-			Environment::set(kLdLibraryPath, ldLibraryPath);
-			Environment::set(kLibraryPath, libraryPath);
-		}
-	}
 #endif
 }
 
