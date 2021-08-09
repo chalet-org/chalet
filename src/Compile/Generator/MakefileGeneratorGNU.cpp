@@ -238,12 +238,14 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 	std::string ret;
 
 	const bool usePch = m_project->usesPch();
+	const auto& objDir = m_state.paths.objDir();
 
-	if (usePch && !List::contains(m_precompiledHeaders, source))
+	auto intermediateSource = fmt::format("{}/{}", objDir, source);
+	if (usePch && !List::contains(m_precompiledHeaders, intermediateSource))
 	{
 		const auto quietFlag = getQuietFlag();
 		const auto& depDir = m_state.paths.depDir();
-		m_precompiledHeaders.push_back(source);
+		m_precompiledHeaders.push_back(intermediateSource);
 
 		auto dependency = fmt::format("{}/{}", depDir, source);
 
@@ -252,7 +254,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 
 		const auto compileEcho = getCompileEchoSources();
 
-		auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
+		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(fmt::format("{}.cxx", intermediateSource), "$@", m_generateDependencies, tempDependency));
 		if (!pchCompile.empty())
 		{
 			std::string moveDependencies;
@@ -263,13 +265,15 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 
 			ret = fmt::format(R"makefile(
 {object}: {source}
-{object}: {source} {dependency}
+{object}: {intermediateSource}
+{object}: {intermediateSource} {dependency}
 	{compileEcho}
 	{quietFlag}{pchCompile}
 	{quietFlag}{moveDependencies}
 )makefile",
 				FMT_ARG(object),
 				FMT_ARG(source),
+				FMT_ARG(intermediateSource),
 				FMT_ARG(compileEcho),
 				FMT_ARG(quietFlag),
 				FMT_ARG(pchCompile),
