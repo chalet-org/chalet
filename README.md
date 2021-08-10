@@ -11,7 +11,7 @@
 **Visual Studio**
 1. Run `./fetch_vendors.sh` from Git Bash. This will get Chalet dependencies
 2. Make sure CMake is accessible from Path (add to System Environment Variables)
-3. Start "x64 Native Tools Command Prompt for VS 2019"
+3. Start "x64 Native Tools Command Prompt for VS 20XX"
 4. Run `.\build_all.bat` from the project root
 
 **MSYS2 with MinGW**
@@ -29,7 +29,7 @@ pacman -S mingw-w64-x86_64-toolchain
 ---
 ### MacOS
 
-1. Install XCode or Command Line Tools
+1. Install Xcode or Command Line Tools
 2. Install Homebrew
 3. Install CMake (via Homebrew is easiest)
 4. Run `bash ./build_all.sh` from the project root
@@ -39,5 +39,5 @@ pacman -S mingw-w64-x86_64-toolchain
 
 A compiler that supports C++17 is required.
 
-1. Install Git, CMake from your package manager, as well as `libunwind-dev`
+1. Install `git` and `cmake` from your package manager, as well as `libunwind-dev`
 2. Run `bash ./build_all.sh` from the project root
