@@ -241,7 +241,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 
 	if (usePch && !List::contains(m_precompiledHeaders, source))
 	{
-		auto pchAbsolute = Commands::getAbsolutePath(source);
+		// auto pchAbsolute = Commands::getAbsolutePath(source);
 		const auto quietFlag = getQuietFlag();
 		const auto& depDir = m_state.paths.depDir();
 		m_precompiledHeaders.push_back(source);
@@ -268,12 +268,9 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 	{compileEcho}
 	{quietFlag}{pchCompile}
 	{quietFlag}{moveDependencies}
-
-{pchAbsolute}:
 )makefile",
 				FMT_ARG(object),
 				FMT_ARG(source),
-				FMT_ARG(pchAbsolute),
 				FMT_ARG(compileEcho),
 				FMT_ARG(quietFlag),
 				FMT_ARG(pchCompile),
