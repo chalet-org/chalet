@@ -205,7 +205,10 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			}
 
 			Output::msgBuildSuccess();
-			Output::printInfo(fmt::format("   Total: {}", m_timer.asString()));
+
+			auto res = m_timer.stop();
+			if (res > 0)
+				Output::printInfo(fmt::format("   Total: {}", m_timer.asString()));
 
 			if (inRoute != Route::BuildRun)
 				Output::lineBreak();

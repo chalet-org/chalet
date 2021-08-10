@@ -191,14 +191,14 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 }*/
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCompileEchoSources() const
+std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& inFile) const
 {
 	const auto color = getBuildColor();
 	std::string printer;
 
 	if (Output::cleanOutput())
 	{
-		printer = getPrinter(fmt::format("   {}$<", color), true);
+		printer = getPrinter(fmt::format("   {}{}", color, inFile), true);
 	}
 	else
 	{
@@ -252,7 +252,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
-		const auto compileEcho = getCompileEchoSources();
+		const auto compileEcho = getCompileEchoSources(source);
 
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(fmt::format("{}.cxx", intermediateSource), "$@", m_generateDependencies, tempDependency));
 		if (!pchCompile.empty())

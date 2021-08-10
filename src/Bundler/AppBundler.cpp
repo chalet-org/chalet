@@ -179,7 +179,9 @@ bool AppBundler::run(const DistributionTarget& inTarget)
 		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget), inputFile))
 			return false;
 
-		Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+		auto res = buildTimer.stop();
+		if (res > 0)
+			Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
 	}
 
 	Output::lineBreak();
