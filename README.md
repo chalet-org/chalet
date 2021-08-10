@@ -27,17 +27,17 @@ pacman -S mingw-w64-x86_64-toolchain
 4. Run `bash ./build_all.sh` from the project root
 
 ---
-### Linux
-
-A compiler that supports C++17 is required.
-
-1. Install Git, CMake from your package manager, as well as `libunwind-dev`
-2. Run `bash ./build_all.sh` from the project root
-
----
 ### MacOS
 
 1. Install XCode or Command Line Tools
 2. Install Homebrew
 3. Install CMake (via Homebrew is easiest)
 4. Run `bash ./build_all.sh` from the project root
+
+---
+### Linux
+
+A compiler that supports C++17 is required.
+
+1. Install Git, CMake from your package manager, as well as `libunwind-dev`
+2. Run `bash ./build_all.sh` from the project root
