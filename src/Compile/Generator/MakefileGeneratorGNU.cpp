@@ -251,7 +251,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
-		const auto compileEcho = getCompileEchoSources();
+		const auto compileEcho = getCompileEchoSources(source);
 
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
 		if (!pchCompile.empty())
