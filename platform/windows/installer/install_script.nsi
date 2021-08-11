@@ -26,7 +26,7 @@ Unicode true
 	!define FILES_SCHEMA_SETTINGS "${FOLDERS_SCHEMA}\chalet-settings.schema.json"
 
 ; output
-	!define OUTPUT_FILE "${FOLDERS_DIST}\chalet-setup.exe"
+	!define OUTPUT_FILE "${FOLDERS_DIST}\chalet-windows-installer.exe"
 
 ; helper defines
 	!define PRODUCT_NAME "Chalet"

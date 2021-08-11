@@ -58,15 +58,11 @@ jobs:
           files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json LICENSE.txt README.md
           dest: dist/chalet-linux-ubuntu.zip
       - name: "Upload binary"
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          upload_url: ${{ needs.Release.outputs.upload_url }}
-          asset_path: ./dist/chalet-linux-ubuntu.zip
-          asset_name: chalet-linux-ubuntu.zip
-          asset_content_type: application/zip
+          files: ./dist/chalet-linux-ubuntu.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
   MacOS:
     needs: Release
     runs-on: macos-latest
@@ -103,15 +99,11 @@ jobs:
           files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json LICENSE.txt README.md
           dest: dist/chalet-macos-universal.zip
       - name: "Upload binary"
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          upload_url: ${{ needs.Release.outputs.upload_url }}
-          asset_path: ./dist/chalet-macos-universal.zip
-          asset_name: chalet-macos-universal.zip
-          asset_content_type: application/zip
+          files: ./dist/chalet-macos-universal.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
   Windows-MSVC:
     needs: Release
     runs-on: windows-latest
@@ -147,23 +139,17 @@ jobs:
           additional-plugin-paths: platform/windows/installer/plugins/Plugins
           arguments: "/WX /V3 /NOCD"
       - name: "Upload zip"
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          upload_url: ${{ needs.Release.outputs.upload_url }}
-          asset_path: ./dist/chalet-windows-msvc64.zip
-          asset_name: chalet-windows-msvc64.zip
-          asset_content_type: application/zip
+          files: ./dist/chalet-windows-msvc64.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Upload installer"
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          upload_url: ${{ needs.Release.outputs.upload_url }}
-          asset_path: ./dist/chalet-setup.exe
-          asset_name: chalet-windows-msvc64-installer.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+          files: ./dist/chalet-windows-installer.exe
+          token: ${{ secrets.GITHUB_TOKEN }}
   Windows-MSYS2:
     needs: Release
     runs-on: windows-latest
@@ -205,20 +191,8 @@ jobs:
           additional-plugin-paths: platform/windows/installer/plugins/Plugins
           arguments: "/WX /V3 /NOCD"
       - name: "Upload assets"
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          upload_url: ${{ needs.Release.outputs.upload_url }}
-          asset_path: ./dist/chalet-windows-mingw64.zip
-          asset_name: chalet-windows-mingw64.zip
-          asset_content_type: application/zip
-      - name: "Upload installer"
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.Release.outputs.upload_url }}
-          asset_path: ./dist/chalet-setup.exe
-          asset_name: chalet-windows-mingw64-installer.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+          files: ./dist/chalet-windows-mingw64.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
