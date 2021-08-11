@@ -19,7 +19,7 @@
 1. Get [MSYS2](https://www.msys2.org/)
 2. Install the current stable GCC toolchain via:
 
-```
+```bash
 pacman -S mingw-w64-x86_64-toolchain
 ```
 
