@@ -22,9 +22,11 @@
 			"stopOnEntry": false,
 			"args": [
 				// "--generator=vscode",
-				"--save-schema",
-				"build",
-				"Release"
+				// "--save-schema",
+				"run",
+				"Release",
+				"tests_chalet",
+				"-w NoTests -s"
 			],
 		},
 		{

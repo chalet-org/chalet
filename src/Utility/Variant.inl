@@ -32,9 +32,13 @@ Variant::Variant(T&& inValue)
 		m_value = inValue;
 		m_kind = Kind::Integer;
 	}
+	else if constexpr (std::is_same_v<Type, StringList>)
+	{
+		m_value = inValue;
+		m_kind = Kind::StringList;
+	}
 	else
 	{
-		LOG(__PRETTY_FUNCTION__);
 		m_kind = Kind::Empty;
 	}
 }

@@ -88,12 +88,14 @@ bool ArgumentPatterns::parse(const StringList& inArguments)
 {
 	m_argumentMap.clear();
 
+	bool parseArgs = false;
+
 	if (inArguments.size() > 1) // expects "program [subcommand]"
 	{
 		bool isOption = false;
 		for (auto& arg : inArguments)
 		{
-			std::size_t i = &arg - &inArguments.front();
+			std::ptrdiff_t i = &arg - &inArguments.front();
 			if (i == 0)
 				continue;
 
@@ -126,18 +128,26 @@ bool ArgumentPatterns::parse(const StringList& inArguments)
 				auto& command = m_subCommands.at(m_route);
 				command(*this);
 
-				return doParse(inArguments);
+				parseArgs = true;
+				break; // we have to pass inArguments to doParse, so break out of this loop
 			}
 		}
 	}
 
-	m_route = Route::Unknown;
-	m_routeString.clear();
-	makeParser();
+	if (parseArgs)
+	{
+		return doParse(inArguments);
+	}
+	else
+	{
+		m_route = Route::Unknown;
+		m_routeString.clear();
+		makeParser();
 
-	populateMainArguments();
+		populateMainArguments();
 
-	return doParse(inArguments);
+		return doParse(inArguments);
+	}
 }
 
 /*****************************************************************************/
