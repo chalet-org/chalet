@@ -47,13 +47,13 @@ bool printCommand(std::string prefix, std::string text, uint total = 0)
 }
 
 /*****************************************************************************/
-bool executeCommandMsvc(StringList command, std::string renameFrom, std::string renameTo, bool generateDependencies)
+bool executeCommandMsvc(StringList command, std::string sourceFile, bool generateDependencies)
 {
 	std::string srcFile;
 	{
-		auto start = renameFrom.find_last_of('/') + 1;
-		auto end = renameFrom.find_last_of('.');
-		srcFile = renameFrom.substr(start, end - start);
+		auto start = sourceFile.find_last_of('/') + 1;
+		auto end = sourceFile.find_last_of('.');
+		srcFile = sourceFile.substr(start, end - start);
 	}
 
 	SubprocessOptions options;
@@ -72,32 +72,14 @@ bool executeCommandMsvc(StringList command, std::string renameFrom, std::string 
 	if (!generateDependencies)
 		return true;
 
-	if (!renameFrom.empty() && !renameTo.empty())
-	{
-		std::unique_lock<std::mutex> lock(s_mutex);
-		CHALET_TRY
-		{
-			fs::path from(renameFrom);
-			if (!fs::exists(from))
-				return true;
-
-			fs::path to(renameTo);
-			if (fs::exists(to))
-				fs::remove(to);
-
-			fs::rename(from, to);
-		}
-		CHALET_CATCH(const std::exception&)
-		{
-		}
-	}
-
 	return true;
 }
 
 /*****************************************************************************/
-bool executeCommand(StringList command, std::string renameFrom, std::string renameTo, bool generateDependencies)
+bool executeCommand(StringList command, std::string sourceFile, bool generateDependencies)
 {
+	UNUSED(sourceFile);
+
 	SubprocessOptions options;
 	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::StdErr;
@@ -107,24 +89,6 @@ bool executeCommand(StringList command, std::string renameFrom, std::string rena
 
 	if (!generateDependencies)
 		return true;
-
-	if (!renameFrom.empty() && !renameTo.empty())
-	{
-		std::unique_lock<std::mutex> lock(s_mutex);
-		CHALET_TRY
-		{
-			if (!fs::exists(renameFrom))
-				return true;
-
-			if (fs::exists(renameTo))
-				fs::remove(renameTo);
-
-			fs::rename(renameFrom, renameTo);
-		}
-		CHALET_CATCH(const std::exception&)
-		{
-		}
-	}
 
 	return true;
 }
@@ -189,7 +153,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 				totalCompiles))
 			return onError();
 
-		if (!executeCommandFunc(pre.command, pre.renameFrom, pre.renameTo, renameAfterCommand))
+		if (!executeCommandFunc(pre.command, pre.output, renameAfterCommand))
 			return onError();
 	}
 
@@ -207,7 +171,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 				color + (showCommmands ? String::join(it.command) : it.output) + reset,
 				totalCompiles));
 
-			threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.renameFrom, it.renameTo, renameAfterCommand));
+			threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.output, renameAfterCommand));
 		}
 	}
 
@@ -247,7 +211,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 				post.label + ' ' + color + (showCommmands ? String::join(post.command) : post.output) + reset))
 			return onError();
 
-		if (!executeCommandFunc(post.command, post.renameFrom, post.renameTo, renameAfterCommand))
+		if (!executeCommandFunc(post.command, post.output, renameAfterCommand))
 			return onError();
 
 		if (buildFailed)

@@ -20,8 +20,7 @@ class CompileStrategyNative final : public ICompileStrategy
 	struct CmdTemp
 	{
 		StringList command;
-		std::string renameFrom;
-		std::string renameTo;
+		std::string sourceFile;
 	};
 
 public:

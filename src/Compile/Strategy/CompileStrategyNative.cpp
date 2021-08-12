@@ -161,8 +161,6 @@ CommandPool::Cmd CompileStrategyNative::getPchCommand(const std::string& pchTarg
 				auto tmp = getPchCompile(source, pchTarget);
 				ret.output = std::move(source);
 				ret.command = std::move(tmp.command);
-				ret.renameFrom = std::move(tmp.renameFrom);
-				ret.renameTo = std::move(tmp.renameTo);
 				ret.color = Output::theme().build;
 				ret.symbol = " ";
 			}
@@ -203,8 +201,6 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 						CommandPool::Cmd out;
 						out.output = std::move(source);
 						out.command = std::move(tmp.command);
-						out.renameFrom = std::move(tmp.renameFrom);
-						out.renameTo = std::move(tmp.renameTo);
 						out.color = Output::theme().build;
 						out.symbol = " ";
 						ret.emplace_back(std::move(out));
@@ -237,8 +233,6 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 						CommandPool::Cmd out;
 						out.output = std::move(source);
 						out.command = std::move(tmp.command);
-						out.renameFrom = std::move(tmp.renameFrom);
-						out.renameTo = std::move(tmp.renameTo);
 						out.color = Output::theme().build;
 						out.symbol = " ";
 						ret.emplace_back(std::move(out));
@@ -289,11 +283,9 @@ CompileStrategyNative::CmdTemp CompileStrategyNative::getPchCompile(const std::s
 	if (m_project->usesPch())
 	{
 		const auto& depDir = m_state.paths.depDir();
+		const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-		ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
-		ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-
-		ret.command = m_toolchain->getPchCompileCommand(source, target, m_generateDependencies, ret.renameFrom);
+		ret.command = m_toolchain->getPchCompileCommand(source, target, m_generateDependencies, dependency);
 	}
 
 	return ret;
@@ -307,11 +299,9 @@ CompileStrategyNative::CmdTemp CompileStrategyNative::getCxxCompile(const std::s
 	CmdTemp ret;
 
 	const auto& depDir = m_state.paths.depDir();
+	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
-	ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-
-	ret.command = m_toolchain->getCxxCompileCommand(source, target, m_generateDependencies, ret.renameFrom, specialization);
+	ret.command = m_toolchain->getCxxCompileCommand(source, target, m_generateDependencies, dependency, specialization);
 
 	return ret;
 }
@@ -325,11 +315,9 @@ CompileStrategyNative::CmdTemp CompileStrategyNative::getRcCompile(const std::st
 
 #if defined(CHALET_WIN32)
 	const auto& depDir = m_state.paths.depDir();
+	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	ret.renameFrom = fmt::format("{depDir}/{source}.Td", FMT_ARG(depDir), FMT_ARG(source));
-	ret.renameTo = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-
-	ret.command = m_toolchain->getRcCompileCommand(source, target, m_generateDependencies, ret.renameFrom);
+	ret.command = m_toolchain->getRcCompileCommand(source, target, m_generateDependencies, dependency);
 #else
 	UNUSED(source, target);
 #endif

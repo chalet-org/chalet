@@ -19,8 +19,6 @@ struct CommandPool
 		StringList command;
 		std::string label;
 		std::string symbol = " ";
-		std::string renameFrom;
-		std::string renameTo;
 		Color color = Color::Red;
 	};
 	using CmdList = std::vector<Cmd>;
