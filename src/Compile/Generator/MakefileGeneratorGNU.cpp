@@ -263,7 +263,6 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 			}
 
 			ret = fmt::format(R"makefile(
-{object}: {source}
 {object}: {source} {dependency}
 	{compileEcho}
 	{quietFlag}{pchCompile}
@@ -324,7 +323,6 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 			}
 
 			ret += fmt::format(R"makefile(
-{objDir}/{location}/%.{ext}.res: {location}/%.{ext}
 {objDir}/{location}/%.{ext}.res: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{rcCompile}
@@ -382,7 +380,6 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 			}
 
 			ret += fmt::format(R"makefile(
-{objDir}/{location}/%.{ext}.o: {location}/%.{ext}
 {objDir}/{location}/%.{ext}.o: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{cppCompile}
@@ -442,7 +439,6 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
 			}
 
 			ret += fmt::format(R"makefile(
-{objDir}/{location}/%.{ext}.o: {location}/%.{ext}
 {objDir}/{location}/%.{ext}.o: {location}/%.{ext} {depDir}/{location}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{objcCompile}

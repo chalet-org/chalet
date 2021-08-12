@@ -3,6 +3,7 @@
         {
             "name": "Linux",
             "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/g++",
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/vendor/nlohmann/single_include",
