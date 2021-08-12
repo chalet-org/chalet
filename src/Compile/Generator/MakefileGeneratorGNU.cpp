@@ -95,10 +95,11 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 
 SHELL := {shell}
 {recipes}
+.PRECIOUS: {depDir}/%.d
+{depDir}/%.d: ;
+
 -include $(DEPS_{hash})
 
-{depDir}/%.d: ;
-.PRECIOUS: {depDir}/%.d
 )makefile",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(suffixes),
@@ -247,24 +248,34 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 		m_precompiledHeaders.push_back(source);
 
 		auto dependency = fmt::format("{}/{}", depDir, source);
+
+		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
 		const auto compileEcho = getCompileEchoSources(source);
 
-		auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency));
+		auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
 		if (!pchCompile.empty())
 		{
+			std::string moveDependencies;
+			if (m_generateDependencies)
+			{
+				moveDependencies = getMoveCommand(tempDependency, dependency);
+			}
+
 			ret = fmt::format(R"makefile(
 {object}: {source}
 {object}: {source} {dependency}
 	{compileEcho}
 	{quietFlag}{pchCompile}
+	{quietFlag}{moveDependencies}
 )makefile",
 				FMT_ARG(object),
 				FMT_ARG(source),
 				FMT_ARG(compileEcho),
 				FMT_ARG(quietFlag),
 				FMT_ARG(pchCompile),
+				FMT_ARG(moveDependencies),
 				FMT_ARG(dependency));
 		}
 	}
@@ -291,27 +302,34 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 			continue;
 
 		auto dependency = fmt::format("{}/{}/$*.{}", depDir, location, ext);
+
+		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
-		auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", m_generateDependencies, dependency));
+		auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", m_generateDependencies, tempDependency));
+		std::string moveDependencies;
 		if (!rcCompile.empty())
 		{
-			std::string makeDependencies;
 			if (m_generateDependencies)
 			{
 #if defined(CHALET_WIN32)
 				if (m_state.toolchain.usingLlvmRC())
 				{
-					makeDependencies = "\n\t" + quietFlag + getFallbackMakeDependsCommand(dependency, "$<", "$@");
+					moveDependencies = getFallbackMakeDependsCommand(dependency, "$<", "$@");
 				}
+				else
 #endif
+				{
+					moveDependencies = getMoveCommand(tempDependency, dependency);
+				}
 			}
 
 			ret += fmt::format(R"makefile(
 {objDir}/{location}/%.{ext}.res: {location}/%.{ext}
 {objDir}/{location}/%.{ext}.res: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d
 	{compileEcho}
-	{quietFlag}{rcCompile}{makeDependencies}
+	{quietFlag}{rcCompile}
+	{quietFlag}{moveDependencies}
 )makefile",
 				FMT_ARG(objDir),
 				FMT_ARG(depDir),
@@ -322,7 +340,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 				FMT_ARG(compileEcho),
 				FMT_ARG(quietFlag),
 				FMT_ARG(rcCompile),
-				FMT_ARG(makeDependencies));
+				FMT_ARG(moveDependencies));
 
 			m_locationCache[location].push_back(ext);
 		}
@@ -351,17 +369,25 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 
 		auto dependency = fmt::format("{}/{}/$*.{}", depDir, location, ext);
 
+		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
 		const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
-		auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, dependency, specialization));
+		auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
 		if (!cppCompile.empty())
 		{
+			std::string moveDependencies;
+			if (m_generateDependencies)
+			{
+				moveDependencies = getMoveCommand(tempDependency, dependency);
+			}
+
 			ret += fmt::format(R"makefile(
 {objDir}/{location}/%.{ext}.o: {location}/%.{ext}
 {objDir}/{location}/%.{ext}.o: {location}/%.{ext} {pchTarget} {depDir}/{location}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{cppCompile}
+	{quietFlag}{moveDependencies}
 )makefile",
 				FMT_ARG(objDir),
 				FMT_ARG(depDir),
@@ -371,6 +397,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 				FMT_ARG(dependency),
 				FMT_ARG(compileEcho),
 				FMT_ARG(quietFlag),
+				FMT_ARG(moveDependencies),
 				FMT_ARG(cppCompile));
 
 			m_locationCache[location].push_back(ext);
@@ -402,17 +429,25 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
 
 		auto dependency = fmt::format("{}/{}/$*.{}", depDir, location, ext);
 
+		const auto tempDependency = dependency + ".Td";
 		dependency += ".d";
 
 		const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCPlusPlus;
-		auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, dependency, specialization));
+		auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, tempDependency, specialization));
 		if (!objcCompile.empty())
 		{
+			std::string moveDependencies;
+			if (m_generateDependencies)
+			{
+				moveDependencies = getMoveCommand(tempDependency, dependency);
+			}
+
 			ret += fmt::format(R"makefile(
 {objDir}/{location}/%.{ext}.o: {location}/%.{ext}
 {objDir}/{location}/%.{ext}.o: {location}/%.{ext} {depDir}/{location}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{objcCompile}
+	{quietFlag}{moveDependencies}
 )makefile",
 				FMT_ARG(objDir),
 				FMT_ARG(depDir),
@@ -421,7 +456,8 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
 				FMT_ARG(dependency),
 				FMT_ARG(compileEcho),
 				FMT_ARG(quietFlag),
-				FMT_ARG(objcCompile));
+				FMT_ARG(objcCompile),
+				FMT_ARG(moveDependencies));
 
 			m_locationCache[location].push_back(ext);
 		}
