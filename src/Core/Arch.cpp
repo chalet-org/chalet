@@ -17,12 +17,12 @@ namespace chalet
 std::string Arch::getHostCpuArchitecture()
 {
 #if defined(CHALET_MACOS)
-	#if TARGET_CPU_ARM64
-	return "arm64-apple-darwin";
-	#elif TARGET_CPU_X86_64
-	return "x86_64-apple-darwin";
+	#if defined(TARGET_CPU_ARM64) && TARGET_CPU_ARM64
+	return "arm64";
+	#elif defined(TARGET_CPU_X86_64) && TARGET_CPU_X86_64
+	return "x86_64";
 	#else
-	return "i686-apple-darwin";
+	return "i686";
 	#endif
 #else
 	#if (defined(__x86_64__) && __x86_64__) || (defined(_M_AMD64) && _M_AMD64 == 100)

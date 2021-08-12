@@ -100,6 +100,10 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 				valid = true;
 			}
 		}
+		else
+		{
+			valid = true;
+		}
 
 		if (!valid)
 			return false;

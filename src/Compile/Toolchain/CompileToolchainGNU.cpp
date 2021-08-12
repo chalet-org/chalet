@@ -779,13 +779,11 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	auto hostArch = m_state.info.hostArchitecture();
 	auto targetArch = m_state.info.targetArchitecture();
 
-#if defined(CHALET_WIN32)
-	if (String::equals({ "arm", "arm64" }, m_arch))
+	if (m_config.isMingw() && String::equals({ "arm", "arm64" }, m_arch))
 	{
 		// don't do anything yet
 		return false;
 	}
-#endif
 
 	if (hostArch == targetArch && targetArch != Arch::Cpu::Unknown)
 		return false;

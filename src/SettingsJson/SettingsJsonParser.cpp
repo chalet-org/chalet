@@ -370,7 +370,7 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
 	{
-		if (m_inputs.toolchainPreferenceName().empty() || String::equals("auto", m_inputs.toolchainPreferenceName()))
+		if (m_inputs.toolchainPreferenceName().empty())
 			m_inputs.setToolchainPreference(std::move(val));
 	}
 

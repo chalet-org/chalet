@@ -405,14 +405,7 @@ void CommandLineInputs::setTargetArchitecture(const std::string& inValue) const 
 	if (inValue.empty())
 		return;
 
-	if (String::equals("auto", inValue))
-	{
-		m_targetArchitecture.clear();
-	}
-	else
-	{
-		m_targetArchitecture = inValue;
-	}
+	m_targetArchitecture = inValue;
 }
 
 /*****************************************************************************/
