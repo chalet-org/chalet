@@ -511,19 +511,6 @@ std::string MakefileGeneratorGNU::getQuietFlag() const
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getMoveCommand(const std::string& inInput, const std::string& inOutput) const
-{
-	if (Environment::isBash())
-		return fmt::format("mv -f {} {}", inInput, inOutput);
-	else
-	{
-		return fmt::format("del /f /q \"$(subst /,\\\\,{inOutput})\" 2> nul && rename \"$(subst /,\\\\,{inInput})\" \"$(notdir {inOutput})\"",
-			FMT_ARG(inInput),
-			FMT_ARG(inOutput));
-	}
-}
-
-/*****************************************************************************/
 std::string MakefileGeneratorGNU::getFallbackMakeDependsCommand(const std::string& inDependencyFile, const std::string& object, const std::string& source) const
 {
 	std::string contents = fmt::format("{}: \\\\\\n  {}\\n", object, source);

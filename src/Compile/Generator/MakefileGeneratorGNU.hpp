@@ -41,7 +41,6 @@ private:
 	std::string getLinkerPreReqs() const;
 
 	std::string getQuietFlag() const;
-	std::string getMoveCommand(const std::string& inInput, const std::string& inOutput) const;
 	std::string getFallbackMakeDependsCommand(const std::string& inDependencyFile, const std::string& object, const std::string& source) const;
 	std::string getPrinter(const std::string& inPrint = "", const bool inNewLine = false) const;
 
