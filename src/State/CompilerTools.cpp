@@ -63,7 +63,8 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 				result = result.substr(0, darwin + 12);
 			}
 #endif
-			m_state.info.setTargetArchitecture(result);
+			if (!result.empty())
+				m_state.info.setTargetArchitecture(result);
 		}
 		else
 		{
@@ -95,17 +96,24 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 					}
 				}
 
-#if defined(CHALET_WIN32)
 				if (!String::contains('-', targetArchString))
 				{
-					// don't enforce pc-windows-gnu
-					// auto gcc = Commands::which("gcc");
-					// if (!gcc.empty())
-					// 	m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-gnu", targetArchString));
-					// else
-					m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", targetArchString));
-				}
+					auto result = Commands::subprocessOutput({ compilerCxx(), "-dumpmachine" });
+					auto firstDash = result.find_first_of('-');
+					if (!result.empty() && firstDash != std::string::npos)
+					{
+						result = fmt::format("{}{}", targetArchString, result.substr(firstDash));
+#if defined(CHALET_MACOS)
+						// Strip out version in auto-detected mac triple
+						auto darwin = result.find("apple-darwin");
+						if (darwin != std::string::npos)
+						{
+							result = result.substr(0, darwin + 12);
+						}
 #endif
+						m_state.info.setTargetArchitecture(result);
+					}
+				}
 
 				if (!valid)
 					return false;
