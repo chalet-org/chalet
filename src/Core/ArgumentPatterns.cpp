@@ -586,7 +586,7 @@ void ArgumentPatterns::addArchArg()
 	m_parser.add_argument("-a", "--arch")
 		.help("Target architecture")
 		.nargs(1)
-		.default_value(std::string())
+		.default_value(std::string("auto"))
 		.action([](const std::string& value) {
 			// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 			// Either parsed later (if MSVC) or passed directly to GNU compiler
@@ -604,10 +604,7 @@ void ArgumentPatterns::addArchArg()
 			{
 				return value;
 			}
-			else
-			{
-				return std::string();
-			}
+			return std::string{ "auto" };
 		});
 
 	m_argumentMap.push_back({ "-a", Variant::Kind::String });
@@ -667,7 +664,7 @@ void ArgumentPatterns::addRunProjectArg()
 {
 	m_parser.add_argument(kArgRunProject)
 		.help(kHelpRunProject)
-		.default_value(std::string());
+		.default_value(std::string(""));
 
 	m_argumentMap.push_back({ kArgRunProject, Variant::Kind::String });
 }
