@@ -49,30 +49,13 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 
 	if (toolchainType == ToolchainType::LLVM)
 	{
-		if (archFromInput.empty())
-		{
-			// also takes -dumpmachine
-			// -print-effective-triple prints triple w/ version
-			// -print-target-triple prints triple w/o version (except on mac)
-			auto result = Commands::subprocessOutput({ compilerCxx(), "-print-target-triple" });
-#if defined(CHALET_MACOS)
-			// Strip out version in auto-detected mac triple
-			auto darwin = result.find("apple-darwin");
-			if (darwin != std::string::npos)
-			{
-				result = result.substr(0, darwin + 12);
-			}
-#endif
-			if (!result.empty())
-				m_state.info.setTargetArchitecture(result);
-		}
-		else
+		bool valid = false;
+		if (!archFromInput.empty())
 		{
 			auto results = Commands::subprocessOutput({ compilerCxx(), "-print-targets" });
 			if (!String::contains("error:", results))
 			{
 				auto split = String::split(results, "\n");
-				bool valid = false;
 				for (auto& line : split)
 				{
 					auto start = line.find_first_not_of(' ');
@@ -95,29 +78,29 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 							valid = true;
 					}
 				}
-
-				if (!String::contains('-', targetArchString))
-				{
-					auto result = Commands::subprocessOutput({ compilerCxx(), "-dumpmachine" });
-					auto firstDash = result.find_first_of('-');
-					if (!result.empty() && firstDash != std::string::npos)
-					{
-						result = fmt::format("{}{}", targetArchString, result.substr(firstDash));
-#if defined(CHALET_MACOS)
-						// Strip out version in auto-detected mac triple
-						auto darwin = result.find("apple-darwin");
-						if (darwin != std::string::npos)
-						{
-							result = result.substr(0, darwin + 12);
-						}
-#endif
-						m_state.info.setTargetArchitecture(result);
-					}
-				}
-
-				if (!valid)
-					return false;
 			}
+
+			if (!String::contains('-', targetArchString))
+			{
+				auto result = Commands::subprocessOutput({ compilerCxx(), "-dumpmachine" });
+				auto firstDash = result.find_first_of('-');
+				if (!result.empty() && firstDash != std::string::npos)
+				{
+					result = fmt::format("{}{}", targetArchString, result.substr(firstDash));
+#if defined(CHALET_MACOS)
+					// Strip out version in auto-detected mac triple
+					auto darwin = result.find("apple-darwin");
+					if (darwin != std::string::npos)
+					{
+						result = result.substr(0, darwin + 12);
+					}
+#endif
+					m_state.info.setTargetArchitecture(result);
+				}
+			}
+
+			if (!valid)
+				return false;
 		}
 	}
 	else if (toolchainType == ToolchainType::GNU)
