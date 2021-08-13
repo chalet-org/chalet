@@ -49,6 +49,8 @@ bool AncillaryTools::validate()
 	fetchBrewVersion();
 
 #if defined(CHALET_MACOS)
+	Output::setShowCommandOverride(false);
+
 	const auto& homeDirectory = m_inputs.homeDirectory();
 	Environment::replaceCommonVariables(m_signingIdentity, homeDirectory);
 
@@ -70,6 +72,9 @@ bool AncillaryTools::validate()
 			}
 		}
 	}
+
+	Output::setShowCommandOverride(true);
+
 #else
 	UNUSED(m_inputs);
 #endif
