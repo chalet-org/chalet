@@ -343,6 +343,7 @@ bool BuildState::validateState()
 void BuildState::manageLibraryPathVariables()
 {
 	Environment::set("CLICOLOR_FORCE", "1");
+	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
 
 #if defined(CHALET_LINUX)
 	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
