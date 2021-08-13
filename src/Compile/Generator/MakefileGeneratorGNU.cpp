@@ -15,20 +15,6 @@
 
 namespace chalet
 {
-namespace
-{
-/*****************************************************************************/
-const char* unicodeRightwardsTripleArrow()
-{
-#if defined(CHALET_WIN32)
-	if (Environment::isBash())
-		return "\\u21DB";
-#endif
-
-	return Unicode::rightwardsTripleArrow();
-}
-}
-
 /*****************************************************************************/
 MakefileGeneratorGNU::MakefileGeneratorGNU(const BuildState& inState) :
 	IStrategyGenerator(inState)
@@ -217,10 +203,9 @@ std::string MakefileGeneratorGNU::getCompileEchoLinker() const
 
 	if (Output::cleanOutput())
 	{
-		const auto arrow = unicodeRightwardsTripleArrow();
 		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
-
-		printer = getPrinter(fmt::format("{color}{arrow}  {description} $@", FMT_ARG(color), FMT_ARG(arrow), FMT_ARG(description)), true);
+		const auto text = fmt::format("{color}   {description} $@", FMT_ARG(color), FMT_ARG(description));
+		printer = getPrinter(text, true);
 	}
 	else
 	{

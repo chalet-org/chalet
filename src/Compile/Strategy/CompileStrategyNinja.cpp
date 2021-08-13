@@ -114,7 +114,7 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 	auto& hash = m_hashes.at(inProject.name());
 
 	{
-		std::cout << Output::getAnsiStyle(Output::theme().build) << std::flush;
+		// std::cout << Output::getAnsiStyle(Output::theme().build) << std::flush;
 
 		command.emplace_back(fmt::format("build_{}", hash));
 		bool result = subprocessNinja(command);
@@ -134,12 +134,11 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 
 	bool skipOutput = false;
 	std::string noWork{ "ninja: no work to do.\n" };
-	Subprocess::PipeFunc onStdOut = [](std::string inData) {
+	Subprocess::PipeFunc onStdOut = [&skipOutput, &noWork](std::string inData) {
 #if defined(CHALET_WIN32)
 		String::replaceAll(inData, "\r\n", "\n");
 #endif
 
-		/*
 #if defined(CHALET_WIN32)
 		// the n & inja split is a weird MinGW thing, although it seems consistent?
 		if (skipOutput || String::endsWith(noWork, inData) || String::equals('n', inData))
@@ -150,7 +149,17 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 			skipOutput = true;
 			return;
 		}
-		*/
+
+		if (String::startsWith('[', inData))
+		{
+			inData = fmt::format("   {}{}", Output::getAnsiReset(), inData);
+			auto firstEndBracket = inData.find(']');
+			if (firstEndBracket != std::string::npos)
+			{
+				auto color = Output::getAnsiStyle(Output::theme().build);
+				inData.replace(firstEndBracket, 1, fmt::format("]{}", color));
+			}
+		}
 
 		std::cout << inData << std::flush;
 	};
