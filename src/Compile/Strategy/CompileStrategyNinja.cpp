@@ -134,34 +134,41 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 
 	bool skipOutput = false;
 	std::string noWork{ "ninja: no work to do.\n" };
-	Subprocess::PipeFunc onStdOut = [&skipOutput, &noWork](std::string inData) {
+	std::string data;
+	Subprocess::PipeFunc onStdOut = [&skipOutput, &noWork, &data](std::string inData) {
 #if defined(CHALET_WIN32)
 		String::replaceAll(inData, "\r\n", "\n");
-#endif
 
-#if defined(CHALET_WIN32)
-		// the n & inja split is a weird MinGW thing, although it seems consistent?
-		if (skipOutput || String::endsWith(noWork, inData) || String::equals('n', inData))
-#else
-		if (skipOutput || String::endsWith(noWork, inData))
+		if (inData.size() == 1)
+		{
+			data = inData;
+			return;
+		}
+		else
 #endif
+		{
+			data += inData;
+		}
+
+		if (skipOutput || String::startsWith(noWork, data) || String::startsWith(data, noWork))
 		{
 			skipOutput = true;
 			return;
 		}
 
-		if (String::startsWith('[', inData))
+		if (String::startsWith('[', data))
 		{
-			inData = fmt::format("   {}{}", Output::getAnsiReset(), inData);
-			auto firstEndBracket = inData.find(']');
+			data = fmt::format("   {}{}", Output::getAnsiReset(), data);
+			auto firstEndBracket = data.find(']');
 			if (firstEndBracket != std::string::npos)
 			{
 				auto color = Output::getAnsiStyle(Output::theme().build);
-				inData.replace(firstEndBracket, 1, fmt::format("]{}", color));
+				data.replace(firstEndBracket, 1, fmt::format("]{}", color));
 			}
 		}
 
-		std::cout << inData << std::flush;
+		std::cout << data << std::flush;
+		data.clear();
 	};
 
 	SubprocessOptions options;
