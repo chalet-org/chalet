@@ -25,7 +25,7 @@ enum class CppCompilerType : ushort
 	AppleClang,
 	MingwGcc,
 	MingwClang,
-	VisualStudio, // TODO!
+	VisualStudio,
 	Intel,
 	EmScripten
 	// NVCC / CUDA ?

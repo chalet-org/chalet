@@ -765,7 +765,7 @@ void CompileToolchainGNU::addNoExceptionsOption(StringList& outArgList) const
 void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
-	if (threadType == ThreadType::Posix || threadType == ThreadType::Auto)
+	if (!m_config.isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
 	{
 		std::string pthread{ "-pthread" };
 		// if (isFlagSupported(pthread))
@@ -898,7 +898,7 @@ void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& outArgList) 
 void CompileToolchainGNU::addThreadModelLinkerOption(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
-	if (threadType == ThreadType::Posix || threadType == ThreadType::Auto)
+	if (!m_config.isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
 	{
 		if (m_config.isMingw() && m_project.staticLinking())
 		{
