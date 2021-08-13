@@ -166,6 +166,10 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 				data.replace(firstEndBracket, 1, fmt::format("]{}", color));
 			}
 		}
+		if (String::contains('\n', data))
+		{
+			String::replaceAll(data, "\n", fmt::format("\n{}", Output::getAnsiReset()));
+		}
 
 		std::cout << data << std::flush;
 		data.clear();
