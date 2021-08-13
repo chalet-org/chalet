@@ -137,6 +137,14 @@ void CompileToolchainLLVM::addLinkerScripts(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void CompileToolchainLLVM::addDiagnosticColorOption(StringList& outArgList) const
+{
+	std::string diagnosticColor{ "-color-diagnostics" };
+	if (isFlagSupported(diagnosticColor))
+		List::addIfDoesNotExist(outArgList, std::move(diagnosticColor));
+}
+
+/*****************************************************************************/
 void CompileToolchainLLVM::addLibStdCppLinkerOption(StringList& outArgList) const
 {
 	UNUSED(outArgList);

@@ -111,6 +111,9 @@ bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
 		command.emplace_back("--quiet"); // forthcoming (in ninja's master branch currently)
 	}
 
+	command.emplace_back("-d");
+	command.emplace_back("keepdepfile");
+
 	auto& hash = m_hashes.at(inProject.name());
 
 	{
@@ -166,10 +169,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 				data.replace(firstEndBracket, 1, fmt::format("]{}", color));
 			}
 		}
-		if (String::contains('\n', data))
-		{
-			String::replaceAll(data, "\n", fmt::format("\n{}", Output::getAnsiReset()));
-		}
+		String::replaceAll(data, "\n", fmt::format("\n{}", Output::getAnsiReset()));
 
 		std::cout << data << std::flush;
 		data.clear();

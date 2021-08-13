@@ -20,6 +20,7 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 
 	// Compile
 	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;
+	virtual void addDiagnosticColorOption(StringList& outArgList) const override;
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const override;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;

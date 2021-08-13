@@ -196,7 +196,7 @@ std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& inFil
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCompileEchoLinker() const
+std::string MakefileGeneratorGNU::getLinkerEcho() const
 {
 	const auto color = getBuildColor();
 	std::string printer;
@@ -434,18 +434,18 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, { fmt::format("$(OBJS_{})", m_hash) }, linkerTargetBase));
 	if (!linkerCommand.empty())
 	{
-		const auto compileEcho = getCompileEchoLinker();
+		const auto linkerEcho = getLinkerEcho();
 		const auto printer = getPrinter("\\n");
 
 		ret = fmt::format(R"makefile(
 {linkerTarget}: {preReqs}
-	{compileEcho}
+	{linkerEcho}
 	{quietFlag}{linkerCommand}
 	@{printer}
 )makefile",
 			FMT_ARG(linkerTarget),
 			FMT_ARG(preReqs),
-			FMT_ARG(compileEcho),
+			FMT_ARG(linkerEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(linkerCommand),
 			FMT_ARG(printer));
