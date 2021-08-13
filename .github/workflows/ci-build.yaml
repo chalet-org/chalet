@@ -57,7 +57,7 @@ jobs:
         with:
           files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json LICENSE.txt README.md
           dest: dist/chalet-linux-ubuntu.zip
-      - name: "Upload binary"
+      - name: "Upload assets"
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
@@ -98,7 +98,7 @@ jobs:
         with:
           files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json LICENSE.txt README.md
           dest: dist/chalet-macos-universal.zip
-      - name: "Upload binary"
+      - name: "Upload assets"
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
@@ -138,17 +138,18 @@ jobs:
           script-file: "platform/windows/installer/install_script.nsi"
           additional-plugin-paths: platform/windows/installer/plugins/Plugins
           arguments: "/WX /V3 /NOCD"
-      - name: "Upload zip"
+      - name: "Zip installer"
+        uses: papeloto/action-zip@v1
+        with:
+          files: dist/chalet-windows-installer.exe LICENSE.txt README.md
+          dest: dist/chalet-windows-msvc64-installer.zip
+      - name: "Upload assets"
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ./dist/chalet-windows-msvc64.zip
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: "Upload installer"
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: ./dist/chalet-windows-installer.exe
+          files: |
+            ./dist/chalet-windows-msvc64.zip
+            ./dist/chalet-windows-msvc64-installer.zip
           token: ${{ secrets.GITHUB_TOKEN }}
   Windows-MSYS2:
     needs: Release
@@ -190,9 +191,16 @@ jobs:
           script-file: "platform/windows/installer/install_script.nsi"
           additional-plugin-paths: platform/windows/installer/plugins/Plugins
           arguments: "/WX /V3 /NOCD"
+      - name: "Zip installer"
+        uses: papeloto/action-zip@v1
+        with:
+          files: dist/chalet-windows-installer.exe LICENSE.txt README.md
+          dest: dist/chalet-windows-mingw64-installer.zip
       - name: "Upload assets"
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ./dist/chalet-windows-mingw64.zip
+          files: |
+            ./dist/chalet-windows-mingw64.zip
+            ./dist/chalet-windows-mingw64-installer.zip
           token: ${{ secrets.GITHUB_TOKEN }}
