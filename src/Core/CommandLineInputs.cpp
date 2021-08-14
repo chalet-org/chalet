@@ -577,7 +577,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::LLVM;
-		ret.strategy = StrategyType::Makefile;
+		ret.strategy = StrategyType::Ninja;
 		ret.cpp = "clang++";
 		ret.cc = "clang";
 		ret.rc = "llvm-rc";
@@ -590,7 +590,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::GNU;
-		ret.strategy = StrategyType::Makefile;
+		ret.strategy = StrategyType::Ninja;
 		ret.cpp = "g++";
 		ret.cc = "gcc";
 		ret.rc = "windres";
