@@ -64,6 +64,7 @@ private:
 
 	bool makePathVariable();
 	void manageLibraryPathVariables();
+	void enforceArchitectureInPath();
 	void enforceArchitectureInPath(std::string& outPathVariable);
 };
 }

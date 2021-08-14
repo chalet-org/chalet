@@ -46,11 +46,7 @@ bool BuildState::initialize()
 	// Before: For when the toolchain & architecture are provided by inputs,
 	//   and the toolchain needs to be populated into .chaletrc
 	// After (in makePathVariable), for cases when the architecture was deduced after reading the cache
-	{
-		auto path = Environment::getPath();
-		enforceArchitectureInPath(path);
-		Environment::setPath(path);
-	}
+	enforceArchitectureInPath();
 
 	if (!parseToolchainFromSettingsJson())
 		return false;
@@ -419,6 +415,16 @@ bool BuildState::makePathVariable()
 	Environment::setPath(pathVariable);
 
 	return true;
+}
+
+/*****************************************************************************/
+void BuildState::enforceArchitectureInPath()
+{
+#if defined(CHALET_WIN32)
+	auto path = Environment::getPath();
+	enforceArchitectureInPath(path);
+	Environment::setPath(path);
+#endif
 }
 
 /*****************************************************************************/
