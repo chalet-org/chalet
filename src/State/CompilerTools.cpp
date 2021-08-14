@@ -332,7 +332,7 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std:
 	// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
 	// Apple clang version 12.0.5 (clang-1205.0.22.9)
 	const auto exec = String::getPathBaseName(inExecutable);
-	const bool isCpp = String::contains("++", exec);
+	// const bool isCpp = String::contains("++", exec);
 	// const bool isC = String::startsWith({ "gcc", "cc" }, exec);
 	std::string rawOutput;
 	if (String::contains("clang", inExecutable))
@@ -377,15 +377,15 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std:
 		{
 			if (String::startsWith("gcc", compilerRaw))
 			{
-				ret = fmt::format("GNU Compiler Collection {} Version {}", isCpp ? "C++" : "C", versionString);
+				ret = fmt::format("GNU Compiler Collection C/C++ Version {}", versionString);
 			}
 			else if (String::startsWith("Apple clang", compilerRaw))
 			{
-				ret = fmt::format("Apple Clang {} Version {}", isCpp ? "C++" : "C", versionString);
+				ret = fmt::format("Apple Clang C/C++ Version {}", versionString);
 			}
 			else if (String::startsWith("clang", compilerRaw))
 			{
-				ret = fmt::format("LLVM Clang {} Version {}", isCpp ? "C++" : "C", versionString);
+				ret = fmt::format("LLVM Clang C/C++ Version {}", versionString);
 			}
 		}
 		else
