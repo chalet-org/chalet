@@ -22,6 +22,8 @@ private:
 	std::string getGenerator() const;
 	std::string getPlatform() const;
 	StringList getGeneratorCommand(const std::string& inLocation) const;
+	void addCmakeDefines(StringList& outList) const;
+
 	StringList getBuildCommand(const std::string& inLocation) const;
 
 	const BuildState& m_state;

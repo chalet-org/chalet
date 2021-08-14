@@ -14,8 +14,7 @@ namespace chalet
 {
 /*****************************************************************************/
 CMakeTarget::CMakeTarget(const BuildState& inState) :
-	IBuildTarget(inState, BuildTargetType::CMake),
-	m_defines(getDefaultCmakeDefines())
+	IBuildTarget(inState, BuildTargetType::CMake)
 {
 }
 
@@ -124,13 +123,6 @@ bool CMakeTarget::recheck() const noexcept
 void CMakeTarget::setRecheck(const bool inValue) noexcept
 {
 	m_recheck = inValue;
-}
-
-/*****************************************************************************/
-StringList CMakeTarget::getDefaultCmakeDefines()
-{
-	// TODO: Only if using bash ... this define might not be needed at all
-	return { "CMAKE_SH=\"CMAKE_SH-NOTFOUND\"" };
 }
 
 }

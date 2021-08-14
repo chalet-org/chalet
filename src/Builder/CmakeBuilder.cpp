@@ -90,13 +90,13 @@ std::string CmakeBuilder::getGenerator() const
 	{
 		ret = "Visual Studio 16 2019";
 	}
-	else if (compileConfig.isMingw())
-	{
-		ret = "MinGW Makefiles";
-	}
 	else
 	{
+#if defined(CHALET_WIN32)
+		ret = "MinGW Makefiles";
+#else
 		ret = "Unix Makefiles";
+#endif
 	}
 
 	return ret;
@@ -138,19 +138,6 @@ std::string CmakeBuilder::getPlatform() const
 /*****************************************************************************/
 StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) const
 {
-	std::string buildConfiguration = m_state.info.buildConfiguration();
-	if (m_state.configuration.enableProfiling())
-	{
-		buildConfiguration = "Debug";
-	}
-#if defined(CHALET_MACOS)
-	std::string targetArch = m_state.info.targetArchitectureString();
-	{
-		auto dash = targetArch.find('-');
-		targetArch = targetArch.substr(0, dash);
-	}
-#endif
-
 	auto& cmake = m_state.toolchain.cmake();
 
 	StringList ret{ cmake, "-G", getGenerator() };
@@ -175,14 +162,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 		ret.push_back(toolset);
 	}
 
-	for (auto& define : m_target.defines())
-	{
-		ret.emplace_back("-D" + define);
-	}
-	ret.emplace_back("-DCMAKE_BUILD_TYPE=" + buildConfiguration);
-#if defined(CHALET_MACOS)
-	ret.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + targetArch);
-#endif
+	addCmakeDefines(ret);
 
 	ret.emplace_back("-S");
 	ret.push_back(inLocation);
@@ -194,10 +174,89 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 }
 
 /*****************************************************************************/
+void CmakeBuilder::addCmakeDefines(StringList& outList) const
+{
+	struct charCompare
+	{
+		bool operator()(const char* inA, const char* inB) const
+		{
+			return std::strcmp(inA, inB) < 0;
+		}
+	};
+
+	std::map<const char*, bool, charCompare> isDefined;
+	for (auto& define : m_target.defines())
+	{
+		outList.emplace_back("-D" + define);
+
+		if (String::contains("CMAKE_EXPORT_COMPILE_COMMANDS", define))
+			isDefined["CMAKE_EXPORT_COMPILE_COMMANDS"] = true;
+		else if (String::contains("CMAKE_C_COMPILER", define))
+			isDefined["CMAKE_C_COMPILER"] = true;
+		else if (String::contains("CMAKE_CXX_COMPILER", define))
+			isDefined["CMAKE_CXX_COMPILER"] = true;
+		else if (String::contains("CMAKE_BUILD_TYPE", define))
+			isDefined["CMAKE_BUILD_TYPE"] = true;
+#if defined(CHALET_WIN32)
+		else if (String::contains("CMAKE_SH", define))
+			isDefined["CMAKE_SH"] = true;
+#elif defined(CHALET_MACOS)
+		else if (String::contains("CMAKE_OSX_ARCHITECTURES", define))
+			isDefined["CMAKE_OSX_ARCHITECTURES"] = true;
+#endif
+	}
+
+	if (!isDefined["EXPORT_COMPILE_COMMANDS"])
+	{
+		outList.emplace_back("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON");
+	}
+
+	if (!isDefined["CMAKE_C_COMPILER"])
+	{
+		outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER={}", m_state.toolchain.compilerC()));
+	}
+
+	if (!isDefined["CMAKE_CXX_COMPILER"])
+	{
+		outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER={}", m_state.toolchain.compilerCpp()));
+	}
+
+	if (!isDefined["CMAKE_BUILD_TYPE"])
+	{
+
+		std::string buildConfiguration = m_state.info.buildConfiguration();
+		if (m_state.configuration.enableProfiling()) // "Profile" or otherwise
+		{
+			buildConfiguration = "Debug";
+		}
+		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + buildConfiguration);
+	}
+
+#if defined(CHALET_WIN32)
+	if (!isDefined["CMAKE_SH"])
+	{
+		if (Commands::which("sh").empty())
+			outList.emplace_back("-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"");
+	}
+#elif defined(CHALET_MACOS)
+	if (!isDefined["CMAKE_OSX_ARCHITECTURES"])
+	{
+		std::string targetArch = m_state.info.targetArchitectureString();
+		{
+			auto dash = targetArch.find('-');
+			targetArch = targetArch.substr(0, dash);
+		}
+		outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + targetArch);
+	}
+#endif
+}
+
+/*****************************************************************************/
 StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 {
 	auto& cmake = m_state.toolchain.cmake();
 	const auto maxJobs = m_state.environment.maxJobs();
+	// const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
 
 	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
 
@@ -209,7 +268,7 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 		ret.emplace_back("--output-sync=target");
 	}
 
-	LOG(String::join(ret));
+	// LOG(String::join(ret));
 
 	return ret;
 }

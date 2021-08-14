@@ -41,6 +41,20 @@ StringList CompileToolchainLLVM::getLinkExclusions() const
 // Compile
 /*****************************************************************************/
 /*****************************************************************************/
+void CompileToolchainLLVM::addWarnings(StringList& outArgList) const
+{
+	CompileToolchainGNU::addWarnings(outArgList);
+
+	if (m_config.isWindowsClang())
+	{
+		const std::string prefix{ "-W" };
+		std::string noLangExtensions{ "no-language-extension-token" };
+		if (!List::contains(m_project.warnings(), noLangExtensions))
+			outArgList.emplace_back(prefix + noLangExtensions);
+	}
+}
+
+/*****************************************************************************/
 void CompileToolchainLLVM::addProfileInformationCompileOption(StringList& outArgList) const
 {
 	// TODO: "-pg" was added in a recent version of Clang (12 or 13 maybe?)

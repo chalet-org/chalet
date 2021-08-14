@@ -151,13 +151,12 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 			data += inData;
 		}
 
+		String::replaceAll(data, "\r\n", "\n");
 		if (skipOutput || String::startsWith(noWork, data) || String::startsWith(data, noWork))
 		{
 			skipOutput = true;
 			return;
 		}
-
-		String::replaceAll(data, "\r\n", "\n");
 
 		if (String::startsWith('[', data))
 		{

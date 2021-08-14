@@ -34,8 +34,6 @@ struct CMakeTarget final : public IBuildTarget
 	void setRecheck(const bool inValue) noexcept;
 
 private:
-	StringList getDefaultCmakeDefines();
-
 	StringList m_defines;
 	std::string m_location;
 	std::string m_buildFile;

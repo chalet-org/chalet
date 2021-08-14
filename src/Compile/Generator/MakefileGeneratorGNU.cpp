@@ -42,7 +42,6 @@ void MakefileGeneratorGNU::addProjectRecipes(const ProjectTarget& inProject, con
 	// ==============================================================================
 	std::string makeTemplate = fmt::format(R"makefile(
 {buildRecipes}
-
 build_{hash}: {target}
 	@{printer}
 .PHONY: build_{hash}
@@ -79,13 +78,11 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 .SUFFIXES:
 .SUFFIXES: {suffixes}
 
-SHELL := {shell}
-{recipes}
+SHELL := {shell}{recipes}
 .PRECIOUS: {depDir}/%.d
 {depDir}/%.d: ;
 
 -include $(DEPS_{hash})
-
 )makefile",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(suffixes),
@@ -282,7 +279,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 			std::string makeDependency;
 			if (m_generateDependencies && m_state.toolchain.usingLlvmRC())
 			{
-				makeDependency = fmt::format("\n\t{}{}", quietFlag, getFallbackMakeDependsCommand(dependency, "$<", "$@"));
+				makeDependency = fmt::format("\n\t@{}", getFallbackMakeDependsCommand(dependency, "$<", "$@"));
 			}
 
 			ret += fmt::format(R"makefile(
@@ -523,7 +520,10 @@ std::string MakefileGeneratorGNU::getPrinter(const std::string& inPrint, const b
 	}
 	else
 	{
-		return fmt::format("echo {}", inPrint);
+		if (inNewLine)
+			return fmt::format("echo {}", inPrint);
+		else
+			return fmt::format("echo|set /p CMD_NOLINE=\"{}\"", inPrint);
 	}
 }
 

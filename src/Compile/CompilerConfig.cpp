@@ -147,19 +147,33 @@ bool CompilerConfig::testCompilerMacros()
 	bool result = true;
 
 	if (emscripten)
+	{
 		m_compilerType = CppCompilerType::EmScripten;
+	}
 	else if (appleClang)
+	{
 		m_compilerType = CppCompilerType::AppleClang;
+	}
 	else if (clang && mingw)
+	{
 		m_compilerType = CppCompilerType::MingwClang;
+	}
 	else if (clang)
+	{
 		m_compilerType = CppCompilerType::Clang;
+	}
 	else if (intel)
+	{
 		m_compilerType = CppCompilerType::Intel;
+	}
 	else if (gcc && mingw)
+	{
 		m_compilerType = CppCompilerType::MingwGcc;
+	}
 	else if (gcc)
+	{
 		m_compilerType = CppCompilerType::Gcc;
+	}
 	else
 	{
 		m_compilerType = CppCompilerType::Unknown;
