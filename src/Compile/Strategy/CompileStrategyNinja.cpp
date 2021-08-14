@@ -140,8 +140,6 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	std::string data;
 	Subprocess::PipeFunc onStdOut = [&skipOutput, &noWork, &data](std::string inData) {
 #if defined(CHALET_WIN32)
-		// String::replaceAll(inData, "\r\n", "\n");
-
 		if (inData.size() == 1)
 		{
 			data = inData;
@@ -159,6 +157,8 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 			return;
 		}
 
+		String::replaceAll(data, "\r\n", "\n");
+
 		if (String::startsWith('[', data))
 		{
 			data = fmt::format("   {}{}", Output::getAnsiReset(), data);
@@ -169,9 +169,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 				data.replace(firstEndBracket, 1, fmt::format("]{}", color));
 			}
 		}
-#if defined(CHALET_WIN32)
-		String::replaceAll(data, "\r", fmt::format("\r{}", Output::getAnsiReset()));
-#endif
+
 		String::replaceAll(data, "\n", fmt::format("\n{}", Output::getAnsiReset()));
 
 		std::cout << data << std::flush;
