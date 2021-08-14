@@ -474,6 +474,8 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 			}
 		}
 	}
+#else
+	UNUSED(outPathVariable);
 #endif
 }
 }
