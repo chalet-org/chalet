@@ -9,10 +9,12 @@
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -56,8 +58,26 @@ bool CmakeBuilder::run()
 
 		{
 			StringList generatorCommand = getGeneratorCommand(location);
-			if (!Commands::subprocess(generatorCommand))
-				return false;
+
+#if defined(CHALET_WIN32)
+			if (Environment::isBash())
+			{
+				SubprocessOptions options;
+				options.stderrOption = PipeOption::StdErr;
+				options.stdoutOption = PipeOption::Pipe;
+				options.onStdOut = [](std::string inData) {
+					String::replaceAll(inData, "\r\n", "\n");
+					std::cout << std::move(inData) << std::flush;
+				};
+				if (Subprocess::run(generatorCommand, std::move(options)) != EXIT_SUCCESS)
+					return false;
+			}
+			else
+#endif
+			{
+				if (!Commands::subprocess(generatorCommand))
+					return false;
+			}
 		}
 
 		{
