@@ -794,13 +794,19 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 /*****************************************************************************/
 std::string Commands::subprocessOutput(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr)
 {
+	return subprocessOutput(inCmd, getWorkingDirectory(), inStdOut, inStdErr);
+}
+
+/*****************************************************************************/
+std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut, const PipeOption inStdErr)
+{
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
 
 	std::string ret;
 
 	SubprocessOptions options;
-	options.cwd = getWorkingDirectory();
+	options.cwd = std::move(inWorkingDirectory);
 	options.stdoutOption = inStdOut;
 	options.stderrOption = inStdErr;
 	if (options.stdoutOption == PipeOption::Pipe)
@@ -938,8 +944,13 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec)
 	std::string null = "/dev/null";
 #endif
 
+	// Clang/GCC only
+	// This command must be run from the bin directory in order to work
+	//   (or added to path before-hand, but we manipulate the path later)
+	//
+	auto compilerPath = String::getPathFolder(inCompilerExec);
 	StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
-	auto result = Commands::subprocessOutput(command);
+	auto result = Commands::subprocessOutput(command, std::move(compilerPath));
 
 	return result;
 }

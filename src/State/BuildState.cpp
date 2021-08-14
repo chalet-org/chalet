@@ -42,6 +42,10 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 /*****************************************************************************/
 bool BuildState::initialize()
 {
+	// For now, enforceArchitectureInPath needs to be called before & after configuring the toolchain
+	// Before: For when the toolchain & architecture are provided by inputs,
+	//   and the toolchain needs to be populated into .chaletrc
+	// After, for cases when the architecture was deduced after reading the cache
 	enforceArchitectureInPath();
 
 	if (!parseToolchainFromSettingsJson())
@@ -53,14 +57,13 @@ bool BuildState::initialize()
 	if (!parseBuildJson())
 		return false;
 
-	enforceArchitectureInPath(); // 2nd time so compiler is checked correctly
-
 	if (!initializeBuild())
 		return false;
 
-	// calls enforceArchitectureInPath 3rd & final time
+	// calls enforceArchitectureInPath 2nd time
 	makePathVariable();
-	manageLibraryPathVariables();
+
+	makeLibraryPathVariables();
 
 	return true;
 }
@@ -344,35 +347,6 @@ bool BuildState::validateState()
 }
 
 /*****************************************************************************/
-void BuildState::manageLibraryPathVariables()
-{
-	Environment::set("CLICOLOR_FORCE", "1");
-	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
-
-#if defined(CHALET_LINUX)
-	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
-	// Note: Not needed on mac: @rpath stuff is done instead
-
-	// TODO: This might actually vary between distros? Test as many as possible
-
-	auto addEnvironmentPath = [this](const char* inKey) {
-		auto path = Environment::getAsString(inKey);
-		auto outPath = environment.makePathVariable(path);
-		LOG(outPath);
-		if (outPath.size() > path.size())
-		{
-			// LOG(inKey, outPath);
-			Environment::set(inKey, outPath);
-		}
-	};
-
-	addEnvironmentPath("LD_LIBRARY_PATH");
-	addEnvironmentPath("LIBRARY_PATH");
-
-#endif
-}
-
-/*****************************************************************************/
 bool BuildState::makePathVariable()
 {
 	auto originalPath = Environment::getPath();
@@ -413,6 +387,35 @@ bool BuildState::makePathVariable()
 	Environment::setPath(pathVariable);
 
 	return true;
+}
+
+/*****************************************************************************/
+void BuildState::makeLibraryPathVariables()
+{
+	Environment::set("CLICOLOR_FORCE", "1");
+	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
+
+#if defined(CHALET_LINUX)
+	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
+	// Note: Not needed on mac: @rpath stuff is done instead
+
+	// TODO: This might actually vary between distros? Test as many as possible
+
+	auto addEnvironmentPath = [this](const char* inKey) {
+		auto path = Environment::getAsString(inKey);
+		auto outPath = environment.makePathVariable(path);
+		LOG(outPath);
+		if (outPath.size() > path.size())
+		{
+			// LOG(inKey, outPath);
+			Environment::set(inKey, outPath);
+		}
+	};
+
+	addEnvironmentPath("LD_LIBRARY_PATH");
+	addEnvironmentPath("LIBRARY_PATH");
+
+#endif
 }
 
 /*****************************************************************************/

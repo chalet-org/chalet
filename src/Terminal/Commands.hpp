@@ -66,6 +66,7 @@ inline bool subprocessNoOutput(const StringList& inCmd);
 inline bool subprocessNoOutput(const StringList& inCmd, std::string inCwd);
 bool subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap);
 std::string subprocessOutput(const StringList& inCmd, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
+std::string subprocessOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
 inline bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile);
 bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr);
 
