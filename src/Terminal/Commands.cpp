@@ -932,6 +932,11 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec)
 	if (inCompilerExec.empty())
 		return std::string();
 
+		// const auto workingDirectory = getWorkingDirectory();
+		// const auto path = String::getPathFolder(inCompilerExec);
+
+		// changeWorkingDirectory(path);
+
 #if defined(CHALET_WIN32)
 	std::string null = "nul";
 #else
@@ -940,6 +945,8 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec)
 
 	StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
 	auto result = Commands::subprocessOutput(command);
+
+	// changeWorkingDirectory(workingDirectory);
 
 	return result;
 }

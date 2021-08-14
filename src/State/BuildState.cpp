@@ -42,13 +42,23 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 /*****************************************************************************/
 bool BuildState::initialize()
 {
-	enforceArchitectureInPath();
+	// For now, enforceArchitectureInPath needs to be called before & after configuring the toolchain
+	// Before: For when the toolchain & architecture are provided by inputs,
+	//   and the toolchain needs to be populated into .chaletrc
+	// After (in makePathVariable), for cases when the architecture was deduced after reading the cache
+	{
+		auto originalPath = Environment::getPath();
+		enforceArchitectureInPath(originalPath);
+	}
 
 	if (!parseToolchainFromSettingsJson())
 		return false;
 
 	if (!initializeBuildConfiguration())
 		return false;
+
+	// calls enforceArchitectureInPath 2nd time
+	makePathVariable();
 
 	if (!parseBuildJson())
 		return false;
@@ -368,26 +378,79 @@ void BuildState::manageLibraryPathVariables()
 }
 
 /*****************************************************************************/
-void BuildState::enforceArchitectureInPath()
+bool BuildState::makePathVariable()
 {
-// works, but probably not a good idea
-//
+	LOG("BuildState::makePathVariable");
+
+	auto originalPath = Environment::getPath();
+	Path::sanitize(originalPath);
+
+	char separator = Path::getSeparator();
+	auto pathList = String::split(originalPath, separator);
+
+	StringList outList;
+
+	if (auto ccRoot = String::getPathFolder(toolchain.compilerC()); !List::contains(pathList, ccRoot))
+		outList.emplace_back(std::move(ccRoot));
+
+	if (auto cppRoot = String::getPathFolder(toolchain.compilerCpp()); !List::contains(pathList, cppRoot))
+		outList.emplace_back(std::move(cppRoot));
+
+	for (auto& p : Path::getOSPaths())
+	{
+		if (!Commands::pathExists(p))
+			continue;
+
+		auto path = Commands::getCanonicalPath(p); // probably not needed, but just in case
+
+		if (!List::contains(pathList, path))
+			outList.emplace_back(std::move(path));
+	}
+
+	for (auto& path : pathList)
+	{
+		List::addIfDoesNotExist(outList, std::move(path));
+	}
+
+	std::string rootPath = String::join(std::move(outList), separator);
+	Path::sanitize(rootPath);
+
+	auto pathVariable = environment.makePathVariable(rootPath);
+	enforceArchitectureInPath(pathVariable);
+	Environment::setPath(pathVariable);
+
+	return true;
+}
+
+/*****************************************************************************/
+void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
+{
+	// Just common mingw conventions at the moment
+	//
 #if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
 	auto toolchainType = m_inputs.toolchainPreference().type;
-	auto path = Environment::getPath();
-	if (toolchainType == ToolchainType::GNU)
+
+	if (toolchainType != ToolchainType::MSVC)
 	{
-		if (String::contains({ "\\mingw64\\", "\\mingw32\\" }, path))
+		std::string lower = String::toLowerCase(outPathVariable);
+
+		if (String::contains({ "\\mingw64\\", "\\mingw32\\", "\\clang64\\", "\\clang32\\" }, outPathVariable))
 		{
-			std::string lower = String::toLowerCase(path);
+			// TODO: clangarm64
+
 			if (targetArch == Arch::Cpu::X64)
 			{
 				auto start = lower.find("\\mingw32\\");
 				if (start != std::string::npos)
 				{
-					String::replaceAll(path, path.substr(start, 9), "\\mingw64\\");
-					Environment::setPath(path);
+					String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw64\\");
+				}
+
+				start = lower.find("\\clang32\\");
+				if (start != std::string::npos)
+				{
+					String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang64\\");
 				}
 			}
 			else if (targetArch == Arch::Cpu::X86)
@@ -395,35 +458,13 @@ void BuildState::enforceArchitectureInPath()
 				auto start = lower.find("\\mingw64\\");
 				if (start != std::string::npos)
 				{
-					String::replaceAll(path, path.substr(start, 9), "\\mingw32\\");
-					Environment::setPath(path);
+					String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw32\\");
 				}
-			}
-		}
-	}
-	else if (toolchainType == ToolchainType::LLVM)
-	{
-		if (String::contains({ "\\clang64\\", "\\clang32\\" }, path))
-		{
-			// TODO: clangarm64
 
-			std::string lower = String::toLowerCase(path);
-			if (targetArch == Arch::Cpu::X64)
-			{
-				auto start = lower.find("\\clang32\\");
+				start = lower.find("\\clang64\\");
 				if (start != std::string::npos)
 				{
-					String::replaceAll(path, path.substr(start, 9), "\\clang64\\");
-					Environment::setPath(path);
-				}
-			}
-			else if (targetArch == Arch::Cpu::X86)
-			{
-				auto start = lower.find("\\clang64\\");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(path, path.substr(start, 9), "\\clang32\\");
-					Environment::setPath(path);
+					String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang32\\");
 				}
 			}
 		}

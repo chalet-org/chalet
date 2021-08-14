@@ -31,8 +31,6 @@ struct BuildJsonParser
 private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
-	bool makePathVariable();
-
 	bool parseProjects(const Json& inNode);
 	bool parseProject(ProjectTarget& outProject, const Json& inNode, const bool inAbstract = false);
 	bool parseScript(ScriptBuildTarget& outScript, const Json& inNode);

@@ -80,11 +80,6 @@ bool BuildJsonParser::serialize()
 /*****************************************************************************/
 bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 {
-	// order is important!
-
-	if (!makePathVariable())
-		return false;
-
 	if (!parseProjects(inJson))
 		return false;
 
@@ -137,22 +132,6 @@ bool BuildJsonParser::validRunProjectRequestedFromInput()
 	}
 
 	return false;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::makePathVariable()
-{
-	auto rootPath = m_state.toolchain.getRootPathVariable();
-	auto pathVariable = m_state.environment.makePathVariable(rootPath);
-
-	// // LOG(pathVariable);
-
-	if (pathVariable.size() > rootPath.size())
-	{
-		Environment::setPath(pathVariable);
-	}
-
-	return true;
 }
 
 /*****************************************************************************/

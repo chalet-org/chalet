@@ -750,12 +750,15 @@ std::string CompilerTools::getRootPathVariable()
 	auto originalPath = Environment::getPath();
 	Path::sanitize(originalPath);
 
+	char separator = Path::getSeparator();
+	auto pathList = String::split(originalPath, separator);
+
 	StringList outList;
 
-	if (auto ccRoot = String::getPathFolder(m_compilerC); !List::contains(outList, ccRoot))
+	if (auto ccRoot = String::getPathFolder(m_compilerC); !List::contains(pathList, ccRoot))
 		outList.emplace_back(std::move(ccRoot));
 
-	if (auto cppRoot = String::getPathFolder(m_compilerCpp); !List::contains(outList, cppRoot))
+	if (auto cppRoot = String::getPathFolder(m_compilerCpp); !List::contains(pathList, cppRoot))
 		outList.emplace_back(std::move(cppRoot));
 
 	for (auto& p : Path::getOSPaths())
@@ -765,11 +768,11 @@ std::string CompilerTools::getRootPathVariable()
 
 		auto path = Commands::getCanonicalPath(p); // probably not needed, but just in case
 
-		List::addIfDoesNotExist(outList, std::move(path));
+		if (!List::contains(pathList, path))
+			outList.emplace_back(std::move(path));
 	}
 
-	char separator = Path::getSeparator();
-	for (auto& path : String::split(originalPath, separator))
+	for (auto& path : pathList)
 	{
 		List::addIfDoesNotExist(outList, std::move(path));
 	}
