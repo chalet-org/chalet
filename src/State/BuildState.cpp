@@ -47,8 +47,9 @@ bool BuildState::initialize()
 	//   and the toolchain needs to be populated into .chaletrc
 	// After (in makePathVariable), for cases when the architecture was deduced after reading the cache
 	{
-		auto originalPath = Environment::getPath();
-		enforceArchitectureInPath(originalPath);
+		auto path = Environment::getPath();
+		enforceArchitectureInPath(path);
+		Environment::setPath(path);
 	}
 
 	if (!parseToolchainFromSettingsJson())

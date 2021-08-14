@@ -117,7 +117,6 @@ bool CompilerConfig::testCompilerMacros()
 	}
 #endif
 
-	LOG("exec:", exec);
 	const std::string macroResult = Commands::testCompilerFlags(exec);
 	// String::replaceAll(macroResult, '\n', ' ');
 	// String::replaceAll(macroResult, "#include ", "");
