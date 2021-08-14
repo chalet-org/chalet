@@ -42,10 +42,6 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototy
 /*****************************************************************************/
 bool BuildState::initialize()
 {
-	// For now, enforceArchitectureInPath needs to be called before & after configuring the toolchain
-	// Before: For when the toolchain & architecture are provided by inputs,
-	//   and the toolchain needs to be populated into .chaletrc
-	// After (in makePathVariable), for cases when the architecture was deduced after reading the cache
 	enforceArchitectureInPath();
 
 	if (!parseToolchainFromSettingsJson())
@@ -54,15 +50,16 @@ bool BuildState::initialize()
 	if (!initializeBuildConfiguration())
 		return false;
 
-	// calls enforceArchitectureInPath 2nd time
-	makePathVariable();
-
 	if (!parseBuildJson())
 		return false;
+
+	enforceArchitectureInPath(); // 2nd time so compiler is checked correctly
 
 	if (!initializeBuild())
 		return false;
 
+	// calls enforceArchitectureInPath 3rd & final time
+	makePathVariable();
 	manageLibraryPathVariables();
 
 	return true;
@@ -361,6 +358,7 @@ void BuildState::manageLibraryPathVariables()
 	auto addEnvironmentPath = [this](const char* inKey) {
 		auto path = Environment::getAsString(inKey);
 		auto outPath = environment.makePathVariable(path);
+		LOG(outPath);
 		if (outPath.size() > path.size())
 		{
 			// LOG(inKey, outPath);
