@@ -380,8 +380,6 @@ void BuildState::manageLibraryPathVariables()
 /*****************************************************************************/
 bool BuildState::makePathVariable()
 {
-	LOG("BuildState::makePathVariable");
-
 	auto originalPath = Environment::getPath();
 	Path::sanitize(originalPath);
 
