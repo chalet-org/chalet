@@ -404,7 +404,7 @@ void BuildState::makeLibraryPathVariables()
 	auto addEnvironmentPath = [this](const char* inKey) {
 		auto path = Environment::getAsString(inKey);
 		auto outPath = environment.makePathVariable(path);
-		LOG(outPath);
+		// LOG(outPath);
 		if (outPath.size() > path.size())
 		{
 			// LOG(inKey, outPath);
