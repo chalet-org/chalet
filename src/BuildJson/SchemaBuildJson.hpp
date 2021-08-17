@@ -27,7 +27,7 @@ class SchemaBuildJson
 		DistDependencies,
 		DistDescription,
 		DistExclude,
-		DistIncludeDependentSharedLibs,
+		DistIncludeDependentSharedLibraries,
 		DistLinux,
 		DistMacOS,
 		DistMainProject,

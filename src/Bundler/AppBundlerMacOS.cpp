@@ -80,28 +80,30 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 		return signAppBundle();
 	}
+	else
+	{
+		// TODO: Generalized version of this in AppBundler
+		Output::lineBreak();
 
-	// TODO: Generalized version of this in AppBundler
-	Output::lineBreak();
+		Commands::makeDirectory(m_frameworkPath);
 
-	Commands::makeDirectory(m_frameworkPath);
+		if (!createBundleIcon())
+			return false;
 
-	if (!createBundleIcon())
-		return false;
+		if (!createPListAndUpdateCommonKeys())
+			return false;
 
-	if (!createPListAndUpdateCommonKeys())
-		return false;
+		if (!setExecutablePaths())
+			return false;
 
-	if (!setExecutablePaths())
-		return false;
+		if (!signAppBundle())
+			return false;
 
-	if (!signAppBundle())
-		return false;
+		if (!createDmgImage())
+			return false;
 
-	if (!createDmgImage())
-		return false;
-
-	return true;
+		return true;
+	}
 }
 
 /*****************************************************************************/
@@ -209,12 +211,12 @@ bool AppBundlerMacOS::createBundleIcon()
 
 	if (!icon.empty())
 	{
-		std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
 		const auto& sips = m_state.tools.sips();
 		bool sipsFound = !sips.empty();
 
 		if (String::endsWith(".png", icon) && sipsFound)
 		{
+			std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
 			if (!Commands::subprocessNoOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
 				return false;
 		}

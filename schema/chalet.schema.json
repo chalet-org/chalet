@@ -81,7 +81,7 @@
 					"$ref": "#/definitions/dist-exclude"
 				},
 				"includeDependentSharedLibraries": {
-					"$ref": "#/definitions/dist-includeDependentSharedLibs"
+					"$ref": "#/definitions/dist-includeDependentSharedLibraries"
 				},
 				"linux": {
 					"$ref": "#/definitions/dist-linux"
@@ -135,7 +135,7 @@
 				"type": "string"
 			}
 		},
-		"dist-includeDependentSharedLibs": {
+		"dist-includeDependentSharedLibraries": {
 			"type": "boolean",
 			"default": true
 		},

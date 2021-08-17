@@ -39,7 +39,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 {
 	DefinitionMap defs;
 
+	//
 	// configurations
+	//
 	defs[Defs::ConfigDebugSymbols] = R"json({
 		"type": "boolean",
 		"description": "true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-g3' option (-g & macro expansion information) and forces '-O0' if the optimizationLevel is not '0' or 'debug'.\nIn MSVC, this enables '/debug', '/incremental' and forces '/Od' if the optimizationLevel is not '0' or 'debug'.\nThis flag is also the determining factor whether the ':debug' suffix is used in a chalet.json property.",
@@ -78,28 +80,34 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": false
 	})json"_ojson;
 
+	//
 	// distribution
+	//
 	defs[Defs::DistConfiguration] = R"json({
 		"type": "string",
-		"description": "The name of the build configuration to use for the distribution.",
+		"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' or 'enableProfiling' is used.",
 		"default": "Release"
 	})json"_ojson;
 
 	defs[Defs::DistDependencies] = R"json({
 		"type": "array",
+		"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
-			"type": "string"
+			"type": "string",
+			"description": "A single file or folder to copy."
 		}
 	})json"_ojson;
 
 	defs[Defs::DistDescription] = R"json({
-		"type": "string"
+		"type": "string",
+		"description": "TODO"
 	})json"_ojson;
 
 	defs[Defs::DistExclude] = R"json({
 		"type": "array",
+		"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
@@ -107,14 +115,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::DistIncludeDependentSharedLibs] = R"json({
+	defs[Defs::DistIncludeDependentSharedLibraries] = R"json({
 		"type": "boolean",
+		"description": "If true (default), any shared libraries that the bundle depeends on will also be copied into the bundle.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::DistLinux] = R"json({
 		"type": "object",
-		"description": "Variables to describe the linux application.",
+		"description": "Properties to describe the Linux distribution. At the moment, these only apply to Linux distros that support the XDG Desktop Entry Specification",
 		"additionalProperties": false,
 		"required": [
 			"icon",
@@ -123,7 +132,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"properties": {
 			"desktopEntry": {
 				"type": "string",
-				"description": "The location to an XDG Desktop Entry template. If the file does not exist, it will be generated."
+				"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place."
 			},
 			"icon": {
 				"type": "string",
@@ -134,13 +143,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::DistMacOS] = R"json({
 		"type": "object",
-		"description": "Variables to describe the macos application bundle.",
+		"description": "Properties to describe the MacOS distribution. Only one application bundle can be defined per distribution target.",
 		"additionalProperties": false,
 		"properties": {
 			"bundleName": {
-				"type": "string"
+				"type": "string",
+				"description": "Controls whether or not a MacOS application bundle is created. If one is filled in, the output bundle will be (outDir)/(bundleName).app"
 			},
 			"dmgBackground": {
+				"description": "If creating a .dmg image iwth 'makeDmg', this will define a background image for it.",
 				"anyOf": [
 					{
 						"type": "string"
@@ -152,19 +163,23 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 						],
 						"properties": {
 							"1x": {
-								"type": "string"
+								"type": "string",
+								"description": "The background image at 1x pixel density."
 							},
 							"2x": {
-								"type": "string"
+								"type": "string",
+								"description": "The background image at 2x pixel density."
 							}
 						}
 					}
 				]
 			},
 			"icon": {
-				"type": "string"
+				"type": "string",
+				"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process."
 			},
 			"infoPropertyList": {
+				"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.\nCertain properties will be deduced during the bundle:\n  CFBundleName: bundleName\n  CFBundleIconFile: icon\n  CFBundleDisplayName: distribution name\n  CFBundleVersion: version string\n  CFBundleExecutable: relative executable path",
 				"anyOf": [
 					{
 						"type": "string"
@@ -176,12 +191,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			},
 			"universalBinary": {
 				"type": "boolean",
-				"description": "If true, the project will be built in both x64 and arm64, and combined into universal binaries before being bundled.",
+				"description": "If true, the project will be built in both x64 and arm64, and combined into universal binaries before being bundled. If either build does not exist yet, it will be built prior to bundling.",
 				"default": false
 			},
 			"makeDmg": {
 				"type": "boolean",
-				"description": "If true, a .dmg image will be built",
+				"description": "If true, a .dmg image will be created after the application bundle.",
 				"default": false
 			}
 		}
@@ -190,40 +205,42 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::DistMainProject] = R"json({
 		"type": "string",
-		"description": "The main executable project."
+		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'projects' array of the distribution target will be chosen as the main executable."
 	})json"_ojson;
 
 	defs[Defs::DistOutDirectory] = R"json({
 		"type": "string",
-		"description": "The output folder to place the final build along with all of its dependencies.",
+		"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
 		"default": "dist"
 	})json"_ojson;
 
 	defs[Defs::DistProjects] = R"json({
 		"type": "array",
 		"uniqueItems": true,
-		"description": "An array of projects to include",
+		"description": "An array of project target names to include in this distribution target.\nIf 'mainProject' is not defined, the first executable target in this list will be chosen as the main exectuable.",
 		"minItems": 1,
 		"items": {
 			"type": "string",
-			"description": "The name of the project"
+			"description": "The name of the project target."
 		}
 	})json"_ojson;
 	defs[Defs::DistProjects][kItems][kPattern] = kPatternProjectName;
 
 	defs[Defs::DistWindows] = R"json({
 		"type": "object",
-		"description": "Variables to describe the windows application.",
+		"description": "Properties to describe the Windows distribution.\nAt the moment, metadata like versioning and descriptions are typically added during the build phase via an application manifest.",
 		"additionalProperties": false,
 		"properties": {
 			"nsisScript": {
 				"type": "string",
-				"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target."
+				"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target."
 			}
 		}
 	})json"_ojson;
 
+	//
 	// externalDependency
+	//
 	defs[Defs::ExtGitRepository] = R"json({
 		"type": "string",
 		"description": "The url of the git repository.",
@@ -1050,7 +1067,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distDef[kProperties]["dependencies"] = getDefinition(Defs::DistDependencies);
 		distDef[kProperties]["description"] = getDefinition(Defs::DistDescription);
 		distDef[kProperties]["exclude"] = getDefinition(Defs::DistExclude);
-		distDef[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistIncludeDependentSharedLibs);
+		distDef[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistIncludeDependentSharedLibraries);
 		distDef[kProperties]["linux"] = getDefinition(Defs::DistLinux);
 		distDef[kProperties]["macos"] = getDefinition(Defs::DistMacOS);
 		distDef[kProperties]["windows"] = getDefinition(Defs::DistWindows);
@@ -1255,7 +1272,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistDependencies: return "dist-dependencies";
 		case Defs::DistDescription: return "dist-description";
 		case Defs::DistExclude: return "dist-exclude";
-		case Defs::DistIncludeDependentSharedLibs: return "dist-includeDependentSharedLibs";
+		case Defs::DistIncludeDependentSharedLibraries: return "dist-includeDependentSharedLibraries";
 		case Defs::DistLinux: return "dist-linux";
 		case Defs::DistMacOS: return "dist-macos";
 		case Defs::DistMainProject: return "dist-mainProject";
