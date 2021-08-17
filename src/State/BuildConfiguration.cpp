@@ -22,14 +22,14 @@ void BuildConfiguration::setName(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-OptimizationLevel BuildConfiguration::optimizations() const noexcept
+OptimizationLevel BuildConfiguration::optimizationLevel() const noexcept
 {
-	return m_optimizations;
+	return m_optimizationLevel;
 }
 
-void BuildConfiguration::setOptimizations(const std::string& inValue) noexcept
+void BuildConfiguration::setOptimizationLevel(const std::string& inValue) noexcept
 {
-	m_optimizations = parseOptimizations(inValue);
+	m_optimizationLevel = parseOptimizationLevel(inValue);
 }
 
 /*****************************************************************************/
@@ -75,7 +75,7 @@ void BuildConfiguration::setEnableProfiling(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-OptimizationLevel BuildConfiguration::parseOptimizations(const std::string& inValue) noexcept
+OptimizationLevel BuildConfiguration::parseOptimizationLevel(const std::string& inValue) noexcept
 {
 	if (String::equals("debug", inValue))
 		return OptimizationLevel::Debug;

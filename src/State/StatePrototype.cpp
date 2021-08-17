@@ -330,31 +330,31 @@ bool StatePrototype::getDefaultBuildConfiguration(BuildConfiguration& outConfig,
 {
 	if (String::equals("Release", inName))
 	{
-		outConfig.setOptimizations("3");
+		outConfig.setOptimizationLevel("3");
 		outConfig.setLinkTimeOptimization(true);
 		outConfig.setStripSymbols(true);
 	}
 	else if (String::equals("Debug", inName))
 	{
-		outConfig.setOptimizations("0");
+		outConfig.setOptimizationLevel("0");
 		outConfig.setDebugSymbols(true);
 	}
 	// these two are the same as cmake
 	else if (String::equals("RelWithDebInfo", inName))
 	{
-		outConfig.setOptimizations("2");
+		outConfig.setOptimizationLevel("2");
 		outConfig.setDebugSymbols(true);
 		outConfig.setLinkTimeOptimization(true);
 	}
 	else if (String::equals("MinSizeRel", inName))
 	{
-		outConfig.setOptimizations("size");
+		outConfig.setOptimizationLevel("size");
 		// outConfig.setLinkTimeOptimization(true);
 		outConfig.setStripSymbols(true);
 	}
 	else if (String::equals("Profile", inName))
 	{
-		outConfig.setOptimizations("0");
+		outConfig.setOptimizationLevel("0");
 		outConfig.setDebugSymbols(true);
 		outConfig.setEnableProfiling(true);
 	}

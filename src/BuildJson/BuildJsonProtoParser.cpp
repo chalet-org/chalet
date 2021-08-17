@@ -154,8 +154,8 @@ bool BuildJsonProtoParser::parseConfiguration(const Json& inNode)
 			BuildConfiguration config;
 			config.setName(name);
 
-			if (std::string val; m_buildJson.assignStringAndValidate(val, configJson, "optimizations"))
-				config.setOptimizations(std::move(val));
+			if (std::string val; m_buildJson.assignStringAndValidate(val, configJson, "optimizationLevel"))
+				config.setOptimizationLevel(std::move(val));
 
 			if (bool val = false; m_buildJson.assignFromKey(val, configJson, "linkTimeOptimization"))
 				config.setLinkTimeOptimization(val);

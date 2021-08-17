@@ -42,25 +42,25 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	// configurations
 	defs[Defs::ConfigDebugSymbols] = R"json({
 		"type": "boolean",
-		"description": "true to include debug symbols, false otherwise.",
+		"description": "true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-g3' option (-g & macro expansion information) and forces '-O0' if the optimizationLevel is not '0' or 'debug'.\nIn MSVC, this enables '/debug', '/incremental' and forces '/Od' if the optimizationLevel is not '0' or 'debug'.\nThis flag is also the determining factor whether the ':debug' suffix is used in a chalet.json property.",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::ConfigEnableProfiling] = R"json({
 		"type": "boolean",
-		"description": "true to enable profiling for this configuration, false otherwise.",
+		"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-pg' option.\nIn MSVC, this doesn't do anything yet.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::ConfigLinkTimeOptimizations] = R"json({
 		"type": "boolean",
-		"description": "true to use link-time optimization, false otherwise.",
+		"description": "true to use link-time optimization, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-flto' option to the linker.\nIn MSVC, this enables the '/GL' option (Whole Program Optimization - which implies link-time optimization).\nLink-time optimization will not be enabled if either profiling or debug symbols are enabled.",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::ConfigOptimizationLevel] = R"json({
 		"type": "string",
-		"description": "The optimization level of the build.",
+		"description": "The optimization level of the build.\nIn GNU-based compilers, This maps 1:1 with its respective '-O' option, except for 'debug' (-Od) and 'size' (-Os).\nIn MSVC, it's mapped as follows: 0 (/Od), 1 (/O1), 2 (/O2), 3 (/Ox), size (/Os), fast (/Ot), debug (/Od)\nIf this value is unset, no optimization level will be used (implying the compiler's default).",
 		"enum": [
 			"0",
 			"1",
@@ -74,7 +74,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::ConfigStripSymbols] = R"json({
 		"type": "boolean",
-		"description": "true to strip symbols from the build, false otherwise.",
+		"description": "true to strip symbols from the build, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-s' option at link time. In MSVC, this is not applicable (symbols are stored in .pdb files).",
 		"default": false
 	})json"_ojson;
 
@@ -1028,12 +1028,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 		auto configuration = R"json({
 			"type": "object",
-			"additionalProperties": false
+			"additionalProperties": false,
+			"description": "Properties to describe a single build configuration type."
 		})json"_ojson;
 		configuration[kProperties]["debugSymbols"] = getDefinition(Defs::ConfigDebugSymbols);
 		configuration[kProperties]["enableProfiling"] = getDefinition(Defs::ConfigEnableProfiling);
 		configuration[kProperties]["linkTimeOptimization"] = getDefinition(Defs::ConfigLinkTimeOptimizations);
-		configuration[kProperties]["optimizations"] = getDefinition(Defs::ConfigOptimizationLevel);
+		configuration[kProperties]["optimizationLevel"] = getDefinition(Defs::ConfigOptimizationLevel);
 		configuration[kProperties]["stripSymbols"] = getDefinition(Defs::ConfigStripSymbols);
 		defs[Defs::Configuration] = std::move(configuration);
 	}
@@ -1397,15 +1398,21 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"][kDescription] = "An abstract build project. 'all' is implicitely added to each project.";
 
 	ret[kProperties]["configurations"] = R"json({
+		"description": "An array of allowed build configuration presets, or an object of custom build configurations.",
+		"default": [
+			"Release",
+			"Debug",
+			"RelWithDebInfo",
+			"MinSizeRel",
+			"Profile"
+		],
 		"anyOf": [
 			{
 				"type": "object",
-				"additionalProperties": false,
-				"description": "A list of allowed build configurations"
+				"additionalProperties": false
 			},
 			{
 				"type": "array",
-				"description": "An array of allowed build configuration presets",
 				"uniqueItems": true,
 				"minItems": 1,
 				"items": {

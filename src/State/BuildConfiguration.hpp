@@ -15,8 +15,8 @@ struct BuildConfiguration
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
 
-	OptimizationLevel optimizations() const noexcept;
-	void setOptimizations(const std::string& inValue) noexcept;
+	OptimizationLevel optimizationLevel() const noexcept;
+	void setOptimizationLevel(const std::string& inValue) noexcept;
 
 	bool linkTimeOptimization() const noexcept;
 	void setLinkTimeOptimization(const bool inValue) noexcept;
@@ -31,10 +31,10 @@ struct BuildConfiguration
 	void setEnableProfiling(const bool inValue) noexcept;
 
 private:
-	OptimizationLevel parseOptimizations(const std::string& inValue) noexcept;
+	OptimizationLevel parseOptimizationLevel(const std::string& inValue) noexcept;
 
 	std::string m_name;
-	OptimizationLevel m_optimizations;
+	OptimizationLevel m_optimizationLevel;
 	bool m_linkTimeOptimization = false;
 	bool m_stripSymbols = false;
 	bool m_debugSymbols = false;

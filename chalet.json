@@ -5,25 +5,25 @@
 	// "path": [],
 	/*"configurations": {
 		"Release": {
-			"optimizations": "3",
+			"optimizationLevel": "3",
 			"linkTimeOptimization": true,
 			"stripSymbols": true
 		},
 		"Debug": {
-			"optimizations": "0",
+			"optimizationLevel": "0",
 			"debugSymbols": true
 		},
 		"RelWithDebInfo": {
-			"optimizations": "2",
+			"optimizationLevel": "2",
 			"debugSymbols": true
 		},
 		"MinSizeRel": {
-			"optimizations": "size",
+			"optimizationLevel": "size",
 			"linkTimeOptimization": true,
 			"stripSymbols": true
 		},
 		"Profile": {
-			"optimizations": "0",
+			"optimizationLevel": "0",
 			"debugSymbols": true,
 			"enableProfiling": true
 		}

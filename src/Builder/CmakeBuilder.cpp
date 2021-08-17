@@ -243,7 +243,6 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 	if (!isDefined["CMAKE_BUILD_TYPE"])
 	{
-
 		std::string buildConfiguration = m_state.info.buildConfiguration();
 		if (m_state.configuration.enableProfiling()) // "Profile" or otherwise
 		{

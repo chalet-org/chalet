@@ -494,7 +494,7 @@ void CompileToolchainMSVC::addOptimizationOption(StringList& outArgList) const
 	std::string opt;
 	auto& configuration = m_state.configuration;
 
-	OptimizationLevel level = configuration.optimizations();
+	OptimizationLevel level = configuration.optimizationLevel();
 
 	if (configuration.debugSymbols()
 		&& level != OptimizationLevel::Debug
@@ -685,7 +685,12 @@ void CompileToolchainMSVC::addThreadModelCompileOption(StringList& outArgList) c
 /*****************************************************************************/
 void CompileToolchainMSVC::addWholeProgramOptimization(StringList& outArgList) const
 {
-	if (m_state.configuration.linkTimeOptimization())
+	auto& configuration = m_state.configuration;
+	const bool enableProfiling = configuration.enableProfiling();
+	const bool debugSymbols = configuration.debugSymbols();
+
+	if (!enableProfiling && !debugSymbols && configuration.linkTimeOptimization())
+	// if (m_state.configuration.linkTimeOptimization())
 	{
 		outArgList.emplace_back("/GL");
 	}

@@ -588,7 +588,7 @@ void CompileToolchainGNU::addOptimizationOption(StringList& outArgList) const
 	std::string opt;
 	auto& configuration = m_state.configuration;
 
-	OptimizationLevel level = configuration.optimizations();
+	OptimizationLevel level = configuration.optimizationLevel();
 
 	if (configuration.debugSymbols()
 		&& level != OptimizationLevel::Debug
