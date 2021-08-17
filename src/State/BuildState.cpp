@@ -405,7 +405,7 @@ void BuildState::makeLibraryPathVariables()
 		auto path = Environment::getAsString(inKey);
 		auto outPath = environment.makePathVariable(path);
 		// LOG(outPath);
-		if (outPath.size() > path.size())
+		if (outPath != path)
 		{
 			// LOG(inKey, outPath);
 			Environment::set(inKey, outPath);
