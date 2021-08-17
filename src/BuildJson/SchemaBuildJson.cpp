@@ -1451,10 +1451,10 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["distribution"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of bundle descriptors for the distribution."
+		"description": "A sequential list of distribution targets to be created during the bundle phase."
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName] = R"json({
-		"description": "A single bundle or script."
+		"description": "A single distribution target or script."
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::TargetScript);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::Dist);
