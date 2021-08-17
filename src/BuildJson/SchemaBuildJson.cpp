@@ -1060,7 +1060,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		auto distDef = R"json({
 			"type": "object",
 			"additionalProperties": false,
-			"description": "Variables to describe the final output build."
+			"description": "Properties to describe an individual distribution target."
 		})json"_ojson;
 		distDef[kProperties] = Json::object();
 		distDef[kProperties]["configuration"] = getDefinition(Defs::DistConfiguration);
@@ -1076,7 +1076,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distDef[kProperties]["projects"] = getDefinition(Defs::DistProjects);
 		distDef[kPatternProperties][fmt::format("^dependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistDependencies);
 		distDef[kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistExclude);
-		defs[Defs::Dist] = std::move(distDef);
+		defs[Defs::TargetDist] = std::move(distDef);
 	}
 
 	{
@@ -1267,18 +1267,18 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::ConfigOptimizationLevel: return "config-optimizationLevel";
 		case Defs::ConfigStripSymbols: return "config-stripSymbols";
 		//
-		case Defs::Dist: return "distribution";
-		case Defs::DistConfiguration: return "dist-configuration";
-		case Defs::DistDependencies: return "dist-dependencies";
-		case Defs::DistDescription: return "dist-description";
-		case Defs::DistExclude: return "dist-exclude";
-		case Defs::DistIncludeDependentSharedLibraries: return "dist-includeDependentSharedLibraries";
-		case Defs::DistLinux: return "dist-linux";
-		case Defs::DistMacOS: return "dist-macos";
-		case Defs::DistMainProject: return "dist-mainProject";
-		case Defs::DistOutDirectory: return "dist-outDir";
-		case Defs::DistProjects: return "dist-projects";
-		case Defs::DistWindows: return "dist-windows";
+		case Defs::TargetDist: return "distribution-target";
+		case Defs::DistConfiguration: return "distribution-target-configuration";
+		case Defs::DistDependencies: return "distribution-target-dependencies";
+		case Defs::DistDescription: return "distribution-target-description";
+		case Defs::DistExclude: return "distribution-target-exclude";
+		case Defs::DistIncludeDependentSharedLibraries: return "distribution-target-includeDependentSharedLibraries";
+		case Defs::DistLinux: return "distribution-target-linux";
+		case Defs::DistMacOS: return "distribution-target-macos";
+		case Defs::DistMainProject: return "distribution-target-mainProject";
+		case Defs::DistOutDirectory: return "distribution-target-outDir";
+		case Defs::DistProjects: return "distribution-target-projects";
+		case Defs::DistWindows: return "distribution-target-windows";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExtGitRepository: return "external-git-repository";
@@ -1457,7 +1457,7 @@ Json SchemaBuildJson::get()
 		"description": "A single distribution target or script."
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::TargetScript);
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::Dist);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::TargetDist);
 
 	ret[kProperties]["externalDepDir"] = R"json({
 		"type": "string",

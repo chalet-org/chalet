@@ -22,7 +22,7 @@ class SchemaBuildJson
 		ConfigOptimizationLevel,
 		ConfigStripSymbols,
 		//
-		Dist,
+		TargetDist,
 		DistConfiguration,
 		DistDependencies,
 		DistDescription,

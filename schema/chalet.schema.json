@@ -63,60 +63,60 @@
 			"description": "true to strip symbols from the build, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-s' option at link time. In MSVC, this is not applicable (symbols are stored in .pdb files).",
 			"default": false
 		},
-		"distribution": {
+		"distribution-target": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "Variables to describe the final output build.",
+			"description": "Properties to describe an individual distribution target.",
 			"properties": {
 				"configuration": {
-					"$ref": "#/definitions/dist-configuration"
+					"$ref": "#/definitions/distribution-target-configuration"
 				},
 				"dependencies": {
-					"$ref": "#/definitions/dist-dependencies"
+					"$ref": "#/definitions/distribution-target-dependencies"
 				},
 				"description": {
-					"$ref": "#/definitions/dist-description"
+					"$ref": "#/definitions/distribution-target-description"
 				},
 				"exclude": {
-					"$ref": "#/definitions/dist-exclude"
+					"$ref": "#/definitions/distribution-target-exclude"
 				},
 				"includeDependentSharedLibraries": {
-					"$ref": "#/definitions/dist-includeDependentSharedLibraries"
+					"$ref": "#/definitions/distribution-target-includeDependentSharedLibraries"
 				},
 				"linux": {
-					"$ref": "#/definitions/dist-linux"
+					"$ref": "#/definitions/distribution-target-linux"
 				},
 				"macos": {
-					"$ref": "#/definitions/dist-macos"
+					"$ref": "#/definitions/distribution-target-macos"
 				},
 				"windows": {
-					"$ref": "#/definitions/dist-windows"
+					"$ref": "#/definitions/distribution-target-windows"
 				},
 				"mainProject": {
-					"$ref": "#/definitions/dist-mainProject"
+					"$ref": "#/definitions/distribution-target-mainProject"
 				},
 				"outDir": {
-					"$ref": "#/definitions/dist-outDir"
+					"$ref": "#/definitions/distribution-target-outDir"
 				},
 				"projects": {
-					"$ref": "#/definitions/dist-projects"
+					"$ref": "#/definitions/distribution-target-projects"
 				}
 			},
 			"patternProperties": {
 				"^dependencies(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/dist-dependencies"
+					"$ref": "#/definitions/distribution-target-dependencies"
 				},
 				"^exclude(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/dist-exclude"
+					"$ref": "#/definitions/distribution-target-exclude"
 				}
 			}
 		},
-		"dist-configuration": {
+		"distribution-target-configuration": {
 			"type": "string",
 			"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' or 'enableProfiling' is used.",
 			"default": "Release"
 		},
-		"dist-dependencies": {
+		"distribution-target-dependencies": {
 			"type": "array",
 			"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
 			"uniqueItems": true,
@@ -126,11 +126,11 @@
 				"description": "A single file or folder to copy."
 			}
 		},
-		"dist-description": {
+		"distribution-target-description": {
 			"type": "string",
 			"description": "TODO"
 		},
-		"dist-exclude": {
+		"distribution-target-exclude": {
 			"type": "array",
 			"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
 			"uniqueItems": true,
@@ -139,12 +139,12 @@
 				"type": "string"
 			}
 		},
-		"dist-includeDependentSharedLibraries": {
+		"distribution-target-includeDependentSharedLibraries": {
 			"type": "boolean",
 			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied into the bundle.",
 			"default": true
 		},
-		"dist-linux": {
+		"distribution-target-linux": {
 			"type": "object",
 			"description": "Properties to describe the Linux distribution. At the moment, these only apply to Linux distros that support the XDG Desktop Entry Specification",
 			"additionalProperties": false,
@@ -163,7 +163,7 @@
 				}
 			}
 		},
-		"dist-macos": {
+		"distribution-target-macos": {
 			"type": "object",
 			"description": "Properties to describe the MacOS distribution. Only one application bundle can be defined per distribution target.",
 			"additionalProperties": false,
@@ -236,16 +236,16 @@
 				}
 			}
 		},
-		"dist-mainProject": {
+		"distribution-target-mainProject": {
 			"type": "string",
 			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'projects' array of the distribution target will be chosen as the main executable."
 		},
-		"dist-outDir": {
+		"distribution-target-outDir": {
 			"type": "string",
 			"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
 			"default": "dist"
 		},
-		"dist-projects": {
+		"distribution-target-projects": {
 			"type": "array",
 			"uniqueItems": true,
 			"description": "An array of project target names to include in this distribution target.\nIf 'mainProject' is not defined, the first executable target in this list will be chosen as the main exectuable.",
@@ -256,7 +256,7 @@
 				"pattern": "^[\\w\\-\\+\\.]{3,}$"
 			}
 		},
-		"dist-windows": {
+		"distribution-target-windows": {
 			"type": "object",
 			"description": "Properties to describe the Windows distribution.\nAt the moment, metadata like versioning and descriptions are typically added during the build phase via an application manifest.",
 			"additionalProperties": false,
@@ -1443,7 +1443,7 @@
 							"$ref": "#/definitions/target-script"
 						},
 						{
-							"$ref": "#/definitions/distribution"
+							"$ref": "#/definitions/distribution-target"
 						}
 					]
 				}
