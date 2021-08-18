@@ -75,11 +75,18 @@ void Arch::set(const std::string& inValue) noexcept
 	std::string arch = str;
 	if (String::contains('-', arch))
 	{
-		auto split = String::split(str, '-');
+		auto split = String::split(arch, '-');
 		arch = split.front();
 	}
 
-	if (String::equals({ "x86_64", "x64", "amd64" }, arch))
+	// Need to do this for msvc-style arches, but this works for x86_64 too
+	if (String::contains('_', arch))
+	{
+		auto split = String::split(arch, '_');
+		arch = split.back();
+	}
+
+	if (String::equals({ "64", "x64", "amd64" }, arch))
 	{
 		val = Arch::Cpu::X64;
 	}
