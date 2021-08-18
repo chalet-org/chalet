@@ -378,15 +378,20 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std:
 			if (String::startsWith("gcc", compilerRaw))
 			{
 				ret = fmt::format("GNU Compiler Collection C/C++ Version {}", versionString);
-			}
-			else if (String::startsWith("Apple clang", compilerRaw))
-			{
-				ret = fmt::format("Apple Clang C/C++ Version {}", versionString);
+				m_version = versionString;
 			}
 			else if (String::startsWith("clang", compilerRaw))
 			{
 				ret = fmt::format("LLVM Clang C/C++ Version {}", versionString);
+				m_version = versionString;
 			}
+#if defined(CHALET_MACOS)
+			else if (String::startsWith("Apple clang", compilerRaw))
+			{
+				ret = fmt::format("Apple Clang C/C++ Version {}", versionString);
+				m_version = versionString;
+			}
+#endif
 		}
 		else
 		{

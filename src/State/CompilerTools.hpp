@@ -128,7 +128,7 @@ private:
 
 	std::string m_strategyString;
 	std::string m_buildPathStyleString;
-	std::string m_version;
+	mutable std::string m_version;
 
 	uint m_cmakeVersionMajor = 0;
 	uint m_cmakeVersionMinor = 0;
