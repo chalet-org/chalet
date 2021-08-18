@@ -543,6 +543,16 @@ void CompilerTools::setBuildPathStyle(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CompilerTools::version() const noexcept
+{
+	return m_version;
+}
+void CompilerTools::setVersion(const std::string& inValue) noexcept
+{
+	m_version = inValue;
+}
+
+/*****************************************************************************/
 const std::string& CompilerTools::compilerCxx() const noexcept
 {
 	if (m_ccDetected)

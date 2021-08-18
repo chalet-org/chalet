@@ -12,6 +12,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -65,7 +66,13 @@ MsvcEnvironment::MsvcEnvironment(const CommandLineInputs& inInputs, BuildState& 
 }
 
 /*****************************************************************************/
-bool MsvcEnvironment::create()
+const std::string& MsvcEnvironment::detectedVersion() const
+{
+	return m_detectedVersion;
+}
+
+/*****************************************************************************/
+bool MsvcEnvironment::create(const std::string& inVersion)
 {
 #if defined(CHALET_WIN32)
 	if (m_initialized)
@@ -97,27 +104,69 @@ bool MsvcEnvironment::create()
 	auto appDataPath = Environment::getAsString("APPDATA");
 	std::string msvcInject = fmt::format("{}\\__CHALET_MSVC_INJECT__", appDataPath);
 
+	std::string installationVersion;
+
+	// we got here from "msvc" "msvc-pre" in the command line
+	bool genericMsvcFromInput = String::equals({ "msvc", "msvc-pre" }, m_inputs.toolchainPreferenceName());
+
 	bool deltaExists = Commands::pathExists(m_varsFileMsvcDelta);
 	if (!deltaExists)
 	{
 		// Diagnostic::infoEllipsis("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta);
 		Diagnostic::infoEllipsis("Creating Microsoft{} Visual C++ Environment Cache", Unicode::registered());
 
+		if (genericMsvcFromInput)
 		{
-			StringList vswhereCmd{ s_vswhere, "-latest" };
-			if (m_inputs.isMsvcPreRelease())
-			{
-				vswhereCmd.emplace_back("-prerelease");
-			}
-			vswhereCmd.emplace_back("-property");
+			auto getStartOfCommand = [this]() {
+				StringList cmd{ s_vswhere, "-nologo", "-latest" };
+				if (m_inputs.isMsvcPreRelease())
+				{
+					cmd.emplace_back("-prerelease");
+				}
+				cmd.emplace_back("-property");
+				return cmd;
+			};
+
+			StringList vswhereCmd = getStartOfCommand();
 			vswhereCmd.emplace_back("installationPath");
 			m_vsAppIdDir = Commands::subprocessOutput(vswhereCmd);
+
+			vswhereCmd = getStartOfCommand();
+			vswhereCmd.emplace_back("installationVersion");
+			m_detectedVersion = Commands::subprocessOutput(vswhereCmd);
 		}
-		if (m_vsAppIdDir.empty() || !Commands::pathExists(m_vsAppIdDir))
+		else if (RegexPatterns::matchesFullVersionString(inVersion))
 		{
-			Diagnostic::error("MSVC Environment could not be fetched: Error running vswhere.exe");
+			StringList vswhereCmd{ s_vswhere, "-nologo", "-version" };
+			vswhereCmd.push_back(inVersion);
+			vswhereCmd.emplace_back("-prerelease"); // always include prereleases in this scenario since we're search for the exact version
+			vswhereCmd.emplace_back("-property");
+			vswhereCmd.emplace_back("installationPath");
+
+			m_vsAppIdDir = Commands::subprocessOutput(vswhereCmd);
+			if (String::startsWith("Error", m_vsAppIdDir))
+				m_vsAppIdDir.clear();
+
+			m_detectedVersion = inVersion;
+		}
+		else
+		{
+			Diagnostic::error("Toolchain version string '{}' is invalid. For MSVC, this must be the full installation version", inVersion);
 			return false;
 		}
+
+		if (m_vsAppIdDir.empty())
+		{
+			Diagnostic::error("MSVC Environment could not be fetched: vswhere could not find a matching Visual Studio installation.");
+			return false;
+		}
+
+		if (!Commands::pathExists(m_vsAppIdDir))
+		{
+			Diagnostic::error("MSVC Environment could not be fetched: The path to Visual Studio could not be found. ({})", m_vsAppIdDir);
+			return false;
+		}
+
 		// Read the current environment and save it to a file
 		if (!saveOriginalEnvironment())
 		{
@@ -247,34 +296,10 @@ bool MsvcEnvironment::create()
 		m_libPath = String::split(libPath->second, ";");
 	}*/
 
-	// we got here from "msvc" "msvc-pre" etc from the command line
-	if (String::equals({ "msvc", "msvc-pre" }, m_inputs.toolchainPreferenceName()))
+	if (genericMsvcFromInput)
 	{
-		auto cl = Commands::which("cl");
-		auto output = Commands::subprocessOutput({ cl });
-		auto splitOutput = String::split(output, String::eol());
-		for (auto& line : splitOutput)
-		{
-			if (String::startsWith("Microsoft (R)", line))
-			{
-				auto pos = line.find("Version");
-				if (pos != std::string::npos)
-				{
-					pos += 8;
-					line = line.substr(pos);
-					pos = line.find_first_of(" ");
-					if (pos != std::string::npos)
-					{
-						line = line.substr(0, pos);
-						if (!line.empty())
-						{
-							m_inputs.setToolchainPreferenceName(fmt::format("{}-pc-msvc{}", m_inputs.targetArchitecture(), line));
-						}
-					}
-				}
-				break;
-			}
-		}
+		// m_detectedVersion
+		m_inputs.setToolchainPreferenceName(fmt::format("{}-pc-msvc{}", m_inputs.targetArchitecture(), m_detectedVersion));
 
 		auto old = m_varsFileMsvcDelta;
 		m_varsFileMsvcDelta = getMsvcVarsPath();
@@ -394,14 +419,12 @@ void MsvcEnvironment::makeArchitectureCorrections()
 	auto arch = m_inputs.targetArchitecture();
 	if (emptyTarget)
 	{
-		if (String::startsWith({ "x64", "x86", "arm" }, m_inputs.toolchainPreferenceName()))
+		// Try to get the architecture from the name
+		const auto& preferenceName = m_inputs.toolchainPreferenceName();
+		auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
+		if (!regexResult.empty())
 		{
-			arch = m_inputs.toolchainPreferenceName().substr(0, 3);
-			changed = true;
-		}
-		else if (String::startsWith("arm64", m_inputs.toolchainPreferenceName()))
-		{
-			arch = "arm64";
+			arch = regexResult;
 			changed = true;
 		}
 		else

@@ -152,6 +152,17 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 	if (toolchain.type == ToolchainType::Unknown)
 		return result;
 
+	if (!toolchains.contains(kKeyVersion) || !toolchains[kKeyVersion].is_string() || toolchains[kKeyVersion].get<std::string>().empty())
+	{
+#if defined(CHALET_WIN32)
+		// Only used w/ MSVC for now
+		auto& vsVersion = m_state.msvcEnvironment.detectedVersion();
+		toolchains[kKeyVersion] = !vsVersion.empty() ? vsVersion : std::string();
+#else
+		toolchains[kKeyVersion] = std::string();
+#endif
+	}
+
 	if (!toolchains.contains(kKeyStrategy) || !toolchains[kKeyStrategy].is_string() || toolchains[kKeyStrategy].get<std::string>().empty())
 	{
 		toolchains[kKeyStrategy] = std::string();
@@ -448,6 +459,9 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyBuildPathStyle))
 		m_state.toolchain.setBuildPathStyle(val);
 
+	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyVersion))
+		m_state.toolchain.setVersion(val);
+
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyArchiver))
 		m_state.toolchain.setArchiver(std::move(val));
 
@@ -486,7 +500,7 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 
 	if (checkForMsvc && m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 	{
-		if (!m_state.msvcEnvironment.create())
+		if (!m_state.msvcEnvironment.create(m_state.toolchain.version()))
 			return false;
 	}
 #else

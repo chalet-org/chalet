@@ -24,7 +24,9 @@ public:
 
 	static bool exists();
 
-	bool create();
+	const std::string& detectedVersion() const;
+
+	bool create(const std::string& inVersion = std::string());
 
 	const StringList& include() const noexcept;
 	const StringList& lib() const noexcept;
@@ -55,6 +57,7 @@ private:
 	std::string m_varsFileMsvcDelta;
 
 	std::string m_vsAppIdDir;
+	std::string m_detectedVersion;
 
 #endif
 	StringList m_include;

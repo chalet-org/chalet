@@ -236,9 +236,14 @@
 						"make",
 						"objdump",
 						"ninja",
-						"strategy"
+						"strategy",
+						"version"
 					],
 					"properties": {
+						"version": {
+							"type": "string",
+							"description": "A version string to identify the toolchain. If MSVC, this must be the full version string of the Visual Studio Installation. (vswhere's installationVersion string)"
+						},
 						"strategy": {
 							"type": "string",
 							"description": "The strategy to use during the build.",

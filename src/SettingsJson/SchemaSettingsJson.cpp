@@ -45,6 +45,9 @@ enum class Defs : ushort
 	XcRun,
 
 	/* Toolchains */
+	Version,
+	ToolchainStrategy,
+	BuildPathStyle,
 	CompilerCpp,
 	CompilerC,
 	CompilerWindowsResource,
@@ -55,8 +58,6 @@ enum class Defs : ushort
 	CMake,
 	Ninja,
 	ObjDump,
-	ToolchainStrategy,
-	BuildPathStyle,
 
 	/* Settings */
 	DumpAssembly,
@@ -248,6 +249,38 @@ Json Schema::getSettingsJson()
 		"default": "/usr/bin/xcrun"
 	})json"_ojson;
 
+	//
+	// toolchain
+	//
+
+	defs[Defs::Version] = R"json({
+		"type": "string",
+		"description": "A version string to identify the toolchain. If MSVC, this must be the full version string of the Visual Studio Installation. (vswhere's installationVersion string)"
+	})json"_ojson;
+
+	defs[Defs::ToolchainStrategy] = R"json({
+		"type": "string",
+		"description": "The strategy to use during the build.",
+		"enum": [
+			"makefile",
+			"native-experimental",
+			"ninja"
+		],
+		"default": "makefile"
+	})json"_ojson;
+
+	defs[Defs::BuildPathStyle] = R"json({
+		"type": "string",
+		"description": "The build path style. ex: build/Debug, build/(arch)_Debug, build/(triple)_Debug, build/(toolchain)_Debug",
+		"enum": [
+			"configuration",
+			"arch-configuration",
+			"target-triple",
+			"toolchain-name"
+		],
+		"default": "target-triple"
+	})json"_ojson;
+
 	// libtool (macOS), ar (Linux / macOS / MinGW), lib.exe (Win)
 	defs[Defs::Archiver] = R"json({
 		"type": "string",
@@ -301,6 +334,11 @@ Json Schema::getSettingsJson()
 		"description": "The executable path to objdump."
 	})json"_ojson;
 
+	defs[Defs::CompilerWindowsResource] = R"json({
+		"type": "string",
+		"description": "The executable path to the resource compiler. (Windows)"
+	})json"_ojson;
+
 	/*
 	// These don't get called directly (yet), but might be useful to look into
 	defs[Defs::RanLib] = R"json({
@@ -316,33 +354,9 @@ Json Schema::getSettingsJson()
 	})json"_ojson;
 	*/
 
-	defs[Defs::CompilerWindowsResource] = R"json({
-		"type": "string",
-		"description": "The executable path to the resource compiler. (Windows)"
-	})json"_ojson;
-
-	defs[Defs::ToolchainStrategy] = R"json({
-		"type": "string",
-		"description": "The strategy to use during the build.",
-		"enum": [
-			"makefile",
-			"native-experimental",
-			"ninja"
-		],
-		"default": "makefile"
-	})json"_ojson;
-
-	defs[Defs::BuildPathStyle] = R"json({
-		"type": "string",
-		"description": "The build path style. ex: build/Debug, build/(arch)_Debug, build/(triple)_Debug, build/(toolchain)_Debug",
-		"enum": [
-			"configuration",
-			"arch-configuration",
-			"target-triple",
-			"toolchain-name"
-		],
-		"default": "target-triple"
-	})json"_ojson;
+	//
+	// settings
+	//
 
 	defs[Defs::DumpAssembly] = R"json({
 		"type": "boolean",
@@ -443,10 +457,12 @@ Json Schema::getSettingsJson()
 			"make",
 			"objdump",
 			"ninja",
-			"strategy"
+			"strategy",
+			"version"
 		]
 	})json"_ojson;
 	toolchains[kProperties] = Json::object();
+	toolchains[kProperties]["version"] = defs[Defs::Version];
 	toolchains[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
 	toolchains[kProperties]["buildPathStyle"] = defs[Defs::BuildPathStyle];
 	toolchains[kProperties]["archiver"] = defs[Defs::Archiver];

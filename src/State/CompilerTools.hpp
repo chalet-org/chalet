@@ -39,6 +39,9 @@ struct CompilerTools
 	const std::string& buildPathStyleString() const noexcept;
 	void setBuildPathStyle(const std::string& inValue) noexcept;
 
+	const std::string& version() const noexcept;
+	void setVersion(const std::string& inValue) noexcept;
+
 	const std::string& compilerCxx() const noexcept;
 
 	const std::string& compilerVersionStringCpp() const noexcept;
@@ -125,6 +128,7 @@ private:
 
 	std::string m_strategyString;
 	std::string m_buildPathStyleString;
+	std::string m_version;
 
 	uint m_cmakeVersionMajor = 0;
 	uint m_cmakeVersionMinor = 0;
