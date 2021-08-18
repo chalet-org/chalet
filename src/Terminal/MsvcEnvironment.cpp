@@ -65,11 +65,13 @@ MsvcEnvironment::MsvcEnvironment(const CommandLineInputs& inInputs, BuildState& 
 #endif
 }
 
+#if defined(CHALET_WIN32)
 /*****************************************************************************/
 const std::string& MsvcEnvironment::detectedVersion() const
 {
 	return m_detectedVersion;
 }
+#endif
 
 /*****************************************************************************/
 bool MsvcEnvironment::create(const std::string& inVersion)
@@ -315,6 +317,8 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
 
 	Diagnostic::printDone(timer.asString());
+#else
+	UNUSED(inVersion);
 #endif
 	return true;
 }

@@ -85,7 +85,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	//
 	defs[Defs::DistConfiguration] = R"json({
 		"type": "string",
-		"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' or 'enableProfiling' is used.",
+		"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
 		"default": "Release"
 	})json"_ojson;
 
@@ -123,7 +123,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::DistLinux] = R"json({
 		"type": "object",
-		"description": "Properties to describe the Linux distribution. At the moment, these only apply to Linux distros that support the XDG Desktop Entry Specification",
+		"description": "Properties to describe the Linux distribution. At the moment, these only apply to desktop environments that support the XDG Desktop Entry Specification",
 		"additionalProperties": false,
 		"required": [
 			"icon",
@@ -151,7 +151,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 				"description": "Controls whether or not a MacOS application bundle is created. If one is filled in, the output bundle will be (outDir)/(bundleName).app"
 			},
 			"dmgBackground": {
-				"description": "If creating a .dmg image iwth 'makeDmg', this will define a background image for it.",
+				"description": "If creating a .dmg image with 'makeDmg', this will define a background image for it.",
 				"anyOf": [
 					{
 						"type": "string"
@@ -164,11 +164,11 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 						"properties": {
 							"1x": {
 								"type": "string",
-								"description": "The background image at 1x pixel density."
+								"description": "The path to a background image in PNG format created for 1x pixel density."
 							},
 							"2x": {
 								"type": "string",
-								"description": "The background image at 2x pixel density."
+								"description": "The path to a background image in PNG format created for 2x pixel density."
 							}
 						}
 					}
@@ -269,6 +269,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": false
 	})json"_ojson;
 
+	//
+	// other
+	//
 	defs[Defs::EnumPlatform] = R"json({
 		"type": "string",
 		"enum": [
@@ -288,6 +291,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
+	//
+	// target
+	//
 	defs[Defs::TargetDescription] = R"json({
 		"type": "string",
 		"description": "A description of the target to display during the build."

@@ -24,7 +24,9 @@ public:
 
 	static bool exists();
 
+#if defined(CHALET_WIN32)
 	const std::string& detectedVersion() const;
+#endif
 
 	bool create(const std::string& inVersion = std::string());
 
