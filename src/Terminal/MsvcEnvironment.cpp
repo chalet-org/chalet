@@ -301,7 +301,7 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 		auto versionSplit = String::split(m_detectedVersion, '.');
 		if (versionSplit.size() >= 1)
 		{
-			m_inputs.setToolchainPreferenceName(fmt::format("{}-windows-msvc{}", m_inputs.targetArchitecture(), versionSplit[0]));
+			m_inputs.setToolchainPreferenceName(fmt::format("{}-pc-windows-msvc{}", m_inputs.targetArchitecture(), versionSplit[0]));
 		}
 
 		auto old = m_varsFileMsvcDelta;

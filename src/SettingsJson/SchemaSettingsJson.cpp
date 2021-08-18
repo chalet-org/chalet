@@ -271,7 +271,7 @@ Json Schema::getSettingsJson()
 
 	defs[Defs::BuildPathStyle] = R"json({
 		"type": "string",
-		"description": "The build path style. ex: build/Debug, build/(arch)_Debug, build/(triple)_Debug, build/(toolchain)_Debug",
+		"description": "The build path style. Examples:\nconfiguration: build/Debug\narch-configuration: build/x64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
 		"enum": [
 			"configuration",
 			"arch-configuration",
