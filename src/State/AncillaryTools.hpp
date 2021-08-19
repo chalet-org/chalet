@@ -60,9 +60,6 @@ struct AncillaryTools
 	const std::string& ldd() const noexcept;
 	void setLdd(std::string&& inValue) noexcept;
 
-	const std::string& lipo() const noexcept;
-	void setLipo(std::string&& inValue) noexcept;
-
 	const std::string& lua() const noexcept;
 	void setLua(std::string&& inValue) noexcept;
 

@@ -292,16 +292,6 @@ void AncillaryTools::setLdd(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& AncillaryTools::lipo() const noexcept
-{
-	return m_lipo;
-}
-void AncillaryTools::setLipo(std::string&& inValue) noexcept
-{
-	m_lipo = std::move(inValue);
-}
-
-/*****************************************************************************/
 const std::string& AncillaryTools::lua() const noexcept
 {
 	return m_lua;

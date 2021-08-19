@@ -230,9 +230,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	whichAdd(tools, kKeyInstruments, HostPlatform::MacOS);
 #endif
 	whichAdd(tools, kKeyLdd);
-#if defined(CHALET_MACOS)
-	whichAdd(tools, kKeyLipo, HostPlatform::MacOS);
-#endif
 	whichAdd(tools, kKeyLua);
 #if defined(CHALET_WIN32)
 	whichAdd(tools, kKeyMakeNsis, HostPlatform::Windows);
@@ -458,9 +455,6 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLdd))
 		m_prototype.tools.setLdd(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLipo))
-		m_prototype.tools.setLipo(std::move(val));
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLua))
 		m_prototype.tools.setLua(std::move(val));

@@ -58,11 +58,6 @@
 					"description": "The executable path to ldd.",
 					"default": "/usr/bin/ldd"
 				},
-				"lipo": {
-					"type": "string",
-					"description": "The executable path to Apple's lipo utility. (MacOS)",
-					"default": "/usr/bin/lipo"
-				},
 				"lua": {
 					"type": "string",
 					"description": "The executable path to Lua.",

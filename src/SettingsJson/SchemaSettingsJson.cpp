@@ -26,7 +26,6 @@ enum class Defs : ushort
 	InstallNameTool,
 	Instruments,
 	Ldd,
-	Lipo,
 	Lua,
 	MakeNsis,
 	OsaScript,
@@ -145,12 +144,6 @@ Json Schema::getSettingsJson()
 		"type": "string",
 		"description": "The executable path to ldd.",
 		"default": "/usr/bin/ldd"
-	})json"_ojson;
-
-	defs[Defs::Lipo] = R"json({
-		"type": "string",
-		"description": "The executable path to Apple's lipo utility. (MacOS)",
-		"default": "/usr/bin/lipo"
 	})json"_ojson;
 
 	defs[Defs::Lua] = R"json({
@@ -495,7 +488,6 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kTools][kProperties]["install_name_tool"] = defs[Defs::InstallNameTool];
 	ret[kProperties][kTools][kProperties]["instruments"] = defs[Defs::Instruments];
 	ret[kProperties][kTools][kProperties]["ldd"] = defs[Defs::Ldd];
-	ret[kProperties][kTools][kProperties]["lipo"] = defs[Defs::Lipo];
 	ret[kProperties][kTools][kProperties]["lua"] = defs[Defs::Lua];
 	ret[kProperties][kTools][kProperties]["makensis"] = defs[Defs::MakeNsis];
 	ret[kProperties][kTools][kProperties]["osascript"] = defs[Defs::OsaScript];
