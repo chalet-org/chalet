@@ -62,6 +62,9 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
 
+	if (!Commands::pathExists(m_frameworkPath))
+		Commands::makeDirectory(m_frameworkPath);
+
 	auto& installNameTool = m_state.tools.installNameTool();
 	if (m_bundle.updateRPaths())
 	{
@@ -84,8 +87,6 @@ bool AppBundlerMacOS::bundleForPlatform()
 	{
 		// TODO: Generalized version of this in AppBundler
 		Output::lineBreak();
-
-		Commands::makeDirectory(m_frameworkPath);
 
 		if (!createBundleIcon())
 			return false;
@@ -330,14 +331,14 @@ bool AppBundlerMacOS::setExecutablePaths() const
 			auto& project = static_cast<const ProjectTarget&>(*target);
 			for (auto& framework : project.macosFrameworks())
 			{
-				// Don't include System frameworks
-				// TODO: maybe make an option for this? Not sure what scenarios this is needed
-				if (Commands::pathExists(fmt::format("/System/Library/Frameworks/{}.framework", framework)))
-					continue;
-
 				for (auto& path : project.macosFrameworkPaths())
 				{
-					const std::string filename = fmt::format("{}{}.framework", path, framework);
+					// Don't include System frameworks
+					// TODO: maybe make an option for this? Not sure what scenarios this is needed
+					if (String::startsWith("/System/Library/Frameworks", path))
+						continue;
+
+					const std::string filename = fmt::format("{}/{}.framework", path, framework);
 					if (!Commands::pathExists(filename))
 						continue;
 

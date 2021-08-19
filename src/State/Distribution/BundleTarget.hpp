@@ -52,21 +52,21 @@ struct BundleTarget final : public IDistTarget
 	void addExcludes(StringList&& inList);
 	void addExclude(std::string&& inValue);
 
-	const StringList& dependencies() const noexcept;
-	void addDependencies(StringList&& inList);
-	void addDependency(std::string&& inValue);
-	void sortDependencies();
+	const StringList& includes() const noexcept;
+	void addIncludes(StringList&& inList);
+	void addInclude(std::string&& inValue);
+	void sortIncludes();
 
 private:
-	void initializeDependencies(const BuildState& inState);
+	void resolveIncludesFromState(const BuildState& inState);
 
 	BundleLinux m_linuxBundle;
 	BundleMacOS m_macosBundle;
 	BundleWindows m_windowsBundle;
 
 	StringList m_projects;
-	StringList m_rawDependencies;
-	StringList m_dependencies;
+	StringList m_rawIncludes;
+	StringList m_includes;
 	StringList m_excludes;
 
 	std::string m_outDir;
@@ -74,7 +74,7 @@ private:
 	std::string m_mainProject;
 
 	bool m_includeDependentSharedLibraries = true;
-	bool m_dependenciesResolved = false;
+	bool m_includesResolved = false;
 	bool m_updateRPaths = true;
 };
 }

@@ -62,6 +62,12 @@ void ErrorHandler::error(const nlohmann::json_pointer<nlohmann::json>& pointer, 
 	error.data = std::move(data);
 	error.value = instance.dump();
 
+	const auto treeReference = pointer.to_string();
+	if (treeReference.size() > 0)
+	{
+		error.tree = String::split(treeReference.substr(1), "/");
+	}
+
 	error.message = parseRawError(error);
 
 	m_errors.push_back(error);
@@ -112,7 +118,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return "the subschema has succeeded, but it is required to not validate";
 
 		case JsonSchemaError::logical_combination:
-			return fmt::format("Validation failed for a key or value inside of '{}'", parentKey);
+			return fmt::format("Invalid key found inside of '{}' object: '{}'", parentKey, outError.tree.front());
 
 		case JsonSchemaError::logical_combination_all_of: {
 			const auto msg = std::any_cast<std::pair<JsonSchemaError, std::any>>(data);

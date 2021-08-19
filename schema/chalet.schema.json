@@ -71,14 +71,14 @@
 				"configuration": {
 					"$ref": "#/definitions/distribution-target-configuration"
 				},
-				"dependencies": {
-					"$ref": "#/definitions/distribution-target-dependencies"
-				},
 				"description": {
 					"$ref": "#/definitions/distribution-target-description"
 				},
 				"exclude": {
 					"$ref": "#/definitions/distribution-target-exclude"
+				},
+				"include": {
+					"$ref": "#/definitions/distribution-target-include"
 				},
 				"includeDependentSharedLibraries": {
 					"$ref": "#/definitions/distribution-target-includeDependentSharedLibraries"
@@ -103,8 +103,8 @@
 				}
 			},
 			"patternProperties": {
-				"^dependencies(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/distribution-target-dependencies"
+				"^include(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+					"$ref": "#/definitions/distribution-target-include"
 				},
 				"^exclude(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/distribution-target-exclude"
@@ -115,16 +115,6 @@
 			"type": "string",
 			"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
 			"default": "Release"
-		},
-		"distribution-target-dependencies": {
-			"type": "array",
-			"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"description": "A single file or folder to copy."
-			}
 		},
 		"distribution-target-description": {
 			"type": "string",
@@ -137,6 +127,16 @@
 			"minItems": 1,
 			"items": {
 				"type": "string"
+			}
+		},
+		"distribution-target-include": {
+			"type": "array",
+			"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"description": "A single file or folder to copy."
 			}
 		},
 		"distribution-target-includeDependentSharedLibraries": {

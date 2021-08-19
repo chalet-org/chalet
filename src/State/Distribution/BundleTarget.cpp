@@ -26,7 +26,7 @@ BundleTarget::BundleTarget() :
 void BundleTarget::initialize(const BuildState& inState)
 {
 	const auto& targetName = this->name();
-	for (auto& dir : m_rawDependencies)
+	for (auto& dir : m_rawIncludes)
 	{
 		inState.paths.replaceVariablesInPath(dir, targetName);
 	}
@@ -35,8 +35,8 @@ void BundleTarget::initialize(const BuildState& inState)
 		inState.paths.replaceVariablesInPath(dir, targetName);
 	}
 
-	initializeDependencies(inState);
-	m_dependenciesResolved = true;
+	resolveIncludesFromState(inState);
+	m_includesResolved = true;
 }
 
 /*****************************************************************************/
@@ -179,32 +179,32 @@ void BundleTarget::addExclude(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& BundleTarget::dependencies() const noexcept
+const StringList& BundleTarget::includes() const noexcept
 {
-	chalet_assert(m_dependenciesResolved, "BundleTarget dependencies not resolved");
-	return m_dependencies;
+	chalet_assert(m_includesResolved, "BundleTarget includes not resolved");
+	return m_includes;
 }
 
-void BundleTarget::addDependencies(StringList&& inList)
+void BundleTarget::addIncludes(StringList&& inList)
 {
-	List::forEach(inList, this, &BundleTarget::addDependency);
+	List::forEach(inList, this, &BundleTarget::addInclude);
 }
 
-void BundleTarget::addDependency(std::string&& inValue)
+void BundleTarget::addInclude(std::string&& inValue)
 {
 	Path::sanitize(inValue);
-	List::addIfDoesNotExist(m_rawDependencies, std::move(inValue));
+	List::addIfDoesNotExist(m_rawIncludes, std::move(inValue));
 }
 
 /*****************************************************************************/
-void BundleTarget::initializeDependencies(const BuildState& inState)
+void BundleTarget::resolveIncludesFromState(const BuildState& inState)
 {
 	const auto add = [this](std::string in) {
 		Path::sanitize(in);
-		List::addIfDoesNotExist(m_dependencies, std::move(in));
+		List::addIfDoesNotExist(m_includes, std::move(in));
 	};
 
-	for (auto& dependency : m_rawDependencies)
+	for (auto& dependency : m_rawIncludes)
 	{
 		if (Commands::pathExists(dependency))
 		{
@@ -264,9 +264,9 @@ void BundleTarget::initializeDependencies(const BuildState& inState)
 }
 
 /*****************************************************************************/
-void BundleTarget::sortDependencies()
+void BundleTarget::sortIncludes()
 {
-	List::sort(m_dependencies);
+	List::sort(m_includes);
 }
 
 }

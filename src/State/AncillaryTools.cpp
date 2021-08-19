@@ -717,27 +717,45 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 				continue;
 
 	#if defined(CHALET_MACOS)
-			if (!String::contains(".dylib", line))
-				continue;
-
-			std::size_t end = line.find(".dylib") + 6;
+			std::size_t end = line.find(".dylib");
 	#else
 			std::size_t end = line.find(" => ");
 	#endif
 			if (end == std::string::npos)
-				continue;
+			{
+				end = line.find(".framework");
+				if (end == std::string::npos)
+				{
+					continue;
+				}
+				else
+				{
+					end += 10;
+				}
+			}
+			else
+			{
+				end += 6;
+			}
 
 			while (line[beg] == '\t')
 				beg++;
 
 			std::string dependency = line.substr(beg, end - beg);
+	#if defined(CHALET_MACOS)
+			if (String::startsWith("/System/Library/Frameworks/", dependency))
+				continue;
+
 			// rpath, executable_path, etc
-			if (String::startsWith('@', dependency))
+			// We just want the main filename, and will try to resolve the path later
+			//
+			if (String::startsWith('@', dependency) || String::contains(".framework", dependency))
 			{
-				auto firstSlash = dependency.find('/');
-				if (firstSlash != std::string::npos)
-					dependency = dependency.substr(firstSlash + 1);
+				auto lastSlash = dependency.find_last_of('/');
+				if (lastSlash != std::string::npos)
+					dependency = dependency.substr(lastSlash + 1);
 			}
+	#endif
 
 			if (String::startsWith("/usr/lib", dependency))
 				continue;

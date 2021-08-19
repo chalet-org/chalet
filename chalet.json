@@ -169,7 +169,7 @@
 			"projects": [
 				"chalet"
 			],
-			// "dependencies": [],
+			// "include": [],
 			"exclude": [
 				"*.psd",
 				"*.7z",
@@ -177,9 +177,9 @@
 				".DS_Store"
 			],
 			"macos": {
-				/*"bundleName": "Chalet",
+				"bundleName": "Chalet",
 				"icon": "platform/chalet-logo.png",
-				"infoPropertyList": {
+				/*"infoPropertyList": {
 					"CFBundleName": "${bundleName}",
 					"CFBundleDisplayName": "${name}",
 					"CFBundleIdentifier": "com.developer.app",

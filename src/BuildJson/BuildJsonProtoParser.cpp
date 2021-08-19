@@ -315,8 +315,8 @@ bool BuildJsonProtoParser::parseBundle(BundleTarget& outBundle, const Json& inNo
 		return false;
 	}
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "dependencies"))
-		outBundle.addDependencies(std::move(list));
+	if (StringList list; assignStringListFromConfig(list, inNode, "include"))
+		outBundle.addIncludes(std::move(list));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "exclude"))
 		outBundle.addExcludes(std::move(list));

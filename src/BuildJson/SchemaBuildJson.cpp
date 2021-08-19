@@ -42,25 +42,25 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	//
 	// configurations
 	//
-	defs[Defs::ConfigDebugSymbols] = R"json({
+	defs[Defs::ConfigurationDebugSymbols] = R"json({
 		"type": "boolean",
 		"description": "true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-g3' option (-g & macro expansion information) and forces '-O0' if the optimizationLevel is not '0' or 'debug'.\nIn MSVC, this enables '/debug', '/incremental' and forces '/Od' if the optimizationLevel is not '0' or 'debug'.\nThis flag is also the determining factor whether the ':debug' suffix is used in a chalet.json property.",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::ConfigEnableProfiling] = R"json({
+	defs[Defs::ConfigurationEnableProfiling] = R"json({
 		"type": "boolean",
 		"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-pg' option.\nIn MSVC, this doesn't do anything yet.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::ConfigLinkTimeOptimizations] = R"json({
+	defs[Defs::ConfigurationLinkTimeOptimizations] = R"json({
 		"type": "boolean",
 		"description": "true to use link-time optimization, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-flto' option to the linker.\nIn MSVC, this enables the '/GL' option (Whole Program Optimization - which implies link-time optimization).\nLink-time optimization will not be enabled if either profiling or debug symbols are enabled.",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::ConfigOptimizationLevel] = R"json({
+	defs[Defs::ConfigurationOptimizationLevel] = R"json({
 		"type": "string",
 		"description": "The optimization level of the build.\nIn GNU-based compilers, This maps 1:1 with its respective '-O' option, except for 'debug' (-Od) and 'size' (-Os).\nIn MSVC, it's mapped as follows: 0 (/Od), 1 (/O1), 2 (/O2), 3 (/Ox), size (/Os), fast (/Ot), debug (/Od)\nIf this value is unset, no optimization level will be used (implying the compiler's default).",
 		"enum": [
@@ -74,7 +74,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		]
 	})json"_ojson;
 
-	defs[Defs::ConfigStripSymbols] = R"json({
+	defs[Defs::ConfigurationStripSymbols] = R"json({
 		"type": "boolean",
 		"description": "true to strip symbols from the build, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-s' option at link time. In MSVC, this is not applicable (symbols are stored in .pdb files).",
 		"default": false
@@ -83,13 +83,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	//
 	// distribution
 	//
-	defs[Defs::DistConfiguration] = R"json({
+	defs[Defs::DistributionTargetConfiguration] = R"json({
 		"type": "string",
 		"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
 		"default": "Release"
 	})json"_ojson;
 
-	defs[Defs::DistDependencies] = R"json({
+	defs[Defs::DistributionTargetInclude] = R"json({
 		"type": "array",
 		"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
 		"uniqueItems": true,
@@ -100,12 +100,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::DistDescription] = R"json({
+	defs[Defs::DistributionTargetDescription] = R"json({
 		"type": "string",
 		"description": "TODO"
 	})json"_ojson;
 
-	defs[Defs::DistExclude] = R"json({
+	defs[Defs::DistributionTargetExclude] = R"json({
 		"type": "array",
 		"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
 		"uniqueItems": true,
@@ -115,13 +115,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::DistIncludeDependentSharedLibraries] = R"json({
+	defs[Defs::DistributionTargetIncludeDependentSharedLibraries] = R"json({
 		"type": "boolean",
 		"description": "If true (default), any shared libraries that the bundle depeends on will also be copied into the bundle.",
 		"default": true
 	})json"_ojson;
 
-	defs[Defs::DistLinux] = R"json({
+	defs[Defs::DistributionTargetLinux] = R"json({
 		"type": "object",
 		"description": "Properties to describe the Linux distribution. At the moment, these only apply to desktop environments that support the XDG Desktop Entry Specification",
 		"additionalProperties": false,
@@ -141,7 +141,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::DistMacOS] = R"json({
+	defs[Defs::DistributionTargetMacOS] = R"json({
 		"type": "object",
 		"description": "Properties to describe the MacOS distribution. Only one application bundle can be defined per distribution target.",
 		"additionalProperties": false,
@@ -201,20 +201,20 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			}
 		}
 	})json"_ojson;
-	defs[Defs::DistMacOS]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
+	defs[Defs::DistributionTargetMacOS]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
 
-	defs[Defs::DistMainProject] = R"json({
+	defs[Defs::DistributionTargetMainProject] = R"json({
 		"type": "string",
 		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'projects' array of the distribution target will be chosen as the main executable."
 	})json"_ojson;
 
-	defs[Defs::DistOutDirectory] = R"json({
+	defs[Defs::DistributionTargetOutputDirectory] = R"json({
 		"type": "string",
 		"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
 		"default": "dist"
 	})json"_ojson;
 
-	defs[Defs::DistProjects] = R"json({
+	defs[Defs::DistributionTargetProjects] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "An array of project target names to include in this distribution target.\nIf 'mainProject' is not defined, the first executable target in this list will be chosen as the main exectuable.",
@@ -224,9 +224,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"description": "The name of the project target."
 		}
 	})json"_ojson;
-	defs[Defs::DistProjects][kItems][kPattern] = kPatternProjectName;
+	defs[Defs::DistributionTargetProjects][kItems][kPattern] = kPatternProjectName;
 
-	defs[Defs::DistWindows] = R"json({
+	defs[Defs::DistributionTargetWindows] = R"json({
 		"type": "object",
 		"description": "Properties to describe the Windows distribution.\nAt the moment, metadata like versioning and descriptions are typically added during the build phase via an application manifest.",
 		"additionalProperties": false,
@@ -241,29 +241,29 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	//
 	// externalDependency
 	//
-	defs[Defs::ExtGitRepository] = R"json({
+	defs[Defs::ExternalDependencyGitRepository] = R"json({
 		"type": "string",
 		"description": "The url of the git repository.",
 		"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
 	})json"_ojson;
 
-	defs[Defs::ExtGitBranch] = R"json({
+	defs[Defs::ExternalDependencyGitBranch] = R"json({
 		"type": "string",
 		"description": "The branch to checkout. Uses the repository's default if not set."
 	})json"_ojson;
 
-	defs[Defs::ExtGitCommit] = R"json({
+	defs[Defs::ExternalDependencyGitCommit] = R"json({
 		"type": "string",
 		"description": "The SHA1 hash of the commit to checkout.",
 		"pattern": "^[0-9a-f]{7,40}$"
 	})json"_ojson;
 
-	defs[Defs::ExtGitTag] = R"json({
+	defs[Defs::ExternalDependencyGitTag] = R"json({
 		"type": "string",
 		"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
 	})json"_ojson;
 
-	defs[Defs::ExtGitSubmodules] = R"json({
+	defs[Defs::ExternalDependencyGitSubmodules] = R"json({
 		"type": "boolean",
 		"description": "Do submodules need to be cloned?",
 		"default": false
@@ -365,14 +365,14 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::TargetOnlyInPlatform][kOneOf][0] = defs.at(Defs::EnumPlatform);
 	defs[Defs::TargetOnlyInPlatform][kOneOf][1][kItems] = defs.at(Defs::EnumPlatform);
 
-	defs[Defs::TargetProjectExtends] = R"json({
+	defs[Defs::ProjectTargetExtends] = R"json({
 		"type": "string",
 		"description": "A project template to extend. Defaults to 'all' implicitly.",
 		"pattern": "^[A-Za-z_-]+$",
 		"default": "all"
 	})json"_ojson;
 
-	defs[Defs::TargetProjectFiles] = R"json({
+	defs[Defs::ProjectTargetFiles] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -382,7 +382,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectKind] = R"json({
+	defs[Defs::ProjectTargetKind] = R"json({
 		"type": "string",
 		"description": "The type of the project's compiled binary.",
 		"enum": [
@@ -393,7 +393,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		]
 	})json"_ojson;
 
-	defs[Defs::TargetProjectLanguage] = R"json({
+	defs[Defs::ProjectTargetLanguage] = R"json({
 		"type": "string",
 		"description": "The target language of the project.",
 		"enum": [
@@ -403,13 +403,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": "C++"
 	})json"_ojson;
 
-	defs[Defs::TargetProjectRunProject] = R"json({
+	defs[Defs::ProjectTargetRunProject] = R"json({
 		"type": "boolean",
 		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::TargetProjectRunArguments] = R"json({
+	defs[Defs::ProjectTargetRunArguments] = R"json({
 		"type": "array",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
 		"minItems": 1,
@@ -418,7 +418,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectRunDependencies] = R"json({
+	defs[Defs::ProjectTargetRunDependencies] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
@@ -428,14 +428,14 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxCStandard] = R"json({
+	defs[Defs::ProjectTargetCxxCStandard] = R"json({
 		"type": "string",
 		"description": "The C standard to use in the compilation",
 		"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
 		"default": "c11"
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxCompileOptions] = R"json({
+	defs[Defs::ProjectTargetCxxCompileOptions] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -445,14 +445,14 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxCppStandard] = R"json({
+	defs[Defs::ProjectTargetCxxCppStandard] = R"json({
 		"type": "string",
 		"description": "The C++ standard to use in the compilation",
 		"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
 		"default": "c++17"
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxDefines] = R"json({
+	defs[Defs::ProjectTargetCxxDefines] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -462,7 +462,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxIncludeDirs] = R"json({
+	defs[Defs::ProjectTargetCxxIncludeDirs] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -472,7 +472,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxLibDirs] = R"json({
+	defs[Defs::ProjectTargetCxxLibDirs] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -482,12 +482,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxLinkerScript] = R"json({
+	defs[Defs::ProjectTargetCxxLinkerScript] = R"json({
 		"type": "string",
 		"description": "An LD linker script path (.ld file) to pass to the linker command"
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxLinkerOptions] = R"json({
+	defs[Defs::ProjectTargetCxxLinkerOptions] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -497,7 +497,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxLinks] = R"json({
+	defs[Defs::ProjectTargetCxxLinks] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -506,9 +506,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"type": "string"
 		}
 	})json"_ojson;
-	defs[Defs::TargetProjectCxxLinks][kItems][kPattern] = kPatternProjectLinks;
+	defs[Defs::ProjectTargetCxxLinks][kItems][kPattern] = kPatternProjectLinks;
 
-	defs[Defs::TargetProjectLocation] = R"json({
+	defs[Defs::ProjectTargetLocation] = R"json({
 		"description": "The root path of the source files, relative to the working directory.",
 		"oneOf": [
 			{
@@ -531,7 +531,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			}
 		]
 	})json"_ojson;
-	defs[Defs::TargetProjectLocation][kOneOf][2][kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = R"json({
+	defs[Defs::ProjectTargetLocation][kOneOf][2][kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -546,7 +546,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			}
 		]
 	})json"_ojson;
-	defs[Defs::TargetProjectLocation][kOneOf][2][kPatternProperties][fmt::format("^include{}{}$", kPatternConfigurations, kPatternPlatforms)] = R"json({
+	defs[Defs::ProjectTargetLocation][kOneOf][2][kPatternProperties][fmt::format("^include{}{}$", kPatternConfigurations, kPatternPlatforms)] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -562,7 +562,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		]
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxMacOsFrameworkPaths] = R"json({
+	defs[Defs::ProjectTargetCxxMacOsFrameworkPaths] = R"json({
 		"type": "array",
 		"description": "A list of paths to search for MacOS Frameworks",
 		"uniqueItems": true,
@@ -572,7 +572,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxMacOsFrameworks] = R"json({
+	defs[Defs::ProjectTargetCxxMacOsFrameworks] = R"json({
 		"type": "array",
 		"description": "A list of MacOS Frameworks to link to the project",
 		"uniqueItems": true,
@@ -582,18 +582,18 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxObjectiveCxx] = R"json({
+	defs[Defs::ProjectTargetCxxObjectiveCxx] = R"json({
 		"type": "boolean",
 		"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxPrecompiledHeader] = R"json({
+	defs[Defs::ProjectTargetCxxPrecompiledHeader] = R"json({
 		"type": "string",
 		"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxThreads] = R"json({
+	defs[Defs::ProjectTargetCxxThreads] = R"json({
 		"type": "string",
 		"enum": [
 			"auto",
@@ -603,25 +603,25 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": "auto"
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxRunTimeTypeInfo] = R"json({
+	defs[Defs::ProjectTargetCxxRunTimeTypeInfo] = R"json({
 		"type": "boolean",
 		"description": "true to include run-time type information (default), false to exclude.",
 		"default": true
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxExceptions] = R"json({
+	defs[Defs::ProjectTargetCxxExceptions] = R"json({
 		"type": "boolean",
 		"description": "true to use exceptions (default), false to turn off exceptions.",
 		"default": true
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxStaticLinking] = R"json({
+	defs[Defs::ProjectTargetCxxStaticLinking] = R"json({
 		"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 		"type": "boolean",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxStaticLinks] = R"json({
+	defs[Defs::ProjectTargetCxxStaticLinks] = R"json({
 		"type": "array",
 		"description": "A list of static links to use with the linker",
 		"uniqueItems": true,
@@ -630,9 +630,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"type": "string"
 		}
 	})json"_ojson;
-	defs[Defs::TargetProjectCxxStaticLinks][kItems][kPattern] = kPatternProjectLinks;
+	defs[Defs::ProjectTargetCxxStaticLinks][kItems][kPattern] = kPatternProjectLinks;
 
-	defs[Defs::TargetProjectCxxWarnings] = R"json({
+	defs[Defs::ProjectTargetCxxWarnings] = R"json({
 		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
 		"anyOf": [
 			{
@@ -658,7 +658,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		]
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxWarnings][kAnyOf][1][kItems][kExamples] = {
+	defs[Defs::ProjectTargetCxxWarnings][kAnyOf][1][kItems][kExamples] = {
 		"abi",
 		"absolute-value",
 		"address",
@@ -954,29 +954,29 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"zero-length-bounds"
 	};
 
-	defs[Defs::TargetProjectCxxWindowsAppManifest] = R"json({
+	defs[Defs::ProjectTargetCxxWindowsAppManifest] = R"json({
 		"description": "The path to a Windows application manifest. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
 		"type": "string"
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxWindowsAppIcon] = R"json({
+	defs[Defs::ProjectTargetCxxWindowsAppIcon] = R"json({
 		"type": "string",
 		"description": "The windows icon to use for the project. Only applies to application targets (kind=[consoleApplication|desktopApplication])"
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxWindowsOutputDef] = R"json({
+	defs[Defs::ProjectTargetCxxWindowsOutputDef] = R"json({
 		"type": "boolean",
 		"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::TargetProjectCxxWindowsPrefixOutputFilename] = R"json({
+	defs[Defs::ProjectTargetCxxWindowsPrefixOutputFilename] = R"json({
 		"type": "boolean",
 		"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
 		"default": true
 	})json"_ojson;
 
-	defs[Defs::TargetScriptScript] = R"json({
+	defs[Defs::ScriptTargetScript] = R"json({
 		"anyOf": [
 			{
 				"type": "string"
@@ -998,17 +998,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"enum": ["CMake", "Chalet"]
 	})json"_ojson;
 
-	defs[Defs::TargetCMakeLocation] = R"json({
+	defs[Defs::CMakeTargetLocation] = R"json({
 		"type": "string",
 		"description": "The folder path of the root CMakeLists.txt for the project."
 	})json"_ojson;
 
-	defs[Defs::TargetCMakeBuildFile] = R"json({
+	defs[Defs::CMakeTargetBuildFile] = R"json({
 		"type": "string",
 		"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)"
 	})json"_ojson;
 
-	defs[Defs::TargetCMakeDefines] = R"json({
+	defs[Defs::CMakeTargetDefines] = R"json({
 		"type": "array",
 		"description": "Macro definitions to be passed into CMake. (-D)",
 		"uniqueItems": true,
@@ -1018,28 +1018,28 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetCMakeRecheck] = R"json({
+	defs[Defs::CMakeTargetRecheck] = R"json({
 		"type": "boolean",
 		"description": "If true, CMake will be invoked each time during the build.",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::TargetCMakeToolset] = R"json({
+	defs[Defs::CMakeTargetToolset] = R"json({
 		"type": "string",
 		"description": "A toolset to be passed to CMake with the -T option."
 	})json"_ojson;
 
-	defs[Defs::TargetChaletLocation] = R"json({
+	defs[Defs::ChaletTargetLocation] = R"json({
 		"type": "string",
 		"description": "The folder path of the root chalet.json for the project."
 	})json"_ojson;
 
-	defs[Defs::TargetChaletBuildFile] = R"json({
+	defs[Defs::ChaletTargetBuildFile] = R"json({
 		"type": "string",
 		"description": "The build file to use, if not chalet.json, relative to the location."
 	})json"_ojson;
 
-	defs[Defs::TargetChaletRecheck] = R"json({
+	defs[Defs::ChaletTargetRecheck] = R"json({
 		"type": "boolean",
 		"description": "If true, Chalet will be invoked each time during the build."
 	})json"_ojson;
@@ -1054,11 +1054,11 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"additionalProperties": false,
 			"description": "Properties to describe a single build configuration type."
 		})json"_ojson;
-		configuration[kProperties]["debugSymbols"] = getDefinition(Defs::ConfigDebugSymbols);
-		configuration[kProperties]["enableProfiling"] = getDefinition(Defs::ConfigEnableProfiling);
-		configuration[kProperties]["linkTimeOptimization"] = getDefinition(Defs::ConfigLinkTimeOptimizations);
-		configuration[kProperties]["optimizationLevel"] = getDefinition(Defs::ConfigOptimizationLevel);
-		configuration[kProperties]["stripSymbols"] = getDefinition(Defs::ConfigStripSymbols);
+		configuration[kProperties]["debugSymbols"] = getDefinition(Defs::ConfigurationDebugSymbols);
+		configuration[kProperties]["enableProfiling"] = getDefinition(Defs::ConfigurationEnableProfiling);
+		configuration[kProperties]["linkTimeOptimization"] = getDefinition(Defs::ConfigurationLinkTimeOptimizations);
+		configuration[kProperties]["optimizationLevel"] = getDefinition(Defs::ConfigurationOptimizationLevel);
+		configuration[kProperties]["stripSymbols"] = getDefinition(Defs::ConfigurationStripSymbols);
 		defs[Defs::Configuration] = std::move(configuration);
 	}
 
@@ -1069,20 +1069,20 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"description": "Properties to describe an individual distribution target."
 		})json"_ojson;
 		distDef[kProperties] = Json::object();
-		distDef[kProperties]["configuration"] = getDefinition(Defs::DistConfiguration);
-		distDef[kProperties]["dependencies"] = getDefinition(Defs::DistDependencies);
-		distDef[kProperties]["description"] = getDefinition(Defs::DistDescription);
-		distDef[kProperties]["exclude"] = getDefinition(Defs::DistExclude);
-		distDef[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistIncludeDependentSharedLibraries);
-		distDef[kProperties]["linux"] = getDefinition(Defs::DistLinux);
-		distDef[kProperties]["macos"] = getDefinition(Defs::DistMacOS);
-		distDef[kProperties]["windows"] = getDefinition(Defs::DistWindows);
-		distDef[kProperties]["mainProject"] = getDefinition(Defs::DistMainProject);
-		distDef[kProperties]["outDir"] = getDefinition(Defs::DistOutDirectory);
-		distDef[kProperties]["projects"] = getDefinition(Defs::DistProjects);
-		distDef[kPatternProperties][fmt::format("^dependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistDependencies);
-		distDef[kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistExclude);
-		defs[Defs::TargetDist] = std::move(distDef);
+		distDef[kProperties]["configuration"] = getDefinition(Defs::DistributionTargetConfiguration);
+		distDef[kProperties]["description"] = getDefinition(Defs::DistributionTargetDescription);
+		distDef[kProperties]["exclude"] = getDefinition(Defs::DistributionTargetExclude);
+		distDef[kProperties]["include"] = getDefinition(Defs::DistributionTargetInclude);
+		distDef[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionTargetIncludeDependentSharedLibraries);
+		distDef[kProperties]["linux"] = getDefinition(Defs::DistributionTargetLinux);
+		distDef[kProperties]["macos"] = getDefinition(Defs::DistributionTargetMacOS);
+		distDef[kProperties]["windows"] = getDefinition(Defs::DistributionTargetWindows);
+		distDef[kProperties]["mainProject"] = getDefinition(Defs::DistributionTargetMainProject);
+		distDef[kProperties]["outDir"] = getDefinition(Defs::DistributionTargetOutputDirectory);
+		distDef[kProperties]["projects"] = getDefinition(Defs::DistributionTargetProjects);
+		distDef[kPatternProperties][fmt::format("^include{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
+		distDef[kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
+		defs[Defs::DistributionTarget] = std::move(distDef);
 	}
 
 	{
@@ -1105,15 +1105,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			]
 		})json"_ojson;
 		externalDependency[kOneOf][0][kProperties] = Json::object();
-		externalDependency[kOneOf][0][kProperties]["repository"] = getDefinition(Defs::ExtGitRepository);
-		externalDependency[kOneOf][0][kProperties]["submodules"] = getDefinition(Defs::ExtGitSubmodules);
-		externalDependency[kOneOf][0][kProperties]["tag"] = getDefinition(Defs::ExtGitTag);
+		externalDependency[kOneOf][0][kProperties]["repository"] = getDefinition(Defs::ExternalDependencyGitRepository);
+		externalDependency[kOneOf][0][kProperties]["submodules"] = getDefinition(Defs::ExternalDependencyGitSubmodules);
+		externalDependency[kOneOf][0][kProperties]["tag"] = getDefinition(Defs::ExternalDependencyGitTag);
 
 		externalDependency[kOneOf][1][kProperties] = Json::object();
-		externalDependency[kOneOf][1][kProperties]["repository"] = getDefinition(Defs::ExtGitRepository);
-		externalDependency[kOneOf][1][kProperties]["submodules"] = getDefinition(Defs::ExtGitSubmodules);
-		externalDependency[kOneOf][1][kProperties]["branch"] = getDefinition(Defs::ExtGitBranch);
-		externalDependency[kOneOf][1][kProperties]["commit"] = getDefinition(Defs::ExtGitCommit);
+		externalDependency[kOneOf][1][kProperties]["repository"] = getDefinition(Defs::ExternalDependencyGitRepository);
+		externalDependency[kOneOf][1][kProperties]["submodules"] = getDefinition(Defs::ExternalDependencyGitSubmodules);
+		externalDependency[kOneOf][1][kProperties]["branch"] = getDefinition(Defs::ExternalDependencyGitBranch);
+		externalDependency[kOneOf][1][kProperties]["commit"] = getDefinition(Defs::ExternalDependencyGitCommit);
 		defs[Defs::ExternalDependency] = std::move(externalDependency);
 	}
 
@@ -1122,46 +1122,46 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
-		targetProjectCxx[kProperties]["cStandard"] = getDefinition(Defs::TargetProjectCxxCStandard);
-		targetProjectCxx[kProperties]["compileOptions"] = getDefinition(Defs::TargetProjectCxxCompileOptions);
-		targetProjectCxx[kProperties]["cppStandard"] = getDefinition(Defs::TargetProjectCxxCppStandard);
-		targetProjectCxx[kProperties]["defines"] = getDefinition(Defs::TargetProjectCxxDefines);
-		targetProjectCxx[kProperties]["includeDirs"] = getDefinition(Defs::TargetProjectCxxIncludeDirs);
-		targetProjectCxx[kProperties]["libDirs"] = getDefinition(Defs::TargetProjectCxxLibDirs);
-		targetProjectCxx[kProperties]["linkerScript"] = getDefinition(Defs::TargetProjectCxxLinkerScript);
-		targetProjectCxx[kProperties]["linkerOptions"] = getDefinition(Defs::TargetProjectCxxLinkerOptions);
-		targetProjectCxx[kProperties]["links"] = getDefinition(Defs::TargetProjectCxxLinks);
-		targetProjectCxx[kProperties]["macosFrameworkPaths"] = getDefinition(Defs::TargetProjectCxxMacOsFrameworkPaths);
-		targetProjectCxx[kProperties]["macosFrameworks"] = getDefinition(Defs::TargetProjectCxxMacOsFrameworks);
-		targetProjectCxx[kProperties]["objectiveCxx"] = getDefinition(Defs::TargetProjectCxxObjectiveCxx);
-		targetProjectCxx[kProperties]["pch"] = getDefinition(Defs::TargetProjectCxxPrecompiledHeader);
-		targetProjectCxx[kProperties]["threads"] = getDefinition(Defs::TargetProjectCxxThreads);
-		targetProjectCxx[kProperties]["rtti"] = getDefinition(Defs::TargetProjectCxxRunTimeTypeInfo);
-		targetProjectCxx[kProperties]["exceptions"] = getDefinition(Defs::TargetProjectCxxExceptions);
-		targetProjectCxx[kProperties]["staticLinking"] = getDefinition(Defs::TargetProjectCxxStaticLinking);
-		targetProjectCxx[kProperties]["staticLinks"] = getDefinition(Defs::TargetProjectCxxStaticLinks);
-		targetProjectCxx[kProperties]["warnings"] = getDefinition(Defs::TargetProjectCxxWarnings);
-		targetProjectCxx[kProperties]["windowsPrefixOutputFilename"] = getDefinition(Defs::TargetProjectCxxWindowsPrefixOutputFilename);
-		targetProjectCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::TargetProjectCxxWindowsOutputDef);
-		targetProjectCxx[kProperties]["windowsApplicationIcon"] = getDefinition(Defs::TargetProjectCxxWindowsAppIcon);
-		targetProjectCxx[kProperties]["windowsApplicationManifest"] = getDefinition(Defs::TargetProjectCxxWindowsAppManifest);
+		targetProjectCxx[kProperties]["cStandard"] = getDefinition(Defs::ProjectTargetCxxCStandard);
+		targetProjectCxx[kProperties]["compileOptions"] = getDefinition(Defs::ProjectTargetCxxCompileOptions);
+		targetProjectCxx[kProperties]["cppStandard"] = getDefinition(Defs::ProjectTargetCxxCppStandard);
+		targetProjectCxx[kProperties]["defines"] = getDefinition(Defs::ProjectTargetCxxDefines);
+		targetProjectCxx[kProperties]["includeDirs"] = getDefinition(Defs::ProjectTargetCxxIncludeDirs);
+		targetProjectCxx[kProperties]["libDirs"] = getDefinition(Defs::ProjectTargetCxxLibDirs);
+		targetProjectCxx[kProperties]["linkerScript"] = getDefinition(Defs::ProjectTargetCxxLinkerScript);
+		targetProjectCxx[kProperties]["linkerOptions"] = getDefinition(Defs::ProjectTargetCxxLinkerOptions);
+		targetProjectCxx[kProperties]["links"] = getDefinition(Defs::ProjectTargetCxxLinks);
+		targetProjectCxx[kProperties]["macosFrameworkPaths"] = getDefinition(Defs::ProjectTargetCxxMacOsFrameworkPaths);
+		targetProjectCxx[kProperties]["macosFrameworks"] = getDefinition(Defs::ProjectTargetCxxMacOsFrameworks);
+		targetProjectCxx[kProperties]["objectiveCxx"] = getDefinition(Defs::ProjectTargetCxxObjectiveCxx);
+		targetProjectCxx[kProperties]["pch"] = getDefinition(Defs::ProjectTargetCxxPrecompiledHeader);
+		targetProjectCxx[kProperties]["threads"] = getDefinition(Defs::ProjectTargetCxxThreads);
+		targetProjectCxx[kProperties]["rtti"] = getDefinition(Defs::ProjectTargetCxxRunTimeTypeInfo);
+		targetProjectCxx[kProperties]["exceptions"] = getDefinition(Defs::ProjectTargetCxxExceptions);
+		targetProjectCxx[kProperties]["staticLinking"] = getDefinition(Defs::ProjectTargetCxxStaticLinking);
+		targetProjectCxx[kProperties]["staticLinks"] = getDefinition(Defs::ProjectTargetCxxStaticLinks);
+		targetProjectCxx[kProperties]["warnings"] = getDefinition(Defs::ProjectTargetCxxWarnings);
+		targetProjectCxx[kProperties]["windowsPrefixOutputFilename"] = getDefinition(Defs::ProjectTargetCxxWindowsPrefixOutputFilename);
+		targetProjectCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::ProjectTargetCxxWindowsOutputDef);
+		targetProjectCxx[kProperties]["windowsApplicationIcon"] = getDefinition(Defs::ProjectTargetCxxWindowsAppIcon);
+		targetProjectCxx[kProperties]["windowsApplicationManifest"] = getDefinition(Defs::ProjectTargetCxxWindowsAppManifest);
 
-		targetProjectCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxCStandard);
-		targetProjectCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxCppStandard);
-		targetProjectCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxCompileOptions);
-		targetProjectCxx[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxDefines);
-		targetProjectCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxIncludeDirs);
-		targetProjectCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxLibDirs);
-		targetProjectCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxLinkerScript);
-		targetProjectCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxLinkerOptions);
-		targetProjectCxx[kPatternProperties][fmt::format("^links{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxLinks);
-		targetProjectCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxObjectiveCxx);
-		targetProjectCxx[kPatternProperties][fmt::format("^staticLinks{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxStaticLinks);
-		targetProjectCxx[kPatternProperties][fmt::format("^threads{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxThreads);
-		targetProjectCxx[kPatternProperties][fmt::format("^rtti{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxRunTimeTypeInfo);
-		targetProjectCxx[kPatternProperties][fmt::format("^exceptions{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxExceptions);
-		targetProjectCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectCxxStaticLinking);
-		defs[Defs::TargetProjectCxx] = std::move(targetProjectCxx);
+		targetProjectCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxCStandard);
+		targetProjectCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxCppStandard);
+		targetProjectCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxCompileOptions);
+		targetProjectCxx[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxDefines);
+		targetProjectCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxIncludeDirs);
+		targetProjectCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxLibDirs);
+		targetProjectCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxLinkerScript);
+		targetProjectCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxLinkerOptions);
+		targetProjectCxx[kPatternProperties][fmt::format("^links{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxLinks);
+		targetProjectCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxObjectiveCxx);
+		targetProjectCxx[kPatternProperties][fmt::format("^staticLinks{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxStaticLinks);
+		targetProjectCxx[kPatternProperties][fmt::format("^threads{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxThreads);
+		targetProjectCxx[kPatternProperties][fmt::format("^rtti{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxRunTimeTypeInfo);
+		targetProjectCxx[kPatternProperties][fmt::format("^exceptions{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxExceptions);
+		targetProjectCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetCxxStaticLinking);
+		defs[Defs::ProjectTargetCxx] = std::move(targetProjectCxx);
 	}
 
 	{
@@ -1169,22 +1169,22 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
-		targetProject[kProperties]["settings:Cxx"] = getDefinition(Defs::TargetProjectCxx);
-		targetProject[kProperties]["extends"] = getDefinition(Defs::TargetProjectExtends);
-		targetProject[kProperties]["files"] = getDefinition(Defs::TargetProjectFiles);
-		targetProject[kProperties]["kind"] = getDefinition(Defs::TargetProjectKind);
-		targetProject[kProperties]["language"] = getDefinition(Defs::TargetProjectLanguage);
-		targetProject[kProperties]["location"] = getDefinition(Defs::TargetProjectLocation);
+		targetProject[kProperties]["settings:Cxx"] = getDefinition(Defs::ProjectTargetCxx);
+		targetProject[kProperties]["extends"] = getDefinition(Defs::ProjectTargetExtends);
+		targetProject[kProperties]["files"] = getDefinition(Defs::ProjectTargetFiles);
+		targetProject[kProperties]["kind"] = getDefinition(Defs::ProjectTargetKind);
+		targetProject[kProperties]["language"] = getDefinition(Defs::ProjectTargetLanguage);
+		targetProject[kProperties]["location"] = getDefinition(Defs::ProjectTargetLocation);
 		targetProject[kProperties]["onlyInConfiguration"] = getDefinition(Defs::TargetOnlyInConfiguration);
 		targetProject[kProperties]["notInConfiguration"] = getDefinition(Defs::TargetNotInConfiguration);
 		targetProject[kProperties]["onlyInPlatform"] = getDefinition(Defs::TargetOnlyInPlatform);
 		targetProject[kProperties]["notInPlatform"] = getDefinition(Defs::TargetNotInPlatform);
-		targetProject[kProperties]["runProject"] = getDefinition(Defs::TargetProjectRunProject);
-		targetProject[kProperties]["runArguments"] = getDefinition(Defs::TargetProjectRunArguments);
-		targetProject[kProperties]["runDependencies"] = getDefinition(Defs::TargetProjectRunDependencies);
-		targetProject[kPatternProperties][fmt::format("^runProject{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectRunProject);
-		targetProject[kPatternProperties][fmt::format("^runDependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetProjectRunDependencies);
-		defs[Defs::TargetProject] = std::move(targetProject);
+		targetProject[kProperties]["runProject"] = getDefinition(Defs::ProjectTargetRunProject);
+		targetProject[kProperties]["runArguments"] = getDefinition(Defs::ProjectTargetRunArguments);
+		targetProject[kProperties]["runDependencies"] = getDefinition(Defs::ProjectTargetRunDependencies);
+		targetProject[kPatternProperties][fmt::format("^runProject{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetRunProject);
+		targetProject[kPatternProperties][fmt::format("^runDependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetRunDependencies);
+		defs[Defs::ProjectTarget] = std::move(targetProject);
 	}
 
 	{
@@ -1192,16 +1192,16 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
-		targetScript[kProperties]["script"] = getDefinition(Defs::TargetScriptScript);
+		targetScript[kProperties]["script"] = getDefinition(Defs::ScriptTargetScript);
 		targetScript[kProperties]["script"][kDescription] = "Script(s) to run during this build step.";
 		targetScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		{
 			auto scriptPattern = fmt::format("^script{}{}$", kPatternConfigurations, kPatternPlatforms);
-			targetScript[kPatternProperties][scriptPattern] = getDefinition(Defs::TargetScriptScript);
+			targetScript[kPatternProperties][scriptPattern] = getDefinition(Defs::ScriptTargetScript);
 			targetScript[kPatternProperties][scriptPattern][kDescription] = "Script(s) to run during this build step.";
 		}
 		targetScript[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
-		defs[Defs::TargetScript] = std::move(targetScript);
+		defs[Defs::ScriptTarget] = std::move(targetScript);
 	}
 
 	{
@@ -1216,21 +1216,21 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"description": "Build the location with CMake"
 		})json"_ojson;
 		targetCMake[kProperties]["description"] = getDefinition(Defs::TargetDescription);
-		targetCMake[kProperties]["location"] = getDefinition(Defs::TargetCMakeLocation);
-		targetCMake[kProperties]["buildFile"] = getDefinition(Defs::TargetCMakeBuildFile);
-		targetCMake[kProperties]["defines"] = getDefinition(Defs::TargetCMakeDefines);
-		targetCMake[kProperties]["toolset"] = getDefinition(Defs::TargetCMakeToolset);
-		targetCMake[kProperties]["recheck"] = getDefinition(Defs::TargetCMakeRecheck);
+		targetCMake[kProperties]["location"] = getDefinition(Defs::CMakeTargetLocation);
+		targetCMake[kProperties]["buildFile"] = getDefinition(Defs::CMakeTargetBuildFile);
+		targetCMake[kProperties]["defines"] = getDefinition(Defs::CMakeTargetDefines);
+		targetCMake[kProperties]["toolset"] = getDefinition(Defs::CMakeTargetToolset);
+		targetCMake[kProperties]["recheck"] = getDefinition(Defs::CMakeTargetRecheck);
 		targetCMake[kProperties]["type"] = getDefinition(Defs::TargetType);
 		targetCMake[kProperties]["onlyInConfiguration"] = getDefinition(Defs::TargetOnlyInConfiguration);
 		targetCMake[kProperties]["notInConfiguration"] = getDefinition(Defs::TargetNotInConfiguration);
 		targetCMake[kProperties]["onlyInPlatform"] = getDefinition(Defs::TargetOnlyInPlatform);
 		targetCMake[kProperties]["notInPlatform"] = getDefinition(Defs::TargetNotInPlatform);
 		targetCMake[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
-		targetCMake[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetCMakeBuildFile);
-		targetCMake[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetCMakeDefines);
-		targetCMake[kPatternProperties][fmt::format("^toolset{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetCMakeToolset);
-		defs[Defs::TargetCMake] = std::move(targetCMake);
+		targetCMake[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::CMakeTargetBuildFile);
+		targetCMake[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::CMakeTargetDefines);
+		targetCMake[kPatternProperties][fmt::format("^toolset{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::CMakeTargetToolset);
+		defs[Defs::CMakeTarget] = std::move(targetCMake);
 	}
 
 	{
@@ -1245,17 +1245,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"description": "Build the location with Chalet"
 		})json"_ojson;
 		targetChalet[kProperties]["description"] = getDefinition(Defs::TargetDescription);
-		targetChalet[kProperties]["location"] = getDefinition(Defs::TargetChaletLocation);
-		targetChalet[kProperties]["buildFile"] = getDefinition(Defs::TargetChaletBuildFile);
-		targetChalet[kProperties]["recheck"] = getDefinition(Defs::TargetChaletRecheck);
+		targetChalet[kProperties]["location"] = getDefinition(Defs::ChaletTargetLocation);
+		targetChalet[kProperties]["buildFile"] = getDefinition(Defs::ChaletTargetBuildFile);
+		targetChalet[kProperties]["recheck"] = getDefinition(Defs::ChaletTargetRecheck);
 		targetChalet[kProperties]["type"] = getDefinition(Defs::TargetType);
 		targetChalet[kProperties]["onlyInConfiguration"] = getDefinition(Defs::TargetOnlyInConfiguration);
 		targetChalet[kProperties]["notInConfiguration"] = getDefinition(Defs::TargetNotInConfiguration);
 		targetChalet[kProperties]["onlyInPlatform"] = getDefinition(Defs::TargetOnlyInPlatform);
 		targetChalet[kProperties]["notInPlatform"] = getDefinition(Defs::TargetNotInPlatform);
 		targetChalet[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
-		targetChalet[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetChaletBuildFile);
-		defs[Defs::TargetChalet] = std::move(targetChalet);
+		targetChalet[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ChaletTargetBuildFile);
+		defs[Defs::ChaletTarget] = std::move(targetChalet);
 	}
 
 	return defs;
@@ -1267,31 +1267,31 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 	switch (inDef)
 	{
 		case Defs::Configuration: return "configuration";
-		case Defs::ConfigDebugSymbols: return "config-debugSymbols";
-		case Defs::ConfigEnableProfiling: return "config-enableProfiling";
-		case Defs::ConfigLinkTimeOptimizations: return "config-linkTimeOptimizations";
-		case Defs::ConfigOptimizationLevel: return "config-optimizationLevel";
-		case Defs::ConfigStripSymbols: return "config-stripSymbols";
+		case Defs::ConfigurationDebugSymbols: return "config-debugSymbols";
+		case Defs::ConfigurationEnableProfiling: return "config-enableProfiling";
+		case Defs::ConfigurationLinkTimeOptimizations: return "config-linkTimeOptimizations";
+		case Defs::ConfigurationOptimizationLevel: return "config-optimizationLevel";
+		case Defs::ConfigurationStripSymbols: return "config-stripSymbols";
 		//
-		case Defs::TargetDist: return "distribution-target";
-		case Defs::DistConfiguration: return "distribution-target-configuration";
-		case Defs::DistDependencies: return "distribution-target-dependencies";
-		case Defs::DistDescription: return "distribution-target-description";
-		case Defs::DistExclude: return "distribution-target-exclude";
-		case Defs::DistIncludeDependentSharedLibraries: return "distribution-target-includeDependentSharedLibraries";
-		case Defs::DistLinux: return "distribution-target-linux";
-		case Defs::DistMacOS: return "distribution-target-macos";
-		case Defs::DistMainProject: return "distribution-target-mainProject";
-		case Defs::DistOutDirectory: return "distribution-target-outDir";
-		case Defs::DistProjects: return "distribution-target-projects";
-		case Defs::DistWindows: return "distribution-target-windows";
+		case Defs::DistributionTarget: return "distribution-target";
+		case Defs::DistributionTargetConfiguration: return "distribution-target-configuration";
+		case Defs::DistributionTargetInclude: return "distribution-target-include";
+		case Defs::DistributionTargetDescription: return "distribution-target-description";
+		case Defs::DistributionTargetExclude: return "distribution-target-exclude";
+		case Defs::DistributionTargetIncludeDependentSharedLibraries: return "distribution-target-includeDependentSharedLibraries";
+		case Defs::DistributionTargetLinux: return "distribution-target-linux";
+		case Defs::DistributionTargetMacOS: return "distribution-target-macos";
+		case Defs::DistributionTargetMainProject: return "distribution-target-mainProject";
+		case Defs::DistributionTargetOutputDirectory: return "distribution-target-outDir";
+		case Defs::DistributionTargetProjects: return "distribution-target-projects";
+		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
-		case Defs::ExtGitRepository: return "external-git-repository";
-		case Defs::ExtGitBranch: return "external-git-branch";
-		case Defs::ExtGitCommit: return "external-git-commit";
-		case Defs::ExtGitTag: return "external-git-tag";
-		case Defs::ExtGitSubmodules: return "external-git-submodules";
+		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
+		case Defs::ExternalDependencyGitBranch: return "external-git-branch";
+		case Defs::ExternalDependencyGitCommit: return "external-git-commit";
+		case Defs::ExternalDependencyGitTag: return "external-git-tag";
+		case Defs::ExternalDependencyGitSubmodules: return "external-git-submodules";
 		//
 		case Defs::EnumPlatform: return "enum-platform";
 		//
@@ -1304,55 +1304,55 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetOnlyInConfiguration: return "target-onlyInConfiguration";
 		case Defs::TargetOnlyInPlatform: return "target-onlyInPlatform";
 		//
-		case Defs::TargetProjectExtends: return "target-project-extends";
-		case Defs::TargetProjectFiles: return "target-project-files";
-		case Defs::TargetProjectKind: return "target-project-kind";
-		case Defs::TargetProjectLocation: return "target-project-location";
-		case Defs::TargetProjectLanguage: return "target-project-language";
-		case Defs::TargetProjectRunProject: return "target-project-runProject";
-		case Defs::TargetProjectRunArguments: return "target-project-runArguments";
-		case Defs::TargetProjectRunDependencies: return "target-project-runDependencies";
+		case Defs::ProjectTargetExtends: return "target-project-extends";
+		case Defs::ProjectTargetFiles: return "target-project-files";
+		case Defs::ProjectTargetKind: return "target-project-kind";
+		case Defs::ProjectTargetLocation: return "target-project-location";
+		case Defs::ProjectTargetLanguage: return "target-project-language";
+		case Defs::ProjectTargetRunProject: return "target-project-runProject";
+		case Defs::ProjectTargetRunArguments: return "target-project-runArguments";
+		case Defs::ProjectTargetRunDependencies: return "target-project-runDependencies";
 		//
-		case Defs::TargetProject: return "target-project";
-		case Defs::TargetProjectCxx: return "target-project-cxx";
-		case Defs::TargetProjectCxxCStandard: return "target-project-cxx-cStandard";
-		case Defs::TargetProjectCxxCppStandard: return "target-project-cxx-cppStandard";
-		case Defs::TargetProjectCxxCompileOptions: return "target-project-cxx-compileOptions";
-		case Defs::TargetProjectCxxDefines: return "target-project-cxx-defines";
-		case Defs::TargetProjectCxxIncludeDirs: return "target-project-cxx-includeDirs";
-		case Defs::TargetProjectCxxLibDirs: return "target-project-cxx-libDirs";
-		case Defs::TargetProjectCxxLinkerScript: return "target-project-cxx-linkerScript";
-		case Defs::TargetProjectCxxLinkerOptions: return "target-project-cxx-linkerOptions";
-		case Defs::TargetProjectCxxLinks: return "target-project-cxx-links";
-		case Defs::TargetProjectCxxMacOsFrameworkPaths: return "target-project-cxx-macosFrameworkPaths";
-		case Defs::TargetProjectCxxMacOsFrameworks: return "target-project-cxx-macosFrameworks";
-		case Defs::TargetProjectCxxObjectiveCxx: return "target-project-cxx-objectiveCxx";
-		case Defs::TargetProjectCxxPrecompiledHeader: return "target-project-cxx-pch";
-		case Defs::TargetProjectCxxThreads: return "target-project-cxx-threads";
-		case Defs::TargetProjectCxxRunTimeTypeInfo: return "target-project-cxx-rtti";
-		case Defs::TargetProjectCxxExceptions: return "target-project-cxx-exceptions";
-		case Defs::TargetProjectCxxStaticLinking: return "target-project-cxx-staticLinking";
-		case Defs::TargetProjectCxxStaticLinks: return "target-project-cxx-staticLinks";
-		case Defs::TargetProjectCxxWarnings: return "target-project-cxx-warnings";
-		case Defs::TargetProjectCxxWindowsAppManifest: return "target-project-cxx-windowsAppManifest";
-		case Defs::TargetProjectCxxWindowsAppIcon: return "target-project-cxx-windowsAppIcon";
-		case Defs::TargetProjectCxxWindowsOutputDef: return "target-project-cxx-windowsOutputDef";
-		case Defs::TargetProjectCxxWindowsPrefixOutputFilename: return "target-project-cxx-windowsPrefixOutputFilename";
+		case Defs::ProjectTarget: return "target-project";
+		case Defs::ProjectTargetCxx: return "target-project-cxx";
+		case Defs::ProjectTargetCxxCStandard: return "target-project-cxx-cStandard";
+		case Defs::ProjectTargetCxxCppStandard: return "target-project-cxx-cppStandard";
+		case Defs::ProjectTargetCxxCompileOptions: return "target-project-cxx-compileOptions";
+		case Defs::ProjectTargetCxxDefines: return "target-project-cxx-defines";
+		case Defs::ProjectTargetCxxIncludeDirs: return "target-project-cxx-includeDirs";
+		case Defs::ProjectTargetCxxLibDirs: return "target-project-cxx-libDirs";
+		case Defs::ProjectTargetCxxLinkerScript: return "target-project-cxx-linkerScript";
+		case Defs::ProjectTargetCxxLinkerOptions: return "target-project-cxx-linkerOptions";
+		case Defs::ProjectTargetCxxLinks: return "target-project-cxx-links";
+		case Defs::ProjectTargetCxxMacOsFrameworkPaths: return "target-project-cxx-macosFrameworkPaths";
+		case Defs::ProjectTargetCxxMacOsFrameworks: return "target-project-cxx-macosFrameworks";
+		case Defs::ProjectTargetCxxObjectiveCxx: return "target-project-cxx-objectiveCxx";
+		case Defs::ProjectTargetCxxPrecompiledHeader: return "target-project-cxx-pch";
+		case Defs::ProjectTargetCxxThreads: return "target-project-cxx-threads";
+		case Defs::ProjectTargetCxxRunTimeTypeInfo: return "target-project-cxx-rtti";
+		case Defs::ProjectTargetCxxExceptions: return "target-project-cxx-exceptions";
+		case Defs::ProjectTargetCxxStaticLinking: return "target-project-cxx-staticLinking";
+		case Defs::ProjectTargetCxxStaticLinks: return "target-project-cxx-staticLinks";
+		case Defs::ProjectTargetCxxWarnings: return "target-project-cxx-warnings";
+		case Defs::ProjectTargetCxxWindowsAppManifest: return "target-project-cxx-windowsAppManifest";
+		case Defs::ProjectTargetCxxWindowsAppIcon: return "target-project-cxx-windowsAppIcon";
+		case Defs::ProjectTargetCxxWindowsOutputDef: return "target-project-cxx-windowsOutputDef";
+		case Defs::ProjectTargetCxxWindowsPrefixOutputFilename: return "target-project-cxx-windowsPrefixOutputFilename";
 		//
-		case Defs::TargetScript: return "target-script";
-		case Defs::TargetScriptScript: return "target-script-script";
+		case Defs::ScriptTarget: return "target-script";
+		case Defs::ScriptTargetScript: return "target-script-script";
 		//
-		case Defs::TargetCMake: return "target-cmake";
-		case Defs::TargetCMakeLocation: return "target-cmake-location";
-		case Defs::TargetCMakeBuildFile: return "target-cmake-buildFile";
-		case Defs::TargetCMakeDefines: return "target-cmake-defines";
-		case Defs::TargetCMakeRecheck: return "target-cmake-recheck";
-		case Defs::TargetCMakeToolset: return "target-cmake-toolset";
+		case Defs::CMakeTarget: return "target-cmake";
+		case Defs::CMakeTargetLocation: return "target-cmake-location";
+		case Defs::CMakeTargetBuildFile: return "target-cmake-buildFile";
+		case Defs::CMakeTargetDefines: return "target-cmake-defines";
+		case Defs::CMakeTargetRecheck: return "target-cmake-recheck";
+		case Defs::CMakeTargetToolset: return "target-cmake-toolset";
 		//
-		case Defs::TargetChalet: return "target-chalet";
-		case Defs::TargetChaletLocation: return "target-chalet-location";
-		case Defs::TargetChaletBuildFile: return "target-chalet-buildFile";
-		case Defs::TargetChaletRecheck: return "target-chalet-recheck";
+		case Defs::ChaletTarget: return "target-chalet";
+		case Defs::ChaletTargetLocation: return "target-chalet-location";
+		case Defs::ChaletTargetBuildFile: return "target-chalet-buildFile";
+		case Defs::ChaletTargetRecheck: return "target-chalet-recheck";
 
 		default: break;
 	}
@@ -1409,7 +1409,7 @@ Json SchemaBuildJson::get()
 	ret[kProperties] = Json::object();
 	ret[kPatternProperties] = Json::object();
 
-	ret[kPatternProperties]["^abstracts:[a-z]+$"] = getDefinition(Defs::TargetProject);
+	ret[kPatternProperties]["^abstracts:[a-z]+$"] = getDefinition(Defs::ProjectTarget);
 	ret[kPatternProperties]["^abstracts:[a-z]+$"][kDescription] = "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project";
 
 	ret[kProperties]["abstracts"] = R"json({
@@ -1417,7 +1417,7 @@ Json SchemaBuildJson::get()
 		"additionalProperties": false,
 		"description": "A list of abstract build projects"
 	})json"_ojson;
-	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"] = getDefinition(Defs::TargetProject);
+	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"] = getDefinition(Defs::ProjectTarget);
 	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"][kDescription] = "An abstract build project. 'all' is implicitely added to each project.";
 
 	ret[kProperties]["configurations"] = R"json({
@@ -1462,8 +1462,8 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName] = R"json({
 		"description": "A single distribution target or script."
 	})json"_ojson;
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::TargetScript);
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::TargetDist);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::ScriptTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::DistributionTarget);
 
 	ret[kProperties]["externalDepDir"] = R"json({
 		"type": "string",
@@ -1516,11 +1516,11 @@ Json SchemaBuildJson::get()
 			}
 		]
 	})json"_ojson;
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][0] = getDefinition(Defs::TargetProject);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][1] = getDefinition(Defs::TargetScript);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][0] = getDefinition(Defs::ProjectTarget);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][1] = getDefinition(Defs::ScriptTarget);
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kProperties]["type"] = getDefinition(Defs::TargetType);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][0]["then"] = getDefinition(Defs::TargetCMake);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][1]["then"] = getDefinition(Defs::TargetChalet);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][0]["then"] = getDefinition(Defs::CMakeTarget);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][1]["then"] = getDefinition(Defs::ChaletTarget);
 
 	ret[kProperties]["version"] = R"json({
 		"type": "string",

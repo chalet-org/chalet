@@ -18,6 +18,7 @@ struct JsonValidationError
 	std::string value;
 	std::string typeName;
 	std::string message;
+	StringList tree;
 	std::any data;
 	JsonSchemaError type = JsonSchemaError::none;
 	JsonErrorClassification classification = JsonErrorClassification::None;
