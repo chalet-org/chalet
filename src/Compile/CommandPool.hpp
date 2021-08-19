@@ -25,9 +25,9 @@ struct CommandPool
 
 	struct Target
 	{
-		Cmd pre;
+		CmdList pre;
 		Cmd post;
-		CommandPool::CmdList list;
+		CmdList list;
 	};
 
 	struct Settings

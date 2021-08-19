@@ -178,7 +178,7 @@
 			],
 			"macos": {
 				"bundleName": "Chalet",
-				"icon": "platform/chalet-logo.png",
+				"icon": "platform/chalet-logo.png"
 				/*"infoPropertyList": {
 					"CFBundleName": "${bundleName}",
 					"CFBundleDisplayName": "${name}",
@@ -191,9 +191,8 @@
 					"CFBundleExecutable": "${mainProject}",
 					"CFBundleIconFile": "${icon}",
 					"NSHighResolutionCapable": true
-				},*/
-				"universalBinary": true
-				/*"makeDmg": false,
+				},
+				"makeDmg": false,
 				"dmgBackground": {
 					"1x": "platform/osx/dmg-background.png",
 					"2x": "platform/osx/dmg-background@2x.png"

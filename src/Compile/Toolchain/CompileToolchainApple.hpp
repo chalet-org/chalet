@@ -19,7 +19,9 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 	virtual bool initialize() final;
 
 	// Compiling
+	virtual void addPchInclude(StringList& outArgList) const final;
 	virtual bool addArchitecture(StringList& outArgList) const final;
+	virtual bool addArchitectureOptions(StringList& outArgList) const final;
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const final;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const final;
 
@@ -34,6 +36,7 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const final;
 
 	// MacOS
+	virtual void addMacosMultiArchOption(StringList& outArgList, const std::string& arch) const final;
 	virtual void addMacosSysRootOption(StringList& outArgList) const final;
 
 	virtual StringList getDynamicLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const final;

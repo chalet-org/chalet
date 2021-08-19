@@ -151,16 +151,14 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 	chalet_assert(m_project != nullptr, "");
 
 	std::string rules;
-	for (auto& group : inOutputs.groups)
-	{
-		if (group->type == SourceType::CxxPrecompiledHeader)
-		{
-			if (group->objectFile.empty())
-				continue;
 
-			rules += getPchBuildRule(group->objectFile);
-		}
+	if (m_project->usesPch())
+	{
+		const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
+		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+		rules += getPchBuildRule(pchTarget);
 	}
+
 	rules += getObjBuildRules(inOutputs.groups);
 
 	return rules;
@@ -179,22 +177,55 @@ std::string NinjaGenerator::getPchRule()
 		const auto depFile = getDepFile(dependency);
 
 		const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+		const auto object = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
 
-		// Have to pass in pchTarget here because MSVC's PCH compile command is wack
-		const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", pchTarget, m_generateDependencies, dependency));
-		if (!pchCompile.empty())
+#if defined(CHALET_MACOS)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{
-			ret = fmt::format(R"ninja(
+			auto baseFolder = String::getPathFolder(object);
+			auto filename = String::getPathFilename(object);
+
+			for (auto& arch : m_state.info.universalArches())
+			{
+				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
+				auto description = String::getPathFolderBaseName(outObject);
+
+				const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", outObject, m_generateDependencies, dependency, arch));
+				if (!pchCompile.empty())
+				{
+					ret += fmt::format(R"ninja(
+rule pch_{arch}_{hash}
+  deps = {deps}{depFile}
+  description = {description}
+  command = {pchCompile}
+)ninja",
+						fmt::arg("hash", m_hash),
+						FMT_ARG(arch),
+						FMT_ARG(deps),
+						FMT_ARG(depFile),
+						FMT_ARG(description),
+						FMT_ARG(pchCompile));
+				}
+			}
+		}
+		else
+#endif
+		{
+			// Have to pass in object here because MSVC's PCH compile command is wack
+			const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", object, m_generateDependencies, dependency, std::string()));
+			if (!pchCompile.empty())
+			{
+				ret = fmt::format(R"ninja(
 rule pch_{hash}
   deps = {deps}{depFile}
   description = $in
   command = {pchCompile}
 )ninja",
-				fmt::arg("hash", m_hash),
-				FMT_ARG(deps),
-				FMT_ARG(depFile),
-				FMT_ARG(pchCompile));
+					fmt::arg("hash", m_hash),
+					FMT_ARG(deps),
+					FMT_ARG(depFile),
+					FMT_ARG(pchCompile));
+			}
 		}
 	}
 
@@ -397,12 +428,43 @@ std::string NinjaGenerator::getPchBuildRule(const std::string& pchTarget)
 		const auto& pch = m_project->pch();
 		m_precompiledHeaders.push_back(pch);
 
-		ret = fmt::format(R"ninja(
+#if defined(CHALET_MACOS)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
+		{
+			auto baseFolder = String::getPathFolder(pchTarget);
+			auto filename = String::getPathFilename(pchTarget);
+
+			std::string lastArch;
+			for (auto& arch : m_state.info.universalArches())
+			{
+				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
+				auto dependencies = pch;
+
+				if (!lastArch.empty())
+				{
+					dependencies += fmt::format(" | {}_{}/{}", baseFolder, lastArch, filename);
+				}
+				ret += fmt::format(R"ninja(
+build {outObject}: pch_{arch}_{hash} {dependencies}
+)ninja",
+					fmt::arg("hash", m_hash),
+					FMT_ARG(arch),
+					FMT_ARG(outObject),
+					FMT_ARG(dependencies));
+
+				lastArch = arch;
+			}
+		}
+		else
+#endif
+		{
+			ret += fmt::format(R"ninja(
 build {pchTarget}: pch_{hash} {pch}
 )ninja",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(pchTarget),
-			FMT_ARG(pch));
+				fmt::arg("hash", m_hash),
+				FMT_ARG(pchTarget),
+				FMT_ARG(pch));
+		}
 
 #if defined(CHALET_WIN32)
 		const auto& config = m_state.toolchain.getConfig(m_project->language());
@@ -429,11 +491,22 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 	std::string ret;
 
 	StringList pches;
-	for (auto& group : inGroups)
+	if (m_project->usesPch())
 	{
-		if (group->type == SourceType::CxxPrecompiledHeader)
+		const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
+		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+#if defined(CHALET_MACOS)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{
-			pches.push_back(group->objectFile);
+			auto baseFolder = String::getPathFolder(pchTarget);
+			auto filename = String::getPathFilename(pchTarget);
+			auto& lastArch = m_state.info.universalArches().back();
+			pches.push_back(fmt::format("{}_{}/{}", baseFolder, lastArch, filename));
+		}
+		else
+#endif
+		{
+			pches.push_back(pchTarget);
 		}
 	}
 

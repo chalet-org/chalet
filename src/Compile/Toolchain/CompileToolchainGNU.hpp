@@ -22,7 +22,7 @@ struct CompileToolchainGNU : ICompileToolchain
 
 	virtual bool initialize() override;
 
-	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
+	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) override;
 	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
 	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;
 	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
@@ -77,6 +77,7 @@ protected:
 	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const;
 
 	// MacOS
+	virtual void addMacosMultiArchOption(StringList& outArgList, const std::string& arch) const;
 	virtual void addMacosSysRootOption(StringList& outArgList) const;
 	virtual void addMacosFrameworkOptions(StringList& outArgList) const;
 

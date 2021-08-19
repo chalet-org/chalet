@@ -65,7 +65,6 @@ private:
 	SourceType getSourceType(const std::string& inSource) const;
 	StringList getObjectFilesList(const StringList& inFiles, const ProjectTarget& inProject, const bool inIsMsvc) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
-	std::string getPrecompiledHeaderDirectory(const ProjectTarget& inProject) const;
 	SourceGroup getFiles(const ProjectTarget& inProject) const;
 	SourceGroup getDirectories(const ProjectTarget& inProject) const;
 	StringList getFileList(const ProjectTarget& inProject) const;

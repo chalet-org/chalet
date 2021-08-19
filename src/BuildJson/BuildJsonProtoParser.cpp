@@ -290,7 +290,7 @@ bool BuildJsonProtoParser::parseBundle(BundleTarget& outBundle, const Json& inNo
 	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "configuration"))
 	{
 		outBundle.setConfiguration(std::move(val));
-		m_prototype.addRequiredArchitecture(outBundle.configuration());
+		m_prototype.addRequiredBuildConfiguration(outBundle.configuration());
 	}
 
 	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "description"))
@@ -419,14 +419,6 @@ bool BuildJsonProtoParser::parseBundleMacOS(BundleTarget& outBundle, const Json&
 				// assigned++;
 			}
 		}
-	}
-
-	if (bool val = false; m_buildJson.assignFromKey(val, macosNode, "universalBinary"))
-	{
-		macosBundle.setUniversalBinary(val);
-
-		m_prototype.addRequiredArchitecture("x86_64-apple-darwin");
-		m_prototype.addRequiredArchitecture("arm64-apple-darwin");
 	}
 
 	if (bool val = false; m_buildJson.assignFromKey(val, macosNode, "makeDmg"))

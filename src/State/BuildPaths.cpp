@@ -698,6 +698,16 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 				std::string outPath = String::getPathFolder(inProject.pch());
 				Path::sanitize(outPath, true);
 
+#if defined(CHALET_MACOS)
+				if (!m_inputs.universalArches().empty())
+				{
+					for (auto& arch : m_inputs.universalArches())
+					{
+						auto path = fmt::format("{}_{}", outPath, arch);
+						ret.emplace_back(std::move(path));
+					}
+				}
+#endif
 				ret.emplace_back(std::move(outPath));
 			}
 		}
@@ -779,18 +789,6 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderDirectory(const ProjectTarget& inProject) const
-{
-	std::string ret;
-	if (inProject.usesPch())
-	{
-		ret = String::getPathFolder(inProject.pch());
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 BuildPaths::SourceGroup BuildPaths::getFiles(const ProjectTarget& inProject) const
 {
 	SourceGroup ret;
@@ -805,7 +803,6 @@ BuildPaths::SourceGroup BuildPaths::getDirectories(const ProjectTarget& inProjec
 {
 	SourceGroup ret;
 	ret.list = getDirectoryList(inProject);
-	ret.pch = getPrecompiledHeaderDirectory(inProject);
 
 	return ret;
 }

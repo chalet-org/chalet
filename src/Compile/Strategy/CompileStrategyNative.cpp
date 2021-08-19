@@ -61,7 +61,7 @@ bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOut
 	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !compilerConfig.isMsvc();
 
 	auto target = std::make_unique<CommandPool::Target>();
-	target->pre = getPchCommand(pchTarget);
+	target->pre = getPchCommands(pchTarget);
 	target->list = getCompileCommands(inOutputs.groups);
 	bool targetExists = Commands::pathExists(inOutputs.target);
 
@@ -139,32 +139,74 @@ bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
 }
 
 /*****************************************************************************/
-CommandPool::Cmd CompileStrategyNative::getPchCommand(const std::string& pchTarget)
+CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pchTarget)
 {
 	chalet_assert(m_project != nullptr, "");
 
-	CommandPool::Cmd ret;
+	CommandPool::CmdList ret;
 	if (m_project->usesPch())
 	{
-		std::string source = m_project->pch();
-
 		auto& sourceCache = m_state.cache.file().sources();
+		std::string source = m_project->pch();
+		const auto& depDir = m_state.paths.depDir();
 
-		m_pchChanged = sourceCache.fileChangedOrDoesNotExist(source, pchTarget);
-		m_sourcesChanged |= m_pchChanged;
-		if (m_pchChanged)
+#if defined(CHALET_MACOS)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{
-			if (!List::contains(m_fileCache, source))
-			{
-				m_fileCache.push_back(source);
+			auto baseFolder = String::getPathFolder(pchTarget);
+			auto filename = String::getPathFilename(pchTarget);
 
-				auto tmp = getPchCompile(source, pchTarget);
-				ret.output = std::move(source);
-				ret.command = std::move(tmp.command);
-				ret.color = Output::theme().build;
-				ret.symbol = " ";
+			for (auto& arch : m_state.info.universalArches())
+			{
+				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
+				auto intermediateSource = String::getPathFolderBaseName(outObject);
+
+				bool pchChanged = sourceCache.fileChangedOrDoesNotExist(source, outObject);
+				m_pchChanged |= pchChanged;
+				if (pchChanged)
+				{
+					if (!List::contains(m_fileCache, intermediateSource))
+					{
+						m_fileCache.push_back(intermediateSource);
+
+						const auto dependency = fmt::format("{}/{}.d", depDir, source);
+						auto command = m_toolchain->getPchCompileCommand(source, outObject, m_generateDependencies, dependency, arch);
+
+						CommandPool::Cmd out;
+						out.output = source;
+						out.command = std::move(command);
+						out.color = Output::theme().build;
+						out.symbol = " ";
+						ret.emplace_back(std::move(out));
+					}
+				}
 			}
 		}
+		else
+#endif
+		{
+			bool pchChanged = sourceCache.fileChangedOrDoesNotExist(source, pchTarget);
+			m_pchChanged |= pchChanged;
+			if (pchChanged)
+			{
+				if (!List::contains(m_fileCache, source))
+				{
+					m_fileCache.push_back(source);
+
+					const auto dependency = fmt::format("{}/{}.d", depDir, source);
+					auto command = m_toolchain->getPchCompileCommand(source, pchTarget, m_generateDependencies, dependency, std::string());
+
+					CommandPool::Cmd out;
+					out.output = std::move(source);
+					out.command = std::move(command);
+					out.color = Output::theme().build;
+					out.symbol = " ";
+					ret.emplace_back(std::move(out));
+				}
+			}
+		}
+
+		m_sourcesChanged |= m_pchChanged;
 	}
 
 	return ret;
@@ -268,25 +310,6 @@ CommandPool::Cmd CompileStrategyNative::getLinkCommand(const std::string& inTarg
 	ret.color = Output::theme().build;
 	ret.symbol = " ";
 	// ret.symbol = Unicode::rightwardsTripleArrow();
-
-	return ret;
-}
-
-/*****************************************************************************/
-CompileStrategyNative::CmdTemp CompileStrategyNative::getPchCompile(const std::string& source, const std::string& target) const
-{
-	chalet_assert(m_project != nullptr, "");
-	chalet_assert(m_toolchain != nullptr, "");
-
-	CmdTemp ret;
-
-	if (m_project->usesPch())
-	{
-		const auto& depDir = m_state.paths.depDir();
-		const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-
-		ret.command = m_toolchain->getPchCompileCommand(source, target, m_generateDependencies, dependency);
-	}
 
 	return ret;
 }

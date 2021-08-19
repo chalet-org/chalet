@@ -37,7 +37,7 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 		switch (group.type)
 		{
 			case SourceType::CxxPrecompiledHeader:
-				return inToolchain->getPchCompileCommand(source, object, generateDeps, dep);
+				return inToolchain->getPchCompileCommand(source, object, generateDeps, dep, std::string());
 
 			case SourceType::C:
 				return inToolchain->getCxxCompileCommand(source, object, generateDeps, dep, CxxSpecialization::C);

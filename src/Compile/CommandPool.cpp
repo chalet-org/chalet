@@ -141,20 +141,24 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 	auto reset = Output::getAnsiReset();
 
-	if (!pre.command.empty())
+	// At the moment, this is only greater than 1 when compiling multiple PCHes for MacOS universal binaries
+	for (auto& it : pre)
 	{
-		totalCompiles++;
+		if (!it.command.empty())
+		{
+			totalCompiles++;
 
-		auto color = Output::getAnsiStyle(pre.color);
+			auto color = Output::getAnsiStyle(it.color);
 
-		if (!printCommand(
-				color + pre.symbol + reset,
-				color + (showCommmands ? String::join(pre.command) : pre.output) + reset,
-				totalCompiles))
-			return onError();
+			if (!printCommand(
+					color + it.symbol + reset,
+					color + (showCommmands ? String::join(it.command) : it.output) + reset,
+					totalCompiles))
+				return onError();
 
-		if (!executeCommandFunc(pre.command, pre.output, renameAfterCommand))
-			return onError();
+			if (!executeCommandFunc(it.command, it.output, renameAfterCommand))
+				return onError();
+		}
 	}
 
 	bool buildFailed = false;

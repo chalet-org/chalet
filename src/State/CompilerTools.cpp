@@ -42,11 +42,6 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	const auto& archFromInput = m_inputs.targetArchitecture();
 	const auto& targetArchString = m_state.info.targetArchitectureString();
 
-#if defined(CHALET_MACOS)
-	if (targetArch == Arch::Cpu::UniversalArm64_X64)
-		return true;
-#endif
-
 	if (toolchainType == ToolchainType::LLVM)
 	{
 		bool valid = false;

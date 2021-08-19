@@ -120,6 +120,8 @@ StringList CompileToolchainApple::getDynamicLibTargetCommand(const std::string& 
 	addThreadModelLinkerOption(ret);
 	addArchitecture(ret);
 	addArchitectureOptions(ret);
+	addMacosMultiArchOption(ret, std::string());
+
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
@@ -143,10 +145,49 @@ StringList CompileToolchainApple::getDynamicLibTargetCommand(const std::string& 
 /*****************************************************************************/
 // Note: Noops mean a flag/feature isn't supported
 
+void CompileToolchainApple::addPchInclude(StringList& outArgList) const
+{
+	if (m_project.usesPch())
+	{
+#if defined(CHALET_MACOS)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
+		{
+			const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
+
+			auto baseFolder = String::getPathFolder(objDirPch);
+			auto filename = String::getPathFilename(objDirPch);
+
+			outArgList.emplace_back("-include");
+			outArgList.emplace_back(std::move(filename));
+
+			for (auto& arch : m_state.info.universalArches())
+			{
+				auto pchPath = fmt::format("{}_{}", baseFolder, arch);
+
+				outArgList.emplace_back(fmt::format("-Xarch_{}", arch));
+				outArgList.emplace_back(getPathCommand("-I", pchPath));
+			}
+		}
+		else
+#endif
+		{
+			CompileToolchainLLVM::addPchInclude(outArgList);
+		}
+	}
+}
+
+/*****************************************************************************/
 bool CompileToolchainApple::addArchitecture(StringList& outArgList) const
 {
-	if (!CompileToolchainLLVM::addArchitecture(outArgList))
-		return false;
+#if defined(CHALET_MACOS)
+	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
+	{}
+	else
+#endif
+	{
+		if (!CompileToolchainLLVM::addArchitecture(outArgList))
+			return false;
+	}
 
 	if (!m_osTargetVersion.empty())
 	{
@@ -161,6 +202,19 @@ bool CompileToolchainApple::addArchitecture(StringList& outArgList) const
 			outArgList.emplace_back(fmt::format("-mios-version-min={}", m_osTargetVersion));
 		}
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CompileToolchainApple::addArchitectureOptions(StringList& outArgList) const
+{
+#if defined(CHALET_MACOS)
+	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
+		return true;
+#endif
+	if (!CompileToolchainLLVM::addArchitectureOptions(outArgList))
+		return false;
 
 	return true;
 }
@@ -252,6 +306,29 @@ void CompileToolchainApple::addObjectiveCxxRuntimeOption(StringList& outArgList,
 /*****************************************************************************/
 // MacOS
 /*****************************************************************************/
+/*****************************************************************************/
+void CompileToolchainApple::addMacosMultiArchOption(StringList& outArgList, const std::string& inArch) const
+{
+#if defined(CHALET_MACOS)
+	if (m_state.info.targetArchitecture() != Arch::Cpu::UniversalMacOS)
+		return;
+#endif
+
+	if (!inArch.empty())
+	{
+		outArgList.emplace_back("-arch");
+		outArgList.emplace_back(inArch);
+	}
+	else
+	{
+		for (auto& arch : m_state.info.universalArches())
+		{
+			outArgList.emplace_back("-arch");
+			outArgList.emplace_back(arch);
+		}
+	}
+}
+
 /*****************************************************************************/
 void CompileToolchainApple::addMacosSysRootOption(StringList& outArgList) const
 {

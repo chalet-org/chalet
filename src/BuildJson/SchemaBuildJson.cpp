@@ -189,11 +189,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 					}
 				]
 			},
-			"universalBinary": {
-				"type": "boolean",
-				"description": "If true, the project will be built in both x64 and arm64, and combined into universal binaries before being bundled. If either build does not exist yet, it will be built prior to bundling.",
-				"default": false
-			},
 			"makeDmg": {
 				"type": "boolean",
 				"description": "If true, a .dmg image will be created after the application bundle.",
@@ -244,7 +239,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::ExternalDependencyGitRepository] = R"json({
 		"type": "string",
 		"description": "The url of the git repository.",
-		"pattern": "^(?:git|ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
+		"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
 	})json"_ojson;
 
 	defs[Defs::ExternalDependencyGitBranch] = R"json({

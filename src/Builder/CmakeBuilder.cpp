@@ -260,13 +260,22 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 #elif defined(CHALET_MACOS)
 	if (!isDefined["CMAKE_OSX_ARCHITECTURES"])
 	{
-		std::string targetArch = m_state.info.targetArchitectureString();
+		if (!m_state.info.universalArches().empty())
 		{
-			auto dash = targetArch.find('-');
-			targetArch = targetArch.substr(0, dash);
+			auto value = String::join(m_state.info.universalArches(), ';');
+			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + value);
 		}
-		outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + targetArch);
+		else
+		{
+			std::string targetArch = m_state.info.targetArchitectureString();
+			{
+				auto dash = targetArch.find('-');
+				targetArch = targetArch.substr(0, dash);
+			}
+			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + targetArch);
+		}
 	}
+
 #endif
 }
 

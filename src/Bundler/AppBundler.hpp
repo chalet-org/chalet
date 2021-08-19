@@ -37,7 +37,6 @@ private:
 	bool runScriptTarget(const ScriptDistTarget& inScript, const std::string& inInputFile);
 	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath);
-	std::unique_ptr<BuildState> getUniversalState(BuildState& inState, const std::string& inBuildConfig) const;
 	BuildState* getBuildState(const std::string& inBuildConfiguration) const;
 
 	const CommandLineInputs& m_inputs;

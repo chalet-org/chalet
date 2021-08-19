@@ -26,9 +26,6 @@ struct BundleMacOS
 	const std::string& infoPropertyListContent() const noexcept;
 	void setInfoPropertyListContent(std::string&& inValue);
 
-	bool universalBinary() const noexcept;
-	void setUniversalBinary(const bool inValue) noexcept;
-
 	bool makeDmg() const noexcept;
 	void setMakeDmg(const bool inValue) noexcept;
 
@@ -38,14 +35,7 @@ struct BundleMacOS
 	const std::string& dmgBackground2x() const noexcept;
 	void setDmgBackground2x(std::string&& inValue);
 
-	const StringList& universalBinaryArches() const noexcept;
-	void addUniversalBinaryArches(StringList&& inList);
-	void addUniversalBinaryArch(std::string&& inValue);
-
 private:
-	StringList m_dylibs;
-	StringList m_universalBinaryArches;
-
 	std::string m_bundleName;
 	std::string m_icon;
 	std::string m_infoPropertyList;
@@ -55,7 +45,6 @@ private:
 	std::string m_dmgBackground2x;
 
 	bool m_makeDmg = false;
-	bool m_universalBinary = false;
 };
 }
 

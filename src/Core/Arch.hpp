@@ -14,7 +14,7 @@ struct Arch
 		ARM,
 		ARM64,
 #if defined(CHALET_MACOS)
-		UniversalArm64_X64
+		UniversalMacOS
 #endif
 	};
 

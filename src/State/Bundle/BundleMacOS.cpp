@@ -136,25 +136,6 @@ void BundleMacOS::setInfoPropertyListContent(std::string&& inValue)
 }
 
 /*****************************************************************************/
-bool BundleMacOS::universalBinary() const noexcept
-{
-	return m_universalBinary;
-}
-
-void BundleMacOS::setUniversalBinary(const bool inValue) noexcept
-{
-	m_universalBinary = inValue;
-
-	if (m_universalBinary)
-	{
-		addUniversalBinaryArches({
-			"x86_64-apple-darwin",
-			"arm64-apple-darwin",
-		});
-	}
-}
-
-/*****************************************************************************/
 bool BundleMacOS::makeDmg() const noexcept
 {
 	return m_makeDmg;
@@ -185,22 +166,5 @@ const std::string& BundleMacOS::dmgBackground2x() const noexcept
 void BundleMacOS::setDmgBackground2x(std::string&& inValue)
 {
 	m_dmgBackground2x = std::move(inValue);
-}
-
-/*****************************************************************************/
-const StringList& BundleMacOS::universalBinaryArches() const noexcept
-{
-	return m_universalBinaryArches;
-}
-
-void BundleMacOS::addUniversalBinaryArches(StringList&& inList)
-{
-	List::forEach(inList, this, &BundleMacOS::addUniversalBinaryArch);
-}
-
-void BundleMacOS::addUniversalBinaryArch(std::string&& inValue)
-{
-	Path::sanitize(inValue);
-	List::addIfDoesNotExist(m_universalBinaryArches, std::move(inValue));
 }
 }

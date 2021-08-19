@@ -50,11 +50,6 @@ BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inStat
 /*****************************************************************************/
 bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 {
-#if defined(CHALET_MACOS)
-	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalArm64_X64)
-		return true;
-#endif
-
 	m_timer.restart();
 
 	m_removeCache.clear();
@@ -274,7 +269,11 @@ void BuildManager::printBuildInformation()
 			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
 		}
 		Diagnostic::info("C++ Compiler: {}", m_state.toolchain.compilerVersionStringCpp());
-		Diagnostic::info("Target Architecture: {}", arch);
+
+		if (m_state.info.universalArches().empty())
+			Diagnostic::info("Target Architecture: {}", arch);
+		else
+			Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.info.universalArches(), " / "));
 	}
 	if (usingCc && !m_state.toolchain.compilerVersionStringC().empty())
 	{

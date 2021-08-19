@@ -59,9 +59,9 @@ bool CompileToolchainMSVC::initialize()
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
+StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch)
 {
-	UNUSED(generateDependency, dependency);
+	UNUSED(generateDependency, dependency, arch);
 
 	chalet_assert(!outputFile.empty(), "");
 

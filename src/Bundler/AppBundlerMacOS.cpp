@@ -382,8 +382,8 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	Timer timer;
 
-	const auto& universalBinaryArches = macosBundle.universalBinaryArches();
-	if (universalBinaryArches.size() < 2)
+	const auto& universalArches = m_state.info.universalArches();
+	if (universalArches.size() < 2)
 	{
 		Output::lineBreak();
 	}

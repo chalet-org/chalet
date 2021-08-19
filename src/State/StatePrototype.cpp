@@ -248,12 +248,6 @@ const StringList& StatePrototype::requiredBuildConfigurations() const noexcept
 }
 
 /*****************************************************************************/
-const StringList& StatePrototype::requiredArchitectures() const noexcept
-{
-	return m_requiredArchitectures;
-}
-
-/*****************************************************************************/
 const std::string& StatePrototype::releaseConfiguration() const noexcept
 {
 	return m_releaseConfiguration;
@@ -382,7 +376,7 @@ void StatePrototype::setReleaseConfiguration(const std::string& inName)
 }
 
 /*****************************************************************************/
-void StatePrototype::addRequiredArchitecture(std::string inArch)
+void StatePrototype::addRequiredBuildConfiguration(std::string inArch)
 {
 	List::addIfDoesNotExist(m_allowedBuildConfigurations, std::move(inArch));
 }

@@ -34,11 +34,10 @@ public:
 	virtual bool buildProject(const ProjectTarget& inProject) const final;
 
 private:
-	CommandPool::Cmd getPchCommand(const std::string& pchTarget);
+	CommandPool::CmdList getPchCommands(const std::string& pchTarget);
 	CommandPool::CmdList getCompileCommands(const SourceFileGroupList& inGroups);
 	CommandPool::Cmd getLinkCommand(const std::string& inTarget, const StringList& inObjects);
 
-	CmdTemp getPchCompile(const std::string& source, const std::string& target) const;
 	CmdTemp getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
 	CmdTemp getRcCompile(const std::string& source, const std::string& target) const;
 

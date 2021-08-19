@@ -231,22 +231,61 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 
 		const auto dependency = fmt::format("{}/{}.d", depDir, source);
 
-		const auto compileEcho = getCompileEchoSources(source);
-
-		auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency));
-		if (!pchCompile.empty())
+#if defined(CHALET_MACOS)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{
-			ret = fmt::format(R"makefile(
+			auto baseFolder = String::getPathFolder(object);
+			auto filename = String::getPathFilename(object);
+
+			std::string lastArch;
+			for (auto& arch : m_state.info.universalArches())
+			{
+				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
+				auto dependencies = source;
+
+				if (!lastArch.empty())
+				{
+					dependencies += fmt::format(" {}_{}/{}", baseFolder, lastArch, filename);
+				}
+
+				auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency, arch));
+				if (!pchCompile.empty())
+				{
+					const auto compileEcho = getCompileEchoSources(String::getPathFolderBaseName(outObject));
+					ret += fmt::format(R"makefile(
+{outObject}: {dependencies} | {dependency}
+	{compileEcho}
+	{quietFlag}{pchCompile}
+)makefile",
+						FMT_ARG(outObject),
+						FMT_ARG(dependencies),
+						FMT_ARG(compileEcho),
+						FMT_ARG(quietFlag),
+						FMT_ARG(pchCompile),
+						FMT_ARG(dependency));
+				}
+				lastArch = arch;
+			}
+		}
+		else
+#endif
+		{
+			auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency, std::string()));
+			if (!pchCompile.empty())
+			{
+				const auto compileEcho = getCompileEchoSources(String::getPathFolderBaseName(object));
+				ret += fmt::format(R"makefile(
 {object}: {source} | {dependency}
 	{compileEcho}
 	{quietFlag}{pchCompile}
 )makefile",
-				FMT_ARG(object),
-				FMT_ARG(source),
-				FMT_ARG(compileEcho),
-				FMT_ARG(quietFlag),
-				FMT_ARG(pchCompile),
-				FMT_ARG(dependency));
+					FMT_ARG(object),
+					FMT_ARG(source),
+					FMT_ARG(compileEcho),
+					FMT_ARG(quietFlag),
+					FMT_ARG(pchCompile),
+					FMT_ARG(dependency));
+			}
 		}
 	}
 
@@ -316,7 +355,9 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
+	const bool usePch = m_project->usesPch();
 	const auto compileEcho = getCompileEchoSources();
+	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 
 	for (auto& location : m_project->locations())
 	{
@@ -325,12 +366,27 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 
 		const auto dependency = fmt::format("{}/{}/$*.{}.d", depDir, location, ext);
 
-		const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 		auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, dependency, specialization));
 		if (!cppCompile.empty())
 		{
+			std::string pch = pchTarget;
+
+#if defined(CHALET_MACOS)
+			if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS && usePch)
+			{
+				auto baseFolder = String::getPathFolder(pchTarget);
+				auto filename = String::getPathFilename(pchTarget);
+				auto& lastArch = m_state.info.universalArches().back();
+				pch = fmt::format("{}_{}/{}", baseFolder, lastArch, filename);
+			}
+			else
+#endif
+			{
+				pch = pchTarget;
+			}
+
 			ret += fmt::format(R"makefile(
-{objDir}/{location}/%.{ext}.o: {location}/%.{ext} {pchTarget} | {depDir}/{location}/%.{ext}.d
+{objDir}/{location}/%.{ext}.o: {location}/%.{ext} {pch} | {depDir}/{location}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{cppCompile}
 )makefile",
@@ -338,7 +394,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 				FMT_ARG(depDir),
 				FMT_ARG(ext),
 				FMT_ARG(location),
-				FMT_ARG(pchTarget),
+				FMT_ARG(pch),
 				FMT_ARG(dependency),
 				FMT_ARG(compileEcho),
 				FMT_ARG(quietFlag),
@@ -537,5 +593,4 @@ std::string MakefileGeneratorGNU::getBuildColor() const
 	return fmt::format("\\033[{}m", color);
 #endif
 }
-
 }

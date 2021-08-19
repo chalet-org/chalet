@@ -292,7 +292,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 		m_precompiledHeaders.push_back(source);
 		// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 
-		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(source, object, m_generateDependencies, std::string()));
+		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(source, object, m_generateDependencies, std::string(), std::string()));
 		if (!pchCompile.empty())
 		{
 

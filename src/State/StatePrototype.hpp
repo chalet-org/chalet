@@ -35,7 +35,6 @@ struct StatePrototype
 
 	const BuildConfigurationMap& buildConfigurations() const noexcept;
 	const StringList& requiredBuildConfigurations() const noexcept;
-	const StringList& requiredArchitectures() const noexcept;
 	const std::string& releaseConfiguration() const noexcept;
 	const std::string& anyConfiguration() const noexcept;
 
@@ -64,7 +63,7 @@ private:
 	bool getDefaultBuildConfiguration(BuildConfiguration& outConfig, const std::string& inName) const;
 	void addBuildConfiguration(const std::string&& inName, BuildConfiguration&& inConfig);
 	void setReleaseConfiguration(const std::string& inName);
-	void addRequiredArchitecture(std::string inArch);
+	void addRequiredBuildConfiguration(std::string inArch);
 
 	GlobalSettingsState m_globalSettingsState;
 	BuildConfigurationMap m_buildConfigurations;
@@ -73,7 +72,6 @@ private:
 
 	StringList m_allowedBuildConfigurations;
 	StringList m_requiredBuildConfigurations;
-	StringList m_requiredArchitectures;
 
 	std::string m_filename;
 	std::string m_releaseConfiguration;
