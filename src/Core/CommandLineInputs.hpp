@@ -86,9 +86,7 @@ struct CommandLineInputs
 	const std::string& targetArchitecture() const noexcept;
 	void setTargetArchitecture(const std::string& inValue) const noexcept;
 
-#if defined(CHALET_MACOS)
 	const StringList& universalArches() const noexcept;
-#endif
 
 	const StringList& archOptions() const noexcept;
 	void setArchOptions(StringList&& inList) const noexcept;
@@ -119,9 +117,7 @@ private:
 
 	StringList m_runOptions;
 	StringList m_notPlatforms;
-#if defined(CHALET_MACOS)
 	mutable StringList m_universalArches;
-#endif
 	mutable StringList m_archOptions;
 
 	const std::string kDefaultInputFile;

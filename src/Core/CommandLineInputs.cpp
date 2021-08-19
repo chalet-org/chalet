@@ -427,12 +427,10 @@ void CommandLineInputs::setTargetArchitecture(const std::string& inValue) const 
 }
 
 /*****************************************************************************/
-#if defined(CHALET_MACOS)
 const StringList& CommandLineInputs::universalArches() const noexcept
 {
 	return m_universalArches;
 }
-#endif
 
 /*****************************************************************************/
 const StringList& CommandLineInputs::archOptions() const noexcept
