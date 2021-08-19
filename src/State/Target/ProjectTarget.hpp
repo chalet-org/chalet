@@ -15,11 +15,12 @@
 namespace chalet
 {
 class BuildState;
+struct WorkspaceEnvironment;
 struct CompilerConfig;
 
 struct ProjectTarget final : public IBuildTarget
 {
-	explicit ProjectTarget(const BuildState& inState);
+	explicit ProjectTarget(BuildState& inState);
 
 	virtual void initialize() final;
 	virtual bool validate() final;
@@ -161,6 +162,8 @@ private:
 	ThreadType parseThreadType(const std::string& inValue);
 	StringList getWarningPreset();
 	StringList parseWarnings(const std::string& inValue);
+
+	WorkspaceEnvironment& m_environment;
 
 	StringList m_fileExtensions;
 	StringList m_defines;

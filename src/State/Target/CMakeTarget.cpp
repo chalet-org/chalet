@@ -24,6 +24,11 @@ void CMakeTarget::initialize()
 	const auto& targetName = this->name();
 	m_state.paths.replaceVariablesInPath(m_buildFile, targetName);
 	m_state.paths.replaceVariablesInPath(m_location, targetName);
+
+	for (auto& define : m_defines)
+	{
+		m_state.paths.replaceVariablesInPath(define, targetName);
+	}
 }
 
 /*****************************************************************************/

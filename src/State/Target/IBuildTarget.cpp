@@ -21,7 +21,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 }
 
 /*****************************************************************************/
-[[nodiscard]] BuildTarget IBuildTarget::make(const BuildTargetType inType, const BuildState& inState)
+[[nodiscard]] BuildTarget IBuildTarget::make(const BuildTargetType inType, BuildState& inState)
 {
 	switch (inType)
 	{

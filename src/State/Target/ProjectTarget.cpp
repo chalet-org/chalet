@@ -6,6 +6,7 @@
 #include "State/Target/ProjectTarget.hpp"
 
 #include "State/BuildState.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
@@ -14,8 +15,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProjectTarget::ProjectTarget(const BuildState& inState) :
-	IBuildTarget(inState, BuildTargetType::Project)
+ProjectTarget::ProjectTarget(BuildState& inState) :
+	IBuildTarget(inState, BuildTargetType::Project),
+	m_environment(inState.environment)
 {
 	StringList exts = {
 		"cpp",
@@ -371,7 +373,8 @@ void ProjectTarget::addMacosFrameworkPath(std::string&& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	List::addIfDoesNotExist(m_macosFrameworkPaths, std::move(inValue));
+	List::addIfDoesNotExist(m_macosFrameworkPaths, inValue);
+	m_environment.addPath(std::move(inValue));
 }
 
 /*****************************************************************************/

@@ -395,7 +395,7 @@ void BuildState::makeLibraryPathVariables()
 	Environment::set("CLICOLOR_FORCE", "1");
 	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
 
-#if defined(CHALET_LINUX)
+#if defined(CHALET_LINUX) || defined(CHALET_MACOS)
 	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
 	// Note: Not needed on mac: @rpath stuff is done instead
 
@@ -412,9 +412,14 @@ void BuildState::makeLibraryPathVariables()
 		}
 	};
 
+	#if defined(CHALET_LINUX)
 	addEnvironmentPath("LD_LIBRARY_PATH");
 	addEnvironmentPath("LIBRARY_PATH");
-
+	#elif defined(CHALET_MACOS)
+	addEnvironmentPath("DYLD_FALLBACK_LIBRARY_PATH");
+	addEnvironmentPath("DYLD_FALLBACK_FRAMEWORK_PATH");
+	// DYLD_LIBRARY_PATH
+	#endif
 #endif
 }
 

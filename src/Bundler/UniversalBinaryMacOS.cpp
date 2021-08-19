@@ -186,7 +186,7 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 
 	auto& installNameTool = inUniversalState.tools.installNameTool();
 
-	auto dependencyMap = m_bundler.dependencyMap();
+	auto& dependencyMap = m_bundler.dependencyMap();
 
 	auto makeIntermediateFile = [&](const std::string& inFile, const std::string& inArch, const std::string& inOutFolder) {
 		auto tmpFolder = fmt::format("{}/tmp_{}", inOutFolder, inArch);
@@ -214,6 +214,9 @@ bool UniversalBinaryMacOS::createUniversalBinaries(const BuildState& inStateA, c
 	for (std::size_t i = 0; i < outputFilesA.size(); ++i)
 	{
 		auto& fileUniversal = outputFilesUniversal[i];
+
+		if (String::endsWith(".framework", fileUniversal))
+			continue;
 
 		auto outFolder = String::getPathFolder(fileUniversal);
 		if (outFolder.empty())
