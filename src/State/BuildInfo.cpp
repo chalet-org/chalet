@@ -81,11 +81,9 @@ const StringList& BuildInfo::archOptions() const noexcept
 }
 
 /*****************************************************************************/
-#if defined(CHALET_MACOS)
 const StringList& BuildInfo::universalArches() const noexcept
 {
 	return m_inputs.universalArches();
 }
-#endif
 
 }

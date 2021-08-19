@@ -28,9 +28,7 @@ struct BuildInfo
 
 	const StringList& archOptions() const noexcept;
 
-#if defined(CHALET_MACOS)
 	const StringList& universalArches() const noexcept;
-#endif
 
 private:
 	const CommandLineInputs& m_inputs;
