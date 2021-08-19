@@ -243,7 +243,7 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode)
 			type = DistTargetType::Script;
 		}
 
-		DistributionTarget target = IDistTarget::make(type);
+		DistTarget target = IDistTarget::make(type);
 		target->setName(name);
 
 		if (target->isScript())

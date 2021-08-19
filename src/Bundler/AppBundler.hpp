@@ -25,7 +25,7 @@ struct AppBundler
 
 	bool runBuilds();
 
-	bool run(const DistributionTarget& inTarget);
+	bool run(const DistTarget& inTarget);
 
 	const BinaryDependencyMap& dependencyMap() const noexcept;
 	bool gatherDependencies(const BundleTarget& inTarget, BuildState& inState);

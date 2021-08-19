@@ -17,7 +17,7 @@ IDistTarget::IDistTarget(const DistTargetType inType) :
 }
 
 /*****************************************************************************/
-[[nodiscard]] DistributionTarget IDistTarget::make(const DistTargetType inType)
+[[nodiscard]] DistTarget IDistTarget::make(const DistTargetType inType)
 {
 	switch (inType)
 	{

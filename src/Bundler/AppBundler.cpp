@@ -72,7 +72,7 @@ bool AppBundler::runBuilds()
 }
 
 /*****************************************************************************/
-bool AppBundler::run(const DistributionTarget& inTarget)
+bool AppBundler::run(const DistTarget& inTarget)
 {
 	const auto& inputFile = m_inputs.inputFile();
 

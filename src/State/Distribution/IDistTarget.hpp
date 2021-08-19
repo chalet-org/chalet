@@ -13,14 +13,14 @@ namespace chalet
 class BuildState;
 
 struct IDistTarget;
-using DistributionTarget = std::unique_ptr<IDistTarget>;
+using DistTarget = std::unique_ptr<IDistTarget>;
 
 struct IDistTarget
 {
 	explicit IDistTarget(const DistTargetType inType);
 	virtual ~IDistTarget() = default;
 
-	[[nodiscard]] static DistributionTarget make(const DistTargetType inType);
+	[[nodiscard]] static DistTarget make(const DistTargetType inType);
 
 	virtual void initialize(const BuildState& inState) = 0;
 	virtual bool validate() = 0;
@@ -42,7 +42,7 @@ private:
 	DistTargetType m_type;
 };
 
-using DistributionTargetList = std::vector<DistributionTarget>;
+using DistributionTargetList = std::vector<DistTarget>;
 }
 
 #endif // CHALET_IDIST_TARGET_HPP

@@ -355,7 +355,6 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();
 	const auto& objDir = m_state.paths.objDir();
-	const bool usePch = m_project->usesPch();
 	const auto compileEcho = getCompileEchoSources();
 	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 
@@ -372,7 +371,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 			std::string pch = pchTarget;
 
 #if defined(CHALET_MACOS)
-			if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS && usePch)
+			if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS && m_project->usesPch())
 			{
 				auto baseFolder = String::getPathFolder(pchTarget);
 				auto filename = String::getPathFilename(pchTarget);
