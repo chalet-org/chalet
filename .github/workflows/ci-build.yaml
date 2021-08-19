@@ -90,9 +90,9 @@ jobs:
           build/Debug/chalet-debug configure
           build/Debug/chalet-debug set settings.signingIdentity $MACOS_SIGNING_IDENTITY
       - name: "Build: Release"
-        run: build/Debug/chalet-debug --save-schema bundle
+        run: build/Debug/chalet-debug --save-schema --arch univeral bundle
       - name: "Run: Tests"
-        run: build/x86_64-apple-darwin_Release/chalet run Release tests_chalet
+        run: build/univeral-apple-darwin_Release/chalet run Release tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:

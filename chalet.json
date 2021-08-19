@@ -177,8 +177,8 @@
 				".DS_Store"
 			],
 			"macos": {
-				"bundleName": "Chalet",
-				"icon": "platform/chalet-logo.png"
+				// "bundleName": "Chalet",
+				// "icon": "platform/chalet-logo.png"
 				/*"infoPropertyList": {
 					"CFBundleName": "${bundleName}",
 					"CFBundleDisplayName": "${name}",
