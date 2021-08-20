@@ -392,12 +392,8 @@ bool BuildJsonProtoParser::parseBundleMacOS(BundleTarget& outBundle, const Json&
 
 	BundleMacOS macosBundle;
 
-	// int assigned = 0;
 	if (std::string val; m_buildJson.assignStringAndValidate(val, macosNode, "bundleName"))
-	{
 		macosBundle.setBundleName(std::move(val));
-		// assigned++;
-	}
 
 	if (std::string val; m_buildJson.assignStringAndValidate(val, macosNode, "icon"))
 		macosBundle.setIcon(std::move(val));
@@ -409,50 +405,40 @@ bool BuildJsonProtoParser::parseBundleMacOS(BundleTarget& outBundle, const Json&
 		if (infoPlistNode.is_object())
 		{
 			macosBundle.setInfoPropertyListContent(infoPlistNode.dump());
-			// assigned++;
 		}
 		else
 		{
 			if (std::string val; m_buildJson.assignStringAndValidate(val, macosNode, kInfoPropertyList))
 			{
 				macosBundle.setInfoPropertyList(std::move(val));
-				// assigned++;
 			}
 		}
 	}
 
-	if (bool val = false; m_buildJson.assignFromKey(val, macosNode, "makeDmg"))
-		macosBundle.setMakeDmg(val);
-
-	const std::string kDmgBackground{ "dmgBackground" };
-	if (macosNode.contains(kDmgBackground))
+	const std::string kDmg{ "dmg" };
+	if (macosNode.contains(kDmg))
 	{
-		const Json& dmgBackground = macosNode[kDmgBackground];
-		if (dmgBackground.is_object())
-		{
-			if (std::string val; m_buildJson.assignStringAndValidate(val, dmgBackground, "1x"))
-				macosBundle.setDmgBackground1x(std::move(val));
+		macosBundle.setMakeDmg(true);
+		const std::string kBackground{ "background" };
 
-			if (std::string val; m_buildJson.assignStringAndValidate(val, dmgBackground, "2x"))
-				macosBundle.setDmgBackground2x(std::move(val));
-		}
-		else
+		if (macosNode.contains(kBackground))
 		{
-			if (std::string val; m_buildJson.assignStringAndValidate(val, macosNode, kDmgBackground))
-				macosBundle.setDmgBackground1x(std::move(val));
+			const Json& dmgBackground = macosNode[kBackground];
+			if (dmgBackground.is_object())
+			{
+				if (std::string val; m_buildJson.assignStringAndValidate(val, dmgBackground, "1x"))
+					macosBundle.setDmgBackground1x(std::move(val));
+
+				if (std::string val; m_buildJson.assignStringAndValidate(val, dmgBackground, "2x"))
+					macosBundle.setDmgBackground2x(std::move(val));
+			}
+			else
+			{
+				if (std::string val; m_buildJson.assignStringAndValidate(val, macosNode, kBackground))
+					macosBundle.setDmgBackground1x(std::move(val));
+			}
 		}
 	}
-
-	// if (assigned == 0)
-	// 	return false; // not an error
-
-	// if (assigned >= 1 && assigned < 2)
-	// {
-	// 	Diagnostic::error("{}: '{bundle}.macos.bundleName' is required.",
-	// 		m_filename,
-	// 		fmt::arg("bundle", kKeyDistribution));
-	// 	return false;
-	// }
 
 	outBundle.setMacosBundle(std::move(macosBundle));
 

@@ -186,9 +186,6 @@
 					"2x": "platform/macos/dmg-background@2x.png"
 				}
 			},*/
-			"macos": {
-
-			},
 			"windows": {
 				"nsisScript": "platform/windows/installer/install_script.nsi"
 			}

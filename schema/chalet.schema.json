@@ -167,41 +167,52 @@
 			"type": "object",
 			"description": "Properties to describe the MacOS distribution. Only one application bundle can be defined per distribution target.",
 			"additionalProperties": false,
+			"required": [
+				"bundleName"
+			],
 			"properties": {
 				"bundleName": {
 					"type": "string",
-					"description": "Controls whether or not a MacOS application bundle is created. If one is filled in, the output bundle will be (outDir)/(bundleName).app"
+					"description": "The short name of the macos bundle (required)"
 				},
-				"dmgBackground": {
-					"description": "If creating a .dmg image with 'makeDmg', this will define a background image for it.",
-					"anyOf": [
-						{
-							"type": "string"
-						},
-						{
-							"type": "object",
-							"required": [
-								"1x"
-							],
-							"properties": {
-								"1x": {
-									"type": "string",
-									"description": "The path to a background image in PNG format created for 1x pixel density."
+				"dmg": {
+					"type": "object",
+					"description": "If defined, a .dmg image will be created after the application bundle.",
+					"additionalProperties": false,
+					"properties": {
+						"background": {
+							"description": "If creating a .dmg image with 'makeDmg', this will define a background image for it.",
+							"anyOf": [
+								{
+									"type": "string"
 								},
-								"2x": {
-									"type": "string",
-									"description": "The path to a background image in PNG format created for 2x pixel density."
+								{
+									"type": "object",
+									"additionalProperties": false,
+									"required": [
+										"1x"
+									],
+									"properties": {
+										"1x": {
+											"type": "string",
+											"description": "The path to a background image in PNG format created for 1x pixel density."
+										},
+										"2x": {
+											"type": "string",
+											"description": "The path to a background image in PNG format created for 2x pixel density."
+										}
+									}
 								}
-							}
+							]
 						}
-					]
+					}
 				},
 				"icon": {
 					"type": "string",
 					"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process."
 				},
 				"infoPropertyList": {
-					"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.\nCertain properties will be deduced during the bundle:\n  CFBundleName: bundleName\n  CFBundleIconFile: icon\n  CFBundleDisplayName: distribution name\n  CFBundleVersion: version string\n  CFBundleExecutable: relative executable path",
+					"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
 					"anyOf": [
 						{
 							"type": "string"
@@ -224,11 +235,6 @@
 							}
 						}
 					]
-				},
-				"makeDmg": {
-					"type": "boolean",
-					"description": "If true, a .dmg image will be created after the application bundle.",
-					"default": false
 				}
 			}
 		},

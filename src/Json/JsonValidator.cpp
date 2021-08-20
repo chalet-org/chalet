@@ -7,6 +7,7 @@
 
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonComments.hpp"
 
 namespace chalet
 {
@@ -117,8 +118,10 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		case JsonSchemaError::logical_not:
 			return "the subschema has succeeded, but it is required to not validate";
 
-		case JsonSchemaError::logical_combination:
-			return fmt::format("Invalid key found inside of '{}' object: '{}'", parentKey, outError.tree.front());
+		case JsonSchemaError::logical_combination: {
+			auto msg = fmt::format("Invalid key/value found in: {}", String::join(outError.tree, '/'));
+			return msg;
+		}
 
 		case JsonSchemaError::logical_combination_all_of: {
 			const auto msg = std::any_cast<std::pair<JsonSchemaError, std::any>>(data);

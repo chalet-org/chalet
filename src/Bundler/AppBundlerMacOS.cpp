@@ -501,13 +501,9 @@ bool AppBundlerMacOS::signAppBundle() const
 			}
 		}
 
-		if (isBundle)
+		uint signingAttempts = 3;
+		for (uint i = 0; i < signingAttempts; ++i)
 		{
-			auto appPath = m_bundlePath.substr(0, m_bundlePath.size() - 9);
-			signLater.push_back(std::move(appPath));
-		}
-
-		auto signRemaining = [&]() {
 			auto it = signLater.end();
 			while (it != signLater.begin())
 			{
@@ -518,12 +514,7 @@ bool AppBundlerMacOS::signAppBundle() const
 					it = signLater.erase(it);
 				}
 			}
-		};
 
-		uint signingAttempts = 3;
-		for (uint i = 0; i < signingAttempts; ++i)
-		{
-			signRemaining();
 			if (signLater.empty())
 				break;
 		}
@@ -532,8 +523,19 @@ bool AppBundlerMacOS::signAppBundle() const
 		{
 			Diagnostic::error("Failed to sign: {}", path);
 		}
+
 		if (!signLater.empty())
 			return false;
+
+		if (isBundle)
+		{
+			auto appPath = m_bundlePath.substr(0, m_bundlePath.size() - 9);
+			if (!m_state.tools.macosCodeSignFile(appPath))
+			{
+				Diagnostic::error("Failed to sign: {}", appPath);
+				return false;
+			}
+		}
 
 		Diagnostic::printDone(timer.asString());
 
