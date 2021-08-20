@@ -26,20 +26,22 @@ Icon=${icon}
 /*****************************************************************************/
 std::string PlatformFileTemplates::macosInfoPlist()
 {
-	return R"({
-	"CFBundleName": "${bundleName}",
-	"CFBundleDisplayName": "${name}",
-	"CFBundleIdentifier": "com.developer.app",
-	"CFBundleVersion": "${version}",
-	"CFBundleDevelopmentRegion": "en",
-	"CFBundleInfoDictionaryVersion": "6.0",
-	"CFBundlePackageType": "APPL",
-	"CFBundleSignature": "????",
-	"CFBundleExecutable": "${mainProject}",
+	return R"json({
+	"CFBundleDevelopmentRegion": "en-US",
+	"CFBundleDisplayName": "${displayName}",
+	"CFBundleExecutable": "${executable}",
 	"CFBundleIconFile": "${icon}",
+	"CFBundleIdentifier": "com.developer.application",
+	"CFBundleInfoDictionaryVersion": "6.0",
+	"CFBundleName": "${name}",
+	"CFBundlePackageType": "APPL",
+	"CFBundleShortVersionString": "${version}",
+	"CFBundleVersion": "${version}",
+	"CFBundleSignature": "????",
+	"LSMinimumSystemVersion": "10.8",
 	"NSHighResolutionCapable": true
 }
-)";
+)json";
 }
 
 /*****************************************************************************/

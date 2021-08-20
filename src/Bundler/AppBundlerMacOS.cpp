@@ -208,10 +208,11 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 bool AppBundlerMacOS::createBundleIcon()
 {
 	const auto& icon = m_bundle.macosBundle().icon();
-	m_iconBaseName = String::getPathBaseName(icon);
 
 	if (!icon.empty())
 	{
+		m_iconBaseName = String::getPathBaseName(icon);
+
 		const auto& sips = m_state.tools.sips();
 		bool sipsFound = !sips.empty();
 
@@ -243,61 +244,58 @@ bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
 {
 	auto& macosBundle = m_bundle.macosBundle();
 
-	std::string tmpInfoPlist;
+	const auto& version = m_state.environment.version();
+	const auto& name = m_bundle.name();
+	const auto& bundleName = macosBundle.bundleName();
+	auto icon = fmt::format("{}.icns", m_iconBaseName);
+
+	auto replacePlistVariables = [&](std::string& outContent) {
+		String::replaceAll(outContent, "${displayName}", name);
+		String::replaceAll(outContent, "${executable}", m_mainExecutable);
+		String::replaceAll(outContent, "${icon}", icon);
+		String::replaceAll(outContent, "${name}", bundleName);
+		String::replaceAll(outContent, "${version}", version);
+	};
+
+	std::string tmpInfoPlist = fmt::format("{}/Info.plist.json", m_bundle.outDir());
 	const auto& infoPropertyList = macosBundle.infoPropertyList();
-	const auto& infoPropertyListContent = macosBundle.infoPropertyListContent();
-	if (infoPropertyList.empty())
+	std::string infoPropertyListContent = macosBundle.infoPropertyListContent();
+
+	if (infoPropertyListContent.empty())
 	{
-		if (infoPropertyListContent.empty())
+		if (infoPropertyList.empty())
 		{
 			Diagnostic::error("No info plist or plist content");
 			return true;
 		}
 
-		const auto& outDir = m_bundle.outDir();
-		tmpInfoPlist = fmt::format("{}/Info.plist.json", outDir);
-		std::ofstream(tmpInfoPlist) << infoPropertyListContent << std::endl;
+		if (String::endsWith(".plist", infoPropertyList))
+		{
+			if (!m_state.tools.plistConvertToJson(infoPropertyList, tmpInfoPlist))
+				return false;
+		}
+		else if (!String::endsWith(".json", infoPropertyList))
+		{
+			Diagnostic::error("Unknown plist file '{}' - Must be in json or binary1 format", infoPropertyList);
+			return true;
+		}
+
+		std::ifstream input(infoPropertyList);
+		for (std::string line; std::getline(input, line);)
+		{
+			infoPropertyListContent += line + "\n";
+		}
+		input.close();
 	}
 
-	const auto& version = m_state.environment.version();
-	const auto& name = m_bundle.name();
-	// const auto& bundleIdentifier = macosBundle.bundleIdentifier();
-	const auto& bundleName = macosBundle.bundleName();
+	replacePlistVariables(infoPropertyListContent);
+	std::ofstream(tmpInfoPlist) << infoPropertyListContent << std::endl;
 
 	const std::string outInfoPropertyList = fmt::format("{}/Info.plist", m_bundlePath);
-
-	{
-		const auto& plistInput = !tmpInfoPlist.empty() ? tmpInfoPlist : infoPropertyList;
-		if (!m_state.tools.plistConvertToBinary(plistInput, outInfoPropertyList))
-			return false;
-
-		if (!tmpInfoPlist.empty())
-		{
-			Commands::remove(tmpInfoPlist);
-			tmpInfoPlist.clear();
-		}
-	}
-
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleName", bundleName))
+	if (!m_state.tools.plistConvertToBinary(tmpInfoPlist, outInfoPropertyList))
 		return false;
 
-	if (!m_iconBaseName.empty())
-	{
-		if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIconFile", m_iconBaseName))
-			return false;
-	}
-
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleDisplayName", name))
-		return false;
-
-	// if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleIdentifier", bundleIdentifier))
-	// 	return false;
-
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleVersion", version))
-		return false;
-
-	if (!m_state.tools.plistReplaceProperty(outInfoPropertyList, "CFBundleExecutable", m_mainExecutable))
-		return false;
+	Commands::remove(tmpInfoPlist);
 
 	return true;
 }

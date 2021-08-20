@@ -642,6 +642,17 @@ bool AncillaryTools::plistConvertToBinary(const std::string& inInput, const std:
 }
 
 /*****************************************************************************/
+bool AncillaryTools::plistConvertToJson(const std::string& inInput, const std::string& inOutput) const
+{
+#if defined(CHALET_MACOS)
+	return Commands::subprocess({ m_plutil, "-convert", "json", inInput, "-o", inOutput });
+#else
+	UNUSED(inInput, inOutput);
+	return false;
+#endif
+}
+
+/*****************************************************************************/
 bool AncillaryTools::plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue) const
 {
 #if defined(CHALET_MACOS)
