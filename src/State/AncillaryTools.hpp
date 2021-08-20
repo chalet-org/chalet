@@ -136,7 +136,6 @@ struct AncillaryTools
 
 	bool plistConvertToBinary(const std::string& inInput, const std::string& inOutput) const;
 	bool plistConvertToJson(const std::string& inInput, const std::string& inOutput) const;
-	bool plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue) const;
 	bool getExecutableDependencies(const std::string& inPath, StringList& outList) const;
 
 	static std::string getPathToGit();

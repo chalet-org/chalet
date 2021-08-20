@@ -653,17 +653,6 @@ bool AncillaryTools::plistConvertToJson(const std::string& inInput, const std::s
 }
 
 /*****************************************************************************/
-bool AncillaryTools::plistReplaceProperty(const std::string& inPlistFile, const std::string& inKey, const std::string& inValue) const
-{
-#if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_plutil, "-replace", inKey, "-string", inValue, inPlistFile });
-#else
-	UNUSED(inPlistFile, inKey, inValue);
-	return false;
-#endif
-}
-
-/*****************************************************************************/
 bool AncillaryTools::getExecutableDependencies(const std::string& inPath, StringList& outList) const
 {
 #if defined(CHALET_WIN32)
