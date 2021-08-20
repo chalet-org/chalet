@@ -246,6 +246,12 @@ void CompileToolchainApple::addDiagnosticColorOption(StringList& outArgList) con
 // Linking
 /*****************************************************************************/
 /*****************************************************************************/
+void CompileToolchainApple::addStripSymbolsOption(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void CompileToolchainApple::addThreadModelLinkerOption(StringList& outArgList) const
 {
 	UNUSED(outArgList);

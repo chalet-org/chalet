@@ -46,7 +46,6 @@ private:
 	bool cmdRebuild(const ProjectTarget& inProject);
 	bool cmdRun(const ProjectTarget& inProject);
 	bool cmdClean();
-	// bool cmdProfile();
 
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);

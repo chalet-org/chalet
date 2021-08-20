@@ -40,7 +40,6 @@ BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inStat
 		{ Route::Build, &BuildManager::cmdBuild },
 		{ Route::Rebuild, &BuildManager::cmdRebuild },
 		{ Route::Run, &BuildManager::cmdRun },
-		// { Route::kProfile, &BuildManager::cmdProfile },
 		{ Route::Bundle, &BuildManager::cmdBuild },
 	}),
 	m_asmDumper(inState)
@@ -490,15 +489,6 @@ bool BuildManager::doLazyClean()
 /*****************************************************************************/
 bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean)
 {
-	// const auto& buildOutputDir = m_state.paths.buildOutputDir();
-
-	// This prints for each project (bad)... maybe redundant since "Rebuild" is already printed
-	// if (Output::cleanOutput() && Commands::pathExists(buildOutputDir))
-	// {
-	// 	Output::msgCleaningRebuild();
-	// 	Output::lineBreak();
-	// }
-
 	auto pch = m_state.paths.getPrecompiledHeader(inProject);
 
 	auto cacheAndRemove = [=](const std::string& inFile, StringList& outCache) -> void {
@@ -661,7 +651,6 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 
 	if (!m_state.configuration.enableProfiling())
 	{
-
 		bool result = Commands::subprocess(cmd);
 
 		auto outFile = fmt::format("{}/{}", buildOutputDir, outputFile);
@@ -693,20 +682,6 @@ bool BuildManager::cmdClean()
 
 	return true;
 }
-
-/*****************************************************************************/
-/*bool BuildManager::cmdProfile()
-{
-	chalet_assert(m_project != nullptr, "");
-
-	const auto& buildConfiguration = m_state.buildConfiguration();
-	const auto& outputFile = m_project->outputFile();
-
-	Output::msgProfile(buildConfiguration, outputFile);
-	Output::lineBreak();
-
-	return true;
-}*/
 
 /*****************************************************************************/
 bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)

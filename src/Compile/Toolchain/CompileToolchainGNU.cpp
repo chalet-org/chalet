@@ -915,11 +915,7 @@ void CompileToolchainGNU::addProfileInformationLinkerOption(StringList& outArgLi
 /*****************************************************************************/
 void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& outArgList) const
 {
-	auto& configuration = m_state.configuration;
-	const bool enableProfiling = configuration.enableProfiling();
-	const bool debugSymbols = configuration.debugSymbols();
-
-	if (!enableProfiling && !debugSymbols && configuration.linkTimeOptimization())
+	if (m_state.configuration.linkTimeOptimization())
 	{
 		std::string lto{ "-flto" };
 		// if (isFlagSupported(lto))

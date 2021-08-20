@@ -26,8 +26,7 @@ struct StatePrototype
 	explicit StatePrototype(CommandLineInputs& inInputs, std::string inFilename);
 
 	bool initialize();
-	bool validateDependencies();
-	bool validateBuildFile();
+	bool validate();
 	void saveCaches();
 
 	JsonFile& jsonFile() noexcept;
@@ -55,6 +54,10 @@ private:
 	bool parseGlobalSettingsJson();
 	bool parseLocalSettingsJson();
 	bool parseBuildJson();
+
+	// bool validateConfigurations();
+	bool validateExternalDependencies();
+	bool validateBuildFile();
 
 	bool runDependencyManager();
 	bool validateBundleDestinations();

@@ -19,13 +19,18 @@
 		},
 		"MinSizeRel": {
 			"optimizationLevel": "size",
-			"linkTimeOptimization": true,
+			// "linkTimeOptimization": true,
 			"stripSymbols": true
 		},
 		"Profile": {
 			"optimizationLevel": "0",
 			"debugSymbols": true,
 			"enableProfiling": true
+		},
+		"RelCustom": {
+			"optimizationLevel": "3",
+			"linkTimeOptimization": true,
+			"stripSymbols": true
 		}
 	},*/
 	/*"configurations": [

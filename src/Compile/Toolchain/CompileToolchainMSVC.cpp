@@ -685,12 +685,7 @@ void CompileToolchainMSVC::addThreadModelCompileOption(StringList& outArgList) c
 /*****************************************************************************/
 void CompileToolchainMSVC::addWholeProgramOptimization(StringList& outArgList) const
 {
-	auto& configuration = m_state.configuration;
-	const bool enableProfiling = configuration.enableProfiling();
-	const bool debugSymbols = configuration.debugSymbols();
-
-	if (!enableProfiling && !debugSymbols && configuration.linkTimeOptimization())
-	// if (m_state.configuration.linkTimeOptimization())
+	if (m_state.configuration.linkTimeOptimization())
 	{
 		outArgList.emplace_back("/GL");
 	}

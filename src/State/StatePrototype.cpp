@@ -82,7 +82,7 @@ bool StatePrototype::initialize()
 			if (!createCache())
 				return false;
 
-			if (!validateDependencies())
+			if (!validate())
 				return false;
 		}
 	}
@@ -90,6 +90,18 @@ bool StatePrototype::initialize()
 	Output::setShowCommandOverride(true);
 
 	if (!runDependencyManager())
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool StatePrototype::validate()
+{
+	// if (!validateConfigurations())
+	// 	return false;
+
+	if (!validateExternalDependencies())
 		return false;
 
 	return true;
@@ -185,7 +197,27 @@ bool StatePrototype::validateBundleDestinations()
 }
 
 /*****************************************************************************/
-bool StatePrototype::validateDependencies()
+/*bool StatePrototype::validateConfigurations()
+{
+	// Unrestricted for now
+
+	// for (auto& [name, config] : m_buildConfigurations)
+	// {
+	// 	const bool enableProfiling = config.enableProfiling();
+	// 	const bool debugSymbols = config.debugSymbols();
+	// 	const bool lto = config.linkTimeOptimization();
+
+	// 	if (lto && (enableProfiling || debugSymbols))
+	// 	{
+	// 		Diagnostic::error("Error in custom configuration '{}': Enabling 'linkTimeOptimization' with 'debugSymbols' or 'enableProfiling' would cause unintended consequences. Link-time optimizations are typically used with release builds.", m_inputs.workingDirectory());
+	// 		return false;
+	// 	}
+	// }
+	return true;
+}*/
+
+/*****************************************************************************/
+bool StatePrototype::validateExternalDependencies()
 {
 	for (auto& dependency : externalDependencies)
 	{
@@ -208,7 +240,7 @@ bool StatePrototype::validateBuildFile()
 		return false;
 	}
 
-	if (!validateDependencies())
+	if (!validate())
 		return false;
 
 	for (auto& target : distribution)
@@ -338,7 +370,7 @@ bool StatePrototype::getDefaultBuildConfiguration(BuildConfiguration& outConfig,
 	{
 		outConfig.setOptimizationLevel("2");
 		outConfig.setDebugSymbols(true);
-		outConfig.setLinkTimeOptimization(true);
+		outConfig.setLinkTimeOptimization(false);
 	}
 	else if (String::equals("MinSizeRel", inName))
 	{

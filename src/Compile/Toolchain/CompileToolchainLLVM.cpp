@@ -138,8 +138,7 @@ bool CompileToolchainLLVM::addArchitectureOptions(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainLLVM::addStripSymbolsOption(StringList& outArgList) const
 {
-	// TODO: The "-s" flag might just not exist in AppleClang
-	UNUSED(outArgList);
+	CompileToolchainGNU::addStripSymbolsOption(outArgList);
 }
 
 /*****************************************************************************/

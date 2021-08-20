@@ -26,7 +26,8 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 	virtual void addDiagnosticColorOption(StringList& outArgList) const final;
 
 	// Linking
-	virtual void addThreadModelLinkerOption(StringList& outArgList) const;
+	virtual void addStripSymbolsOption(StringList& outArgList) const final;
+	virtual void addThreadModelLinkerOption(StringList& outArgList) const final;
 	virtual void addProfileInformationLinkerOption(StringList& outArgList) const final;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const final;
 
