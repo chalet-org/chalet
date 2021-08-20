@@ -644,7 +644,6 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 #if defined(CHALET_MACOS)
 	// This is required for profiling
 	auto& installNameTool = m_state.tools.installNameTool();
-	// install_name_tool -add_rpath @executable_path/chalet_external/SFML/lib
 	for (auto p : m_state.environment.path())
 	{
 		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");

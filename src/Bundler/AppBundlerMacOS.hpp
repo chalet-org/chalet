@@ -30,7 +30,7 @@ private:
 	std::string getFrameworksPath() const;
 
 	bool createBundleIcon();
-	bool createPListAndUpdateCommonKeys() const;
+	bool createPListAndReplaceVariables() const;
 	bool setExecutablePaths() const;
 	bool createDmgImage() const;
 	bool signAppBundle() const;

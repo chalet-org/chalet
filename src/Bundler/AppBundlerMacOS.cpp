@@ -91,7 +91,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 		if (!createBundleIcon())
 			return false;
 
-		if (!createPListAndUpdateCommonKeys())
+		if (!createPListAndReplaceVariables())
 			return false;
 
 		if (!setExecutablePaths())
@@ -240,7 +240,7 @@ bool AppBundlerMacOS::createBundleIcon()
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::createPListAndUpdateCommonKeys() const
+bool AppBundlerMacOS::createPListAndReplaceVariables() const
 {
 	auto& macosBundle = m_bundle.macosBundle();
 
@@ -428,6 +428,7 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }))
 		return false;
+
 	if (!Commands::subprocess({ "rm", "-rf", fmt::format("{}/.fseventsd", volumePath) }))
 		return false;
 
@@ -461,53 +462,44 @@ bool AppBundlerMacOS::signAppBundle() const
 	// TODO: Entitlements
 	bool isBundle = String::endsWith(".app/Contents", m_bundlePath);
 
+	StringList signPaths;
+	StringList signLater;
+
 	CHALET_TRY
 	{
-		for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_executablePath))
+		signPaths.push_back(m_executablePath);
+		if (isBundle)
 		{
-			if (entry.is_regular_file())
+			signPaths.push_back(m_frameworkPath);
+			signPaths.push_back(m_resourcePath);
+		}
+
+		for (auto& bundlePath : signPaths)
+		{
+			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(bundlePath))
 			{
-				auto path = entry.path().string();
-				if (!m_state.tools.macosCodeSignFile(path))
+				if (entry.is_regular_file() || entry.is_directory())
 				{
-					Diagnostic::error("Failed to sign: {}", path);
-					return false;
+					auto path = entry.path().string();
+					if (!m_state.tools.macosCodeSignFile(path))
+					{
+						signLater.push_back(path);
+					}
 				}
 			}
 		}
 
 		if (isBundle)
 		{
-			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_frameworkPath))
-			{
-				if (entry.is_regular_file())
-				{
-					auto path = entry.path().string();
-					if (!m_state.tools.macosCodeSignFile(path))
-					{
-						Diagnostic::error("Failed to sign: {}", path);
-						return false;
-					}
-				}
-			}
-
-			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(m_resourcePath))
-			{
-				if (entry.is_regular_file())
-				{
-					auto path = entry.path().string();
-					if (!m_state.tools.macosCodeSignFile(path))
-					{
-						Diagnostic::error("Failed to sign: {}", path);
-						return false;
-					}
-				}
-			}
-
 			auto appPath = m_bundlePath.substr(0, m_bundlePath.size() - 9);
-			if (!m_state.tools.macosCodeSignFile(appPath))
+			signLater.push_back(std::move(appPath));
+		}
+
+		for (auto& path : signLater)
+		{
+			if (!m_state.tools.macosCodeSignFile(path))
 			{
-				Diagnostic::error("Failed to sign: {}", appPath);
+				Diagnostic::error("Failed to sign: {}", path);
 				return false;
 			}
 		}

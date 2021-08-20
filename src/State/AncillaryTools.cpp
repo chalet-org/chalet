@@ -560,7 +560,7 @@ bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, c
 bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inForce) const
 {
 #if defined(CHALET_MACOS)
-	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--deep", "--continue" };
+	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--continue" };
 
 	if (inForce)
 		cmd.emplace_back("-f");
@@ -573,6 +573,7 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inF
 		cmd.emplace_back("-v");
 
 	cmd.push_back(inPath);
+
 	if (showCommands)
 		return Commands::subprocess(cmd);
 	else
@@ -612,7 +613,7 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
 
-	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--deep", "--continue", "-f", "-s", m_signingIdentity };
+	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--continue", "-f", "-s", m_signingIdentity };
 	cmd.emplace_back(fmt::format("-bundle-version={}", inVersionId));
 
 	bool showCommands = Output::showCommands();
@@ -736,7 +737,7 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 			if (String::startsWith("/System/Library/Frameworks/", dependency))
 				continue;
 
-			// rpath, executable_path, etc
+			// rpath, etc
 			// We just want the main filename, and will try to resolve the path later
 			//
 			if (String::startsWith('@', dependency) || String::contains(".framework", dependency))
