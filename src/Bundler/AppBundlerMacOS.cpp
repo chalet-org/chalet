@@ -474,13 +474,25 @@ bool AppBundlerMacOS::signAppBundle() const
 			signPaths.push_back(m_resourcePath);
 		}
 
+		StringList bundleExtensions{
+			".app",
+			".framework",
+			".kext",
+			".plugin",
+			".docset",
+			".xpc",
+			".qlgenerator",
+			".component",
+			".saver",
+			".mdimporter",
+		};
 		for (auto& bundlePath : signPaths)
 		{
 			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(bundlePath))
 			{
-				if (entry.is_regular_file() || entry.is_directory())
+				auto path = entry.path().string();
+				if (entry.is_regular_file() || (entry.is_directory() && String::endsWith(bundleExtensions, path)))
 				{
-					auto path = entry.path().string();
 					if (!m_state.tools.macosCodeSignFile(path))
 					{
 						signLater.push_back(path);
@@ -495,14 +507,33 @@ bool AppBundlerMacOS::signAppBundle() const
 			signLater.push_back(std::move(appPath));
 		}
 
+		auto signRemaining = [&]() {
+			auto it = signLater.end();
+			while (it != signLater.begin())
+			{
+				--it;
+				auto& path = (*it);
+				if (m_state.tools.macosCodeSignFile(path))
+				{
+					it = signLater.erase(it);
+				}
+			}
+		};
+
+		uint signingAttempts = 3;
+		for (uint i = 0; i < signingAttempts; ++i)
+		{
+			signRemaining();
+			if (signLater.empty())
+				break;
+		}
+
 		for (auto& path : signLater)
 		{
-			if (!m_state.tools.macosCodeSignFile(path))
-			{
-				Diagnostic::error("Failed to sign: {}", path);
-				return false;
-			}
+			Diagnostic::error("Failed to sign: {}", path);
 		}
+		if (!signLater.empty())
+			return false;
 
 		Diagnostic::printDone(timer.asString());
 
