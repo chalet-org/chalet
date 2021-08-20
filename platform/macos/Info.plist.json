@@ -1,0 +1,14 @@
+{
+	"CFBundleDevelopmentRegion": "en-US",
+	"CFBundleDisplayName": "${displayName}",
+	"CFBundleExecutable": "${executable}",
+	"CFBundleIconFile": "${icon}",
+	"CFBundleIdentifier": "com.developer.application",
+	"CFBundleInfoDictionaryVersion": "6.0",
+	"CFBundleName": "${name}",
+	"CFBundlePackageType": "APPL",
+	"CFBundleShortVersionString": "${version}",
+	"CFBundleVersion": "${version}",
+	"CFBundleSignature": "????",
+	"LSMinimumSystemVersion": "10.8"
+}

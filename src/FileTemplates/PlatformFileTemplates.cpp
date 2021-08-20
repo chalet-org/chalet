@@ -38,8 +38,7 @@ std::string PlatformFileTemplates::macosInfoPlist()
 	"CFBundleShortVersionString": "${version}",
 	"CFBundleVersion": "${version}",
 	"CFBundleSignature": "????",
-	"LSMinimumSystemVersion": "10.8",
-	"NSHighResolutionCapable": true
+	"LSMinimumSystemVersion": "10.8"
 }
 )json";
 }
