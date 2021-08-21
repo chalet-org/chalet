@@ -49,7 +49,7 @@ Diagnostic::ErrorList* Diagnostic::getErrorList()
 }
 
 /*****************************************************************************/
-void Diagnostic::printDone(const std::string& inExtra)
+void Diagnostic::printDone(const std::string& inTime)
 {
 	if (!Output::quietNonBuild())
 	{
@@ -63,9 +63,9 @@ void Diagnostic::printDone(const std::string& inExtra)
 		else
 			done = "done";
 
-		if (!inExtra.empty())
+		if (!inTime.empty() && Output::showBenchmarks())
 		{
-			std::cout << fmt::format("{}{} ({}){}", color, done, inExtra, reset) << std::endl;
+			std::cout << fmt::format("{}{} ({}){}", color, done, inTime, reset) << std::endl;
 		}
 		else
 		{

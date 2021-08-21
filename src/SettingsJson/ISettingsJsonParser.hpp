@@ -23,6 +23,7 @@ protected:
 	const std::string kKeyGenerateCompileCommands = "generateCompileCommands";
 	const std::string kKeyMaxJobs = "maxJobs";
 	const std::string kKeyShowCommands = "showCommands";
+	const std::string kKeyBenchmark = "benchmark";
 	const std::string kKeyLastToolchain = "toolchain";
 	const std::string kKeyLastArchitecture = "architecture";
 	const std::string kKeySigningIdentity = "signingIdentity";

@@ -157,6 +157,10 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		return inState.showCommands;
 	});
 
+	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyBenchmark, [&]() {
+		return inState.benchmark;
+	});
+
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference, [&]() {
 		m_inputs.detectToolchainPreference();
 	});
@@ -355,6 +359,9 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyShowCommands))
 		Output::setShowCommands(val);
+
+	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyBenchmark))
+		Output::setShowBenchmarks(val);
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyDumpAssembly))
 		m_prototype.environment.setDumpAssembly(val);

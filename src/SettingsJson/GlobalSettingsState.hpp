@@ -27,6 +27,7 @@ struct GlobalSettingsState
 	std::string bundleDirectory;
 
 	uint maxJobs = 0;
+	bool benchmark = true;
 	bool showCommands = false;
 	bool dumpAssembly = false;
 	bool generateCompileCommands = false;

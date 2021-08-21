@@ -143,8 +143,10 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			}
 
 			auto res = buildTimer.stop();
-			if (res > 0)
+			if (res > 0 && Output::showBenchmarks())
+			{
 				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+			}
 
 			Output::lineBreak();
 		}
@@ -162,8 +164,10 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 				Output::msgTargetUpToDate(multiTarget, name);
 				auto res = buildTimer.stop();
-				if (res > 0)
+				if (res > 0 && Output::showBenchmarks())
+				{
 					Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+				}
 
 				Output::lineBreak();
 			}
@@ -201,8 +205,10 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			Output::msgBuildSuccess();
 
 			auto res = m_timer.stop();
-			if (res > 0)
+			if (res > 0 && Output::showBenchmarks())
+			{
 				Output::printInfo(fmt::format("   Total: {}", m_timer.asString()));
+			}
 
 			if (inRoute != Route::BuildRun)
 				Output::lineBreak();
@@ -705,11 +711,11 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 		return false;
 
 	auto result = buildTimer.stop();
-
-	if (result > 0)
+	if (result > 0 && Output::showBenchmarks())
 	{
 		Output::printInfo(fmt::format("   Build time: {}ms", result));
 	}
+
 	Output::lineBreak();
 
 	return true;
@@ -725,11 +731,11 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 		return false;
 
 	auto result = buildTimer.stop();
-
-	if (result > 0)
+	if (result > 0 && Output::showBenchmarks())
 	{
 		Output::printInfo(fmt::format("   Build time: {}ms", result));
 	}
+
 	Output::lineBreak();
 
 	return true;

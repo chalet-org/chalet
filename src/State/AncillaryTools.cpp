@@ -14,7 +14,6 @@
 #include "Utility/DependencyWalker.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Timer.hpp"
 
 namespace chalet
 {

@@ -22,6 +22,7 @@ namespace
 static bool s_quietNonBuild = false;
 static bool s_showCommands = false;
 static bool s_allowCommandsToShow = true;
+static bool s_showBenchamrks = true;
 #if defined(CHALET_WIN32)
 static std::int64_t s_commandPromptVersion = -1;
 #endif
@@ -143,6 +144,17 @@ void Output::setShowCommands(const bool inValue)
 void Output::setShowCommandOverride(const bool inValue)
 {
 	s_allowCommandsToShow = inValue;
+}
+
+/*****************************************************************************/
+bool Output::showBenchmarks()
+{
+	return s_showBenchamrks;
+}
+
+void Output::setShowBenchmarks(const bool inValue)
+{
+	s_showBenchamrks = inValue;
 }
 
 /*****************************************************************************/

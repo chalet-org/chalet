@@ -14,7 +14,7 @@ struct Diagnostic
 {
 	Diagnostic() = delete;
 
-	static void printDone(const std::string& inExtra = std::string());
+	static void printDone(const std::string& inTime = std::string());
 
 	template <typename... Args>
 	static void info(std::string_view inFmt, Args&&... args);

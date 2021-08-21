@@ -28,6 +28,9 @@ bool showCommands();
 void setShowCommands(const bool inValue);
 void setShowCommandOverride(const bool inValue);
 
+bool showBenchmarks();
+void setShowBenchmarks(const bool inValue);
+
 bool getUserInput(
 	const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor, std::string inNote = std::string(),
 	const std::function<bool(std::string&)>& onValidate = [](std::string& input) {UNUSED(input);return true; });
