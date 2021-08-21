@@ -321,6 +321,8 @@ bool AppBundlerMacOS::setExecutablePaths() const
 	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Resources", m_executableOutputPath }))
 		return false;
 
+	StringList addedFrameworks;
+
 	uint i = 0;
 	for (auto& target : m_state.targets)
 	{
@@ -339,6 +341,11 @@ bool AppBundlerMacOS::setExecutablePaths() const
 					const std::string filename = fmt::format("{}/{}.framework", path, framework);
 					if (!Commands::pathExists(filename))
 						continue;
+
+					if (List::contains(addedFrameworks, framework))
+						continue;
+
+					addedFrameworks.push_back(framework);
 
 					if (!Commands::copySkipExisting(filename, m_frameworkPath))
 						return false;
@@ -417,20 +424,34 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	const auto& background1x = macosBundle.dmgBackground1x();
 	const auto& background2x = macosBundle.dmgBackground2x();
+	const bool hasBackground = !background1x.empty() || !background2x.empty();
 
-	if (!Commands::subprocessNoOutput({ tiffutil, "-cathidpicheck", background1x, background2x, "-out", fmt::format("{}/background.tiff", backgroundPath) }))
-		return false;
+	if (hasBackground)
+	{
+		StringList cmd{ tiffutil, "-cathidpicheck" };
+
+		if (!background1x.empty())
+			cmd.push_back(background1x);
+
+		if (!background2x.empty())
+			cmd.push_back(background2x);
+
+		cmd.emplace_back("-out");
+		cmd.emplace_back(fmt::format("{}/background.tiff", backgroundPath));
+
+		if (!Commands::subprocessNoOutput(cmd))
+			return false;
+	}
 
 	if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath)))
 		return false;
 
-	const auto applescriptText = PlatformFileTemplates::macosDmgApplescript(bundleName);
+	const auto applescriptText = PlatformFileTemplates::macosDmgApplescript(bundleName, hasBackground);
 
 	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }))
 		return false;
 
-	if (!Commands::subprocess({ "rm", "-rf", fmt::format("{}/.fseventsd", volumePath) }))
-		return false;
+	Commands::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
 
 	if (!Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
 		return false;

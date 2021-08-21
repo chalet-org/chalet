@@ -418,12 +418,14 @@ bool BuildJsonProtoParser::parseBundleMacOS(BundleTarget& outBundle, const Json&
 	const std::string kDmg{ "dmg" };
 	if (macosNode.contains(kDmg))
 	{
+		const Json& dmg = macosNode.at(kDmg);
+
 		macosBundle.setMakeDmg(true);
 		const std::string kBackground{ "background" };
 
-		if (macosNode.contains(kBackground))
+		if (dmg.contains(kBackground))
 		{
-			const Json& dmgBackground = macosNode[kBackground];
+			const Json& dmgBackground = dmg.at(kBackground);
 			if (dmgBackground.is_object())
 			{
 				if (std::string val; m_buildJson.assignStringAndValidate(val, dmgBackground, "1x"))
@@ -434,7 +436,7 @@ bool BuildJsonProtoParser::parseBundleMacOS(BundleTarget& outBundle, const Json&
 			}
 			else
 			{
-				if (std::string val; m_buildJson.assignStringAndValidate(val, macosNode, kBackground))
+				if (std::string val; m_buildJson.assignStringAndValidate(val, dmg, kBackground))
 					macosBundle.setDmgBackground1x(std::move(val));
 			}
 		}

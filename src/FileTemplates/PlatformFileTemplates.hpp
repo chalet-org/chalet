@@ -12,7 +12,7 @@ namespace PlatformFileTemplates
 {
 std::string linuxDesktopEntry();
 std::string macosInfoPlist();
-std::string macosDmgApplescript(const std::string& inAppName);
+std::string macosDmgApplescript(const std::string& inAppName, const bool inHasBackground);
 std::string minimumWindowsAppManifest();
 std::string generalWindowsAppManifest(const std::string& inName = "${name}", const std::string& inDescription = "${description}", const std::string& inVersion = "${version}");
 std::string loadedWindowsAppManifest(const std::string& inName = "${name}", const std::string& inDescription = "${description}", const std::string& inVersion = "${version}");
