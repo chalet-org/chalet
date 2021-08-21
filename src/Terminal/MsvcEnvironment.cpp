@@ -421,7 +421,6 @@ void MsvcEnvironment::makeArchitectureCorrections()
 	else if (String::equals("i686", host))
 		host = "x86";
 
-	bool changed = false;
 	bool emptyTarget = m_inputs.targetArchitecture().empty();
 	auto arch = m_inputs.targetArchitecture();
 	if (emptyTarget)
@@ -432,40 +431,31 @@ void MsvcEnvironment::makeArchitectureCorrections()
 		if (!regexResult.empty())
 		{
 			arch = regexResult;
-			changed = true;
 		}
 		else
 		{
 			arch = m_inputs.hostArchitecture();
-			changed = true;
 		}
 	}
 	if (String::equals({ "x86_64", "x64_x64" }, arch))
 	{
 		arch = "x64";
-		changed = true;
 	}
 	else if (String::equals({ "i686", "x86_x86" }, arch))
 	{
 		arch = "x86";
-		changed = true;
 	}
 	else if (String::equals("arm64", arch))
 	{
 		arch = fmt::format("{}_arm64", host);
-		changed = true;
 	}
 	else if (String::equals("arm", arch))
 	{
 		arch = fmt::format("{}_arm", host);
-		changed = true;
 	}
 
-	if (changed)
-	{
-		m_inputs.setTargetArchitecture(arch);
-		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
-	}
+	m_inputs.setTargetArchitecture(arch);
+	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 }
 
 /*****************************************************************************/
