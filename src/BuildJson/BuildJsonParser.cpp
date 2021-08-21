@@ -305,6 +305,9 @@ bool BuildJsonParser::parseProject(ProjectTarget& outProject, const Json& inNode
 	if (!parsePlatformConfigExclusions(outProject, inNode))
 		return true; // true to skip project
 
+	if (std::string val; assignStringFromConfig(val, inNode, "description"))
+		outProject.setDescription(std::move(val));
+
 	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "kind"))
 		outProject.setKind(val);
 

@@ -531,7 +531,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 	const Color color = isRun ? Output::theme().success : Output::theme().header;
 
 	if (!inScript.description().empty())
-		Output::msgScriptDescription(inScript.description(), color);
+		Output::msgTargetDescription(inScript.description(), color);
 	else
 		Output::msgScript(inScript.name(), color);
 
@@ -550,7 +550,11 @@ bool BuildManager::cmdBuild(const ProjectTarget& inProject)
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	const auto& outputFile = inProject.outputFile();
 
-	Output::msgBuild(buildConfiguration, outputFile);
+	if (!inProject.description().empty())
+		Output::msgTargetDescription(inProject.description(), Output::theme().header);
+	else
+		Output::msgBuild(buildConfiguration, outputFile);
+
 	Output::lineBreak();
 
 	if (!m_strategy->buildProject(inProject))
@@ -571,7 +575,11 @@ bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	const auto& outputFile = inProject.outputFile();
 
-	Output::msgRebuild(buildConfiguration, outputFile);
+	if (!inProject.description().empty())
+		Output::msgTargetDescription(inProject.description(), Output::theme().header);
+	else
+		Output::msgRebuild(buildConfiguration, outputFile);
+
 	Output::lineBreak();
 
 	if (!m_strategy->buildProject(inProject))
@@ -616,7 +624,11 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 
 	const auto& runArguments = inProject.runArguments();
 
-	Output::msgRun(buildConfiguration, outputFile);
+	if (!inProject.description().empty())
+		Output::msgTargetDescription(inProject.description(), Output::theme().success);
+	else
+		Output::msgRun(buildConfiguration, outputFile);
+
 	// LOG(runOptions);
 	// LOG(runArguments);
 	// Output::lineBreak();

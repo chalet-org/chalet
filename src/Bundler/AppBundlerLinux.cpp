@@ -102,7 +102,6 @@ bool AppBundlerLinux::bundleForPlatform()
 				String::replaceAll(fileContents, "${mainProject}", Commands::getAbsolutePath(filename));
 				String::replaceAll(fileContents, "${path}", Commands::getAbsolutePath(bundlePath));
 				String::replaceAll(fileContents, "${name}", m_bundle.name());
-				String::replaceAll(fileContents, "${description}", m_bundle.description());
 				String::replaceAll(fileContents, "${icon}", Commands::getAbsolutePath(iconPath));
 			}))
 			return false;

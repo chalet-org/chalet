@@ -73,7 +73,7 @@ void msgClean(const std::string& inBuildConfiguration);
 void msgBuild(const std::string& inBuildConfiguration, const std::string& inName);
 void msgRebuild(const std::string& inBuildConfiguration, const std::string& inName);
 void msgScript(const std::string& inName, const Color inColor);
-void msgScriptDescription(const std::string& inDescription, const Color inColor);
+void msgTargetDescription(const std::string& inDescription, const Color inColor);
 void msgRun(const std::string& inBuildConfiguration, const std::string& inName);
 void msgBuildProd(const std::string& inBuildConfiguration, const std::string& inName);
 void msgProfile(const std::string& inBuildConfiguration, const std::string& inName);

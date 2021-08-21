@@ -6,5 +6,5 @@ Terminal=false
 Exec=${mainProject}
 Path=${path}
 Name=${name}
-Comment=${description}
+Comment=A cross-platform JSON-based project & build tool
 Icon=${icon}

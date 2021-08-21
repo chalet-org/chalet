@@ -72,7 +72,7 @@
 					"$ref": "#/definitions/distribution-target-configuration"
 				},
 				"description": {
-					"$ref": "#/definitions/distribution-target-description"
+					"$ref": "#/definitions/target-description"
 				},
 				"exclude": {
 					"$ref": "#/definitions/distribution-target-exclude"
@@ -103,6 +103,9 @@
 				}
 			},
 			"patternProperties": {
+				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+					"$ref": "#/definitions/target-description"
+				},
 				"^include(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/distribution-target-include"
 				},
@@ -115,10 +118,6 @@
 			"type": "string",
 			"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
 			"default": "Release"
-		},
-		"distribution-target-description": {
-			"type": "string",
-			"description": "TODO"
 		},
 		"distribution-target-exclude": {
 			"type": "array",
@@ -222,7 +221,7 @@
 							"default": {
 								"CFBundleDevelopmentRegion": "en-US",
 								"CFBundleDisplayName": "${displayName}",
-								"CFBundleExecutable": "${executable}",
+								"CFBundleExecutable": "${mainProject}",
 								"CFBundleIconFile": "${icon}",
 								"CFBundleIdentifier": "com.developer.application",
 								"CFBundleInfoDictionaryVersion": "6.0",
@@ -452,6 +451,9 @@
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
 				"settings:Cxx": {
 					"$ref": "#/definitions/target-project-cxx"
 				},
@@ -493,6 +495,9 @@
 				}
 			},
 			"patternProperties": {
+				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+					"$ref": "#/definitions/target-description"
+				},
 				"^runProject(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/target-project-runProject"
 				},

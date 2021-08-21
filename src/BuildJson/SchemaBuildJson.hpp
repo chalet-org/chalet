@@ -24,7 +24,6 @@ class SchemaBuildJson
 		//
 		DistributionTarget,
 		DistributionTargetConfiguration,
-		DistributionTargetDescription,
 		DistributionTargetExclude,
 		DistributionTargetInclude,
 		DistributionTargetIncludeDependentSharedLibraries,

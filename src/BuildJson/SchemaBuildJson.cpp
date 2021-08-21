@@ -100,11 +100,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::DistributionTargetDescription] = R"json({
-		"type": "string",
-		"description": "TODO"
-	})json"_ojson;
-
 	defs[Defs::DistributionTargetExclude] = R"json({
 		"type": "array",
 		"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
@@ -1071,7 +1066,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		})json"_ojson;
 		distDef[kProperties] = Json::object();
 		distDef[kProperties]["configuration"] = getDefinition(Defs::DistributionTargetConfiguration);
-		distDef[kProperties]["description"] = getDefinition(Defs::DistributionTargetDescription);
+		distDef[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distDef[kProperties]["exclude"] = getDefinition(Defs::DistributionTargetExclude);
 		distDef[kProperties]["include"] = getDefinition(Defs::DistributionTargetInclude);
 		distDef[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionTargetIncludeDependentSharedLibraries);
@@ -1081,6 +1076,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distDef[kProperties]["mainProject"] = getDefinition(Defs::DistributionTargetMainProject);
 		distDef[kProperties]["outDir"] = getDefinition(Defs::DistributionTargetOutputDirectory);
 		distDef[kProperties]["projects"] = getDefinition(Defs::DistributionTargetProjects);
+		distDef[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
 		distDef[kPatternProperties][fmt::format("^include{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
 		distDef[kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
 		defs[Defs::DistributionTarget] = std::move(distDef);
@@ -1170,6 +1166,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
+		targetProject[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		targetProject[kProperties]["settings:Cxx"] = getDefinition(Defs::ProjectTargetCxx);
 		targetProject[kProperties]["extends"] = getDefinition(Defs::ProjectTargetExtends);
 		targetProject[kProperties]["files"] = getDefinition(Defs::ProjectTargetFiles);
@@ -1183,6 +1180,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetProject[kProperties]["runProject"] = getDefinition(Defs::ProjectTargetRunProject);
 		targetProject[kProperties]["runArguments"] = getDefinition(Defs::ProjectTargetRunArguments);
 		targetProject[kProperties]["runDependencies"] = getDefinition(Defs::ProjectTargetRunDependencies);
+		targetProject[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
 		targetProject[kPatternProperties][fmt::format("^runProject{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetRunProject);
 		targetProject[kPatternProperties][fmt::format("^runDependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ProjectTargetRunDependencies);
 		defs[Defs::ProjectTarget] = std::move(targetProject);
@@ -1277,7 +1275,6 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTarget: return "distribution-target";
 		case Defs::DistributionTargetConfiguration: return "distribution-target-configuration";
 		case Defs::DistributionTargetInclude: return "distribution-target-include";
-		case Defs::DistributionTargetDescription: return "distribution-target-description";
 		case Defs::DistributionTargetExclude: return "distribution-target-exclude";
 		case Defs::DistributionTargetIncludeDependentSharedLibraries: return "distribution-target-includeDependentSharedLibraries";
 		case Defs::DistributionTargetLinux: return "distribution-target-linux";

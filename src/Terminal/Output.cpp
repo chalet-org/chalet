@@ -600,7 +600,7 @@ void Output::msgScript(const std::string& inName, const Color inColor)
 }
 
 /*****************************************************************************/
-void Output::msgScriptDescription(const std::string& inDescription, const Color inColor)
+void Output::msgTargetDescription(const std::string& inDescription, const Color inColor)
 {
 	auto symbol = Unicode::triangle();
 	displayStyledSymbol(inColor, symbol, inDescription);

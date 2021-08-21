@@ -18,7 +18,7 @@ Terminal=false
 Exec=${mainProject}
 Path=${path}
 Name=${name}
-Comment=${description}
+Comment=
 Icon=${icon}
 )";
 }
@@ -29,7 +29,7 @@ std::string PlatformFileTemplates::macosInfoPlist()
 	return R"json({
 	"CFBundleDevelopmentRegion": "en-US",
 	"CFBundleDisplayName": "${displayName}",
-	"CFBundleExecutable": "${executable}",
+	"CFBundleExecutable": "${mainProject}",
 	"CFBundleIconFile": "${icon}",
 	"CFBundleIdentifier": "com.developer.application",
 	"CFBundleInfoDictionaryVersion": "6.0",

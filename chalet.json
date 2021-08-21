@@ -168,7 +168,6 @@
 	},
 	"distribution": {
 		"Chalet": {
-			"description": "A cross-platform JSON-based project & build tool",
 			"outDir": "dist",
 			"configuration": "Release",
 			"projects": [

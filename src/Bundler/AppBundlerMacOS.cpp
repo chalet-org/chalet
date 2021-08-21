@@ -251,7 +251,7 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 
 	auto replacePlistVariables = [&](std::string& outContent) {
 		String::replaceAll(outContent, "${displayName}", name);
-		String::replaceAll(outContent, "${executable}", m_mainExecutable);
+		String::replaceAll(outContent, "${mainProject}", m_mainExecutable);
 		String::replaceAll(outContent, "${icon}", icon);
 		String::replaceAll(outContent, "${name}", bundleName);
 		String::replaceAll(outContent, "${version}", version);

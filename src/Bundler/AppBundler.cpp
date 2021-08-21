@@ -80,6 +80,12 @@ bool AppBundler::run(const DistTarget& inTarget)
 	{
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
 
+		if (!bundle.description().empty())
+		{
+			Output::msgTargetDescription(bundle.description(), Output::theme().header);
+			Output::lineBreak();
+		}
+
 		chalet_assert(!bundle.configuration().empty(), "State not initialized");
 
 		BuildState* buildState = nullptr;
@@ -235,7 +241,12 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 			const auto& outputFile = project.outputFile();
 			const auto outputFilePath = fmt::format("{}/{}", buildOutputDir, outputFile);
 
-			if (project.isExecutable())
+			if (project.isStaticLibrary())
+			{
+				List::addIfDoesNotExist(dependenciesToCopy, outputFilePath);
+				continue;
+			}
+			else if (project.isExecutable())
 			{
 				std::string outTarget = outputFilePath;
 				List::addIfDoesNotExist(executables, std::move(outTarget));
@@ -456,7 +467,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 		return false;
 
 	if (!inScript.description().empty())
-		Output::msgScriptDescription(inScript.description(), Output::theme().header);
+		Output::msgTargetDescription(inScript.description(), Output::theme().header);
 	else
 		Output::msgScript(inScript.name(), Output::theme().header);
 
