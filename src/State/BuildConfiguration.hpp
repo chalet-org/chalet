@@ -30,6 +30,10 @@ struct BuildConfiguration
 	bool enableProfiling() const noexcept;
 	void setEnableProfiling(const bool inValue) noexcept;
 
+	bool isReleaseWithDebugInfo() const noexcept;
+	bool isMinSizeRelease() const noexcept;
+	bool isDebuggable() const noexcept;
+
 private:
 	OptimizationLevel parseOptimizationLevel(const std::string& inValue) noexcept;
 

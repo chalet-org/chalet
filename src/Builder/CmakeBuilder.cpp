@@ -243,11 +243,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 	if (!isDefined["CMAKE_BUILD_TYPE"])
 	{
-		std::string buildConfiguration = m_state.info.buildConfiguration();
-		if (m_state.configuration.enableProfiling()) // "Profile" or otherwise
-		{
-			buildConfiguration = "Debug";
-		}
+		std::string buildConfiguration = getCMakeCompatibleBuildConfiguration();
 		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + buildConfiguration);
 	}
 
@@ -277,6 +273,31 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 	}
 
 #endif
+}
+
+/*****************************************************************************/
+std::string CmakeBuilder::getCMakeCompatibleBuildConfiguration() const
+{
+	std::string ret = m_state.info.buildConfiguration();
+
+	if (m_state.configuration.isMinSizeRelease())
+	{
+		ret = "MinSizeRel";
+	}
+	else if (m_state.configuration.isReleaseWithDebugInfo())
+	{
+		ret = "RelWithDebInfo";
+	}
+	else if (m_state.configuration.isDebuggable())
+	{
+		ret = "Debug";
+	}
+	else
+	{
+		ret = "Release";
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

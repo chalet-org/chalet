@@ -75,6 +75,20 @@ void BuildConfiguration::setEnableProfiling(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+bool BuildConfiguration::isReleaseWithDebugInfo() const noexcept
+{
+	return (m_optimizationLevel == OptimizationLevel::L2 || m_optimizationLevel == OptimizationLevel::L3) && m_debugSymbols;
+}
+bool BuildConfiguration::isMinSizeRelease() const noexcept
+{
+	return m_optimizationLevel == OptimizationLevel::Size && !m_debugSymbols;
+}
+bool BuildConfiguration::isDebuggable() const noexcept
+{
+	return m_debugSymbols || m_enableProfiling;
+}
+
+/*****************************************************************************/
 OptimizationLevel BuildConfiguration::parseOptimizationLevel(const std::string& inValue) noexcept
 {
 	if (String::equals("debug", inValue))

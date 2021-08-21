@@ -171,7 +171,7 @@ bool BuildJsonProtoParser::parseConfiguration(const Json& inNode)
 
 			if (m_prototype.releaseConfiguration().empty())
 			{
-				if (!config.debugSymbols() && !config.enableProfiling())
+				if (!config.isDebuggable())
 				{
 					m_prototype.setReleaseConfiguration(config.name());
 				}
@@ -202,7 +202,7 @@ bool BuildJsonProtoParser::parseConfiguration(const Json& inNode)
 
 				if (m_prototype.releaseConfiguration().empty())
 				{
-					if (!config.debugSymbols() && !config.enableProfiling())
+					if (!config.isDebuggable())
 					{
 						m_prototype.setReleaseConfiguration(config.name());
 					}

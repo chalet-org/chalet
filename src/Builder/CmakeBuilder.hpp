@@ -23,6 +23,7 @@ private:
 	std::string getPlatform() const;
 	StringList getGeneratorCommand(const std::string& inLocation) const;
 	void addCmakeDefines(StringList& outList) const;
+	std::string getCMakeCompatibleBuildConfiguration() const;
 
 	StringList getBuildCommand(const std::string& inLocation) const;
 
