@@ -138,19 +138,8 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	bool skipOutput = false;
 	std::string noWork{ "ninja: no work to do.\n" };
 	std::string data;
-	Subprocess::PipeFunc onStdOut = [&skipOutput, &noWork, &data](std::string inData) {
-#if defined(CHALET_WIN32)
-		if (inData.size() == 1)
-		{
-			data += inData;
-			return;
-		}
-		else
-#endif
-		{
-			data += inData;
-		}
 
+	auto parsePrintOutput = [&skipOutput, &noWork, &data]() {
 		String::replaceAll(data, "\r\n", "\n");
 		if (skipOutput || String::startsWith(noWork, data) || String::startsWith(data, noWork))
 		{
@@ -175,6 +164,22 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 		data.clear();
 	};
 
+	Subprocess::PipeFunc onStdOut = [&data, &parsePrintOutput](std::string inData) {
+#if defined(CHALET_WIN32)
+		if (inData.size() == 1)
+		{
+			data += inData;
+			return;
+		}
+		else
+#endif
+		{
+			data += inData;
+		}
+
+		parsePrintOutput();
+	};
+
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = PipeOption::Pipe;
@@ -182,6 +187,13 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	options.onStdOut = std::move(onStdOut);
 
 	int result = Subprocess::run(inCmd, std::move(options));
+
+#if defined(CHALET_WIN32)
+	if (data.size() > 0)
+	{
+		parsePrintOutput();
+	}
+#endif
 
 	if (!skipOutput)
 		Output::lineBreak();
