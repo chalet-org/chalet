@@ -142,7 +142,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 #if defined(CHALET_WIN32)
 		if (inData.size() == 1)
 		{
-			data = inData;
+			data += inData;
 			return;
 		}
 		else
