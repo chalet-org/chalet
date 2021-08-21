@@ -111,6 +111,22 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 	// we got here from "msvc" "msvc-pre" in the command line
 	bool genericMsvcFromInput = String::equals({ "msvc", "msvc-pre" }, m_inputs.toolchainPreferenceName());
 
+	auto getStartOfVsWhereCommand = [this]() {
+		StringList cmd{ s_vswhere, "-nologo", "-latest" };
+		if (m_inputs.isMsvcPreRelease())
+		{
+			cmd.emplace_back("-prerelease");
+		}
+		cmd.emplace_back("-property");
+		return cmd;
+	};
+
+	auto getMsvcVersion = [this, &getStartOfVsWhereCommand]() {
+		StringList vswhereCmd = getStartOfVsWhereCommand();
+		vswhereCmd.emplace_back("installationVersion");
+		return Commands::subprocessOutput(vswhereCmd);
+	};
+
 	bool deltaExists = Commands::pathExists(m_varsFileMsvcDelta);
 	if (!deltaExists)
 	{
@@ -119,23 +135,12 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 
 		if (genericMsvcFromInput)
 		{
-			auto getStartOfCommand = [this]() {
-				StringList cmd{ s_vswhere, "-nologo", "-latest" };
-				if (m_inputs.isMsvcPreRelease())
-				{
-					cmd.emplace_back("-prerelease");
-				}
-				cmd.emplace_back("-property");
-				return cmd;
-			};
 
-			StringList vswhereCmd = getStartOfCommand();
+			StringList vswhereCmd = getStartOfVsWhereCommand();
 			vswhereCmd.emplace_back("installationPath");
 			m_vsAppIdDir = Commands::subprocessOutput(vswhereCmd);
 
-			vswhereCmd = getStartOfCommand();
-			vswhereCmd.emplace_back("installationVersion");
-			m_detectedVersion = Commands::subprocessOutput(vswhereCmd);
+			m_detectedVersion = getMsvcVersion();
 		}
 		else if (RegexPatterns::matchesFullVersionString(inVersion))
 		{
@@ -231,6 +236,9 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 	{
 		// Diagnostic::infoEllipsis("Reading Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta);
 		Diagnostic::infoEllipsis("Reading Microsoft{} Visual C++ Environment Cache", Unicode::registered());
+
+		if (genericMsvcFromInput)
+			m_detectedVersion = getMsvcVersion();
 	}
 
 	// Read delta to cache
@@ -300,10 +308,14 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 
 	if (genericMsvcFromInput)
 	{
-		auto versionSplit = String::split(m_detectedVersion, '.');
-		if (versionSplit.size() >= 1)
+		if (!m_detectedVersion.empty())
 		{
-			m_inputs.setToolchainPreferenceName(fmt::format("{}-pc-windows-msvc{}", m_inputs.targetArchitecture(), versionSplit[0]));
+			auto versionSplit = String::split(m_detectedVersion, '.');
+			if (versionSplit.size() >= 1)
+			{
+				std::string name = fmt::format("{}-pc-windows-msvc{}", m_inputs.targetArchitecture(), versionSplit.front());
+				m_inputs.setToolchainPreferenceName(std::move(name));
+			}
 		}
 
 		auto old = m_varsFileMsvcDelta;
