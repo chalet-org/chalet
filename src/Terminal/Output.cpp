@@ -186,16 +186,15 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 		FMT_ARG(lineUp),
 		FMT_ARG(output));
 
-	bool result = false;
 	std::string input;
-	if (std::getline(std::cin, input))
-	{
-		if (!input.empty() && onValidate(input))
-		{
-			outResult = std::move(input);
-			result = true;
-		}
-	}
+	std::getline(std::cin, input); // get up to first line break (if applicable)
+
+	if (input.empty())
+		input = outResult;
+	else
+		outResult = input;
+
+	bool result = onValidate(input);
 
 	auto toOutput = fmt::format("{cleanLine}{lineUp}{output}{outResult}{reset}",
 		FMT_ARG(cleanLine),
@@ -211,11 +210,11 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 }
 
 /*****************************************************************************/
-bool Output::getUserInputYesNo(const std::string& inUserQuery, const Color inAnswerColor, std::string inNote)
+bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, const Color inAnswerColor, std::string inNote)
 {
-	std::string result{ "yes" };
-	return !getUserInput(inUserQuery, result, inAnswerColor, std::move(inNote), [](std::string& input) {
-		return String::equals({ "no", "n" }, String::toLowerCase(input));
+	std::string result{ inDefaultYes ? "yes" : "no" };
+	return getUserInput(inUserQuery, result, inAnswerColor, std::move(inNote), [](std::string& input) {
+		return !String::equals({ "no", "n" }, String::toLowerCase(input));
 	});
 }
 

@@ -408,8 +408,8 @@ void StatePrototype::setReleaseConfiguration(const std::string& inName)
 }
 
 /*****************************************************************************/
-void StatePrototype::addRequiredBuildConfiguration(std::string inArch)
+void StatePrototype::addRequiredBuildConfiguration(std::string inValue)
 {
-	List::addIfDoesNotExist(m_allowedBuildConfigurations, std::move(inArch));
+	List::addIfDoesNotExist(m_allowedBuildConfigurations, std::move(inValue));
 }
 }

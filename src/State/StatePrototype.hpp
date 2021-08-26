@@ -66,7 +66,7 @@ private:
 	bool getDefaultBuildConfiguration(BuildConfiguration& outConfig, const std::string& inName) const;
 	void addBuildConfiguration(const std::string&& inName, BuildConfiguration&& inConfig);
 	void setReleaseConfiguration(const std::string& inName);
-	void addRequiredBuildConfiguration(std::string inArch);
+	void addRequiredBuildConfiguration(std::string inValue);
 
 	GlobalSettingsState m_globalSettingsState;
 	BuildConfigurationMap m_buildConfigurations;

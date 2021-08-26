@@ -34,7 +34,7 @@ bool ProjectInitializer::run()
 	const auto& path = m_inputs.initPath();
 	if (!Commands::pathExists(path))
 	{
-		if (Output::getUserInputYesNo(fmt::format("Directory '{}' does not exist. Create it?", path), inputColor))
+		if (Output::getUserInputYesNo(fmt::format("Directory '{}' does not exist. Create it?", path), true, inputColor))
 		{
 			if (!Commands::makeDirectory(path))
 			{
@@ -143,7 +143,7 @@ bool ProjectInitializer::run()
 		});
 	}
 
-	props.useLocation = Output::getUserInputYesNo("Detect source files automatically?", inputColor, "If yes, 'location' is used, otherwise 'files' must be added explicitly");
+	props.useLocation = Output::getUserInputYesNo("Detect source files automatically?", true, inputColor, "If yes, 'location' is used, otherwise 'files' must be added explicitly");
 
 	Output::getUserInput("Root source directory:", props.location, inputColor, "The primary location for source files", [](std::string& input) {
 		auto lower = String::toLowerCase(input);
@@ -155,17 +155,17 @@ bool ProjectInitializer::run()
 
 	Output::getUserInput(fmt::format("Main source file:"), props.mainSource, inputColor, fmt::format("Must end in: {}", String::join(sourceExts, " ")), [&sourceExts, isC = isC](std::string& input) {
 		auto lower = String::toLowerCase(input);
-		bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
+		bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
 		if (validChars && ((isC && !String::endsWith(sourceExts, input)) || (!isC && !String::endsWith(sourceExts, lower))))
 		{
 			input = String::getPathBaseName(input) + sourceExts.front();
 		}
-		return validChars && input.size() >= 3;
+		return validChars;
 	});
 
 	if (props.specialization != CxxSpecialization::ObjectiveC)
 	{
-		if (Output::getUserInputYesNo("Use a precompiled header?", inputColor, "Precompiled headers are known to reduce compile times"))
+		if (Output::getUserInputYesNo("Use a precompiled header?", true, inputColor, "Precompiled headers are a way of reducing compile times"))
 		{
 			StringList headerExts;
 			if (isC)
@@ -184,19 +184,19 @@ bool ProjectInitializer::run()
 
 			Output::getUserInput(fmt::format("Precompiled header:"), props.precompiledHeader, inputColor, fmt::format("Must end in: {}", String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
 				auto lower = String::toLowerCase(input);
-				bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
+				bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
 				if (validChars && ((isC && !String::endsWith(headerExts, input)) || (!isC && !String::endsWith(headerExts, lower))))
 				{
 					input = String::getPathBaseName(input) + headerExts.front();
 				}
-				return validChars && input.size() >= 3;
+				return validChars;
 			});
 		}
 	}
 
-	props.defaultConfigs = Output::getUserInputYesNo("Include default build configurations in build file?", inputColor, "Optional, but can be customized or restricted to certain configurations");
-	props.envFile = Output::getUserInputYesNo("Include a .env file?", inputColor, "Optionally add environment variables or search paths to the build");
-	props.makeGitRepository = Output::getUserInputYesNo("Initialize a git repository?", inputColor, "This will also create a .gitignore file");
+	props.defaultConfigs = Output::getUserInputYesNo("Include default build configurations in build file?", false, inputColor, "Optional, but can be customized or restricted to certain configurations");
+	props.envFile = Output::getUserInputYesNo("Include a .env file?", false, inputColor, "Optionally add environment variables or search paths to the build");
+	props.makeGitRepository = Output::getUserInputYesNo("Initialize a git repository?", false, inputColor, "This will also create a .gitignore file");
 
 	const std::string blankLine(80, ' ');
 	std::cout << blankLine << std::flush;
@@ -283,7 +283,7 @@ bool ProjectInitializer::run()
 
 	Output::lineBreak();
 
-	if (Output::getUserInputYesNo("Does everything look okay?", inputColor))
+	if (Output::getUserInputYesNo("Does everything look okay?", true, inputColor))
 	{
 		return doRun(props);
 	}
@@ -355,7 +355,7 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 		Diagnostic::printDone();
 		// Output::lineBreak();
 
-		if (Output::getUserInputYesNo("Run 'chalet configure'?", Output::theme().alt))
+		if (Output::getUserInputYesNo("Run 'chalet configure'?", true, Output::theme().alt))
 		{
 			auto appPath = m_inputs.appPath();
 			if (!Commands::pathExists(appPath))
