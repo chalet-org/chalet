@@ -148,6 +148,7 @@
 				"maxJobs",
 				"showCommands",
 				"benchmark",
+				"configuration",
 				"toolchain",
 				"architecture",
 				"signingIdentity",
@@ -182,6 +183,10 @@
 					"description": "true to show all build times (total build time, build targets, other steps), false to hide them.",
 					"type": "boolean",
 					"default": true
+				},
+				"configuration": {
+					"description": "The build configuration to use for building, if not the previous one.",
+					"type": "string"
 				},
 				"toolchain": {
 					"description": "The toolchain id to use for building, if not the previous one.",

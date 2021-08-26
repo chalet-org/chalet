@@ -16,7 +16,7 @@ struct GlobalSettingsState
 	Json tools;
 	Json appleSdks;
 
-	std::string signingIdentity;
+	std::string buildConfiguration;
 	std::string toolchainPreference;
 	std::string architecturePreference;
 	std::string inputFile;
@@ -25,6 +25,7 @@ struct GlobalSettingsState
 	std::string rootDirectory;
 	std::string outputDirectory;
 	std::string bundleDirectory;
+	std::string signingIdentity;
 
 	uint maxJobs = 0;
 	bool benchmark = true;

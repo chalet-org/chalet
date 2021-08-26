@@ -40,7 +40,7 @@ bool AppBundler::runBuilds()
 		if (m_states.find(configName) == m_states.end())
 		{
 			CommandLineInputs inputs = m_inputs;
-			inputs.setBuildConfiguration(inConfig);
+			inputs.setBuildConfiguration(std::string(inConfig));
 			inputs.setTargetArchitecture(arch);
 			auto state = std::make_unique<BuildState>(std::move(inputs), m_prototype);
 

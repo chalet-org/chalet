@@ -64,6 +64,7 @@ enum class Defs : ushort
 	MaxJobs,
 	ShowCommands,
 	Benchmark,
+	LastBuildConfiguration,
 	LastToolchain,
 	LastArchitecture,
 	SigningIdentity,
@@ -382,6 +383,11 @@ Json Schema::getSettingsJson()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::LastBuildConfiguration] = R"json({
+		"description": "The build configuration to use for building, if not the previous one.",
+		"type": "string"
+	})json"_ojson;
+
 	defs[Defs::LastToolchain] = R"json({
 		"description": "The toolchain id to use for building, if not the previous one.",
 		"type": "string"
@@ -527,6 +533,7 @@ Json Schema::getSettingsJson()
 			"maxJobs",
 			"showCommands",
 			"benchmark",
+			"configuration",
 			"toolchain",
 			"architecture",
 			"signingIdentity",
@@ -543,6 +550,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kSettings][kProperties]["maxJobs"] = defs[Defs::MaxJobs];
 	ret[kProperties][kSettings][kProperties]["showCommands"] = defs[Defs::ShowCommands];
 	ret[kProperties][kSettings][kProperties]["benchmark"] = defs[Defs::Benchmark];
+	ret[kProperties][kSettings][kProperties]["configuration"] = defs[Defs::LastBuildConfiguration];
 	ret[kProperties][kSettings][kProperties]["toolchain"] = defs[Defs::LastToolchain];
 	ret[kProperties][kSettings][kProperties]["architecture"] = defs[Defs::LastArchitecture];
 	ret[kProperties][kSettings][kProperties]["signingIdentity"] = defs[Defs::SigningIdentity];

@@ -44,6 +44,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 	m_inputs.setAppPath(arguments.front());
 
+	std::string buildConfiguration;
 	std::string toolchainPreference;
 	std::string architecturePreference;
 	std::string inputFile;
@@ -64,13 +65,13 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				if (value.empty())
 					continue;
 
-				if (key == patterns.argBuildConfiguration())
-				{
-					m_inputs.setBuildFromCommandLine(std::move(value));
-				}
-				else if (key == patterns.argRunProject())
+				if (key == patterns.argRunProject())
 				{
 					m_inputs.setRunProject(std::move(value));
+				}
+				else if (String::equals({ "-c", "--configuration" }, key))
+				{
+					buildConfiguration = std::move(value);
 				}
 				else if (String::equals({ "-i", "--input-file" }, key))
 				{
@@ -177,6 +178,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	else
 		m_inputs.setSettingsFile(std::move(settingsFile));
 
+	m_inputs.setBuildConfiguration(std::move(buildConfiguration));
 	m_inputs.setArchitectureRaw(std::move(architecturePreference));
 
 	// must do at the end (after arch & toolchain have been parsed)

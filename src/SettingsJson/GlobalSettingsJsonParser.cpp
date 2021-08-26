@@ -88,6 +88,13 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		return outState.benchmark;
 	});
 
+	// kKeyLastBuildConfiguration
+
+	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyLastBuildConfiguration, [&]() {
+		outState.buildConfiguration = m_inputs.buildConfiguration();
+		return outState.buildConfiguration;
+	});
+
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyLastToolchain, [&]() {
 		m_inputs.detectToolchainPreference();
 		outState.toolchainPreference = m_inputs.toolchainPreferenceName();
@@ -182,6 +189,9 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 
 	if (ushort val = 0; m_jsonFile.assignFromKey(val, buildSettings, kKeyMaxJobs))
 		outState.maxJobs = val;
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastBuildConfiguration))
+		outState.buildConfiguration = std::move(val);
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
 		outState.toolchainPreference = std::move(val);

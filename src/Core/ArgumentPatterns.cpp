@@ -19,16 +19,15 @@ std::string ArgumentPatterns::getHelpCommand()
 	return fmt::format(R"(
    init [{path}]
    configure
-   buildrun {buildConfiguration} {runProject} {runArgs}
-   run {buildConfiguration} {runProject} {runArgs}
-   build {buildConfiguration}
-   rebuild {buildConfiguration}
-   clean [{buildConfiguration}]
+   buildrun {runProject} {runArgs}
+   run {runProject} {runArgs}
+   build
+   rebuild
+   clean
    bundle
    get {key}
    set {key} {value}
    unset {key})",
-		fmt::arg("buildConfiguration", kArgBuildConfiguration),
 		fmt::arg("runProject", kArgRunProject),
 		fmt::arg("runArgs", kArgRunArguments),
 		fmt::arg("key", kArgConfigKey),
@@ -58,10 +57,6 @@ ArgumentPatterns::ArgumentPatterns() :
 }
 
 /*****************************************************************************/
-const std::string& ArgumentPatterns::argBuildConfiguration() const noexcept
-{
-	return kArgBuildConfiguration;
-}
 const std::string& ArgumentPatterns::argRunProject() const noexcept
 {
 	return kArgRunProject;
@@ -164,6 +159,7 @@ ushort ArgumentPatterns::parseOption(const std::string& inString)
 		"-o", "--output-dir",
 		"-b", "--bundle-dir",
 		"-t", "--toolchain",
+		"-c", "--configuration",
 		// "-p", "--project-gen",
 		"-e", "--env-file",
 		"-a", "--arch",
@@ -641,22 +637,15 @@ void ArgumentPatterns::addQuietArgs()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::addBuildConfigurationArg(const bool inOptional)
+void ArgumentPatterns::addBuildConfigurationArg()
 {
-	if (inOptional)
-	{
-		m_parser.add_argument(kArgBuildConfiguration)
-			.help(kHelpBuildConfiguration)
-			.default_value(std::string(""));
-	}
-	else
-	{
-		m_parser.add_argument(kArgBuildConfiguration)
-			.help(kHelpBuildConfiguration)
-			.required();
-	}
+	m_parser.add_argument("-c", "--configuration")
+		.help("The build configuration to use")
+		.nargs(1)
+		.default_value(std::string());
 
-	m_argumentMap.push_back({ kArgBuildConfiguration, Variant::Kind::String });
+	m_argumentMap.push_back({ "-c", Variant::Kind::String });
+	m_argumentMap.push_back({ "--configuration", Variant::Kind::String });
 }
 
 /*****************************************************************************/
@@ -702,20 +691,26 @@ void ArgumentPatterns::addSettingsTypeArg()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandBuildRun()
+void ArgumentPatterns::addOptionalArguments()
 {
 	addInputFileArg();
 	addSettingsFileArg();
 	addRootDirArg();
 	addOutputDirArg();
+	addBuildConfigurationArg();
 	addToolchainArg();
 	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();
 	addSaveSchemaArg();
 	addQuietArgs();
+}
 
-	addBuildConfigurationArg();
+/*****************************************************************************/
+void ArgumentPatterns::commandBuildRun()
+{
+	addOptionalArguments();
+
 	addRunProjectArg();
 	addRunArgumentsArg();
 }
@@ -723,18 +718,8 @@ void ArgumentPatterns::commandBuildRun()
 /*****************************************************************************/
 void ArgumentPatterns::commandRun()
 {
-	addInputFileArg();
-	addSettingsFileArg();
-	addRootDirArg();
-	addOutputDirArg();
-	addToolchainArg();
-	addProjectGenArg();
-	addEnvFileArg();
-	addArchArg();
-	addSaveSchemaArg();
-	addQuietArgs();
+	addOptionalArguments();
 
-	addBuildConfigurationArg();
 	addRunProjectArg();
 	addRunArgumentsArg();
 }
@@ -742,84 +727,31 @@ void ArgumentPatterns::commandRun()
 /*****************************************************************************/
 void ArgumentPatterns::commandBuild()
 {
-	addInputFileArg();
-	addSettingsFileArg();
-	addRootDirArg();
-	addOutputDirArg();
-	addToolchainArg();
-	addProjectGenArg();
-	addEnvFileArg();
-	addArchArg();
-	addSaveSchemaArg();
-	addQuietArgs();
-
-	addBuildConfigurationArg();
+	addOptionalArguments();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandRebuild()
 {
-	addInputFileArg();
-	addSettingsFileArg();
-	addRootDirArg();
-	addOutputDirArg();
-	addToolchainArg();
-	addProjectGenArg();
-	addEnvFileArg();
-	addArchArg();
-	addSaveSchemaArg();
-	addQuietArgs();
-
-	addBuildConfigurationArg();
+	addOptionalArguments();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandClean()
 {
-	addInputFileArg();
-	addSettingsFileArg();
-	addRootDirArg();
-	addOutputDirArg();
-	addToolchainArg();
-	addProjectGenArg();
-	addEnvFileArg();
-	addArchArg();
-	addSaveSchemaArg();
-	addQuietArgs();
-
-	bool optional = true;
-	addBuildConfigurationArg(optional);
+	addOptionalArguments();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandBundle()
 {
-	addInputFileArg();
-	addSettingsFileArg();
-	addRootDirArg();
-	addOutputDirArg();
-	addBundleDirArg();
-	addToolchainArg();
-	addProjectGenArg();
-	addEnvFileArg();
-	addArchArg();
-	addSaveSchemaArg();
-	addQuietArgs();
+	addOptionalArguments();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::commandConfigure()
 {
-	addInputFileArg();
-	addSettingsFileArg();
-	addRootDirArg();
-	addOutputDirArg();
-	addToolchainArg();
-	addProjectGenArg();
-	addEnvFileArg();
-	addArchArg();
-	addSaveSchemaArg();
-	addQuietArgs();
+	addOptionalArguments();
 }
 
 /*****************************************************************************/
@@ -842,7 +774,7 @@ void ArgumentPatterns::commandSettingsGet()
 
 	m_parser.add_argument(kArgConfigKey)
 		.help("The config key to get")
-		.default_value(std::string(""));
+		.default_value(std::string());
 
 	m_argumentMap.push_back({ kArgConfigKey, Variant::Kind::String });
 }
@@ -861,7 +793,7 @@ void ArgumentPatterns::commandSettingsSet()
 
 	m_parser.add_argument(kArgConfigValue)
 		.help("The config value to change to")
-		.default_value(std::string(""));
+		.default_value(std::string());
 
 	m_argumentMap.push_back({ kArgConfigValue, Variant::Kind::String });
 }
@@ -883,13 +815,7 @@ void ArgumentPatterns::commandSettingsUnset()
 #if defined(CHALET_DEBUG)
 void ArgumentPatterns::commandDebug()
 {
-	addInputFileArg();
-	addSettingsFileArg();
-	addRootDirArg();
-	addOutputDirArg();
-	addProjectGenArg();
-	addEnvFileArg();
-	addArchArg();
+	addOptionalArguments();
 }
 #endif
 

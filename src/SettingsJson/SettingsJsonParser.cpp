@@ -165,6 +165,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		m_inputs.detectToolchainPreference();
 	});
 
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastBuildConfiguration, m_inputs.buildConfiguration(), inState.buildConfiguration);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
 
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyInputFile, m_inputs.inputFile(), inState.inputFile);
@@ -371,6 +372,12 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))
 		m_prototype.tools.setGenerateCompileCommands(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastBuildConfiguration))
+	{
+		if (m_inputs.buildConfiguration().empty())
+			m_inputs.setBuildConfiguration(std::move(val));
+	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
 	{

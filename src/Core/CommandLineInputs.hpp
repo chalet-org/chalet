@@ -46,10 +46,7 @@ struct CommandLineInputs
 	void setCommand(const Route inValue) noexcept;
 
 	const std::string& buildConfiguration() const noexcept;
-	void setBuildConfiguration(const std::string& inValue) noexcept;
-
-	const std::string& buildFromCommandLine() const noexcept;
-	void setBuildFromCommandLine(std::string&& inValue) noexcept;
+	void setBuildConfiguration(std::string&& inValue) noexcept;
 
 	const std::string& platform() const noexcept;
 	const StringList& notPlatforms() const noexcept;

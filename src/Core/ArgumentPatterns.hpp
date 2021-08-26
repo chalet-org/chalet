@@ -21,7 +21,6 @@ class ArgumentPatterns
 public:
 	ArgumentPatterns();
 
-	const std::string& argBuildConfiguration() const noexcept;
 	const std::string& argRunProject() const noexcept;
 	const std::string& argRunArguments() const noexcept;
 	const std::string& argInitPath() const noexcept;
@@ -57,13 +56,14 @@ private:
 	void addToolchainArg();
 	void addEnvFileArg();
 	void addArchArg();
-	void addBuildConfigurationArg(const bool inOptional = false);
+	void addBuildConfigurationArg();
 	void addRunProjectArg();
 	void addRunArgumentsArg();
 	void addSaveSchemaArg();
 	void addQuietArgs();
 	void addSettingsTypeArg();
 
+	void addOptionalArguments();
 	void commandBuildRun();
 	void commandRun();
 	void commandBuild();
@@ -92,7 +92,6 @@ private:
 
 	const std::string kCommand = "<command>";
 
-	const std::string kArgBuildConfiguration = "<configuration>";
 	const std::string kArgRunProject = "[<runProject>]";
 	const std::string kArgRunArguments = "[ARG...]";
 	const std::string kArgInitName = "<name>";
@@ -100,7 +99,6 @@ private:
 	const std::string kArgConfigKey = "<key>";
 	const std::string kArgConfigValue = "<value>";
 
-	const std::string kHelpBuildConfiguration = "The build configuration";
 	const std::string kHelpRunProject = "A project to run";
 	const std::string kHelpRunArguments = "The arguments to pass to the run project";
 	const std::string kHelpInitName = "The name of the project to initialize";

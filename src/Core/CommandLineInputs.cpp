@@ -202,27 +202,12 @@ const std::string& CommandLineInputs::buildConfiguration() const noexcept
 	return m_buildConfiguration;
 }
 
-void CommandLineInputs::setBuildConfiguration(const std::string& inValue) noexcept
+void CommandLineInputs::setBuildConfiguration(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
 		return;
 
 	m_buildConfiguration = inValue;
-}
-
-/*****************************************************************************/
-const std::string& CommandLineInputs::buildFromCommandLine() const noexcept
-{
-	return m_buildFromCommandLine;
-}
-void CommandLineInputs::setBuildFromCommandLine(std::string&& inValue) noexcept
-{
-	if (inValue.empty())
-		return;
-
-	m_buildFromCommandLine = std::move(inValue);
-
-	setBuildConfiguration(m_buildFromCommandLine);
 }
 
 /*****************************************************************************/
