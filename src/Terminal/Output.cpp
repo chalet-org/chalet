@@ -507,7 +507,7 @@ void Output::msgTargetUpToDate(const bool inMultiTarget, const std::string& inPr
 {
 	if (!s_quietNonBuild)
 	{
-		std::string successText = "Up to date.";
+		std::string successText = "Target is up to date.";
 		if (inMultiTarget)
 			print(sTheme.build, fmt::format("   {}: {}", inProjectName, successText));
 		else
