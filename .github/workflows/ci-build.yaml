@@ -51,7 +51,7 @@ jobs:
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema bundle
       - name: "Run: Tests"
-        run: build/x86_64-linux-gnu_Release/chalet run Release tests_chalet
+        run: build/x86_64-linux-gnu_Release/chalet -c Release run tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
@@ -92,7 +92,7 @@ jobs:
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema --arch universal bundle
       - name: "Run: Tests"
-        run: build/universal-apple-darwin_Release/chalet run Release tests_chalet
+        run: build/universal-apple-darwin_Release/chalet -c Release run tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
@@ -126,7 +126,7 @@ jobs:
       - name: "Build: Release"
         run: build/msvc_Debug/chalet-debug --save-schema -t msvc -a x64 bundle
       - name: "Run: Tests"
-        run: build/msvc_Debug/chalet-debug run Release tests_chalet
+        run: build/msvc_Debug/chalet-debug -c Release run tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
@@ -179,7 +179,7 @@ jobs:
       - name: "Build: Release"
         run: build/Debug/chalet-debug --save-schema -t gcc bundle
       - name: "Run: Tests"
-        run: build/x86_64-w64-mingw32_Release/chalet run Release tests_chalet
+        run: build/x86_64-w64-mingw32_Release/chalet -c Release run tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
