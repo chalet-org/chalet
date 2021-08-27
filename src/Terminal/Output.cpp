@@ -28,9 +28,9 @@ static std::int64_t s_commandPromptVersion = -1;
 #endif
 
 /*****************************************************************************/
-std::string getFormattedBuildTarget(const std::string& inBuildConfiguration, const std::string& inName)
+std::string getFormattedBuildTarget(const std::string& inName)
 {
-	return fmt::format("{} (target: {})", inBuildConfiguration, inName);
+	return fmt::format(": {}", inName);
 }
 
 /*****************************************************************************/
@@ -507,7 +507,7 @@ void Output::msgTargetUpToDate(const bool inMultiTarget, const std::string& inPr
 {
 	if (!s_quietNonBuild)
 	{
-		std::string successText = "Target is up to date.";
+		std::string successText = "Up to date.";
 		if (inMultiTarget)
 			print(sTheme.build, fmt::format("   {}: {}", inProjectName, successText));
 		else
@@ -534,20 +534,6 @@ void Output::msgCleaning()
 void Output::msgNothingToClean()
 {
 	print(sTheme.build, "   Nothing to clean...");
-}
-
-/*****************************************************************************/
-void Output::msgCleaningRebuild()
-{
-	print(sTheme.build, "   Removing previous build files & folders...");
-}
-
-/*****************************************************************************/
-void Output::msgBuildProdError(const std::string& inBuildConfiguration)
-{
-	auto symbol = Unicode::circledSaltire();
-	displayStyledSymbol(sTheme.error, symbol, fmt::format("Error: 'bundle' must be run on '{}' build.", inBuildConfiguration));
-	// exit 1
 }
 
 /*****************************************************************************/
@@ -590,17 +576,17 @@ void Output::msgClean(const std::string& inBuildConfiguration)
 }
 
 /*****************************************************************************/
-void Output::msgBuild(const std::string& inBuildConfiguration, const std::string& inName)
+void Output::msgBuild(const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(sTheme.header, symbol, "Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(sTheme.header, symbol, "Build" + getFormattedBuildTarget(inName));
 }
 
 /*****************************************************************************/
-void Output::msgRebuild(const std::string& inBuildConfiguration, const std::string& inName)
+void Output::msgRebuild(const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(sTheme.header, symbol, "Rebuild: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(sTheme.header, symbol, "Rebuild" + getFormattedBuildTarget(inName));
 }
 
 /*****************************************************************************/
@@ -618,24 +604,10 @@ void Output::msgTargetDescription(const std::string& inDescription, const Color 
 }
 
 /*****************************************************************************/
-void Output::msgRun(const std::string& inBuildConfiguration, const std::string& inName)
+void Output::msgRun(const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(sTheme.success, symbol, "Run: " + getFormattedBuildTarget(inBuildConfiguration, inName));
-}
-
-/*****************************************************************************/
-void Output::msgBuildProd(const std::string& inBuildConfiguration, const std::string& inName)
-{
-	auto symbol = Unicode::triangle();
-	displayStyledSymbol(sTheme.header, symbol, "Production Build: " + getFormattedBuildTarget(inBuildConfiguration, inName));
-}
-
-/*****************************************************************************/
-void Output::msgProfile(const std::string& inBuildConfiguration, const std::string& inName)
-{
-	auto symbol = Unicode::triangle();
-	displayStyledSymbol(sTheme.header, symbol, "Profile: " + getFormattedBuildTarget(inBuildConfiguration, inName));
+	displayStyledSymbol(sTheme.success, symbol, "Run" + getFormattedBuildTarget(inName));
 }
 
 /*****************************************************************************/

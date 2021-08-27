@@ -54,8 +54,6 @@ private:
 	bool createAppBundle();
 	bool runProfiler(const ProjectTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 
-	void testTerminalMessages();
-
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 

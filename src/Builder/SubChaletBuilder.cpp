@@ -30,9 +30,8 @@ SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTar
 bool SubChaletBuilder::run()
 {
 	const auto& name = m_target.name();
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
-	Output::msgBuild(buildConfiguration, name);
+	Output::msgBuild(name);
 	Output::lineBreak();
 
 	const auto oldPath = Environment::getPath();

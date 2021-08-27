@@ -66,20 +66,16 @@ void msgTargetUpToDate(const bool inMultiTarget, const std::string& inProjectNam
 void msgBuildFail();
 void msgCleaning();
 void msgNothingToClean();
-void msgCleaningRebuild();
-void msgBuildProdError(const std::string& inBuildConfiguration);
 void msgProfilerStartedGprof(const std::string& inProfileAnalysis);
 void msgProfilerStartedSample(const std::string& inExecutable, const uint inDuration, const uint inSamplingInterval);
 void msgProfilerDone(const std::string& inProfileAnalysis);
 void msgProfilerDoneInstruments(const std::string& inProfileAnalysis);
 void msgClean(const std::string& inBuildConfiguration);
-void msgBuild(const std::string& inBuildConfiguration, const std::string& inName);
-void msgRebuild(const std::string& inBuildConfiguration, const std::string& inName);
+void msgBuild(const std::string& inName);
+void msgRebuild(const std::string& inName);
 void msgScript(const std::string& inName, const Color inColor);
 void msgTargetDescription(const std::string& inDescription, const Color inColor);
-void msgRun(const std::string& inBuildConfiguration, const std::string& inName);
-void msgBuildProd(const std::string& inBuildConfiguration, const std::string& inName);
-void msgProfile(const std::string& inBuildConfiguration, const std::string& inName);
+void msgRun(const std::string& inName);
 
 // void msgRemoving(const std::string& inPath);
 void msgCopying(const std::string& inFrom, const std::string& inTo);

@@ -292,7 +292,9 @@ void BuildManager::printBuildInformation()
 	}
 
 	const auto strategy = getBuildStrategyName();
-	Diagnostic::info("Build Strategy: {}", strategy);
+	Diagnostic::info("Strategy: {}", strategy);
+
+	Diagnostic::info("Configuration: {}", m_state.info.buildConfiguration());
 }
 
 /*****************************************************************************/
@@ -553,13 +555,12 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 /*****************************************************************************/
 bool BuildManager::cmdBuild(const ProjectTarget& inProject)
 {
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	const auto& outputFile = inProject.outputFile();
 
 	if (!inProject.description().empty())
 		Output::msgTargetDescription(inProject.description(), Output::theme().header);
 	else
-		Output::msgBuild(buildConfiguration, outputFile);
+		Output::msgBuild(outputFile);
 
 	Output::lineBreak();
 
@@ -578,13 +579,12 @@ bool BuildManager::cmdBuild(const ProjectTarget& inProject)
 /*****************************************************************************/
 bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 {
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	const auto& outputFile = inProject.outputFile();
 
 	if (!inProject.description().empty())
 		Output::msgTargetDescription(inProject.description(), Output::theme().header);
 	else
-		Output::msgRebuild(buildConfiguration, outputFile);
+		Output::msgRebuild(outputFile);
 
 	Output::lineBreak();
 
@@ -626,14 +626,13 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& runOptions = m_inputs.runOptions();
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
 	const auto& runArguments = inProject.runArguments();
 
 	if (!inProject.description().empty())
 		Output::msgTargetDescription(inProject.description(), Output::theme().success);
 	else
-		Output::msgRun(buildConfiguration, outputFile);
+		Output::msgRun(outputFile);
 
 	// LOG(runOptions);
 	// LOG(runArguments);
@@ -765,23 +764,4 @@ std::string BuildManager::getRunProject()
 	return std::string();
 }
 
-/*****************************************************************************/
-void BuildManager::testTerminalMessages()
-{
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
-	// const auto& distConfig = m_state.bundle.configuration();
-
-	const std::string name{ "cool-program.exe" };
-	const std::string profAnalysis{ "profiler_analysis.stats" };
-
-	Output::msgBuildSuccess();
-	Output::msgBuildFail();
-	// Output::msgBuildProdError(distConfig);
-	Output::msgProfilerDone(profAnalysis);
-	Output::msgBuild(buildConfiguration, name);
-	Output::msgRebuild(buildConfiguration, name);
-	Output::msgRun(buildConfiguration, name);
-	Output::msgBuildProd(buildConfiguration, name);
-	Output::msgProfile(buildConfiguration, name);
-}
 }

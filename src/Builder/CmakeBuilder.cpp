@@ -29,11 +29,10 @@ CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarge
 bool CmakeBuilder::run()
 {
 	const auto& name = m_target.name();
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
 	// TODO: add doxygen to path?
 
-	Output::msgBuild(buildConfiguration, name);
+	Output::msgBuild(name);
 	Output::lineBreak();
 
 	auto location = Commands::getAbsolutePath(m_target.location());
