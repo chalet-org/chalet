@@ -47,6 +47,11 @@ bool CmakeBuilder::run()
 	m_outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.location());
 	Path::sanitize(m_outputLocation);
 
+	auto onRunFailure = [this]() -> bool {
+		Commands::removeRecursively(m_outputLocation);
+		return false;
+	};
+
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
 	bool recheckCmake = m_target.recheck();
 
@@ -69,20 +74,20 @@ bool CmakeBuilder::run()
 					std::cout << std::move(inData) << std::flush;
 				};
 				if (Subprocess::run(generatorCommand, std::move(options)) != EXIT_SUCCESS)
-					return false;
+					return onRunFailure();
 			}
 			else
 #endif
 			{
 				if (!Commands::subprocess(generatorCommand))
-					return false;
+					return onRunFailure();
 			}
 		}
 
 		{
 			StringList buildCommand = getBuildCommand(m_outputLocation);
 			if (!Commands::subprocess(buildCommand, PipeOption::StdOut))
-				return false;
+				return onRunFailure();
 		}
 
 		Output::lineBreak();
