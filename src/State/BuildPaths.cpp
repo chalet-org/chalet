@@ -239,6 +239,7 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 {
 	const auto& buildDir = buildOutputDir();
 
+	String::replaceAll(outPath, "${cwd}", m_inputs.workingDirectory());
 	String::replaceAll(outPath, "${buildDir}", buildDir);
 
 	const auto& external = m_environment.externalDepDir();

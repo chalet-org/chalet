@@ -346,6 +346,19 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 		depsFromJson.push_back(dep);
 	}
 
+	StringList searchDirs;
+	for (auto& target : inState.targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<const ProjectTarget&>(*target);
+			for (auto& dir : project.libDirs())
+			{
+				List::addIfDoesNotExist(searchDirs, dir);
+			}
+		}
+	}
+
 	if (inTarget.includeDependentSharedLibraries())
 	{
 		StringList allDependencies;
@@ -399,15 +412,34 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 
 					if (!Commands::pathExists(dep))
 					{
-						std::string resolved = Commands::which(filename);
+						std::string resolved;
+						for (auto& dir : searchDirs)
+						{
+							resolved = fmt::format("{}/{}", dir, filename);
+							if (!Commands::pathExists(resolved))
+							{
+								resolved.clear();
+								continue;
+							}
+							else
+							{
+								dep = std::move(resolved);
+								break;
+							}
+						}
+
 						if (resolved.empty())
 						{
-							// Diagnostic::warn("Dependency not copied (not found in path): '{}'", dep);
-							// return false;
-							// We probably don't care about them anyway
-							continue;
+							resolved = Commands::which(filename);
+							if (resolved.empty())
+							{
+								// Diagnostic::warn("Dependency not copied (not found in path): '{}'", dep);
+								// return false;
+								// We probably don't care about them anyway
+								continue;
+							}
+							dep = std::move(resolved);
 						}
-						dep = std::move(resolved);
 					}
 
 					if (m_dependencyMap.find(dep) == m_dependencyMap.end())
@@ -429,15 +461,34 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 
 							if (!Commands::pathExists(d))
 							{
-								std::string resolved = Commands::which(file);
+								std::string resolved;
+								for (auto& dir : searchDirs)
+								{
+									resolved = fmt::format("{}/{}", dir, file);
+									if (!Commands::pathExists(resolved))
+									{
+										resolved.clear();
+										continue;
+									}
+									else
+									{
+										dep = std::move(resolved);
+										break;
+									}
+								}
+
 								if (resolved.empty())
 								{
-									// Diagnostic::warn("Dependency not copied (not found in path): '{}'", d);
-									// return false;
-									// We probably don't care about them anyway
-									continue;
+									resolved = Commands::which(file);
+									if (resolved.empty())
+									{
+										// Diagnostic::warn("Dependency not copied (not found in path): '{}'", d);
+										// return false;
+										// We probably don't care about them anyway
+										continue;
+									}
+									d = std::move(resolved);
 								}
-								d = std::move(resolved);
 							}
 						}
 						m_dependencyMap.emplace(dep, std::move(depsOfDeps));
