@@ -85,6 +85,7 @@ private:
 	argparse::ArgumentParser m_parser;
 	ParserList m_subCommands;
 
+	StringList m_optionPairsCache;
 	ArgumentMap m_argumentMap;
 
 	Route m_route;

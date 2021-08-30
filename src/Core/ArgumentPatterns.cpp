@@ -49,6 +49,24 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ Route::SettingsGet, &ArgumentPatterns::commandSettingsGet },
 		{ Route::SettingsSet, &ArgumentPatterns::commandSettingsSet },
 		{ Route::SettingsUnset, &ArgumentPatterns::commandSettingsUnset },
+	}),
+	m_optionPairsCache({
+		// clang-format off
+		"-i", "--input-file",
+		"-s", "--settings-file",
+		"-f", "--file",
+		"-r", "--root-dir",
+		"-o", "--output-dir",
+		"-x", "--external-dir",
+		"-b", "--bundle-dir",
+		"-t", "--toolchain",
+		"-c", "--configuration",
+		// "-p", "--project-gen",
+		"-e", "--env-file",
+		"-a", "--arch",
+		"-l", "--local",
+		"-g", "--global",
+		// clang-format on
 	})
 {
 #if defined(CHALET_DEBUG)
@@ -150,24 +168,7 @@ ushort ArgumentPatterns::parseOption(const std::string& inString)
 {
 	ushort res = 0;
 
-	// clang-format off
-	if (String::equals({
-		"-i", "--input-file",
-		"-s", "--settings-file",
-		"-f", "--file",
-		"-r", "--root-dir",
-		"-o", "--output-dir",
-		"-x", "--external-dir",
-		"-b", "--bundle-dir",
-		"-t", "--toolchain",
-		"-c", "--configuration",
-		// "-p", "--project-gen",
-		"-e", "--env-file",
-		"-a", "--arch",
-		"-l", "--local",
-		"-g", "--global",
-	}, inString))
-	// clang-format on
+	if (String::equals(m_optionPairsCache, inString))
 	{
 		// anything that takes 2 args
 		res = 2;

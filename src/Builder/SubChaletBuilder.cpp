@@ -104,7 +104,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 	cmd.emplace_back(std::move(proximateSettings));
 
 	cmd.emplace_back("--external-dir");
-	cmd.emplace_back(std::move(proximateExternal));
+	cmd.emplace_back(fmt::format("{}/{}", proximateExternal, m_target.name()));
 
 	cmd.emplace_back("--output-dir");
 	cmd.emplace_back(fmt::format("{}/{}", proximateOutput, m_target.name()));
