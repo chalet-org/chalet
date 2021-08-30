@@ -13,7 +13,6 @@ vendors=(
 	'nlohmann'
 	'subprocess'
 	'ust'
-	'hash-library'
 )
 
 repositories=(
@@ -27,7 +26,6 @@ repositories=(
 	'nlohmann/json'
 	'chalet-org/subprocess'
 	'chalet-org/UniversalStacktrace'
-	'chalet-org/hash-library'
 )
 tags=(
 	'master'
@@ -38,7 +36,6 @@ tags=(
 	'master'
 	'master'
 	'6471a63115239a0b6458ad25e2eb8d828c22fb34'
-	'master'
 	'master'
 	'master'
 )
@@ -52,7 +49,6 @@ commits=(
 	0
 	0
 	1
-	0
 	0
 	0
 )

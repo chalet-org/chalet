@@ -6,7 +6,6 @@
 #include "State/AncillaryTools.hpp"
 
 #include "Core/CommandLineInputs.hpp"
-// #include "Libraries/HashAlgorithm.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -52,9 +51,6 @@ bool AncillaryTools::validate()
 
 	const auto& homeDirectory = m_inputs.homeDirectory();
 	Environment::replaceCommonVariables(m_signingIdentity, homeDirectory);
-
-	// hash::SHA1 sha1;
-	// m_signingIdentity = String::toUpperCase(sha1(m_signingIdentity));
 
 	if (!m_signingIdentity.empty())
 	{
