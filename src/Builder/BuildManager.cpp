@@ -433,7 +433,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 			continue;
 		}
 
-		for (auto& path : m_state.environment.path())
+		for (auto& path : m_state.environment.searchPaths())
 		{
 			resolved = fmt::format("{}/{}", path, dep);
 			if (Commands::pathExists(resolved))
@@ -651,7 +651,7 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 #if defined(CHALET_MACOS)
 	// This is required for profiling
 	auto& installNameTool = m_state.tools.installNameTool();
-	for (auto p : m_state.environment.path())
+	for (auto p : m_state.environment.searchPaths())
 	{
 		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
 		Commands::subprocessNoOutput({ installNameTool, "-add_rpath", fmt::format("@executable_path/{}", p), file });

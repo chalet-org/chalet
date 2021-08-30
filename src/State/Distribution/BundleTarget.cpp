@@ -9,6 +9,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -23,7 +24,7 @@ BundleTarget::BundleTarget() :
 }
 
 /*****************************************************************************/
-void BundleTarget::initialize(const BuildState& inState)
+bool BundleTarget::initialize(const BuildState& inState)
 {
 	const auto& targetName = this->name();
 	for (auto& dir : m_rawIncludes)
@@ -35,8 +36,12 @@ void BundleTarget::initialize(const BuildState& inState)
 		inState.paths.replaceVariablesInPath(dir, targetName);
 	}
 
-	resolveIncludesFromState(inState);
+	if (!resolveIncludesFromState(inState))
+		return false;
+
 	m_includesResolved = true;
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -197,7 +202,7 @@ void BundleTarget::addInclude(std::string&& inValue)
 }
 
 /*****************************************************************************/
-void BundleTarget::resolveIncludesFromState(const BuildState& inState)
+bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 {
 	const auto add = [this](std::string in) {
 		Path::sanitize(in);
@@ -250,17 +255,34 @@ void BundleTarget::resolveIncludesFromState(const BuildState& inState)
 
 		if (!found)
 		{
-			for (auto& path : inState.environment.path())
+
+			for (auto& path : inState.environment.searchPaths())
 			{
 				resolved = fmt::format("{}/{}", path, dependency);
 				if (Commands::pathExists(resolved))
 				{
 					add(std::move(resolved));
+					found = true;
 					break;
 				}
 			}
 		}
+		if (!found)
+		{
+			resolved = Commands::which(dependency);
+			if (!resolved.empty())
+			{
+				add(std::move(resolved));
+			}
+			else
+			{
+				Diagnostic::error("Included path '{}' for distribution target '{}' was not found:", dependency, this->name());
+				return false;
+			}
+		}
 	}
+
+	return true;
 }
 
 /*****************************************************************************/

@@ -43,7 +43,7 @@ class SchemaBuildJson
 		//
 		EnumPlatform,
 		//
-		EnvironmentPath,
+		EnvironmentSearchPaths,
 		//
 		TargetDescription,
 		TargetType,

@@ -17,7 +17,7 @@ struct BundleTarget final : public IDistTarget
 {
 	explicit BundleTarget();
 
-	virtual void initialize(const BuildState& inState) final;
+	virtual bool initialize(const BuildState& inState) final;
 	virtual bool validate() final;
 
 	bool updateRPaths() const noexcept;
@@ -58,7 +58,7 @@ struct BundleTarget final : public IDistTarget
 	void sortIncludes();
 
 private:
-	void resolveIncludesFromState(const BuildState& inState);
+	bool resolveIncludesFromState(const BuildState& inState);
 
 	BundleLinux m_linuxBundle;
 	BundleMacOS m_macosBundle;

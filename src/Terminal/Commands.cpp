@@ -773,7 +773,7 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 }
 
 /*****************************************************************************/
-bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr, EnvMap inEnvMap)
+bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr)
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
@@ -783,7 +783,6 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 
 	SubprocessOptions options;
 	options.cwd = std::move(inCwd);
-	options.env = std::move(inEnvMap);
 	options.stdoutOption = inStdOut;
 	options.stderrOption = inStdErr;
 	options.onCreate = std::move(inOnCreate);
@@ -901,12 +900,46 @@ std::string Commands::which(const std::string& inExecutable)
 		String::replaceAll(result, '\\', '/');
 	}
 #else
-	StringList command;
-	command = { "which", inExecutable };
+	{
+		if (!Commands::pathExists(inExecutable)) // checks working dir
+		{
+			auto path = Environment::getPath();
+			auto home = Environment::getUserDirectory();
+			std::size_t start = 0;
+			while (start != std::string::npos)
+			{
+				auto end = path.find(':', start);
+				auto tmp = path.substr(start, end - start);
+				while (tmp.back() == '/')
+					tmp.pop_back();
 
-	result = Commands::subprocessOutput(command);
-	if (String::contains("which: no", result))
-		return std::string();
+				if (String::startsWith("~/", tmp))
+				{
+					tmp = fmt::format("{}/{}", home, tmp.substr(2));
+				}
+
+				result = fmt::format("{}/{}", tmp, inExecutable);
+				if (Commands::pathExists(result))
+					break;
+
+				result.clear();
+				start = end;
+				if (start != std::string::npos)
+					++start;
+			}
+		}
+	}
+
+	// which (original method) has issues when PATH is changed inside chalet - doesn't seem to inherit the env
+	// StringList command;
+	// command = { "which", inExecutable };
+
+	// result = Commands::subprocessOutput(command);
+	// if (String::contains("which: no", result))
+	// 	return std::string();
+
+	if (result.empty())
+		return result;
 
 	#if defined(CHALET_MACOS)
 	if (String::startsWith("/usr/bin/", result))

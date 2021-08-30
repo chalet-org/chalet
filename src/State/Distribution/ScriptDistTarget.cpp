@@ -18,13 +18,15 @@ ScriptDistTarget::ScriptDistTarget() :
 }
 
 /*****************************************************************************/
-void ScriptDistTarget::initialize(const BuildState& inState)
+bool ScriptDistTarget::initialize(const BuildState& inState)
 {
 	const auto& targetName = this->name();
 	for (auto& script : m_scripts)
 	{
 		inState.paths.replaceVariablesInPath(script, targetName);
 	}
+
+	return true;
 }
 
 /*****************************************************************************/

@@ -49,7 +49,7 @@ private:
 
 	explicit BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnvironment& inEnvironment);
 
-	void initialize(const BuildInfo& inInfo, const CompilerTools& inToolchain);
+	bool initialize(const BuildInfo& inInfo, const CompilerTools& inToolchain);
 	void populateFileList(const ProjectTarget& inProject);
 
 	struct SourceGroup

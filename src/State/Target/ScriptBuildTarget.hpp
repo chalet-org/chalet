@@ -14,7 +14,7 @@ struct ScriptBuildTarget final : public IBuildTarget
 {
 	explicit ScriptBuildTarget(const BuildState& inState);
 
-	virtual void initialize() final;
+	virtual bool initialize() final;
 	virtual bool validate() final;
 
 	const StringList& scripts() const noexcept;

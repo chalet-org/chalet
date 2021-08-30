@@ -19,7 +19,7 @@ struct WorkspaceEnvironment
 {
 	WorkspaceEnvironment();
 
-	void initialize(BuildPaths& inPaths);
+	bool initialize(BuildPaths& inPaths);
 
 	uint processorCount() const noexcept;
 
@@ -38,13 +38,13 @@ struct WorkspaceEnvironment
 	const std::string& externalDepDir() const noexcept;
 	void setExternalDepDir(std::string&& inValue) noexcept;
 
-	const StringList& path() const noexcept;
-	void addPaths(StringList&& inList);
-	void addPath(std::string&& inValue);
+	const StringList& searchPaths() const noexcept;
+	void addSearchPaths(StringList&& inList);
+	void addSearchPath(std::string&& inValue);
 	std::string makePathVariable(const std::string& inRootPath) const;
 
 private:
-	mutable StringList m_path;
+	mutable StringList m_searchPaths;
 
 	std::string m_workspace;
 	std::string m_version;

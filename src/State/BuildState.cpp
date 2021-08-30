@@ -154,7 +154,7 @@ bool BuildState::initializeBuild()
 
 	{
 		auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Local);
-		// Note: This is about as quick as it'll get (50ms in mingw)
+
 		if (!toolchain.initialize(targets, settingsFile))
 		{
 			const auto& targetArch = m_inputs.toolchainPreference().type == ToolchainType::GNU ?
@@ -205,6 +205,11 @@ bool BuildState::initializeBuild()
 				project.addIncludeDir(std::move(includeDir));
 			}
 
+#if defined(CHALET_MACOS)
+			project.addMacosFrameworkPath("/Library/Frameworks");
+			project.addMacosFrameworkPath("/System/Library/Frameworks");
+#endif
+
 			for (auto& t : targets)
 			{
 				if (t->isProject())
@@ -218,7 +223,6 @@ bool BuildState::initializeBuild()
 	}
 
 	{
-		// Note: Most time is spent here (277ms in mingw)
 		environment.initialize(paths);
 
 		for (auto& target : targets)
@@ -397,9 +401,9 @@ void BuildState::makeLibraryPathVariables()
 
 #if defined(CHALET_LINUX) || defined(CHALET_MACOS)
 	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
-	// Note: Not needed on mac: @rpath stuff is done instead
 
-	// TODO: This might actually vary between distros? Test as many as possible
+	if (environment.searchPaths().empty())
+		return;
 
 	auto addEnvironmentPath = [this](const char* inKey) {
 		auto path = Environment::getAsString(inKey);

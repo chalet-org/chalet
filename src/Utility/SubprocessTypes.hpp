@@ -22,7 +22,6 @@ enum class PipeOption : int
 	Close ///< Troll the child by providing a closed pipe.
 };
 
-using EnvMap = std::map<std::string, std::string>;
 }
 
 #endif // CHALET_SUBPROCESS_TYPES_HPP

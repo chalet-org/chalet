@@ -29,7 +29,7 @@ BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnviron
 }
 
 /*****************************************************************************/
-void BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inToolchain)
+bool BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inToolchain)
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
@@ -74,6 +74,8 @@ void BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inTool
 	}
 
 	m_initialized = true;
+
+	return true;
 }
 
 /*****************************************************************************/

@@ -19,7 +19,7 @@ CMakeTarget::CMakeTarget(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-void CMakeTarget::initialize()
+bool CMakeTarget::initialize()
 {
 	const auto& targetName = this->name();
 	m_state.paths.replaceVariablesInPath(m_buildFile, targetName);
@@ -29,6 +29,8 @@ void CMakeTarget::initialize()
 	{
 		m_state.paths.replaceVariablesInPath(define, targetName);
 	}
+
+	return true;
 }
 
 /*****************************************************************************/

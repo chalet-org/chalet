@@ -27,7 +27,8 @@
 	#include <array>
 #endif
 
-#ifdef CHALET_MSVC
+#if defined(CHALET_MSVC)
+	#define putenv _putenv
 	#pragma warning(push)
 	#pragma warning(disable : 4996)
 #endif
@@ -413,11 +414,7 @@ void Environment::set(const char* inName, const std::string& inValue)
 #ifdef CHALET_WIN32
 	std::string outValue = fmt::format("{}={}", inName, inValue);
 	// LOG(outValue);
-	#ifdef CHALET_MSVC
-	int result = _putenv(outValue.c_str());
-	#else
 	int result = putenv(outValue.c_str());
-	#endif
 #else
 	int result = setenv(inName, inValue.c_str(), true);
 #endif

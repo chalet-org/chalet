@@ -277,9 +277,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		]
 	})json"_ojson;
 
-	defs[Defs::EnvironmentPath] = R"json({
+	defs[Defs::EnvironmentSearchPaths] = R"json({
 		"type": "array",
-		"description": "Any additional paths to include.",
+		"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDepDir}",
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
@@ -1293,7 +1293,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		//
 		case Defs::EnumPlatform: return "enum-platform";
 		//
-		case Defs::EnvironmentPath: return "environment-path";
+		case Defs::EnvironmentSearchPaths: return "environment-searchPaths";
 		//
 		case Defs::TargetDescription: return "target-description";
 		case Defs::TargetType: return "target-type";
@@ -1476,8 +1476,8 @@ Json SchemaBuildJson::get()
 	})json"_ojson;
 	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-\\+\\.]{3,100}$"] = getDefinition(Defs::ExternalDependency);
 
-	ret[kProperties]["path"] = getDefinition(Defs::EnvironmentPath);
-	ret[kPatternProperties][fmt::format("^path{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::EnvironmentPath);
+	ret[kProperties]["searchPaths"] = getDefinition(Defs::EnvironmentSearchPaths);
+	ret[kPatternProperties][fmt::format("^searchPaths{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::EnvironmentSearchPaths);
 
 	const auto targets = "targets";
 	ret[kProperties][targets] = R"json({

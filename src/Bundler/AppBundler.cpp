@@ -102,7 +102,8 @@ bool AppBundler::run(const DistTarget& inTarget)
 			return false;
 		}
 
-		bundle.initialize(*buildState);
+		if (!bundle.initialize(*buildState))
+			return false;
 
 		if (!gatherDependencies(bundle, *buildState))
 			return false;

@@ -22,7 +22,7 @@ struct ProjectTarget final : public IBuildTarget
 {
 	explicit ProjectTarget(BuildState& inState);
 
-	virtual void initialize() final;
+	virtual bool initialize() final;
 	virtual bool validate() final;
 
 	bool isExecutable() const noexcept;

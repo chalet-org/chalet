@@ -78,7 +78,6 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 		auto process = sp::RunBuilder(const_cast<StringList&>(inCmd))
 						   .cerr(static_cast<sp::PipeOption>(inOptions.stderrOption))
 						   .cout(static_cast<sp::PipeOption>(inOptions.stdoutOption))
-						   .env(std::move(inOptions.env))
 						   .cwd(std::move(inOptions.cwd))
 						   .popen();
 

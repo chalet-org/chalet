@@ -22,7 +22,7 @@ struct IDistTarget
 
 	[[nodiscard]] static DistTarget make(const DistTargetType inType);
 
-	virtual void initialize(const BuildState& inState) = 0;
+	virtual bool initialize(const BuildState& inState) = 0;
 	virtual bool validate() = 0;
 
 	DistTargetType type() const noexcept;

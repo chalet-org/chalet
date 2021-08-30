@@ -14,7 +14,7 @@ struct SubChaletTarget final : public IBuildTarget
 {
 	explicit SubChaletTarget(const BuildState& inState);
 
-	virtual void initialize() final;
+	virtual bool initialize() final;
 	virtual bool validate() final;
 
 	const std::string& location() const noexcept;

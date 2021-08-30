@@ -33,7 +33,6 @@ struct SubprocessOptions
 	Subprocess::PipeFunc onStdOut = nullptr;
 	Subprocess::PipeFunc onStdErr = nullptr;
 	Subprocess::CreateFunc onCreate = nullptr;
-	EnvMap env;
 };
 
 }

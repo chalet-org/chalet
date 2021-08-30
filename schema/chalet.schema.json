@@ -342,9 +342,9 @@
 				"linux"
 			]
 		},
-		"environment-path": {
+		"environment-searchPaths": {
 			"type": "array",
-			"description": "Any additional paths to include.",
+			"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDepDir}",
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {
@@ -1471,8 +1471,8 @@
 				}
 			}
 		},
-		"path": {
-			"$ref": "#/definitions/environment-path"
+		"searchPaths": {
+			"$ref": "#/definitions/environment-searchPaths"
 		},
 		"targets": {
 			"type": "object",
@@ -1542,8 +1542,8 @@
 			"$ref": "#/definitions/target-project",
 			"description": "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project"
 		},
-		"^path(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-			"$ref": "#/definitions/environment-path"
+		"^searchPaths(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+			"$ref": "#/definitions/environment-searchPaths"
 		}
 	}
 }

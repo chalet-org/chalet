@@ -29,11 +29,11 @@ WorkspaceEnvironment::WorkspaceEnvironment() :
 }
 
 /*****************************************************************************/
-void WorkspaceEnvironment::initialize(BuildPaths& inPaths)
+bool WorkspaceEnvironment::initialize(BuildPaths& inPaths)
 {
 	auto originalPathVar = Environment::getPath();
 	std::string addedPath;
-	for (auto& path : m_path)
+	for (auto& path : m_searchPaths)
 	{
 		if (String::contains(path + Path::getSeparator(), originalPathVar))
 			continue;
@@ -48,6 +48,8 @@ void WorkspaceEnvironment::initialize(BuildPaths& inPaths)
 		auto pathVar = addedPath + originalPathVar;
 		Environment::setPath(pathVar);
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -118,34 +120,34 @@ void WorkspaceEnvironment::setExternalDepDir(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const StringList& WorkspaceEnvironment::path() const noexcept
+const StringList& WorkspaceEnvironment::searchPaths() const noexcept
 {
-	return m_path;
+	return m_searchPaths;
 }
 
-void WorkspaceEnvironment::addPaths(StringList&& inList)
+void WorkspaceEnvironment::addSearchPaths(StringList&& inList)
 {
-	List::forEach(inList, this, &WorkspaceEnvironment::addPath);
+	List::forEach(inList, this, &WorkspaceEnvironment::addSearchPath);
 }
 
-void WorkspaceEnvironment::addPath(std::string&& inValue)
+void WorkspaceEnvironment::addSearchPath(std::string&& inValue)
 {
 	if (inValue.back() == '/')
 		inValue.pop_back();
 
-	List::addIfDoesNotExist(m_path, std::move(inValue));
+	List::addIfDoesNotExist(m_searchPaths, std::move(inValue));
 }
 
 /*****************************************************************************/
 std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath) const
 {
-	if (m_path.empty())
+	if (m_searchPaths.empty())
 		return inRootPath;
 
 	auto separator = Path::getSeparator();
 	StringList outList;
 
-	for (auto& p : m_path)
+	for (auto& p : m_searchPaths)
 	{
 		if (!Commands::pathExists(p))
 			continue;

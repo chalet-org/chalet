@@ -18,13 +18,15 @@ ScriptBuildTarget::ScriptBuildTarget(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-void ScriptBuildTarget::initialize()
+bool ScriptBuildTarget::initialize()
 {
 	const auto& targetName = this->name();
 	for (auto& script : m_scripts)
 	{
 		m_state.paths.replaceVariablesInPath(script, targetName);
 	}
+
+	return true;
 }
 
 /*****************************************************************************/

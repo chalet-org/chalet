@@ -165,7 +165,7 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath)
+bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath) const
 {
 	for (auto& [file, dependencies] : inDependencyMap)
 	{
@@ -180,8 +180,11 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile)
+bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const
 {
+	if (!Commands::pathExists(inOutputFile))
+		return true;
+
 	if (inDependencies.size() > 0)
 	{
 		if (!Commands::subprocess({ inInstallNameTool, "-id", fmt::format("@rpath/{}", inFile), inOutputFile }))
@@ -305,7 +308,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 {
 	auto& installNameTool = m_state.tools.installNameTool();
 
-	for (auto p : m_state.environment.path())
+	for (auto p : m_state.environment.searchPaths())
 	{
 		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
 		Commands::subprocessNoOutput({ installNameTool, "-delete_rpath", fmt::format("@executable_path/{}", p), m_executableOutputPath });
@@ -387,11 +390,6 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	Timer timer;
 
-	const auto& universalArches = m_state.info.universalArches();
-	if (universalArches.size() < 2)
-	{
-		Output::lineBreak();
-	}
 	Diagnostic::infoEllipsis("Creating the distribution disk image");
 
 	const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);

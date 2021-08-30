@@ -120,8 +120,8 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode)
 	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "externalDepDir"))
 		m_prototype.environment.setExternalDepDir(std::move(val));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "path"))
-		m_prototype.environment.addPaths(std::move(list));
+	if (StringList list; assignStringListFromConfig(list, inNode, "searchPaths"))
+		m_prototype.environment.addSearchPaths(std::move(list));
 
 	return true;
 }

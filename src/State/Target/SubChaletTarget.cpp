@@ -17,11 +17,13 @@ SubChaletTarget::SubChaletTarget(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-void SubChaletTarget::initialize()
+bool SubChaletTarget::initialize()
 {
 	const auto& targetName = this->name();
 	m_state.paths.replaceVariablesInPath(m_buildFile, targetName);
 	m_state.paths.replaceVariablesInPath(m_location, targetName);
+
+	return true;
 }
 
 /*****************************************************************************/

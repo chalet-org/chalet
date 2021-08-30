@@ -33,7 +33,7 @@ ProjectTarget::ProjectTarget(BuildState& inState) :
 }
 
 /*****************************************************************************/
-void ProjectTarget::initialize()
+bool ProjectTarget::initialize()
 {
 	const auto& targetName = this->name();
 	auto parse = [&](StringList& outList) {
@@ -52,6 +52,8 @@ void ProjectTarget::initialize()
 	parse(m_locationExcludes);
 
 	m_state.paths.replaceVariablesInPath(m_pch, name());
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -374,7 +376,7 @@ void ProjectTarget::addMacosFrameworkPath(std::string&& inValue)
 		inValue += '/';
 
 	List::addIfDoesNotExist(m_macosFrameworkPaths, inValue);
-	m_environment.addPath(std::move(inValue));
+	m_environment.addSearchPath(std::move(inValue));
 }
 
 /*****************************************************************************/
