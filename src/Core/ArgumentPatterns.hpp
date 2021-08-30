@@ -50,6 +50,7 @@ private:
 	void addSettingsFileArg();
 	void addFileArg();
 	void addRootDirArg();
+	void addExternalDirArg();
 	void addOutputDirArg();
 	void addBundleDirArg();
 	void addProjectGenArg();

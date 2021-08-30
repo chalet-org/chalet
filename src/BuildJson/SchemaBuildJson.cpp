@@ -279,7 +279,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::EnvironmentSearchPaths] = R"json({
 		"type": "array",
-		"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDepDir}",
+		"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDir}",
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
@@ -1463,16 +1463,10 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::ScriptTarget);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::DistributionTarget);
 
-	ret[kProperties]["externalDepDir"] = R"json({
-		"type": "string",
-		"description": "The path to install external dependencies into (see externalDependencies).",
-		"default": "chalet_external"
-	})json"_ojson;
-
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined in 'externalDepDir'."
+		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'externalDir'."
 	})json"_ojson;
 	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-\\+\\.]{3,100}$"] = getDefinition(Defs::ExternalDependency);
 

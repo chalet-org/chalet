@@ -52,6 +52,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	std::string file;
 	std::string rootDirectory;
 	std::string outputDirectory;
+	std::string externalDirectory;
 	std::string bundleDirectory;
 	std::string envFile;
 
@@ -92,6 +93,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				else if (String::equals({ "-o", "--output-dir" }, key))
 				{
 					outputDirectory = std::move(value);
+				}
+				else if (String::equals({ "-x", "--external-dir" }, key))
+				{
+					externalDirectory = std::move(value);
 				}
 				else if (String::equals({ "-b", "--bundle-dir" }, key))
 				{
@@ -168,6 +173,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	m_inputs.setRootDirectory(std::move(rootDirectory));
 
 	//
+	m_inputs.setExternalDirectory(std::move(externalDirectory));
 	m_inputs.setOutputDirectory(std::move(outputDirectory));
 	m_inputs.setBundleDirectory(std::move(bundleDirectory));
 	m_inputs.setInputFile(std::move(inputFile));

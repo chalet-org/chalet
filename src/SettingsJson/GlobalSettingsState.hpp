@@ -24,6 +24,7 @@ struct GlobalSettingsState
 	std::string envFile;
 	std::string rootDirectory;
 	std::string outputDirectory;
+	std::string externalDirectory;
 	std::string bundleDirectory;
 	std::string signingIdentity;
 

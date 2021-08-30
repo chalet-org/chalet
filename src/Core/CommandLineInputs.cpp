@@ -21,9 +21,11 @@ CommandLineInputs::CommandLineInputs() :
 	kDefaultInputFile("chalet.json"),
 	kDefaultEnvFile(".env"),
 	kDefaultOutputDirectory("build"),
+	kDefaultExternalDirectory("chalet_external"),
 	m_inputFile(kDefaultInputFile),
 	m_settingsFile(".chaletrc"),
 	m_outputDirectory(kDefaultOutputDirectory),
+	m_externalDirectory(kDefaultExternalDirectory),
 	m_platform(getPlatform()),
 	m_envFile(kDefaultEnvFile),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
@@ -151,6 +153,23 @@ void CommandLineInputs::setOutputDirectory(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& CommandLineInputs::externalDirectory() const noexcept
+{
+	return m_externalDirectory;
+}
+
+void CommandLineInputs::setExternalDirectory(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_externalDirectory = std::move(inValue);
+
+	Path::sanitize(m_externalDirectory);
+	// clearWorkingDirectory(m_externalDirectory);
+}
+
+/*****************************************************************************/
 const std::string& CommandLineInputs::bundleDirectory() const noexcept
 {
 	return m_bundleDirectory;
@@ -165,8 +184,6 @@ void CommandLineInputs::setBundleDirectory(std::string&& inValue) noexcept
 
 	Path::sanitize(m_bundleDirectory);
 	// clearWorkingDirectory(m_bundleDirectory);
-
-	LOG(m_bundleDirectory);
 }
 /*****************************************************************************/
 const std::string& CommandLineInputs::defaultInputFile() const noexcept
@@ -180,9 +197,16 @@ const std::string& CommandLineInputs::defaultEnvFile() const noexcept
 	return kDefaultEnvFile;
 }
 
+/*****************************************************************************/
 const std::string& CommandLineInputs::defaultOutputDirectory() const noexcept
 {
 	return kDefaultOutputDirectory;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::defaultExternalDirectory() const noexcept
+{
+	return kDefaultExternalDirectory;
 }
 
 /*****************************************************************************/

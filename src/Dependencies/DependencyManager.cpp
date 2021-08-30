@@ -30,7 +30,7 @@ DependencyManager::DependencyManager(const CommandLineInputs& inInputs, StatePro
 /*****************************************************************************/
 bool DependencyManager::run()
 {
-	m_prototype.cache.file().loadExternalDependencies(m_prototype.environment.externalDepDir());
+	m_prototype.cache.file().loadExternalDependencies(m_inputs.externalDirectory());
 
 	Output::lineBreak();
 
@@ -100,7 +100,7 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 {
 	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
 
-	const auto& externalDepDir = m_prototype.environment.externalDepDir();
+	const auto& externalDir = m_inputs.externalDirectory();
 	for (auto& it : inList)
 	{
 		if (Commands::pathExists(it))
@@ -108,7 +108,7 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 			if (Commands::removeRecursively(it))
 			{
 				std::string name = it;
-				String::replaceAll(name, fmt::format("{}/", externalDepDir), "");
+				String::replaceAll(name, fmt::format("{}/", externalDir), "");
 
 				Output::msgDisplayBlack(fmt::format("Removed unused dependency: '{}'", name));
 				m_fetched |= true;
@@ -124,12 +124,12 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 /*****************************************************************************/
 bool DependencyManager::removeExternalDependencyDirectoryIfEmpty() const
 {
-	const auto& externalDepDir = m_prototype.environment.externalDepDir();
-	if (Commands::pathIsEmpty(externalDepDir, {}, true))
+	const auto& externalDir = m_inputs.externalDirectory();
+	if (Commands::pathIsEmpty(externalDir, {}, true))
 	{
-		if (!Commands::remove(externalDepDir))
+		if (!Commands::remove(externalDir))
 		{
-			Diagnostic::error("Error removing folder: {}", externalDepDir);
+			Diagnostic::error("Error removing folder: {}", externalDir);
 			return false;
 		}
 	}

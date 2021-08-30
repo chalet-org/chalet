@@ -35,9 +35,6 @@ struct WorkspaceEnvironment
 	const std::string& version() const noexcept;
 	void setVersion(std::string&& inValue) noexcept;
 
-	const std::string& externalDepDir() const noexcept;
-	void setExternalDepDir(std::string&& inValue) noexcept;
-
 	const StringList& searchPaths() const noexcept;
 	void addSearchPaths(StringList&& inList);
 	void addSearchPath(std::string&& inValue);
@@ -48,7 +45,6 @@ private:
 
 	std::string m_workspace;
 	std::string m_version;
-	std::string m_externalDepDir{ "chalet_external" };
 
 	std::string m_pathString;
 	StringList m_pathInternal;

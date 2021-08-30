@@ -33,6 +33,7 @@ protected:
 	const std::string kKeyEnvFile = "envFile";
 	const std::string kKeyRootDirectory = "rootDir";
 	const std::string kKeyOutputDirectory = "outputDir";
+	const std::string kKeyExternalDirectory = "externalDir";
 	const std::string kKeyBundleDirectory = "bundleDir";
 };
 }

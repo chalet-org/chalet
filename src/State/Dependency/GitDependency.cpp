@@ -15,8 +15,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-GitDependency::GitDependency(const StatePrototype& inPrototype) :
-	IBuildDependency(inPrototype, BuildDependencyType::Git)
+GitDependency::GitDependency(const CommandLineInputs& inInputs, const StatePrototype& inPrototype) :
+	IBuildDependency(inPrototype, BuildDependencyType::Git),
+	m_inputs(inInputs)
 {
 }
 
@@ -109,14 +110,14 @@ bool GitDependency::parseDestination()
 	if (!m_destination.empty())
 		return false;
 
-	const auto& externalDepDir = m_prototype.environment.externalDepDir();
-	chalet_assert(!externalDepDir.empty(), "externalDepDir can't be blank.");
+	const auto& externalDir = m_inputs.externalDirectory();
+	chalet_assert(!externalDir.empty(), "externalDir can't be blank.");
 
 	auto& targetName = this->name();
 
 	if (!targetName.empty())
 	{
-		m_destination = fmt::format("{}/{}", externalDepDir, targetName);
+		m_destination = fmt::format("{}/{}", externalDir, targetName);
 		return true;
 	}
 
@@ -130,7 +131,7 @@ bool GitDependency::parseDestination()
 
 	std::string baseName = String::getPathBaseName(m_repository);
 
-	m_destination = fmt::format("{}/{}", externalDepDir, baseName);
+	m_destination = fmt::format("{}/{}", externalDir, baseName);
 
 	// LOG(m_destination);
 

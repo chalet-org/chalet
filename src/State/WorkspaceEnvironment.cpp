@@ -103,23 +103,6 @@ void WorkspaceEnvironment::setVersion(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& WorkspaceEnvironment::externalDepDir() const noexcept
-{
-	return m_externalDepDir;
-}
-
-void WorkspaceEnvironment::setExternalDepDir(std::string&& inValue) noexcept
-{
-	if (inValue.empty())
-		return;
-
-	m_externalDepDir = std::move(inValue);
-
-	if (m_externalDepDir.back() == '/')
-		m_externalDepDir.pop_back();
-}
-
-/*****************************************************************************/
 const StringList& WorkspaceEnvironment::searchPaths() const noexcept
 {
 	return m_searchPaths;

@@ -202,11 +202,13 @@
 				},
 				"inputFile": {
 					"description": "An input build file to use.",
-					"type": "string"
+					"type": "string",
+					"default": "chalet.json"
 				},
 				"envFile": {
 					"description": "A file to load environment variables from.",
-					"type": "string"
+					"type": "string",
+					"default": ".env"
 				},
 				"rootDir": {
 					"description": "The root directory to run the build from.",
@@ -214,7 +216,13 @@
 				},
 				"outputDir": {
 					"description": "The output directory of the build.",
-					"type": "string"
+					"type": "string",
+					"default": "build"
+				},
+				"externalDir": {
+					"type": "string",
+					"description": "The directory to install external dependencies into prior to the rest of the build's run.",
+					"default": "chalet_external"
 				},
 				"bundleDir": {
 					"description": "The root directory of all distribution bundles.",

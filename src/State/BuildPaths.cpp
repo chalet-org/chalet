@@ -244,10 +244,10 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 	String::replaceAll(outPath, "${cwd}", m_inputs.workingDirectory());
 	String::replaceAll(outPath, "${buildDir}", buildDir);
 
-	const auto& external = m_environment.externalDepDir();
+	const auto& external = m_inputs.externalDirectory();
 	if (!external.empty())
 	{
-		String::replaceAll(outPath, "${externalDepDir}", external);
+		String::replaceAll(outPath, "${externalDir}", external);
 		String::replaceAll(outPath, "${external}", external);
 		String::replaceAll(outPath, "${vendor}", external);
 	}

@@ -157,6 +157,7 @@ ushort ArgumentPatterns::parseOption(const std::string& inString)
 		"-f", "--file",
 		"-r", "--root-dir",
 		"-o", "--output-dir",
+		"-x", "--external-dir",
 		"-b", "--bundle-dir",
 		"-t", "--toolchain",
 		"-c", "--configuration",
@@ -520,6 +521,18 @@ void ArgumentPatterns::addOutputDirArg()
 }
 
 /*****************************************************************************/
+void ArgumentPatterns::addExternalDirArg()
+{
+	m_parser.add_argument("-x", "--external-dir")
+		.help("The directory to install external dependencies into")
+		.nargs(1)
+		.default_value(std::string("chalet_external"));
+
+	m_argumentMap.push_back({ "-x", Variant::Kind::String });
+	m_argumentMap.push_back({ "--external-dir", Variant::Kind::String });
+}
+
+/*****************************************************************************/
 void ArgumentPatterns::addBundleDirArg()
 {
 	m_parser.add_argument("-b", "--bundle-dir")
@@ -696,6 +709,7 @@ void ArgumentPatterns::addOptionalArguments()
 	addInputFileArg();
 	addSettingsFileArg();
 	addRootDirArg();
+	addExternalDirArg();
 	addOutputDirArg();
 	addBuildConfigurationArg();
 	addToolchainArg();

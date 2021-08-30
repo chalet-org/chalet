@@ -123,7 +123,12 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyOutputDirectory, [&]() {
 		outState.outputDirectory = m_inputs.outputDirectory();
-		return outState.rootDirectory;
+		return outState.outputDirectory;
+	});
+
+	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyExternalDirectory, [&]() {
+		outState.externalDirectory = m_inputs.externalDirectory();
+		return outState.externalDirectory;
 	});
 
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyBundleDirectory, [&]() {

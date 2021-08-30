@@ -172,6 +172,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyEnvFile, m_inputs.envFile(), inState.envFile);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyBundleDirectory, m_inputs.bundleDirectory(), inState.bundleDirectory);
 
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeySigningIdentity, [&]() {
@@ -416,6 +417,12 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 	{
 		if (m_inputs.outputDirectory().empty() || !String::equals({ m_inputs.outputDirectory(), m_inputs.defaultOutputDirectory() }, val))
 			m_inputs.setOutputDirectory(std::move(val));
+	}
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyExternalDirectory))
+	{
+		if (m_inputs.externalDirectory().empty() || !String::equals({ m_inputs.externalDirectory(), m_inputs.defaultExternalDirectory() }, val))
+			m_inputs.setExternalDirectory(std::move(val));
 	}
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyBundleDirectory))

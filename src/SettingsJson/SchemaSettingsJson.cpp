@@ -73,6 +73,7 @@ enum class Defs : ushort
 	EnvFile,
 	RootDir,
 	OutputDir,
+	ExternalDir,
 	BundleDir,
 
 	/* Theme */
@@ -405,12 +406,14 @@ Json Schema::getSettingsJson()
 
 	defs[Defs::InputFile] = R"json({
 		"description": "An input build file to use.",
-		"type": "string"
+		"type": "string",
+		"default": "chalet.json"
 	})json"_ojson;
 
 	defs[Defs::EnvFile] = R"json({
 		"description": "A file to load environment variables from.",
-		"type": "string"
+		"type": "string",
+		"default": ".env"
 	})json"_ojson;
 
 	defs[Defs::RootDir] = R"json({
@@ -420,7 +423,14 @@ Json Schema::getSettingsJson()
 
 	defs[Defs::OutputDir] = R"json({
 		"description": "The output directory of the build.",
-		"type": "string"
+		"type": "string",
+		"default": "build"
+	})json"_ojson;
+
+	defs[Defs::ExternalDir] = R"json({
+		"type": "string",
+		"description": "The directory to install external dependencies into prior to the rest of the build's run.",
+		"default": "chalet_external"
 	})json"_ojson;
 
 	defs[Defs::BundleDir] = R"json({
@@ -559,6 +569,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kSettings][kProperties]["envFile"] = defs[Defs::EnvFile];
 	ret[kProperties][kSettings][kProperties]["rootDir"] = defs[Defs::RootDir];
 	ret[kProperties][kSettings][kProperties]["outputDir"] = defs[Defs::OutputDir];
+	ret[kProperties][kSettings][kProperties]["externalDir"] = defs[Defs::ExternalDir];
 	ret[kProperties][kSettings][kProperties]["bundleDir"] = defs[Defs::BundleDir];
 
 	const auto kToolchains = "toolchains";

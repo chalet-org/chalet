@@ -1,7 +1,6 @@
 {
 	"version": "0.0.1",
 	"workspace": "Chalet",
-	"externalDepDir": "chalet_external",
 	// "searchPaths": [],
 	/*"configurations": {
 		"Release": {
