@@ -248,8 +248,6 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 	if (!external.empty())
 	{
 		String::replaceAll(outPath, "${externalDir}", external);
-		String::replaceAll(outPath, "${external}", external);
-		String::replaceAll(outPath, "${vendor}", external);
 	}
 
 	if (!inName.empty())
