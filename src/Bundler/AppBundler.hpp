@@ -29,7 +29,6 @@ struct AppBundler
 
 	const BinaryDependencyMap& dependencyMap() const noexcept;
 	bool gatherDependencies(const BundleTarget& inTarget, BuildState& inState);
-	void addDependencies(std::string&& inFile, StringList&& inDependencies);
 	void logDependencies() const;
 
 private:

@@ -127,8 +127,6 @@ bool AppBundler::run(const DistTarget& inTarget)
 
 	Output::lineBreak();
 
-	// logDependencies();
-
 	return true;
 }
 
@@ -185,7 +183,9 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	// Timer timer;
 
-	const auto copyIncludedPath = [](const std::string& inDep, const std::string& inOutPath) -> bool {
+	const auto cwd = m_inputs.workingDirectory() + '/';
+
+	const auto copyIncludedPath = [&cwd](const std::string& inDep, const std::string& inOutPath) -> bool {
 		if (Commands::pathExists(inDep))
 		{
 			const auto filename = String::getPathFilename(inDep);
@@ -195,7 +195,11 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 				if (Commands::pathExists(outputFile))
 					return true; // Already copied - duplicate dependency
 			}
-			if (!Commands::copy(inDep, inOutPath))
+
+			auto dep = inDep;
+			String::replaceAll(dep, cwd, "");
+
+			if (!Commands::copy(dep, inOutPath))
 			{
 				Diagnostic::warn("Dependency '{}' could not be copied to: {}", filename, inOutPath);
 				return false;
@@ -392,31 +396,84 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 		}
 #endif
 
+		// TODO: Refactor this w/ recursion
+
 		for (auto& outputFilePath : allDependencies)
 		{
-			if (m_dependencyMap.find(outputFilePath) == m_dependencyMap.end())
+			if (m_dependencyMap.find(outputFilePath) != m_dependencyMap.end())
+				continue;
+
+			StringList dependencies;
+			if (!inState.tools.getExecutableDependencies(outputFilePath, dependencies))
 			{
-				StringList dependencies;
-				if (!inState.tools.getExecutableDependencies(outputFilePath, dependencies))
+				Diagnostic::error("Dependencies not found for file: '{}'", outputFilePath);
+				return false;
+			}
+
+			for (auto& dep : dependencies)
+			{
+				const auto filename = String::getPathFilename(dep);
+				if (dep.empty()
+					|| List::contains(depsFromJson, dep)
+					|| List::contains(depsFromJson, filename))
+					continue;
+
+				if (!Commands::pathExists(dep))
 				{
-					Diagnostic::error("Dependencies not found for file: '{}'", outputFilePath);
+					std::string resolved;
+					for (auto& dir : searchDirs)
+					{
+						resolved = fmt::format("{}/{}", dir, filename);
+						if (!Commands::pathExists(resolved))
+						{
+							resolved.clear();
+							continue;
+						}
+						else
+						{
+							dep = std::move(resolved);
+							break;
+						}
+					}
+
+					if (resolved.empty())
+					{
+						resolved = Commands::which(filename);
+						if (resolved.empty())
+						{
+							// Diagnostic::warn("Dependency not copied (not found in path): '{}'", dep);
+							// return false;
+							// We probably don't care about them anyway
+							continue;
+						}
+						dep = std::move(resolved);
+					}
+				}
+
+				if (m_dependencyMap.find(dep) != m_dependencyMap.end())
+					continue;
+
+				StringList depsOfDeps;
+				if (!inState.tools.getExecutableDependencies(dep, depsOfDeps))
+				{
+					Diagnostic::error("Dependencies not found for file: '{}'", dep);
 					return false;
 				}
 
-				for (auto& dep : dependencies)
+				for (auto& d : depsOfDeps)
 				{
-					const auto filename = String::getPathFilename(dep);
-					if (dep.empty()
-						|| List::contains(depsFromJson, dep)
-						|| List::contains(depsFromJson, filename))
+					auto file = String::getPathFilename(d);
+					if (d.empty()
+						|| List::contains(depsFromJson, d)
+						|| List::contains(depsFromJson, file))
 						continue;
 
-					if (!Commands::pathExists(dep))
+					if (!Commands::pathExists(d))
 					{
 						std::string resolved;
 						for (auto& dir : searchDirs)
 						{
-							resolved = fmt::format("{}/{}", dir, filename);
+							resolved = fmt::format("{}/{}", dir, file);
 							if (!Commands::pathExists(resolved))
 							{
 								resolved.clear();
@@ -424,93 +481,35 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 							}
 							else
 							{
-								dep = std::move(resolved);
+								d = std::move(resolved);
 								break;
 							}
 						}
 
 						if (resolved.empty())
 						{
-							resolved = Commands::which(filename);
+							resolved = Commands::which(file);
 							if (resolved.empty())
 							{
-								// Diagnostic::warn("Dependency not copied (not found in path): '{}'", dep);
+								// Diagnostic::warn("Dependency not copied (not found in path): '{}'", d);
 								// return false;
 								// We probably don't care about them anyway
 								continue;
 							}
-							dep = std::move(resolved);
+							d = std::move(resolved);
 						}
-					}
-
-					if (m_dependencyMap.find(dep) == m_dependencyMap.end())
-					{
-						StringList depsOfDeps;
-						if (!inState.tools.getExecutableDependencies(dep, depsOfDeps))
-						{
-							Diagnostic::error("Dependencies not found for file: '{}'", dep);
-							return false;
-						}
-
-						for (auto& d : depsOfDeps)
-						{
-							auto file = String::getPathFilename(d);
-							if (dep.empty()
-								|| List::contains(depsFromJson, d)
-								|| List::contains(depsFromJson, file))
-								continue;
-
-							if (!Commands::pathExists(d))
-							{
-								std::string resolved;
-								for (auto& dir : searchDirs)
-								{
-									resolved = fmt::format("{}/{}", dir, file);
-									if (!Commands::pathExists(resolved))
-									{
-										resolved.clear();
-										continue;
-									}
-									else
-									{
-										dep = std::move(resolved);
-										break;
-									}
-								}
-
-								if (resolved.empty())
-								{
-									resolved = Commands::which(file);
-									if (resolved.empty())
-									{
-										// Diagnostic::warn("Dependency not copied (not found in path): '{}'", d);
-										// return false;
-										// We probably don't care about them anyway
-										continue;
-									}
-									d = std::move(resolved);
-								}
-							}
-						}
-						m_dependencyMap.emplace(dep, std::move(depsOfDeps));
 					}
 				}
-
-				m_dependencyMap.emplace(std::move(outputFilePath), std::move(dependencies));
+				m_dependencyMap.emplace(dep, std::move(depsOfDeps));
 			}
+
+			m_dependencyMap.emplace(std::move(outputFilePath), std::move(dependencies));
 		}
 	}
 
-	return true;
-}
+	// logDependencies();
 
-/*****************************************************************************/
-void AppBundler::addDependencies(std::string&& inFile, StringList&& inDependencies)
-{
-	if (m_dependencyMap.find(inFile) == m_dependencyMap.end())
-	{
-		m_dependencyMap.emplace(std::move(inFile), std::move(inDependencies));
-	}
+	return true;
 }
 
 /*****************************************************************************/
