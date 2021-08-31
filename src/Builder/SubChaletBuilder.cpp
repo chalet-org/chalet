@@ -108,6 +108,9 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 	cmd.emplace_back("--output-dir");
 	cmd.emplace_back(fmt::format("{}/{}", proximateOutput, m_target.name()));
 
+	cmd.emplace_back("--configuration");
+	cmd.push_back(m_state.info.buildConfiguration());
+
 	if (!m_inputs.toolchainPreferenceName().empty())
 	{
 		cmd.emplace_back("--toolchain");
@@ -129,8 +132,6 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 		cmd.emplace_back("--arch");
 		cmd.push_back(m_inputs.architectureRaw());
 	}
-
-	cmd.push_back(m_state.info.buildConfiguration());
 
 	return cmd;
 }
