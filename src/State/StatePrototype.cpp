@@ -147,7 +147,7 @@ bool StatePrototype::runDependencyManager()
 /*****************************************************************************/
 bool StatePrototype::validateBundleDestinations()
 {
-	auto& bundleDirectory = m_inputs.bundleDirectory();
+	auto& distributionDirectory = m_inputs.distributionDirectory();
 
 	std::unordered_map<std::string, std::string> locations;
 	bool result = true;
@@ -164,10 +164,10 @@ bool StatePrototype::validateBundleDestinations()
 			}
 			List::addIfDoesNotExist(m_requiredBuildConfigurations, bundle.configuration());
 
-			if (!bundleDirectory.empty())
+			if (!distributionDirectory.empty())
 			{
-				auto& outDir = bundle.outDir();
-				bundle.setOutDir(fmt::format("{}/{}", bundleDirectory, outDir));
+				auto& subDirectory = bundle.subDirectory();
+				bundle.setSubDirectory(fmt::format("{}/{}", distributionDirectory, subDirectory));
 			}
 
 			for (auto& projectName : bundle.projects())
@@ -175,19 +175,19 @@ bool StatePrototype::validateBundleDestinations()
 				auto res = locations.find(projectName);
 				if (res != locations.end())
 				{
-					if (res->second == bundle.outDir())
+					if (res->second == bundle.subDirectory())
 					{
-						Diagnostic::error("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", projectName, bundle.outDir(), bundle.name());
+						Diagnostic::error("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", projectName, bundle.subDirectory(), bundle.name());
 						result = false;
 					}
 					else
 					{
-						locations.emplace(projectName, bundle.outDir());
+						locations.emplace(projectName, bundle.subDirectory());
 					}
 				}
 				else
 				{
-					locations.emplace(projectName, bundle.outDir());
+					locations.emplace(projectName, bundle.subDirectory());
 				}
 			}
 		}

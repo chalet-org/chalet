@@ -22,10 +22,12 @@ CommandLineInputs::CommandLineInputs() :
 	kDefaultEnvFile(".env"),
 	kDefaultOutputDirectory("build"),
 	kDefaultExternalDirectory("chalet_external"),
+	kDefaultDistributionDirectory("dist"),
 	m_inputFile(kDefaultInputFile),
 	m_settingsFile(".chaletrc"),
 	m_outputDirectory(kDefaultOutputDirectory),
 	m_externalDirectory(kDefaultExternalDirectory),
+	m_distributionDirectory(kDefaultDistributionDirectory),
 	m_platform(getPlatform()),
 	m_envFile(kDefaultEnvFile),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
@@ -170,20 +172,20 @@ void CommandLineInputs::setExternalDirectory(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::bundleDirectory() const noexcept
+const std::string& CommandLineInputs::distributionDirectory() const noexcept
 {
-	return m_bundleDirectory;
+	return m_distributionDirectory;
 }
 
-void CommandLineInputs::setBundleDirectory(std::string&& inValue) noexcept
+void CommandLineInputs::setDistributionDirectory(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
 		return;
 
-	m_bundleDirectory = std::move(inValue);
+	m_distributionDirectory = std::move(inValue);
 
-	Path::sanitize(m_bundleDirectory);
-	// clearWorkingDirectory(m_bundleDirectory);
+	Path::sanitize(m_distributionDirectory);
+	// clearWorkingDirectory(m_distributionDirectory);
 }
 /*****************************************************************************/
 const std::string& CommandLineInputs::defaultInputFile() const noexcept
@@ -207,6 +209,12 @@ const std::string& CommandLineInputs::defaultOutputDirectory() const noexcept
 const std::string& CommandLineInputs::defaultExternalDirectory() const noexcept
 {
 	return kDefaultExternalDirectory;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::defaultDistributionDirectory() const noexcept
+{
+	return kDefaultDistributionDirectory;
 }
 
 /*****************************************************************************/

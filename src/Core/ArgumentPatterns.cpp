@@ -58,7 +58,7 @@ ArgumentPatterns::ArgumentPatterns() :
 		"-r", "--root-dir",
 		"-o", "--output-dir",
 		"-x", "--external-dir",
-		"-b", "--bundle-dir",
+		"-d", "--distribution-dir",
 		"-t", "--toolchain",
 		"-c", "--configuration",
 		// "-p", "--project-gen",
@@ -536,13 +536,13 @@ void ArgumentPatterns::addExternalDirArg()
 /*****************************************************************************/
 void ArgumentPatterns::addBundleDirArg()
 {
-	m_parser.add_argument("-b", "--bundle-dir")
-		.help("The root directory of all distribution bundles")
+	m_parser.add_argument("-d", "--distribution-dir")
+		.help("The root directory for all distribution bundles")
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-b", Variant::Kind::String });
-	m_argumentMap.push_back({ "--bundle-dir", Variant::Kind::String });
+	m_argumentMap.push_back({ "-d", Variant::Kind::String });
+	m_argumentMap.push_back({ "--distribution-dir", Variant::Kind::String });
 }
 
 /*****************************************************************************/

@@ -153,7 +153,7 @@
 	},
 	"distribution": {
 		"Chalet": {
-			"outDir": "dist",
+			// "subDirectory": "dist",
 			"configuration": "Release",
 			"projects": [
 				"chalet"

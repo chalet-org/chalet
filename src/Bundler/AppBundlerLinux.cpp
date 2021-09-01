@@ -124,19 +124,19 @@ bool AppBundlerLinux::bundleForPlatform()
 /*****************************************************************************/
 std::string AppBundlerLinux::getBundlePath() const
 {
-	return m_bundle.outDir();
+	return m_bundle.subDirectory();
 }
 
 /*****************************************************************************/
 std::string AppBundlerLinux::getExecutablePath() const
 {
-	return m_bundle.outDir();
+	return m_bundle.subDirectory();
 }
 
 /*****************************************************************************/
 std::string AppBundlerLinux::getResourcePath() const
 {
-	return m_bundle.outDir();
+	return m_bundle.subDirectory();
 }
 
 }

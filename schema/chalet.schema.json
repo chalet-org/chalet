@@ -95,8 +95,8 @@
 				"mainProject": {
 					"$ref": "#/definitions/distribution-target-mainProject"
 				},
-				"outDir": {
-					"$ref": "#/definitions/distribution-target-outDir"
+				"subDirectory": {
+					"$ref": "#/definitions/distribution-target-subDirectory"
 				},
 				"projects": {
 					"$ref": "#/definitions/distribution-target-projects"
@@ -140,7 +140,7 @@
 		},
 		"distribution-target-includeDependentSharedLibraries": {
 			"type": "boolean",
-			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied into the bundle.",
+			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
 			"default": true
 		},
 		"distribution-target-linux": {
@@ -241,7 +241,7 @@
 			"type": "string",
 			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'projects' array of the distribution target will be chosen as the main executable."
 		},
-		"distribution-target-outDir": {
+		"distribution-target-subDirectory": {
 			"type": "string",
 			"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
 			"default": "dist"

@@ -21,12 +21,12 @@ bool BundleLinux::validate()
 	{
 		if (!String::endsWith(".png", m_icon))
 		{
-			Diagnostic::error("bundle.linux.icon must end with '.png', but was '{}'.", m_icon);
+			Diagnostic::error("distribution.linux.icon must end with '.png', but was '{}'.", m_icon);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_icon))
 		{
-			Diagnostic::error("bundle.linux.icon '{}' was not found.", m_icon);
+			Diagnostic::error("distribution.linux.icon '{}' was not found.", m_icon);
 			result = false;
 		}
 	}
@@ -35,7 +35,7 @@ bool BundleLinux::validate()
 	{
 		if (!String::endsWith(".desktop", m_desktopEntry))
 		{
-			Diagnostic::error("bundle.linux.desktopEntry must end with '.desktop', but was '{}'.", m_desktopEntry);
+			Diagnostic::error("distribution.linux.desktopEntry must end with '.desktop', but was '{}'.", m_desktopEntry);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_desktopEntry))

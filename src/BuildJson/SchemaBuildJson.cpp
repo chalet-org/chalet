@@ -112,7 +112,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::DistributionTargetIncludeDependentSharedLibraries] = R"json({
 		"type": "boolean",
-		"description": "If true (default), any shared libraries that the bundle depeends on will also be copied into the bundle.",
+		"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
 		"default": true
 	})json"_ojson;
 
@@ -1074,7 +1074,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distDef[kProperties]["macos"] = getDefinition(Defs::DistributionTargetMacOS);
 		distDef[kProperties]["windows"] = getDefinition(Defs::DistributionTargetWindows);
 		distDef[kProperties]["mainProject"] = getDefinition(Defs::DistributionTargetMainProject);
-		distDef[kProperties]["outDir"] = getDefinition(Defs::DistributionTargetOutputDirectory);
+		distDef[kProperties]["subDirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
 		distDef[kProperties]["projects"] = getDefinition(Defs::DistributionTargetProjects);
 		distDef[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
 		distDef[kPatternProperties][fmt::format("^include{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
@@ -1280,7 +1280,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTargetLinux: return "distribution-target-linux";
 		case Defs::DistributionTargetMacOS: return "distribution-target-macos";
 		case Defs::DistributionTargetMainProject: return "distribution-target-mainProject";
-		case Defs::DistributionTargetOutputDirectory: return "distribution-target-outDir";
+		case Defs::DistributionTargetOutputDirectory: return "distribution-target-subDirectory";
 		case Defs::DistributionTargetProjects: return "distribution-target-projects";
 		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//

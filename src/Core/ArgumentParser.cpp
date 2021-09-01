@@ -53,7 +53,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	std::string rootDirectory;
 	std::string outputDirectory;
 	std::string externalDirectory;
-	std::string bundleDirectory;
+	std::string distributionDirectory;
 	std::string envFile;
 
 	for (auto& [key, rawValue] : patterns.arguments())
@@ -98,9 +98,9 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					externalDirectory = std::move(value);
 				}
-				else if (String::equals({ "-b", "--bundle-dir" }, key))
+				else if (String::equals({ "-d", "--distribution-dir" }, key))
 				{
-					bundleDirectory = std::move(value);
+					distributionDirectory = std::move(value);
 				}
 				else if (String::equals({ "-t", "--toolchain" }, key))
 				{
@@ -175,7 +175,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	//
 	m_inputs.setExternalDirectory(std::move(externalDirectory));
 	m_inputs.setOutputDirectory(std::move(outputDirectory));
-	m_inputs.setBundleDirectory(std::move(bundleDirectory));
+	m_inputs.setDistributionDirectory(std::move(distributionDirectory));
 	m_inputs.setInputFile(std::move(inputFile));
 	m_inputs.setEnvFile(std::move(envFile));
 

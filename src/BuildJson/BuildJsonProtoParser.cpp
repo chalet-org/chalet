@@ -293,8 +293,8 @@ bool BuildJsonProtoParser::parseBundle(BundleTarget& outBundle, const Json& inNo
 	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "description"))
 		outBundle.setDescription(std::move(val));
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "outDir"))
-		outBundle.setOutDir(std::move(val));
+	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "subDirectory"))
+		outBundle.setSubDirectory(std::move(val));
 
 	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "mainProject"))
 		outBundle.setMainProject(std::move(val));

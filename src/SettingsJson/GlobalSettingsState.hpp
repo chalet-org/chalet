@@ -25,7 +25,7 @@ struct GlobalSettingsState
 	std::string rootDirectory;
 	std::string outputDirectory;
 	std::string externalDirectory;
-	std::string bundleDirectory;
+	std::string distributionDirectory;
 	std::string signingIdentity;
 
 	uint maxJobs = 0;

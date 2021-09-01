@@ -21,7 +21,7 @@ bool BundleMacOS::validate()
 	{
 		if (m_bundleName.size() > 15)
 		{
-			Diagnostic::error("bundle.macos.bundleName should not contain more than 15 characters.");
+			Diagnostic::error("distribution.macos.bundleName should not contain more than 15 characters.");
 			result = false;
 		}
 	}
@@ -30,12 +30,12 @@ bool BundleMacOS::validate()
 	{
 		if (!String::endsWith({ ".png", ".icns" }, m_icon))
 		{
-			Diagnostic::error("bundle.macos.icon must end with '.png' or '.icns', but was '{}'.", m_icon);
+			Diagnostic::error("distribution.macos.icon must end with '.png' or '.icns', but was '{}'.", m_icon);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_icon))
 		{
-			Diagnostic::error("bundle.macos.icon '{}' was not found.", m_icon);
+			Diagnostic::error("distribution.macos.icon '{}' was not found.", m_icon);
 			result = false;
 		}
 	}
@@ -44,7 +44,7 @@ bool BundleMacOS::validate()
 	{
 		if (!String::endsWith(".json", m_infoPropertyList))
 		{
-			Diagnostic::error("bundle.macos.infoPropertyList must end with '.plist' or '.json', but was '{}'.", m_infoPropertyList);
+			Diagnostic::error("distribution.macos.infoPropertyList must end with '.plist' or '.json', but was '{}'.", m_infoPropertyList);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_infoPropertyList))
@@ -57,12 +57,12 @@ bool BundleMacOS::validate()
 	{
 		if (!String::endsWith(".png", m_dmgBackground1x))
 		{
-			Diagnostic::error("bundle.macos.dmgBackground1x must end with '.png', but was '{}'.", m_dmgBackground1x);
+			Diagnostic::error("distribution.macos.dmgBackground1x must end with '.png', but was '{}'.", m_dmgBackground1x);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_dmgBackground1x))
 		{
-			Diagnostic::error("bundle.macos.dmgBackground1x '{}' was not found.", m_dmgBackground1x);
+			Diagnostic::error("distribution.macos.dmgBackground1x '{}' was not found.", m_dmgBackground1x);
 			result = false;
 		}
 	}
@@ -71,12 +71,12 @@ bool BundleMacOS::validate()
 	{
 		if (!String::endsWith(".png", m_dmgBackground2x))
 		{
-			Diagnostic::error("bundle.macos.dmgBackground2x must end with '.png', but was '{}'.", m_dmgBackground2x);
+			Diagnostic::error("distribution.macos.dmgBackground2x must end with '.png', but was '{}'.", m_dmgBackground2x);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_dmgBackground2x))
 		{
-			Diagnostic::error("bundle.macos.dmgBackground2x '{}' was not found.", m_dmgBackground2x);
+			Diagnostic::error("distribution.macos.dmgBackground2x '{}' was not found.", m_dmgBackground2x);
 			result = false;
 		}
 	}

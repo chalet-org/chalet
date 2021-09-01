@@ -38,19 +38,19 @@ bool AppBundlerWindows::bundleForPlatform()
 /*****************************************************************************/
 std::string AppBundlerWindows::getBundlePath() const
 {
-	return m_bundle.outDir();
+	return m_bundle.subDirectory();
 }
 
 /*****************************************************************************/
 std::string AppBundlerWindows::getExecutablePath() const
 {
-	return m_bundle.outDir();
+	return m_bundle.subDirectory();
 }
 
 /*****************************************************************************/
 std::string AppBundlerWindows::getResourcePath() const
 {
-	return m_bundle.outDir();
+	return m_bundle.subDirectory();
 }
 
 /*****************************************************************************/

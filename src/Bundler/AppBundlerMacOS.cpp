@@ -110,15 +110,15 @@ bool AppBundlerMacOS::bundleForPlatform()
 /*****************************************************************************/
 std::string AppBundlerMacOS::getBundlePath() const
 {
-	const auto& outDir = m_bundle.outDir();
+	const auto& subDirectory = m_bundle.subDirectory();
 	const auto& bundleName = m_bundle.macosBundle().bundleName();
 	if (!bundleName.empty())
 	{
-		return fmt::format("{}/{}.app/Contents", outDir, bundleName);
+		return fmt::format("{}/{}.app/Contents", subDirectory, bundleName);
 	}
 	else
 	{
-		return outDir;
+		return subDirectory;
 	}
 }
 
@@ -132,7 +132,7 @@ std::string AppBundlerMacOS::getExecutablePath() const
 	}
 	else
 	{
-		return m_bundle.outDir();
+		return m_bundle.subDirectory();
 	}
 }
 
@@ -146,7 +146,7 @@ std::string AppBundlerMacOS::getResourcePath() const
 	}
 	else
 	{
-		return m_bundle.outDir();
+		return m_bundle.subDirectory();
 	}
 }
 
@@ -160,7 +160,7 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 	}
 	else
 	{
-		return m_bundle.outDir();
+		return m_bundle.subDirectory();
 	}
 }
 
@@ -260,7 +260,7 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 		String::replaceAll(outContent, "${version}", version);
 	};
 
-	std::string tmpInfoPlist = fmt::format("{}/Info.plist.json", m_bundle.outDir());
+	std::string tmpInfoPlist = fmt::format("{}/Info.plist.json", m_bundle.subDirectory());
 	const auto& infoPropertyList = macosBundle.infoPropertyList();
 	std::string infoPropertyListContent = macosBundle.infoPropertyListContent();
 
@@ -379,12 +379,12 @@ bool AppBundlerMacOS::createDmgImage() const
 	if (!macosBundle.makeDmg())
 		return true;
 
-	const auto& outDir = m_bundle.outDir();
+	const auto& subDirectory = m_bundle.subDirectory();
 
 	auto& hdiutil = m_state.tools.hdiutil();
 	auto& tiffutil = m_state.tools.tiffutil();
 	const std::string volumePath = fmt::format("/Volumes/{}", bundleName);
-	const std::string appPath = fmt::format("{}/{}.app", outDir, bundleName);
+	const std::string appPath = fmt::format("{}/{}.app", subDirectory, bundleName);
 
 	Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
 
@@ -392,7 +392,7 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	Diagnostic::infoEllipsis("Creating the distribution disk image");
 
-	const std::string tmpDmg = fmt::format("{}/.tmp.dmg", outDir);
+	const std::string tmpDmg = fmt::format("{}/.tmp.dmg", subDirectory);
 
 	std::uintmax_t appSize = Commands::getPathSize(appPath);
 	std::uintmax_t mb = 1000000;
@@ -454,7 +454,7 @@ bool AppBundlerMacOS::createDmgImage() const
 	if (!Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
 		return false;
 
-	const std::string outDmgPath = fmt::format("{}/{}.dmg", outDir, bundleName);
+	const std::string outDmgPath = fmt::format("{}/{}.dmg", subDirectory, bundleName);
 	if (!Commands::subprocessNoOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
 		return false;
 

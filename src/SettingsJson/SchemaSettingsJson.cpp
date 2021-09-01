@@ -74,7 +74,7 @@ enum class Defs : ushort
 	RootDir,
 	OutputDir,
 	ExternalDir,
-	BundleDir,
+	DistributionDir,
 
 	/* Theme */
 	ThemeColor
@@ -400,7 +400,7 @@ Json Schema::getSettingsJson()
 	})json"_ojson;
 
 	defs[Defs::SigningIdentity] = R"json({
-		"description": "The signing identity to use when bundling the macos application bundle.",
+		"description": "The signing identity to use when bundling the macos application distribution.",
 		"type": "string"
 	})json"_ojson;
 
@@ -433,7 +433,7 @@ Json Schema::getSettingsJson()
 		"default": "chalet_external"
 	})json"_ojson;
 
-	defs[Defs::BundleDir] = R"json({
+	defs[Defs::DistributionDir] = R"json({
 		"description": "The root directory of all distribution bundles.",
 		"type": "string"
 	})json"_ojson;
@@ -551,7 +551,7 @@ Json Schema::getSettingsJson()
 			"envFile",
 			"rootDir",
 			"outputDir",
-			"bundleDir"
+			"distributionDir"
 		]
 	})json"_ojson;
 	ret[kProperties][kSettings][kProperties] = Json::object();
@@ -570,7 +570,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kSettings][kProperties]["rootDir"] = defs[Defs::RootDir];
 	ret[kProperties][kSettings][kProperties]["outputDir"] = defs[Defs::OutputDir];
 	ret[kProperties][kSettings][kProperties]["externalDir"] = defs[Defs::ExternalDir];
-	ret[kProperties][kSettings][kProperties]["bundleDir"] = defs[Defs::BundleDir];
+	ret[kProperties][kSettings][kProperties]["distributionDir"] = defs[Defs::DistributionDir];
 
 	const auto kToolchains = "toolchains";
 	ret[kProperties][kToolchains] = R"json({

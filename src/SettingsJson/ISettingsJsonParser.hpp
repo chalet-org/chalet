@@ -34,7 +34,7 @@ protected:
 	const std::string kKeyRootDirectory = "rootDir";
 	const std::string kKeyOutputDirectory = "outputDir";
 	const std::string kKeyExternalDirectory = "externalDir";
-	const std::string kKeyBundleDirectory = "bundleDir";
+	const std::string kKeyDistributionDirectory = "distributionDir";
 };
 }
 

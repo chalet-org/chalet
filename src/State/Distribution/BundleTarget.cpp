@@ -18,8 +18,7 @@ namespace chalet
 {
 /*****************************************************************************/
 BundleTarget::BundleTarget() :
-	IDistTarget(DistTargetType::DistributionBundle),
-	m_outDir("dist")
+	IDistTarget(DistTargetType::DistributionBundle)
 {
 }
 
@@ -105,15 +104,15 @@ void BundleTarget::setWindowsBundle(BundleWindows&& inValue)
 }
 
 /*****************************************************************************/
-const std::string& BundleTarget::outDir() const noexcept
+const std::string& BundleTarget::subDirectory() const noexcept
 {
-	return m_outDir;
+	return m_subDirectory;
 }
 
-void BundleTarget::setOutDir(std::string&& inValue)
+void BundleTarget::setSubDirectory(std::string&& inValue)
 {
-	m_outDir = std::move(inValue);
-	Path::sanitize(m_outDir);
+	m_subDirectory = std::move(inValue);
+	Path::sanitize(m_subDirectory);
 }
 
 /*****************************************************************************/

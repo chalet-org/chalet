@@ -156,7 +156,7 @@
 				"envFile",
 				"rootDir",
 				"outputDir",
-				"bundleDir"
+				"distributionDir"
 			],
 			"properties": {
 				"dumpAssembly": {
@@ -197,7 +197,7 @@
 					"type": "string"
 				},
 				"signingIdentity": {
-					"description": "The signing identity to use when bundling the macos application bundle.",
+					"description": "The signing identity to use when bundling the macos application distribution.",
 					"type": "string"
 				},
 				"inputFile": {
@@ -224,7 +224,7 @@
 					"description": "The directory to install external dependencies into prior to the rest of the build's run.",
 					"default": "chalet_external"
 				},
-				"bundleDir": {
+				"distributionDir": {
 					"description": "The root directory of all distribution bundles.",
 					"type": "string"
 				}

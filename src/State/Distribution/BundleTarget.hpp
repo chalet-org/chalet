@@ -32,8 +32,8 @@ struct BundleTarget final : public IDistTarget
 	const BundleWindows& windowsBundle() const noexcept;
 	void setWindowsBundle(BundleWindows&& inValue);
 
-	const std::string& outDir() const noexcept;
-	void setOutDir(std::string&& inValue);
+	const std::string& subDirectory() const noexcept;
+	void setSubDirectory(std::string&& inValue);
 
 	const std::string& configuration() const noexcept;
 	void setConfiguration(std::string&& inValue);
@@ -69,7 +69,7 @@ private:
 	StringList m_includes;
 	StringList m_excludes;
 
-	std::string m_outDir;
+	std::string m_subDirectory;
 	std::string m_configuration;
 	std::string m_mainProject;
 

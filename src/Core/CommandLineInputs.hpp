@@ -26,6 +26,7 @@ struct CommandLineInputs
 	const std::string& defaultEnvFile() const noexcept;
 	const std::string& defaultOutputDirectory() const noexcept;
 	const std::string& defaultExternalDirectory() const noexcept;
+	const std::string& defaultDistributionDirectory() const noexcept;
 
 	const std::string& inputFile() const noexcept;
 	void setInputFile(std::string&& inValue) noexcept;
@@ -43,8 +44,8 @@ struct CommandLineInputs
 	const std::string& externalDirectory() const noexcept;
 	void setExternalDirectory(std::string&& inValue) noexcept;
 
-	const std::string& bundleDirectory() const noexcept;
-	void setBundleDirectory(std::string&& inValue) noexcept;
+	const std::string& distributionDirectory() const noexcept;
+	void setDistributionDirectory(std::string&& inValue) noexcept;
 
 	Route command() const noexcept;
 	void setCommand(const Route inValue) noexcept;
@@ -125,13 +126,14 @@ private:
 	const std::string kDefaultEnvFile;
 	const std::string kDefaultOutputDirectory;
 	const std::string kDefaultExternalDirectory;
+	const std::string kDefaultDistributionDirectory;
 
 	std::string m_inputFile;
 	std::string m_settingsFile;
 	std::string m_rootDirectory;
 	std::string m_outputDirectory;
 	std::string m_externalDirectory;
-	std::string m_bundleDirectory;
+	std::string m_distributionDirectory;
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
 	std::string m_platform;
