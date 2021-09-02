@@ -208,4 +208,29 @@ bool WorkspaceCache::removeStaleProjectCaches()
 	return result;
 }
 
+/*****************************************************************************/
+bool WorkspaceCache::saveProjectCache()
+{
+	bool result = m_cacheFile.save();
+
+	const auto& cacheRef = getCacheRef(CacheType::Local);
+	const auto& outputDirectory = m_inputs.outputDirectory();
+
+	auto removePathIfEmpty = [](const std::string& inPath) {
+		if (Commands::pathIsEmpty(inPath))
+			Commands::remove(inPath);
+	};
+
+	removePathIfEmpty(cacheRef);
+	removePathIfEmpty(outputDirectory);
+
+	if (!result)
+	{
+		Diagnostic::error("There was an error saving the workspace cache.");
+		return false;
+	}
+
+	return true;
+}
+
 }

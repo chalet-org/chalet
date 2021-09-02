@@ -235,6 +235,10 @@ bool WorkspaceInternalCacheFile::save()
 	if (m_filename.empty())
 		return false;
 
+	// configure step without building first would not have one. don't do anything
+	if (m_buildHash.empty())
+		return true;
+
 	for (auto& [_, sourceCache] : m_sourceCaches)
 	{
 		m_dirty |= sourceCache->dirty();

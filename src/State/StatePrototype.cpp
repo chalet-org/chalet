@@ -143,7 +143,7 @@ void StatePrototype::saveCaches()
 	cache.saveSettings(SettingsType::Global);
 
 	cache.removeStaleProjectCaches();
-	cache.file().save();
+	cache.saveProjectCache();
 }
 
 /*****************************************************************************/

@@ -33,6 +33,7 @@ struct WorkspaceCache
 	void saveSettings(const SettingsType inType);
 
 	bool removeStaleProjectCaches();
+	bool saveProjectCache();
 
 private:
 	friend class BuildState;
