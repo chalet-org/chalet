@@ -568,19 +568,13 @@ void CompileToolchainMSVC::addOptimizationOption(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
 {
+	// TODO: Reverse years so c11 / c++14 is checked explicitly & newest year isn't
 	if (specialization == CxxSpecialization::C)
 	{
 		outArgList.emplace_back("/TC"); // Treat code as C
 
 		std::string langStandard = String::toLowerCase(m_project.cStandard());
-		if (String::equals("gnu2x", langStandard)
-			|| String::equals("gnu18", langStandard)
-			|| String::equals("gnu17", langStandard)
-			|| String::equals("c2x", langStandard)
-			|| String::equals("c18", langStandard)
-			|| String::equals("c17", langStandard)
-			|| String::equals(langStandard, "iso9899:2018")
-			|| String::equals(langStandard, "iso9899:2017"))
+		if (String::equals({ "gnu2x", "gnu18", "gnu17", "c2x", "c18", "c17", "iso9899:2018", "iso9899:2017" }, langStandard))
 		{
 			outArgList.emplace_back("/std:c17");
 		}
@@ -594,17 +588,17 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const Cxx
 		outArgList.emplace_back("/TP"); // Treat code as C++
 
 		std::string langStandard = String::toLowerCase(m_project.cppStandard());
-		if (String::equals(langStandard, "c++20")
-			|| String::equals(langStandard, "c++2a")
-			|| String::equals(langStandard, "gnu++20")
-			|| String::equals(langStandard, "gnu++2a"))
+		if (String::equals({ "c++23", "c++2b", "gnu++23", "gnu++2b" }, langStandard))
 		{
 			outArgList.emplace_back("/std:c++latest");
 		}
-		else if (String::equals(langStandard, "c++17")
-			|| String::equals(langStandard, "c++1z")
-			|| String::equals(langStandard, "gnu++17")
-			|| String::equals(langStandard, "gnu++1z"))
+		else if (String::equals({ "c++20", "c++2a", "gnu++20", "gnu++2a" }, langStandard))
+		{
+			// TODO: c++20 in 2019 16.11 & 17.0 (Preview 3+ presumably)
+			//   https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/
+			outArgList.emplace_back("/std:c++20");
+		}
+		else if (String::equals({ "c++17", "c++1z", "gnu++17", "gnu++1z" }, langStandard))
 		{
 			outArgList.emplace_back("/std:c++17");
 		}
