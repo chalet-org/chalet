@@ -23,6 +23,7 @@ struct CommandLineInputs
 	const std::string& homeDirectory() const noexcept;
 
 	const std::string& defaultInputFile() const noexcept;
+	const std::string& defaultSettingsFile() const noexcept;
 	const std::string& defaultEnvFile() const noexcept;
 	const std::string& defaultOutputDirectory() const noexcept;
 	const std::string& defaultExternalDirectory() const noexcept;
@@ -123,6 +124,7 @@ private:
 	mutable StringList m_archOptions;
 
 	const std::string kDefaultInputFile;
+	const std::string kDefaultSettingsFile;
 	const std::string kDefaultEnvFile;
 	const std::string kDefaultOutputDirectory;
 	const std::string kDefaultExternalDirectory;

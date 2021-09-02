@@ -12,6 +12,7 @@
 #include "SettingsJson/SettingsJsonParser.hpp"
 
 #include "State/Distribution/BundleTarget.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -21,21 +22,18 @@
 namespace chalet
 {
 /*****************************************************************************/
-StatePrototype::StatePrototype(CommandLineInputs& inInputs, std::string inFilename) :
+StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
 	cache(inInputs),
 	tools(inInputs),
 	m_inputs(inInputs),
-	m_filename(std::move(inFilename)),
-	m_buildJson(std::make_unique<JsonFile>(m_filename))
+	m_buildJson(std::make_unique<JsonFile>())
 {
 }
 
 /*****************************************************************************/
 bool StatePrototype::initialize()
 {
-	m_inputs.clearWorkingDirectory(m_filename);
-
-	if (!cache.initialize())
+	if (!cache.initializeSettings())
 		return false;
 
 	// if (!environment.initialize())
@@ -44,8 +42,25 @@ bool StatePrototype::initialize()
 	if (!parseGlobalSettingsJson())
 		return false;
 
-	// Note: existence of m_filename is checked by Router (before the cache is made)
 	if (!parseLocalSettingsJson())
+		return false;
+
+	m_filename = m_inputs.inputFile();
+	if (m_filename.empty())
+	{
+		m_filename = m_inputs.defaultInputFile();
+	}
+	m_inputs.clearWorkingDirectory(m_filename);
+
+	if (!Commands::pathExists(m_filename))
+	{
+		Diagnostic::error("Build file '{}' was not found.", m_filename);
+		return false;
+	}
+
+	m_buildJson->load(m_inputs.inputFile());
+
+	if (!cache.initialize())
 		return false;
 
 	Output::setShowCommandOverride(false);

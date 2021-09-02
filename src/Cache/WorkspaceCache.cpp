@@ -35,11 +35,6 @@ const std::string& WorkspaceCache::getCacheRef(const CacheType inCacheType) cons
 /*****************************************************************************/
 bool WorkspaceCache::initialize()
 {
-	m_localSettings.load(m_inputs.settingsFile());
-	m_globalSettings.load(m_inputs.globalSettingsFile());
-
-	m_removeOldCacheFolder = m_localSettings.json.empty();
-
 	const auto& outputDirectory = m_inputs.outputDirectory();
 	m_cacheFolderLocal = fmt::format("{}/.cache", outputDirectory);
 	// m_cacheFolderGlobal = fmt::format("{}/.chalet", m_inputs.homeDirectory());
@@ -52,6 +47,17 @@ bool WorkspaceCache::initialize()
 		Diagnostic::error("There was an error saving the workspace cache.");
 		return false;
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool WorkspaceCache::initializeSettings()
+{
+	m_localSettings.load(m_inputs.settingsFile());
+	m_globalSettings.load(m_inputs.globalSettingsFile());
+
+	m_removeOldCacheFolder = m_localSettings.json.empty();
 
 	return true;
 }

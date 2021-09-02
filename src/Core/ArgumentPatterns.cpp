@@ -465,9 +465,9 @@ void ArgumentPatterns::populateMainArguments()
 void ArgumentPatterns::addInputFileArg()
 {
 	m_parser.add_argument("-i", "--input-file")
-		.help("An input build file to use")
+		.help("An input build file to use [default: \"chalet.json\"]")
 		.nargs(1)
-		.default_value(std::string("chalet.json"));
+		.default_value(std::string());
 
 	m_argumentMap.push_back({ "-i", Variant::Kind::String });
 	m_argumentMap.push_back({ "--input-file", Variant::Kind::String });
@@ -477,9 +477,9 @@ void ArgumentPatterns::addInputFileArg()
 void ArgumentPatterns::addSettingsFileArg()
 {
 	m_parser.add_argument("-s", "--settings-file")
-		.help("The path to a settings file to use")
+		.help("The path to a settings file to use [default: \".chaletrc\"]")
 		.nargs(1)
-		.default_value(std::string(".chaletrc"));
+		.default_value(std::string());
 
 	m_argumentMap.push_back({ "-s", Variant::Kind::String });
 	m_argumentMap.push_back({ "--settings-file", Variant::Kind::String });
@@ -513,9 +513,9 @@ void ArgumentPatterns::addRootDirArg()
 void ArgumentPatterns::addOutputDirArg()
 {
 	m_parser.add_argument("-o", "--output-dir")
-		.help("The output directory of the build")
+		.help("The output directory of the build [default: \"build\"]")
 		.nargs(1)
-		.default_value(std::string("build"));
+		.default_value(std::string());
 
 	m_argumentMap.push_back({ "-o", Variant::Kind::String });
 	m_argumentMap.push_back({ "--output-dir", Variant::Kind::String });
@@ -525,9 +525,9 @@ void ArgumentPatterns::addOutputDirArg()
 void ArgumentPatterns::addExternalDirArg()
 {
 	m_parser.add_argument("-x", "--external-dir")
-		.help("The directory to install external dependencies into")
+		.help("The directory to install external dependencies into [default: \"chalet_external\"]")
 		.nargs(1)
-		.default_value(std::string("chalet_external"));
+		.default_value(std::string());
 
 	m_argumentMap.push_back({ "-x", Variant::Kind::String });
 	m_argumentMap.push_back({ "--external-dir", Variant::Kind::String });
@@ -537,7 +537,7 @@ void ArgumentPatterns::addExternalDirArg()
 void ArgumentPatterns::addBundleDirArg()
 {
 	m_parser.add_argument("-d", "--distribution-dir")
-		.help("The root directory for all distribution bundles")
+		.help("The root directory for all distribution bundles [default: \"dist\"]")
 		.nargs(1)
 		.default_value(std::string());
 
@@ -565,11 +565,11 @@ void ArgumentPatterns::addToolchainArg()
 {
 	m_parser.add_argument("-t", "--toolchain")
 #if defined(CHALET_WIN32)
-		.help("Toolchain preference [msvc, msvc-pre, llvm, gcc, ...]")
+		.help("Toolchain preference (msvc, msvc-pre, llvm, gcc, ...) [default: \"msvc\"]")
 #elif defined(CHALET_MACOS)
-		.help("Toolchain preference [apple-llvm, llvm, gcc, ...]")
+		.help("Toolchain preference (apple-llvm, llvm, gcc, ...) [default: \"apple-llvm\"]")
 #else
-		.help("Toolchain preference [llvm, gcc, ...]")
+		.help("Toolchain preference (llvm, gcc, ...) [default: \"gcc\"]")
 #endif
 		.nargs(1)
 		.default_value(std::string());
@@ -582,7 +582,7 @@ void ArgumentPatterns::addToolchainArg()
 void ArgumentPatterns::addEnvFileArg()
 {
 	m_parser.add_argument("-e", "--env-file")
-		.help("A file to load environment variables from")
+		.help("A file to load environment variables from [default: \".env\"]")
 		.nargs(1)
 		.default_value(std::string());
 
@@ -654,7 +654,7 @@ void ArgumentPatterns::addQuietArgs()
 void ArgumentPatterns::addBuildConfigurationArg()
 {
 	m_parser.add_argument("-c", "--configuration")
-		.help("The build configuration to use")
+		.help("The build configuration to use [default: \"Release\"]")
 		.nargs(1)
 		.default_value(std::string());
 
@@ -667,7 +667,7 @@ void ArgumentPatterns::addRunProjectArg()
 {
 	m_parser.add_argument(kArgRunProject)
 		.help(kHelpRunProject)
-		.default_value(std::string(""));
+		.default_value(std::string());
 
 	m_argumentMap.push_back({ kArgRunProject, Variant::Kind::String });
 }

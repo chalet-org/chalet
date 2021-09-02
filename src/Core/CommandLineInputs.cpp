@@ -19,17 +19,13 @@ namespace chalet
 CommandLineInputs::CommandLineInputs() :
 	m_notPlatforms(getNotPlatforms()),
 	kDefaultInputFile("chalet.json"),
+	kDefaultSettingsFile(".chaletrc"),
 	kDefaultEnvFile(".env"),
 	kDefaultOutputDirectory("build"),
 	kDefaultExternalDirectory("chalet_external"),
 	kDefaultDistributionDirectory("dist"),
-	m_inputFile(kDefaultInputFile),
-	m_settingsFile(".chaletrc"),
-	m_outputDirectory(kDefaultOutputDirectory),
-	m_externalDirectory(kDefaultExternalDirectory),
-	m_distributionDirectory(kDefaultDistributionDirectory),
+	m_settingsFile(kDefaultSettingsFile),
 	m_platform(getPlatform()),
-	m_envFile(kDefaultEnvFile),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
 {
 }
@@ -41,10 +37,7 @@ void CommandLineInputs::detectToolchainPreference() const
 		return;
 
 #if defined(CHALET_WIN32)
-	if (!Commands::which("clang").empty())
-		m_toolchainPreference = getToolchainPreferenceFromString("llvm");
-	else
-		m_toolchainPreference = getToolchainPreferenceFromString("msvc");
+	m_toolchainPreference = getToolchainPreferenceFromString("msvc");
 #elif defined(CHALET_MACOS)
 	m_toolchainPreference = getToolchainPreferenceFromString("apple-llvm");
 #else
@@ -109,7 +102,7 @@ const std::string& CommandLineInputs::globalSettingsFile() const noexcept
 {
 	if (m_globalSettingsFile.empty())
 	{
-		m_globalSettingsFile = fmt::format("{}/.chaletrc", homeDirectory());
+		m_globalSettingsFile = fmt::format("{}/{}", homeDirectory(), kDefaultInputFile);
 	}
 	return m_globalSettingsFile;
 }
@@ -139,7 +132,6 @@ void CommandLineInputs::setRootDirectory(std::string&& inValue) noexcept
 /*****************************************************************************/
 const std::string& CommandLineInputs::outputDirectory() const noexcept
 {
-	chalet_assert(!m_outputDirectory.empty(), "outputDirectory was not defined");
 	return m_outputDirectory;
 }
 
@@ -191,6 +183,12 @@ void CommandLineInputs::setDistributionDirectory(std::string&& inValue) noexcept
 const std::string& CommandLineInputs::defaultInputFile() const noexcept
 {
 	return kDefaultInputFile;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::defaultSettingsFile() const noexcept
+{
+	return kDefaultSettingsFile;
 }
 
 /*****************************************************************************/

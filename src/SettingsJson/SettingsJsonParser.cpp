@@ -41,7 +41,7 @@ bool SettingsJsonParser::serialize(const GlobalSettingsState& inState)
 	}
 
 	Timer timer;
-	bool cacheExists = m_prototype.cache.exists();
+	/*bool cacheExists = m_prototype.cache.exists();
 	if (cacheExists)
 	{
 		Diagnostic::infoEllipsis("Reading Settings [{}]", m_jsonFile.filename());
@@ -49,7 +49,7 @@ bool SettingsJsonParser::serialize(const GlobalSettingsState& inState)
 	else
 	{
 		Diagnostic::infoEllipsis("Creating Settings [{}]", m_jsonFile.filename());
-	}
+	}*/
 
 	if (!makeSettingsJson(inState))
 		return false;
@@ -66,7 +66,7 @@ bool SettingsJsonParser::serialize(const GlobalSettingsState& inState)
 	if (!validatePaths())
 		return false;
 
-	Diagnostic::printDone(timer.asString());
+	// Diagnostic::printDone(timer.asString());
 
 	return true;
 }

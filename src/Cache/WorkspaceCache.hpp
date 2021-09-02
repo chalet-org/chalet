@@ -43,6 +43,7 @@ private:
 	void removeCacheFolder(const CacheType inCacheType);
 
 	bool initialize();
+	bool initializeSettings();
 
 	const CommandLineInputs& m_inputs;
 

@@ -23,7 +23,7 @@ struct CommandLineInputs;
 
 struct StatePrototype
 {
-	explicit StatePrototype(CommandLineInputs& inInputs, std::string inFilename);
+	explicit StatePrototype(CommandLineInputs& inInputs);
 
 	bool initialize();
 	bool validate();

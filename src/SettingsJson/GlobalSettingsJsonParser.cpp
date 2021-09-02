@@ -107,12 +107,12 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 	});
 
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyInputFile, [&]() {
-		outState.inputFile = m_inputs.inputFile();
+		outState.inputFile = m_inputs.defaultInputFile();
 		return outState.inputFile;
 	});
 
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyEnvFile, [&]() {
-		outState.envFile = m_inputs.envFile();
+		outState.envFile = m_inputs.defaultEnvFile();
 		return outState.envFile;
 	});
 
@@ -122,17 +122,17 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 	});
 
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyOutputDirectory, [&]() {
-		outState.outputDirectory = m_inputs.outputDirectory();
+		outState.outputDirectory = m_inputs.defaultOutputDirectory();
 		return outState.outputDirectory;
 	});
 
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyExternalDirectory, [&]() {
-		outState.externalDirectory = m_inputs.externalDirectory();
+		outState.externalDirectory = m_inputs.defaultExternalDirectory();
 		return outState.externalDirectory;
 	});
 
 	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyDistributionDirectory, [&]() {
-		outState.distributionDirectory = m_inputs.distributionDirectory();
+		outState.distributionDirectory = m_inputs.defaultDistributionDirectory();
 		return outState.distributionDirectory;
 	});
 

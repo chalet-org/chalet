@@ -27,6 +27,9 @@ SettingsManager::SettingsManager(const CommandLineInputs& inInputs, const Settin
 /*****************************************************************************/
 bool SettingsManager::run()
 {
+	if (!m_cache.initializeSettings())
+		return false;
+
 	if (!m_cache.initialize())
 		return false;
 
