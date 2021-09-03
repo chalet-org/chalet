@@ -29,7 +29,9 @@ private:
 	bool parseSettings(const Json& inNode, GlobalSettingsState& outState);
 	bool parseToolchains(const Json& inNode, GlobalSettingsState& outState);
 	bool parseAncillaryTools(const Json& inNode, GlobalSettingsState& outState);
+#if defined(CHALET_MACOS)
 	bool parseApplePlatformSdks(const Json& inNode, GlobalSettingsState& outState);
+#endif
 
 	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;

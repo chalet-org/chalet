@@ -46,10 +46,6 @@ bool StatePrototype::initialize()
 		return false;
 
 	m_filename = m_inputs.inputFile();
-	if (m_filename.empty())
-	{
-		m_filename = m_inputs.defaultInputFile();
-	}
 	m_inputs.clearWorkingDirectory(m_filename);
 
 	if (!Commands::pathExists(m_filename))

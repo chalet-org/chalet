@@ -90,53 +90,64 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 
 	// kKeyLastBuildConfiguration
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyLastBuildConfiguration, [&]() {
+	auto assignSettingsString = [&](const std::string& inKey, const std::function<std::string()>& onAssign) {
+		m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, inKey, []() {
+			return std::string();
+		});
+		std::string value = buildSettings.at(inKey).get<std::string>();
+		if (value.empty())
+		{
+			buildSettings[inKey] = onAssign();
+		}
+	};
+
+	assignSettingsString(kKeyLastBuildConfiguration, [&]() {
 		outState.buildConfiguration = m_inputs.buildConfiguration();
 		return outState.buildConfiguration;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyLastToolchain, [&]() {
+	assignSettingsString(kKeyLastToolchain, [&]() {
 		m_inputs.detectToolchainPreference();
 		outState.toolchainPreference = m_inputs.toolchainPreferenceName();
 		return outState.toolchainPreference;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyLastArchitecture, [&]() {
+	assignSettingsString(kKeyLastArchitecture, [&]() {
 		outState.architecturePreference = m_inputs.architectureRaw();
 		return outState.architecturePreference;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyInputFile, [&]() {
+	assignSettingsString(kKeyInputFile, [&]() {
 		outState.inputFile = m_inputs.defaultInputFile();
 		return outState.inputFile;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyEnvFile, [&]() {
+	assignSettingsString(kKeyEnvFile, [&]() {
 		outState.envFile = m_inputs.defaultEnvFile();
 		return outState.envFile;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyRootDirectory, [&]() {
+	assignSettingsString(kKeyRootDirectory, [&]() {
 		outState.rootDirectory = m_inputs.rootDirectory();
 		return outState.rootDirectory;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyOutputDirectory, [&]() {
+	assignSettingsString(kKeyOutputDirectory, [&]() {
 		outState.outputDirectory = m_inputs.defaultOutputDirectory();
 		return outState.outputDirectory;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyExternalDirectory, [&]() {
+	assignSettingsString(kKeyExternalDirectory, [&]() {
 		outState.externalDirectory = m_inputs.defaultExternalDirectory();
 		return outState.externalDirectory;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeyDistributionDirectory, [&]() {
+	assignSettingsString(kKeyDistributionDirectory, [&]() {
 		outState.distributionDirectory = m_inputs.defaultDistributionDirectory();
 		return outState.distributionDirectory;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeySigningIdentity, [&]() {
+	assignSettingsString(kKeySigningIdentity, [&]() {
 		outState.signingIdentity = std::string();
 		return outState.signingIdentity;
 	});
@@ -192,6 +203,9 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyBenchmark))
 		outState.benchmark = val;
 
+	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))
+		outState.generateCompileCommands = val;
+
 	if (ushort val = 0; m_jsonFile.assignFromKey(val, buildSettings, kKeyMaxJobs))
 		outState.maxJobs = val;
 
@@ -206,6 +220,24 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeySigningIdentity))
 		outState.signingIdentity = std::move(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyInputFile))
+		outState.inputFile = std::move(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyEnvFile))
+		outState.envFile = std::move(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyRootDirectory))
+		outState.rootDirectory = std::move(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyOutputDirectory))
+		outState.outputDirectory = std::move(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyExternalDirectory))
+		outState.externalDirectory = std::move(val);
+
+	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyDistributionDirectory))
+		outState.distributionDirectory = std::move(val);
 
 	return true;
 }
@@ -247,6 +279,7 @@ bool GlobalSettingsJsonParser::parseAncillaryTools(const Json& inNode, GlobalSet
 }
 
 /*****************************************************************************/
+#if defined(CHALET_MACOS)
 bool GlobalSettingsJsonParser::parseApplePlatformSdks(const Json& inNode, GlobalSettingsState& outState)
 {
 	if (!inNode.contains(kKeyAppleSdks))
@@ -263,5 +296,6 @@ bool GlobalSettingsJsonParser::parseApplePlatformSdks(const Json& inNode, Global
 
 	return true;
 }
+#endif
 
 }

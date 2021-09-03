@@ -33,8 +33,9 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				// "--generator=vscode",
-				"build",
-				"Release"
+				"-c",
+				"Release",
+				"build"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
