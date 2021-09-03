@@ -56,6 +56,12 @@ bool SettingsToolchainJsonParser::serialize()
 	auto& toolchains = rootNode["toolchains"];
 	if (!toolchains.contains(preference))
 	{
+		if (!m_inputs.isToolchainPreset())
+		{
+			Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized toolchain name or preset.", m_jsonFile.filename(), preference);
+			return false;
+		}
+
 		toolchains[preference] = JsonDataType::object;
 	}
 

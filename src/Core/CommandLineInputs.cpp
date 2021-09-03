@@ -353,6 +353,11 @@ bool CommandLineInputs::isMsvcPreRelease() const noexcept
 	return m_isMsvcPreRelease;
 }
 
+bool CommandLineInputs::isToolchainPreset() const noexcept
+{
+	return m_isToolchainPreset;
+}
+
 /*****************************************************************************/
 const std::string& CommandLineInputs::initPath() const noexcept
 {
@@ -581,9 +586,13 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	ToolchainPreference ret;
 	ret.buildPathStyle = BuildPathStyle::TargetTriple;
 
+	m_isToolchainPreset = false;
+	m_isMsvcPreRelease = false;
+
 #if defined(CHALET_WIN32)
 	if (String::equals({ "msvc", "msvc-pre" }, inValue))
 	{
+		m_isToolchainPreset = true;
 		m_isMsvcPreRelease = String::equals("msvc-pre", inValue);
 
 		m_toolchainPreferenceName = inValue;
@@ -606,6 +615,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	if (String::equals("llvm", inValue))
 #endif
 	{
+		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::LLVM;
@@ -619,6 +629,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 	else if (String::equals("gcc", inValue))
 	{
+		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::GNU;

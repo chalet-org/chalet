@@ -75,6 +75,7 @@ struct CommandLineInputs
 	const std::string& toolchainPreferenceName() const noexcept;
 	void setToolchainPreferenceName(std::string&& inValue) const noexcept;
 	bool isMsvcPreRelease() const noexcept;
+	bool isToolchainPreset() const noexcept;
 
 	const std::string& initPath() const noexcept;
 	void setInitPath(std::string&& inValue) noexcept;
@@ -162,6 +163,7 @@ private:
 
 	bool m_saveSchemaToFile = false;
 	mutable bool m_isMsvcPreRelease = false;
+	mutable bool m_isToolchainPreset = false;
 };
 }
 
