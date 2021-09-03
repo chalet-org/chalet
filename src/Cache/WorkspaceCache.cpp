@@ -217,7 +217,7 @@ bool WorkspaceCache::saveProjectCache()
 	const auto& outputDirectory = m_inputs.outputDirectory();
 
 	auto removePathIfEmpty = [](const std::string& inPath) {
-		if (Commands::pathIsEmpty(inPath))
+		if (Commands::pathIsEmpty(inPath, {}, true))
 			Commands::remove(inPath);
 	};
 

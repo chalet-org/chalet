@@ -100,7 +100,7 @@ bool ProjectInitializer::run()
 	{
 		props.language = CodeLanguage::C;
 		props.specialization = CxxSpecialization::C;
-		props.langStandard = "c17";
+		props.langStandard = "17";
 		sourceExts.emplace_back(".c");
 	}
 #if defined(CHALET_MACOS)
@@ -108,14 +108,14 @@ bool ProjectInitializer::run()
 	{
 		props.language = CodeLanguage::C;
 		props.specialization = CxxSpecialization::ObjectiveC;
-		props.langStandard = "c17";
+		props.langStandard = "17";
 		sourceExts.emplace_back(".m");
 	}
 	else if (String::equals("Objective-C++", language))
 	{
 		props.language = CodeLanguage::CPlusPlus;
 		props.specialization = CxxSpecialization::ObjectiveCPlusPlus;
-		props.langStandard = "c++17";
+		props.langStandard = "20";
 		sourceExts.emplace_back(".mm");
 	}
 #endif
@@ -123,7 +123,7 @@ bool ProjectInitializer::run()
 	{
 		props.language = CodeLanguage::CPlusPlus;
 		props.specialization = CxxSpecialization::CPlusPlus;
-		props.langStandard = "c++17";
+		props.langStandard = "20";
 		sourceExts.emplace_back(".cpp");
 		sourceExts.emplace_back(".cxx");
 		sourceExts.emplace_back(".cc");
@@ -132,15 +132,21 @@ bool ProjectInitializer::run()
 	bool isC = props.language == CodeLanguage::C;
 	if (!isC)
 	{
-		Output::getUserInput("C++ Standard:", props.langStandard, inputColor, "Common choices: c++20 c++17 c++14 c++11", [](std::string& input) {
-			return RegexPatterns::matchesGnuCppStandard(input);
+		Output::getUserInput("C++ Standard:", props.langStandard, inputColor, "Common choices: 20 17 14 11", [](std::string& input) {
+			return RegexPatterns::matchesCxxStandardShort(input) || RegexPatterns::matchesGnuCppStandard(input);
 		});
+
+		if (props.langStandard.size() <= 2)
+			props.langStandard = fmt::format("c++{}", props.langStandard);
 	}
 	else
 	{
-		Output::getUserInput("C Standard:", props.langStandard, inputColor, "Common choices: c17 c11", [](std::string& input) {
-			return RegexPatterns::matchesGnuCStandard(input);
+		Output::getUserInput("C Standard:", props.langStandard, inputColor, "Common choices: 17 11", [](std::string& input) {
+			return RegexPatterns::matchesCxxStandardShort(input) || RegexPatterns::matchesGnuCStandard(input);
 		});
+
+		if (props.langStandard.size() <= 2)
+			props.langStandard = fmt::format("c{}", props.langStandard);
 	}
 
 	props.useLocation = Output::getUserInputYesNo("Detect source files automatically?", true, inputColor, "If yes, 'location' is used, otherwise 'files' must be added explicitly");
@@ -363,10 +369,19 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 				appPath = Commands::which("chalet");
 			}
 
-			auto inputFile = fmt::format("{}/chalet.json", m_rootPath);
-			auto settingsFile = fmt::format("{}/.chaletrc", m_rootPath);
-			auto outputDir = fmt::format("{}/build", m_rootPath);
-			if (!Commands::subprocess({ std::move(appPath), "configure", "--input-file", std::move(inputFile), "--settings-file", std::move(settingsFile), "--output-dir", std::move(outputDir) }))
+			auto inputFile = fmt::format("{}/{}", m_rootPath, m_inputs.defaultInputFile());
+			auto settingsFile = fmt::format("{}/{}", m_rootPath, m_inputs.defaultSettingsFile());
+			auto outputDir = fmt::format("{}/{}", m_rootPath, m_inputs.defaultOutputDirectory());
+			if (!Commands::subprocess({
+					std::move(appPath),
+					"configure",
+					"--input-file",
+					std::move(inputFile),
+					"--settings-file",
+					std::move(settingsFile),
+					"--output-dir",
+					std::move(outputDir),
+				}))
 				return false;
 		}
 		else

@@ -143,7 +143,7 @@ bool Router::run()
 bool Router::cmdConfigure()
 {
 	// TODO: pass command to installDependencies & recheck them
-	Output::lineBreak();
+	// Output::lineBreak();
 	Output::msgConfigureCompleted();
 	Output::lineBreak();
 

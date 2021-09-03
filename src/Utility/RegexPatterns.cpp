@@ -50,6 +50,26 @@ bool RegexPatterns::matchesGnuCStandard(const std::string& inValue)
 }
 
 /*****************************************************************************/
+bool RegexPatterns::matchesCxxStandardShort(const std::string& inValue)
+{
+	if (inValue.empty())
+		return false;
+
+#ifdef CHALET_REGEX_CTRE
+	static constexpr auto regex = ctll::fixed_string{ "^\\d[\\dxyzab]$" };
+	if (auto m = ctre::match<regex>(inValue))
+#else
+	static std::regex regex{ "^\\d[\\dxyzab]$" };
+	if (std::regex_match(inValue, regex))
+#endif
+	{
+		return true;
+	}
+
+	return false;
+}
+
+/*****************************************************************************/
 std::string RegexPatterns::matchesTargetArchitectureWithResult(const std::string& inValue)
 {
 	std::string result;
