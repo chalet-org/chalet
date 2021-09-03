@@ -526,7 +526,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_prototype.tools, inInputFile);
+	ScriptRunner scriptRunner(m_inputs, m_prototype.tools, inInputFile);
 	bool showExitCode = false;
 	if (!scriptRunner.run(scripts, showExitCode))
 	{

@@ -19,7 +19,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-ScriptRunner::ScriptRunner(const AncillaryTools& inTools, const std::string& inInputFile) :
+ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools, const std::string& inInputFile) :
+	m_inputs(inInputs),
 	m_tools(inTools),
 	m_inputFile(inInputFile)
 {
@@ -237,6 +238,10 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 
 	bool result = Commands::subprocess(command);
 	auto exitCode = Subprocess::getLastExitCode();
+
+	std::string script = inScript;
+	m_inputs.clearWorkingDirectory(script);
+
 	auto message = fmt::format("{} exited with code: {}", inScript, exitCode);
 
 	if (inShowExitCode || !result)

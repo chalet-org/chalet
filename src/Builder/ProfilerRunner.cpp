@@ -5,6 +5,7 @@
 
 #include "Builder/ProfilerRunner.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -14,7 +15,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProfilerRunner::ProfilerRunner(BuildState& inState, const ProjectTarget& inProject) :
+ProfilerRunner::ProfilerRunner(const CommandLineInputs& inInputs, BuildState& inState, const ProjectTarget& inProject) :
+	m_inputs(inInputs),
 	m_state(inState),
 	m_project(inProject)
 {
@@ -92,6 +94,8 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	const auto& outputFile = m_project.outputFile();
 	auto outFile = fmt::format("{}/{}", inOutputFolder, outputFile);
+	m_inputs.clearWorkingDirectory(outFile);
+
 	auto message = fmt::format("{} exited with code: {}", outFile, Subprocess::getLastExitCode());
 
 	// Output::lineBreak();

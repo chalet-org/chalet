@@ -10,16 +10,18 @@ namespace chalet
 {
 struct AncillaryTools;
 struct ColorTheme;
+struct CommandLineInputs;
 
 class ScriptRunner
 {
 public:
-	explicit ScriptRunner(const AncillaryTools& inTools, const std::string& inInputFile);
+	explicit ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools, const std::string& inInputFile);
 
 	bool run(const StringList& inScripts, const bool inShowExitCode);
 	bool run(const std::string& inScript, const bool inShowExitCode);
 
 private:
+	const CommandLineInputs& m_inputs;
 	const AncillaryTools& m_tools;
 	const std::string& m_inputFile;
 };

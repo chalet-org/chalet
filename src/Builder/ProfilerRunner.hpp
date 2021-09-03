@@ -11,10 +11,12 @@
 
 namespace chalet
 {
+struct CommandLineInputs;
+
 class ProfilerRunner
 {
 public:
-	explicit ProfilerRunner(BuildState& inState, const ProjectTarget& inProject);
+	explicit ProfilerRunner(const CommandLineInputs& inInputs, BuildState& inState, const ProjectTarget& inProject);
 
 	bool run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 
@@ -25,6 +27,7 @@ private:
 	bool runWithSample(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 #endif
 
+	const CommandLineInputs& m_inputs;
 	const BuildState& m_state;
 	const ProjectTarget& m_project;
 };

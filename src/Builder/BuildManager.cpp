@@ -450,7 +450,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 /*****************************************************************************/
 bool BuildManager::runProfiler(const ProjectTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
-	ProfilerRunner profiler(m_state, inProject);
+	ProfilerRunner profiler(m_inputs, m_state, inProject);
 	return profiler.run(inCommand, inExecutable, inOutputFolder);
 }
 
@@ -545,7 +545,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_state.tools, m_inputs.inputFile());
+	ScriptRunner scriptRunner(m_inputs, m_state.tools, m_inputs.inputFile());
 	if (!scriptRunner.run(scripts, inRunCommand))
 		return false;
 
@@ -671,6 +671,8 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 		bool result = Commands::subprocess(cmd);
 
 		auto outFile = fmt::format("{}/{}", buildOutputDir, outputFile);
+		m_inputs.clearWorkingDirectory(outFile);
+
 		auto message = fmt::format("{} exited with code: {}", outFile, Subprocess::getLastExitCode());
 
 		// Output::lineBreak();
