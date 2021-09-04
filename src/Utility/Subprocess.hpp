@@ -17,7 +17,6 @@ namespace Subprocess
 int getLastExitCode();
 
 int run(const StringList& inCmd, SubprocessOptions&& inOptions);
-int run2(const StringList& inCmd, SubprocessOptions&& inOptions);
 void haltAllProcesses(const int inSignal = SIGTERM);
 }
 }

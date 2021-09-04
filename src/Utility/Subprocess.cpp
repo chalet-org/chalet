@@ -156,13 +156,6 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 }
 
 /*****************************************************************************/
-int Subprocess::run2(const StringList& inCmd, SubprocessOptions&& inOptions)
-{
-	UNUSED(inCmd, inOptions);
-	return -1;
-}
-
-/*****************************************************************************/
 void Subprocess::haltAllProcesses(const int inSignal)
 {
 	subProcessSignalHandler(inSignal);

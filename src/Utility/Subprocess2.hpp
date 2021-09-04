@@ -10,16 +10,12 @@
 
 namespace chalet
 {
-struct Subprocess2
+namespace Subprocess2
 {
-	Subprocess2() = default;
-
-	int run(const StringList& inCmd, SubprocessOptions&& inOptions);
-
-private:
-	//
-};
-
+int run(const StringList& inCmd, SubprocessOptions&& inOptions);
+int getLastExitCode();
+void haltAllProcesses(const int inSignal = SIGTERM);
+}
 }
 
 #endif // CHALET_SUBPROCESS2_HPP

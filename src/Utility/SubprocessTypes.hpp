@@ -21,7 +21,6 @@ enum class PipeOption : int
 	Pipe, ///< Redirects to a new handle created for you.
 	Close ///< Troll the child by providing a closed pipe.
 };
-
 }
 
 #endif // CHALET_SUBPROCESS_TYPES_HPP

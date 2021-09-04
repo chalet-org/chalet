@@ -253,8 +253,7 @@ bool Router::cmdDebug()
 		Output::printSeparator();
 
 		Timer timer;
-		Subprocess2 process;
-		int result = process.run(cmd, std::move(options));
+		int result = Subprocess2::run(cmd, std::move(options));
 		// Subprocess::run(cmd, std::move(options));
 		Output::printSeparator();
 

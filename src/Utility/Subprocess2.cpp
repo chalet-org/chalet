@@ -8,25 +8,61 @@
 #include <array>
 
 #include <fcntl.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-extern char** environ;
-
 #include "Libraries/Format.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/OSTerminal.hpp"
 #include "Terminal/Output.hpp"
+
+extern char** environ;
 
 namespace chalet
 {
 namespace
 {
 /*****************************************************************************/
-enum class FileNo
+enum class FileNo : int
 {
 	StdIn = STDIN_FILENO,
 	StdOut = STDOUT_FILENO,
 	StdErr = STDERR_FILENO
+};
+
+enum class SigNum : int
+{
+	HangUp = 1,
+	Interrupt = SIGINT,
+	Quit = 3,
+	IllegalInstruction = SIGILL,
+	Trap = 5,
+	Abort = SIGABRT,
+	// SIGIOT = 6,
+	// SIGBUS = 7,
+	FloatingPointException = SIGFPE,
+	Kill = 9,
+	PSIGUSR1 = 10,
+	SegmentationViolation = SIGSEGV,
+	PSIGUSR2 = 12,
+	BrokenPipe = 13,
+	Alarm = 14,
+	Terminate = SIGTERM,
+	// SIGSTKFLT = 16,
+	// SIGCHLD = 17,
+	// SIGCONT = 18,
+	// SIGSTOP = 19,
+	// SIGTSTP = 20,
+	// SIGTTIN = 21,
+	// SIGTTOU = 22,
+	// SIGURG = 23,
+	// SIGXCPU = 24,
+	// SIGXFSZ = 25,
+	// SIGVTALRM = 26,
+	// SIGPROF = 27,
+	// SIGWINCH = 28,
+	// SIGIO = 29
 };
 
 /*****************************************************************************/
@@ -105,7 +141,7 @@ class OpenProcess
 	Pipe m_out;
 	Pipe m_err;
 
-	pid_t m_pid = -1;
+	bool m_killed = false;
 
 	static int getReturnCode(const int inExitCode)
 	{
@@ -164,6 +200,8 @@ class OpenProcess
 	}
 
 public:
+	pid_t m_pid = -1;
+
 	static int createWithoutPipes(const StringList& inCmd, const std::string& inCwd)
 	{
 		std::string cwd;
@@ -258,7 +296,7 @@ public:
 				Pipe::duplicate(FileNo::StdErr, FileNo::StdOut);
 			}
 
-			execve(inCmd.front().c_str(), m_cmd.data(), NULL);
+			execve(inCmd.front().c_str(), m_cmd.data(), environ);
 			_exit(0);
 		}
 
@@ -295,6 +333,12 @@ public:
 			ssize_t bytesRead = 0;
 			while (true)
 			{
+				if (m_killed)
+				{
+					std::cout << std::endl;
+					break;
+				}
+
 				bytesRead = ::read(pipe.m_read, inBuffer.data(), inBuffer.size());
 				if (bytesRead > 0)
 					onRead(std::string_view(inBuffer.data(), bytesRead));
@@ -308,7 +352,70 @@ public:
 	{
 		return waitForResult(m_pid, m_cmd);
 	}
+
+	bool sendSignal(const SigNum inSignal)
+	{
+		if (m_pid == -1)
+			return false;
+
+		m_killed = true;
+
+		return ::kill(m_pid, static_cast<int>(inSignal)) == 0;
+	}
+
+	bool terminate()
+	{
+		return sendSignal(SigNum::Terminate);
+	}
+
+	bool kill()
+	{
+		return sendSignal(SigNum::Kill);
+	}
 };
+
+std::vector<OpenProcess*> s_procesess;
+std::atomic<int> s_lastErrorCode = 0;
+bool s_initialized = false;
+
+/*****************************************************************************/
+void removeProcess(const OpenProcess& inProcess)
+{
+	auto it = s_procesess.end();
+	while (it != s_procesess.begin())
+	{
+		--it;
+		OpenProcess* process = (*it);
+		if (process->m_pid == inProcess.m_pid)
+		{
+			it = s_procesess.erase(it);
+			return;
+		}
+	}
+
+	if (s_procesess.empty())
+		OSTerminal::reset();
+}
+
+/*****************************************************************************/
+void subProcessSignalHandler(int inSignal)
+{
+	auto it = s_procesess.end();
+	while (it != s_procesess.begin())
+	{
+		--it;
+		OpenProcess* process = (*it);
+
+		if (static_cast<SigNum>(inSignal) == SigNum::Terminate)
+			process->terminate();
+		else
+			process->sendSignal(static_cast<SigNum>(inSignal));
+
+		it = s_procesess.erase(it);
+	}
+
+	OSTerminal::reset();
+}
 }
 
 /*****************************************************************************/
@@ -316,6 +423,14 @@ int Subprocess2::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 {
 	CHALET_TRY
 	{
+		if (!s_initialized)
+		{
+			::signal(SIGINT, subProcessSignalHandler);
+			::signal(SIGTERM, subProcessSignalHandler);
+			::signal(SIGABRT, subProcessSignalHandler);
+			s_initialized = true;
+		}
+
 		if (inCmd.empty())
 			return 0;
 
@@ -329,25 +444,22 @@ int Subprocess2::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 			if (!process.create(inCmd, inOptions))
 				return 1;
 
+			s_procesess.push_back(&process);
+
 			static std::array<char, 256> buffer{ 0 };
-			/*static auto onStdOut = [](std::string_view data) {
-				std::cout << data << std::flush;
-			};
-			static auto onStdErr = [](std::string_view data) {
-				std::cerr << data << std::flush;
-			};*/
 
 			if (inOptions.stdoutOption == PipeOption::Pipe)
 				process.read(FileNo::StdOut, buffer, inOptions.onStdOut);
-			// else if (inOptions.stdoutOption != PipeOption::Close)
-			// 	process.read(FileNo::StdOut, buffer, onStdOut);
 
 			if (inOptions.stderrOption == PipeOption::Pipe)
 				process.read(FileNo::StdErr, buffer, inOptions.onStdErr);
-			// else if (inOptions.stderrOption != PipeOption::Close)
-			// 	process.read(FileNo::StdErr, buffer, onStdErr);
 
-			return process.waitForResult();
+			int result = process.waitForResult();
+
+			removeProcess(process);
+			s_lastErrorCode = result;
+
+			return result;
 		}
 	}
 	CHALET_CATCH(const std::exception& err)
@@ -357,4 +469,15 @@ int Subprocess2::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 	}
 }
 
+/*****************************************************************************/
+int Subprocess2::getLastExitCode()
+{
+	return s_lastErrorCode;
+}
+
+/*****************************************************************************/
+void Subprocess2::haltAllProcesses(const int inSignal)
+{
+	subProcessSignalHandler(inSignal);
+}
 }
