@@ -189,12 +189,6 @@ void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 /*****************************************************************************/
 void Diagnostic::addError(const Type inType, std::string&& inMessage)
 {
-	if (sStartedInfo)
-	{
-		std::cerr << std::endl;
-		sStartedInfo = false;
-	}
-
 	getErrorList()->push_back({ inType, std::move(inMessage) });
 }
 

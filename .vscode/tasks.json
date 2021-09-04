@@ -162,8 +162,8 @@
 			]
 		},
 		{
-			"label": "Build: Release (Xcode)",
-			"command": "${CHALET_DEBUG} --generator=xcode --save-schema -c Release build",
+			"label": "Debug (Chalet Command)",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release debug",
 			"type": "shell",
 			"group": {
 				"kind": "build",

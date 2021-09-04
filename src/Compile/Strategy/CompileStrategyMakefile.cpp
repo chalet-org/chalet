@@ -231,8 +231,8 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	// 	Output::print(Output::theme().build, inCmd);
 
 	std::string errorOutput;
-	Subprocess::PipeFunc onStdErr = [&errorOutput](std::string inData) {
-		errorOutput += std::move(inData);
+	SubprocessOptions::PipeFunc onStdErr = [&errorOutput](std::string_view inData) {
+		errorOutput += inData;
 	};
 	// static Subprocess::PipeFunc onStdErr = [](std::string inData) {
 	// 	std::cerr << inData << std::flush;
@@ -249,16 +249,17 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	if (m_state.toolchain.makeIsNMake())
 	{
 		options.stdoutOption = PipeOption::Pipe;
-		options.onStdOut = [](std::string inData) {
-			String::replaceAll(inData, "\r\n", "\n");
-			String::replaceAll(inData, ": warning ", Output::getAnsiReset() + ": warning ");
-			String::replaceAll(inData, ": error ", Output::getAnsiReset() + ": error ");
-			std::cout << inData << std::flush;
+		options.onStdOut = [](std::string_view inData) {
+			std::string data(inData);
+			String::replaceAll(data, "\r\n", "\n");
+			String::replaceAll(data, ": warning ", Output::getAnsiReset() + ": warning ");
+			String::replaceAll(data, ": error ", Output::getAnsiReset() + ": error ");
+			std::cout << std::move(data) << std::flush;
 		};
 	}
 	else
 	{
-		// options.onStdOut = [](std::string inData) {
+		// options.onStdOut = [](std::string_view inData) {
 		// 	String::replaceAll(inData, "\r\n", "\n");
 		// 	std::cout << inData << std::flush;
 		// };

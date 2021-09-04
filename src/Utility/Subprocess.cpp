@@ -10,6 +10,7 @@
 
 #include "Libraries/SubprocessApi.hpp"
 #include "Terminal/OSTerminal.hpp"
+#include "Utility/Subprocess2.hpp"
 
 #ifdef CHALET_MSVC
 	#pragma warning(push)
@@ -96,8 +97,8 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 			s_initialized = true;
 		}
 
-		static auto onDefaultStdErr = [](std::string inString) {
-			std::cerr << inString << std::flush;
+		static auto onDefaultStdErr = [](std::string_view inData) {
+			std::cerr << inData << std::flush;
 		};
 
 		if (inOptions.stderrOption == PipeOption::StdErr)
@@ -118,7 +119,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 					if (bytesRead > 0)
 					{
 						inOptions.onStdOut(std::string(buffer.data(), bytesRead));
-						std::fill_n(buffer.data(), bytesRead, 0);
+						// std::fill_n(buffer.data(), bytesRead, 0);
 					}
 				} while (bytesRead > 0);
 			}
@@ -131,7 +132,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 					if (bytesRead > 0)
 					{
 						inOptions.onStdErr(std::string(buffer.data(), bytesRead));
-						std::fill_n(buffer.data(), bytesRead, 0);
+						// std::fill_n(buffer.data(), bytesRead, 0);
 					}
 				} while (bytesRead > 0);
 			}
@@ -152,6 +153,13 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 		CHALET_EXCEPT_ERROR("subprocess error: {}", err.what());
 		return -1;
 	}
+}
+
+/*****************************************************************************/
+int Subprocess::run2(const StringList& inCmd, SubprocessOptions&& inOptions)
+{
+	UNUSED(inCmd, inOptions);
+	return -1;
 }
 
 /*****************************************************************************/

@@ -22,7 +22,12 @@
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Subprocess.hpp"
+#include "Utility/Subprocess2.hpp"
 #include "Utility/Timer.hpp"
+
+#include <chrono>
+#include <thread>
 
 namespace chalet
 {
@@ -223,32 +228,38 @@ bool Router::cmdSettings(const Route inRoute)
 #if defined(CHALET_DEBUG)
 bool Router::cmdDebug()
 {
+	auto chalet = Commands::which("chalet");
+	StringList cmd{
+		chalet,
+		"bigol",
+		"shit"
+	};
+
+	// auto waitTime = std::chrono::milliseconds(25);
+	SubprocessOptions options;
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdOut = [](std::string_view data) {
+		std::cout << data << std::flush;
+		// std::this_thread::sleep_for(waitTime);
+	};
+	options.onStdErr = [](std::string_view data) {
+		std::cerr << data << std::flush;
+		// std::this_thread::sleep_for(waitTime);
+	};
+
+	for (uint i = 0; i < 1; ++i)
 	{
+		Output::printSeparator();
+
 		Timer timer;
+		Subprocess2 process;
+		int result = process.run(cmd, std::move(options));
+		// Subprocess::run(cmd, std::move(options));
+		Output::printSeparator();
 
-		Commands::subprocess({ "echo", "Hello World!" });
-
-		auto result = timer.stop();
-		Output::printInfo(fmt::format("time: {}ms\n", result));
-	}
-
-	{
-		Timer timer;
-
-		// StringList patterns{ "*.cpp" };
-		// Commands::forEachFileMatch("src", patterns, [](const fs::path& inPath) {
-		// 	std::cout << inPath.string() << '\n';
-		// });
-
-		// std::cout << std::endl;
-
-		// Commands::subprocess({ "chalet", "build", "TestingStuff" });
-		Commands::subprocess({ "cd", "build" });
-		// auto output = Commands::subprocessOutput({ "which", "chalet" });
-		// LOG(output);
-
-		auto result = timer.stop();
-		Output::printInfo(fmt::format("time: {}ms\n", result));
+		LOG("return code:", result);
+		LOG("cmdDebug:", timer.asString());
 	}
 
 	return true;

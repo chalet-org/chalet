@@ -59,11 +59,12 @@ bool executeCommandMsvc(StringList command, std::string sourceFile, bool generat
 	SubprocessOptions options;
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = PipeOption::StdErr;
-	options.onStdOut = [&srcFile](std::string inData) {
-		if (String::startsWith(srcFile, inData))
+	options.onStdOut = [&srcFile](std::string_view inData) {
+		std::string data(inData);
+		if (String::startsWith(srcFile, data))
 			return;
 
-		std::cout << std::move(inData) << std::flush;
+		std::cout << std::move(data) << std::flush;
 	};
 
 	if (Subprocess::run(command, std::move(options)) != EXIT_SUCCESS)

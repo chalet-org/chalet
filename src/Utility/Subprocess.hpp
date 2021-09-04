@@ -8,33 +8,18 @@
 
 #include <signal.h>
 
-#include "Utility/SubprocessTypes.hpp"
+#include "Utility/SubprocessOptions.hpp"
 
 namespace chalet
 {
-struct SubprocessOptions;
-
 namespace Subprocess
 {
-using PipeFunc = std::function<void(std::string /* output */)>;
-using CreateFunc = std::function<void(int /* pid */)>;
-
 int getLastExitCode();
 
 int run(const StringList& inCmd, SubprocessOptions&& inOptions);
+int run2(const StringList& inCmd, SubprocessOptions&& inOptions);
 void haltAllProcesses(const int inSignal = SIGTERM);
 }
-
-struct SubprocessOptions
-{
-	std::string cwd;
-	PipeOption stdoutOption = PipeOption::Close;
-	PipeOption stderrOption = PipeOption::Close;
-	Subprocess::PipeFunc onStdOut = nullptr;
-	Subprocess::PipeFunc onStdErr = nullptr;
-	Subprocess::CreateFunc onCreate = nullptr;
-};
-
 }
 
 #endif // CHALET_SUBPROCESS_HPP

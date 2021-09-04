@@ -21,9 +21,10 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				// "--generator=vscode",
 				// "--save-schema",
-				"bundle"
+				"-c",
+				"Release",
+				"debug"
 			],
 		},
 		{
