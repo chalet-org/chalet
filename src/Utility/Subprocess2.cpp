@@ -8,7 +8,6 @@
 #include <array>
 
 #include <fcntl.h>
-#include <spawn.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
