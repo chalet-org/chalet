@@ -6,6 +6,8 @@
 #ifndef CHALET_SUBPROCESS2_HPP
 #define CHALET_SUBPROCESS2_HPP
 
+#include <signal.h>
+
 #include "Utility/SubprocessOptions.hpp"
 
 namespace chalet
