@@ -6,6 +6,7 @@
 #include "Utility/Subprocess2.hpp"
 
 #include <array>
+#include <atomic>
 
 #include <fcntl.h>
 #include <sys/wait.h>
