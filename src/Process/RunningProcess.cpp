@@ -5,6 +5,12 @@
 
 #include "Process/RunningProcess.hpp"
 
+#if defined(CHALET_WIN32)
+#else
+	#include <sys/wait.h>
+	#include <unistd.h>
+#endif
+
 extern char** environ;
 
 namespace chalet
@@ -113,25 +119,6 @@ ProcessPipe& RunningProcess::getFilePipe(const PipeHandle inFileNo)
 }
 
 /*****************************************************************************/
-void RunningProcess::close()
-{
-	m_out.closeRead();
-	m_out.closeWrite();
-	m_err.closeRead();
-	m_err.closeWrite();
-
-#if defined(CHALET_WIN32)
-	CloseHandle(m_processInfo.hProcess);
-	CloseHandle(m_processInfo.hThread);
-	ZeroMemory(&m_processInfo, sizeof(m_processInfo));
-#endif
-
-	m_pid = 0;
-	m_cmd.clear();
-	m_cwd.clear();
-}
-
-/*****************************************************************************/
 bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOptions)
 {
 	if (!inOptions.cwd.empty())
@@ -221,6 +208,25 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+void RunningProcess::close()
+{
+	m_out.closeRead();
+	m_out.closeWrite();
+	m_err.closeRead();
+	m_err.closeWrite();
+
+#if defined(CHALET_WIN32)
+	CloseHandle(m_processInfo.hProcess);
+	CloseHandle(m_processInfo.hThread);
+	ZeroMemory(&m_processInfo, sizeof(m_processInfo));
+#endif
+
+	m_pid = 0;
+	m_cmd.clear();
+	m_cwd.clear();
 }
 
 /*****************************************************************************/

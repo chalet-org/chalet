@@ -8,13 +8,6 @@
 #include <array>
 #include <atomic>
 
-#if defined(CHALET_WIN32)
-#else
-	#include <fcntl.h>
-	#include <sys/wait.h>
-	#include <unistd.h>
-#endif
-
 #include "Libraries/Format.hpp"
 #include "Process/ProcessPipe.hpp"
 #include "Process/RunningProcess.hpp"

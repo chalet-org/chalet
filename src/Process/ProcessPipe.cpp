@@ -5,8 +5,21 @@
 
 #include "Process/ProcessPipe.hpp"
 
+#if defined(CHALET_WIN32)
+#else
+	#include <fcntl.h>
+#endif
+
 namespace chalet
 {
+
+/*****************************************************************************/
+ProcessPipe::~ProcessPipe()
+{
+	closeRead();
+	closeWrite();
+}
+
 /*****************************************************************************/
 void ProcessPipe::duplicate(PipeHandle oldFd, PipeHandle newFd)
 {
@@ -16,6 +29,31 @@ void ProcessPipe::duplicate(PipeHandle oldFd, PipeHandle newFd)
 	}
 }
 
+/*****************************************************************************/
+void ProcessPipe::setInheritable(PipeHandle inHandle, const bool inInherits)
+{
+	if (inHandle == kInvalidPipe)
+		return;
+
+	int flags = ::fcntl(inHandle, F_GETFD);
+	if (flags < 0)
+	{
+		CHALET_THROW(std::runtime_error("Error calling fcntl"));
+	}
+
+	if (inInherits)
+		flags &= ~FD_CLOEXEC;
+	else
+		flags |= FD_CLOEXEC;
+
+	int result = ::fcntl(inHandle, F_SETFD, flags);
+	if (result < -1)
+	{
+		CHALET_THROW(std::runtime_error("Error calling fcntl"));
+	}
+}
+
+/*****************************************************************************/
 void ProcessPipe::close(PipeHandle newFd)
 {
 	if (newFd == kInvalidPipe)
@@ -23,10 +61,11 @@ void ProcessPipe::close(PipeHandle newFd)
 
 	if (::close(newFd) != 0)
 	{
-		CHALET_THROW(std::runtime_error("Error closing read pipe"));
+		CHALET_THROW(std::runtime_error("Error closing pipe"));
 	}
 }
 
+/*****************************************************************************/
 /*****************************************************************************/
 void ProcessPipe::openPipe()
 {
@@ -35,7 +74,9 @@ void ProcessPipe::openPipe()
 		CHALET_THROW(std::runtime_error("Error opening pipe"));
 	}
 
-	// TODO: pipe_set_inheritable false
+	// if not inheritable
+	setInheritable(m_read, false);
+	setInheritable(m_write, false);
 }
 
 /*****************************************************************************/

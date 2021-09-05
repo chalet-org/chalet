@@ -24,18 +24,16 @@ public:
 
 	static int createWithoutPipes(const StringList& inCmd, const std::string& inCwd);
 
-	void close();
 	bool create(const StringList& inCmd, const ProcessOptions& inOptions);
+	void close();
+
+	int waitForResult();
+	bool sendSignal(const SigNum inSignal);
+	bool terminate();
+	bool kill();
 
 	template <size_t Size>
 	void read(PipeHandle inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
-
-	int waitForResult();
-
-	bool sendSignal(const SigNum inSignal);
-
-	bool terminate();
-	bool kill();
 
 	ProcessID m_pid = 0;
 

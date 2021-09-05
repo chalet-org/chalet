@@ -15,7 +15,12 @@ class ProcessPipe
 	friend class RunningProcess;
 
 public:
+	ProcessPipe() = default;
+	CHALET_DISALLOW_COPY_MOVE(ProcessPipe);
+	~ProcessPipe();
+
 	static void duplicate(PipeHandle oldFd, PipeHandle newFd);
+	static void setInheritable(PipeHandle inHandle, const bool inInherits);
 	static void close(PipeHandle newFd);
 
 	void openPipe();
