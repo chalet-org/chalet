@@ -11,27 +11,96 @@
 	#include <unistd.h>
 #endif
 
+#include "Utility/String.hpp"
+
 extern char** environ;
 
 namespace chalet
 {
-/*****************************************************************************/
-int RunningProcess::getReturnCode(const int inExitCode)
-{
 #if defined(CHALET_WIN32)
-	return inExitCode;
-#else
-	if (WIFEXITED(inExitCode))
-		return WEXITSTATUS(inExitCode);
-	else if (WIFSIGNALED(inExitCode))
-		return -WTERMSIG(inExitCode);
-	else
-		return 1;
-#endif
+namespace
+{
+/*****************************************************************************/
+std::string escapeShellArgument(const std::string& inArg)
+{
+	bool needsQuote = inArg.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890._-+/") != std::string::npos;
+	if (!needsQuote)
+		return inArg;
+
+	std::string result = "\"";
+	for (auto& c : inArg)
+	{
+		if (c == '\"' || c == '\\')
+			result += '\\';
+
+		result += c;
+	}
+	result += "\"";
+
+	return result;
 }
 
 /*****************************************************************************/
-int RunningProcess::waitForResult(const ProcessID inPid, CmdPtrArray& inCmd)
+std::string getWindowsArguments(const StringList& inCmd)
+{
+	std::string args;
+	for (std::size_t i = 0; i < inCmd.size(); ++i)
+	{
+		if (i > 0)
+			args += ' ';
+
+		args += escapeShellArgument(inCmd[i]);
+	}
+
+	return args;
+}
+}
+
+/*****************************************************************************/
+int RunningProcess::waitForResult(PROCESS_INFORMATION& inProcessInfo)
+{
+	DWORD waitMs = INFINITE;
+	DWORD result = ::WaitForSingleObject(inProcessInfo.hProcess, waitMs);
+	if (result == WAIT_TIMEOUT)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject WAIT_TIMEOUT error: {}", error);
+		return -1;
+	}
+	else if (result == WAIT_ABANDONED)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject WAIT_ABANDONED error: {}", error);
+		return -1;
+	}
+	else if (result == WAIT_FAILED)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject WAIT_FAILED error: {}", error);
+		return -1;
+	}
+
+	if (result != WAIT_OBJECT_0)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject error: {}", error);
+		return -1;
+	}
+
+	DWORD exitCode;
+	bool ret = ::GetExitCodeProcess(inProcessInfo.hProcess, &exitCode) == TRUE;
+	if (!ret)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("GetExitCodeProcess error: {}", error);
+		return -1;
+	}
+
+	return static_cast<int>(exitCode);
+}
+#else
+/*****************************************************************************/
+int RunningProcess::waitForResult(const ProcessID inPid)
 {
 	int exitCode;
 	while (true)
@@ -43,9 +112,18 @@ int RunningProcess::waitForResult(const ProcessID inPid, CmdPtrArray& inCmd)
 		break;
 	}
 
-	inCmd.clear();
-
 	return getReturnCode(exitCode);
+}
+
+/*****************************************************************************/
+int RunningProcess::getReturnCode(const int inExitCode)
+{
+	if (WIFEXITED(inExitCode))
+		return WEXITSTATUS(inExitCode);
+	else if (WIFSIGNALED(inExitCode))
+		return -WTERMSIG(inExitCode);
+	else
+		return 1;
 }
 
 /*****************************************************************************/
@@ -63,36 +141,19 @@ RunningProcess::CmdPtrArray RunningProcess::getCmdVector(const StringList& inCmd
 	return cmd;
 }
 
+#endif
+
 /*****************************************************************************/
-int RunningProcess::createWithoutPipes(const StringList& inCmd, const std::string& inCwd)
+ProcessPipe& RunningProcess::getFilePipe(const HandleInput inFileNo)
 {
-	std::string cwd;
-	if (!inCwd.empty())
+	if (inFileNo == FileNo::StdErr)
 	{
-		cwd = std::filesystem::current_path().string();
-		std::filesystem::current_path(inCwd);
+		return m_err;
 	}
-
-	CmdPtrArray cmd = getCmdVector(inCmd);
-
-	ProcessID pid = fork();
-	if (pid == -1)
+	else
 	{
-		CHALET_THROW(std::runtime_error(fmt::format("can't fork process. Error:", errno)));
-		return -1;
+		return m_out;
 	}
-	else if (pid == 0)
-	{
-		execve(inCmd.front().c_str(), cmd.data(), environ);
-		_exit(0);
-	}
-
-	if (!cwd.empty())
-		std::filesystem::current_path(cwd);
-
-	cmd.clear();
-
-	return waitForResult(pid, cmd);
 }
 
 /*****************************************************************************/
@@ -103,24 +164,100 @@ RunningProcess::~RunningProcess()
 }
 
 /*****************************************************************************/
-ProcessPipe& RunningProcess::getFilePipe(const PipeHandle inFileNo)
+bool RunningProcess::operator==(const RunningProcess& inProcess)
 {
-#if defined(CHALET_WIN32)
-#else
-	switch (inFileNo)
-	{
-		case FileNo::StdErr: return m_err;
-		case FileNo::StdIn: // return m_in;
-		default: break;
-	}
-#endif
-
-	return m_out;
+	return m_pid == inProcess.m_pid;
 }
 
 /*****************************************************************************/
 bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOptions)
 {
+#if defined(CHALET_WIN32)
+	STARTUPINFOA startupInfo;
+	::ZeroMemory(&startupInfo, sizeof(startupInfo));
+
+	PROCESS_INFORMATION processInfo;
+	::ZeroMemory(&processInfo, sizeof(processInfo));
+
+	startupInfo.cb = sizeof(startupInfo);
+	startupInfo.hStdInput = ::GetStdHandle(FileNo::StdIn);
+	startupInfo.hStdOutput = ::GetStdHandle(FileNo::StdOut);
+	startupInfo.hStdError = ::GetStdHandle(FileNo::StdErr);
+	startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+	// m_in.create();
+
+	// input = read
+	// output = write
+
+	if (inOptions.stdoutOption == PipeOption::Pipe || inOptions.stdoutOption == PipeOption::Close)
+	{
+		m_out.create();
+		startupInfo.hStdOutput = m_out.m_write;
+		m_out.setInheritable(m_out.m_read, false);
+	}
+
+	if (inOptions.stderrOption == PipeOption::Pipe || inOptions.stderrOption == PipeOption::Close)
+	{
+		m_err.create();
+		startupInfo.hStdError = m_err.m_write;
+		m_err.setInheritable(m_err.m_read, false);
+	}
+	else if (inOptions.stderrOption == PipeOption::StdOut)
+	{
+		startupInfo.hStdError = startupInfo.hStdOutput;
+	}
+
+	if (inOptions.stdoutOption == PipeOption::StdErr)
+	{
+		startupInfo.hStdOutput = startupInfo.hStdError;
+	}
+
+	{
+		const char* cwd = inOptions.cwd.empty() ? nullptr : inOptions.cwd.c_str();
+		std::string args = getWindowsArguments(inCmd);
+
+		DWORD processFlags = HIGH_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
+		/*if (m_newProcessGroup)
+		{
+			processFlags |= CREATE_NEW_PROCESS_GROUP;
+		}*/
+
+		BOOL success = ::CreateProcessA(inCmd.front().c_str(),
+			const_cast<LPSTR>(args.c_str()), // program arguments
+			NULL,							 // process security attributes
+			NULL,							 // thread security attributes
+			TRUE,							 // handles are inherited
+			processFlags,					 // creation flags
+			NULL,							 // environment
+			cwd,							 // use parent's current directory
+			&startupInfo,					 // STARTUPINFO pointer
+			&processInfo);					 // receives PROCESS_INFORMATION
+
+		m_processInfo = processInfo;
+		m_pid = processInfo.dwProcessId;
+
+		if (m_out.m_read != m_out.m_write)
+			m_out.closeWrite();
+
+		if (m_err.m_read != m_err.m_write)
+			m_err.closeWrite();
+
+		if (inOptions.stdoutOption == PipeOption::Close)
+			m_out.close();
+
+		if (inOptions.stderrOption == PipeOption::Close)
+			m_err.close();
+
+		if (!success)
+		{
+			DWORD error = ::GetLastError();
+			Diagnostic::error("CreateProcess error: {}", error);
+			return false;
+		}
+	}
+
+#else
 	if (!inOptions.cwd.empty())
 	{
 		m_cwd = std::filesystem::current_path().string();
@@ -132,18 +269,18 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 	bool openStdOut = inOptions.stdoutOption == PipeOption::Pipe;
 	bool openStdErr = inOptions.stderrOption == PipeOption::Pipe;
 
-	// m_in.openPipe();
+	// m_in.create();
 
 	if (openStdOut)
-		m_out.openPipe();
+		m_out.create();
 
 	if (openStdErr)
-		m_err.openPipe();
+		m_err.create();
 
 	m_pid = fork();
 	if (m_pid == -1)
 	{
-		CHALET_THROW(std::runtime_error(fmt::format("can't fork process. Error:", errno)));
+		Diagnostic::error("can't fork process. Error: {}", errno);
 		return false;
 	}
 	else if (m_pid == 0)
@@ -201,6 +338,7 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 
 	if (openStdErr)
 		m_err.closeWrite();
+#endif
 
 	if (inOptions.onCreate != nullptr)
 	{
@@ -213,41 +351,73 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 /*****************************************************************************/
 void RunningProcess::close()
 {
-	m_out.closeRead();
-	m_out.closeWrite();
-	m_err.closeRead();
-	m_err.closeWrite();
+	m_out.close();
+	m_err.close();
 
 #if defined(CHALET_WIN32)
-	CloseHandle(m_processInfo.hProcess);
-	CloseHandle(m_processInfo.hThread);
-	ZeroMemory(&m_processInfo, sizeof(m_processInfo));
+	::CloseHandle(m_processInfo.hProcess);
+	::CloseHandle(m_processInfo.hThread);
+	::ZeroMemory(&m_processInfo, sizeof(m_processInfo));
 #endif
 
 	m_pid = 0;
 	m_cmd.clear();
+#if !defined(CHALET_WIN32)
 	m_cwd.clear();
+#endif
 }
 
 /*****************************************************************************/
 int RunningProcess::waitForResult()
 {
-	return waitForResult(m_pid, m_cmd);
+#if defined(CHALET_WIN32)
+	int result = waitForResult(m_processInfo);
+#else
+	int result = waitForResult(m_pid);
+#endif
+	m_cmd.clear();
+	return result;
 }
 
 /*****************************************************************************/
 bool RunningProcess::sendSignal(const SigNum inSignal)
 {
+#if defined(CHALET_WIN32)
+	if (m_pid == 0)
+		return false;
+
+	m_killed = true;
+
+	if (inSignal == SigNum::Kill)
+	{
+		return ::TerminateProcess(m_processInfo.hProcess, 137) == TRUE;
+	}
+	else if (inSignal == SigNum::Interrupt)
+	{
+		if (::GenerateConsoleCtrlEvent(CTRL_C_EVENT, m_pid) == FALSE)
+		{
+			DWORD error = ::GetLastError();
+			Diagnostic::error("GenerateConsoleCtrlEvent CTRL_C_EVENT error: {}", error);
+			return false;
+		}
+	}
+	else
+	{
+		if (::GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, m_pid) == FALSE)
+		{
+			DWORD error = ::GetLastError();
+			Diagnostic::error("GenerateConsoleCtrlEvent CTRL_BREAK_EVENT error: {}", error);
+			return false;
+		}
+	}
+
+	return true;
+#else
 	if (m_pid == -1)
 		return false;
 
 	m_killed = true;
 
-#if defined(CHALET_WIN32)
-	if (inSignal == SigNum::Kill)
-	{
-	}
-#else
 	return ::kill(m_pid, static_cast<int>(inSignal)) == 0;
 #endif
 }

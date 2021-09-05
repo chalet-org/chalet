@@ -16,19 +16,22 @@ namespace chalet
 {
 namespace FileNo
 {
-enum
-{
-	StdIn = STDIN_FILENO,
-	StdOut = STDOUT_FILENO,
-	StdErr = STDERR_FILENO
-};
+#if defined(CHALET_WIN32)
+constexpr DWORD StdIn = STD_INPUT_HANDLE;
+constexpr DWORD StdOut = STD_OUTPUT_HANDLE;
+constexpr DWORD StdErr = STD_ERROR_HANDLE;
+#else
+constexpr int StdIn = STDIN_FILENO;
+constexpr int StdOut = STDOUT_FILENO;
+constexpr int StdErr = STDERR_FILENO;
+#endif
 }
 
 #if defined(CHALET_WIN32)
 typedef HANDLE PipeHandle;
 typedef DWORD ProcessID;
 
-constexpr PipeHandle kInvalidPipe = INVALID_HANDLE_VALUE;
+const PipeHandle kInvalidPipe = INVALID_HANDLE_VALUE;
 #else
 typedef int PipeHandle;
 typedef ::pid_t ProcessID;

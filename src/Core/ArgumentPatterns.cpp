@@ -277,13 +277,13 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 	{
 		if (inArguments.size() <= 1)
 		{
-			// CHALET_THROW(std::runtime_error("No arguments were given"));
+			// Diagnostic::error("No arguments were given");
 			return showHelp();
 		}
 
 		if (List::contains(inArguments, std::string("-h")) || List::contains(inArguments, std::string("--help")))
 		{
-			// CHALET_THROW(std::runtime_error("help"));
+			// Diagnostic::error("help");
 			return showHelp();
 		}
 
@@ -300,7 +300,7 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 
 		if (m_routeString.empty())
 		{
-			// CHALET_THROW(std::runtime_error("No sub-command given"));
+			// Diagnostic::error("No sub-command given");
 			return showHelp();
 		}
 	}

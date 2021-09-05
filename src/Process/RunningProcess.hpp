@@ -16,13 +16,17 @@ namespace chalet
 class RunningProcess
 {
 	using CmdPtrArray = std::vector<char*>;
+#if defined(CHALET_WIN32)
+	using HandleInput = DWORD;
+#else
+	using HandleInput = PipeHandle;
+#endif
 
 public:
 	RunningProcess() = default;
 	CHALET_DISALLOW_COPY_MOVE(RunningProcess);
 	~RunningProcess();
-
-	static int createWithoutPipes(const StringList& inCmd, const std::string& inCwd);
+	bool operator==(const RunningProcess& rhs);
 
 	bool create(const StringList& inCmd, const ProcessOptions& inOptions);
 	void close();
@@ -33,26 +37,30 @@ public:
 	bool kill();
 
 	template <size_t Size>
-	void read(PipeHandle inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
-
-	ProcessID m_pid = 0;
+	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
 
 private:
+#if defined(CHALET_WIN32)
+	static int waitForResult(PROCESS_INFORMATION& inProcessInfo);
+#else
+	static int waitForResult(const ProcessID inPid);
 	static int getReturnCode(const int inExitCode);
-	static int waitForResult(const ProcessID inPid, CmdPtrArray& inCmd);
 	static CmdPtrArray getCmdVector(const StringList& inCmd);
-
-	ProcessPipe& getFilePipe(const PipeHandle inFileNo);
+#endif
+	ProcessPipe& getFilePipe(const HandleInput inFileNo);
 
 	CmdPtrArray m_cmd;
-	std::string m_cwd;
 #if defined(CHALET_WIN32)
 	PROCESS_INFORMATION m_processInfo{ 0, 0, 0, 0 };
+#else
+	std::string m_cwd;
 #endif
 
 	// ProcessPipe m_in;
 	ProcessPipe m_out;
 	ProcessPipe m_err;
+
+	ProcessID m_pid = 0;
 
 	bool m_killed = false;
 };

@@ -31,7 +31,7 @@ void removeProcess(const RunningProcess& inProcess)
 	{
 		--it;
 		RunningProcess* process = (*it);
-		if (process->m_pid == inProcess.m_pid)
+		if (*process == inProcess)
 		{
 			it = s_procesess.erase(it);
 			return;
@@ -78,41 +78,36 @@ int Subprocess2::run(const StringList& inCmd, ProcessOptions&& inOptions, const 
 
 		if (inCmd.empty())
 		{
-			CHALET_THROW(std::runtime_error("Subprocess: Command cannot be empty."));
+			Diagnostic::error("Subprocess: Command cannot be empty.");
+			return -1;
 		}
 
 		if (!Commands::pathExists(inCmd.front()))
 		{
-			CHALET_THROW(std::runtime_error(fmt::format("Subprocess: Executable not found: {}", inCmd.front())));
+			Diagnostic::error("Subprocess: Executable not found: {}", inCmd.front());
+			return -1;
 		}
 
-		if (inOptions.stdoutOption == PipeOption::StdOut && inOptions.stderrOption == PipeOption::StdErr)
-		{
-			return RunningProcess::createWithoutPipes(inCmd, inOptions.cwd);
-		}
-		else
-		{
-			RunningProcess process;
-			if (!process.create(inCmd, inOptions))
-				return 1;
+		RunningProcess process;
+		if (!process.create(inCmd, inOptions))
+			return 1;
 
-			s_procesess.push_back(&process);
+		s_procesess.push_back(&process);
 
-			static std::array<char, 256> buffer{ 0 };
+		static std::array<char, 256> buffer{ 0 };
 
-			if (inOptions.stdoutOption == PipeOption::Pipe)
-				process.read(FileNo::StdOut, buffer, inBufferSize, inOptions.onStdOut);
+		if (inOptions.stdoutOption == PipeOption::Pipe)
+			process.read(FileNo::StdOut, buffer, inBufferSize, inOptions.onStdOut);
 
-			if (inOptions.stderrOption == PipeOption::Pipe)
-				process.read(FileNo::StdErr, buffer, inBufferSize, inOptions.onStdErr);
+		if (inOptions.stderrOption == PipeOption::Pipe)
+			process.read(FileNo::StdErr, buffer, inBufferSize, inOptions.onStdErr);
 
-			int result = process.waitForResult();
+		int result = process.waitForResult();
 
-			removeProcess(process);
-			s_lastErrorCode = result;
+		removeProcess(process);
+		s_lastErrorCode = result;
 
-			return result;
-		}
+		return result;
 	}
 	CHALET_CATCH(const std::exception& err)
 	{

@@ -36,7 +36,7 @@
 				// "--generator=vscode",
 				"-c",
 				"Release",
-				"build"
+				"debug"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",

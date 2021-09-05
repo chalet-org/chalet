@@ -22,30 +22,12 @@ enum class SigNum : int
 #else
 	Abort = SIGABRT,
 #endif
-	// SIGIOT = 6,
-	// SIGBUS = 7,
 	FloatingPointException = SIGFPE,
 	Kill = 9,
-	// SIGUSR1 = 10,
 	SegmentationViolation = SIGSEGV,
-	// SIGUSR2 = 12,
 	BrokenPipe = 13,
 	Alarm = 14,
 	Terminate = SIGTERM,
-	// SIGSTKFLT = 16,
-	// SIGCHLD = 17,
-	// SIGCONT = 18,
-	// SIGSTOP = 19,
-	// SIGTSTP = 20,
-	// SIGTTIN = 21,
-	// SIGTTOU = 22,
-	// SIGURG = 23,
-	// SIGXCPU = 24,
-	// SIGXFSZ = 25,
-	// SIGVTALRM = 26,
-	// SIGPROF = 27,
-	// SIGWINCH = 28,
-	// SIGIO = 29
 };
 }
 
