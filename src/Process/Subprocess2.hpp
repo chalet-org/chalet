@@ -6,17 +6,16 @@
 #ifndef CHALET_SUBPROCESS2_HPP
 #define CHALET_SUBPROCESS2_HPP
 
-#include <signal.h>
-
-#include "Utility/SubprocessOptions.hpp"
+#include "Process/ProcessOptions.hpp"
+#include "Process/SigNum.hpp"
 
 namespace chalet
 {
 namespace Subprocess2
 {
-int run(const StringList& inCmd, SubprocessOptions&& inOptions, const std::uint8_t inBufferSize = 0);
+int run(const StringList& inCmd, ProcessOptions&& inOptions, const std::uint8_t inBufferSize = 0);
 int getLastExitCode();
-void haltAllProcesses(const int inSignal = SIGTERM);
+void haltAllProcesses(const SigNum inSignal = SigNum::Terminate);
 }
 }
 

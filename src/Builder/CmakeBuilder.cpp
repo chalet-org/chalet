@@ -66,7 +66,7 @@ bool CmakeBuilder::run()
 #if defined(CHALET_WIN32)
 			if (Environment::isBash())
 			{
-				SubprocessOptions options;
+				ProcessOptions options;
 				options.stderrOption = PipeOption::StdErr;
 				options.stdoutOption = PipeOption::Pipe;
 				options.onStdOut = [](std::string inData) {

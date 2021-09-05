@@ -231,14 +231,14 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	// 	Output::print(Output::theme().build, inCmd);
 
 	std::string errorOutput;
-	SubprocessOptions::PipeFunc onStdErr = [&errorOutput](std::string inData) {
+	ProcessOptions::PipeFunc onStdErr = [&errorOutput](std::string inData) {
 		errorOutput += inData;
 	};
 	// static Subprocess::PipeFunc onStdErr = [](std::string inData) {
 	// 	std::cerr << inData << std::flush;
 	// };
 
-	SubprocessOptions options;
+	ProcessOptions options;
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::Pipe;

@@ -61,6 +61,33 @@
         },
         {
             "name": "Win32",
+            "intelliSenseMode": "msvc-x64",
+            "includePath": [
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/vendor/nlohmann/single_include",
+                "${workspaceFolder}/vendor/json-schema-validator/src",
+                "${workspaceFolder}/vendor/fmt/include",
+                "${workspaceFolder}/vendor/argparse/include",
+                "${workspaceFolder}/vendor/glob/single_include",
+                "${workspaceFolder}/vendor/subprocess/src/cpp",
+                "${workspaceFolder}/vendor/ust",
+                "${workspaceFolder}/vendor",
+                "${workspaceFolder}/test"
+            ],
+            "defines": [
+                "_WIN32",
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "forcedInclude": [
+                "${workspaceFolder}/src/PCH.hpp"
+            ]
+        },
+        {
+            "name": "Win32 (MinGW)",
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
             "includePath": [

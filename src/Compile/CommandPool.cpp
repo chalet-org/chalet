@@ -56,7 +56,7 @@ bool executeCommandMsvc(StringList command, std::string sourceFile, bool generat
 		srcFile = sourceFile.substr(start, end - start);
 	}
 
-	SubprocessOptions options;
+	ProcessOptions options;
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = PipeOption::StdErr;
 	options.onStdOut = [&srcFile](std::string inData) {
@@ -80,7 +80,7 @@ bool executeCommand(StringList command, std::string sourceFile, bool generateDep
 {
 	UNUSED(sourceFile);
 
-	SubprocessOptions options;
+	ProcessOptions options;
 	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::StdErr;
 

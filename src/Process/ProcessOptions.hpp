@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SUBPROCESS_OPTIONS_HPP
-#define CHALET_SUBPROCESS_OPTIONS_HPP
+#ifndef CHALET_PROCESS_OPTIONS_HPP
+#define CHALET_PROCESS_OPTIONS_HPP
 
-#include "Utility/SubprocessTypes.hpp"
+#include "Process/PipeOption.hpp"
 
 namespace chalet
 {
-struct SubprocessOptions
+struct ProcessOptions
 {
 	using PipeFunc = std::function<void(std::string /* output */)>;
 	using CreateFunc = std::function<void(int /* pid */)>;
@@ -24,4 +24,4 @@ struct SubprocessOptions
 };
 }
 
-#endif // CHALET_SUBPROCESS_OPTIONS_HPP
+#endif // CHALET_PROCESS_OPTIONS_HPP

@@ -781,7 +781,7 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 	chalet_assert(inStdOut != PipeOption::Pipe, "Commands::subprocess must implement onStdOut");
 	chalet_assert(inStdErr != PipeOption::Pipe, "Commands::subprocess must implement onStdErr");
 
-	SubprocessOptions options;
+	ProcessOptions options;
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = inStdOut;
 	options.stderrOption = inStdErr;
@@ -804,7 +804,7 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 
 	std::string ret;
 
-	SubprocessOptions options;
+	ProcessOptions options;
 	options.cwd = std::move(inWorkingDirectory);
 	options.stdoutOption = inStdOut;
 	options.stderrOption = inStdErr;
@@ -836,7 +836,7 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 
 	std::ofstream outputStream(inOutputFile);
 
-	SubprocessOptions options;
+	ProcessOptions options;
 	options.cwd = getWorkingDirectory();
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = inStdErr;

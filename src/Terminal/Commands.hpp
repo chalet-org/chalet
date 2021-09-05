@@ -6,7 +6,7 @@
 #ifndef CHALET_COMMANDS_HPP
 #define CHALET_COMMANDS_HPP
 
-#include "Utility/SubprocessTypes.hpp"
+#include "Process/PipeOption.hpp"
 
 namespace chalet
 {

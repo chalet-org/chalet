@@ -8,7 +8,7 @@
 
 #include <signal.h>
 
-#include "Utility/SubprocessOptions.hpp"
+#include "Process/ProcessOptions.hpp"
 
 namespace chalet
 {
@@ -16,7 +16,7 @@ namespace Subprocess
 {
 int getLastExitCode();
 
-int run(const StringList& inCmd, SubprocessOptions&& inOptions);
+int run(const StringList& inCmd, ProcessOptions&& inOptions);
 void haltAllProcesses(const int inSignal = SIGTERM);
 }
 }

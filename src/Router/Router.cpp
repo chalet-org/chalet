@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 
+#include "Process/Subprocess2.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
@@ -23,7 +24,6 @@
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Subprocess.hpp"
-#include "Utility/Subprocess2.hpp"
 #include "Utility/Timer.hpp"
 
 #include <chrono>
@@ -236,7 +236,7 @@ bool Router::cmdDebug()
 	};
 
 	// auto waitTime = std::chrono::milliseconds(25);
-	SubprocessOptions options;
+	ProcessOptions options;
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = PipeOption::Pipe;
 	options.onStdOut = [](std::string data) {

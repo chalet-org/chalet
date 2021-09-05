@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SUBPROCESS_TYPES_HPP
-#define CHALET_SUBPROCESS_TYPES_HPP
+#ifndef CHALET_PROCESS_PIPE_OPTION_HPP
+#define CHALET_PROCESS_PIPE_OPTION_HPP
 
 namespace chalet
 {
@@ -15,12 +15,13 @@ enum class PipeOption : int
 	StdOut,	 ///< Redirects to stdout
 	StdErr,	 ///< redirects to stderr
 	/** Redirects to provided pipe. You can open /dev/null. Pipe handle
-            that you specify will be made inheritable and closed automatically.
-        */
+		that you specify will be made inheritable and closed automatically.
+	*/
 	Specific,
 	Pipe, ///< Redirects to a new handle created for you.
 	Close ///< Troll the child by providing a closed pipe.
 };
+
 }
 
-#endif // CHALET_SUBPROCESS_TYPES_HPP
+#endif // CHALET_PROCESS_PIPE_OPTION_HPP

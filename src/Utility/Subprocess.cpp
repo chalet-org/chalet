@@ -9,8 +9,8 @@
 #include <atomic>
 
 #include "Libraries/SubprocessApi.hpp"
+#include "Process/Subprocess2.hpp"
 #include "Terminal/OSTerminal.hpp"
-#include "Utility/Subprocess2.hpp"
 
 #ifdef CHALET_MSVC
 	#pragma warning(push)
@@ -72,7 +72,7 @@ int Subprocess::getLastExitCode()
 }
 
 /*****************************************************************************/
-int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
+int Subprocess::run(const StringList& inCmd, ProcessOptions&& inOptions)
 {
 	CHALET_TRY
 	{

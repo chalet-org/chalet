@@ -164,7 +164,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 		data.clear();
 	};
 
-	SubprocessOptions::PipeFunc onStdOut = [&data, &parsePrintOutput](std::string inData) {
+	ProcessOptions::PipeFunc onStdOut = [&data, &parsePrintOutput](std::string inData) {
 #if defined(CHALET_WIN32)
 		if (inData.size() == 1)
 		{
@@ -180,7 +180,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 		parsePrintOutput();
 	};
 
-	SubprocessOptions options;
+	ProcessOptions options;
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = PipeOption::StdErr;
