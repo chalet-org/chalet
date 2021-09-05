@@ -12,7 +12,7 @@ namespace chalet
 {
 class ProcessPipe
 {
-	friend class OpenProcess;
+	friend class RunningProcess;
 
 public:
 	static void duplicate(PipeHandle oldFd, PipeHandle newFd);

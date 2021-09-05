@@ -27,8 +27,8 @@ public:
 	void close();
 	bool create(const StringList& inCmd, const ProcessOptions& inOptions);
 
-	template <class T, size_t Size>
-	void read(const PipeHandle inFileNo, std::array<T, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
+	template <size_t Size>
+	void read(PipeHandle inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
 
 	int waitForResult();
 
@@ -60,6 +60,6 @@ private:
 };
 }
 
-#include "Process/RunningProcess.hpp"
+#include "Process/RunningProcess.inl"
 
 #endif // CHALET_RUNNING_PROCESS_HPP

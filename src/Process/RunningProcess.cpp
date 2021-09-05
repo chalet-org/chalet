@@ -5,6 +5,8 @@
 
 #include "Process/RunningProcess.hpp"
 
+extern char** environ;
+
 namespace chalet
 {
 /*****************************************************************************/

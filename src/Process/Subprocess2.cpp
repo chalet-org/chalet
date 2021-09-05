@@ -22,8 +22,6 @@
 #include "Terminal/OSTerminal.hpp"
 #include "Terminal/Output.hpp"
 
-extern char** environ;
-
 namespace chalet
 {
 namespace

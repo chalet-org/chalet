@@ -8,8 +8,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-template <class T, size_t Size>
-void RunningProcess::read(const PipeHandle inFileNo, std::array<T, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead)
+template <size_t Size>
+void RunningProcess::read(PipeHandle inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead)
 {
 	if (onRead != nullptr)
 	{
