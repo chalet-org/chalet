@@ -12,7 +12,7 @@ namespace chalet
 {
 struct SubprocessOptions
 {
-	using PipeFunc = std::function<void(std::string_view /* output */)>;
+	using PipeFunc = std::function<void(std::string /* output */)>;
 	using CreateFunc = std::function<void(int /* pid */)>;
 
 	std::string cwd;

@@ -69,10 +69,9 @@ bool CmakeBuilder::run()
 				SubprocessOptions options;
 				options.stderrOption = PipeOption::StdErr;
 				options.stdoutOption = PipeOption::Pipe;
-				options.onStdOut = [](std::string_view inData) {
-					std::string data(inData);
-					String::replaceAll(data, "\r\n", "\n");
-					std::cout << std::move(data) << std::flush;
+				options.onStdOut = [](std::string inData) {
+					String::replaceAll(inData, "\r\n", "\n");
+					std::cout << std::move(inData) << std::flush;
 				};
 				if (Subprocess::run(generatorCommand, std::move(options)) != EXIT_SUCCESS)
 					return onRunFailure();

@@ -235,15 +235,15 @@ bool Router::cmdDebug()
 		"shit"
 	};
 
-	auto waitTime = std::chrono::milliseconds(25);
+	// auto waitTime = std::chrono::milliseconds(25);
 	SubprocessOptions options;
-	options.stdoutOption = PipeOption::Close;
-	options.stderrOption = PipeOption::StdOut;
-	options.onStdOut = [&waitTime](std::string_view data) {
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdOut = [](std::string data) {
 		std::cout << data << std::flush;
-		std::this_thread::sleep_for(waitTime);
+		// std::this_thread::sleep_for(waitTime);
 	};
-	options.onStdErr = [](std::string_view data) {
+	options.onStdErr = [](std::string data) {
 		std::cerr << data << std::flush;
 		// std::this_thread::sleep_for(waitTime);
 	};
@@ -253,11 +253,12 @@ bool Router::cmdDebug()
 		Output::printSeparator();
 
 		Timer timer;
+		// int result = Subprocess::run(cmd, std::move(options));
 		int result = Subprocess2::run(cmd, std::move(options));
-		// Subprocess::run(cmd, std::move(options));
 		Output::printSeparator();
 
-		LOG("return code:", result);
+		// LOG("return code:", result);
+		UNUSED(result);
 		LOG("cmdDebug:", timer.asString());
 	}
 

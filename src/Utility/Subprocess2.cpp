@@ -74,7 +74,7 @@ class Pipe
 	int m_write;
 
 public:
-	inline void openPipe()
+	void openPipe()
 	{
 		if (::pipe(reinterpret_cast<int*>(this)) != 0)
 		{
@@ -82,7 +82,7 @@ public:
 		}
 	}
 
-	inline void duplicateRead(const FileNo newFd)
+	void duplicateRead(const FileNo newFd)
 	{
 		if (::dup2(m_read, static_cast<int>(newFd)) == -1)
 		{
@@ -90,7 +90,7 @@ public:
 		}
 	}
 
-	inline void duplicateWrite(const FileNo newFd)
+	void duplicateWrite(const FileNo newFd)
 	{
 		if (::dup2(m_write, static_cast<int>(newFd)) == -1)
 		{
@@ -114,7 +114,7 @@ public:
 		}
 	}
 
-	inline void closeRead()
+	void closeRead()
 	{
 		if (::close(m_read) != 0)
 		{
@@ -122,7 +122,7 @@ public:
 		}
 	}
 
-	inline void closeWrite()
+	void closeWrite()
 	{
 		if (::close(m_write) != 0)
 		{
@@ -221,7 +221,7 @@ public:
 		}
 		else if (pid == 0)
 		{
-			execve(inCmd.front().c_str(), cmd.data(), NULL);
+			execve(inCmd.front().c_str(), cmd.data(), environ);
 			_exit(0);
 		}
 
@@ -325,12 +325,13 @@ public:
 	}
 
 	template <class T, size_t Size>
-	inline void read(const FileNo inFileNo, std::array<T, Size>& inBuffer, const std::uint8_t inBufferSize, const SubprocessOptions::PipeFunc& onRead = nullptr)
+	void read(const FileNo inFileNo, std::array<T, Size>& inBuffer, const std::uint8_t inBufferSize, const SubprocessOptions::PipeFunc& onRead = nullptr)
 	{
 		if (onRead != nullptr)
 		{
 			auto& pipe = getFilePipe(inFileNo);
 			ssize_t bytesRead = 0;
+			std::size_t bufferSize = inBufferSize > 0 ? static_cast<std::size_t>(inBufferSize) : inBuffer.size();
 			while (true)
 			{
 				if (m_killed)
@@ -339,16 +340,16 @@ public:
 					break;
 				}
 
-				bytesRead = ::read(pipe.m_read, inBuffer.data(), inBufferSize > 0 ? static_cast<std::size_t>(inBufferSize) : inBuffer.size());
+				bytesRead = ::read(pipe.m_read, inBuffer.data(), bufferSize);
 				if (bytesRead > 0)
-					onRead(std::string_view(inBuffer.data(), bytesRead));
+					onRead(std::string(inBuffer.data(), bytesRead));
 				else
 					break;
 			}
 		}
 	}
 
-	inline int waitForResult()
+	int waitForResult()
 	{
 		return waitForResult(m_pid, m_cmd);
 	}
@@ -432,7 +433,14 @@ int Subprocess2::run(const StringList& inCmd, SubprocessOptions&& inOptions, con
 		}
 
 		if (inCmd.empty())
-			return 0;
+		{
+			CHALET_THROW(std::runtime_error("Subprocess: Command cannot be empty."));
+		}
+
+		if (!Commands::pathExists(inCmd.front()))
+		{
+			CHALET_THROW(std::runtime_error(fmt::format("Subprocess: Executable not found: {}", inCmd.front())));
+		}
 
 		if (inOptions.stdoutOption == PipeOption::StdOut && inOptions.stderrOption == PipeOption::StdErr)
 		{

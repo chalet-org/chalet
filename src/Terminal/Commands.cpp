@@ -810,13 +810,13 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 	options.stderrOption = inStdErr;
 	if (options.stdoutOption == PipeOption::Pipe)
 	{
-		options.onStdOut = [&ret](std::string_view inData) {
+		options.onStdOut = [&ret](std::string inData) {
 			ret += std::move(inData);
 		};
 	}
 	if (options.stderrOption == PipeOption::Pipe)
 	{
-		options.onStdErr = [&ret](std::string_view inData) {
+		options.onStdErr = [&ret](std::string inData) {
 			ret += std::move(inData);
 		};
 	}
@@ -840,12 +840,11 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 	options.cwd = getWorkingDirectory();
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = inStdErr;
-	options.onStdOut = [&outputStream](std::string_view inData) {
-		std::string data(inData);
+	options.onStdOut = [&outputStream](std::string inData) {
 #if defined(CHALET_WIN32)
-		String::replaceAll(data, "\r\n", "\n");
+		String::replaceAll(inData, "\r\n", "\n");
 #endif
-		outputStream << std::move(data);
+		outputStream << std::move(inData);
 	};
 	if (options.stderrOption == PipeOption::Pipe)
 	{

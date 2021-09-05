@@ -97,7 +97,7 @@ int Subprocess::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 			s_initialized = true;
 		}
 
-		static auto onDefaultStdErr = [](std::string_view inData) {
+		static auto onDefaultStdErr = [](std::string inData) {
 			std::cerr << inData << std::flush;
 		};
 
