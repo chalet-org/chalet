@@ -43,9 +43,9 @@ enum class SigNum : int
 	// SIGBUS = 7,
 	FloatingPointException = SIGFPE,
 	Kill = 9,
-	PSIGUSR1 = 10,
+	// SIGUSR1 = 10,
 	SegmentationViolation = SIGSEGV,
-	PSIGUSR2 = 12,
+	// SIGUSR2 = 12,
 	BrokenPipe = 13,
 	Alarm = 14,
 	Terminate = SIGTERM,
@@ -325,7 +325,7 @@ public:
 	}
 
 	template <class T, size_t Size>
-	inline void read(const FileNo inFileNo, std::array<T, Size>& inBuffer, const SubprocessOptions::PipeFunc& onRead = nullptr)
+	inline void read(const FileNo inFileNo, std::array<T, Size>& inBuffer, const std::uint8_t inBufferSize, const SubprocessOptions::PipeFunc& onRead = nullptr)
 	{
 		if (onRead != nullptr)
 		{
@@ -339,7 +339,7 @@ public:
 					break;
 				}
 
-				bytesRead = ::read(pipe.m_read, inBuffer.data(), inBuffer.size());
+				bytesRead = ::read(pipe.m_read, inBuffer.data(), inBufferSize > 0 ? static_cast<std::size_t>(inBufferSize) : inBuffer.size());
 				if (bytesRead > 0)
 					onRead(std::string_view(inBuffer.data(), bytesRead));
 				else
@@ -419,7 +419,7 @@ void subProcessSignalHandler(int inSignal)
 }
 
 /*****************************************************************************/
-int Subprocess2::run(const StringList& inCmd, SubprocessOptions&& inOptions)
+int Subprocess2::run(const StringList& inCmd, SubprocessOptions&& inOptions, const std::uint8_t inBufferSize)
 {
 	CHALET_TRY
 	{
@@ -449,10 +449,10 @@ int Subprocess2::run(const StringList& inCmd, SubprocessOptions&& inOptions)
 			static std::array<char, 256> buffer{ 0 };
 
 			if (inOptions.stdoutOption == PipeOption::Pipe)
-				process.read(FileNo::StdOut, buffer, inOptions.onStdOut);
+				process.read(FileNo::StdOut, buffer, inBufferSize, inOptions.onStdOut);
 
 			if (inOptions.stderrOption == PipeOption::Pipe)
-				process.read(FileNo::StdErr, buffer, inOptions.onStdErr);
+				process.read(FileNo::StdErr, buffer, inBufferSize, inOptions.onStdErr);
 
 			int result = process.waitForResult();
 

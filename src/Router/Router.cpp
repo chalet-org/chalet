@@ -235,13 +235,13 @@ bool Router::cmdDebug()
 		"shit"
 	};
 
-	// auto waitTime = std::chrono::milliseconds(25);
+	auto waitTime = std::chrono::milliseconds(25);
 	SubprocessOptions options;
-	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::Pipe;
-	options.onStdOut = [](std::string_view data) {
+	options.stdoutOption = PipeOption::Close;
+	options.stderrOption = PipeOption::StdOut;
+	options.onStdOut = [&waitTime](std::string_view data) {
 		std::cout << data << std::flush;
-		// std::this_thread::sleep_for(waitTime);
+		std::this_thread::sleep_for(waitTime);
 	};
 	options.onStdErr = [](std::string_view data) {
 		std::cerr << data << std::flush;

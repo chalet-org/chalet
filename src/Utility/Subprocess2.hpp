@@ -14,7 +14,7 @@ namespace chalet
 {
 namespace Subprocess2
 {
-int run(const StringList& inCmd, SubprocessOptions&& inOptions);
+int run(const StringList& inCmd, SubprocessOptions&& inOptions, const std::uint8_t inBufferSize = 0);
 int getLastExitCode();
 void haltAllProcesses(const int inSignal = SIGTERM);
 }
