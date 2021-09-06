@@ -96,8 +96,7 @@ int RunningProcess::waitForResult()
 		return -1;
 	}
 
-	m_cmd.clear();
-
+	close();
 	return static_cast<int>(exitCode);
 }
 #else
@@ -115,7 +114,8 @@ int RunningProcess::waitForResult()
 	}
 
 	int result = getReturnCode(exitCode);
-	m_cmd.clear();
+
+	close();
 	return result;
 }
 
@@ -403,15 +403,20 @@ bool RunningProcess::sendSignal(const SigNum inSignal)
 		}
 	}
 
-	return true;
 #else
 	if (m_pid == -1)
 		return false;
 
 	m_killed = true;
 
-	return ::kill(m_pid, static_cast<int>(inSignal)) == 0;
+	if (::kill(m_pid, static_cast<int>(inSignal)) != 0)
+	{
+		Diagnostic::error("Error shutting down process: {}", m_pid);
+		return false;
+	}
 #endif
+
+	return true;
 }
 
 /*****************************************************************************/

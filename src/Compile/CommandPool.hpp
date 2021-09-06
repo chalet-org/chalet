@@ -44,7 +44,6 @@ struct CommandPool
 
 private:
 	mutable ThreadPool m_threadPool;
-	mutable bool m_canceled = false;
 };
 }
 

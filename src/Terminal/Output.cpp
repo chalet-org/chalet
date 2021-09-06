@@ -516,6 +516,17 @@ void Output::msgTargetUpToDate(const bool inMultiTarget, const std::string& inPr
 }
 
 /*****************************************************************************/
+void Output::msgCommandPoolError(const std::string& inMessage)
+{
+	if (!s_quietNonBuild)
+	{
+		const auto colorError = getAnsiStyle(sTheme.error, true);
+		const auto reset = getAnsiReset();
+		std::cout << fmt::format("   {}Error: {}{}", colorError, reset, inMessage) << std::endl;
+	}
+}
+
+/*****************************************************************************/
 void Output::msgBuildFail()
 {
 	auto symbol = Unicode::heavyBallotX();

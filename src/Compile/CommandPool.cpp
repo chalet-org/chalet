@@ -19,6 +19,7 @@ namespace
 {
 std::mutex s_mutex;
 std::atomic<uint> s_compileIndex = 0;
+bool s_canceled = false;
 std::function<void()> s_shutdownHandler;
 
 /*****************************************************************************/
@@ -111,7 +112,15 @@ bool executeCommand(StringList command, std::string sourceFile, bool generateDep
 /*****************************************************************************/
 void signalHandler(int inSignal)
 {
-	Subprocess::haltAllProcesses(inSignal);
+	if (s_canceled)
+		return;
+
+	if (inSignal == SIGTERM)
+	{
+		// might result in a segfault, but if a SIGTERM has been sent, we really want to halt anyway
+		Subprocess::haltAllProcesses(inSignal);
+	}
+
 	s_shutdownHandler();
 }
 }
@@ -135,14 +144,17 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	::signal(SIGTERM, signalHandler);
 	::signal(SIGABRT, signalHandler);
 
+	s_canceled = false;
+
 	s_shutdownHandler = [this]() {
 		this->m_threadPool.stop();
-		this->m_canceled = true;
+		s_canceled = true;
 	};
 
 	auto onError = [quiet = quiet]() -> bool {
 		Output::setQuietNonBuild(quiet);
-		Diagnostic::error("Build error...");
+		// Diagnostic::error("Build error...");
+		Output::lineBreak();
 		return false;
 	};
 
@@ -176,7 +188,6 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		}
 	}
 
-	bool buildFailed = false;
 	std::vector<std::future<bool>> threadResults;
 	for (auto& it : list)
 	{
@@ -194,28 +205,44 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		}
 	}
 
+	std::string exceptionThrown;
 	for (auto& tr : threadResults)
 	{
 		CHALET_TRY
 		{
 			if (!tr.get())
 			{
-				signalHandler(SIGTERM);
-				buildFailed = true;
-				break;
+				CHALET_THROW(std::runtime_error("build error"));
 			}
 		}
-		CHALET_CATCH(std::future_error & err)
+		CHALET_CATCH(const std::exception& err)
 		{
-			CHALET_EXCEPT_ERROR(err.what());
-			return onError();
+			if (!s_canceled && exceptionThrown.empty())
+			{
+				signalHandler(SIGTERM);
+				exceptionThrown = fmt::format("exception '{}'", err.what());
+				s_canceled = true;
+			}
 		}
 	}
 
-	if (buildFailed)
+	if (s_canceled)
 	{
-		m_threadPool.stop();
+		// m_threadPool.stop();
 		threadResults.clear();
+
+		Output::lineBreak();
+
+		if (!exceptionThrown.empty())
+		{
+			Output::msgCommandPoolError(exceptionThrown);
+			Output::msgCommandPoolError("Terminated running processes.");
+		}
+		else
+		{
+			Output::msgCommandPoolError("Aborted by user.");
+		}
+
 		return onError();
 	}
 
@@ -233,7 +260,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		if (!executeCommandFunc(post.command, post.output, renameAfterCommand))
 			return onError();
 
-		if (buildFailed)
+		if (s_canceled)
 		{
 			threadResults.clear();
 			return onError();
@@ -242,10 +269,13 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		Output::lineBreak();
 	}
 
+	s_shutdownHandler = nullptr;
+	s_compileIndex = 0;
+
 	Output::setQuietNonBuild(quiet);
 	// Output::setShowCommandOverride(true);
 
-	const bool completed = !m_canceled;
+	const bool completed = !s_canceled;
 	return completed;
 }
 }

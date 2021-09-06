@@ -51,12 +51,9 @@ void subProcessSignalHandler(int inSignal)
 		--it;
 		RunningProcess* process = (*it);
 
-		if (static_cast<SigNum>(inSignal) == SigNum::Terminate)
-			process->terminate();
-		else
-			process->sendSignal(static_cast<SigNum>(inSignal));
-
-		it = s_procesess.erase(it);
+		bool success = process->sendSignal(static_cast<SigNum>(inSignal));
+		if (success)
+			it = s_procesess.erase(it);
 	}
 
 	OSTerminal::reset();

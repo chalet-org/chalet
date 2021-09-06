@@ -63,6 +63,7 @@ void msgDisplayBlack(const std::string& inString);
 void msgConfigureCompleted();
 void msgBuildSuccess();
 void msgTargetUpToDate(const bool inMultiTarget, const std::string& inProjectName);
+void msgCommandPoolError(const std::string& inMessage);
 void msgBuildFail();
 void msgCleaning();
 void msgNothingToClean();
