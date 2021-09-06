@@ -183,7 +183,8 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 
 	Commands::sleep(1.0);
 
-	return Commands::subprocess({ "open", instrumentsTrace });
+	auto open = Commands::which("open");
+	return Commands::subprocess({ std::move(open), instrumentsTrace });
 }
 
 /*****************************************************************************/

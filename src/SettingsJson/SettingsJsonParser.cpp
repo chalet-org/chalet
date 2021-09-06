@@ -284,6 +284,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	// iPhoneSimulator.platform
 	Json& appleSkdsJson = m_jsonFile.json[kKeyAppleSdks];
 
+	auto xcrun = Commands::which("xcrun");
 	for (auto sdk : {
 			 "appletvos",
 			 "appletvsimulator",
@@ -296,7 +297,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	{
 		if (!appleSkdsJson.contains(sdk))
 		{
-			std::string sdkPath = Commands::subprocessOutput({ "xcrun", "--sdk", sdk, "--show-sdk-path" });
+			std::string sdkPath = Commands::subprocessOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" });
 			appleSkdsJson[sdk] = std::move(sdkPath);
 			m_jsonFile.setDirty(true);
 		}
