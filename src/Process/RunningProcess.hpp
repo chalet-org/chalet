@@ -40,12 +40,9 @@ public:
 	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
 
 private:
-#if defined(CHALET_WIN32)
-	static int waitForResult(PROCESS_INFORMATION& inProcessInfo);
-#else
-	static int waitForResult(const ProcessID inPid);
-	static int getReturnCode(const int inExitCode);
-	static CmdPtrArray getCmdVector(const StringList& inCmd);
+#if !defined(CHALET_WIN32)
+	int getReturnCode(const int inExitCode);
+	CmdPtrArray getCmdVector(const StringList& inCmd);
 #endif
 	ProcessPipe& getFilePipe(const HandleInput inFileNo);
 

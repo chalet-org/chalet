@@ -258,16 +258,12 @@ bool CompilerConfig::getSupportedCompilerFlags()
 /*****************************************************************************/
 void CompilerConfig::parseGnuHelpList(const StringList& inCommand)
 {
-	std::string raw = Commands::subprocessOutput(inCommand);
+	auto path = String::getPathFolder(inCommand.front());
+	std::string raw = Commands::subprocessOutput(inCommand, std::move(path));
 	auto split = String::split(raw, String::eol());
 
 	for (auto& line : split)
 	{
-		if (String::contains("-fno-rtti", line))
-		{
-			LOG(line);
-		}
-
 		auto beg = line.find_first_not_of(' ');
 		auto end = line.find_first_of('=', beg);
 		if (end == std::string::npos)
@@ -333,10 +329,6 @@ void CompilerConfig::parseClangHelpList()
 
 	for (auto& line : split)
 	{
-		if (String::contains("-frtti", line))
-		{
-			LOG(line);
-		}
 		auto beg = line.find_first_not_of(' ');
 		auto end = line.find_first_of('=', beg);
 		if (end == std::string::npos)

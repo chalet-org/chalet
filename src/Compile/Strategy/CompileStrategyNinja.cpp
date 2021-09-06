@@ -136,29 +136,38 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	// 	Output::print(Output::theme().build, inCmd);
 
 	bool skipOutput = false;
-	std::string noWork{ "ninja: no work to do.\n" };
+	std::string noWork{ "ninja: no work to do." };
 	std::string data;
+	auto endlineReplace = fmt::format("\n{}", Output::getAnsiReset());
 
-	auto parsePrintOutput = [&skipOutput, &noWork, &data]() {
-		String::replaceAll(data, "\r\n", "\n");
-		if (skipOutput || String::startsWith(noWork, data) || String::startsWith(data, noWork))
+	auto parsePrintOutput = [&]() {
+		bool canSkip = data.size() > 5 && (String::startsWith(noWork, data) || String::startsWith(data, noWork));
+		if (skipOutput || canSkip)
 		{
 			skipOutput = true;
 			return;
 		}
 
-		if (String::startsWith('[', data))
+		if (data.front() == '[')
 		{
-			data = fmt::format("   {}{}", Output::getAnsiReset(), data);
+			data.replace(0, 1, fmt::format("   {}[", Output::getAnsiReset()));
+
 			auto firstEndBracket = data.find(']');
 			if (firstEndBracket != std::string::npos)
 			{
-				auto color = Output::getAnsiStyle(Output::theme().build);
-				data.replace(firstEndBracket, 1, fmt::format("]{}", color));
+				if (data.substr(0, firstEndBracket).find('\n') == std::string::npos)
+				{
+					auto color = Output::getAnsiStyle(Output::theme().build);
+					data.replace(firstEndBracket, 1, fmt::format("]{}", color));
+				}
 			}
 		}
 
-		String::replaceAll(data, "\n", fmt::format("\n{}", Output::getAnsiReset()));
+#if defined(CHALET_WIN32)
+		String::replaceAll(data, "\r\n", endlineReplace);
+#else
+		String::replaceAll(data, "\n", endlineReplace);
+#endif
 
 		std::cout << data << std::flush;
 		data.clear();

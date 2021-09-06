@@ -57,10 +57,10 @@ std::string getWindowsArguments(const StringList& inCmd)
 }
 
 /*****************************************************************************/
-int RunningProcess::waitForResult(PROCESS_INFORMATION& inProcessInfo)
+int RunningProcess::waitForResult()
 {
 	DWORD waitMs = INFINITE;
-	DWORD result = ::WaitForSingleObject(inProcessInfo.hProcess, waitMs);
+	DWORD result = ::WaitForSingleObject(m_processInfo.hProcess, waitMs);
 	if (result == WAIT_TIMEOUT)
 	{
 		DWORD error = ::GetLastError();
@@ -88,7 +88,7 @@ int RunningProcess::waitForResult(PROCESS_INFORMATION& inProcessInfo)
 	}
 
 	DWORD exitCode;
-	bool ret = ::GetExitCodeProcess(inProcessInfo.hProcess, &exitCode) == TRUE;
+	bool ret = ::GetExitCodeProcess(m_processInfo.hProcess, &exitCode) == TRUE;
 	if (!ret)
 	{
 		DWORD error = ::GetLastError();
@@ -96,11 +96,13 @@ int RunningProcess::waitForResult(PROCESS_INFORMATION& inProcessInfo)
 		return -1;
 	}
 
+	m_cmd.clear();
+
 	return static_cast<int>(exitCode);
 }
 #else
 /*****************************************************************************/
-int RunningProcess::waitForResult(const ProcessID inPid)
+int RunningProcess::waitForResult()
 {
 	int exitCode;
 	while (true)
@@ -112,7 +114,9 @@ int RunningProcess::waitForResult(const ProcessID inPid)
 		break;
 	}
 
-	return getReturnCode(exitCode);
+	int result = getReturnCode(exitCode);
+	m_cmd.clear();
+	return result;
 }
 
 /*****************************************************************************/
@@ -365,18 +369,6 @@ void RunningProcess::close()
 #if !defined(CHALET_WIN32)
 	m_cwd.clear();
 #endif
-}
-
-/*****************************************************************************/
-int RunningProcess::waitForResult()
-{
-#if defined(CHALET_WIN32)
-	int result = waitForResult(m_processInfo);
-#else
-	int result = waitForResult(m_pid);
-#endif
-	m_cmd.clear();
-	return result;
 }
 
 /*****************************************************************************/

@@ -17,8 +17,11 @@
 	#pragma warning(disable : 4244)
 #endif
 
+#define CHALET_USE_PROCESS1 0
+
 namespace chalet
 {
+#if CHALET_USE_PROCESS1
 namespace
 {
 std::vector<sp::Popen*> s_procesess;
@@ -64,14 +67,21 @@ void subProcessSignalHandler(int inSignal)
 	OSTerminal::reset();
 }
 }
+#else
+#endif
 
 /*****************************************************************************/
 int Subprocess::getLastExitCode()
 {
+#if CHALET_USE_PROCESS1
 	return s_lastErrorCode;
+#else
+	return Subprocess2::getLastExitCode();
+#endif
 }
 
 /*****************************************************************************/
+#if CHALET_USE_PROCESS1
 int Subprocess::run(const StringList& inCmd, ProcessOptions&& inOptions)
 {
 	CHALET_TRY
@@ -154,11 +164,21 @@ int Subprocess::run(const StringList& inCmd, ProcessOptions&& inOptions)
 		return -1;
 	}
 }
+#else
+int Subprocess::run(const StringList& inCmd, ProcessOptions&& inOptions)
+{
+	return Subprocess2::run(inCmd, std::move(inOptions));
+}
+#endif
 
 /*****************************************************************************/
 void Subprocess::haltAllProcesses(const int inSignal)
 {
+#if CHALET_USE_PROCESS1
 	subProcessSignalHandler(inSignal);
+#else
+	return Subprocess2::haltAllProcesses(static_cast<SigNum>(inSignal));
+#endif
 }
 }
 

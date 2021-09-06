@@ -289,7 +289,9 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 		else
 #endif
 		{
+#if defined(CHALET_WIN32)
 			String::replaceAll(errorOutput, "\r\n", "\n");
+#endif
 			String::replaceAll(errorOutput, fmt::format("{}: *** Waiting for unfinished jobs....{}", make, String::eol()), "");
 			String::replaceAll(errorOutput, fmt::format("{}: *** No rule", make), "No rule");
 			cutoff = errorOutput.find(fmt::format("{}: *** [", make));

@@ -238,7 +238,7 @@ bool Router::cmdDebug()
 	auto waitTime = std::chrono::milliseconds(25);
 	ProcessOptions options;
 	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::StdOut;
+	options.stderrOption = PipeOption::StdErr;
 	options.onStdOut = [&waitTime](std::string data) {
 		std::cout << data << std::flush;
 		std::this_thread::sleep_for(waitTime);
@@ -254,7 +254,7 @@ bool Router::cmdDebug()
 
 		Timer timer;
 		// int result = Subprocess::run(cmd, std::move(options));
-		int result = Subprocess2::run(cmd, std::move(options), 1);
+		int result = Subprocess2::run(cmd, std::move(options));
 		Output::printSeparator();
 
 		// LOG("return code:", result);

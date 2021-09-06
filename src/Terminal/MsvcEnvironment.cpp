@@ -374,8 +374,9 @@ bool MsvcEnvironment::setVariableToPath(const char* inName)
 bool MsvcEnvironment::saveOriginalEnvironment()
 {
 #if defined(CHALET_WIN32)
+	auto cmdExe = Environment::getComSpec();
 	StringList cmd{
-		"cmd.exe",
+		std::move(cmdExe),
 		"/c",
 		"SET"
 	};
