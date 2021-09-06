@@ -1,22 +1,25 @@
 {
-	"version": "3.0.0",
-	"defaults": {},
-	"configurations": [
-		{
-			"type": "default",
-			"project": "CMakeLists.txt",
-			"projectTarget": "chalet-debug.exe",
-			"name": "chalet-debug.exe",
-			"currentDir": "${projectDir}",
-			"env": {
-				"Path": "${env.Path}"
-			},
-			"inheritEnvironments": [
-				"msvc_x64_x64"
-			],
-			"args": [
-				"--save-schema", "build", "Release"
-			]
-		}
-	]
+  "version": "3.0.0",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "chalet-debug.exe",
+      "name": "chalet-debug.exe",
+      "currentDir": "${projectDir}",
+      "env": {
+        "Path": "${env.Path}"
+      },
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "args": [
+        "--save-schema",
+        "-c",
+        "Release",
+        "build"
+      ]
+    }
+  ]
 }

@@ -13,7 +13,9 @@
 
 #include "Utility/String.hpp"
 
-extern char** environ;
+#if !defined(CHALET_MSVC)
+	extern char** environ;
+#endif
 
 namespace chalet
 {
