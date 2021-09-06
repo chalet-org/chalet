@@ -107,7 +107,7 @@ int RunningProcess::waitForResult()
 	int exitCode;
 	while (true)
 	{
-		ProcessID child = ::waitpid(inPid, &exitCode, 0);
+		ProcessID child = ::waitpid(m_pid, &exitCode, 0);
 		if (child == -1 && errno == EINTR)
 			continue;
 

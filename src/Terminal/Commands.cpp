@@ -37,9 +37,9 @@ namespace chalet
 namespace
 {
 #if defined(CHALET_WIN32)
-std::string kCygPath;
+static std::string kCygPath;
 #elif defined(CHALET_MACOS)
-std::string kXcodePath;
+static std::string kXcodePath;
 #endif
 
 struct stat statBuffer;
@@ -994,7 +994,8 @@ const std::string& Commands::getCygPath()
 {
 	if (kCygPath.empty())
 	{
-		kCygPath = Commands::subprocessOutput({ "cygpath", "-m", "/" });
+		auto cygPath = Commands::which("cygpath");
+		kCygPath = Commands::subprocessOutput({ std::move(cygPath), "-m", "/" });
 		Path::sanitize(kCygPath, true);
 		kCygPath.pop_back();
 	}
@@ -1009,7 +1010,8 @@ const std::string& Commands::getXcodePath()
 {
 	if (kXcodePath.empty())
 	{
-		kXcodePath = Commands::subprocessOutput({ "xcode-select", "-p" });
+		auto xcodeSelect = "/usr/bin/xcode-select";
+		kXcodePath = Commands::subprocessOutput({ std::move(xcodeSelect), "-p" });
 	}
 
 	return kXcodePath;
