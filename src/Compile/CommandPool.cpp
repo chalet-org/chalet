@@ -56,15 +56,18 @@ bool executeCommandMsvc(StringList command, std::string sourceFile, bool generat
 		srcFile = sourceFile.substr(start, end - start);
 	}
 
-	ProcessOptions options;
-	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::StdErr;
-	options.onStdOut = [&srcFile](std::string inData) {
+	auto onOutput = [&srcFile](std::string inData) {
 		if (String::startsWith(srcFile, inData))
 			return;
 
 		std::cout << std::move(inData) << std::flush;
 	};
+
+	ProcessOptions options;
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdOut = onOutput;
+	options.onStdErr = onOutput;
 
 	if (Subprocess::run(command, std::move(options)) != EXIT_SUCCESS)
 		return false;
@@ -81,8 +84,20 @@ bool executeCommand(StringList command, std::string sourceFile, bool generateDep
 	UNUSED(sourceFile);
 
 	ProcessOptions options;
+#if defined(CHALET_WIN32)
+	auto onOutput = [](std::string inData) {
+		String::replaceAll(inData, "\n", "\r\n");
+		std::cout << std::move(inData) << std::flush;
+	};
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdOut = onOutput;
+	options.onStdErr = onOutput;
+
+#else
 	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::StdErr;
+#endif
 
 	if (Subprocess::run(command, std::move(options)) != EXIT_SUCCESS)
 		return false;
