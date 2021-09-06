@@ -127,7 +127,7 @@ std::string getParentProcessPath()
 	#else
 		// TODO: Better solution than this
 		std::string procLoc = "/proc/" + std::to_string(static_cast<int>(pid)) + "/exe";
-		name = Commands::subprocessOutput({ "ls", "-lt", procLoc });
+		name = Commands::subprocessOutput({ "/usr/bin/ls", "-lt", procLoc });
 		auto list = String::split(name, " -> ");
 		name = list.back();
 	#endif
