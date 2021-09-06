@@ -811,12 +811,18 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 	if (options.stdoutOption == PipeOption::Pipe)
 	{
 		options.onStdOut = [&ret](std::string inData) {
+#if defined(CHALET_WIN32)
+			String::replaceAll(inData, "\r\n", "\n");
+#endif
 			ret += std::move(inData);
 		};
 	}
 	if (options.stderrOption == PipeOption::Pipe)
 	{
 		options.onStdErr = [&ret](std::string inData) {
+#if defined(CHALET_WIN32)
+			String::replaceAll(inData, "\r\n", "\n");
+#endif
 			ret += std::move(inData);
 		};
 	}
