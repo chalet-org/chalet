@@ -138,6 +138,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	bool skipOutput = false;
 	std::string noWork{ "ninja: no work to do." };
 	std::string data;
+	auto eol = String::eol();
 	auto endlineReplace = fmt::format("\n{}", Output::getAnsiReset());
 
 	auto parsePrintOutput = [&]() {
@@ -163,11 +164,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 			}
 		}
 
-#if defined(CHALET_WIN32)
-		String::replaceAll(data, "\r\n", endlineReplace);
-#else
-		String::replaceAll(data, "\n", endlineReplace);
-#endif
+		String::replaceAll(data, eol, endlineReplace);
 
 		std::cout << data << std::flush;
 		data.clear();

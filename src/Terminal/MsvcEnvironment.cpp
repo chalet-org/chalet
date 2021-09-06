@@ -133,24 +133,30 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 		// Diagnostic::infoEllipsis("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta);
 		Diagnostic::infoEllipsis("Creating Microsoft{} Visual C++ Environment Cache", Unicode::registered());
 
+		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) {
+			auto temp = Commands::subprocessOutput(inCmd);
+			auto split = String::split(temp, "\n");
+			return split.front();
+		};
+
 		if (genericMsvcFromInput)
 		{
 
 			StringList vswhereCmd = getStartOfVsWhereCommand();
 			vswhereCmd.emplace_back("installationPath");
-			m_vsAppIdDir = Commands::subprocessOutput(vswhereCmd);
+			m_vsAppIdDir = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
 
 			m_detectedVersion = getMsvcVersion();
 		}
 		else if (RegexPatterns::matchesFullVersionString(inVersion))
 		{
 			StringList vswhereCmd{ s_vswhere, "-nologo", "-version" };
-			vswhereCmd.push_back(inVersion);
+			vswhereCmd.push_back(fmt::format("{}", inVersion));
 			vswhereCmd.emplace_back("-prerelease"); // always include prereleases in this scenario since we're search for the exact version
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 
-			m_vsAppIdDir = Commands::subprocessOutput(vswhereCmd);
+			m_vsAppIdDir = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
 			if (String::startsWith("Error", m_vsAppIdDir))
 				m_vsAppIdDir.clear();
 
