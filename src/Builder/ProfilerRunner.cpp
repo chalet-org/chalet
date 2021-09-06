@@ -177,7 +177,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 			return false;
 	}
 
-	Output::lineBreak();
+	Output::printSeparator();
 	Output::msgProfilerDoneInstruments(instrumentsTrace);
 	Output::lineBreak();
 
