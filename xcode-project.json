@@ -32,17 +32,6 @@
 				}
 			]
 		},
-		"subprocess": {
-			"type": "library.static",
-			"templates": [
-				"AllTargets"
-			],
-			"sources": [
-				{
-					"path": "vendor/subprocess"
-				}
-			]
-		},
 		"chalet": {
 			"type": "application",
 			"templates": [
@@ -56,9 +45,6 @@
 			"dependencies": [
 				{
 					"target": "json-schema-validator"
-				},
-				{
-					"target": "subprocess"
 				}
 			]
 		},
@@ -78,9 +64,6 @@
 			"dependencies": [
 				{
 					"target": "json-schema-validator"
-				},
-				{
-					"target": "subprocess"
 				}
 			]
 		}

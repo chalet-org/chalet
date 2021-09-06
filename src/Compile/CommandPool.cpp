@@ -7,10 +7,10 @@
 
 #include <csignal>
 
+#include "Process/Process.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -70,7 +70,7 @@ bool executeCommandMsvc(StringList command, std::string sourceFile, bool generat
 	options.onStdOut = onOutput;
 	options.onStdErr = onOutput;
 
-	if (Subprocess::run(command, std::move(options)) != EXIT_SUCCESS)
+	if (Process::run(command, std::move(options)) != EXIT_SUCCESS)
 		return false;
 
 	if (!generateDependencies)
@@ -100,7 +100,7 @@ bool executeCommand(StringList command, std::string sourceFile, bool generateDep
 	options.stderrOption = PipeOption::StdErr;
 #endif
 
-	if (Subprocess::run(command, std::move(options)) != EXIT_SUCCESS)
+	if (Process::run(command, std::move(options)) != EXIT_SUCCESS)
 		return false;
 
 	if (!generateDependencies)
@@ -118,7 +118,7 @@ void signalHandler(int inSignal)
 	if (inSignal == SIGTERM)
 	{
 		// might result in a segfault, but if a SIGTERM has been sent, we really want to halt anyway
-		Subprocess::haltAllProcesses(inSignal);
+		Process::haltAll(SigNum::Terminate);
 	}
 
 	s_shutdownHandler();

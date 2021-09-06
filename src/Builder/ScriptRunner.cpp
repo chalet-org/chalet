@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/ColorTheme.hpp"
 #include "Terminal/Commands.hpp"
@@ -14,7 +15,6 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -237,7 +237,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 	command.emplace_back(std::move(outScriptPath));
 
 	bool result = Commands::subprocess(command);
-	auto exitCode = Subprocess::getLastExitCode();
+	auto exitCode = Process::getLastExitCode();
 
 	std::string script = inScript;
 	m_inputs.clearWorkingDirectory(script);

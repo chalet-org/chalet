@@ -36,7 +36,6 @@ file(GLOB_RECURSE SOURCES
 	src/*.cpp
 	src/*.rc
 	vendor/json-schema-validator/src/*.cpp
-	vendor/subprocess/src/cpp/*.cpp
 )
 
 add_executable(${TARGET_NAME} ${SOURCES})
@@ -52,7 +51,6 @@ target_include_directories(${TARGET_NAME}
 		vendor/fmt/include/
 		vendor/argparse/include/
 		vendor/glob/single_include/
-		vendor/subprocess/src/cpp/
 		vendor/ust/
 		vendor/
 )

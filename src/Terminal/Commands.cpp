@@ -19,12 +19,12 @@
 #include "Core/CommandLineInputs.hpp"
 
 #include "Libraries/Glob.hpp"
+#include "Process/Process.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 
 #ifdef CHALET_MSVC
 	#define popen _popen
@@ -787,7 +787,7 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 	options.stderrOption = inStdErr;
 	options.onCreate = std::move(inOnCreate);
 
-	return Subprocess::run(inCmd, std::move(options)) == EXIT_SUCCESS;
+	return Process::run(inCmd, std::move(options)) == EXIT_SUCCESS;
 }
 
 /*****************************************************************************/
@@ -821,7 +821,7 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 		};
 	}
 
-	UNUSED(Subprocess::run(inCmd, std::move(options)));
+	UNUSED(Process::run(inCmd, std::move(options)));
 
 	stripLastEndLine(ret);
 
@@ -851,7 +851,7 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 		options.onStdErr = options.onStdOut;
 	}
 
-	bool result = Subprocess::run(inCmd, std::move(options)) == EXIT_SUCCESS;
+	bool result = Process::run(inCmd, std::move(options)) == EXIT_SUCCESS;
 	outputStream << std::endl;
 	return result;
 }

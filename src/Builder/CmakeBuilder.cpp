@@ -5,6 +5,7 @@
 
 #include "Builder/CmakeBuilder.hpp"
 
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
@@ -14,7 +15,6 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -73,7 +73,7 @@ bool CmakeBuilder::run()
 					String::replaceAll(inData, "\r\n", "\n");
 					std::cout << std::move(inData) << std::flush;
 				};
-				if (Subprocess::run(generatorCommand, std::move(options)) != EXIT_SUCCESS)
+				if (Process::run(generatorCommand, std::move(options)) != EXIT_SUCCESS)
 					return onRunFailure();
 			}
 			else

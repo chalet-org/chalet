@@ -11,7 +11,6 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
-                "${workspaceFolder}/vendor/subprocess/src/cpp",
                 "${workspaceFolder}/vendor/ust",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
@@ -43,7 +42,6 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
-                "${workspaceFolder}/vendor/subprocess/src/cpp",
                 "${workspaceFolder}/vendor/ust",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
@@ -69,7 +67,6 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
-                "${workspaceFolder}/vendor/subprocess/src/cpp",
                 "${workspaceFolder}/vendor/ust",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test"
@@ -97,7 +94,6 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
-                "${workspaceFolder}/vendor/subprocess/src/cpp",
                 "${workspaceFolder}/vendor/ust",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test"

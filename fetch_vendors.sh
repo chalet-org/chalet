@@ -11,7 +11,6 @@ vendors=(
 	'glob'
 	'json-schema-validator'
 	'nlohmann'
-	'subprocess'
 	'ust'
 )
 
@@ -24,7 +23,6 @@ repositories=(
 	'chalet-org/glob'
 	'chalet-org/json-schema-validator'
 	'nlohmann/json'
-	'chalet-org/subprocess'
 	'chalet-org/UniversalStacktrace'
 )
 tags=(
@@ -37,7 +35,6 @@ tags=(
 	'master'
 	'6471a63115239a0b6458ad25e2eb8d828c22fb34'
 	'master'
-	'master'
 )
 
 commits=(
@@ -49,7 +46,6 @@ commits=(
 	0
 	0
 	1
-	0
 	0
 )
 

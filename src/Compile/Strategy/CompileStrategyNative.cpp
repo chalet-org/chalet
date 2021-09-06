@@ -5,6 +5,7 @@
 
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
@@ -13,7 +14,6 @@
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 
 // TODO: Finish. It's a bit crap
 

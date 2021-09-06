@@ -5,13 +5,13 @@
 
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 
 // #define CHALET_KEEP_OLD_CACHE 1
 
@@ -234,7 +234,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	ProcessOptions::PipeFunc onStdErr = [&errorOutput](std::string inData) {
 		errorOutput += inData;
 	};
-	// static Subprocess::PipeFunc onStdErr = [](std::string inData) {
+	// static ProcessOptions::PipeFunc onStdErr = [](std::string inData) {
 	// 	std::cerr << inData << std::flush;
 	// };
 
@@ -266,7 +266,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 
 #endif
 
-	int result = Subprocess::run(inCmd, std::move(options));
+	int result = Process::run(inCmd, std::move(options));
 	if (!errorOutput.empty())
 	{
 		std::size_t cutoff = std::string::npos;

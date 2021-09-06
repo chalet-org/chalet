@@ -3,20 +3,20 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SUBPROCESS2_HPP
-#define CHALET_SUBPROCESS2_HPP
+#ifndef CHALET_PROCESS_HPP
+#define CHALET_PROCESS_HPP
 
 #include "Process/ProcessOptions.hpp"
 #include "Process/SigNum.hpp"
 
 namespace chalet
 {
-namespace Subprocess2
+namespace Process
 {
 int run(const StringList& inCmd, ProcessOptions&& inOptions, const std::uint8_t inBufferSize = 0);
 int getLastExitCode();
-void haltAllProcesses(const SigNum inSignal = SigNum::Terminate);
+void haltAll(const SigNum inSignal = SigNum::Terminate);
 }
 }
 
-#endif // CHALET_SUBPROCESS2_HPP
+#endif // CHALET_PROCESS_HPP

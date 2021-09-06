@@ -19,12 +19,12 @@
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 
+#include "Process/Process.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 #include "Utility/Timer.hpp"
 
 #include "Json/JsonComments.hpp"
@@ -673,7 +673,7 @@ bool BuildManager::cmdRun(const ProjectTarget& inProject)
 		auto outFile = fmt::format("{}/{}", buildOutputDir, outputFile);
 		m_inputs.clearWorkingDirectory(outFile);
 
-		auto message = fmt::format("{} exited with code: {}", outFile, Subprocess::getLastExitCode());
+		auto message = fmt::format("{} exited with code: {}", outFile, Process::getLastExitCode());
 
 		// Output::lineBreak();
 		Output::printSeparator();

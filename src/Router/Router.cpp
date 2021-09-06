@@ -9,7 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 
-#include "Process/Subprocess2.hpp"
+#include "Process/Process.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
@@ -23,7 +23,6 @@
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 #include "Utility/Timer.hpp"
 
 #include <chrono>
@@ -253,8 +252,8 @@ bool Router::cmdDebug()
 		Output::printSeparator();
 
 		Timer timer;
-		// int result = Subprocess::run(cmd, std::move(options));
-		int result = Subprocess2::run(cmd, std::move(options));
+		// int result = Process::run(cmd, std::move(options));
+		int result = Process::run(cmd, std::move(options));
 		Output::printSeparator();
 
 		// LOG("return code:", result);

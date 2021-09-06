@@ -6,11 +6,11 @@
 #include "Builder/ProfilerRunner.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -96,7 +96,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 	auto outFile = fmt::format("{}/{}", inOutputFolder, outputFile);
 	m_inputs.clearWorkingDirectory(outFile);
 
-	auto message = fmt::format("{} exited with code: {}", outFile, Subprocess::getLastExitCode());
+	auto message = fmt::format("{} exited with code: {}", outFile, Process::getLastExitCode());
 
 	// Output::lineBreak();
 	Output::printSeparator();

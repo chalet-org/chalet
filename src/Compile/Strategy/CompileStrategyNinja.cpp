@@ -5,12 +5,12 @@
 
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
 
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Subprocess.hpp"
 
 namespace chalet
 {
@@ -195,7 +195,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	options.stderrOption = PipeOption::StdErr;
 	options.onStdOut = std::move(onStdOut);
 
-	int result = Subprocess::run(inCmd, std::move(options));
+	int result = Process::run(inCmd, std::move(options));
 
 #if defined(CHALET_WIN32)
 	if (data.size() > 0)

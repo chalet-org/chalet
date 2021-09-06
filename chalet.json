@@ -60,7 +60,6 @@
 				"vendor/argparse/include",
 				"vendor/glob/single_include",
 				"vendor/ust",
-				"vendor/subprocess/src/cpp",
 				"vendor"
 			],
 			"links": [
@@ -81,10 +80,6 @@
 			"kind": "staticLibrary",
 			"location": "vendor/json-schema-validator/src"
 		},
-		"subprocess": {
-			"kind": "staticLibrary",
-			"location": "vendor/subprocess/src/cpp"
-		},
 		"chalet": {
 			"kind": "consoleApplication",
 			"location": "src",
@@ -92,8 +87,7 @@
 				"pch": "src/PCH.hpp",
 				"windowsApplicationManifest": "platform/windows/app.manifest",
 				"staticLinks": [
-					"json-schema-validator",
-					"subprocess"
+					"json-schema-validator"
 				]
 			},
 			"runProject": true
@@ -110,8 +104,7 @@
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"staticLinks": [
-					"json-schema-validator",
-					"subprocess"
+					"json-schema-validator"
 				],
 				"includeDirs": [
 					"vendor/catch2/single_include"

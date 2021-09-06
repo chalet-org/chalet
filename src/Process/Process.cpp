@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Process/Subprocess2.hpp"
+#include "Process/Process.hpp"
 
 #include <array>
 #include <atomic>
@@ -61,7 +61,7 @@ void subProcessSignalHandler(int inSignal)
 }
 
 /*****************************************************************************/
-int Subprocess2::run(const StringList& inCmd, ProcessOptions&& inOptions, const std::uint8_t inBufferSize)
+int Process::run(const StringList& inCmd, ProcessOptions&& inOptions, const std::uint8_t inBufferSize)
 {
 	CHALET_TRY
 	{
@@ -114,13 +114,13 @@ int Subprocess2::run(const StringList& inCmd, ProcessOptions&& inOptions, const 
 }
 
 /*****************************************************************************/
-int Subprocess2::getLastExitCode()
+int Process::getLastExitCode()
 {
 	return s_lastErrorCode;
 }
 
 /*****************************************************************************/
-void Subprocess2::haltAllProcesses(const SigNum inSignal)
+void Process::haltAll(const SigNum inSignal)
 {
 	subProcessSignalHandler(static_cast<std::underlying_type_t<SigNum>>(inSignal));
 }
