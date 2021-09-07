@@ -59,7 +59,6 @@
 				"vendor/fmt/include",
 				"vendor/argparse/include",
 				"vendor/glob/single_include",
-				"vendor/ust",
 				"vendor"
 			],
 			"links": [
@@ -198,9 +197,6 @@
 		},
 		"nlohmann_json": {
 			"repository": "git@github.com:nlohmann/json.git"
-		},
-		"ust": {
-			"repository": "git@github.com:MisterTea/UniversalStacktrace.git"
 		}
 	}*/
 }

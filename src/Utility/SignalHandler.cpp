@@ -5,8 +5,6 @@
 
 #include "Utility/SignalHandler.hpp"
 
-#include "Libraries/StackTrace.hpp"
-
 #include <csignal>
 #include <stdio.h>
 #include <stdlib.h>
@@ -71,7 +69,7 @@ void SignalHandler::handler(const int inSignal)
 			break;
 
 		case SIGINT:
-			printError("SIGINT", "Terminal Interrupt", false);
+			printError("SIGINT", "Terminal Interrupt");
 			break;
 
 		case SIGSEGV:
@@ -84,7 +82,6 @@ void SignalHandler::handler(const int inSignal)
 
 		default:
 			std::cerr << "Unknown Signal " + std::to_string(inSignal) + ":\n";
-			printStackTrace();
 			break;
 	}
 
@@ -98,92 +95,12 @@ void SignalHandler::handler(const int inSignal)
 }
 
 /*****************************************************************************/
-void SignalHandler::printError(const std::string& inType, const std::string& inDescription, const bool inPrintStackTrace)
+void SignalHandler::printError(const std::string& inType, const std::string& inDescription)
 {
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
 	std::cerr << boldRed << inType + '\n';
 
 	if (!inDescription.empty())
 		std::cerr << inDescription + ":\n";
-
-	if (inPrintStackTrace)
-		printStackTrace();
-}
-
-/*****************************************************************************/
-void SignalHandler::printStackTrace()
-{
-	std::string workingDirectory = Commands::getWorkingDirectory();
-	if (workingDirectory.empty())
-	{
-		std::cerr << "SignalHandler::printStackTrace: no workingDirectory" << std::endl;
-		return;
-	}
-
-#if !defined(CHALET_MSVC)
-	Path::sanitize(workingDirectory);
-#endif
-
-	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
-	const auto boldBlack = Output::getAnsiStyle(Output::theme().flair, true);
-	const auto redHighlight = Output::getAnsiStyle(Output::theme().info, Output::theme().error, true);
-	const auto blue = Output::getAnsiStyle(Output::theme().build);
-	const auto reset = Output::getAnsiReset();
-
-	auto thisClassName = CHALET_REFLECT(SignalHandler);
-	auto diagnosticClassName = CHALET_REFLECT(Diagnostic);
-
-	std::size_t cols = 100;
-
-	bool highlight = true;
-	ust::StackTrace stacktrace = ust::generate();
-	for (auto& entry : stacktrace.entries)
-	{
-		// ignore this class
-		if (String::contains(thisClassName, entry.functionName) || String::contains(diagnosticClassName, entry.functionName))
-			continue;
-
-		if (entry.functionName.size() > cols)
-			entry.functionName = entry.functionName.substr(0, cols) + "...";
-
-#if !defined(CHALET_MACOS)
-		// note: entry.sourceFileName will be blank if there are no debugging symbols!
-		std::size_t pos = entry.sourceFileName.find(workingDirectory);
-		const bool sourceCode = pos != std::string::npos;
-		std::string sourceFile = sourceCode ? entry.sourceFileName.substr(pos + workingDirectory.length() + 1) : entry.sourceFileName;
-#else
-		const bool sourceCode = !entry.sourceFileName.empty();
-		std::string sourceFile = entry.sourceFileName;
-#endif
-		// Note: breakpoints vary depending on compiler optimization level
-		if (sourceCode)
-		{
-			// at TestScene::init() src/main/Scenes/TestScene.cpp:42
-			if (highlight)
-			{
-				std::cerr << redHighlight << "  at";
-				highlight = false;
-			}
-			else
-			{
-				std::cerr << boldRed << "  at";
-			}
-
-			std::cerr << reset << ' ' << entry.functionName << ' ' << blue << sourceFile << ':' << entry.lineNumber << reset << '\n';
-		}
-		// OS dynamic libs, etc
-		else if (entry.functionName.empty())
-		{
-			// at C:/Windows/System32/msvcrt.dll:0x7ff8f04e7c58
-			// Skip these, because they're just noise (until they're not)
-			// std::cout << boldRed << "  at " << boldBlack << entry.binaryFileName << ':' << entry.address << reset << '\n';
-		}
-		// C++ runtime, libstdc++, libgcc, etc.
-		else
-		{
-			// at mainCRTStartup
-			std::cerr << boldRed << "  at " << boldBlack << entry.functionName << ' ' << entry.lineNumber << reset << '\n';
-		}
-	}
 }
 }

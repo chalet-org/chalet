@@ -36,7 +36,7 @@ public:
 	bool terminate();
 	bool kill();
 
-	template <size_t Size>
+	template <std::size_t Size>
 	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
 
 private:

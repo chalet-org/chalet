@@ -51,7 +51,6 @@ target_include_directories(${TARGET_NAME}
 		vendor/fmt/include/
 		vendor/argparse/include/
 		vendor/glob/single_include/
-		vendor/ust/
 		vendor/
 )
 
