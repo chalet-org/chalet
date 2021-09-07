@@ -232,7 +232,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 
 	std::string errorOutput;
 	ProcessOptions::PipeFunc onStdErr = [&errorOutput](std::string inData) {
-		errorOutput += inData;
+		errorOutput += std::move(inData);
 	};
 	// static ProcessOptions::PipeFunc onStdErr = [](std::string inData) {
 	// 	std::cerr << inData << std::flush;

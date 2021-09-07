@@ -49,7 +49,7 @@ bool printCommand(std::string prefix, std::string text, uint total = 0)
 }
 
 /*****************************************************************************/
-bool executeCommandMsvc(StringList command, std::string sourceFile, bool generateDependencies)
+bool executeCommandMsvc(StringList command, std::string sourceFile)
 {
 	std::string srcFile;
 	{
@@ -74,38 +74,44 @@ bool executeCommandMsvc(StringList command, std::string sourceFile, bool generat
 	if (Process::run(command, options) != EXIT_SUCCESS)
 		return false;
 
-	if (!generateDependencies)
-		return true;
-
 	return true;
 }
 
 /*****************************************************************************/
-bool executeCommandCarriageReturn(StringList command, std::string sourceFile, bool generateDependencies)
+bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 {
 	UNUSED(sourceFile);
 
 	ProcessOptions options;
-	auto onOutput = [](std::string inData) {
+	static auto onStdOut = [](std::string inData) {
 		String::replaceAll(inData, "\n", "\r\n");
 		std::cout << std::move(inData) << std::flush;
 	};
+
+	std::string errorOutput;
+	auto onStdErr = [&errorOutput](std::string inData) {
+		errorOutput += std::move(inData);
+	};
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = PipeOption::Pipe;
-	options.onStdOut = onOutput;
-	options.onStdErr = onOutput;
+	options.onStdOut = onStdOut;
+	options.onStdErr = onStdErr;
 
 	if (Process::run(command, options) != EXIT_SUCCESS)
 		return false;
 
-	if (!generateDependencies)
-		return true;
+	if (!errorOutput.empty())
+	{
+		std::unique_lock<std::mutex> lock(s_mutex);
+		String::replaceAll(errorOutput, "\n", "\r\n");
+		std::cout << errorOutput << std::flush;
+	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool executeCommand(StringList command, std::string sourceFile, bool generateDependencies)
+bool executeCommand(StringList command, std::string sourceFile)
 {
 	UNUSED(sourceFile);
 
@@ -115,9 +121,6 @@ bool executeCommand(StringList command, std::string sourceFile, bool generateDep
 
 	if (Process::run(command, options) != EXIT_SUCCESS)
 		return false;
-
-	if (!generateDependencies)
-		return true;
 
 	return true;
 }
@@ -200,7 +203,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 					totalCompiles))
 				return onError();
 
-			if (!executeCommandFunc(it.command, it.output, renameAfterCommand))
+			if (!executeCommandFunc(it.command, it.output))
 				return onError();
 		}
 	}
@@ -218,7 +221,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 				color + (showCommmands ? String::join(it.command) : it.output) + reset,
 				totalCompiles));
 
-			threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.output, renameAfterCommand));
+			threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.output));
 		}
 	}
 
@@ -274,7 +277,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 				post.label + ' ' + color + (showCommmands ? String::join(post.command) : post.output) + reset))
 			return onError();
 
-		if (!executeCommandFunc(post.command, post.output, renameAfterCommand))
+		if (!executeCommandFunc(post.command, post.output))
 			return onError();
 
 		if (s_canceled)
