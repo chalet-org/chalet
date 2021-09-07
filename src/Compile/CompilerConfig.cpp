@@ -218,10 +218,12 @@ bool CompilerConfig::getSupportedCompilerFlags()
 				{
 					cmd.emplace_back(fmt::format("--help={}", help));
 				}
+				LOG(String::join(cmd));
 				parseGnuHelpList(cmd);
 			}
 			{
 				StringList cmd{ exec, "-Wl,--help" };
+				LOG(String::join(cmd));
 				parseGnuHelpList(cmd);
 			}
 
@@ -260,7 +262,7 @@ void CompilerConfig::parseGnuHelpList(const StringList& inCommand)
 {
 	auto path = String::getPathFolder(inCommand.front());
 	std::string raw = Commands::subprocessOutput(inCommand, std::move(path));
-	auto split = String::split(raw, String::eol());
+	auto split = String::split(raw, '\n');
 
 	for (auto& line : split)
 	{
@@ -325,7 +327,7 @@ void CompilerConfig::parseClangHelpList()
 	const auto& exec = compilerExecutable();
 
 	std::string raw = Commands::subprocessOutput({ exec, "-cc1", "--help" });
-	auto split = String::split(raw, String::eol());
+	auto split = String::split(raw, '\n');
 
 	for (auto& line : split)
 	{
@@ -431,7 +433,7 @@ bool CompilerConfig::isLinkSupported(const std::string& inLink, const StringList
 		cmd.emplace_back(fmt::format("-print-file-name={}", file));
 
 		auto raw = Commands::subprocessOutput(cmd);
-		// auto split = String::split(raw, String::eol());
+		// auto split = String::split(raw, '\n');
 
 		return !String::equals(file, raw);
 	}

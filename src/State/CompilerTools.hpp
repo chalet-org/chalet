@@ -103,7 +103,7 @@ private:
 	bool updateToolchainCacheNode(JsonFile& inConfigJson);
 
 	std::string parseVersionMSVC(const std::string& inExecutable, std::string& outArch) const;
-	std::string parseVersionGNU(const std::string& inExecutable, std::string& outArch, const std::string_view inEol = "\n") const;
+	std::string parseVersionGNU(const std::string& inExecutable, std::string& outArch) const;
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;

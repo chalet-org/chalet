@@ -209,7 +209,7 @@ void CompilerTools::fetchCompilerVersions()
 			}
 			else
 			{
-				version = parseVersionGNU(m_compilerCpp, m_compilerDetectedArchCpp, String::eol());
+				version = parseVersionGNU(m_compilerCpp, m_compilerDetectedArchCpp);
 			}
 #else
 			version = parseVersionGNU(m_compilerCpp, m_compilerDetectedArchCpp);
@@ -230,7 +230,7 @@ void CompilerTools::fetchCompilerVersions()
 			}
 			else
 			{
-				version = parseVersionGNU(m_compilerC, m_compilerDetectedArchC, String::eol());
+				version = parseVersionGNU(m_compilerC, m_compilerDetectedArchC);
 			}
 #else
 			version = parseVersionGNU(m_compilerC, m_compilerDetectedArchC);
@@ -301,7 +301,7 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std
 
 	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
 	std::string rawOutput = Commands::subprocessOutput({ inExecutable });
-	auto splitOutput = String::split(rawOutput, String::eol());
+	auto splitOutput = String::split(rawOutput, '\n');
 	if (splitOutput.size() >= 2)
 	{
 		auto start = splitOutput[1].find("Version");
@@ -319,7 +319,7 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std
 }
 
 /*****************************************************************************/
-std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std::string& outArch, const std::string_view inEol) const
+std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std::string& outArch) const
 {
 	std::string ret;
 
@@ -339,7 +339,7 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std:
 		rawOutput = Commands::subprocessOutput({ inExecutable, "-v" });
 	}
 
-	auto splitOutput = String::split(rawOutput, inEol);
+	auto splitOutput = String::split(rawOutput, '\n');
 	if (splitOutput.size() >= 2)
 	{
 		std::string versionString;
