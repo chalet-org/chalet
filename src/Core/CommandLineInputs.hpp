@@ -110,6 +110,16 @@ struct CommandLineInputs
 
 	void clearWorkingDirectory(std::string& outValue) const;
 
+	uint processorCount() const noexcept;
+
+	uint maxJobs() const noexcept;
+	bool maxJobsSetFromCommandLine() const noexcept;
+	void setMaxJobs(const uint inValue, const bool inFromCL = false) noexcept;
+
+	bool dumpAssembly() const noexcept;
+	bool dumpAssemblySetFromCommandLine() const noexcept;
+	void setDumpAssembly(const bool inValue, const bool inFromCL = false) noexcept;
+
 private:
 	std::string getPlatform() const noexcept;
 	StringList getNotPlatforms() const noexcept;
@@ -157,10 +167,16 @@ private:
 	std::string m_hostArchitecture;
 	mutable std::string m_targetArchitecture;
 
+	uint m_processorCount = 0;
+	uint m_maxJobs = 0;
+
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
 	SettingsType m_settingsType = SettingsType::None;
 
+	bool m_dumpAssembly = false;
+	bool m_maxJobsSetFromCommandLine = false;
+	bool m_dumpAssemblySetFromCommandLine = false;
 	bool m_saveSchemaToFile = false;
 	mutable bool m_isMsvcPreRelease = false;
 	mutable bool m_isToolchainPreset = false;

@@ -5,6 +5,8 @@
 
 #include "Core/ArgumentPatterns.hpp"
 
+#include <thread>
+
 // #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "Utility/List.hpp"
@@ -61,6 +63,7 @@ ArgumentPatterns::ArgumentPatterns() :
 		"-d", "--distribution-dir",
 		"-t", "--toolchain",
 		"-c", "--configuration",
+		"-j", "--max-jobs",
 		// "-p", "--project-gen",
 		"-e", "--env-file",
 		"-a", "--arch",
@@ -383,9 +386,11 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					value = m_parser.get<bool>(key);
 					break;
 
-				case Variant::Kind::Integer:
-					value = m_parser.get<int>(key);
+				case Variant::Kind::Integer: {
+					std::string tmpValue = m_parser.get<std::string>(key);
+					value = atoi(tmpValue.c_str());
 					break;
+				}
 
 				case Variant::Kind::String:
 					value = m_parser.get<std::string>(key);
@@ -413,7 +418,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					break;
 			}
 		}
-		CHALET_CATCH(const std::exception&)
+		CHALET_CATCH(const std::exception& err)
 		{
 			Diagnostic::error("An invalid set of arguments were found.\n   Aborting...");
 			return false;
@@ -579,6 +584,31 @@ void ArgumentPatterns::addToolchainArg()
 }
 
 /*****************************************************************************/
+void ArgumentPatterns::addMaxJobsArg()
+{
+	auto jobs = std::thread::hardware_concurrency();
+	m_parser.add_argument("-j", "--max-jobs")
+		.help(fmt::format("The number of jobs to run during compilation [default: {}]", jobs))
+		.nargs(1)
+		.default_value(0);
+
+	m_argumentMap.push_back({ "-j", Variant::Kind::Integer });
+	m_argumentMap.push_back({ "--max-jobs", Variant::Kind::Integer });
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addDumpAssemblyArg()
+{
+	m_parser.add_argument("--dump-assembly")
+		.help("Include an .asm dump of each object file during the build")
+		.nargs(1)
+		.default_value(false)
+		.implicit_value(true);
+
+	m_argumentMap.push_back({ "--dump-assembly", Variant::Kind::Boolean });
+}
+
+/*****************************************************************************/
 void ArgumentPatterns::addEnvFileArg()
 {
 	m_parser.add_argument("-e", "--env-file")
@@ -714,6 +744,8 @@ void ArgumentPatterns::addOptionalArguments()
 	addOutputDirArg();
 	addBuildConfigurationArg();
 	addToolchainArg();
+	addMaxJobsArg();
+	// addDumpAssemblyArg();
 	addProjectGenArg();
 	addEnvFileArg();
 	addArchArg();

@@ -341,7 +341,7 @@ bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route
 
 	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
 
-	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig, m_state.environment.dumpAssembly());
+	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig, m_state.info.dumpAssembly());
 
 	if (!Commands::makeDirectories(outputs.directories))
 	{
@@ -360,7 +360,7 @@ bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route
 		doClean(inProject, outputs.target, outputs.groups);
 	}
 
-	if (m_state.environment.dumpAssembly())
+	if (m_state.info.dumpAssembly())
 	{
 		StringList assemblyList;
 		for (auto& group : outputs.groups)
@@ -567,7 +567,7 @@ bool BuildManager::cmdBuild(const ProjectTarget& inProject)
 	if (!m_strategy->buildProject(inProject))
 		return false;
 
-	if (m_state.environment.dumpAssembly())
+	if (m_state.info.dumpAssembly())
 	{
 		if (!m_asmDumper.dumpProject(inProject))
 			return false;
@@ -591,7 +591,7 @@ bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 	if (!m_strategy->buildProject(inProject))
 		return false;
 
-	if (m_state.environment.dumpAssembly())
+	if (m_state.info.dumpAssembly())
 	{
 		bool forced = true;
 		if (!m_asmDumper.dumpProject(inProject, forced))

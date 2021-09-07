@@ -367,10 +367,16 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 		Output::setShowBenchmarks(val);
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyDumpAssembly))
-		m_prototype.environment.setDumpAssembly(val);
+	{
+		if (!m_inputs.dumpAssemblySetFromCommandLine())
+			m_inputs.setDumpAssembly(val);
+	}
 
 	if (ushort val = 0; m_jsonFile.assignFromKey(val, buildSettings, kKeyMaxJobs))
-		m_prototype.environment.setMaxJobs(val);
+	{
+		if (!m_inputs.dumpAssemblySetFromCommandLine())
+			m_inputs.setMaxJobs(val);
+	}
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))
 		m_prototype.tools.setGenerateCompileCommands(val);

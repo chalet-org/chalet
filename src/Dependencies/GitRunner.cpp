@@ -6,6 +6,7 @@
 #include "Dependencies/GitRunner.hpp"
 
 #include "Cache/ExternalDependencyCache.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
@@ -17,8 +18,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-GitRunner::GitRunner(StatePrototype& inPrototype, const GitDependency& inDependency) :
+GitRunner::GitRunner(StatePrototype& inPrototype, const CommandLineInputs& inInputs, const GitDependency& inDependency) :
 	m_prototype(inPrototype),
+	m_inputs(inInputs),
 	m_dependency(inDependency),
 	m_dependencyCache(m_prototype.cache.file().externalDependencies()),
 	m_repository(m_dependency.repository()),
@@ -137,7 +139,7 @@ StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
 
 	if (m_submodules)
 	{
-		uint maxJobs = m_prototype.environment.maxJobs();
+		uint maxJobs = m_inputs.maxJobs();
 
 		ret.emplace_back("--recurse-submodules");
 		ret.emplace_back("--shallow-submodules");

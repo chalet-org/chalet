@@ -18,7 +18,7 @@ namespace chalet
 /*****************************************************************************/
 AssemblyDumper::AssemblyDumper(BuildState& inState) :
 	m_state(inState),
-	m_commandPool(m_state.environment.maxJobs())
+	m_commandPool(m_state.info.maxJobs())
 {
 }
 

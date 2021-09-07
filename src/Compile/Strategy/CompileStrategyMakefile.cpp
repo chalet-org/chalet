@@ -124,7 +124,7 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 	auto& buildFile = m_buildFiles.at(inProject.name());
 	{
 		std::string jobs;
-		const auto maxJobs = m_state.environment.maxJobs();
+		const auto maxJobs = m_state.info.maxJobs();
 		if (maxJobs > 0)
 			jobs = fmt::format("-j{}", maxJobs);
 
@@ -186,7 +186,7 @@ bool CompileStrategyMakefile::buildNMake(const ProjectTarget& inProject) const
 
 	if (makeIsJom)
 	{
-		const auto maxJobs = m_state.environment.maxJobs();
+		const auto maxJobs = m_state.info.maxJobs();
 
 		command.emplace_back("/J" + std::to_string(maxJobs));
 		// command.emplace_back(std::to_string(maxJobs));
@@ -303,10 +303,14 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 		}
 
 		// Note: std::cerr outputs after std::cout on windows (which we don't want)
+#if defined(CHALET_WIN32)
 		if (result == EXIT_SUCCESS)
+#endif
 			std::cout << Output::getAnsiReset() << errorOutput << std::endl;
+#if defined(CHALET_WIN32)
 		else
 			std::cout << Output::getAnsiReset() << errorOutput << std::flush;
+#endif
 	}
 
 	return result == EXIT_SUCCESS;

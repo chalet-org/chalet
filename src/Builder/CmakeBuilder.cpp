@@ -308,7 +308,7 @@ std::string CmakeBuilder::getCMakeCompatibleBuildConfiguration() const
 StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 {
 	auto& cmake = m_state.toolchain.cmake();
-	const auto maxJobs = m_state.environment.maxJobs();
+	const auto maxJobs = m_state.info.maxJobs();
 	// const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
 
 	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;

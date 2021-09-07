@@ -22,7 +22,7 @@ namespace chalet
 /*****************************************************************************/
 CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
 	ICompileStrategy(StrategyType::Native, inState),
-	m_commandPool(m_state.environment.maxJobs())
+	m_commandPool(m_state.info.maxJobs())
 {
 }
 

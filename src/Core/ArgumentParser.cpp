@@ -142,11 +142,25 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				break;
 			}
 
+			case Variant::Kind::Integer: {
+				int value = rawValue.asInt();
+				if (String::equals({ "-j", "--max-jobs" }, key))
+				{
+					if (value > 0)
+						m_inputs.setMaxJobs(static_cast<uint>(value), true);
+				}
+				break;
+			}
+
 			case Variant::Kind::Boolean: {
 				bool value = rawValue.asBool();
 				if (String::equals("--save-schema", key))
 				{
 					m_inputs.setSaveSchemaToFile(value);
+				}
+				else if (String::equals("--dump-assembly", key))
+				{
+					m_inputs.setDumpAssembly(value, true);
 				}
 				else if (String::equals("--quieter", key))
 				{

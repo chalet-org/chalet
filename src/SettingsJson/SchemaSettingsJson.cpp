@@ -368,7 +368,7 @@ Json Schema::getSettingsJson()
 
 	defs[Defs::MaxJobs] = R"json({
 		"type": "integer",
-		"description": "The number of threads to run during compilation. If this number exceeds the capabilities of the processor, the processor's max will be used.",
+		"description": "The number of jobs to run during compilation.",
 		"minimum": 1
 	})json"_ojson;
 

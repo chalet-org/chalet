@@ -27,8 +27,10 @@ struct BuildInfo
 	void setTargetArchitecture(const std::string& inValue) noexcept;
 
 	const StringList& archOptions() const noexcept;
-
 	const StringList& universalArches() const noexcept;
+
+	uint maxJobs() const noexcept;
+	bool dumpAssembly() const noexcept;
 
 private:
 	const CommandLineInputs& m_inputs;

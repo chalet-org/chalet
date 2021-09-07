@@ -5,8 +5,6 @@
 
 #include "State/WorkspaceEnvironment.hpp"
 
-#include <thread>
-
 #include "Libraries/FileSystem.hpp"
 
 #include "State/BuildInfo.hpp"
@@ -20,14 +18,6 @@
 
 namespace chalet
 {
-/*****************************************************************************/
-WorkspaceEnvironment::WorkspaceEnvironment() :
-	m_processorCount(std::thread::hardware_concurrency()),
-	m_maxJobs(m_processorCount)
-{
-	// LOG("Processor count: ", m_processorCount);
-}
-
 /*****************************************************************************/
 bool WorkspaceEnvironment::initialize(BuildPaths& inPaths)
 {
@@ -50,34 +40,6 @@ bool WorkspaceEnvironment::initialize(BuildPaths& inPaths)
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-uint WorkspaceEnvironment::processorCount() const noexcept
-{
-	return m_processorCount;
-}
-
-/*****************************************************************************/
-uint WorkspaceEnvironment::maxJobs() const noexcept
-{
-	return m_maxJobs;
-}
-
-void WorkspaceEnvironment::setMaxJobs(const uint inValue) noexcept
-{
-	m_maxJobs = std::clamp(inValue, 1U, processorCount());
-}
-
-/*****************************************************************************/
-bool WorkspaceEnvironment::dumpAssembly() const noexcept
-{
-	return m_dumpAssembly;
-}
-
-void WorkspaceEnvironment::setDumpAssembly(const bool inValue) noexcept
-{
-	m_dumpAssembly = inValue;
 }
 
 /*****************************************************************************/

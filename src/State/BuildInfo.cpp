@@ -86,4 +86,16 @@ const StringList& BuildInfo::universalArches() const noexcept
 	return m_inputs.universalArches();
 }
 
+/*****************************************************************************/
+uint BuildInfo::maxJobs() const noexcept
+{
+	return m_inputs.maxJobs();
+}
+
+/*****************************************************************************/
+bool BuildInfo::dumpAssembly() const noexcept
+{
+	return m_inputs.dumpAssembly();
+}
+
 }

@@ -55,6 +55,8 @@ private:
 	void addBundleDirArg();
 	void addProjectGenArg();
 	void addToolchainArg();
+	void addMaxJobsArg();
+	void addDumpAssemblyArg();
 	void addEnvFileArg();
 	void addArchArg();
 	void addBuildConfigurationArg();

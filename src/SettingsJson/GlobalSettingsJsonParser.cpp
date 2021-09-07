@@ -68,6 +68,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 	Json& buildSettings = m_jsonFile.json[kKeySettings];
 
 	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyDumpAssembly, [&]() {
+		outState.dumpAssembly = m_inputs.dumpAssembly();
 		return outState.dumpAssembly;
 	});
 
@@ -76,7 +77,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 	});
 
 	m_jsonFile.assignNodeIfEmpty<uint>(buildSettings, kKeyMaxJobs, [&]() {
-		outState.maxJobs = m_prototype.environment.processorCount();
+		outState.maxJobs = m_inputs.maxJobs();
 		return outState.maxJobs;
 	});
 

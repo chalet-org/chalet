@@ -108,7 +108,7 @@ int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
-		CHALET_EXCEPT_ERROR("subprocess2 error: {}", err.what());
+		CHALET_EXCEPT_ERROR("Subprocess error: {}", err.what());
 		return -1;
 	}
 }

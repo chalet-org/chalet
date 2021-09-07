@@ -17,17 +17,9 @@ struct BuildInfo;
 
 struct WorkspaceEnvironment
 {
-	WorkspaceEnvironment();
+	WorkspaceEnvironment() = default;
 
 	bool initialize(BuildPaths& inPaths);
-
-	uint processorCount() const noexcept;
-
-	uint maxJobs() const noexcept;
-	void setMaxJobs(const uint inValue) noexcept;
-
-	bool dumpAssembly() const noexcept;
-	void setDumpAssembly(const bool inValue) noexcept;
 
 	const std::string& workspace() const noexcept;
 	void setWorkspace(std::string&& inValue) noexcept;
@@ -48,11 +40,6 @@ private:
 
 	std::string m_pathString;
 	StringList m_pathInternal;
-
-	uint m_processorCount = 0;
-	uint m_maxJobs = 0;
-
-	bool m_dumpAssembly = false;
 };
 }
 
