@@ -9,6 +9,7 @@
 
 #include "Process/Process.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
@@ -70,7 +71,31 @@ bool executeCommandMsvc(StringList command, std::string sourceFile, bool generat
 	options.onStdOut = onOutput;
 	options.onStdErr = onOutput;
 
-	if (Process::run(command, std::move(options)) != EXIT_SUCCESS)
+	if (Process::run(command, options) != EXIT_SUCCESS)
+		return false;
+
+	if (!generateDependencies)
+		return true;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool executeCommandCarriageReturn(StringList command, std::string sourceFile, bool generateDependencies)
+{
+	UNUSED(sourceFile);
+
+	ProcessOptions options;
+	auto onOutput = [](std::string inData) {
+		String::replaceAll(inData, "\n", "\r\n");
+		std::cout << std::move(inData) << std::flush;
+	};
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdOut = onOutput;
+	options.onStdErr = onOutput;
+
+	if (Process::run(command, options) != EXIT_SUCCESS)
 		return false;
 
 	if (!generateDependencies)
@@ -85,22 +110,10 @@ bool executeCommand(StringList command, std::string sourceFile, bool generateDep
 	UNUSED(sourceFile);
 
 	ProcessOptions options;
-#if defined(CHALET_WIN32)
-	auto onOutput = [](std::string inData) {
-		String::replaceAll(inData, "\n", "\r\n");
-		std::cout << std::move(inData) << std::flush;
-	};
-	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::Pipe;
-	options.onStdOut = onOutput;
-	options.onStdErr = onOutput;
-
-#else
 	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::StdErr;
-#endif
 
-	if (Process::run(command, std::move(options)) != EXIT_SUCCESS)
+	if (Process::run(command, options) != EXIT_SUCCESS)
 		return false;
 
 	if (!generateDependencies)
@@ -161,7 +174,11 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	Output::setQuietNonBuild(false);
 	// Output::setShowCommandOverride(false);
 
-	auto executeCommandFunc = msvcCommand ? executeCommandMsvc : executeCommand;
+	auto& executeCommandFunc = msvcCommand ?
+		  executeCommandMsvc :
+		Environment::isMicrosoftTerminalOrWindowsBash() ?
+		  executeCommandCarriageReturn :
+		  executeCommand;
 
 	s_compileIndex = 1;
 	uint totalCompiles = static_cast<uint>(list.size());

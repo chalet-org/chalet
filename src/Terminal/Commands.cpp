@@ -787,7 +787,7 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 	options.stderrOption = inStdErr;
 	options.onCreate = std::move(inOnCreate);
 
-	return Process::run(inCmd, std::move(options)) == EXIT_SUCCESS;
+	return Process::run(inCmd, options) == EXIT_SUCCESS;
 }
 
 /*****************************************************************************/
@@ -827,7 +827,7 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 		};
 	}
 
-	UNUSED(Process::run(inCmd, std::move(options)));
+	UNUSED(Process::run(inCmd, options));
 
 	stripLastEndLine(ret);
 
@@ -857,7 +857,7 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 		options.onStdErr = options.onStdOut;
 	}
 
-	bool result = Process::run(inCmd, std::move(options)) == EXIT_SUCCESS;
+	bool result = Process::run(inCmd, options) == EXIT_SUCCESS;
 	outputStream << std::endl;
 	return result;
 }

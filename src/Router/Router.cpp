@@ -252,8 +252,7 @@ bool Router::cmdDebug()
 		Output::printSeparator();
 
 		Timer timer;
-		// int result = Process::run(cmd, std::move(options));
-		int result = Process::run(cmd, std::move(options));
+		int result = Process::run(cmd, options);
 		Output::printSeparator();
 
 		// LOG("return code:", result);

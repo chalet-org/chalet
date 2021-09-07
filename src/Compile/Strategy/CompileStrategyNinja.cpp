@@ -192,7 +192,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	options.stderrOption = PipeOption::StdErr;
 	options.onStdOut = std::move(onStdOut);
 
-	int result = Process::run(inCmd, std::move(options));
+	int result = Process::run(inCmd, options);
 
 #if defined(CHALET_WIN32)
 	if (data.size() > 0)

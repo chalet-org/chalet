@@ -266,7 +266,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 
 #endif
 
-	int result = Process::run(inCmd, std::move(options));
+	int result = Process::run(inCmd, options);
 	if (!errorOutput.empty())
 	{
 		std::size_t cutoff = std::string::npos;

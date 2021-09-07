@@ -13,7 +13,7 @@ namespace chalet
 {
 namespace Process
 {
-int run(const StringList& inCmd, ProcessOptions&& inOptions, const std::uint8_t inBufferSize = 0);
+int run(const StringList& inCmd, const ProcessOptions& inOptions, const std::uint8_t inBufferSize = 0);
 int getLastExitCode();
 void haltAll(const SigNum inSignal = SigNum::Terminate);
 }

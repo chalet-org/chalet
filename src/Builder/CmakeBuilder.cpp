@@ -73,7 +73,7 @@ bool CmakeBuilder::run()
 					String::replaceAll(inData, "\r\n", "\n");
 					std::cout << std::move(inData) << std::flush;
 				};
-				if (Process::run(generatorCommand, std::move(options)) != EXIT_SUCCESS)
+				if (Process::run(generatorCommand, options) != EXIT_SUCCESS)
 					return onRunFailure();
 			}
 			else

@@ -218,12 +218,10 @@ bool CompilerConfig::getSupportedCompilerFlags()
 				{
 					cmd.emplace_back(fmt::format("--help={}", help));
 				}
-				LOG(String::join(cmd));
 				parseGnuHelpList(cmd);
 			}
 			{
 				StringList cmd{ exec, "-Wl,--help" };
-				LOG(String::join(cmd));
 				parseGnuHelpList(cmd);
 			}
 

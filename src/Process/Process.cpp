@@ -61,7 +61,7 @@ void subProcessSignalHandler(int inSignal)
 }
 
 /*****************************************************************************/
-int Process::run(const StringList& inCmd, ProcessOptions&& inOptions, const std::uint8_t inBufferSize)
+int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const std::uint8_t inBufferSize)
 {
 	CHALET_TRY
 	{

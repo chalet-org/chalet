@@ -157,14 +157,35 @@ bool Environment::isBash()
 }
 
 /*****************************************************************************/
-bool Environment::isBashOrWindowsConPTY()
+bool Environment::isBashGenericColorTermOrWindowsTerminal()
 {
 #if defined(CHALET_WIN32)
 	if (s_terminalType == ShellType::Unset)
 		setTerminalType();
-	return s_terminalType == ShellType::Bash || s_terminalType == ShellType::WindowsConPTY;
+	return s_terminalType == ShellType::Bash
+		|| s_terminalType == ShellType::GenericColorTerm
+		|| s_terminalType == ShellType::WindowsTerminal;
 #else
 	return isBash();
+#endif
+}
+
+/*****************************************************************************/
+bool Environment::isMicrosoftTerminalOrWindowsBash()
+{
+	if (s_terminalType == ShellType::Unset)
+		setTerminalType();
+
+#if defined(CHALET_WIN32)
+	return s_terminalType == ShellType::CommandPrompt
+		|| s_terminalType == ShellType::CommandPromptVisualStudio
+		|| s_terminalType == ShellType::Powershell
+		|| s_terminalType == ShellType::PowershellOpenSource
+		|| s_terminalType == ShellType::PowershellIse
+		|| s_terminalType == ShellType::WindowsTerminal
+		|| s_terminalType == ShellType::Bash;
+#else
+	return false;
 #endif
 }
 
@@ -223,20 +244,13 @@ void Environment::setTerminalType()
 		return printTermType();
 	}
 
-	result = Environment::get("COLORTERM");
-	if (result != nullptr)
-	{
-		s_terminalType = ShellType::WindowsConPTY;
-		return printTermType();
-	}
-
 	// Powershell needs to be detected from the parent PID
 	// Note: env is identical to command prompt. It uses its own env for things like $PSHOME
 	{
 		const auto& [parentPath, parentParentPath] = getParentProcessPaths();
 		if (String::endsWith("WindowsTerminal.exe", parentParentPath))
 		{
-			s_terminalType = ShellType::WindowsConPTY;
+			s_terminalType = ShellType::WindowsTerminal;
 			return printTermType();
 		}
 		else if (String::endsWith("pwsh.exe", parentPath))
@@ -254,6 +268,18 @@ void Environment::setTerminalType()
 			s_terminalType = ShellType::Powershell;
 			return printTermType();
 		}
+		else if (String::endsWith("cmd.exe", parentPath))
+		{
+			s_terminalType = ShellType::CommandPrompt;
+			return printTermType();
+		}
+	}
+
+	result = Environment::get("COLORTERM");
+	if (result != nullptr)
+	{
+		s_terminalType = ShellType::GenericColorTerm;
+		return printTermType();
 	}
 
 	// Detect Command prompt from PROMPT
@@ -353,8 +379,12 @@ void Environment::printTermType()
 			term = "Subprocess";
 			break;
 
-		case ShellType::WindowsConPTY:
-			term = "Generic (w/ COLORTERM)";
+		case ShellType::WindowsTerminal:
+			term = "Windows Terminal (2019)";
+			break;
+
+		case ShellType::GenericColorTerm:
+			term = "Generic (w/ COLORTERM set)";
 			break;
 
 		case ShellType::CommandPrompt:

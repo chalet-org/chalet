@@ -111,7 +111,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 	Diagnostic::showMessage(Type::Error, std::move(inMessage));
 	Diagnostic::printErrors();
 
-	if (Environment::isBashOrWindowsConPTY())
+	if (Environment::isBashGenericColorTermOrWindowsTerminal())
 	{
 		const auto boldBlack = Output::getAnsiStyle(Output::theme().flair, true);
 		std::cerr << boldBlack;

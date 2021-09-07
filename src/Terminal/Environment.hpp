@@ -11,7 +11,8 @@ namespace chalet
 struct Environment
 {
 	static bool isBash();
-	static bool isBashOrWindowsConPTY();
+	static bool isBashGenericColorTermOrWindowsTerminal();
+	static bool isMicrosoftTerminalOrWindowsBash();
 	static bool isCommandPromptOrPowerShell();
 	static bool isVisualStudioCommandPrompt();
 	static bool isContinuousIntegrationServer();
@@ -43,7 +44,8 @@ private:
 		Korn,	// /bin/ksh
 		Zsh,	// /bin/zsh
 		Fish,	// /usr/bin/fish, /usr/local/bin/fish
-		WindowsConPTY,
+		WindowsTerminal,
+		GenericColorTerm,
 		CommandPrompt,
 		CommandPromptVisualStudio,
 		Powershell,
