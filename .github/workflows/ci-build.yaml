@@ -51,7 +51,7 @@ jobs:
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Build: Release"
-        run: build/Debug/chalet-debug -j 16 --save-schema bundle
+        run: build/Debug/chalet-debug --save-schema bundle
       - name: "Run: Tests"
         run: build/x86_64-linux-gnu_Release/chalet -c Release run tests_chalet
       - name: "Zip binary"
@@ -94,7 +94,7 @@ jobs:
           build/Debug/chalet-debug configure
           build/Debug/chalet-debug set settings.signingIdentity $MACOS_SIGNING_IDENTITY
       - name: "Build: Release"
-        run: build/Debug/chalet-debug -j 16 --save-schema --arch universal bundle
+        run: build/Debug/chalet-debug --save-schema --arch universal bundle
       - name: "Run: Tests"
         run: build/universal-apple-darwin_Release/chalet -c Release run tests_chalet
       - name: "Zip binary"
@@ -128,7 +128,7 @@ jobs:
       - name: "Build: Debug"
         run: ./build.bat Debug
       - name: "Build: Release"
-        run: build/msvc_Debug/chalet-debug -j 16 --save-schema -t msvc -a x64 bundle
+        run: build/msvc_Debug/chalet-debug --save-schema -t msvc -a x64 bundle
       - name: "Run: Tests"
         run: build/msvc_Debug/chalet-debug -c Release run tests_chalet
       - name: "Zip binary"
@@ -182,7 +182,7 @@ jobs:
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Build: Release"
-        run: build/Debug/chalet-debug -j 16 --save-schema -t gcc bundle
+        run: build/Debug/chalet-debug --save-schema -t gcc bundle
       - name: "Run: Tests"
         run: build/x86_64-w64-mingw32_Release/chalet -c Release run tests_chalet
       - name: "Zip binary"
