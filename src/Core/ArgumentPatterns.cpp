@@ -418,7 +418,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					break;
 			}
 		}
-		CHALET_CATCH(const std::exception& err)
+		CHALET_CATCH(const std::exception&)
 		{
 			Diagnostic::error("An invalid set of arguments were found.\n   Aborting...");
 			return false;
