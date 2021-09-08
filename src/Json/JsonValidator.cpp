@@ -31,6 +31,8 @@ private:
 	JsonValidator::ValidationErrors& m_errors;
 	const std::string& m_file;
 
+	const std::string kRootKey{ "(root)" };
+
 	std::string getValueFromDump(const std::string& inString);
 	std::string getPropertyFromErrorMsg(const std::string& inString);
 	std::string parseRawError(JsonValidationError& outError);
@@ -105,7 +107,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 
 	// LOG("outError.type: ", static_cast<int>(outError.type));
 
-	std::string parentKey = outError.key.empty() ? "(root)" : outError.key;
+	const std::string& parentKey = outError.key.empty() ? kRootKey : outError.key;
 
 	switch (outError.type)
 	{
@@ -138,8 +140,18 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		case JsonSchemaError::logical_combination_one_of:
 			return "more than one subschema has succeeded, but exactly one of them is required to validate";
 
-		case JsonSchemaError::type_instance_unexpected_type:
-			return fmt::format("An invalid value was found in '{}'. Found {}", parentKey, outError.typeName);
+		case JsonSchemaError::type_instance_unexpected_type: {
+			if (String::equals(kRootKey, parentKey) && String::equals("null", outError.typeName))
+			{
+				// There should also be a JSON exception, and a generic error message that prints,
+				//   so this extra one is just confusing
+				return std::string();
+			}
+			else
+			{
+				return fmt::format("An invalid value was found in '{}'. Found {}", parentKey, outError.typeName);
+			}
+		}
 
 		case JsonSchemaError::type_instance_not_found_in_required_enum: {
 			// TODO: Logic to try to whitelist keys from throwing errors

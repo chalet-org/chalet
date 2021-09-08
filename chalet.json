@@ -116,30 +116,48 @@
 			],
 			"onlyInConfiguration": "Release"
 		},
-		"script-bash": {
+		"script-shell": {
+			"script.!windows": "scripts/script_shell.sh",
+			"script.windows": "scripts/script_batch.bat"
+		}
+		/*"script-shell-env": {
 			"script.!windows": "scripts/script_shell_env.sh",
 			"script.windows": "scripts/script_batch.bat"
-		} /*,
+		},
+		"script-shell-bad": {
+			"script": "scripts/script_shell_bad.sh"
+		},
 		"script-batch": {
 			"script.windows": "scripts/script_batch.bat"
 		},
 		"script-powershell": {
-			"script.windows": "scripts/script_powershell.ps1",
-			"script.macos": "scripts/script_powershell_env.ps1"
+			"script": "scripts/script_powershell.ps1"
 		},
-		"script-bash-bad": {
-			"script": "scripts/script_shell_bad.sh"
+		"script-powershell-env": {
+			"script": "scripts/script_powershell_env.ps1"
 		},
 		"script-python": {
+			"script": "scripts/script_python.py"
+		},
+		"script-python-env": {
 			"script": "scripts/script_python_env.py"
 		},
 		"script-ruby": {
+			"script": "scripts/script_ruby.rb"
+		},
+		"script-ruby-env": {
 			"script": "scripts/script_ruby_env.rb"
 		},
 		"script-perl": {
+			"script": "scripts/script_perl.pl"
+		},
+		"script-perl-env": {
 			"script": "scripts/script_perl_env.pl"
 		},
 		"script-lua": {
+			"script": "scripts/script_lua.lua"
+		},
+		"script-lua-env": {
 			"script": "scripts/script_lua_env.lua"
 		}*/
 	},
