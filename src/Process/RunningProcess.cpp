@@ -286,7 +286,13 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 	else if (m_pid == 0)
 	{
 		if (!inOptions.cwd.empty())
-			::chdir(inOptions.cwd.c_str());
+		{
+			if (::chdir(inOptions.cwd.c_str()) != 0)
+			{
+				Diagnostic::error("Error changing working directory for subprocess: {}", inOptions.cwd);
+				return false;
+			}
+		}
 
 		// m_in.duplicateRead(FileNo::StdIn);
 		// m_in.closeWrite();
@@ -322,8 +328,8 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 			ProcessPipe::duplicate(FileNo::StdErr, FileNo::StdOut);
 		}
 
-		execve(inCmd.front().c_str(), m_cmd.data(), environ);
-		_exit(0);
+		int result = execve(inCmd.front().c_str(), m_cmd.data(), environ);
+		_exit(result == EXIT_SUCCESS ? 0 : errno);
 	}
 
 	// UNUSED(m_in);
