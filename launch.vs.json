@@ -18,6 +18,8 @@
         "--save-schema",
         "-c",
         "Release",
+        "-t",
+        "msvc-pre",
         "build"
       ]
     }

@@ -559,27 +559,28 @@ std::string MakefileGeneratorGNU::getFallbackMakeDependsCommand(const std::strin
 /*****************************************************************************/
 std::string MakefileGeneratorGNU::getPrinter(const std::string& inPrint, const bool inNewLine) const
 {
-	if (!Environment::isBash() && inPrint == "\\n")
+#if defined(CHALET_WIN32)
+	if (inPrint == "\\n")
 	{
 		return "echo.";
 	}
+	else if (inPrint.empty())
+	{
+		return "rem";
+	}
 
+	if (inNewLine)
+		return fmt::format("echo {}", inPrint);
+	else
+		return fmt::format("echo|set /p CMD_NOLINE=\"{}\"", inPrint);
+#else
 	if (inPrint.empty())
 	{
-		return Environment::isBash() ? ":" : "rem"; // This just needs to be a noop
+		return ":";
 	}
 
-	if (Environment::isBash())
-	{
-		return fmt::format("printf '{}{}'", inPrint, inNewLine ? "\\n" : "");
-	}
-	else
-	{
-		if (inNewLine)
-			return fmt::format("echo {}", inPrint);
-		else
-			return fmt::format("echo|set /p CMD_NOLINE=\"{}\"", inPrint);
-	}
+	return fmt::format("printf '{}{}'", inPrint, inNewLine ? "\\n" : "");
+#endif
 }
 
 /*****************************************************************************/

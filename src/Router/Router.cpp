@@ -280,34 +280,61 @@ bool Router::parseTheme()
 /*****************************************************************************/
 bool Router::parseEnvFile()
 {
-	std::string envFile = m_inputs.envFile();
-	if (String::equals(m_inputs.defaultEnvFile(), envFile))
-	{
-#if defined(CHALET_WIN32)
-		std::string toSearch{ ".env.windows" };
-#elif defined(CHALET_MACOS)
-		std::string toSearch{ ".env.macos" };
-#else
-		std::string toSearch{ ".env.linux" };
-#endif
-		if (Commands::pathExists(toSearch))
-			envFile = std::move(toSearch);
-	}
-
-	if (Commands::pathExists(envFile))
-	{
-		Timer timer;
-		Diagnostic::infoEllipsis("Reading Environment [{}]", envFile);
-
-		if (!Environment::parseVariablesFromFile(envFile))
+	auto searchDotEnv = [this](const std::string& inRelativeEnv, const std::string& inEnv) -> std::string {
+		if (String::endsWith(m_inputs.defaultEnvFile(), inRelativeEnv))
 		{
-			Diagnostic::error("There was an error parsing the env file: {}", envFile);
-			return false;
+			auto toSearch = String::getPathFolder(inRelativeEnv);
+			if (!toSearch.empty())
+			{
+				toSearch = fmt::format("{}/{}", toSearch, inEnv);
+				if (Commands::pathExists(toSearch))
+					return toSearch;
+			}
+
+			if (Commands::pathExists(inEnv))
+				return inEnv;
+		}
+		else
+		{
+			if (Commands::pathExists(inRelativeEnv))
+				return inRelativeEnv;
 		}
 
-		Diagnostic::printDone(timer.asString());
+		return std::string();
+	};
+
+#if defined(CHALET_WIN32)
+	std::string platformEnv = fmt::format("{}.windows", m_inputs.defaultEnvFile());
+#elif defined(CHALET_MACOS)
+	std::string platformEnv = fmt::format("{}.macos", m_inputs.defaultEnvFile());
+#else
+	std::string platformEnv = fmt::format("{}.linux", m_inputs.defaultEnvFile());
+#endif
+
+	std::string envFile = searchDotEnv(m_inputs.envFile(), platformEnv);
+	if (envFile.empty())
+	{
+		envFile = searchDotEnv(m_inputs.envFile(), m_inputs.defaultEnvFile());
 	}
 
+	if (envFile.empty())
+	{
+		if (Commands::pathExists(m_inputs.envFile()))
+			envFile = m_inputs.envFile();
+		else
+			return true; // don't care
+	}
+
+	Timer timer;
+	Diagnostic::infoEllipsis("Reading Environment [{}]", envFile);
+
+	if (!Environment::parseVariablesFromFile(envFile))
+	{
+		Diagnostic::error("There was an error parsing the env file: {}", envFile);
+		return false;
+	}
+
+	Diagnostic::printDone(timer.asString());
 	return true;
 }
 
