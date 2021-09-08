@@ -707,10 +707,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		}
 	}
 
-	/*if (Environment::isContinuousIntegrationServer())
+	if (Environment::isContinuousIntegrationServer())
 	{
 		ret.strategy = StrategyType::Native;
-	}*/
+	}
 
 	return ret;
 }
