@@ -139,9 +139,15 @@ bool CompileStrategyMakefile::buildMake(const ProjectTarget& inProject) const
 		command.emplace_back(".");
 		command.emplace_back("-f");
 		command.push_back(buildFile);
-		// command.emplace_back("--no-builtin-rules");
-		// command.emplace_back("--no-builtin-variables");
-		// command.emplace_back("--no-print-directory");
+
+		/*if (m_state.toolchain.makeVersionMajor() >= 4)
+		{
+			command.emplace_back("--output-sync=target");
+		}*/
+
+		command.emplace_back("--no-builtin-rules");
+		command.emplace_back("--no-builtin-variables");
+		command.emplace_back("--no-print-directory");
 	}
 
 	auto& hash = m_hashes.at(inProject.name());

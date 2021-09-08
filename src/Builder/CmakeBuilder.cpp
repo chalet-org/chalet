@@ -315,10 +315,16 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 
 	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };
 
-	if (isMake && m_state.toolchain.makeVersionMajor() >= 4)
+	if (isMake)
 	{
 		ret.emplace_back("--");
-		ret.emplace_back("--output-sync=target");
+		if (m_state.toolchain.makeVersionMajor() >= 4)
+		{
+			ret.emplace_back("--output-sync=target");
+		}
+		ret.emplace_back("--no-builtin-rules");
+		ret.emplace_back("--no-builtin-variables");
+		ret.emplace_back("--no-print-directory");
 	}
 
 	// LOG(String::join(ret));
