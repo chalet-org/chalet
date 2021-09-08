@@ -59,7 +59,7 @@ std::string MakefileGeneratorNMake::getContents(const std::string& inPath) const
 	UNUSED(inPath);
 
 	const auto& depDir = m_state.paths.depDir();
-	const auto suffixes = String::getPrefixed(m_fileExtensions, ".");
+	// const auto suffixes = String::getPrefixed(m_fileExtensions, ".");
 	const auto shell = "cmd.exe";
 
 	auto recipes = String::join(m_targetRecipes);
@@ -83,12 +83,11 @@ std::string MakefileGeneratorNMake::getContents(const std::string& inPath) const
 	// ==============================================================================
 	std::string makefileTemplate = fmt::format(R"makefile(
 .SUFFIXES:
-.SUFFIXES: {suffixes}
 
 SHELL = {shell}
 {recipes}{depDirs}
 )makefile",
-		FMT_ARG(suffixes),
+		// FMT_ARG(suffixes),
 		FMT_ARG(shell),
 		FMT_ARG(recipes),
 		FMT_ARG(depDirs));
@@ -106,7 +105,7 @@ SHELL = {shell}
 void MakefileGeneratorNMake::reset()
 {
 	m_targetRecipes.clear();
-	m_fileExtensions.clear();
+	// m_fileExtensions.clear();
 }
 
 /*****************************************************************************/
@@ -158,10 +157,10 @@ std::string MakefileGeneratorNMake::getBuildRecipes(const SourceOutputs& inOutpu
 {
 	chalet_assert(m_project != nullptr, "");
 
-	for (auto& ext : inOutputs.fileExtensions)
+	/*for (auto& ext : inOutputs.fileExtensions)
 	{
 		List::addIfDoesNotExist(m_fileExtensions, ext);
-	}
+	}*/
 
 	std::string recipes;
 

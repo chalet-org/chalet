@@ -44,7 +44,7 @@ private:
 
 	std::string getBuildColor() const;
 
-	StringList m_fileExtensions;
+	// StringList m_fileExtensions;
 };
 }
 

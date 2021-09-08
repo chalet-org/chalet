@@ -48,7 +48,7 @@ private:
 
 	std::string getBuildColor() const;
 
-	StringList m_fileExtensions;
+	// StringList m_fileExtensions;
 
 	mutable std::unordered_map<std::string, StringList> m_locationCache;
 };
