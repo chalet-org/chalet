@@ -7,6 +7,7 @@
 
 #include <array>
 #include <atomic>
+#include <mutex>
 
 #include "Libraries/Format.hpp"
 #include "Process/ProcessPipe.hpp"
@@ -19,6 +20,7 @@ namespace chalet
 {
 namespace
 {
+std::mutex s_mutex;
 std::vector<RunningProcess*> s_procesess;
 std::atomic<int> s_lastErrorCode = 0;
 bool s_initialized = false;
@@ -26,6 +28,7 @@ bool s_initialized = false;
 /*****************************************************************************/
 void removeProcess(const RunningProcess& inProcess)
 {
+	std::unique_lock<std::mutex> lock(s_mutex);
 	auto it = s_procesess.end();
 	while (it != s_procesess.begin())
 	{
@@ -45,6 +48,7 @@ void removeProcess(const RunningProcess& inProcess)
 /*****************************************************************************/
 void subProcessSignalHandler(int inSignal)
 {
+	std::unique_lock<std::mutex> lock(s_mutex);
 	auto it = s_procesess.end();
 	while (it != s_procesess.begin())
 	{
