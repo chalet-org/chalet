@@ -14,7 +14,7 @@
 #include "Utility/String.hpp"
 
 #if !defined(CHALET_MSVC)
-	extern char** environ;
+extern char** environ;
 #endif
 
 namespace chalet
@@ -264,12 +264,6 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 	}
 
 #else
-	if (!inOptions.cwd.empty())
-	{
-		m_cwd = std::filesystem::current_path().string();
-		std::filesystem::current_path(inOptions.cwd);
-	}
-
 	m_cmd = getCmdVector(inCmd);
 
 	bool openStdOut = inOptions.stdoutOption == PipeOption::Pipe;
@@ -291,6 +285,9 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 	}
 	else if (m_pid == 0)
 	{
+		if (!inOptions.cwd.empty())
+			::chdir(inOptions.cwd.c_str());
+
 		// m_in.duplicateRead(FileNo::StdIn);
 		// m_in.closeWrite();
 
@@ -332,12 +329,6 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 	// UNUSED(m_in);
 
 	// m_in.closeRead();
-
-	if (!m_cwd.empty())
-	{
-		std::filesystem::current_path(m_cwd);
-		m_cwd.clear();
-	}
 
 	if (openStdOut)
 		m_out.closeWrite();

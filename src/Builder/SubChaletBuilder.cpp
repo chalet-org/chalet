@@ -29,6 +29,9 @@ SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTar
 /*****************************************************************************/
 bool SubChaletBuilder::run()
 {
+	m_buildFile.clear();
+	m_outputLocation.clear();
+
 	const auto& name = m_target.name();
 
 	Output::msgBuild(name);
@@ -42,6 +45,10 @@ bool SubChaletBuilder::run()
 	if (!m_target.buildFile().empty())
 	{
 		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
+	}
+	else
+	{
+		m_buildFile = fmt::format("{}/{}", location, m_inputs.defaultInputFile());
 	}
 
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.tools.chalet()), false);

@@ -96,9 +96,9 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 		return false;
 	}
 
-	for (const auto& file : fs::directory_iterator(source))
+	CHALET_TRY
 	{
-		CHALET_TRY
+		for (const auto& file : fs::directory_iterator(source))
 		{
 			const auto& current = file.path();
 			if (file.is_symlink())
@@ -116,10 +116,10 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 				fs::copy(current, dest / current.filename(), inOptions);
 			}
 		}
-		CHALET_CATCH(const fs::filesystem_error& err)
-		{
-			CHALET_EXCEPT_ERROR(err.what())
-		}
+	}
+	CHALET_CATCH(const std::exception& err)
+	{
+		CHALET_EXCEPT_ERROR(err.what());
 	}
 
 	return true;
@@ -289,7 +289,7 @@ std::uintmax_t Commands::getPathSize(const std::string& inPath)
 
 		const auto path = fs::path{ inPath };
 		std::uintmax_t ret = 0;
-		for (const fs::directory_entry& entry : fs::recursive_directory_iterator(path))
+		for (const auto& entry : fs::recursive_directory_iterator(path))
 		{
 			if (entry.is_regular_file())
 			{
@@ -299,7 +299,7 @@ std::uintmax_t Commands::getPathSize(const std::string& inPath)
 
 		return ret;
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	CHALET_CATCH(const std::exception& err)
 	{
 		CHALET_EXCEPT_ERROR(err.what())
 		return 0;
@@ -639,7 +639,7 @@ bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& 
 		CHALET_EXCEPT_ERROR(err.what())
 		return false;
 	}
-	CHALET_CATCH(const std::runtime_error& err)
+	CHALET_CATCH(const std::exception& err)
 	{
 		CHALET_EXCEPT_ERROR(err.what())
 		return false;

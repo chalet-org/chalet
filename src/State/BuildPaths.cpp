@@ -97,13 +97,20 @@ void BuildPaths::populateFileList(const ProjectTarget& inProject)
 	m_fileList.emplace(inProject.name(), std::make_unique<SourceGroup>(std::move(files)));
 }
 
+/*****************************************************************************/
 const std::string& BuildPaths::homeDirectory() const noexcept
 {
 	return m_inputs.homeDirectory();
 }
 
 /*****************************************************************************/
-const std::string& BuildPaths::outputDirectory() const
+const std::string& BuildPaths::rootDirectory() const noexcept
+{
+	return m_inputs.rootDirectory();
+}
+
+/*****************************************************************************/
+const std::string& BuildPaths::outputDirectory() const noexcept
 {
 	return m_inputs.outputDirectory();
 }
@@ -625,6 +632,12 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 			// if (m_useCache && List::contains(m_fileListCache, loc))
 			// 	continue;
 
+			if (!Commands::pathExists(loc))
+			{
+				Diagnostic::warn("Path not found: {}", loc);
+				continue;
+			}
+
 			int j = 0;
 			for (auto& item : fs::recursive_directory_iterator(loc))
 			{
@@ -666,7 +679,7 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 			// 	m_fileListCache.push_back(source);
 		}
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	CHALET_CATCH(const std::exception& err)
 	{
 		CHALET_EXCEPT_ERROR(err.what());
 		ret.clear();
@@ -749,6 +762,12 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 			if (String::equals(m_intermediateDir, locRaw))
 				continue;
 
+			if (!Commands::pathExists(loc))
+			{
+				Diagnostic::warn("Path not found: {}", loc);
+				continue;
+			}
+
 			for (auto& item : fs::recursive_directory_iterator(loc))
 			{
 				if (!item.is_directory())
@@ -779,7 +798,7 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 			// 	m_directoryCache.push_back(loc);
 		}
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	CHALET_CATCH(const std::exception& err)
 	{
 		CHALET_EXCEPT_ERROR(err.what());
 		ret.clear();

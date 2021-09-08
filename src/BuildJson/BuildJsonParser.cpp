@@ -361,12 +361,6 @@ bool BuildJsonParser::parseProject(ProjectTarget& outProject, const Json& inNode
 			Diagnostic::error("{}: project '{}' must contain 'kind'.", m_filename, outProject.name());
 			return false;
 		}
-
-		if (!outProject.pch().empty() && !Commands::pathExists(outProject.pch()))
-		{
-			Diagnostic::error("{}: Precompiled header '{}' was not found.", m_filename, outProject.pch());
-			return false;
-		}
 	}
 
 	return true;

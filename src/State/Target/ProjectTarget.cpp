@@ -70,6 +70,16 @@ bool ProjectTarget::validate()
 		}
 	}
 
+	if (!m_pch.empty())
+	{
+		const auto& pch = !m_state.paths.rootDirectory().empty() ? fmt::format("{}/{}", m_state.paths.rootDirectory(), m_pch) : m_pch;
+		if (!Commands::pathExists(pch))
+		{
+			Diagnostic::error("Precompiled header '{}' for target '{}' was not found.", pch, targetName);
+			result = false;
+		}
+	}
+
 	for (auto& option : m_compileOptions)
 	{
 		if (String::equals(option.substr(0, 2), "-W"))

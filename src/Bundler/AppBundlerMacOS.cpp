@@ -507,7 +507,7 @@ bool AppBundlerMacOS::signAppBundle() const
 		};
 		for (auto& bundlePath : signPaths)
 		{
-			for (const fs::directory_entry& entry : fs::recursive_directory_iterator(bundlePath))
+			for (const auto& entry : fs::recursive_directory_iterator(bundlePath))
 			{
 				auto path = entry.path().string();
 				if (entry.is_regular_file() || (entry.is_directory() && String::endsWith(bundleExtensions, path)))
@@ -560,7 +560,7 @@ bool AppBundlerMacOS::signAppBundle() const
 
 		return true;
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	CHALET_CATCH(const std::exception& err)
 	{
 		CHALET_EXCEPT_ERROR(err.what());
 		return false;

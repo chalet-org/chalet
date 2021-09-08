@@ -21,7 +21,8 @@ struct BuildPaths
 {
 	const std::string& homeDirectory() const noexcept;
 
-	const std::string& outputDirectory() const;
+	const std::string& rootDirectory() const noexcept;
+	const std::string& outputDirectory() const noexcept;
 	const std::string& buildOutputDir() const noexcept;
 	const std::string& objDir() const noexcept;
 	const std::string& depDir() const noexcept;
