@@ -173,7 +173,7 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 						auto command = m_toolchain->getPchCompileCommand(source, outObject, m_generateDependencies, dependency, arch);
 
 						CommandPool::Cmd out;
-						out.output = source;
+						out.output = fmt::format("{} ({})", source, arch);
 						out.command = std::move(command);
 						out.color = Output::theme().build;
 						out.symbol = " ";

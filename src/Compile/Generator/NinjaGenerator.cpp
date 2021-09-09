@@ -188,7 +188,6 @@ std::string NinjaGenerator::getPchRule()
 			for (auto& arch : m_state.info.universalArches())
 			{
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
-				auto description = String::getPathFolderBaseName(outObject);
 
 				const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", outObject, m_generateDependencies, dependency, arch));
 				if (!pchCompile.empty())
@@ -196,14 +195,13 @@ std::string NinjaGenerator::getPchRule()
 					ret += fmt::format(R"ninja(
 rule pch_{arch}_{hash}
   deps = {deps}{depFile}
-  description = {description}
+  description = $in ({arch})
   command = {pchCompile}
 )ninja",
 						fmt::arg("hash", m_hash),
 						FMT_ARG(arch),
 						FMT_ARG(deps),
 						FMT_ARG(depFile),
-						FMT_ARG(description),
 						FMT_ARG(pchCompile));
 				}
 			}
