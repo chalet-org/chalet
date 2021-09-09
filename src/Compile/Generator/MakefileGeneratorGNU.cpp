@@ -250,7 +250,11 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 				auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency, arch));
 				if (!pchCompile.empty())
 				{
-					const auto compileEcho = getCompileEchoSources(String::getPathFolderBaseName(outObject));
+					const auto& objDir = m_state.paths.objDir();
+					auto pch = String::getPathFolderBaseName(object);
+					String::replaceAll(pch, fmt::format("{}/", objDir), "");
+					pch += fmt::format(" ({})", arch);
+					const auto compileEcho = getCompileEchoSources(pch);
 					ret += fmt::format(R"makefile(
 {outObject}: {dependencies} | {dependency}
 	{compileEcho}
@@ -272,7 +276,10 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 			auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency, std::string()));
 			if (!pchCompile.empty())
 			{
-				const auto compileEcho = getCompileEchoSources(String::getPathFolderBaseName(object));
+				const auto& objDir = m_state.paths.objDir();
+				auto pch = String::getPathFolderBaseName(object);
+				String::replaceAll(pch, fmt::format("{}/", objDir), "");
+				const auto compileEcho = getCompileEchoSources(pch);
 				ret += fmt::format(R"makefile(
 {object}: {source} | {dependency}
 	{compileEcho}
