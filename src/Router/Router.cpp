@@ -227,39 +227,6 @@ bool Router::cmdSettings(const Route inRoute)
 #if defined(CHALET_DEBUG)
 bool Router::cmdDebug()
 {
-	auto chalet = Commands::which("chalet");
-	StringList cmd{
-		chalet,
-		"bigol",
-		"shit"
-	};
-
-	auto waitTime = std::chrono::milliseconds(25);
-	ProcessOptions options;
-	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::StdOut;
-	options.onStdOut = [&waitTime](std::string data) {
-		std::cout << data << std::flush;
-		std::this_thread::sleep_for(waitTime);
-	};
-	options.onStdErr = [](std::string data) {
-		std::cerr << data << std::flush;
-		// std::this_thread::sleep_for(waitTime);
-	};
-
-	for (uint i = 0; i < 1; ++i)
-	{
-		Output::printSeparator();
-
-		Timer timer;
-		int result = Process::run(cmd, options, 1);
-		Output::printSeparator();
-
-		// LOG("return code:", result);
-		UNUSED(result);
-		LOG("cmdDebug:", timer.asString());
-	}
-
 	return true;
 }
 #endif
