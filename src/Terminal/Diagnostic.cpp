@@ -20,7 +20,7 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
-Spinner* s_spinnerThread = nullptr;
+std::unique_ptr<Spinner> s_spinnerThread;
 
 bool sExceptionThrown = false;
 bool sAssertionFailure = false;
@@ -30,8 +30,7 @@ void destroySpinnerThread()
 	if (s_spinnerThread != nullptr)
 	{
 		s_spinnerThread->stop();
-		delete s_spinnerThread;
-		s_spinnerThread = nullptr;
+		s_spinnerThread.reset();
 	}
 }
 }
@@ -115,7 +114,9 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 			else
 			{
 				std::cout << std::flush;
-				s_spinnerThread = new Spinner();
+				destroySpinnerThread();
+				s_spinnerThread = std::make_unique<Spinner>();
+				s_spinnerThread->start();
 			}
 		}
 	}

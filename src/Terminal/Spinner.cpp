@@ -20,12 +20,6 @@ void signalHandler(int inSignal)
 }
 
 /*****************************************************************************/
-Spinner::Spinner()
-{
-	start();
-}
-
-/*****************************************************************************/
 Spinner::~Spinner()
 {
 	destroy();
@@ -38,6 +32,9 @@ void Spinner::start()
 	::signal(SIGTERM, signalHandler);
 	::signal(SIGABRT, signalHandler);
 
+	destroy();
+
+	m_running = true;
 	m_thread = std::make_unique<std::thread>(&Spinner::doRegularEllipsis, this);
 }
 
@@ -54,22 +51,16 @@ void Spinner::destroy()
 	{
 		m_running = false;
 		m_thread->join();
-
 		m_thread.reset();
-		m_thread = nullptr;
 	}
 }
 
 /*****************************************************************************/
 void Spinner::doRegularEllipsis()
 {
-	m_running = true;
 	uint i = 0;
-	while (true)
+	while (m_running)
 	{
-		if (!m_running)
-			break;
-
 		std::string output;
 		switch (i % 4)
 		{

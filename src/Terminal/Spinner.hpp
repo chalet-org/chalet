@@ -13,7 +13,7 @@ namespace chalet
 {
 struct Spinner
 {
-	Spinner();
+	Spinner() = default;
 	CHALET_DISALLOW_COPY_MOVE(Spinner);
 	~Spinner();
 
