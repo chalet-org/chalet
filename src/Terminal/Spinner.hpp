@@ -6,6 +6,7 @@
 #ifndef CHALET_SPINNER_HPP
 #define CHALET_SPINNER_HPP
 
+#include <atomic>
 #include <thread>
 
 namespace chalet
