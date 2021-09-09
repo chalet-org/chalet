@@ -295,11 +295,15 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 		if (!pchCompile.empty())
 		{
 
-			const auto compilerEcho = getCompileEchoSources(object);
+			std::string compilerEcho;
+			if (m_toolchain->type() != ToolchainType::MSVC)
+			{
+				compilerEcho = getCompileEchoSources(object) + "\n\t";
+			}
 
 			ret = fmt::format(R"makefile(
 {object}: {source}
-	{quietFlag}{pchCompile}
+	{compilerEcho}{quietFlag}{pchCompile}
 )makefile",
 				FMT_ARG(object),
 				FMT_ARG(source),
@@ -354,11 +358,15 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, dependency, specialization));
 	if (!cppCompile.empty())
 	{
-		const auto compilerEcho = getCompileEchoSources(source);
+		std::string compilerEcho;
+		if (m_toolchain->type() != ToolchainType::MSVC)
+		{
+			compilerEcho = getCompileEchoSources(source) + "\n\t";
+		}
 
 		ret = fmt::format(R"makefile(
 {object}: {source}
-	{quietFlag}{cppCompile}
+	{compilerEcho}{quietFlag}{cppCompile}
 )makefile",
 			FMT_ARG(source),
 			FMT_ARG(compilerEcho),
