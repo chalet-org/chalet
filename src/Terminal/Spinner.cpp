@@ -5,6 +5,8 @@
 
 #include "Terminal/Spinner.hpp"
 
+#include <signal.h>
+
 namespace chalet
 {
 namespace
@@ -65,6 +67,9 @@ void Spinner::doRegularEllipsis()
 	uint i = 0;
 	while (true)
 	{
+		if (!m_running)
+			break;
+
 		std::string output;
 		switch (i % 4)
 		{
@@ -80,9 +85,6 @@ void Spinner::doRegularEllipsis()
 		++i;
 		if (i == 4)
 			i = 0;
-
-		if (!m_running)
-			break;
 	}
 
 	std::cout << "\b\b\b\b\b ... " << std::flush;
