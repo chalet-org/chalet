@@ -59,6 +59,7 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 {
 	auto start = clock::now();
 	std::chrono::milliseconds ms{ 0 };
+	auto step = std::chrono::milliseconds(1);
 	while (ms < inLength)
 	{
 		auto finish = clock::now();
@@ -67,7 +68,7 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 		if (!m_running)
 			return false;
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		std::this_thread::sleep_for(step);
 	}
 
 	return true;
