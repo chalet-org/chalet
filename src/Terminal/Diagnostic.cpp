@@ -105,7 +105,7 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 		else
 		{
 			// std::cout << fmt::format("{} ... {}", color, reset);
-			std::cout << color + "     ";
+			std::cout << color;
 
 			if (Output::showCommands())
 			{

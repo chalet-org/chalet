@@ -55,25 +55,54 @@ void Spinner::destroy()
 	}
 }
 
+bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
+{
+	auto start = clock::now();
+	std::chrono::milliseconds ms{ 0 };
+	while (ms < inLength)
+	{
+		auto finish = clock::now();
+		ms = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
+
+		if (!m_running)
+			return false;
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
+
+	return true;
+}
+
 /*****************************************************************************/
 void Spinner::doRegularEllipsis()
 {
+	std::cout << " ... " << std::flush;
+
+	constexpr auto frameTime = std::chrono::milliseconds(333);
+
+	// first "frame" - keep output minimal
+	if (!sleepWithContext(frameTime))
+		return;
+
 	uint i = 0;
 	while (m_running)
 	{
 		std::string output;
 		switch (i % 4)
 		{
-			case 0: output = "\b\b\b\b\b ... "; break;
-			case 1: output = "\b\b\b\b\b     "; break;
-			case 2: output = "\b\b\b\b\b .   "; break;
-			case 3: output = "\b\b\b\b\b ..  "; break;
+			case 0: output = "\b\b\b\b\b     "; break;
+			case 1: output = "\b\b\b\b\b .   "; break;
+			case 2: output = "\b\b\b\b\b ..  "; break;
+			case 3: output = "\b\b\b\b\b ... "; break;
 			default: break;
 		}
 
 		std::cout << output << std::flush;
-		std::this_thread::sleep_for(std::chrono::milliseconds(333));
+		if (!sleepWithContext(frameTime))
+			break;
+
 		++i;
+
 		if (i == 4)
 			i = 0;
 	}

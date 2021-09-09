@@ -21,7 +21,10 @@ struct Spinner
 	void stop();
 
 private:
+	using clock = std::chrono::steady_clock;
+
 	void destroy();
+	bool sleepWithContext(const std::chrono::milliseconds& inLength);
 
 	void doRegularEllipsis();
 
