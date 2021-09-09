@@ -298,6 +298,9 @@ bool Router::parseEnvFile()
 		{
 			if (Commands::pathExists(inRelativeEnv))
 				return inRelativeEnv;
+
+			if (Commands::pathExists(inEnv))
+				return inEnv;
 		}
 
 		return std::string();
