@@ -10,6 +10,7 @@
 
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Spinner.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/SignalHandler.hpp"
 
@@ -19,9 +20,20 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
+Spinner* s_spinnerThread = nullptr;
+
 bool sExceptionThrown = false;
 bool sAssertionFailure = false;
-bool sStartedInfo = false;
+
+void destroySpinnerThread()
+{
+	if (s_spinnerThread != nullptr)
+	{
+		s_spinnerThread->stop();
+		delete s_spinnerThread;
+		s_spinnerThread = nullptr;
+	}
+}
 }
 
 /*****************************************************************************/
@@ -56,7 +68,8 @@ void Diagnostic::printDone(const std::string& inTime)
 		const auto color = Output::getAnsiStyle(Output::theme().flair);
 		const auto reset = Output::getAnsiReset();
 
-		sStartedInfo = false;
+		destroySpinnerThread();
+
 		std::string done;
 		if (Output::showCommands())
 			done = "... done";
@@ -92,12 +105,18 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 		}
 		else
 		{
-			std::cout << fmt::format("{} ... {}", color, reset);
-			sStartedInfo = true;
+			// std::cout << fmt::format("{} ... {}", color, reset);
+			std::cout << color + "     ";
+
 			if (Output::showCommands())
-				std::cout << std::endl;
+			{
+				std::cout << reset << std::endl;
+			}
 			else
+			{
 				std::cout << std::flush;
+				s_spinnerThread = new Spinner();
+			}
 		}
 	}
 }
@@ -125,10 +144,10 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 /*****************************************************************************/
 void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber)
 {
-	if (sStartedInfo)
+	if (s_spinnerThread != nullptr)
 	{
 		std::cerr << std::endl;
-		sStartedInfo = false;
+		destroySpinnerThread();
 	}
 
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
@@ -161,10 +180,10 @@ bool Diagnostic::assertionFailure() noexcept
 void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 {
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
-	if (sStartedInfo)
+	if (s_spinnerThread != nullptr)
 	{
 		out << std::endl;
-		sStartedInfo = false;
+		destroySpinnerThread();
 	}
 
 	const auto color = Output::getAnsiStyle(inType == Type::Error ? Output::theme().error : Output::theme().warning, true);
@@ -177,10 +196,10 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 {
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
-	if (sStartedInfo)
+	if (s_spinnerThread != nullptr)
 	{
 		out << std::endl;
-		sStartedInfo = false;
+		destroySpinnerThread();
 	}
 
 	out << fmt::format("   {}", std::move(inMessage)) << std::endl;
@@ -198,6 +217,8 @@ void Diagnostic::printErrors()
 	if (s_ErrorList != nullptr)
 	{
 		{
+			destroySpinnerThread();
+
 			auto& errorList = *s_ErrorList;
 			StringList warnings;
 			StringList errors;
@@ -212,7 +233,6 @@ void Diagnostic::printErrors()
 					errors.emplace_back(std::move(err.message));
 			}
 
-			sStartedInfo = false;
 			bool hasWarnings = false;
 			if (warnings.size() > 0)
 			{
@@ -255,6 +275,7 @@ void Diagnostic::printErrors()
 /*****************************************************************************/
 void Diagnostic::throwCriticalError()
 {
+	destroySpinnerThread();
 	CHALET_THROW(kCriticalError);
 }
 

@@ -15,7 +15,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
-// TODO: Finish. It's a bit crap
+// TODO: Finish.
 
 namespace chalet
 {
