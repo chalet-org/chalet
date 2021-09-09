@@ -32,7 +32,7 @@ bool DependencyManager::run()
 {
 	m_prototype.cache.file().loadExternalDependencies(m_inputs.externalDirectory());
 
-	Output::lineBreak();
+	// Output::lineBreak();
 
 	m_fetched = false;
 
@@ -52,8 +52,8 @@ bool DependencyManager::run()
 	if (!removeExternalDependencyDirectoryIfEmpty())
 		return false;
 
-	if (!m_fetched)
-		Output::previousLine();
+	// if (!m_fetched)
+	// 	Output::previousLine();
 
 	m_prototype.cache.file().saveExternalDependencies();
 
