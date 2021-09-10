@@ -301,6 +301,8 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std
 
 	UNUSED(inExecutable);
 
+#if defined(CHALET_WIN32)
+
 	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
 	// std::string rawOutput = Commands::subprocessOutput({ inExecutable });
 	// auto splitOutput = String::split(rawOutput, '\n');
@@ -322,6 +324,9 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std
 			ret = fmt::format("Microsoft{} Visual C/C++ {}", Unicode::registered(), versionString);
 		}
 	}
+#else
+	UNUSED(outArch);
+#endif
 
 	return ret;
 }
