@@ -140,6 +140,7 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 
 #if defined(CHALET_WIN32)
 	// dumpbin
+	// https://docs.microsoft.com/en-us/cpp/build/reference/dumpbin-options?view=msvc-160
 	if (m_state.toolchain.isDisassemblerDumpBin())
 	{
 		ret.push_back(disassembler);
@@ -147,6 +148,8 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 		ret.emplace_back("/disasm");
 		ret.emplace_back(fmt::format("/out:{}", target));
 		ret.push_back(object);
+
+		// TODO: /PDBPATH ?
 	}
 	else
 #endif
