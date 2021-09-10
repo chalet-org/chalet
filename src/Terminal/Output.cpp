@@ -529,10 +529,14 @@ void Output::msgCommandPoolError(const std::string& inMessage)
 /*****************************************************************************/
 void Output::msgBuildFail()
 {
+	// Always display this (don't handle s_quietNonBuild)
+	//
 	auto symbol = Unicode::heavyBallotX();
-	displayStyledSymbol(sTheme.error, symbol, "Failed!");
-	displayStyledSymbol(sTheme.error, " ", "Review the errors above.");
-	// exit 1
+
+	const auto color = getAnsiStyle(sTheme.error, true);
+	const auto reset = getAnsiReset();
+
+	std::cout << fmt::format("{}{}  Failed!\n   Review the errors above.", color, symbol) << reset << std::endl;
 }
 
 /*****************************************************************************/
