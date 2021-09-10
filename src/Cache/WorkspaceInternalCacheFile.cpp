@@ -58,7 +58,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 	{
 		chalet_assert(m_initializedTime != 0, "");
 
-		auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_lastWrites, m_initializedTime, m_initializedTime));
+		auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_lastWrites, m_initializedTime));
 		if (!success)
 		{
 			Diagnostic::error("Error creating cache for {}", inId);
@@ -66,6 +66,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 		}
 		m_sources = it->second.get();
 	}
+	m_sources->updateInitializedTime();
 
 	return true;
 }
@@ -195,7 +196,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 						}
 
 						std::time_t lastBuild = strtoll(lastBuildRaw.c_str(), NULL, 0);
-						auto [it, success] = m_sourceCaches.emplace(id, std::make_unique<SourceCache>(m_lastWrites, m_initializedTime, lastBuild));
+						auto [it, success] = m_sourceCaches.emplace(id, std::make_unique<SourceCache>(m_lastWrites, lastBuild));
 						if (!success)
 						{
 							Diagnostic::error("Error creating cache for {}", id);
@@ -260,8 +261,10 @@ bool WorkspaceInternalCacheFile::save()
 			contents += fmt::format("#{}\n", hash);
 		}
 
+		// auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		for (auto& [id, sourceCache] : m_sourceCaches)
 		{
+			// sourceCache->updateLastBuildTime(now);
 			contents += sourceCache->asString(id);
 		}
 

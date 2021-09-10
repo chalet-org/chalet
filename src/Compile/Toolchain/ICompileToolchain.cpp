@@ -98,7 +98,9 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 	const auto windowsManifestFile = m_state.paths.getWindowsManifestFilename(m_project);
 	const auto windowsManifestResourceFile = m_state.paths.getWindowsManifestResourceFilename(m_project);
 
-	if (!windowsManifestFile.empty() && sources.fileChangedOrDoesNotExist(windowsManifestFile))
+	bool manifestChanged = sources.fileChangedOrDoesNotExist(windowsManifestFile);
+
+	if (!windowsManifestFile.empty() && manifestChanged)
 	{
 		if (!m_isNative && Commands::pathExists(windowsManifestResourceFile))
 			Commands::remove(windowsManifestResourceFile);
@@ -116,7 +118,7 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 		}
 	}
 
-	if (!windowsManifestResourceFile.empty() && sources.fileChangedOrDependantChanged(windowsManifestResourceFile, windowsManifestFile))
+	if (!windowsManifestResourceFile.empty() && (sources.fileChangedOrDoesNotExist(windowsManifestResourceFile) || manifestChanged))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
 		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
