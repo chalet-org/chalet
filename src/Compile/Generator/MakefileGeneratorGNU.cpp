@@ -322,7 +322,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 		if (!rcCompile.empty())
 		{
 			std::string makeDependency;
-			if (m_generateDependencies && m_state.toolchain.usingLlvmRC())
+			if (m_generateDependencies && m_state.toolchain.isCompilerWindowsResourceLLVMRC())
 			{
 				makeDependency = fmt::format("\n\t@{}", getFallbackMakeDependsCommand(dependency, "$<", "$@"));
 			}

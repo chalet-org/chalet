@@ -326,6 +326,27 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		m_jsonFile.setDirty(true);
 	}
 
+	if (!toolchains.contains(kKeyDisassembler) || !toolchains[kKeyDisassembler].is_string() || toolchains[kKeyDisassembler].get<std::string>().empty())
+	{
+		std::string disasm;
+		StringList searches;
+		if (toolchain.type == ToolchainType::LLVM)
+		{
+			searches.emplace_back("llvm-objdump");
+		}
+		searches.push_back(toolchain.disassembler);
+
+		for (const auto& search : searches)
+		{
+			disasm = Commands::which(search);
+			if (!disasm.empty())
+				break;
+		}
+
+		toolchains[kKeyDisassembler] = std::move(disasm);
+		m_jsonFile.setDirty(true);
+	}
+
 	// if (!result)
 	// {
 	// 	toolchains.erase(kKeyCompilerCpp);
@@ -385,27 +406,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 	}
 
 	whichAdd(toolchains, kKeyNinja);
-
-	if (!toolchains.contains(kKeyObjdump) || !toolchains[kKeyObjdump].is_string() || toolchains[kKeyObjdump].get<std::string>().empty())
-	{
-		std::string objdump;
-		StringList searches;
-		if (toolchain.type == ToolchainType::LLVM)
-		{
-			searches.emplace_back("llvm-objdump");
-		}
-		searches.push_back(kKeyObjdump);
-
-		for (const auto& search : searches)
-		{
-			objdump = Commands::which(search);
-			if (!objdump.empty())
-				break;
-		}
-
-		toolchains[kKeyObjdump] = std::move(objdump);
-		m_jsonFile.setDirty(true);
-	}
 
 	if (toolchains[kKeyStrategy].get<std::string>().empty())
 	{
@@ -497,8 +497,8 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyNinja))
 		m_state.toolchain.setNinja(std::move(val));
 
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyObjdump))
-		m_state.toolchain.setObjdump(std::move(val));
+	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyDisassembler))
+		m_state.toolchain.setDisassembler(std::move(val));
 
 #if defined(CHALET_WIN32)
 	bool checkForMsvc = m_inputs.toolchainPreference().type == ToolchainType::Unknown;

@@ -53,10 +53,10 @@ enum class Defs : ushort
 	Archiver,
 	Linker,
 	Profiler,
+	Disassembler,
 	Make,
 	CMake,
 	Ninja,
-	ObjDump,
 
 	/* Settings */
 	DumpAssembly,
@@ -325,9 +325,9 @@ Json Schema::getSettingsJson()
 		"description": "The executable path to Ninja."
 	})json"_ojson;
 
-	defs[Defs::ObjDump] = R"json({
+	defs[Defs::Disassembler] = R"json({
 		"type": "string",
-		"description": "The executable path to objdump."
+		"description": "The executable path to the toolchain's disassembler (if applicable) - for instance, objdump with GCC, dumpbin with MSVC, and otool with Apple LLVM."
 	})json"_ojson;
 
 	defs[Defs::CompilerWindowsResource] = R"json({
@@ -471,7 +471,7 @@ Json Schema::getSettingsJson()
 			"linker",
 			"profiler",
 			"make",
-			"objdump",
+			"disassembler",
 			"ninja",
 			"strategy",
 			"version"
@@ -490,7 +490,7 @@ Json Schema::getSettingsJson()
 	toolchains[kProperties]["profiler"] = defs[Defs::Profiler];
 	toolchains[kProperties]["make"] = defs[Defs::Make];
 	toolchains[kProperties]["ninja"] = defs[Defs::Ninja];
-	toolchains[kProperties]["objdump"] = defs[Defs::ObjDump];
+	toolchains[kProperties]["disassembler"] = defs[Defs::Disassembler];
 
 	//
 	ret[kProperties] = Json::object();

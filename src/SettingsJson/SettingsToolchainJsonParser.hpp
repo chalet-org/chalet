@@ -41,12 +41,12 @@ private:
 	const std::string kKeyVersion = "version";
 	const std::string kKeyLinker = "linker";
 	const std::string kKeyProfiler = "profiler";
+	const std::string kKeyDisassembler = "disassembler";
 
 	//
 	const std::string kKeyCmake = "cmake";
 	const std::string kKeyMake = "make";
 	const std::string kKeyNinja = "ninja";
-	const std::string kKeyObjdump = "objdump";
 };
 }
 

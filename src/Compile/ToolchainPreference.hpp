@@ -20,6 +20,7 @@ struct ToolchainPreference
 	std::string linker;
 	std::string archiver;
 	std::string profiler;
+	std::string disassembler;
 
 	mutable ToolchainType type = ToolchainType::Unknown;
 	StrategyType strategy = StrategyType::Makefile;

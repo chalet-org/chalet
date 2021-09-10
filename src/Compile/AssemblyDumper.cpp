@@ -32,9 +32,13 @@ bool AssemblyDumper::addProject(const ProjectTarget& inProject, StringList&& inA
 		return false;
 	}
 #else
-	if (m_state.toolchain.objdump().empty())
+	if (m_state.toolchain.disassembler().empty())
 	{
+	#if defined(CHALET_WIN32)
+		Diagnostic::error("dumpAssembly feature requires dumpbin (if MSVC) or objdump (if MinGW), which is blank in the toolchain settings.");
+	#else
 		Diagnostic::error("dumpAssembly feature requires objdump, which is blank in the toolchain settings.");
+	#endif
 		return false;
 	}
 #endif
@@ -132,30 +136,52 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 {
 	StringList ret;
 
-	if (!m_state.tools.bash().empty() && m_state.tools.bashAvailable())
-	{
-#if defined(CHALET_MACOS)
-		auto asmCommand = fmt::format("{otool} -tvV {object} | c++filt > {target}",
-			fmt::arg("otool", m_state.tools.otool()),
-			FMT_ARG(object),
-			FMT_ARG(target));
-#else
-		const auto& objdump = m_state.toolchain.objdump();
-		std::string archArg;
-		if (!String::endsWith("llvm-objdump.exe", objdump))
-		{
-			archArg = "-Mintel ";
-		}
-		auto asmCommand = fmt::format("\"{objdump}\" -d -C {archArg}{object} > {target}",
-			FMT_ARG(objdump),
-			FMT_ARG(archArg),
-			FMT_ARG(object),
-			FMT_ARG(target));
-#endif
+	const auto& disassembler = m_state.toolchain.disassembler();
 
+#if defined(CHALET_WIN32)
+	// dumpbin
+	if (m_state.toolchain.isDisassemblerDumpBin())
+	{
+		ret.push_back(disassembler);
+		ret.emplace_back("/nologo");
+		ret.emplace_back("/disasm");
+		ret.emplace_back(fmt::format("/out:{}", target));
+		ret.push_back(object);
+	}
+	else
+#endif
+		if (m_state.tools.bashAvailable())
+	{
 		ret.push_back(m_state.tools.bash());
 		ret.emplace_back("-c");
-		ret.emplace_back(std::move(asmCommand));
+
+#if defined(CHALET_MACOS)
+		// otool
+		if (m_state.toolchain.isDisassemblerOtool())
+		{
+			auto asmCommand = fmt::format("{disassembler} -tvV {object} | c++filt > {target}",
+				FMT_ARG(disassembler),
+				FMT_ARG(object),
+				FMT_ARG(target));
+			ret.emplace_back(std::move(asmCommand));
+		}
+		else
+#else
+		{
+			// objdump
+			std::string archArg;
+			if (!m_state.toolchain.isDisassemblerLLVMObjDump())
+			{
+				archArg = "-Mintel ";
+			}
+			auto asmCommand = fmt::format("\"{disassembler}\" -d -C {archArg}{object} > {target}",
+				FMT_ARG(disassembler),
+				FMT_ARG(archArg),
+				FMT_ARG(object),
+				FMT_ARG(target));
+			ret.emplace_back(std::move(asmCommand));
+		}
+#endif
 	}
 
 	return ret;

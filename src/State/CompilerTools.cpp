@@ -729,13 +729,32 @@ bool CompilerTools::isProfilerGprof() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::objdump() const noexcept
+const std::string& CompilerTools::disassembler() const noexcept
 {
-	return m_objdump;
+	return m_disassembler;
 }
-void CompilerTools::setObjdump(std::string&& inValue) noexcept
+void CompilerTools::setDisassembler(std::string&& inValue) noexcept
 {
-	m_objdump = std::move(inValue);
+	m_disassembler = std::move(inValue);
+
+#if defined(CHALET_MACOS)
+	m_isDisassemblerOtool = String::endsWith("otool", m_disassembler);
+#elif defined(CHALET_WIN32)
+	m_isDisassemblerDumpBin = String::endsWith("dumpbin.exe", m_disassembler);
+	m_isDisassemblerLLVMObjDump = String::endsWith("llvm-objdump.exe", m_disassembler);
+#endif
+}
+bool CompilerTools::isDisassemblerDumpBin() const noexcept
+{
+	return m_isDisassemblerDumpBin;
+}
+bool CompilerTools::isDisassemblerOtool() const noexcept
+{
+	return m_isDisassemblerOtool;
+}
+bool CompilerTools::isDisassemblerLLVMObjDump() const noexcept
+{
+	return m_isDisassemblerLLVMObjDump;
 }
 
 /*****************************************************************************/
@@ -747,11 +766,15 @@ void CompilerTools::setCompilerWindowsResource(std::string&& inValue) noexcept
 {
 	m_compilerWindowsResource = std::move(inValue);
 
-	m_usingLlvmRC = String::endsWith({ "llvm-rc.exe", "llvm-rc" }, m_compilerWindowsResource);
+#if defined(CHALET_WIN32)
+	m_isCompilerWindowsResourceLLVMRC = String::endsWith({ "llvm-rc.exe", "llvm-rc" }, m_compilerWindowsResource);
+#else
+	m_isCompilerWindowsResourceLLVMRC = String::endsWith("llvm-rc", m_compilerWindowsResource);
+#endif
 }
-bool CompilerTools::usingLlvmRC() const noexcept
+bool CompilerTools::isCompilerWindowsResourceLLVMRC() const noexcept
 {
-	return m_usingLlvmRC;
+	return m_isCompilerWindowsResourceLLVMRC;
 }
 
 /*****************************************************************************/

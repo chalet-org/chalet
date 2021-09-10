@@ -248,7 +248,7 @@
 						"linker",
 						"profiler",
 						"make",
-						"objdump",
+						"disassembler",
 						"ninja",
 						"strategy",
 						"version"
@@ -322,9 +322,9 @@
 							"type": "string",
 							"description": "The executable path to Ninja."
 						},
-						"objdump": {
+						"disassembler": {
 							"type": "string",
-							"description": "The executable path to objdump."
+							"description": "The executable path to the toolchain's disassembler (if applicable) - for instance, objdump with GCC, dumpbin with MSVC, and otool with Apple LLVM."
 						}
 					}
 				}

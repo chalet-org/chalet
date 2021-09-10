@@ -653,6 +653,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.linker = "link";
 		ret.archiver = "lib";
 		ret.profiler = ""; // TODO
+		ret.disassembler = "dumpbin";
 	}
 	else
 #endif
@@ -673,6 +674,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.linker = "lld";
 		ret.archiver = "ar";
 		ret.profiler = ""; // TODO
+#if defined(CHALET_MACOS)
+		ret.disassembler = "otool";
+#else
+		ret.disassembler = "objdump";
+#endif
 	}
 	else if (String::equals("gcc", inValue))
 	{
@@ -687,6 +693,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.linker = "ld";
 		ret.archiver = "ar";
 		ret.profiler = "gprof";
+		ret.disassembler = "objdump";
 	}
 	else
 	{

@@ -61,7 +61,7 @@ struct CompilerTools
 
 	const std::string& compilerWindowsResource() const noexcept;
 	void setCompilerWindowsResource(std::string&& inValue) noexcept;
-	bool usingLlvmRC() const noexcept;
+	bool isCompilerWindowsResourceLLVMRC() const noexcept;
 
 	const std::string& cmake() const noexcept;
 	void setCmake(std::string&& inValue) noexcept;
@@ -84,8 +84,11 @@ struct CompilerTools
 	void setProfiler(std::string&& inValue) noexcept;
 	bool isProfilerGprof() const noexcept;
 
-	const std::string& objdump() const noexcept;
-	void setObjdump(std::string&& inValue) noexcept;
+	const std::string& disassembler() const noexcept;
+	void setDisassembler(std::string&& inValue) noexcept;
+	bool isDisassemblerDumpBin() const noexcept;
+	bool isDisassemblerOtool() const noexcept;
+	bool isDisassemblerLLVMObjDump() const noexcept;
 
 	const std::string& ninja() const noexcept;
 	void setNinja(std::string&& inValue) noexcept;
@@ -119,7 +122,7 @@ private:
 	std::string m_make;
 	std::string m_ninja;
 	std::string m_profiler;
-	std::string m_objdump;
+	std::string m_disassembler;
 
 	std::string m_compilerVersionStringCpp;
 	std::string m_compilerVersionStringC;
@@ -148,7 +151,10 @@ private:
 	bool m_isProfilerGprof = false;
 
 	bool m_ccDetected = false;
-	bool m_usingLlvmRC = false;
+	bool m_isDisassemblerDumpBin = false;
+	bool m_isDisassemblerOtool = false;
+	bool m_isDisassemblerLLVMObjDump = false;
+	bool m_isCompilerWindowsResourceLLVMRC = false;
 	bool m_cmakeAvailable = false;
 	bool m_ninjaAvailable = false;
 	bool m_makeIsNMake = false;
