@@ -299,33 +299,32 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std
 {
 	std::string ret;
 
-	UNUSED(inExecutable);
-
 #if defined(CHALET_WIN32)
 
 	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-	// std::string rawOutput = Commands::subprocessOutput({ inExecutable });
-	// auto splitOutput = String::split(rawOutput, '\n');
-	// if (splitOutput.size() >= 2)
+	std::string rawOutput = Commands::subprocessOutput({ inExecutable });
+	auto splitOutput = String::split(rawOutput, '\n');
+	if (splitOutput.size() >= 2)
 	{
-		// auto start = splitOutput[1].find("Version");
-		// auto end = splitOutput[1].find(" for ");
-		// if (start != std::string::npos && end != std::string::npos)
+		auto start = splitOutput[1].find("Version");
+		auto end = splitOutput[1].find(" for ");
+		if (start != std::string::npos && end != std::string::npos)
 		{
-			// const auto versionString = splitOutput[1].substr(start, end - start); // cl.exe version
+			start += 8;
+			const auto clVersion = splitOutput[1].substr(start, end - start); // cl.exe version
 
 			// const auto arch = splitOutput[1].substr(end + 5);
 			outArch = m_state.info.targetArchitectureString();
 
 			// We want the toolchain version as opposed to the cl.exe version (annoying)
 			const auto& detectedMsvcVersion = m_state.msvcEnvironment.detectedVersion();
-			const auto& versionString = detectedMsvcVersion.empty() ? m_version : detectedMsvcVersion;
+			const auto& toolchainVersion = detectedMsvcVersion.empty() ? m_version : detectedMsvcVersion;
 
-			ret = fmt::format("Microsoft{} Visual C/C++ {}", Unicode::registered(), versionString);
+			ret = fmt::format("Microsoft{} Visual C/C++ version {} (cl-{})", Unicode::registered(), toolchainVersion, clVersion);
 		}
 	}
 #else
-	UNUSED(outArch);
+	UNUSED(inExecutable, outArch);
 #endif
 
 	return ret;
@@ -385,18 +384,18 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std:
 		{
 			if (String::startsWith("gcc", compilerRaw))
 			{
-				ret = fmt::format("GNU Compiler Collection C/C++ Version {}", versionString);
+				ret = fmt::format("GNU Compiler Collection C/C++ version {}", versionString);
 				m_version = versionString;
 			}
 			else if (String::startsWith("clang", compilerRaw))
 			{
-				ret = fmt::format("LLVM Clang C/C++ Version {}", versionString);
+				ret = fmt::format("LLVM Clang C/C++ version {}", versionString);
 				m_version = versionString;
 			}
 #if defined(CHALET_MACOS)
 			else if (String::startsWith("Apple clang", compilerRaw))
 			{
-				ret = fmt::format("Apple Clang C/C++ Version {}", versionString);
+				ret = fmt::format("Apple Clang C/C++ version {}", versionString);
 				m_version = versionString;
 			}
 #endif
