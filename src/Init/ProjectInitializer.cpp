@@ -188,7 +188,7 @@ bool ProjectInitializer::run()
 
 			props.precompiledHeader = fmt::format("pch{}", headerExts.front());
 
-			Output::getUserInput(fmt::format("Precompiled header:"), props.precompiledHeader, inputColor, fmt::format("Must end in: {}", String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
+			Output::getUserInput(fmt::format("Precompiled header file:"), props.precompiledHeader, inputColor, fmt::format("Must end in: {}", String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
 				auto lower = String::toLowerCase(input);
 				bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
 				if (validChars && ((isC && !String::endsWith(headerExts, input)) || (!isC && !String::endsWith(headerExts, lower))))
