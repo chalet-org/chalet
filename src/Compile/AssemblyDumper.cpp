@@ -169,7 +169,7 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 			ret.emplace_back(std::move(asmCommand));
 		}
 		else
-#else
+#endif
 		{
 			// objdump
 			std::string archArg;
@@ -184,7 +184,6 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 				FMT_ARG(target));
 			ret.emplace_back(std::move(asmCommand));
 		}
-#endif
 	}
 
 	return ret;
