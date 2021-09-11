@@ -319,7 +319,7 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 			auto versionSplit = String::split(m_detectedVersion, '.');
 			if (versionSplit.size() >= 1)
 			{
-				std::string name = fmt::format("{}-pc-windows-msvc{}", m_inputs.targetArchitecture(), versionSplit.front());
+				std::string name = fmt::format("{}-pc-windows-msvc{}", m_arch, versionSplit.front());
 				m_inputs.setToolchainPreferenceName(std::move(name));
 			}
 		}
@@ -399,18 +399,17 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 {
 #if defined(CHALET_WIN32)
 	std::string vcvarsFile{ "vcvarsall" };
-	const auto& arch = m_state.info.targetArchitectureString();
 	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
 
-	if (!String::equals(allowedArchesWin, arch))
+	if (!String::equals(allowedArchesWin, m_arch))
 	{
-		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", arch, vcvarsFile);
+		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", m_arch, vcvarsFile);
 		return false;
 	}
 
 	// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
 	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
-	StringList cmd{ vcVarsAll, arch };
+	StringList cmd{ vcVarsAll, m_arch };
 
 	for (auto& arg : m_inputs.archOptions())
 	{
@@ -434,46 +433,56 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 /*****************************************************************************/
 void MsvcEnvironment::makeArchitectureCorrections()
 {
-	auto host = m_inputs.hostArchitecture();
-	if (String::equals("x86_64", host))
-		host = "x64";
-	else if (String::equals("i686", host))
-		host = "x86";
+	auto normalizeArch = [](const std::string& inArch) -> std::string {
+		if (String::equals("x86_64", inArch))
+			return "x64";
+		else if (String::equals("i686", inArch))
+			return "x86";
 
-	bool emptyTarget = m_inputs.targetArchitecture().empty();
-	auto arch = m_inputs.targetArchitecture();
-	if (emptyTarget)
+		return inArch;
+	};
+
+	auto target = m_inputs.targetArchitecture();
+	if (target.empty())
 	{
 		// Try to get the architecture from the name
 		const auto& preferenceName = m_inputs.toolchainPreferenceName();
 		auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
 		if (!regexResult.empty())
 		{
-			arch = regexResult;
+			target = regexResult;
 		}
 		else
 		{
-			arch = m_inputs.hostArchitecture();
+			target = normalizeArch(m_inputs.hostArchitecture());
 		}
 	}
-	if (String::equals({ "x86_64", "x64_x64" }, arch))
+
+	std::string host;
+	if (String::contains('_', target))
 	{
-		arch = "x64";
-	}
-	else if (String::equals({ "i686", "x86_x86" }, arch))
-	{
-		arch = "x86";
-	}
-	else if (String::equals("arm64", arch))
-	{
-		arch = fmt::format("{}_arm64", host);
-	}
-	else if (String::equals("arm", arch))
-	{
-		arch = fmt::format("{}_arm", host);
+		auto split = String::split(target, '_');
+		if (String::equals("64", split.back()))
+		{
+			target = "x64";
+		}
+		else
+		{
+			host = split.front();
+			target = split.back();
+		}
 	}
 
-	m_inputs.setTargetArchitecture(arch);
+	if (host.empty())
+		host = normalizeArch(m_inputs.hostArchitecture());
+
+	if (host == target)
+		m_arch = target;
+	else
+		m_arch = fmt::format("{}_{}", host, target);
+
+	m_inputs.setTargetArchitecture(target);
+	m_state.info.setHostArchitecture(host);
 	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 }
 
