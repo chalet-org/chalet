@@ -7,6 +7,8 @@
 
 #include <signal.h>
 
+#include "Terminal/Environment.hpp"
+
 namespace chalet
 {
 namespace
@@ -78,6 +80,9 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 void Spinner::doRegularEllipsis()
 {
 	std::cout << " ... " << std::flush;
+
+	if (Environment::isContinuousIntegrationServer())
+		return;
 
 	constexpr auto frameTime = std::chrono::milliseconds(333);
 
