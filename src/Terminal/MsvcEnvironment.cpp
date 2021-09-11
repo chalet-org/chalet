@@ -319,7 +319,7 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 			auto versionSplit = String::split(m_detectedVersion, '.');
 			if (versionSplit.size() >= 1)
 			{
-				std::string name = fmt::format("{}-pc-windows-msvc{}", m_arch, versionSplit.front());
+				std::string name = fmt::format("{}-pc-windows-msvc{}", m_inputs.targetArchitecture(), versionSplit.front());
 				m_inputs.setToolchainPreferenceName(std::move(name));
 			}
 		}
@@ -401,15 +401,16 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 	std::string vcvarsFile{ "vcvarsall" };
 	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
 
-	if (!String::equals(allowedArchesWin, m_arch))
+	const auto& targetArch = m_inputs.targetArchitecture();
+	if (!String::equals(allowedArchesWin, targetArch))
 	{
-		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", m_arch, vcvarsFile);
+		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", targetArch, vcvarsFile);
 		return false;
 	}
 
 	// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
 	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
-	StringList cmd{ vcVarsAll, m_arch };
+	StringList cmd{ vcVarsAll, targetArch };
 
 	for (auto& arg : m_inputs.archOptions())
 	{
@@ -476,13 +477,13 @@ void MsvcEnvironment::makeArchitectureCorrections()
 	if (host.empty())
 		host = normalizeArch(m_inputs.hostArchitecture());
 
-	if (host == target)
-		m_arch = target;
-	else
-		m_arch = fmt::format("{}_{}", host, target);
-
-	m_inputs.setTargetArchitecture(target);
 	m_state.info.setHostArchitecture(host);
+
+	if (host == target)
+		m_inputs.setTargetArchitecture(target);
+	else
+		m_inputs.setTargetArchitecture(fmt::format("{}_{}", host, target));
+
 	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 }
 

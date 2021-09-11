@@ -288,7 +288,11 @@ void BuildManager::printBuildInformation()
 			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
 		}
 		Diagnostic::info("C Compiler: {}", m_state.toolchain.compilerVersionStringC());
-		Diagnostic::info("Target Architecture: {}", arch);
+
+		if (m_state.info.universalArches().empty())
+			Diagnostic::info("Target Architecture: {}", arch);
+		else
+			Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.info.universalArches(), " / "));
 	}
 
 	const auto strategy = getBuildStrategyName();

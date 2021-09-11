@@ -180,8 +180,13 @@ bool CompilerTools::detectTargetArchitectureMSVC()
 	}
 
 	target = lower.substr(search, nextPath - search);
+
 	m_state.info.setHostArchitecture(host);
-	m_inputs.setTargetArchitecture(target);
+
+	if (host == target)
+		m_inputs.setTargetArchitecture(target);
+	else
+		m_inputs.setTargetArchitecture(fmt::format("{}_{}", host, target));
 
 	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 

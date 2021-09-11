@@ -61,8 +61,6 @@ private:
 	std::string m_vsAppIdDir;
 	std::string m_detectedVersion;
 
-	std::string m_arch;
-
 #endif
 	StringList m_include;
 	StringList m_lib;
