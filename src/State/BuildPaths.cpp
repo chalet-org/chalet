@@ -542,7 +542,9 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Proje
 	StringList ret;
 	for (const auto& file : inFiles)
 	{
-		ret.push_back(getObjectFile(file, inIsMsvc));
+		auto outFile = getObjectFile(file, inIsMsvc);
+		if (!outFile.empty())
+			ret.emplace_back(std::move(outFile));
 	}
 
 #if defined(CHALET_WIN32)
