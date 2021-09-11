@@ -476,13 +476,15 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 /*****************************************************************************/
 std::string BuildPaths::getObjectFile(const std::string& inSource, const bool inIsMsvc) const
 {
-#if defined(CHALET_WIN32)
 	if (String::endsWith(m_resourceExts, inSource))
 	{
+#if defined(CHALET_WIN32)
 		return fmt::format("{}/{}.res", objDir(), inSource);
+#else
+		return std::string();
+#endif
 	}
 	else
-#endif
 	{
 		return fmt::format("{}/{}.{}", objDir(), inSource, inIsMsvc ? "obj" : "o");
 	}

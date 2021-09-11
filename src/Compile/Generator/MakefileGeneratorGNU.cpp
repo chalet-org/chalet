@@ -216,7 +216,6 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 				auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency, arch));
 				if (!pchCompile.empty())
 				{
-					const auto& objDir = m_state.paths.objDir();
 					auto pch = String::getPathFolderBaseName(object);
 					String::replaceAll(pch, fmt::format("{}/", objDir), "");
 					pch += fmt::format(" ({})", arch);
