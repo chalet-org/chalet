@@ -169,7 +169,10 @@ std::string NinjaGenerator::getPchRule()
 {
 	std::string ret;
 
-	if (m_project->usesPch() && !List::contains(m_precompiledHeaders, m_project->pch()))
+	const auto& objDir = m_state.paths.objDir();
+
+	const auto& pch = m_project->pch();
+	if (m_project->usesPch() && !List::contains(m_precompiledHeaders, fmt::format("{}/{}", objDir, pch)))
 	{
 		const auto deps = getRuleDeps();
 		const auto& depDir = m_state.paths.depDir();
@@ -189,9 +192,11 @@ std::string NinjaGenerator::getPchRule()
 			{
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 
-				const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", outObject, m_generateDependencies, dependency, arch));
+				auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", outObject, m_generateDependencies, dependency, arch));
 				if (!pchCompile.empty())
 				{
+					String::replaceAll(pchCompile, outObject, "$out");
+					String::replaceAll(pchCompile, pch, "$in");
 					ret += fmt::format(R"ninja(
 rule pch_{arch}_{hash}
   deps = {deps}{depFile}
@@ -210,9 +215,11 @@ rule pch_{arch}_{hash}
 #endif
 		{
 			// Have to pass in object here because MSVC's PCH compile command is wack
-			const auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", object, m_generateDependencies, dependency, std::string()));
+			auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", object, m_generateDependencies, dependency, std::string()));
 			if (!pchCompile.empty())
 			{
+				String::replaceAll(pchCompile, object, "$out");
+				String::replaceAll(pchCompile, pch, "$in");
 				ret = fmt::format(R"ninja(
 rule pch_{hash}
   deps = {deps}{depFile}
@@ -421,10 +428,13 @@ std::string NinjaGenerator::getPchBuildRule(const std::string& pchTarget)
 {
 	std::string ret;
 
-	if (m_project->usesPch() && !List::contains(m_precompiledHeaders, m_project->pch()))
+	const auto& objDir = m_state.paths.objDir();
+	const auto& pch = m_project->pch();
+	auto pchCache = fmt::format("{}/{}", objDir, pch);
+
+	if (m_project->usesPch() && !List::contains(m_precompiledHeaders, pchCache))
 	{
-		const auto& pch = m_project->pch();
-		m_precompiledHeaders.push_back(pch);
+		m_precompiledHeaders.push_back(std::move(pchCache));
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)

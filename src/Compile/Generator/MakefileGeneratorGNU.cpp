@@ -137,43 +137,6 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 }
 
 /*****************************************************************************/
-/*std::string MakefileGeneratorGNU::getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget)
-{
-	const auto objDir = fmt::format("{}/", m_state.paths.objDir());
-
-	std::string ret;
-
-	for (auto& obj : inObjects)
-	{
-		if (obj.empty())
-			continue;
-
-		std::string source = obj;
-		String::replaceAll(source, objDir, "");
-
-		if (String::endsWith(".o", source))
-			source = source.substr(0, source.size() - 2);
-		else if (String::endsWith(".res", source))
-			source = source.substr(0, source.size() - 4);
-
-		if (String::endsWith({ ".rc", ".RC" }, source))
-		{
-			ret += getRcRecipe(source, obj);
-		}
-		else if (String::endsWith({ ".m", ".M", ".mm" }, source))
-		{
-			ret += getObjcRecipe(source, obj);
-		}
-		else
-		{
-			ret += getCppRecipe(source, obj, pchTarget);
-		}
-	}
-
-	return ret;
-}*/
-
-/*****************************************************************************/
 std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& inFile) const
 {
 	const auto color = getBuildColor();
@@ -221,12 +184,15 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 
 	const bool usePch = m_project->usesPch();
 
-	if (usePch && !List::contains(m_precompiledHeaders, source))
+	const auto& objDir = m_state.paths.objDir();
+	auto pchCache = fmt::format("{}/{}", objDir, source);
+
+	if (usePch && !List::contains(m_precompiledHeaders, pchCache))
 	{
 		// auto pchAbsolute = Commands::getAbsolutePath(source);
 		const auto quietFlag = getQuietFlag();
 		const auto& depDir = m_state.paths.depDir();
-		m_precompiledHeaders.push_back(source);
+		m_precompiledHeaders.push_back(std::move(pchCache));
 
 		const auto dependency = fmt::format("{}/{}.d", depDir, source);
 
@@ -276,7 +242,6 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 			auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency, std::string()));
 			if (!pchCompile.empty())
 			{
-				const auto& objDir = m_state.paths.objDir();
 				auto pch = String::getPathFolderBaseName(object);
 				String::replaceAll(pch, fmt::format("{}/", objDir), "");
 				const auto compileEcho = getCompileEchoSources(pch);

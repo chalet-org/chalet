@@ -7,6 +7,7 @@
 
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
+#include "State/SourceOutputs.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -23,7 +24,7 @@ AssemblyDumper::AssemblyDumper(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool AssemblyDumper::addProject(const ProjectTarget& inProject, StringList&& inAssemblies)
+bool AssemblyDumper::validate() const
 {
 #if defined(CHALET_MACOS)
 	if (m_state.tools.otool().empty())
@@ -43,23 +44,14 @@ bool AssemblyDumper::addProject(const ProjectTarget& inProject, StringList&& inA
 	}
 #endif
 
-	auto& name = inProject.name();
-	m_outputs[name] = std::move(inAssemblies);
-
 	return true;
 }
 
 /*****************************************************************************/
-bool AssemblyDumper::dumpProject(const ProjectTarget& inProject, const bool inForced) const
+bool AssemblyDumper::dumpProject(const std::string& inProjectName, const SourceOutputs& inOutputs, const bool inForced) const
 {
-	auto& name = inProject.name();
-	if (m_outputs.find(name) == m_outputs.end())
-		return true;
-
-	auto& assemblies = m_outputs.at(name);
-
 	CommandPool::Target target;
-	target.list = getAsmCommands(assemblies, inForced);
+	target.list = getAsmCommands(inOutputs, inForced);
 
 	CommandPool::Settings settings;
 	settings.msvcCommand = false;
@@ -71,7 +63,7 @@ bool AssemblyDumper::dumpProject(const ProjectTarget& inProject, const bool inFo
 	{
 		if (!m_commandPool.run(target, settings))
 		{
-			Diagnostic::error("There was a problem dumping asm files for: {}", inProject.name());
+			Diagnostic::error("There was a problem dumping asm files for: {}", inProjectName);
 			return false;
 		}
 
@@ -82,38 +74,24 @@ bool AssemblyDumper::dumpProject(const ProjectTarget& inProject, const bool inFo
 }
 
 /*****************************************************************************/
-CommandPool::CmdList AssemblyDumper::getAsmCommands(const StringList& inAssemblies, const bool inForced) const
+CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutputs, const bool inForced) const
 {
 	CommandPool::CmdList ret;
 
-	const auto& objDir = m_state.paths.objDir();
-	const auto& asmDir = m_state.paths.asmDir();
-
 	auto& sourceCache = m_state.cache.file().sources();
 
-	for (auto& asmFile : inAssemblies)
+	for (auto& group : inOutputs.groups)
 	{
+		const auto& asmFile = group->assemblyFile;
+
 		if (asmFile.empty() || List::contains(m_cache, asmFile))
 			continue;
 
 		if (inForced)
-		{
 			Commands::remove(asmFile);
-		}
 
-		std::string object = asmFile;
-		String::replaceAll(object, asmDir, objDir);
-
-		if (String::endsWith(".asm", object))
-			object = object.substr(0, object.size() - 4);
-
-		std::string source = object;
-		String::replaceAll(source, objDir + '/', "");
-
-		if (String::endsWith(".o", source))
-			source = source.substr(0, source.size() - 2);
-		else if (String::endsWith({ ".res", ".obj" }, source))
-			source = source.substr(0, source.size() - 4);
+		const auto& source = group->sourceFile;
+		const auto& object = group->objectFile;
 
 		if (sourceCache.fileChangedOrDoesNotExist(source, asmFile))
 		{

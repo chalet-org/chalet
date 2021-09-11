@@ -227,6 +227,8 @@ bool Router::cmdSettings(const Route inRoute)
 #if defined(CHALET_DEBUG)
 bool Router::cmdDebug()
 {
+	LOG("Router::cmdDebug()");
+
 	return true;
 }
 #endif

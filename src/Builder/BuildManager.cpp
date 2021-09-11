@@ -90,6 +90,9 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 	if (!runCommand)
 	{
+		if (!m_asmDumper.validate())
+			return false;
+
 		for (auto& target : m_state.targets)
 		{
 			if (target->isProject())
@@ -340,6 +343,8 @@ std::string BuildManager::getBuildStrategyName() const
 /*****************************************************************************/
 bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route inRoute)
 {
+	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
+
 	auto& compilerConfig = m_state.toolchain.getConfig(inProject.language());
 	auto compilerType = compilerConfig.compilerType();
 
@@ -362,18 +367,6 @@ bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route
 	if (inRoute == Route::Rebuild)
 	{
 		doClean(inProject, outputs.target, outputs.groups);
-	}
-
-	if (m_state.info.dumpAssembly())
-	{
-		StringList assemblyList;
-		for (auto& group : outputs.groups)
-		{
-			assemblyList.push_back(std::move(group->assemblyFile));
-		}
-
-		if (!m_asmDumper.addProject(inProject, std::move(assemblyList)))
-			return false;
 	}
 
 	if (!m_strategy->addProject(inProject, std::move(outputs), buildToolchain))
@@ -573,7 +566,7 @@ bool BuildManager::cmdBuild(const ProjectTarget& inProject)
 
 	if (m_state.info.dumpAssembly())
 	{
-		if (!m_asmDumper.dumpProject(inProject))
+		if (!m_asmDumper.dumpProject(inProject.name(), m_strategy->getSourceOutput(inProject.name())))
 			return false;
 	}
 
@@ -598,7 +591,7 @@ bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 	if (m_state.info.dumpAssembly())
 	{
 		bool forced = true;
-		if (!m_asmDumper.dumpProject(inProject, forced))
+		if (!m_asmDumper.dumpProject(inProject.name(), m_strategy->getSourceOutput(inProject.name()), forced))
 			return false;
 	}
 

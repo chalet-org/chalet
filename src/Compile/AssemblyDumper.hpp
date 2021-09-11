@@ -13,22 +13,21 @@ namespace chalet
 {
 class BuildState;
 struct ProjectTarget;
+struct SourceOutputs;
 
 struct AssemblyDumper
 {
 	explicit AssemblyDumper(BuildState& inState);
 
-	bool addProject(const ProjectTarget& inProject, StringList&& inAssemblies);
+	bool validate() const;
 
-	bool dumpProject(const ProjectTarget& inProject, const bool inForced = false) const;
+	bool dumpProject(const std::string& inProjectName, const SourceOutputs& inOutputs, const bool inForced = false) const;
 
 private:
-	CommandPool::CmdList getAsmCommands(const StringList& inAssemblies, const bool inForced) const;
+	CommandPool::CmdList getAsmCommands(const SourceOutputs& inOutputs, const bool inForced) const;
 	StringList getAsmGenerate(const std::string& object, const std::string& target) const;
 
 	BuildState& m_state;
-
-	std::unordered_map<std::string, StringList> m_outputs;
 
 	CommandPool m_commandPool;
 	mutable StringList m_cache;

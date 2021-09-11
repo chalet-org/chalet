@@ -31,6 +31,8 @@ struct ICompileStrategy
 	bool addCompileCommands(const ProjectTarget& inProject, CompileToolchain& inToolchain);
 	bool saveCompileCommands() const;
 
+	const SourceOutputs& getSourceOutput(const std::string& inTarget);
+
 	virtual bool initialize(const StringList& inFileExtensions) = 0;
 	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
 

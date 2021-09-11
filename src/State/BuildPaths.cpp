@@ -63,9 +63,6 @@ bool BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inTool
 		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
 	}
 
-	m_objDir = fmt::format("{}/obj", m_buildOutputDir);
-	m_depDir = fmt::format("{}/dep", m_buildOutputDir);
-	m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
 	m_intermediateDir = fmt::format("{}/intermediate", outputDirectory);
 
 	{
@@ -152,6 +149,25 @@ const StringList& BuildPaths::allFileExtensions() const noexcept
 }
 
 /*****************************************************************************/
+void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const ProjectTarget& inProject)
+{
+	if (inProject.isSharedLibrary())
+	{
+		m_objDir = fmt::format("{}/obj.shared", m_buildOutputDir);
+		// m_depDir = fmt::format("{}/dep.shared", m_buildOutputDir);
+		m_asmDir = fmt::format("{}/asm.shared", m_buildOutputDir);
+	}
+	else
+	{
+		m_objDir = fmt::format("{}/obj", m_buildOutputDir);
+		// m_depDir = fmt::format("{}/dep", m_buildOutputDir);
+		m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
+	}
+
+	m_depDir = m_objDir;
+}
+
+/*****************************************************************************/
 SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const
 {
 	SourceOutputs ret;
@@ -170,7 +186,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const Compi
 	const bool isMsvc = inConfig.isMsvc();
 	const bool isNotMsvc = !isMsvc;
 	ret.objectListLinker = getObjectFilesList(files.list, inProject, isMsvc);
-	files.list = String::excludeIf(m_fileListCache, files.list);
+	files.list = String::excludeIf(inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache, files.list);
 	ret.groups = getSourceFileGroupList(std::move(files), inProject, inConfig, inDumpAssembly);
 	for (auto& group : ret.groups)
 	{
@@ -178,13 +194,14 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const Compi
 		List::addIfDoesNotExist(ret.types, std::move(type));
 	}
 
-	StringList objSubDirs = getOutputDirectoryList(directories, m_objDir);
-	StringList depSubDirs = getOutputDirectoryList(directories, m_depDir);
+	StringList objSubDirs = getOutputDirectoryList(directories, objDir());
+	// StringList depSubDirs = getOutputDirectoryList(directories, depDir());
+	StringList depSubDirs;
 
 	StringList asmSubDirs;
 	if (inDumpAssembly)
 	{
-		asmSubDirs = getOutputDirectoryList(directories, m_asmDir);
+		asmSubDirs = getOutputDirectoryList(directories, asmDir());
 
 		if (isNotMsvc)
 			ret.directories.reserve(4 + objSubDirs.size() + depSubDirs.size() + asmSubDirs.size());
@@ -200,7 +217,7 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const Compi
 	}
 
 	ret.directories.push_back(m_buildOutputDir);
-	ret.directories.push_back(m_objDir);
+	ret.directories.push_back(objDir());
 
 #if !defined(CHALET_MACOS)
 	// m_intermediateDir is only used in windows so far
@@ -212,13 +229,13 @@ SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const Compi
 
 	if (isNotMsvc)
 	{
-		ret.directories.push_back(m_depDir);
+		ret.directories.push_back(depDir());
 		ret.directories.insert(ret.directories.end(), depSubDirs.begin(), depSubDirs.end());
 	}
 
 	if (inDumpAssembly)
 	{
-		ret.directories.push_back(m_asmDir);
+		ret.directories.push_back(asmDir());
 		ret.directories.insert(ret.directories.end(), asmSubDirs.begin(), asmSubDirs.end());
 	}
 
@@ -313,9 +330,7 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectTarget& inProjec
 		auto ext = inPchExtension ? "pch" : "gch";
 
 		const std::string base = getPrecompiledHeaderInclude(inProject);
-		ret = fmt::format("{base}.{ext}",
-			FMT_ARG(base),
-			FMT_ARG(ext));
+		ret = fmt::format("{}.{}", base, ext);
 	}
 
 	return ret;
@@ -328,9 +343,7 @@ std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectTarget& inProje
 	if (inProject.usesPch())
 	{
 		const auto& pch = inProject.pch();
-		ret = fmt::format("{objDir}/{pch}",
-			fmt::arg("objDir", objDir()),
-			FMT_ARG(pch));
+		ret = fmt::format("{}/{}", objDir(), pch);
 	}
 
 	return ret;
@@ -407,13 +420,15 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 	SourceFileGroupList ret;
 	bool isMsvc = inConfig.isMsvc();
 
+	auto& fileListCache = inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache;
+
 	for (auto& file : inFiles.list)
 	{
 		if (file.empty())
 			continue;
 
 		if (m_useCache)
-			m_fileListCache.push_back(file);
+			fileListCache.push_back(file);
 
 		SourceType type = getSourceType(file);
 
@@ -461,13 +476,15 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 /*****************************************************************************/
 std::string BuildPaths::getObjectFile(const std::string& inSource, const bool inIsMsvc) const
 {
+#if defined(CHALET_WIN32)
 	if (String::endsWith(m_resourceExts, inSource))
 	{
-		return fmt::format("{}/{}.res", m_objDir, inSource);
+		return fmt::format("{}/{}.res", objDir(), inSource);
 	}
 	else
+#endif
 	{
-		return fmt::format("{}/{}.{}", m_objDir, inSource, inIsMsvc ? "obj" : "o");
+		return fmt::format("{}/{}.{}", objDir(), inSource, inIsMsvc ? "obj" : "o");
 	}
 }
 
@@ -480,14 +497,14 @@ std::string BuildPaths::getAssemblyFile(const std::string& inSource, const bool 
 	}
 	else
 	{
-		return fmt::format("{}/{}.{}.asm", m_asmDir, inSource, inIsMsvc ? "obj" : "o");
+		return fmt::format("{}/{}.{}.asm", asmDir(), inSource, inIsMsvc ? "obj" : "o");
 	}
 }
 
 /*****************************************************************************/
 std::string BuildPaths::getDependencyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.d", m_depDir, inSource);
+	return fmt::format("{}/{}.d", depDir(), inSource);
 }
 
 /*****************************************************************************/
@@ -521,19 +538,9 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const ProjectTarget& inProject, const bool inIsMsvc) const
 {
 	StringList ret;
-	auto ext = inIsMsvc ? "obj" : "o";
 	for (const auto& file : inFiles)
 	{
-		if (!String::endsWith(m_resourceExts, file))
-		{
-			ret.emplace_back(fmt::format("{}/{}.{}", m_objDir, file, ext));
-		}
-		else
-		{
-#if defined(CHALET_WIN32)
-			ret.emplace_back(fmt::format("{}/{}.res", m_objDir, file));
-#endif
-		}
+		ret.push_back(getObjectFile(file, inIsMsvc));
 	}
 
 #if defined(CHALET_WIN32)
@@ -629,9 +636,6 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 			if (String::equals(m_intermediateDir, locRaw))
 				continue;
 
-			// if (m_useCache && List::contains(m_fileListCache, loc))
-			// 	continue;
-
 			if (!Commands::pathExists(loc))
 			{
 				Diagnostic::warn("Path not found: {}", loc);
@@ -674,9 +678,6 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 				List::addIfDoesNotExist(ret, std::move(source));
 				j++;
 			}
-
-			// if (m_useCache && !List::contains(m_fileListCache, source))
-			// 	m_fileListCache.push_back(source);
 		}
 	}
 	CHALET_CATCH(const std::exception& err)

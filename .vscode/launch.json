@@ -24,7 +24,7 @@
 				// "--save-schema",
 				"-c",
 				"Release",
-				"debug"
+				"build"
 			],
 		},
 		{
@@ -36,7 +36,7 @@
 				// "--generator=vscode",
 				"-c",
 				"Release",
-				"debug"
+				"build"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",

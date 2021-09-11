@@ -26,7 +26,6 @@ struct MakefileGeneratorGNU final : IStrategyGenerator
 
 private:
 	std::string getBuildRecipes(const SourceOutputs& inOutputs);
-	// std::string getObjBuildRecipes(const StringList& inObjects, const std::string& pchTarget);
 
 	std::string getCompileEchoSources(const std::string& inFile = "$<") const;
 	std::string getLinkerEcho() const;

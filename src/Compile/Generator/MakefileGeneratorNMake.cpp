@@ -260,9 +260,9 @@ std::string MakefileGeneratorNMake::getTargetRecipe(const std::string& linkerTar
 
 		ret = fmt::format(R"makefile(
 {linkerTarget}: {preReqs}
-	{compileEcho}
-	{quietFlag}{linkerCommand}
-	@{printer}
+{compileEcho}
+{quietFlag}{linkerCommand}
+@{printer}
 )makefile",
 			FMT_ARG(linkerTarget),
 			FMT_ARG(preReqs),
@@ -285,10 +285,13 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 
 	const bool usePch = m_project->usesPch();
 
-	if (usePch && !List::contains(m_precompiledHeaders, source))
+	const auto& objDir = m_state.paths.objDir();
+	auto pchCache = fmt::format("{}/{}", objDir, source);
+
+	if (usePch && !List::contains(m_precompiledHeaders, pchCache))
 	{
 		const auto quietFlag = getQuietFlag();
-		m_precompiledHeaders.push_back(source);
+		m_precompiledHeaders.push_back(std::move(pchCache));
 		// const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(source, object, m_generateDependencies, std::string(), std::string()));
@@ -303,7 +306,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 
 			ret = fmt::format(R"makefile(
 {object}: {source}
-	{compilerEcho}{quietFlag}{pchCompile}
+{compilerEcho}{quietFlag}{pchCompile}
 )makefile",
 				FMT_ARG(object),
 				FMT_ARG(source),
@@ -331,8 +334,8 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 
 		ret = fmt::format(R"makefile(
 {object}: {source}
-	{compilerEcho}
-	{quietFlag}{rcCompile} 1>nul
+{compilerEcho}
+{quietFlag}{rcCompile} 1>nul
 )makefile",
 			FMT_ARG(object),
 			FMT_ARG(source),
@@ -366,7 +369,7 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 
 		ret = fmt::format(R"makefile(
 {object}: {source}
-	{compilerEcho}{quietFlag}{cppCompile}
+{compilerEcho}{quietFlag}{cppCompile}
 )makefile",
 			FMT_ARG(source),
 			FMT_ARG(compilerEcho),

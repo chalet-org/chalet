@@ -708,8 +708,6 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 	const bool hasStaticLinks = m_project.staticLinks().size() > 0;
 	const bool hasDynamicLinks = m_project.links().size() > 0;
 
-	UNUSED(hasDynamicLinks);
-
 	if (hasStaticLinks)
 	{
 		for (auto& target : m_state.targets)
@@ -717,8 +715,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 			if (target->isProject())
 			{
 				auto& project = static_cast<const ProjectTarget&>(*target);
-				auto& link = project.name();
-				if (List::contains(m_project.projectStaticLinks(), link))
+				if (List::contains(m_project.projectStaticLinks(), project.name()))
 				{
 					outArgList.push_back(project.outputFile());
 				}
@@ -763,7 +760,8 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 	}
 
 	// TODO: Dynamic way of determining this list
-	// would they differ between console app & windows app?
+	//   would they differ between console app & windows app?
+	//   or target architecture?
 	for (const char* link : {
 			 "DbgHelp",
 			 "kernel32",

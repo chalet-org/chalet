@@ -40,6 +40,7 @@ struct BuildPaths
 	std::string getWindowsManifestResourceFilename(const ProjectTarget& inProject) const;
 	std::string getWindowsIconResourceFilename(const ProjectTarget& inProject) const;
 
+	void setBuildDirectoriesBasedOnProjectKind(const ProjectTarget& inProject);
 	SourceOutputs getOutputs(const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const;
 
@@ -81,6 +82,7 @@ private:
 	const StringList m_objectiveCppExts;
 
 	mutable StringList m_fileListCache;
+	mutable StringList m_fileListCacheShared;
 	// mutable StringList m_directoryCache;
 
 	std::unordered_map<std::string, std::unique_ptr<SourceGroup>> m_fileList;

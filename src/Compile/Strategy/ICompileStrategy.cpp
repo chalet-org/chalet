@@ -70,6 +70,13 @@ bool ICompileStrategy::saveCompileCommands() const
 }
 
 /*****************************************************************************/
+const SourceOutputs& ICompileStrategy::getSourceOutput(const std::string& inTarget)
+{
+	chalet_assert(m_outputs.find(inTarget) != m_outputs.end(), "");
+	return m_outputs.at(inTarget);
+}
+
+/*****************************************************************************/
 bool ICompileStrategy::doPostBuild() const
 {
 	return true;
