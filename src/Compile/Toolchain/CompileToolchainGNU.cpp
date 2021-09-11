@@ -582,13 +582,11 @@ void CompileToolchainGNU::addLinks(StringList& outArgList) const
 		}
 
 		endStaticLinkGroup(outArgList);
+		startExplicitDynamicLinkGroup(outArgList);
 	}
 
 	if (hasDynamicLinks)
 	{
-		if (hasStaticLinks)
-			startExplicitDynamicLinkGroup(outArgList);
-
 		auto excludes = getLinkExclusions();
 
 		for (auto& link : m_project.links())
