@@ -138,7 +138,7 @@ bool CompileToolchainLLVM::addArchitectureOptions(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainLLVM::addStripSymbolsOption(StringList& outArgList) const
 {
-	CompileToolchainGNU::addStripSymbolsOption(outArgList);
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
