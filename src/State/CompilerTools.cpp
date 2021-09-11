@@ -131,32 +131,13 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	{
 		auto allowedArches = Arch::getAllowedMsvcArchitectures();
 		if (!String::equals(allowedArches, targetArchString))
-			return false;
-
-		std::string host;
-		std::string target = targetArchString;
-		if (String::contains('_', target))
 		{
-			auto split = String::split(target, '_');
-			host = split.front();
-			target = split.back();
-		}
-		else
-		{
-			host = target;
-		}
-
-		auto& compiler = !m_compilerCpp.empty() ? m_compilerCpp : m_compilerC;
-		std::string lower = String::toLowerCase(compiler);
-		auto search = lower.find(fmt::format("/host{}/{}/", host, target));
-		if (search == std::string::npos)
-		{
-			Diagnostic::error("Target architecture '{}' was not found in compiler path: {}", target, compiler);
+			Diagnostic::error("Target architecture '{}' was not recognized.", targetArchString);
 			return false;
 		}
 
-		m_state.info.setHostArchitecture(host);
-		m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", targetArchString));
+		if (!detectTargetArchitectureMSVC())
+			return false;
 	}
 #endif
 
@@ -170,7 +151,59 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 }
 
 /*****************************************************************************/
-void CompilerTools::detectToolchainFromPaths()
+#if defined(CHALET_WIN32)
+bool CompilerTools::detectTargetArchitectureMSVC()
+{
+	if (m_msvcArchitectureSet)
+		return true;
+
+	std::string host;
+	std::string target;
+
+	auto& compiler = !m_compilerCpp.empty() ? m_compilerCpp : m_compilerC;
+	std::string lower = String::toLowerCase(compiler);
+	auto search = lower.find("/bin/host");
+	if (search == std::string::npos)
+	{
+		Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
+		return false;
+	}
+
+	auto nextPath = lower.find('/', search + 5);
+	if (search == std::string::npos)
+	{
+		Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
+		return false;
+	}
+
+	search += 9;
+	host = lower.substr(search, nextPath - search);
+	search = nextPath + 1;
+	nextPath = lower.find('/', search);
+	if (search == std::string::npos)
+	{
+		Diagnostic::error("MSVC Target architecture was not detected in compiler path: {}", compiler);
+		return false;
+	}
+
+	target = lower.substr(search, nextPath - search);
+	m_state.info.setHostArchitecture(host);
+
+	if (host == target)
+		m_inputs.setTargetArchitecture(target);
+	else
+		m_inputs.setTargetArchitecture(fmt::format("{}_{}", host, target));
+
+	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
+
+	m_msvcArchitectureSet = true;
+
+	return true;
+}
+#endif
+
+/*****************************************************************************/
+bool CompilerTools::detectToolchainFromPaths()
 {
 	auto& toolchain = m_inputs.toolchainPreference();
 	if (toolchain.type == ToolchainType::Unknown)
@@ -179,6 +212,9 @@ void CompilerTools::detectToolchainFromPaths()
 		if (String::endsWith("cl.exe", m_compilerCpp) || String::endsWith("cl.exe", m_compilerC))
 		{
 			toolchain.setType(ToolchainType::MSVC);
+
+			if (!detectTargetArchitectureMSVC())
+				return false;
 		}
 		else
 #endif
@@ -192,6 +228,8 @@ void CompilerTools::detectToolchainFromPaths()
 			toolchain.setType(ToolchainType::GNU);
 		}
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -289,6 +327,7 @@ bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 	auto& buildSettings = inConfigJson.json["settings"];
 
 	buildSettings["toolchain"] = preference;
+	buildSettings["architecture"] = m_inputs.targetArchitecture().empty() ? "auto" : m_inputs.targetArchitecture();
 	inConfigJson.setDirty(true);
 
 	return true;

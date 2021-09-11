@@ -24,7 +24,7 @@ struct CompilerTools
 	explicit CompilerTools(const CommandLineInputs& inInputs, BuildState& inState);
 
 	bool initialize(const BuildTargetList& inTargets, JsonFile& inConfigJson);
-	void detectToolchainFromPaths();
+	bool detectToolchainFromPaths();
 	void fetchCompilerVersions();
 
 	void fetchMakeVersion();
@@ -104,6 +104,9 @@ struct CompilerTools
 private:
 	bool initializeCompilerConfigs(const BuildTargetList& inTargets);
 	bool updateToolchainCacheNode(JsonFile& inConfigJson);
+#if defined(CHALET_WIN32)
+	bool detectTargetArchitectureMSVC();
+#endif
 
 	std::string parseVersionMSVC(const std::string& inExecutable, std::string& outArch) const;
 	std::string parseVersionGNU(const std::string& inExecutable, std::string& outArch) const;
@@ -159,6 +162,9 @@ private:
 	bool m_ninjaAvailable = false;
 	bool m_makeIsNMake = false;
 	bool m_makeIsJom = false;
+#if defined(CHALET_WIN32)
+	bool m_msvcArchitectureSet = false;
+#endif
 };
 }
 

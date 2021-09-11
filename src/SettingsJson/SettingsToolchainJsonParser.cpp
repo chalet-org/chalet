@@ -502,7 +502,8 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 
 #if defined(CHALET_WIN32)
 	bool checkForMsvc = m_inputs.toolchainPreference().type == ToolchainType::Unknown;
-	m_state.toolchain.detectToolchainFromPaths();
+	if (!m_state.toolchain.detectToolchainFromPaths())
+		return false;
 
 	if (checkForMsvc && m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 	{
