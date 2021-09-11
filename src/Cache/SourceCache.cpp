@@ -12,7 +12,7 @@ namespace chalet
 /*****************************************************************************/
 SourceCache::SourceCache(SourceLastWriteMap& inLastWrites, const std::time_t inLastBuildTime) :
 	m_lastWrites(inLastWrites),
-	m_initializedTime(0),
+	m_initializedTime(inLastBuildTime),
 	m_lastBuildTime(inLastBuildTime)
 {
 }
