@@ -275,8 +275,7 @@ bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 			}
 			else
 			{
-				Diagnostic::error("Included path '{}' for distribution target '{}' was not found:", dependency, this->name());
-				return false;
+				Diagnostic::warn("Included path '{}' for distribution target '{}' was not found.", dependency, this->name());
 			}
 		}
 	}
