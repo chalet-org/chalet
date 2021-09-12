@@ -5,18 +5,19 @@
 
 #include "Cache/WorkspaceInternalCacheFile.hpp"
 
+#include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-WorkspaceInternalCacheFile::WorkspaceInternalCacheFile(WorkspaceCache& inCache) :
-	m_cache(inCache),
+WorkspaceInternalCacheFile::WorkspaceInternalCacheFile() :
 	kKeyHashes("h"),
 	kKeyHashBuild("b"),
 	kKeyHashTheme("t"),
@@ -26,11 +27,15 @@ WorkspaceInternalCacheFile::WorkspaceInternalCacheFile(WorkspaceCache& inCache) 
 	kKeyLastChaletJsonWriteTime("c"),
 	kKeyBuilds("d"),
 	kKeyBuildLastBuilt("l"),
+	kKeyBuildNative("n"),
 	kKeyBuildFiles("f")
 {
-	UNUSED(m_cache);
 }
 
+/*****************************************************************************/
+WorkspaceInternalCacheFile::~WorkspaceInternalCacheFile() = default;
+
+/*****************************************************************************/
 void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue) noexcept
 {
 	m_buildHashChanged = m_buildHash != inValue;
@@ -95,16 +100,22 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 							m_sources = it->second.get();
 						}
 
-						if (value.contains(kKeyBuildFiles) && m_sources != nullptr)
+						if (m_sources != nullptr)
 						{
-							auto& files = value.at(kKeyBuildFiles);
-							if (files.is_object())
+							if (bool val; m_dataFile->assignFromKey(val, value, kKeyBuildNative))
+								m_sources->setNative(val);
+
+							if (value.contains(kKeyBuildFiles))
 							{
-								for (auto& [file, val] : files.items())
+								auto& files = value.at(kKeyBuildFiles);
+								if (files.is_object())
 								{
-									auto rawValue = val.get<std::string>();
-									std::time_t lastWrite = strtoll(rawValue.c_str(), NULL, 0);
-									m_sources->addLastWrite(file, lastWrite);
+									for (auto& [file, val] : files.items())
+									{
+										auto rawValue = val.get<std::string>();
+										std::time_t lastWrite = strtoll(rawValue.c_str(), NULL, 0);
+										m_sources->addLastWrite(file, lastWrite);
+									}
 								}
 							}
 						}
@@ -126,6 +137,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 		}
 	}
 
+	m_sources->setNative(inNative);
 	m_sources->updateInitializedTime();
 
 	return true;
@@ -143,9 +155,17 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 		{
 			if (builds.contains(inId))
 			{
-				builds.erase(inId);
-				m_dirty = true;
-				result = true;
+				bool removeId = false;
+				{
+					auto& build = builds.at(inId);
+					removeId = !build.is_object() || !build.contains(kKeyBuildNative);
+				}
+				if (removeId)
+				{
+					builds.erase(inId);
+					m_dirty = true;
+					result = true;
+				}
 			}
 		}
 	}
@@ -153,12 +173,15 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 	auto itr = m_sourceCaches.find(inId);
 	if (itr != m_sourceCaches.end())
 	{
-		if (m_sources == itr->second.get())
-			m_sources = nullptr;
+		if (!itr->second->native())
+		{
+			if (m_sources == itr->second.get())
+				m_sources = nullptr;
 
-		itr = m_sourceCaches.erase(itr);
-		m_dirty = true;
-		result = true;
+			itr = m_sourceCaches.erase(itr);
+			m_dirty = true;
+			result = true;
+		}
 	}
 
 	return result;
@@ -302,14 +325,14 @@ bool WorkspaceInternalCacheFile::save()
 
 		for (auto& [id, sourceCache] : m_sourceCaches)
 		{
-			rootNode[kKeyBuilds][id] = sourceCache->asJson(kKeyBuildLastBuilt, kKeyBuildFiles);
+			rootNode[kKeyBuilds][id] = sourceCache->asJson(kKeyBuildLastBuilt, kKeyBuildNative, kKeyBuildFiles);
 		}
 
 		m_dataFile->setContents(std::move(rootNode));
 		m_dataFile->setDirty(true);
 
-		m_dataFile->save(0);
-		// m_dataFile->save();
+		// m_dataFile->save(0);
+		m_dataFile->save();
 
 		m_dirty = false;
 

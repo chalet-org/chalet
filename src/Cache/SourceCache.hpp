@@ -17,8 +17,11 @@ struct SourceCache
 {
 	explicit SourceCache(const std::time_t inLastBuildTime);
 
+	bool native() const noexcept;
+	void setNative(const bool inValue) noexcept;
+
 	bool dirty() const;
-	Json asJson(const std::string& kKeyBuildLastBuilt, const std::string& kKeyBuildFiles) const;
+	Json asJson(const std::string& kKeyBuildLastBuilt, const std::string& kKeyBuildNative, const std::string& kKeyBuildFiles) const;
 
 	bool updateInitializedTime(const std::time_t inTime = 0);
 
@@ -41,6 +44,7 @@ private:
 	std::time_t m_initializedTime = 0;
 	std::time_t m_lastBuildTime = 0;
 
+	bool m_native = false;
 	mutable bool m_dirty = false;
 };
 }

@@ -7,16 +7,18 @@
 #define CHALET_WORKSPACE_SOURCE_CACHE_FILE_HPP
 
 #include "Cache/ExternalDependencyCache.hpp"
-#include "Cache/SourceCache.hpp"
-#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
 struct WorkspaceCache;
+struct SourceCache;
+struct JsonFile;
 
 struct WorkspaceInternalCacheFile
 {
-	explicit WorkspaceInternalCacheFile(WorkspaceCache& inCache);
+	WorkspaceInternalCacheFile();
+	CHALET_DEFAULT_COPY_MOVE(WorkspaceInternalCacheFile);
+	~WorkspaceInternalCacheFile();
 
 	bool initialize(const std::string& inFilename, const std::string& inBuildFile);
 	bool save();
@@ -49,8 +51,6 @@ private:
 
 	std::string getAppVersionHash(std::string appPath);
 
-	WorkspaceCache& m_cache;
-
 	StringList m_doNotRemoves;
 	StringList m_extraHashes;
 
@@ -80,6 +80,7 @@ private:
 	const std::string kKeyLastChaletJsonWriteTime;
 	const std::string kKeyBuilds;
 	const std::string kKeyBuildLastBuilt;
+	const std::string kKeyBuildNative;
 	const std::string kKeyBuildFiles;
 
 	bool m_buildHashChanged = false;

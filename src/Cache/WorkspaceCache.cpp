@@ -19,8 +19,7 @@ namespace chalet
 {
 /*****************************************************************************/
 WorkspaceCache::WorkspaceCache(const CommandLineInputs& inInputs) :
-	m_inputs(inInputs),
-	m_cacheFile(*this)
+	m_inputs(inInputs)
 {
 }
 

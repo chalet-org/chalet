@@ -17,17 +17,32 @@ SourceCache::SourceCache(const std::time_t inLastBuildTime) :
 }
 
 /*****************************************************************************/
+bool SourceCache::native() const noexcept
+{
+	return m_native;
+}
+
+/*****************************************************************************/
+void SourceCache::setNative(const bool inValue) noexcept
+{
+	m_native = inValue;
+}
+
+/*****************************************************************************/
 bool SourceCache::dirty() const
 {
 	return m_dirty;
 }
 
 /*****************************************************************************/
-Json SourceCache::asJson(const std::string& kKeyBuildLastBuilt, const std::string& kKeyBuildFiles) const
+Json SourceCache::asJson(const std::string& kKeyBuildLastBuilt, const std::string& kKeyBuildNative, const std::string& kKeyBuildFiles) const
 {
 	Json ret = Json::object();
 
 	ret[kKeyBuildLastBuilt] = std::to_string(m_dirty ? m_initializedTime : m_lastBuildTime);
+
+	if (m_native)
+		ret[kKeyBuildNative] = true;
 
 	ret[kKeyBuildFiles] = Json::object();
 

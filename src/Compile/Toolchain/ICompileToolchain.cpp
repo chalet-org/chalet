@@ -5,9 +5,9 @@
 
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
+#include "Cache/SourceCache.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
-
 #include "State/BuildState.hpp"
 #include "State/Target/ProjectTarget.hpp"
 #include "Terminal/Commands.hpp"

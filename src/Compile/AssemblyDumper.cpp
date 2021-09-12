@@ -5,6 +5,7 @@
 
 #include "Compile/AssemblyDumper.hpp"
 
+#include "Cache/SourceCache.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
