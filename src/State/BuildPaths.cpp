@@ -385,12 +385,12 @@ std::string BuildPaths::getWindowsManifestResourceFilename(const ProjectTarget& 
 	{
 		if (inProject.windowsApplicationManifest().empty())
 		{
-			return fmt::format("{}/win_manifest.rc", intermediateDir());
+			return fmt::format("{}/default.manifest.rc", intermediateDir());
 		}
 		else
 		{
 			const auto& name = inProject.name();
-			return fmt::format("{}/{}_win_manifest.rc", intermediateDir(), name);
+			return fmt::format("{}/{}_manifest.rc", intermediateDir(), name);
 		}
 	}
 #else
