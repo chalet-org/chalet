@@ -192,7 +192,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 		// auto pchAbsolute = Commands::getAbsolutePath(source);
 		const auto quietFlag = getQuietFlag();
 		const auto& depDir = m_state.paths.depDir();
-		m_precompiledHeaders.push_back(std::move(pchCache));
+		m_precompiledHeaders.emplace_back(std::move(pchCache));
 
 		const auto dependency = fmt::format("{}/{}.d", depDir, source);
 

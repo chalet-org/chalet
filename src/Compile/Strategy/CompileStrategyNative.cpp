@@ -149,6 +149,7 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 		auto& sourceCache = m_state.cache.file().sources();
 		std::string source = m_project->pch();
 		const auto& depDir = m_state.paths.depDir();
+		const auto& objDir = m_state.paths.objDir();
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
@@ -165,9 +166,10 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 				m_pchChanged |= pchChanged;
 				if (pchChanged)
 				{
+					auto pchCache = fmt::format("{}/{}", objDir, intermediateSource);
 					if (!List::contains(m_fileCache, intermediateSource))
 					{
-						m_fileCache.push_back(intermediateSource);
+						m_fileCache.emplace_back(std::move(pchCache));
 
 						const auto dependency = fmt::format("{}/{}.d", depDir, source);
 						auto command = m_toolchain->getPchCompileCommand(source, outObject, m_generateDependencies, dependency, arch);
@@ -189,9 +191,10 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 			m_pchChanged |= pchChanged;
 			if (pchChanged)
 			{
-				if (!List::contains(m_fileCache, source))
+				auto pchCache = fmt::format("{}/{}", objDir, source);
+				if (!List::contains(m_fileCache, pchCache))
 				{
-					m_fileCache.push_back(source);
+					m_fileCache.emplace_back(std::move(pchCache));
 
 					const auto dependency = fmt::format("{}/{}.d", depDir, source);
 					auto command = m_toolchain->getPchCompileCommand(source, pchTarget, m_generateDependencies, dependency, std::string());
@@ -219,6 +222,8 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 
 	CommandPool::CmdList ret;
 
+	const auto& objDir = m_state.paths.objDir();
+
 	for (auto& group : inGroups)
 	{
 		const auto& source = group->sourceFile;
@@ -235,9 +240,10 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
-					if (!List::contains(m_fileCache, source))
+					auto sourceFile = fmt::format("{}/{}", objDir, source);
+					if (!List::contains(m_fileCache, sourceFile))
 					{
-						m_fileCache.push_back(source);
+						m_fileCache.emplace_back(std::move(sourceFile));
 
 						auto tmp = getRcCompile(source, target);
 						CommandPool::Cmd out;
@@ -267,9 +273,10 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
-					if (!List::contains(m_fileCache, source))
+					auto sourceFile = fmt::format("{}/{}", objDir, source);
+					if (!List::contains(m_fileCache, sourceFile))
 					{
-						m_fileCache.push_back(source);
+						m_fileCache.emplace_back(std::move(sourceFile));
 
 						auto tmp = getCxxCompile(source, target, specialization);
 						CommandPool::Cmd out;
