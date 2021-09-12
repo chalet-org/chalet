@@ -688,7 +688,7 @@
 					"$ref": "#/definitions/target-project-cxx-windowsAppIcon"
 				},
 				"windowsApplicationManifest": {
-					"$ref": "#/definitions/target-project-cxx-windowsAppManifest"
+					"$ref": "#/definitions/target-project-cxx-windowsApplicationManifest"
 				}
 			},
 			"patternProperties": {
@@ -1191,9 +1191,17 @@
 				}
 			]
 		},
-		"target-project-cxx-windowsAppManifest": {
-			"description": "The path to a Windows application manifest. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
-			"type": "string"
+		"target-project-cxx-windowsApplicationManifest": {
+			"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "boolean",
+					"const": false
+				}
+			]
 		},
 		"target-project-cxx-windowsAppIcon": {
 			"type": "string",

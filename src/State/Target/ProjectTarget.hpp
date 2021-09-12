@@ -124,6 +124,9 @@ struct ProjectTarget final : public IBuildTarget
 	const std::string& windowsApplicationManifest() const noexcept;
 	void setWindowsApplicationManifest(std::string&& inValue) noexcept;
 
+	bool windowsApplicationManifestGenerationEnabled() const noexcept;
+	void setWindowsApplicationManifestGenerationEnabled(const bool inValue) noexcept;
+
 	const std::string& windowsApplicationIcon() const noexcept;
 	void setWindowsApplicationIcon(std::string&& inValue) noexcept;
 
@@ -207,6 +210,7 @@ private:
 	bool m_staticLinking = false;
 	bool m_posixThreads = true;
 	bool m_invalidWarningPreset = false;
+	bool m_windowsApplicationManifestGenerationEnabled = true;
 	bool m_windowsPrefixOutputFilename = true;
 	bool m_setWindowsPrefixOutputFilename = false;
 	bool m_windowsOutputDef = false;

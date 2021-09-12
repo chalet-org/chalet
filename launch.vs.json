@@ -19,7 +19,9 @@
         "-c",
         "Release",
         "-t",
-        "msvc-pre",
+        "msvc",
+        "-a",
+        "x64",
         "build"
       ]
     }

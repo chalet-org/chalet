@@ -81,6 +81,8 @@ void BuildPaths::populateFileList(const ProjectTarget& inProject)
 	if (m_fileList.find(inProject.name()) != m_fileList.end())
 		return;
 
+	// setBuildDirectoriesBasedOnProjectKind(inProject);
+
 	SourceGroup files = getFiles(inProject);
 
 	for (auto& file : files.list)
@@ -114,31 +116,31 @@ const std::string& BuildPaths::outputDirectory() const noexcept
 
 const std::string& BuildPaths::buildOutputDir() const noexcept
 {
-	chalet_assert(m_initialized, "BuildPaths::buildOutputDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_buildOutputDir.empty(), "BuildPaths::buildOutputDir() called before BuildPaths::initialize().");
 	return m_buildOutputDir;
 }
 
 const std::string& BuildPaths::objDir() const noexcept
 {
-	chalet_assert(m_initialized, "BuildPaths::objDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_objDir.empty(), "BuildPaths::objDir() called before BuildPaths::initialize().");
 	return m_objDir;
 }
 
 const std::string& BuildPaths::depDir() const noexcept
 {
-	chalet_assert(m_initialized, "BuildPaths::depDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_depDir.empty(), "BuildPaths::depDir() called before BuildPaths::initialize().");
 	return m_depDir;
 }
 
 const std::string& BuildPaths::asmDir() const noexcept
 {
-	chalet_assert(m_initialized, "BuildPaths::asmDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_asmDir.empty(), "BuildPaths::asmDir() called before BuildPaths::initialize().");
 	return m_asmDir;
 }
 
 const std::string& BuildPaths::intermediateDir() const noexcept
 {
-	chalet_assert(m_initialized, "BuildPaths::intermediateDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_intermediateDir.empty(), "BuildPaths::intermediateDir() called before BuildPaths::initialize().");
 	return m_intermediateDir;
 }
 
@@ -353,44 +355,49 @@ std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectTarget& inProje
 std::string BuildPaths::getWindowsManifestFilename(const ProjectTarget& inProject) const
 {
 #if defined(CHALET_WIN32)
-	if (inProject.windowsApplicationManifest().empty())
+	if (!inProject.isStaticLibrary() && inProject.windowsApplicationManifestGenerationEnabled())
 	{
-		std::string ret;
-
-		if (!inProject.isStaticLibrary())
+		if (inProject.windowsApplicationManifest().empty())
 		{
-			auto outputFile = inProject.outputFileNoPrefix();
+			// auto outputFile = inProject.outputFileNoPrefix();
 
 			// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
-			ret = fmt::format("{}/{}.manifest", m_intermediateDir, outputFile);
-		}
-		return ret;
-	}
+			// return fmt::format("{}/{}.manifest", intermediateDir(), outputFile);
 
-	return inProject.windowsApplicationManifest();
+			return fmt::format("{}/default.manifest", intermediateDir());
+		}
+		else
+		{
+			return inProject.windowsApplicationManifest();
+		}
+	}
 #else
 	UNUSED(inProject);
-	return std::string();
 #endif
+	return std::string();
 }
 
 /*****************************************************************************/
 std::string BuildPaths::getWindowsManifestResourceFilename(const ProjectTarget& inProject) const
 {
-	std::string ret;
-
 #if defined(CHALET_WIN32)
-	if (!inProject.isStaticLibrary())
+	if (!inProject.isStaticLibrary() && inProject.windowsApplicationManifestGenerationEnabled())
 	{
-		const auto& name = inProject.name();
-
-		ret = fmt::format("{}/{}_win32_manifest.rc", m_intermediateDir, name);
+		if (inProject.windowsApplicationManifest().empty())
+		{
+			return fmt::format("{}/win_manifest.rc", intermediateDir());
+		}
+		else
+		{
+			const auto& name = inProject.name();
+			return fmt::format("{}/{}_win_manifest.rc", intermediateDir(), name);
+		}
 	}
 #else
 	UNUSED(inProject);
 #endif
 
-	return ret;
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -403,7 +410,7 @@ std::string BuildPaths::getWindowsIconResourceFilename(const ProjectTarget& inPr
 	{
 		const auto& name = inProject.name();
 
-		ret = fmt::format("{}/{}_win32_icon.rc", m_intermediateDir, name);
+		ret = fmt::format("{}/{}_win32_icon.rc", intermediateDir(), name);
 	}
 #else
 	UNUSED(inProject);

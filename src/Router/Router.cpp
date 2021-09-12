@@ -70,14 +70,20 @@ bool Router::run()
 		prototype = std::make_unique<StatePrototype>(m_inputs);
 
 		if (!prototype->initialize())
+		{
+			Output::lineBreak();
 			return false;
+		}
 
 		if (command != Route::Bundle && command != Route::Configure)
 		{
 			chalet_assert(prototype != nullptr, "");
 			buildState = std::make_unique<BuildState>(m_inputs, *prototype);
 			if (!buildState->initialize())
+			{
+				Output::lineBreak();
 				return false;
+			}
 		}
 	}
 

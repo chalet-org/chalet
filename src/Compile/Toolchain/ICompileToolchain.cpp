@@ -107,7 +107,12 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 
 		if (!Commands::pathExists(windowsManifestFile))
 		{
-			std::string manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
+			std::string manifestContents;
+			if (m_project.windowsApplicationManifest().empty())
+				manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
+			else
+				manifestContents = PlatformFileTemplates::generalWindowsAppManifest(m_project.name(), m_state.environment.version(), m_state.info.targetArchitecture());
+
 			String::replaceAll(manifestContents, "\t", " ");
 
 			if (!Commands::createFileWithContents(windowsManifestFile, manifestContents))

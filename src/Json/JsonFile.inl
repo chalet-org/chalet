@@ -91,17 +91,14 @@ bool JsonFile::containsKeyForType(const Json& inNode, const std::string& inKey)
 
 	if (inNode.at(inKey).is_null())
 	{
-		Diagnostic::error("{}: An invalid value (null) was found in '{}'.", m_filename, inKey);
 		return false;
 	}
 	else if (inNode.at(inKey).is_object())
 	{
-		Diagnostic::error("{}: An invalid value (object) was found in '{}'.", m_filename, inKey);
 		return false;
 	}
 	else if (inNode.at(inKey).is_array())
 	{
-		Diagnostic::error("{}: An invalid value (array) was found in '{}'.", m_filename, inKey);
 		return false;
 	}
 
@@ -109,46 +106,32 @@ bool JsonFile::containsKeyForType(const Json& inNode, const std::string& inKey)
 	if constexpr (std::is_same_v<Type, std::string>)
 	{
 		if (!inNode.at(inKey).is_string())
-		{
-			Diagnostic::error("{}: An invalid value was found in '{}'. Expected string", m_filename, inKey);
 			return false;
-		}
 	}
 	else if constexpr (std::is_same_v<Type, bool>)
 	{
 		if (!inNode.at(inKey).is_boolean())
-		{
-			Diagnostic::error("{}: An invalid value was found in '{}'. Expected true|false", m_filename, inKey);
 			return false;
-		}
 	}
 	else if constexpr (std::is_unsigned_v<Type>)
 	{
 		if (!inNode.at(inKey).is_number_unsigned())
-		{
-			Diagnostic::error("{}: An invalid value was found in '{}'. Expected unsigned integer", m_filename, inKey);
 			return false;
-		}
 	}
 	else if constexpr (std::is_floating_point_v<Type>)
 	{
 		if (!inNode.at(inKey).is_number_float())
-		{
-			Diagnostic::error("{}: An invalid value was found in '{}'. Expected floating point", m_filename, inKey);
 			return false;
-		}
 	}
 	else if constexpr (std::is_integral_v<Type>)
 	{
 		if (!inNode.at(inKey).is_number_integer())
-		{
-			Diagnostic::error("{}: An invalid value was found in '{}'. Expected integer", m_filename, inKey);
 			return false;
-		}
 	}
 	else
 	{
 		chalet_assert(false, "JsonFile::containsKeyForType - invalid type");
+		return false;
 	}
 
 	return true;

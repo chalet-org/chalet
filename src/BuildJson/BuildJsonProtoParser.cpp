@@ -73,10 +73,7 @@ bool BuildJsonProtoParser::validateAgainstSchema()
 
 	// TODO: schema versioning
 	if (!m_buildJson.validate(std::move(buildJsonSchema)))
-	{
-		Diagnostic::error("{}: There was an error validating the file against its schema.", m_filename);
 		return false;
-	}
 
 	return true;
 }

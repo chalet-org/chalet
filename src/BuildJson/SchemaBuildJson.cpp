@@ -951,8 +951,16 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	};
 
 	defs[Defs::ProjectTargetCxxWindowsAppManifest] = R"json({
-		"description": "The path to a Windows application manifest. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
-		"type": "string"
+		"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
+		"anyOf": [
+			{
+				"type": "string"
+			},
+			{
+				"type": "boolean",
+				"const": false
+			}
+		]
 	})json"_ojson;
 
 	defs[Defs::ProjectTargetCxxWindowsAppIcon] = R"json({
@@ -1332,7 +1340,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::ProjectTargetCxxStaticLinking: return "target-project-cxx-staticLinking";
 		case Defs::ProjectTargetCxxStaticLinks: return "target-project-cxx-staticLinks";
 		case Defs::ProjectTargetCxxWarnings: return "target-project-cxx-warnings";
-		case Defs::ProjectTargetCxxWindowsAppManifest: return "target-project-cxx-windowsAppManifest";
+		case Defs::ProjectTargetCxxWindowsAppManifest: return "target-project-cxx-windowsApplicationManifest";
 		case Defs::ProjectTargetCxxWindowsAppIcon: return "target-project-cxx-windowsAppIcon";
 		case Defs::ProjectTargetCxxWindowsOutputDef: return "target-project-cxx-windowsOutputDef";
 		case Defs::ProjectTargetCxxWindowsPrefixOutputFilename: return "target-project-cxx-windowsPrefixOutputFilename";

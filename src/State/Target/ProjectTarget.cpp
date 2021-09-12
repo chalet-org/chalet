@@ -63,7 +63,10 @@ bool ProjectTarget::validate()
 	bool result = true;
 	for (auto& location : m_locations)
 	{
-		if (!Commands::pathExists(location) && !String::equals(m_state.paths.intermediateDir(), location))
+		if (String::equals(m_state.paths.intermediateDir(), location))
+			continue;
+
+		if (!Commands::pathExists(location))
 		{
 			Diagnostic::error("location for project target '{}' doesn't exist: {}", targetName, location);
 			result = false;
@@ -563,6 +566,16 @@ const std::string& ProjectTarget::windowsApplicationManifest() const noexcept
 void ProjectTarget::setWindowsApplicationManifest(std::string&& inValue) noexcept
 {
 	m_windowsApplicationManifest = std::move(inValue);
+}
+
+/*****************************************************************************/
+bool ProjectTarget::windowsApplicationManifestGenerationEnabled() const noexcept
+{
+	return m_windowsApplicationManifestGenerationEnabled;
+}
+void ProjectTarget::setWindowsApplicationManifestGenerationEnabled(const bool inValue) noexcept
+{
+	m_windowsApplicationManifestGenerationEnabled = inValue;
 }
 
 /*****************************************************************************/

@@ -7,6 +7,27 @@
 
 namespace chalet
 {
+namespace
+{
+const char* getWindowsManifestArch(const Arch::Cpu inCpu)
+{
+	switch (inCpu)
+	{
+		case Arch::Cpu::X86:
+			return "x86";
+
+		case Arch::Cpu::ARM64:
+			return "arm64";
+
+		case Arch::Cpu::ARM:
+			return "arm";
+
+		case Arch::Cpu::X64:
+		default:
+			return "amd64";
+	}
+}
+}
 /*****************************************************************************/
 std::string PlatformFileTemplates::linuxDesktopEntry()
 {
@@ -89,6 +110,22 @@ std::string PlatformFileTemplates::minimumWindowsAppManifest()
 			</requestedPrivileges>
 		</security>
 	</trustInfo>
+</assembly>
+)xml";
+}
+
+/*****************************************************************************/
+std::string PlatformFileTemplates::minimumWindowsAppManifestWithCompatibility()
+{
+	return R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+		<security>
+			<requestedPrivileges>
+				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
+			</requestedPrivileges>
+		</security>
+	</trustInfo>
 	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
 		<application>
 			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}" /> <!-- Windows Vista/Server 2008 -->
@@ -107,17 +144,13 @@ std::string PlatformFileTemplates::minimumWindowsAppManifest()
 //   The msys2 package 'mingw-w64-x86_64-windows-default-manifest' also includes
 //   supportedOS
 //
-std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& inName, const std::string& inDescription, const std::string& inVersion)
+std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& inName, const std::string& inVersion, const Arch::Cpu inCpu)
 {
-
+	auto arch = getWindowsManifestArch(inCpu);
 	return fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<assemblyIdentity
-		name="{name}"
-		processorArchitecture="ia64"
-		version="{version}"
-		type="win32" />
-	<description>{description}</description>
+	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="{version}" type="win32" />
+	<description></description>
 	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
 		<security>
 			<requestedPrivileges>
@@ -127,31 +160,28 @@ std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& 
 	</trustInfo>
 	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
 		<application>
-			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}" /> <!-- Windows Vista/Server 2008 -->
-			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}" /> <!-- Windows 7/Server 2008 R2 -->
-			<supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}" /> <!-- Windows 8/Server 2012 -->
-			<supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}" /> <!-- Windows 8.1/Server 2012 R2 -->
-			<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" /> <!-- Windows 10 -->
+			<supportedOS Id="{{e2011457-1546-43c5-a5fe-008deee3d3f0}}" /> <!-- Windows Vista/Server 2008 -->
+			<supportedOS Id="{{35138b9a-5d96-4fbd-8e2d-a2440225f93a}}" /> <!-- Windows 7/Server 2008 R2 -->
+			<supportedOS Id="{{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}}" /> <!-- Windows 8/Server 2012 -->
+			<supportedOS Id="{{1f676c76-80e1-4239-95bb-83d0f6d0da78}}" /> <!-- Windows 8.1/Server 2012 R2 -->
+			<supportedOS Id="{{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}}" /> <!-- Windows 10 -->
 		</application>
 	</compatibility>
 </assembly>
 )xml",
 		fmt::arg("name", inName),
 		fmt::arg("version", inVersion),
-		fmt::arg("description", inDescription));
+		FMT_ARG(arch));
 }
 
 /*****************************************************************************/
-std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& inName, const std::string& inDescription, const std::string& inVersion)
+std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& inName, const std::string& inVersion, const Arch::Cpu inCpu)
 {
+	auto arch = getWindowsManifestArch(inCpu);
 	return fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<assemblyIdentity
-		name="{name}"
-		processorArchitecture="ia64"
-		version="{version}"
-		type="win32" />
-	<description>{description}</description>
+	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="{version}" type="win32" />
+	<description></description>
 	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
 		<security>
 			<requestedPrivileges>
@@ -176,18 +206,18 @@ std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& i
 	</application>
 	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
 		<application>
-			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}" /> <!-- Windows Vista/Server 2008 -->
-			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}" /> <!-- Windows 7/Server 2008 R2 -->
-			<supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}" /> <!-- Windows 8/Server 2012 -->
-			<supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}" /> <!-- Windows 8.1/Server 2012 R2 -->
-			<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" /> <!-- Windows 10 -->
+			<supportedOS Id="{{e2011457-1546-43c5-a5fe-008deee3d3f0}}" /> <!-- Windows Vista/Server 2008 -->
+			<supportedOS Id="{{35138b9a-5d96-4fbd-8e2d-a2440225f93a}}" /> <!-- Windows 7/Server 2008 R2 -->
+			<supportedOS Id="{{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}}" /> <!-- Windows 8/Server 2012 -->
+			<supportedOS Id="{{1f676c76-80e1-4239-95bb-83d0f6d0da78}}" /> <!-- Windows 8.1/Server 2012 R2 -->
+			<supportedOS Id="{{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}}" /> <!-- Windows 10 -->
 		</application>
 	</compatibility>
 </assembly>
 )xml",
 		fmt::arg("name", inName),
 		fmt::arg("version", inVersion),
-		fmt::arg("description", inDescription));
+		FMT_ARG(arch));
 }
 
 /*****************************************************************************/
