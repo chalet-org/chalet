@@ -15,11 +15,11 @@ struct JsonFile
 	JsonFile() = default;
 	explicit JsonFile(std::string inFilename);
 
-	static bool saveToFile(const Json& inJson, const std::string& outFilename);
+	static bool saveToFile(const Json& inJson, const std::string& outFilename, const int inIndent = 1);
 
 	void load();
 	void load(std::string inFilename);
-	bool save();
+	bool save(const int inIndent = 1);
 
 	bool dirty() const noexcept;
 	void setDirty(const bool inValue) noexcept;

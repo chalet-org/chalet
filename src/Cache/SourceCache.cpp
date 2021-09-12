@@ -10,8 +10,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-SourceCache::SourceCache(SourceLastWriteMap& inLastWrites, const std::time_t inLastBuildTime) :
-	m_lastWrites(inLastWrites),
+SourceCache::SourceCache(const std::time_t inLastBuildTime) :
 	m_initializedTime(inLastBuildTime),
 	m_lastBuildTime(inLastBuildTime)
 {
@@ -24,11 +23,24 @@ bool SourceCache::dirty() const
 }
 
 /*****************************************************************************/
-std::string SourceCache::asString(const std::string& inId) const
+Json SourceCache::asJson(const std::string& kKeyBuildLastBuilt, const std::string& kKeyBuildFiles) const
 {
-	std::string ret;
+	Json ret = Json::object();
 
-	ret += fmt::format("@{}\t{}\n", inId, m_dirty ? m_initializedTime : m_lastBuildTime);
+	ret[kKeyBuildLastBuilt] = std::to_string(m_dirty ? m_initializedTime : m_lastBuildTime);
+
+	ret[kKeyBuildFiles] = Json::object();
+
+	for (auto& [file, data] : m_lastWrites)
+	{
+		if (!Commands::pathExists(file))
+			continue;
+
+		if (data.needsUpdate)
+			forceUpdate(file, data);
+
+		ret[kKeyBuildFiles][file] = std::to_string(data.lastWrite);
+	}
 
 	return ret;
 }
@@ -53,6 +65,14 @@ void SourceCache::addLastWrite(std::string inFile, const std::string& inRaw)
 	std::time_t lastWrite = strtoll(inRaw.c_str(), NULL, 0);
 	auto& fileData = m_lastWrites[std::move(inFile)];
 	fileData.lastWrite = lastWrite;
+	fileData.needsUpdate = true;
+	m_dirty = true;
+}
+
+void SourceCache::addLastWrite(std::string inFile, const std::time_t inLastWrite)
+{
+	auto& fileData = m_lastWrites[std::move(inFile)];
+	fileData.lastWrite = inLastWrite;
 	fileData.needsUpdate = true;
 	m_dirty = true;
 }

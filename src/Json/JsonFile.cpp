@@ -22,7 +22,7 @@ JsonFile::JsonFile(std::string inFilename) :
 }
 
 /*****************************************************************************/
-bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename)
+bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, const int inIndent)
 {
 	if (outFilename.empty())
 		return false;
@@ -34,7 +34,11 @@ bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename)
 			return false;
 	}
 
-	std::ofstream(outFilename) << inJson.dump(1, '\t') << std::endl;
+	if (inIndent <= 0 || inIndent > 4)
+		std::ofstream(outFilename) << inJson.dump() << std::endl;
+	else
+		std::ofstream(outFilename) << inJson.dump(inIndent, '\t') << std::endl;
+
 	return true;
 }
 
@@ -54,11 +58,11 @@ void JsonFile::load(std::string inFilename)
 }
 
 /*****************************************************************************/
-bool JsonFile::save()
+bool JsonFile::save(const int inIndent)
 {
 	if (!m_filename.empty() && m_dirty)
 	{
-		return JsonFile::saveToFile(json, m_filename);
+		return JsonFile::saveToFile(json, m_filename, inIndent);
 	}
 
 	// if there's nothing to save, we don't care

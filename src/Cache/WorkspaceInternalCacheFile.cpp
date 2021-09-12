@@ -16,7 +16,17 @@ namespace chalet
 {
 /*****************************************************************************/
 WorkspaceInternalCacheFile::WorkspaceInternalCacheFile(WorkspaceCache& inCache) :
-	m_cache(inCache)
+	m_cache(inCache),
+	kKeyHashes("h"),
+	kKeyHashBuild("b"),
+	kKeyHashTheme("t"),
+	kKeyHashVersionDebug("vd"),
+	kKeyHashVersionRelease("vr"),
+	kKeyHashExtra("e"),
+	kKeyLastChaletJsonWriteTime("c"),
+	kKeyBuilds("d"),
+	kKeyBuildLastBuilt("l"),
+	kKeyBuildFiles("f")
 {
 	UNUSED(m_cache);
 }
@@ -57,15 +67,65 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 	else
 	{
 		chalet_assert(m_initializedTime != 0, "");
+		chalet_assert(m_dataFile != nullptr, "");
 
-		auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_lastWrites, m_initializedTime));
-		if (!success)
+		m_sources = nullptr;
+
+		auto& rootNode = m_dataFile->json;
+		if (rootNode.contains(kKeyBuilds))
 		{
-			Diagnostic::error("Error creating cache for {}", inId);
-			return false;
+			auto& builds = rootNode.at(kKeyBuilds);
+			if (builds.is_object())
+			{
+				if (builds.contains(inId))
+				{
+					auto& value = builds.at(inId);
+					if (value.is_object())
+					{
+						if (std::string rawValue; m_dataFile->assignStringAndValidate(rawValue, value, kKeyBuildLastBuilt))
+						{
+							std::time_t lastBuild = strtoll(rawValue.c_str(), NULL, 0);
+							auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(lastBuild));
+							if (!success)
+							{
+								Diagnostic::error("Error creating cache for {}", inId);
+								return false;
+							}
+
+							m_sources = it->second.get();
+						}
+
+						if (value.contains(kKeyBuildFiles) && m_sources != nullptr)
+						{
+							auto& files = value.at(kKeyBuildFiles);
+							if (files.is_object())
+							{
+								for (auto& [file, val] : files.items())
+								{
+									auto rawValue = val.get<std::string>();
+									std::time_t lastWrite = strtoll(rawValue.c_str(), NULL, 0);
+									m_sources->addLastWrite(file, lastWrite);
+								}
+							}
+						}
+					}
+				}
+			}
 		}
-		m_sources = it->second.get();
+
+		if (m_sources == nullptr)
+		{
+			auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_initializedTime));
+			if (!success)
+			{
+				Diagnostic::error("Error creating cache for {}", inId);
+				return false;
+			}
+
+			m_sources = it->second.get();
+		}
 	}
+
 	m_sources->updateInitializedTime();
 
 	return true;
@@ -74,6 +134,22 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 {
+	bool result = false;
+	auto& rootNode = m_dataFile->json;
+	if (rootNode.contains(kKeyBuilds))
+	{
+		auto& builds = rootNode.at(kKeyBuilds);
+		if (builds.is_object())
+		{
+			if (builds.contains(inId))
+			{
+				builds.erase(inId);
+				m_dirty = true;
+				result = true;
+			}
+		}
+	}
+
 	auto itr = m_sourceCaches.find(inId);
 	if (itr != m_sourceCaches.end())
 	{
@@ -82,10 +158,10 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 
 		itr = m_sourceCaches.erase(itr);
 		m_dirty = true;
-		return true;
+		result = true;
 	}
 
-	return false;
+	return result;
 }
 
 /*****************************************************************************/
@@ -116,113 +192,61 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 	m_lastBuildFileWrite = Commands::getLastWriteTime(inBuildFile);
 
-	auto onError = []() -> bool {
-		Diagnostic::error("Invalid key found in cache. Aborting.");
-		return false;
-	};
-
 	chalet_assert(m_initializedTime != 0, "");
+
+	m_dataFile = std::make_unique<JsonFile>(m_filename);
 
 	if (Commands::pathExists(m_filename))
 	{
-		SourceCache* sourceCache = nullptr;
-		int i = 0;
-		std::ifstream input(m_filename);
-		for (std::string line; std::getline(input, line);)
+		auto& rootNode = m_dataFile->json;
+		if (rootNode.is_object())
 		{
-			switch (i)
+			if (rootNode.contains(kKeyHashes))
 			{
-				case 0: {
-					auto split = String::split(line, '\t');
-					if (split.size() != 2)
-						return onError();
-
-					const auto& buildHash = split.front();
-					const auto& lastBuildRaw = split.back();
-
-					if (buildHash.empty() || lastBuildRaw.empty())
-						return onError();
-
-					std::time_t lastBuildFileWrite = strtoll(lastBuildRaw.c_str(), NULL, 0);
-					m_buildHash = std::move(buildHash);
-					m_buildFileChanged = lastBuildFileWrite != m_lastBuildFileWrite;
-					break;
-				}
-				case 1: {
-					m_hashTheme = std::move(line);
-					break;
-				}
-				case 2: {
-					if (String::contains('\t', line))
+				auto& hashes = rootNode.at(kKeyHashes);
+				if (hashes.is_object())
+				{
+					if (std::string val; m_dataFile->assignStringAndValidate(val, hashes, kKeyHashBuild))
 					{
-						auto split = String::split(line, '\t');
-						if (split.size() != 2)
-							return onError();
-
-						m_hashVersion = std::move(split.front());
-						m_hashVersionDebug = std::move(split.back());
+						m_buildHash = std::move(val);
 					}
-					else
+
+					if (std::string val; m_dataFile->assignStringAndValidate(val, hashes, kKeyHashTheme))
 					{
-						m_hashVersion = std::move(line);
+						m_hashTheme = std::move(val);
 					}
-					break;
-				}
-				default: {
-					if (String::startsWith('#', line))
+
+					if (std::string val; m_dataFile->assignStringAndValidate(val, hashes, kKeyHashVersionRelease))
+						m_hashVersion = std::move(val);
+
+					if (std::string val; m_dataFile->assignStringAndValidate(val, hashes, kKeyHashVersionDebug))
+						m_hashVersionDebug = std::move(val);
+
+					if (hashes.contains(kKeyHashExtra))
 					{
-						std::string id = line.substr(1);
-						if (id.empty())
-							return onError();
-
-						addExtraHash(std::move(id));
-					}
-					else if (String::startsWith('@', line))
-					{
-						auto split = String::split(line.substr(1), '\t');
-						if (split.size() != 2)
-							return onError();
-
-						const auto& id = split.front();
-						const auto& lastBuildRaw = split.back();
-
-						if (id.empty() || lastBuildRaw.empty())
-							return onError();
-
-						if (m_sourceCaches.find(id) != m_sourceCaches.end())
+						auto& extra = hashes.at(kKeyHashExtra);
+						if (extra.is_array())
 						{
-							Diagnostic::error("Duplicate key found in cache: {}", id);
-							return false;
-						}
+							for (auto& item : extra)
+							{
+								if (!item.is_string())
+									return false;
 
-						std::time_t lastBuild = strtoll(lastBuildRaw.c_str(), NULL, 0);
-						auto [it, success] = m_sourceCaches.emplace(id, std::make_unique<SourceCache>(m_lastWrites, lastBuild));
-						if (!success)
-						{
-							Diagnostic::error("Error creating cache for {}", id);
-							return false;
-						}
-
-						sourceCache = it->second.get();
-					}
-					else
-					{
-
-						auto splitVar = String::split(line, '\t');
-						if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
-						{
-							chalet_assert(sourceCache != nullptr, "");
-							if (sourceCache != nullptr)
-								sourceCache->addLastWrite(std::move(splitVar.back()), splitVar.front());
+								std::string hash = item.get<std::string>();
+								if (!hash.empty())
+									addExtraHash(std::move(hash));
+							}
 						}
 					}
-					break;
 				}
 			}
 
-			++i;
+			if (std::string rawValue; m_dataFile->assignFromKey(rawValue, rootNode, kKeyLastChaletJsonWriteTime))
+			{
+				std::time_t val = strtoll(rawValue.c_str(), NULL, 0);
+				m_buildFileChanged = val != m_lastBuildFileWrite;
+			}
 		}
-		sourceCache = nullptr;
 	}
 
 	return true;
@@ -245,48 +269,51 @@ bool WorkspaceInternalCacheFile::save()
 		m_dirty |= sourceCache->dirty();
 	}
 
-	if (m_dirty)
+	if (m_dirty && m_dataFile != nullptr)
 	{
-		std::string contents;
-		contents += fmt::format("{}\t{}\n", m_buildHash, m_lastBuildFileWrite);
-		contents += fmt::format("{}\n", m_hashTheme);
+		Json rootNode = Json::object();
+
+		rootNode[kKeyHashes] = Json::object();
+
+		if (!m_buildHash.empty())
+			rootNode[kKeyHashes][kKeyHashBuild] = m_buildHash;
+
+		if (!m_hashTheme.empty())
+			rootNode[kKeyHashes][kKeyHashTheme] = m_hashTheme;
 
 		if (!m_hashVersionDebug.empty())
-			contents += fmt::format("{}\t{}\n", m_hashVersion, m_hashVersionDebug);
-		else
-			contents += fmt::format("{}\n", m_hashVersion);
+			rootNode[kKeyHashes][kKeyHashVersionDebug] = m_hashVersionDebug;
 
+		if (!m_hashVersion.empty())
+			rootNode[kKeyHashes][kKeyHashVersionRelease] = m_hashVersion;
+
+		rootNode[kKeyHashes][kKeyHashExtra] = Json::array();
 		for (auto& hash : m_extraHashes)
 		{
-			contents += fmt::format("#{}\n", hash);
+			rootNode[kKeyHashes][kKeyHashExtra].push_back(hash);
 		}
 
-		// auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		rootNode[kKeyLastChaletJsonWriteTime] = std::to_string(m_lastBuildFileWrite);
+
+		if (!m_dataFile->json.contains(kKeyBuilds))
+			rootNode[kKeyBuilds] = Json::object();
+		else
+			rootNode[kKeyBuilds] = m_dataFile->json.at(kKeyBuilds);
+
 		for (auto& [id, sourceCache] : m_sourceCaches)
 		{
-			// sourceCache->updateLastBuildTime(now);
-			contents += sourceCache->asString(id);
+			rootNode[kKeyBuilds][id] = sourceCache->asJson(kKeyBuildLastBuilt, kKeyBuildFiles);
 		}
 
-		if (m_sourceCaches.size() > 0)
-		{
-			SourceCache* sourceCache = m_sourceCaches.begin()->second.get();
-			for (auto& [file, fileData] : m_lastWrites)
-			{
-				if (!Commands::pathExists(file))
-					continue;
+		m_dataFile->setContents(std::move(rootNode));
+		m_dataFile->setDirty(true);
 
-				if (fileData.needsUpdate)
-					sourceCache->forceUpdate(file, fileData);
-
-				contents += fmt::format("{}\t{}\n", fileData.lastWrite, file);
-			}
-			sourceCache = nullptr;
-		}
+		m_dataFile->save(0);
+		// m_dataFile->save();
 
 		m_dirty = false;
 
-		return Commands::createFileWithContents(m_filename, contents);
+		return true;
 	}
 
 	return true;
@@ -415,7 +442,7 @@ StringList WorkspaceInternalCacheFile::getCacheIdsForRemoval() const
 		if (List::contains(m_doNotRemoves, id))
 			continue;
 
-		ret.push_back(id);
+		List::addIfDoesNotExist(ret, id);
 	}
 
 	for (auto& [id, _] : m_sourceCaches)
@@ -423,7 +450,23 @@ StringList WorkspaceInternalCacheFile::getCacheIdsForRemoval() const
 		if (List::contains(m_doNotRemoves, id))
 			continue;
 
-		ret.push_back(id);
+		List::addIfDoesNotExist(ret, id);
+	}
+
+	auto& rootNode = m_dataFile->json;
+	if (rootNode.contains(kKeyBuilds))
+	{
+		auto& builds = rootNode.at(kKeyBuilds);
+		if (builds.is_object())
+		{
+			for (auto [id, _] : builds.items())
+			{
+				if (List::contains(m_doNotRemoves, id))
+					continue;
+
+				List::addIfDoesNotExist(ret, id);
+			}
+		}
 	}
 
 	return ret;

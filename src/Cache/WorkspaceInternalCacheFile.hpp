@@ -8,6 +8,7 @@
 
 #include "Cache/ExternalDependencyCache.hpp"
 #include "Cache/SourceCache.hpp"
+#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
@@ -53,6 +54,8 @@ private:
 	StringList m_doNotRemoves;
 	StringList m_extraHashes;
 
+	std::unique_ptr<JsonFile> m_dataFile;
+
 	std::string m_filename;
 	std::string m_buildHash;
 	std::string m_hashTheme;
@@ -67,7 +70,17 @@ private:
 	ExternalDependencyCache m_externalDependencies;
 	std::string m_externalDependencyCachePath;
 	mutable std::unordered_map<std::string, std::unique_ptr<SourceCache>> m_sourceCaches;
-	SourceLastWriteMap m_lastWrites;
+
+	const std::string kKeyHashes;
+	const std::string kKeyHashBuild;
+	const std::string kKeyHashTheme;
+	const std::string kKeyHashVersionDebug;
+	const std::string kKeyHashVersionRelease;
+	const std::string kKeyHashExtra;
+	const std::string kKeyLastChaletJsonWriteTime;
+	const std::string kKeyBuilds;
+	const std::string kKeyBuildLastBuilt;
+	const std::string kKeyBuildFiles;
 
 	bool m_buildHashChanged = false;
 	bool m_buildFileChanged = false;
