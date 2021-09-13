@@ -560,12 +560,23 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 		if (rule.empty())
 			continue;
 
-		ret += fmt::format("build {object}: {rule}_{hash} {source}{pchImplicitDep}\n",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(object),
-			FMT_ARG(rule),
-			FMT_ARG(source),
-			FMT_ARG(pchImplicitDep));
+		if (group->type != SourceType::WindowsResource)
+		{
+			ret += fmt::format("build {object}: {rule}_{hash} {source}{pchImplicitDep}\n",
+				fmt::arg("hash", m_hash),
+				FMT_ARG(object),
+				FMT_ARG(rule),
+				FMT_ARG(source),
+				FMT_ARG(pchImplicitDep));
+		}
+		else
+		{
+			ret += fmt::format("build {object}: {rule}_{hash} {source}\n",
+				fmt::arg("hash", m_hash),
+				FMT_ARG(object),
+				FMT_ARG(rule),
+				FMT_ARG(source));
+		}
 	}
 
 	return ret;
