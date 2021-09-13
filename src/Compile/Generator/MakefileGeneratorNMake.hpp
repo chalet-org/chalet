@@ -33,7 +33,7 @@ private:
 
 	std::string getPchRecipe(const std::string& source, const std::string& object);
 	std::string getRcRecipe(const std::string& source, const std::string& object) const;
-	std::string getCppRecipe(const std::string& source, const std::string& object) const;
+	std::string getCppRecipe(const std::string& source, const std::string& object, const std::string& pchTarget) const;
 
 	std::string getTargetRecipe(const std::string& linkerTarget, const StringList& objects) const;
 

@@ -198,6 +198,11 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const SourceFileGroupList
 	std::string ret;
 
 	StringList pches;
+
+	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+	pches.push_back(pchTarget);
+
 	for (auto& group : inGroups)
 	{
 		const auto& source = group->sourceFile;
@@ -209,7 +214,7 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const SourceFileGroupList
 		{
 			case SourceType::C:
 			case SourceType::CPlusPlus:
-				ret += getCppRecipe(source, object);
+				ret += getCppRecipe(source, object, pchTarget);
 				break;
 
 			case SourceType::WindowsResource:
@@ -218,15 +223,13 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const SourceFileGroupList
 
 			case SourceType::CxxPrecompiledHeader:
 				ret += getPchRecipe(source, object);
-				pches.push_back(object);
 				break;
 
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus:
 			case SourceType::Unknown:
-			default: {
+			default:
 				break;
-			}
 		}
 	}
 
@@ -260,9 +263,9 @@ std::string MakefileGeneratorNMake::getTargetRecipe(const std::string& linkerTar
 
 		ret = fmt::format(R"makefile(
 {linkerTarget}: {preReqs}
-{compileEcho}
-{quietFlag}{linkerCommand}
-@{printer}
+	{compileEcho}
+	{quietFlag}{linkerCommand}
+	@{printer}
 )makefile",
 			FMT_ARG(linkerTarget),
 			FMT_ARG(preReqs),
@@ -306,7 +309,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 
 			ret = fmt::format(R"makefile(
 {object}: {source}
-{compilerEcho}{quietFlag}{pchCompile}
+	{compilerEcho}{quietFlag}{pchCompile}
 )makefile",
 				FMT_ARG(object),
 				FMT_ARG(source),
@@ -334,8 +337,8 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 
 		ret = fmt::format(R"makefile(
 {object}: {source}
-{compilerEcho}
-{quietFlag}{rcCompile} 1>nul
+	{compilerEcho}
+	{quietFlag}{rcCompile} 1>nul
 )makefile",
 			FMT_ARG(object),
 			FMT_ARG(source),
@@ -348,7 +351,7 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, const std::string& object) const
+std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, const std::string& object, const std::string& pchTarget) const
 {
 	chalet_assert(m_project != nullptr, "");
 
@@ -368,14 +371,15 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 		}
 
 		ret = fmt::format(R"makefile(
-{object}: {source}
-{compilerEcho}{quietFlag}{cppCompile}
+{object}: {source} {pchTarget}
+	{compilerEcho}{quietFlag}{cppCompile}
 )makefile",
 			FMT_ARG(source),
 			FMT_ARG(compilerEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(cppCompile),
-			FMT_ARG(object));
+			FMT_ARG(object),
+			FMT_ARG(pchTarget));
 	}
 
 	return ret;
