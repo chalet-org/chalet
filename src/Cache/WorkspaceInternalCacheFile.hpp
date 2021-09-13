@@ -17,7 +17,7 @@ struct JsonFile;
 struct WorkspaceInternalCacheFile
 {
 	WorkspaceInternalCacheFile();
-	CHALET_DEFAULT_COPY_MOVE(WorkspaceInternalCacheFile);
+	CHALET_DISALLOW_COPY_MOVE(WorkspaceInternalCacheFile);
 	~WorkspaceInternalCacheFile();
 
 	bool initialize(const std::string& inFilename, const std::string& inBuildFile);
