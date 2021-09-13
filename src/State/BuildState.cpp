@@ -286,6 +286,32 @@ bool BuildState::validateState()
 			Diagnostic::error("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec);
 			return false;
 		}
+
+#if defined(CHALET_WIN32)
+		for (auto& target : targets)
+		{
+			if (target->isProject())
+			{
+				auto& project = static_cast<ProjectTarget&>(*target);
+
+				if (project.language() != CodeLanguage::C && project.language() != CodeLanguage::CPlusPlus)
+					continue;
+
+				auto& compilerConfig = toolchain.getConfig(project.language());
+				if (compilerConfig.isMsvc() && !toolchain.makeIsNMake())
+				{
+					Diagnostic::error("If using the 'makefile' strategy alongside MSVC, only NMake or Qt Jom are supported (found GNU make).");
+					return false;
+				}
+				/*else if (compilerConfig.isMingwGcc() && toolchain.makeIsNMake())
+				{
+					Diagnostic::error("If using the 'makefile' strategy alongside MinGW, only GNU make is suported (found NMake or Qt Jom).");
+					return false;
+				}*/
+				break;
+			}
+		}
+#endif
 	}
 	else if (strat == StrategyType::Ninja)
 	{
