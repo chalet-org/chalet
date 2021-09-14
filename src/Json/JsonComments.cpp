@@ -11,10 +11,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-Json JsonComments::parse(const std::string& inFilename)
+bool JsonComments::parse(Json& outJson, const std::string& inFilename)
 {
 	if (!Commands::pathExists(inFilename))
-		return Json();
+	{
+		outJson = Json();
+		return false;
+	}
 
 	std::string lines;
 	std::ifstream fileStream(inFilename);
@@ -25,17 +28,22 @@ Json JsonComments::parse(const std::string& inFilename)
 		bool allow_exceptions = true;
 		bool ignore_comments = true;
 
-		return Json::parse(fileStream, cb, allow_exceptions, ignore_comments);
+		outJson = Json::parse(fileStream, cb, allow_exceptions, ignore_comments);
+		return true;
 	}
 	CHALET_CATCH(const Json::out_of_range& err)
 	{
 		CHALET_EXCEPT_ERROR("{}", err.what());
-		return Json();
+		Diagnostic::error("Error parsing: {}", inFilename);
+		outJson = Json();
+		return false;
 	}
 	CHALET_CATCH(const Json::parse_error& err)
 	{
 		CHALET_EXCEPT_ERROR("{}", err.what());
-		return Json();
+		Diagnostic::error("Error parsing: {}", inFilename);
+		outJson = Json();
+		return false;
 	}
 }
 

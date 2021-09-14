@@ -25,8 +25,7 @@ namespace chalet
 StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
 	cache(inInputs),
 	tools(inInputs),
-	m_inputs(inInputs),
-	m_buildJson(std::make_unique<JsonFile>())
+	m_inputs(inInputs)
 {
 }
 
@@ -54,7 +53,8 @@ bool StatePrototype::initialize()
 		return false;
 	}
 
-	m_buildJson->load(m_inputs.inputFile());
+	if (!m_buildJson.load(m_inputs.inputFile()))
+		return false;
 
 	if (!cache.initialize())
 		return false;
@@ -269,13 +269,13 @@ bool StatePrototype::validateBuildFile()
 /*****************************************************************************/
 JsonFile& StatePrototype::jsonFile() noexcept
 {
-	return *m_buildJson;
+	return m_buildJson;
 }
 
 /*****************************************************************************/
 const std::string& StatePrototype::filename() const noexcept
 {
-	return m_buildJson->filename();
+	return m_buildJson.filename();
 }
 
 /*****************************************************************************/

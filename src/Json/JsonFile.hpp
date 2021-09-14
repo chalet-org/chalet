@@ -17,8 +17,8 @@ struct JsonFile
 
 	static bool saveToFile(const Json& inJson, const std::string& outFilename, const int inIndent = 1);
 
-	void load();
-	void load(std::string inFilename);
+	bool load();
+	bool load(std::string inFilename);
 	bool save(const int inIndent = 1);
 
 	bool dirty() const noexcept;

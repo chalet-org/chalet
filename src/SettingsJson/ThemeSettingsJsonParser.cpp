@@ -32,7 +32,8 @@ bool ThemeSettingsJsonParser::serialize()
 	if (Commands::pathExists(globalSettings))
 	{
 		JsonFile jsonFile;
-		jsonFile.load(globalSettings);
+		if (!jsonFile.load(globalSettings))
+			return false;
 
 		if (!serializeFromJsonRoot(jsonFile.json, theme))
 		{
@@ -44,7 +45,8 @@ bool ThemeSettingsJsonParser::serialize()
 	if (Commands::pathExists(localSettings))
 	{
 		JsonFile jsonFile;
-		jsonFile.load(localSettings);
+		if (!jsonFile.load(localSettings))
+			return false;
 
 		if (!serializeFromJsonRoot(jsonFile.json, theme))
 		{

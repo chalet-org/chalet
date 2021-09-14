@@ -30,8 +30,8 @@ bool SettingsManager::run()
 	if (!m_cache.initializeSettings())
 		return false;
 
-	if (!m_cache.initialize())
-		return false;
+	// if (!m_cache.initialize())
+	// 	return false;
 
 	auto& settings = getSettings();
 	if (!Commands::pathExists(settings.filename()))

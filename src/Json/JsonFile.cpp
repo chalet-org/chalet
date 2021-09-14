@@ -18,7 +18,6 @@ namespace chalet
 JsonFile::JsonFile(std::string inFilename) :
 	m_filename(std::move(inFilename))
 {
-	load();
 }
 
 /*****************************************************************************/
@@ -43,18 +42,18 @@ bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, co
 }
 
 /*****************************************************************************/
-void JsonFile::load()
+bool JsonFile::load()
 {
 	chalet_assert(!m_filename.empty(), "JsonFile::load(): No file to load");
-	json = JsonComments::parse(m_filename);
+	return JsonComments::parse(json, m_filename);
 }
 
 /*****************************************************************************/
-void JsonFile::load(std::string inFilename)
+bool JsonFile::load(std::string inFilename)
 {
 	m_filename = std::move(inFilename);
 
-	load();
+	return load();
 }
 
 /*****************************************************************************/

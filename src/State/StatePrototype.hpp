@@ -79,7 +79,7 @@ private:
 	std::string m_filename;
 	std::string m_releaseConfiguration;
 
-	std::unique_ptr<JsonFile> m_buildJson;
+	JsonFile m_buildJson;
 };
 }
 

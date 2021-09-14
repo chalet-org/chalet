@@ -12,7 +12,7 @@ namespace chalet
 {
 namespace JsonComments
 {
-Json parse(const std::string& inFilename);
+bool parse(Json& outJson, const std::string& inFilename);
 Json parseLiteral(const std::string& inJsonContent);
 }
 }
