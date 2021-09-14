@@ -617,17 +617,13 @@ bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& 
 						break;
 					}
 				}
-				if (!foundException)
-				{
-					result = false;
-					break;
-				}
+
+				if (foundException)
+					continue;
 			}
-			else
-			{
-				result = false;
-				break;
-			}
+
+			result = false;
+			break;
 		}
 
 		return result;
