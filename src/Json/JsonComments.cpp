@@ -16,7 +16,7 @@ bool JsonComments::parse(Json& outJson, const std::string& inFilename)
 	if (!Commands::pathExists(inFilename))
 	{
 		outJson = Json();
-		return false;
+		return true;
 	}
 
 	std::string lines;
