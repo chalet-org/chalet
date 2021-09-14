@@ -82,13 +82,9 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 
 	makeArchitectureCorrections();
 
-	// auto& outputDirectory = m_state.paths.outputDirectory();
-
 	m_varsFileOriginal = m_state.cache.getHashPath("original.env", CacheType::Local);
 	m_varsFileMsvc = m_state.cache.getHashPath("msvc_all.env", CacheType::Local);
 	m_varsFileMsvcDelta = getMsvcVarsPath();
-
-	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
 
 	m_initialized = true;
 
@@ -141,7 +137,6 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 
 		if (genericMsvcFromInput)
 		{
-
 			StringList vswhereCmd = getStartOfVsWhereCommand();
 			vswhereCmd.emplace_back("installationPath");
 			m_vsAppIdDir = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
@@ -291,27 +286,6 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 		}
 	}
 
-	/*auto include = m_variables.find("INCLUDE");
-	if (include != m_variables.end())
-	{
-		String::replaceAll(include->second, "\\", "/");
-		m_include = String::split(include->second, ";");
-	}*/
-
-	/*auto lib = m_variables.find("LIB");
-	if (lib != m_variables.end())
-	{
-		String::replaceAll(lib->second, "\\", "/");
-		m_lib = String::split(lib->second, ";");
-	}*/
-
-	/*auto libPath = m_variables.find("LIBPATH");
-	if (libPath != m_variables.end())
-	{
-		String::replaceAll(libPath->second, "\\", "/");
-		m_libPath = String::split(libPath->second, ";");
-	}*/
-
 	if (genericMsvcFromInput)
 	{
 		if (!m_detectedVersion.empty())
@@ -340,24 +314,6 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 #endif
 	return true;
 }
-
-/*****************************************************************************/
-const StringList& MsvcEnvironment::include() const noexcept
-{
-	return m_include;
-}
-
-/*****************************************************************************/
-const StringList& MsvcEnvironment::lib() const noexcept
-{
-	return m_lib;
-}
-
-/*****************************************************************************/
-/*const StringList& MsvcEnvironment::libPath() const noexcept
-{
-	return m_libPath;
-}*/
 
 /*****************************************************************************/
 bool MsvcEnvironment::setVariableToPath(const char* inName)

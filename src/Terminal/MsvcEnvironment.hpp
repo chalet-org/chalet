@@ -30,10 +30,6 @@ public:
 
 	bool create(const std::string& inVersion = std::string());
 
-	const StringList& include() const noexcept;
-	const StringList& lib() const noexcept;
-	// const StringList& libPath() const noexcept;
-
 private:
 #if defined(CHALET_WIN32)
 	static int s_exists;
@@ -62,9 +58,6 @@ private:
 	std::string m_detectedVersion;
 
 #endif
-	StringList m_include;
-	StringList m_lib;
-	// StringList m_libPath;
 };
 }
 

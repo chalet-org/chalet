@@ -69,6 +69,23 @@ bool BuildState::initialize()
 }
 
 /*****************************************************************************/
+bool BuildState::initializeForConfigure()
+{
+	enforceArchitectureInPath();
+
+	if (!parseToolchainFromSettingsJson())
+		return false;
+
+	if (!parseBuildJson())
+		return false;
+
+	if (!initializeToolchain())
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
 bool BuildState::doBuild(const bool inShowSuccess)
 {
 	BuildManager mgr(m_inputs, *this);
@@ -141,33 +158,38 @@ bool BuildState::parseBuildJson()
 }
 
 /*****************************************************************************/
+bool BuildState::initializeToolchain()
+{
+	auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Local);
+
+	if (!toolchain.initialize(targets, settingsFile))
+	{
+		const auto& targetArch = m_inputs.toolchainPreference().type == ToolchainType::GNU ?
+			  m_inputs.targetArchitecture() :
+			  info.targetArchitectureString();
+
+		auto& toolchainName = m_inputs.toolchainPreferenceName();
+		Diagnostic::error("Requested arch '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 bool BuildState::initializeBuild()
 {
 	Timer timer;
 
 	Output::setShowCommandOverride(false);
 
-	bool isConfigure = m_inputs.command() == Route::Configure;
+	Diagnostic::infoEllipsis("Initializing");
 
-	if (!isConfigure)
-		Diagnostic::infoEllipsis("Initializing");
+	if (!initializeToolchain())
+		return false;
 
-	{
-		auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Local);
-
-		if (!toolchain.initialize(targets, settingsFile))
-		{
-			const auto& targetArch = m_inputs.toolchainPreference().type == ToolchainType::GNU ?
-				  m_inputs.targetArchitecture() :
-				  info.targetArchitectureString();
-
-			auto& toolchainName = m_inputs.toolchainPreferenceName();
-			Diagnostic::error("Requested arch '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
-			return false;
-		}
-	}
-
-	paths.initialize(info, toolchain);
+	if (!paths.initialize(info, toolchain))
+		return false;
 
 	// Note: < 1ms
 	for (auto& target : targets)
@@ -241,8 +263,7 @@ bool BuildState::initializeBuild()
 	if (!validateState())
 		return false;
 
-	if (!isConfigure)
-		Diagnostic::printDone(timer.asString());
+	Diagnostic::printDone(timer.asString());
 
 	Output::setShowCommandOverride(true);
 

@@ -48,6 +48,7 @@ public:
 	BuildTargetList targets;
 
 	bool initialize();
+	bool initializeForConfigure();
 	bool doBuild(const bool inShowSuccess = true);
 	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
 
@@ -58,6 +59,7 @@ private:
 	bool parseToolchainFromSettingsJson();
 	bool parseBuildJson();
 
+	bool initializeToolchain();
 	bool initializeBuild();
 	void initializeCache();
 	bool validateState();

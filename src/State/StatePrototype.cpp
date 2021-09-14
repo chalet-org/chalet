@@ -88,7 +88,7 @@ bool StatePrototype::initialize()
 				return false;
 		}
 
-		if (!externalDependencies.empty())
+		// if (!externalDependencies.empty())
 		{
 			if (!createCache())
 				return false;

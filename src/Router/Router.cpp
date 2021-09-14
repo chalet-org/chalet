@@ -75,7 +75,16 @@ bool Router::run()
 			return false;
 		}
 
-		if (command != Route::Bundle && command != Route::Configure)
+		if (command == Route::Configure)
+		{
+			chalet_assert(prototype != nullptr, "");
+			buildState = std::make_unique<BuildState>(m_inputs, *prototype);
+			if (!buildState->initializeForConfigure())
+				return false;
+
+			buildState.reset();
+		}
+		else if (command != Route::Bundle)
 		{
 			chalet_assert(prototype != nullptr, "");
 			buildState = std::make_unique<BuildState>(m_inputs, *prototype);
