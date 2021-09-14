@@ -42,7 +42,7 @@ BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inStat
 		{ Route::Run, &BuildManager::cmdRun },
 		{ Route::Bundle, &BuildManager::cmdBuild },
 	}),
-	m_asmDumper(inState)
+	m_asmDumper(inInputs, inState)
 {
 }
 

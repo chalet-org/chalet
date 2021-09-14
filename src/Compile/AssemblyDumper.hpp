@@ -14,10 +14,11 @@ namespace chalet
 class BuildState;
 struct ProjectTarget;
 struct SourceOutputs;
+struct CommandLineInputs;
 
 struct AssemblyDumper
 {
-	explicit AssemblyDumper(BuildState& inState);
+	explicit AssemblyDumper(const CommandLineInputs& inInputs, BuildState& inState);
 
 	bool validate() const;
 
@@ -27,6 +28,7 @@ private:
 	CommandPool::CmdList getAsmCommands(const SourceOutputs& inOutputs, const bool inForced) const;
 	StringList getAsmGenerate(const std::string& object, const std::string& target) const;
 
+	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 
 	CommandPool m_commandPool;

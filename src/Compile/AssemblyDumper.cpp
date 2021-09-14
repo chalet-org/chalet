@@ -6,6 +6,7 @@
 #include "Compile/AssemblyDumper.hpp"
 
 #include "Cache/SourceCache.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
@@ -18,7 +19,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-AssemblyDumper::AssemblyDumper(BuildState& inState) :
+AssemblyDumper::AssemblyDumper(const CommandLineInputs& inInputs, BuildState& inState) :
+	m_inputs(inInputs),
 	m_state(inState),
 	m_commandPool(m_state.info.maxJobs())
 {
@@ -27,23 +29,31 @@ AssemblyDumper::AssemblyDumper(BuildState& inState) :
 /*****************************************************************************/
 bool AssemblyDumper::validate() const
 {
-#if defined(CHALET_MACOS)
-	if (m_state.tools.otool().empty())
-	{
-		Diagnostic::error("dumpAssembly feature requires otool, which is blank in the toolchain settings.");
-		return false;
-	}
-#else
 	if (m_state.toolchain.disassembler().empty())
 	{
-	#if defined(CHALET_WIN32)
-		Diagnostic::error("dumpAssembly feature requires dumpbin (if MSVC) or objdump (if MinGW), which is blank in the toolchain settings.");
-	#else
-		Diagnostic::error("dumpAssembly feature requires objdump, which is blank in the toolchain settings.");
-	#endif
+#if defined(CHALET_WIN32)
+		Diagnostic::error("{}: dumpAssembly feature requires dumpbin (if MSVC) or objdump (if MinGW), which is blank in the toolchain settings.", m_inputs.settingsFile());
+#elif defined(CHALET_MACOS)
+		Diagnostic::error("{}: dumpAssembly feature requires otool or objdump as the disassembler, which is blank in the toolchain settings.", m_inputs.settingsFile());
+#else
+		Diagnostic::error("{}: dumpAssembly feature requires objdump as the disassembler, which is blank in the toolchain settings.", m_inputs.settingsFile());
+#endif
 		return false;
 	}
+
+	if (
+#if defined(CHALET_WIN32)
+		!m_state.toolchain.isDisassemblerDumpBin() &&
 #endif
+		!m_state.tools.bashAvailable())
+	{
+#if defined(CHALET_MACOS)
+		Diagnostic::error("{}: dumpAssembly feature for otool and objdump require bash, but what not detected or blank in tools.", m_inputs.settingsFile());
+#else
+		Diagnostic::error("{}: dumpAssembly feature for objdump require bash, but what not detected or blank in tools.", m_inputs.settingsFile());
+#endif
+		return false;
+	}
 
 	return true;
 }

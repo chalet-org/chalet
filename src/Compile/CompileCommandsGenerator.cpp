@@ -7,6 +7,7 @@
 
 #include "State/SourceOutputs.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -93,6 +94,7 @@ bool CompileCommandsGenerator::save(const std::string& inOutputFolder) const
 {
 	auto outputFile = fmt::format("{}/compile_commands.json", inOutputFolder);
 	auto cwd = Commands::getWorkingDirectory();
+	Path::sanitize(cwd);
 
 	Json outJson = Json::array();
 

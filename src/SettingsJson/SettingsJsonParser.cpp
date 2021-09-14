@@ -274,6 +274,49 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	whichAdd(tools, kKeyXcrun, HostPlatform::MacOS);
 #endif
 
+#if defined(CHALET_WIN32)
+	{
+		// Try really hard to find these tools
+
+		auto& gitNode = tools.at(kKeyGit);
+		auto gitPath = gitNode.get<std::string>();
+		if (gitPath.empty())
+		{
+			gitPath = m_prototype.tools.getPathToGit();
+			tools[kKeyGit] = gitPath;
+		}
+
+		bool gitExists = Commands::pathExists(gitPath);
+		if (gitExists)
+		{
+			const auto gitBinFolder = String::getPathFolder(gitPath);
+
+			auto& bashNode = tools.at(kKeyBash);
+			auto bashPath = bashNode.get<std::string>();
+			if (bashPath.empty() && !gitPath.empty())
+			{
+				bashPath = fmt::format("{}/{}", gitBinFolder, "bash.exe");
+				if (Commands::pathExists(bashPath))
+				{
+					tools[kKeyBash] = bashPath;
+				}
+			}
+
+			auto& lddNode = tools.at(kKeyLdd);
+			auto lddPath = lddNode.get<std::string>();
+			if (lddPath.empty() && !gitPath.empty())
+			{
+				auto gitRoot = String::getPathFolder(gitBinFolder);
+				lddPath = fmt::format("{}/usr/bin/{}", gitRoot, "ldd.exe");
+				if (Commands::pathExists(lddPath))
+				{
+					tools[kKeyLdd] = lddPath;
+				}
+			}
+		}
+	}
+#endif
+
 #if defined(CHALET_MACOS)
 	// AppleTVOS.platform/
 	// AppleTVSimulator.platform
