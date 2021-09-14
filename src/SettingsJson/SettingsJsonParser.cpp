@@ -285,6 +285,20 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 			gitPath = m_prototype.tools.getPathToGit();
 			tools[kKeyGit] = gitPath;
 		}
+		else
+		{
+			// We always want bin/git.exe (is not specific to cmd prompt or msys)
+			if (String::contains("Git/mingw64/bin/git.exe", gitPath))
+			{
+				String::replaceAll(gitPath, "mingw64/", "");
+				tools[kKeyGit] = gitPath;
+			}
+			else if (String::contains("Git/cmd/git.exe", gitPath))
+			{
+				String::replaceAll(gitPath, "cmd/", "bin");
+				tools[kKeyGit] = gitPath;
+			}
+		}
 
 		bool gitExists = Commands::pathExists(gitPath);
 		if (gitExists)
