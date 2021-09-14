@@ -290,6 +290,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		if (gitExists)
 		{
 			const auto gitBinFolder = String::getPathFolder(gitPath);
+			const auto gitRoot = String::getPathFolder(gitBinFolder);
 
 			auto& bashNode = tools.at(kKeyBash);
 			auto bashPath = bashNode.get<std::string>();
@@ -306,11 +307,22 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 			auto lddPath = lddNode.get<std::string>();
 			if (lddPath.empty() && !gitPath.empty())
 			{
-				auto gitRoot = String::getPathFolder(gitBinFolder);
 				lddPath = fmt::format("{}/usr/bin/{}", gitRoot, "ldd.exe");
 				if (Commands::pathExists(lddPath))
 				{
 					tools[kKeyLdd] = lddPath;
+				}
+			}
+
+			// we can also do the same for perl
+			auto& perlNode = tools.at(kKeyPerl);
+			auto perlPath = perlNode.get<std::string>();
+			if (perlPath.empty() && !gitPath.empty())
+			{
+				perlPath = fmt::format("{}/usr/bin/{}", gitRoot, "perl.exe");
+				if (Commands::pathExists(perlPath))
+				{
+					tools[kKeyPerl] = perlPath;
 				}
 			}
 		}
