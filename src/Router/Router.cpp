@@ -244,10 +244,7 @@ bool Router::parseTheme()
 {
 	ThemeSettingsJsonParser themeParser(m_inputs);
 	if (!themeParser.serialize())
-	{
-		Diagnostic::error("Error parsing theme.");
 		return false;
-	}
 
 	return true;
 }
