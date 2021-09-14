@@ -220,7 +220,7 @@ bool WorkspaceCache::saveProjectCache()
 
 	auto removePathIfEmpty = [](const std::string& inPath) {
 		if (Commands::pathIsEmpty(inPath, {}, true))
-			Commands::remove(inPath);
+			Commands::removeRecursively(inPath);
 	};
 
 	removePathIfEmpty(cacheRef);

@@ -597,9 +597,7 @@ bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& 
 			CHALET_THROW(std::runtime_error("Not a directory"));
 		}
 
-		bool result = fs::is_directory(inPath);
-		if (!result)
-			return false;
+		bool result = true;
 
 		auto dirEnd = fs::directory_iterator();
 		for (auto it = fs::directory_iterator(inPath); it != dirEnd; ++it)
