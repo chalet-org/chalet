@@ -252,7 +252,13 @@ void CompilerTools::fetchCompilerVersions()
 
 	if (m_compilerVersionStringC.empty())
 	{
-		if (!m_compilerC.empty() && Commands::pathExists(m_compilerC))
+		auto baseFolderC = String::getPathFolder(m_compilerC);
+		auto baseFolderCpp = String::getPathFolder(m_compilerCpp);
+		if (String::equals(baseFolderC, baseFolderCpp))
+		{
+			m_compilerVersionStringC = m_compilerVersionStringCpp;
+		}
+		else if (!m_compilerC.empty() && Commands::pathExists(m_compilerC))
 		{
 			std::string version;
 #if defined(CHALET_WIN32)
