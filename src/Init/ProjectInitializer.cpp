@@ -369,24 +369,7 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 				appPath = Commands::which("chalet");
 			}
 
-			auto inputFile = fmt::format("{}/{}", m_rootPath, m_inputs.defaultInputFile());
-			auto settingsFile = fmt::format("{}/{}", m_rootPath, m_inputs.defaultSettingsFile());
-			auto outputDir = fmt::format("{}/{}", m_rootPath, m_inputs.defaultOutputDirectory());
-
-			m_inputs.clearWorkingDirectory(inputFile);
-			m_inputs.clearWorkingDirectory(settingsFile);
-			m_inputs.clearWorkingDirectory(outputDir);
-
-			if (!Commands::subprocess({
-					std::move(appPath),
-					"configure",
-					"--input-file",
-					std::move(inputFile),
-					"--settings-file",
-					std::move(settingsFile),
-					"--output-dir",
-					std::move(outputDir),
-				}))
+			if (!Commands::subprocess({ std::move(appPath), "configure" }, m_rootPath))
 				return false;
 		}
 		else
