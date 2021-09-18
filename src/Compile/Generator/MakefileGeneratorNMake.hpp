@@ -17,7 +17,7 @@ struct MakefileGeneratorNMake final : IStrategyGenerator
 {
 	explicit MakefileGeneratorNMake(const BuildState& inState);
 
-	virtual void addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) final;
+	virtual void addProjectRecipes(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) final;
 	virtual std::string getContents(const std::string& inPath) const final;
 
 	virtual void reset() override;

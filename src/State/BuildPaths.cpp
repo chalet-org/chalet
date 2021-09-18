@@ -76,7 +76,7 @@ bool BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inTool
 }
 
 /*****************************************************************************/
-void BuildPaths::populateFileList(const ProjectTarget& inProject)
+void BuildPaths::populateFileList(const SourceTarget& inProject)
 {
 	if (m_fileList.find(inProject.name()) != m_fileList.end())
 		return;
@@ -151,7 +151,7 @@ const StringList& BuildPaths::allFileExtensions() const noexcept
 }
 
 /*****************************************************************************/
-void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const ProjectTarget& inProject)
+void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject)
 {
 	if (inProject.isSharedLibrary())
 	{
@@ -170,7 +170,7 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const ProjectTarget& inPr
 }
 
 /*****************************************************************************/
-SourceOutputs BuildPaths::getOutputs(const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const
+SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const
 {
 	SourceOutputs ret;
 
@@ -286,7 +286,7 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getTargetFilename(const ProjectTarget& inProject) const
+std::string BuildPaths::getTargetFilename(const SourceTarget& inProject) const
 {
 	const auto& filename = inProject.outputFile();
 
@@ -294,7 +294,7 @@ std::string BuildPaths::getTargetFilename(const ProjectTarget& inProject) const
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getTargetBasename(const ProjectTarget& inProject) const
+std::string BuildPaths::getTargetBasename(const SourceTarget& inProject) const
 {
 	const auto& name = inProject.name();
 	std::string base;
@@ -312,7 +312,7 @@ std::string BuildPaths::getTargetBasename(const ProjectTarget& inProject) const
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeader(const ProjectTarget& inProject) const
+std::string BuildPaths::getPrecompiledHeader(const SourceTarget& inProject) const
 {
 	std::string ret;
 	if (inProject.usesPch())
@@ -324,7 +324,7 @@ std::string BuildPaths::getPrecompiledHeader(const ProjectTarget& inProject) con
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectTarget& inProject, const bool inPchExtension) const
+std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject, const bool inPchExtension) const
 {
 	std::string ret;
 	if (inProject.usesPch())
@@ -339,7 +339,7 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const ProjectTarget& inProjec
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectTarget& inProject) const
+std::string BuildPaths::getPrecompiledHeaderInclude(const SourceTarget& inProject) const
 {
 	std::string ret;
 	if (inProject.usesPch())
@@ -352,7 +352,7 @@ std::string BuildPaths::getPrecompiledHeaderInclude(const ProjectTarget& inProje
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getWindowsManifestFilename(const ProjectTarget& inProject) const
+std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject) const
 {
 #if defined(CHALET_WIN32)
 	if (!inProject.isStaticLibrary() && inProject.windowsApplicationManifestGenerationEnabled())
@@ -378,7 +378,7 @@ std::string BuildPaths::getWindowsManifestFilename(const ProjectTarget& inProjec
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getWindowsManifestResourceFilename(const ProjectTarget& inProject) const
+std::string BuildPaths::getWindowsManifestResourceFilename(const SourceTarget& inProject) const
 {
 #if defined(CHALET_WIN32)
 	if (!inProject.isStaticLibrary() && inProject.windowsApplicationManifestGenerationEnabled())
@@ -401,7 +401,7 @@ std::string BuildPaths::getWindowsManifestResourceFilename(const ProjectTarget& 
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getWindowsIconResourceFilename(const ProjectTarget& inProject) const
+std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inProject) const
 {
 	std::string ret;
 
@@ -422,7 +422,7 @@ std::string BuildPaths::getWindowsIconResourceFilename(const ProjectTarget& inPr
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const
+SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const
 {
 	SourceFileGroupList ret;
 	bool isMsvc = inConfig.isMsvc();
@@ -544,7 +544,7 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 }
 
 /*****************************************************************************/
-StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const ProjectTarget& inProject, const bool inIsMsvc) const
+StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject, const bool inIsMsvc) const
 {
 	StringList ret;
 	for (const auto& file : inFiles)
@@ -584,7 +584,7 @@ StringList BuildPaths::getOutputDirectoryList(const SourceGroup& inDirectoryList
 }
 
 /*****************************************************************************/
-StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
+StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 {
 	auto manifestResource = getWindowsManifestResourceFilename(inProject);
 	auto iconResource = getWindowsIconResourceFilename(inProject);
@@ -711,7 +711,7 @@ StringList BuildPaths::getFileList(const ProjectTarget& inProject) const
 }
 
 /*****************************************************************************/
-StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
+StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 {
 	StringList ret;
 
@@ -821,7 +821,7 @@ StringList BuildPaths::getDirectoryList(const ProjectTarget& inProject) const
 }
 
 /*****************************************************************************/
-BuildPaths::SourceGroup BuildPaths::getFiles(const ProjectTarget& inProject) const
+BuildPaths::SourceGroup BuildPaths::getFiles(const SourceTarget& inProject) const
 {
 	SourceGroup ret;
 	ret.list = getFileList(inProject);
@@ -831,7 +831,7 @@ BuildPaths::SourceGroup BuildPaths::getFiles(const ProjectTarget& inProject) con
 }
 
 /*****************************************************************************/
-BuildPaths::SourceGroup BuildPaths::getDirectories(const ProjectTarget& inProject) const
+BuildPaths::SourceGroup BuildPaths::getDirectories(const SourceTarget& inProject) const
 {
 	SourceGroup ret;
 	ret.list = getDirectoryList(inProject);

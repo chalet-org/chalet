@@ -7,7 +7,7 @@
 #define CHALET_PROFILER_RUNNER_HPP
 
 #include "State/BuildState.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
@@ -16,7 +16,7 @@ struct CommandLineInputs;
 class ProfilerRunner
 {
 public:
-	explicit ProfilerRunner(const CommandLineInputs& inInputs, BuildState& inState, const ProjectTarget& inProject);
+	explicit ProfilerRunner(const CommandLineInputs& inInputs, BuildState& inState, const SourceTarget& inProject);
 
 	bool run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 
@@ -29,7 +29,7 @@ private:
 
 	const CommandLineInputs& m_inputs;
 	const BuildState& m_state;
-	const ProjectTarget& m_project;
+	const SourceTarget& m_project;
 };
 }
 

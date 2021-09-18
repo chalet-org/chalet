@@ -240,7 +240,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 
 			if (!List::contains(bundleProjects, project.name()))
 				continue;
@@ -356,7 +356,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 			for (auto& dir : project.libDirs())
 			{
 				List::addIfDoesNotExist(searchDirs, dir);
@@ -372,7 +372,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 		{
 			if (target->isProject())
 			{
-				auto& project = static_cast<const ProjectTarget&>(*target);
+				auto& project = static_cast<const SourceTarget&>(*target);
 
 				if (List::contains(bundleProjects, project.name()))
 				{

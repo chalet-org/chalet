@@ -11,12 +11,12 @@
 namespace chalet
 {
 class BuildState;
-struct ProjectTarget;
+struct SourceTarget;
 struct CompilerConfig;
 
 struct CompileToolchainGNU : ICompileToolchain
 {
-	explicit CompileToolchainGNU(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
+	explicit CompileToolchainGNU(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 
 	virtual ToolchainType type() const noexcept override;
 

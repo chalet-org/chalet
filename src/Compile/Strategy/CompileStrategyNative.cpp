@@ -46,7 +46,7 @@ bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
+bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
 {
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
@@ -121,7 +121,7 @@ bool CompileStrategyNative::doPostBuild() const
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::buildProject(const ProjectTarget& inProject) const
+bool CompileStrategyNative::buildProject(const SourceTarget& inProject) const
 {
 	if (m_targets.find(inProject.name()) == m_targets.end())
 		return true;

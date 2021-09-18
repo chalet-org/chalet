@@ -11,12 +11,12 @@
 namespace chalet
 {
 class BuildState;
-struct ProjectTarget;
+struct SourceTarget;
 struct CompilerConfig;
 
 struct CompileToolchainMSVC final : ICompileToolchain
 {
-	explicit CompileToolchainMSVC(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
+	explicit CompileToolchainMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 
 	virtual ToolchainType type() const noexcept final;
 

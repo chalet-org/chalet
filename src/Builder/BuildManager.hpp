@@ -17,12 +17,12 @@ namespace chalet
 {
 struct SubChaletTarget;
 struct CMakeTarget;
-struct ProjectTarget;
+struct SourceTarget;
 struct ScriptBuildTarget;
 
 class BuildManager
 {
-	using BuildAction = std::function<bool(BuildManager&, const ProjectTarget& inTarget)>;
+	using BuildAction = std::function<bool(BuildManager&, const SourceTarget& inTarget)>;
 	using BuildRouteList = std::unordered_map<Route, BuildAction>;
 
 public:
@@ -34,17 +34,17 @@ private:
 	void printBuildInformation();
 	std::string getBuildStrategyName() const;
 
-	bool copyRunDependencies(const ProjectTarget& inProject);
+	bool copyRunDependencies(const SourceTarget& inProject);
 	StringList getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig);
-	bool doClean(const ProjectTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean = false);
+	bool doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean = false);
 	bool doLazyClean();
 
-	bool addProjectToBuild(const ProjectTarget& inProject, const Route inRoute);
+	bool addProjectToBuild(const SourceTarget& inProject, const Route inRoute);
 
 	// commands
-	bool cmdBuild(const ProjectTarget& inProject);
-	bool cmdRebuild(const ProjectTarget& inProject);
-	bool cmdRun(const ProjectTarget& inProject);
+	bool cmdBuild(const SourceTarget& inProject);
+	bool cmdRebuild(const SourceTarget& inProject);
+	bool cmdRun(const SourceTarget& inProject);
 	bool cmdClean();
 
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
@@ -52,7 +52,7 @@ private:
 	bool runCMakeTarget(const CMakeTarget& inTarget);
 	std::string getRunProject();
 	bool createAppBundle();
-	bool runProfiler(const ProjectTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
+	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
@@ -65,7 +65,7 @@ private:
 
 	Timer m_timer;
 
-	// ProjectTarget* m_project = nullptr;
+	// SourceTarget* m_project = nullptr;
 
 	std::string m_runProjectName;
 };

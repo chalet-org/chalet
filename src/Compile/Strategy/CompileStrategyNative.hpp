@@ -11,7 +11,7 @@
 
 #include "Compile/CommandPool.hpp"
 #include "State/BuildState.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
@@ -27,11 +27,11 @@ public:
 	explicit CompileStrategyNative(BuildState& inState);
 
 	virtual bool initialize(const StringList& inFileExtensions) final;
-	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
+	virtual bool addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
 
 	virtual bool saveBuildFile() const final;
 	virtual bool doPostBuild() const final;
-	virtual bool buildProject(const ProjectTarget& inProject) const final;
+	virtual bool buildProject(const SourceTarget& inProject) const final;
 
 private:
 	CommandPool::CmdList getPchCommands(const std::string& pchTarget);
@@ -45,7 +45,7 @@ private:
 
 	StringList m_fileCache;
 
-	const ProjectTarget* m_project = nullptr;
+	const SourceTarget* m_project = nullptr;
 	ICompileToolchain* m_toolchain = nullptr;
 
 	std::unordered_map<std::string, std::unique_ptr<CommandPool::Target>> m_targets;

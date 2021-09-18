@@ -9,7 +9,7 @@
 
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
@@ -18,7 +18,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
+CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
 	ICompileToolchain(inState, inProject, inConfig)
 {
 }
@@ -1216,7 +1216,7 @@ void CompileToolchainGNU::initializeSupportedLinks()
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.isExecutable())
 				continue;
 

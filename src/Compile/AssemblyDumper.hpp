@@ -7,12 +7,12 @@
 #define CHALET_ASSEMBLY_DUMPER_HPP
 
 #include "Compile/CommandPool.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
 class BuildState;
-struct ProjectTarget;
+struct SourceTarget;
 struct SourceOutputs;
 struct CommandLineInputs;
 

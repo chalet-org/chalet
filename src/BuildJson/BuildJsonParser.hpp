@@ -14,7 +14,7 @@ struct BundleTarget;
 struct CommandLineInputs;
 struct CMakeTarget;
 struct JsonFile;
-struct ProjectTarget;
+struct SourceTarget;
 struct ScriptBuildTarget;
 struct SubChaletTarget;
 struct StatePrototype;
@@ -32,14 +32,14 @@ private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseProjects(const Json& inNode);
-	bool parseProject(ProjectTarget& outProject, const Json& inNode, const bool inAbstract = false);
+	bool parseProject(SourceTarget& outProject, const Json& inNode, const bool inAbstract = false);
 	bool parseScript(ScriptBuildTarget& outScript, const Json& inNode);
 	bool parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode);
 	bool parseCMakeProject(CMakeTarget& outProject, const Json& inNode);
 	bool parsePlatformConfigExclusions(IBuildTarget& outProject, const Json& inNode);
-	bool parseCompilerSettingsCxx(ProjectTarget& outProject, const Json& inNode);
-	bool parseFilesAndLocation(ProjectTarget& outProject, const Json& inNode, const bool inAbstract);
-	bool parseProjectLocationOrFiles(ProjectTarget& outProject, const Json& inNode);
+	bool parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode);
+	bool parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract);
+	bool parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode);
 
 	bool validBuildRequested();
 	bool validRunProjectRequested();
@@ -61,7 +61,7 @@ private:
 	const std::string& kKeyAbstracts;
 	const std::string& kKeyTargets;
 
-	std::unordered_map<std::string, std::unique_ptr<ProjectTarget>> m_abstractProjects;
+	std::unordered_map<std::string, std::unique_ptr<SourceTarget>> m_abstractProjects;
 
 	std::string m_debugIdentifier{ "debug" };
 };

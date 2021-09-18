@@ -12,7 +12,7 @@
 namespace chalet
 {
 class BuildState;
-struct ProjectTarget;
+struct SourceTarget;
 struct CompilerConfig;
 
 struct ICompileToolchain;
@@ -20,12 +20,12 @@ using CompileToolchain = std::unique_ptr<ICompileToolchain>;
 
 struct ICompileToolchain
 {
-	explicit ICompileToolchain(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
+	explicit ICompileToolchain(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 	virtual ~ICompileToolchain() = default;
 
-	[[nodiscard]] static CompileToolchain make(const ToolchainType inType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
+	[[nodiscard]] static CompileToolchain make(const ToolchainType inType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 
-	[[nodiscard]] static CompileToolchain make(const CppCompilerType inType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig);
+	[[nodiscard]] static CompileToolchain make(const CppCompilerType inType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 
 	virtual ToolchainType type() const noexcept = 0;
 
@@ -75,7 +75,7 @@ protected:
 	virtual void addPlatformGuiApplicationFlag(StringList& outArgList) const;
 
 	const BuildState& m_state;
-	const ProjectTarget& m_project;
+	const SourceTarget& m_project;
 	const CompilerConfig& m_config;
 
 	bool m_quotePaths = true;

@@ -11,7 +11,7 @@
 
 #include "State/AncillaryTools.hpp"
 #include "State/StatePrototype.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -196,7 +196,7 @@ bool BuildState::initializeBuild()
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<ProjectTarget&>(*target);
+			auto& project = static_cast<SourceTarget&>(*target);
 			auto& compilerConfig = toolchain.getConfig(project.language());
 			project.parseOutputFilename(compilerConfig);
 
@@ -236,7 +236,7 @@ bool BuildState::initializeBuild()
 			{
 				if (t->isProject())
 				{
-					auto& p = static_cast<ProjectTarget&>(*t);
+					auto& p = static_cast<SourceTarget&>(*t);
 					bool staticLib = p.kind() == ProjectKind::StaticLibrary;
 					project.resolveLinksFromProject(p.name(), staticLib);
 				}
@@ -253,7 +253,7 @@ bool BuildState::initializeBuild()
 
 			if (target->isProject())
 			{
-				paths.populateFileList(static_cast<ProjectTarget&>(*target));
+				paths.populateFileList(static_cast<SourceTarget&>(*target));
 			}
 		}
 
@@ -313,7 +313,7 @@ bool BuildState::validateState()
 		{
 			if (target->isProject())
 			{
-				auto& project = static_cast<ProjectTarget&>(*target);
+				auto& project = static_cast<SourceTarget&>(*target);
 
 				if (project.language() != CodeLanguage::C && project.language() != CodeLanguage::CPlusPlus)
 					continue;

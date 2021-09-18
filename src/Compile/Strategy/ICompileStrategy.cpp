@@ -47,7 +47,7 @@ StrategyType ICompileStrategy::type() const noexcept
 }
 
 /*****************************************************************************/
-bool ICompileStrategy::addCompileCommands(const ProjectTarget& inProject, CompileToolchain& inToolchain)
+bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject, CompileToolchain& inToolchain)
 {
 	const auto& name = inProject.name();
 	if (m_outputs.find(name) != m_outputs.end())

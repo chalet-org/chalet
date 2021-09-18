@@ -10,7 +10,7 @@
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
@@ -24,7 +24,7 @@ struct IStrategyGenerator
 
 	[[nodiscard]] static StrategyGenerator make(const StrategyType inType, BuildState& inState);
 
-	virtual void addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) = 0;
+	virtual void addProjectRecipes(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash) = 0;
 	virtual std::string getContents(const std::string& inPath) const = 0;
 	virtual void reset();
 
@@ -33,7 +33,7 @@ struct IStrategyGenerator
 protected:
 	const BuildState& m_state;
 	ICompileToolchain* m_toolchain = nullptr;
-	const ProjectTarget* m_project = nullptr;
+	const SourceTarget* m_project = nullptr;
 
 	StringList m_targetRecipes;
 	StringList m_precompiledHeaders;

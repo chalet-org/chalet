@@ -9,7 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 
 #include "State/BuildState.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -285,7 +285,7 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<ProjectTarget&>(*target);
+			auto& project = static_cast<SourceTarget&>(*target);
 			auto language = project.language();
 
 			if (m_configs.find(language) == m_configs.end())

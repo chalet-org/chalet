@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROJECT_TARGET_HPP
-#define CHALET_PROJECT_TARGET_HPP
+#ifndef CHALET_SOURCE_TARGET_HPP
+#define CHALET_SOURCE_TARGET_HPP
 
 #include "Compile/CodeLanguage.hpp"
 #include "State/ProjectKind.hpp"
@@ -18,9 +18,9 @@ class BuildState;
 struct WorkspaceEnvironment;
 struct CompilerConfig;
 
-struct ProjectTarget final : public IBuildTarget
+struct SourceTarget final : public IBuildTarget
 {
-	explicit ProjectTarget(BuildState& inState);
+	explicit SourceTarget(BuildState& inState);
 
 	virtual bool initialize() final;
 	virtual bool validate() final;
@@ -217,4 +217,4 @@ private:
 };
 }
 
-#endif // CHALET_PROJECT_TARGET_HPP
+#endif // CHALET_SOURCE_TARGET_HPP

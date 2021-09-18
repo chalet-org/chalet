@@ -24,7 +24,7 @@ MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-void MakefileGeneratorNMake::addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
+void MakefileGeneratorNMake::addProjectRecipes(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
 {
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
@@ -396,7 +396,7 @@ std::string MakefileGeneratorNMake::getLinkerPreReqs(const StringList& objects) 
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 			if (List::contains(m_project->projectStaticLinks(), project.name()))
 			{
 				ret += " " + m_state.paths.getTargetFilename(project);

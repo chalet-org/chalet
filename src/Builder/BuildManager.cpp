@@ -15,8 +15,8 @@
 #include "Terminal/Output.hpp"
 
 #include "State/Target/CMakeTarget.hpp"
-#include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 
 #include "Process/Process.hpp"
@@ -97,7 +97,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			if (target->isProject())
 			{
-				if (!addProjectToBuild(static_cast<const ProjectTarget&>(*target), inRoute))
+				if (!addProjectToBuild(static_cast<const SourceTarget&>(*target), inRoute))
 					return false;
 			}
 		}
@@ -159,7 +159,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			{
 				Timer buildTimer;
 
-				if (!m_buildRoutes[inRoute](*this, static_cast<const ProjectTarget&>(*target)))
+				if (!m_buildRoutes[inRoute](*this, static_cast<const SourceTarget&>(*target)))
 				{
 					error = true;
 					break;
@@ -222,7 +222,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	{
 		if (runProject->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*runProject);
+			auto& project = static_cast<const SourceTarget&>(*runProject);
 			if (!Commands::pathExists(m_state.paths.getTargetFilename(project)))
 			{
 				Diagnostic::error("Requested configuration '{}' must be built for run project: '{}'", m_state.info.buildConfiguration(), project.name());
@@ -262,7 +262,7 @@ void BuildManager::printBuildInformation()
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 
 			usingCpp |= project.language() == CodeLanguage::CPlusPlus;
 			usingCc |= project.language() == CodeLanguage::C;
@@ -341,7 +341,7 @@ std::string BuildManager::getBuildStrategyName() const
 }
 
 /*****************************************************************************/
-bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route inRoute)
+bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route inRoute)
 {
 	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
 
@@ -382,7 +382,7 @@ bool BuildManager::addProjectToBuild(const ProjectTarget& inProject, const Route
 }
 
 /*****************************************************************************/
-bool BuildManager::copyRunDependencies(const ProjectTarget& inProject)
+bool BuildManager::copyRunDependencies(const SourceTarget& inProject)
 {
 	bool result = true;
 
@@ -445,7 +445,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunD
 }
 
 /*****************************************************************************/
-bool BuildManager::runProfiler(const ProjectTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
+bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
 	ProfilerRunner profiler(m_inputs, m_state, inProject);
 	return profiler.run(inCommand, inExecutable, inOutputFolder);
@@ -492,7 +492,7 @@ bool BuildManager::doLazyClean()
 }
 
 /*****************************************************************************/
-bool BuildManager::doClean(const ProjectTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean)
+bool BuildManager::doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean)
 {
 	auto pch = m_state.paths.getPrecompiledHeader(inProject);
 
@@ -550,7 +550,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 }
 
 /*****************************************************************************/
-bool BuildManager::cmdBuild(const ProjectTarget& inProject)
+bool BuildManager::cmdBuild(const SourceTarget& inProject)
 {
 	const auto& outputFile = inProject.outputFile();
 
@@ -574,7 +574,7 @@ bool BuildManager::cmdBuild(const ProjectTarget& inProject)
 }
 
 /*****************************************************************************/
-bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
+bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 {
 	const auto& outputFile = inProject.outputFile();
 
@@ -599,13 +599,13 @@ bool BuildManager::cmdRebuild(const ProjectTarget& inProject)
 }
 
 /*****************************************************************************/
-bool BuildManager::cmdRun(const ProjectTarget& inProject)
+bool BuildManager::cmdRun(const SourceTarget& inProject)
 {
 	for (auto& target : m_state.targets)
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.runDependencies().empty())
 				continue;
 
@@ -754,7 +754,7 @@ std::string BuildManager::getRunProject()
 		auto& name = target->name();
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.isExecutable() && project.runProject())
 				return name; // just get the top one
 		}

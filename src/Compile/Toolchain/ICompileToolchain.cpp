@@ -9,7 +9,7 @@
 #include "Compile/CompilerConfig.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "State/BuildState.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
@@ -21,7 +21,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-ICompileToolchain::ICompileToolchain(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
+ICompileToolchain::ICompileToolchain(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
 	m_state(inState),
 	m_project(inProject),
 	m_config(inConfig)
@@ -34,7 +34,7 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const ProjectTar
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileToolchain ICompileToolchain::make(const ToolchainType inType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig)
+[[nodiscard]] CompileToolchain ICompileToolchain::make(const ToolchainType inType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig)
 {
 	switch (inType)
 	{
@@ -56,7 +56,7 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const ProjectTar
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileToolchain ICompileToolchain::make(const CppCompilerType inCompilerType, const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig)
+[[nodiscard]] CompileToolchain ICompileToolchain::make(const CppCompilerType inCompilerType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig)
 {
 	switch (inCompilerType)
 	{

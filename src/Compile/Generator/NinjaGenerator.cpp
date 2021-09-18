@@ -30,7 +30,7 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-void NinjaGenerator::addProjectRecipes(const ProjectTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
+void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
 {
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
@@ -48,7 +48,7 @@ void NinjaGenerator::addProjectRecipes(const ProjectTarget& inProject, const Sou
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 			if (List::contains(inProject.projectStaticLinks(), project.name()))
 			{
 				objects += " " + m_state.paths.getTargetFilename(project);

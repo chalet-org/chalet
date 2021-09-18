@@ -8,7 +8,7 @@
 #include "Compile/CompilerConfig.hpp"
 
 #include "State/BuildState.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -17,7 +17,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainLLVM::CompileToolchainLLVM(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
+CompileToolchainLLVM::CompileToolchainLLVM(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
 	CompileToolchainGNU(inState, inProject, inConfig)
 {
 }

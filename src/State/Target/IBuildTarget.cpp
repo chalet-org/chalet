@@ -7,8 +7,8 @@
 
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
-#include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "Utility/String.hpp"
 
@@ -26,7 +26,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 	switch (inType)
 	{
 		case BuildTargetType::Project:
-			return std::make_unique<ProjectTarget>(inState);
+			return std::make_unique<SourceTarget>(inState);
 		case BuildTargetType::Script:
 			return std::make_unique<ScriptBuildTarget>(inState);
 		case BuildTargetType::SubChalet:

@@ -447,7 +447,7 @@
 				}
 			]
 		},
-		"target-project": {
+		"target-source": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
@@ -455,22 +455,22 @@
 					"$ref": "#/definitions/target-description"
 				},
 				"settings:Cxx": {
-					"$ref": "#/definitions/target-project-cxx"
+					"$ref": "#/definitions/target-source-cxx"
 				},
 				"extends": {
-					"$ref": "#/definitions/target-project-extends"
+					"$ref": "#/definitions/target-source-extends"
 				},
 				"files": {
-					"$ref": "#/definitions/target-project-files"
+					"$ref": "#/definitions/target-source-files"
 				},
 				"kind": {
-					"$ref": "#/definitions/target-project-kind"
+					"$ref": "#/definitions/target-source-kind"
 				},
 				"language": {
-					"$ref": "#/definitions/target-project-language"
+					"$ref": "#/definitions/target-source-language"
 				},
 				"location": {
-					"$ref": "#/definitions/target-project-location"
+					"$ref": "#/definitions/target-source-location"
 				},
 				"onlyInConfiguration": {
 					"$ref": "#/definitions/target-onlyInConfiguration"
@@ -485,13 +485,13 @@
 					"$ref": "#/definitions/target-notInPlatform"
 				},
 				"runProject": {
-					"$ref": "#/definitions/target-project-runProject"
+					"$ref": "#/definitions/target-source-runProject"
 				},
 				"runArguments": {
-					"$ref": "#/definitions/target-project-runArguments"
+					"$ref": "#/definitions/target-source-runArguments"
 				},
 				"runDependencies": {
-					"$ref": "#/definitions/target-project-runDependencies"
+					"$ref": "#/definitions/target-source-runDependencies"
 				}
 			},
 			"patternProperties": {
@@ -499,20 +499,20 @@
 					"$ref": "#/definitions/target-description"
 				},
 				"^runProject(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-runProject"
+					"$ref": "#/definitions/target-source-runProject"
 				},
 				"^runDependencies(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-runDependencies"
+					"$ref": "#/definitions/target-source-runDependencies"
 				}
 			}
 		},
-		"target-project-extends": {
+		"target-source-extends": {
 			"type": "string",
 			"description": "A project template to extend. Defaults to 'all' implicitly.",
 			"pattern": "^[A-Za-z_-]+$",
 			"default": "all"
 		},
-		"target-project-files": {
+		"target-source-files": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -521,7 +521,7 @@
 				"type": "string"
 			}
 		},
-		"target-project-kind": {
+		"target-source-kind": {
 			"type": "string",
 			"description": "The type of the project's compiled binary.",
 			"enum": [
@@ -531,7 +531,7 @@
 				"desktopApplication"
 			]
 		},
-		"target-project-location": {
+		"target-source-location": {
 			"description": "The root path of the source files, relative to the working directory.",
 			"oneOf": [
 				{
@@ -586,7 +586,7 @@
 				}
 			]
 		},
-		"target-project-language": {
+		"target-source-language": {
 			"type": "string",
 			"description": "The target language of the project.",
 			"enum": [
@@ -595,12 +595,12 @@
 			],
 			"default": "C++"
 		},
-		"target-project-runProject": {
+		"target-source-runProject": {
 			"type": "boolean",
 			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
 			"default": false
 		},
-		"target-project-runArguments": {
+		"target-source-runArguments": {
 			"type": "array",
 			"description": "If the project is the run target, a string of arguments to pass to the run command.",
 			"minItems": 1,
@@ -608,7 +608,7 @@
 				"type": "string"
 			}
 		},
-		"target-project-runDependencies": {
+		"target-source-runDependencies": {
 			"type": "array",
 			"uniqueItems": true,
 			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
@@ -617,141 +617,141 @@
 				"type": "string"
 			}
 		},
-		"target-project-cxx": {
+		"target-source-cxx": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
 				"cStandard": {
-					"$ref": "#/definitions/target-project-cxx-cStandard"
+					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
 				"compileOptions": {
-					"$ref": "#/definitions/target-project-cxx-compileOptions"
+					"$ref": "#/definitions/target-source-cxx-compileOptions"
 				},
 				"cppStandard": {
-					"$ref": "#/definitions/target-project-cxx-cppStandard"
+					"$ref": "#/definitions/target-source-cxx-cppStandard"
 				},
 				"defines": {
-					"$ref": "#/definitions/target-project-cxx-defines"
+					"$ref": "#/definitions/target-source-cxx-defines"
 				},
 				"includeDirs": {
-					"$ref": "#/definitions/target-project-cxx-includeDirs"
+					"$ref": "#/definitions/target-source-cxx-includeDirs"
 				},
 				"libDirs": {
-					"$ref": "#/definitions/target-project-cxx-libDirs"
+					"$ref": "#/definitions/target-source-cxx-libDirs"
 				},
 				"linkerScript": {
-					"$ref": "#/definitions/target-project-cxx-linkerScript"
+					"$ref": "#/definitions/target-source-cxx-linkerScript"
 				},
 				"linkerOptions": {
-					"$ref": "#/definitions/target-project-cxx-linkerOptions"
+					"$ref": "#/definitions/target-source-cxx-linkerOptions"
 				},
 				"links": {
-					"$ref": "#/definitions/target-project-cxx-links"
+					"$ref": "#/definitions/target-source-cxx-links"
 				},
 				"macosFrameworkPaths": {
-					"$ref": "#/definitions/target-project-cxx-macosFrameworkPaths"
+					"$ref": "#/definitions/target-source-cxx-macosFrameworkPaths"
 				},
 				"macosFrameworks": {
-					"$ref": "#/definitions/target-project-cxx-macosFrameworks"
+					"$ref": "#/definitions/target-source-cxx-macosFrameworks"
 				},
 				"objectiveCxx": {
-					"$ref": "#/definitions/target-project-cxx-objectiveCxx"
+					"$ref": "#/definitions/target-source-cxx-objectiveCxx"
 				},
 				"pch": {
-					"$ref": "#/definitions/target-project-cxx-pch"
+					"$ref": "#/definitions/target-source-cxx-pch"
 				},
 				"threads": {
-					"$ref": "#/definitions/target-project-cxx-threads"
+					"$ref": "#/definitions/target-source-cxx-threads"
 				},
 				"rtti": {
-					"$ref": "#/definitions/target-project-cxx-rtti"
+					"$ref": "#/definitions/target-source-cxx-rtti"
 				},
 				"exceptions": {
-					"$ref": "#/definitions/target-project-cxx-exceptions"
+					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
 				"staticLinking": {
-					"$ref": "#/definitions/target-project-cxx-staticLinking"
+					"$ref": "#/definitions/target-source-cxx-staticLinking"
 				},
 				"staticLinks": {
-					"$ref": "#/definitions/target-project-cxx-staticLinks"
+					"$ref": "#/definitions/target-source-cxx-staticLinks"
 				},
 				"warnings": {
-					"$ref": "#/definitions/target-project-cxx-warnings"
+					"$ref": "#/definitions/target-source-cxx-warnings"
 				},
 				"windowsPrefixOutputFilename": {
-					"$ref": "#/definitions/target-project-cxx-windowsPrefixOutputFilename"
+					"$ref": "#/definitions/target-source-cxx-windowsPrefixOutputFilename"
 				},
 				"windowsOutputDef": {
-					"$ref": "#/definitions/target-project-cxx-windowsOutputDef"
+					"$ref": "#/definitions/target-source-cxx-windowsOutputDef"
 				},
 				"windowsApplicationIcon": {
-					"$ref": "#/definitions/target-project-cxx-windowsAppIcon"
+					"$ref": "#/definitions/target-source-cxx-windowsAppIcon"
 				},
 				"windowsApplicationManifest": {
-					"$ref": "#/definitions/target-project-cxx-windowsApplicationManifest"
+					"$ref": "#/definitions/target-source-cxx-windowsApplicationManifest"
 				}
 			},
 			"patternProperties": {
 				"^cStandard(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-cStandard"
+					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
 				"^cppStandard(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-cppStandard"
+					"$ref": "#/definitions/target-source-cxx-cppStandard"
 				},
 				"^compileOptions(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-compileOptions"
+					"$ref": "#/definitions/target-source-cxx-compileOptions"
 				},
 				"^defines(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-defines"
+					"$ref": "#/definitions/target-source-cxx-defines"
 				},
 				"^includeDirs(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-includeDirs"
+					"$ref": "#/definitions/target-source-cxx-includeDirs"
 				},
 				"^libDirs(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-libDirs"
+					"$ref": "#/definitions/target-source-cxx-libDirs"
 				},
 				"^linkerScript(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-linkerScript"
+					"$ref": "#/definitions/target-source-cxx-linkerScript"
 				},
 				"^linkerOptions(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-linkerOptions"
+					"$ref": "#/definitions/target-source-cxx-linkerOptions"
 				},
 				"^links(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-links"
+					"$ref": "#/definitions/target-source-cxx-links"
 				},
 				"^objectiveCxx(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-objectiveCxx"
+					"$ref": "#/definitions/target-source-cxx-objectiveCxx"
 				},
 				"^staticLinks(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-staticLinks"
+					"$ref": "#/definitions/target-source-cxx-staticLinks"
 				},
 				"^threads(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-threads"
+					"$ref": "#/definitions/target-source-cxx-threads"
 				},
 				"^rtti(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-rtti"
+					"$ref": "#/definitions/target-source-cxx-rtti"
 				},
 				"^exceptions(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-exceptions"
+					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
 				"^staticLinking(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
-					"$ref": "#/definitions/target-project-cxx-staticLinking"
+					"$ref": "#/definitions/target-source-cxx-staticLinking"
 				}
 			}
 		},
-		"target-project-cxx-cStandard": {
+		"target-source-cxx-cStandard": {
 			"type": "string",
 			"description": "The C standard to use in the compilation",
 			"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
 			"default": "c11"
 		},
-		"target-project-cxx-cppStandard": {
+		"target-source-cxx-cppStandard": {
 			"type": "string",
 			"description": "The C++ standard to use in the compilation",
 			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
 			"default": "c++17"
 		},
-		"target-project-cxx-compileOptions": {
+		"target-source-cxx-compileOptions": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -760,7 +760,7 @@
 				"type": "string"
 			}
 		},
-		"target-project-cxx-defines": {
+		"target-source-cxx-defines": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -769,7 +769,7 @@
 				"type": "string"
 			}
 		},
-		"target-project-cxx-includeDirs": {
+		"target-source-cxx-includeDirs": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -778,7 +778,7 @@
 				"type": "string"
 			}
 		},
-		"target-project-cxx-libDirs": {
+		"target-source-cxx-libDirs": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -787,11 +787,11 @@
 				"type": "string"
 			}
 		},
-		"target-project-cxx-linkerScript": {
+		"target-source-cxx-linkerScript": {
 			"type": "string",
 			"description": "An LD linker script path (.ld file) to pass to the linker command"
 		},
-		"target-project-cxx-linkerOptions": {
+		"target-source-cxx-linkerOptions": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -800,7 +800,7 @@
 				"type": "string"
 			}
 		},
-		"target-project-cxx-links": {
+		"target-source-cxx-links": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -810,7 +810,7 @@
 				"pattern": "^[\\w\\-\\+\\.]+$"
 			}
 		},
-		"target-project-cxx-macosFrameworkPaths": {
+		"target-source-cxx-macosFrameworkPaths": {
 			"type": "array",
 			"description": "A list of paths to search for MacOS Frameworks",
 			"uniqueItems": true,
@@ -819,7 +819,7 @@
 				"type": "string"
 			}
 		},
-		"target-project-cxx-macosFrameworks": {
+		"target-source-cxx-macosFrameworks": {
 			"type": "array",
 			"description": "A list of MacOS Frameworks to link to the project",
 			"uniqueItems": true,
@@ -828,16 +828,16 @@
 				"type": "string"
 			}
 		},
-		"target-project-cxx-objectiveCxx": {
+		"target-source-cxx-objectiveCxx": {
 			"type": "boolean",
 			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
 			"default": false
 		},
-		"target-project-cxx-pch": {
+		"target-source-cxx-pch": {
 			"type": "string",
 			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
 		},
-		"target-project-cxx-threads": {
+		"target-source-cxx-threads": {
 			"type": "string",
 			"enum": [
 				"auto",
@@ -846,22 +846,22 @@
 			],
 			"default": "auto"
 		},
-		"target-project-cxx-rtti": {
+		"target-source-cxx-rtti": {
 			"type": "boolean",
 			"description": "true to include run-time type information (default), false to exclude.",
 			"default": true
 		},
-		"target-project-cxx-exceptions": {
+		"target-source-cxx-exceptions": {
 			"type": "boolean",
 			"description": "true to use exceptions (default), false to turn off exceptions.",
 			"default": true
 		},
-		"target-project-cxx-staticLinking": {
+		"target-source-cxx-staticLinking": {
 			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 			"type": "boolean",
 			"default": false
 		},
-		"target-project-cxx-staticLinks": {
+		"target-source-cxx-staticLinks": {
 			"type": "array",
 			"description": "A list of static links to use with the linker",
 			"uniqueItems": true,
@@ -871,7 +871,7 @@
 				"pattern": "^[\\w\\-\\+\\.]+$"
 			}
 		},
-		"target-project-cxx-warnings": {
+		"target-source-cxx-warnings": {
 			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
 			"anyOf": [
 				{
@@ -1191,7 +1191,7 @@
 				}
 			]
 		},
-		"target-project-cxx-windowsApplicationManifest": {
+		"target-source-cxx-windowsApplicationManifest": {
 			"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
 			"anyOf": [
 				{
@@ -1203,16 +1203,16 @@
 				}
 			]
 		},
-		"target-project-cxx-windowsAppIcon": {
+		"target-source-cxx-windowsAppIcon": {
 			"type": "string",
 			"description": "The windows icon to use for the project. Only applies to application targets (kind=[consoleApplication|desktopApplication])"
 		},
-		"target-project-cxx-windowsOutputDef": {
+		"target-source-cxx-windowsOutputDef": {
 			"type": "boolean",
 			"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
 			"default": false
 		},
-		"target-project-cxx-windowsPrefixOutputFilename": {
+		"target-source-cxx-windowsPrefixOutputFilename": {
 			"type": "boolean",
 			"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
 			"default": true
@@ -1404,7 +1404,7 @@
 			"description": "A list of abstract build projects",
 			"patternProperties": {
 				"^[A-Za-z_-]+$": {
-					"$ref": "#/definitions/target-project",
+					"$ref": "#/definitions/target-source",
 					"description": "An abstract build project. 'all' is implicitely added to each project."
 				}
 			}
@@ -1486,7 +1486,7 @@
 					"description": "A single build target or script.",
 					"oneOf": [
 						{
-							"$ref": "#/definitions/target-project"
+							"$ref": "#/definitions/target-source"
 						},
 						{
 							"$ref": "#/definitions/target-script"
@@ -1542,7 +1542,7 @@
 	},
 	"patternProperties": {
 		"^abstracts:[a-z]+$": {
-			"$ref": "#/definitions/target-project",
+			"$ref": "#/definitions/target-source",
 			"description": "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project"
 		},
 		"^searchPaths(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {

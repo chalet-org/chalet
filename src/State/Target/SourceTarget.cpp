@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 
 #include "State/BuildState.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -15,7 +15,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProjectTarget::ProjectTarget(BuildState& inState) :
+SourceTarget::SourceTarget(BuildState& inState) :
 	IBuildTarget(inState, BuildTargetType::Project),
 	m_environment(inState.environment)
 {
@@ -33,7 +33,7 @@ ProjectTarget::ProjectTarget(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool ProjectTarget::initialize()
+bool SourceTarget::initialize()
 {
 	const auto& targetName = this->name();
 	auto parse = [&](StringList& outList) {
@@ -57,7 +57,7 @@ bool ProjectTarget::initialize()
 }
 
 /*****************************************************************************/
-bool ProjectTarget::validate()
+bool SourceTarget::validate()
 {
 	const auto& targetName = this->name();
 	bool result = true;
@@ -123,33 +123,33 @@ bool ProjectTarget::validate()
 }
 
 /*****************************************************************************/
-bool ProjectTarget::isExecutable() const noexcept
+bool SourceTarget::isExecutable() const noexcept
 {
 	return m_kind == ProjectKind::ConsoleApplication || m_kind == ProjectKind::DesktopApplication;
 }
 
-bool ProjectTarget::isSharedLibrary() const noexcept
+bool SourceTarget::isSharedLibrary() const noexcept
 {
 	return m_kind == ProjectKind::SharedLibrary;
 }
 
-bool ProjectTarget::isStaticLibrary() const noexcept
+bool SourceTarget::isStaticLibrary() const noexcept
 {
 	return m_kind == ProjectKind::StaticLibrary;
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::fileExtensions() const noexcept
+const StringList& SourceTarget::fileExtensions() const noexcept
 {
 	return m_fileExtensions;
 }
 
-void ProjectTarget::addFileExtensions(StringList&& inList)
+void SourceTarget::addFileExtensions(StringList&& inList)
 {
-	List::forEach(inList, this, &ProjectTarget::addFileExtension);
+	List::forEach(inList, this, &SourceTarget::addFileExtension);
 }
 
-void ProjectTarget::addFileExtension(std::string&& inValue)
+void SourceTarget::addFileExtension(std::string&& inValue)
 {
 	if (!inValue.empty() && inValue.front() != '.')
 		inValue = "." + inValue;
@@ -158,40 +158,40 @@ void ProjectTarget::addFileExtension(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::defines() const noexcept
+const StringList& SourceTarget::defines() const noexcept
 {
 	return m_defines;
 }
 
-void ProjectTarget::addDefines(StringList&& inList)
+void SourceTarget::addDefines(StringList&& inList)
 {
 	// -D
-	List::forEach(inList, this, &ProjectTarget::addDefine);
+	List::forEach(inList, this, &SourceTarget::addDefine);
 }
 
-void ProjectTarget::addDefine(std::string&& inValue)
+void SourceTarget::addDefine(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_defines, std::move(inValue));
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::links() const noexcept
+const StringList& SourceTarget::links() const noexcept
 {
 	return m_links;
 }
 
-void ProjectTarget::addLinks(StringList&& inList)
+void SourceTarget::addLinks(StringList&& inList)
 {
 	// -l
-	List::forEach(inList, this, &ProjectTarget::addLink);
+	List::forEach(inList, this, &SourceTarget::addLink);
 }
 
-void ProjectTarget::addLink(std::string&& inValue)
+void SourceTarget::addLink(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_links, std::move(inValue));
 }
 
-void ProjectTarget::resolveLinksFromProject(const std::string& inProjectName, const bool inStaticLib)
+void SourceTarget::resolveLinksFromProject(const std::string& inProjectName, const bool inStaticLib)
 {
 	// TODO: should this behavior be separated as "projectLinks"?
 	for (auto& link : m_links)
@@ -219,41 +219,41 @@ void ProjectTarget::resolveLinksFromProject(const std::string& inProjectName, co
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::projectStaticLinks() const noexcept
+const StringList& SourceTarget::projectStaticLinks() const noexcept
 {
 	return m_projectStaticLinks;
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::staticLinks() const noexcept
+const StringList& SourceTarget::staticLinks() const noexcept
 {
 	return m_staticLinks;
 }
 
-void ProjectTarget::addStaticLinks(StringList&& inList)
+void SourceTarget::addStaticLinks(StringList&& inList)
 {
 	// -Wl,-Bstatic -l
-	List::forEach(inList, this, &ProjectTarget::addStaticLink);
+	List::forEach(inList, this, &SourceTarget::addStaticLink);
 }
 
-void ProjectTarget::addStaticLink(std::string&& inValue)
+void SourceTarget::addStaticLink(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_staticLinks, std::move(inValue));
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::libDirs() const noexcept
+const StringList& SourceTarget::libDirs() const noexcept
 {
 	return m_libDirs;
 }
 
-void ProjectTarget::addLibDirs(StringList&& inList)
+void SourceTarget::addLibDirs(StringList&& inList)
 {
 	// -L
-	List::forEach(inList, this, &ProjectTarget::addLibDir);
+	List::forEach(inList, this, &SourceTarget::addLibDir);
 }
 
-void ProjectTarget::addLibDir(std::string&& inValue)
+void SourceTarget::addLibDir(std::string&& inValue)
 {
 	if (inValue.back() != '/')
 		inValue += '/';
@@ -262,18 +262,18 @@ void ProjectTarget::addLibDir(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::includeDirs() const noexcept
+const StringList& SourceTarget::includeDirs() const noexcept
 {
 	return m_includeDirs;
 }
 
-void ProjectTarget::addIncludeDirs(StringList&& inList)
+void SourceTarget::addIncludeDirs(StringList&& inList)
 {
 	// -I
-	List::forEach(inList, this, &ProjectTarget::addIncludeDir);
+	List::forEach(inList, this, &SourceTarget::addIncludeDir);
 }
 
-void ProjectTarget::addIncludeDir(std::string&& inValue)
+void SourceTarget::addIncludeDir(std::string&& inValue)
 {
 	if (inValue.back() != '/')
 		inValue += '/';
@@ -282,17 +282,17 @@ void ProjectTarget::addIncludeDir(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::runDependencies() const noexcept
+const StringList& SourceTarget::runDependencies() const noexcept
 {
 	return m_runDependencies;
 }
 
-void ProjectTarget::addRunDependencies(StringList&& inList)
+void SourceTarget::addRunDependencies(StringList&& inList)
 {
-	List::forEach(inList, this, &ProjectTarget::addRunDependency);
+	List::forEach(inList, this, &SourceTarget::addRunDependency);
 }
 
-void ProjectTarget::addRunDependency(std::string&& inValue)
+void SourceTarget::addRunDependency(std::string&& inValue)
 {
 	// if (inValue.back() != '/')
 	// 	inValue += '/'; // no!
@@ -301,18 +301,18 @@ void ProjectTarget::addRunDependency(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::warnings() const noexcept
+const StringList& SourceTarget::warnings() const noexcept
 {
 	return m_warnings;
 }
 
-void ProjectTarget::addWarnings(StringList&& inList)
+void SourceTarget::addWarnings(StringList&& inList)
 {
-	List::forEach(inList, this, &ProjectTarget::addWarning);
+	List::forEach(inList, this, &SourceTarget::addWarning);
 	m_warningsPreset = ProjectWarnings::Custom;
 }
 
-void ProjectTarget::addWarning(std::string&& inValue)
+void SourceTarget::addWarning(std::string&& inValue)
 {
 	if (String::equals("-W", inValue.substr(0, 2)))
 	{
@@ -324,66 +324,66 @@ void ProjectTarget::addWarning(std::string&& inValue)
 }
 
 /*****************************************************************************/
-void ProjectTarget::setWarningPreset(std::string&& inValue)
+void SourceTarget::setWarningPreset(std::string&& inValue)
 {
 	m_warningsPresetString = std::move(inValue);
 	m_warnings = parseWarnings(m_warningsPresetString);
 }
 
-ProjectWarnings ProjectTarget::warningsPreset() const noexcept
+ProjectWarnings SourceTarget::warningsPreset() const noexcept
 {
 	return m_warningsPreset;
 }
 
 /*****************************************************************************/
-bool ProjectTarget::warningsTreatedAsErrors() const noexcept
+bool SourceTarget::warningsTreatedAsErrors() const noexcept
 {
 	return static_cast<int>(m_warningsPreset) >= static_cast<int>(ProjectWarnings::Error);
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::compileOptions() const noexcept
+const StringList& SourceTarget::compileOptions() const noexcept
 {
 	return m_compileOptions;
 }
 
-void ProjectTarget::addCompileOptions(StringList&& inList)
+void SourceTarget::addCompileOptions(StringList&& inList)
 {
-	List::forEach(inList, this, &ProjectTarget::addCompileOption);
+	List::forEach(inList, this, &SourceTarget::addCompileOption);
 }
 
-void ProjectTarget::addCompileOption(std::string&& inValue)
+void SourceTarget::addCompileOption(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_compileOptions, std::move(inValue));
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::linkerOptions() const noexcept
+const StringList& SourceTarget::linkerOptions() const noexcept
 {
 	return m_linkerOptions;
 }
-void ProjectTarget::addLinkerOptions(StringList&& inList)
+void SourceTarget::addLinkerOptions(StringList&& inList)
 {
-	List::forEach(inList, this, &ProjectTarget::addLinkerOption);
+	List::forEach(inList, this, &SourceTarget::addLinkerOption);
 }
-void ProjectTarget::addLinkerOption(std::string&& inValue)
+void SourceTarget::addLinkerOption(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_linkerOptions, std::move(inValue));
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::macosFrameworkPaths() const noexcept
+const StringList& SourceTarget::macosFrameworkPaths() const noexcept
 {
 	return m_macosFrameworkPaths;
 }
 
-void ProjectTarget::addMacosFrameworkPaths(StringList&& inList)
+void SourceTarget::addMacosFrameworkPaths(StringList&& inList)
 {
 	// -F
-	List::forEach(inList, this, &ProjectTarget::addMacosFrameworkPath);
+	List::forEach(inList, this, &SourceTarget::addMacosFrameworkPath);
 }
 
-void ProjectTarget::addMacosFrameworkPath(std::string&& inValue)
+void SourceTarget::addMacosFrameworkPath(std::string&& inValue)
 {
 	if (inValue.back() != '/')
 		inValue += '/';
@@ -393,63 +393,63 @@ void ProjectTarget::addMacosFrameworkPath(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::macosFrameworks() const noexcept
+const StringList& SourceTarget::macosFrameworks() const noexcept
 {
 	return m_macosFrameworks;
 }
 
-void ProjectTarget::addMacosFrameworks(StringList&& inList)
+void SourceTarget::addMacosFrameworks(StringList&& inList)
 {
 	// -framework *.framework
-	List::forEach(inList, this, &ProjectTarget::addMacosFramework);
+	List::forEach(inList, this, &SourceTarget::addMacosFramework);
 }
 
-void ProjectTarget::addMacosFramework(std::string&& inValue)
+void SourceTarget::addMacosFramework(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_macosFrameworks, std::move(inValue));
 }
 
 /*****************************************************************************/
-const std::string& ProjectTarget::outputFile() const noexcept
+const std::string& SourceTarget::outputFile() const noexcept
 {
 	return m_outputFile;
 }
 
 /*****************************************************************************/
-const std::string& ProjectTarget::outputFileNoPrefix() const noexcept
+const std::string& SourceTarget::outputFileNoPrefix() const noexcept
 {
 	return m_outputFileNoPrefix;
 }
 
 /*****************************************************************************/
-const std::string& ProjectTarget::cStandard() const noexcept
+const std::string& SourceTarget::cStandard() const noexcept
 {
 	return m_cStandard;
 }
 
-void ProjectTarget::setCStandard(std::string&& inValue) noexcept
+void SourceTarget::setCStandard(std::string&& inValue) noexcept
 {
 	m_cStandard = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& ProjectTarget::cppStandard() const noexcept
+const std::string& SourceTarget::cppStandard() const noexcept
 {
 	return m_cppStandard;
 }
 
-void ProjectTarget::setCppStandard(std::string&& inValue) noexcept
+void SourceTarget::setCppStandard(std::string&& inValue) noexcept
 {
 	m_cppStandard = std::move(inValue);
 }
 
 /*****************************************************************************/
-CodeLanguage ProjectTarget::language() const noexcept
+CodeLanguage SourceTarget::language() const noexcept
 {
 	return m_language;
 }
 
-void ProjectTarget::setLanguage(const std::string& inValue) noexcept
+void SourceTarget::setLanguage(const std::string& inValue) noexcept
 {
 	if (String::equals(inValue, "C++"))
 	{
@@ -461,244 +461,244 @@ void ProjectTarget::setLanguage(const std::string& inValue) noexcept
 	}
 	else
 	{
-		chalet_assert(false, "Invalid language for ProjectTarget::setLanguage");
+		chalet_assert(false, "Invalid language for SourceTarget::setLanguage");
 		m_language = CodeLanguage::None;
 	}
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::files() const noexcept
+const StringList& SourceTarget::files() const noexcept
 {
 	return m_files;
 }
 
-void ProjectTarget::addFiles(StringList&& inList)
+void SourceTarget::addFiles(StringList&& inList)
 {
-	List::forEach(inList, this, &ProjectTarget::addFile);
+	List::forEach(inList, this, &SourceTarget::addFile);
 }
 
-void ProjectTarget::addFile(std::string&& inValue)
+void SourceTarget::addFile(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_files, std::move(inValue));
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::locations() const noexcept
+const StringList& SourceTarget::locations() const noexcept
 {
 	return m_locations;
 }
 
-void ProjectTarget::addLocations(StringList&& inList)
+void SourceTarget::addLocations(StringList&& inList)
 {
-	List::forEach(inList, this, &ProjectTarget::addLocation);
+	List::forEach(inList, this, &SourceTarget::addLocation);
 }
 
-void ProjectTarget::addLocation(std::string&& inValue)
+void SourceTarget::addLocation(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_locations, std::move(inValue));
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::locationExcludes() const noexcept
+const StringList& SourceTarget::locationExcludes() const noexcept
 {
 	return m_locationExcludes;
 }
 
-void ProjectTarget::addLocationExcludes(StringList&& inList)
+void SourceTarget::addLocationExcludes(StringList&& inList)
 {
-	List::forEach(inList, this, &ProjectTarget::addLocationExclude);
+	List::forEach(inList, this, &SourceTarget::addLocationExclude);
 }
 
-void ProjectTarget::addLocationExclude(std::string&& inValue)
+void SourceTarget::addLocationExclude(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_locationExcludes, std::move(inValue));
 }
 
 /*****************************************************************************/
-const std::string& ProjectTarget::pch() const noexcept
+const std::string& SourceTarget::pch() const noexcept
 {
 	return m_pch;
 }
 
-void ProjectTarget::setPch(std::string&& inValue) noexcept
+void SourceTarget::setPch(std::string&& inValue) noexcept
 {
 	m_pch = std::move(inValue);
 }
 
-bool ProjectTarget::usesPch() const noexcept
+bool SourceTarget::usesPch() const noexcept
 {
 	return !m_pch.empty();
 }
 
 /*****************************************************************************/
-const StringList& ProjectTarget::runArguments() const noexcept
+const StringList& SourceTarget::runArguments() const noexcept
 {
 	return m_runArguments;
 }
 
-void ProjectTarget::addRunArguments(StringList&& inList)
+void SourceTarget::addRunArguments(StringList&& inList)
 {
-	List::forEach(inList, this, &ProjectTarget::addRunArgument);
+	List::forEach(inList, this, &SourceTarget::addRunArgument);
 }
 
-void ProjectTarget::addRunArgument(std::string&& inValue)
+void SourceTarget::addRunArgument(std::string&& inValue)
 {
 	m_runArguments.emplace_back(std::move(inValue));
 }
 
 /*****************************************************************************/
-const std::string& ProjectTarget::linkerScript() const noexcept
+const std::string& SourceTarget::linkerScript() const noexcept
 {
 	return m_linkerScript;
 }
 
-void ProjectTarget::setLinkerScript(std::string&& inValue) noexcept
+void SourceTarget::setLinkerScript(std::string&& inValue) noexcept
 {
 	m_linkerScript = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& ProjectTarget::windowsApplicationManifest() const noexcept
+const std::string& SourceTarget::windowsApplicationManifest() const noexcept
 {
 	return m_windowsApplicationManifest;
 }
 
-void ProjectTarget::setWindowsApplicationManifest(std::string&& inValue) noexcept
+void SourceTarget::setWindowsApplicationManifest(std::string&& inValue) noexcept
 {
 	m_windowsApplicationManifest = std::move(inValue);
 }
 
 /*****************************************************************************/
-bool ProjectTarget::windowsApplicationManifestGenerationEnabled() const noexcept
+bool SourceTarget::windowsApplicationManifestGenerationEnabled() const noexcept
 {
 	return m_windowsApplicationManifestGenerationEnabled;
 }
-void ProjectTarget::setWindowsApplicationManifestGenerationEnabled(const bool inValue) noexcept
+void SourceTarget::setWindowsApplicationManifestGenerationEnabled(const bool inValue) noexcept
 {
 	m_windowsApplicationManifestGenerationEnabled = inValue;
 }
 
 /*****************************************************************************/
-const std::string& ProjectTarget::windowsApplicationIcon() const noexcept
+const std::string& SourceTarget::windowsApplicationIcon() const noexcept
 {
 	return m_windowsApplicationIcon;
 }
 
-void ProjectTarget::setWindowsApplicationIcon(std::string&& inValue) noexcept
+void SourceTarget::setWindowsApplicationIcon(std::string&& inValue) noexcept
 {
 	m_windowsApplicationIcon = std::move(inValue);
 }
 
 /*****************************************************************************/
-ProjectKind ProjectTarget::kind() const noexcept
+ProjectKind SourceTarget::kind() const noexcept
 {
 	return m_kind;
 }
 
-void ProjectTarget::setKind(const ProjectKind inValue) noexcept
+void SourceTarget::setKind(const ProjectKind inValue) noexcept
 {
 	m_kind = inValue;
 }
 
-void ProjectTarget::setKind(const std::string& inValue)
+void SourceTarget::setKind(const std::string& inValue)
 {
 	m_kind = parseProjectKind(inValue);
 }
 
 /*****************************************************************************/
-ThreadType ProjectTarget::threadType() const noexcept
+ThreadType SourceTarget::threadType() const noexcept
 {
 	return m_threadType;
 }
 
-void ProjectTarget::setThreadType(const ThreadType inValue) noexcept
+void SourceTarget::setThreadType(const ThreadType inValue) noexcept
 {
 	m_threadType = inValue;
 }
 
-void ProjectTarget::setThreadType(const std::string& inValue)
+void SourceTarget::setThreadType(const std::string& inValue)
 {
 	m_threadType = parseThreadType(inValue);
 }
 
 /*****************************************************************************/
-bool ProjectTarget::objectiveCxx() const noexcept
+bool SourceTarget::objectiveCxx() const noexcept
 {
 	return m_objectiveCxx;
 }
-void ProjectTarget::setObjectiveCxx(const bool inValue) noexcept
+void SourceTarget::setObjectiveCxx(const bool inValue) noexcept
 {
 	m_objectiveCxx = inValue;
 }
 
 /*****************************************************************************/
-bool ProjectTarget::rtti() const noexcept
+bool SourceTarget::rtti() const noexcept
 {
 	return m_rtti;
 }
 
-void ProjectTarget::setRtti(const bool inValue) noexcept
+void SourceTarget::setRtti(const bool inValue) noexcept
 {
 	m_rtti = inValue;
 }
 
-bool ProjectTarget::exceptions() const noexcept
+bool SourceTarget::exceptions() const noexcept
 {
 	return m_exceptions;
 }
-void ProjectTarget::setExceptions(const bool inValue) noexcept
+void SourceTarget::setExceptions(const bool inValue) noexcept
 {
 	m_exceptions = inValue;
 }
 
 /*****************************************************************************/
-bool ProjectTarget::runProject() const noexcept
+bool SourceTarget::runProject() const noexcept
 {
 	return m_runProject;
 }
 
-void ProjectTarget::setRunProject(const bool inValue) noexcept
+void SourceTarget::setRunProject(const bool inValue) noexcept
 {
 	m_runProject = inValue;
 }
 
 /*****************************************************************************/
-bool ProjectTarget::staticLinking() const noexcept
+bool SourceTarget::staticLinking() const noexcept
 {
 	return m_staticLinking;
 }
 
-void ProjectTarget::setStaticLinking(const bool inValue) noexcept
+void SourceTarget::setStaticLinking(const bool inValue) noexcept
 {
 	m_staticLinking = inValue;
 }
 
 /*****************************************************************************/
 // TODO: string prefix (lib) / suffix (-s) control
-bool ProjectTarget::windowsPrefixOutputFilename() const noexcept
+bool SourceTarget::windowsPrefixOutputFilename() const noexcept
 {
 	bool staticLib = m_kind == ProjectKind::StaticLibrary;
 	return m_windowsPrefixOutputFilename || staticLib;
 }
 
-void ProjectTarget::setWindowsPrefixOutputFilename(const bool inValue) noexcept
+void SourceTarget::setWindowsPrefixOutputFilename(const bool inValue) noexcept
 {
 	m_windowsPrefixOutputFilename = inValue;
 	m_setWindowsPrefixOutputFilename = true;
 }
 
 /*****************************************************************************/
-bool ProjectTarget::windowsOutputDef() const noexcept
+bool SourceTarget::windowsOutputDef() const noexcept
 {
 	return m_windowsOutputDef;
 }
-void ProjectTarget::setWindowsOutputDef(const bool inValue) noexcept
+void SourceTarget::setWindowsOutputDef(const bool inValue) noexcept
 {
 	m_windowsOutputDef = inValue;
 }
 
 /*****************************************************************************/
-ThreadType ProjectTarget::parseThreadType(const std::string& inValue)
+ThreadType SourceTarget::parseThreadType(const std::string& inValue)
 {
 	if (String::equals("auto", inValue))
 		return ThreadType::Auto;
@@ -710,7 +710,7 @@ ThreadType ProjectTarget::parseThreadType(const std::string& inValue)
 }
 
 /*****************************************************************************/
-ProjectKind ProjectTarget::parseProjectKind(const std::string& inValue)
+ProjectKind SourceTarget::parseProjectKind(const std::string& inValue)
 {
 	if (String::equals("staticLibrary", inValue))
 		return ProjectKind::StaticLibrary;
@@ -728,7 +728,7 @@ ProjectKind ProjectTarget::parseProjectKind(const std::string& inValue)
 }
 
 /*****************************************************************************/
-void ProjectTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
+void SourceTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 {
 	const auto& projectName = name();
 	chalet_assert(!projectName.empty(), "parseOutputFilename: name is blank");
@@ -786,7 +786,7 @@ void ProjectTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 /*****************************************************************************/
 // TODO: These will need numerous discussions as to how they can be categorized
 //
-StringList ProjectTarget::parseWarnings(const std::string& inValue)
+StringList SourceTarget::parseWarnings(const std::string& inValue)
 {
 	StringList ret;
 

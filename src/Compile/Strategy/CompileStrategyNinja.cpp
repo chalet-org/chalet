@@ -51,7 +51,7 @@ bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
 }
 
 /*****************************************************************************/
-bool CompileStrategyNinja::addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
+bool CompileStrategyNinja::addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
 {
 	if (!m_initialized)
 		return false;
@@ -90,7 +90,7 @@ bool CompileStrategyNinja::saveBuildFile() const
 }
 
 /*****************************************************************************/
-bool CompileStrategyNinja::buildProject(const ProjectTarget& inProject) const
+bool CompileStrategyNinja::buildProject(const SourceTarget& inProject) const
 {
 	auto& ninjaExec = m_state.toolchain.ninja();
 	if (m_hashes.find(inProject.name()) == m_hashes.end())

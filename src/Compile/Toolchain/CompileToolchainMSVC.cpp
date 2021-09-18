@@ -11,14 +11,14 @@
 
 #include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 
 // https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically?view=msvc-160
 
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const ProjectTarget& inProject, const CompilerConfig& inConfig) :
+CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
 	ICompileToolchain(inState, inProject, inConfig),
 	m_compilerType(m_config.compilerType())
 {
@@ -714,7 +714,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 		{
 			if (target->isProject())
 			{
-				auto& project = static_cast<const ProjectTarget&>(*target);
+				auto& project = static_cast<const SourceTarget&>(*target);
 				if (List::contains(m_project.projectStaticLinks(), project.name()))
 				{
 					outArgList.push_back(project.outputFile());
@@ -737,7 +737,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 			{
 				if (target->isProject())
 				{
-					auto& project = static_cast<const ProjectTarget&>(*target);
+					auto& project = static_cast<const SourceTarget&>(*target);
 					if (project.name() == link && project.isSharedLibrary())
 					{
 						auto outputFile = project.outputFile();

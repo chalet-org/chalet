@@ -12,7 +12,7 @@
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
@@ -28,16 +28,16 @@ struct ICompileStrategy
 
 	StrategyType type() const noexcept;
 
-	bool addCompileCommands(const ProjectTarget& inProject, CompileToolchain& inToolchain);
+	bool addCompileCommands(const SourceTarget& inProject, CompileToolchain& inToolchain);
 	bool saveCompileCommands() const;
 
 	const SourceOutputs& getSourceOutput(const std::string& inTarget);
 
 	virtual bool initialize(const StringList& inFileExtensions) = 0;
-	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
+	virtual bool addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
 
 	virtual bool saveBuildFile() const = 0;
-	virtual bool buildProject(const ProjectTarget& inProject) const = 0;
+	virtual bool buildProject(const SourceTarget& inProject) const = 0;
 	virtual bool doPostBuild() const;
 
 protected:

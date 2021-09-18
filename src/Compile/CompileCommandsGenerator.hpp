@@ -10,7 +10,7 @@
 
 namespace chalet
 {
-struct ProjectTarget;
+struct SourceTarget;
 struct SourceOutputs;
 
 struct CompileCommandsGenerator

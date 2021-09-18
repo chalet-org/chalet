@@ -15,7 +15,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProfilerRunner::ProfilerRunner(const CommandLineInputs& inInputs, BuildState& inState, const ProjectTarget& inProject) :
+ProfilerRunner::ProfilerRunner(const CommandLineInputs& inInputs, BuildState& inState, const SourceTarget& inProject) :
 	m_inputs(inInputs),
 	m_state(inState),
 	m_project(inProject)

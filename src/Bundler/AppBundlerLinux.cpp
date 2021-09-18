@@ -49,7 +49,7 @@ bool AppBundlerLinux::removeOldFiles()
 	{
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 			if (!List::contains(bundleProjects, project.name()))
 				continue;
 

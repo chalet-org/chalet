@@ -17,15 +17,15 @@ struct CompileStrategyMakefile final : ICompileStrategy
 	explicit CompileStrategyMakefile(BuildState& inState);
 
 	virtual bool initialize(const StringList& inFileExtensions) final;
-	virtual bool addProject(const ProjectTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
+	virtual bool addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
 
 	virtual bool saveBuildFile() const final;
-	virtual bool buildProject(const ProjectTarget& inProject) const final;
+	virtual bool buildProject(const SourceTarget& inProject) const final;
 
 private:
-	bool buildMake(const ProjectTarget& inProject) const;
+	bool buildMake(const SourceTarget& inProject) const;
 #if defined(CHALET_WIN32)
-	bool buildNMake(const ProjectTarget& inProject) const;
+	bool buildNMake(const SourceTarget& inProject) const;
 #endif
 
 	bool subprocessMakefile(const StringList& inCmd, std::string inCwd = std::string()) const;

@@ -7,7 +7,7 @@
 #define CHALET_BUILD_PATHS_HPP
 
 #include "State/SourceOutputs.hpp"
-#include "State/Target/ProjectTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
@@ -31,17 +31,17 @@ struct BuildPaths
 
 	const StringList& allFileExtensions() const noexcept;
 
-	std::string getTargetFilename(const ProjectTarget& inProject) const;
-	std::string getTargetBasename(const ProjectTarget& inProject) const;
-	std::string getPrecompiledHeader(const ProjectTarget& inProject) const;
-	std::string getPrecompiledHeaderTarget(const ProjectTarget& inProject, const bool inPchExtension = true) const;
-	std::string getPrecompiledHeaderInclude(const ProjectTarget& inProject) const;
-	std::string getWindowsManifestFilename(const ProjectTarget& inProject) const;
-	std::string getWindowsManifestResourceFilename(const ProjectTarget& inProject) const;
-	std::string getWindowsIconResourceFilename(const ProjectTarget& inProject) const;
+	std::string getTargetFilename(const SourceTarget& inProject) const;
+	std::string getTargetBasename(const SourceTarget& inProject) const;
+	std::string getPrecompiledHeader(const SourceTarget& inProject) const;
+	std::string getPrecompiledHeaderTarget(const SourceTarget& inProject, const bool inPchExtension = true) const;
+	std::string getPrecompiledHeaderInclude(const SourceTarget& inProject) const;
+	std::string getWindowsManifestFilename(const SourceTarget& inProject) const;
+	std::string getWindowsManifestResourceFilename(const SourceTarget& inProject) const;
+	std::string getWindowsIconResourceFilename(const SourceTarget& inProject) const;
 
-	void setBuildDirectoriesBasedOnProjectKind(const ProjectTarget& inProject);
-	SourceOutputs getOutputs(const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const;
+	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
+	SourceOutputs getOutputs(const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const;
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const;
 
 	void replaceVariablesInPath(std::string& outPath, const std::string& inName = std::string()) const;
@@ -52,7 +52,7 @@ private:
 	explicit BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnvironment& inEnvironment);
 
 	bool initialize(const BuildInfo& inInfo, const CompilerTools& inToolchain);
-	void populateFileList(const ProjectTarget& inProject);
+	void populateFileList(const SourceTarget& inProject);
 
 	struct SourceGroup
 	{
@@ -60,17 +60,17 @@ private:
 		StringList list;
 	};
 
-	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const ProjectTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const;
+	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const;
 	std::string getObjectFile(const std::string& inSource, const bool inIsMsvc) const;
 	std::string getAssemblyFile(const std::string& inSource, const bool inIsMsvc) const;
 	std::string getDependencyFile(const std::string& inSource) const;
 	SourceType getSourceType(const std::string& inSource) const;
-	StringList getObjectFilesList(const StringList& inFiles, const ProjectTarget& inProject, const bool inIsMsvc) const;
+	StringList getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject, const bool inIsMsvc) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
-	SourceGroup getFiles(const ProjectTarget& inProject) const;
-	SourceGroup getDirectories(const ProjectTarget& inProject) const;
-	StringList getFileList(const ProjectTarget& inProject) const;
-	StringList getDirectoryList(const ProjectTarget& inProject) const;
+	SourceGroup getFiles(const SourceTarget& inProject) const;
+	SourceGroup getDirectories(const SourceTarget& inProject) const;
+	StringList getFileList(const SourceTarget& inProject) const;
+	StringList getDirectoryList(const SourceTarget& inProject) const;
 
 	const CommandLineInputs& m_inputs;
 	const WorkspaceEnvironment& m_environment;

@@ -18,8 +18,8 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/CMakeTarget.hpp"
-#include "State/Target/ProjectTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -96,7 +96,7 @@ bool BuildJsonParser::validBuildRequested()
 
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.language() == CodeLanguage::None)
 			{
 				Diagnostic::error("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project.name());
@@ -120,7 +120,7 @@ bool BuildJsonParser::validRunProjectRequestedFromInput()
 		bool isProjectFromArgs = !inputRunProject.empty() && name == inputRunProject;
 		if (target->isProject())
 		{
-			auto& project = static_cast<const ProjectTarget&>(*target);
+			auto& project = static_cast<const SourceTarget&>(*target);
 			if (isProjectFromArgs && project.isExecutable())
 				return true;
 		}
@@ -157,7 +157,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		{
 			if (m_abstractProjects.find(name) == m_abstractProjects.end())
 			{
-				auto abstractProject = std::make_unique<ProjectTarget>(m_state);
+				auto abstractProject = std::make_unique<SourceTarget>(m_state);
 				if (!parseProject(*abstractProject, templateJson, true))
 				{
 					Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_filename, name);
@@ -192,7 +192,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 
 		if (m_abstractProjects.find(name) == m_abstractProjects.end())
 		{
-			auto abstractProject = std::make_unique<ProjectTarget>(m_state);
+			auto abstractProject = std::make_unique<SourceTarget>(m_state);
 			if (!parseProject(*abstractProject, abstractJson, true))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_filename, name);
@@ -245,7 +245,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		BuildTarget target;
 		if (type == BuildTargetType::Project && m_abstractProjects.find(extends) != m_abstractProjects.end())
 		{
-			target = std::make_unique<ProjectTarget>(*m_abstractProjects.at(extends)); // note: copy ctor
+			target = std::make_unique<SourceTarget>(*m_abstractProjects.at(extends)); // note: copy ctor
 		}
 		else
 		{
@@ -283,7 +283,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		}
 		else
 		{
-			if (!parseProject(static_cast<ProjectTarget&>(*target), targetJson))
+			if (!parseProject(static_cast<SourceTarget&>(*target), targetJson))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' project target.", m_filename, name);
 				return false;
@@ -300,7 +300,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProject(ProjectTarget& outProject, const Json& inNode, const bool inAbstract)
+bool BuildJsonParser::parseProject(SourceTarget& outProject, const Json& inNode, const bool inAbstract)
 {
 	if (!parsePlatformConfigExclusions(outProject, inNode))
 		return true; // true to skip project
@@ -476,7 +476,7 @@ bool BuildJsonParser::parsePlatformConfigExclusions(IBuildTarget& outProject, co
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseCompilerSettingsCxx(ProjectTarget& outProject, const Json& inNode)
+bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode)
 {
 
 	if (std::string val; assignStringFromConfig(val, inNode, "windowsApplicationManifest"))
@@ -558,7 +558,7 @@ bool BuildJsonParser::parseCompilerSettingsCxx(ProjectTarget& outProject, const 
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseFilesAndLocation(ProjectTarget& outProject, const Json& inNode, const bool inAbstract)
+bool BuildJsonParser::parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract)
 {
 	bool locResult = parseProjectLocationOrFiles(outProject, inNode);
 	if (locResult && inAbstract)
@@ -591,7 +591,7 @@ bool BuildJsonParser::parseFilesAndLocation(ProjectTarget& outProject, const Jso
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProjectLocationOrFiles(ProjectTarget& outProject, const Json& inNode)
+bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode)
 {
 	const std::string loc{ "location" };
 
