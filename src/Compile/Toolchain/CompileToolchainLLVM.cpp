@@ -136,6 +136,33 @@ bool CompileToolchainLLVM::addArchitectureOptions(StringList& outArgList) const
 // Linking
 /*****************************************************************************/
 /*****************************************************************************/
+void CompileToolchainLLVM::addLinks(StringList& outArgList) const
+{
+	CompileToolchainGNU::addLinks(outArgList);
+
+	if (m_config.isWindowsClang())
+	{
+		const std::string prefix{ "-l" };
+		for (const char* link : {
+				 "DbgHelp",
+				 "kernel32",
+				 "user32",
+				 "gdi32",
+				 "winspool",
+				 "shell32",
+				 "ole32",
+				 "oleaut32",
+				 "uuid",
+				 "comdlg32",
+				 "advapi32",
+			 })
+		{
+			List::addIfDoesNotExist(outArgList, fmt::format("{}{}", prefix, link));
+		}
+	}
+}
+
+/*****************************************************************************/
 void CompileToolchainLLVM::addStripSymbolsOption(StringList& outArgList) const
 {
 	UNUSED(outArgList);
@@ -177,10 +204,26 @@ void CompileToolchainLLVM::addStaticCompilerLibraryOptions(StringList& outArgLis
 }
 
 /*****************************************************************************/
-void CompileToolchainLLVM::addPlatformGuiApplicationFlag(StringList& outArgList) const
+void CompileToolchainLLVM::addSubSystem(StringList& outArgList) const
 {
-	// Noop in clang for now
-	UNUSED(outArgList);
+	if (m_config.isWindowsClang())
+	{
+		const bool debugSymbols = m_state.configuration.debugSymbols();
+		const ProjectKind kind = m_project.kind();
+		if (kind == ProjectKind::ConsoleApplication || (kind == ProjectKind::DesktopApplication && debugSymbols))
+		{
+			std::string subsystem{ "-Wl,/subsystem:console" };
+			List::addIfDoesNotExist(outArgList, std::move(subsystem));
+			List::addIfDoesNotExist(outArgList, "-Wl,/ENTRY:mainCRTStartup");
+		}
+		else if (kind == ProjectKind::DesktopApplication && !debugSymbols)
+		{
+			// TODO: check other windows specific options
+			std::string subsystem{ "-Wl,/subsystem:windows" };
+			List::addIfDoesNotExist(outArgList, std::move(subsystem));
+			List::addIfDoesNotExist(outArgList, "-Wl,/ENTRY:mainCRTStartup");
+		}
+	}
 }
 
 /*****************************************************************************/

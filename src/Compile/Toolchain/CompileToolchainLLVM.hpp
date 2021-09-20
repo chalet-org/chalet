@@ -29,11 +29,12 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 	virtual bool addArchitectureOptions(StringList& outArgList) const override;
 
 	// Linking
+	virtual void addLinks(StringList& outArgList) const override;
 	virtual void addStripSymbolsOption(StringList& outArgList) const override;
 	virtual void addLinkerScripts(StringList& outArgList) const override;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;
 	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const override;
-	virtual void addPlatformGuiApplicationFlag(StringList& outArgList) const override;
+	virtual void addSubSystem(StringList& outArgList) const override;
 
 	// Linking (Misc)
 	virtual void startStaticLinkGroup(StringList& outArgList) const override;

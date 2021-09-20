@@ -342,7 +342,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
-	addPlatformGuiApplicationFlag(ret);
+	addSubSystem(ret);
 	addMacosFrameworkOptions(ret);
 
 	addLibDirs(ret);
@@ -419,7 +419,7 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
-	addPlatformGuiApplicationFlag(ret);
+	addSubSystem(ret);
 	addMacosFrameworkOptions(ret);
 
 	return ret;
@@ -980,7 +980,7 @@ void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& outArgList
 }
 
 /*****************************************************************************/
-void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& outArgList) const
+void CompileToolchainGNU::addSubSystem(StringList& outArgList) const
 {
 	if (m_config.isMingwGcc())
 	{
@@ -988,16 +988,16 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& outArgList) 
 		const ProjectKind kind = m_project.kind();
 		if (kind == ProjectKind::ConsoleApplication || (kind == ProjectKind::DesktopApplication && debugSymbols))
 		{
-			std::string mConsole{ "-mconsole" };
+			std::string subsystem{ "-mconsole" };
 			// if (isFlagSupported(mWindows))
-			List::addIfDoesNotExist(outArgList, std::move(mConsole));
+			List::addIfDoesNotExist(outArgList, std::move(subsystem));
 		}
 		else if (kind == ProjectKind::DesktopApplication && !debugSymbols)
 		{
 			// TODO: check other windows specific options
-			std::string mWindows{ "-mwindows" };
+			std::string subsystem{ "-mwindows" };
 			// if (isFlagSupported(mWindows))
-			List::addIfDoesNotExist(outArgList, std::move(mWindows));
+			List::addIfDoesNotExist(outArgList, std::move(subsystem));
 		}
 	}
 }

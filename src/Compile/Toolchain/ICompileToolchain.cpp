@@ -358,7 +358,7 @@ void ICompileToolchain::addStaticCompilerLibraryOptions(StringList& outArgList) 
 }
 
 /*****************************************************************************/
-void ICompileToolchain::addPlatformGuiApplicationFlag(StringList& outArgList) const
+void ICompileToolchain::addSubSystem(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }

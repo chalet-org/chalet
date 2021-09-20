@@ -72,7 +72,7 @@ protected:
 	virtual void addLinkerScripts(StringList& outArgList) const;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const;
 	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const;
-	virtual void addPlatformGuiApplicationFlag(StringList& outArgList) const;
+	virtual void addSubSystem(StringList& outArgList) const;
 
 	const BuildState& m_state;
 	const SourceTarget& m_project;

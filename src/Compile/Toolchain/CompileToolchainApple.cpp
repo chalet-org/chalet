@@ -125,7 +125,7 @@ StringList CompileToolchainApple::getDynamicLibTargetCommand(const std::string& 
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
-	addPlatformGuiApplicationFlag(ret);
+	addSubSystem(ret);
 	addMacosFrameworkOptions(ret);
 
 	addLibDirs(ret);

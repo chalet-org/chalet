@@ -802,17 +802,15 @@ void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
 
 	if (kind == ProjectKind::ConsoleApplication || (kind == ProjectKind::DesktopApplication && debugSymbols))
 	{
-		std::string subsystemConsole{ "/subsystem:console" };
-		List::addIfDoesNotExist(outArgList, std::move(subsystemConsole));
-
-		outArgList.emplace_back("/ENTRY:mainCRTStartup");
+		std::string subsystem{ "/subsystem:console" };
+		List::addIfDoesNotExist(outArgList, std::move(subsystem));
+		List::addIfDoesNotExist(outArgList, "/ENTRY:mainCRTStartup");
 	}
 	else if (kind == ProjectKind::DesktopApplication && !debugSymbols)
 	{
-		std::string subsystemConsole{ "/subsystem:windows" };
-		List::addIfDoesNotExist(outArgList, std::move(subsystemConsole));
-
-		outArgList.emplace_back("/ENTRY:mainCRTStartup");
+		std::string subsystem{ "/subsystem:windows" };
+		List::addIfDoesNotExist(outArgList, std::move(subsystem));
+		List::addIfDoesNotExist(outArgList, "/ENTRY:mainCRTStartup");
 	}
 }
 
