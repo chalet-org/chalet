@@ -246,7 +246,7 @@ bool ProjectInitializer::run()
 		Output::printInfo(".gitignore");
 		Output::lineBreak();
 
-		const auto gitIgnore = StarterFileTemplates::getGitIgnore(m_inputs.outputDirectory(), m_inputs.settingsFile());
+		const auto gitIgnore = StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
 		std::cout << Output::getAnsiStyle(Output::theme().build) << gitIgnore << Output::getAnsiReset() << std::endl;
 
 		Commands::sleep(stepTime);
@@ -425,7 +425,8 @@ bool ProjectInitializer::makePch(const BuildJsonProps& inProps)
 bool ProjectInitializer::makeGitIgnore()
 {
 	const auto outFile = fmt::format("{}/.gitignore", m_rootPath);
-	const auto contents = StarterFileTemplates::getGitIgnore(m_inputs.outputDirectory(), m_inputs.settingsFile());
+
+	const auto contents = StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
 
 	return Commands::createFileWithContents(outFile, contents);
 }
