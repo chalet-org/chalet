@@ -62,7 +62,6 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 
 	ret[kTargets] = Json::object();
 	ret[kTargets][project] = Json::object();
-	ret[kTargets][project]["runProject"] = true;
 	ret[kTargets][project]["kind"] = kind;
 
 	if (inProps.useLocation)
