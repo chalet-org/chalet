@@ -11,6 +11,8 @@
 #include "State/ProjectWarnings.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/ThreadType.hpp"
+#include "State/WindowsEntryPoint.hpp"
+#include "State/WindowsSubSystem.hpp"
 
 namespace chalet
 {
@@ -139,6 +141,14 @@ struct SourceTarget final : public IBuildTarget
 	void setThreadType(const ThreadType inValue) noexcept;
 	void setThreadType(const std::string& inValue);
 
+	WindowsSubSystem windowsSubSystem() const noexcept;
+	void setWindowsSubSystem(const WindowsSubSystem inValue) noexcept;
+	void setWindowsSubSystem(const std::string& inValue);
+
+	WindowsEntryPoint windowsEntryPoint() const noexcept;
+	void setWindowsEntryPoint(const WindowsEntryPoint inValue) noexcept;
+	void setWindowsEntryPoint(const std::string& inValue);
+
 	bool objectiveCxx() const noexcept;
 	void setObjectiveCxx(const bool inValue) noexcept;
 
@@ -163,6 +173,8 @@ struct SourceTarget final : public IBuildTarget
 private:
 	ProjectKind parseProjectKind(const std::string& inValue);
 	ThreadType parseThreadType(const std::string& inValue);
+	WindowsSubSystem parseWindowsSubSystem(const std::string& inValue);
+	WindowsEntryPoint parseWindowsEntryPoint(const std::string& inValue);
 	StringList getWarningPreset();
 	StringList parseWarnings(const std::string& inValue);
 
@@ -188,7 +200,7 @@ private:
 
 	std::string m_productionDependencies;
 	std::string m_productionExcludes;
-	std::string m_warningsPresetString{ "none" };
+	std::string m_warningsPresetString;
 	std::string m_outputFile;
 	std::string m_outputFileNoPrefix;
 	std::string m_cStandard;
@@ -202,6 +214,8 @@ private:
 	CodeLanguage m_language = CodeLanguage::None;
 	ProjectWarnings m_warningsPreset = ProjectWarnings::None;
 	ThreadType m_threadType = ThreadType::Auto;
+	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;
+	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;
 
 	bool m_objectiveCxx = false;
 	bool m_rtti = true;

@@ -362,4 +362,88 @@ void ICompileToolchain::addSubSystem(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
+
+/*****************************************************************************/
+void ICompileToolchain::addEntryPoint(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+std::string ICompileToolchain::getMsvcCompatibleSubSystem() const
+{
+	const WindowsSubSystem subSystem = m_project.windowsSubSystem();
+	if (subSystem == WindowsSubSystem::Windows)
+	{
+		return "windows";
+	}
+	else if (subSystem == WindowsSubSystem::BootApplication)
+	{
+		return "BOOT_APPLICATION";
+	}
+	else if (subSystem == WindowsSubSystem::Native)
+	{
+		return "native";
+	}
+	else if (subSystem == WindowsSubSystem::Posix)
+	{
+		return "posix";
+	}
+	else if (subSystem == WindowsSubSystem::EfiApplication)
+	{
+		return "EFI_APPLICATION";
+	}
+	else if (subSystem == WindowsSubSystem::EfiBootServiceDriver)
+	{
+		return "EFI_BOOT_SERVICE_DRIVER";
+	}
+	else if (subSystem == WindowsSubSystem::EfiRom)
+	{
+		return "EFI_ROM";
+	}
+	else if (subSystem == WindowsSubSystem::EfiRuntimeDriver)
+	{
+		return "EFI_RUNTIME_DRIVER";
+	}
+	else
+	{
+		return "console";
+	}
+}
+
+/*****************************************************************************/
+std::string ICompileToolchain::getMsvcCompatibleEntryPoint() const
+{
+	const ProjectKind kind = m_project.kind();
+	const WindowsEntryPoint entryPoint = m_project.windowsEntryPoint();
+
+	if (kind == ProjectKind::Executable)
+	{
+		if (entryPoint == WindowsEntryPoint::MainUnicode)
+		{
+			return "wmainCRTStartup";
+		}
+		else if (entryPoint == WindowsEntryPoint::WinMain)
+		{
+			return "WinMainCRTStartup";
+		}
+		else if (entryPoint == WindowsEntryPoint::WinMainUnicode)
+		{
+			return "wWinMainCRTStartup";
+		}
+		else
+		{
+			return "mainCRTStartup";
+		}
+	}
+	else if (kind == ProjectKind::SharedLibrary)
+	{
+		if (entryPoint == WindowsEntryPoint::DllMain)
+		{
+			return "_DllMainCRTStartup";
+		}
+	}
+
+	return std::string();
+}
 }

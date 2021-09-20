@@ -86,6 +86,8 @@ class SchemaBuildJson
 		SourceTargetCxxWindowsAppIcon,
 		SourceTargetCxxWindowsOutputDef,
 		SourceTargetCxxWindowsPrefixOutputFilename,
+		SourceTargetCxxWindowsSubSystem,
+		SourceTargetCxxWindowsEntryPoint,
 		//
 		ScriptTarget,
 		ScriptTargetScript,

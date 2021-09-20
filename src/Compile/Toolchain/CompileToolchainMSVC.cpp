@@ -220,6 +220,7 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 
 	addTargetPlatformArch(ret);
 	addSubSystem(ret);
+	addEntryPoint(ret);
 	addCgThreads(ret);
 	addLibDirs(ret);
 
@@ -319,6 +320,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 
 	addTargetPlatformArch(ret);
 	addSubSystem(ret);
+	addEntryPoint(ret);
 	addCgThreads(ret);
 	addLibDirs(ret);
 
@@ -794,23 +796,24 @@ void CompileToolchainMSVC::addCgThreads(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
 {
-	const bool debugSymbols = m_state.configuration.debugSymbols();
 	const ProjectKind kind = m_project.kind();
 
-	// TODO: EFI_, NATIVE, POSIX, etc
 	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
 
-	if (kind == ProjectKind::ConsoleApplication || (kind == ProjectKind::DesktopApplication && debugSymbols))
+	if (kind == ProjectKind::Executable)
 	{
-		std::string subsystem{ "/subsystem:console" };
-		List::addIfDoesNotExist(outArgList, std::move(subsystem));
-		List::addIfDoesNotExist(outArgList, "/ENTRY:mainCRTStartup");
+		const auto subSystem = getMsvcCompatibleSubSystem();
+		List::addIfDoesNotExist(outArgList, fmt::format("/subsystem:{}", subSystem));
 	}
-	else if (kind == ProjectKind::DesktopApplication && !debugSymbols)
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addEntryPoint(StringList& outArgList) const
+{
+	const auto entryPoint = getMsvcCompatibleEntryPoint();
+	if (!entryPoint.empty())
 	{
-		std::string subsystem{ "/subsystem:windows" };
-		List::addIfDoesNotExist(outArgList, std::move(subsystem));
-		List::addIfDoesNotExist(outArgList, "/ENTRY:mainCRTStartup");
+		List::addIfDoesNotExist(outArgList, fmt::format("/entry:{}", entryPoint));
 	}
 }
 

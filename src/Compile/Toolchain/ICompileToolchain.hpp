@@ -73,6 +73,11 @@ protected:
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const;
 	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const;
 	virtual void addSubSystem(StringList& outArgList) const;
+	virtual void addEntryPoint(StringList& outArgList) const;
+
+	// Other
+	std::string getMsvcCompatibleSubSystem() const;
+	std::string getMsvcCompatibleEntryPoint() const;
 
 	const BuildState& m_state;
 	const SourceTarget& m_project;

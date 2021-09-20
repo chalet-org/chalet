@@ -17,7 +17,8 @@ namespace chalet
 /*****************************************************************************/
 SourceTarget::SourceTarget(BuildState& inState) :
 	IBuildTarget(inState, BuildTargetType::Project),
-	m_environment(inState.environment)
+	m_environment(inState.environment),
+	m_warningsPresetString("none")
 {
 	StringList exts = {
 		"cpp",
@@ -125,7 +126,7 @@ bool SourceTarget::validate()
 /*****************************************************************************/
 bool SourceTarget::isExecutable() const noexcept
 {
-	return m_kind == ProjectKind::ConsoleApplication || m_kind == ProjectKind::DesktopApplication;
+	return m_kind == ProjectKind::Executable;
 }
 
 bool SourceTarget::isSharedLibrary() const noexcept
@@ -622,10 +623,43 @@ void SourceTarget::setThreadType(const std::string& inValue)
 }
 
 /*****************************************************************************/
+WindowsSubSystem SourceTarget::windowsSubSystem() const noexcept
+{
+	return m_windowsSubSystem;
+}
+
+void SourceTarget::setWindowsSubSystem(const WindowsSubSystem inValue) noexcept
+{
+	m_windowsSubSystem = inValue;
+}
+
+void SourceTarget::setWindowsSubSystem(const std::string& inValue)
+{
+	m_windowsSubSystem = parseWindowsSubSystem(inValue);
+}
+
+/*****************************************************************************/
+WindowsEntryPoint SourceTarget::windowsEntryPoint() const noexcept
+{
+	return m_windowsEntryPoint;
+}
+
+void SourceTarget::setWindowsEntryPoint(const WindowsEntryPoint inValue) noexcept
+{
+	m_windowsEntryPoint = inValue;
+}
+
+void SourceTarget::setWindowsEntryPoint(const std::string& inValue)
+{
+	m_windowsEntryPoint = parseWindowsEntryPoint(inValue);
+}
+
+/*****************************************************************************/
 bool SourceTarget::objectiveCxx() const noexcept
 {
 	return m_objectiveCxx;
 }
+
 void SourceTarget::setObjectiveCxx(const bool inValue) noexcept
 {
 	m_objectiveCxx = inValue;
@@ -712,19 +746,70 @@ ThreadType SourceTarget::parseThreadType(const std::string& inValue)
 /*****************************************************************************/
 ProjectKind SourceTarget::parseProjectKind(const std::string& inValue)
 {
+	if (String::equals("executable", inValue))
+		return ProjectKind::Executable;
+
 	if (String::equals("staticLibrary", inValue))
 		return ProjectKind::StaticLibrary;
 
 	if (String::equals("sharedLibrary", inValue))
 		return ProjectKind::SharedLibrary;
 
-	if (String::equals("consoleApplication", inValue))
-		return ProjectKind::ConsoleApplication;
-
-	if (String::equals("desktopApplication", inValue))
-		return ProjectKind::DesktopApplication;
-
 	return ProjectKind::None;
+}
+
+/*****************************************************************************/
+WindowsSubSystem SourceTarget::parseWindowsSubSystem(const std::string& inValue)
+{
+	if (String::equals("console", inValue))
+		return WindowsSubSystem::Console;
+
+	if (String::equals("windows", inValue))
+		return WindowsSubSystem::Windows;
+
+	if (String::equals("bootApplication", inValue))
+		return WindowsSubSystem::BootApplication;
+
+	if (String::equals("native", inValue))
+		return WindowsSubSystem::Native;
+
+	if (String::equals("posix", inValue))
+		return WindowsSubSystem::Posix;
+
+	if (String::equals("efiApplication", inValue))
+		return WindowsSubSystem::EfiApplication;
+
+	if (String::equals("efiBootServer", inValue))
+		return WindowsSubSystem::EfiBootServiceDriver;
+
+	if (String::equals("efiRom", inValue))
+		return WindowsSubSystem::EfiRom;
+
+	if (String::equals("efiRuntimeDriver", inValue))
+		return WindowsSubSystem::EfiRuntimeDriver;
+
+	return WindowsSubSystem::None;
+}
+
+/*****************************************************************************/
+WindowsEntryPoint SourceTarget::parseWindowsEntryPoint(const std::string& inValue)
+{
+	if (String::equals("main", inValue))
+		return WindowsEntryPoint::Main;
+
+	if (String::equals("wmain", inValue))
+		return WindowsEntryPoint::MainUnicode;
+
+	if (String::equals("WinMain", inValue))
+		return WindowsEntryPoint::WinMain;
+
+	if (String::equals("wWinMain", inValue))
+		return WindowsEntryPoint::WinMainUnicode;
+
+	if (String::equals("DllMain", inValue))
+		return WindowsEntryPoint::DllMain;
+
+	return WindowsEntryPoint::None;
 }
 
 /*****************************************************************************/
@@ -758,8 +843,7 @@ void SourceTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 
 	switch (m_kind)
 	{
-		case ProjectKind::ConsoleApplication:
-		case ProjectKind::DesktopApplication: {
+		case ProjectKind::Executable: {
 			m_outputFile = projectName + executableExtension;
 			m_outputFileNoPrefix = m_outputFile;
 			break;

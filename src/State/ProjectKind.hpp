@@ -13,8 +13,7 @@ enum class ProjectKind : ushort
 	None,
 	StaticLibrary,
 	SharedLibrary,
-	ConsoleApplication,
-	DesktopApplication
+	Executable
 };
 }
 

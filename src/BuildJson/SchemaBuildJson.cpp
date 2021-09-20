@@ -384,8 +384,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"enum": [
 			"staticLibrary",
 			"sharedLibrary",
-			"consoleApplication",
-			"desktopApplication"
+			"executable"
 		]
 	})json"_ojson;
 
@@ -591,6 +590,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::SourceTargetCxxThreads] = R"json({
 		"type": "string",
+		"description": "The thread model to use.",
 		"enum": [
 			"auto",
 			"posix",
@@ -951,7 +951,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	};
 
 	defs[Defs::SourceTargetCxxWindowsAppManifest] = R"json({
-		"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
+		"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",
 		"anyOf": [
 			{
 				"type": "string"
@@ -965,7 +965,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::SourceTargetCxxWindowsAppIcon] = R"json({
 		"type": "string",
-		"description": "The windows icon to use for the project. Only applies to application targets (kind=[consoleApplication|desktopApplication])"
+		"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)"
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxWindowsOutputDef] = R"json({
@@ -978,6 +978,36 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"type": "boolean",
 		"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
 		"default": true
+	})json"_ojson;
+
+	defs[Defs::SourceTargetCxxWindowsSubSystem] = R"json({
+		"type": "string",
+		"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to 'console'",
+		"enum": [
+			"console",
+			"windows",
+			"bootApplication",
+			"native",
+			"posix",
+			"efiApplication",
+			"efiBootServer",
+			"efiRom",
+			"efiRuntimeDriver"
+		],
+		"default": "console"
+	})json"_ojson;
+
+	defs[Defs::SourceTargetCxxWindowsEntryPoint] = R"json({
+		"type": "string",
+		"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to 'main'",
+		"enum": [
+			"main",
+			"wmain",
+			"WinMain",
+			"wWinMain",
+			"DllMain"
+		],
+		"default": "main"
 	})json"_ojson;
 
 	defs[Defs::ScriptTargetScript] = R"json({
@@ -1150,6 +1180,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetProjectCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::SourceTargetCxxWindowsOutputDef);
 		targetProjectCxx[kProperties]["windowsApplicationIcon"] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
 		targetProjectCxx[kProperties]["windowsApplicationManifest"] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
+		targetProjectCxx[kProperties]["windowsSubSystem"] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
+		targetProjectCxx[kProperties]["windowsEntryPoint"] = getDefinition(Defs::SourceTargetCxxWindowsEntryPoint);
 
 		targetProjectCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxCStandard);
 		targetProjectCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxCppStandard);
@@ -1166,6 +1198,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetProjectCxx[kPatternProperties][fmt::format("^rtti{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
 		targetProjectCxx[kPatternProperties][fmt::format("^exceptions{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxExceptions);
 		targetProjectCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinking);
+
+		targetProjectCxx[kPatternProperties][fmt::format("^windowsApplicationIcon{}$", kPatternConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
+		targetProjectCxx[kPatternProperties][fmt::format("^windowsApplicationManifest{}$", kPatternConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
+		targetProjectCxx[kPatternProperties][fmt::format("^windowsSubSystem{}$", kPatternConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
+		targetProjectCxx[kPatternProperties][fmt::format("^windowsEntryPoint{}$", kPatternConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsEntryPoint);
+
 		defs[Defs::SourceTargetCxx] = std::move(targetProjectCxx);
 	}
 
@@ -1344,6 +1382,8 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::SourceTargetCxxWindowsAppIcon: return "source-target-cxx-windowsAppIcon";
 		case Defs::SourceTargetCxxWindowsOutputDef: return "source-target-cxx-windowsOutputDef";
 		case Defs::SourceTargetCxxWindowsPrefixOutputFilename: return "source-target-cxx-windowsPrefixOutputFilename";
+		case Defs::SourceTargetCxxWindowsSubSystem: return "source-target-cxx-windowsSubSystem";
+		case Defs::SourceTargetCxxWindowsEntryPoint: return "source-target-cxx-windowsEntryPoint";
 		//
 		case Defs::ScriptTarget: return "script-target";
 		case Defs::ScriptTargetScript: return "script-target-script";

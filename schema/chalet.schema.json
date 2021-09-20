@@ -527,8 +527,7 @@
 			"enum": [
 				"staticLibrary",
 				"sharedLibrary",
-				"consoleApplication",
-				"desktopApplication"
+				"executable"
 			]
 		},
 		"source-target-location": {
@@ -689,6 +688,12 @@
 				},
 				"windowsApplicationManifest": {
 					"$ref": "#/definitions/source-target-cxx-windowsApplicationManifest"
+				},
+				"windowsSubSystem": {
+					"$ref": "#/definitions/source-target-cxx-windowsSubSystem"
+				},
+				"windowsEntryPoint": {
+					"$ref": "#/definitions/source-target-cxx-windowsEntryPoint"
 				}
 			},
 			"patternProperties": {
@@ -736,6 +741,18 @@
 				},
 				"^staticLinking(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
 					"$ref": "#/definitions/source-target-cxx-staticLinking"
+				},
+				"^windowsApplicationIcon(:!?debug|)$": {
+					"$ref": "#/definitions/source-target-cxx-windowsAppIcon"
+				},
+				"^windowsApplicationManifest(:!?debug|)$": {
+					"$ref": "#/definitions/source-target-cxx-windowsApplicationManifest"
+				},
+				"^windowsSubSystem(:!?debug|)$": {
+					"$ref": "#/definitions/source-target-cxx-windowsSubSystem"
+				},
+				"^windowsEntryPoint(:!?debug|)$": {
+					"$ref": "#/definitions/source-target-cxx-windowsEntryPoint"
 				}
 			}
 		},
@@ -839,6 +856,7 @@
 		},
 		"source-target-cxx-threads": {
 			"type": "string",
+			"description": "The thread model to use.",
 			"enum": [
 				"auto",
 				"posix",
@@ -1192,7 +1210,7 @@
 			]
 		},
 		"source-target-cxx-windowsApplicationManifest": {
-			"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to application (kind=[consoleApplication|desktopApplication]) and shared library (kind=sharedLibrary) targets",
+			"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",
 			"anyOf": [
 				{
 					"type": "string"
@@ -1205,7 +1223,7 @@
 		},
 		"source-target-cxx-windowsAppIcon": {
 			"type": "string",
-			"description": "The windows icon to use for the project. Only applies to application targets (kind=[consoleApplication|desktopApplication])"
+			"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)"
 		},
 		"source-target-cxx-windowsOutputDef": {
 			"type": "boolean",
@@ -1216,6 +1234,34 @@
 			"type": "boolean",
 			"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
 			"default": true
+		},
+		"source-target-cxx-windowsSubSystem": {
+			"type": "string",
+			"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to 'console'",
+			"enum": [
+				"console",
+				"windows",
+				"bootApplication",
+				"native",
+				"posix",
+				"efiApplication",
+				"efiBootServer",
+				"efiRom",
+				"efiRuntimeDriver"
+			],
+			"default": "console"
+		},
+		"source-target-cxx-windowsEntryPoint": {
+			"type": "string",
+			"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to 'main'",
+			"enum": [
+				"main",
+				"wmain",
+				"WinMain",
+				"wWinMain",
+				"DllMain"
+			],
+			"default": "main"
 		},
 		"script-target": {
 			"type": "object",

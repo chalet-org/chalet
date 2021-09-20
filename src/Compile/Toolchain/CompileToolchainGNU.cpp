@@ -294,13 +294,15 @@ StringList CompileToolchainGNU::getLinkerTargetCommand(const std::string& output
 			return getStaticLibTargetCommand(outputFile, sourceObjs);
 		}
 
-		case ProjectKind::DesktopApplication:
-		case ProjectKind::ConsoleApplication:
+		case ProjectKind::Executable: {
+			return getExecutableTargetCommand(outputFile, sourceObjs);
+		}
+
 		default:
 			break;
 	}
 
-	return getExecutableTargetCommand(outputFile, sourceObjs);
+	return {};
 }
 
 /*****************************************************************************/
@@ -343,6 +345,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
 	addSubSystem(ret);
+	addEntryPoint(ret);
 	addMacosFrameworkOptions(ret);
 
 	addLibDirs(ret);
@@ -420,6 +423,7 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 	addLibStdCppLinkerOption(ret);
 	addStaticCompilerLibraryOptions(ret);
 	addSubSystem(ret);
+	addEntryPoint(ret);
 	addMacosFrameworkOptions(ret);
 
 	return ret;
@@ -984,22 +988,45 @@ void CompileToolchainGNU::addSubSystem(StringList& outArgList) const
 {
 	if (m_config.isMingwGcc())
 	{
-		const bool debugSymbols = m_state.configuration.debugSymbols();
+		// MinGW rolls these together for some reason
+		// -mwindows and -mconsole kind of do some magic behind the scenes, so it's hard to assume anything
+
 		const ProjectKind kind = m_project.kind();
-		if (kind == ProjectKind::ConsoleApplication || (kind == ProjectKind::DesktopApplication && debugSymbols))
+		const WindowsSubSystem subSystem = m_project.windowsSubSystem();
+		const WindowsEntryPoint entryPoint = m_project.windowsEntryPoint();
+
+		if (kind == ProjectKind::Executable)
 		{
-			std::string subsystem{ "-mconsole" };
-			// if (isFlagSupported(mWindows))
-			List::addIfDoesNotExist(outArgList, std::move(subsystem));
+			if (entryPoint == WindowsEntryPoint::WinMainUnicode || entryPoint == WindowsEntryPoint::MainUnicode)
+			{
+				List::addIfDoesNotExist(outArgList, "-municode");
+			}
+
+			if (subSystem == WindowsSubSystem::Windows)
+			{
+				List::addIfDoesNotExist(outArgList, "-mwindows");
+			}
+			else
+			{
+				List::addIfDoesNotExist(outArgList, "-mconsole");
+			}
 		}
-		else if (kind == ProjectKind::DesktopApplication && !debugSymbols)
+		else if (kind == ProjectKind::SharedLibrary)
 		{
-			// TODO: check other windows specific options
-			std::string subsystem{ "-mwindows" };
-			// if (isFlagSupported(mWindows))
-			List::addIfDoesNotExist(outArgList, std::move(subsystem));
+			if (entryPoint == WindowsEntryPoint::DllMain)
+			{
+				List::addIfDoesNotExist(outArgList, "-mdll");
+			}
 		}
 	}
+}
+
+/*****************************************************************************/
+void CompileToolchainGNU::addEntryPoint(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+
+	// MinGW: See addSubSystem
 }
 
 /*****************************************************************************/

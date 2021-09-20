@@ -50,7 +50,8 @@ private:
 	virtual void addLibDirs(StringList& outArgList) const final;
 	virtual void addLinks(StringList& outArgList) const final;
 	void addCgThreads(StringList& outArgList) const;
-	void addSubSystem(StringList& outArgList) const;
+	virtual void addSubSystem(StringList& outArgList) const final;
+	virtual void addEntryPoint(StringList& outArgList) const final;
 
 	// General
 	void addTargetPlatformArch(StringList& outArgList) const;

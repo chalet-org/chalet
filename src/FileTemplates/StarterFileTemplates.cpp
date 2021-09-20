@@ -23,8 +23,6 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	const std::string langStandardKey = cpp ? "cppStandard" : "cStandard";
 	const std::string project = inProps.projectName;
 
-	const std::string kind = "consoleApplication";
-
 	const std::string kAbstractsAll = "abstracts:all";
 	const std::string kSettingsCxx = "settings:Cxx";
 	const std::string kTargets = "targets";
@@ -62,7 +60,7 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 
 	ret[kTargets] = Json::object();
 	ret[kTargets][project] = Json::object();
-	ret[kTargets][project]["kind"] = kind;
+	ret[kTargets][project]["kind"] = "executable";
 
 	if (inProps.useLocation)
 	{

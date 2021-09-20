@@ -478,7 +478,6 @@ bool BuildJsonParser::parsePlatformConfigExclusions(IBuildTarget& outProject, co
 /*****************************************************************************/
 bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode)
 {
-
 	if (std::string val; assignStringFromConfig(val, inNode, "windowsApplicationManifest"))
 		outProject.setWindowsApplicationManifest(std::move(val));
 	else if (bool enabled = false; m_buildJson.assignFromKey(enabled, inNode, "windowsApplicationManifest"))
@@ -486,6 +485,12 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outProject, const J
 
 	if (std::string val; assignStringFromConfig(val, inNode, "windowsApplicationIcon"))
 		outProject.setWindowsApplicationIcon(std::move(val));
+
+	if (std::string val; assignStringFromConfig(val, inNode, "windowsSubSystem"))
+		outProject.setWindowsSubSystem(val);
+
+	if (std::string val; assignStringFromConfig(val, inNode, "windowsEntryPoint"))
+		outProject.setWindowsEntryPoint(val);
 
 	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "windowsPrefixOutputFilename"))
 		outProject.setWindowsPrefixOutputFilename(val);

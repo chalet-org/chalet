@@ -64,6 +64,7 @@ protected:
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;
 	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const override;
 	virtual void addSubSystem(StringList& outArgList) const override;
+	virtual void addEntryPoint(StringList& outArgList) const override;
 
 	// Linking (Misc)
 	virtual void startStaticLinkGroup(StringList& outArgList) const;

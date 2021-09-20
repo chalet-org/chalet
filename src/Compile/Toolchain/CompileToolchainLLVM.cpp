@@ -208,20 +208,24 @@ void CompileToolchainLLVM::addSubSystem(StringList& outArgList) const
 {
 	if (m_config.isWindowsClang())
 	{
-		const bool debugSymbols = m_state.configuration.debugSymbols();
 		const ProjectKind kind = m_project.kind();
-		if (kind == ProjectKind::ConsoleApplication || (kind == ProjectKind::DesktopApplication && debugSymbols))
+		if (kind == ProjectKind::Executable)
 		{
-			std::string subsystem{ "-Wl,/subsystem:console" };
-			List::addIfDoesNotExist(outArgList, std::move(subsystem));
-			List::addIfDoesNotExist(outArgList, "-Wl,/ENTRY:mainCRTStartup");
+			const auto subSystem = getMsvcCompatibleSubSystem();
+			List::addIfDoesNotExist(outArgList, fmt::format("-Wl,/subsystem:{}", subSystem));
 		}
-		else if (kind == ProjectKind::DesktopApplication && !debugSymbols)
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainLLVM::addEntryPoint(StringList& outArgList) const
+{
+	if (m_config.isWindowsClang())
+	{
+		const auto entryPoint = getMsvcCompatibleEntryPoint();
+		if (!entryPoint.empty())
 		{
-			// TODO: check other windows specific options
-			std::string subsystem{ "-Wl,/subsystem:windows" };
-			List::addIfDoesNotExist(outArgList, std::move(subsystem));
-			List::addIfDoesNotExist(outArgList, "-Wl,/ENTRY:mainCRTStartup");
+			List::addIfDoesNotExist(outArgList, fmt::format("-Wl,/entry:{}", entryPoint));
 		}
 	}
 }
