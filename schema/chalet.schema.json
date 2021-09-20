@@ -597,7 +597,7 @@
 		},
 		"source-target-runProject": {
 			"type": "boolean",
-			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized.",
+			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized. If no executable projects are defined as the runProject, the first executable one will be chosen.",
 			"default": false
 		},
 		"source-target-runArguments": {

@@ -117,9 +117,19 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			if (m_runProjectName == name)
 			{
-				runProject = target.get();
 				if (!target->isProject())
 					continue;
+
+				runProject = target.get();
+			}
+			else if (m_runProjectName.empty() && runProject == nullptr)
+			{
+				if (!target->isProject())
+					continue;
+
+				auto& project = static_cast<const SourceTarget&>(*target);
+				if (project.isExecutable())
+					runProject = target.get();
 			}
 			else if (runCommand)
 				continue;
@@ -218,9 +228,14 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		}
 	}
 
-	if ((inRoute == Route::BuildRun || runCommand) && runProject != nullptr)
+	if ((inRoute == Route::BuildRun || runCommand))
 	{
-		if (runProject->isProject())
+		if (runProject == nullptr)
+		{
+			Diagnostic::error("No executable project was found to run.");
+			return false;
+		}
+		else if (runProject->isProject())
 		{
 			auto& project = static_cast<const SourceTarget&>(*runProject);
 			if (!Commands::pathExists(m_state.paths.getTargetFilename(project)))
