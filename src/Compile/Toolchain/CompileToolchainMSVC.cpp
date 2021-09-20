@@ -798,6 +798,7 @@ void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
 {
 	const ProjectKind kind = m_project.kind();
 
+	// TODO: Support for /driver:WDM (NativeWDM or something)
 	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
 
 	if (kind == ProjectKind::Executable)
