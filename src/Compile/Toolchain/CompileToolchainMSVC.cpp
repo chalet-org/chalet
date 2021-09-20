@@ -794,28 +794,26 @@ void CompileToolchainMSVC::addCgThreads(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
 {
-	std::string subsystem;
-	switch (m_project.kind())
-	{
-		case ProjectKind::ConsoleApplication:
-			subsystem = "console";
-			break;
+	const bool debugSymbols = m_state.configuration.debugSymbols();
+	const ProjectKind kind = m_project.kind();
 
-		case ProjectKind::DesktopApplication:
-			subsystem = "windows";
-			outArgList.emplace_back("/ENTRY:mainCRTStartup");
-			break;
-
-		default: break;
-	}
-
-	// TODO:
+	// TODO: EFI_, NATIVE, POSIX, etc
 	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
 
-	if (subsystem.empty())
-		return;
+	if (kind == ProjectKind::ConsoleApplication || (kind == ProjectKind::DesktopApplication && debugSymbols))
+	{
+		std::string subsystemConsole{ "/subsystem:console" };
+		List::addIfDoesNotExist(outArgList, std::move(subsystemConsole));
 
-	outArgList.emplace_back(fmt::format("/subsystem:{}", subsystem));
+		outArgList.emplace_back("/ENTRY:mainCRTStartup");
+	}
+	else if (kind == ProjectKind::DesktopApplication && !debugSymbols)
+	{
+		std::string subsystemConsole{ "/subsystem:windows" };
+		List::addIfDoesNotExist(outArgList, std::move(subsystemConsole));
+
+		outArgList.emplace_back("/ENTRY:mainCRTStartup");
+	}
 }
 
 /*****************************************************************************/

@@ -986,7 +986,13 @@ void CompileToolchainGNU::addPlatformGuiApplicationFlag(StringList& outArgList) 
 	{
 		const bool debugSymbols = m_state.configuration.debugSymbols();
 		const ProjectKind kind = m_project.kind();
-		if (kind == ProjectKind::DesktopApplication && !debugSymbols)
+		if (kind == ProjectKind::ConsoleApplication || (kind == ProjectKind::DesktopApplication && debugSymbols))
+		{
+			std::string mConsole{ "-mconsole" };
+			// if (isFlagSupported(mWindows))
+			List::addIfDoesNotExist(outArgList, std::move(mConsole));
+		}
+		else if (kind == ProjectKind::DesktopApplication && !debugSymbols)
 		{
 			// TODO: check other windows specific options
 			std::string mWindows{ "-mwindows" };
