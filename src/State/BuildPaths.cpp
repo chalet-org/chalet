@@ -20,11 +20,11 @@ namespace chalet
 BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnvironment& inEnvironment) :
 	m_inputs(inInputs),
 	m_environment(inEnvironment),
-	m_cExts({ ".c", ".C" }),
-	m_cppExts({ ".cpp", ".cc", ".cxx", ".c++", ".CPP", ".CC", ".CXX", ".C++" }),
-	m_resourceExts({ ".rc", ".RC" }),
-	m_objectiveCExts({ ".m", ".M" }),
-	m_objectiveCppExts({ ".mm" })
+	m_cExts({ "c" }),
+	m_cppExts({ "cpp", "cc", "cxx", "c++", "C", "CPP", "CC", "CXX", "C++" }),
+	m_resourceExts({ "rc", "RC" }),
+	m_objectiveCExts({ "m", "M" }),
+	m_objectiveCppExts({ "mm" })
 {
 }
 
@@ -148,6 +148,34 @@ const std::string& BuildPaths::intermediateDir() const noexcept
 const StringList& BuildPaths::allFileExtensions() const noexcept
 {
 	return m_allFileExtensions;
+}
+const StringList& BuildPaths::cExtensions() const noexcept
+{
+	return m_cExts;
+}
+const StringList& BuildPaths::cppExtensions() const noexcept
+{
+	return m_cppExts;
+}
+StringList BuildPaths::cxxExtensions() const noexcept
+{
+	return List::combine(m_cExts, m_cppExts);
+}
+const StringList& BuildPaths::objectiveCExtensions() const noexcept
+{
+	return m_objectiveCExts;
+}
+const StringList& BuildPaths::objectiveCppExtensions() const noexcept
+{
+	return m_objectiveCppExts;
+}
+StringList BuildPaths::objectiveCxxExtensions() const noexcept
+{
+	return List::combine(m_objectiveCExts, m_objectiveCppExts);
+}
+const StringList& BuildPaths::resourceExtensions() const noexcept
+{
+	return m_resourceExts;
 }
 
 /*****************************************************************************/
@@ -519,25 +547,29 @@ std::string BuildPaths::getDependencyFile(const std::string& inSource) const
 /*****************************************************************************/
 SourceType BuildPaths::getSourceType(const std::string& inSource) const
 {
-	if (String::endsWith(m_cppExts, inSource))
+	const auto ext = String::getPathSuffix(inSource);
+	if (!ext.empty())
 	{
-		return SourceType::CPlusPlus;
-	}
-	else if (String::endsWith(m_cExts, inSource))
-	{
-		return SourceType::C;
-	}
-	else if (String::endsWith(m_resourceExts, inSource))
-	{
-		return SourceType::WindowsResource;
-	}
-	else if (String::endsWith(m_objectiveCExts, inSource))
-	{
-		return SourceType::ObjectiveC;
-	}
-	else if (String::endsWith(m_objectiveCppExts, inSource))
-	{
-		return SourceType::ObjectiveCPlusPlus;
+		if (String::endsWith(m_cppExts, ext))
+		{
+			return SourceType::CPlusPlus;
+		}
+		else if (String::endsWith(m_cExts, ext))
+		{
+			return SourceType::C;
+		}
+		else if (String::endsWith(m_resourceExts, ext))
+		{
+			return SourceType::WindowsResource;
+		}
+		else if (String::endsWith(m_objectiveCExts, ext))
+		{
+			return SourceType::ObjectiveC;
+		}
+		else if (String::endsWith(m_objectiveCppExts, ext))
+		{
+			return SourceType::ObjectiveCPlusPlus;
+		}
 	}
 
 	return SourceType::Unknown;
@@ -628,8 +660,9 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 
 	const auto& locations = inProject.locations();
 
-	auto searchString = String::join(inProject.fileExtensions());
-	searchString += " " + String::toUpperCase(searchString);
+	StringList extensions = List::combine(m_cExts, m_cppExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
+
+	const auto searchString = "." + String::join(extensions, " .");
 
 	const auto& excludesList = inProject.locationExcludes();
 	std::string excludes = String::join(excludesList);

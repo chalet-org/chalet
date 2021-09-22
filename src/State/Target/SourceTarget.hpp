@@ -31,10 +31,6 @@ struct SourceTarget final : public IBuildTarget
 	bool isSharedLibrary() const noexcept;
 	bool isStaticLibrary() const noexcept;
 
-	const StringList& fileExtensions() const noexcept;
-	void addFileExtensions(StringList&& inList);
-	void addFileExtension(std::string&& inValue);
-
 	const StringList& defines() const noexcept;
 	void addDefines(StringList&& inList);
 	void addDefine(std::string&& inValue);

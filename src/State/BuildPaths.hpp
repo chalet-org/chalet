@@ -30,6 +30,13 @@ struct BuildPaths
 	const std::string& intermediateDir() const noexcept;
 
 	const StringList& allFileExtensions() const noexcept;
+	const StringList& cExtensions() const noexcept;
+	const StringList& cppExtensions() const noexcept;
+	StringList cxxExtensions() const noexcept;
+	const StringList& objectiveCExtensions() const noexcept;
+	const StringList& objectiveCppExtensions() const noexcept;
+	StringList objectiveCxxExtensions() const noexcept;
+	const StringList& resourceExtensions() const noexcept;
 
 	std::string getTargetFilename(const SourceTarget& inProject) const;
 	std::string getTargetBasename(const SourceTarget& inProject) const;

@@ -578,20 +578,6 @@ bool BuildJsonParser::parseFilesAndLocation(SourceTarget& outProject, const Json
 		return false;
 	}
 
-	// if (StringList list; assignStringListFromConfig(list, inNode, "fileExtensions"))
-	// 	outProject.addFileExtensions(list);
-
-	if (!inAbstract && (outProject.fileExtensions().size() == 0 && outProject.files().size() == 0))
-	{
-		Diagnostic::error("{}: No file extensions set for project: {}\n  Aborting...", m_filename, outProject.name());
-		return false;
-	}
-
-	/*if (!inAbstract && (outProject.files().size() > 0 && outProject.fileExtensions().size() > 0))
-	{
-		Diagnostic::warn("{}: 'fileExtensions' ignored since 'files' are explicitely declared in project: {}", m_filename, outProject.name());
-	}*/
-
 	return true;
 }
 

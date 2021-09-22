@@ -45,4 +45,33 @@ bool List::contains(const std::vector<VectorType>& inList, const VectorType& inV
 {
 	return std::find(inList.begin(), inList.end(), inValue) != inList.end();
 }
+
+/*****************************************************************************/
+template <typename T>
+void addArg(StringList& outList, const T& inArg)
+{
+	using Type = std::decay_t<T>;
+	if constexpr (std::is_same_v<StringList, Type>)
+	{
+		for (const auto& item : inArg)
+		{
+			outList.emplace_back(item);
+		}
+	}
+	else
+	{
+		static_assert((std::is_constructible_v<std::string, const T&>));
+		outList.emplace_back(inArg);
+	}
+}
+
+template <typename... Args>
+StringList List::combine(Args&&... args)
+{
+	StringList ret;
+
+	((addArg<Args>(ret, std::forward<Args>(args))), ...);
+
+	return ret;
+}
 }

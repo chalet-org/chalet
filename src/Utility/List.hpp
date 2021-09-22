@@ -29,6 +29,9 @@ void removeIfExists(std::vector<std::string>& outList, const char* inValue);
 
 template <typename VectorType>
 bool contains(const std::vector<VectorType>& inList, const VectorType& inValue);
+
+template <typename... Args>
+StringList combine(Args&&... args);
 }
 }
 

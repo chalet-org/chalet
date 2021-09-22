@@ -116,19 +116,19 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 
 	std::string recipes = getPchRecipe(pch, pchTarget);
 
-	for (auto& ext : String::filterIf({ "rc", "RC" }, inOutputs.fileExtensions))
-	{
-		recipes += getRcRecipe(ext, pchTarget);
-	}
-
-	for (auto& ext : String::filterIf({ "cpp", "CPP", "cc", "CC", "cxx", "CXX", "c++", "C++", "c", "C" }, inOutputs.fileExtensions))
+	for (auto& ext : String::filterIf(m_state.paths.cxxExtensions(), inOutputs.fileExtensions))
 	{
 		recipes += getCxxRecipe(ext, pchTarget);
 	}
 
-	for (auto& ext : String::filterIf({ "m", "M", "mm" }, inOutputs.fileExtensions))
+	for (auto& ext : String::filterIf(m_state.paths.objectiveCxxExtensions(), inOutputs.fileExtensions))
 	{
 		recipes += getObjcRecipe(ext);
+	}
+
+	for (auto& ext : String::filterIf(m_state.paths.resourceExtensions(), inOutputs.fileExtensions))
+	{
+		recipes += getRcRecipe(ext, pchTarget);
 	}
 
 	recipes += getTargetRecipe(inOutputs.target);

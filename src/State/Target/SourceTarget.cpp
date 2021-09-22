@@ -20,17 +20,6 @@ SourceTarget::SourceTarget(BuildState& inState) :
 	m_environment(inState.environment),
 	m_warningsPresetString("none")
 {
-	StringList exts = {
-		"cpp",
-		"cc",
-		"cxx",
-		"c++",
-		"c",
-		"mm",
-		"m",
-		"rc"
-	};
-	addFileExtensions(std::move(exts));
 }
 
 /*****************************************************************************/
@@ -137,25 +126,6 @@ bool SourceTarget::isSharedLibrary() const noexcept
 bool SourceTarget::isStaticLibrary() const noexcept
 {
 	return m_kind == ProjectKind::StaticLibrary;
-}
-
-/*****************************************************************************/
-const StringList& SourceTarget::fileExtensions() const noexcept
-{
-	return m_fileExtensions;
-}
-
-void SourceTarget::addFileExtensions(StringList&& inList)
-{
-	List::forEach(inList, this, &SourceTarget::addFileExtension);
-}
-
-void SourceTarget::addFileExtension(std::string&& inValue)
-{
-	if (!inValue.empty() && inValue.front() != '.')
-		inValue = "." + inValue;
-
-	List::addIfDoesNotExist(m_fileExtensions, std::move(inValue));
 }
 
 /*****************************************************************************/
