@@ -219,11 +219,15 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 /*****************************************************************************/
 CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileGroupList& inGroups)
 {
+	chalet_assert(m_project != nullptr, "");
+
 	auto& sourceCache = m_state.cache.file().sources();
 
 	CommandPool::CmdList ret;
 
 	const auto& objDir = m_state.paths.objDir();
+
+	const bool objectiveCxx = m_project->objectiveCxx();
 
 	for (auto& group : inGroups)
 	{
@@ -231,6 +235,9 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 		const auto& target = group->objectFile;
 
 		if (source.empty())
+			continue;
+
+		if (!objectiveCxx && (group->type == SourceType::ObjectiveC || group->type == SourceType::ObjectiveCPlusPlus))
 			continue;
 
 		switch (group->type)

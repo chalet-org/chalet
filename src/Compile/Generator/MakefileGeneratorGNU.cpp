@@ -121,9 +121,12 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 		recipes += getCxxRecipe(ext, pchTarget);
 	}
 
-	for (auto& ext : String::filterIf(m_state.paths.objectiveCxxExtensions(), inOutputs.fileExtensions))
+	if (m_project->objectiveCxx())
 	{
-		recipes += getObjcRecipe(ext);
+		for (auto& ext : String::filterIf(m_state.paths.objectiveCxxExtensions(), inOutputs.fileExtensions))
+		{
+			recipes += getObjcRecipe(ext);
+		}
 	}
 
 	for (auto& ext : String::filterIf(m_state.paths.resourceExtensions(), inOutputs.fileExtensions))

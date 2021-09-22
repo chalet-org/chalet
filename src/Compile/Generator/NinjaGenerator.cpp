@@ -130,10 +130,17 @@ std::string NinjaGenerator::getDepFile(const std::string& inDependency)
 /*****************************************************************************/
 std::string NinjaGenerator::getRules(const SourceTypeList& inTypes)
 {
+	chalet_assert(m_project != nullptr, "");
+
+	const bool objectiveCxx = m_project->objectiveCxx();
+
 	std::string rules;
 	for (auto& type : inTypes)
 	{
 		if (m_rules.find(type) == m_rules.end())
+			continue;
+
+		if (!objectiveCxx && (type == SourceType::ObjectiveC || type == SourceType::ObjectiveCPlusPlus))
 			continue;
 
 		rules += m_rules[type](*this);
@@ -524,11 +531,15 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 		pchImplicitDep = fmt::format(" | {}", String::join(std::move(pches)));
 	}
 
+	const bool objectiveCxx = m_project->objectiveCxx();
 	for (auto& group : inGroups)
 	{
 		const auto& source = group->sourceFile;
 		const auto& object = group->objectFile;
 		if (source.empty())
+			continue;
+
+		if (!objectiveCxx && (group->type == SourceType::ObjectiveC || group->type == SourceType::ObjectiveCPlusPlus))
 			continue;
 
 		std::string rule;
