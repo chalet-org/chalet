@@ -308,7 +308,6 @@ bool BuildState::validateState()
 			return false;
 		}
 
-#if defined(CHALET_WIN32)
 		for (auto& target : targets)
 		{
 			if (target->isProject())
@@ -319,6 +318,7 @@ bool BuildState::validateState()
 					continue;
 
 				auto& compilerConfig = toolchain.getConfig(project.language());
+#if defined(CHALET_WIN32)
 				if (compilerConfig.isMsvc() && !toolchain.makeIsNMake())
 				{
 					Diagnostic::error("If using the 'makefile' strategy alongside MSVC, only NMake or Qt Jom are supported (found GNU make).");
@@ -329,10 +329,15 @@ bool BuildState::validateState()
 					Diagnostic::error("If using the 'makefile' strategy alongside MinGW, only GNU make is suported (found NMake or Qt Jom).");
 					return false;
 				}*/
+#endif
+				if (!compilerConfig.isAppleClang() && project.objectiveCxx())
+				{
+					Diagnostic::error("{}: Objective-C is currently only supported on MacOS using Apple clang. Use either 'objectiveCxx.macos' or remove 'objectiveCxx' from the '{}' project.", m_inputs.inputFile(), project.name());
+					return false;
+				}
 				break;
 			}
 		}
-#endif
 	}
 	else if (strat == StrategyType::Ninja)
 	{

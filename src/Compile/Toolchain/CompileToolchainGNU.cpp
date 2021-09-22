@@ -1080,9 +1080,9 @@ void CompileToolchainGNU::addObjectiveCxxLink(StringList& outArgList) const
 	// Removed for now - seems the most concise way to use Objective-C on Linux/MinGW is via gnustep
 	//   gcc `gnustep-config --objc-flags` -L/usr/GNUstep/Local/Library/Libraries -lgnustep-base foo.m -o foo
 
-	/*const std::string prefix{ "-l" };
-	if (m_project.objectiveCxx())
+	/*if (m_project.objectiveCxx())
 	{
+		const std::string prefix{ "-l" };
 		std::string objc = prefix + "objc";
 		List::addIfDoesNotExist(outArgList, std::move(objc));
 	}*/
