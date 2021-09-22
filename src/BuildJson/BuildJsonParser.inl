@@ -20,25 +20,14 @@ bool BuildJsonParser::parseKeyFromConfig(T& outVariable, const Json& inNode, con
 
 	res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}.{}", inKey, platform));
 
-	if (m_state.configuration.debugSymbols())
-	{
-		res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}:{}", inKey, m_debugIdentifier));
-		res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}:{}.{}", inKey, m_debugIdentifier, platform));
-	}
-	else
-	{
-		res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}:!{}", inKey, m_debugIdentifier));
-		res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform));
-	}
+	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
+	res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}:{}{}", inKey, notSymbol, m_debugIdentifier));
+	res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}:{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
 
 	for (auto& notPlatform : m_inputs.notPlatforms())
 	{
 		res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform));
-
-		if (m_state.configuration.debugSymbols())
-			res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, notPlatform));
-		else
-			res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, notPlatform));
+		res |= m_buildJson.assignFromKey(outVariable, inNode, fmt::format("{}:{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
 	}
 
 	return res;

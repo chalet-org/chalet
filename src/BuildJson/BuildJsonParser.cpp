@@ -598,7 +598,10 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outProject, cons
 			return true;
 		}
 		else
+		{
+			// No location or files
 			return false;
+		}
 	}
 
 	if (hasFiles)
@@ -644,25 +647,14 @@ bool BuildJsonParser::assignStringFromConfig(std::string& outVariable, const Jso
 
 	res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}.{}", inKey, platform), inDefault);
 
-	if (m_state.configuration.debugSymbols())
-	{
-		res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}", inKey, m_debugIdentifier), inDefault);
-		res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}.{}", inKey, m_debugIdentifier, platform), inDefault);
-	}
-	else
-	{
-		res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:!{}", inKey, m_debugIdentifier), inDefault);
-		res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform), inDefault);
-	}
+	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
+	res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}{}", inKey, notSymbol, m_debugIdentifier), inDefault);
+	res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform), inDefault);
 
 	for (auto& notPlatform : m_inputs.notPlatforms())
 	{
 		res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform), inDefault);
-
-		if (m_state.configuration.debugSymbols())
-			res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, notPlatform), inDefault);
-		else
-			res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, notPlatform), inDefault);
+		res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform), inDefault);
 	}
 
 	return res;
@@ -677,25 +669,14 @@ bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json
 
 	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
 
-	if (m_state.configuration.debugSymbols())
-	{
-		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:{}", inKey, m_debugIdentifier));
-		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:{}.{}", inKey, m_debugIdentifier, platform));
-	}
-	else
-	{
-		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:!{}", inKey, m_debugIdentifier));
-		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform));
-	}
+	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
+	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:{}{}", inKey, notSymbol, m_debugIdentifier));
+	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
 
 	for (auto& notPlatform : m_inputs.notPlatforms())
 	{
 		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
-
-		if (m_state.configuration.debugSymbols())
-			res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, notPlatform));
-		else
-			res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, notPlatform));
+		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
 	}
 
 	return res;
@@ -710,25 +691,14 @@ bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& 
 
 	res |= inNode.contains(fmt::format("{}.{}", inKey, platform));
 
-	if (m_state.configuration.debugSymbols())
-	{
-		res |= inNode.contains(fmt::format("{}:{}", inKey, m_debugIdentifier));
-		res |= inNode.contains(fmt::format("{}:{}.{}", inKey, m_debugIdentifier, platform));
-	}
-	else
-	{
-		res |= inNode.contains(fmt::format("{}:!{}", inKey, m_debugIdentifier));
-		res |= inNode.contains(fmt::format("{}:!{}.{}", inKey, m_debugIdentifier, platform));
-	}
+	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
+	res |= inNode.contains(fmt::format("{}:{}{}", inKey, notSymbol, m_debugIdentifier));
+	res |= inNode.contains(fmt::format("{}:{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
 
 	for (auto& notPlatform : m_inputs.notPlatforms())
 	{
 		res |= inNode.contains(fmt::format("{}.!{}", inKey, notPlatform));
-
-		if (m_state.configuration.debugSymbols())
-			res |= inNode.contains(fmt::format("{}:{}.!{}", inKey, m_debugIdentifier, notPlatform));
-		else
-			res |= inNode.contains(fmt::format("{}:!{}.!{}", inKey, m_debugIdentifier, notPlatform));
+		res |= inNode.contains(fmt::format("{}:{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
 	}
 
 	return res;
