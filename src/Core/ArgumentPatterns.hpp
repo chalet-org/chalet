@@ -6,26 +6,29 @@
 #ifndef CHALET_ARG_PARSE_PARSER_HPP
 #define CHALET_ARG_PARSE_PARSER_HPP
 
+#include "Core/ArgumentIdentifier.hpp"
 #include "Libraries/ArgParse.hpp"
 #include "Router/Route.hpp"
 #include "Utility/Variant.hpp"
 
 namespace chalet
 {
+struct MappedArgument
+{
+	ArgumentIdentifier id;
+	Variant value;
+
+	MappedArgument(ArgumentIdentifier inId, Variant inValue);
+};
+
 class ArgumentPatterns
 {
 	using ParserAction = std::function<void(ArgumentPatterns&)>;
 	using ParserList = std::unordered_map<Route, ParserAction>;
-	using ArgumentMap = std::map<std::string, Variant>;
+	using ArgumentMap = std::unordered_map<std::string, MappedArgument>;
 
 public:
 	ArgumentPatterns();
-
-	const std::string& argRunProject() const noexcept;
-	const std::string& argRunArguments() const noexcept;
-	const std::string& argInitPath() const noexcept;
-	const std::string& argConfigKey() const noexcept;
-	const std::string& argConfigValue() const noexcept;
 
 	bool parse(const StringList& inArguments);
 	const ArgumentMap& arguments() const noexcept;
@@ -44,13 +47,13 @@ private:
 	// void populateArgumentMap(const StringList& inArguments);
 	std::string getHelp();
 
-	argparse::Argument& addStringArgument(const char* inArgument, const char* inHelp);
-	argparse::Argument& addStringArgument(const char* inArgument, const char* inHelp, std::string inDefaultValue);
-	argparse::Argument& addTwoStringArguments(const char* inShort, const char* inLong, const char* inHelp, std::string inDefaultValue = std::string());
-	argparse::Argument& addTwoIntArguments(const char* inShort, const char* inLong, const char* inHelp, const int inDefaultValue);
-	argparse::Argument& addBoolArgument(const char* inArgument, const char* inHelp, const bool inDefaultValue);
-	argparse::Argument& addTwoBoolArguments(const char* inShort, const char* inLong, const char* inHelp, const bool inDefaultValue);
-	argparse::Argument& addRemainingArguments(const char* inArgument, const char* inHelp);
+	argparse::Argument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument);
+	argparse::Argument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue);
+	argparse::Argument& addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue = std::string());
+	argparse::Argument& addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const int inDefaultValue);
+	argparse::Argument& addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue);
+	argparse::Argument& addTwoBoolArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const bool inDefaultValue);
+	argparse::Argument& addRemainingArguments(const ArgumentIdentifier inId, const char* inArgument);
 
 	void populateMainArguments();
 	void addInputFileArg();
@@ -62,9 +65,9 @@ private:
 	void addBundleDirArg();
 	void addProjectGenArg();
 	void addToolchainArg();
+	void addArchArg();
 	void addMaxJobsArg();
 	void addEnvFileArg();
-	void addArchArg();
 	void addBuildConfigurationArg();
 	void addRunProjectArg();
 	void addRunArgumentsArg();
@@ -108,8 +111,8 @@ private:
 	const std::string kArgRunArguments = "[ARG...]";
 	const std::string kArgInitName = "<name>";
 	const std::string kArgInitPath = "<path>";
-	const std::string kArgConfigKey = "<key>";
-	const std::string kArgConfigValue = "<value>";
+	const std::string kArgSettingsKey = "<key>";
+	const std::string kArgSettingsValue = "<value>";
 };
 }
 

@@ -56,95 +56,100 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	std::string distributionDirectory;
 	std::string envFile;
 
-	for (auto& [key, rawValue] : patterns.arguments())
+	for (auto& [key, arg] : patterns.arguments())
 	{
-		auto kind = rawValue.kind();
+		auto kind = arg.value.kind();
 		switch (kind)
 		{
 			case Variant::Kind::String: {
-				auto value = rawValue.asString();
+				auto value = arg.value.asString();
 				if (value.empty())
 					continue;
 
-				if (key == patterns.argRunProject())
+				switch (arg.id)
 				{
-					m_inputs.setRunProject(std::move(value));
+					case ArgumentIdentifier::RunProjectName:
+						m_inputs.setRunProject(std::move(value));
+						break;
+
+					case ArgumentIdentifier::BuildConfiguration:
+						buildConfiguration = std::move(value);
+						break;
+
+					case ArgumentIdentifier::InputFile:
+						inputFile = std::move(value);
+						break;
+
+					case ArgumentIdentifier::SettingsFile:
+						settingsFile = std::move(value);
+						break;
+
+					case ArgumentIdentifier::File:
+						file = std::move(value);
+						break;
+
+					case ArgumentIdentifier::RootDirectory:
+						rootDirectory = std::move(value);
+						break;
+
+					case ArgumentIdentifier::OutputDirectory:
+						outputDirectory = std::move(value);
+						break;
+
+					case ArgumentIdentifier::ExternalDirectory:
+						externalDirectory = std::move(value);
+						break;
+
+					case ArgumentIdentifier::DistributionDirectory:
+						distributionDirectory = std::move(value);
+						break;
+
+					case ArgumentIdentifier::Toolchain:
+						toolchainPreference = std::move(value);
+						break;
+
+						// case ProjectGen:
+						// 	m_inputs.setGenerator(std::move(value));
+						// 	break;
+
+					case ArgumentIdentifier::EnvFile:
+						envFile = std::move(value);
+						break;
+
+					case ArgumentIdentifier::TargetArchitecture:
+						architecturePreference = std::move(value);
+						break;
+
+					case ArgumentIdentifier::InitPath:
+						m_inputs.setInitPath(std::move(value));
+						break;
+
+					case ArgumentIdentifier::SettingsKey:
+						m_inputs.setSettingsKey(std::move(value));
+						break;
+
+					case ArgumentIdentifier::SettingsValue:
+						m_inputs.setSettingsValue(std::move(value));
+						break;
+
+					default: break;
 				}
-				else if (String::equals({ "-c", "--configuration" }, key))
-				{
-					buildConfiguration = std::move(value);
-				}
-				else if (String::equals({ "-i", "--input-file" }, key))
-				{
-					inputFile = std::move(value);
-				}
-				else if (String::equals({ "-s", "--settings-file" }, key))
-				{
-					settingsFile = std::move(value);
-				}
-				else if (String::equals({ "-f", "--file" }, key))
-				{
-					file = std::move(value);
-				}
-				else if (String::equals({ "-r", "--root-dir" }, key))
-				{
-					rootDirectory = std::move(value);
-				}
-				else if (String::equals({ "-o", "--output-dir" }, key))
-				{
-					outputDirectory = std::move(value);
-				}
-				else if (String::equals({ "-x", "--external-dir" }, key))
-				{
-					externalDirectory = std::move(value);
-				}
-				else if (String::equals({ "-d", "--distribution-dir" }, key))
-				{
-					distributionDirectory = std::move(value);
-				}
-				else if (String::equals({ "-t", "--toolchain" }, key))
-				{
-					toolchainPreference = std::move(value);
-				}
-				/*else if (String::equals({ "-p", "--project-gen" }, key))
-				{
-					m_inputs.setGenerator(std::move(value));
-				}*/
-				else if (String::equals({ "-e", "--env-file" }, key))
-				{
-					envFile = std::move(value);
-				}
-				else if (String::equals({ "-a", "--arch" }, key))
-				{
-					architecturePreference = std::move(value);
-				}
-				else if (key == patterns.argInitPath())
-				{
-					m_inputs.setInitPath(std::move(value));
-				}
-				else if (key == patterns.argConfigKey())
-				{
-					m_inputs.setSettingsKey(std::move(value));
-				}
-				else if (key == patterns.argConfigValue())
-				{
-					m_inputs.setSettingsValue(std::move(value));
-				}
+
 				break;
 			}
 
 			case Variant::Kind::StringList: {
-				if (key == patterns.argRunArguments())
+				if (arg.id == ArgumentIdentifier::RunProjectArguments)
 				{
-					auto runArgs = String::join(rawValue.asStringList());
+					auto runArgs = String::join(arg.value.asStringList());
 					m_inputs.setRunOptions(std::move(runArgs));
 				}
 				break;
 			}
 
 			case Variant::Kind::Integer: {
-				int value = rawValue.asInt();
-				if (String::equals({ "-j", "--max-jobs" }, key))
+				int value = arg.value.asInt();
+				if (arg.id == ArgumentIdentifier::MaxJobs)
 				{
 					if (value > 0)
 						m_inputs.setMaxJobs(static_cast<uint>(value), true);
@@ -153,28 +158,34 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 			}
 
 			case Variant::Kind::Boolean: {
-				bool value = rawValue.asBool();
-				if (String::equals("--save-schema", key))
+				bool value = arg.value.asBool();
+				switch (arg.id)
 				{
-					m_inputs.setSaveSchemaToFile(value);
-				}
-				else if (String::equals("--dump-assembly", key))
-				{
-					m_inputs.setDumpAssembly(value, true);
-				}
-				else if (String::equals("--quieter", key))
-				{
-					Output::setQuietNonBuild(value);
-				}
-				else if (String::equals({ "-l", "--local" }, key))
-				{
-					if (value)
-						m_inputs.setSettingsType(SettingsType::Local);
-				}
-				else if (String::equals({ "-g", "--global" }, key))
-				{
-					if (value)
-						m_inputs.setSettingsType(SettingsType::Global);
+					case ArgumentIdentifier::SaveSchema:
+						m_inputs.setSaveSchemaToFile(value);
+						break;
+
+					case ArgumentIdentifier::DumpAssembly:
+						m_inputs.setDumpAssembly(value, true);
+						break;
+
+					case ArgumentIdentifier::Quieter:
+						Output::setQuietNonBuild(value);
+						break;
+
+					case ArgumentIdentifier::LocalSettings: {
+						if (value)
+							m_inputs.setSettingsType(SettingsType::Local);
+						break;
+					}
+
+					case ArgumentIdentifier::GlobalSettings: {
+						if (value)
+							m_inputs.setSettingsType(SettingsType::Global);
+						break;
+					}
+
+					default: break;
 				}
 				break;
 			}

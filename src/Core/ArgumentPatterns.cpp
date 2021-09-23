@@ -16,6 +16,13 @@
 namespace chalet
 {
 /*****************************************************************************/
+MappedArgument::MappedArgument(ArgumentIdentifier inId, Variant inValue) :
+	id(inId),
+	value(std::move(inValue))
+{
+}
+
+/*****************************************************************************/
 ArgumentPatterns::ArgumentPatterns() :
 	m_subCommands({
 		{ Route::BuildRun, &ArgumentPatterns::commandBuildRun },
@@ -30,25 +37,6 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ Route::SettingsSet, &ArgumentPatterns::commandSettingsSet },
 		{ Route::SettingsUnset, &ArgumentPatterns::commandSettingsUnset },
 	})
-// m_optionPairsCache({
-// 	// clang-format off
-// 	"-i", "--input-file",
-// 	"-s", "--settings-file",
-// 	"-f", "--file",
-// 	"-r", "--root-dir",
-// 	"-o", "--output-dir",
-// 	"-x", "--external-dir",
-// 	"-d", "--distribution-dir",
-// 	"-t", "--toolchain",
-// 	"-a", "--arch",
-// 	"-c", "--configuration",
-// 	"-j", "--max-jobs",
-// 	// "-p", "--project-gen",
-// 	"-e", "--env-file",
-// 	"-l", "--local",
-// 	"-g", "--global",
-// 	// clang-format on
-// })
 {
 #if defined(CHALET_DEBUG)
 	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::commandDebug);
@@ -58,28 +46,6 @@ ArgumentPatterns::ArgumentPatterns() :
 	// --show-commands=0
 	// --benchmark=1
 	// --signing-identity
-}
-
-/*****************************************************************************/
-const std::string& ArgumentPatterns::argRunProject() const noexcept
-{
-	return kArgRunProject;
-}
-const std::string& ArgumentPatterns::argRunArguments() const noexcept
-{
-	return kArgRunArguments;
-}
-const std::string& ArgumentPatterns::argInitPath() const noexcept
-{
-	return kArgInitPath;
-}
-const std::string& ArgumentPatterns::argConfigKey() const noexcept
-{
-	return kArgConfigKey;
-}
-const std::string& ArgumentPatterns::argConfigValue() const noexcept
-{
-	return kArgConfigValue;
 }
 
 /*****************************************************************************/
@@ -253,7 +219,7 @@ void ArgumentPatterns::makeParser()
 		.default_value(true)
 		.required();
 
-	m_argumentMap.emplace(m_routeString, true);
+	m_argumentMap.emplace(m_routeString, MappedArgument{ ArgumentIdentifier::RouteString, true });
 }
 
 /*****************************************************************************/
@@ -337,53 +303,48 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		return remaining;
 	};
 
-	StringList keys;
-	for (auto& [key, value] : m_argumentMap)
-	{
-		keys.push_back(key);
-	}
-
 	bool isRun = m_route == Route::Run || m_route == Route::BuildRun;
 	for (auto& arg : inArguments)
 	{
-		if (arg.front() == '-' && !List::contains(keys, arg) && !isRun)
+		bool containsArgument = m_argumentMap.find(arg) != m_argumentMap.end();
+		if (arg.front() == '-' && !containsArgument && !isRun)
 		{
 			Diagnostic::error("An invalid argument was found: '{}'", arg);
 			return false;
 		}
 	}
 
-	for (auto& [key, value] : m_argumentMap)
+	for (auto& [key, arg] : m_argumentMap)
 	{
 		if (key == m_routeString)
 			continue;
 
-		if (String::startsWith('-', key) && !List::contains(inArguments, key) && value.kind() != Variant::Kind::Boolean)
+		if (String::startsWith('-', key) && !List::contains(inArguments, key) && arg.value.kind() != Variant::Kind::Boolean)
 			continue;
 
 		CHALET_TRY
 		{
-			switch (value.kind())
+			switch (arg.value.kind())
 			{
 				case Variant::Kind::Boolean:
-					value = m_parser.get<bool>(key);
+					arg.value = m_parser.get<bool>(key);
 					break;
 
 				case Variant::Kind::Integer: {
 					std::string tmpValue = m_parser.get<std::string>(key);
-					value = atoi(tmpValue.c_str());
+					arg.value = atoi(tmpValue.c_str());
 					break;
 				}
 
 				case Variant::Kind::String:
-					value = m_parser.get<std::string>(key);
-					lastValue = value.asString();
+					arg.value = m_parser.get<std::string>(key);
+					lastValue = arg.value.asString();
 					break;
 
 				case Variant::Kind::StringList: {
 					CHALET_TRY
 					{
-						value = m_parser.get<StringList>(key);
+						arg.value = m_parser.get<StringList>(key);
 					}
 					CHALET_CATCH(std::exception & err)
 					{
@@ -393,7 +354,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 				}
 
 				case Variant::Kind::Remainder:
-					value = gatherRemaining(lastValue);
+					arg.value = gatherRemaining(lastValue);
 					return true;
 
 				case Variant::Kind::Empty:
@@ -445,38 +406,35 @@ std::string ArgumentPatterns::getHelp()
 
 /*****************************************************************************/
 /*****************************************************************************/
-argparse::Argument& ArgumentPatterns::addStringArgument(const char* inArgument, const char* inHelp)
+argparse::Argument& ArgumentPatterns::addStringArgument(const ArgumentIdentifier inId, const char* inArgument)
 {
-	auto& arg = m_parser.add_argument(inArgument)
-					.help(inHelp);
+	auto& arg = m_parser.add_argument(inArgument);
 
-	m_argumentMap.emplace(inArgument, Variant::Kind::String);
+	m_argumentMap.emplace(inArgument, MappedArgument{ inId, Variant::Kind::String });
 
 	return arg;
 }
 
 /*****************************************************************************/
-argparse::Argument& ArgumentPatterns::addStringArgument(const char* inArgument, const char* inHelp, std::string inDefaultValue)
+argparse::Argument& ArgumentPatterns::addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue)
 {
 	auto& arg = m_parser.add_argument(inArgument)
-					.help(inHelp)
 					.default_value(std::move(inDefaultValue));
 
-	m_argumentMap.emplace(inArgument, Variant::Kind::String);
+	m_argumentMap.emplace(inArgument, MappedArgument{ inId, Variant::Kind::String });
 
 	return arg;
 }
 
 /*****************************************************************************/
-argparse::Argument& ArgumentPatterns::addTwoStringArguments(const char* inShort, const char* inLong, const char* inHelp, std::string inDefaultValue)
+argparse::Argument& ArgumentPatterns::addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue)
 {
 	auto& arg = m_parser.add_argument(inShort, inLong)
-					.help(inHelp)
 					.nargs(1)
 					.default_value(std::move(inDefaultValue));
 
-	m_argumentMap.emplace(inShort, Variant::Kind::String);
-	m_argumentMap.emplace(inLong, Variant::Kind::String);
+	m_argumentMap.emplace(inShort, MappedArgument{ inId, Variant::Kind::String });
+	m_argumentMap.emplace(inLong, MappedArgument{ inId, Variant::Kind::String });
 
 	m_optionPairsCache.emplace_back(inShort);
 	m_optionPairsCache.emplace_back(inLong);
@@ -485,15 +443,14 @@ argparse::Argument& ArgumentPatterns::addTwoStringArguments(const char* inShort,
 }
 
 /*****************************************************************************/
-argparse::Argument& ArgumentPatterns::addTwoIntArguments(const char* inShort, const char* inLong, const char* inHelp, const int inDefaultValue)
+argparse::Argument& ArgumentPatterns::addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const int inDefaultValue)
 {
 	auto& arg = m_parser.add_argument(inShort, inLong)
-					.help(inHelp)
 					.nargs(1)
 					.default_value(inDefaultValue);
 
-	m_argumentMap.emplace(inShort, Variant::Kind::Integer);
-	m_argumentMap.emplace(inLong, Variant::Kind::Integer);
+	m_argumentMap.emplace(inShort, MappedArgument{ inId, Variant::Kind::Integer });
+	m_argumentMap.emplace(inLong, MappedArgument{ inId, Variant::Kind::Integer });
 
 	m_optionPairsCache.emplace_back(inShort);
 	m_optionPairsCache.emplace_back(inLong);
@@ -502,30 +459,28 @@ argparse::Argument& ArgumentPatterns::addTwoIntArguments(const char* inShort, co
 }
 
 /*****************************************************************************/
-argparse::Argument& ArgumentPatterns::addBoolArgument(const char* inArgument, const char* inHelp, const bool inDefaultValue)
+argparse::Argument& ArgumentPatterns::addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue)
 {
 	auto& arg = m_parser.add_argument(inArgument)
-					.help(inHelp)
 					.nargs(1)
 					.default_value(inDefaultValue)
 					.implicit_value(true);
 
-	m_argumentMap.emplace(inArgument, Variant::Kind::Boolean);
+	m_argumentMap.emplace(inArgument, MappedArgument{ inId, Variant::Kind::Boolean });
 
 	return arg;
 }
 
 /*****************************************************************************/
-argparse::Argument& ArgumentPatterns::addTwoBoolArguments(const char* inShort, const char* inLong, const char* inHelp, const bool inDefaultValue)
+argparse::Argument& ArgumentPatterns::addTwoBoolArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const bool inDefaultValue)
 {
 	auto& arg = m_parser.add_argument(inShort, inLong)
-					.help(inHelp)
 					.nargs(1)
 					.default_value(inDefaultValue)
 					.implicit_value(true);
 
-	m_argumentMap.emplace(inShort, Variant::Kind::Boolean);
-	m_argumentMap.emplace(inLong, Variant::Kind::Boolean);
+	m_argumentMap.emplace(inShort, MappedArgument{ inId, Variant::Kind::Boolean });
+	m_argumentMap.emplace(inLong, MappedArgument{ inId, Variant::Kind::Boolean });
 
 	m_optionPairsCache.emplace_back(inShort);
 	m_optionPairsCache.emplace_back(inLong);
@@ -534,13 +489,12 @@ argparse::Argument& ArgumentPatterns::addTwoBoolArguments(const char* inShort, c
 }
 
 /*****************************************************************************/
-argparse::Argument& ArgumentPatterns::addRemainingArguments(const char* inArgument, const char* inHelp)
+argparse::Argument& ArgumentPatterns::addRemainingArguments(const ArgumentIdentifier inId, const char* inArgument)
 {
 	auto& arg = m_parser.add_argument(inArgument)
-					.help(inHelp)
 					.remaining();
 
-	m_argumentMap.emplace(inArgument, Variant::Kind::Remainder);
+	m_argumentMap.emplace(inArgument, MappedArgument{ inId, Variant::Kind::Remainder });
 
 	return arg;
 }
@@ -563,94 +517,103 @@ void ArgumentPatterns::populateMainArguments()
    unset {key})",
 			fmt::arg("runProject", kArgRunProject),
 			fmt::arg("runArgs", kArgRunArguments),
-			fmt::arg("key", kArgConfigKey),
-			fmt::arg("value", kArgConfigValue),
+			fmt::arg("key", kArgSettingsKey),
+			fmt::arg("value", kArgSettingsValue),
 			fmt::arg("path", kArgInitPath)));
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addInputFileArg()
 {
-	addTwoStringArguments("-i", "--input-file", "An input build file to use [default: \"chalet.json\"]");
+	addTwoStringArguments(ArgumentIdentifier::InputFile, "-i", "--input-file")
+		.help("An input build file to use [default: \"chalet.json\"]");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addSettingsFileArg()
 {
-	addTwoStringArguments("-s", "--settings-file", "The path to a settings file to use [default: \".chaletrc\"]");
+	addTwoStringArguments(ArgumentIdentifier::SettingsFile, "-s", "--settings-file")
+		.help("The path to a settings file to use [default: \".chaletrc\"]");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addFileArg()
 {
-	addTwoStringArguments("-f", "--file", "The path to a JSON file to examine, if not the local/global settings");
+	addTwoStringArguments(ArgumentIdentifier::File, "-f", "--file")
+		.help("The path to a JSON file to examine, if not the local/global settings");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addRootDirArg()
 {
-	addTwoStringArguments("-r", "--root-dir", "The root directory to run the build from");
+	addTwoStringArguments(ArgumentIdentifier::RootDirectory, "-r", "--root-dir")
+		.help("The root directory to run the build from");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addOutputDirArg()
 {
-	addTwoStringArguments("-o", "--output-dir", "The output directory of the build [default: \"build\"]");
+	addTwoStringArguments(ArgumentIdentifier::OutputDirectory, "-o", "--output-dir")
+		.help("The output directory of the build [default: \"build\"]");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addExternalDirArg()
 {
-	addTwoStringArguments("-x", "--external-dir", "The directory to install external dependencies into [default: \"chalet_external\"]");
+	addTwoStringArguments(ArgumentIdentifier::ExternalDirectory, "-x", "--external-dir")
+		.help("The directory to install external dependencies into [default: \"chalet_external\"]");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addBundleDirArg()
 {
-	addTwoStringArguments("-d", "--distribution-dir", "The root directory for all distribution bundles [default: \"dist\"]");
+	addTwoStringArguments(ArgumentIdentifier::DistributionDirectory, "-d", "--distribution-dir")
+		.help("The root directory for all distribution bundles [default: \"dist\"]");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addProjectGenArg()
 {
-	// future
+// future
 #if 0
-	addTwoStringArguments("-p", "--project-gen", "Project file generator [vs2019,vscode,xcode]");
+	addTwoStringArguments("-p", "--project-gen")
+		.help("Project file generator [vs2019,vscode,xcode]");
 #endif
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addToolchainArg()
 {
-	addTwoStringArguments("-t", "--toolchain",
+	addTwoStringArguments(ArgumentIdentifier::Toolchain, "-t", "--toolchain")
 #if defined(CHALET_WIN32)
-		"Toolchain preference (msvc, msvc-pre, llvm, gcc, ...) [default: \"msvc\"]"
+		.help("Toolchain preference (msvc, msvc-pre, llvm, gcc, ...) [default: \"msvc\"]");
 #elif defined(CHALET_MACOS)
-		"Toolchain preference (apple-llvm, llvm, gcc, ...) [default: \"apple-llvm\"]"
+		.help("Toolchain preference (apple-llvm, llvm, gcc, ...) [default: \"apple-llvm\"]");
 #else
-		"Toolchain preference (llvm, gcc, ...) [default: \"gcc\"]"
+		.help("Toolchain preference (llvm, gcc, ...) [default: \"gcc\"]");
 #endif
-	);
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addMaxJobsArg()
 {
 	auto jobs = std::thread::hardware_concurrency();
-	auto help = fmt::format("The number of jobs to run during compilation [default: {}]", jobs);
-	addTwoIntArguments("-j", "--max-jobs", help.c_str(), 0);
+	addTwoIntArguments(ArgumentIdentifier::MaxJobs, "-j", "--max-jobs", 0)
+		.help(fmt::format("The number of jobs to run during compilation [default: {}]", jobs));
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addEnvFileArg()
 {
-	addTwoStringArguments("-e", "--env-file", "A file to load environment variables from [default: \".env\"]");
+	addTwoStringArguments(ArgumentIdentifier::EnvFile, "-e", "--env-file")
+		.help("A file to load environment variables from [default: \".env\"]");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addArchArg()
 {
-	addTwoStringArguments("-a", "--arch", "Target architecture", "auto")
+	addTwoStringArguments(ArgumentIdentifier::TargetArchitecture, "-a", "--arch", "auto")
+		.help("Target architecture")
 		.action([](const std::string& value) -> std::string {
 			// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 			// Either parsed later (if MSVC) or passed directly to GNU compiler
@@ -675,7 +638,8 @@ void ArgumentPatterns::addArchArg()
 /*****************************************************************************/
 void ArgumentPatterns::addSaveSchemaArg()
 {
-	addBoolArgument("--save-schema", "Save build & cache schemas to file", false);
+	addBoolArgument(ArgumentIdentifier::SaveSchema, "--save-schema", false)
+		.help("Save build & settubgs schemas to file");
 }
 
 /*****************************************************************************/
@@ -686,38 +650,46 @@ void ArgumentPatterns::addQuietArgs()
 	// --quieter = just build output
 	// --quietest = no output
 
-	addBoolArgument("--quieter", "Show only build output", false);
+	addBoolArgument(ArgumentIdentifier::Quieter, "--quieter", false)
+		.help("Show only build output");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addBuildConfigurationArg()
 {
-	addTwoStringArguments("-c", "--configuration", "The build configuration to use [default: \"Release\"]");
+	addTwoStringArguments(ArgumentIdentifier::BuildConfiguration, "-c", "--configuration")
+		.help("The build configuration to use [default: \"Release\"]");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addRunProjectArg()
 {
-	addStringArgument(kArgRunProject.c_str(), "A project to run", std::string());
+	addStringArgument(ArgumentIdentifier::RunProjectName, kArgRunProject.c_str(), std::string())
+		.help("A project to run");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addRunArgumentsArg()
 {
-	addRemainingArguments(kArgRunArguments.c_str(), "The arguments to pass to the run project");
+	addRemainingArguments(ArgumentIdentifier::RunProjectArguments, kArgRunArguments.c_str())
+		.help("The arguments to pass to the run project");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addSettingsTypeArg()
 {
-	addTwoBoolArguments("-l", "--local", "Use the local settings [.chaletrc]", true);
-	addTwoBoolArguments("-g", "--global", "Use the global settings [~/.chaletrc]", false);
+	addTwoBoolArguments(ArgumentIdentifier::LocalSettings, "-l", "--local", true)
+		.help("Use the local settings [.chaletrc]");
+
+	addTwoBoolArguments(ArgumentIdentifier::GlobalSettings, "-g", "--global", false)
+		.help("Use the global settings [~/.chaletrc]");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addDumpAssemblyArg()
 {
-	// addBoolArgument("--dump-assembly", "Include an .asm dump of each object file during the build", false);
+	// addBoolArgument(ArgumentIdentifier::DumpAssembly, "--dump-assembly", false)
+	// 	.help("Include an .asm dump of each object file during the build");
 }
 
 /*****************************************************************************/
@@ -809,7 +781,8 @@ void ArgumentPatterns::commandConfigure()
 void ArgumentPatterns::commandInit()
 {
 	//
-	addStringArgument(kArgInitPath.c_str(), "The path of the project to initialize", ".")
+	addStringArgument(ArgumentIdentifier::InitPath, kArgInitPath.c_str(), ".")
+		.help("The path of the project to initialize")
 		.required();
 }
 
@@ -819,7 +792,8 @@ void ArgumentPatterns::commandSettingsGet()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(kArgConfigKey.c_str(), "The config key to get", std::string());
+	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str(), std::string())
+		.help("The config key to get");
 }
 
 /*****************************************************************************/
@@ -828,10 +802,12 @@ void ArgumentPatterns::commandSettingsSet()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(kArgConfigKey.c_str(), "The config key to change")
+	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str())
+		.help("The config key to change")
 		.required();
 
-	addStringArgument(kArgConfigValue.c_str(), "The config value to change to", std::string());
+	addStringArgument(ArgumentIdentifier::SettingsValue, kArgSettingsValue.c_str(), std::string())
+		.help("The config value to change to");
 }
 
 /*****************************************************************************/
@@ -840,7 +816,8 @@ void ArgumentPatterns::commandSettingsUnset()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(kArgConfigKey.c_str(), "The config key to remove")
+	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str())
+		.help("The config key to remove")
 		.required();
 }
 
