@@ -62,11 +62,11 @@ ArgumentPatterns::ArgumentPatterns() :
 		"-x", "--external-dir",
 		"-d", "--distribution-dir",
 		"-t", "--toolchain",
+		"-a", "--arch",
 		"-c", "--configuration",
 		"-j", "--max-jobs",
 		// "-p", "--project-gen",
 		"-e", "--env-file",
-		"-a", "--arch",
 		"-l", "--local",
 		"-g", "--global",
 		// clang-format on
@@ -75,6 +75,11 @@ ArgumentPatterns::ArgumentPatterns() :
 #if defined(CHALET_DEBUG)
 	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::commandDebug);
 #endif
+	// --dump-assembly
+	// --generate-compile-commands=0
+	// --show-commands=0
+	// --benchmark=1
+	// --signing-identity
 }
 
 /*****************************************************************************/
@@ -270,7 +275,7 @@ void ArgumentPatterns::makeParser()
 		.default_value(true)
 		.required();
 
-	m_argumentMap.push_back({ m_routeString, true });
+	m_argumentMap.emplace(m_routeString, true);
 }
 
 /*****************************************************************************/
@@ -474,8 +479,8 @@ void ArgumentPatterns::addInputFileArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-i", Variant::Kind::String });
-	m_argumentMap.push_back({ "--input-file", Variant::Kind::String });
+	m_argumentMap.emplace("-i", Variant::Kind::String);
+	m_argumentMap.emplace("--input-file", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -486,8 +491,8 @@ void ArgumentPatterns::addSettingsFileArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-s", Variant::Kind::String });
-	m_argumentMap.push_back({ "--settings-file", Variant::Kind::String });
+	m_argumentMap.emplace("-s", Variant::Kind::String);
+	m_argumentMap.emplace("--settings-file", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -498,8 +503,8 @@ void ArgumentPatterns::addFileArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-f", Variant::Kind::String });
-	m_argumentMap.push_back({ "--file", Variant::Kind::String });
+	m_argumentMap.emplace("-f", Variant::Kind::String);
+	m_argumentMap.emplace("--file", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -510,8 +515,8 @@ void ArgumentPatterns::addRootDirArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-r", Variant::Kind::String });
-	m_argumentMap.push_back({ "--root-dir", Variant::Kind::String });
+	m_argumentMap.emplace("-r", Variant::Kind::String);
+	m_argumentMap.emplace("--root-dir", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -522,8 +527,8 @@ void ArgumentPatterns::addOutputDirArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-o", Variant::Kind::String });
-	m_argumentMap.push_back({ "--output-dir", Variant::Kind::String });
+	m_argumentMap.emplace("-o", Variant::Kind::String);
+	m_argumentMap.emplace("--output-dir", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -534,8 +539,8 @@ void ArgumentPatterns::addExternalDirArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-x", Variant::Kind::String });
-	m_argumentMap.push_back({ "--external-dir", Variant::Kind::String });
+	m_argumentMap.emplace("-x", Variant::Kind::String);
+	m_argumentMap.emplace("--external-dir", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -546,8 +551,8 @@ void ArgumentPatterns::addBundleDirArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-d", Variant::Kind::String });
-	m_argumentMap.push_back({ "--distribution-dir", Variant::Kind::String });
+	m_argumentMap.emplace("-d", Variant::Kind::String);
+	m_argumentMap.emplace("--distribution-dir", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -560,8 +565,8 @@ void ArgumentPatterns::addProjectGenArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-p", Variant::Kind::String });
-	m_argumentMap.push_back({ "--project-gen", Variant::Kind::String });
+	m_argumentMap.emplace("-p", Variant::Kind::String);
+	m_argumentMap.emplace("--project-gen", Variant::Kind::String);
 #endif
 }
 
@@ -579,8 +584,8 @@ void ArgumentPatterns::addToolchainArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-t", Variant::Kind::String });
-	m_argumentMap.push_back({ "--toolchain", Variant::Kind::String });
+	m_argumentMap.emplace("-t", Variant::Kind::String);
+	m_argumentMap.emplace("--toolchain", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -592,8 +597,8 @@ void ArgumentPatterns::addMaxJobsArg()
 		.nargs(1)
 		.default_value(0);
 
-	m_argumentMap.push_back({ "-j", Variant::Kind::Integer });
-	m_argumentMap.push_back({ "--max-jobs", Variant::Kind::Integer });
+	m_argumentMap.emplace("-j", Variant::Kind::Integer);
+	m_argumentMap.emplace("--max-jobs", Variant::Kind::Integer);
 }
 
 /*****************************************************************************/
@@ -605,7 +610,7 @@ void ArgumentPatterns::addDumpAssemblyArg()
 		.default_value(false)
 		.implicit_value(true);
 
-	m_argumentMap.push_back({ "--dump-assembly", Variant::Kind::Boolean });
+	m_argumentMap.emplace("--dump-assembly", Variant::Kind::Boolean);
 }
 
 /*****************************************************************************/
@@ -616,8 +621,8 @@ void ArgumentPatterns::addEnvFileArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-e", Variant::Kind::String });
-	m_argumentMap.push_back({ "--env-file", Variant::Kind::String });
+	m_argumentMap.emplace("-e", Variant::Kind::String);
+	m_argumentMap.emplace("--env-file", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -647,8 +652,8 @@ void ArgumentPatterns::addArchArg()
 			return std::string{ "auto" };
 		});
 
-	m_argumentMap.push_back({ "-a", Variant::Kind::String });
-	m_argumentMap.push_back({ "--arch", Variant::Kind::String });
+	m_argumentMap.emplace("-a", Variant::Kind::String);
+	m_argumentMap.emplace("--arch", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -660,7 +665,7 @@ void ArgumentPatterns::addSaveSchemaArg()
 		.default_value(false)
 		.implicit_value(true);
 
-	m_argumentMap.push_back({ "--save-schema", Variant::Kind::Boolean });
+	m_argumentMap.emplace("--save-schema", Variant::Kind::Boolean);
 }
 
 /*****************************************************************************/
@@ -677,7 +682,7 @@ void ArgumentPatterns::addQuietArgs()
 		.default_value(false)
 		.implicit_value(true);
 
-	m_argumentMap.push_back({ "--quieter", Variant::Kind::Boolean });
+	m_argumentMap.emplace("--quieter", Variant::Kind::Boolean);
 }
 
 /*****************************************************************************/
@@ -688,8 +693,8 @@ void ArgumentPatterns::addBuildConfigurationArg()
 		.nargs(1)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ "-c", Variant::Kind::String });
-	m_argumentMap.push_back({ "--configuration", Variant::Kind::String });
+	m_argumentMap.emplace("-c", Variant::Kind::String);
+	m_argumentMap.emplace("--configuration", Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -699,7 +704,7 @@ void ArgumentPatterns::addRunProjectArg()
 		.help(kHelpRunProject)
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ kArgRunProject, Variant::Kind::String });
+	m_argumentMap.emplace(kArgRunProject, Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -709,7 +714,7 @@ void ArgumentPatterns::addRunArgumentsArg()
 		.help(kHelpRunArguments)
 		.remaining();
 
-	m_argumentMap.push_back({ kArgRunArguments, Variant::Kind::Remainder });
+	m_argumentMap.emplace(kArgRunArguments, Variant::Kind::Remainder);
 }
 
 /*****************************************************************************/
@@ -721,8 +726,8 @@ void ArgumentPatterns::addSettingsTypeArg()
 		.default_value(true)
 		.implicit_value(true);
 
-	m_argumentMap.push_back({ "-l", Variant::Kind::Boolean });
-	m_argumentMap.push_back({ "--local", Variant::Kind::Boolean });
+	m_argumentMap.emplace("-l", Variant::Kind::Boolean);
+	m_argumentMap.emplace("--local", Variant::Kind::Boolean);
 
 	m_parser.add_argument("-g", "--global")
 		.help("Use the global settings [~/.chaletrc]")
@@ -730,8 +735,28 @@ void ArgumentPatterns::addSettingsTypeArg()
 		.default_value(false)
 		.implicit_value(true);
 
-	m_argumentMap.push_back({ "-g", Variant::Kind::Boolean });
-	m_argumentMap.push_back({ "--global", Variant::Kind::Boolean });
+	m_argumentMap.emplace("-g", Variant::Kind::Boolean);
+	m_argumentMap.emplace("--global", Variant::Kind::Boolean);
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addDumpAssemblyArg()
+{
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addGenerateCompileCommandsArg()
+{
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addShowCommandsArg()
+{
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addBenchmarkArg()
+{
 }
 
 /*****************************************************************************/
@@ -744,11 +769,15 @@ void ArgumentPatterns::addOptionalArguments()
 	addOutputDirArg();
 	addBuildConfigurationArg();
 	addToolchainArg();
-	addMaxJobsArg();
-	// addDumpAssemblyArg();
-	addProjectGenArg();
-	addEnvFileArg();
 	addArchArg();
+	addEnvFileArg();
+	addProjectGenArg();
+	addMaxJobsArg();
+	addShowCommandsArg();
+	addDumpAssemblyArg();
+	addBenchmarkArg();
+	addGenerateCompileCommandsArg();
+	// addDumpAssemblyArg();
 	addSaveSchemaArg();
 	addQuietArgs();
 }
@@ -810,7 +839,7 @@ void ArgumentPatterns::commandInit()
 		.default_value(std::string("."))
 		.required();
 
-	m_argumentMap.push_back({ kArgInitPath, Variant::Kind::String });
+	m_argumentMap.emplace(kArgInitPath, Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -823,7 +852,7 @@ void ArgumentPatterns::commandSettingsGet()
 		.help("The config key to get")
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ kArgConfigKey, Variant::Kind::String });
+	m_argumentMap.emplace(kArgConfigKey, Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -836,13 +865,13 @@ void ArgumentPatterns::commandSettingsSet()
 		.help("The config key to change")
 		.required();
 
-	m_argumentMap.push_back({ kArgConfigKey, Variant::Kind::String });
+	m_argumentMap.emplace(kArgConfigKey, Variant::Kind::String);
 
 	m_parser.add_argument(kArgConfigValue)
 		.help("The config value to change to")
 		.default_value(std::string());
 
-	m_argumentMap.push_back({ kArgConfigValue, Variant::Kind::String });
+	m_argumentMap.emplace(kArgConfigValue, Variant::Kind::String);
 }
 
 /*****************************************************************************/
@@ -855,7 +884,7 @@ void ArgumentPatterns::commandSettingsUnset()
 		.help("The config key to remove")
 		.required();
 
-	m_argumentMap.push_back({ kArgConfigKey, Variant::Kind::String });
+	m_argumentMap.emplace(kArgConfigKey, Variant::Kind::String);
 }
 
 /*****************************************************************************/

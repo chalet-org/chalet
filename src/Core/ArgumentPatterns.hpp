@@ -16,7 +16,7 @@ class ArgumentPatterns
 {
 	using ParserAction = std::function<void(ArgumentPatterns&)>;
 	using ParserList = std::unordered_map<Route, ParserAction>;
-	using ArgumentMap = std::vector<std::pair<std::string, Variant>>;
+	using ArgumentMap = std::map<std::string, Variant>;
 
 public:
 	ArgumentPatterns();
@@ -65,6 +65,10 @@ private:
 	void addSaveSchemaArg();
 	void addQuietArgs();
 	void addSettingsTypeArg();
+	void addDumpAssemblyArg();
+	void addGenerateCompileCommandsArg();
+	void addShowCommandsArg();
+	void addBenchmarkArg();
 
 	void addOptionalArguments();
 	void commandBuildRun();
