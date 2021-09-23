@@ -34,7 +34,6 @@ public:
 
 private:
 	ushort parseOption(const std::string& inString);
-	std::string getHelpCommand();
 
 	Route getRouteFromString(const std::string& inValue);
 
@@ -44,6 +43,14 @@ private:
 	bool populateArgumentMap(const StringList& inArguments);
 	// void populateArgumentMap(const StringList& inArguments);
 	std::string getHelp();
+
+	argparse::Argument& addStringArgument(const char* inArgument, const char* inHelp);
+	argparse::Argument& addStringArgument(const char* inArgument, const char* inHelp, std::string inDefaultValue);
+	argparse::Argument& addTwoStringArguments(const char* inShort, const char* inLong, const char* inHelp, std::string inDefaultValue = std::string());
+	argparse::Argument& addTwoIntArguments(const char* inShort, const char* inLong, const char* inHelp, const int inDefaultValue);
+	argparse::Argument& addBoolArgument(const char* inArgument, const char* inHelp, const bool inDefaultValue);
+	argparse::Argument& addTwoBoolArguments(const char* inShort, const char* inLong, const char* inHelp, const bool inDefaultValue);
+	argparse::Argument& addRemainingArguments(const char* inArgument, const char* inHelp);
 
 	void populateMainArguments();
 	void addInputFileArg();
@@ -56,7 +63,6 @@ private:
 	void addProjectGenArg();
 	void addToolchainArg();
 	void addMaxJobsArg();
-	void addDumpAssemblyArg();
 	void addEnvFileArg();
 	void addArchArg();
 	void addBuildConfigurationArg();
@@ -98,19 +104,12 @@ private:
 
 	std::string m_routeString;
 
-	const std::string kCommand = "<command>";
-
 	const std::string kArgRunProject = "[<runProject>]";
 	const std::string kArgRunArguments = "[ARG...]";
 	const std::string kArgInitName = "<name>";
 	const std::string kArgInitPath = "<path>";
 	const std::string kArgConfigKey = "<key>";
 	const std::string kArgConfigValue = "<value>";
-
-	const std::string kHelpRunProject = "A project to run";
-	const std::string kHelpRunArguments = "The arguments to pass to the run project";
-	const std::string kHelpInitName = "The name of the project to initialize";
-	const std::string kHelpInitPath = "The path of the project to initialize";
 };
 }
 
