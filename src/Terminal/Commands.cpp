@@ -641,6 +641,9 @@ bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& 
 }
 
 /*****************************************************************************/
+// Should match:
+//   https://www.digitalocean.com/community/tools/glob?comments=true&glob=src%2F%2A%2A%2F%2A.cpp&matches=false&tests=src&tests=src%2Fmain.cpp&tests=src%2Fpch.hpp&tests=src%2Ffoo&tests=src%2Ffoo%2Ffoo.cpp&tests=src%2Ffoo%2Ffoo.hpp&tests=src%2Fbar&tests=src%2Fbar%2Fbar&tests=src%2Fbar%2Fbar%2Fbar.cpp&tests=src%2Fbar%2Fbar%2Fbar.hpp
+//
 void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound)
 {
 	if (onFound == nullptr)
