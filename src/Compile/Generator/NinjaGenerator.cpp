@@ -548,15 +548,19 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 			case SourceType::C:
 				rule = "cc";
 				break;
+
 			case SourceType::CPlusPlus:
 				rule = "cpp";
 				break;
+
 			case SourceType::ObjectiveC:
 				rule = "objc";
 				break;
+
 			case SourceType::ObjectiveCPlusPlus:
 				rule = "objcpp";
 				break;
+
 			case SourceType::WindowsResource:
 				rule = "rc";
 				break;

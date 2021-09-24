@@ -550,23 +550,23 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 	const auto ext = String::getPathSuffix(inSource);
 	if (!ext.empty())
 	{
-		if (String::endsWith(m_cppExts, ext))
+		if (String::equals(m_cppExts, ext))
 		{
 			return SourceType::CPlusPlus;
 		}
-		else if (String::endsWith(m_cExts, ext))
+		else if (String::equals(m_cExts, ext))
 		{
 			return SourceType::C;
 		}
-		else if (String::endsWith(m_resourceExts, ext))
+		else if (String::equals(m_resourceExts, ext))
 		{
 			return SourceType::WindowsResource;
 		}
-		else if (String::endsWith(m_objectiveCExts, ext))
+		else if (String::equals(m_objectiveCExts, ext))
 		{
 			return SourceType::ObjectiveC;
 		}
-		else if (String::endsWith(m_objectiveCppExts, ext))
+		else if (String::equals(m_objectiveCppExts, ext))
 		{
 			return SourceType::ObjectiveCPlusPlus;
 		}
