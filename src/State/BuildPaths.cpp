@@ -632,7 +632,7 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 		{
 			if (usesPch && String::equals(pch, file))
 			{
-				Diagnostic::warn("Precompiled header explicitly included as file: {} (ignored)", file);
+				Diagnostic::warn("Precompiled header explicitly included in 'files': {} (ignored)", file);
 				continue;
 			}
 

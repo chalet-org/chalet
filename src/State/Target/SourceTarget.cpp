@@ -450,7 +450,19 @@ void SourceTarget::addFiles(StringList&& inList)
 
 void SourceTarget::addFile(std::string&& inValue)
 {
-	List::addIfDoesNotExist(m_files, std::move(inValue));
+	if (String::contains('*', inValue))
+	{
+		Commands::forEachGlobMatch(inValue, GlobMatch::Files, [&](const fs::path& inPath) {
+			auto path = inPath.string();
+			Path::sanitize(path);
+
+			List::addIfDoesNotExist(m_files, std::move(path));
+		});
+	}
+	else
+	{
+		List::addIfDoesNotExist(m_files, std::move(inValue));
+	}
 }
 
 /*****************************************************************************/
@@ -482,7 +494,19 @@ void SourceTarget::addLocationExcludes(StringList&& inList)
 
 void SourceTarget::addLocationExclude(std::string&& inValue)
 {
-	List::addIfDoesNotExist(m_locationExcludes, std::move(inValue));
+	if (String::contains('*', inValue))
+	{
+		Commands::forEachGlobMatch(inValue, GlobMatch::Files, [&](const fs::path& inPath) {
+			auto path = inPath.string();
+			Path::sanitize(path);
+
+			List::addIfDoesNotExist(m_locationExcludes, std::move(path));
+		});
+	}
+	else
+	{
+		List::addIfDoesNotExist(m_locationExcludes, std::move(inValue));
+	}
 }
 
 /*****************************************************************************/

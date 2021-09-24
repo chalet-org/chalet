@@ -7,6 +7,7 @@
 #define CHALET_COMMANDS_HPP
 
 #include "Process/PipeOption.hpp"
+#include "Utility/GlobMatch.hpp"
 
 namespace chalet
 {
@@ -41,10 +42,10 @@ bool copySilent(const std::string& inFrom, const std::string& inTo);
 bool copySkipExisting(const std::string& inFrom, const std::string& inTo);
 bool copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent = false);
 bool rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting = false);
-void forEachFileMatch(const std::string& inPath, const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
-void forEachFileMatch(const std::string& inPath, const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);
-void forEachFileMatch(const std::string& inPattern, const std::function<void(const fs::path&)>& onFound);
-void forEachFileMatch(const StringList& inPatterns, const std::function<void(const fs::path&)>& onFound);
+void forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
+void forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
+void forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
+void forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
 
 bool readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace);
 std::string readShebangFromFile(const std::string& inFile);

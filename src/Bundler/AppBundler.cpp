@@ -315,7 +315,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	// LOG("Distribution dependencies gathered in:", timer.asString());
 
-	Commands::forEachFileMatch(resourcePath, bundle.excludes(), [&](const fs::path& inPath) {
+	Commands::forEachGlobMatch(resourcePath, bundle.excludes(), GlobMatch::FilesAndFolders, [&](const fs::path& inPath) {
 		Commands::remove(inPath.string());
 	});
 

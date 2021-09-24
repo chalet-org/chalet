@@ -170,8 +170,8 @@
 			],
 			// "include": [],
 			"exclude": [
-				"*.psd",
-				"*.7z",
+				"**.psd",
+				"**.7z",
 				"Thumbs.db",
 				".DS_Store"
 			],
