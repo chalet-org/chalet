@@ -141,16 +141,11 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 
 	Json& buildSettings = m_jsonFile.json[kKeySettings];
 
-	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyDumpAssembly, [&]() {
-		return inState.dumpAssembly;
-	});
+	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildSettings, kKeyMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
 
 	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyGenerateCompileCommands, [&]() {
 		return inState.generateCompileCommands;
-	});
-
-	m_jsonFile.assignNodeIfEmpty<uint>(buildSettings, kKeyMaxJobs, [&]() {
-		return inState.maxJobs;
 	});
 
 	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyShowCommands, [&]() {
@@ -437,13 +432,13 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyDumpAssembly))
 	{
-		if (!m_inputs.dumpAssemblySetFromCommandLine())
+		if (!m_inputs.dumpAssembly().has_value())
 			m_inputs.setDumpAssembly(val);
 	}
 
 	if (ushort val = 0; m_jsonFile.assignFromKey(val, buildSettings, kKeyMaxJobs))
 	{
-		if (!m_inputs.dumpAssemblySetFromCommandLine())
+		if (!m_inputs.maxJobs().has_value())
 			m_inputs.setMaxJobs(val);
 	}
 

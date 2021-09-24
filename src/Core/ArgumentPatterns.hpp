@@ -50,8 +50,9 @@ private:
 	argparse::Argument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument);
 	argparse::Argument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue);
 	argparse::Argument& addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue = std::string());
-	argparse::Argument& addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const int inDefaultValue);
+	argparse::Argument& addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong);
 	argparse::Argument& addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue);
+	argparse::Argument& addOptionalBoolArgument(const ArgumentIdentifier inId, const char* inArgument);
 	argparse::Argument& addTwoBoolArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const bool inDefaultValue);
 	argparse::Argument& addRemainingArguments(const ArgumentIdentifier inId, const char* inArgument);
 

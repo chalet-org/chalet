@@ -7,6 +7,7 @@
 #define CHALET_ARGUMENT_HPP
 
 #include <any>
+#include <optional>
 
 #ifdef CHALET_MSVC
 	#pragma warning(push)
@@ -23,7 +24,9 @@ struct Variant
 	{
 		Empty,
 		Boolean,
+		OptionalBoolean,
 		Integer,
+		OptionalInteger,
 		String,
 		Enum,
 		StringList,
@@ -40,7 +43,9 @@ struct Variant
 	Kind kind() const noexcept;
 
 	bool asBool() const;
+	std::optional<bool> asOptionalBool() const;
 	int asInt() const;
+	std::optional<int> asOptionalInt() const;
 	std::string asString() const;
 	StringList asStringList() const;
 

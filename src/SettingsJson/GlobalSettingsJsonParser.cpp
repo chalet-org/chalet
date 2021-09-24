@@ -5,6 +5,8 @@
 
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
 
+#include <thread>
+
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/GlobalSettingsState.hpp"
 #include "State/StatePrototype.hpp"
@@ -67,19 +69,45 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 
 	Json& buildSettings = m_jsonFile.json[kKeySettings];
 
-	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyDumpAssembly, [&]() {
-		outState.dumpAssembly = m_inputs.dumpAssembly();
-		return outState.dumpAssembly;
+	auto assignSettingsBool = [&](const std::string& inKey, const bool inDefault, const std::function<const std::optional<bool>&()>& onGetValue) {
+		m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, inKey, [&inDefault]() {
+			return inDefault;
+		});
+		auto value = onGetValue();
+		if (value.has_value())
+		{
+			buildSettings[inKey] = *value;
+		}
+	};
+
+	auto assignSettingsUint = [&](const std::string& inKey, const uint inDefault, const std::function<const std::optional<uint>&()>& onGetValue) {
+		m_jsonFile.assignNodeIfEmpty<uint>(buildSettings, inKey, [&inDefault]() {
+			return inDefault;
+		});
+		auto value = onGetValue();
+		if (value.has_value())
+		{
+			buildSettings[inKey] = *value;
+		}
+	};
+
+	assignSettingsBool(kKeyDumpAssembly, outState.dumpAssembly, [&]() {
+		return m_inputs.dumpAssembly();
 	});
 
 	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyGenerateCompileCommands, [&]() {
 		return outState.generateCompileCommands;
 	});
 
-	m_jsonFile.assignNodeIfEmpty<uint>(buildSettings, kKeyMaxJobs, [&]() {
-		outState.maxJobs = m_inputs.maxJobs();
-		return outState.maxJobs;
-	});
+	{
+		uint maxJobs = outState.maxJobs;
+		if (maxJobs == 0)
+			maxJobs = std::thread::hardware_concurrency();
+
+		assignSettingsUint(kKeyMaxJobs, maxJobs, [&]() {
+			return m_inputs.maxJobs();
+		});
+	}
 
 	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyShowCommands, [&]() {
 		return outState.showCommands;

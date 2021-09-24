@@ -5,6 +5,8 @@
 
 #include "State/BuildInfo.hpp"
 
+#include <thread>
+
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
@@ -13,16 +15,28 @@ namespace chalet
 {
 /*****************************************************************************/
 BuildInfo::BuildInfo(const CommandLineInputs& inInputs) :
-	m_inputs(inInputs)
+	m_inputs(inInputs),
+	m_processorCount(std::thread::hardware_concurrency())
 {
 	m_hostArchitecture.set(m_inputs.hostArchitecture());
 	setTargetArchitecture(m_inputs.targetArchitecture());
+
+	if (m_inputs.maxJobs().has_value())
+		m_maxJobs = *m_inputs.maxJobs();
+
+	if (m_inputs.dumpAssembly().has_value())
+		m_dumpAssembly = *m_inputs.dumpAssembly();
 }
 
 /*****************************************************************************/
 const std::string& BuildInfo::buildConfiguration() const noexcept
 {
 	chalet_assert(!m_buildConfiguration.empty(), "Build configuration is empty");
+	return m_buildConfiguration;
+}
+
+const std::string& BuildInfo::buildConfigurationNoAssert() const noexcept
+{
 	return m_buildConfiguration;
 }
 
@@ -89,13 +103,13 @@ const StringList& BuildInfo::universalArches() const noexcept
 /*****************************************************************************/
 uint BuildInfo::maxJobs() const noexcept
 {
-	return m_inputs.maxJobs();
+	return m_maxJobs;
 }
 
 /*****************************************************************************/
 bool BuildInfo::dumpAssembly() const noexcept
 {
-	return m_inputs.dumpAssembly();
+	return m_dumpAssembly;
 }
 
 }

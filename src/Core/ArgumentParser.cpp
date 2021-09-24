@@ -147,12 +147,30 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				break;
 			}
 
-			case Variant::Kind::Integer: {
-				int value = arg.value.asInt();
+			case Variant::Kind::OptionalInteger: {
+				auto rawValue = arg.value.asOptionalInt();
+				if (!rawValue.has_value())
+					break;
+
+				int value = *rawValue;
+
 				if (arg.id == ArgumentIdentifier::MaxJobs)
 				{
-					if (value > 0)
-						m_inputs.setMaxJobs(static_cast<uint>(value), true);
+					m_inputs.setMaxJobs(static_cast<uint>(value));
+				}
+				break;
+			}
+
+			case Variant::Kind::OptionalBoolean: {
+				auto rawValue = arg.value.asOptionalBool();
+				if (!rawValue.has_value())
+					break;
+
+				bool value = *rawValue;
+
+				if (arg.id == ArgumentIdentifier::DumpAssembly)
+				{
+					m_inputs.setDumpAssembly(value);
 				}
 				break;
 			}
@@ -163,10 +181,6 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					case ArgumentIdentifier::SaveSchema:
 						m_inputs.setSaveSchemaToFile(value);
-						break;
-
-					case ArgumentIdentifier::DumpAssembly:
-						m_inputs.setDumpAssembly(value, true);
 						break;
 
 					case ArgumentIdentifier::Quieter:
@@ -223,6 +237,10 @@ StringList ArgumentParser::parseRawArguments(const int argc, const char* const a
 {
 	StringList ret;
 
+	StringList implicitTrueArgs{
+		"--dump-assembly"
+	};
+
 	for (int i = 0; i < argc; ++i)
 	{
 		std::string arg(argv[i] ? argv[i] : "");
@@ -250,6 +268,9 @@ StringList ArgumentParser::parseRawArguments(const int argc, const char* const a
 
 		if (String::startsWith("--", arg) && String::contains('=', arg))
 		{
+			String::replaceAll(arg, "=true", "=1");
+			String::replaceAll(arg, "=false", "=0");
+
 			auto list = String::split(arg, '=');
 			for (auto& it : list)
 			{
@@ -259,6 +280,13 @@ StringList ArgumentParser::parseRawArguments(const int argc, const char* const a
 		else
 		{
 			ret.emplace_back(std::move(arg));
+
+			if (String::equals(implicitTrueArgs, ret.back()))
+			{
+				// This is a hack so that one can write --dump-assembly without a 2nd arg
+				// argparse has issues figuring out what you want otherwise
+				ret.emplace_back("1");
+			}
 		}
 	}
 

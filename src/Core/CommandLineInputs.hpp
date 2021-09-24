@@ -6,6 +6,8 @@
 #ifndef CHALET_COMMAND_LINE_INPUTS_HPP
 #define CHALET_COMMAND_LINE_INPUTS_HPP
 
+#include <optional>
+
 #include "Compile/ToolchainPreference.hpp"
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
@@ -110,15 +112,11 @@ struct CommandLineInputs
 
 	void clearWorkingDirectory(std::string& outValue) const;
 
-	uint processorCount() const noexcept;
+	const std::optional<uint>& maxJobs() const noexcept;
+	void setMaxJobs(const uint inValue) noexcept;
 
-	uint maxJobs() const noexcept;
-	bool maxJobsSetFromCommandLine() const noexcept;
-	void setMaxJobs(const uint inValue, const bool inFromCL = false) noexcept;
-
-	bool dumpAssembly() const noexcept;
-	bool dumpAssemblySetFromCommandLine() const noexcept;
-	void setDumpAssembly(const bool inValue, const bool inFromCL = false) noexcept;
+	const std::optional<bool>& dumpAssembly() const noexcept;
+	void setDumpAssembly(const bool inValue) noexcept;
 
 private:
 	std::string getPlatform() const noexcept;
@@ -167,16 +165,13 @@ private:
 	std::string m_hostArchitecture;
 	mutable std::string m_targetArchitecture;
 
-	uint m_processorCount = 0;
-	uint m_maxJobs = 0;
+	std::optional<uint> m_maxJobs;
+	std::optional<bool> m_dumpAssembly;
 
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
 	SettingsType m_settingsType = SettingsType::None;
 
-	bool m_dumpAssembly = false;
-	bool m_maxJobsSetFromCommandLine = false;
-	bool m_dumpAssemblySetFromCommandLine = false;
 	bool m_saveSchemaToFile = false;
 	mutable bool m_isMsvcPreRelease = false;
 	mutable bool m_isToolchainPreset = false;

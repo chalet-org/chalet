@@ -82,6 +82,28 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const std::string& inKey, const 
 	return result;
 }
 
+template <typename T>
+bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::optional<T>& inValueA, const T& inValueB)
+{
+	bool result = false;
+	bool valid = containsKeyForType<T>(outNode, inKey) && !inValueA.has_value();
+
+	if (!valid)
+	{
+		if (inValueA.has_value())
+		{
+			outNode[inKey] = *inValueA;
+		}
+		else
+		{
+			outNode[inKey] = inValueB;
+		}
+		setDirty(true);
+	}
+
+	return result;
+}
+
 /*****************************************************************************/
 template <typename T>
 bool JsonFile::containsKeyForType(const Json& inNode, const std::string& inKey)

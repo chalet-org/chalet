@@ -57,9 +57,9 @@ bool BuildJsonParser::serialize()
 		return false;
 	}
 
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
 	if (!validBuildRequested())
 	{
+		const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
 		Diagnostic::error("{}: No valid projects to build in '{}' configuration. Check usage of 'onlyInConfiguration'", m_filename, buildConfiguration);
 		return false;
 	}
@@ -449,28 +449,31 @@ bool BuildJsonParser::parseCMakeProject(CMakeTarget& outProject, const Json& inN
 /*****************************************************************************/
 bool BuildJsonParser::parsePlatformConfigExclusions(IBuildTarget& outProject, const Json& inNode)
 {
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
-	const auto& platform = m_inputs.platform();
+	const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
+	if (!buildConfiguration.empty())
+	{
+		const auto& platform = m_inputs.platform();
 
-	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "onlyInConfiguration"))
-		outProject.setIncludeInBuild(List::contains(list, buildConfiguration));
-	else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "onlyInConfiguration"))
-		outProject.setIncludeInBuild(val == buildConfiguration);
+		if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "onlyInConfiguration"))
+			outProject.setIncludeInBuild(List::contains(list, buildConfiguration));
+		else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "onlyInConfiguration"))
+			outProject.setIncludeInBuild(val == buildConfiguration);
 
-	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "notInConfiguration"))
-		outProject.setIncludeInBuild(!List::contains(list, buildConfiguration));
-	else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "notInConfiguration"))
-		outProject.setIncludeInBuild(val != buildConfiguration);
+		if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "notInConfiguration"))
+			outProject.setIncludeInBuild(!List::contains(list, buildConfiguration));
+		else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "notInConfiguration"))
+			outProject.setIncludeInBuild(val != buildConfiguration);
 
-	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "onlyInPlatform"))
-		outProject.setIncludeInBuild(List::contains(list, platform));
-	else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "onlyInPlatform"))
-		outProject.setIncludeInBuild(val == platform);
+		if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "onlyInPlatform"))
+			outProject.setIncludeInBuild(List::contains(list, platform));
+		else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "onlyInPlatform"))
+			outProject.setIncludeInBuild(val == platform);
 
-	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "notInPlatform"))
-		outProject.setIncludeInBuild(!List::contains(list, platform));
-	else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "notInPlatform"))
-		outProject.setIncludeInBuild(val != platform);
+		if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "notInPlatform"))
+			outProject.setIncludeInBuild(!List::contains(list, platform));
+		else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "notInPlatform"))
+			outProject.setIncludeInBuild(val != platform);
+	}
 
 	return outProject.includeInBuild();
 }

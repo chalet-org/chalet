@@ -22,9 +22,8 @@
 			"stopOnEntry": false,
 			"args": [
 				// "--save-schema",
-				"-c",
-				"Release",
-				"build"
+				"--max-jobs",
+				"configure"
 			],
 		},
 		{

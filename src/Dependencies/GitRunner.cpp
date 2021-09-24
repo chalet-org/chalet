@@ -5,6 +5,8 @@
 
 #include "Dependencies/GitRunner.hpp"
 
+#include <thread>
+
 #include "Cache/ExternalDependencyCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/Dependency/GitDependency.hpp"
@@ -139,7 +141,11 @@ StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
 
 	if (m_submodules)
 	{
-		uint maxJobs = m_inputs.maxJobs();
+		uint maxJobs = 0;
+		if (m_inputs.maxJobs().has_value())
+			maxJobs = *m_inputs.maxJobs();
+		else
+			maxJobs = std::thread::hardware_concurrency();
 
 		ret.emplace_back("--recurse-submodules");
 		ret.emplace_back("--shallow-submodules");

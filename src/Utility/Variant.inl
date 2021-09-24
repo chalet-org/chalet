@@ -5,6 +5,8 @@
 
 #include "Utility/Variant.hpp"
 
+#include "Utility/Reflect.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -22,10 +24,20 @@ Variant::Variant(T&& inValue)
 		m_value = inValue;
 		m_kind = Kind::Enum;
 	}
+	else if constexpr (std::is_same_v<Type, std::optional<bool>>)
+	{
+		m_value = inValue;
+		m_kind = Kind::OptionalBoolean;
+	}
 	else if constexpr (std::is_same_v<Type, bool>)
 	{
 		m_value = inValue;
 		m_kind = Kind::Boolean;
+	}
+	else if constexpr (std::is_same_v<Type, std::optional<int>>)
+	{
+		m_value = inValue;
+		m_kind = Kind::OptionalInteger;
 	}
 	else if constexpr (std::is_same_v<Type, int>)
 	{
@@ -34,7 +46,7 @@ Variant::Variant(T&& inValue)
 	}
 	else if constexpr (std::is_same_v<Type, StringList>)
 	{
-		m_value = inValue;
+		m_value = std::move(inValue);
 		m_kind = Kind::StringList;
 	}
 	else

@@ -5,8 +5,6 @@
 
 #include "Core/CommandLineInputs.hpp"
 
-#include <thread>
-
 #include "Core/Arch.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -28,9 +26,7 @@ CommandLineInputs::CommandLineInputs() :
 	kDefaultDistributionDirectory("dist"),
 	m_settingsFile(kDefaultSettingsFile),
 	m_platform(getPlatform()),
-	m_hostArchitecture(Arch::getHostCpuArchitecture()),
-	m_processorCount(std::thread::hardware_concurrency()),
-	m_maxJobs(m_processorCount)
+	m_hostArchitecture(Arch::getHostCpuArchitecture())
 {
 	// LOG("Processor count: ", m_processorCount);
 }
@@ -548,47 +544,25 @@ void CommandLineInputs::clearWorkingDirectory(std::string& outValue) const
 }
 
 /*****************************************************************************/
-uint CommandLineInputs::processorCount() const noexcept
-{
-	return m_processorCount;
-}
-
-/*****************************************************************************/
-uint CommandLineInputs::maxJobs() const noexcept
+const std::optional<uint>& CommandLineInputs::maxJobs() const noexcept
 {
 	return m_maxJobs;
 }
 
-bool CommandLineInputs::maxJobsSetFromCommandLine() const noexcept
-{
-	return m_maxJobsSetFromCommandLine;
-}
-
-void CommandLineInputs::setMaxJobs(const uint inValue, const bool inFromCL) noexcept
+void CommandLineInputs::setMaxJobs(const uint inValue) noexcept
 {
 	m_maxJobs = std::max(inValue, 1U);
-
-	if (inFromCL)
-		m_maxJobsSetFromCommandLine = true;
 }
 
 /*****************************************************************************/
-bool CommandLineInputs::dumpAssembly() const noexcept
+const std::optional<bool>& CommandLineInputs::dumpAssembly() const noexcept
 {
 	return m_dumpAssembly;
 }
 
-bool CommandLineInputs::dumpAssemblySetFromCommandLine() const noexcept
-{
-	return m_dumpAssemblySetFromCommandLine;
-}
-
-void CommandLineInputs::setDumpAssembly(const bool inValue, const bool inFromCL) noexcept
+void CommandLineInputs::setDumpAssembly(const bool inValue) noexcept
 {
 	m_dumpAssembly = inValue;
-
-	if (inFromCL)
-		m_dumpAssemblySetFromCommandLine = true;
 }
 
 /*****************************************************************************/

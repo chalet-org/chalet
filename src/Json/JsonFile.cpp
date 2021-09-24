@@ -155,22 +155,17 @@ bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const std::string&
 
 	if (!validString)
 	{
-		if (inValueA.empty())
-		{
-			outNode[inKey] = inValueB;
-		}
-		else
+		if (!inValueA.empty())
 		{
 			if (onAssignA != nullptr)
 				onAssignA();
 
 			outNode[inKey] = inValueA;
 		}
-		result = true;
-	}
-
-	if (result)
-	{
+		else
+		{
+			outNode[inKey] = inValueB;
+		}
 		setDirty(true);
 	}
 

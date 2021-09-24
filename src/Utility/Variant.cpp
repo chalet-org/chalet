@@ -33,8 +33,16 @@ Variant::Variant(const Kind inKind) :
 			m_value = std::string();
 			break;
 
+		case Variant::Kind::OptionalBoolean:
+			m_value = std::optional<bool>();
+			break;
+
 		case Variant::Kind::Boolean:
 			m_value = false;
+			break;
+
+		case Variant::Kind::OptionalInteger:
+			m_value = std::optional<int>();
 			break;
 
 		case Variant::Kind::Integer:
@@ -67,6 +75,17 @@ bool Variant::asBool() const
 }
 
 /*****************************************************************************/
+std::optional<bool> Variant::asOptionalBool() const
+{
+	if (m_kind == Kind::OptionalBoolean)
+	{
+		return std::any_cast<std::optional<bool>>(m_value);
+	}
+
+	return std::nullopt;
+}
+
+/*****************************************************************************/
 int Variant::asInt() const
 {
 	if (m_kind == Kind::Integer)
@@ -75,6 +94,17 @@ int Variant::asInt() const
 	}
 
 	return 0;
+}
+
+/*****************************************************************************/
+std::optional<int> Variant::asOptionalInt() const
+{
+	if (m_kind == Kind::OptionalInteger)
+	{
+		return std::any_cast<std::optional<int>>(m_value);
+	}
+
+	return std::nullopt;
 }
 
 /*****************************************************************************/
@@ -117,9 +147,37 @@ std::ostream& operator<<(std::ostream& os, const Variant& dt)
 			os << (dt.asBool() ? "true" : "false");
 			break;
 
+		case Variant::Kind::OptionalBoolean: {
+			auto raw = dt.asOptionalBool();
+			if (!raw.has_value())
+			{
+				os << "nullopt";
+			}
+			else
+			{
+				bool val = *raw;
+				os << (val ? "true" : "false");
+			}
+			break;
+		}
+
 		case Variant::Kind::Integer:
 			os << dt.asInt();
 			break;
+
+		case Variant::Kind::OptionalInteger: {
+			auto raw = dt.asOptionalInt();
+			if (!raw.has_value())
+			{
+				os << "nullopt";
+			}
+			else
+			{
+				int val = *raw;
+				os << val;
+			}
+			break;
+		}
 
 		case Variant::Kind::Enum:
 			os << dt.asInt();

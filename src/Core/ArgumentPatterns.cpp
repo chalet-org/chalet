@@ -41,7 +41,7 @@ ArgumentPatterns::ArgumentPatterns() :
 #if defined(CHALET_DEBUG)
 	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::commandDebug);
 #endif
-	// --dump-assembly
+	// --dump-assembly=1
 	// --generate-compile-commands=0
 	// --show-commands=0
 	// --benchmark=1
@@ -330,9 +330,28 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					arg.value = m_parser.get<bool>(key);
 					break;
 
+				case Variant::Kind::OptionalBoolean: {
+					std::string tmpValue = m_parser.get<std::string>(key);
+					if (!tmpValue.empty())
+					{
+						int rawValue = atoi(tmpValue.c_str());
+						arg.value = std::optional<bool>(rawValue == 1);
+					}
+					break;
+				}
+
 				case Variant::Kind::Integer: {
 					std::string tmpValue = m_parser.get<std::string>(key);
 					arg.value = atoi(tmpValue.c_str());
+					break;
+				}
+
+				case Variant::Kind::OptionalInteger: {
+					std::string tmpValue = m_parser.get<std::string>(key);
+					if (!tmpValue.empty())
+					{
+						arg.value = std::optional<int>(atoi(tmpValue.c_str()));
+					}
 					break;
 				}
 
@@ -346,7 +365,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					{
 						arg.value = m_parser.get<StringList>(key);
 					}
-					CHALET_CATCH(std::exception & err)
+					CHALET_CATCH(const std::exception& err)
 					{
 						CHALET_EXCEPT_ERROR(err.what());
 					}
@@ -362,8 +381,9 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					break;
 			}
 		}
-		CHALET_CATCH(const std::exception&)
+		CHALET_CATCH(const std::exception& err)
 		{
+			Diagnostic::error("Error parsing argument: {}", err.what());
 			Diagnostic::error("An invalid set of arguments were found.\n   Aborting...");
 			return false;
 		}
@@ -388,6 +408,7 @@ std::string ArgumentPatterns::getHelp()
 	String::replaceAll(help, "[default: 0]", "");
 	String::replaceAll(help, "[default: true]", "");
 	String::replaceAll(help, "[default: false]", "");
+	String::replaceAll(help, "[default: <not representable>]", "");
 
 	std::string ret = fmt::format("{title}\n\n{help}", FMT_ARG(title), FMT_ARG(help));
 	if (m_route == Route::Unknown)
@@ -443,14 +464,13 @@ argparse::Argument& ArgumentPatterns::addTwoStringArguments(const ArgumentIdenti
 }
 
 /*****************************************************************************/
-argparse::Argument& ArgumentPatterns::addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const int inDefaultValue)
+argparse::Argument& ArgumentPatterns::addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong)
 {
 	auto& arg = m_parser.add_argument(inShort, inLong)
-					.nargs(1)
-					.default_value(inDefaultValue);
+					.nargs(2);
 
-	m_argumentMap.emplace(inShort, MappedArgument{ inId, Variant::Kind::Integer });
-	m_argumentMap.emplace(inLong, MappedArgument{ inId, Variant::Kind::Integer });
+	m_argumentMap.emplace(inShort, MappedArgument{ inId, Variant::Kind::OptionalInteger });
+	m_argumentMap.emplace(inLong, MappedArgument{ inId, Variant::Kind::OptionalInteger });
 
 	m_optionPairsCache.emplace_back(inShort);
 	m_optionPairsCache.emplace_back(inLong);
@@ -467,6 +487,18 @@ argparse::Argument& ArgumentPatterns::addBoolArgument(const ArgumentIdentifier i
 					.implicit_value(true);
 
 	m_argumentMap.emplace(inArgument, MappedArgument{ inId, Variant::Kind::Boolean });
+
+	return arg;
+}
+
+/*****************************************************************************/
+argparse::Argument& ArgumentPatterns::addOptionalBoolArgument(const ArgumentIdentifier inId, const char* inArgument)
+{
+	auto& arg = m_parser.add_argument(inArgument)
+					.nargs(1)
+					.default_value(std::string());
+
+	m_argumentMap.emplace(inArgument, MappedArgument{ inId, Variant::Kind::OptionalBoolean });
 
 	return arg;
 }
@@ -598,7 +630,7 @@ void ArgumentPatterns::addToolchainArg()
 void ArgumentPatterns::addMaxJobsArg()
 {
 	auto jobs = std::thread::hardware_concurrency();
-	addTwoIntArguments(ArgumentIdentifier::MaxJobs, "-j", "--max-jobs", 0)
+	addTwoIntArguments(ArgumentIdentifier::MaxJobs, "-j", "--max-jobs")
 		.help(fmt::format("The number of jobs to run during compilation [default: {}]", jobs));
 }
 
@@ -688,8 +720,8 @@ void ArgumentPatterns::addSettingsTypeArg()
 /*****************************************************************************/
 void ArgumentPatterns::addDumpAssemblyArg()
 {
-	// addBoolArgument(ArgumentIdentifier::DumpAssembly, "--dump-assembly", false)
-	// 	.help("Include an .asm dump of each object file during the build");
+	addOptionalBoolArgument(ArgumentIdentifier::DumpAssembly, "--dump-assembly")
+		.help("Include an .asm dump of each object file during the build");
 }
 
 /*****************************************************************************/

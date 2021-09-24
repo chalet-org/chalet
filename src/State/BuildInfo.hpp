@@ -16,6 +16,7 @@ struct BuildInfo
 	explicit BuildInfo(const CommandLineInputs& inInputs);
 
 	const std::string& buildConfiguration() const noexcept;
+	const std::string& buildConfigurationNoAssert() const noexcept;
 	void setBuildConfiguration(const std::string& inValue) noexcept;
 
 	Arch::Cpu hostArchitecture() const noexcept;
@@ -39,6 +40,11 @@ private:
 
 	Arch m_hostArchitecture;
 	Arch m_targetArchitecture;
+
+	uint m_maxJobs = 0;
+	uint m_processorCount = 0;
+
+	bool m_dumpAssembly = false;
 };
 }
 

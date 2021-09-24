@@ -39,6 +39,9 @@ struct JsonFile
 	template <typename T>
 	bool assignNodeIfEmpty(Json& outNode, const std::string& inKey, const std::function<T()>& onAssign);
 
+	template <typename T>
+	bool assignNodeIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::optional<T>& inValueA, const T& inValueB);
+
 	bool assignStringAndValidate(std::string& outString, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
 	bool assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey);
 
