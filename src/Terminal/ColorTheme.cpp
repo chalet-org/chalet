@@ -5,6 +5,7 @@
 
 #include "Terminal/ColorTheme.hpp"
 
+#include "Terminal/Environment.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -21,6 +22,11 @@ ColorTheme::ColorTheme() :
 	alt(Color::Magenta),
 	note(Color::Blue)
 {
+	if (Environment::isContinuousIntegrationServer())
+	{
+		// Black might be unreadable (Github Actions anyway)
+		flair = Color::Reset;
+	}
 }
 
 /*****************************************************************************/
