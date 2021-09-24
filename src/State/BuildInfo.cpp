@@ -26,6 +26,9 @@ BuildInfo::BuildInfo(const CommandLineInputs& inInputs) :
 
 	if (m_inputs.dumpAssembly().has_value())
 		m_dumpAssembly = *m_inputs.dumpAssembly();
+
+	if (m_inputs.generateCompileCommands().has_value())
+		m_generateCompileCommands = *m_inputs.generateCompileCommands();
 }
 
 /*****************************************************************************/
@@ -110,6 +113,12 @@ uint BuildInfo::maxJobs() const noexcept
 bool BuildInfo::dumpAssembly() const noexcept
 {
 	return m_dumpAssembly;
+}
+
+/*****************************************************************************/
+bool BuildInfo::generateCompileCommands() const noexcept
+{
+	return m_generateCompileCommands;
 }
 
 }

@@ -168,10 +168,27 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 				bool value = *rawValue;
 
-				if (arg.id == ArgumentIdentifier::DumpAssembly)
+				switch (arg.id)
 				{
-					m_inputs.setDumpAssembly(value);
+					case ArgumentIdentifier::DumpAssembly:
+						m_inputs.setDumpAssembly(value);
+						break;
+
+					case ArgumentIdentifier::ShowCommands:
+						m_inputs.setShowCommands(value);
+						break;
+
+					case ArgumentIdentifier::Benchmark:
+						m_inputs.setBenchmark(value);
+						break;
+
+					case ArgumentIdentifier::GenerateCompileCommands:
+						m_inputs.setGenerateCompileCommands(value);
+						break;
+
+					default: break;
 				}
+
 				break;
 			}
 
@@ -238,7 +255,10 @@ StringList ArgumentParser::parseRawArguments(const int argc, const char* const a
 	StringList ret;
 
 	StringList implicitTrueArgs{
-		"--dump-assembly"
+		"--dump-assembly",
+		"--generate-compile-commands",
+		"--show-commands",
+		"--benchmark"
 	};
 
 	for (int i = 0; i < argc; ++i)
@@ -283,7 +303,7 @@ StringList ArgumentParser::parseRawArguments(const int argc, const char* const a
 
 			if (String::equals(implicitTrueArgs, ret.back()))
 			{
-				// This is a hack so that one can write --dump-assembly without a 2nd arg
+				// This is a hack so that one can write --dump-assembly without an =# or 2nd arg
 				// argparse has issues figuring out what you want otherwise
 				ret.emplace_back("1");
 			}

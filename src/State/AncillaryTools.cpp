@@ -468,16 +468,6 @@ void AncillaryTools::setXcrun(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-bool AncillaryTools::generateCompileCommands() const noexcept
-{
-	return m_generateCompileCommands;
-}
-void AncillaryTools::setGenerateCompileCommands(const bool inValue) noexcept
-{
-	m_generateCompileCommands = inValue;
-}
-
-/*****************************************************************************/
 bool AncillaryTools::installHomebrewPackage(const std::string& inPackage) const
 {
 #if defined(CHALET_MACOS)

@@ -206,7 +206,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				return false;
 			}
 
-			if (m_state.tools.generateCompileCommands())
+			if (m_state.info.generateCompileCommands())
 			{
 				if (!m_strategy->saveCompileCommands())
 				{
@@ -387,7 +387,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 	if (!m_strategy->addProject(inProject, std::move(outputs), buildToolchain))
 		return false;
 
-	if (m_state.tools.generateCompileCommands())
+	if (m_state.info.generateCompileCommands())
 	{
 		if (!m_strategy->addCompileCommands(inProject, buildToolchain))
 			return false;

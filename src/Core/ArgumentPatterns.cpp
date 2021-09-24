@@ -671,7 +671,7 @@ void ArgumentPatterns::addArchArg()
 void ArgumentPatterns::addSaveSchemaArg()
 {
 	addBoolArgument(ArgumentIdentifier::SaveSchema, "--save-schema", false)
-		.help("Save build & settubgs schemas to file");
+		.help("Save build & settings schemas to file");
 }
 
 /*****************************************************************************/
@@ -721,22 +721,28 @@ void ArgumentPatterns::addSettingsTypeArg()
 void ArgumentPatterns::addDumpAssemblyArg()
 {
 	addOptionalBoolArgument(ArgumentIdentifier::DumpAssembly, "--dump-assembly")
-		.help("Include an .asm dump of each object file during the build");
+		.help("Create an .asm dump of each object file during the build");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addGenerateCompileCommandsArg()
 {
+	addOptionalBoolArgument(ArgumentIdentifier::GenerateCompileCommands, "--generate-compile-commands")
+		.help("Generate a compile_commands.json file for Clang tooling use");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addShowCommandsArg()
 {
+	addOptionalBoolArgument(ArgumentIdentifier::ShowCommands, "--show-commands")
+		.help("Show the commands run during the build");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addBenchmarkArg()
 {
+	addOptionalBoolArgument(ArgumentIdentifier::Benchmark, "--benchmark")
+		.help("Show all build times (total build time, build targets, other steps)");
 }
 
 /*****************************************************************************/

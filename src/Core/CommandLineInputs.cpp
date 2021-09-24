@@ -566,6 +566,39 @@ void CommandLineInputs::setDumpAssembly(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::optional<bool>& CommandLineInputs::showCommands() const noexcept
+{
+	return m_showCommands;
+}
+
+void CommandLineInputs::setShowCommands(const bool inValue) noexcept
+{
+	m_showCommands = inValue;
+}
+
+/*****************************************************************************/
+const std::optional<bool>& CommandLineInputs::benchmark() const noexcept
+{
+	return m_benchmark;
+}
+
+void CommandLineInputs::setBenchmark(const bool inValue) noexcept
+{
+	m_benchmark = inValue;
+}
+
+/*****************************************************************************/
+const std::optional<bool>& CommandLineInputs::generateCompileCommands() const noexcept
+{
+	return m_generateCompileCommands;
+}
+
+void CommandLineInputs::setGenerateCompileCommands(const bool inValue) noexcept
+{
+	m_generateCompileCommands = inValue;
+}
+
+/*****************************************************************************/
 std::string CommandLineInputs::getPlatform() const noexcept
 {
 #if defined(CHALET_WIN32)

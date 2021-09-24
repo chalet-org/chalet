@@ -73,7 +73,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, inKey, [&inDefault]() {
 			return inDefault;
 		});
-		auto value = onGetValue();
+		const auto& value = onGetValue();
 		if (value.has_value())
 		{
 			buildSettings[inKey] = *value;
@@ -84,40 +84,12 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		m_jsonFile.assignNodeIfEmpty<uint>(buildSettings, inKey, [&inDefault]() {
 			return inDefault;
 		});
-		auto value = onGetValue();
+		const auto& value = onGetValue();
 		if (value.has_value())
 		{
 			buildSettings[inKey] = *value;
 		}
 	};
-
-	assignSettingsBool(kKeyDumpAssembly, outState.dumpAssembly, [&]() {
-		return m_inputs.dumpAssembly();
-	});
-
-	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyGenerateCompileCommands, [&]() {
-		return outState.generateCompileCommands;
-	});
-
-	{
-		uint maxJobs = outState.maxJobs;
-		if (maxJobs == 0)
-			maxJobs = std::thread::hardware_concurrency();
-
-		assignSettingsUint(kKeyMaxJobs, maxJobs, [&]() {
-			return m_inputs.maxJobs();
-		});
-	}
-
-	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyShowCommands, [&]() {
-		return outState.showCommands;
-	});
-
-	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyBenchmark, [&]() {
-		return outState.benchmark;
-	});
-
-	// kKeyLastBuildConfiguration
 
 	auto assignSettingsString = [&](const std::string& inKey, const std::function<std::string()>& onAssign) {
 		m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, inKey, []() {
@@ -129,6 +101,29 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 			buildSettings[inKey] = onAssign();
 		}
 	};
+
+	assignSettingsBool(kKeyDumpAssembly, outState.dumpAssembly, [&]() {
+		return m_inputs.dumpAssembly();
+	});
+
+	assignSettingsBool(kKeyShowCommands, outState.showCommands, [&]() {
+		return m_inputs.showCommands();
+	});
+
+	assignSettingsBool(kKeyBenchmark, outState.benchmark, [&]() {
+		return m_inputs.benchmark();
+	});
+
+	assignSettingsBool(kKeyGenerateCompileCommands, outState.generateCompileCommands, [&]() {
+		return m_inputs.generateCompileCommands();
+	});
+
+	{
+		uint maxJobs = outState.maxJobs == 0 ? std::thread::hardware_concurrency() : outState.maxJobs;
+		assignSettingsUint(kKeyMaxJobs, maxJobs, [&]() {
+			return m_inputs.maxJobs();
+		});
+	}
 
 	assignSettingsString(kKeyLastBuildConfiguration, [&]() {
 		outState.buildConfiguration = m_inputs.buildConfiguration();

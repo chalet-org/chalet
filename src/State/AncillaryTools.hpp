@@ -114,10 +114,6 @@ struct AncillaryTools
 	const std::string& xcrun() const noexcept;
 	void setXcrun(std::string&& inValue) noexcept;
 
-	// Tool-related settings
-	bool generateCompileCommands() const noexcept;
-	void setGenerateCompileCommands(const bool inValue) noexcept;
-
 	// Commands
 
 	bool installHomebrewPackage(const std::string& inPackage) const;
@@ -183,8 +179,6 @@ private:
 	uint m_xcodegenVersionMajor = 0;
 	uint m_xcodegenVersionMinor = 0;
 	uint m_xcodegenVersionPatch = 0;
-
-	bool m_generateCompileCommands = false;
 
 	bool m_brewAvailable = false;
 	bool m_bashAvailable = false;

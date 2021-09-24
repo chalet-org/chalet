@@ -356,7 +356,7 @@ Json Schema::getSettingsJson()
 
 	defs[Defs::DumpAssembly] = R"json({
 		"type": "boolean",
-		"description": "true to use include an asm dump of each file in the build, false otherwise.",
+		"description": "true to use create an asm dump of each file in the build, false otherwise.",
 		"default": false
 	})json"_ojson;
 

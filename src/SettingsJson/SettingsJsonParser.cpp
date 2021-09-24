@@ -141,20 +141,11 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 
 	Json& buildSettings = m_jsonFile.json[kKeySettings];
 
-	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildSettings, kKeyMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
-
-	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyGenerateCompileCommands, [&]() {
-		return inState.generateCompileCommands;
-	});
-
-	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyShowCommands, [&]() {
-		return inState.showCommands;
-	});
-
-	m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, kKeyBenchmark, [&]() {
-		return inState.benchmark;
-	});
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyShowCommands, m_inputs.showCommands(), inState.showCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyBenchmark, m_inputs.benchmark(), inState.benchmark);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildSettings, kKeyMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
 
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference, [&]() {
 		m_inputs.detectToolchainPreference();
@@ -424,16 +415,32 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 		return false;
 	}
 
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyShowCommands))
-		Output::setShowCommands(val);
-
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyBenchmark))
-		Output::setShowBenchmarks(val);
-
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyDumpAssembly))
 	{
 		if (!m_inputs.dumpAssembly().has_value())
 			m_inputs.setDumpAssembly(val);
+	}
+
+	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyShowCommands))
+	{
+		if (m_inputs.showCommands().has_value())
+			val = *m_inputs.showCommands();
+
+		Output::setShowCommands(val);
+	}
+
+	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyBenchmark))
+	{
+		if (m_inputs.benchmark().has_value())
+			val = *m_inputs.benchmark();
+
+		Output::setShowBenchmarks(val);
+	}
+
+	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))
+	{
+		if (!m_inputs.generateCompileCommands().has_value())
+			m_inputs.setGenerateCompileCommands(val);
 	}
 
 	if (ushort val = 0; m_jsonFile.assignFromKey(val, buildSettings, kKeyMaxJobs))
@@ -441,9 +448,6 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 		if (!m_inputs.maxJobs().has_value())
 			m_inputs.setMaxJobs(val);
 	}
-
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))
-		m_prototype.tools.setGenerateCompileCommands(val);
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastBuildConfiguration))
 	{

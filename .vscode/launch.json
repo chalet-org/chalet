@@ -22,7 +22,7 @@
 			"stopOnEntry": false,
 			"args": [
 				// "--save-schema",
-				"--max-jobs",
+				"--show-commands",
 				"configure"
 			],
 		},

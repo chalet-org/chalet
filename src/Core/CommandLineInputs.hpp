@@ -118,6 +118,15 @@ struct CommandLineInputs
 	const std::optional<bool>& dumpAssembly() const noexcept;
 	void setDumpAssembly(const bool inValue) noexcept;
 
+	const std::optional<bool>& showCommands() const noexcept;
+	void setShowCommands(const bool inValue) noexcept;
+
+	const std::optional<bool>& benchmark() const noexcept;
+	void setBenchmark(const bool inValue) noexcept;
+
+	const std::optional<bool>& generateCompileCommands() const noexcept;
+	void setGenerateCompileCommands(const bool inValue) noexcept;
+
 private:
 	std::string getPlatform() const noexcept;
 	StringList getNotPlatforms() const noexcept;
@@ -167,6 +176,9 @@ private:
 
 	std::optional<uint> m_maxJobs;
 	std::optional<bool> m_dumpAssembly;
+	std::optional<bool> m_showCommands;
+	std::optional<bool> m_benchmark;
+	std::optional<bool> m_generateCompileCommands;
 
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;

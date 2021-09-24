@@ -32,6 +32,7 @@ struct BuildInfo
 
 	uint maxJobs() const noexcept;
 	bool dumpAssembly() const noexcept;
+	bool generateCompileCommands() const noexcept;
 
 private:
 	const CommandLineInputs& m_inputs;
@@ -45,6 +46,7 @@ private:
 	uint m_processorCount = 0;
 
 	bool m_dumpAssembly = false;
+	bool m_generateCompileCommands = false;
 };
 }
 
