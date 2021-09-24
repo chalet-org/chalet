@@ -641,72 +641,47 @@ bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& 
 }
 
 /*****************************************************************************/
-void Commands::forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound)
-{
-	if (onFound == nullptr)
-		return;
-
-	if (!String::contains('*', inPattern) || String::contains("***", inPattern))
-		return;
-
-	std::string pattern = inPattern;
-	if (!String::contains("**/*", inPattern))
-	{
-		String::replaceAll(pattern, "**", "**/*");
-	}
-
-	for (auto& match : glob::rglob(fmt::format("{}/{}", inPath, pattern)))
-	{
-		bool isDirectory = fs::is_directory(match);
-		bool isRegularFile = fs::is_regular_file(match);
-
-		if (inSettings == GlobMatch::Files && isDirectory)
-			continue;
-
-		if (inSettings == GlobMatch::Folders && isRegularFile)
-			continue;
-
-		if (isRegularFile || isDirectory)
-			onFound(match);
-	}
-}
-
-/*****************************************************************************/
-void Commands::forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound)
-{
-	for (auto& pattern : inPatterns)
-	{
-		forEachGlobMatch(inPath, pattern, inSettings, onFound);
-	}
-}
-
-/*****************************************************************************/
 void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound)
 {
 	if (onFound == nullptr)
 		return;
 
-	if (!String::contains('*', inPattern) || String::contains("***", inPattern))
+	if (!String::contains('*', inPattern))
 		return;
 
-	std::string pattern = inPattern;
-	if (!String::contains("**/*", inPattern))
-	{
-		String::replaceAll(pattern, "**", "**/*");
-	}
-	for (auto& res : glob::rglob(pattern))
-	{
-		bool isDirectory = fs::is_directory(res);
-		bool isRegularFile = fs::is_regular_file(res);
+	auto matchIsValid = [&](const fs::path& inmatch) -> bool {
+		bool isDirectory = fs::is_directory(inmatch);
+		bool isRegularFile = fs::is_regular_file(inmatch);
 
 		if (inSettings == GlobMatch::Files && isDirectory)
-			continue;
+			return false;
 
 		if (inSettings == GlobMatch::Folders && isRegularFile)
-			continue;
+			return false;
 
-		if (isRegularFile || isDirectory)
-			onFound(res);
+		return isRegularFile || isDirectory;
+	};
+
+	bool recursive = true;
+	bool dirOnly = inSettings == GlobMatch::Folders;
+
+	if (String::contains("**/*", inPattern))
+	{
+		auto pattern = inPattern;
+		// this will get the root
+		String::replaceAll(pattern, "**/*", "*");
+
+		for (auto& match : glob::glob(pattern, recursive, dirOnly))
+		{
+			if (matchIsValid(match))
+				onFound(match);
+		}
+	}
+
+	for (auto& match : glob::glob(inPattern, recursive, dirOnly))
+	{
+		if (matchIsValid(match))
+			onFound(match);
 	}
 }
 
@@ -716,6 +691,21 @@ void Commands::forEachGlobMatch(const StringList& inPatterns, const GlobMatch in
 	for (auto& pattern : inPatterns)
 	{
 		forEachGlobMatch(pattern, inSettings, onFound);
+	}
+}
+
+/*****************************************************************************/
+void Commands::forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound)
+{
+	forEachGlobMatch(fmt::format("{}/{}", inPath, inPattern), inSettings, onFound);
+}
+
+/*****************************************************************************/
+void Commands::forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound)
+{
+	for (auto& pattern : inPatterns)
+	{
+		forEachGlobMatch(inPath, pattern, inSettings, onFound);
 	}
 }
 

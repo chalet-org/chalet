@@ -32,20 +32,24 @@ std::int64_t getLastWriteTime(const std::string& inFile);
 
 bool makeDirectory(const std::string& inPath);
 bool makeDirectories(const StringList& inPaths);
+
 bool remove(const std::string& inPath);
 bool removeRecursively(const std::string& inPath);
+
 bool setExecutableFlag(const std::string& inPath);
 bool createDirectorySymbolicLink(const std::string& inFrom, const std::string& inTo);
 bool createSymbolicLink(const std::string& inFrom, const std::string& inTo);
+
 bool copy(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions = fs::copy_options::none);
 bool copySilent(const std::string& inFrom, const std::string& inTo);
 bool copySkipExisting(const std::string& inFrom, const std::string& inTo);
 bool copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent = false);
 bool rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting = false);
-void forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
-void forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
+
 void forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
 void forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
+void forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
+void forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
 
 bool readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace);
 std::string readShebangFromFile(const std::string& inFile);

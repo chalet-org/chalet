@@ -207,8 +207,7 @@ bool BuildState::initializeBuild()
 					StringList locations;
 					for (auto& file : project.files())
 					{
-						auto loc = String::getPathFolder(file);
-						List::addIfDoesNotExist(locations, std::move(loc));
+						List::addIfDoesNotExist(locations, String::getPathFolder(file));
 					}
 					project.addLocations(std::move(locations));
 				}

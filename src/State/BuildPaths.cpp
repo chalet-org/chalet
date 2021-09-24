@@ -621,6 +621,8 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 	auto manifestResource = getWindowsManifestResourceFilename(inProject);
 	auto iconResource = getWindowsIconResourceFilename(inProject);
 
+	StringList extensions = List::combine(m_cExts, m_cppExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
+
 	const auto& files = inProject.files();
 	if (files.size() > 0)
 	{
@@ -633,6 +635,12 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 			if (usesPch && String::equals(pch, file))
 			{
 				Diagnostic::warn("Precompiled header explicitly included in 'files': {} (ignored)", file);
+				continue;
+			}
+
+			if (!String::endsWith(extensions, file))
+			{
+				Diagnostic::warn("File type in 'files' is not required or supported: {} (ignored)", file);
 				continue;
 			}
 
@@ -659,8 +667,6 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 	}
 
 	const auto& locations = inProject.locations();
-
-	StringList extensions = List::combine(m_cExts, m_cppExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
 
 	const auto searchString = "." + String::join(extensions, " .");
 
