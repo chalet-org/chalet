@@ -334,14 +334,6 @@
 			"description": "Do submodules need to be cloned?",
 			"default": false
 		},
-		"enum-platform": {
-			"type": "string",
-			"enum": [
-				"windows",
-				"macos",
-				"linux"
-			]
-		},
 		"environment-searchPaths": {
 			"type": "array",
 			"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDir}",
@@ -363,89 +355,10 @@
 				"Chalet"
 			]
 		},
-		"target-notInConfiguration": {
-			"description": "Don't compile this project in specific build configuration(s)",
-			"oneOf": [
-				{
-					"type": "string"
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string"
-					}
-				}
-			]
-		},
-		"target-notInPlatform": {
-			"description": "Don't compile this project on specific platform(s)",
-			"oneOf": [
-				{
-					"type": "string",
-					"enum": [
-						"windows",
-						"macos",
-						"linux"
-					]
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"enum": [
-							"windows",
-							"macos",
-							"linux"
-						]
-					}
-				}
-			]
-		},
-		"target-onlyInConfiguration": {
-			"description": "Only compile this project in specific build configuration(s)",
-			"oneOf": [
-				{
-					"type": "string"
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string"
-					}
-				}
-			]
-		},
-		"target-onlyInPlatform": {
-			"description": "Only compile this project on specific platform(s)",
-			"oneOf": [
-				{
-					"type": "string",
-					"enum": [
-						"windows",
-						"macos",
-						"linux"
-					]
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"enum": [
-							"windows",
-							"macos",
-							"linux"
-						]
-					}
-				}
-			]
+		"target-rule": {
+			"type": "string",
+			"description": "A rule describing when to include this target in the build.",
+			"pattern": "^(!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$"
 		},
 		"source-target": {
 			"type": "object",
@@ -472,17 +385,8 @@
 				"location": {
 					"$ref": "#/definitions/source-target-location"
 				},
-				"onlyInConfiguration": {
-					"$ref": "#/definitions/target-onlyInConfiguration"
-				},
-				"notInConfiguration": {
-					"$ref": "#/definitions/target-notInConfiguration"
-				},
-				"onlyInPlatform": {
-					"$ref": "#/definitions/target-onlyInPlatform"
-				},
-				"notInPlatform": {
-					"$ref": "#/definitions/target-notInPlatform"
+				"rule": {
+					"$ref": "#/definitions/target-rule"
 				},
 				"runProject": {
 					"$ref": "#/definitions/source-target-runProject"
@@ -1330,17 +1234,8 @@
 				"type": {
 					"$ref": "#/definitions/target-type"
 				},
-				"onlyInConfiguration": {
-					"$ref": "#/definitions/target-onlyInConfiguration"
-				},
-				"notInConfiguration": {
-					"$ref": "#/definitions/target-notInConfiguration"
-				},
-				"onlyInPlatform": {
-					"$ref": "#/definitions/target-onlyInPlatform"
-				},
-				"notInPlatform": {
-					"$ref": "#/definitions/target-notInPlatform"
+				"rule": {
+					"$ref": "#/definitions/target-rule"
 				}
 			},
 			"patternProperties": {
@@ -1408,17 +1303,8 @@
 				"type": {
 					"$ref": "#/definitions/target-type"
 				},
-				"onlyInConfiguration": {
-					"$ref": "#/definitions/target-onlyInConfiguration"
-				},
-				"notInConfiguration": {
-					"$ref": "#/definitions/target-notInConfiguration"
-				},
-				"onlyInPlatform": {
-					"$ref": "#/definitions/target-onlyInPlatform"
-				},
-				"notInPlatform": {
-					"$ref": "#/definitions/target-notInPlatform"
+				"rule": {
+					"$ref": "#/definitions/target-rule"
 				}
 			},
 			"patternProperties": {

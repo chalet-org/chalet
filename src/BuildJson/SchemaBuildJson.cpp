@@ -268,15 +268,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	//
 	// other
 	//
-	defs[Defs::EnumPlatform] = R"json({
-		"type": "string",
-		"enum": [
-			"windows",
-			"macos",
-			"linux"
-		]
-	})json"_ojson;
-
 	defs[Defs::EnvironmentSearchPaths] = R"json({
 		"type": "array",
 		"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDir}",
@@ -295,71 +286,11 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"description": "A description of the target to display during the build."
 	})json"_ojson;
 
-	defs[Defs::TargetNotInConfiguration] = R"json({
-		"description": "Don't compile this project in specific build configuration(s)",
-		"oneOf": [
-			{
-				"type": "string"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"type": "string"
-				}
-			}
-		]
+	defs[Defs::TargetRule] = R"json({
+		"type": "string",
+		"description": "A rule describing when to include this target in the build."
 	})json"_ojson;
-
-	defs[Defs::TargetNotInPlatform] = R"json({
-		"description": "Don't compile this project on specific platform(s)",
-		"oneOf": [
-			{
-				"type": "object"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1
-			}
-		]
-	})json"_ojson;
-	defs[Defs::TargetNotInPlatform][kOneOf][0] = defs.at(Defs::EnumPlatform);
-	defs[Defs::TargetNotInPlatform][kOneOf][1][kItems] = defs.at(Defs::EnumPlatform);
-
-	defs[Defs::TargetOnlyInConfiguration] = R"json({
-		"description": "Only compile this project in specific build configuration(s)",
-		"oneOf": [
-			{
-				"type": "string"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"type": "string"
-				}
-			}
-		]
-	})json"_ojson;
-
-	defs[Defs::TargetOnlyInPlatform] = R"json({
-		"description": "Only compile this project on specific platform(s)",
-		"oneOf": [
-			{
-				"type": "object"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1
-			}
-		]
-	})json"_ojson;
-	defs[Defs::TargetOnlyInPlatform][kOneOf][0] = defs.at(Defs::EnumPlatform);
-	defs[Defs::TargetOnlyInPlatform][kOneOf][1][kItems] = defs.at(Defs::EnumPlatform);
+	defs[Defs::TargetRule][kPattern] = fmt::format("^(!?debug|){}$", kPatternPlatforms);
 
 	defs[Defs::SourceTargetExtends] = R"json({
 		"type": "string",
@@ -1219,10 +1150,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetProject[kProperties]["kind"] = getDefinition(Defs::SourceTargetKind);
 		targetProject[kProperties]["language"] = getDefinition(Defs::SourceTargetLanguage);
 		targetProject[kProperties]["location"] = getDefinition(Defs::SourceTargetLocation);
-		targetProject[kProperties]["onlyInConfiguration"] = getDefinition(Defs::TargetOnlyInConfiguration);
-		targetProject[kProperties]["notInConfiguration"] = getDefinition(Defs::TargetNotInConfiguration);
-		targetProject[kProperties]["onlyInPlatform"] = getDefinition(Defs::TargetOnlyInPlatform);
-		targetProject[kProperties]["notInPlatform"] = getDefinition(Defs::TargetNotInPlatform);
+		targetProject[kProperties]["rule"] = getDefinition(Defs::TargetRule);
 		targetProject[kProperties]["runProject"] = getDefinition(Defs::SourceTargetRunProject);
 		targetProject[kProperties]["runArguments"] = getDefinition(Defs::SourceTargetRunArguments);
 		targetProject[kProperties]["runDependencies"] = getDefinition(Defs::SourceTargetRunDependencies);
@@ -1267,10 +1195,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetCMake[kProperties]["toolset"] = getDefinition(Defs::CMakeTargetToolset);
 		targetCMake[kProperties]["recheck"] = getDefinition(Defs::CMakeTargetRecheck);
 		targetCMake[kProperties]["type"] = getDefinition(Defs::TargetType);
-		targetCMake[kProperties]["onlyInConfiguration"] = getDefinition(Defs::TargetOnlyInConfiguration);
-		targetCMake[kProperties]["notInConfiguration"] = getDefinition(Defs::TargetNotInConfiguration);
-		targetCMake[kProperties]["onlyInPlatform"] = getDefinition(Defs::TargetOnlyInPlatform);
-		targetCMake[kProperties]["notInPlatform"] = getDefinition(Defs::TargetNotInPlatform);
+		targetCMake[kProperties]["rule"] = getDefinition(Defs::TargetRule);
 		targetCMake[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
 		targetCMake[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::CMakeTargetBuildFile);
 		targetCMake[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::CMakeTargetDefines);
@@ -1294,10 +1219,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetChalet[kProperties]["buildFile"] = getDefinition(Defs::ChaletTargetBuildFile);
 		targetChalet[kProperties]["recheck"] = getDefinition(Defs::ChaletTargetRecheck);
 		targetChalet[kProperties]["type"] = getDefinition(Defs::TargetType);
-		targetChalet[kProperties]["onlyInConfiguration"] = getDefinition(Defs::TargetOnlyInConfiguration);
-		targetChalet[kProperties]["notInConfiguration"] = getDefinition(Defs::TargetNotInConfiguration);
-		targetChalet[kProperties]["onlyInPlatform"] = getDefinition(Defs::TargetOnlyInPlatform);
-		targetChalet[kProperties]["notInPlatform"] = getDefinition(Defs::TargetNotInPlatform);
+		targetChalet[kProperties]["rule"] = getDefinition(Defs::TargetRule);
 		targetChalet[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
 		targetChalet[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ChaletTargetBuildFile);
 		defs[Defs::ChaletTarget] = std::move(targetChalet);
@@ -1337,16 +1259,11 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::ExternalDependencyGitTag: return "external-git-tag";
 		case Defs::ExternalDependencyGitSubmodules: return "external-git-submodules";
 		//
-		case Defs::EnumPlatform: return "enum-platform";
-		//
 		case Defs::EnvironmentSearchPaths: return "environment-searchPaths";
 		//
 		case Defs::TargetDescription: return "target-description";
 		case Defs::TargetType: return "target-type";
-		case Defs::TargetNotInConfiguration: return "target-notInConfiguration";
-		case Defs::TargetNotInPlatform: return "target-notInPlatform";
-		case Defs::TargetOnlyInConfiguration: return "target-onlyInConfiguration";
-		case Defs::TargetOnlyInPlatform: return "target-onlyInPlatform";
+		case Defs::TargetRule: return "target-rule";
 		//
 		case Defs::SourceTargetExtends: return "source-target-extends";
 		case Defs::SourceTargetFiles: return "source-target-files";

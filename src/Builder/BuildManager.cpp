@@ -117,19 +117,31 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			if (m_runProjectName == name)
 			{
-				if (!target->isProject())
+				if (target->isProject())
+				{
+					auto& project = static_cast<const SourceTarget&>(*target);
+					if (project.isExecutable())
+						runProject = target.get();
+				}
+				else if (target->isScript())
+				{
+					runProject = target.get();
 					continue;
-
-				runProject = target.get();
+				}
 			}
 			else if (m_runProjectName.empty() && runProject == nullptr)
 			{
-				if (!target->isProject())
-					continue;
-
-				auto& project = static_cast<const SourceTarget&>(*target);
-				if (project.isExecutable())
+				if (target->isProject())
+				{
+					auto& project = static_cast<const SourceTarget&>(*target);
+					if (project.isExecutable())
+						runProject = target.get();
+				}
+				else if (target->isScript())
+				{
 					runProject = target.get();
+					continue;
+				}
 			}
 			else if (runCommand)
 				continue;

@@ -41,16 +41,17 @@ class SchemaBuildJson
 		ExternalDependencyGitTag,
 		ExternalDependencyGitSubmodules,
 		//
-		EnumPlatform,
+		// EnumPlatform,
 		//
 		EnvironmentSearchPaths,
 		//
 		TargetDescription,
 		TargetType,
-		TargetNotInConfiguration,
-		TargetNotInPlatform,
-		TargetOnlyInConfiguration,
-		TargetOnlyInPlatform,
+		TargetRule,
+		// TargetNotInConfiguration,
+		// TargetNotInPlatform,
+		// TargetOnlyInConfiguration,
+		// TargetOnlyInPlatform,
 		//
 		SourceTarget,
 		SourceTargetExtends,

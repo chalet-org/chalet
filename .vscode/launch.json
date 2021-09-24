@@ -21,8 +21,7 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				// "--save-schema",
-				"--show-commands",
+				"--save-schema",
 				"configure"
 			],
 		},

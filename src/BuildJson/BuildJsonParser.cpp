@@ -60,7 +60,7 @@ bool BuildJsonParser::serialize()
 	if (!validBuildRequested())
 	{
 		const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
-		Diagnostic::error("{}: No valid projects to build in '{}' configuration. Check usage of 'onlyInConfiguration'", m_filename, buildConfiguration);
+		Diagnostic::error("{}: No valid projects to build in '{}' configuration. Check usage of 'rule' property", m_filename, buildConfiguration);
 		return false;
 	}
 
@@ -302,7 +302,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 /*****************************************************************************/
 bool BuildJsonParser::parseProject(SourceTarget& outProject, const Json& inNode, const bool inAbstract)
 {
-	if (!parsePlatformConfigExclusions(outProject, inNode))
+	if (!parsePlatformConfigRule(outProject, inNode))
 		return true; // true to skip project
 
 	if (std::string val; assignStringFromConfig(val, inNode, "description"))
@@ -404,7 +404,7 @@ bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outProject, const Js
 	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "recheck"))
 		outProject.setRecheck(val);
 
-	if (!parsePlatformConfigExclusions(outProject, inNode))
+	if (!parsePlatformConfigRule(outProject, inNode))
 		return false;
 
 	return true;
@@ -433,7 +433,7 @@ bool BuildJsonParser::parseCMakeProject(CMakeTarget& outProject, const Json& inN
 	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "defines"))
 		outProject.addDefines(std::move(list));
 
-	if (!parsePlatformConfigExclusions(outProject, inNode))
+	if (!parsePlatformConfigRule(outProject, inNode))
 		return false;
 
 	// If it's a cmake project, ignore everything else and return
@@ -447,32 +447,15 @@ bool BuildJsonParser::parseCMakeProject(CMakeTarget& outProject, const Json& inN
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parsePlatformConfigExclusions(IBuildTarget& outProject, const Json& inNode)
+bool BuildJsonParser::parsePlatformConfigRule(IBuildTarget& outProject, const Json& inNode)
 {
 	const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
 	if (!buildConfiguration.empty())
 	{
-		const auto& platform = m_inputs.platform();
-
-		if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "onlyInConfiguration"))
-			outProject.setIncludeInBuild(List::contains(list, buildConfiguration));
-		else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "onlyInConfiguration"))
-			outProject.setIncludeInBuild(val == buildConfiguration);
-
-		if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "notInConfiguration"))
-			outProject.setIncludeInBuild(!List::contains(list, buildConfiguration));
-		else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "notInConfiguration"))
-			outProject.setIncludeInBuild(val != buildConfiguration);
-
-		if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "onlyInPlatform"))
-			outProject.setIncludeInBuild(List::contains(list, platform));
-		else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "onlyInPlatform"))
-			outProject.setIncludeInBuild(val == platform);
-
-		if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "notInPlatform"))
-			outProject.setIncludeInBuild(!List::contains(list, platform));
-		else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "notInPlatform"))
-			outProject.setIncludeInBuild(val != platform);
+		if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "rule"))
+		{
+			outProject.setIncludeInBuild(ruleIsValid(val));
+		}
 	}
 
 	return outProject.includeInBuild();
@@ -705,6 +688,33 @@ bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& 
 	}
 
 	return res;
+}
+
+bool BuildJsonParser::ruleIsValid(const std::string& inContent)
+{
+	const auto& platform = m_inputs.platform();
+
+	if (String::equals(platform, inContent))
+		return true;
+
+	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
+
+	if (String::equals(fmt::format("{}{}", notSymbol, m_debugIdentifier), inContent))
+		return true;
+
+	if (String::equals(fmt::format("{}{}.{}", notSymbol, m_debugIdentifier, platform), inContent))
+		return true;
+
+	for (auto& notPlatform : m_inputs.notPlatforms())
+	{
+		if (String::equals(fmt::format("!{}", notPlatform), inContent))
+			return true;
+
+		if (String::equals(fmt::format("{}{}.!{}", notSymbol, m_debugIdentifier, notPlatform), inContent))
+			return true;
+	}
+
+	return false;
 }
 
 }

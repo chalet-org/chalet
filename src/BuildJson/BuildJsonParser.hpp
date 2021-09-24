@@ -36,7 +36,7 @@ private:
 	bool parseScript(ScriptBuildTarget& outScript, const Json& inNode);
 	bool parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode);
 	bool parseCMakeProject(CMakeTarget& outProject, const Json& inNode);
-	bool parsePlatformConfigExclusions(IBuildTarget& outProject, const Json& inNode);
+	bool parsePlatformConfigRule(IBuildTarget& outProject, const Json& inNode);
 	bool parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode);
 	bool parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract);
 	bool parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode);
@@ -52,6 +52,8 @@ private:
 	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey);
 
 	bool containsComplexKey(const Json& inNode, const std::string& inKey);
+
+	bool ruleIsValid(const std::string& inContent);
 
 	const CommandLineInputs& m_inputs;
 	JsonFile& m_buildJson;
