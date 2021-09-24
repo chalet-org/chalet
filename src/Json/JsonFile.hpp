@@ -6,6 +6,8 @@
 #ifndef CHALET_JSON_FILE_HPP
 #define CHALET_JSON_FILE_HPP
 
+#include <optional>
+
 #include "Libraries/Json.hpp"
 
 namespace chalet

@@ -69,22 +69,22 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 
 	Json& buildSettings = m_jsonFile.json[kKeySettings];
 
-	auto assignSettingsBool = [&](const std::string& inKey, const bool inDefault, const std::function<const std::optional<bool>&()>& onGetValue) {
+	auto assignSettingsBool = [&](const std::string& inKey, const bool inDefault, const std::function<std::optional<bool>()>& onGetValue) {
 		m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, inKey, [&inDefault]() {
 			return inDefault;
 		});
-		const auto& value = onGetValue();
+		auto value = onGetValue();
 		if (value.has_value())
 		{
 			buildSettings[inKey] = *value;
 		}
 	};
 
-	auto assignSettingsUint = [&](const std::string& inKey, const uint inDefault, const std::function<const std::optional<uint>&()>& onGetValue) {
+	auto assignSettingsUint = [&](const std::string& inKey, const uint inDefault, const std::function<std::optional<uint>()>& onGetValue) {
 		m_jsonFile.assignNodeIfEmpty<uint>(buildSettings, inKey, [&inDefault]() {
 			return inDefault;
 		});
-		const auto& value = onGetValue();
+		auto value = onGetValue();
 		if (value.has_value())
 		{
 			buildSettings[inKey] = *value;
