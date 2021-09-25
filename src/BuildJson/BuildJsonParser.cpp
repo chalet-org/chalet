@@ -60,7 +60,7 @@ bool BuildJsonParser::serialize()
 	if (!validBuildRequested())
 	{
 		const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
-		Diagnostic::error("{}: No valid projects to build in '{}' configuration. Check usage of 'rule' property", m_filename, buildConfiguration);
+		Diagnostic::error("{}: No valid projects to build in '{}' configuration. Check usage of 'condition' property", m_filename, buildConfiguration);
 		return false;
 	}
 
@@ -80,14 +80,14 @@ bool BuildJsonParser::serialize()
 /*****************************************************************************/
 bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 {
-	if (!parseProjects(inJson))
+	if (!parseTarget(inJson))
 		return false;
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::validBuildRequested()
+bool BuildJsonParser::validBuildRequested() const
 {
 	int count = 0;
 	for (auto& target : m_state.targets)
@@ -108,7 +108,7 @@ bool BuildJsonParser::validBuildRequested()
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::validRunProjectRequestedFromInput()
+bool BuildJsonParser::validRunProjectRequestedFromInput() const
 {
 	const auto& inputRunProject = m_inputs.runProject();
 	if (inputRunProject.empty())
@@ -135,7 +135,7 @@ bool BuildJsonParser::validRunProjectRequestedFromInput()
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProjects(const Json& inNode)
+bool BuildJsonParser::parseTarget(const Json& inNode)
 {
 	if (!inNode.contains(kKeyTargets))
 	{
@@ -155,16 +155,16 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		const Json& abstracts = inNode.at(kKeyAbstracts);
 		for (auto& [name, templateJson] : abstracts.items())
 		{
-			if (m_abstractProjects.find(name) == m_abstractProjects.end())
+			if (m_abstractSourceTarget.find(name) == m_abstractSourceTarget.end())
 			{
-				auto abstractProject = std::make_unique<SourceTarget>(m_state);
-				if (!parseProject(*abstractProject, templateJson, true))
+				auto abstract = std::make_unique<SourceTarget>(m_state);
+				if (!parseSourceTarget(*abstract, templateJson, true))
 				{
 					Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_filename, name);
 					return false;
 				}
 
-				m_abstractProjects.emplace(name, std::move(abstractProject));
+				m_abstractSourceTarget.emplace(name, std::move(abstract));
 			}
 			else
 			{
@@ -190,16 +190,16 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		std::string name = prefixedName.substr(prefix.size());
 		String::replaceAll(name, prefix, "");
 
-		if (m_abstractProjects.find(name) == m_abstractProjects.end())
+		if (m_abstractSourceTarget.find(name) == m_abstractSourceTarget.end())
 		{
-			auto abstractProject = std::make_unique<SourceTarget>(m_state);
-			if (!parseProject(*abstractProject, abstractJson, true))
+			auto abstract = std::make_unique<SourceTarget>(m_state);
+			if (!parseSourceTarget(*abstract, abstractJson, true))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_filename, name);
 				return false;
 			}
 
-			m_abstractProjects.emplace(name, std::move(abstractProject));
+			m_abstractSourceTarget.emplace(name, std::move(abstract));
 		}
 		else
 		{
@@ -243,9 +243,9 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		}
 
 		BuildTarget target;
-		if (type == BuildTargetType::Project && m_abstractProjects.find(extends) != m_abstractProjects.end())
+		if (type == BuildTargetType::Project && m_abstractSourceTarget.find(extends) != m_abstractSourceTarget.end())
 		{
-			target = std::make_unique<SourceTarget>(*m_abstractProjects.at(extends)); // note: copy ctor
+			target = std::make_unique<SourceTarget>(*m_abstractSourceTarget.at(extends)); // note: copy ctor
 		}
 		else
 		{
@@ -262,7 +262,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		if (target->isScript())
 		{
 			// A script could be only for a specific platform
-			if (!parseScript(static_cast<ScriptBuildTarget&>(*target), targetJson))
+			if (!parseScriptTarget(static_cast<ScriptBuildTarget&>(*target), targetJson))
 				continue;
 		}
 		else if (target->isSubChalet())
@@ -275,7 +275,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		}
 		else if (target->isCMake())
 		{
-			if (!parseCMakeProject(static_cast<CMakeTarget&>(*target), targetJson))
+			if (!parseCMakeTarget(static_cast<CMakeTarget&>(*target), targetJson))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' target of type 'CMake'.", m_filename, name);
 				return false;
@@ -283,7 +283,7 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 		}
 		else
 		{
-			if (!parseProject(static_cast<SourceTarget&>(*target), targetJson))
+			if (!parseSourceTarget(static_cast<SourceTarget&>(*target), targetJson))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' project target.", m_filename, name);
 				return false;
@@ -300,34 +300,34 @@ bool BuildJsonParser::parseProjects(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProject(SourceTarget& outProject, const Json& inNode, const bool inAbstract)
+bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inNode, const bool inAbstract) const
 {
-	if (!parsePlatformConfigRule(outProject, inNode))
+	if (!parseTargetCondition(outTarget, inNode))
 		return true; // true to skip project
 
-	if (std::string val; assignStringFromConfig(val, inNode, "description"))
-		outProject.setDescription(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
+		outTarget.setDescription(std::move(val));
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "kind"))
-		outProject.setKind(val);
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "kind"))
+		outTarget.setKind(val);
 
-	// if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "name"))
-	// 	outProject.setName(val);
+	// if (std::string val; m_buildJson.assignFromKey(val, inNode, "name"))
+	// 	outTarget.setName(val);
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "language"))
-		outProject.setLanguage(val);
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "language"))
+		outTarget.setLanguage(val);
 
-	if (!parseFilesAndLocation(outProject, inNode, inAbstract))
+	if (!parseFilesAndLocation(outTarget, inNode, inAbstract))
 		return false;
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "runArguments"))
-		outProject.addRunArguments(std::move(list));
+		outTarget.addRunArguments(std::move(list));
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "runProject"))
-		outProject.setRunProject(val);
+		outTarget.setRunProject(val);
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "runDependencies"))
-		outProject.addRunDependencies(std::move(list));
+		outTarget.addRunDependencies(std::move(list));
 
 	{
 		const auto compilerSettings{ "settings" };
@@ -337,7 +337,7 @@ bool BuildJsonParser::parseProject(SourceTarget& outProject, const Json& inNode,
 			if (jCompilerSettings.contains("Cxx"))
 			{
 				const Json& node = jCompilerSettings.at("Cxx");
-				if (!parseCompilerSettingsCxx(outProject, node))
+				if (!parseCompilerSettingsCxx(outTarget, node))
 					return false;
 			}
 		}*/
@@ -347,7 +347,7 @@ bool BuildJsonParser::parseProject(SourceTarget& outProject, const Json& inNode,
 		{
 			const Json& node = inNode.at(compilerSettingsCpp);
 
-			if (!parseCompilerSettingsCxx(outProject, node))
+			if (!parseCompilerSettingsCxx(outTarget, node))
 				return false;
 		}
 	}
@@ -356,9 +356,9 @@ bool BuildJsonParser::parseProject(SourceTarget& outProject, const Json& inNode,
 	{
 		// Do some final error checking here
 
-		if (outProject.kind() == ProjectKind::None)
+		if (outTarget.kind() == ProjectKind::None)
 		{
-			Diagnostic::error("{}: project '{}' must contain 'kind'.", m_filename, outProject.name());
+			Diagnostic::error("{}: project '{}' must contain 'kind'.", m_filename, outTarget.name());
 			return false;
 		}
 	}
@@ -367,191 +367,194 @@ bool BuildJsonParser::parseProject(SourceTarget& outProject, const Json& inNode,
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseScript(ScriptBuildTarget& outScript, const Json& inNode)
+bool BuildJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const
 {
+	if (!parseTargetCondition(outTarget, inNode))
+		return true;
+
 	const std::string key{ "script" };
 
 	if (StringList list; assignStringListFromConfig(list, inNode, key))
-		outScript.addScripts(std::move(list));
-	else if (std::string val; assignStringFromConfig(val, inNode, key))
-		outScript.addScript(std::move(val));
+		outTarget.addScripts(std::move(list));
+	else if (std::string val; parseKeyFromConfig(val, inNode, key))
+		outTarget.addScript(std::move(val));
 	else
 		return false;
 
-	if (std::string val; assignStringFromConfig(val, inNode, "description"))
-		outScript.setDescription(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
+		outTarget.setDescription(std::move(val));
 
-	// if (!parsePlatformConfigExclusions(outProject, inNode))
+	// if (!parsePlatformConfigExclusions(outTarget, inNode))
 	// 	return false;
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode)
+bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "location"))
-		outProject.setLocation(std::move(val));
+	if (!parseTargetCondition(outTarget, inNode))
+		return true;
+
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "location"))
+		outTarget.setLocation(std::move(val));
 	else
 		return false;
 
-	if (std::string val; assignStringFromConfig(val, inNode, "description"))
-		outProject.setDescription(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
+		outTarget.setDescription(std::move(val));
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "buildFile"))
-		outProject.setBuildFile(std::move(val));
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "buildFile"))
+		outTarget.setBuildFile(std::move(val));
 
 	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "recheck"))
-		outProject.setRecheck(val);
-
-	if (!parsePlatformConfigRule(outProject, inNode))
-		return false;
+		outTarget.setRecheck(val);
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseCMakeProject(CMakeTarget& outProject, const Json& inNode)
+bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "location"))
-		outProject.setLocation(std::move(val));
+	if (!parseTargetCondition(outTarget, inNode))
+		return true;
+
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "location"))
+		outTarget.setLocation(std::move(val));
 	else
 		return false;
 
-	if (std::string val; assignStringFromConfig(val, inNode, "description"))
-		outProject.setDescription(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
+		outTarget.setDescription(std::move(val));
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "buildFile"))
-		outProject.setBuildFile(std::move(val));
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "buildFile"))
+		outTarget.setBuildFile(std::move(val));
 
 	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "recheck"))
-		outProject.setRecheck(val);
+		outTarget.setRecheck(val);
 
-	if (std::string val; assignStringFromConfig(val, inNode, "toolset"))
-		outProject.setToolset(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "toolset"))
+		outTarget.setToolset(std::move(val));
 
 	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "defines"))
-		outProject.addDefines(std::move(list));
-
-	if (!parsePlatformConfigRule(outProject, inNode))
-		return false;
+		outTarget.addDefines(std::move(list));
 
 	// If it's a cmake project, ignore everything else and return
 	// if (cmakeResult)
 
-	// auto& compilerConfig = m_state.toolchain.getConfig(outProject.language());
-	// outProject.parseOutputFilename(compilerConfig);
+	// auto& compilerConfig = m_state.toolchain.getConfig(outTarget.language());
+	// outTarget.parseOutputFilename(compilerConfig);
 	// return true;
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parsePlatformConfigRule(IBuildTarget& outProject, const Json& inNode)
+bool BuildJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const
 {
 	const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
 	if (!buildConfiguration.empty())
 	{
-		if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "rule"))
+		if (std::string val; m_buildJson.assignFromKey(val, inNode, "condition"))
 		{
-			outProject.setIncludeInBuild(ruleIsValid(val));
+			outTarget.setIncludeInBuild(conditionIsValid(val));
 		}
 	}
 
-	return outProject.includeInBuild();
+	return outTarget.includeInBuild();
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode)
+bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; assignStringFromConfig(val, inNode, "windowsApplicationManifest"))
-		outProject.setWindowsApplicationManifest(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "windowsApplicationManifest"))
+		outTarget.setWindowsApplicationManifest(std::move(val));
 	else if (bool enabled = false; m_buildJson.assignFromKey(enabled, inNode, "windowsApplicationManifest"))
-		outProject.setWindowsApplicationManifestGenerationEnabled(enabled);
+		outTarget.setWindowsApplicationManifestGenerationEnabled(enabled);
 
-	if (std::string val; assignStringFromConfig(val, inNode, "windowsApplicationIcon"))
-		outProject.setWindowsApplicationIcon(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "windowsApplicationIcon"))
+		outTarget.setWindowsApplicationIcon(std::move(val));
 
-	if (std::string val; assignStringFromConfig(val, inNode, "windowsSubSystem"))
-		outProject.setWindowsSubSystem(val);
+	if (std::string val; parseKeyFromConfig(val, inNode, "windowsSubSystem"))
+		outTarget.setWindowsSubSystem(val);
 
-	if (std::string val; assignStringFromConfig(val, inNode, "windowsEntryPoint"))
-		outProject.setWindowsEntryPoint(val);
+	if (std::string val; parseKeyFromConfig(val, inNode, "windowsEntryPoint"))
+		outTarget.setWindowsEntryPoint(val);
 
 	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "windowsPrefixOutputFilename"))
-		outProject.setWindowsPrefixOutputFilename(val);
+		outTarget.setWindowsPrefixOutputFilename(val);
 
 	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "windowsOutputDef"))
-		outProject.setWindowsOutputDef(val);
+		outTarget.setWindowsOutputDef(val);
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "pch"))
-		outProject.setPch(std::move(val));
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "pch"))
+		outTarget.setPch(std::move(val));
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "objectiveCxx"))
-		outProject.setObjectiveCxx(val);
+		outTarget.setObjectiveCxx(val);
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "rtti"))
-		outProject.setRtti(val);
+		outTarget.setRtti(val);
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "exceptions"))
-		outProject.setExceptions(val);
+		outTarget.setExceptions(val);
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "staticLinking"))
-		outProject.setStaticLinking(val);
+		outTarget.setStaticLinking(val);
 
-	if (std::string val; assignStringFromConfig(val, inNode, "threads"))
-		outProject.setThreadType(val);
+	if (std::string val; parseKeyFromConfig(val, inNode, "threads"))
+		outTarget.setThreadType(val);
 
-	if (std::string val; assignStringFromConfig(val, inNode, "cppStandard"))
-		outProject.setCppStandard(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "cppStandard"))
+		outTarget.setCppStandard(std::move(val));
 
-	if (std::string val; assignStringFromConfig(val, inNode, "cStandard"))
-		outProject.setCStandard(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "cStandard"))
+		outTarget.setCStandard(std::move(val));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "warnings"))
-		outProject.addWarnings(std::move(list));
-	else if (std::string val; assignStringFromConfig(val, inNode, "warnings"))
-		outProject.setWarningPreset(std::move(val));
+		outTarget.addWarnings(std::move(list));
+	else if (std::string val; parseKeyFromConfig(val, inNode, "warnings"))
+		outTarget.setWarningPreset(std::move(val));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "compileOptions"))
-		outProject.addCompileOptions(std::move(list));
+		outTarget.addCompileOptions(std::move(list));
 
-	if (std::string val; assignStringFromConfig(val, inNode, "linkerScript"))
-		outProject.setLinkerScript(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "linkerScript"))
+		outTarget.setLinkerScript(std::move(val));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "linkerOptions"))
-		outProject.addLinkerOptions(std::move(list));
+		outTarget.addLinkerOptions(std::move(list));
 
 #if defined(CHALET_MACOS)
 	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "macosFrameworkPaths"))
-		outProject.addMacosFrameworkPaths(std::move(list));
+		outTarget.addMacosFrameworkPaths(std::move(list));
 
 	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "macosFrameworks"))
-		outProject.addMacosFrameworks(std::move(list));
+		outTarget.addMacosFrameworks(std::move(list));
 #endif
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "defines"))
-		outProject.addDefines(std::move(list));
+		outTarget.addDefines(std::move(list));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "links"))
-		outProject.addLinks(std::move(list));
+		outTarget.addLinks(std::move(list));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "staticLinks"))
-		outProject.addStaticLinks(std::move(list));
+		outTarget.addStaticLinks(std::move(list));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "libDirs"))
-		outProject.addLibDirs(std::move(list));
+		outTarget.addLibDirs(std::move(list));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "includeDirs"))
-		outProject.addIncludeDirs(std::move(list));
+		outTarget.addIncludeDirs(std::move(list));
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract)
+bool BuildJsonParser::parseFilesAndLocation(SourceTarget& outTarget, const Json& inNode, const bool inAbstract) const
 {
-	bool locResult = parseProjectLocationOrFiles(outProject, inNode);
+	bool locResult = parseProjectLocationOrFiles(outTarget, inNode);
 	if (locResult && inAbstract)
 	{
 		Diagnostic::error("{}: '{}' cannot contain a location configuration.", m_filename, kKeyAbstracts);
@@ -560,7 +563,7 @@ bool BuildJsonParser::parseFilesAndLocation(SourceTarget& outProject, const Json
 
 	if (!locResult && !inAbstract)
 	{
-		Diagnostic::error("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outProject.name());
+		Diagnostic::error("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outTarget.name());
 		return false;
 	}
 
@@ -568,7 +571,7 @@ bool BuildJsonParser::parseFilesAndLocation(SourceTarget& outProject, const Json
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode)
+bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outTarget, const Json& inNode) const
 {
 	const std::string loc{ "location" };
 
@@ -579,7 +582,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outProject, cons
 		if (hasFiles)
 		{
 			if (StringList list; assignStringListFromConfig(list, inNode, "files"))
-				outProject.addFiles(std::move(list));
+				outTarget.addFiles(std::move(list));
 
 			return true;
 		}
@@ -601,22 +604,22 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outProject, cons
 	{
 		// include is mandatory
 		if (StringList list; assignStringListFromConfig(list, node, "include"))
-			outProject.addLocations(std::move(list));
-		else if (std::string val; assignStringFromConfig(val, node, "include"))
-			outProject.addLocation(std::move(val));
+			outTarget.addLocations(std::move(list));
+		else if (std::string val; parseKeyFromConfig(val, node, "include"))
+			outTarget.addLocation(std::move(val));
 		else
 			return false;
 
 		// exclude is optional
 		if (StringList list; assignStringListFromConfig(list, node, "exclude"))
-			outProject.addLocationExcludes(std::move(list));
-		else if (std::string val; assignStringFromConfig(val, node, "exclude"))
-			outProject.addLocationExclude(std::move(val));
+			outTarget.addLocationExcludes(std::move(list));
+		else if (std::string val; parseKeyFromConfig(val, node, "exclude"))
+			outTarget.addLocationExclude(std::move(val));
 	}
 	else if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, loc))
-		outProject.addLocations(std::move(list));
-	else if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, loc))
-		outProject.addLocation(std::move(val));
+		outTarget.addLocations(std::move(list));
+	else if (std::string val; m_buildJson.assignFromKey(val, inNode, loc))
+		outTarget.addLocation(std::move(val));
 	else
 		return false;
 
@@ -625,29 +628,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outProject, cons
 
 /*****************************************************************************/
 /*****************************************************************************/
-bool BuildJsonParser::assignStringFromConfig(std::string& outVariable, const Json& inNode, const std::string& inKey, const std::string& inDefault)
-{
-	bool res = m_buildJson.assignStringAndValidate(outVariable, inNode, inKey, inDefault);
-
-	const auto& platform = m_inputs.platform();
-
-	res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}.{}", inKey, platform), inDefault);
-
-	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
-	res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}{}", inKey, notSymbol, m_debugIdentifier), inDefault);
-	res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform), inDefault);
-
-	for (auto& notPlatform : m_inputs.notPlatforms())
-	{
-		res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform), inDefault);
-		res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}:{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform), inDefault);
-	}
-
-	return res;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey)
+bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const
 {
 	bool res = m_buildJson.assignStringListAndValidate(outList, inNode, inKey);
 
@@ -656,20 +637,22 @@ bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json
 	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
 
 	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
-	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:{}{}", inKey, notSymbol, m_debugIdentifier));
-	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
+	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}", inKey, notSymbol, m_debugIdentifier));
+	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
+	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}.{}{}", inKey, platform, notSymbol, m_debugIdentifier));
 
 	for (auto& notPlatform : m_inputs.notPlatforms())
 	{
 		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
-		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}:{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
+		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}.{}{}", inKey, notPlatform, notSymbol, m_debugIdentifier));
+		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
 	}
 
 	return res;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& inKey)
+bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& inKey) const
 {
 	bool res = inNode.contains(inKey);
 
@@ -678,19 +661,22 @@ bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& 
 	res |= inNode.contains(fmt::format("{}.{}", inKey, platform));
 
 	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
-	res |= inNode.contains(fmt::format("{}:{}{}", inKey, notSymbol, m_debugIdentifier));
-	res |= inNode.contains(fmt::format("{}:{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
+	res |= inNode.contains(fmt::format("{}.{}{}", inKey, notSymbol, m_debugIdentifier));
+	res |= inNode.contains(fmt::format("{}.{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
+	res |= inNode.contains(fmt::format("{}.{}.{}{}", inKey, platform, notSymbol, m_debugIdentifier));
 
 	for (auto& notPlatform : m_inputs.notPlatforms())
 	{
 		res |= inNode.contains(fmt::format("{}.!{}", inKey, notPlatform));
-		res |= inNode.contains(fmt::format("{}:{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
+		res |= inNode.contains(fmt::format("{}.!{}.{}{}", inKey, notPlatform, notSymbol, m_debugIdentifier));
+		res |= inNode.contains(fmt::format("{}.{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
 	}
 
 	return res;
 }
 
-bool BuildJsonParser::ruleIsValid(const std::string& inContent)
+/*****************************************************************************/
+bool BuildJsonParser::conditionIsValid(const std::string& inContent) const
 {
 	const auto& platform = m_inputs.platform();
 
@@ -705,11 +691,16 @@ bool BuildJsonParser::ruleIsValid(const std::string& inContent)
 	if (String::equals(fmt::format("{}{}.{}", notSymbol, m_debugIdentifier, platform), inContent))
 		return true;
 
+	if (String::equals(fmt::format("{}.{}{}", platform, notSymbol, m_debugIdentifier), inContent))
+		return true;
+
 	for (auto& notPlatform : m_inputs.notPlatforms())
 	{
 		if (String::equals(fmt::format("!{}", notPlatform), inContent))
 			return true;
 
+		if (String::equals(fmt::format("!{}.{}{}", notSymbol, m_debugIdentifier, notPlatform), inContent))
+			return true;
 		if (String::equals(fmt::format("{}{}.!{}", notSymbol, m_debugIdentifier, notPlatform), inContent))
 			return true;
 	}

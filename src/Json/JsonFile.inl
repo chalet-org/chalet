@@ -11,7 +11,7 @@ namespace chalet
 {
 /*****************************************************************************/
 template <typename T>
-bool JsonFile::assignFromKey(T& outVariable, const Json& inNode, const std::string& inKey)
+bool JsonFile::assignFromKey(T& outVariable, const Json& inNode, const std::string& inKey) const
 {
 	if (!containsKeyForType<T>(inNode, inKey))
 		return false;
@@ -106,7 +106,7 @@ bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const std::string& i
 
 /*****************************************************************************/
 template <typename T>
-bool JsonFile::containsKeyForType(const Json& inNode, const std::string& inKey)
+bool JsonFile::containsKeyForType(const Json& inNode, const std::string& inKey) const
 {
 	if (!inNode.contains(inKey))
 		return false;

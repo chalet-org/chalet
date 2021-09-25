@@ -48,6 +48,7 @@
 		"config-optimizationLevel": {
 			"type": "string",
 			"description": "The optimization level of the build.\nIn GNU-based compilers, This maps 1:1 with its respective '-O' option, except for 'debug' (-Od) and 'size' (-Os).\nIn MSVC, it's mapped as follows: 0 (/Od), 1 (/O1), 2 (/O2), 3 (/Ox), size (/Os), fast (/Ot), debug (/Od)\nIf this value is unset, no optimization level will be used (implying the compiler's default).",
+			"minLength": 1,
 			"enum": [
 				"0",
 				"1",
@@ -103,13 +104,13 @@
 				}
 			},
 			"patternProperties": {
-				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^include(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^include(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/distribution-target-include"
 				},
-				"^exclude(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^exclude(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/distribution-target-exclude"
 				}
 			}
@@ -117,6 +118,7 @@
 		"distribution-target-configuration": {
 			"type": "string",
 			"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
+			"minLength": 1,
 			"default": "Release"
 		},
 		"distribution-target-exclude": {
@@ -135,7 +137,8 @@
 			"minItems": 1,
 			"items": {
 				"type": "string",
-				"description": "A single file or folder to copy."
+				"description": "A single file or folder to copy.",
+				"minLength": 1
 			}
 		},
 		"distribution-target-includeDependentSharedLibraries": {
@@ -154,11 +157,13 @@
 			"properties": {
 				"desktopEntry": {
 					"type": "string",
-					"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place."
+					"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
+					"minLength": 1
 				},
 				"icon": {
 					"type": "string",
-					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
+					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)",
+					"minLength": 1
 				}
 			}
 		},
@@ -172,7 +177,8 @@
 			"properties": {
 				"bundleName": {
 					"type": "string",
-					"description": "The short name of the macos bundle (required)"
+					"description": "The short name of the macos bundle (required)",
+					"minLength": 1
 				},
 				"dmg": {
 					"type": "object",
@@ -183,7 +189,8 @@
 							"description": "If creating a .dmg image with 'makeDmg', this will define a background image for it.",
 							"anyOf": [
 								{
-									"type": "string"
+									"type": "string",
+									"minLength": 1
 								},
 								{
 									"type": "object",
@@ -194,11 +201,13 @@
 									"properties": {
 										"1x": {
 											"type": "string",
-											"description": "The path to a background image in PNG format created for 1x pixel density."
+											"description": "The path to a background image in PNG format created for 1x pixel density.",
+											"minLength": 1
 										},
 										"2x": {
 											"type": "string",
-											"description": "The path to a background image in PNG format created for 2x pixel density."
+											"description": "The path to a background image in PNG format created for 2x pixel density.",
+											"minLength": 1
 										}
 									}
 								}
@@ -208,13 +217,15 @@
 				},
 				"icon": {
 					"type": "string",
-					"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process."
+					"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
+					"minLength": 1
 				},
 				"infoPropertyList": {
 					"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
 					"anyOf": [
 						{
-							"type": "string"
+							"type": "string",
+							"minLength": 1
 						},
 						{
 							"type": "object",
@@ -239,11 +250,13 @@
 		},
 		"distribution-target-mainProject": {
 			"type": "string",
-			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'projects' array of the distribution target will be chosen as the main executable."
+			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'projects' array of the distribution target will be chosen as the main executable.",
+			"minLength": 1
 		},
 		"distribution-target-subDirectory": {
 			"type": "string",
 			"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
+			"minLength": 1,
 			"default": "dist"
 		},
 		"distribution-target-projects": {
@@ -254,6 +267,7 @@
 			"items": {
 				"type": "string",
 				"description": "The name of the project target.",
+				"minLength": 1,
 				"pattern": "^[\\w\\-\\+\\.]{3,}$"
 			}
 		},
@@ -264,7 +278,8 @@
 			"properties": {
 				"nsisScript": {
 					"type": "string",
-					"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target."
+					"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target.",
+					"minLength": 1
 				}
 			}
 		},
@@ -314,20 +329,24 @@
 		"external-git-repository": {
 			"type": "string",
 			"description": "The url of the git repository.",
-			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
+			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$",
+			"minLength": 1
 		},
 		"external-git-branch": {
 			"type": "string",
-			"description": "The branch to checkout. Uses the repository's default if not set."
+			"description": "The branch to checkout. Uses the repository's default if not set.",
+			"minLength": 1
 		},
 		"external-git-commit": {
 			"type": "string",
 			"description": "The SHA1 hash of the commit to checkout.",
-			"pattern": "^[0-9a-f]{7,40}$"
+			"pattern": "^[0-9a-f]{7,40}$",
+			"minLength": 1
 		},
 		"external-git-tag": {
 			"type": "string",
-			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
+			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
+			"minLength": 1
 		},
 		"external-git-submodules": {
 			"type": "boolean",
@@ -340,25 +359,29 @@
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"target-description": {
 			"type": "string",
-			"description": "A description of the target to display during the build."
+			"description": "A description of the target to display during the build.",
+			"minLength": 1
 		},
 		"target-type": {
 			"type": "string",
 			"description": "The target type, if not a local project or script.",
+			"minLength": 1,
 			"enum": [
 				"CMake",
 				"Chalet"
 			]
 		},
-		"target-rule": {
+		"target-condition": {
 			"type": "string",
 			"description": "A rule describing when to include this target in the build.",
-			"pattern": "^(!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$"
+			"minLength": 1,
+			"pattern": "^((!?(debug|windows|macos|linux)\\b\\.?){0,2})$"
 		},
 		"source-target": {
 			"type": "object",
@@ -385,8 +408,8 @@
 				"location": {
 					"$ref": "#/definitions/source-target-location"
 				},
-				"rule": {
-					"$ref": "#/definitions/target-rule"
+				"condition": {
+					"$ref": "#/definitions/target-condition"
 				},
 				"runProject": {
 					"$ref": "#/definitions/source-target-runProject"
@@ -399,13 +422,13 @@
 				}
 			},
 			"patternProperties": {
-				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^runProject(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^runProject(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-runProject"
 				},
-				"^runDependencies(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^runDependencies(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-runDependencies"
 				}
 			}
@@ -414,6 +437,7 @@
 			"type": "string",
 			"description": "A project template to extend. Defaults to 'all' implicitly.",
 			"pattern": "^[A-Za-z_-]+$",
+			"minLength": 1,
 			"default": "all"
 		},
 		"source-target-files": {
@@ -422,12 +446,14 @@
 			"minItems": 1,
 			"description": "Explicitly define the source files, relative to the working directory.",
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-kind": {
 			"type": "string",
 			"description": "The type of the project's compiled binary.",
+			"minLength": 1,
 			"enum": [
 				"staticLibrary",
 				"sharedLibrary",
@@ -438,14 +464,16 @@
 			"description": "The root path of the source files, relative to the working directory.",
 			"oneOf": [
 				{
-					"type": "string"
+					"type": "string",
+					"minLength": 1
 				},
 				{
 					"type": "array",
 					"uniqueItems": true,
 					"minItems": 1,
 					"items": {
-						"type": "string"
+						"type": "string",
+						"minLength": 1
 					}
 				},
 				{
@@ -455,32 +483,36 @@
 						"include"
 					],
 					"patternProperties": {
-						"^exclude(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+						"^exclude(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 							"anyOf": [
 								{
-									"type": "string"
+									"type": "string",
+									"minLength": 1
 								},
 								{
 									"type": "array",
 									"uniqueItems": true,
 									"minItems": 1,
 									"items": {
-										"type": "string"
+										"type": "string",
+										"minLength": 1
 									}
 								}
 							]
 						},
-						"^include(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+						"^include(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 							"anyOf": [
 								{
-									"type": "string"
+									"type": "string",
+									"minLength": 1
 								},
 								{
 									"type": "array",
 									"uniqueItems": true,
 									"minItems": 1,
 									"items": {
-										"type": "string"
+										"type": "string",
+										"minLength": 1
 									}
 								}
 							]
@@ -492,6 +524,7 @@
 		"source-target-language": {
 			"type": "string",
 			"description": "The target language of the project.",
+			"minLength": 1,
 			"enum": [
 				"C",
 				"C++"
@@ -508,7 +541,8 @@
 			"description": "If the project is the run target, a string of arguments to pass to the run command.",
 			"minItems": 1,
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-runDependencies": {
@@ -517,7 +551,8 @@
 			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
 			"minItems": 1,
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-cxx": {
@@ -601,61 +636,61 @@
 				}
 			},
 			"patternProperties": {
-				"^cStandard(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^cStandard(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-cStandard"
 				},
-				"^cppStandard(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^cppStandard(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-cppStandard"
 				},
-				"^compileOptions(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^compileOptions(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-compileOptions"
 				},
-				"^defines(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^defines(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-defines"
 				},
-				"^includeDirs(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^includeDirs(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-includeDirs"
 				},
-				"^libDirs(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^libDirs(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-libDirs"
 				},
-				"^linkerScript(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^linkerScript(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-linkerScript"
 				},
-				"^linkerOptions(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^linkerOptions(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-linkerOptions"
 				},
-				"^links(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^links(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-links"
 				},
-				"^objectiveCxx(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^objectiveCxx(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-objectiveCxx"
 				},
-				"^staticLinks(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^staticLinks(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-staticLinks"
 				},
-				"^threads(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^threads(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-threads"
 				},
-				"^rtti(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^rtti(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-rtti"
 				},
-				"^exceptions(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^exceptions(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-exceptions"
 				},
-				"^staticLinking(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^staticLinking(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-staticLinking"
 				},
-				"^windowsApplicationIcon(:!?debug|)$": {
+				"^windowsApplicationIcon(\\.((!?(debug)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-windowsAppIcon"
 				},
-				"^windowsApplicationManifest(:!?debug|)$": {
+				"^windowsApplicationManifest(\\.((!?(debug)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-windowsApplicationManifest"
 				},
-				"^windowsSubSystem(:!?debug|)$": {
+				"^windowsSubSystem(\\.((!?(debug)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-windowsSubSystem"
 				},
-				"^windowsEntryPoint(:!?debug|)$": {
+				"^windowsEntryPoint(\\.((!?(debug)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-windowsEntryPoint"
 				}
 			}
@@ -664,12 +699,14 @@
 			"type": "string",
 			"description": "The C standard to use in the compilation",
 			"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
+			"minLength": 1,
 			"default": "c11"
 		},
 		"source-target-cxx-cppStandard": {
 			"type": "string",
 			"description": "The C++ standard to use in the compilation",
 			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
+			"minLength": 1,
 			"default": "c++17"
 		},
 		"source-target-cxx-compileOptions": {
@@ -678,7 +715,8 @@
 			"minItems": 1,
 			"description": "Options to add during the compilation step.",
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-cxx-defines": {
@@ -687,7 +725,8 @@
 			"minItems": 1,
 			"description": "Macro definitions to be used by the preprocessor",
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-cxx-includeDirs": {
@@ -696,7 +735,8 @@
 			"minItems": 1,
 			"description": "A list of directories to include with the project.",
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-cxx-libDirs": {
@@ -705,12 +745,14 @@
 			"minItems": 1,
 			"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-cxx-linkerScript": {
 			"type": "string",
-			"description": "An LD linker script path (.ld file) to pass to the linker command"
+			"description": "An LD linker script path (.ld file) to pass to the linker command",
+			"minLength": 1
 		},
 		"source-target-cxx-linkerOptions": {
 			"type": "array",
@@ -718,7 +760,8 @@
 			"minItems": 1,
 			"description": "Options to add during the linking step.",
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-cxx-links": {
@@ -728,6 +771,7 @@
 			"description": "A list of dynamic links to use with the linker",
 			"items": {
 				"type": "string",
+				"minLength": 1,
 				"pattern": "^[\\w\\-\\+\\.]+$"
 			}
 		},
@@ -737,7 +781,8 @@
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-cxx-macosFrameworks": {
@@ -746,7 +791,8 @@
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"source-target-cxx-objectiveCxx": {
@@ -756,11 +802,13 @@
 		},
 		"source-target-cxx-pch": {
 			"type": "string",
-			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
+			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root.",
+			"minLength": 1
 		},
 		"source-target-cxx-threads": {
 			"type": "string",
 			"description": "The thread model to use.",
+			"minLength": 1,
 			"enum": [
 				"auto",
 				"posix",
@@ -790,6 +838,7 @@
 			"minItems": 1,
 			"items": {
 				"type": "string",
+				"minLength": 1,
 				"pattern": "^[\\w\\-\\+\\.]+$"
 			}
 		},
@@ -798,6 +847,7 @@
 			"anyOf": [
 				{
 					"type": "string",
+					"minLength": 1,
 					"enum": [
 						"none",
 						"minimal",
@@ -812,6 +862,7 @@
 					"type": "array",
 					"items": {
 						"type": "string",
+						"minLength": 1,
 						"uniqueItems": true,
 						"minItems": 1,
 						"examples": [
@@ -1117,7 +1168,8 @@
 			"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",
 			"anyOf": [
 				{
-					"type": "string"
+					"type": "string",
+					"minLength": 1
 				},
 				{
 					"type": "boolean",
@@ -1127,7 +1179,8 @@
 		},
 		"source-target-cxx-windowsAppIcon": {
 			"type": "string",
-			"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)"
+			"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)",
+			"minLength": 1
 		},
 		"source-target-cxx-windowsOutputDef": {
 			"type": "boolean",
@@ -1142,6 +1195,7 @@
 		"source-target-cxx-windowsSubSystem": {
 			"type": "string",
 			"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to 'console'",
+			"minLength": 1,
 			"enum": [
 				"console",
 				"windows",
@@ -1158,6 +1212,7 @@
 		"source-target-cxx-windowsEntryPoint": {
 			"type": "string",
 			"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to 'main'",
+			"minLength": 1,
 			"enum": [
 				"main",
 				"wmain",
@@ -1180,11 +1235,11 @@
 				}
 			},
 			"patternProperties": {
-				"^script(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^script(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/script-target-script",
 					"description": "Script(s) to run during this build step."
 				},
-				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/target-description"
 				}
 			}
@@ -1192,14 +1247,16 @@
 		"script-target-script": {
 			"anyOf": [
 				{
-					"type": "string"
+					"type": "string",
+					"minLength": 1
 				},
 				{
 					"type": "array",
 					"uniqueItems": true,
 					"minItems": 1,
 					"items": {
-						"type": "string"
+						"type": "string",
+						"minLength": 1
 					}
 				}
 			]
@@ -1234,32 +1291,34 @@
 				"type": {
 					"$ref": "#/definitions/target-type"
 				},
-				"rule": {
-					"$ref": "#/definitions/target-rule"
+				"condition": {
+					"$ref": "#/definitions/target-condition"
 				}
 			},
 			"patternProperties": {
-				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^buildFile(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^buildFile(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/cmake-target-buildFile"
 				},
-				"^defines(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^defines(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/cmake-target-defines"
 				},
-				"^toolset(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^toolset(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/cmake-target-toolset"
 				}
 			}
 		},
 		"cmake-target-location": {
 			"type": "string",
-			"description": "The folder path of the root CMakeLists.txt for the project."
+			"description": "The folder path of the root CMakeLists.txt for the project.",
+			"minLength": 1
 		},
 		"cmake-target-buildFile": {
 			"type": "string",
-			"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)"
+			"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)",
+			"minLength": 1
 		},
 		"cmake-target-defines": {
 			"type": "array",
@@ -1267,7 +1326,8 @@
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"cmake-target-recheck": {
@@ -1277,7 +1337,8 @@
 		},
 		"cmake-target-toolset": {
 			"type": "string",
-			"description": "A toolset to be passed to CMake with the -T option."
+			"description": "A toolset to be passed to CMake with the -T option.",
+			"minLength": 1
 		},
 		"chalet-target": {
 			"type": "object",
@@ -1303,26 +1364,28 @@
 				"type": {
 					"$ref": "#/definitions/target-type"
 				},
-				"rule": {
-					"$ref": "#/definitions/target-rule"
+				"condition": {
+					"$ref": "#/definitions/target-condition"
 				}
 			},
 			"patternProperties": {
-				"^description(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^buildFile(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+				"^buildFile(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/chalet-target-buildFile"
 				}
 			}
 		},
 		"chalet-target-location": {
 			"type": "string",
-			"description": "The folder path of the root chalet.json for the project."
+			"description": "The folder path of the root chalet.json for the project.",
+			"minLength": 1
 		},
 		"chalet-target-buildFile": {
 			"type": "string",
-			"description": "The build file to use, if not chalet.json, relative to the location."
+			"description": "The build file to use, if not chalet.json, relative to the location.",
+			"minLength": 1
 		},
 		"chalet-target-recheck": {
 			"type": "boolean",
@@ -1367,6 +1430,7 @@
 					"items": {
 						"type": "string",
 						"description": "A configuration preset",
+						"minLength": 1,
 						"enum": [
 							"Release",
 							"Debug",
@@ -1464,11 +1528,13 @@
 		"version": {
 			"type": "string",
 			"description": "Version of the workspace project.",
+			"minLength": 1,
 			"pattern": "^[\\w\\-\\+\\.]+$"
 		},
 		"workspace": {
 			"type": "string",
 			"description": "The name of the workspace.",
+			"minLength": 1,
 			"pattern": "^[\\w\\-\\+ ]+$"
 		}
 	},
@@ -1477,7 +1543,7 @@
 			"$ref": "#/definitions/source-target",
 			"description": "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project"
 		},
-		"^searchPaths(:!?debug|)(\\.!?windows|\\.!?macos|\\.!?linux|)$": {
+		"^searchPaths(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 			"$ref": "#/definitions/environment-searchPaths"
 		}
 	}

@@ -11,6 +11,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/StatePrototype.hpp"
+#include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -28,7 +29,7 @@ BuildJsonProtoParser::BuildJsonProtoParser(const CommandLineInputs& inInputs, St
 BuildJsonProtoParser::~BuildJsonProtoParser() = default;
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::serialize()
+bool BuildJsonProtoParser::serialize() const
 {
 	if (!validateAgainstSchema())
 		return false;
@@ -41,7 +42,7 @@ bool BuildJsonProtoParser::serialize()
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::serializeDependenciesOnly()
+bool BuildJsonProtoParser::serializeDependenciesOnly() const
 {
 	if (!validateAgainstSchema())
 		return false;
@@ -61,7 +62,7 @@ bool BuildJsonProtoParser::serializeDependenciesOnly()
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::validateAgainstSchema()
+bool BuildJsonProtoParser::validateAgainstSchema() const
 {
 	SchemaBuildJson schemaBuilder;
 	Json buildJsonSchema = schemaBuilder.get();
@@ -79,7 +80,7 @@ bool BuildJsonProtoParser::validateAgainstSchema()
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode)
+bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode) const
 {
 	if (!inNode.is_object())
 		return false;
@@ -100,7 +101,7 @@ bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseRoot(const Json& inNode)
+bool BuildJsonProtoParser::parseRoot(const Json& inNode) const
 {
 	if (!inNode.is_object())
 	{
@@ -108,10 +109,10 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode)
 		return false;
 	}
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "workspace"))
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "workspace"))
 		m_prototype.environment.setWorkspace(std::move(val));
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "version"))
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "version"))
 		m_prototype.environment.setVersion(std::move(val));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "searchPaths"))
@@ -121,7 +122,7 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseConfiguration(const Json& inNode)
+bool BuildJsonProtoParser::parseConfiguration(const Json& inNode) const
 {
 	if (!inNode.contains(kKeyConfigurations))
 	{
@@ -148,7 +149,7 @@ bool BuildJsonProtoParser::parseConfiguration(const Json& inNode)
 			BuildConfiguration config;
 			config.setName(name);
 
-			if (std::string val; m_buildJson.assignStringAndValidate(val, configJson, "optimizationLevel"))
+			if (std::string val; m_buildJson.assignFromKey(val, configJson, "optimizationLevel"))
 				config.setOptimizationLevel(std::move(val));
 
 			if (bool val = false; m_buildJson.assignFromKey(val, configJson, "linkTimeOptimization"))
@@ -211,7 +212,7 @@ bool BuildJsonProtoParser::parseConfiguration(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDistribution(const Json& inNode)
+bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 {
 	if (!inNode.contains(kKeyDistribution))
 		return true;
@@ -242,12 +243,12 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode)
 
 		if (target->isScript())
 		{
-			if (!parseScript(static_cast<ScriptDistTarget&>(*target), targetJson))
+			if (!parseDistributionScript(static_cast<ScriptDistTarget&>(*target), targetJson))
 				continue;
 		}
 		else
 		{
-			if (!parseBundle(static_cast<BundleTarget&>(*target), targetJson))
+			if (!parseDistributionBundle(static_cast<BundleTarget&>(*target), targetJson))
 				return false;
 		}
 
@@ -258,19 +259,22 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseScript(ScriptDistTarget& outScript, const Json& inNode)
+bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const
 {
+	if (!parseTargetCondition(inNode))
+		return true;
+
 	const std::string key{ "script" };
 
 	if (StringList list; assignStringListFromConfig(list, inNode, key))
-		outScript.addScripts(std::move(list));
-	else if (std::string val; assignStringFromConfig(val, inNode, key))
-		outScript.addScript(std::move(val));
+		outTarget.addScripts(std::move(list));
+	else if (std::string val; parseKeyFromConfig(val, inNode, key))
+		outTarget.addScript(std::move(val));
 	else
 		return false;
 
-	if (std::string val; assignStringFromConfig(val, inNode, "description"))
-		outScript.setDescription(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
+		outTarget.setDescription(std::move(val));
 
 	// if (!parsePlatformConfigExclusions(outProject, inNode))
 	// 	return false;
@@ -279,48 +283,48 @@ bool BuildJsonProtoParser::parseScript(ScriptDistTarget& outScript, const Json& 
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseBundle(BundleTarget& outBundle, const Json& inNode)
+bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "configuration"))
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "configuration"))
 	{
-		outBundle.setConfiguration(std::move(val));
-		m_prototype.addRequiredBuildConfiguration(outBundle.configuration());
+		outTarget.setConfiguration(std::move(val));
+		m_prototype.addRequiredBuildConfiguration(outTarget.configuration());
 	}
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "description"))
-		outBundle.setDescription(std::move(val));
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "description"))
+		outTarget.setDescription(std::move(val));
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "subDirectory"))
-		outBundle.setSubDirectory(std::move(val));
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "subDirectory"))
+		outTarget.setSubDirectory(std::move(val));
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "mainProject"))
-		outBundle.setMainProject(std::move(val));
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "mainProject"))
+		outTarget.setMainProject(std::move(val));
 
 	if (bool val; parseKeyFromConfig(val, inNode, "includeDependentSharedLibraries"))
-		outBundle.setIncludeDependentSharedLibraries(val);
+		outTarget.setIncludeDependentSharedLibraries(val);
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "projects"))
 	{
-		outBundle.addProjects(std::move(list));
+		outTarget.addProjects(std::move(list));
 	}
 	else
 	{
-		Diagnostic::error("{}: Distribution bundle '{}' was found without 'projects'", m_filename, outBundle.name());
+		Diagnostic::error("{}: Distribution bundle '{}' was found without 'projects'", m_filename, outTarget.name());
 		return false;
 	}
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "include"))
-		outBundle.addIncludes(std::move(list));
+		outTarget.addIncludes(std::move(list));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "exclude"))
-		outBundle.addExcludes(std::move(list));
+		outTarget.addExcludes(std::move(list));
 
 #if defined(CHALET_LINUX)
-	return parseBundleLinux(outBundle, inNode);
+	return parseDistributionBundleLinux(outTarget, inNode);
 #elif defined(CHALET_MACOS)
-	return parseBundleMacOS(outBundle, inNode);
+	return parseDistributionBundleMacOS(outTarget, inNode);
 #elif defined(CHALET_WIN32)
-	return parseBundleWindows(outBundle, inNode);
+	return parseDistributionBundleWindows(outTarget, inNode);
 #else
 	#error "Unrecognized platform"
 	return false;
@@ -328,7 +332,7 @@ bool BuildJsonProtoParser::parseBundle(BundleTarget& outBundle, const Json& inNo
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseBundleLinux(BundleTarget& outBundle, const Json& inNode)
+bool BuildJsonProtoParser::parseDistributionBundleLinux(BundleTarget& outTarget, const Json& inNode) const
 {
 	if (!inNode.contains("linux"))
 		return true;
@@ -343,13 +347,13 @@ bool BuildJsonProtoParser::parseBundleLinux(BundleTarget& outBundle, const Json&
 	BundleLinux linuxBundle;
 
 	int assigned = 0;
-	if (std::string val; m_buildJson.assignStringAndValidate(val, linuxNode, "icon"))
+	if (std::string val; m_buildJson.assignFromKey(val, linuxNode, "icon"))
 	{
 		linuxBundle.setIcon(std::move(val));
 		assigned++;
 	}
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, linuxNode, "desktopEntry"))
+	if (std::string val; m_buildJson.assignFromKey(val, linuxNode, "desktopEntry"))
 	{
 		linuxBundle.setDesktopEntry(std::move(val));
 		assigned++;
@@ -366,13 +370,13 @@ bool BuildJsonProtoParser::parseBundleLinux(BundleTarget& outBundle, const Json&
 		return false;
 	}
 
-	outBundle.setLinuxBundle(std::move(linuxBundle));
+	outTarget.setLinuxBundle(std::move(linuxBundle));
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseBundleMacOS(BundleTarget& outBundle, const Json& inNode)
+bool BuildJsonProtoParser::parseDistributionBundleMacOS(BundleTarget& outTarget, const Json& inNode) const
 {
 	if (!inNode.contains("macos"))
 		return true;
@@ -386,10 +390,10 @@ bool BuildJsonProtoParser::parseBundleMacOS(BundleTarget& outBundle, const Json&
 
 	BundleMacOS macosBundle;
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, macosNode, "bundleName"))
+	if (std::string val; m_buildJson.assignFromKey(val, macosNode, "bundleName"))
 		macosBundle.setBundleName(std::move(val));
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, macosNode, "icon"))
+	if (std::string val; m_buildJson.assignFromKey(val, macosNode, "icon"))
 		macosBundle.setIcon(std::move(val));
 
 	const std::string kInfoPropertyList{ "infoPropertyList" };
@@ -402,7 +406,7 @@ bool BuildJsonProtoParser::parseBundleMacOS(BundleTarget& outBundle, const Json&
 		}
 		else
 		{
-			if (std::string val; m_buildJson.assignStringAndValidate(val, macosNode, kInfoPropertyList))
+			if (std::string val; m_buildJson.assignFromKey(val, macosNode, kInfoPropertyList))
 			{
 				macosBundle.setInfoPropertyList(std::move(val));
 			}
@@ -422,27 +426,27 @@ bool BuildJsonProtoParser::parseBundleMacOS(BundleTarget& outBundle, const Json&
 			const Json& dmgBackground = dmg.at(kBackground);
 			if (dmgBackground.is_object())
 			{
-				if (std::string val; m_buildJson.assignStringAndValidate(val, dmgBackground, "1x"))
+				if (std::string val; m_buildJson.assignFromKey(val, dmgBackground, "1x"))
 					macosBundle.setDmgBackground1x(std::move(val));
 
-				if (std::string val; m_buildJson.assignStringAndValidate(val, dmgBackground, "2x"))
+				if (std::string val; m_buildJson.assignFromKey(val, dmgBackground, "2x"))
 					macosBundle.setDmgBackground2x(std::move(val));
 			}
 			else
 			{
-				if (std::string val; m_buildJson.assignStringAndValidate(val, dmg, kBackground))
+				if (std::string val; m_buildJson.assignFromKey(val, dmg, kBackground))
 					macosBundle.setDmgBackground1x(std::move(val));
 			}
 		}
 	}
 
-	outBundle.setMacosBundle(std::move(macosBundle));
+	outTarget.setMacosBundle(std::move(macosBundle));
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseBundleWindows(BundleTarget& outBundle, const Json& inNode)
+bool BuildJsonProtoParser::parseDistributionBundleWindows(BundleTarget& outTarget, const Json& inNode) const
 {
 	if (!inNode.contains("windows"))
 		return true;
@@ -456,11 +460,11 @@ bool BuildJsonProtoParser::parseBundleWindows(BundleTarget& outBundle, const Jso
 
 	BundleWindows windowsBundle;
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, windowsNode, "nsisScript"))
+	if (std::string val; m_buildJson.assignFromKey(val, windowsNode, "nsisScript"))
 		windowsBundle.setNsisScript(std::move(val));
 
 	// int assigned = 0;
-	// if (std::string val; m_buildJson.assignStringAndValidate(val, windowsNode, "icon"))
+	// if (std::string val; m_buildJson.assignFromKey(val, windowsNode, "icon"))
 	// {
 	// 	windowsBundle.setIcon(val);
 	// 	assigned++;
@@ -469,13 +473,13 @@ bool BuildJsonProtoParser::parseBundleWindows(BundleTarget& outBundle, const Jso
 	// if (assigned == 0)
 	// 	return false;
 
-	outBundle.setWindowsBundle(std::move(windowsBundle));
+	outTarget.setWindowsBundle(std::move(windowsBundle));
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode)
+bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode) const
 {
 	// don't care if there aren't any dependencies
 	if (!inNode.contains(kKeyExternalDependencies))
@@ -504,9 +508,9 @@ bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseGitDependency(GitDependency& outDependency, const Json& inNode)
+bool BuildJsonProtoParser::parseGitDependency(GitDependency& outDependency, const Json& inNode) const
 {
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "repository"))
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "repository"))
 		outDependency.setRepository(std::move(val));
 	else
 	{
@@ -514,12 +518,12 @@ bool BuildJsonProtoParser::parseGitDependency(GitDependency& outDependency, cons
 		return false;
 	}
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "branch"))
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "branch"))
 		outDependency.setBranch(std::move(val));
 
-	if (std::string val; m_buildJson.assignStringAndValidate(val, inNode, "tag"))
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "tag"))
 		outDependency.setTag(std::move(val));
-	else if (m_buildJson.assignStringAndValidate(val, inNode, "commit"))
+	else if (m_buildJson.assignFromKey(val, inNode, "commit"))
 	{
 		if (!outDependency.tag().empty())
 		{
@@ -537,25 +541,17 @@ bool BuildJsonProtoParser::parseGitDependency(GitDependency& outDependency, cons
 }
 
 /*****************************************************************************/
-/*****************************************************************************/
-bool BuildJsonProtoParser::assignStringFromConfig(std::string& outVariable, const Json& inNode, const std::string& inKey, const std::string& inDefault)
+bool BuildJsonProtoParser::parseTargetCondition(const Json& inNode) const
 {
-	bool res = m_buildJson.assignStringAndValidate(outVariable, inNode, inKey, inDefault);
+	if (std::string val; m_buildJson.assignFromKey(val, inNode, "condition"))
+		return conditionIsValid(val);
 
-	const auto& platform = m_inputs.platform();
-
-	res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}.{}", inKey, platform), inDefault);
-
-	for (auto& notPlatform : m_inputs.notPlatforms())
-	{
-		res |= m_buildJson.assignStringAndValidate(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform), inDefault);
-	}
-
-	return res;
+	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey)
+/*****************************************************************************/
+bool BuildJsonProtoParser::assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const
 {
 	bool res = m_buildJson.assignStringListAndValidate(outList, inNode, inKey);
 
@@ -569,6 +565,23 @@ bool BuildJsonProtoParser::assignStringListFromConfig(StringList& outList, const
 	}
 
 	return res;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::conditionIsValid(const std::string& inContent) const
+{
+	const auto& platform = m_inputs.platform();
+
+	if (String::equals(platform, inContent))
+		return true;
+
+	for (auto& notPlatform : m_inputs.notPlatforms())
+	{
+		if (String::equals(fmt::format("!{}", notPlatform), inContent))
+			return true;
+	}
+
+	return false;
 }
 
 }

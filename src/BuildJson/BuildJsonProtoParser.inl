@@ -14,11 +14,8 @@ namespace chalet
 {
 /*****************************************************************************/
 template <typename T>
-bool BuildJsonProtoParser::parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey)
+bool BuildJsonProtoParser::parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey) const
 {
-	using Type = std::decay_t<T>;
-	static_assert(!std::is_same_v<Type, std::string>, "use assignStringFromConfig instead");
-
 	bool res = m_buildJson.assignFromKey(outVariable, inNode, inKey);
 
 	const auto& platform = m_inputs.platform();

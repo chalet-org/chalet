@@ -31,29 +31,28 @@ struct BuildJsonParser
 private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
-	bool parseProjects(const Json& inNode);
-	bool parseProject(SourceTarget& outProject, const Json& inNode, const bool inAbstract = false);
-	bool parseScript(ScriptBuildTarget& outScript, const Json& inNode);
-	bool parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode);
-	bool parseCMakeProject(CMakeTarget& outProject, const Json& inNode);
-	bool parsePlatformConfigRule(IBuildTarget& outProject, const Json& inNode);
-	bool parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode);
-	bool parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract);
-	bool parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode);
+	bool parseTarget(const Json& inNode);
+	bool parseSourceTarget(SourceTarget& outProject, const Json& inNode, const bool inAbstract = false) const;
+	bool parseScriptTarget(ScriptBuildTarget& outScript, const Json& inNode) const;
+	bool parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode) const;
+	bool parseCMakeTarget(CMakeTarget& outProject, const Json& inNode) const;
+	bool parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const;
+	bool parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode) const;
+	bool parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract) const;
+	bool parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode) const;
 
-	bool validBuildRequested();
-	bool validRunProjectRequested();
-	bool validRunProjectRequestedFromInput();
+	bool validBuildRequested() const;
+	bool validRunProjectRequested() const;
+	bool validRunProjectRequestedFromInput() const;
 
 	template <typename T>
-	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey);
+	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey) const;
 
-	bool assignStringFromConfig(std::string& outVariable, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
-	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey);
+	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const;
 
-	bool containsComplexKey(const Json& inNode, const std::string& inKey);
+	bool containsComplexKey(const Json& inNode, const std::string& inKey) const;
 
-	bool ruleIsValid(const std::string& inContent);
+	bool conditionIsValid(const std::string& inContent) const;
 
 	const CommandLineInputs& m_inputs;
 	JsonFile& m_buildJson;
@@ -63,7 +62,7 @@ private:
 	const std::string& kKeyAbstracts;
 	const std::string& kKeyTargets;
 
-	std::unordered_map<std::string, std::unique_ptr<SourceTarget>> m_abstractProjects;
+	std::unordered_map<std::string, std::unique_ptr<SourceTarget>> m_abstractSourceTarget;
 
 	std::string m_debugIdentifier{ "debug" };
 };

@@ -23,33 +23,35 @@ struct BuildJsonProtoParser
 	CHALET_DISALLOW_COPY_MOVE(BuildJsonProtoParser);
 	~BuildJsonProtoParser();
 
-	bool serialize();
-	bool serializeDependenciesOnly();
+	bool serialize() const;
+	bool serializeDependenciesOnly() const;
 
 private:
-	bool validateAgainstSchema();
-	bool serializeRequiredFromJsonRoot(const Json& inNode);
+	bool validateAgainstSchema() const;
+	bool serializeRequiredFromJsonRoot(const Json& inNode) const;
 
-	bool parseRoot(const Json& inNode);
+	bool parseRoot(const Json& inNode) const;
 
-	bool parseConfiguration(const Json& inNode);
+	bool parseConfiguration(const Json& inNode) const;
 
-	bool parseDistribution(const Json& inNode);
-	bool parseScript(ScriptDistTarget& outScript, const Json& inNode);
-	bool parseBundle(BundleTarget& outBundle, const Json& inNode);
-	bool parseBundleLinux(BundleTarget& outBundle, const Json& inNode);
-	bool parseBundleMacOS(BundleTarget& outBundle, const Json& inNode);
-	bool parseBundleWindows(BundleTarget& outBundle, const Json& inNode);
+	bool parseDistribution(const Json& inNode) const;
+	bool parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionBundle(BundleTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionBundleLinux(BundleTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionBundleMacOS(BundleTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionBundleWindows(BundleTarget& outTarget, const Json& inNode) const;
 
-	bool parseExternalDependencies(const Json& inNode);
-	bool parseGitDependency(GitDependency& outDependency, const Json& inNode);
+	bool parseExternalDependencies(const Json& inNode) const;
+	bool parseGitDependency(GitDependency& outDependency, const Json& inNode) const;
+	bool parseTargetCondition(const Json& inNode) const;
 
 	//
 	template <typename T>
-	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey);
+	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey) const;
 
-	bool assignStringFromConfig(std::string& outVariable, const Json& inNode, const std::string& inKey, const std::string& inDefault = "");
-	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey);
+	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const;
+
+	bool conditionIsValid(const std::string& inContent) const;
 
 	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;

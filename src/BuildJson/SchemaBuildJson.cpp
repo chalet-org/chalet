@@ -29,8 +29,11 @@ SchemaBuildJson::SchemaBuildJson() :
 	kPatternProjectName(R"(^[\w\-\+\.]{3,}$)"),
 	kPatternProjectLinks(R"(^[\w\-\+\.]+$)"),
 	kPatternDistributionName(R"(^[\w\-\+\.\ \(\)]{3,}$)"),
-	kPatternConfigurations(R"((:!?debug|))"),
-	kPatternPlatforms(R"((\.!?windows|\.!?macos|\.!?linux|))")
+	kPatternConditionConfigurations(R"regex((\.((!?(debug)\b\.?)?))?)regex"),
+	kPatternConditionPlatforms(R"regex((\.((!?(windows|macos|linux)\b\.?){0,2}))?)regex"),
+	kPatternConditionConfigurationsPlatforms(R"regex((\.((!?(debug|windows|macos|linux)\b\.?){0,2}))?)regex"),
+	kPatternConditionPlatformsInner(R"regex(((!?(windows|macos|linux))?))regex"),
+	kPatternConditionConfigurationsPlatformsInner(R"regex(((!?(debug|windows|macos|linux)\b\.?){0,2}))regex")
 {
 }
 
@@ -63,6 +66,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::ConfigurationOptimizationLevel] = R"json({
 		"type": "string",
 		"description": "The optimization level of the build.\nIn GNU-based compilers, This maps 1:1 with its respective '-O' option, except for 'debug' (-Od) and 'size' (-Os).\nIn MSVC, it's mapped as follows: 0 (/Od), 1 (/O1), 2 (/O2), 3 (/Ox), size (/Os), fast (/Ot), debug (/Od)\nIf this value is unset, no optimization level will be used (implying the compiler's default).",
+		"minLength": 1,
 		"enum": [
 			"0",
 			"1",
@@ -86,6 +90,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::DistributionTargetConfiguration] = R"json({
 		"type": "string",
 		"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
+		"minLength": 1,
 		"default": "Release"
 	})json"_ojson;
 
@@ -96,7 +101,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minItems": 1,
 		"items": {
 			"type": "string",
-			"description": "A single file or folder to copy."
+			"description": "A single file or folder to copy.",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -127,11 +133,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"properties": {
 			"desktopEntry": {
 				"type": "string",
-				"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place."
+				"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
+				"minLength": 1
 			},
 			"icon": {
 				"type": "string",
-				"description": "The location to an icon to use for the application (PNG 256x256 is recommended)"
+				"description": "The location to an icon to use for the application (PNG 256x256 is recommended)",
+				"minLength": 1
 			}
 		}
 	})json"_ojson;
@@ -146,7 +154,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"properties": {
 			"bundleName": {
 				"type": "string",
-				"description": "The short name of the macos bundle (required)"
+				"description": "The short name of the macos bundle (required)",
+				"minLength": 1
 			},
 			"dmg": {
 				"type": "object",
@@ -157,7 +166,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 						"description": "If creating a .dmg image with 'makeDmg', this will define a background image for it.",
 						"anyOf": [
 							{
-								"type": "string"
+								"type": "string",
+								"minLength": 1
 							},
 							{
 								"type": "object",
@@ -168,11 +178,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 								"properties": {
 									"1x": {
 										"type": "string",
-										"description": "The path to a background image in PNG format created for 1x pixel density."
+										"description": "The path to a background image in PNG format created for 1x pixel density.",
+										"minLength": 1
 									},
 									"2x": {
 										"type": "string",
-										"description": "The path to a background image in PNG format created for 2x pixel density."
+										"description": "The path to a background image in PNG format created for 2x pixel density.",
+										"minLength": 1
 									}
 								}
 							}
@@ -182,13 +194,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			},
 			"icon": {
 				"type": "string",
-				"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process."
+				"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
+				"minLength": 1
 			},
 			"infoPropertyList": {
 				"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
 				"anyOf": [
 					{
-						"type": "string"
+						"type": "string",
+						"minLength": 1
 					},
 					{
 						"type": "object"
@@ -201,12 +215,14 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::DistributionTargetMainProject] = R"json({
 		"type": "string",
-		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'projects' array of the distribution target will be chosen as the main executable."
+		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'projects' array of the distribution target will be chosen as the main executable.",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::DistributionTargetOutputDirectory] = R"json({
 		"type": "string",
 		"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
+		"minLength": 1,
 		"default": "dist"
 	})json"_ojson;
 
@@ -217,7 +233,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minItems": 1,
 		"items": {
 			"type": "string",
-			"description": "The name of the project target."
+			"description": "The name of the project target.",
+			"minLength": 1
 		}
 	})json"_ojson;
 	defs[Defs::DistributionTargetProjects][kItems][kPattern] = kPatternProjectName;
@@ -229,7 +246,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"properties": {
 			"nsisScript": {
 				"type": "string",
-				"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target."
+				"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target.",
+				"minLength": 1
 			}
 		}
 	})json"_ojson;
@@ -240,23 +258,27 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::ExternalDependencyGitRepository] = R"json({
 		"type": "string",
 		"description": "The url of the git repository.",
-		"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$"
+		"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ExternalDependencyGitBranch] = R"json({
 		"type": "string",
-		"description": "The branch to checkout. Uses the repository's default if not set."
+		"description": "The branch to checkout. Uses the repository's default if not set.",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ExternalDependencyGitCommit] = R"json({
 		"type": "string",
 		"description": "The SHA1 hash of the commit to checkout.",
-		"pattern": "^[0-9a-f]{7,40}$"
+		"pattern": "^[0-9a-f]{7,40}$",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ExternalDependencyGitTag] = R"json({
 		"type": "string",
-		"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out."
+		"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ExternalDependencyGitSubmodules] = R"json({
@@ -274,7 +296,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -283,19 +306,22 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	//
 	defs[Defs::TargetDescription] = R"json({
 		"type": "string",
-		"description": "A description of the target to display during the build."
+		"description": "A description of the target to display during the build.",
+		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::TargetRule] = R"json({
+	defs[Defs::TargetCondition] = R"json({
 		"type": "string",
-		"description": "A rule describing when to include this target in the build."
+		"description": "A rule describing when to include this target in the build.",
+		"minLength": 1
 	})json"_ojson;
-	defs[Defs::TargetRule][kPattern] = fmt::format("^(!?debug|){}$", kPatternPlatforms);
+	defs[Defs::TargetCondition][kPattern] = fmt::format("^{}$", kPatternConditionConfigurationsPlatformsInner);
 
 	defs[Defs::SourceTargetExtends] = R"json({
 		"type": "string",
 		"description": "A project template to extend. Defaults to 'all' implicitly.",
 		"pattern": "^[A-Za-z_-]+$",
+		"minLength": 1,
 		"default": "all"
 	})json"_ojson;
 
@@ -305,13 +331,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minItems": 1,
 		"description": "Explicitly define the source files, relative to the working directory.",
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
 	defs[Defs::SourceTargetKind] = R"json({
 		"type": "string",
 		"description": "The type of the project's compiled binary.",
+		"minLength": 1,
 		"enum": [
 			"staticLibrary",
 			"sharedLibrary",
@@ -322,6 +350,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::SourceTargetLanguage] = R"json({
 		"type": "string",
 		"description": "The target language of the project.",
+		"minLength": 1,
 		"enum": [
 			"C",
 			"C++"
@@ -340,7 +369,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
 		"minItems": 1,
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -350,7 +380,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
 		"minItems": 1,
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -358,6 +389,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"type": "string",
 		"description": "The C standard to use in the compilation",
 		"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
+		"minLength": 1,
 		"default": "c11"
 	})json"_ojson;
 
@@ -367,7 +399,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minItems": 1,
 		"description": "Options to add during the compilation step.",
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -375,6 +408,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"type": "string",
 		"description": "The C++ standard to use in the compilation",
 		"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
+		"minLength": 1,
 		"default": "c++17"
 	})json"_ojson;
 
@@ -384,7 +418,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minItems": 1,
 		"description": "Macro definitions to be used by the preprocessor",
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -394,7 +429,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minItems": 1,
 		"description": "A list of directories to include with the project.",
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -404,13 +440,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minItems": 1,
 		"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxLinkerScript] = R"json({
 		"type": "string",
-		"description": "An LD linker script path (.ld file) to pass to the linker command"
+		"description": "An LD linker script path (.ld file) to pass to the linker command",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxLinkerOptions] = R"json({
@@ -419,7 +457,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minItems": 1,
 		"description": "Options to add during the linking step.",
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -429,7 +468,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minItems": 1,
 		"description": "A list of dynamic links to use with the linker",
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 	defs[Defs::SourceTargetCxxLinks][kItems][kPattern] = kPatternProjectLinks;
@@ -438,14 +478,16 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"description": "The root path of the source files, relative to the working directory.",
 		"oneOf": [
 			{
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			},
 			{
 				"type": "array",
 				"uniqueItems": true,
 				"minItems": 1,
 				"items": {
-					"type": "string"
+					"type": "string",
+					"minLength": 1
 				}
 			},
 			{
@@ -457,32 +499,36 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			}
 		]
 	})json"_ojson;
-	defs[Defs::SourceTargetLocation][kOneOf][2][kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = R"json({
+	defs[Defs::SourceTargetLocation][kOneOf][2][kPatternProperties][fmt::format("^exclude{}$", kPatternConditionConfigurationsPlatforms)] = R"json({
 		"anyOf": [
 			{
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			},
 			{
 				"type": "array",
 				"uniqueItems": true,
 				"minItems": 1,
 				"items": {
-					"type": "string"
+					"type": "string",
+					"minLength": 1
 				}
 			}
 		]
 	})json"_ojson;
-	defs[Defs::SourceTargetLocation][kOneOf][2][kPatternProperties][fmt::format("^include{}{}$", kPatternConfigurations, kPatternPlatforms)] = R"json({
+	defs[Defs::SourceTargetLocation][kOneOf][2][kPatternProperties][fmt::format("^include{}$", kPatternConditionConfigurationsPlatforms)] = R"json({
 		"anyOf": [
 			{
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			},
 			{
 				"type": "array",
 				"uniqueItems": true,
 				"minItems": 1,
 				"items": {
-					"type": "string"
+					"type": "string",
+					"minLength": 1
 				}
 			}
 		]
@@ -494,7 +540,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -504,7 +551,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -516,12 +564,14 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::SourceTargetCxxPrecompiledHeader] = R"json({
 		"type": "string",
-		"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root."
+		"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root.",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxThreads] = R"json({
 		"type": "string",
 		"description": "The thread model to use.",
+		"minLength": 1,
 		"enum": [
 			"auto",
 			"posix",
@@ -554,7 +604,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 	defs[Defs::SourceTargetCxxStaticLinks][kItems][kPattern] = kPatternProjectLinks;
@@ -564,6 +615,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"anyOf": [
 			{
 				"type": "string",
+				"minLength": 1,
 				"enum": [
 					"none",
 					"minimal",
@@ -578,6 +630,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 				"type": "array",
 				"items": {
 					"type": "string",
+					"minLength": 1,
 					"uniqueItems": true,
 					"minItems": 1
 				}
@@ -885,7 +938,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",
 		"anyOf": [
 			{
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			},
 			{
 				"type": "boolean",
@@ -896,7 +950,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::SourceTargetCxxWindowsAppIcon] = R"json({
 		"type": "string",
-		"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)"
+		"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxWindowsOutputDef] = R"json({
@@ -914,6 +969,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::SourceTargetCxxWindowsSubSystem] = R"json({
 		"type": "string",
 		"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to 'console'",
+		"minLength": 1,
 		"enum": [
 			"console",
 			"windows",
@@ -931,6 +987,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::SourceTargetCxxWindowsEntryPoint] = R"json({
 		"type": "string",
 		"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to 'main'",
+		"minLength": 1,
 		"enum": [
 			"main",
 			"wmain",
@@ -942,16 +999,19 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	})json"_ojson;
 
 	defs[Defs::ScriptTargetScript] = R"json({
+		"description": "Script(s) to run during this build step.",
 		"anyOf": [
 			{
-				"type": "string"
+				"type": "string",
+				"minLength": 1
 			},
 			{
 				"type": "array",
 				"uniqueItems": true,
 				"minItems": 1,
 				"items": {
-					"type": "string"
+					"type": "string",
+					"minLength": 1
 				}
 			}
 		]
@@ -960,17 +1020,23 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::TargetType] = R"json({
 		"type": "string",
 		"description": "The target type, if not a local project or script.",
-		"enum": ["CMake", "Chalet"]
+		"minLength": 1,
+		"enum": [
+			"CMake",
+			"Chalet"
+		]
 	})json"_ojson;
 
 	defs[Defs::CMakeTargetLocation] = R"json({
 		"type": "string",
-		"description": "The folder path of the root CMakeLists.txt for the project."
+		"description": "The folder path of the root CMakeLists.txt for the project.",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::CMakeTargetBuildFile] = R"json({
 		"type": "string",
-		"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)"
+		"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::CMakeTargetDefines] = R"json({
@@ -979,7 +1045,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
-			"type": "string"
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -991,17 +1058,20 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::CMakeTargetToolset] = R"json({
 		"type": "string",
-		"description": "A toolset to be passed to CMake with the -T option."
+		"description": "A toolset to be passed to CMake with the -T option.",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ChaletTargetLocation] = R"json({
 		"type": "string",
-		"description": "The folder path of the root chalet.json for the project."
+		"description": "The folder path of the root chalet.json for the project.",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ChaletTargetBuildFile] = R"json({
 		"type": "string",
-		"description": "The build file to use, if not chalet.json, relative to the location."
+		"description": "The build file to use, if not chalet.json, relative to the location.",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ChaletTargetRecheck] = R"json({
@@ -1045,9 +1115,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distDef[kProperties]["mainProject"] = getDefinition(Defs::DistributionTargetMainProject);
 		distDef[kProperties]["subDirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
 		distDef[kProperties]["projects"] = getDefinition(Defs::DistributionTargetProjects);
-		distDef[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
-		distDef[kPatternProperties][fmt::format("^include{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
-		distDef[kPatternProperties][fmt::format("^exclude{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
+		distDef[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
+		distDef[kPatternProperties][fmt::format("^include{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
+		distDef[kPatternProperties][fmt::format("^exclude{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
 		defs[Defs::DistributionTarget] = std::move(distDef);
 	}
 
@@ -1114,26 +1184,26 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetProjectCxx[kProperties]["windowsSubSystem"] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
 		targetProjectCxx[kProperties]["windowsEntryPoint"] = getDefinition(Defs::SourceTargetCxxWindowsEntryPoint);
 
-		targetProjectCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxCStandard);
-		targetProjectCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxCppStandard);
-		targetProjectCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxCompileOptions);
-		targetProjectCxx[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxDefines);
-		targetProjectCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxIncludeDirs);
-		targetProjectCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxLibDirs);
-		targetProjectCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerScript);
-		targetProjectCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerOptions);
-		targetProjectCxx[kPatternProperties][fmt::format("^links{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxLinks);
-		targetProjectCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxObjectiveCxx);
-		targetProjectCxx[kPatternProperties][fmt::format("^staticLinks{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinks);
-		targetProjectCxx[kPatternProperties][fmt::format("^threads{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxThreads);
-		targetProjectCxx[kPatternProperties][fmt::format("^rtti{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
-		targetProjectCxx[kPatternProperties][fmt::format("^exceptions{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxExceptions);
-		targetProjectCxx[kPatternProperties][fmt::format("^staticLinking{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinking);
+		targetProjectCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCStandard);
+		targetProjectCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCppStandard);
+		targetProjectCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCompileOptions);
+		targetProjectCxx[kPatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxDefines);
+		targetProjectCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxIncludeDirs);
+		targetProjectCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLibDirs);
+		targetProjectCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerScript);
+		targetProjectCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerOptions);
+		targetProjectCxx[kPatternProperties][fmt::format("^links{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxLinks);
+		targetProjectCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxObjectiveCxx);
+		targetProjectCxx[kPatternProperties][fmt::format("^staticLinks{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinks);
+		targetProjectCxx[kPatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxThreads);
+		targetProjectCxx[kPatternProperties][fmt::format("^rtti{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
+		targetProjectCxx[kPatternProperties][fmt::format("^exceptions{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxExceptions);
+		targetProjectCxx[kPatternProperties][fmt::format("^staticLinking{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinking);
 
-		targetProjectCxx[kPatternProperties][fmt::format("^windowsApplicationIcon{}$", kPatternConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
-		targetProjectCxx[kPatternProperties][fmt::format("^windowsApplicationManifest{}$", kPatternConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
-		targetProjectCxx[kPatternProperties][fmt::format("^windowsSubSystem{}$", kPatternConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
-		targetProjectCxx[kPatternProperties][fmt::format("^windowsEntryPoint{}$", kPatternConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsEntryPoint);
+		targetProjectCxx[kPatternProperties][fmt::format("^windowsApplicationIcon{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
+		targetProjectCxx[kPatternProperties][fmt::format("^windowsApplicationManifest{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
+		targetProjectCxx[kPatternProperties][fmt::format("^windowsSubSystem{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
+		targetProjectCxx[kPatternProperties][fmt::format("^windowsEntryPoint{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsEntryPoint);
 
 		defs[Defs::SourceTargetCxx] = std::move(targetProjectCxx);
 	}
@@ -1150,13 +1220,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetProject[kProperties]["kind"] = getDefinition(Defs::SourceTargetKind);
 		targetProject[kProperties]["language"] = getDefinition(Defs::SourceTargetLanguage);
 		targetProject[kProperties]["location"] = getDefinition(Defs::SourceTargetLocation);
-		targetProject[kProperties]["rule"] = getDefinition(Defs::TargetRule);
+		targetProject[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
 		targetProject[kProperties]["runProject"] = getDefinition(Defs::SourceTargetRunProject);
 		targetProject[kProperties]["runArguments"] = getDefinition(Defs::SourceTargetRunArguments);
 		targetProject[kProperties]["runDependencies"] = getDefinition(Defs::SourceTargetRunDependencies);
-		targetProject[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
-		targetProject[kPatternProperties][fmt::format("^runProject{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetRunProject);
-		targetProject[kPatternProperties][fmt::format("^runDependencies{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::SourceTargetRunDependencies);
+		targetProject[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
+		targetProject[kPatternProperties][fmt::format("^runProject{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunProject);
+		targetProject[kPatternProperties][fmt::format("^runDependencies{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunDependencies);
 		defs[Defs::SourceTarget] = std::move(targetProject);
 	}
 
@@ -1166,14 +1236,10 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"additionalProperties": false
 		})json"_ojson;
 		targetScript[kProperties]["script"] = getDefinition(Defs::ScriptTargetScript);
-		targetScript[kProperties]["script"][kDescription] = "Script(s) to run during this build step.";
 		targetScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
-		{
-			auto scriptPattern = fmt::format("^script{}{}$", kPatternConfigurations, kPatternPlatforms);
-			targetScript[kPatternProperties][scriptPattern] = getDefinition(Defs::ScriptTargetScript);
-			targetScript[kPatternProperties][scriptPattern][kDescription] = "Script(s) to run during this build step.";
-		}
-		targetScript[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
+		targetScript[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
+		targetScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::ScriptTargetScript);
+		targetScript[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
 		defs[Defs::ScriptTarget] = std::move(targetScript);
 	}
 
@@ -1195,11 +1261,11 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetCMake[kProperties]["toolset"] = getDefinition(Defs::CMakeTargetToolset);
 		targetCMake[kProperties]["recheck"] = getDefinition(Defs::CMakeTargetRecheck);
 		targetCMake[kProperties]["type"] = getDefinition(Defs::TargetType);
-		targetCMake[kProperties]["rule"] = getDefinition(Defs::TargetRule);
-		targetCMake[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
-		targetCMake[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::CMakeTargetBuildFile);
-		targetCMake[kPatternProperties][fmt::format("^defines{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::CMakeTargetDefines);
-		targetCMake[kPatternProperties][fmt::format("^toolset{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::CMakeTargetToolset);
+		targetCMake[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
+		targetCMake[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
+		targetCMake[kPatternProperties][fmt::format("^buildFile{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::CMakeTargetBuildFile);
+		targetCMake[kPatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::CMakeTargetDefines);
+		targetCMake[kPatternProperties][fmt::format("^toolset{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::CMakeTargetToolset);
 		defs[Defs::CMakeTarget] = std::move(targetCMake);
 	}
 
@@ -1219,9 +1285,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetChalet[kProperties]["buildFile"] = getDefinition(Defs::ChaletTargetBuildFile);
 		targetChalet[kProperties]["recheck"] = getDefinition(Defs::ChaletTargetRecheck);
 		targetChalet[kProperties]["type"] = getDefinition(Defs::TargetType);
-		targetChalet[kProperties]["rule"] = getDefinition(Defs::TargetRule);
-		targetChalet[kPatternProperties][fmt::format("^description{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::TargetDescription);
-		targetChalet[kPatternProperties][fmt::format("^buildFile{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::ChaletTargetBuildFile);
+		targetChalet[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
+		targetChalet[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
+		targetChalet[kPatternProperties][fmt::format("^buildFile{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::ChaletTargetBuildFile);
 		defs[Defs::ChaletTarget] = std::move(targetChalet);
 	}
 
@@ -1263,7 +1329,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		//
 		case Defs::TargetDescription: return "target-description";
 		case Defs::TargetType: return "target-type";
-		case Defs::TargetRule: return "target-rule";
+		case Defs::TargetCondition: return "target-condition";
 		//
 		case Defs::SourceTargetExtends: return "source-target-extends";
 		case Defs::SourceTargetFiles: return "source-target-files";
@@ -1404,6 +1470,7 @@ Json SchemaBuildJson::get()
 				"items": {
 					"type": "string",
 					"description": "A configuration preset",
+					"minLength": 1,
 					"enum": [
 						"Release",
 						"Debug",
@@ -1426,6 +1493,7 @@ Json SchemaBuildJson::get()
 		"description": "A single distribution target or script."
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::ScriptTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0]["condition"][kPattern] = fmt::format("^{}$", kPatternConditionPlatformsInner);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::DistributionTarget);
 
 	ret[kProperties]["externalDependencies"] = R"json({
@@ -1436,7 +1504,7 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-\\+\\.]{3,100}$"] = getDefinition(Defs::ExternalDependency);
 
 	ret[kProperties]["searchPaths"] = getDefinition(Defs::EnvironmentSearchPaths);
-	ret[kPatternProperties][fmt::format("^searchPaths{}{}$", kPatternConfigurations, kPatternPlatforms)] = getDefinition(Defs::EnvironmentSearchPaths);
+	ret[kPatternProperties][fmt::format("^searchPaths{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::EnvironmentSearchPaths);
 
 	const auto targets = "targets";
 	ret[kProperties][targets] = R"json({
@@ -1482,12 +1550,14 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["version"] = R"json({
 		"type": "string",
 		"description": "Version of the workspace project.",
+		"minLength": 1,
 		"pattern": "^[\\w\\-\\+\\.]+$"
 	})json"_ojson;
 
 	ret[kProperties]["workspace"] = R"json({
 		"type": "string",
 		"description": "The name of the workspace.",
+		"minLength": 1,
 		"pattern": "^[\\w\\-\\+ ]+$"
 	})json"_ojson;
 

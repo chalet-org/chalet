@@ -47,11 +47,7 @@ class SchemaBuildJson
 		//
 		TargetDescription,
 		TargetType,
-		TargetRule,
-		// TargetNotInConfiguration,
-		// TargetNotInPlatform,
-		// TargetOnlyInConfiguration,
-		// TargetOnlyInPlatform,
+		TargetCondition,
 		//
 		SourceTarget,
 		SourceTargetExtends,
@@ -133,8 +129,11 @@ private:
 	const std::string kPatternProjectName;
 	const std::string kPatternProjectLinks;
 	const std::string kPatternDistributionName;
-	const std::string kPatternConfigurations;
-	const std::string kPatternPlatforms;
+	const std::string kPatternConditionConfigurations;
+	const std::string kPatternConditionPlatforms;
+	const std::string kPatternConditionConfigurationsPlatforms;
+	const std::string kPatternConditionPlatformsInner;
+	const std::string kPatternConditionConfigurationsPlatformsInner;
 
 	DefinitionMap m_defs;
 	bool m_useRefs = true;

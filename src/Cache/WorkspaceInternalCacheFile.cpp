@@ -87,7 +87,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 					auto& value = builds.at(inId);
 					if (value.is_object())
 					{
-						if (std::string rawValue; m_dataFile->assignStringAndValidate(rawValue, value, kKeyBuildLastBuilt))
+						if (std::string rawValue; m_dataFile->assignFromKey(rawValue, value, kKeyBuildLastBuilt))
 						{
 							std::time_t lastBuild = strtoll(rawValue.c_str(), NULL, 0);
 							auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(lastBuild));
@@ -231,20 +231,20 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 				auto& hashes = rootNode.at(kKeyHashes);
 				if (hashes.is_object())
 				{
-					if (std::string val; m_dataFile->assignStringAndValidate(val, hashes, kKeyHashBuild))
+					if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashBuild))
 					{
 						m_buildHash = std::move(val);
 					}
 
-					if (std::string val; m_dataFile->assignStringAndValidate(val, hashes, kKeyHashTheme))
+					if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashTheme))
 					{
 						m_hashTheme = std::move(val);
 					}
 
-					if (std::string val; m_dataFile->assignStringAndValidate(val, hashes, kKeyHashVersionRelease))
+					if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashVersionRelease))
 						m_hashVersion = std::move(val);
 
-					if (std::string val; m_dataFile->assignStringAndValidate(val, hashes, kKeyHashVersionDebug))
+					if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashVersionDebug))
 						m_hashVersionDebug = std::move(val);
 
 					if (hashes.contains(kKeyHashExtra))

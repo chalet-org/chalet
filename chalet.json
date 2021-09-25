@@ -49,7 +49,7 @@
 			"warnings": "strict",
 			// "compileOptions": [],
 			// "linkerOptions": [],
-			"defines:debug": [
+			"defines.debug": [
 				"_DEBUG",
 				"JSON_NOEXCEPTION"
 			],
@@ -114,7 +114,7 @@
 				"NoTests",
 				"-s"
 			],
-			"rule": "!debug"
+			"condition": "!debug"
 		},
 		"script-shell": {
 			"script.!windows": "scripts/script_shell.sh",

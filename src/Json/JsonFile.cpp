@@ -103,19 +103,6 @@ void JsonFile::makeNode(const std::string& inName, const JsonDataType inType)
 }
 
 /*****************************************************************************/
-bool JsonFile::assignStringAndValidate(std::string& outString, const Json& inNode, const std::string& inKey, const std::string& inDefault)
-{
-	bool result = assignFromKey(outString, inNode, inKey);
-	if (result && outString.empty())
-	{
-		warnBlankKey(inKey, inDefault);
-		return false;
-	}
-
-	return result;
-}
-
-/*****************************************************************************/
 bool JsonFile::assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey)
 {
 	if (!inNode.contains(inKey))
@@ -131,9 +118,6 @@ bool JsonFile::assignStringListAndValidate(StringList& outList, const Json& inNo
 			return false;
 
 		std::string item = itemRaw.get<std::string>();
-		if (item.empty())
-			warnBlankKeyInList(inKey);
-
 		List::addIfDoesNotExist(outList, std::move(item));
 	}
 
@@ -173,7 +157,7 @@ bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const std::string&
 }
 
 /*****************************************************************************/
-bool JsonFile::containsKeyThatStartsWith(const Json& inNode, const std::string& inFind)
+bool JsonFile::containsKeyThatStartsWith(const Json& inNode, const std::string& inFind) const
 {
 	bool res = false;
 
@@ -254,21 +238,6 @@ void JsonFile::initializeDataType(Json& inJson, const JsonDataType inType)
 	}
 
 	setDirty(true);
-}
-
-/*****************************************************************************/
-void JsonFile::warnBlankKey(const std::string& inKey, const std::string& inDefault)
-{
-	if (!inDefault.empty())
-		Diagnostic::warn("{}: '{}' was defined, but blank. Using the built-in default ({})", m_filename, inKey, inDefault);
-	else
-		Diagnostic::warn("{}: '{}' was defined, but blank.", m_filename, inKey);
-}
-
-/*****************************************************************************/
-void JsonFile::warnBlankKeyInList(const std::string& inKey)
-{
-	Diagnostic::warn("{}: A blank value was found in '{}'.", m_filename, inKey);
 }
 
 }
