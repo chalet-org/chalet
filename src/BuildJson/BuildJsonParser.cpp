@@ -146,7 +146,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 	const Json& targets = inNode.at(kKeyTargets);
 	if (!targets.is_object() || targets.size() == 0)
 	{
-		Diagnostic::error("{}: '{}' must contain at least one project.", m_filename, kKeyTargets);
+		Diagnostic::error("{}: '{}' must contain at least one target.", m_filename, kKeyTargets);
 		return false;
 	}
 
