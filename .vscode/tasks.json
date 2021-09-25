@@ -91,7 +91,7 @@
 		},
 		{
 			"label": "Build & Run: Debug",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release buildrun",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} -c Release --save-schema buildrun",
 			"type": "shell",
 			"group": {
 				"kind": "build",

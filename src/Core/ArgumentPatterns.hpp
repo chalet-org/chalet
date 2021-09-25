@@ -25,7 +25,7 @@ class ArgumentPatterns
 {
 	using ParserAction = std::function<void(ArgumentPatterns&)>;
 	using ParserList = std::unordered_map<Route, ParserAction>;
-	using ArgumentMap = std::unordered_map<std::string, MappedArgument>;
+	using ArgumentMap = std::map<std::string, MappedArgument>; // note: must be ordered
 
 public:
 	ArgumentPatterns();

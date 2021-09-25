@@ -681,16 +681,16 @@
 				"^staticLinking(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-staticLinking"
 				},
-				"^windowsApplicationIcon(\\.((!?(debug)\\b\\.?){0,2}))?$": {
+				"^windowsApplicationIcon(\\.((!?(debug)\\b\\.?)?))?$": {
 					"$ref": "#/definitions/source-target-cxx-windowsAppIcon"
 				},
-				"^windowsApplicationManifest(\\.((!?(debug)\\b\\.?){0,2}))?$": {
+				"^windowsApplicationManifest(\\.((!?(debug)\\b\\.?)?))?$": {
 					"$ref": "#/definitions/source-target-cxx-windowsApplicationManifest"
 				},
-				"^windowsSubSystem(\\.((!?(debug)\\b\\.?){0,2}))?$": {
+				"^windowsSubSystem(\\.((!?(debug)\\b\\.?)?))?$": {
 					"$ref": "#/definitions/source-target-cxx-windowsSubSystem"
 				},
-				"^windowsEntryPoint(\\.((!?(debug)\\b\\.?){0,2}))?$": {
+				"^windowsEntryPoint(\\.((!?(debug)\\b\\.?)?))?$": {
 					"$ref": "#/definitions/source-target-cxx-windowsEntryPoint"
 				}
 			}
@@ -1227,17 +1227,18 @@
 			"additionalProperties": false,
 			"properties": {
 				"script": {
-					"$ref": "#/definitions/script-target-script",
-					"description": "Script(s) to run during this build step."
+					"$ref": "#/definitions/script-target-script"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
 				}
 			},
 			"patternProperties": {
 				"^script(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
-					"$ref": "#/definitions/script-target-script",
-					"description": "Script(s) to run during this build step."
+					"$ref": "#/definitions/script-target-script"
 				},
 				"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/target-description"
@@ -1245,6 +1246,7 @@
 			}
 		},
 		"script-target-script": {
+			"description": "Script(s) to run during this build step.",
 			"anyOf": [
 				{
 					"type": "string",

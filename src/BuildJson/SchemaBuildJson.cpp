@@ -1493,7 +1493,6 @@ Json SchemaBuildJson::get()
 		"description": "A single distribution target or script."
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::ScriptTarget);
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0]["condition"][kPattern] = fmt::format("^{}$", kPatternConditionPlatformsInner);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::DistributionTarget);
 
 	ret[kProperties]["externalDependencies"] = R"json({
