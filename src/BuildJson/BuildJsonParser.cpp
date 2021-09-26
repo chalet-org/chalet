@@ -331,7 +331,7 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 
 	{
 		const auto compilerSettings{ "settings" };
-		/*if (inNode.contains(compilerSettings))
+		if (inNode.contains(compilerSettings))
 		{
 			const Json& jCompilerSettings = inNode.at(compilerSettings);
 			if (jCompilerSettings.contains("Cxx"))
@@ -340,13 +340,12 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 				if (!parseCompilerSettingsCxx(outTarget, node))
 					return false;
 			}
-		}*/
+		}
 
 		const auto compilerSettingsCpp = fmt::format("{}:Cxx", compilerSettings);
 		if (inNode.contains(compilerSettingsCpp))
 		{
 			const Json& node = inNode.at(compilerSettingsCpp);
-
 			if (!parseCompilerSettingsCxx(outTarget, node))
 				return false;
 		}

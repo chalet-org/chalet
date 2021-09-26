@@ -1209,6 +1209,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		})json"_ojson;
 		targetProject[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		targetProject[kProperties]["settings:Cxx"] = getDefinition(Defs::SourceTargetCxx);
+		targetProject[kProperties]["settings"] = R"json({
+			"type": "object",
+			"description": "Settings for each language",
+			"additionalProperties": false
+		})json"_ojson;
+		targetProject[kProperties]["settings"][kProperties]["Cxx"] = getDefinition(Defs::SourceTargetCxx);
 		targetProject[kProperties]["extends"] = getDefinition(Defs::SourceTargetExtends);
 		targetProject[kProperties]["files"] = getDefinition(Defs::SourceTargetFiles);
 		targetProject[kProperties]["kind"] = getDefinition(Defs::SourceTargetKind);

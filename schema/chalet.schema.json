@@ -393,6 +393,16 @@
 				"settings:Cxx": {
 					"$ref": "#/definitions/source-target-cxx"
 				},
+				"settings": {
+					"type": "object",
+					"description": "Settings for each language",
+					"additionalProperties": false,
+					"properties": {
+						"Cxx": {
+							"$ref": "#/definitions/source-target-cxx"
+						}
+					}
+				},
 				"extends": {
 					"$ref": "#/definitions/source-target-extends"
 				},
