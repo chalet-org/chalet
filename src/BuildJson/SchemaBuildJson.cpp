@@ -353,7 +353,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minLength": 1,
 		"enum": [
 			"C",
-			"C++"
+			"C++",
+			"Objective-C",
+			"Objective-C++"
 		],
 		"default": "C++"
 	})json"_ojson;
@@ -554,12 +556,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"type": "string",
 			"minLength": 1
 		}
-	})json"_ojson;
-
-	defs[Defs::SourceTargetCxxObjectiveCxx] = R"json({
-		"type": "boolean",
-		"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
-		"default": false
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxPrecompiledHeader] = R"json({
@@ -1169,7 +1165,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetProjectCxx[kProperties]["links"] = getDefinition(Defs::SourceTargetCxxLinks);
 		targetProjectCxx[kProperties]["macosFrameworkPaths"] = getDefinition(Defs::SourceTargetCxxMacOsFrameworkPaths);
 		targetProjectCxx[kProperties]["macosFrameworks"] = getDefinition(Defs::SourceTargetCxxMacOsFrameworks);
-		targetProjectCxx[kProperties]["objectiveCxx"] = getDefinition(Defs::SourceTargetCxxObjectiveCxx);
 		targetProjectCxx[kProperties]["pch"] = getDefinition(Defs::SourceTargetCxxPrecompiledHeader);
 		targetProjectCxx[kProperties]["threads"] = getDefinition(Defs::SourceTargetCxxThreads);
 		targetProjectCxx[kProperties]["rtti"] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
@@ -1193,7 +1188,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetProjectCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerScript);
 		targetProjectCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerOptions);
 		targetProjectCxx[kPatternProperties][fmt::format("^links{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxLinks);
-		targetProjectCxx[kPatternProperties][fmt::format("^objectiveCxx{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxObjectiveCxx);
 		targetProjectCxx[kPatternProperties][fmt::format("^staticLinks{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinks);
 		targetProjectCxx[kPatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxThreads);
 		targetProjectCxx[kPatternProperties][fmt::format("^rtti{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
@@ -1225,6 +1219,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetProject[kProperties]["runArguments"] = getDefinition(Defs::SourceTargetRunArguments);
 		targetProject[kProperties]["runDependencies"] = getDefinition(Defs::SourceTargetRunDependencies);
 		targetProject[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
+		targetProject[kPatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
 		targetProject[kPatternProperties][fmt::format("^runProject{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunProject);
 		targetProject[kPatternProperties][fmt::format("^runDependencies{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunDependencies);
 		defs[Defs::SourceTarget] = std::move(targetProject);
@@ -1353,7 +1348,6 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::SourceTargetCxxLinks: return "source-target-cxx-links";
 		case Defs::SourceTargetCxxMacOsFrameworkPaths: return "source-target-cxx-macosFrameworkPaths";
 		case Defs::SourceTargetCxxMacOsFrameworks: return "source-target-cxx-macosFrameworks";
-		case Defs::SourceTargetCxxObjectiveCxx: return "source-target-cxx-objectiveCxx";
 		case Defs::SourceTargetCxxPrecompiledHeader: return "source-target-cxx-pch";
 		case Defs::SourceTargetCxxThreads: return "source-target-cxx-threads";
 		case Defs::SourceTargetCxxRunTimeTypeInfo: return "source-target-cxx-rtti";

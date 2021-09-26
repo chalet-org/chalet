@@ -93,6 +93,7 @@
 		},
 		"tests_chalet": {
 			"kind": "executable",
+			"condition": "!debug",
 			"location": {
 				"include": [
 					"src",
@@ -113,8 +114,7 @@
 				"-w",
 				"NoTests",
 				"-s"
-			],
-			"condition": "!debug"
+			]
 		},
 		"script-shell": {
 			"script.!windows": "scripts/script_shell.sh",

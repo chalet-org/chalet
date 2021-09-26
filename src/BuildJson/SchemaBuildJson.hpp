@@ -71,7 +71,6 @@ class SchemaBuildJson
 		SourceTargetCxxLinks,
 		SourceTargetCxxMacOsFrameworkPaths,
 		SourceTargetCxxMacOsFrameworks,
-		SourceTargetCxxObjectiveCxx,
 		SourceTargetCxxPrecompiledHeader,
 		SourceTargetCxxThreads,
 		SourceTargetCxxRunTimeTypeInfo,

@@ -425,6 +425,9 @@
 				"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/target-description"
 				},
+				"^language(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
+					"$ref": "#/definitions/target-description"
+				},
 				"^runProject(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-runProject"
 				},
@@ -527,7 +530,9 @@
 			"minLength": 1,
 			"enum": [
 				"C",
-				"C++"
+				"C++",
+				"Objective-C",
+				"Objective-C++"
 			],
 			"default": "C++"
 		},
@@ -591,9 +596,6 @@
 				},
 				"macosFrameworks": {
 					"$ref": "#/definitions/source-target-cxx-macosFrameworks"
-				},
-				"objectiveCxx": {
-					"$ref": "#/definitions/source-target-cxx-objectiveCxx"
 				},
 				"pch": {
 					"$ref": "#/definitions/source-target-cxx-pch"
@@ -662,9 +664,6 @@
 				},
 				"^links(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-links"
-				},
-				"^objectiveCxx(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
-					"$ref": "#/definitions/source-target-cxx-objectiveCxx"
 				},
 				"^staticLinks(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/source-target-cxx-staticLinks"
@@ -794,11 +793,6 @@
 				"type": "string",
 				"minLength": 1
 			}
-		},
-		"source-target-cxx-objectiveCxx": {
-			"type": "boolean",
-			"description": "Set to true if compiling Objective-C or Objective-C++ files (.m or .mm), or including any Objective-C/C++ headers.",
-			"default": false
 		},
 		"source-target-cxx-pch": {
 			"type": "string",

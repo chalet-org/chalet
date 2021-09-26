@@ -331,7 +331,7 @@ bool BuildState::validateState()
 #endif
 				if (!compilerConfig.isAppleClang() && project.objectiveCxx())
 				{
-					Diagnostic::error("{}: Objective-C is currently only supported on MacOS using Apple clang. Use either 'objectiveCxx.macos' or remove 'objectiveCxx' from the '{}' project.", m_inputs.inputFile(), project.name());
+					Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang. Use either 'language.macos' or '\"condition\": \"macos\"' in the '{}' project.", m_inputs.inputFile(), project.name());
 					return false;
 				}
 				break;

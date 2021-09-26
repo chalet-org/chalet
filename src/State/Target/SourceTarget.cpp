@@ -422,13 +422,23 @@ CodeLanguage SourceTarget::language() const noexcept
 
 void SourceTarget::setLanguage(const std::string& inValue) noexcept
 {
-	if (String::equals(inValue, "C++"))
+	if (String::equals("C++", inValue))
 	{
 		m_language = CodeLanguage::CPlusPlus;
 	}
 	else if (String::equals("C", inValue))
 	{
 		m_language = CodeLanguage::C;
+	}
+	else if (String::equals("Objective-C++", inValue))
+	{
+		m_language = CodeLanguage::CPlusPlus;
+		setObjectiveCxx(true);
+	}
+	else if (String::equals("Objective-C", inValue))
+	{
+		m_language = CodeLanguage::C;
+		setObjectiveCxx(true);
 	}
 	else
 	{

@@ -490,9 +490,6 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 	if (std::string val; m_buildJson.assignFromKey(val, inNode, "pch"))
 		outTarget.setPch(std::move(val));
 
-	if (bool val = false; parseKeyFromConfig(val, inNode, "objectiveCxx"))
-		outTarget.setObjectiveCxx(val);
-
 	if (bool val = false; parseKeyFromConfig(val, inNode, "rtti"))
 		outTarget.setRtti(val);
 

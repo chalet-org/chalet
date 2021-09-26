@@ -18,8 +18,19 @@ namespace chalet
 /*****************************************************************************/
 Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 {
+	auto getLanguage = [](CxxSpecialization inSpecialization) -> std::string {
+		switch (inSpecialization)
+		{
+			case CxxSpecialization::CPlusPlus: return "C++";
+			case CxxSpecialization::ObjectiveC: return "Objective-C";
+			case CxxSpecialization::ObjectiveCPlusPlus: return "Objective-C++";
+			default: return "C";
+		}
+	};
+
 	const bool cpp = inProps.language == CodeLanguage::CPlusPlus;
-	const std::string language = cpp ? "C++" : "C";
+	const bool objectiveCxx = inProps.specialization == CxxSpecialization::ObjectiveC || inProps.specialization == CxxSpecialization::ObjectiveCPlusPlus;
+	const std::string language = getLanguage(inProps.specialization);
 	const std::string langStandardKey = cpp ? "cppStandard" : "cStandard";
 	const std::string project = inProps.projectName;
 
@@ -51,9 +62,8 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 		};
 	}
 
-	if (inProps.specialization == CxxSpecialization::ObjectiveC || inProps.specialization == CxxSpecialization::ObjectiveCPlusPlus)
+	if (objectiveCxx)
 	{
-		ret[kAbstractsAll][kSettingsCxx]["objectiveCxx"] = true;
 		ret[kAbstractsAll][kSettingsCxx]["macosFrameworks"] = Json::array();
 		ret[kAbstractsAll][kSettingsCxx]["macosFrameworks"][0] = "Foundation";
 	}
