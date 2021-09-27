@@ -314,7 +314,7 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 	// if (std::string val; m_buildJson.assignFromKey(val, inNode, "name"))
 	// 	outTarget.setName(val);
 
-	if (std::string val; m_buildJson.assignFromKey(val, inNode, "language"))
+	if (std::string val; parseKeyFromConfig(val, inNode, "language"))
 		outTarget.setLanguage(val);
 
 	if (!parseFilesAndLocation(outTarget, inNode, inAbstract))
