@@ -222,6 +222,7 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 	addSubSystem(ret);
 	addEntryPoint(ret);
 	addCgThreads(ret);
+	addLinkerOptions(ret);
 	addLibDirs(ret);
 
 	const bool debugSymbols = m_state.configuration.debugSymbols();
@@ -322,6 +323,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 	addSubSystem(ret);
 	addEntryPoint(ret);
 	addCgThreads(ret);
+	addLinkerOptions(ret);
 	addLibDirs(ret);
 
 	const bool debugSymbols = m_state.configuration.debugSymbols();
@@ -622,7 +624,10 @@ void CompileToolchainMSVC::addDebuggingInformationOption(StringList& outArgList)
 /*****************************************************************************/
 void CompileToolchainMSVC::addCompileOptions(StringList& outArgList) const
 {
-	UNUSED(outArgList);
+	for (auto& option : m_project.compileOptions())
+	{
+		List::addIfDoesNotExist(outArgList, option);
+	}
 }
 
 /*****************************************************************************/
@@ -779,6 +784,16 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 		 })
 	{
 		List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
+	}
+}
+
+/*****************************************************************************/
+void CompileToolchainMSVC::addLinkerOptions(StringList& outArgList) const
+{
+	for (auto& option : m_project.linkerOptions())
+	{
+		// if (isFlagSupported(option))
+		outArgList.push_back(option);
 	}
 }
 

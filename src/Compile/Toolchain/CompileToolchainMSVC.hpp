@@ -49,6 +49,7 @@ private:
 	// Linking
 	virtual void addLibDirs(StringList& outArgList) const final;
 	virtual void addLinks(StringList& outArgList) const final;
+	virtual void addLinkerOptions(StringList& outArgList) const final;
 	void addCgThreads(StringList& outArgList) const;
 	virtual void addSubSystem(StringList& outArgList) const final;
 	virtual void addEntryPoint(StringList& outArgList) const final;
