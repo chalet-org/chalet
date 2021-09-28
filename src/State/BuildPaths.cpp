@@ -298,16 +298,18 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 	String::replaceAll(outPath, "${cwd}", m_inputs.workingDirectory());
 	String::replaceAll(outPath, "${buildDir}", buildDir);
 
-	const auto& external = m_inputs.externalDirectory();
-	if (!external.empty())
+	const auto& externalDir = m_inputs.externalDirectory();
+	if (!externalDir.empty())
 	{
-		String::replaceAll(outPath, "${externalDir}", external);
+		String::replaceAll(outPath, "${externalDir}", externalDir);
+		String::replaceAll(outPath, "${externalBuildDir}", fmt::format("{}/{}", buildDir, externalDir));
 	}
 
-	if (!inName.empty())
+	/*if (!inName.empty())
 	{
 		String::replaceAll(outPath, "${name}", inName);
-	}
+	}*/
+	UNUSED(inName);
 
 	const auto& homeDirectory = m_inputs.homeDirectory();
 	Environment::replaceCommonVariables(outPath, homeDirectory);
