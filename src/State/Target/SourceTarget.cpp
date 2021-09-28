@@ -229,7 +229,7 @@ void SourceTarget::addLibDir(std::string&& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	List::addIfDoesNotExist(m_libDirs, std::move(inValue));
+	addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
 }
 
 /*****************************************************************************/
@@ -249,7 +249,7 @@ void SourceTarget::addIncludeDir(std::string&& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	List::addIfDoesNotExist(m_includeDirs, std::move(inValue));
+	addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
 }
 
 /*****************************************************************************/
@@ -460,19 +460,7 @@ void SourceTarget::addFiles(StringList&& inList)
 
 void SourceTarget::addFile(std::string&& inValue)
 {
-	if (String::contains('*', inValue))
-	{
-		Commands::forEachGlobMatch(inValue, GlobMatch::Files, [&](const fs::path& inPath) {
-			auto path = inPath.string();
-			Path::sanitize(path);
-
-			List::addIfDoesNotExist(m_files, std::move(path));
-		});
-	}
-	else
-	{
-		List::addIfDoesNotExist(m_files, std::move(inValue));
-	}
+	addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
 }
 
 /*****************************************************************************/
@@ -488,19 +476,7 @@ void SourceTarget::addLocations(StringList&& inList)
 
 void SourceTarget::addLocation(std::string&& inValue)
 {
-	if (String::contains('*', inValue))
-	{
-		Commands::forEachGlobMatch(inValue, GlobMatch::Folders, [&](const fs::path& inPath) {
-			auto path = inPath.string();
-			Path::sanitize(path);
-
-			List::addIfDoesNotExist(m_locations, std::move(path));
-		});
-	}
-	else
-	{
-		List::addIfDoesNotExist(m_locations, std::move(inValue));
-	}
+	addPathToListWithGlob(std::move(inValue), m_locations, GlobMatch::Folders);
 }
 
 /*****************************************************************************/
@@ -516,19 +492,7 @@ void SourceTarget::addLocationExcludes(StringList&& inList)
 
 void SourceTarget::addLocationExclude(std::string&& inValue)
 {
-	if (String::contains('*', inValue))
-	{
-		Commands::forEachGlobMatch(inValue, GlobMatch::FilesAndFolders, [&](const fs::path& inPath) {
-			auto path = inPath.string();
-			Path::sanitize(path);
-
-			List::addIfDoesNotExist(m_locationExcludes, std::move(path));
-		});
-	}
-	else
-	{
-		List::addIfDoesNotExist(m_locationExcludes, std::move(inValue));
-	}
+	addPathToListWithGlob(std::move(inValue), m_locationExcludes, GlobMatch::FilesAndFolders);
 }
 
 /*****************************************************************************/
@@ -748,15 +712,21 @@ void SourceTarget::setWindowsOutputDef(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-ThreadType SourceTarget::parseThreadType(const std::string& inValue)
+void SourceTarget::addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings)
 {
-	if (String::equals("auto", inValue))
-		return ThreadType::Auto;
+	if (String::contains('*', inValue))
+	{
+		Commands::forEachGlobMatch(inValue, inSettings, [&](const fs::path& inPath) {
+			auto path = inPath.string();
+			Path::sanitize(path);
 
-	if (String::equals("posix", inValue))
-		return ThreadType::Posix;
-
-	return ThreadType::None;
+			List::addIfDoesNotExist(outList, std::move(path));
+		});
+	}
+	else
+	{
+		List::addIfDoesNotExist(outList, std::move(inValue));
+	}
 }
 
 /*****************************************************************************/
@@ -772,6 +742,18 @@ ProjectKind SourceTarget::parseProjectKind(const std::string& inValue)
 		return ProjectKind::SharedLibrary;
 
 	return ProjectKind::None;
+}
+
+/*****************************************************************************/
+ThreadType SourceTarget::parseThreadType(const std::string& inValue)
+{
+	if (String::equals("auto", inValue))
+		return ThreadType::Auto;
+
+	if (String::equals("posix", inValue))
+		return ThreadType::Posix;
+
+	return ThreadType::None;
 }
 
 /*****************************************************************************/
