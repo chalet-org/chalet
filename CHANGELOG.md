@@ -7,7 +7,7 @@
 
 * Initial release [commit](https://github.com/chalet-org/chalet-dev/commit/2a4752a84319b4f3627d43606bdcd68bbfb6b8f6)
 
-## [0.2.3] [2021-08-10]
+## [0.2.7] [2021-09-28]
 
 ### Bug Fixes
 
