@@ -46,13 +46,14 @@ class SchemaBuildJson
 		EnvironmentSearchPaths,
 		//
 		TargetDescription,
-		TargetType,
+		TargetKind,
 		TargetCondition,
 		//
-		SourceTarget,
+		AbstractTarget,
+		ExecutableSourceTarget,
+		LibrarySourceTarget,
 		SourceTargetExtends,
 		SourceTargetFiles,
-		SourceTargetKind,
 		SourceTargetLocation,
 		SourceTargetLanguage,
 		SourceTargetRunProject,
@@ -115,6 +116,7 @@ private:
 	const std::string kDefinitions;
 	const std::string kItems;
 	const std::string kProperties;
+	const std::string kAdditionalProperties;
 	const std::string kPattern;
 	const std::string kPatternProperties;
 	const std::string kDescription;
@@ -123,6 +125,8 @@ private:
 	const std::string kAnyOf;
 	const std::string kAllOf;
 	const std::string kOneOf;
+	const std::string kThen;
+	const std::string kElse;
 
 	//
 	const std::string kPatternProjectName;

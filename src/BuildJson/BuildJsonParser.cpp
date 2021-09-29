@@ -224,21 +224,19 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		}
 
 		BuildTargetType type = BuildTargetType::Project;
-		if (m_buildJson.containsKeyThatStartsWith(targetJson, "script"))
+		if (std::string val; m_buildJson.assignFromKey(val, targetJson, "kind"))
 		{
-			type = BuildTargetType::Script;
-		}
-		else if (targetJson.contains("type"))
-		{
-			std::string val;
-			m_buildJson.assignFromKey(val, targetJson, "type");
-			if (String::equals("CMake", val))
+			if (String::equals("cmakeProject", val))
 			{
 				type = BuildTargetType::CMake;
 			}
-			else if (String::equals("Chalet", val))
+			else if (String::equals("chaletProject", val))
 			{
 				type = BuildTargetType::SubChalet;
+			}
+			else if (String::equals("script", val))
+			{
+				type = BuildTargetType::Script;
 			}
 		}
 

@@ -49,6 +49,8 @@ bool SourceTarget::initialize()
 /*****************************************************************************/
 bool SourceTarget::validate()
 {
+	chalet_assert(m_kind != ProjectKind::None, "SourceTarget msut be executable, sharedLibrary or staticLibrary");
+
 	const auto& targetName = this->name();
 	bool result = true;
 	for (auto& location : m_locations)

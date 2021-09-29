@@ -368,13 +368,17 @@
 			"description": "A description of the target to display during the build.",
 			"minLength": 1
 		},
-		"target-type": {
+		"target-kind": {
 			"type": "string",
-			"description": "The target type, if not a local project or script.",
+			"description": "The type of the project's compiled binary.",
 			"minLength": 1,
 			"enum": [
-				"CMake",
-				"Chalet"
+				"staticLibrary",
+				"sharedLibrary",
+				"executable",
+				"cmakeProject",
+				"chaletProject",
+				"script"
 			]
 		},
 		"target-condition": {
@@ -383,13 +387,10 @@
 			"minLength": 1,
 			"pattern": "^((!?(debug|windows|macos|linux)\\b\\.?){0,2})$"
 		},
-		"source-target": {
+		"abstract-target": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
-				"description": {
-					"$ref": "#/definitions/target-description"
-				},
 				"settings:Cxx": {
 					"$ref": "#/definitions/source-target-cxx"
 				},
@@ -403,6 +404,29 @@
 						}
 					}
 				},
+				"language": {
+					"$ref": "#/definitions/source-target-language"
+				}
+			},
+			"patternProperties": {
+				"^language(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
+					"$ref": "#/definitions/target-description"
+				}
+			}
+		},
+		"executable-source-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			],
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
 				"extends": {
 					"$ref": "#/definitions/source-target-extends"
 				},
@@ -410,7 +434,7 @@
 					"$ref": "#/definitions/source-target-files"
 				},
 				"kind": {
-					"$ref": "#/definitions/source-target-kind"
+					"$ref": "#/definitions/target-kind"
 				},
 				"language": {
 					"$ref": "#/definitions/source-target-language"
@@ -418,8 +442,18 @@
 				"location": {
 					"$ref": "#/definitions/source-target-location"
 				},
-				"condition": {
-					"$ref": "#/definitions/target-condition"
+				"settings": {
+					"type": "object",
+					"description": "Settings for each language",
+					"additionalProperties": false,
+					"properties": {
+						"Cxx": {
+							"$ref": "#/definitions/source-target-cxx"
+						}
+					}
+				},
+				"settings:Cxx": {
+					"$ref": "#/definitions/source-target-cxx"
 				},
 				"runProject": {
 					"$ref": "#/definitions/source-target-runProject"
@@ -446,6 +480,57 @@
 				}
 			}
 		},
+		"library-source-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			],
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"extends": {
+					"$ref": "#/definitions/source-target-extends"
+				},
+				"files": {
+					"$ref": "#/definitions/source-target-files"
+				},
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
+				"language": {
+					"$ref": "#/definitions/source-target-language"
+				},
+				"location": {
+					"$ref": "#/definitions/source-target-location"
+				},
+				"settings": {
+					"type": "object",
+					"description": "Settings for each language",
+					"additionalProperties": false,
+					"properties": {
+						"Cxx": {
+							"$ref": "#/definitions/source-target-cxx"
+						}
+					}
+				},
+				"settings:Cxx": {
+					"$ref": "#/definitions/source-target-cxx"
+				}
+			},
+			"patternProperties": {
+				"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^language(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
+					"$ref": "#/definitions/target-description"
+				}
+			}
+		},
 		"source-target-extends": {
 			"type": "string",
 			"description": "A project template to extend. Defaults to 'all' implicitly.",
@@ -462,16 +547,6 @@
 				"type": "string",
 				"minLength": 1
 			}
-		},
-		"source-target-kind": {
-			"type": "string",
-			"description": "The type of the project's compiled binary.",
-			"minLength": 1,
-			"enum": [
-				"staticLibrary",
-				"sharedLibrary",
-				"executable"
-			]
 		},
 		"source-target-location": {
 			"description": "The root path of the source files, relative to the working directory.",
@@ -1269,13 +1344,16 @@
 		},
 		"cmake-target": {
 			"type": "object",
+			"description": "Build the location with CMake",
 			"additionalProperties": false,
 			"required": [
-				"type",
+				"kind",
 				"location"
 			],
-			"description": "Build the location with CMake",
 			"properties": {
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
@@ -1293,9 +1371,6 @@
 				},
 				"recheck": {
 					"$ref": "#/definitions/cmake-target-recheck"
-				},
-				"type": {
-					"$ref": "#/definitions/target-type"
 				},
 				"condition": {
 					"$ref": "#/definitions/target-condition"
@@ -1348,13 +1423,16 @@
 		},
 		"chalet-target": {
 			"type": "object",
+			"description": "Build the location with Chalet",
 			"additionalProperties": false,
 			"required": [
-				"type",
+				"kind",
 				"location"
 			],
-			"description": "Build the location with Chalet",
 			"properties": {
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
@@ -1366,9 +1444,6 @@
 				},
 				"recheck": {
 					"$ref": "#/definitions/chalet-target-recheck"
-				},
-				"type": {
-					"$ref": "#/definitions/target-type"
 				},
 				"condition": {
 					"$ref": "#/definitions/target-condition"
@@ -1405,7 +1480,7 @@
 			"description": "A list of abstract build projects",
 			"patternProperties": {
 				"^[A-Za-z_-]+$": {
-					"$ref": "#/definitions/source-target",
+					"$ref": "#/definitions/abstract-target",
 					"description": "An abstract build project. 'all' is implicitely added to each project."
 				}
 			}
@@ -1485,49 +1560,95 @@
 			"description": "A sequential list of projects, cmake projects, or scripts.",
 			"patternProperties": {
 				"^[\\w\\-\\+\\.]{3,}$": {
+					"type": "object",
 					"description": "A single build target or script.",
-					"oneOf": [
-						{
-							"$ref": "#/definitions/source-target"
-						},
-						{
-							"$ref": "#/definitions/script-target"
-						},
-						{
-							"type": "object",
+					"if": {
+						"properties": {
+							"kind": {
+								"const": "executable"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/executable-source-target"
+					},
+					"else": {
+						"if": {
 							"properties": {
-								"type": {
-									"$ref": "#/definitions/target-type"
+								"kind": {
+									"enum": [
+										"staticLibrary",
+										"sharedLibrary"
+									]
+								}
+							}
+						},
+						"then": {
+							"$ref": "#/definitions/library-source-target"
+						},
+						"else": {
+							"if": {
+								"properties": {
+									"kind": {
+										"const": "cmakeProject"
+									}
 								}
 							},
-							"allOf": [
-								{
-									"if": {
-										"properties": {
-											"type": {
-												"const": "CMake"
-											}
+							"then": {
+								"$ref": "#/definitions/cmake-target"
+							},
+							"else": {
+								"if": {
+									"properties": {
+										"kind": {
+											"const": "chaletProject"
 										}
-									},
-									"then": {
-										"$ref": "#/definitions/cmake-target"
 									}
 								},
-								{
+								"then": {
+									"$ref": "#/definitions/chalet-target"
+								},
+								"else": {
 									"if": {
 										"properties": {
-											"type": {
-												"const": "Chalet"
+											"kind": {
+												"const": "script"
 											}
 										}
 									},
 									"then": {
-										"$ref": "#/definitions/chalet-target"
+										"type": "object",
+										"additionalProperties": false,
+										"properties": {
+											"script": {
+												"$ref": "#/definitions/script-target-script"
+											},
+											"description": {
+												"$ref": "#/definitions/target-description"
+											},
+											"condition": {
+												"$ref": "#/definitions/target-condition"
+											},
+											"kind": {
+												"$ref": "#/definitions/target-kind"
+											}
+										},
+										"patternProperties": {
+											"^script(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
+												"$ref": "#/definitions/script-target-script"
+											},
+											"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
+												"$ref": "#/definitions/target-description"
+											}
+										},
+										"required": [
+											"kind"
+										]
 									}
 								}
-							]
+							}
 						}
-					]
+					}
 				}
 			}
 		},
@@ -1546,7 +1667,7 @@
 	},
 	"patternProperties": {
 		"^abstracts:[a-z]+$": {
-			"$ref": "#/definitions/source-target",
+			"$ref": "#/definitions/abstract-target",
 			"description": "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project"
 		},
 		"^searchPaths(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
