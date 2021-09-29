@@ -18,6 +18,7 @@ SchemaBuildJson::SchemaBuildJson() :
 	kDefinitions("definitions"),
 	kItems("items"),
 	kProperties("properties"),
+	kAdditionalProperties("additionalProperties"),
 	kPattern("pattern"),
 	kPatternProperties("patternProperties"),
 	kDescription("description"),
@@ -26,6 +27,8 @@ SchemaBuildJson::SchemaBuildJson() :
 	kAnyOf("anyOf"),
 	kAllOf("allOf"),
 	kOneOf("oneOf"),
+	kThen("then"),
+	kElse("else"),
 	kPatternProjectName(R"(^[\w\-\+\.]{3,}$)"),
 	kPatternProjectLinks(R"(^[\w\-\+\.]+$)"),
 	kPatternDistributionName(R"(^[\w\-\+\.\ \(\)]{3,}$)"),
@@ -336,14 +339,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::SourceTargetKind] = R"json({
+	defs[Defs::TargetKind] = R"json({
 		"type": "string",
 		"description": "The type of the project's compiled binary.",
 		"minLength": 1,
 		"enum": [
 			"staticLibrary",
 			"sharedLibrary",
-			"executable"
+			"executable",
+			"cmakeProject",
+			"chaletProject",
+			"script"
 		]
 	})json"_ojson;
 
@@ -1013,16 +1019,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		]
 	})json"_ojson;
 
-	defs[Defs::TargetType] = R"json({
-		"type": "string",
-		"description": "The target type, if not a local project or script.",
-		"minLength": 1,
-		"enum": [
-			"CMake",
-			"Chalet"
-		]
-	})json"_ojson;
-
 	defs[Defs::CMakeTargetLocation] = R"json({
 		"type": "string",
 		"description": "The folder path of the root CMakeLists.txt for the project.",
@@ -1150,85 +1146,105 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	}
 
 	{
-		auto targetProjectCxx = R"json({
+		auto sourceTargetCxx = R"json({
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
-		targetProjectCxx[kProperties]["cStandard"] = getDefinition(Defs::SourceTargetCxxCStandard);
-		targetProjectCxx[kProperties]["compileOptions"] = getDefinition(Defs::SourceTargetCxxCompileOptions);
-		targetProjectCxx[kProperties]["cppStandard"] = getDefinition(Defs::SourceTargetCxxCppStandard);
-		targetProjectCxx[kProperties]["defines"] = getDefinition(Defs::SourceTargetCxxDefines);
-		targetProjectCxx[kProperties]["includeDirs"] = getDefinition(Defs::SourceTargetCxxIncludeDirs);
-		targetProjectCxx[kProperties]["libDirs"] = getDefinition(Defs::SourceTargetCxxLibDirs);
-		targetProjectCxx[kProperties]["linkerScript"] = getDefinition(Defs::SourceTargetCxxLinkerScript);
-		targetProjectCxx[kProperties]["linkerOptions"] = getDefinition(Defs::SourceTargetCxxLinkerOptions);
-		targetProjectCxx[kProperties]["links"] = getDefinition(Defs::SourceTargetCxxLinks);
-		targetProjectCxx[kProperties]["macosFrameworkPaths"] = getDefinition(Defs::SourceTargetCxxMacOsFrameworkPaths);
-		targetProjectCxx[kProperties]["macosFrameworks"] = getDefinition(Defs::SourceTargetCxxMacOsFrameworks);
-		targetProjectCxx[kProperties]["pch"] = getDefinition(Defs::SourceTargetCxxPrecompiledHeader);
-		targetProjectCxx[kProperties]["threads"] = getDefinition(Defs::SourceTargetCxxThreads);
-		targetProjectCxx[kProperties]["rtti"] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
-		targetProjectCxx[kProperties]["exceptions"] = getDefinition(Defs::SourceTargetCxxExceptions);
-		targetProjectCxx[kProperties]["staticLinking"] = getDefinition(Defs::SourceTargetCxxStaticLinking);
-		targetProjectCxx[kProperties]["staticLinks"] = getDefinition(Defs::SourceTargetCxxStaticLinks);
-		targetProjectCxx[kProperties]["warnings"] = getDefinition(Defs::SourceTargetCxxWarnings);
-		targetProjectCxx[kProperties]["windowsPrefixOutputFilename"] = getDefinition(Defs::SourceTargetCxxWindowsPrefixOutputFilename);
-		targetProjectCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::SourceTargetCxxWindowsOutputDef);
-		targetProjectCxx[kProperties]["windowsApplicationIcon"] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
-		targetProjectCxx[kProperties]["windowsApplicationManifest"] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
-		targetProjectCxx[kProperties]["windowsSubSystem"] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
-		targetProjectCxx[kProperties]["windowsEntryPoint"] = getDefinition(Defs::SourceTargetCxxWindowsEntryPoint);
+		sourceTargetCxx[kProperties]["cStandard"] = getDefinition(Defs::SourceTargetCxxCStandard);
+		sourceTargetCxx[kProperties]["compileOptions"] = getDefinition(Defs::SourceTargetCxxCompileOptions);
+		sourceTargetCxx[kProperties]["cppStandard"] = getDefinition(Defs::SourceTargetCxxCppStandard);
+		sourceTargetCxx[kProperties]["defines"] = getDefinition(Defs::SourceTargetCxxDefines);
+		sourceTargetCxx[kProperties]["includeDirs"] = getDefinition(Defs::SourceTargetCxxIncludeDirs);
+		sourceTargetCxx[kProperties]["libDirs"] = getDefinition(Defs::SourceTargetCxxLibDirs);
+		sourceTargetCxx[kProperties]["linkerScript"] = getDefinition(Defs::SourceTargetCxxLinkerScript);
+		sourceTargetCxx[kProperties]["linkerOptions"] = getDefinition(Defs::SourceTargetCxxLinkerOptions);
+		sourceTargetCxx[kProperties]["links"] = getDefinition(Defs::SourceTargetCxxLinks);
+		sourceTargetCxx[kProperties]["macosFrameworkPaths"] = getDefinition(Defs::SourceTargetCxxMacOsFrameworkPaths);
+		sourceTargetCxx[kProperties]["macosFrameworks"] = getDefinition(Defs::SourceTargetCxxMacOsFrameworks);
+		sourceTargetCxx[kProperties]["pch"] = getDefinition(Defs::SourceTargetCxxPrecompiledHeader);
+		sourceTargetCxx[kProperties]["threads"] = getDefinition(Defs::SourceTargetCxxThreads);
+		sourceTargetCxx[kProperties]["rtti"] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
+		sourceTargetCxx[kProperties]["exceptions"] = getDefinition(Defs::SourceTargetCxxExceptions);
+		sourceTargetCxx[kProperties]["staticLinking"] = getDefinition(Defs::SourceTargetCxxStaticLinking);
+		sourceTargetCxx[kProperties]["staticLinks"] = getDefinition(Defs::SourceTargetCxxStaticLinks);
+		sourceTargetCxx[kProperties]["warnings"] = getDefinition(Defs::SourceTargetCxxWarnings);
+		sourceTargetCxx[kProperties]["windowsPrefixOutputFilename"] = getDefinition(Defs::SourceTargetCxxWindowsPrefixOutputFilename);
+		sourceTargetCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::SourceTargetCxxWindowsOutputDef);
+		sourceTargetCxx[kProperties]["windowsApplicationIcon"] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
+		sourceTargetCxx[kProperties]["windowsApplicationManifest"] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
+		sourceTargetCxx[kProperties]["windowsSubSystem"] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
+		sourceTargetCxx[kProperties]["windowsEntryPoint"] = getDefinition(Defs::SourceTargetCxxWindowsEntryPoint);
 
-		targetProjectCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCStandard);
-		targetProjectCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCppStandard);
-		targetProjectCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCompileOptions);
-		targetProjectCxx[kPatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxDefines);
-		targetProjectCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxIncludeDirs);
-		targetProjectCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLibDirs);
-		targetProjectCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerScript);
-		targetProjectCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerOptions);
-		targetProjectCxx[kPatternProperties][fmt::format("^links{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxLinks);
-		targetProjectCxx[kPatternProperties][fmt::format("^staticLinks{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinks);
-		targetProjectCxx[kPatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxThreads);
-		targetProjectCxx[kPatternProperties][fmt::format("^rtti{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
-		targetProjectCxx[kPatternProperties][fmt::format("^exceptions{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxExceptions);
-		targetProjectCxx[kPatternProperties][fmt::format("^staticLinking{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinking);
+		sourceTargetCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCStandard);
+		sourceTargetCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCppStandard);
+		sourceTargetCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCompileOptions);
+		sourceTargetCxx[kPatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxDefines);
+		sourceTargetCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxIncludeDirs);
+		sourceTargetCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLibDirs);
+		sourceTargetCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerScript);
+		sourceTargetCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerOptions);
+		sourceTargetCxx[kPatternProperties][fmt::format("^links{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxLinks);
+		sourceTargetCxx[kPatternProperties][fmt::format("^staticLinks{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinks);
+		sourceTargetCxx[kPatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxThreads);
+		sourceTargetCxx[kPatternProperties][fmt::format("^rtti{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
+		sourceTargetCxx[kPatternProperties][fmt::format("^exceptions{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxExceptions);
+		sourceTargetCxx[kPatternProperties][fmt::format("^staticLinking{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinking);
 
-		targetProjectCxx[kPatternProperties][fmt::format("^windowsApplicationIcon{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
-		targetProjectCxx[kPatternProperties][fmt::format("^windowsApplicationManifest{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
-		targetProjectCxx[kPatternProperties][fmt::format("^windowsSubSystem{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
-		targetProjectCxx[kPatternProperties][fmt::format("^windowsEntryPoint{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsEntryPoint);
+		sourceTargetCxx[kPatternProperties][fmt::format("^windowsApplicationIcon{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
+		sourceTargetCxx[kPatternProperties][fmt::format("^windowsApplicationManifest{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
+		sourceTargetCxx[kPatternProperties][fmt::format("^windowsSubSystem{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
+		sourceTargetCxx[kPatternProperties][fmt::format("^windowsEntryPoint{}$", kPatternConditionConfigurations)] = getDefinition(Defs::SourceTargetCxxWindowsEntryPoint);
 
-		defs[Defs::SourceTargetCxx] = std::move(targetProjectCxx);
+		defs[Defs::SourceTargetCxx] = std::move(sourceTargetCxx);
 	}
 
 	{
-		auto targetProject = R"json({
+		auto abstractSource = R"json({
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
-		targetProject[kProperties]["description"] = getDefinition(Defs::TargetDescription);
-		targetProject[kProperties]["settings:Cxx"] = getDefinition(Defs::SourceTargetCxx);
-		targetProject[kProperties]["settings"] = R"json({
+		abstractSource[kProperties]["settings:Cxx"] = getDefinition(Defs::SourceTargetCxx);
+		abstractSource[kProperties]["settings"] = R"json({
 			"type": "object",
 			"description": "Settings for each language",
 			"additionalProperties": false
 		})json"_ojson;
-		targetProject[kProperties]["settings"][kProperties]["Cxx"] = getDefinition(Defs::SourceTargetCxx);
-		targetProject[kProperties]["extends"] = getDefinition(Defs::SourceTargetExtends);
-		targetProject[kProperties]["files"] = getDefinition(Defs::SourceTargetFiles);
-		targetProject[kProperties]["kind"] = getDefinition(Defs::SourceTargetKind);
-		targetProject[kProperties]["language"] = getDefinition(Defs::SourceTargetLanguage);
-		targetProject[kProperties]["location"] = getDefinition(Defs::SourceTargetLocation);
-		targetProject[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetProject[kProperties]["runProject"] = getDefinition(Defs::SourceTargetRunProject);
-		targetProject[kProperties]["runArguments"] = getDefinition(Defs::SourceTargetRunArguments);
-		targetProject[kProperties]["runDependencies"] = getDefinition(Defs::SourceTargetRunDependencies);
-		targetProject[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
-		targetProject[kPatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
-		targetProject[kPatternProperties][fmt::format("^runProject{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunProject);
-		targetProject[kPatternProperties][fmt::format("^runDependencies{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunDependencies);
-		defs[Defs::SourceTarget] = std::move(targetProject);
+		abstractSource[kProperties]["settings"][kProperties]["Cxx"] = getDefinition(Defs::SourceTargetCxx);
+		abstractSource[kProperties]["language"] = getDefinition(Defs::SourceTargetLanguage);
+		abstractSource[kPatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
+		defs[Defs::AbstractTarget] = std::move(abstractSource);
+	}
+	{
+		auto targetSource = R"json({
+			"type": "object",
+			"additionalProperties": false,
+			"required": [ "kind" ]
+		})json"_ojson;
+		targetSource[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
+		targetSource[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+		targetSource[kProperties]["extends"] = getDefinition(Defs::SourceTargetExtends);
+		targetSource[kProperties]["files"] = getDefinition(Defs::SourceTargetFiles);
+		targetSource[kProperties]["kind"] = getDefinition(Defs::TargetKind);
+		targetSource[kProperties]["language"] = getDefinition(Defs::SourceTargetLanguage);
+		targetSource[kProperties]["location"] = getDefinition(Defs::SourceTargetLocation);
+		targetSource[kProperties]["settings"] = R"json({
+			"type": "object",
+			"description": "Settings for each language",
+			"additionalProperties": false
+		})json"_ojson;
+		targetSource[kProperties]["settings"][kProperties]["Cxx"] = getDefinition(Defs::SourceTargetCxx);
+		targetSource[kProperties]["settings:Cxx"] = getDefinition(Defs::SourceTargetCxx);
+		targetSource[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
+		targetSource[kPatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
+		defs[Defs::LibrarySourceTarget] = std::move(targetSource);
+
+		//
+		defs[Defs::ExecutableSourceTarget] = defs[Defs::LibrarySourceTarget];
+		defs[Defs::ExecutableSourceTarget][kProperties]["runProject"] = getDefinition(Defs::SourceTargetRunProject);
+		defs[Defs::ExecutableSourceTarget][kProperties]["runArguments"] = getDefinition(Defs::SourceTargetRunArguments);
+		defs[Defs::ExecutableSourceTarget][kProperties]["runDependencies"] = getDefinition(Defs::SourceTargetRunDependencies);
+		defs[Defs::ExecutableSourceTarget][kPatternProperties][fmt::format("^runProject{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunProject);
+		defs[Defs::ExecutableSourceTarget][kPatternProperties][fmt::format("^runDependencies{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunDependencies);
 	}
 
 	{
@@ -1248,20 +1264,20 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 		auto targetCMake = R"json({
 			"type": "object",
+			"description": "Build the location with CMake",
 			"additionalProperties": false,
 			"required": [
-				"type",
+				"kind",
 				"location"
-			],
-			"description": "Build the location with CMake"
+			]
 		})json"_ojson;
+		targetCMake[kProperties]["kind"] = getDefinition(Defs::TargetKind);
 		targetCMake[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		targetCMake[kProperties]["location"] = getDefinition(Defs::CMakeTargetLocation);
 		targetCMake[kProperties]["buildFile"] = getDefinition(Defs::CMakeTargetBuildFile);
 		targetCMake[kProperties]["defines"] = getDefinition(Defs::CMakeTargetDefines);
 		targetCMake[kProperties]["toolset"] = getDefinition(Defs::CMakeTargetToolset);
 		targetCMake[kProperties]["recheck"] = getDefinition(Defs::CMakeTargetRecheck);
-		targetCMake[kProperties]["type"] = getDefinition(Defs::TargetType);
 		targetCMake[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
 		targetCMake[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
 		targetCMake[kPatternProperties][fmt::format("^buildFile{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::CMakeTargetBuildFile);
@@ -1274,18 +1290,18 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 		auto targetChalet = R"json({
 			"type": "object",
+			"description": "Build the location with Chalet",
 			"additionalProperties": false,
 			"required": [
-				"type",
+				"kind",
 				"location"
-			],
-			"description": "Build the location with Chalet"
+			]
 		})json"_ojson;
+		targetChalet[kProperties]["kind"] = getDefinition(Defs::TargetKind);
 		targetChalet[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		targetChalet[kProperties]["location"] = getDefinition(Defs::ChaletTargetLocation);
 		targetChalet[kProperties]["buildFile"] = getDefinition(Defs::ChaletTargetBuildFile);
 		targetChalet[kProperties]["recheck"] = getDefinition(Defs::ChaletTargetRecheck);
-		targetChalet[kProperties]["type"] = getDefinition(Defs::TargetType);
 		targetChalet[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
 		targetChalet[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
 		targetChalet[kPatternProperties][fmt::format("^buildFile{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::ChaletTargetBuildFile);
@@ -1329,19 +1345,20 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::EnvironmentSearchPaths: return "environment-searchPaths";
 		//
 		case Defs::TargetDescription: return "target-description";
-		case Defs::TargetType: return "target-type";
+		case Defs::TargetKind: return "target-kind";
 		case Defs::TargetCondition: return "target-condition";
 		//
 		case Defs::SourceTargetExtends: return "source-target-extends";
 		case Defs::SourceTargetFiles: return "source-target-files";
-		case Defs::SourceTargetKind: return "source-target-kind";
 		case Defs::SourceTargetLocation: return "source-target-location";
 		case Defs::SourceTargetLanguage: return "source-target-language";
 		case Defs::SourceTargetRunProject: return "source-target-runProject";
 		case Defs::SourceTargetRunArguments: return "source-target-runArguments";
 		case Defs::SourceTargetRunDependencies: return "source-target-runDependencies";
 		//
-		case Defs::SourceTarget: return "source-target";
+		case Defs::AbstractTarget: return "abstract-target";
+		case Defs::ExecutableSourceTarget: return "executable-source-target";
+		case Defs::LibrarySourceTarget: return "library-source-target";
 		case Defs::SourceTargetCxx: return "source-target-cxx";
 		case Defs::SourceTargetCxxCStandard: return "source-target-cxx-cStandard";
 		case Defs::SourceTargetCxxCppStandard: return "source-target-cxx-cppStandard";
@@ -1438,7 +1455,7 @@ Json SchemaBuildJson::get()
 	ret[kProperties] = Json::object();
 	ret[kPatternProperties] = Json::object();
 
-	ret[kPatternProperties]["^abstracts:[a-z]+$"] = getDefinition(Defs::SourceTarget);
+	ret[kPatternProperties]["^abstracts:[a-z]+$"] = getDefinition(Defs::AbstractTarget);
 	ret[kPatternProperties]["^abstracts:[a-z]+$"][kDescription] = "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project";
 
 	ret[kProperties]["abstracts"] = R"json({
@@ -1446,7 +1463,7 @@ Json SchemaBuildJson::get()
 		"additionalProperties": false,
 		"description": "A list of abstract build projects"
 	})json"_ojson;
-	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"] = getDefinition(Defs::SourceTarget);
+	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"] = getDefinition(Defs::AbstractTarget);
 	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"][kDescription] = "An abstract build project. 'all' is implicitely added to each project.";
 
 	ret[kProperties]["configurations"] = R"json({
@@ -1512,39 +1529,55 @@ Json SchemaBuildJson::get()
 		"description": "A sequential list of projects, cmake projects, or scripts."
 	})json"_ojson;
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName] = R"json({
+		"type": "object",
 		"description": "A single build target or script.",
-		"oneOf": [
-			{
-				"type": "object"
+		"if": {
+			"properties": {
+				"kind": { "const": "executable" }
+			}
+		},
+		"then": {},
+		"else": {
+			"if": {
+				"properties": {
+					"kind": { "enum": [ "staticLibrary", "sharedLibrary" ] }
+				}
 			},
-			{
-				"type": "object"
-			},
-			{
-				"type": "object",
-				"properties": {},
-				 "allOf": [
-					{
-						"if": {
-							"properties": { "type": { "const": "CMake" } }
-						},
-						"then": {}
+			"then": {},
+			"else": {
+				"if": {
+					"properties": {
+						"kind": { "const": "cmakeProject" }
+					}
+				},
+				"then": {},
+				"else": {
+					"if": {
+						"properties": {
+							"kind": { "const": "chaletProject" }
+						}
 					},
-					{
+					"then": {},
+					"else": {
 						"if": {
-							"properties": { "type": { "const": "Chalet" } }
+							"properties": {
+								"kind": { "const": "script" }
+							}
 						},
 						"then": {}
 					}
-				]
+				}
 			}
-		]
+		}
+
 	})json"_ojson;
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][0] = getDefinition(Defs::SourceTarget);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][1] = getDefinition(Defs::ScriptTarget);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kProperties]["type"] = getDefinition(Defs::TargetType);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][0]["then"] = getDefinition(Defs::CMakeTarget);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kOneOf][2][kAllOf][1]["then"] = getDefinition(Defs::ChaletTarget);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kThen] = getDefinition(Defs::ExecutableSourceTarget);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kThen] = getDefinition(Defs::LibrarySourceTarget);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kThen] = getDefinition(Defs::CMakeTarget);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kThen] = getDefinition(Defs::ChaletTarget);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kElse][kThen] = m_defs.at(Defs::ScriptTarget);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kElse][kThen][kProperties]["kind"] = getDefinition(Defs::TargetKind);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kElse][kThen]["required"] = { "kind" };
 
 	ret[kProperties]["version"] = R"json({
 		"type": "string",
