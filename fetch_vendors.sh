@@ -31,7 +31,7 @@ tags=(
 	'v1.5.6'
 	'master'
 	'master'
-	'6471a63115239a0b6458ad25e2eb8d828c22fb34'
+	'v3.10.2'
 )
 
 commits=(
@@ -42,7 +42,7 @@ commits=(
 	0
 	0
 	0
-	1
+	0
 )
 
 printf "Fetching dependencies into '$OUTDIR'...\n\n"
