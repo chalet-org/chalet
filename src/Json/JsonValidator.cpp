@@ -301,10 +301,18 @@ bool JsonValidator::setSchema(Json&& inSchema)
 /*****************************************************************************/
 bool JsonValidator::validate(const Json& inJsonContent)
 {
-	ErrorHandler errorHandler{ m_errors, m_file };
-	m_impl->validator.validate(inJsonContent, errorHandler);
+	CHALET_TRY
+	{
+		ErrorHandler errorHandler{ m_errors, m_file };
+		m_impl->validator.validate(inJsonContent, errorHandler);
 
-	return m_errors.size() == 0;
+		return m_errors.size() == 0;
+	}
+	CHALET_CATCH(const std::exception& err)
+	{
+		CHALET_EXCEPT_ERROR(err.what());
+		return false;
+	}
 }
 
 /*****************************************************************************/
