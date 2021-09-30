@@ -445,9 +445,83 @@ void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
 			break;
 		}
 
-		case ProjectWarnings::Custom:
-			outArgList.emplace_back("/W3");
+		case ProjectWarnings::Custom: {
+			// TODO: Refactor this so the strict warnings are stored somewhere GNU can use
+			auto& warnings = m_project.warnings();
+
+			StringList veryStrict{
+				"noexcept",
+				"undef",
+				"conversion",
+				"cast-qual",
+				"float-equal",
+				"inline",
+				"old-style-cast",
+				"strict-null-sentinel",
+				"overloaded-virtual",
+				"sign-conversion",
+				"sign-promo",
+			};
+
+			bool strictSet = false;
+			for (auto& w : warnings)
+			{
+				if (!String::equals(veryStrict, w))
+					continue;
+
+				outArgList.emplace_back("/Wall");
+				strictSet = true;
+				break;
+			}
+
+			if (!strictSet)
+			{
+				StringList strictPedantic{
+					"unused",
+					"cast-align",
+					"double-promotion",
+					"format=2",
+					"missing-declarations",
+					"missing-include-dirs",
+					"non-virtual-dtor",
+					"redundant-decls",
+					"odr",
+					"unreachable-code",
+					"shadow",
+				};
+				for (auto& w : warnings)
+				{
+					if (!String::equals(strictPedantic, w))
+						continue;
+
+					outArgList.emplace_back("/W4");
+					strictSet = true;
+					break;
+				}
+			}
+
+			if (strictSet)
+			{
+				outArgList.emplace_back("/WX");
+			}
+			else
+			{
+				if (List::contains<std::string>(warnings, "pedantic"))
+				{
+					outArgList.emplace_back("/W3");
+				}
+				else if (List::contains<std::string>(warnings, "extra"))
+				{
+					outArgList.emplace_back("/W2");
+				}
+				else if (List::contains<std::string>(warnings, "all"))
+				{
+					outArgList.emplace_back("/W1");
+				}
+			}
+
 			break;
+		}
 
 		case ProjectWarnings::None:
 		default:
