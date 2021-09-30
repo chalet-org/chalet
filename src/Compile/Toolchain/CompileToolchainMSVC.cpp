@@ -446,9 +446,11 @@ void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
 		}
 
 		case ProjectWarnings::Custom:
+			outArgList.emplace_back("/W3");
+			break;
+
 		case ProjectWarnings::None:
 		default:
-			outArgList.emplace_back("/W3");
 			break;
 	}
 }
