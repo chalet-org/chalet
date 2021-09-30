@@ -500,11 +500,7 @@ void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
 				}
 			}
 
-			if (strictSet)
-			{
-				outArgList.emplace_back("/WX");
-			}
-			else
+			if (!strictSet)
 			{
 				if (List::contains<std::string>(warnings, "pedantic"))
 				{
@@ -518,6 +514,11 @@ void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
 				{
 					outArgList.emplace_back("/W1");
 				}
+			}
+
+			if (List::contains<std::string>(warnings, "pedantic"))
+			{
+				outArgList.emplace_back("/WX");
 			}
 
 			break;
