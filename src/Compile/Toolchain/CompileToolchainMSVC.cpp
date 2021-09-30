@@ -424,12 +424,11 @@ void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
 			outArgList.emplace_back("/W2");
 			break;
 
-		case ProjectWarnings::Error: {
-			outArgList.emplace_back("/W2");
-			outArgList.emplace_back("/WX");
+		case ProjectWarnings::Pedantic: {
+			outArgList.emplace_back("/W3");
 			break;
 		}
-		case ProjectWarnings::Pedantic: {
+		case ProjectWarnings::Error: {
 			outArgList.emplace_back("/W3");
 			outArgList.emplace_back("/WX");
 			break;

@@ -894,19 +894,19 @@ StringList SourceTarget::parseWarnings(const std::string& inValue)
 		return ret;
 	}
 
-	ret.emplace_back("error");
-	if (String::equals("error", inValue))
-	{
-		m_warningsPreset = ProjectWarnings::Error;
-		return ret;
-	}
-
 	ret.emplace_back("pedantic");
 	// ret.emplace_back("pedantic-errors"); // Not on OSX?
 
 	if (String::equals("pedantic", inValue))
 	{
 		m_warningsPreset = ProjectWarnings::Pedantic;
+		return ret;
+	}
+
+	ret.emplace_back("error");
+	if (String::equals("error", inValue))
+	{
+		m_warningsPreset = ProjectWarnings::Error;
 		return ret;
 	}
 
