@@ -366,13 +366,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": "C++"
 	})json"_ojson;
 
-	defs[Defs::SourceTargetRunProject] = R"json({
+	defs[Defs::TargetRunTarget] = R"json({
 		"type": "boolean",
-		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized. If no executable projects are defined as the runProject, the first executable one will be chosen.",
+		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runTarget is given, it will be prioritized. If no executable projects are defined as the runTarget, the first executable one will be chosen.",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::SourceTargetRunArguments] = R"json({
+	defs[Defs::TargetRunTargetArguments] = R"json({
 		"type": "array",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
 		"minItems": 1,
@@ -382,7 +382,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::SourceTargetRunDependencies] = R"json({
+	defs[Defs::TargetRunDependencies] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
@@ -1240,24 +1240,44 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 		//
 		defs[Defs::ExecutableSourceTarget] = defs[Defs::LibrarySourceTarget];
-		defs[Defs::ExecutableSourceTarget][kProperties]["runProject"] = getDefinition(Defs::SourceTargetRunProject);
-		defs[Defs::ExecutableSourceTarget][kProperties]["runArguments"] = getDefinition(Defs::SourceTargetRunArguments);
-		defs[Defs::ExecutableSourceTarget][kProperties]["runDependencies"] = getDefinition(Defs::SourceTargetRunDependencies);
-		defs[Defs::ExecutableSourceTarget][kPatternProperties][fmt::format("^runProject{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunProject);
-		defs[Defs::ExecutableSourceTarget][kPatternProperties][fmt::format("^runDependencies{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetRunDependencies);
+		defs[Defs::ExecutableSourceTarget][kProperties]["runTarget"] = getDefinition(Defs::TargetRunTarget);
+		defs[Defs::ExecutableSourceTarget][kProperties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
+		defs[Defs::ExecutableSourceTarget][kProperties]["runDependencies"] = getDefinition(Defs::TargetRunDependencies);
+		defs[Defs::ExecutableSourceTarget][kPatternProperties][fmt::format("^runTarget{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunTarget);
+		defs[Defs::ExecutableSourceTarget][kPatternProperties][fmt::format("^runDependencies{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunDependencies);
 	}
 
 	{
-		auto targetScript = R"json({
+		auto targetBuildScript = R"json({
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			]
+		})json"_ojson;
+		targetBuildScript[kProperties]["kind"] = getDefinition(Defs::TargetKind);
+		targetBuildScript[kProperties]["script"] = getDefinition(Defs::ScriptTargetScript);
+		targetBuildScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+		targetBuildScript[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
+		targetBuildScript[kProperties]["runTarget"] = getDefinition(Defs::TargetRunTarget);
+		// targetBuildScript[kProperties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
+		targetBuildScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::ScriptTargetScript);
+		targetBuildScript[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
+		targetBuildScript[kPatternProperties][fmt::format("^runTarget{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunTarget);
+		defs[Defs::BuildScriptTarget] = std::move(targetBuildScript);
+	}
+
+	{
+		auto targetDistScript = R"json({
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
-		targetScript[kProperties]["script"] = getDefinition(Defs::ScriptTargetScript);
-		targetScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
-		targetScript[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::ScriptTargetScript);
-		targetScript[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
-		defs[Defs::ScriptTarget] = std::move(targetScript);
+		targetDistScript[kProperties]["script"] = getDefinition(Defs::ScriptTargetScript);
+		targetDistScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+		targetDistScript[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
+		targetDistScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::ScriptTargetScript);
+		targetDistScript[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
+		defs[Defs::DistScriptTarget] = std::move(targetDistScript);
 	}
 
 	{
@@ -1347,14 +1367,14 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetDescription: return "target-description";
 		case Defs::TargetKind: return "target-kind";
 		case Defs::TargetCondition: return "target-condition";
+		case Defs::TargetRunTarget: return "target-runTarget";
+		case Defs::TargetRunTargetArguments: return "target-runArguments";
+		case Defs::TargetRunDependencies: return "target-runDependencies";
 		//
 		case Defs::SourceTargetExtends: return "source-target-extends";
 		case Defs::SourceTargetFiles: return "source-target-files";
 		case Defs::SourceTargetLocation: return "source-target-location";
 		case Defs::SourceTargetLanguage: return "source-target-language";
-		case Defs::SourceTargetRunProject: return "source-target-runProject";
-		case Defs::SourceTargetRunArguments: return "source-target-runArguments";
-		case Defs::SourceTargetRunDependencies: return "source-target-runDependencies";
 		//
 		case Defs::AbstractTarget: return "abstract-target";
 		case Defs::ExecutableSourceTarget: return "executable-source-target";
@@ -1385,7 +1405,8 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::SourceTargetCxxWindowsSubSystem: return "source-target-cxx-windowsSubSystem";
 		case Defs::SourceTargetCxxWindowsEntryPoint: return "source-target-cxx-windowsEntryPoint";
 		//
-		case Defs::ScriptTarget: return "script-target";
+		case Defs::BuildScriptTarget: return "build-script-target";
+		case Defs::DistScriptTarget: return "distribution-script-target";
 		case Defs::ScriptTargetScript: return "script-target-script";
 		//
 		case Defs::CMakeTarget: return "cmake-target";
@@ -1509,7 +1530,7 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName] = R"json({
 		"description": "A single distribution target or script."
 	})json"_ojson;
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::ScriptTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::DistScriptTarget);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::DistributionTarget);
 
 	ret[kProperties]["externalDependencies"] = R"json({
@@ -1564,7 +1585,11 @@ Json SchemaBuildJson::get()
 								"kind": { "const": "script" }
 							}
 						},
-						"then": {}
+						"then": {},
+						"else": {
+							"type": "object",
+							"additionalProperties": false
+						}
 					}
 				}
 			}
@@ -1575,9 +1600,8 @@ Json SchemaBuildJson::get()
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kThen] = getDefinition(Defs::LibrarySourceTarget);
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kThen] = getDefinition(Defs::CMakeTarget);
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kThen] = getDefinition(Defs::ChaletTarget);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kElse][kThen] = m_defs.at(Defs::ScriptTarget);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kElse][kThen][kProperties]["kind"] = getDefinition(Defs::TargetKind);
-	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kElse][kThen]["required"] = { "kind" };
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kElse][kThen] = getDefinition(Defs::BuildScriptTarget);
+	ret[kProperties][targets][kPatternProperties][kPatternProjectName][kElse][kElse][kElse][kElse][kElse][kProperties]["kind"] = getDefinition(Defs::TargetKind);
 
 	ret[kProperties]["version"] = R"json({
 		"type": "string",

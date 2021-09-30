@@ -668,14 +668,14 @@ void SourceTarget::setExceptions(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-bool SourceTarget::runProject() const noexcept
+bool SourceTarget::runTarget() const noexcept
 {
-	return m_runProject;
+	return m_runTarget;
 }
 
-void SourceTarget::setRunProject(const bool inValue) noexcept
+void SourceTarget::setRunTarget(const bool inValue) noexcept
 {
-	m_runProject = inValue;
+	m_runTarget = inValue;
 }
 
 /*****************************************************************************/

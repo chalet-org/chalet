@@ -50,7 +50,7 @@ private:
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
-	std::string getRunProject();
+	std::string getRunTarget();
 	bool createAppBundle();
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
 
@@ -67,7 +67,7 @@ private:
 
 	// SourceTarget* m_project = nullptr;
 
-	std::string m_runProjectName;
+	std::string m_runTargetName;
 };
 }
 

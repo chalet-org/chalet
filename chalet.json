@@ -89,7 +89,7 @@
 					"json-schema-validator"
 				]
 			},
-			"runProject": true
+			"runTarget": true
 		},
 		"tests_chalet": {
 			"kind": "executable",

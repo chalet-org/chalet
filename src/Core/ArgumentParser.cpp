@@ -68,8 +68,8 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 				switch (arg.id)
 				{
-					case ArgumentIdentifier::RunProjectName:
-						m_inputs.setRunProject(std::move(value));
+					case ArgumentIdentifier::RunTargetName:
+						m_inputs.setRunTarget(std::move(value));
 						break;
 
 					case ArgumentIdentifier::BuildConfiguration:
@@ -139,7 +139,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 			}
 
 			case Variant::Kind::StringList: {
-				if (arg.id == ArgumentIdentifier::RunProjectArguments)
+				if (arg.id == ArgumentIdentifier::RunTargetArguments)
 				{
 					auto runArgs = String::join(arg.value.asStringList());
 					m_inputs.setRunOptions(std::move(runArgs));

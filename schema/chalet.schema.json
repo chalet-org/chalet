@@ -387,6 +387,30 @@
 			"minLength": 1,
 			"pattern": "^((!?(debug|windows|macos|linux)\\b\\.?){0,2})$"
 		},
+		"target-runTarget": {
+			"type": "boolean",
+			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runTarget is given, it will be prioritized. If no executable projects are defined as the runTarget, the first executable one will be chosen.",
+			"default": false
+		},
+		"target-runArguments": {
+			"type": "array",
+			"description": "If the project is the run target, a string of arguments to pass to the run command.",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"target-runDependencies": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
 		"abstract-target": {
 			"type": "object",
 			"additionalProperties": false,
@@ -455,14 +479,14 @@
 				"settings:Cxx": {
 					"$ref": "#/definitions/source-target-cxx"
 				},
-				"runProject": {
-					"$ref": "#/definitions/source-target-runProject"
+				"runTarget": {
+					"$ref": "#/definitions/target-runTarget"
 				},
 				"runArguments": {
-					"$ref": "#/definitions/source-target-runArguments"
+					"$ref": "#/definitions/target-runArguments"
 				},
 				"runDependencies": {
-					"$ref": "#/definitions/source-target-runDependencies"
+					"$ref": "#/definitions/target-runDependencies"
 				}
 			},
 			"patternProperties": {
@@ -472,11 +496,11 @@
 				"^language(\\.((!?(windows|macos|linux)\\b\\.?){0,2}))?$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^runProject(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
-					"$ref": "#/definitions/source-target-runProject"
+				"^runTarget(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
+					"$ref": "#/definitions/target-runTarget"
 				},
 				"^runDependencies(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
-					"$ref": "#/definitions/source-target-runDependencies"
+					"$ref": "#/definitions/target-runDependencies"
 				}
 			}
 		},
@@ -620,30 +644,6 @@
 				"Objective-C++"
 			],
 			"default": "C++"
-		},
-		"source-target-runProject": {
-			"type": "boolean",
-			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runProject is given, it will be prioritized. If no executable projects are defined as the runProject, the first executable one will be chosen.",
-			"default": false
-		},
-		"source-target-runArguments": {
-			"type": "array",
-			"description": "If the project is the run target, a string of arguments to pass to the run command.",
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
-		},
-		"source-target-runDependencies": {
-			"type": "array",
-			"uniqueItems": true,
-			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
 		},
 		"source-target-cxx": {
 			"type": "object",
@@ -1301,7 +1301,42 @@
 			],
 			"default": "main"
 		},
-		"script-target": {
+		"build-script-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			],
+			"properties": {
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
+				"script": {
+					"$ref": "#/definitions/script-target-script"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"runTarget": {
+					"$ref": "#/definitions/target-runTarget"
+				}
+			},
+			"patternProperties": {
+				"^script(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
+					"$ref": "#/definitions/script-target-script"
+				},
+				"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^runTarget(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
+					"$ref": "#/definitions/target-runTarget"
+				}
+			}
+		},
+		"distribution-script-target": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
@@ -1532,7 +1567,7 @@
 					"description": "A single distribution target or script.",
 					"oneOf": [
 						{
-							"$ref": "#/definitions/script-target"
+							"$ref": "#/definitions/distribution-script-target"
 						},
 						{
 							"$ref": "#/definitions/distribution-target"
@@ -1617,33 +1652,16 @@
 										}
 									},
 									"then": {
+										"$ref": "#/definitions/build-script-target"
+									},
+									"else": {
 										"type": "object",
 										"additionalProperties": false,
 										"properties": {
-											"script": {
-												"$ref": "#/definitions/script-target-script"
-											},
-											"description": {
-												"$ref": "#/definitions/target-description"
-											},
-											"condition": {
-												"$ref": "#/definitions/target-condition"
-											},
 											"kind": {
 												"$ref": "#/definitions/target-kind"
 											}
-										},
-										"patternProperties": {
-											"^script(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
-												"$ref": "#/definitions/script-target-script"
-											},
-											"^description(\\.((!?(debug|windows|macos|linux)\\b\\.?){0,2}))?$": {
-												"$ref": "#/definitions/target-description"
-											}
-										},
-										"required": [
-											"kind"
-										]
+										}
 									}
 								}
 							}

@@ -155,8 +155,8 @@ struct SourceTarget final : public IBuildTarget
 	bool exceptions() const noexcept;
 	void setExceptions(const bool inValue) noexcept;
 
-	bool runProject() const noexcept;
-	void setRunProject(const bool inValue) noexcept;
+	bool runTarget() const noexcept;
+	void setRunTarget(const bool inValue) noexcept;
 
 	bool staticLinking() const noexcept;
 	void setStaticLinking(const bool inValue) noexcept;
@@ -218,7 +218,7 @@ private:
 	bool m_objectiveCxx = false;
 	bool m_rtti = true;
 	bool m_exceptions = true;
-	bool m_runProject = false;
+	bool m_runTarget = false;
 	bool m_staticLinking = false;
 	bool m_posixThreads = true;
 	bool m_invalidWarningPreset = false;
