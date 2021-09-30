@@ -538,8 +538,8 @@ void ArgumentPatterns::populateMainArguments()
 		.help(fmt::format(R"(
    init [{path}]
    configure
-   buildrun {runProject} {runArgs}
-   run {runProject} {runArgs}
+   buildrun {runTarget} {runArgs}
+   run {runTarget} {runArgs}
    build
    rebuild
    clean
@@ -547,8 +547,8 @@ void ArgumentPatterns::populateMainArguments()
    get {key}
    set {key} {value}
    unset {key})",
-			fmt::arg("runProject", kArgRunProject),
-			fmt::arg("runArgs", kArgRunArguments),
+			fmt::arg("runTarget", kArgRunTarget),
+			fmt::arg("runArgs", kArgRunTargetArguments),
 			fmt::arg("key", kArgSettingsKey),
 			fmt::arg("value", kArgSettingsValue),
 			fmt::arg("path", kArgInitPath)));
@@ -694,17 +694,17 @@ void ArgumentPatterns::addBuildConfigurationArg()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::addRunProjectArg()
+void ArgumentPatterns::addRunTargetArg()
 {
-	addStringArgument(ArgumentIdentifier::RunProjectName, kArgRunProject.c_str(), std::string())
-		.help("A project to run");
+	addStringArgument(ArgumentIdentifier::RunTargetName, kArgRunTarget.c_str(), std::string())
+		.help("An executable or script target to run");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addRunArgumentsArg()
 {
-	addRemainingArguments(ArgumentIdentifier::RunProjectArguments, kArgRunArguments.c_str())
-		.help("The arguments to pass to the run project");
+	addRemainingArguments(ArgumentIdentifier::RunTargetArguments, kArgRunTargetArguments.c_str())
+		.help("The arguments to pass to the run target");
 }
 
 /*****************************************************************************/
@@ -772,7 +772,7 @@ void ArgumentPatterns::commandBuildRun()
 {
 	addOptionalArguments();
 
-	addRunProjectArg();
+	addRunTargetArg();
 	addRunArgumentsArg();
 }
 
@@ -781,7 +781,7 @@ void ArgumentPatterns::commandRun()
 {
 	addOptionalArguments();
 
-	addRunProjectArg();
+	addRunTargetArg();
 	addRunArgumentsArg();
 }
 

@@ -42,8 +42,8 @@ private:
 	bool parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode) const;
 
 	bool validBuildRequested() const;
-	bool validRunProjectRequested() const;
-	bool validRunProjectRequestedFromInput() const;
+	bool validRunTargetRequested() const;
+	bool validRunTargetRequestedFromInput() const;
 
 	template <typename T>
 	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey) const;

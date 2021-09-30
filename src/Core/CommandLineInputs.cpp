@@ -252,17 +252,17 @@ const StringList& CommandLineInputs::notPlatforms() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::runProject() const noexcept
+const std::string& CommandLineInputs::runTarget() const noexcept
 {
-	return m_runProject;
+	return m_runTarget;
 }
 
-void CommandLineInputs::setRunProject(std::string&& inValue) noexcept
+void CommandLineInputs::setRunTarget(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
 		return;
 
-	m_runProject = std::move(inValue);
+	m_runTarget = std::move(inValue);
 }
 
 /*****************************************************************************/

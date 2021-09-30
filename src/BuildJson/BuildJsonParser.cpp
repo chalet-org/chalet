@@ -64,9 +64,9 @@ bool BuildJsonParser::serialize()
 		return false;
 	}
 
-	if (!validRunProjectRequestedFromInput())
+	if (!validRunTargetRequestedFromInput())
 	{
-		Diagnostic::error("{}: Requested runProject of '{}' was not a valid project name.", m_filename, m_inputs.runProject());
+		Diagnostic::error("{}: Requested runTarget of '{}' was not a valid project name.", m_filename, m_inputs.runTarget());
 		return false;
 	}
 
@@ -108,16 +108,16 @@ bool BuildJsonParser::validBuildRequested() const
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::validRunProjectRequestedFromInput() const
+bool BuildJsonParser::validRunTargetRequestedFromInput() const
 {
-	const auto& inputRunProject = m_inputs.runProject();
-	if (inputRunProject.empty())
+	const auto& inputRunTarget = m_inputs.runTarget();
+	if (inputRunTarget.empty())
 		return true;
 
 	for (auto& target : m_state.targets)
 	{
 		auto& name = target->name();
-		bool isProjectFromArgs = !inputRunProject.empty() && name == inputRunProject;
+		bool isProjectFromArgs = !inputRunTarget.empty() && name == inputRunTarget;
 		if (target->isProject())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
@@ -321,8 +321,8 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 	if (StringList list; assignStringListFromConfig(list, inNode, "runArguments"))
 		outTarget.addRunArguments(std::move(list));
 
-	if (bool val = false; parseKeyFromConfig(val, inNode, "runProject"))
-		outTarget.setRunProject(val);
+	if (bool val = false; parseKeyFromConfig(val, inNode, "runTarget"))
+		outTarget.setRunTarget(val);
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "runDependencies"))
 		outTarget.addRunDependencies(std::move(list));
@@ -381,8 +381,11 @@ bool BuildJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json
 	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
 		outTarget.setDescription(std::move(val));
 
-	// if (!parsePlatformConfigExclusions(outTarget, inNode))
-	// 	return false;
+	// if (StringList list; assignStringListFromConfig(list, inNode, "runArguments"))
+	// 	outTarget.addRunArguments(std::move(list));
+
+	if (bool val = false; parseKeyFromConfig(val, inNode, "runTarget"))
+		outTarget.setRunTarget(val);
 
 	return true;
 }

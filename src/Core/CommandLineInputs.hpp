@@ -59,8 +59,8 @@ struct CommandLineInputs
 	const std::string& platform() const noexcept;
 	const StringList& notPlatforms() const noexcept;
 
-	const std::string& runProject() const noexcept;
-	void setRunProject(std::string&& inValue) noexcept;
+	const std::string& runTarget() const noexcept;
+	void setRunTarget(std::string&& inValue) noexcept;
 
 	const StringList& runOptions() const noexcept;
 	void setRunOptions(std::string&& inValue) noexcept;
@@ -157,7 +157,7 @@ private:
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
 	std::string m_platform;
-	std::string m_runProject;
+	std::string m_runTarget;
 	std::string m_appPath;
 	std::string m_generatorRaw;
 	std::string m_settingsKey;

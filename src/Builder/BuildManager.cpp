@@ -73,7 +73,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	}
 
 	bool runCommand = inRoute == Route::Run;
-	m_runProjectName = getRunProject();
+	m_runTargetName = getRunTarget();
 
 	auto strategy = m_state.toolchain.strategy();
 	if (!runCommand)
@@ -107,7 +107,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 	bool multiTarget = m_state.targets.size() > 1;
 
-	const IBuildTarget* runProject = nullptr;
+	const IBuildTarget* runTarget = nullptr;
 
 	bool error = false;
 	for (auto& target : m_state.targets)
@@ -115,31 +115,31 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		auto& name = target->name();
 		if (runCommand || inRoute == Route::BuildRun)
 		{
-			if (m_runProjectName == name)
+			if (m_runTargetName == name)
 			{
 				if (target->isProject())
 				{
 					auto& project = static_cast<const SourceTarget&>(*target);
 					if (project.isExecutable())
-						runProject = target.get();
+						runTarget = target.get();
 				}
 				else if (target->isScript())
 				{
-					runProject = target.get();
+					runTarget = target.get();
 					continue;
 				}
 			}
-			else if (m_runProjectName.empty() && runProject == nullptr)
+			else if (m_runTargetName.empty() && runTarget == nullptr)
 			{
 				if (target->isProject())
 				{
 					auto& project = static_cast<const SourceTarget&>(*target);
 					if (project.isExecutable())
-						runProject = target.get();
+						runTarget = target.get();
 				}
 				else if (target->isScript())
 				{
-					runProject = target.get();
+					runTarget = target.get();
 					continue;
 				}
 			}
@@ -242,17 +242,17 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 	if ((inRoute == Route::BuildRun || runCommand))
 	{
-		if (runProject == nullptr)
+		if (runTarget == nullptr)
 		{
 			Diagnostic::error("No executable project was found to run.");
 			return false;
 		}
-		else if (runProject->isProject())
+		else if (runTarget->isProject())
 		{
-			auto& project = static_cast<const SourceTarget&>(*runProject);
+			auto& project = static_cast<const SourceTarget&>(*runTarget);
 			if (!Commands::pathExists(m_state.paths.getTargetFilename(project)))
 			{
-				Diagnostic::error("Requested configuration '{}' must be built for run project: '{}'", m_state.info.buildConfiguration(), project.name());
+				Diagnostic::error("Requested configuration '{}' must be built for run target: '{}'", m_state.info.buildConfiguration(), project.name());
 				return false;
 			}
 
@@ -261,9 +261,9 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 			return cmdRun(project);
 		}
-		else if (runProject->isScript())
+		else if (runTarget->isScript())
 		{
-			auto& script = static_cast<const ScriptBuildTarget&>(*runProject);
+			auto& script = static_cast<const ScriptBuildTarget&>(*runTarget);
 
 			// if (runCommand)
 			Output::lineBreak();
@@ -272,7 +272,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		}
 		else
 		{
-			Diagnostic::error("Run project not found: '{}'", m_runProjectName);
+			Diagnostic::error("Run target not found: '{}'", m_runTargetName);
 			return false;
 		}
 	}
@@ -767,14 +767,14 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 }
 
 /*****************************************************************************/
-std::string BuildManager::getRunProject()
+std::string BuildManager::getRunTarget()
 {
-	// Note: validated in BuildJsonParser::validRunProjectRequestedFromInput()
+	// Note: validated in BuildJsonParser::validRunTargetRequestedFromInput()
 	//  before BuildManager is run
 	//
-	const auto& inputRunProject = m_inputs.runProject();
-	if (!inputRunProject.empty())
-		return inputRunProject;
+	const auto& inputRunTarget = m_inputs.runTarget();
+	if (!inputRunTarget.empty())
+		return inputRunTarget;
 
 	for (auto& target : m_state.targets)
 	{
@@ -782,7 +782,7 @@ std::string BuildManager::getRunProject()
 		if (target->isProject())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.isExecutable() && project.runProject())
+			if (project.isExecutable() && project.runTarget())
 				return name; // just get the top one
 		}
 	}

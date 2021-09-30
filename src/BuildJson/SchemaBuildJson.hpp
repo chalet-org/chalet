@@ -48,6 +48,9 @@ class SchemaBuildJson
 		TargetDescription,
 		TargetKind,
 		TargetCondition,
+		TargetRunTarget,
+		TargetRunTargetArguments,
+		TargetRunDependencies,
 		//
 		AbstractTarget,
 		ExecutableSourceTarget,
@@ -56,9 +59,6 @@ class SchemaBuildJson
 		SourceTargetFiles,
 		SourceTargetLocation,
 		SourceTargetLanguage,
-		SourceTargetRunProject,
-		SourceTargetRunArguments,
-		SourceTargetRunDependencies,
 		//
 		SourceTargetCxx,
 		SourceTargetCxxCStandard,
@@ -86,7 +86,8 @@ class SchemaBuildJson
 		SourceTargetCxxWindowsSubSystem,
 		SourceTargetCxxWindowsEntryPoint,
 		//
-		ScriptTarget,
+		BuildScriptTarget,
+		DistScriptTarget,
 		ScriptTargetScript,
 		//
 		CMakeTarget,

@@ -70,7 +70,7 @@ private:
 	void addMaxJobsArg();
 	void addEnvFileArg();
 	void addBuildConfigurationArg();
-	void addRunProjectArg();
+	void addRunTargetArg();
 	void addRunArgumentsArg();
 	void addSaveSchemaArg();
 	void addQuietArgs();
@@ -108,8 +108,8 @@ private:
 
 	std::string m_routeString;
 
-	const std::string kArgRunProject = "[<runProject>]";
-	const std::string kArgRunArguments = "[ARG...]";
+	const std::string kArgRunTarget = "[<runTarget>]";
+	const std::string kArgRunTargetArguments = "[ARG...]";
 	const std::string kArgInitName = "<name>";
 	const std::string kArgInitPath = "<path>";
 	const std::string kArgSettingsKey = "<key>";
