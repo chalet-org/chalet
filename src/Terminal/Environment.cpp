@@ -429,7 +429,7 @@ const char* Environment::get(const char* inName)
 }
 
 /*****************************************************************************/
-const std::string Environment::getAsString(const char* inName, const std::string& inFallback)
+std::string Environment::getAsString(const char* inName, const std::string& inFallback)
 {
 	const char* result = std::getenv(inName);
 	if (result != nullptr)

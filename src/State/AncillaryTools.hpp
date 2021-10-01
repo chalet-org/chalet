@@ -17,6 +17,7 @@ struct AncillaryTools
 	bool resolveOwnExecutable(const std::string& inAppPath);
 
 	bool validate();
+	bool validateSigningIdentity() const;
 
 	void fetchBashVersion();
 	void fetchBrewVersion();
