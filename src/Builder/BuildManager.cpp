@@ -100,6 +100,19 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				if (!addProjectToBuild(static_cast<const SourceTarget&>(*target), inRoute))
 					return false;
 			}
+			else if (inRoute == Route::Rebuild)
+			{
+				if (target->isCMake())
+				{
+					if (!doCMakeClean(static_cast<const CMakeTarget&>(*target)))
+						return false;
+				}
+				else if (target->isSubChalet())
+				{
+					if (!doSubChaletClean(static_cast<const SubChaletTarget&>(*target)))
+						return false;
+				}
+			}
 		}
 	}
 
@@ -548,6 +561,43 @@ bool BuildManager::doClean(const SourceTarget& inProject, const std::string& inT
 	{
 		cacheAndRemove(group->objectFile, m_removeCache);
 		cacheAndRemove(group->dependencyFile, m_removeCache);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
+{
+	auto outputLocation = fmt::format("{}/{}", m_inputs.outputDirectory(), inTarget.name());
+	Path::sanitize(outputLocation);
+
+	if (Commands::pathExists(outputLocation))
+	{
+		if (!Commands::removeRecursively(outputLocation))
+		{
+			Diagnostic::error("There was an error cleaning the '{}' Chalet project.", inTarget.name());
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
+{
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	auto outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), inTarget.location());
+	Path::sanitize(outputLocation);
+
+	if (Commands::pathExists(outputLocation))
+	{
+		if (!Commands::removeRecursively(outputLocation))
+		{
+			Diagnostic::error("There was an error cleaning the '{}' CMake project.", inTarget.name());
+			return false;
+		}
 	}
 
 	return true;

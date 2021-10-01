@@ -37,6 +37,8 @@ private:
 	bool copyRunDependencies(const SourceTarget& inProject);
 	StringList getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig);
 	bool doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean = false);
+	bool doSubChaletClean(const SubChaletTarget& inTarget);
+	bool doCMakeClean(const CMakeTarget& inTarget);
 	bool doLazyClean();
 
 	bool addProjectToBuild(const SourceTarget& inProject, const Route inRoute);

@@ -42,6 +42,10 @@ bool SubChaletBuilder::run()
 	auto location = Commands::getAbsolutePath(m_target.location());
 	Path::sanitize(location);
 
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	m_outputLocation = fmt::format("{}/{}", location, buildOutputDir);
+	Path::sanitize(m_outputLocation);
+
 	if (!m_target.buildFile().empty())
 	{
 		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
@@ -55,10 +59,6 @@ bool SubChaletBuilder::run()
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("name: {}", name), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("location: {}", location), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
-
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	m_outputLocation = fmt::format("{}/{}", location, buildOutputDir);
-	Path::sanitize(m_outputLocation);
 
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
 	bool recheckChalet = m_target.recheck();
