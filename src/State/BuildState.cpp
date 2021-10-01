@@ -185,6 +185,9 @@ bool BuildState::initializeBuild()
 
 	Diagnostic::infoEllipsis("Initializing");
 
+	if (!tools.validateSigningIdentity())
+		return false;
+
 	if (!initializeToolchain())
 		return false;
 

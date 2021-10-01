@@ -47,28 +47,43 @@ bool AncillaryTools::validate()
 	fetchBrewVersion();
 
 #if defined(CHALET_MACOS)
-	Output::setShowCommandOverride(false);
-
-	const auto& homeDirectory = m_inputs.homeDirectory();
-	Environment::replaceCommonVariables(m_signingIdentity, homeDirectory);
-
-	if (!m_signingIdentity.empty())
+	if (m_inputs.command() == Route::Bundle)
 	{
-		// security find-identity -v -p codesigning
-		auto security = Commands::which("security");
-		if (!security.empty())
+		const auto& homeDirectory = m_inputs.homeDirectory();
+		Environment::replaceCommonVariables(m_signingIdentity, homeDirectory);
+	}
+#endif
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AncillaryTools::validateSigningIdentity() const
+{
+#if defined(CHALET_MACOS)
+	// This can take a little of time (60ms), so only call it when it's needed
+	if (m_inputs.command() == Route::Bundle)
+	{
+		Output::setShowCommandOverride(false);
+
+		if (!m_signingIdentity.empty())
 		{
-			StringList cmd{ std::move(security), "find-identity", "-v", "-p", "codesigning" };
-			auto identities = Commands::subprocessOutput(cmd);
-			if (!String::contains(m_signingIdentity, identities))
+			// security find-identity -v -p codesigning
+			auto security = Commands::which("security");
+			if (!security.empty())
 			{
-				Diagnostic::error("signingIdentity '{}' could not be verified with '{}'", m_signingIdentity, String::join(std::move(cmd)));
-				return false;
+				StringList cmd{ std::move(security), "find-identity", "-v", "-p", "codesigning" };
+				auto identities = Commands::subprocessOutput(cmd);
+				if (!String::contains(m_signingIdentity, identities))
+				{
+					Diagnostic::error("signingIdentity '{}' could not be verified with '{}'", m_signingIdentity, String::join(std::move(cmd)));
+					return false;
+				}
 			}
 		}
-	}
 
-	Output::setShowCommandOverride(true);
+		Output::setShowCommandOverride(true);
+	}
 
 #else
 	UNUSED(m_inputs);
