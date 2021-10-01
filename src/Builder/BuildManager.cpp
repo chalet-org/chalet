@@ -393,7 +393,8 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 
 	if (inRoute == Route::Rebuild)
 	{
-		doClean(inProject, outputs.target, outputs.groups);
+		bool fullClean = true;
+		doClean(inProject, outputs.target, outputs.groups, fullClean);
 	}
 
 	if (!m_strategy->addProject(inProject, std::move(outputs), buildToolchain))
