@@ -476,7 +476,16 @@ bool AppBundlerMacOS::signAppBundle() const
 	}
 
 	Timer timer;
-	Diagnostic::infoEllipsis("Signing the MacOS application bundle");
+
+	const auto& bundleName = m_bundle.macosBundle().bundleName();
+	if (!bundleName.empty())
+	{
+		Diagnostic::infoEllipsis("Signing the application bundle");
+	}
+	else
+	{
+		Diagnostic::infoEllipsis("Signing binaries");
+	}
 
 	// TODO: Entitlements
 	bool isBundle = String::endsWith(".app/Contents", m_bundlePath);
