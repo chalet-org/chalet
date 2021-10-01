@@ -389,12 +389,12 @@ std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject
 	{
 		if (inProject.windowsApplicationManifest().empty())
 		{
-			// auto outputFile = inProject.outputFileNoPrefix();
+			auto outputFile = inProject.outputFileNoPrefix();
 
 			// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
-			// return fmt::format("{}/{}.manifest", intermediateDir(), outputFile);
+			return fmt::format("{}/{}.manifest", intermediateDir(), outputFile);
 
-			return fmt::format("{}/default.manifest", intermediateDir());
+			// return fmt::format("{}/default.manifest", intermediateDir());
 		}
 		else
 		{
@@ -413,11 +413,11 @@ std::string BuildPaths::getWindowsManifestResourceFilename(const SourceTarget& i
 #if defined(CHALET_WIN32)
 	if (!inProject.isStaticLibrary() && inProject.windowsApplicationManifestGenerationEnabled())
 	{
-		if (inProject.windowsApplicationManifest().empty())
+		/*if (inProject.windowsApplicationManifest().empty())
 		{
 			return fmt::format("{}/default.manifest.rc", intermediateDir());
 		}
-		else
+		else*/
 		{
 			const auto& name = inProject.name();
 			return fmt::format("{}/{}_manifest.rc", intermediateDir(), name);
