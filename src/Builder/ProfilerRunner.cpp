@@ -58,8 +58,8 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 		}
 		const bool useXcTrace = m_state.tools.xcodeVersionMajor() >= 12 || xctraceAvailable;
 
-		bool instrumentsAvailable = false;
-		if (!m_state.tools.instruments().empty())
+		bool instrumentsAvailable = m_state.tools.xcodeVersionMajor() <= 12;
+		if (instrumentsAvailable && !m_state.tools.instruments().empty())
 		{
 			const auto instrumentsOutput = Commands::subprocessOutput({ m_state.tools.instruments() });
 			instrumentsAvailable = !String::contains("requires Xcode", instrumentsOutput);
