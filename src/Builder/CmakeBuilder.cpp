@@ -103,7 +103,9 @@ bool CmakeBuilder::run()
 std::string CmakeBuilder::getGenerator() const
 {
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+#if defined(CHALET_WIN32)
 	const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
+#endif
 
 	std::string ret;
 	if (isNinja)
