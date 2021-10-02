@@ -266,9 +266,12 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 #endif
 	}
 
-	if (!isDefined["EXPORT_COMPILE_COMMANDS"])
+	if (m_state.info.generateCompileCommands())
 	{
-		outList.emplace_back("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON");
+		if (!isDefined["EXPORT_COMPILE_COMMANDS"])
+		{
+			outList.emplace_back("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON");
+		}
 	}
 
 	if (!isDefined["CMAKE_C_COMPILER"])
