@@ -76,7 +76,7 @@ bool CMakeTarget::validate()
 	if (compileConfig.isMsvc())
 	{
 		const auto& version = m_state.msvcEnvironment.detectedVersion();
-		if (!String::startsWith({ "17", "16", "15", "14", "12" }, version))
+		if (!String::startsWith({ "17", "16", "15", "14", "12", "11", "10" }, version))
 		{
 			if (version.empty())
 				Diagnostic::error("Visual Studio version was not detected.");
