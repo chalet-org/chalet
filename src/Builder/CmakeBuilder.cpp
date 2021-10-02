@@ -110,10 +110,33 @@ std::string CmakeBuilder::getGenerator() const
 	{
 		ret = "Ninja";
 	}
+#if defined(CHALET_WIN32)
 	else if (compileConfig.isMsvc())
 	{
-		ret = "Visual Studio 16 2019";
+		// Validated in CMakeTarget::validate
+		const auto& version = m_state.msvcEnvironment.detectedVersion();
+		if (String::startsWith("17", version))
+		{
+			ret = "Visual Studio 17 2022";
+		}
+		else if (String::startsWith("16", version))
+		{
+			ret = "Visual Studio 16 2019";
+		}
+		else if (String::startsWith("15", version))
+		{
+			ret = "Visual Studio 15 2017";
+		}
+		else if (String::startsWith("14", version))
+		{
+			ret = "Visual Studio 14 2015";
+		}
+		else if (String::startsWith("12", version))
+		{
+			ret = "Visual Studio 12 2013";
+		}
 	}
+#endif
 	else
 	{
 #if defined(CHALET_WIN32)
@@ -164,7 +187,10 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 {
 	auto& cmake = m_state.toolchain.cmake();
 
-	StringList ret{ cmake, "-G", getGenerator() };
+	auto generator = getGenerator();
+	chalet_assert(!generator.empty(), "CMake Generator is empty");
+
+	StringList ret{ cmake, "-G", std::move(generator) };
 
 	std::string platform = getPlatform();
 	if (!platform.empty())
