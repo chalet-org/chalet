@@ -137,6 +137,14 @@ std::string CmakeBuilder::getGenerator() const
 		{
 			ret = "Visual Studio 12 2013";
 		}
+		else if (String::startsWith("11", version))
+		{
+			ret = "Visual Studio 11 2012";
+		}
+		else if (String::startsWith("10", version))
+		{
+			ret = "Visual Studio 10 2010";
+		}
 	}
 #endif
 	else
