@@ -9,6 +9,7 @@
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -69,6 +70,22 @@ bool CMakeTarget::validate()
 		Diagnostic::error("Build '{}' not recognized by CMake.", buildConfiguration);
 		result = false;
 	}
+
+#if defined(CHALET_WIN32)
+	const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
+	if (compileConfig.isMsvc())
+	{
+		const auto& version = m_state.msvcEnvironment.detectedVersion();
+		if (!String::startsWith({ "17", "16", "15", "14", "12" }, version))
+		{
+			if (version.empty())
+				Diagnostic::error("Visual Studio version was not detected.");
+			else
+				Diagnostic::error("Visual Studio version '{}' was detected, but is not yet supported in Chalet's CMake integration.", buildConfiguration);
+			result = false;
+		}
+	}
+#endif
 
 	return result;
 }
