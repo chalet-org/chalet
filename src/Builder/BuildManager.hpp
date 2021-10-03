@@ -70,6 +70,8 @@ private:
 	// SourceTarget* m_project = nullptr;
 
 	std::string m_runTargetName;
+
+	bool m_directoriesMade = false;
 };
 }
 

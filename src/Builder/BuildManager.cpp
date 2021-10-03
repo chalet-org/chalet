@@ -118,6 +118,12 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 	m_strategy->saveBuildFile();
 
+	if (inRoute == Route::Rebuild || m_directoriesMade)
+	{
+		if (Output::showCommands())
+			Output::lineBreak();
+	}
+
 	bool multiTarget = m_state.targets.size() > 1;
 
 	const IBuildTarget* runTarget = nullptr;
@@ -392,7 +398,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 
 	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig, m_state.info.dumpAssembly());
 
-	if (!Commands::makeDirectories(outputs.directories))
+	if (!Commands::makeDirectories(outputs.directories, m_directoriesMade))
 	{
 		Diagnostic::error("Error creating paths for project: {}", inProject.name());
 		return false;
