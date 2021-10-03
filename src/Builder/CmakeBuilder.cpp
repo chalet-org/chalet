@@ -116,7 +116,7 @@ std::string CmakeBuilder::getGenerator() const
 	else if (compileConfig.isMsvc())
 	{
 		// Validated in CMakeTarget::validate
-		const auto& version = m_state.msvcEnvironment.detectedVersion();
+		const auto& version = m_state.toolchain.version();
 		if (String::startsWith("17", version))
 		{
 			ret = "Visual Studio 17 2022";

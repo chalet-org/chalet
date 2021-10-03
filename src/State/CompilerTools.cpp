@@ -356,10 +356,10 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std
 			outArch = m_state.info.targetArchitectureString();
 
 			// We want the toolchain version as opposed to the cl.exe version (annoying)
-			const auto& detectedMsvcVersion = m_state.msvcEnvironment.detectedVersion();
+			const auto& detectedMsvcVersion = m_state.toolchain.version();
 			const auto& toolchainVersion = detectedMsvcVersion.empty() ? m_version : detectedMsvcVersion;
 
-			ret = fmt::format("Microsoft{} Visual C/C++ version {} (cl-{})", Unicode::registered(), toolchainVersion, clVersion);
+			ret = fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), clVersion, toolchainVersion);
 		}
 	}
 #else
