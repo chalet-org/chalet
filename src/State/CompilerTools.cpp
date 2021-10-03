@@ -359,7 +359,7 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std
 			const auto& detectedMsvcVersion = m_state.toolchain.version();
 			const auto& toolchainVersion = detectedMsvcVersion.empty() ? m_version : detectedMsvcVersion;
 
-			ret = fmt::format("Microsoft{} Visual C/C++ version {} (cl-{})", Unicode::registered(), toolchainVersion, clVersion);
+			ret = fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), clVersion, toolchainVersion);
 		}
 	}
 #else
