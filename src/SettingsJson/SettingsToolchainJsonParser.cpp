@@ -505,10 +505,16 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 	if (!m_state.toolchain.detectToolchainFromPaths())
 		return false;
 
-	if (checkForMsvc && m_inputs.toolchainPreference().type == ToolchainType::MSVC)
+	if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 	{
-		if (!m_state.msvcEnvironment.create(m_state.toolchain.version()))
-			return false;
+		if (checkForMsvc)
+		{
+			if (!m_state.msvcEnvironment.create(m_state.toolchain.version()))
+				return false;
+		}
+
+		if (m_state.toolchain.version().empty())
+			m_state.toolchain.setVersion(m_state.msvcEnvironment.detectedVersion());
 	}
 #else
 	m_state.toolchain.detectToolchainFromPaths();

@@ -75,7 +75,7 @@ bool CMakeTarget::validate()
 	const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
 	if (compileConfig.isMsvc())
 	{
-		const auto& version = m_state.msvcEnvironment.detectedVersion();
+		const auto& version = m_state.toolchain.version();
 		if (!String::startsWith({ "17", "16", "15", "14", "12", "11", "10" }, version))
 		{
 			if (version.empty())
