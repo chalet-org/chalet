@@ -9,6 +9,7 @@
 #include <optional>
 
 #include "Compile/ToolchainPreference.hpp"
+#include "Core/CommandLineListOption.hpp"
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
 #include "Settings/SettingsType.hpp"
@@ -98,8 +99,14 @@ struct CommandLineInputs
 	void setArchOptions(StringList&& inList) const noexcept;
 	std::string getArchWithOptionsAsString(const std::string& inArchBase) const;
 
+	const StringList& commandList() const noexcept;
+	void setCommandList(StringList&& inList) noexcept;
+
 	bool saveSchemaToFile() const noexcept;
 	void setSaveSchemaToFile(const bool inValue) noexcept;
+
+	CommandLineListOption listOption() const noexcept;
+	void setListOption(std::string&& inValue) noexcept;
 
 	SettingsType settingsType() const noexcept;
 	void setSettingsType(const SettingsType inValue) noexcept;
@@ -127,17 +134,21 @@ struct CommandLineInputs
 	const std::optional<bool>& generateCompileCommands() const noexcept;
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
+	StringList getToolchainPresets() const noexcept;
+
 private:
 	std::string getPlatform() const noexcept;
 	StringList getNotPlatforms() const noexcept;
 
 	ToolchainPreference getToolchainPreferenceFromString(const std::string& inValue) const;
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
+	CommandLineListOption getListOptionFromString(const std::string& inValue) const;
 
 	mutable ToolchainPreference m_toolchainPreference;
 
 	StringList m_runOptions;
 	StringList m_notPlatforms;
+	StringList m_commandList;
 	mutable StringList m_universalArches;
 	mutable StringList m_archOptions;
 
@@ -183,6 +194,7 @@ private:
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
 	SettingsType m_settingsType = SettingsType::None;
+	CommandLineListOption m_listOption = CommandLineListOption::None;
 
 	bool m_saveSchemaToFile = false;
 	mutable bool m_isMsvcPreRelease = false;

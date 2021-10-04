@@ -132,6 +132,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 						m_inputs.setSettingsValue(std::move(value));
 						break;
 
+					case ArgumentIdentifier::ListType:
+						m_inputs.setListOption(std::move(value));
+						break;
+
 					default: break;
 				}
 
@@ -245,6 +249,12 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 	// must do at the end (after arch & toolchain have been parsed)
 	m_inputs.setToolchainPreference(std::move(toolchainPreference));
+
+	if (command == Route::List)
+	{
+		Output::setQuietNonBuild(true);
+		m_inputs.setCommandList(patterns.getRouteList());
+	}
 
 	return true;
 }

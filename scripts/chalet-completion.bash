@@ -7,18 +7,16 @@ _chalet_completions()
 
 	case "${prev}" in
 	-c|--configuration)
-		COMPREPLY=($(compgen -W "Release Debug RelWithDebInfo MinSizeRel Profile" "${cur}"))
+		COMPREPLY=($(compgen -W "$(chalet list --type configurations)" "${cur}"))
 	;;
 	-t|--toolchain)
-		COMPREPLY=($(compgen -W "msvc-pre msvc apple-llvm llvm gcc" "${cur}"))
+		COMPREPLY=($(compgen -W "$(chalet list --type all-toolchains)" "${cur}"))
 	;;
 	-a|--arch)
-		COMPREPLY=($(compgen -W "auto" "${cur}"))
+		COMPREPLY=($(compgen -W "$(chalet list --type architectures)" "${cur}"))
 	;;
 	*)
-	{
-		COMPREPLY=($(compgen -W "$(chalet --help | sed -En '/   chalet/! s/^   ([a-z]+).*$/\1/p')" -- "${cur}"))
-	}
+		COMPREPLY=($(compgen -W "$(chalet list --type commands)" -- "${cur}"))
 	;;
 	esac
 }

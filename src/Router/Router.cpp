@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 
+#include "Core/ListPrinter.hpp"
 #include "Process/Process.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
@@ -60,9 +61,11 @@ bool Router::run()
 	std::unique_ptr<BuildState> buildState;
 
 	const bool isSettings = command == Route::SettingsGet || command == Route::SettingsSet || command == Route::SettingsUnset;
+	const bool isList = command == Route::List;
 	if (command != Route::Init && !isSettings)
 	{
-		Output::lineBreak();
+		if (!isList)
+			Output::lineBreak();
 
 		if (!parseEnvFile())
 			return false;
@@ -84,7 +87,7 @@ bool Router::run()
 
 			buildState.reset();
 		}
-		else if (command != Route::Bundle)
+		else if (command != Route::Bundle && !isList)
 		{
 			chalet_assert(prototype != nullptr, "");
 			buildState = std::make_unique<BuildState>(m_inputs, *prototype);
@@ -135,6 +138,11 @@ bool Router::run()
 			case Route::SettingsSet:
 			case Route::SettingsUnset:
 				result = cmdSettings(command);
+				break;
+
+			case Route::List:
+				chalet_assert(prototype != nullptr, "");
+				result = cmdList(*prototype);
 				break;
 
 			case Route::BuildRun:
@@ -200,8 +208,7 @@ bool Router::cmdBundle(StatePrototype& inPrototype)
 bool Router::cmdInit()
 {
 	ProjectInitializer initializer(m_inputs);
-	if (!initializer.run())
-		return true;
+	initializer.run();
 
 	return true;
 }
@@ -236,6 +243,13 @@ bool Router::cmdSettings(const Route inRoute)
 		return true;
 
 	return true;
+}
+
+/*****************************************************************************/
+bool Router::cmdList(StatePrototype& inPrototype)
+{
+	ListPrinter listPrinter(m_inputs, inPrototype);
+	return listPrinter.printListOfRequestedType();
 }
 
 /*****************************************************************************/
