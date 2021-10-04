@@ -194,7 +194,6 @@ bool BuildState::initializeBuild()
 	if (!paths.initialize(info, toolchain))
 		return false;
 
-	// Note: < 1ms
 	for (auto& target : targets)
 	{
 		if (target->isProject())

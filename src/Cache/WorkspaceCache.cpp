@@ -78,18 +78,35 @@ bool WorkspaceCache::createCacheFolder(const CacheType inCacheType)
 	Output::setShowCommandOverride(false);
 
 	if (!Commands::pathExists(cacheRef))
-		return Commands::makeDirectory(cacheRef);
+	{
+		if (!Commands::makeDirectory(cacheRef))
+			return false;
+	}
 
 	Output::setShowCommandOverride(true);
+
+	m_settingsCreated = true;
 
 	return true;
 }
 
 /*****************************************************************************/
+bool WorkspaceCache::settingsCreated() const noexcept
+{
+	return m_settingsCreated;
+}
+
+/*****************************************************************************/
 bool WorkspaceCache::exists(const CacheType inCacheType) const
 {
-	const auto& cacheRef = getCacheRef(inCacheType);
-	return Commands::pathExists(cacheRef) || Commands::pathExists(m_localSettings.filename());
+	if (inCacheType == CacheType::Local)
+	{
+		return Commands::pathExists(m_cacheFolderLocal) || Commands::pathExists(m_localSettings.filename());
+	}
+	else
+	{
+		return Commands::pathExists(m_globalSettings.filename());
+	}
 }
 
 /*****************************************************************************/
@@ -138,6 +155,14 @@ WorkspaceInternalCacheFile& WorkspaceCache::file() noexcept
 
 /*****************************************************************************/
 JsonFile& WorkspaceCache::getSettings(const SettingsType inType) noexcept
+{
+	if (inType == SettingsType::Global)
+		return m_globalSettings;
+	else
+		return m_localSettings;
+}
+
+const JsonFile& WorkspaceCache::getSettings(const SettingsType inType) const noexcept
 {
 	if (inType == SettingsType::Global)
 		return m_globalSettings;

@@ -68,8 +68,10 @@ bool DependencyManager::runGitDependency(const GitDependency& inDependency)
 	if (m_prototype.tools.git().empty())
 		return true;
 
+	bool doNotUpdate = m_inputs.command() != Route::Configure;
+
 	GitRunner git(m_prototype, m_inputs, inDependency);
-	if (!git.run(m_inputs.command() != Route::Configure))
+	if (!git.run(doNotUpdate))
 	{
 		Diagnostic::error("Error fetching git dependency: {}", inDependency.name());
 		return false;

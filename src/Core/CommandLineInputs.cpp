@@ -483,6 +483,16 @@ std::string CommandLineInputs::getArchWithOptionsAsString(const std::string& inA
 }
 
 /*****************************************************************************/
+const StringList& CommandLineInputs::commandList() const noexcept
+{
+	return m_commandList;
+}
+void CommandLineInputs::setCommandList(StringList&& inList) noexcept
+{
+	m_commandList = std::move(inList);
+}
+
+/*****************************************************************************/
 bool CommandLineInputs::saveSchemaToFile() const noexcept
 {
 	return m_saveSchemaToFile;
@@ -491,6 +501,16 @@ bool CommandLineInputs::saveSchemaToFile() const noexcept
 void CommandLineInputs::setSaveSchemaToFile(const bool inValue) noexcept
 {
 	m_saveSchemaToFile = inValue;
+}
+
+/*****************************************************************************/
+CommandLineListOption CommandLineInputs::listOption() const noexcept
+{
+	return m_listOption;
+}
+void CommandLineInputs::setListOption(std::string&& inValue) noexcept
+{
+	m_listOption = getListOptionFromString(inValue);
 }
 
 /*****************************************************************************/
@@ -596,6 +616,23 @@ const std::optional<bool>& CommandLineInputs::generateCompileCommands() const no
 void CommandLineInputs::setGenerateCompileCommands(const bool inValue) noexcept
 {
 	m_generateCompileCommands = inValue;
+}
+
+/*****************************************************************************/
+StringList CommandLineInputs::getToolchainPresets() const noexcept
+{
+	StringList ret;
+
+#if defined(CHALET_WIN32)
+	ret.emplace_back("msvc-pre");
+	ret.emplace_back("msvc");
+#elif defined(CHALET_MACOS)
+	ret.emplace_back("apple-llvm");
+#endif
+	ret.emplace_back("llvm");
+	ret.emplace_back("gcc");
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -754,4 +791,34 @@ IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) cons
 	return IdeType::None;
 }
 
+/*****************************************************************************/
+CommandLineListOption CommandLineInputs::getListOptionFromString(const std::string& inValue) const
+{
+	if (String::equals("commands", inValue))
+	{
+		return CommandLineListOption::Commands;
+	}
+	else if (String::equals("configurations", inValue))
+	{
+		return CommandLineListOption::Configurations;
+	}
+	else if (String::equals("toolchain-presets", inValue))
+	{
+		return CommandLineListOption::ToolchainPresets;
+	}
+	else if (String::equals("user-toolchains", inValue))
+	{
+		return CommandLineListOption::UserToolchains;
+	}
+	else if (String::equals("all-toolchains", inValue))
+	{
+		return CommandLineListOption::AllToolchains;
+	}
+	else if (String::equals("architectures", inValue))
+	{
+		return CommandLineListOption::Architectures;
+	}
+
+	return CommandLineListOption::None;
+}
 }

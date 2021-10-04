@@ -37,6 +37,9 @@ struct StatePrototype
 	const std::string& releaseConfiguration() const noexcept;
 	const std::string& anyConfiguration() const noexcept;
 
+	StringList getBuildConfigurationList() const;
+	StringList getUserToolchainList() const;
+
 	const std::string kKeyTargets = "targets";
 	const std::string kKeyAbstracts = "abstracts";
 
@@ -68,11 +71,12 @@ private:
 	void setReleaseConfiguration(const std::string& inName);
 	void addRequiredBuildConfiguration(std::string inValue);
 
+	CommandLineInputs& m_inputs;
+
 	GlobalSettingsState m_globalSettingsState;
 	BuildConfigurationMap m_buildConfigurations;
 
-	CommandLineInputs& m_inputs;
-
+	StringList kDefaultBuildConfigurations;
 	StringList m_allowedBuildConfigurations;
 	StringList m_requiredBuildConfigurations;
 

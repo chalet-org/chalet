@@ -30,10 +30,12 @@ struct WorkspaceCache
 	WorkspaceInternalCacheFile& file() noexcept;
 
 	JsonFile& getSettings(const SettingsType inType) noexcept;
+	const JsonFile& getSettings(const SettingsType inType) const noexcept;
 	void saveSettings(const SettingsType inType);
 
 	bool removeStaleProjectCaches();
 	bool saveProjectCache();
+	bool settingsCreated() const noexcept;
 
 private:
 	friend class BuildState;
@@ -56,6 +58,7 @@ private:
 	std::string m_cacheFolderLocal;
 	// std::string m_cacheFolderGlobal;
 
+	bool m_settingsCreated = false;
 	bool m_removeOldCacheFolder = false;
 };
 }

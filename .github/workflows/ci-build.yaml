@@ -57,7 +57,7 @@ jobs:
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
-          files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json LICENSE.txt README.md
+          files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.bash LICENSE.txt README.md
           dest: dist/chalet-linux-ubuntu.zip
       - name: "Upload assets"
         uses: softprops/action-gh-release@v1
@@ -100,7 +100,7 @@ jobs:
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
-          files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json LICENSE.txt README.md
+          files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.bash LICENSE.txt README.md
           dest: dist/chalet-macos-universal.zip
       - name: "Upload assets"
         uses: softprops/action-gh-release@v1
@@ -134,7 +134,7 @@ jobs:
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
-          files: dist/chalet.exe schema/chalet-settings.schema.json schema/chalet.schema.json LICENSE.txt README.md
+          files: dist/chalet.exe schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.bash LICENSE.txt README.md
           dest: dist/chalet-windows-msvc64.zip
       - name: "Make NSIS Installer"
         uses: joncloud/makensis-action@v3.5
@@ -188,7 +188,7 @@ jobs:
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
-          files: dist/chalet.exe schema/chalet-settings.schema.json schema/chalet.schema.json LICENSE.txt README.md
+          files: dist/chalet.exe schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.bash LICENSE.txt README.md
           dest: dist/chalet-windows-mingw64.zip
       - name: "Make NSIS Installer"
         uses: joncloud/makensis-action@v3.5

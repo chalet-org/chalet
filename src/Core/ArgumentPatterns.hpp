@@ -25,7 +25,8 @@ class ArgumentPatterns
 {
 	using ParserAction = std::function<void(ArgumentPatterns&)>;
 	using ParserList = std::unordered_map<Route, ParserAction>;
-	using ArgumentMap = std::map<std::string, MappedArgument>; // note: must be ordered
+	using RouteMap = std::map<std::string, Route>;			   // note: ordered
+	using ArgumentMap = std::map<std::string, MappedArgument>; // note: ordered
 
 public:
 	ArgumentPatterns();
@@ -34,6 +35,8 @@ public:
 	const ArgumentMap& arguments() const noexcept;
 
 	Route route() const noexcept;
+
+	StringList getRouteList();
 
 private:
 	ushort parseOption(const std::string& inString);
@@ -93,6 +96,7 @@ private:
 	void commandSettingsGet();
 	void commandSettingsSet();
 	void commandSettingsUnset();
+	void commandList();
 
 #if defined(CHALET_DEBUG)
 	void commandDebug();
@@ -103,6 +107,7 @@ private:
 
 	StringList m_optionPairsCache;
 	ArgumentMap m_argumentMap;
+	RouteMap m_routeMap;
 
 	Route m_route;
 

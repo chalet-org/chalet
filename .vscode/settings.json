@@ -8,7 +8,9 @@
 	"files.trimTrailingWhitespace": true,
 	"files.eol": "\n",
 	"search.exclude": {
-		"vendor": true
+		"vendor": true,
+		"dist": true,
+		"build": true
 	},
 	"terminal.integrated.automationShell.windows": "C:/Program Files/Git/bin/bash.exe",
 	"json.schemas": [

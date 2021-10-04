@@ -326,8 +326,9 @@ bool Commands::makeDirectory(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::makeDirectories(const StringList& inPaths)
+bool Commands::makeDirectories(const StringList& inPaths, bool& outDirectoriesMade)
 {
+	outDirectoriesMade = false;
 	bool result = true;
 	for (auto& path : inPaths)
 	{
@@ -335,6 +336,7 @@ bool Commands::makeDirectories(const StringList& inPaths)
 			continue;
 
 		result &= Commands::makeDirectory(path);
+		outDirectoriesMade = true;
 	}
 
 	return result;

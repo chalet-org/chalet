@@ -36,16 +36,27 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ Route::SettingsGet, &ArgumentPatterns::commandSettingsGet },
 		{ Route::SettingsSet, &ArgumentPatterns::commandSettingsSet },
 		{ Route::SettingsUnset, &ArgumentPatterns::commandSettingsUnset },
+		{ Route::List, &ArgumentPatterns::commandList },
+	}),
+	m_routeMap({
+		{ "buildrun", Route::BuildRun },
+		{ "run", Route::Run },
+		{ "build", Route::Build },
+		{ "rebuild", Route::Rebuild },
+		{ "clean", Route::Clean },
+		{ "bundle", Route::Bundle },
+		{ "configure", Route::Configure },
+		{ "init", Route::Init },
+		{ "get", Route::SettingsGet },
+		{ "set", Route::SettingsSet },
+		{ "unset", Route::SettingsUnset },
+		{ "list", Route::List },
 	})
 {
 #if defined(CHALET_DEBUG)
 	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::commandDebug);
+	m_routeMap.emplace("debug", Route::Debug);
 #endif
-	// --dump-assembly=1
-	// --generate-compile-commands=0
-	// --show-commands=0
-	// --benchmark=1
-	// --signing-identity
 }
 
 /*****************************************************************************/
@@ -137,56 +148,8 @@ ushort ArgumentPatterns::parseOption(const std::string& inString)
 /*****************************************************************************/
 Route ArgumentPatterns::getRouteFromString(const std::string& inValue)
 {
-	if (String::equals("buildrun", inValue))
-	{
-		return Route::BuildRun;
-	}
-	else if (String::equals("run", inValue))
-	{
-		return Route::Run;
-	}
-	else if (String::equals("build", inValue))
-	{
-		return Route::Build;
-	}
-	else if (String::equals("rebuild", inValue))
-	{
-		return Route::Rebuild;
-	}
-	else if (String::equals("clean", inValue))
-	{
-		return Route::Clean;
-	}
-	else if (String::equals("bundle", inValue))
-	{
-		return Route::Bundle;
-	}
-	else if (String::equals("configure", inValue))
-	{
-		return Route::Configure;
-	}
-	else if (String::equals("init", inValue))
-	{
-		return Route::Init;
-	}
-	else if (String::equals("get", inValue))
-	{
-		return Route::SettingsGet;
-	}
-	else if (String::equals("set", inValue))
-	{
-		return Route::SettingsSet;
-	}
-	else if (String::equals("unset", inValue))
-	{
-		return Route::SettingsUnset;
-	}
-#if defined(CHALET_DEBUG)
-	else if (String::equals("debug", inValue))
-	{
-		return Route::Debug;
-	}
-#endif
+	if (m_routeMap.find(inValue) != m_routeMap.end())
+		return m_routeMap.at(inValue);
 
 	return Route::Unknown;
 }
@@ -200,6 +163,18 @@ const ArgumentPatterns::ArgumentMap& ArgumentPatterns::arguments() const noexcep
 Route ArgumentPatterns::route() const noexcept
 {
 	return m_route;
+}
+
+/*****************************************************************************/
+StringList ArgumentPatterns::getRouteList()
+{
+	StringList ret;
+	for (auto& [cmd, _] : m_routeMap)
+	{
+		ret.emplace_back(cmd);
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -546,7 +521,8 @@ void ArgumentPatterns::populateMainArguments()
    bundle
    get {key}
    set {key} {value}
-   unset {key})",
+   unset {key}
+   list)",
 			fmt::arg("runTarget", kArgRunTarget),
 			fmt::arg("runArgs", kArgRunTargetArguments),
 			fmt::arg("key", kArgSettingsKey),
@@ -856,6 +832,15 @@ void ArgumentPatterns::commandSettingsUnset()
 
 	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str())
 		.help("The config key to remove")
+		.required();
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::commandList()
+{
+	addStringArgument(ArgumentIdentifier::ListType, "--type", std::string())
+		.help("The data type to list (commands, configurations, toolchain-presets, user-toolchains, all-toolchains, architectures)")
+		.nargs(1)
 		.required();
 }
 

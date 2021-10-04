@@ -25,7 +25,14 @@ namespace chalet
 StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
 	cache(inInputs),
 	tools(inInputs),
-	m_inputs(inInputs)
+	m_inputs(inInputs),
+	kDefaultBuildConfigurations({
+		"Release",
+		"Debug",
+		"RelWithDebInfo",
+		"MinSizeRel",
+		"Profile",
+	})
 {
 }
 
@@ -47,10 +54,20 @@ bool StatePrototype::initialize()
 	m_filename = m_inputs.inputFile();
 	m_inputs.clearWorkingDirectory(m_filename);
 
+	Route route = m_inputs.command();
+	bool isListRoute = route == Route::List;
+
 	if (!Commands::pathExists(m_filename))
 	{
-		Diagnostic::error("Build file '{}' was not found.", m_filename);
-		return false;
+		if (isListRoute)
+		{
+			return true;
+		}
+		else
+		{
+			Diagnostic::error("Build file '{}' was not found.", m_filename);
+			return false;
+		}
 	}
 
 	if (!m_buildJson.load(m_inputs.inputFile()))
@@ -61,7 +78,7 @@ bool StatePrototype::initialize()
 
 	Output::setShowCommandOverride(false);
 
-	if (m_inputs.command() != Route::Configure)
+	if (route != Route::Configure)
 	{
 		Timer timer;
 		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
@@ -135,11 +152,15 @@ bool StatePrototype::createCache()
 /*****************************************************************************/
 void StatePrototype::saveCaches()
 {
-	cache.saveSettings(SettingsType::Local);
 	cache.saveSettings(SettingsType::Global);
 
-	cache.removeStaleProjectCaches();
-	cache.saveProjectCache();
+	if (cache.settingsCreated())
+	{
+		cache.saveSettings(SettingsType::Local);
+
+		cache.removeStaleProjectCaches();
+		cache.saveProjectCache();
+	}
 }
 
 /*****************************************************************************/
@@ -310,6 +331,58 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 }
 
 /*****************************************************************************/
+StringList StatePrototype::getBuildConfigurationList() const
+{
+	StringList ret;
+
+	if (!m_buildConfigurations.empty())
+	{
+		for (auto& [name, _] : m_buildConfigurations)
+		{
+			ret.emplace_back(name);
+		}
+	}
+	else
+	{
+		return kDefaultBuildConfigurations;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList StatePrototype::getUserToolchainList() const
+{
+	StringList ret;
+
+	const std::string kKeyToolchains = "toolchains";
+
+	auto parseToolchains = [&](const Json& inNode, StringList& outList) {
+		if (!inNode.contains(kKeyToolchains))
+			return;
+
+		const auto& toolchains = inNode.at(kKeyToolchains);
+		for (auto& [key, _] : toolchains.items())
+		{
+			outList.emplace_back(key);
+		}
+	};
+
+	if (cache.exists(CacheType::Local))
+	{
+		auto& settingsFile = cache.getSettings(SettingsType::Local);
+		parseToolchains(settingsFile.json, ret);
+	}
+	else if (cache.exists(CacheType::Global))
+	{
+		auto& settingsFile = cache.getSettings(SettingsType::Global);
+		parseToolchains(settingsFile.json, ret);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool StatePrototype::parseGlobalSettingsJson()
 {
 	auto& settingsFile = cache.getSettings(SettingsType::Global);
@@ -337,13 +410,7 @@ bool StatePrototype::makeDefaultBuildConfigurations()
 {
 	m_buildConfigurations.clear();
 
-	m_allowedBuildConfigurations = {
-		"Release",
-		"Debug",
-		"RelWithDebInfo",
-		"MinSizeRel",
-		"Profile",
-	};
+	m_allowedBuildConfigurations = kDefaultBuildConfigurations;
 
 	m_releaseConfiguration = "Release";
 
