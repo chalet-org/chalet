@@ -7,6 +7,7 @@ Unicode true
 ; folders
 	!define FOLDERS_DIST "dist"
 	!define FOLDERS_SCHEMA "schema"
+	!define FOLDERS_SCRIPTS "scripts"
 	!define FOLDERS_BIN "bin"
 	!define FOLDERS_PLATFORM "platform\windows\installer"
 	!define FOLDERS_IMAGES "${FOLDERS_PLATFORM}\images"
@@ -24,6 +25,7 @@ Unicode true
 	!define FILES_CMD "chalet.cmd"
 	!define FILES_SCHEMA_BUILD "${FOLDERS_SCHEMA}\chalet.schema.json"
 	!define FILES_SCHEMA_SETTINGS "${FOLDERS_SCHEMA}\chalet-settings.schema.json"
+	!define FILES_SCRIPTS_BASH_COMPLETION "${FOLDERS_SCRIPTS}\chalet-completion.bash"
 
 ; output
 	!define OUTPUT_FILE "${FOLDERS_DIST}\chalet-windows-installer.exe"
@@ -194,6 +196,7 @@ Section "MainSection" SEC01
 	SetOutPath "$INSTDIR\${FOLDERS_SCHEMA}"
 	File "${FILES_SCHEMA_BUILD}"
 	File "${FILES_SCHEMA_SETTINGS}"
+	File "${FILES_SCRIPTS_BASH_COMPLETION}"
 
 ; Shortcuts
 	; CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
@@ -280,6 +283,7 @@ Section Uninstall
 	Delete "$INSTDIR\${FILES_UNINSTALLER}"
 	Delete "$INSTDIR\${FILES_LICENSE}"
 	Delete "$INSTDIR\${FILES_README}"
+	Delete "$INSTDIR\${FILES_SCRIPTS_BASH_COMPLETION}"
 	Delete "$INSTDIR\${FILES_SCHEMA_SETTINGS}"
 	Delete "$INSTDIR\${FILES_SCHEMA_BUILD}"
 	Delete "${OUT_BIN}\${FILES_MAIN}"
