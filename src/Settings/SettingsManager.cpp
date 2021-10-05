@@ -14,19 +14,61 @@
 namespace chalet
 {
 /*****************************************************************************/
-SettingsManager::SettingsManager(const CommandLineInputs& inInputs, const SettingsAction inAction) :
+SettingsManager::SettingsManager(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	m_cache(inInputs),
 	m_key(inInputs.settingsKey()),
 	m_value(inInputs.settingsValue()),
-	m_action(inAction),
 	m_type(inInputs.settingsType())
 {
 }
 
 /*****************************************************************************/
-bool SettingsManager::run()
+bool SettingsManager::run(const SettingsAction inAction)
 {
+	if (!initialize())
+		return false;
+
+	m_action = inAction;
+
+	auto& settings = getSettings();
+	switch (m_action)
+	{
+		case SettingsAction::Get:
+			if (!runSettingsGet(settings.json))
+				return false;
+			break;
+
+		case SettingsAction::Set:
+			if (!runSettingsSet(settings.json))
+				return false;
+			break;
+
+		case SettingsAction::Unset:
+			if (!runSettingsUnset(settings.json))
+				return false;
+			break;
+
+		case SettingsAction::QueryKeys:
+			if (!runSettingsKeyQuery(settings.json))
+				return false;
+			break;
+
+		default:
+			break;
+	}
+
+	settings.save();
+
+	return true;
+}
+
+/*****************************************************************************/
+bool SettingsManager::initialize()
+{
+	if (m_initialized)
+		return true;
+
 	if (!m_cache.initializeSettings())
 		return false;
 
@@ -50,30 +92,9 @@ bool SettingsManager::run()
 		settings.setDirty(true);
 	}
 
-	switch (m_action)
-	{
-		case SettingsAction::Get:
-			if (!runSettingsGet(node))
-				return false;
-			break;
+	m_initialized = true;
 
-		case SettingsAction::Set:
-			if (!runSettingsSet(node))
-				return false;
-			break;
-
-		case SettingsAction::Unset:
-			if (!runSettingsUnset(node))
-				return false;
-			break;
-
-		default:
-			break;
-	}
-
-	settings.save();
-
-	return false;
+	return true;
 }
 
 /*****************************************************************************/
@@ -91,6 +112,70 @@ bool SettingsManager::runSettingsGet(Json& node)
 	else
 	{
 		std::cout << ptr->dump(3, ' ') << std::endl;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool SettingsManager::runSettingsKeyQuery(Json& node)
+{
+	StringList keyResultList;
+
+	auto escapeString = [](std::string str) -> std::string {
+		String::replaceAll(str, ".", R"(\\\\.)");
+		return str;
+	};
+
+	Json* ptr = &node;
+	if (!m_key.empty())
+	{
+		StringList subKeys = parseKey();
+		std::string idxRaw;
+		std::string subKeyRaw;
+		std::string outKeyPath;
+		for (auto& subKey : subKeys)
+		{
+			if (!getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw) || !ptr->contains(subKey))
+			{
+				for (auto& [key, _] : ptr->items())
+				{
+					if (!ptr->is_array())
+					{
+						if (outKeyPath.empty())
+							keyResultList.emplace_back(escapeString(key));
+						else
+							keyResultList.emplace_back(fmt::format("{}.{}", outKeyPath, escapeString(key)));
+					}
+				}
+				break;
+			}
+
+			ptr = &ptr->at(subKey);
+
+			if (outKeyPath.empty())
+				outKeyPath = escapeString(subKey);
+			else
+				outKeyPath += fmt::format(".{}", escapeString(subKey));
+
+			if (ptr->is_array() && !idxRaw.empty())
+			{
+				std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+				if (val < ptr->size())
+				{
+					ptr = &(*ptr)[val];
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+	}
+
+	if (!keyResultList.empty())
+	{
+		std::cout << String::join(keyResultList) << std::endl;
 	}
 
 	return true;
@@ -313,23 +398,12 @@ bool SettingsManager::findRequestedNode(Json& inNode, std::string& outLastKey, J
 
 	if (!m_key.empty())
 	{
-		bool fail = false;
 		StringList subKeys = parseKey();
 		std::string idxRaw;
 		std::string subKeyRaw;
 		for (auto& subKey : subKeys)
 		{
-			if (!getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw))
-			{
-				fail = true;
-			}
-
-			if (!outNode->contains(subKey))
-			{
-				fail = true;
-			}
-
-			if (fail)
+			if (!getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw) || !outNode->contains(subKey))
 			{
 				auto& key = !subKeyRaw.empty() ? subKeyRaw : subKey;
 				auto loc = m_key.find(key);

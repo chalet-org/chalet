@@ -16,7 +16,7 @@ enum class CommandLineListOption : ushort
 	AllToolchains,
 	UserToolchains,
 	ToolchainPresets,
-	Architectures
+	Architectures,
 };
 }
 

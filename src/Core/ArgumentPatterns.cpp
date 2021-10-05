@@ -34,6 +34,7 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ Route::Configure, &ArgumentPatterns::commandConfigure },
 		{ Route::Init, &ArgumentPatterns::commandInit },
 		{ Route::SettingsGet, &ArgumentPatterns::commandSettingsGet },
+		{ Route::SettingsGetKeys, &ArgumentPatterns::commandSettingsGetKeys },
 		{ Route::SettingsSet, &ArgumentPatterns::commandSettingsSet },
 		{ Route::SettingsUnset, &ArgumentPatterns::commandSettingsUnset },
 		{ Route::List, &ArgumentPatterns::commandList },
@@ -48,10 +49,17 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ "configure", Route::Configure },
 		{ "init", Route::Init },
 		{ "get", Route::SettingsGet },
+		{ "getkeys", Route::SettingsGetKeys },
 		{ "set", Route::SettingsSet },
 		{ "unset", Route::SettingsUnset },
 		{ "list", Route::List },
-	})
+	}),
+	kArgRunTarget("[<runTarget>]"),
+	kArgRemainingArguments("[ARG...]"),
+	kArgInitName("<name>"),
+	kArgInitPath("<path>"),
+	kArgSettingsKey("<key>"),
+	kArgSettingsValue("<value>")
 {
 #if defined(CHALET_DEBUG)
 	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::commandDebug);
@@ -524,7 +532,7 @@ void ArgumentPatterns::populateMainArguments()
    unset {key}
    list)",
 			fmt::arg("runTarget", kArgRunTarget),
-			fmt::arg("runArgs", kArgRunTargetArguments),
+			fmt::arg("runArgs", kArgRemainingArguments),
 			fmt::arg("key", kArgSettingsKey),
 			fmt::arg("value", kArgSettingsValue),
 			fmt::arg("path", kArgInitPath)));
@@ -679,7 +687,7 @@ void ArgumentPatterns::addRunTargetArg()
 /*****************************************************************************/
 void ArgumentPatterns::addRunArgumentsArg()
 {
-	addRemainingArguments(ArgumentIdentifier::RunTargetArguments, kArgRunTargetArguments.c_str())
+	addRemainingArguments(ArgumentIdentifier::RunTargetArguments, kArgRemainingArguments.c_str())
 		.help("The arguments to pass to the run target");
 }
 
@@ -808,6 +816,18 @@ void ArgumentPatterns::commandSettingsGet()
 
 	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str(), std::string())
 		.help("The config key to get");
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::commandSettingsGetKeys()
+{
+	addFileArg();
+	addSettingsTypeArg();
+
+	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str(), std::string())
+		.help("The config key to query for");
+
+	addRemainingArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, kArgRemainingArguments.c_str());
 }
 
 /*****************************************************************************/

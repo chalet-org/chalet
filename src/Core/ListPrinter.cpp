@@ -6,6 +6,7 @@
 #include "Core/ListPrinter.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+#include "Settings/SettingsManager.hpp"
 #include "State/StatePrototype.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

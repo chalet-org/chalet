@@ -21,6 +21,7 @@ enum class Route : ushort
 	Configure,
 	Init,
 	SettingsGet,
+	SettingsGetKeys,
 	SettingsSet,
 	SettingsUnset,
 	List,
