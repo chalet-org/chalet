@@ -123,52 +123,53 @@ bool SettingsManager::runSettingsKeyQuery(Json& node)
 	StringList keyResultList;
 
 	auto escapeString = [](std::string str) -> std::string {
-		String::replaceAll(str, ".", R"(\\\\.)");
+		String::replaceAll(str, ".", R"(\\.)");
 		return str;
 	};
 
 	Json* ptr = &node;
-	if (!m_key.empty())
+
+	StringList subKeys = parseKey();
+	if (!subKeys.back().empty())
+		subKeys.push_back(std::string()); // ensures object key w/o dot will get handled
+
+	std::string idxRaw;
+	std::string subKeyRaw;
+	std::string outKeyPath;
+	for (auto& subKey : subKeys)
 	{
-		StringList subKeys = parseKey();
-		std::string idxRaw;
-		std::string subKeyRaw;
-		std::string outKeyPath;
-		for (auto& subKey : subKeys)
+		if (subKey.empty() || !getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw) || !ptr->contains(subKey))
 		{
-			if (!getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw) || !ptr->contains(subKey))
+			if (!ptr->is_array())
 			{
 				for (auto& [key, _] : ptr->items())
 				{
-					if (!ptr->is_array())
-					{
-						if (outKeyPath.empty())
-							keyResultList.emplace_back(escapeString(key));
-						else
-							keyResultList.emplace_back(fmt::format("{}.{}", outKeyPath, escapeString(key)));
-					}
+					if (outKeyPath.empty())
+						keyResultList.emplace_back(escapeString(key));
+					else
+						keyResultList.emplace_back(fmt::format("{}.{}", outKeyPath, escapeString(key)));
 				}
-				break;
 			}
+			break;
+		}
 
-			ptr = &ptr->at(subKey);
+		ptr = &ptr->at(subKey);
 
-			if (outKeyPath.empty())
-				outKeyPath = escapeString(subKey);
-			else
-				outKeyPath += fmt::format(".{}", escapeString(subKey));
+		if (outKeyPath.empty())
+			outKeyPath = escapeString(subKey);
+		else
+			outKeyPath += fmt::format(".{}", escapeString(subKey));
 
-			if (ptr->is_array() && !idxRaw.empty())
+		if (ptr->is_array() && !idxRaw.empty())
+		{
+			std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+			if (val < ptr->size())
 			{
-				std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
-				if (val < ptr->size())
-				{
-					ptr = &(*ptr)[val];
-				}
-				else
-				{
-					break;
-				}
+				ptr = &(*ptr)[val];
+			}
+			else
+			{
+				break;
 			}
 		}
 	}
