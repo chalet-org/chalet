@@ -6,7 +6,6 @@ _chalet_completions()
 	cur="${_CMDS[COMP_CWORD]}"
 	prev="${_CMDS[COMP_CWORD-1]}"
 
-
 	case "${prev}" in
 	-c|--configuration)
 		COMPREPLY=($(compgen -W "$(chalet list --type configurations)" -- $cur))
@@ -17,12 +16,14 @@ _chalet_completions()
 	-a|--arch)
 		COMPREPLY=($(compgen -W "$(chalet list --type architectures)" -- $cur))
 	;;
-	get|set|unset)
+	get|getkeys|set|unset)
 		_CMDS[COMP_CWORD-1]=getkeys
-		COMPREPLY=($(compgen -W "$(${_CMDS[@]})"))
+		_CMDS[COMP_CWORD]="${_CMDS[COMP_CWORD]//\\\\./\\.}"
+		_RESP=$(${_CMDS[@]})
+		COMPREPLY=($(compgen -W "${_RESP//\\\\./\\\\\\\\.}"))
 	;;
 	*)
-		COMPREPLY=($(compgen -W "$(chalet list --type commands)" -- $cur))
+		COMPREPLY=($(compgen -W "$(chalet list --type commands)" -- "$cur"))
 	;;
 	esac
 }
