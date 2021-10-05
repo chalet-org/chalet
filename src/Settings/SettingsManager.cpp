@@ -155,6 +155,9 @@ bool SettingsManager::runSettingsKeyQuery(Json& node)
 
 		ptr = &ptr->at(subKey);
 
+		if (!ptr->is_object())
+			continue;
+
 		if (outKeyPath.empty())
 			outKeyPath = escapeString(subKey);
 		else
