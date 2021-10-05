@@ -26,10 +26,10 @@ SettingsManager::SettingsManager(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool SettingsManager::run(const SettingsAction inAction)
 {
-	if (!initialize())
-		return false;
-
 	m_action = inAction;
+
+	if (!initialize())
+		return m_action == SettingsAction::QueryKeys;
 
 	auto& settings = getSettings();
 	switch (m_action)
@@ -78,10 +78,13 @@ bool SettingsManager::initialize()
 	auto& settings = getSettings();
 	if (!Commands::pathExists(settings.filename()))
 	{
-		if (m_type == SettingsType::Global)
-			Diagnostic::error("File '{}' doesn't exist.", settings.filename());
-		else
-			Diagnostic::error("Not a chalet project, or a build hasn't been run yet.", settings.filename());
+		if (m_action != SettingsAction::QueryKeys)
+		{
+			if (m_type == SettingsType::Global)
+				Diagnostic::error("File '{}' doesn't exist.", settings.filename());
+			else
+				Diagnostic::error("Not a chalet project, or a build hasn't been run yet.", settings.filename());
+		}
 		return false;
 	}
 
