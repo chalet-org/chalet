@@ -143,7 +143,7 @@ bool SettingsManager::runSettingsKeyQuery(Json& node)
 	{
 		if (subKey.empty() || !getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw) || !ptr->contains(subKey))
 		{
-			if (!ptr->is_array())
+			if (ptr->is_object())
 			{
 				for (auto& [key, _] : ptr->items())
 				{
@@ -153,18 +153,23 @@ bool SettingsManager::runSettingsKeyQuery(Json& node)
 						keyResultList.emplace_back(fmt::format("{}.{}", outKeyPath, escapeString(key)));
 				}
 			}
+			else
+			{
+				if (!outKeyPath.empty())
+					keyResultList.emplace_back(std::move(outKeyPath));
+			}
 			break;
 		}
 
 		ptr = &ptr->at(subKey);
 
-		if (!ptr->is_object())
-			continue;
-
 		if (outKeyPath.empty())
 			outKeyPath = escapeString(subKey);
 		else
 			outKeyPath += fmt::format(".{}", escapeString(subKey));
+
+		if (!ptr->is_object())
+			continue;
 
 		if (ptr->is_array() && !idxRaw.empty())
 		{
