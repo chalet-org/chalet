@@ -59,6 +59,7 @@ ArgumentPatterns::ArgumentPatterns() :
 	kArgInitName("<name>"),
 	kArgInitPath("<path>"),
 	kArgSettingsKey("<key>"),
+	kArgSettingsKeyQuery("<query>"),
 	kArgSettingsValue("<value>")
 {
 #if defined(CHALET_DEBUG)
@@ -379,6 +380,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 std::string ArgumentPatterns::getHelp()
 {
 	std::string title = "Chalet - A cross-platform JSON-based project & build tool";
+
 	std::string help = m_parser.help().str();
 	String::replaceAll(help, " [options] <subcommand>", " <subcommand> [options]");
 	String::replaceAll(help, "Usage: ", "Usage:\n   ");
@@ -393,7 +395,7 @@ std::string ArgumentPatterns::getHelp()
 	String::replaceAll(help, "[default: false]", "");
 	String::replaceAll(help, "[default: <not representable>]", "");
 
-	std::string ret = fmt::format("{title}\n\n{help}", FMT_ARG(title), FMT_ARG(help));
+	std::string ret = fmt::format("{}\n\n{}", title, help);
 	if (m_route == Route::Unknown)
 	{
 		ret += "\nAdditional help is available in each subcommand";
@@ -403,6 +405,12 @@ std::string ArgumentPatterns::getHelp()
 		RegexPatterns::matchAndReplace(ret, "(\\[options\\]) (\\w+)", "$& [opts]");
 		String::replaceAll(ret, " [options]", "");
 		String::replaceAll(ret, "[opts]", "[options]");
+	}
+
+	if (m_route == Route::SettingsGetKeys)
+	{
+		String::replaceAll(ret, fmt::format("{} {}", kArgSettingsKeyQuery, kArgRemainingArguments), kArgSettingsKeyQuery);
+		String::replaceAll(ret, fmt::format("\n{}     	RMV", kArgRemainingArguments), "");
 	}
 
 	return ret;
@@ -517,8 +525,7 @@ argparse::Argument& ArgumentPatterns::addRemainingArguments(const ArgumentIdenti
 /*****************************************************************************/
 void ArgumentPatterns::populateMainArguments()
 {
-	m_parser.add_argument("<subcommand>")
-		.help(fmt::format(R"(
+	auto help = fmt::format(R"(
    init [{path}]
    configure
    buildrun {runTarget} {runArgs}
@@ -528,14 +535,19 @@ void ArgumentPatterns::populateMainArguments()
    clean
    bundle
    get {key}
+   getkeys {keyQuery}
    set {key} {value}
    unset {key}
    list)",
-			fmt::arg("runTarget", kArgRunTarget),
-			fmt::arg("runArgs", kArgRemainingArguments),
-			fmt::arg("key", kArgSettingsKey),
-			fmt::arg("value", kArgSettingsValue),
-			fmt::arg("path", kArgInitPath)));
+		fmt::arg("runTarget", kArgRunTarget),
+		fmt::arg("runArgs", kArgRemainingArguments),
+		fmt::arg("key", kArgSettingsKey),
+		fmt::arg("keyQuery", kArgSettingsKeyQuery),
+		fmt::arg("value", kArgSettingsValue),
+		fmt::arg("path", kArgInitPath));
+
+	m_parser.add_argument("<subcommand>")
+		.help(std::move(help));
 }
 
 /*****************************************************************************/
@@ -824,10 +836,11 @@ void ArgumentPatterns::commandSettingsGetKeys()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str(), std::string())
+	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKeyQuery.c_str(), std::string())
 		.help("The config key to query for");
 
-	addRemainingArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, kArgRemainingArguments.c_str());
+	addRemainingArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, kArgRemainingArguments.c_str())
+		.help("RMV");
 }
 
 /*****************************************************************************/
