@@ -183,7 +183,7 @@
 				"chalet"
 			],
 			"include": [
-				"scripts/chalet-completion.bash"
+				"scripts/chalet-completion.sh"
 			],
 			"exclude": [
 				"**.psd",

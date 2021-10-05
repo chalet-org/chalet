@@ -25,7 +25,7 @@ Unicode true
 	!define FILES_CMD "chalet.cmd"
 	!define FILES_SCHEMA_BUILD "${FOLDERS_SCHEMA}\chalet.schema.json"
 	!define FILES_SCHEMA_SETTINGS "${FOLDERS_SCHEMA}\chalet-settings.schema.json"
-	!define FILES_SCRIPTS_BASH_COMPLETION "${FOLDERS_SCRIPTS}\chalet-completion.bash"
+	!define FILES_SCRIPTS_BASH_COMPLETION "${FOLDERS_SCRIPTS}\chalet-completion.sh"
 
 ; output
 	!define OUTPUT_FILE "${FOLDERS_DIST}\chalet-windows-installer.exe"
