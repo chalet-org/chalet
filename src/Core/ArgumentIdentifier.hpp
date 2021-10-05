@@ -42,6 +42,7 @@ enum class ArgumentIdentifier : ushort
 	SettingsKey,
 	SettingsValue,
 	ListType,
+	SettingsKeysRemainingArgs,
 };
 }
 

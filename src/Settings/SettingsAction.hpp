@@ -13,6 +13,7 @@ enum class SettingsAction : ushort
 	Get,
 	Set,
 	Unset,
+	QueryKeys,
 };
 }
 

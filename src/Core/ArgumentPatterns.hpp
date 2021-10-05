@@ -94,6 +94,7 @@ private:
 	void commandConfigure();
 	void commandInit();
 	void commandSettingsGet();
+	void commandSettingsGetKeys();
 	void commandSettingsSet();
 	void commandSettingsUnset();
 	void commandList();
@@ -109,16 +110,16 @@ private:
 	ArgumentMap m_argumentMap;
 	RouteMap m_routeMap;
 
-	Route m_route;
-
 	std::string m_routeString;
 
-	const std::string kArgRunTarget = "[<runTarget>]";
-	const std::string kArgRunTargetArguments = "[ARG...]";
-	const std::string kArgInitName = "<name>";
-	const std::string kArgInitPath = "<path>";
-	const std::string kArgSettingsKey = "<key>";
-	const std::string kArgSettingsValue = "<value>";
+	const std::string kArgRunTarget;
+	const std::string kArgRemainingArguments;
+	const std::string kArgInitName;
+	const std::string kArgInitPath;
+	const std::string kArgSettingsKey;
+	const std::string kArgSettingsValue;
+
+	Route m_route;
 };
 }
 

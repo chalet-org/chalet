@@ -16,12 +16,15 @@ struct CommandLineInputs;
 
 struct SettingsManager
 {
-	explicit SettingsManager(const CommandLineInputs& inInputs, const SettingsAction inAction);
+	explicit SettingsManager(const CommandLineInputs& inInputs);
 
-	bool run();
+	bool run(const SettingsAction inAction);
 
 private:
+	bool initialize();
+
 	bool runSettingsGet(Json& node);
+	bool runSettingsKeyQuery(Json& node);
 	bool runSettingsSet(Json& node);
 	bool runSettingsUnset(Json& node);
 
@@ -43,6 +46,8 @@ private:
 
 	SettingsAction m_action = SettingsAction::Get;
 	SettingsType m_type = SettingsType::None;
+
+	bool m_initialized = false;
 };
 }
 

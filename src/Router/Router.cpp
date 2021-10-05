@@ -60,7 +60,7 @@ bool Router::run()
 	std::unique_ptr<StatePrototype> prototype;
 	std::unique_ptr<BuildState> buildState;
 
-	const bool isSettings = command == Route::SettingsGet || command == Route::SettingsSet || command == Route::SettingsUnset;
+	const bool isSettings = command == Route::SettingsGet || command == Route::SettingsSet || command == Route::SettingsUnset || command == Route::SettingsGetKeys;
 	const bool isList = command == Route::List;
 	if (command != Route::Init && !isSettings)
 	{
@@ -137,6 +137,7 @@ bool Router::run()
 			case Route::SettingsGet:
 			case Route::SettingsSet:
 			case Route::SettingsUnset:
+			case Route::SettingsGetKeys:
 				result = cmdSettings(command);
 				break;
 
@@ -234,12 +235,15 @@ bool Router::cmdSettings(const Route inRoute)
 		case Route::SettingsUnset:
 			action = SettingsAction::Unset;
 			break;
+		case Route::SettingsGetKeys:
+			action = SettingsAction::QueryKeys;
+			break;
 		default:
 			return false;
 	}
 
-	SettingsManager settingsMgr(m_inputs, action);
-	if (!settingsMgr.run())
+	SettingsManager settingsMgr(m_inputs);
+	if (!settingsMgr.run(action))
 		return true;
 
 	return true;
