@@ -117,6 +117,7 @@ private:
 	const std::string kArgInitName;
 	const std::string kArgInitPath;
 	const std::string kArgSettingsKey;
+	const std::string kArgSettingsKeyQuery;
 	const std::string kArgSettingsValue;
 
 	Route m_route;
