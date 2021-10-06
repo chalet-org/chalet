@@ -217,12 +217,6 @@ bool Router::cmdInit()
 /*****************************************************************************/
 bool Router::cmdSettings(const Route inRoute)
 {
-	if (m_inputs.settingsType() == SettingsType::None)
-	{
-		Diagnostic::error("There was an error determining the settings request");
-		return false;
-	}
-
 	SettingsAction action = SettingsAction::Get;
 	switch (inRoute)
 	{

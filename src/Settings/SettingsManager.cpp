@@ -26,6 +26,13 @@ SettingsManager::SettingsManager(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool SettingsManager::run(const SettingsAction inAction)
 {
+
+	if (m_type == SettingsType::None)
+	{
+		Diagnostic::error("There was an error determining the settings request");
+		return false;
+	}
+
 	m_action = inAction;
 
 	if (!initialize())

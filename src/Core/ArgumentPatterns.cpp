@@ -706,7 +706,7 @@ void ArgumentPatterns::addRunArgumentsArg()
 /*****************************************************************************/
 void ArgumentPatterns::addSettingsTypeArg()
 {
-	addTwoBoolArguments(ArgumentIdentifier::LocalSettings, "-l", "--local", true)
+	addTwoBoolArguments(ArgumentIdentifier::LocalSettings, "-l", "--local", false)
 		.help("Use the local settings [.chaletrc]");
 
 	addTwoBoolArguments(ArgumentIdentifier::GlobalSettings, "-g", "--global", false)

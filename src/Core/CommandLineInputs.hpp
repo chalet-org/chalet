@@ -193,7 +193,7 @@ private:
 
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
-	SettingsType m_settingsType = SettingsType::None;
+	SettingsType m_settingsType = SettingsType::Local;
 	CommandLineListOption m_listOption = CommandLineListOption::None;
 
 	bool m_saveSchemaToFile = false;
