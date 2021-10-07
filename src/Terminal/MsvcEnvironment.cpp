@@ -44,6 +44,12 @@ bool MsvcEnvironment::exists()
 			String::replaceAll(s_vswhere, progFiles, progFiles64);
 
 			vswhereFound = Commands::pathExists(s_vswhere);
+			if (!vswhereFound)
+			{
+				// Do this one last to try to support legacy (< VS 2017)
+				s_vswhere = Commands::which("vswhere");
+				vswhereFound = !s_vswhere.empty();
+			}
 		}
 
 		s_exists = vswhereFound ? 1 : 0;
