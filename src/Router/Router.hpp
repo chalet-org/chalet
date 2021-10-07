@@ -29,7 +29,7 @@ private:
 	bool cmdBundle(StatePrototype& inPrototype);
 	bool cmdInit();
 	bool cmdSettings(const Route inRoute);
-	bool cmdList(StatePrototype& inPrototype);
+	bool cmdList();
 
 #if defined(CHALET_DEBUG)
 	bool cmdDebug();

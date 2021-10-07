@@ -103,7 +103,7 @@ const std::string& CommandLineInputs::globalSettingsFile() const noexcept
 {
 	if (m_globalSettingsFile.empty())
 	{
-		m_globalSettingsFile = fmt::format("{}/{}", homeDirectory(), kDefaultSettingsFile);
+		m_globalSettingsFile = fmt::format("{}/.chaletconfig", homeDirectory());
 	}
 	return m_globalSettingsFile;
 }

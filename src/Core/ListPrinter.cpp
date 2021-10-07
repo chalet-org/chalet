@@ -25,10 +25,7 @@ bool ListPrinter::printListOfRequestedType()
 {
 	CommandLineListOption listOption = m_inputs.listOption();
 	if (listOption == CommandLineListOption::None)
-	{
-		Diagnostic::error("Requested list type was invalid");
 		return false;
-	}
 
 	StringList output;
 	if (listOption == CommandLineListOption::Commands)
@@ -37,7 +34,7 @@ bool ListPrinter::printListOfRequestedType()
 	}
 	else if (listOption == CommandLineListOption::Configurations)
 	{
-		output = m_prototype.getBuildConfigurationList();
+		output = getBuildConfigurationList();
 	}
 	else if (listOption == CommandLineListOption::ToolchainPresets)
 	{
@@ -45,12 +42,12 @@ bool ListPrinter::printListOfRequestedType()
 	}
 	else if (listOption == CommandLineListOption::UserToolchains)
 	{
-		output = m_prototype.getUserToolchainList();
+		output = getUserToolchainList();
 	}
 	else if (listOption == CommandLineListOption::AllToolchains)
 	{
 		StringList presets = m_inputs.getToolchainPresets();
-		StringList userToolchains = m_prototype.getUserToolchainList();
+		StringList userToolchains = getUserToolchainList();
 		output = List::combine(std::move(userToolchains), std::move(presets));
 	}
 	else if (listOption == CommandLineListOption::Architectures)
@@ -61,6 +58,117 @@ bool ListPrinter::printListOfRequestedType()
 	std::cout << String::join(output) << std::endl;
 
 	return true;
+}
+
+/*****************************************************************************/
+StringList ListPrinter::getBuildConfigurationList() const
+{
+	StringList ret;
+
+	const auto& defaultBuildConfigurations = m_prototype.defaultBuildConfigurations();
+	const auto& buildJson = m_prototype.chaletJson().json;
+
+	const std::string kKeyConfigurations = "configurations";
+
+	if (!buildJson.contains(kKeyConfigurations))
+	{
+		return defaultBuildConfigurations;
+	}
+
+	StringList buildConfigurations;
+	const Json& configurations = buildJson.at(kKeyConfigurations);
+	if (configurations.is_object())
+	{
+		for (auto& [name, configJson] : configurations.items())
+		{
+			if (!configJson.is_object() || name.empty())
+				continue;
+
+			buildConfigurations.emplace_back(name);
+		}
+	}
+	else if (configurations.is_array())
+	{
+		for (auto& configJson : configurations)
+		{
+			if (configJson.is_string())
+			{
+				auto name = configJson.get<std::string>();
+				if (name.empty() || !List::contains(defaultBuildConfigurations, name))
+					continue;
+
+				ret.emplace_back(std::move(name));
+			}
+		}
+
+		return ret;
+	}
+
+	if (!buildConfigurations.empty())
+	{
+		StringList defaults;
+		StringList userDefined;
+		for (const auto& name : buildConfigurations)
+		{
+			if (List::contains(defaultBuildConfigurations, name))
+				defaults.push_back(name);
+			else
+				userDefined.emplace_back(name);
+		}
+
+		// Order as defaults first, user defined second
+		if (!defaults.empty())
+		{
+			for (auto& name : defaultBuildConfigurations)
+			{
+				if (List::contains(defaults, name))
+					ret.emplace_back(name);
+			}
+		}
+
+		for (auto&& name : userDefined)
+		{
+			ret.emplace_back(std::move(name));
+		}
+	}
+	else
+	{
+		return defaultBuildConfigurations;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList ListPrinter::getUserToolchainList() const
+{
+	StringList ret;
+
+	const std::string kKeyToolchains = "toolchains";
+
+	auto parseToolchains = [&](const Json& inNode, StringList& outList) {
+		if (!inNode.contains(kKeyToolchains))
+			return;
+
+		const auto& toolchains = inNode.at(kKeyToolchains);
+		for (auto& [key, _] : toolchains.items())
+		{
+			outList.emplace_back(key);
+		}
+	};
+
+	if (m_prototype.cache.exists(CacheType::Local))
+	{
+		auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Local);
+		parseToolchains(settingsFile.json, ret);
+	}
+	else if (m_prototype.cache.exists(CacheType::Global))
+	{
+		auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Global);
+		parseToolchains(settingsFile.json, ret);
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

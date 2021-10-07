@@ -29,16 +29,17 @@ struct StatePrototype
 	bool validate();
 	void saveCaches();
 
-	JsonFile& jsonFile() noexcept;
+	bool initializeForList();
+
+	JsonFile& chaletJson() noexcept;
+	const JsonFile& chaletJson() const noexcept;
 	const std::string& filename() const noexcept;
 
 	const BuildConfigurationMap& buildConfigurations() const noexcept;
 	const StringList& requiredBuildConfigurations() const noexcept;
 	const std::string& releaseConfiguration() const noexcept;
 	const std::string& anyConfiguration() const noexcept;
-
-	StringList getBuildConfigurationList() const;
-	StringList getUserToolchainList() const;
+	const StringList& defaultBuildConfigurations() const noexcept;
 
 	const std::string kKeyTargets = "targets";
 	const std::string kKeyAbstracts = "abstracts";
@@ -83,7 +84,7 @@ private:
 	std::string m_filename;
 	std::string m_releaseConfiguration;
 
-	JsonFile m_buildJson;
+	JsonFile m_chaletJson;
 };
 }
 

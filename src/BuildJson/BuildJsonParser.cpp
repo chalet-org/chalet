@@ -33,7 +33,7 @@ namespace chalet
 /*****************************************************************************/
 BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, BuildState& inState) :
 	m_inputs(inInputs),
-	m_buildJson(inPrototype.jsonFile()),
+	m_chaletJson(inPrototype.chaletJson()),
 	m_filename(inPrototype.filename()),
 	m_state(inState),
 	kKeyAbstracts(inPrototype.kKeyAbstracts),
@@ -50,7 +50,7 @@ bool BuildJsonParser::serialize()
 	// Timer timer;
 	// Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
 
-	const Json& jRoot = m_buildJson.json;
+	const Json& jRoot = m_chaletJson.json;
 	if (!serializeFromJsonRoot(jRoot))
 	{
 		Diagnostic::error("{}: There was an error parsing the file.", m_filename);
@@ -220,11 +220,11 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		std::string extends{ "all" };
 		if (targetJson.is_object())
 		{
-			m_buildJson.assignFromKey(extends, targetJson, "extends");
+			m_chaletJson.assignFromKey(extends, targetJson, "extends");
 		}
 
 		BuildTargetType type = BuildTargetType::Project;
-		if (std::string val; m_buildJson.assignFromKey(val, targetJson, "kind"))
+		if (std::string val; m_chaletJson.assignFromKey(val, targetJson, "kind"))
 		{
 			if (String::equals("cmakeProject", val))
 			{
@@ -306,10 +306,10 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
 		outTarget.setDescription(std::move(val));
 
-	if (std::string val; m_buildJson.assignFromKey(val, inNode, "kind"))
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "kind"))
 		outTarget.setKind(val);
 
-	// if (std::string val; m_buildJson.assignFromKey(val, inNode, "name"))
+	// if (std::string val; m_chaletJson.assignFromKey(val, inNode, "name"))
 	// 	outTarget.setName(val);
 
 	if (std::string val; parseKeyFromConfig(val, inNode, "language"))
@@ -396,7 +396,7 @@ bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Jso
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
-	if (std::string val; m_buildJson.assignFromKey(val, inNode, "location"))
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "location"))
 		outTarget.setLocation(std::move(val));
 	else
 		return false;
@@ -404,10 +404,10 @@ bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Jso
 	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
 		outTarget.setDescription(std::move(val));
 
-	if (std::string val; m_buildJson.assignFromKey(val, inNode, "buildFile"))
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "buildFile"))
 		outTarget.setBuildFile(std::move(val));
 
-	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "recheck"))
+	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "recheck"))
 		outTarget.setRecheck(val);
 
 	return true;
@@ -419,7 +419,7 @@ bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNod
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
-	if (std::string val; m_buildJson.assignFromKey(val, inNode, "location"))
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "location"))
 		outTarget.setLocation(std::move(val));
 	else
 		return false;
@@ -427,16 +427,16 @@ bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNod
 	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
 		outTarget.setDescription(std::move(val));
 
-	if (std::string val; m_buildJson.assignFromKey(val, inNode, "buildFile"))
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "buildFile"))
 		outTarget.setBuildFile(std::move(val));
 
-	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "recheck"))
+	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "recheck"))
 		outTarget.setRecheck(val);
 
 	if (std::string val; parseKeyFromConfig(val, inNode, "toolset"))
 		outTarget.setToolset(std::move(val));
 
-	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "defines"))
+	if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, "defines"))
 		outTarget.addDefines(std::move(list));
 
 	// If it's a cmake project, ignore everything else and return
@@ -455,7 +455,7 @@ bool BuildJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& 
 	const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
 	if (!buildConfiguration.empty())
 	{
-		if (std::string val; m_buildJson.assignFromKey(val, inNode, "condition"))
+		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
 		{
 			outTarget.setIncludeInBuild(conditionIsValid(val));
 		}
@@ -469,7 +469,7 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 {
 	if (std::string val; parseKeyFromConfig(val, inNode, "windowsApplicationManifest"))
 		outTarget.setWindowsApplicationManifest(std::move(val));
-	else if (bool enabled = false; m_buildJson.assignFromKey(enabled, inNode, "windowsApplicationManifest"))
+	else if (bool enabled = false; m_chaletJson.assignFromKey(enabled, inNode, "windowsApplicationManifest"))
 		outTarget.setWindowsApplicationManifestGenerationEnabled(enabled);
 
 	if (std::string val; parseKeyFromConfig(val, inNode, "windowsApplicationIcon"))
@@ -481,13 +481,13 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 	if (std::string val; parseKeyFromConfig(val, inNode, "windowsEntryPoint"))
 		outTarget.setWindowsEntryPoint(val);
 
-	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "windowsPrefixOutputFilename"))
+	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "windowsPrefixOutputFilename"))
 		outTarget.setWindowsPrefixOutputFilename(val);
 
-	if (bool val = false; m_buildJson.assignFromKey(val, inNode, "windowsOutputDef"))
+	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "windowsOutputDef"))
 		outTarget.setWindowsOutputDef(val);
 
-	if (std::string val; m_buildJson.assignFromKey(val, inNode, "pch"))
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "pch"))
 		outTarget.setPch(std::move(val));
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "rtti"))
@@ -523,10 +523,10 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 		outTarget.addLinkerOptions(std::move(list));
 
 #if defined(CHALET_MACOS)
-	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "macosFrameworkPaths"))
+	if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, "macosFrameworkPaths"))
 		outTarget.addMacosFrameworkPaths(std::move(list));
 
-	if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, "macosFrameworks"))
+	if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, "macosFrameworks"))
 		outTarget.addMacosFrameworks(std::move(list));
 #endif
 
@@ -613,9 +613,9 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outTarget, const
 		else if (std::string val; parseKeyFromConfig(val, node, "exclude"))
 			outTarget.addLocationExclude(std::move(val));
 	}
-	else if (StringList list; m_buildJson.assignStringListAndValidate(list, inNode, loc))
+	else if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, loc))
 		outTarget.addLocations(std::move(list));
-	else if (std::string val; m_buildJson.assignFromKey(val, inNode, loc))
+	else if (std::string val; m_chaletJson.assignFromKey(val, inNode, loc))
 		outTarget.addLocation(std::move(val));
 	else
 		return false;
@@ -627,22 +627,22 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outTarget, const
 /*****************************************************************************/
 bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const
 {
-	bool res = m_buildJson.assignStringListAndValidate(outList, inNode, inKey);
+	bool res = m_chaletJson.assignStringListAndValidate(outList, inNode, inKey);
 
 	const auto& platform = m_inputs.platform();
 
-	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
+	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
 
 	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
-	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}", inKey, notSymbol, m_debugIdentifier));
-	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
-	res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}.{}{}", inKey, platform, notSymbol, m_debugIdentifier));
+	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}", inKey, notSymbol, m_debugIdentifier));
+	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
+	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}.{}{}", inKey, platform, notSymbol, m_debugIdentifier));
 
 	for (auto& notPlatform : m_inputs.notPlatforms())
 	{
-		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
-		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}.{}{}", inKey, notPlatform, notSymbol, m_debugIdentifier));
-		res |= m_buildJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
+		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
+		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}.{}{}", inKey, notPlatform, notSymbol, m_debugIdentifier));
+		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
 	}
 
 	return res;

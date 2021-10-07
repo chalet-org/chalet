@@ -55,7 +55,7 @@ private:
 	bool conditionIsValid(const std::string& inContent) const;
 
 	const CommandLineInputs& m_inputs;
-	JsonFile& m_buildJson;
+	JsonFile& m_chaletJson;
 	const std::string& m_filename;
 	BuildState& m_state;
 

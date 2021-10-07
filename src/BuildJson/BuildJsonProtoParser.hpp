@@ -55,7 +55,7 @@ private:
 
 	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
-	JsonFile& m_buildJson;
+	JsonFile& m_chaletJson;
 	const std::string& m_filename;
 
 	const std::string kKeyDistribution = "distribution";

@@ -18,6 +18,8 @@ struct ListPrinter
 	bool printListOfRequestedType();
 
 private:
+	StringList getBuildConfigurationList() const;
+	StringList getUserToolchainList() const;
 	StringList getArchitectures() const;
 
 	const CommandLineInputs& m_inputs;

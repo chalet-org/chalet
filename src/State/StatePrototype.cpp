@@ -39,6 +39,9 @@ StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool StatePrototype::initialize()
 {
+	Route route = m_inputs.command();
+	chalet_assert(route != Route::List, "");
+
 	if (!cache.initializeSettings())
 		return false;
 
@@ -54,19 +57,13 @@ bool StatePrototype::initialize()
 	m_filename = m_inputs.inputFile();
 	m_inputs.clearWorkingDirectory(m_filename);
 
-	Route route = m_inputs.command();
-	bool isListRoute = route == Route::List;
-
 	if (!Commands::pathExists(m_filename))
 	{
-		if (isListRoute)
-			return true;
-
 		Diagnostic::error("Build file '{}' was not found.", m_filename);
 		return false;
 	}
 
-	if (!m_buildJson.load(m_inputs.inputFile()))
+	if (!m_chaletJson.load(m_filename))
 		return false;
 
 	if (!cache.initialize())
@@ -74,16 +71,7 @@ bool StatePrototype::initialize()
 
 	Output::setShowCommandOverride(false);
 
-	if (isListRoute)
-	{
-		if (!parseBuildJson())
-			return false;
-
-		Output::setShowCommandOverride(true);
-
-		return true;
-	}
-	else if (route != Route::Configure)
+	if (route != Route::Configure)
 	{
 		Timer timer;
 		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
@@ -102,7 +90,7 @@ bool StatePrototype::initialize()
 
 		Diagnostic::printDone(timer.asString());
 	}
-	else if (route != Route::List)
+	else
 	{
 		{
 			BuildJsonProtoParser parser(m_inputs, *this);
@@ -123,6 +111,32 @@ bool StatePrototype::initialize()
 	Output::setShowCommandOverride(true);
 
 	if (!runDependencyManager())
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool StatePrototype::initializeForList()
+{
+	Route route = m_inputs.command();
+	chalet_assert(route == Route::List, "");
+	if (route != Route::List)
+		return false;
+
+	if (!cache.initializeSettings())
+		return false;
+
+	m_filename = m_inputs.inputFile();
+	if (m_filename.empty())
+		m_filename = m_inputs.defaultInputFile();
+
+	m_inputs.clearWorkingDirectory(m_filename);
+
+	if (!Commands::pathExists(m_filename))
+		return true;
+
+	if (!m_chaletJson.load(m_filename))
 		return false;
 
 	return true;
@@ -293,15 +307,21 @@ bool StatePrototype::validateBuildFile()
 }
 
 /*****************************************************************************/
-JsonFile& StatePrototype::jsonFile() noexcept
+JsonFile& StatePrototype::chaletJson() noexcept
 {
-	return m_buildJson;
+	return m_chaletJson;
+}
+
+/*****************************************************************************/
+const JsonFile& StatePrototype::chaletJson() const noexcept
+{
+	return m_chaletJson;
 }
 
 /*****************************************************************************/
 const std::string& StatePrototype::filename() const noexcept
 {
-	return m_buildJson.filename();
+	return m_chaletJson.filename();
 }
 
 /*****************************************************************************/
@@ -336,75 +356,9 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 }
 
 /*****************************************************************************/
-StringList StatePrototype::getBuildConfigurationList() const
+const StringList& StatePrototype::defaultBuildConfigurations() const noexcept
 {
-	StringList ret;
-
-	if (!m_buildConfigurations.empty())
-	{
-		StringList defaults;
-		StringList userDefined;
-		for (auto& [name, _] : m_buildConfigurations)
-		{
-			if (List::contains(kDefaultBuildConfigurations, name))
-				defaults.push_back(name);
-			else
-				userDefined.emplace_back(name);
-		}
-
-		// Order as defaults first, user defined second
-		if (!defaults.empty())
-		{
-			for (auto& name : kDefaultBuildConfigurations)
-			{
-				if (List::contains(defaults, name))
-					ret.emplace_back(name);
-			}
-		}
-
-		for (auto&& name : userDefined)
-		{
-			ret.emplace_back(std::move(name));
-		}
-	}
-	else
-	{
-		return kDefaultBuildConfigurations;
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
-StringList StatePrototype::getUserToolchainList() const
-{
-	StringList ret;
-
-	const std::string kKeyToolchains = "toolchains";
-
-	auto parseToolchains = [&](const Json& inNode, StringList& outList) {
-		if (!inNode.contains(kKeyToolchains))
-			return;
-
-		const auto& toolchains = inNode.at(kKeyToolchains);
-		for (auto& [key, _] : toolchains.items())
-		{
-			outList.emplace_back(key);
-		}
-	};
-
-	if (cache.exists(CacheType::Local))
-	{
-		auto& settingsFile = cache.getSettings(SettingsType::Local);
-		parseToolchains(settingsFile.json, ret);
-	}
-	else if (cache.exists(CacheType::Global))
-	{
-		auto& settingsFile = cache.getSettings(SettingsType::Global);
-		parseToolchains(settingsFile.json, ret);
-	}
-
-	return ret;
+	return kDefaultBuildConfigurations;
 }
 
 /*****************************************************************************/

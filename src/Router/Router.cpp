@@ -44,6 +44,9 @@ bool Router::run()
 		return false;
 
 	Route command = m_inputs.command();
+	if (command == Route::List)
+		return cmdList();
+
 	if (command == Route::Unknown
 		|| static_cast<std::underlying_type_t<Route>>(command) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
 	{
@@ -60,17 +63,17 @@ bool Router::run()
 	std::unique_ptr<StatePrototype> prototype;
 	std::unique_ptr<BuildState> buildState;
 
-	const bool isSettings = command == Route::SettingsGet || command == Route::SettingsSet || command == Route::SettingsUnset || command == Route::SettingsGetKeys;
-	const bool isList = command == Route::List;
+	const bool isSettings = command == Route::SettingsGet
+		|| command == Route::SettingsSet
+		|| command == Route::SettingsUnset
+		|| command == Route::SettingsGetKeys;
+
 	if (command != Route::Init && !isSettings)
 	{
-		if (!isList)
-		{
-			Output::lineBreak();
+		Output::lineBreak();
 
-			if (!parseEnvFile())
-				return false;
-		}
+		if (!parseEnvFile())
+			return false;
 
 		prototype = std::make_unique<StatePrototype>(m_inputs);
 
@@ -89,7 +92,7 @@ bool Router::run()
 
 			buildState.reset();
 		}
-		else if (command != Route::Bundle && !isList)
+		else if (command != Route::Bundle)
 		{
 			chalet_assert(prototype != nullptr, "");
 			buildState = std::make_unique<BuildState>(m_inputs, *prototype);
@@ -118,9 +121,10 @@ bool Router::run()
 		switch (command)
 		{
 #if defined(CHALET_DEBUG)
-			case Route::Debug:
+			case Route::Debug: {
 				result = cmdDebug();
 				break;
+			}
 #endif
 			case Route::Bundle: {
 				chalet_assert(prototype != nullptr, "");
@@ -128,25 +132,23 @@ bool Router::run()
 				break;
 			}
 
-			case Route::Configure:
+			case Route::Configure: {
 				result = cmdConfigure();
 				break;
+			}
 
-			case Route::Init:
+			case Route::Init: {
 				result = cmdInit();
 				break;
+			}
 
 			case Route::SettingsGet:
 			case Route::SettingsSet:
 			case Route::SettingsUnset:
-			case Route::SettingsGetKeys:
+			case Route::SettingsGetKeys: {
 				result = cmdSettings(command);
 				break;
-
-			case Route::List:
-				chalet_assert(prototype != nullptr, "");
-				result = cmdList(*prototype);
-				break;
+			}
 
 			case Route::BuildRun:
 			case Route::Build:
@@ -163,7 +165,7 @@ bool Router::run()
 		}
 	}
 
-	if (prototype != nullptr && command != Route::List)
+	if (prototype != nullptr)
 		prototype->saveCaches();
 
 	return result;
@@ -246,9 +248,13 @@ bool Router::cmdSettings(const Route inRoute)
 }
 
 /*****************************************************************************/
-bool Router::cmdList(StatePrototype& inPrototype)
+bool Router::cmdList()
 {
-	ListPrinter listPrinter(m_inputs, inPrototype);
+	StatePrototype prototype(m_inputs);
+	if (!prototype.initializeForList())
+		return false;
+
+	ListPrinter listPrinter(m_inputs, prototype);
 	return listPrinter.printListOfRequestedType();
 }
 
