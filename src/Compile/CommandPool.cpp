@@ -29,14 +29,15 @@ bool printCommand(std::string prefix, std::string text, uint total = 0)
 	std::unique_lock<std::mutex> lock(s_mutex);
 	if (total > 0)
 	{
-		auto indexStr = std::to_string(s_compileIndex);
-		const auto totalStr = std::to_string(total);
-		while (indexStr.size() < totalStr.size())
-		{
-			indexStr = " " + indexStr;
-		}
+		// auto indexStr = std::to_string(s_compileIndex);
+		uint index = s_compileIndex;
+		// const auto totalStr = std::to_string(total);
+		// while (indexStr.size() < totalStr.size())
+		// {
+		// 	indexStr = " " + indexStr;
+		// }
 
-		std::cout << fmt::format("{}  [{}/{}] {}", prefix, indexStr, total, text) << std::endl;
+		std::cout << fmt::format("{}  [{}/{}] {}", prefix, index, total, text) << std::endl;
 	}
 	else
 	{
@@ -185,6 +186,10 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 	s_compileIndex = 1;
 	uint totalCompiles = static_cast<uint>(list.size());
+	totalCompiles += static_cast<uint>(pre.size());
+
+	if (!post.command.empty())
+		++totalCompiles;
 
 	auto reset = Output::getAnsiReset();
 
@@ -193,8 +198,6 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	{
 		if (!it.command.empty())
 		{
-			totalCompiles++;
-
 			auto color = Output::getAnsiStyle(it.color);
 
 			if (!printCommand(
@@ -274,7 +277,8 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 
 		if (!printCommand(
 				color + post.symbol + reset,
-				post.label + ' ' + color + (showCommmands ? String::join(post.command) : post.output) + reset))
+				color + post.label + ' ' + (showCommmands ? String::join(post.command) : post.output) + reset,
+				totalCompiles))
 			return onError();
 
 		if (!executeCommandFunc(post.command, post.output))
