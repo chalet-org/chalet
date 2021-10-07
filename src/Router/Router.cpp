@@ -65,10 +65,12 @@ bool Router::run()
 	if (command != Route::Init && !isSettings)
 	{
 		if (!isList)
+		{
 			Output::lineBreak();
 
-		if (!parseEnvFile())
-			return false;
+			if (!parseEnvFile())
+				return false;
+		}
 
 		prototype = std::make_unique<StatePrototype>(m_inputs);
 

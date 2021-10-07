@@ -78,6 +78,10 @@ bool StatePrototype::initialize()
 	{
 		if (!parseBuildJson())
 			return false;
+
+		Output::setShowCommandOverride(true);
+
+		return true;
 	}
 	else if (route != Route::Configure)
 	{
