@@ -342,9 +342,29 @@ StringList StatePrototype::getBuildConfigurationList() const
 
 	if (!m_buildConfigurations.empty())
 	{
+		StringList defaults;
+		StringList userDefined;
 		for (auto& [name, _] : m_buildConfigurations)
 		{
-			ret.emplace_back(name);
+			if (List::contains(kDefaultBuildConfigurations, name))
+				defaults.push_back(name);
+			else
+				userDefined.emplace_back(name);
+		}
+
+		// Order as defaults first, user defined second
+		if (!defaults.empty())
+		{
+			for (auto& name : kDefaultBuildConfigurations)
+			{
+				if (List::contains(defaults, name))
+					ret.emplace_back(name);
+			}
+		}
+
+		for (auto&& name : userDefined)
+		{
+			ret.emplace_back(std::move(name));
 		}
 	}
 	else
