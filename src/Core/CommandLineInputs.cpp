@@ -665,10 +665,11 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	StringList ret;
 
 #if defined(CHALET_WIN32)
-	for (auto& [name, _] : kVisualStudioPresets)
-	{
-		ret.emplace_back(name);
-	}
+	ret.emplace_back("vs-stable");
+	ret.emplace_back("vs-preview");
+	ret.emplace_back("vs-2022");
+	ret.emplace_back("vs-2019");
+	ret.emplace_back("vs-2017");
 #elif defined(CHALET_MACOS)
 	ret.emplace_back(kPresetAppleLLVM);
 #endif
