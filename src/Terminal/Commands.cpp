@@ -314,7 +314,8 @@ bool Commands::makeDirectory(const std::string& inPath)
 		if (Output::showCommands())
 			Output::printCommand(fmt::format("make directory: {}", inPath));
 
-		fs::create_directories(inPath);
+		if (!fs::create_directories(inPath))
+			return false;
 
 		return true;
 	}

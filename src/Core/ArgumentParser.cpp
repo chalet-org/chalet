@@ -256,7 +256,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 	if (command == Route::List)
 	{
-		Output::setQuietNonBuild(true);
+		// Output::setQuietNonBuild(true);
 		m_inputs.setCommandList(patterns.getRouteList());
 	}
 

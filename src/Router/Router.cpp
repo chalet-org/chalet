@@ -161,7 +161,7 @@ bool Router::run()
 		}
 	}
 
-	if (prototype != nullptr)
+	if (prototype != nullptr && command != Route::List)
 		prototype->saveCaches();
 
 	return result;

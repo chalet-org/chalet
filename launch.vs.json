@@ -19,7 +19,7 @@
         "-c",
         "Release",
         "-t",
-        "msvc",
+        "vs-latest",
         "-a",
         "x64",
         "build"

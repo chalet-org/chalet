@@ -60,14 +60,10 @@ bool StatePrototype::initialize()
 	if (!Commands::pathExists(m_filename))
 	{
 		if (isListRoute)
-		{
 			return true;
-		}
-		else
-		{
-			Diagnostic::error("Build file '{}' was not found.", m_filename);
-			return false;
-		}
+
+		Diagnostic::error("Build file '{}' was not found.", m_filename);
+		return false;
 	}
 
 	if (!m_buildJson.load(m_inputs.inputFile()))
@@ -78,7 +74,12 @@ bool StatePrototype::initialize()
 
 	Output::setShowCommandOverride(false);
 
-	if (route != Route::Configure)
+	if (isListRoute)
+	{
+		if (!parseBuildJson())
+			return false;
+	}
+	else if (route != Route::Configure)
 	{
 		Timer timer;
 		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
@@ -97,7 +98,7 @@ bool StatePrototype::initialize()
 
 		Diagnostic::printDone(timer.asString());
 	}
-	else
+	else if (route != Route::List)
 	{
 		{
 			BuildJsonProtoParser parser(m_inputs, *this);

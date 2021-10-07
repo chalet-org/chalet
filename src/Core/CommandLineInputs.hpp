@@ -10,6 +10,7 @@
 
 #include "Compile/ToolchainPreference.hpp"
 #include "Core/CommandLineListOption.hpp"
+#include "Core/VisualStudioVersion.hpp"
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
 #include "Settings/SettingsType.hpp"
@@ -77,7 +78,7 @@ struct CommandLineInputs
 	void setToolchainPreference(std::string&& inValue) const noexcept;
 	const std::string& toolchainPreferenceName() const noexcept;
 	void setToolchainPreferenceName(std::string&& inValue) const noexcept;
-	bool isMsvcPreRelease() const noexcept;
+	VisualStudioVersion visualStudioVersion() const noexcept;
 	bool isToolchainPreset() const noexcept;
 
 	const std::string& initPath() const noexcept;
@@ -143,6 +144,7 @@ private:
 	ToolchainPreference getToolchainPreferenceFromString(const std::string& inValue) const;
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
 	CommandLineListOption getListOptionFromString(const std::string& inValue) const;
+	VisualStudioVersion getVisualStudioVersionFromPresetString(const std::string& inValue) const;
 
 	mutable ToolchainPreference m_toolchainPreference;
 
@@ -196,8 +198,9 @@ private:
 	SettingsType m_settingsType = SettingsType::Local;
 	CommandLineListOption m_listOption = CommandLineListOption::None;
 
+	mutable VisualStudioVersion m_visualStudioVersion = VisualStudioVersion::None;
+
 	bool m_saveSchemaToFile = false;
-	mutable bool m_isMsvcPreRelease = false;
 	mutable bool m_isToolchainPreset = false;
 };
 }

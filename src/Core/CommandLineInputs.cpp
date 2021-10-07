@@ -38,7 +38,7 @@ void CommandLineInputs::detectToolchainPreference() const
 		return;
 
 #if defined(CHALET_WIN32)
-	m_toolchainPreference = getToolchainPreferenceFromString("msvc");
+	m_toolchainPreference = getToolchainPreferenceFromString("vs-latest");
 #elif defined(CHALET_MACOS)
 	m_toolchainPreference = getToolchainPreferenceFromString("apple-llvm");
 #else
@@ -349,9 +349,9 @@ void CommandLineInputs::setToolchainPreferenceName(std::string&& inValue) const 
 }
 
 /*****************************************************************************/
-bool CommandLineInputs::isMsvcPreRelease() const noexcept
+VisualStudioVersion CommandLineInputs::visualStudioVersion() const noexcept
 {
-	return m_isMsvcPreRelease;
+	return m_visualStudioVersion;
 }
 
 bool CommandLineInputs::isToolchainPreset() const noexcept
@@ -624,8 +624,11 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	StringList ret;
 
 #if defined(CHALET_WIN32)
-	ret.emplace_back("msvc-pre");
-	ret.emplace_back("msvc");
+	ret.emplace_back("vs-latest");
+	ret.emplace_back("vs-preview");
+	ret.emplace_back("vs-2022");
+	ret.emplace_back("vs-2019");
+	ret.emplace_back("vs-2017");
 #elif defined(CHALET_MACOS)
 	ret.emplace_back("apple-llvm");
 #endif
@@ -678,13 +681,13 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	ret.buildPathStyle = BuildPathStyle::TargetTriple;
 
 	m_isToolchainPreset = false;
-	m_isMsvcPreRelease = false;
+	m_visualStudioVersion = VisualStudioVersion::None;
 
 #if defined(CHALET_WIN32)
-	if (String::equals({ "msvc", "msvc-pre" }, inValue))
+	if (String::equals({ "vs-2017", "vs-2019", "vs-2022", "vs-latest", "vs-preview" }, inValue))
 	{
 		m_isToolchainPreset = true;
-		m_isMsvcPreRelease = String::equals("msvc-pre", inValue);
+		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
 
 		m_toolchainPreferenceName = inValue;
 
@@ -820,5 +823,28 @@ CommandLineListOption CommandLineInputs::getListOptionFromString(const std::stri
 	}
 
 	return CommandLineListOption::None;
+}
+
+/*****************************************************************************/
+VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(const std::string& inValue) const
+{
+	if (String::equals("vs-2022", inValue))
+	{
+		return VisualStudioVersion::VisualStudio2022;
+	}
+	else if (String::equals("vs-2019", inValue))
+	{
+		return VisualStudioVersion::VisualStudio2019;
+	}
+	else if (String::equals("vs-2017", inValue))
+	{
+		return VisualStudioVersion::VisualStudio2017;
+	}
+	else if (String::equals("vs-preview", inValue))
+	{
+		return VisualStudioVersion::Preview;
+	}
+
+	return VisualStudioVersion::Latest;
 }
 }

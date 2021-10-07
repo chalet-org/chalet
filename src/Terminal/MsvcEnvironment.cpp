@@ -104,21 +104,36 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 
 	std::string installationVersion;
 
-	// we got here from "msvc" "msvc-pre" in the command line
-	bool genericMsvcFromInput = String::equals({ "msvc", "msvc-pre" }, m_inputs.toolchainPreferenceName());
+	// we got here from a preset in the command line
+	bool genericMsvcFromInput = m_inputs.visualStudioVersion() != VisualStudioVersion::None;
 
 	auto getStartOfVsWhereCommand = [this]() {
-		StringList cmd{ s_vswhere, "-nologo", "-latest" };
-		if (m_inputs.isMsvcPreRelease())
-		{
+		StringList cmd{ s_vswhere, "-nologo" };
+		const auto vsVersion = m_inputs.visualStudioVersion();
+		const bool isLatest = vsVersion == VisualStudioVersion::Latest;
+		const bool isPreview = vsVersion == VisualStudioVersion::Preview;
+
+		if (!isLatest)
 			cmd.emplace_back("-prerelease");
+
+		if (isLatest || isPreview)
+		{
+			cmd.emplace_back("-latest");
 		}
-		cmd.emplace_back("-property");
+		else
+		{
+			ushort ver = static_cast<ushort>(vsVersion);
+			ushort next = ver + 1;
+			cmd.emplace_back("-version");
+			cmd.emplace_back(fmt::format("[{},{})", ver, next));
+		}
+
 		return cmd;
 	};
 
 	auto getMsvcVersion = [this, &getStartOfVsWhereCommand]() {
 		StringList vswhereCmd = getStartOfVsWhereCommand();
+		vswhereCmd.emplace_back("-property");
 		vswhereCmd.emplace_back("installationVersion");
 		return Commands::subprocessOutput(vswhereCmd);
 	};
@@ -138,6 +153,7 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 		if (genericMsvcFromInput)
 		{
 			StringList vswhereCmd = getStartOfVsWhereCommand();
+			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 			m_vsAppIdDir = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
 
@@ -145,9 +161,10 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 		}
 		else if (RegexPatterns::matchesFullVersionString(inVersion))
 		{
-			StringList vswhereCmd{ s_vswhere, "-nologo", "-version" };
-			vswhereCmd.push_back(fmt::format("{}", inVersion));
+			StringList vswhereCmd{ s_vswhere, "-nologo" };
 			vswhereCmd.emplace_back("-prerelease"); // always include prereleases in this scenario since we're search for the exact version
+			vswhereCmd.emplace_back("-version");
+			vswhereCmd.push_back(fmt::format("{}", inVersion));
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 
