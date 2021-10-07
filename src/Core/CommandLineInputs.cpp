@@ -840,6 +840,8 @@ VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(co
 	{
 		return kVisualStudioPresets.at(inValue);
 	}
+#else
+	UNUSED(inValue);
 #endif
 
 	return VisualStudioVersion::Stable;
