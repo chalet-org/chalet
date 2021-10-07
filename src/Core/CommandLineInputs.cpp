@@ -19,7 +19,9 @@ namespace
 {
 const std::string kPresetGCC{ "gcc" };
 const std::string kPresetLLVM{ "llvm" };
-#if defined(CHALET_MACOS)
+#if defined(CHALET_WIN32)
+const std::string kPresetVisualStudioStable{ "vs-stable" };
+#elif defined(CHALET_MACOS)
 const std::string kPresetAppleLLVM{ "apple-llvm" };
 #endif
 
@@ -79,7 +81,7 @@ void CommandLineInputs::detectToolchainPreference() const
 		return;
 
 #if defined(CHALET_WIN32)
-	m_toolchainPreference = getToolchainPreferenceFromString(kVisualStudioPresets.begin()->first);
+	m_toolchainPreference = getToolchainPreferenceFromString(kPresetVisualStudioStable);
 #elif defined(CHALET_MACOS)
 	m_toolchainPreference = getToolchainPreferenceFromString(kPresetAppleLLVM);
 #else
@@ -665,7 +667,7 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	StringList ret;
 
 #if defined(CHALET_WIN32)
-	ret.emplace_back("vs-stable");
+	ret.emplace_back(kPresetVisualStudioStable);
 	ret.emplace_back("vs-preview");
 	ret.emplace_back("vs-2022");
 	ret.emplace_back("vs-2019");
