@@ -128,7 +128,7 @@ jobs:
       - name: "Build: Debug"
         run: ./build.bat Debug
       - name: "Build: Release"
-        run: build/msvc_Debug/chalet-debug --save-schema -t vs-latest -a x64 bundle
+        run: build/msvc_Debug/chalet-debug --save-schema -t vs-stable -a x64 bundle
       - name: "Run: Tests"
         run: build/msvc_Debug/chalet-debug -c Release run tests_chalet
       - name: "Zip binary"

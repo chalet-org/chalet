@@ -38,7 +38,7 @@ void CommandLineInputs::detectToolchainPreference() const
 		return;
 
 #if defined(CHALET_WIN32)
-	m_toolchainPreference = getToolchainPreferenceFromString("vs-latest");
+	m_toolchainPreference = getToolchainPreferenceFromString("vs-stable");
 #elif defined(CHALET_MACOS)
 	m_toolchainPreference = getToolchainPreferenceFromString("apple-llvm");
 #else
@@ -624,7 +624,7 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	StringList ret;
 
 #if defined(CHALET_WIN32)
-	ret.emplace_back("vs-latest");
+	ret.emplace_back("vs-stable");
 	ret.emplace_back("vs-preview");
 	ret.emplace_back("vs-2022");
 	ret.emplace_back("vs-2019");
@@ -684,7 +684,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	m_visualStudioVersion = VisualStudioVersion::None;
 
 #if defined(CHALET_WIN32)
-	if (String::equals({ "vs-2017", "vs-2019", "vs-2022", "vs-latest", "vs-preview" }, inValue))
+	if (String::equals({ "vs-2017", "vs-2019", "vs-2022", "vs-stable", "vs-preview" }, inValue))
 	{
 		m_isToolchainPreset = true;
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);

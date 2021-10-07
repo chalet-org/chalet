@@ -19,7 +19,7 @@
         "-c",
         "Release",
         "-t",
-        "vs-latest",
+        "vs-stable",
         "-a",
         "x64",
         "build"
