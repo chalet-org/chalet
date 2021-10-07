@@ -59,7 +59,7 @@ bool CompilerConfig::configureCompilerPaths()
 	std::string path = String::getPathFolder(exec);
 	const std::string lowercasePath = String::toLowerCase(path);
 
-	const std::unordered_map<std::string, std::string> cmpilerStructures
+	const Dictionary<std::string> cmpilerStructures
 	{
 #if defined(CHALET_WIN32)
 		{ "/bin/hostx64/x64", "/lib/x64" },

@@ -55,7 +55,7 @@ private:
 	std::string m_compilerPathInclude{ "/usr/include" };
 	std::string m_flagsFile;
 
-	std::unordered_map<std::string, bool> m_supportedFlags;
+	Dictionary<bool> m_supportedFlags;
 
 	CodeLanguage m_language = CodeLanguage::None;
 	CppCompilerType m_compilerType = CppCompilerType::Unknown;

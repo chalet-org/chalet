@@ -15,6 +15,46 @@
 
 namespace chalet
 {
+namespace
+{
+const std::string kPresetGCC{ "gcc" };
+const std::string kPresetLLVM{ "llvm" };
+#if defined(CHALET_MACOS)
+const std::string kPresetAppleLLVM{ "apple-llvm" };
+#endif
+
+const Dictionary<IdeType> kIdeTypes{
+	{ "vscode", IdeType::VisualStudioCode },
+	{ "vs2019", IdeType::VisualStudio2019 },
+	{ "xcode", IdeType::XCode },
+	// { "codeblocks", IdeType::CodeBlocks },
+};
+
+const Dictionary<CommandLineListOption> kCommandLineLists{
+	{ "commands", CommandLineListOption::Commands },
+	{ "configurations", CommandLineListOption::Configurations },
+	{ "toolchain-presets", CommandLineListOption::ToolchainPresets },
+	{ "user-toolchains", CommandLineListOption::UserToolchains },
+	{ "all-toolchains", CommandLineListOption::AllToolchains },
+	{ "architectures", CommandLineListOption::Architectures },
+};
+
+#if defined(CHALET_WIN32)
+const OrderedDictionary<VisualStudioVersion> kVisualStudioPresets{
+	{ "vs-stable", VisualStudioVersion::Stable }, // first
+	{ "vs-preview", VisualStudioVersion::Preview },
+	{ "vs-2022", VisualStudioVersion::VisualStudio2022 },
+	{ "vs-2019", VisualStudioVersion::VisualStudio2019 },
+	{ "vs-2017", VisualStudioVersion::VisualStudio2017 },
+	{ "vs-2015", VisualStudioVersion::VisualStudio2015 },
+	{ "vs-2013", VisualStudioVersion::VisualStudio2013 },
+	{ "vs-2012", VisualStudioVersion::VisualStudio2012 },
+	{ "vs-2010", VisualStudioVersion::VisualStudio2010 },
+};
+#endif
+
+}
+
 /*****************************************************************************/
 CommandLineInputs::CommandLineInputs() :
 	m_notPlatforms(getNotPlatforms()),
@@ -38,11 +78,11 @@ void CommandLineInputs::detectToolchainPreference() const
 		return;
 
 #if defined(CHALET_WIN32)
-	m_toolchainPreference = getToolchainPreferenceFromString("vs-stable");
+	m_toolchainPreference = getToolchainPreferenceFromString(kVisualStudioPresets.begin()->first);
 #elif defined(CHALET_MACOS)
-	m_toolchainPreference = getToolchainPreferenceFromString("apple-llvm");
+	m_toolchainPreference = getToolchainPreferenceFromString(kPresetAppleLLVM);
 #else
-	m_toolchainPreference = getToolchainPreferenceFromString("gcc");
+	m_toolchainPreference = getToolchainPreferenceFromString(kPresetGCC);
 #endif
 }
 
@@ -624,16 +664,15 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	StringList ret;
 
 #if defined(CHALET_WIN32)
-	ret.emplace_back("vs-stable");
-	ret.emplace_back("vs-preview");
-	ret.emplace_back("vs-2022");
-	ret.emplace_back("vs-2019");
-	ret.emplace_back("vs-2017");
+	for (auto& [name, _] : kVisualStudioPresets)
+	{
+		ret.emplace_back(name);
+	}
 #elif defined(CHALET_MACOS)
-	ret.emplace_back("apple-llvm");
+	ret.emplace_back(kPresetAppleLLVM);
 #endif
-	ret.emplace_back("llvm");
-	ret.emplace_back("gcc");
+	ret.emplace_back(kPresetLLVM);
+	ret.emplace_back(kPresetGCC);
 
 	return ret;
 }
@@ -684,7 +723,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	m_visualStudioVersion = VisualStudioVersion::None;
 
 #if defined(CHALET_WIN32)
-	if (String::equals({ "vs-2017", "vs-2019", "vs-2022", "vs-stable", "vs-preview" }, inValue))
+	if (kVisualStudioPresets.find(inValue) != kVisualStudioPresets.end())
 	{
 		m_isToolchainPreset = true;
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
@@ -705,9 +744,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	else
 #endif
 #if defined(CHALET_MACOS)
-		if (String::equals({ "apple-llvm", "llvm" }, inValue))
+		if (String::equals({ kPresetAppleLLVM, kPresetLLVM }, inValue))
 #else
-	if (String::equals("llvm", inValue))
+	if (String::equals(kPresetLLVM, inValue))
 #endif
 	{
 		m_isToolchainPreset = true;
@@ -727,7 +766,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "objdump";
 #endif
 	}
-	else if (String::equals("gcc", inValue))
+	else if (String::equals(kPresetGCC, inValue))
 	{
 		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
@@ -770,22 +809,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 /*****************************************************************************/
 IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) const
 {
-	if (String::equals("vscode", inValue))
+	if (kIdeTypes.find(inValue) != kIdeTypes.end())
 	{
-		return IdeType::VisualStudioCode;
+		return kIdeTypes.at(inValue);
 	}
-	else if (String::equals("vs2019", inValue))
-	{
-		return IdeType::VisualStudio2019;
-	}
-	else if (String::equals("xcode", inValue))
-	{
-		return IdeType::XCode;
-	}
-	/*else if (String::equals("codeblocks", inValue))
-	{
-		return IdeType::CodeBlocks;
-	}*/
 	else if (!inValue.empty())
 	{
 		return IdeType::Unknown;
@@ -797,29 +824,9 @@ IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) cons
 /*****************************************************************************/
 CommandLineListOption CommandLineInputs::getListOptionFromString(const std::string& inValue) const
 {
-	if (String::equals("commands", inValue))
+	if (kCommandLineLists.find(inValue) != kCommandLineLists.end())
 	{
-		return CommandLineListOption::Commands;
-	}
-	else if (String::equals("configurations", inValue))
-	{
-		return CommandLineListOption::Configurations;
-	}
-	else if (String::equals("toolchain-presets", inValue))
-	{
-		return CommandLineListOption::ToolchainPresets;
-	}
-	else if (String::equals("user-toolchains", inValue))
-	{
-		return CommandLineListOption::UserToolchains;
-	}
-	else if (String::equals("all-toolchains", inValue))
-	{
-		return CommandLineListOption::AllToolchains;
-	}
-	else if (String::equals("architectures", inValue))
-	{
-		return CommandLineListOption::Architectures;
+		return kCommandLineLists.at(inValue);
 	}
 
 	return CommandLineListOption::None;
@@ -828,42 +835,12 @@ CommandLineListOption CommandLineInputs::getListOptionFromString(const std::stri
 /*****************************************************************************/
 VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(const std::string& inValue) const
 {
-	if (String::equals("vs-stable", inValue))
+#if defined(CHALET_WIN32)
+	if (kVisualStudioPresets.find(inValue) != kVisualStudioPresets.end())
 	{
-		return VisualStudioVersion::Stable;
+		return kVisualStudioPresets.at(inValue);
 	}
-	else if (String::equals("vs-preview", inValue))
-	{
-		return VisualStudioVersion::Preview;
-	}
-	if (String::equals("vs-2022", inValue))
-	{
-		return VisualStudioVersion::VisualStudio2022;
-	}
-	else if (String::equals("vs-2019", inValue))
-	{
-		return VisualStudioVersion::VisualStudio2019;
-	}
-	else if (String::equals("vs-2017", inValue))
-	{
-		return VisualStudioVersion::VisualStudio2017;
-	}
-	else if (String::equals("vs-2015", inValue))
-	{
-		return VisualStudioVersion::VisualStudio2015;
-	}
-	else if (String::equals("vs-2013", inValue))
-	{
-		return VisualStudioVersion::VisualStudio2013;
-	}
-	else if (String::equals("vs-2012", inValue))
-	{
-		return VisualStudioVersion::VisualStudio2012;
-	}
-	else if (String::equals("vs-2010", inValue))
-	{
-		return VisualStudioVersion::VisualStudio2010;
-	}
+#endif
 
 	return VisualStudioVersion::Stable;
 }

@@ -10,7 +10,7 @@ namespace chalet
 {
 class ExternalDependencyCache
 {
-	using StringMap = std::unordered_map<std::string, std::string>;
+	using StringMap = Dictionary<std::string>;
 
 public:
 	ExternalDependencyCache() = default;

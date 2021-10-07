@@ -32,8 +32,8 @@ private:
 
 	std::string m_cacheFolder;
 
-	std::unordered_map<std::string, std::string> m_hashes;
-	std::unordered_map<std::string, std::string> m_buildFiles;
+	Dictionary<std::string> m_hashes;
+	Dictionary<std::string> m_buildFiles;
 
 	bool m_initialized = false;
 	bool m_cacheNeedsUpdate = false;

@@ -11,7 +11,7 @@
 
 namespace chalet
 {
-using SourceLastWriteMap = std::unordered_map<std::string, LastWrite>;
+using SourceLastWriteMap = Dictionary<LastWrite>;
 
 struct SourceCache
 {

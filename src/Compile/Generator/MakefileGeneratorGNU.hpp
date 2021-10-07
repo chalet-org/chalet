@@ -49,7 +49,7 @@ private:
 
 	// StringList m_fileExtensions;
 
-	mutable std::unordered_map<std::string, StringList> m_locationCache;
+	mutable Dictionary<StringList> m_locationCache;
 };
 }
 

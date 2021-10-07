@@ -43,7 +43,7 @@ struct ICompileStrategy
 protected:
 	BuildState& m_state;
 
-	std::unordered_map<std::string, SourceOutputs> m_outputs;
+	Dictionary<SourceOutputs> m_outputs;
 
 	StrategyGenerator m_generator;
 	CompileCommandsGenerator m_compileCommandsGenerator;

@@ -93,7 +93,7 @@ protected:
 	StringList m_arch86;
 	// StringList m_arch86_64;
 
-	std::unordered_map<std::string, bool> m_supportedLinks;
+	Dictionary<bool> m_supportedLinks;
 
 private:
 	std::string m_arch;

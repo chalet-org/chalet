@@ -10,6 +10,20 @@
 
 namespace chalet
 {
+namespace
+{
+Dictionary<Color> kThemeMap{
+	{ "reset", Color::Reset },
+	{ "black", Color::Black },
+	{ "red", Color::Red },
+	{ "green", Color::Green },
+	{ "yellow", Color::Yellow },
+	{ "blue", Color::Blue },
+	{ "magenta", Color::Magenta },
+	{ "cyan", Color::Cyan },
+	{ "white", Color::White },
+};
+}
 /*****************************************************************************/
 ColorTheme::ColorTheme() :
 	info(Color::Reset),
@@ -32,94 +46,27 @@ ColorTheme::ColorTheme() :
 /*****************************************************************************/
 bool ColorTheme::parseColorFromString(const std::string& inString, Color& outColor)
 {
-	if (String::equals("reset", inString))
+	if (kThemeMap.find(inString) != kThemeMap.end())
 	{
-		outColor = Color::Reset;
-	}
-	else if (String::equals("black", inString))
-	{
-		outColor = Color::Black;
-	}
-	else if (String::equals("red", inString))
-	{
-		outColor = Color::Red;
-	}
-	else if (String::equals("green", inString))
-	{
-		outColor = Color::Green;
-	}
-	else if (String::equals("yellow", inString))
-	{
-		outColor = Color::Yellow;
-	}
-	else if (String::equals("blue", inString))
-	{
-		outColor = Color::Blue;
-	}
-	else if (String::equals("magenta", inString))
-	{
-		outColor = Color::Magenta;
-	}
-	else if (String::equals("cyan", inString))
-	{
-		outColor = Color::Cyan;
-	}
-	else if (String::equals("white", inString))
-	{
-		outColor = Color::White;
+		outColor = kThemeMap.at(inString);
+		return true;
 	}
 	else
 	{
 		return false;
 	}
-
-	return true;
 }
 
 /*****************************************************************************/
 std::string ColorTheme::getStringFromColor(const Color inColor)
 {
-	std::string ret;
-	switch (inColor)
+	for (auto& [id, color] : kThemeMap)
 	{
-		case Color::Reset:
-			ret = "reset";
-			break;
-
-		case Color::Black:
-			ret = "black";
-			break;
-
-		case Color::Red:
-			ret = "red";
-			break;
-
-		case Color::Green:
-			ret = "green";
-			break;
-
-		case Color::Yellow:
-			ret = "yellow";
-			break;
-
-		case Color::Blue:
-			ret = "blue";
-			break;
-
-		case Color::Magenta:
-			ret = "magenta";
-			break;
-
-		case Color::Cyan:
-			ret = "cyan";
-			break;
-
-		case Color::White:
-			ret = "white";
-			break;
+		if (inColor == color)
+			return id;
 	}
 
-	return ret;
+	return std::string();
 }
 
 /*****************************************************************************/

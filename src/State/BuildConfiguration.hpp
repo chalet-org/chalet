@@ -45,7 +45,7 @@ private:
 	bool m_enableProfiling = false;
 };
 
-using BuildConfigurationMap = std::unordered_map<std::string, BuildConfiguration>;
+using BuildConfigurationMap = Dictionary<BuildConfiguration>;
 }
 
 #endif // CHALET_BUILD_CONFIGURATION_HPP

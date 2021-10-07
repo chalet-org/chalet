@@ -19,7 +19,7 @@ struct IAppBundler;
 
 struct AppBundler
 {
-	using StateMap = std::unordered_map<std::string, std::unique_ptr<BuildState>>;
+	using StateMap = HeapDictionary<BuildState>;
 
 	explicit AppBundler(const CommandLineInputs& inInputs, StatePrototype& inPrototype);
 

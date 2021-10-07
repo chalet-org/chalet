@@ -92,7 +92,7 @@ private:
 	mutable StringList m_fileListCacheShared;
 	// mutable StringList m_directoryCache;
 
-	std::unordered_map<std::string, std::unique_ptr<SourceGroup>> m_fileList;
+	HeapDictionary<SourceGroup> m_fileList;
 	StringList m_allFileExtensions;
 
 	std::string m_buildOutputDir;

@@ -200,7 +200,7 @@ bool StatePrototype::validateBundleDestinations()
 {
 	auto& distributionDirectory = m_inputs.distributionDirectory();
 
-	std::unordered_map<std::string, std::string> locations;
+	Dictionary<std::string> locations;
 	bool result = true;
 	for (auto& target : distribution)
 	{

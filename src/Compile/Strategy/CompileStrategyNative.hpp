@@ -48,7 +48,7 @@ private:
 	const SourceTarget* m_project = nullptr;
 	ICompileToolchain* m_toolchain = nullptr;
 
-	std::unordered_map<std::string, std::unique_ptr<CommandPool::Target>> m_targets;
+	HeapDictionary<CommandPool::Target> m_targets;
 
 	bool m_generateDependencies = false;
 	bool m_pchChanged = false;

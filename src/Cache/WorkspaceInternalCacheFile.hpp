@@ -69,7 +69,7 @@ private:
 
 	ExternalDependencyCache m_externalDependencies;
 	std::string m_externalDependencyCachePath;
-	mutable std::unordered_map<std::string, std::unique_ptr<SourceCache>> m_sourceCaches;
+	mutable HeapDictionary<SourceCache> m_sourceCaches;
 
 	const std::string kKeyHashes;
 	const std::string kKeyHashBuild;

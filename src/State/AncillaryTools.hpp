@@ -140,7 +140,7 @@ struct AncillaryTools
 private:
 	const CommandLineInputs& m_inputs;
 
-	std::unordered_map<std::string, std::string> m_applePlatformSdk;
+	Dictionary<std::string> m_applePlatformSdk;
 
 	std::string m_chalet;
 

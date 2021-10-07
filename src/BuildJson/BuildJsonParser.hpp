@@ -62,7 +62,7 @@ private:
 	const std::string& kKeyAbstracts;
 	const std::string& kKeyTargets;
 
-	std::unordered_map<std::string, std::unique_ptr<SourceTarget>> m_abstractSourceTarget;
+	HeapDictionary<SourceTarget> m_abstractSourceTarget;
 
 	std::string m_debugIdentifier{ "debug" };
 };

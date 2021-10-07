@@ -48,7 +48,7 @@ private:
 #if defined(CHALET_WIN32)
 	bool m_initialized = false;
 
-	std::unordered_map<std::string, std::string> m_variables;
+	Dictionary<std::string> m_variables;
 
 	std::string m_varsFileOriginal;
 	std::string m_varsFileMsvc;
