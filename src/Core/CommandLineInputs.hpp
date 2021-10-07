@@ -136,6 +136,7 @@ struct CommandLineInputs
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
 	StringList getToolchainPresets() const noexcept;
+	StringList getCommandLineListNames() const noexcept;
 
 private:
 	std::string getPlatform() const noexcept;

@@ -31,6 +31,7 @@ const Dictionary<IdeType> kIdeTypes{
 };
 
 const Dictionary<CommandLineListOption> kCommandLineLists{
+	{ "list-names", CommandLineListOption::ListNames },
 	{ "commands", CommandLineListOption::Commands },
 	{ "configurations", CommandLineListOption::Configurations },
 	{ "toolchain-presets", CommandLineListOption::ToolchainPresets },
@@ -673,6 +674,19 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 #endif
 	ret.emplace_back(kPresetLLVM);
 	ret.emplace_back(kPresetGCC);
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList CommandLineInputs::getCommandLineListNames() const noexcept
+{
+	StringList ret;
+
+	for (auto& [name, _] : kCommandLineLists)
+	{
+		ret.emplace_back(name);
+	}
 
 	return ret;
 }

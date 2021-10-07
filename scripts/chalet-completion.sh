@@ -16,6 +16,9 @@ _chalet_completions()
 	-a|--arch)
 		COMPREPLY=($(compgen -W "$(chalet list --type architectures)" -- $cur))
 		;;
+	--type)
+		COMPREPLY=($(compgen -W "$(chalet list --type list-names)" -- $cur))
+		;;
 	get|getkeys|set|unset)
 		_CMDS[COMP_CWORD-1]=getkeys
 		_CMDS[COMP_CWORD]="${cur//\\\\./\\.}"

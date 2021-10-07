@@ -28,31 +28,41 @@ bool ListPrinter::printListOfRequestedType()
 		return false;
 
 	StringList output;
-	if (listOption == CommandLineListOption::Commands)
+	switch (listOption)
 	{
-		output = m_inputs.commandList();
-	}
-	else if (listOption == CommandLineListOption::Configurations)
-	{
-		output = getBuildConfigurationList();
-	}
-	else if (listOption == CommandLineListOption::ToolchainPresets)
-	{
-		output = m_inputs.getToolchainPresets();
-	}
-	else if (listOption == CommandLineListOption::UserToolchains)
-	{
-		output = getUserToolchainList();
-	}
-	else if (listOption == CommandLineListOption::AllToolchains)
-	{
-		StringList presets = m_inputs.getToolchainPresets();
-		StringList userToolchains = getUserToolchainList();
-		output = List::combine(std::move(userToolchains), std::move(presets));
-	}
-	else if (listOption == CommandLineListOption::Architectures)
-	{
-		output = getArchitectures();
+		case CommandLineListOption::Commands:
+			output = m_inputs.commandList();
+			break;
+
+		case CommandLineListOption::Configurations:
+			output = getBuildConfigurationList();
+			break;
+
+		case CommandLineListOption::ToolchainPresets:
+			output = m_inputs.getToolchainPresets();
+			break;
+
+		case CommandLineListOption::UserToolchains:
+			output = getUserToolchainList();
+			break;
+
+		case CommandLineListOption::Architectures:
+			output = getArchitectures();
+			break;
+
+		case CommandLineListOption::ListNames:
+			output = m_inputs.getCommandLineListNames();
+			break;
+
+		case CommandLineListOption::AllToolchains: {
+			StringList presets = m_inputs.getToolchainPresets();
+			StringList userToolchains = getUserToolchainList();
+			output = List::combine(std::move(userToolchains), std::move(presets));
+			break;
+		}
+
+		default:
+			break;
 	}
 
 	std::cout << String::join(output) << std::endl;

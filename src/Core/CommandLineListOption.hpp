@@ -11,6 +11,8 @@ namespace chalet
 enum class CommandLineListOption : ushort
 {
 	None,
+	ListNames,
+	//
 	Commands,
 	Configurations,
 	AllToolchains,

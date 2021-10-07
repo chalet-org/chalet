@@ -872,7 +872,7 @@ void ArgumentPatterns::commandSettingsUnset()
 void ArgumentPatterns::commandList()
 {
 	addStringArgument(ArgumentIdentifier::ListType, "--type", std::string())
-		.help("The data type to list (commands, configurations, toolchain-presets, user-toolchains, all-toolchains, architectures)")
+		.help("The data type to list (commands, configurations, toolchain-presets, user-toolchains, all-toolchains, architectures, list-names)")
 		.nargs(1)
 		.required();
 }
