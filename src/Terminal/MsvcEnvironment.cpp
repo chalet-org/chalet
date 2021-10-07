@@ -116,13 +116,13 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 	auto getStartOfVsWhereCommand = [this]() {
 		StringList cmd{ s_vswhere, "-nologo" };
 		const auto vsVersion = m_inputs.visualStudioVersion();
-		const bool isLatest = vsVersion == VisualStudioVersion::Latest;
+		const bool isStable = vsVersion == VisualStudioVersion::Stable;
 		const bool isPreview = vsVersion == VisualStudioVersion::Preview;
 
-		if (!isLatest)
+		if (!isStable)
 			cmd.emplace_back("-prerelease");
 
-		if (isLatest || isPreview)
+		if (isStable || isPreview)
 		{
 			cmd.emplace_back("-latest");
 		}

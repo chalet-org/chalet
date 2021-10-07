@@ -828,6 +828,14 @@ CommandLineListOption CommandLineInputs::getListOptionFromString(const std::stri
 /*****************************************************************************/
 VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(const std::string& inValue) const
 {
+	if (String::equals("vs-stable", inValue))
+	{
+		return VisualStudioVersion::Stable;
+	}
+	else if (String::equals("vs-preview", inValue))
+	{
+		return VisualStudioVersion::Preview;
+	}
 	if (String::equals("vs-2022", inValue))
 	{
 		return VisualStudioVersion::VisualStudio2022;
@@ -840,11 +848,23 @@ VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(co
 	{
 		return VisualStudioVersion::VisualStudio2017;
 	}
-	else if (String::equals("vs-preview", inValue))
+	else if (String::equals("vs-2015", inValue))
 	{
-		return VisualStudioVersion::Preview;
+		return VisualStudioVersion::VisualStudio2015;
+	}
+	else if (String::equals("vs-2013", inValue))
+	{
+		return VisualStudioVersion::VisualStudio2013;
+	}
+	else if (String::equals("vs-2012", inValue))
+	{
+		return VisualStudioVersion::VisualStudio2012;
+	}
+	else if (String::equals("vs-2010", inValue))
+	{
+		return VisualStudioVersion::VisualStudio2010;
 	}
 
-	return VisualStudioVersion::Latest;
+	return VisualStudioVersion::Stable;
 }
 }

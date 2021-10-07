@@ -614,7 +614,7 @@ void ArgumentPatterns::addToolchainArg()
 {
 	addTwoStringArguments(ArgumentIdentifier::Toolchain, "-t", "--toolchain")
 #if defined(CHALET_WIN32)
-		.help("Toolchain preference (vs-stable, vs-preview, vs-2022, vs-2019, vs-2017, llvm, gcc, ...) [default: \"vs-stable\"]");
+		.help("Toolchain preference (vs-stable, vs-preview, vs-2022 .. vs-2010, llvm, gcc, ...) [default: \"vs-stable\"]");
 #elif defined(CHALET_MACOS)
 		.help("Toolchain preference (apple-llvm, llvm, gcc, ...) [default: \"apple-llvm\"]");
 #else
