@@ -754,11 +754,21 @@ bool BuildManager::cmdRun(const SourceTarget& inProject)
 		auto outFile = fmt::format("{}/{}", buildOutputDir, outputFile);
 		m_inputs.clearWorkingDirectory(outFile);
 
-		auto message = fmt::format("{} exited with code: {}", outFile, Process::getLastExitCode());
+		int lastExitCode = Process::getLastExitCode();
+		auto message = fmt::format("{} exited with code: {}", outFile, lastExitCode);
 
 		// Output::lineBreak();
 		Output::printSeparator();
 		Output::print(result ? Output::theme().info : Output::theme().error, message, true);
+
+		auto lastSystemMessage = Process::getSystemMessage(lastExitCode);
+		if (!lastSystemMessage.empty())
+		{
+#if defined(CHALET_WIN32)
+			String::replaceAll(lastSystemMessage, "%1", outputFile);
+#endif
+			Output::print(Output::theme().info, lastSystemMessage);
+		}
 
 		return result;
 	}

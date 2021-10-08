@@ -15,6 +15,7 @@ namespace Process
 {
 int run(const StringList& inCmd, const ProcessOptions& inOptions, const std::uint8_t inBufferSize = 0);
 int getLastExitCode();
+std::string getSystemMessage(const int inExitCode);
 void haltAll(const SigNum inSignal = SigNum::Terminate);
 }
 }

@@ -28,6 +28,8 @@ public:
 	~RunningProcess();
 	bool operator==(const RunningProcess& rhs);
 
+	static std::string getErrorMessageFromCode(const int inCode);
+
 	bool create(const StringList& inCmd, const ProcessOptions& inOptions);
 	void close();
 

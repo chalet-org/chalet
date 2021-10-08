@@ -61,6 +61,12 @@ std::string getWindowsArguments(const StringList& inCmd)
 /*****************************************************************************/
 int RunningProcess::waitForResult()
 {
+	if (m_pid == 0)
+	{
+		DWORD error = ::GetLastError();
+		return static_cast<int>(error);
+	}
+
 	DWORD waitMs = INFINITE;
 	DWORD result = ::WaitForSingleObject(m_processInfo.hProcess, waitMs);
 	if (result == WAIT_TIMEOUT)
@@ -101,6 +107,30 @@ int RunningProcess::waitForResult()
 	close();
 	return static_cast<int>(exitCode);
 }
+
+/*****************************************************************************/
+std::string RunningProcess::getErrorMessageFromCode(const int inCode)
+{
+	DWORD messageId = static_cast<DWORD>(inCode);
+	if (messageId == 0)
+		return std::string();
+
+	LPSTR messageBuffer = NULL;
+	DWORD dwFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+	DWORD size = FormatMessageA(dwFlags,
+		NULL,
+		messageId,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPSTR)&messageBuffer,
+		0,
+		NULL);
+
+	std::string message(messageBuffer, static_cast<std::size_t>(size));
+
+	LocalFree(messageBuffer);
+
+	return message;
+}
 #else
 /*****************************************************************************/
 int RunningProcess::waitForResult()
@@ -132,6 +162,12 @@ int RunningProcess::getReturnCode(const int inExitCode)
 		return 1;
 }
 
+/*****************************************************************************/
+std::string RunningProcess::getErrorMessageFromCode(const int inCode) const
+{
+	UNUSED(inCode);
+	return std::string();
+}
 /*****************************************************************************/
 RunningProcess::CmdPtrArray RunningProcess::getCmdVector(const StringList& inCmd)
 {
@@ -256,11 +292,7 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 			m_err.close();
 
 		if (!success)
-		{
-			DWORD error = ::GetLastError();
-			Diagnostic::error("CreateProcess error: {}", error);
 			return false;
-		}
 	}
 
 #else

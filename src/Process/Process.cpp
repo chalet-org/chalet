@@ -91,7 +91,10 @@ int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const
 
 		RunningProcess process;
 		if (!process.create(inCmd, inOptions))
-			return 1;
+		{
+			s_lastErrorCode = process.waitForResult();
+			return s_lastErrorCode;
+		}
 
 		s_procesess.push_back(&process);
 
@@ -121,6 +124,15 @@ int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const
 int Process::getLastExitCode()
 {
 	return s_lastErrorCode;
+}
+
+/*****************************************************************************/
+std::string Process::getSystemMessage(const int inExitCode)
+{
+	if (inExitCode == 0)
+		return std::string();
+
+	return RunningProcess::getErrorMessageFromCode(inExitCode);
 }
 
 /*****************************************************************************/
