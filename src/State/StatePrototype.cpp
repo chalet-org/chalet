@@ -40,7 +40,7 @@ StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
 bool StatePrototype::initialize()
 {
 	Route route = m_inputs.command();
-	chalet_assert(route != Route::List, "");
+	chalet_assert(route != Route::Query, "");
 
 	if (!cache.initializeSettings())
 		return false;
@@ -120,8 +120,8 @@ bool StatePrototype::initialize()
 bool StatePrototype::initializeForList()
 {
 	Route route = m_inputs.command();
-	chalet_assert(route == Route::List, "");
-	if (route != Route::List)
+	chalet_assert(route == Route::Query, "");
+	if (route != Route::Query)
 		return false;
 
 	if (!cache.initializeSettings())

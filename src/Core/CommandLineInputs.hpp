@@ -9,7 +9,7 @@
 #include <optional>
 
 #include "Compile/ToolchainPreference.hpp"
-#include "Core/CommandLineListOption.hpp"
+#include "Core/QueryOption.hpp"
 #include "Core/VisualStudioVersion.hpp"
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
@@ -23,8 +23,12 @@ struct CommandLineInputs
 
 	void detectToolchainPreference() const;
 
+	const std::string& defaultArchPreset() const noexcept;
+	const std::string& defaultToolchainPreset() const noexcept;
+
 	const std::string& workingDirectory() const noexcept;
 	const std::string& homeDirectory() const noexcept;
+	const std::string& globalSettingsFile() const noexcept;
 
 	const std::string& defaultInputFile() const noexcept;
 	const std::string& defaultSettingsFile() const noexcept;
@@ -38,7 +42,7 @@ struct CommandLineInputs
 
 	const std::string& settingsFile() const noexcept;
 	void setSettingsFile(std::string&& inValue) noexcept;
-	const std::string& globalSettingsFile() const noexcept;
+	std::string getGlobalSettingsFilePath() const;
 
 	const std::string& rootDirectory() const noexcept;
 	void setRootDirectory(std::string&& inValue) noexcept;
@@ -106,8 +110,8 @@ struct CommandLineInputs
 	bool saveSchemaToFile() const noexcept;
 	void setSaveSchemaToFile(const bool inValue) noexcept;
 
-	CommandLineListOption listOption() const noexcept;
-	void setListOption(std::string&& inValue) noexcept;
+	QueryOption queryOption() const noexcept;
+	void setQueryOption(std::string&& inValue) noexcept;
 
 	SettingsType settingsType() const noexcept;
 	void setSettingsType(const SettingsType inValue) noexcept;
@@ -136,7 +140,7 @@ struct CommandLineInputs
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
 	StringList getToolchainPresets() const noexcept;
-	StringList getCommandLineListNames() const noexcept;
+	StringList getCliQueryOptions() const noexcept;
 
 private:
 	std::string getPlatform() const noexcept;
@@ -144,7 +148,7 @@ private:
 
 	ToolchainPreference getToolchainPreferenceFromString(const std::string& inValue) const;
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
-	CommandLineListOption getListOptionFromString(const std::string& inValue) const;
+	QueryOption getQueryOptionFromString(const std::string& inValue) const;
 	VisualStudioVersion getVisualStudioVersionFromPresetString(const std::string& inValue) const;
 
 	mutable ToolchainPreference m_toolchainPreference;
@@ -161,6 +165,17 @@ private:
 	const std::string kDefaultOutputDirectory;
 	const std::string kDefaultExternalDirectory;
 	const std::string kDefaultDistributionDirectory;
+
+	const std::string kGlobalSettingsFile;
+
+	const std::string kArchPresetAuto;
+	const std::string kToolchainPresetGCC;
+	const std::string kToolchainPresetLLVM;
+#if defined(CHALET_WIN32)
+	const std::string kToolchainPresetVisualStudioStable;
+#elif defined(CHALET_MACOS)
+	const std::string kToolchainPresetAppleLLVM;
+#endif
 
 	std::string m_inputFile;
 	std::string m_settingsFile;
@@ -180,7 +195,6 @@ private:
 	mutable std::string m_toolchainPreferenceName;
 	mutable std::string m_workingDirectory;
 	mutable std::string m_homeDirectory;
-	mutable std::string m_globalSettingsFile;
 
 	std::string m_initPath;
 	std::string m_envFile;
@@ -197,7 +211,7 @@ private:
 	Route m_command = Route::Unknown;
 	IdeType m_generator = IdeType::None;
 	SettingsType m_settingsType = SettingsType::Local;
-	CommandLineListOption m_listOption = CommandLineListOption::None;
+	QueryOption m_queryOption = QueryOption::None;
 
 	mutable VisualStudioVersion m_visualStudioVersion = VisualStudioVersion::None;
 

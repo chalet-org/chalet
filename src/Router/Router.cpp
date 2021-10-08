@@ -9,7 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 
-#include "Core/ListPrinter.hpp"
+#include "Core/QueryController.hpp"
 #include "Process/Process.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
@@ -44,8 +44,8 @@ bool Router::run()
 		return false;
 
 	Route command = m_inputs.command();
-	if (command == Route::List)
-		return cmdList();
+	if (command == Route::Query)
+		return cmdQuery();
 
 	if (command == Route::Unknown
 		|| static_cast<std::underlying_type_t<Route>>(command) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
@@ -248,14 +248,14 @@ bool Router::cmdSettings(const Route inRoute)
 }
 
 /*****************************************************************************/
-bool Router::cmdList()
+bool Router::cmdQuery()
 {
 	StatePrototype prototype(m_inputs);
 	if (!prototype.initializeForList())
 		return false;
 
-	ListPrinter listPrinter(m_inputs, prototype);
-	return listPrinter.printListOfRequestedType();
+	QueryController query(m_inputs, prototype);
+	return query.printListOfRequestedType();
 }
 
 /*****************************************************************************/

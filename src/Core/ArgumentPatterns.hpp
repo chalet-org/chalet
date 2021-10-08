@@ -13,6 +13,8 @@
 
 namespace chalet
 {
+struct CommandLineInputs;
+
 struct MappedArgument
 {
 	ArgumentIdentifier id;
@@ -29,7 +31,7 @@ class ArgumentPatterns
 	using ArgumentMap = OrderedDictionary<MappedArgument>;
 
 public:
-	ArgumentPatterns();
+	ArgumentPatterns(const CommandLineInputs& inInputs);
 
 	bool parse(const StringList& inArguments);
 	const ArgumentMap& arguments() const noexcept;
@@ -97,11 +99,13 @@ private:
 	void commandSettingsGetKeys();
 	void commandSettingsSet();
 	void commandSettingsUnset();
-	void commandList();
+	void commandQuery();
 
 #if defined(CHALET_DEBUG)
 	void commandDebug();
 #endif
+
+	const CommandLineInputs& m_inputs;
 
 	argparse::ArgumentParser m_parser;
 	ParserList m_subCommands;
@@ -119,6 +123,7 @@ private:
 	const std::string kArgSettingsKey;
 	const std::string kArgSettingsKeyQuery;
 	const std::string kArgSettingsValue;
+	const std::string kArgQueryType;
 
 	Route m_route;
 };

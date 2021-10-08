@@ -7,7 +7,7 @@
 
 #include <thread>
 
-// #include "Core/CommandLineInputs.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
@@ -23,7 +23,8 @@ MappedArgument::MappedArgument(ArgumentIdentifier inId, Variant inValue) :
 }
 
 /*****************************************************************************/
-ArgumentPatterns::ArgumentPatterns() :
+ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
+	m_inputs(inInputs),
 	m_subCommands({
 		{ Route::BuildRun, &ArgumentPatterns::commandBuildRun },
 		{ Route::Run, &ArgumentPatterns::commandRun },
@@ -37,7 +38,7 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ Route::SettingsGetKeys, &ArgumentPatterns::commandSettingsGetKeys },
 		{ Route::SettingsSet, &ArgumentPatterns::commandSettingsSet },
 		{ Route::SettingsUnset, &ArgumentPatterns::commandSettingsUnset },
-		{ Route::List, &ArgumentPatterns::commandList },
+		{ Route::Query, &ArgumentPatterns::commandQuery },
 	}),
 	m_routeMap({
 		{ "buildrun", Route::BuildRun },
@@ -52,7 +53,7 @@ ArgumentPatterns::ArgumentPatterns() :
 		{ "getkeys", Route::SettingsGetKeys },
 		{ "set", Route::SettingsSet },
 		{ "unset", Route::SettingsUnset },
-		{ "list", Route::List },
+		{ "query", Route::Query },
 	}),
 	kArgRunTarget("[<runTarget>]"),
 	kArgRemainingArguments("[ARG...]"),
@@ -60,7 +61,8 @@ ArgumentPatterns::ArgumentPatterns() :
 	kArgInitPath("<path>"),
 	kArgSettingsKey("<key>"),
 	kArgSettingsKeyQuery("<query>"),
-	kArgSettingsValue("<value>")
+	kArgSettingsValue("<value>"),
+	kArgQueryType("<type>")
 {
 #if defined(CHALET_DEBUG)
 	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::commandDebug);
@@ -538,13 +540,14 @@ void ArgumentPatterns::populateMainArguments()
    getkeys {keyQuery}
    set {key} {value}
    unset {key}
-   list)",
+   query {queryType})",
 		fmt::arg("runTarget", kArgRunTarget),
 		fmt::arg("runArgs", kArgRemainingArguments),
 		fmt::arg("key", kArgSettingsKey),
 		fmt::arg("keyQuery", kArgSettingsKeyQuery),
 		fmt::arg("value", kArgSettingsValue),
-		fmt::arg("path", kArgInitPath));
+		fmt::arg("path", kArgInitPath),
+		fmt::arg("queryType", kArgQueryType));
 
 	m_parser.add_argument("<subcommand>")
 		.help(std::move(help));
@@ -553,15 +556,17 @@ void ArgumentPatterns::populateMainArguments()
 /*****************************************************************************/
 void ArgumentPatterns::addInputFileArg()
 {
+	const auto& defaultValue = m_inputs.defaultInputFile();
 	addTwoStringArguments(ArgumentIdentifier::InputFile, "-i", "--input-file")
-		.help("An input build file to use [default: \"chalet.json\"]");
+		.help(fmt::format("An input build file to use [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addSettingsFileArg()
 {
+	const auto& defaultValue = m_inputs.defaultSettingsFile();
 	addTwoStringArguments(ArgumentIdentifier::SettingsFile, "-s", "--settings-file")
-		.help("The path to a settings file to use [default: \".chaletrc\"]");
+		.help(fmt::format("The path to a settings file to use [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
@@ -581,22 +586,25 @@ void ArgumentPatterns::addRootDirArg()
 /*****************************************************************************/
 void ArgumentPatterns::addOutputDirArg()
 {
+	const auto& defaultValue = m_inputs.defaultOutputDirectory();
 	addTwoStringArguments(ArgumentIdentifier::OutputDirectory, "-o", "--output-dir")
-		.help("The output directory of the build [default: \"build\"]");
+		.help(fmt::format("The output directory of the build [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addExternalDirArg()
 {
+	const auto& defaultValue = m_inputs.defaultExternalDirectory();
 	addTwoStringArguments(ArgumentIdentifier::ExternalDirectory, "-x", "--external-dir")
-		.help("The directory to install external dependencies into [default: \"chalet_external\"]");
+		.help(fmt::format("The directory to install external dependencies into [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addBundleDirArg()
 {
+	const auto& defaultValue = m_inputs.defaultDistributionDirectory();
 	addTwoStringArguments(ArgumentIdentifier::DistributionDirectory, "-d", "--distribution-dir")
-		.help("The root directory for all distribution bundles [default: \"dist\"]");
+		.help(fmt::format("The root directory for all distribution bundles [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
@@ -612,14 +620,10 @@ void ArgumentPatterns::addProjectGenArg()
 /*****************************************************************************/
 void ArgumentPatterns::addToolchainArg()
 {
+	const auto toolchains = m_inputs.getToolchainPresets();
+	const auto& defaultValue = m_inputs.defaultToolchainPreset();
 	addTwoStringArguments(ArgumentIdentifier::Toolchain, "-t", "--toolchain")
-#if defined(CHALET_WIN32)
-		.help("Toolchain preference (vs-stable, vs-preview, vs-2022 .. vs-2010, llvm, gcc, ...) [default: \"vs-stable\"]");
-#elif defined(CHALET_MACOS)
-		.help("Toolchain preference (apple-llvm, llvm, gcc, ...) [default: \"apple-llvm\"]");
-#else
-		.help("Toolchain preference (llvm, gcc, ...) [default: \"gcc\"]");
-#endif
+		.help(fmt::format("Toolchain preference ({}, ...) [default: \"{}\"]", String::join(toolchains, ", "), defaultValue));
 }
 
 /*****************************************************************************/
@@ -633,8 +637,9 @@ void ArgumentPatterns::addMaxJobsArg()
 /*****************************************************************************/
 void ArgumentPatterns::addEnvFileArg()
 {
+	const auto& defaultValue = m_inputs.defaultEnvFile();
 	addTwoStringArguments(ArgumentIdentifier::EnvFile, "-e", "--env-file")
-		.help("A file to load environment variables from [default: \".env\"]");
+		.help(fmt::format("A file to load environment variables from [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
@@ -706,11 +711,13 @@ void ArgumentPatterns::addRunArgumentsArg()
 /*****************************************************************************/
 void ArgumentPatterns::addSettingsTypeArg()
 {
+	const auto& defaultValue = m_inputs.defaultSettingsFile();
 	addTwoBoolArguments(ArgumentIdentifier::LocalSettings, "-l", "--local", false)
-		.help("Use the local settings [.chaletrc]");
+		.help(fmt::format("Use the local settings [{}]", defaultValue));
 
+	const auto& globalSettings = m_inputs.globalSettingsFile();
 	addTwoBoolArguments(ArgumentIdentifier::GlobalSettings, "-g", "--global", false)
-		.help("Use the global settings [~/.chaletrc]");
+		.help(fmt::format("Use the global settings [~/{}]", globalSettings));
 }
 
 /*****************************************************************************/
@@ -869,11 +876,11 @@ void ArgumentPatterns::commandSettingsUnset()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandList()
+void ArgumentPatterns::commandQuery()
 {
-	addStringArgument(ArgumentIdentifier::ListType, "--type", std::string())
-		.help("The data type to list (commands, configurations, toolchain-presets, user-toolchains, all-toolchains, architectures, list-names)")
-		.nargs(1)
+	auto listNames = m_inputs.getCliQueryOptions();
+	addStringArgument(ArgumentIdentifier::QueryType, kArgQueryType.c_str())
+		.help(fmt::format("The data type to query ({})", String::join(listNames, ", ")))
 		.required();
 }
 

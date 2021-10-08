@@ -41,7 +41,7 @@ enum class ArgumentIdentifier : ushort
 	InitPath,
 	SettingsKey,
 	SettingsValue,
-	ListType,
+	QueryType,
 	SettingsKeysRemainingArgs,
 };
 }

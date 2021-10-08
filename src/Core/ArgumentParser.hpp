@@ -6,10 +6,10 @@
 #ifndef CHALET_ARGUMENT_PARSER_HPP
 #define CHALET_ARGUMENT_PARSER_HPP
 
-#include "Core/CommandLineInputs.hpp"
-
 namespace chalet
 {
+struct CommandLineInputs;
+
 class ArgumentParser
 {
 public:

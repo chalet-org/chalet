@@ -24,7 +24,7 @@ enum class Route : ushort
 	SettingsGetKeys,
 	SettingsSet,
 	SettingsUnset,
-	List,
+	Query,
 #if defined(CHALET_DEBUG)
 	Debug,
 #endif

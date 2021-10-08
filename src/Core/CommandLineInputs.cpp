@@ -17,14 +17,6 @@ namespace chalet
 {
 namespace
 {
-const std::string kPresetGCC{ "gcc" };
-const std::string kPresetLLVM{ "llvm" };
-#if defined(CHALET_WIN32)
-const std::string kPresetVisualStudioStable{ "vs-stable" };
-#elif defined(CHALET_MACOS)
-const std::string kPresetAppleLLVM{ "apple-llvm" };
-#endif
-
 const Dictionary<IdeType> kIdeTypes{
 	{ "vscode", IdeType::VisualStudioCode },
 	{ "vs2019", IdeType::VisualStudio2019 },
@@ -32,14 +24,17 @@ const Dictionary<IdeType> kIdeTypes{
 	// { "codeblocks", IdeType::CodeBlocks },
 };
 
-const Dictionary<CommandLineListOption> kCommandLineLists{
-	{ "list-names", CommandLineListOption::ListNames },
-	{ "commands", CommandLineListOption::Commands },
-	{ "configurations", CommandLineListOption::Configurations },
-	{ "toolchain-presets", CommandLineListOption::ToolchainPresets },
-	{ "user-toolchains", CommandLineListOption::UserToolchains },
-	{ "all-toolchains", CommandLineListOption::AllToolchains },
-	{ "architectures", CommandLineListOption::Architectures },
+const Dictionary<QueryOption> kQueryOptions{
+	{ "list-names", QueryOption::QueryNames },
+	{ "commands", QueryOption::Commands },
+	{ "configurations", QueryOption::Configurations },
+	{ "toolchain-presets", QueryOption::ToolchainPresets },
+	{ "user-toolchains", QueryOption::UserToolchains },
+	{ "all-toolchains", QueryOption::AllToolchains },
+	{ "architectures", QueryOption::Architectures },
+	{ "toolchain", QueryOption::Toolchain },
+	{ "architecture", QueryOption::Architecture },
+	{ "run-target", QueryOption::RunTarget },
 };
 
 #if defined(CHALET_WIN32)
@@ -67,6 +62,15 @@ CommandLineInputs::CommandLineInputs() :
 	kDefaultOutputDirectory("build"),
 	kDefaultExternalDirectory("chalet_external"),
 	kDefaultDistributionDirectory("dist"),
+	kGlobalSettingsFile(".chaletconfig"),
+	kArchPresetAuto("auto"),
+	kToolchainPresetGCC("gcc"),
+	kToolchainPresetLLVM("llvm"),
+#if defined(CHALET_WIN32)
+	kToolchainPresetVisualStudioStable("vs-stable"),
+#elif defined(CHALET_MACOS)
+	kToolchainPresetAppleLLVM("apple-llvm"),
+#endif
 	m_settingsFile(kDefaultSettingsFile),
 	m_platform(getPlatform()),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
@@ -80,12 +84,25 @@ void CommandLineInputs::detectToolchainPreference() const
 	if (!m_toolchainPreferenceName.empty())
 		return;
 
+	const auto& defaultPreset = defaultToolchainPreset();
+	m_toolchainPreference = getToolchainPreferenceFromString(defaultPreset);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::defaultArchPreset() const noexcept
+{
+	return kArchPresetAuto;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::defaultToolchainPreset() const noexcept
+{
 #if defined(CHALET_WIN32)
-	m_toolchainPreference = getToolchainPreferenceFromString(kPresetVisualStudioStable);
+	return kToolchainPresetVisualStudioStable;
 #elif defined(CHALET_MACOS)
-	m_toolchainPreference = getToolchainPreferenceFromString(kPresetAppleLLVM);
+	return kToolchainPresetAppleLLVM;
 #else
-	m_toolchainPreference = getToolchainPreferenceFromString(kPresetGCC);
+	return kToolchainPresetGCC;
 #endif
 }
 
@@ -109,6 +126,12 @@ const std::string& CommandLineInputs::homeDirectory() const noexcept
 		Path::sanitize(m_homeDirectory, true);
 	}
 	return m_homeDirectory;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::globalSettingsFile() const noexcept
+{
+	return kGlobalSettingsFile;
 }
 
 /*****************************************************************************/
@@ -142,13 +165,10 @@ void CommandLineInputs::setSettingsFile(std::string&& inValue) noexcept
 	Path::sanitize(m_settingsFile);
 	// clearWorkingDirectory(m_settingsFile);
 }
-const std::string& CommandLineInputs::globalSettingsFile() const noexcept
+
+std::string CommandLineInputs::getGlobalSettingsFilePath() const
 {
-	if (m_globalSettingsFile.empty())
-	{
-		m_globalSettingsFile = fmt::format("{}/.chaletconfig", homeDirectory());
-	}
-	return m_globalSettingsFile;
+	return fmt::format("{}/{}", homeDirectory(), kGlobalSettingsFile);
 }
 //
 
@@ -469,7 +489,7 @@ void CommandLineInputs::setTargetArchitecture(const std::string& inValue) const 
 	if (inValue.empty())
 		return;
 
-	if (String::equals("auto", inValue))
+	if (String::equals(kArchPresetAuto, inValue))
 	{
 		m_targetArchitecture.clear();
 	}
@@ -547,13 +567,13 @@ void CommandLineInputs::setSaveSchemaToFile(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-CommandLineListOption CommandLineInputs::listOption() const noexcept
+QueryOption CommandLineInputs::queryOption() const noexcept
 {
-	return m_listOption;
+	return m_queryOption;
 }
-void CommandLineInputs::setListOption(std::string&& inValue) noexcept
+void CommandLineInputs::setQueryOption(std::string&& inValue) noexcept
 {
-	m_listOption = getListOptionFromString(inValue);
+	m_queryOption = getQueryOptionFromString(inValue);
 }
 
 /*****************************************************************************/
@@ -667,26 +687,26 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	StringList ret;
 
 #if defined(CHALET_WIN32)
-	ret.emplace_back(kPresetVisualStudioStable);
+	ret.emplace_back(kToolchainPresetVisualStudioStable);
 	ret.emplace_back("vs-preview");
 	ret.emplace_back("vs-2022");
 	ret.emplace_back("vs-2019");
 	ret.emplace_back("vs-2017");
 #elif defined(CHALET_MACOS)
-	ret.emplace_back(kPresetAppleLLVM);
+	ret.emplace_back(kToolchainPresetAppleLLVM);
 #endif
-	ret.emplace_back(kPresetLLVM);
-	ret.emplace_back(kPresetGCC);
+	ret.emplace_back(kToolchainPresetLLVM);
+	ret.emplace_back(kToolchainPresetGCC);
 
 	return ret;
 }
 
 /*****************************************************************************/
-StringList CommandLineInputs::getCommandLineListNames() const noexcept
+StringList CommandLineInputs::getCliQueryOptions() const noexcept
 {
 	StringList ret;
 
-	for (auto& [name, _] : kCommandLineLists)
+	for (auto& [name, _] : kQueryOptions)
 	{
 		ret.emplace_back(name);
 	}
@@ -761,9 +781,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	else
 #endif
 #if defined(CHALET_MACOS)
-		if (String::equals({ kPresetAppleLLVM, kPresetLLVM }, inValue))
+		if (String::equals({ kToolchainPresetAppleLLVM, kToolchainPresetLLVM }, inValue))
 #else
-	if (String::equals(kPresetLLVM, inValue))
+	if (String::equals(kToolchainPresetLLVM, inValue))
 #endif
 	{
 		m_isToolchainPreset = true;
@@ -783,7 +803,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "objdump";
 #endif
 	}
-	else if (String::equals(kPresetGCC, inValue))
+	else if (String::equals(kToolchainPresetGCC, inValue))
 	{
 		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
@@ -839,14 +859,14 @@ IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) cons
 }
 
 /*****************************************************************************/
-CommandLineListOption CommandLineInputs::getListOptionFromString(const std::string& inValue) const
+QueryOption CommandLineInputs::getQueryOptionFromString(const std::string& inValue) const
 {
-	if (kCommandLineLists.find(inValue) != kCommandLineLists.end())
+	if (kQueryOptions.find(inValue) != kQueryOptions.end())
 	{
-		return kCommandLineLists.at(inValue);
+		return kQueryOptions.at(inValue);
 	}
 
-	return CommandLineListOption::None;
+	return QueryOption::None;
 }
 
 /*****************************************************************************/

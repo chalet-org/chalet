@@ -56,7 +56,7 @@ bool WorkspaceCache::initializeSettings()
 	if (!m_localSettings.load(m_inputs.settingsFile()))
 		return false;
 
-	if (!m_globalSettings.load(m_inputs.globalSettingsFile()))
+	if (!m_globalSettings.load(m_inputs.getGlobalSettingsFilePath()))
 		return false;
 
 	m_removeOldCacheFolder = m_localSettings.json.empty();

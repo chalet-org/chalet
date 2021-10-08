@@ -21,7 +21,7 @@ ThemeSettingsJsonParser::ThemeSettingsJsonParser(const CommandLineInputs& inInpu
 /*****************************************************************************/
 bool ThemeSettingsJsonParser::serialize()
 {
-	const auto& globalSettings = m_inputs.globalSettingsFile();
+	const auto globalSettings = m_inputs.getGlobalSettingsFilePath();
 	const auto& localSettings = m_inputs.settingsFile();
 
 	ColorTheme theme = Output::theme();

@@ -3,15 +3,15 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_LINE_LIST_OPTION_HPP
-#define CHALET_COMMAND_LINE_LIST_OPTION_HPP
+#ifndef CHALET_QUERY_OPTION_HPP
+#define CHALET_QUERY_OPTION_HPP
 
 namespace chalet
 {
-enum class CommandLineListOption : ushort
+enum class QueryOption : ushort
 {
 	None,
-	ListNames,
+	QueryNames,
 	//
 	Commands,
 	Configurations,
@@ -19,7 +19,11 @@ enum class CommandLineListOption : ushort
 	UserToolchains,
 	ToolchainPresets,
 	Architectures,
+	//
+	Toolchain,
+	Architecture,
+	RunTarget,
 };
 }
 
-#endif // CHALET_COMMAND_LINE_LIST_OPTION_HPP
+#endif // CHALET_QUERY_OPTION_HPP
