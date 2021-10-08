@@ -163,7 +163,7 @@ int RunningProcess::getReturnCode(const int inExitCode)
 }
 
 /*****************************************************************************/
-std::string RunningProcess::getErrorMessageFromCode(const int inCode) const
+std::string RunningProcess::getErrorMessageFromCode(const int inCode)
 {
 	UNUSED(inCode);
 	return std::string();
