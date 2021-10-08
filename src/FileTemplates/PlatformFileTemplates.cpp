@@ -144,12 +144,12 @@ std::string PlatformFileTemplates::minimumWindowsAppManifestWithCompatibility()
 //   The msys2 package 'mingw-w64-x86_64-windows-default-manifest' also includes
 //   supportedOS
 //
-std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& inName, const std::string& inVersion, const Arch::Cpu inCpu)
+std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& inName, const Arch::Cpu inCpu)
 {
 	auto arch = getWindowsManifestArch(inCpu);
 	return fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="{version}" type="win32" />
+	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="1.0.0.0" type="win32" />
 	<description></description>
 	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
 		<security>
@@ -170,17 +170,16 @@ std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& 
 </assembly>
 )xml",
 		fmt::arg("name", inName),
-		fmt::arg("version", inVersion),
 		FMT_ARG(arch));
 }
 
 /*****************************************************************************/
-std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& inName, const std::string& inVersion, const Arch::Cpu inCpu)
+std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& inName, const Arch::Cpu inCpu)
 {
 	auto arch = getWindowsManifestArch(inCpu);
 	return fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="{version}" type="win32" />
+	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="1.0.0.0" type="win32" />
 	<description></description>
 	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
 		<security>
@@ -216,7 +215,6 @@ std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& i
 </assembly>
 )xml",
 		fmt::arg("name", inName),
-		fmt::arg("version", inVersion),
 		FMT_ARG(arch));
 }
 
