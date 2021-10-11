@@ -39,7 +39,6 @@ struct StatePrototype
 	const StringList& requiredBuildConfigurations() const noexcept;
 	const std::string& releaseConfiguration() const noexcept;
 	const std::string& anyConfiguration() const noexcept;
-	const StringList& defaultBuildConfigurations() const noexcept;
 
 	const std::string kKeyTargets = "targets";
 	const std::string kKeyAbstracts = "abstracts";
@@ -67,7 +66,6 @@ private:
 	bool validateBundleDestinations();
 
 	bool makeDefaultBuildConfigurations();
-	bool getDefaultBuildConfiguration(BuildConfiguration& outConfig, const std::string& inName) const;
 	void addBuildConfiguration(const std::string&& inName, BuildConfiguration&& inConfig);
 	void setReleaseConfiguration(const std::string& inName);
 	void addRequiredBuildConfiguration(std::string inValue);
@@ -77,7 +75,6 @@ private:
 	GlobalSettingsState m_globalSettingsState;
 	BuildConfigurationMap m_buildConfigurations;
 
-	StringList kDefaultBuildConfigurations;
 	StringList m_allowedBuildConfigurations;
 	StringList m_requiredBuildConfigurations;
 

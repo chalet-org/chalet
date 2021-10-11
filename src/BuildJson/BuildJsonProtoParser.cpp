@@ -189,7 +189,7 @@ bool BuildJsonProtoParser::parseConfiguration(const Json& inNode) const
 				}
 
 				BuildConfiguration config;
-				if (!m_prototype.getDefaultBuildConfiguration(config, name))
+				if (!BuildConfiguration::makeDefaultConfiguration(config, name))
 				{
 					Diagnostic::error("{}: Error creating the default build configuration '{}'", m_filename, name);
 					return false;

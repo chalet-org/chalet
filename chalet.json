@@ -21,6 +21,11 @@
 			// "linkTimeOptimization": true,
 			"stripSymbols": true
 		},
+		"RelStable": {
+			"optimizationLevel": "2",
+			"linkTimeOptimization": false,
+			"stripSymbols": true
+		},
 		"Profile": {
 			"optimizationLevel": "0",
 			"debugSymbols": true,
@@ -37,6 +42,7 @@
 		"Debug",
 		"RelWithDebInfo",
 		"MinSizeRel",
+		"RelStable",
 		"Profile"
 	],*/
 	"abstracts:all": {

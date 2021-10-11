@@ -12,6 +12,9 @@ namespace chalet
 {
 struct BuildConfiguration
 {
+	static StringList getDefaultBuildConfigurationNames();
+	static bool makeDefaultConfiguration(BuildConfiguration& outConfig, const std::string& inName);
+
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
 

@@ -58,19 +58,6 @@ bool CMakeTarget::validate()
 		result = false;
 	}
 
-	std::string buildConfiguration = m_state.info.buildConfiguration();
-	if (m_state.configuration.enableProfiling())
-	{
-		buildConfiguration = "Debug";
-	}
-
-	if (!List::contains({ "Release", "Debug", "RelWithDebInfo", "MinSizeRel" }, buildConfiguration))
-	{
-		// https://cmake.org/cmake/help/v3.0/variable/CMAKE_BUILD_TYPE.html
-		Diagnostic::error("Build '{}' not recognized by CMake.", buildConfiguration);
-		result = false;
-	}
-
 #if defined(CHALET_WIN32)
 	const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
 	if (compileConfig.isMsvc())
@@ -81,7 +68,7 @@ bool CMakeTarget::validate()
 			if (version.empty())
 				Diagnostic::error("Visual Studio version was not detected.");
 			else
-				Diagnostic::error("Visual Studio version '{}' was detected, but is not yet supported in Chalet's CMake integration.", buildConfiguration);
+				Diagnostic::error("Visual Studio version '{}' was detected, but is not yet supported in Chalet's CMake integration.", version);
 			result = false;
 		}
 	}

@@ -121,7 +121,8 @@ private:
 	const std::string kPattern;
 	const std::string kPatternProperties;
 	const std::string kDescription;
-	// const std::string kEnum = "enum";
+	const std::string kDefault;
+	const std::string kEnum;
 	const std::string kExamples;
 	const std::string kAnyOf;
 	const std::string kAllOf;

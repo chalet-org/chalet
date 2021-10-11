@@ -6,6 +6,7 @@
 #include "FileTemplates/StarterFileTemplates.hpp"
 
 #include "State/AncillaryTools.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -53,13 +54,7 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	if (inProps.defaultConfigs)
 	{
 		ret[kConfigurations] = Json::array();
-		ret[kConfigurations] = {
-			"Release",
-			"Debug",
-			"MinSizeRel",
-			"RelWithDebInfo",
-			"Profile",
-		};
+		ret[kConfigurations] = BuildConfiguration::getDefaultBuildConfigurationNames();
 	}
 
 	if (objectiveCxx)

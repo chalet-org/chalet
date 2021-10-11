@@ -25,14 +25,7 @@ namespace chalet
 StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
 	cache(inInputs),
 	tools(inInputs),
-	m_inputs(inInputs),
-	kDefaultBuildConfigurations({
-		"Release",
-		"Debug",
-		"RelWithDebInfo",
-		"MinSizeRel",
-		"Profile",
-	})
+	m_inputs(inInputs)
 {
 }
 
@@ -356,12 +349,6 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 }
 
 /*****************************************************************************/
-const StringList& StatePrototype::defaultBuildConfigurations() const noexcept
-{
-	return kDefaultBuildConfigurations;
-}
-
-/*****************************************************************************/
 bool StatePrototype::parseGlobalSettingsJson()
 {
 	auto& settingsFile = cache.getSettings(SettingsType::Global);
@@ -389,14 +376,14 @@ bool StatePrototype::makeDefaultBuildConfigurations()
 {
 	m_buildConfigurations.clear();
 
-	m_allowedBuildConfigurations = kDefaultBuildConfigurations;
+	m_allowedBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
 
 	m_releaseConfiguration = "Release";
 
 	for (auto& name : m_allowedBuildConfigurations)
 	{
 		BuildConfiguration config;
-		if (!getDefaultBuildConfiguration(config, name))
+		if (!BuildConfiguration::makeDefaultConfiguration(config, name))
 		{
 			Diagnostic::error("{}: Error creating the default build configurations.", m_filename);
 			return false;
@@ -404,50 +391,6 @@ bool StatePrototype::makeDefaultBuildConfigurations()
 
 		m_buildConfigurations.emplace(std::move(name), std::move(config));
 	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool StatePrototype::getDefaultBuildConfiguration(BuildConfiguration& outConfig, const std::string& inName) const
-{
-	if (String::equals("Release", inName))
-	{
-		outConfig.setOptimizationLevel("3");
-		outConfig.setLinkTimeOptimization(true);
-		outConfig.setStripSymbols(true);
-	}
-	else if (String::equals("Debug", inName))
-	{
-		outConfig.setOptimizationLevel("0");
-		outConfig.setDebugSymbols(true);
-	}
-	// these two are the same as cmake
-	else if (String::equals("RelWithDebInfo", inName))
-	{
-		outConfig.setOptimizationLevel("2");
-		outConfig.setDebugSymbols(true);
-		outConfig.setLinkTimeOptimization(false);
-	}
-	else if (String::equals("MinSizeRel", inName))
-	{
-		outConfig.setOptimizationLevel("size");
-		// outConfig.setLinkTimeOptimization(true);
-		outConfig.setStripSymbols(true);
-	}
-	else if (String::equals("Profile", inName))
-	{
-		outConfig.setOptimizationLevel("0");
-		outConfig.setDebugSymbols(true);
-		outConfig.setEnableProfiling(true);
-	}
-	else
-	{
-		Diagnostic::error("{}: An invalid build configuration ({}) was requested. Expected: Release, Debug, RelWithDebInfo, MinSizeRel, Profile", m_filename, inName);
-		return false;
-	}
-
-	outConfig.setName(inName);
 
 	return true;
 }

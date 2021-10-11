@@ -11,6 +11,72 @@
 namespace chalet
 {
 /*****************************************************************************/
+StringList BuildConfiguration::getDefaultBuildConfigurationNames()
+{
+	return {
+		"Release",
+		"Debug",
+		"MinSizeRel",
+		"RelWithDebInfo",
+		"RelStable",
+		"Profile",
+	};
+}
+
+/*****************************************************************************/
+bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig, const std::string& inName)
+{
+	outConfig = BuildConfiguration();
+
+	if (String::equals("Release", inName))
+	{
+		outConfig.setOptimizationLevel("3");
+		outConfig.setLinkTimeOptimization(true);
+		outConfig.setStripSymbols(true);
+	}
+	else if (String::equals("Debug", inName))
+	{
+		outConfig.setOptimizationLevel("0");
+		outConfig.setDebugSymbols(true);
+	}
+	// these two are the same as cmake
+	else if (String::equals("RelWithDebInfo", inName))
+	{
+		outConfig.setOptimizationLevel("2");
+		outConfig.setDebugSymbols(true);
+		outConfig.setLinkTimeOptimization(false);
+	}
+	else if (String::equals("MinSizeRel", inName))
+	{
+		outConfig.setOptimizationLevel("size");
+		outConfig.setLinkTimeOptimization(false);
+		outConfig.setStripSymbols(true);
+	}
+	else if (String::equals("RelStable", inName))
+	{
+		outConfig.setOptimizationLevel("2");
+		outConfig.setLinkTimeOptimization(false);
+		outConfig.setStripSymbols(true);
+	}
+	else if (String::equals("Profile", inName))
+	{
+		outConfig.setOptimizationLevel("0");
+		outConfig.setDebugSymbols(true);
+		outConfig.setEnableProfiling(true);
+	}
+	else
+	{
+		auto names = String::join(getDefaultBuildConfigurationNames(), ", ");
+		Diagnostic::error("An invalid build configuration ({}) was requested. Expected: {}", inName, names);
+		return false;
+	}
+
+	outConfig.setName(inName);
+
+	return true;
+}
+
+/*****************************************************************************/
 const std::string& BuildConfiguration::name() const noexcept
 {
 	return m_name;

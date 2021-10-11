@@ -1525,8 +1525,9 @@
 			"default": [
 				"Release",
 				"Debug",
-				"RelWithDebInfo",
 				"MinSizeRel",
+				"RelWithDebInfo",
+				"RelStable",
 				"Profile"
 			],
 			"anyOf": [
@@ -1550,8 +1551,9 @@
 						"enum": [
 							"Release",
 							"Debug",
-							"RelWithDebInfo",
 							"MinSizeRel",
+							"RelWithDebInfo",
+							"RelStable",
 							"Profile"
 						]
 					}

@@ -104,7 +104,7 @@ StringList QueryController::getBuildConfigurationList() const
 {
 	StringList ret;
 
-	const auto& defaultBuildConfigurations = m_prototype.defaultBuildConfigurations();
+	const auto defaultBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
 	const auto& buildJson = m_prototype.chaletJson().json;
 
 	const std::string kKeyConfigurations = "configurations";

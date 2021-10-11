@@ -333,10 +333,12 @@ std::string CmakeBuilder::getCMakeCompatibleBuildConfiguration() const
 	}
 	else if (m_state.configuration.isDebuggable())
 	{
+		// Profile > Debug in CMake
 		ret = "Debug";
 	}
 	else
 	{
+		// RelStable > Release in CMake
 		ret = "Release";
 	}
 

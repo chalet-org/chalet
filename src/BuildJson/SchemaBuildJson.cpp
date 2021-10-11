@@ -7,6 +7,7 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
+#include "State/BuildConfiguration.hpp"
 #include "Utility/String.hpp"
 #include "Utility/SuppressIntellisense.hpp"
 #include "Json/JsonComments.hpp"
@@ -22,7 +23,8 @@ SchemaBuildJson::SchemaBuildJson() :
 	kPattern("pattern"),
 	kPatternProperties("patternProperties"),
 	kDescription("description"),
-	// kEnum("enum"),
+	kDefault("default"),
+	kEnum("enum"),
 	kExamples("examples"),
 	kAnyOf("anyOf"),
 	kAllOf("allOf"),
@@ -1489,13 +1491,7 @@ Json SchemaBuildJson::get()
 
 	ret[kProperties]["configurations"] = R"json({
 		"description": "An array of allowed build configuration presets, or an object of custom build configurations.",
-		"default": [
-			"Release",
-			"Debug",
-			"RelWithDebInfo",
-			"MinSizeRel",
-			"Profile"
-		],
+		"default": [],
 		"anyOf": [
 			{
 				"type": "object",
@@ -1508,19 +1504,14 @@ Json SchemaBuildJson::get()
 				"items": {
 					"type": "string",
 					"description": "A configuration preset",
-					"minLength": 1,
-					"enum": [
-						"Release",
-						"Debug",
-						"RelWithDebInfo",
-						"MinSizeRel",
-						"Profile"
-					]
+					"minLength": 1
 				}
 			}
 		]
 	})json"_ojson;
 	ret[kProperties]["configurations"][kAnyOf][0][kPatternProperties][R"(^[A-Za-z]{3,}$)"] = getDefinition(Defs::Configuration);
+	ret[kProperties]["configurations"][kDefault] = BuildConfiguration::getDefaultBuildConfigurationNames();
+	ret[kProperties]["configurations"][kAnyOf][1][kItems][kEnum] = BuildConfiguration::getDefaultBuildConfigurationNames();
 
 	ret[kProperties]["distribution"] = R"json({
 		"type": "object",
