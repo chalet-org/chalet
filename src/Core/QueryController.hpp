@@ -26,6 +26,7 @@ private:
 	StringList getUserToolchainList() const;
 	StringList getArchitectures() const;
 	StringList getCurrentArchitecture() const;
+	StringList getCurrentBuildConfiguration() const;
 	StringList getCurrentToolchain() const;
 	StringList getCurrentRunTarget() const;
 

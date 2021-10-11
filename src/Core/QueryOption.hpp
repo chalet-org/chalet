@@ -21,6 +21,7 @@ enum class QueryOption : ushort
 	Architectures,
 	//
 	Toolchain,
+	Configuration,
 	Architecture,
 	RunTarget,
 };

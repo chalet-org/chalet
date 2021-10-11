@@ -33,6 +33,7 @@ const Dictionary<QueryOption> kQueryOptions{
 	{ "all-toolchains", QueryOption::AllToolchains },
 	{ "architectures", QueryOption::Architectures },
 	{ "toolchain", QueryOption::Toolchain },
+	{ "configuration", QueryOption::Configuration },
 	{ "architecture", QueryOption::Architecture },
 	{ "run-target", QueryOption::RunTarget },
 };

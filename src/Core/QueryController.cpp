@@ -58,6 +58,10 @@ bool QueryController::printListOfRequestedType()
 			output = getCurrentArchitecture();
 			break;
 
+		case QueryOption::Configuration:
+			output = getCurrentBuildConfiguration();
+			break;
+
 		case QueryOption::Toolchain:
 			output = getCurrentToolchain();
 			break;
@@ -267,6 +271,43 @@ StringList QueryController::getCurrentArchitecture() const
 	{
 		ret.emplace_back(m_inputs.defaultArchPreset());
 	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getCurrentBuildConfiguration() const
+{
+	StringList ret;
+
+	const std::string kKeySettings = "settings";
+	const std::string kKeyConfiguration = "configuration";
+
+	const auto& settingsFile = getSettingsJson();
+	if (settingsFile.is_object())
+	{
+		if (settingsFile.contains(kKeySettings))
+		{
+			const auto& settings = settingsFile.at(kKeySettings);
+			if (settings.contains(kKeyConfiguration))
+			{
+				const auto& configuration = settings.at(kKeyConfiguration);
+				if (configuration.is_string())
+				{
+					auto value = configuration.get<std::string>();
+					if (!value.empty())
+					{
+						ret.emplace_back(std::move(value));
+					}
+				}
+			}
+		}
+	}
+
+	/*if (ret.empty())
+	{
+		ret.emplace_back(m_prototype.releaseConfiguration());
+	}*/
 
 	return ret;
 }
