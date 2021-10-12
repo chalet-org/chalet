@@ -165,9 +165,9 @@ int RunningProcess::getReturnCode(const int inExitCode)
 /*****************************************************************************/
 std::string RunningProcess::getErrorMessageFromCode(const int inCode)
 {
-	UNUSED(inCode);
-	return std::string();
+	return fmt::format("Error: {}", ::strerror(inCode));
 }
+
 /*****************************************************************************/
 RunningProcess::CmdPtrArray RunningProcess::getCmdVector(const StringList& inCmd)
 {
