@@ -168,6 +168,7 @@ int RunningProcess::getReturnCode(const int inExitCode)
 std::string RunningProcess::getErrorMessageFromCode(const int inCode)
 {
 	std::array<char, 256> buffer;
+	buffer.fill(0);
 	::strerror_r(inCode, buffer.data(), buffer.size());
 
 	return std::string(buffer.data());
