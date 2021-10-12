@@ -225,12 +225,12 @@ std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& i
 std::string PlatformFileTemplates::windowsManifestResource(const std::string& inManifestFile, const bool inDllPrivateDeps)
 {
 	int id = inDllPrivateDeps ? 2 : 1;
-	return fmt::format(R"rc(#define WIN32_LEAN_AND_MEAN
-#include <winuser.h>
-
-{id} RT_MANIFEST "{manifestFile}"
+	auto macroName = inDllPrivateDeps ? "ISOLATIONAWARE_MANIFEST_RESOURCE_ID" : "CREATEPROCESS_MANIFEST_RESOURCE_ID";
+	return fmt::format(R"rc(#pragma code_page(65001)
+{id} /* {macroName} */ 24 /* RT_MANIFEST */ "{manifestFile}"
 )rc",
 		FMT_ARG(id),
+		FMT_ARG(macroName),
 		fmt::arg("manifestFile", inManifestFile));
 }
 
