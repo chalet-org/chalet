@@ -289,10 +289,13 @@ bool SettingsManager::runSettingsSet(Json& node)
 
 	if (set)
 	{
+		std::string key(m_key);
+		String::replaceAll(key, "\\.", ".");
+
 		if (ptr->is_object())
-			std::cout << fmt::format("\"{}\": {}", m_key, ptr->dump(3, ' ')) << std::endl;
+			std::cout << fmt::format("\"{}\": {}", key, ptr->dump(3, ' ')) << std::endl;
 		else
-			std::cout << fmt::format("{}: {}", m_key, m_value) << std::endl;
+			std::cout << fmt::format("{}: {}", key, m_value) << std::endl;
 
 		settings.setDirty(true);
 	}
