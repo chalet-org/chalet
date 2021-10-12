@@ -767,7 +767,7 @@ bool BuildManager::cmdRun(const SourceTarget& inProject)
 #if defined(CHALET_WIN32)
 			String::replaceAll(lastSystemMessage, "%1", outputFile);
 #endif
-			Output::print(Output::theme().info, lastSystemMessage);
+			Output::print(Output::theme().info, fmt::format("Error: {}", lastSystemMessage));
 		}
 
 		return result;

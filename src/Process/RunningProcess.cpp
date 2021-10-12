@@ -9,6 +9,8 @@
 #else
 	#include <sys/wait.h>
 	#include <unistd.h>
+	#include <string.h>
+	#include <array>
 #endif
 
 #include "Utility/String.hpp"
@@ -165,7 +167,10 @@ int RunningProcess::getReturnCode(const int inExitCode)
 /*****************************************************************************/
 std::string RunningProcess::getErrorMessageFromCode(const int inCode)
 {
-	return fmt::format("Error: {}", ::strerror(inCode));
+	std::array<char, 256> buffer;
+	::strerror_r(inCode, buffer.data(), buffer.size());
+
+	return std::string(buffer.data());
 }
 
 /*****************************************************************************/
