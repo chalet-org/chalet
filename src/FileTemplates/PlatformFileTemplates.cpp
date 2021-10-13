@@ -237,9 +237,7 @@ std::string PlatformFileTemplates::windowsManifestResource(const std::string& in
 /*****************************************************************************/
 std::string PlatformFileTemplates::windowsIconResource(const std::string& inIconFile)
 {
-	return fmt::format(R"rc(#define WIN32_LEAN_AND_MEAN
-#include <winuser.h>
-
+	return fmt::format(R"rc(#pragma code_page(65001)
 2 ICON "{iconFile}"
 )rc",
 		fmt::arg("iconFile", inIconFile));
