@@ -324,7 +324,14 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 {
 	const auto& preference = m_inputs.toolchainPreferenceName();
-	auto& buildSettings = inConfigJson.json["settings"];
+	const std::string kKeySettings("settings");
+	if (!inConfigJson.json.contains(kKeySettings))
+	{
+		Diagnostic::error("Settings did not correctly initialize.");
+		return false;
+	}
+
+	auto& buildSettings = inConfigJson.json.at(kKeySettings);
 
 	buildSettings["toolchain"] = preference;
 	buildSettings["architecture"] = m_inputs.targetArchitecture().empty() ? "auto" : m_inputs.targetArchitecture();

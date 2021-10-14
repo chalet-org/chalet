@@ -99,7 +99,14 @@ const std::string& JsonFile::filename() const noexcept
 /*****************************************************************************/
 void JsonFile::makeNode(const std::string& inName, const JsonDataType inType)
 {
-	initializeDataType(json[inName], inType);
+	if (json.contains(inName))
+	{
+		if (json.at(inName).type() == inType)
+			return;
+	}
+
+	json[inName] = initializeDataType(inType);
+	setDirty(true);
 }
 
 /*****************************************************************************/
@@ -194,50 +201,39 @@ bool JsonFile::validate(Json&& inSchemaJson)
 }
 
 /*****************************************************************************/
-void JsonFile::initializeDataType(Json& inJson, const JsonDataType inType)
+Json JsonFile::initializeDataType(const JsonDataType inType)
 {
-	if (inJson.type() == inType)
-		return;
-
 	switch (inType)
 	{
 		case JsonDataType::object:
-			inJson = Json::object();
-			break;
+			return Json::object();
 
 		case JsonDataType::array:
-			inJson = Json::array();
-			break;
+			return Json::array();
 
 		case JsonDataType::string:
-			inJson = std::string();
-			break;
+			return std::string();
 
 		case JsonDataType::binary:
-			inJson = 0x0;
-			break;
+			return 0x0;
 
 		case JsonDataType::boolean:
-			inJson = false;
-			break;
+			return false;
 
 		case JsonDataType::number_float:
-			inJson = 0.0f;
-			break;
+			return 0.0f;
 
 		case JsonDataType::number_integer:
-			inJson = 0;
-			break;
+			return 0;
 
 		case JsonDataType::number_unsigned:
-			inJson = 0U;
-			break;
+			return 0U;
 
 		default:
-			return;
+			break;
 	}
 
-	setDirty(true);
+	return Json();
 }
 
 }

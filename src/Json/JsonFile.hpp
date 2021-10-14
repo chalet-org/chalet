@@ -56,7 +56,7 @@ struct JsonFile
 	Json json;
 
 private:
-	void initializeDataType(Json& inJson, const JsonDataType inType);
+	Json initializeDataType(const JsonDataType inType);
 
 	std::string m_filename;
 

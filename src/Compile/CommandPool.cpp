@@ -26,7 +26,7 @@ std::function<void()> s_shutdownHandler;
 /*****************************************************************************/
 bool printCommand(std::string prefix, std::string text, uint total = 0)
 {
-	std::unique_lock<std::mutex> lock(s_mutex);
+	std::lock_guard<std::mutex> lock(s_mutex);
 	if (total > 0)
 	{
 		// auto indexStr = std::to_string(s_compileIndex);
@@ -103,7 +103,7 @@ bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 
 	if (!errorOutput.empty())
 	{
-		std::unique_lock<std::mutex> lock(s_mutex);
+		std::lock_guard<std::mutex> lock(s_mutex);
 		String::replaceAll(errorOutput, "\n", "\r\n");
 		std::cout << errorOutput << std::flush;
 	}

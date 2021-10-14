@@ -79,6 +79,7 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 /*****************************************************************************/
 void Spinner::doRegularEllipsis()
 {
+	std::lock_guard<std::mutex> lock(m_mutex);
 	std::cout << " ... " << std::flush;
 
 	if (Environment::isContinuousIntegrationServer())

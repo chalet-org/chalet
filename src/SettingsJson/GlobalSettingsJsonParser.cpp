@@ -54,7 +54,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 	m_jsonFile.makeNode(kKeyTheme, JsonDataType::object);
 
 	ColorTheme theme = Output::theme();
-	Json& themeJson = m_jsonFile.json[kKeyTheme];
+	Json& themeJson = m_jsonFile.json.at(kKeyTheme);
 	auto makeThemeKeyValueFromTheme = [&](const std::string& inKey) {
 		if (!themeJson.contains(inKey) || !themeJson[inKey].is_string())
 		{
@@ -67,7 +67,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		makeThemeKeyValueFromTheme(key);
 	}
 
-	Json& buildSettings = m_jsonFile.json[kKeySettings];
+	Json& buildSettings = m_jsonFile.json.at(kKeySettings);
 
 	auto assignSettingsBool = [&](const std::string& inKey, const bool inDefault, const std::function<std::optional<bool>()>& onGetValue) {
 		m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, inKey, [&inDefault]() {

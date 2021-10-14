@@ -30,6 +30,7 @@ private:
 
 	std::atomic<bool> m_running = false;
 	std::unique_ptr<std::thread> m_thread;
+	std::mutex m_mutex;
 };
 }
 

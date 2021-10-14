@@ -67,7 +67,7 @@ ThreadPool::~ThreadPool()
 /*****************************************************************************/
 void ThreadPool::stop()
 {
-	std::unique_lock<std::mutex> lock(m_queueMutex);
+	std::lock_guard<std::mutex> lock(m_queueMutex);
 	m_stop = true;
 
 	while (!m_tasks.empty())
