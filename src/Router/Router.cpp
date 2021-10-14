@@ -70,16 +70,13 @@ bool Router::run()
 
 	if (command != Route::Init && !isSettings)
 	{
-		Output::lineBreak();
-
-		if (!parseEnvFile())
-			return false;
+		// Output::lineBreak();
 
 		prototype = std::make_unique<StatePrototype>(m_inputs);
 
 		if (!prototype->initialize())
 		{
-			Output::lineBreak();
+			// Output::lineBreak();
 			return false;
 		}
 
@@ -259,86 +256,12 @@ bool Router::cmdQuery()
 }
 
 /*****************************************************************************/
-#if defined(CHALET_DEBUG)
-bool Router::cmdDebug()
-{
-	LOG("Router::cmdDebug()");
-
-	return true;
-}
-#endif
-
-/*****************************************************************************/
 bool Router::parseTheme()
 {
 	ThemeSettingsJsonParser themeParser(m_inputs);
 	if (!themeParser.serialize())
 		return false;
 
-	return true;
-}
-
-/*****************************************************************************/
-bool Router::parseEnvFile()
-{
-	auto searchDotEnv = [this](const std::string& inRelativeEnv, const std::string& inEnv) -> std::string {
-		if (String::endsWith(m_inputs.defaultEnvFile(), inRelativeEnv))
-		{
-			auto toSearch = String::getPathFolder(inRelativeEnv);
-			if (!toSearch.empty())
-			{
-				toSearch = fmt::format("{}/{}", toSearch, inEnv);
-				if (Commands::pathExists(toSearch))
-					return toSearch;
-			}
-
-			if (Commands::pathExists(inEnv))
-				return inEnv;
-		}
-		else
-		{
-			if (Commands::pathExists(inRelativeEnv))
-				return inRelativeEnv;
-
-			if (Commands::pathExists(inEnv))
-				return inEnv;
-		}
-
-		return std::string();
-	};
-
-#if defined(CHALET_WIN32)
-	std::string platformEnv = fmt::format("{}.windows", m_inputs.defaultEnvFile());
-#elif defined(CHALET_MACOS)
-	std::string platformEnv = fmt::format("{}.macos", m_inputs.defaultEnvFile());
-#else
-	std::string platformEnv = fmt::format("{}.linux", m_inputs.defaultEnvFile());
-#endif
-
-	std::string envFile = searchDotEnv(m_inputs.envFile(), platformEnv);
-	if (envFile.empty())
-	{
-		envFile = searchDotEnv(m_inputs.envFile(), m_inputs.defaultEnvFile());
-	}
-
-	if (envFile.empty())
-	{
-		if (Commands::pathExists(m_inputs.envFile()))
-			envFile = m_inputs.envFile();
-		else
-			return true; // don't care
-	}
-
-	Timer timer;
-	Diagnostic::infoEllipsis("Reading Environment [{}]", envFile);
-
-	if (!Environment::parseVariablesFromFile(envFile))
-	{
-		Diagnostic::error("There was an error parsing the env file: {}", envFile);
-		return false;
-	}
-
-	Diagnostic::printDone(timer.asString());
 	return true;
 }
 
@@ -361,5 +284,15 @@ bool Router::xcodebuildRoute(BuildState& inState)
 	return false;
 #endif
 }
+
+/*****************************************************************************/
+#if defined(CHALET_DEBUG)
+bool Router::cmdDebug()
+{
+	LOG("Router::cmdDebug()");
+
+	return true;
+}
+#endif
 
 }

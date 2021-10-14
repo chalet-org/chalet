@@ -54,6 +54,7 @@ private:
 
 	bool createCache();
 
+	bool parseEnvFile();
 	bool parseGlobalSettingsJson();
 	bool parseLocalSettingsJson();
 	bool parseBuildJson();

@@ -11,8 +11,10 @@
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
 #include "SettingsJson/SettingsJsonParser.hpp"
 
+#include "Core/DotEnvFileParser.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -34,6 +36,9 @@ bool StatePrototype::initialize()
 {
 	Route route = m_inputs.command();
 	chalet_assert(route != Route::Query, "");
+
+	if (!parseEnvFile())
+		return false;
 
 	if (!cache.initializeSettings())
 		return false;
@@ -348,6 +353,12 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 	}
 }
 
+/*****************************************************************************/
+bool StatePrototype::parseEnvFile()
+{
+	DotEnvFileParser envParser(m_inputs);
+	return envParser.serialize();
+}
 /*****************************************************************************/
 bool StatePrototype::parseGlobalSettingsJson()
 {

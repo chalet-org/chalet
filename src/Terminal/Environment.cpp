@@ -289,55 +289,54 @@ void Environment::setTerminalType()
 		s_terminalType = ShellType::CommandPrompt;
 		return printTermType();
 	}
-
-	s_terminalType = ShellType::Subprocess;
 #else
 	auto parentPath = getParentProcessPath();
 	// LOG("parentPath:", parentPath);
 
-	if (String::equals("/bin/bash", parentPath))
+	if (String::endsWith("/bash", parentPath))
 	{
 		s_terminalType = ShellType::Bash;
 		return printTermType();
 	}
-	else if (String::equals({ "/bin/sh", "/sbin/sh" }, parentPath))
-	{
-		s_terminalType = ShellType::Bourne;
-		return printTermType();
-	}
-	else if (String::equals("/bin/zsh", parentPath))
+	else if (String::endsWith("/zsh", parentPath))
 	{
 		s_terminalType = ShellType::Zsh;
 		return printTermType();
 	}
-	else if (String::contains({ "pwsh", "powershell" }, parentPath))
+	else if (String::endsWith({ "/pwsh", "powershell" }, parentPath))
 	{
 		s_terminalType = ShellType::PowershellOpenSourceNonWindows;
 		return printTermType();
 	}
-	else if (String::equals("/bin/csh", parentPath))
-	{
-		s_terminalType = ShellType::CShell;
-		return printTermType();
-	}
-	else if (String::equals("/bin/tcsh", parentPath))
+	else if (String::endsWith("/tcsh", parentPath))
 	{
 		s_terminalType = ShellType::TShell;
 		return printTermType();
 	}
-	else if (String::equals("/bin/ksh", parentPath))
+	else if (String::endsWith("/csh", parentPath))
+	{
+		s_terminalType = ShellType::CShell;
+		return printTermType();
+	}
+	else if (String::endsWith("/ksh", parentPath))
 	{
 		s_terminalType = ShellType::Korn;
 		return printTermType();
 	}
-	else if (String::endsWith({ "/usr/bin/fish", "/usr/local/bin/fish", "/fish" }, parentPath))
+	else if (String::endsWith("/fish", parentPath))
 	{
 		s_terminalType = ShellType::Fish;
 		return printTermType();
 	}
+	else if (String::endsWith("/sh", parentPath))
+	{
+		s_terminalType = ShellType::Bourne;
+		return printTermType();
+	}
+#endif
 
 	s_terminalType = ShellType::Subprocess;
-#endif
+
 	printTermType();
 }
 
@@ -483,98 +482,6 @@ void Environment::replaceCommonVariables(std::string& outString, const std::stri
 	}
 
 	Path::sanitize(outString);
-}
-
-/*****************************************************************************/
-bool Environment::parseVariablesFromFile(const std::string& inFile)
-{
-	auto appDataPath = Environment::getAsString("APPDATA");
-	StringList pathSearch{ "Path", "PATH" };
-
-#if defined(CHALET_WIN32)
-	const bool msvcExists = MsvcEnvironment::exists();
-#endif
-
-	std::ifstream input(inFile);
-	for (std::string line; std::getline(input, line);)
-	{
-		if (line.empty() || String::startsWith('#', line))
-			continue;
-
-		if (!String::contains('=', line))
-			continue;
-
-		auto splitVar = String::split(line, '=');
-		if (splitVar.size() == 2 && !splitVar.front().empty())
-		{
-			auto& key = splitVar.front();
-			if (String::startsWith(' ', key))
-			{
-				std::size_t afterSpaces = key.find_first_not_of(' ');
-				key = key.substr(afterSpaces);
-			}
-
-			auto& value = splitVar.back();
-
-			if (!value.empty())
-			{
-#if defined(CHALET_WIN32)
-				const bool isPath = String::equals(pathSearch, key);
-				for (std::size_t end = value.find_last_of('%'); end != std::string::npos;)
-				{
-					std::size_t beg = value.substr(0, end).find_last_of('%');
-					if (beg == std::string::npos)
-						break;
-
-					std::size_t length = (end + 1) - beg;
-
-					std::string capture = value.substr(beg, length);
-					std::string replaceKey = value.substr(beg + 1, length - 2);
-
-					// Note: If someone writes "Path=C:\MyPath;%Path%", MSVC Path variables would be placed before C:\MyPath.
-					//   This would be a problem is someone is using MinGW and wants to detect the MinGW version of Cmake, Ninja,
-					//   or anything else that is also bundled with Visual Studio
-					//   To get around this, and have MSVC Path vars before %Path% as expected,
-					//   we add a fake path (with valid syntax) to inject it into later (See MsvcEnvironment.cpp)
-					//
-					auto replaceValue = Environment::getAsString(replaceKey.c_str());
-					if (msvcExists && isPath && String::equals(pathSearch, replaceKey))
-					{
-						value.replace(beg, length, fmt::format("{}\\__CHALET_MSVC_INJECT__;{}", appDataPath, replaceValue));
-					}
-					else
-					{
-						value.replace(beg, length, replaceValue);
-					}
-
-					end = value.find_last_of("%");
-				}
-#else
-				for (std::size_t beg = value.find_last_of('$'); beg != std::string::npos;)
-				{
-					std::size_t end = value.find_first_of(':', beg);
-					if (end == std::string::npos)
-						end = value.size();
-
-					std::size_t length = end - beg;
-
-					std::string capture = value.substr(beg, length);
-					std::string replaceKey = value.substr(beg + 1, length - 1);
-
-					auto replaceValue = Environment::getAsString(replaceKey.c_str());
-					value.replace(beg, length, replaceValue);
-
-					beg = value.find_last_of('$');
-				}
-#endif
-
-				Environment::set(key.c_str(), value);
-			}
-		}
-	}
-	input.close();
-
-	return true;
 }
 
 /*****************************************************************************/

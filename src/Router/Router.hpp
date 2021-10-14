@@ -31,13 +31,12 @@ private:
 	bool cmdSettings(const Route inRoute);
 	bool cmdQuery();
 
+	bool parseTheme();
+	bool xcodebuildRoute(BuildState& inState);
+
 #if defined(CHALET_DEBUG)
 	bool cmdDebug();
 #endif
-
-	bool parseTheme();
-	bool parseEnvFile();
-	bool xcodebuildRoute(BuildState& inState);
 
 	CommandLineInputs& m_inputs;
 };

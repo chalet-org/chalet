@@ -22,7 +22,6 @@ struct Environment
 	static void set(const char* inName, const std::string& inValue);
 
 	static void replaceCommonVariables(std::string& outString, const std::string& inHomeDirectory);
-	static bool parseVariablesFromFile(const std::string& inFile);
 
 	static std::string getPath();
 	static const char* getPathKey();
