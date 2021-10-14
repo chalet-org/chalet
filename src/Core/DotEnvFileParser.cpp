@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/MsvcEnvironment.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
