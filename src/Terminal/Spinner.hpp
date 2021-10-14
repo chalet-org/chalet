@@ -7,6 +7,7 @@
 #define CHALET_SPINNER_HPP
 
 #include <atomic>
+#include <mutex>
 #include <thread>
 
 namespace chalet
