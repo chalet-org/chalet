@@ -100,11 +100,15 @@ int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const
 
 		static std::array<char, 256> buffer{ 0 };
 
-		if (inOptions.stdoutOption == PipeOption::Pipe && inOptions.onStdOut != nullptr)
-			process.read(FileNo::StdOut, buffer, inBufferSize, inOptions.onStdOut);
+		{
 
-		if (inOptions.stderrOption == PipeOption::Pipe && inOptions.onStdErr != nullptr)
-			process.read(FileNo::StdErr, buffer, inBufferSize, inOptions.onStdErr);
+			std::lock_guard<std::mutex> lock(s_mutex);
+			if (inOptions.stdoutOption == PipeOption::Pipe && inOptions.onStdOut != nullptr)
+				process.read(FileNo::StdOut, buffer, inBufferSize, inOptions.onStdOut);
+
+			if (inOptions.stderrOption == PipeOption::Pipe && inOptions.onStdErr != nullptr)
+				process.read(FileNo::StdErr, buffer, inBufferSize, inOptions.onStdErr);
+		}
 
 		int result = process.waitForResult();
 
