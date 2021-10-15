@@ -206,6 +206,12 @@ bool StatePrototype::validateBundleDestinations()
 		{
 			auto& bundle = static_cast<BundleTarget&>(*target);
 
+			if (bundle.buildTargets().empty())
+			{
+				Diagnostic::error("{}: Distribution bundle '{}' was found without 'buildTargets'", m_filename, bundle.name());
+				return false;
+			}
+
 			if (bundle.configuration().empty() && !m_releaseConfiguration.empty())
 			{
 				auto config = m_releaseConfiguration;

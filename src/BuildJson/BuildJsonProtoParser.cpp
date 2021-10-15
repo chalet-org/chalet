@@ -307,14 +307,7 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 		outTarget.setIncludeDependentSharedLibraries(val);
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "buildTargets"))
-	{
 		outTarget.addBuildTargets(std::move(list));
-	}
-	else
-	{
-		Diagnostic::error("{}: Distribution bundle '{}' was found without 'buildTargets'", m_filename, outTarget.name());
-		return false;
-	}
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "include"))
 		outTarget.addIncludes(std::move(list));
