@@ -36,7 +36,7 @@ Version=1.0
 Type=Application
 Categories=Application;
 Terminal=false
-Exec=${mainProject}
+Exec=${mainExecutable}
 Path=${path}
 Name=${name}
 Comment=
@@ -50,7 +50,7 @@ std::string PlatformFileTemplates::macosInfoPlist()
 	return R"json({
 	"CFBundleDevelopmentRegion": "en-US",
 	"CFBundleDisplayName": "${displayName}",
-	"CFBundleExecutable": "${mainProject}",
+	"CFBundleExecutable": "${mainExecutable}",
 	"CFBundleIconFile": "${icon}",
 	"CFBundleIdentifier": "com.developer.application",
 	"CFBundleInfoDictionaryVersion": "6.0",

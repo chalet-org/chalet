@@ -28,7 +28,7 @@ namespace chalet
 		"CFBundleInfoDictionaryVersion": "6.0",
 		"CFBundlePackageType": "APPL",
 		"CFBundleSignature": "????",
-		"CFBundleExecutable": "${mainProject}",
+		"CFBundleExecutable": "${mainExecutable}",
 		"CFBundleIconFile": "${icon}",
 		"NSHighResolutionCapable": true
 	}
@@ -254,7 +254,7 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 
 	auto replacePlistVariables = [&](std::string& outContent) {
 		String::replaceAll(outContent, "${displayName}", name);
-		String::replaceAll(outContent, "${mainProject}", m_mainExecutable);
+		String::replaceAll(outContent, "${mainExecutable}", m_mainExecutable);
 		String::replaceAll(outContent, "${icon}", icon);
 		String::replaceAll(outContent, "${name}", bundleName);
 		String::replaceAll(outContent, "${version}", version);

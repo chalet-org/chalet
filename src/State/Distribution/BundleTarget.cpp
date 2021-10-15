@@ -127,14 +127,14 @@ void BundleTarget::setConfiguration(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const std::string& BundleTarget::mainProject() const noexcept
+const std::string& BundleTarget::mainExecutable() const noexcept
 {
-	return m_mainProject;
+	return m_mainExecutable;
 }
 
-void BundleTarget::setMainProject(std::string&& inValue)
+void BundleTarget::setMainExecutable(std::string&& inValue)
 {
-	m_mainProject = std::move(inValue);
+	m_mainExecutable = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -149,20 +149,20 @@ void BundleTarget::setIncludeDependentSharedLibraries(const bool inValue) noexce
 }
 
 /*****************************************************************************/
-const StringList& BundleTarget::projects() const noexcept
+const StringList& BundleTarget::buildTargets() const noexcept
 {
-	return m_projects;
+	return m_buildTargets;
 }
 
-void BundleTarget::addProjects(StringList&& inList)
+void BundleTarget::addBuildTargets(StringList&& inList)
 {
-	List::forEach(inList, this, &BundleTarget::addProject);
+	List::forEach(inList, this, &BundleTarget::addBuildTarget);
 }
 
-void BundleTarget::addProject(std::string&& inValue)
+void BundleTarget::addBuildTarget(std::string&& inValue)
 {
 	Path::sanitize(inValue);
-	List::addIfDoesNotExist(m_projects, std::move(inValue));
+	List::addIfDoesNotExist(m_buildTargets, std::move(inValue));
 }
 
 /*****************************************************************************/

@@ -92,6 +92,16 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	//
 	// distribution
 	//
+	defs[Defs::DistributionTargetKind] = R"json({
+		"type": "string",
+		"description": "Whether the distribution target is a bundle or script.",
+		"minLength": 1,
+		"enum": [
+			"bundle",
+			"script"
+		]
+	})json"_ojson;
+
 	defs[Defs::DistributionTargetConfiguration] = R"json({
 		"type": "string",
 		"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
@@ -218,9 +228,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	})json"_ojson;
 	defs[Defs::DistributionTargetMacOS]["properties"]["infoPropertyList"]["anyOf"][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
 
-	defs[Defs::DistributionTargetMainProject] = R"json({
+	defs[Defs::DistributionTargetMainExecutable] = R"json({
 		"type": "string",
-		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'projects' array of the distribution target will be chosen as the main executable.",
+		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'targets' array of the distribution target will be chosen as the main executable.",
 		"minLength": 1
 	})json"_ojson;
 
@@ -231,18 +241,18 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": "dist"
 	})json"_ojson;
 
-	defs[Defs::DistributionTargetProjects] = R"json({
+	defs[Defs::DistributionTargetBuildTargets] = R"json({
 		"type": "array",
 		"uniqueItems": true,
-		"description": "An array of project target names to include in this distribution target.\nIf 'mainProject' is not defined, the first executable target in this list will be chosen as the main exectuable.",
+		"description": "An array of build target names to include in this distribution target.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
 		"minItems": 1,
 		"items": {
 			"type": "string",
-			"description": "The name of the project target.",
+			"description": "The name of the build target.",
 			"minLength": 1
 		}
 	})json"_ojson;
-	defs[Defs::DistributionTargetProjects][kItems][kPattern] = kPatternProjectName;
+	defs[Defs::DistributionTargetBuildTargets][kItems][kPattern] = kPatternProjectName;
 
 	defs[Defs::DistributionTargetWindows] = R"json({
 		"type": "object",
@@ -343,7 +353,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::TargetKind] = R"json({
 		"type": "string",
-		"description": "The type of the project's compiled binary.",
+		"description": "The type of the target's compiled binary, a script or external project.",
 		"minLength": 1,
 		"enum": [
 			"staticLibrary",
@@ -370,7 +380,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::TargetRunTarget] = R"json({
 		"type": "boolean",
-		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runTarget is given, it will be prioritized. If no executable projects are defined as the runTarget, the first executable one will be chosen.",
+		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runTarget is given, it will be prioritized. If no executable targets are defined as the runTarget, the first executable one will be chosen.",
 		"default": false
 	})json"_ojson;
 
@@ -1095,9 +1105,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		auto distDef = R"json({
 			"type": "object",
 			"additionalProperties": false,
-			"description": "Properties to describe an individual distribution target."
+			"description": "Properties to describe an individual distribution target.",
+			"required": [
+				"kind",
+				"buildTargets"
+			]
 		})json"_ojson;
 		distDef[kProperties] = Json::object();
+		distDef[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
+		distDef[kProperties]["buildTargets"] = getDefinition(Defs::DistributionTargetBuildTargets);
 		distDef[kProperties]["configuration"] = getDefinition(Defs::DistributionTargetConfiguration);
 		distDef[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distDef[kProperties]["exclude"] = getDefinition(Defs::DistributionTargetExclude);
@@ -1106,9 +1122,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distDef[kProperties]["linux"] = getDefinition(Defs::DistributionTargetLinux);
 		distDef[kProperties]["macos"] = getDefinition(Defs::DistributionTargetMacOS);
 		distDef[kProperties]["windows"] = getDefinition(Defs::DistributionTargetWindows);
-		distDef[kProperties]["mainProject"] = getDefinition(Defs::DistributionTargetMainProject);
+		distDef[kProperties]["mainExecutable"] = getDefinition(Defs::DistributionTargetMainExecutable);
 		distDef[kProperties]["subDirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
-		distDef[kProperties]["projects"] = getDefinition(Defs::DistributionTargetProjects);
 		distDef[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
 		distDef[kPatternProperties][fmt::format("^include{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
 		distDef[kPatternProperties][fmt::format("^exclude{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
@@ -1274,6 +1289,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
+		targetDistScript[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
 		targetDistScript[kProperties]["script"] = getDefinition(Defs::ScriptTargetScript);
 		targetDistScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		targetDistScript[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
@@ -1346,15 +1362,16 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::ConfigurationStripSymbols: return "config-stripSymbols";
 		//
 		case Defs::DistributionTarget: return "distribution-target";
+		case Defs::DistributionTargetKind: return "distribution-target-kind";
 		case Defs::DistributionTargetConfiguration: return "distribution-target-configuration";
 		case Defs::DistributionTargetInclude: return "distribution-target-include";
 		case Defs::DistributionTargetExclude: return "distribution-target-exclude";
 		case Defs::DistributionTargetIncludeDependentSharedLibraries: return "distribution-target-includeDependentSharedLibraries";
 		case Defs::DistributionTargetLinux: return "distribution-target-linux";
 		case Defs::DistributionTargetMacOS: return "distribution-target-macos";
-		case Defs::DistributionTargetMainProject: return "distribution-target-mainProject";
+		case Defs::DistributionTargetMainExecutable: return "distribution-target-mainExecutable";
 		case Defs::DistributionTargetOutputDirectory: return "distribution-target-subDirectory";
-		case Defs::DistributionTargetProjects: return "distribution-target-projects";
+		case Defs::DistributionTargetBuildTargets: return "distribution-target-targets";
 		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
@@ -1484,7 +1501,7 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["abstracts"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of abstract build projects"
+		"description": "A list of abstract build targets"
 	})json"_ojson;
 	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"] = getDefinition(Defs::AbstractTarget);
 	ret[kProperties]["abstracts"][kPatternProperties][R"(^[A-Za-z_-]+$)"][kDescription] = "An abstract build project. 'all' is implicitely added to each project.";
@@ -1519,10 +1536,29 @@ Json SchemaBuildJson::get()
 		"description": "A sequential list of distribution targets to be created during the bundle phase."
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName] = R"json({
-		"description": "A single distribution target or script."
+		"type": "object",
+		"description": "A single distribution target or script.",
+		"if": {
+			"properties": {
+				"kind": { "const": "bundle" }
+			}
+		},
+		"then": {},
+		"else": {
+			"if": {
+				"properties": {
+					"kind": { "const": "script" }
+				}
+			},
+			"then": {},
+			"else": {
+				"type": "object",
+				"additionalProperties": false
+			}
+		}
 	})json"_ojson;
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][0] = getDefinition(Defs::DistScriptTarget);
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kOneOf][1] = getDefinition(Defs::DistributionTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kThen] = getDefinition(Defs::DistributionTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kThen] = getDefinition(Defs::DistScriptTarget);
 
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "object",
@@ -1538,7 +1574,7 @@ Json SchemaBuildJson::get()
 	ret[kProperties][targets] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A sequential list of projects, cmake projects, or scripts."
+		"description": "A sequential list of build targets, cmake targets, or scripts."
 	})json"_ojson;
 	ret[kProperties][targets][kPatternProperties][kPatternProjectName] = R"json({
 		"type": "object",

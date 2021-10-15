@@ -38,15 +38,15 @@ struct BundleTarget final : public IDistTarget
 	const std::string& configuration() const noexcept;
 	void setConfiguration(std::string&& inValue);
 
-	const std::string& mainProject() const noexcept;
-	void setMainProject(std::string&& inValue);
+	const std::string& mainExecutable() const noexcept;
+	void setMainExecutable(std::string&& inValue);
 
 	bool includeDependentSharedLibraries() const noexcept;
 	void setIncludeDependentSharedLibraries(const bool inValue) noexcept;
 
-	const StringList& projects() const noexcept;
-	void addProjects(StringList&& inList);
-	void addProject(std::string&& inValue);
+	const StringList& buildTargets() const noexcept;
+	void addBuildTargets(StringList&& inList);
+	void addBuildTarget(std::string&& inValue);
 
 	const StringList& excludes() const noexcept;
 	void addExcludes(StringList&& inList);
@@ -64,14 +64,14 @@ private:
 	BundleMacOS m_macosBundle;
 	BundleWindows m_windowsBundle;
 
-	StringList m_projects;
+	StringList m_buildTargets;
 	StringList m_rawIncludes;
 	StringList m_includes;
 	StringList m_excludes;
 
 	std::string m_subDirectory;
 	std::string m_configuration;
-	std::string m_mainProject;
+	std::string m_mainExecutable;
 
 	bool m_includeDependentSharedLibraries = true;
 	bool m_includesResolved = false;

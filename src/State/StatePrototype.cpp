@@ -219,24 +219,24 @@ bool StatePrototype::validateBundleDestinations()
 				bundle.setSubDirectory(fmt::format("{}/{}", distributionDirectory, subDirectory));
 			}
 
-			for (auto& projectName : bundle.projects())
+			for (auto& targetName : bundle.buildTargets())
 			{
-				auto res = locations.find(projectName);
+				auto res = locations.find(targetName);
 				if (res != locations.end())
 				{
 					if (res->second == bundle.subDirectory())
 					{
-						Diagnostic::error("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", projectName, bundle.subDirectory(), bundle.name());
+						Diagnostic::error("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", targetName, bundle.subDirectory(), bundle.name());
 						result = false;
 					}
 					else
 					{
-						locations.emplace(projectName, bundle.subDirectory());
+						locations.emplace(targetName, bundle.subDirectory());
 					}
 				}
 				else
 				{
-					locations.emplace(projectName, bundle.subDirectory());
+					locations.emplace(targetName, bundle.subDirectory());
 				}
 			}
 		}

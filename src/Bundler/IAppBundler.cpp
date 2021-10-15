@@ -54,17 +54,17 @@ const BundleTarget& IAppBundler::bundle() const noexcept
 /*****************************************************************************/
 bool IAppBundler::getMainExecutable()
 {
-	auto& bundleProjects = m_bundle.projects();
-	auto& mainProject = m_bundle.mainProject();
+	auto& buildTargets = m_bundle.buildTargets();
+	auto& mainExecutable = m_bundle.mainExecutable();
 	std::string lastOutput;
 
-	// Match mainProject if defined, otherwise get first executable
+	// Match mainExecutable if defined, otherwise get first executable
 	for (auto& target : m_state.targets)
 	{
 		if (target->isProject())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
-			if (!List::contains(bundleProjects, project.name()))
+			if (!List::contains(buildTargets, project.name()))
 				continue;
 
 			if (project.isStaticLibrary())
@@ -75,7 +75,7 @@ bool IAppBundler::getMainExecutable()
 			if (!project.isExecutable())
 				continue;
 
-			if (!mainProject.empty() && !String::equals(mainProject, project.name()))
+			if (!mainExecutable.empty() && !String::equals(mainExecutable, project.name()))
 				continue;
 
 			// LOG("Main exec:", project.name());

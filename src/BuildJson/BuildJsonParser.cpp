@@ -60,7 +60,7 @@ bool BuildJsonParser::serialize()
 	if (!validBuildRequested())
 	{
 		const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
-		Diagnostic::error("{}: No valid projects to build in '{}' configuration. Check usage of 'condition' property", m_filename, buildConfiguration);
+		Diagnostic::error("{}: No valid targets to build in '{}' configuration. Check usage of 'condition' property", m_filename, buildConfiguration);
 		return false;
 	}
 
@@ -99,7 +99,7 @@ bool BuildJsonParser::validBuildRequested() const
 			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.language() == CodeLanguage::None)
 			{
-				Diagnostic::error("{}: All projects must have 'language' defined, but '{}' was found without one.", m_filename, project.name());
+				Diagnostic::error("{}: All targets must have 'language' defined, but '{}' was found without one.", m_filename, project.name());
 				return false;
 			}
 		}

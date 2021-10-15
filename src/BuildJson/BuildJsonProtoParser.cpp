@@ -233,9 +233,12 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 		}
 
 		DistTargetType type = DistTargetType::DistributionBundle;
-		if (m_chaletJson.containsKeyThatStartsWith(targetJson, "script"))
+		if (std::string val; m_chaletJson.assignFromKey(val, targetJson, "kind"))
 		{
-			type = DistTargetType::Script;
+			if (String::equals("script", val))
+			{
+				type = DistTargetType::Script;
+			}
 		}
 
 		DistTarget target = IDistTarget::make(type);
@@ -297,19 +300,19 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "subDirectory"))
 		outTarget.setSubDirectory(std::move(val));
 
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "mainProject"))
-		outTarget.setMainProject(std::move(val));
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "mainExecutable"))
+		outTarget.setMainExecutable(std::move(val));
 
 	if (bool val; parseKeyFromConfig(val, inNode, "includeDependentSharedLibraries"))
 		outTarget.setIncludeDependentSharedLibraries(val);
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "projects"))
+	if (StringList list; assignStringListFromConfig(list, inNode, "buildTargets"))
 	{
-		outTarget.addProjects(std::move(list));
+		outTarget.addBuildTargets(std::move(list));
 	}
 	else
 	{
-		Diagnostic::error("{}: Distribution bundle '{}' was found without 'projects'", m_filename, outTarget.name());
+		Diagnostic::error("{}: Distribution bundle '{}' was found without 'buildTargets'", m_filename, outTarget.name());
 		return false;
 	}
 

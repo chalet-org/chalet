@@ -173,7 +173,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 {
 	auto& bundle = inBundler.bundle();
 	const auto& buildOutputDir = inState.paths.buildOutputDir();
-	const auto& bundleProjects = inBundler.bundle().projects();
+	const auto& buildTargets = inBundler.bundle().buildTargets();
 
 	const auto bundlePath = inBundler.getBundlePath();
 	const auto executablePath = inBundler.getExecutablePath();
@@ -242,7 +242,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 
-			if (!List::contains(bundleProjects, project.name()))
+			if (!List::contains(buildTargets, project.name()))
 				continue;
 
 			const auto& outputFile = project.outputFile();
@@ -339,7 +339,7 @@ const BinaryDependencyMap& AppBundler::dependencyMap() const noexcept
 /*****************************************************************************/
 bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& inState)
 {
-	const auto& bundleProjects = inTarget.projects();
+	const auto& buildTargets = inTarget.buildTargets();
 	const auto& buildOutputDir = inState.paths.buildOutputDir();
 
 	StringList depsFromJson;
@@ -374,7 +374,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
 
-				if (List::contains(bundleProjects, project.name()))
+				if (List::contains(buildTargets, project.name()))
 				{
 					const auto& outputFile = project.outputFile();
 					auto outputFilePath = fmt::format("{}/{}", buildOutputDir, outputFile);

@@ -85,8 +85,8 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 
 	ret[kDistribution] = Json::object();
 	ret[kDistribution][project] = Json::object();
-	ret[kDistribution][project]["projects"] = Json::array();
-	ret[kDistribution][project]["projects"][0] = project;
+	ret[kDistribution][project]["buildTargets"] = Json::array();
+	ret[kDistribution][project]["buildTargets"][0] = project;
 
 	return ret;
 }

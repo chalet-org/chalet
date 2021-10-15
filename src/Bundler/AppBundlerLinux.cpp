@@ -43,14 +43,14 @@ AppBundlerLinux::AppBundlerLinux(BuildState& inState, const BundleTarget& inBund
 /*****************************************************************************/
 bool AppBundlerLinux::removeOldFiles()
 {
-	auto& bundleProjects = m_bundle.projects();
+	auto& buildTargets = m_bundle.buildTargets();
 
 	for (auto& target : m_state.targets)
 	{
 		if (target->isProject())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
-			if (!List::contains(bundleProjects, project.name()))
+			if (!List::contains(buildTargets, project.name()))
 				continue;
 
 			if (!project.isExecutable())
@@ -99,7 +99,7 @@ bool AppBundlerLinux::bundleForPlatform()
 			return false;
 
 		if (!Commands::readFileAndReplace(desktopEntryString, [&](std::string& fileContents) {
-				String::replaceAll(fileContents, "${mainProject}", Commands::getAbsolutePath(filename));
+				String::replaceAll(fileContents, "${mainExecutable}", Commands::getAbsolutePath(filename));
 				String::replaceAll(fileContents, "${path}", Commands::getAbsolutePath(bundlePath));
 				String::replaceAll(fileContents, "${name}", m_bundle.name());
 				String::replaceAll(fileContents, "${icon}", Commands::getAbsolutePath(iconPath));

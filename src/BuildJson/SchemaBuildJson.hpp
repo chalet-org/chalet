@@ -23,15 +23,16 @@ class SchemaBuildJson
 		ConfigurationStripSymbols,
 		//
 		DistributionTarget,
+		DistributionTargetKind,
 		DistributionTargetConfiguration,
 		DistributionTargetExclude,
 		DistributionTargetInclude,
 		DistributionTargetIncludeDependentSharedLibraries,
 		DistributionTargetLinux,
 		DistributionTargetMacOS,
-		DistributionTargetMainProject,
+		DistributionTargetMainExecutable,
 		DistributionTargetOutputDirectory,
-		DistributionTargetProjects,
+		DistributionTargetBuildTargets,
 		DistributionTargetWindows,
 		//
 		ExternalDependency,

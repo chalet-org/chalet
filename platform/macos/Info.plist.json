@@ -1,7 +1,7 @@
 {
 	"CFBundleDevelopmentRegion": "en-US",
 	"CFBundleDisplayName": "${displayName}",
-	"CFBundleExecutable": "${mainProject}",
+	"CFBundleExecutable": "${mainExecutable}",
 	"CFBundleIconFile": "${icon}",
 	"CFBundleIdentifier": "com.developer.application",
 	"CFBundleInfoDictionaryVersion": "6.0",

@@ -528,7 +528,7 @@ bool BuildManager::doLazyClean()
 
 	Commands::removeRecursively(dirToClean);
 
-	// TODO: Clean CMake projects
+	// TODO: Clean CMake targets
 	// TODO: Flag to clean externalDependencies
 	// TODO: Also clean cache files specific to build configuration
 
