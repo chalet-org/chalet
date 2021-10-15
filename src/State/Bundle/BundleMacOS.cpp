@@ -14,16 +14,28 @@
 
 namespace chalet
 {
+namespace
+{
+const Dictionary<MacOSBundleType> kBundleTypes
+{
+#if defined(CHALET_MACOS)
+	{ "app", MacOSBundleType::Application },
+		{ "framework", MacOSBundleType::Framework },
+		{ "plugin", MacOSBundleType::Plugin },
+		{ "kext", MacOSBundleType::KernelExtension },
+#endif
+};
+}
+
 /*****************************************************************************/
 bool BundleMacOS::validate()
 {
 	bool result = true;
+
+	if (m_bundleName.size() > 15)
 	{
-		if (m_bundleName.size() > 15)
-		{
-			Diagnostic::error("distribution.macos.bundleName should not contain more than 15 characters.");
-			result = false;
-		}
+		Diagnostic::error("distribution.macos.bundleName should not contain more than 15 characters.");
+		result = false;
 	}
 
 	if (!m_icon.empty())
@@ -85,14 +97,32 @@ bool BundleMacOS::validate()
 }
 
 /*****************************************************************************/
+MacOSBundleType BundleMacOS::bundleType() const noexcept
+{
+	return m_bundleType;
+}
+
+void BundleMacOS::setBundleType(std::string&& inName)
+{
+	m_bundleType = getBundleTypeFromString(inName);
+}
+
+bool BundleMacOS::isAppBundle() const noexcept
+{
+	return m_bundleType == MacOSBundleType::Application;
+}
+
+/*****************************************************************************/
 const std::string& BundleMacOS::bundleName() const noexcept
 {
 	return m_bundleName;
 }
 
-void BundleMacOS::setBundleName(std::string&& inValue)
+void BundleMacOS::setBundleName(const std::string& inValue)
 {
-	m_bundleName = std::move(inValue);
+	// bundleName is used specifically for CFBundleName
+	// https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundlename
+	m_bundleName = inValue.substr(0, 15);
 }
 
 /*****************************************************************************/
@@ -166,5 +196,16 @@ const std::string& BundleMacOS::dmgBackground2x() const noexcept
 void BundleMacOS::setDmgBackground2x(std::string&& inValue)
 {
 	m_dmgBackground2x = std::move(inValue);
+}
+
+/*****************************************************************************/
+MacOSBundleType BundleMacOS::getBundleTypeFromString(const std::string& inValue) const
+{
+	if (kBundleTypes.find(inValue) != kBundleTypes.end())
+	{
+		return kBundleTypes.at(inValue);
+	}
+
+	return MacOSBundleType::None;
 }
 }

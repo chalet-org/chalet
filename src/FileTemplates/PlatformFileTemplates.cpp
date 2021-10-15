@@ -49,12 +49,12 @@ std::string PlatformFileTemplates::macosInfoPlist()
 {
 	return R"json({
 	"CFBundleDevelopmentRegion": "en-US",
-	"CFBundleDisplayName": "${displayName}",
+	"CFBundleDisplayName": "${name}",
 	"CFBundleExecutable": "${mainExecutable}",
 	"CFBundleIconFile": "${icon}",
 	"CFBundleIdentifier": "com.developer.application",
 	"CFBundleInfoDictionaryVersion": "6.0",
-	"CFBundleName": "${name}",
+	"CFBundleName": "${bundleName}",
 	"CFBundlePackageType": "APPL",
 	"CFBundleShortVersionString": "${version}",
 	"CFBundleVersion": "${version}",

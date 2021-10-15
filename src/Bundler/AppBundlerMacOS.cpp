@@ -75,9 +75,8 @@ bool AppBundlerMacOS::bundleForPlatform()
 	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/.", m_executableOutputPath }))
 		return false;
 
-	// No app name = no bundle to make
 	// treat it like linux/windows
-	if (macosBundle.bundleName().empty())
+	if (macosBundle.bundleType() == MacOSBundleType::None)
 	{
 		Output::lineBreak();
 
@@ -111,10 +110,9 @@ bool AppBundlerMacOS::bundleForPlatform()
 std::string AppBundlerMacOS::getBundlePath() const
 {
 	const auto& subDirectory = m_bundle.subDirectory();
-	const auto& bundleName = m_bundle.macosBundle().bundleName();
-	if (!bundleName.empty())
+	if (m_bundle.macosBundle().isAppBundle())
 	{
-		return fmt::format("{}/{}.app/Contents", subDirectory, bundleName);
+		return fmt::format("{}/{}.app/Contents", subDirectory, m_bundle.name());
 	}
 	else
 	{
@@ -125,8 +123,7 @@ std::string AppBundlerMacOS::getBundlePath() const
 /*****************************************************************************/
 std::string AppBundlerMacOS::getExecutablePath() const
 {
-	const auto& bundleName = m_bundle.macosBundle().bundleName();
-	if (!bundleName.empty())
+	if (m_bundle.macosBundle().isAppBundle())
 	{
 		return fmt::format("{}/MacOS", getBundlePath());
 	}
@@ -139,8 +136,7 @@ std::string AppBundlerMacOS::getExecutablePath() const
 /*****************************************************************************/
 std::string AppBundlerMacOS::getResourcePath() const
 {
-	const auto& bundleName = m_bundle.macosBundle().bundleName();
-	if (!bundleName.empty())
+	if (m_bundle.macosBundle().isAppBundle())
 	{
 		return fmt::format("{}/Resources", getBundlePath());
 	}
@@ -153,8 +149,7 @@ std::string AppBundlerMacOS::getResourcePath() const
 /*****************************************************************************/
 std::string AppBundlerMacOS::getFrameworksPath() const
 {
-	const auto& bundleName = m_bundle.macosBundle().bundleName();
-	if (!bundleName.empty())
+	if (m_bundle.macosBundle().isAppBundle())
 	{
 		return fmt::format("{}/Frameworks", getBundlePath());
 	}
@@ -248,15 +243,13 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 	auto& macosBundle = m_bundle.macosBundle();
 
 	const auto& version = m_state.environment.version();
-	const auto& name = m_bundle.name();
-	const auto& bundleName = macosBundle.bundleName();
 	auto icon = fmt::format("{}.icns", m_iconBaseName);
 
 	auto replacePlistVariables = [&](std::string& outContent) {
-		String::replaceAll(outContent, "${displayName}", name);
+		String::replaceAll(outContent, "${name}", m_bundle.name());
 		String::replaceAll(outContent, "${mainExecutable}", m_mainExecutable);
 		String::replaceAll(outContent, "${icon}", icon);
-		String::replaceAll(outContent, "${name}", bundleName);
+		String::replaceAll(outContent, "${bundleName}", macosBundle.bundleName());
 		String::replaceAll(outContent, "${version}", version);
 	};
 
@@ -375,7 +368,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 bool AppBundlerMacOS::createDmgImage() const
 {
 	auto& macosBundle = m_bundle.macosBundle();
-	const auto& bundleName = macosBundle.bundleName();
+	const auto& name = m_bundle.name();
 	if (!macosBundle.makeDmg())
 		return true;
 
@@ -383,8 +376,8 @@ bool AppBundlerMacOS::createDmgImage() const
 
 	auto& hdiutil = m_state.tools.hdiutil();
 	auto& tiffutil = m_state.tools.tiffutil();
-	const std::string volumePath = fmt::format("/Volumes/{}", bundleName);
-	const std::string appPath = fmt::format("{}/{}.app", subDirectory, bundleName);
+	const std::string volumePath = fmt::format("/Volumes/{}", name);
+	const std::string appPath = fmt::format("{}/{}.app", subDirectory, name);
 
 	Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
 
@@ -407,7 +400,7 @@ bool AppBundlerMacOS::createDmgImage() const
 		dmgSize = temp;
 	}
 
-	if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", fmt::format("{}", dmgSize), "-fs", "HFS+", "-volname", bundleName, tmpDmg }))
+	if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", fmt::format("{}", dmgSize), "-fs", "HFS+", "-volname", name, tmpDmg }))
 		return false;
 
 	if (!Commands::subprocessNoOutput({ hdiutil, "attach", tmpDmg }))
@@ -444,7 +437,7 @@ bool AppBundlerMacOS::createDmgImage() const
 	if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath)))
 		return false;
 
-	const auto applescriptText = PlatformFileTemplates::macosDmgApplescript(bundleName, hasBackground);
+	const auto applescriptText = PlatformFileTemplates::macosDmgApplescript(name, hasBackground);
 
 	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }))
 		return false;
@@ -454,7 +447,7 @@ bool AppBundlerMacOS::createDmgImage() const
 	if (!Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
 		return false;
 
-	const std::string outDmgPath = fmt::format("{}/{}.dmg", subDirectory, bundleName);
+	const std::string outDmgPath = fmt::format("{}/{}.dmg", subDirectory, name);
 	if (!Commands::subprocessNoOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
 		return false;
 
@@ -477,8 +470,7 @@ bool AppBundlerMacOS::signAppBundle() const
 
 	Timer timer;
 
-	const auto& bundleName = m_bundle.macosBundle().bundleName();
-	if (!bundleName.empty())
+	if (m_bundle.macosBundle().isAppBundle())
 	{
 		Diagnostic::infoEllipsis("Signing the application bundle");
 	}

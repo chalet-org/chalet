@@ -6,6 +6,8 @@
 #ifndef CHALET_BUNDLE_MACOS_HPP
 #define CHALET_BUNDLE_MACOS_HPP
 
+#include "State/Bundle/MacOSBundleType.hpp"
+
 namespace chalet
 {
 struct BundleMacOS
@@ -14,8 +16,12 @@ struct BundleMacOS
 
 	bool validate();
 
+	MacOSBundleType bundleType() const noexcept;
+	void setBundleType(std::string&& inName);
+	bool isAppBundle() const noexcept;
+
 	const std::string& bundleName() const noexcept;
-	void setBundleName(std::string&& inValue);
+	void setBundleName(const std::string& inValue);
 
 	const std::string& icon() const noexcept;
 	void setIcon(std::string&& inValue);
@@ -36,6 +42,8 @@ struct BundleMacOS
 	void setDmgBackground2x(std::string&& inValue);
 
 private:
+	MacOSBundleType getBundleTypeFromString(const std::string& inValue) const;
+
 	std::string m_bundleName;
 	std::string m_icon;
 	std::string m_infoPropertyList;
@@ -43,6 +51,8 @@ private:
 
 	std::string m_dmgBackground1x;
 	std::string m_dmgBackground2x;
+
+	MacOSBundleType m_bundleType = MacOSBundleType::None;
 
 	bool m_makeDmg = false;
 };

@@ -385,9 +385,10 @@ bool BuildJsonProtoParser::parseDistributionBundleMacOS(BundleTarget& outTarget,
 	}
 
 	BundleMacOS macosBundle;
+	macosBundle.setBundleName(outTarget.name());
 
-	if (std::string val; m_chaletJson.assignFromKey(val, macosNode, "bundleName"))
-		macosBundle.setBundleName(std::move(val));
+	if (std::string val; m_chaletJson.assignFromKey(val, macosNode, "bundleType"))
+		macosBundle.setBundleType(std::move(val));
 
 	if (std::string val; m_chaletJson.assignFromKey(val, macosNode, "icon"))
 		macosBundle.setIcon(std::move(val));

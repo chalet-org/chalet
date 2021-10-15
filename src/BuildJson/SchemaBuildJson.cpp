@@ -164,13 +164,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"description": "Properties to describe the MacOS distribution. Only one application bundle can be defined per distribution target.",
 		"additionalProperties": false,
 		"required": [
-			"bundleName"
+			"bundleType"
 		],
 		"properties": {
-			"bundleName": {
+			"bundleType": {
 				"type": "string",
-				"description": "The short name of the macos bundle (required)",
-				"minLength": 1
+				"description": "The MacOS bundle type (only .app is supported currently)",
+				"minLength": 1,
+				"enum": [
+					"app"
+				],
+				"default": "app"
 			},
 			"dmg": {
 				"type": "object",

@@ -188,13 +188,17 @@
 			"description": "Properties to describe the MacOS distribution. Only one application bundle can be defined per distribution target.",
 			"additionalProperties": false,
 			"required": [
-				"bundleName"
+				"bundleType"
 			],
 			"properties": {
-				"bundleName": {
+				"bundleType": {
 					"type": "string",
-					"description": "The short name of the macos bundle (required)",
-					"minLength": 1
+					"description": "The MacOS bundle type (only .app is supported currently)",
+					"minLength": 1,
+					"enum": [
+						"app"
+					],
+					"default": "app"
 				},
 				"dmg": {
 					"type": "object",
@@ -247,12 +251,12 @@
 							"type": "object",
 							"default": {
 								"CFBundleDevelopmentRegion": "en-US",
-								"CFBundleDisplayName": "${displayName}",
+								"CFBundleDisplayName": "${name}",
 								"CFBundleExecutable": "${mainExecutable}",
 								"CFBundleIconFile": "${icon}",
 								"CFBundleIdentifier": "com.developer.application",
 								"CFBundleInfoDictionaryVersion": "6.0",
-								"CFBundleName": "${name}",
+								"CFBundleName": "${bundleName}",
 								"CFBundlePackageType": "APPL",
 								"CFBundleShortVersionString": "${version}",
 								"CFBundleVersion": "${version}",

@@ -199,7 +199,7 @@
 				".DS_Store"
 			],
 			/*"macos": {
-				// "bundleName": "Chalet",
+				// "bundleType": "app",
 				// "icon": "platform/chalet-logo.png"
 				"infoPropertyList": "platform/macos/Info.plist.json",
 				"makeDmg": false,
