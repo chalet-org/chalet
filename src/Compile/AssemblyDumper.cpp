@@ -164,7 +164,11 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 			std::string archArg;
 			if (!m_state.toolchain.isDisassemblerLLVMObjDump())
 			{
-				archArg = "-Mintel ";
+				Arch::Cpu arch = m_state.info.targetArchitecture();
+				if (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86)
+				{
+					archArg = "-Mintel ";
+				}
 			}
 			auto asmCommand = fmt::format("\"{disassembler}\" -d -C {archArg}{object} > {target}",
 				FMT_ARG(disassembler),
