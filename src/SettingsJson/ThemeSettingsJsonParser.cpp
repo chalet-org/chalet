@@ -61,6 +61,8 @@ bool ThemeSettingsJsonParser::serialize()
 /*****************************************************************************/
 bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme)
 {
+	const std::string kKeyTheme{ "theme" };
+
 	if (inJson.is_object() && inJson.contains(kKeyTheme))
 	{
 		const auto& themeJson = inJson.at(kKeyTheme);

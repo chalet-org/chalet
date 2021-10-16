@@ -185,7 +185,13 @@ void GlobalSettingsJsonParser::initializeTheme()
 	}
 	else if (themeJson.is_object())
 	{
-		const auto& theme = Output::theme();
+		auto theme = Output::theme();
+		if (themeJson.empty())
+		{
+			theme.setPreset(ColorTheme::defaultPresetName());
+			Output::setTheme(theme);
+		}
+
 		auto makeThemeKeyValueFromTheme = [&](const std::string& inKey) {
 			if (!themeJson.contains(inKey) || !themeJson[inKey].is_string())
 			{

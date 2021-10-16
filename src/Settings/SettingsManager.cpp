@@ -222,28 +222,30 @@ bool SettingsManager::runSettingsSet(Json& node)
 
 	bool set = false;
 	auto& settings = getSettings();
-	if (ptr->is_string())
+
+	if (String::startsWith({ "{", "[" }, m_value))
 	{
-		*ptr = m_value;
-		set = true;
-	}
-	else if (ptr->is_boolean())
-	{
-		if (String::equals({ "true", "1" }, m_value))
+		CHALET_TRY
 		{
-			*ptr = true;
+			*ptr = Json::parse(m_value);
 			set = true;
 		}
-		else if (String::equals({ "false", "0" }, m_value))
+		CHALET_CATCH(const std::exception& err)
 		{
-			*ptr = false;
-			set = true;
-		}
-		else
-		{
-			Diagnostic::error("'{}' expects a value of true or false.", m_key);
+			CHALET_EXCEPT_ERROR(err.what());
+			Diagnostic::error("Couldn't parse value: '{}'", m_value);
 			return false;
 		}
+	}
+	else if (String::equals("true", m_value))
+	{
+		*ptr = true;
+		set = true;
+	}
+	else if (String::equals("false", m_value))
+	{
+		*ptr = false;
+		set = true;
 	}
 	else if (ptr->is_number_integer())
 	{
@@ -267,24 +269,11 @@ bool SettingsManager::runSettingsSet(Json& node)
 		*ptr = value;
 		set = true;
 	}
-	else if (ptr->is_object())
-	{
-		CHALET_TRY
-		{
-			*ptr = Json::parse(m_value);
-			set = true;
-		}
-		CHALET_CATCH(const std::exception& err)
-		{
-			CHALET_EXCEPT_ERROR(err.what());
-			Diagnostic::error("Couldn't parse value: {}", m_value);
-			return false;
-		}
-	}
 	else
 	{
-		Diagnostic::error("Unknown key: '{}'", m_key);
-		return false;
+		// string
+		*ptr = m_value;
+		set = true;
 	}
 
 	if (set)

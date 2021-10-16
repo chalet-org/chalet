@@ -23,8 +23,6 @@ private:
 	bool serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme);
 
 	const CommandLineInputs& m_inputs;
-
-	const std::string kKeyTheme = "theme";
 };
 }
 
