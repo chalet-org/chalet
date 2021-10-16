@@ -142,7 +142,7 @@ std::string ColorTheme::asString() const
 	if (isPreset())
 		return m_preset;
 
-	return fmt::format("{} {} {} {} {} {} {} {} {} {}",
+	return fmt::format("{} {} {} {} {} {} {} {} {}",
 		static_cast<ushort>(info),
 		static_cast<ushort>(error),
 		static_cast<ushort>(warning),
