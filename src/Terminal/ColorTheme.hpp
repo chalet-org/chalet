@@ -16,13 +16,12 @@ struct ColorTheme
 	Color error = Color::Reset;
 	Color warning = Color::Reset;
 	Color success = Color::Reset;
+	Color note = Color::Reset;
 	//
 	Color flair = Color::Reset;
 	Color header = Color::Reset;
 	Color build = Color::Reset;
-	Color answer = Color::Reset;
-	Color alt = Color::Reset;
-	Color note = Color::Reset;
+	Color assembly = Color::Reset;
 
 	static std::string getStringFromColor(const Color inColor);
 	static StringList getJsonColors();

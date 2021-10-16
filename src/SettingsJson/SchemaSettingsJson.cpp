@@ -447,6 +447,7 @@ Json Schema::getSettingsJson()
 
 	//
 
+	const auto kDefinitions = "definitions";
 	const auto kProperties = "properties";
 	const auto kAnyOf = "anyOf";
 
@@ -485,6 +486,9 @@ Json Schema::getSettingsJson()
 	toolchains[kProperties]["disassembler"] = defs[Defs::Disassembler];
 
 	//
+	ret[kDefinitions] = Json::object();
+	ret[kDefinitions]["theme-color"] = defs[Defs::ThemeColor];
+
 	ret[kProperties] = Json::object();
 
 	const auto kTools = "tools";
@@ -593,9 +597,11 @@ Json Schema::getSettingsJson()
 	})json"_ojson;
 	ret[kProperties][kTheme][kAnyOf][1][kProperties] = Json::object();
 
+	Json themeRef = Json::object();
+	themeRef["$ref"] = std::string("#/definitions/theme-color");
 	for (const auto& key : ColorTheme::getKeys())
 	{
-		ret[kProperties][kTheme][kAnyOf][1][kProperties][key] = defs[Defs::ThemeColor];
+		ret[kProperties][kTheme][kAnyOf][1][kProperties][key] = themeRef;
 	}
 
 	return ret;

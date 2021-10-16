@@ -90,12 +90,11 @@ StringList ColorTheme::getKeys()
 		"error",
 		"warning",
 		"success",
+		"note",
 		"flair",
 		"header",
 		"build",
-		"answer",
-		"alt",
-		"note",
+		"assembly",
 	};
 }
 
@@ -144,31 +143,30 @@ std::string ColorTheme::asString() const
 		return m_preset;
 
 	return fmt::format("{} {} {} {} {} {} {} {} {} {}",
+		static_cast<ushort>(info),
 		static_cast<ushort>(error),
 		static_cast<ushort>(warning),
 		static_cast<ushort>(success),
+		static_cast<ushort>(note),
 		static_cast<ushort>(flair),
-		static_cast<ushort>(info),
 		static_cast<ushort>(header),
 		static_cast<ushort>(build),
-		static_cast<ushort>(alt),
-		static_cast<ushort>(answer),
-		static_cast<ushort>(note));
+		static_cast<ushort>(assembly));
 }
 
 /*****************************************************************************/
 bool ColorTheme::operator==(const ColorTheme& rhs) const
 {
-	return error == rhs.error
+	return info == rhs.info
+		&& error == rhs.error
 		&& warning == rhs.warning
 		&& success == rhs.success
+		&& note == rhs.note
 		&& flair == rhs.flair
 		&& info == rhs.info
 		&& header == rhs.header
 		&& build == rhs.build
-		&& alt == rhs.answer
-		&& alt == rhs.alt
-		&& note == rhs.note
+		&& assembly == rhs.assembly
 		&& m_preset == rhs.m_preset;
 }
 
@@ -207,38 +205,35 @@ void ColorTheme::makePreset(const std::string& inValue)
 		error = Color::BrightRedBold;
 		warning = Color::BrightYellowBold;
 		success = Color::BrightGreenBold;
+		note = Color::BrightMagentaBold;
 		flair = Color::BrightBlack;
 		header = Color::BrightYellowBold;
 		build = Color::BrightBlue;
-		answer = Color::BrightMagentaBold;
-		alt = Color::Magenta;
-		note = Color::Blue;
+		assembly = Color::Magenta;
 	}
 }
 
 /*****************************************************************************/
 
-#define GET_COLORS(inKey)                      \
-	if (String::equals("info", inKey))         \
-		return &info;                          \
-	else if (String::equals("error", inKey))   \
-		return &error;                         \
-	else if (String::equals("warning", inKey)) \
-		return &warning;                       \
-	else if (String::equals("success", inKey)) \
-		return &success;                       \
-	else if (String::equals("flair", inKey))   \
-		return &flair;                         \
-	else if (String::equals("header", inKey))  \
-		return &header;                        \
-	else if (String::equals("build", inKey))   \
-		return &build;                         \
-	else if (String::equals("answer", inKey))  \
-		return &answer;                        \
-	else if (String::equals("alt", inKey))     \
-		return &alt;                           \
-	else if (String::equals("note", inKey))    \
-		return &note;                          \
+#define GET_COLORS(inKey)                       \
+	if (String::equals("info", inKey))          \
+		return &info;                           \
+	else if (String::equals("error", inKey))    \
+		return &error;                          \
+	else if (String::equals("warning", inKey))  \
+		return &warning;                        \
+	else if (String::equals("success", inKey))  \
+		return &success;                        \
+	else if (String::equals("note", inKey))     \
+		return &note;                           \
+	else if (String::equals("flair", inKey))    \
+		return &flair;                          \
+	else if (String::equals("header", inKey))   \
+		return &header;                         \
+	else if (String::equals("build", inKey))    \
+		return &build;                          \
+	else if (String::equals("assembly", inKey)) \
+		return &assembly;                       \
 	return nullptr
 
 Color* ColorTheme::getColorFromString(const std::string& inKey)

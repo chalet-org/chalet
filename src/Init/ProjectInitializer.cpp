@@ -376,7 +376,7 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 		}
 
 		auto symbol = Unicode::diamond();
-		Output::displayStyledSymbol(Output::theme().alt, symbol, "Happy coding!");
+		Output::displayStyledSymbol(Output::theme().note, symbol, "Happy coding!");
 
 		Output::lineBreak();
 	}

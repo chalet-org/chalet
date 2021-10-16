@@ -161,8 +161,8 @@ void Output::setShowBenchmarks(const bool inValue)
 bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, std::string note, const std::function<bool(std::string&)>& onValidate)
 {
 	const auto color = Output::getAnsiStyle(sTheme.flair);
-	const auto noteColor = Output::getAnsiStyle(sTheme.note);
-	const auto answerColor = Output::getAnsiStyle(sTheme.answer);
+	const auto noteColor = Output::getAnsiStyle(sTheme.build);
+	const auto answerColor = Output::getAnsiStyle(sTheme.note);
 	const auto reset = Output::getAnsiStyle(Color::Reset);
 	const char symbol = '>';
 
@@ -416,9 +416,9 @@ void Output::msgFetchingDependency(const std::string& inGitUrl, const std::strin
 	auto symbol = Unicode::heavyCurvedDownRightArrow();
 
 	if (!inBranchOrTag.empty() && !String::equals("HEAD", inBranchOrTag))
-		displayStyledSymbol(sTheme.alt, symbol, fmt::format("Fetching: {} ({})", path, inBranchOrTag));
+		displayStyledSymbol(sTheme.note, symbol, fmt::format("Fetching: {} ({})", path, inBranchOrTag));
 	else
-		displayStyledSymbol(sTheme.alt, symbol, fmt::format("Fetching: {}", path));
+		displayStyledSymbol(sTheme.note, symbol, fmt::format("Fetching: {}", path));
 }
 
 /*****************************************************************************/
@@ -428,9 +428,9 @@ void Output::msgUpdatingDependency(const std::string& inGitUrl, const std::strin
 	auto symbol = Unicode::heavyCurvedDownRightArrow();
 
 	if (!inBranchOrTag.empty())
-		displayStyledSymbol(sTheme.alt, symbol, fmt::format("Updating: {} ({})", path, inBranchOrTag));
+		displayStyledSymbol(sTheme.note, symbol, fmt::format("Updating: {} ({})", path, inBranchOrTag));
 	else
-		displayStyledSymbol(sTheme.alt, symbol, fmt::format("Updating: {}", path));
+		displayStyledSymbol(sTheme.note, symbol, fmt::format("Updating: {}", path));
 }
 
 /*****************************************************************************/
@@ -518,14 +518,14 @@ void Output::msgProfilerStartedSample(const std::string& inExecutable, const uin
 void Output::msgProfilerDone(const std::string& inProfileAnalysis)
 {
 	auto symbol = Unicode::diamond();
-	displayStyledSymbol(sTheme.alt, symbol, fmt::format("Profiler Completed! View {} for details.", inProfileAnalysis));
+	displayStyledSymbol(sTheme.note, symbol, fmt::format("Profiler Completed! View {} for details.", inProfileAnalysis));
 }
 
 /*****************************************************************************/
 void Output::msgProfilerDoneInstruments(const std::string& inProfileAnalysis)
 {
 	auto symbol = Unicode::diamond();
-	displayStyledSymbol(sTheme.alt, symbol, fmt::format("Profiler Completed! Launching {} in Instruments.", inProfileAnalysis));
+	displayStyledSymbol(sTheme.note, symbol, fmt::format("Profiler Completed! Launching {} in Instruments.", inProfileAnalysis));
 }
 
 // Leave the commands as separate functions in case symbols and things change

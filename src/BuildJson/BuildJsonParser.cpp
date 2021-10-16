@@ -243,7 +243,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		BuildTarget target;
 		if (type == BuildTargetType::Project && m_abstractSourceTarget.find(extends) != m_abstractSourceTarget.end())
 		{
-			target = std::make_unique<SourceTarget>(*m_abstractSourceTarget.at(extends)); // note: copy ctor
+			target = std::make_unique<SourceTarget>(*m_abstractSourceTarget.at(extends)); // Note: copy ctor
 		}
 		else
 		{
