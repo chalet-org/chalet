@@ -160,13 +160,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 
 	if (!toolchains.contains(kKeyVersion) || !toolchains[kKeyVersion].is_string() || toolchains[kKeyVersion].get<std::string>().empty())
 	{
-#if defined(CHALET_WIN32)
-		// Only used w/ MSVC for now
-		auto& vsVersion = m_state.msvcEnvironment.detectedVersion();
-		toolchains[kKeyVersion] = !vsVersion.empty() ? vsVersion : std::string();
-#else
 		toolchains[kKeyVersion] = std::string();
-#endif
 	}
 
 	if (!toolchains.contains(kKeyStrategy) || !toolchains[kKeyStrategy].is_string() || toolchains[kKeyStrategy].get<std::string>().empty())
@@ -361,8 +355,11 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		{
 			auto path = Commands::which(inKey);
 			bool res = !path.empty();
-			inNode[inKey] = std::move(path);
-			m_jsonFile.setDirty(true);
+			if (res)
+			{
+				inNode[inKey] = std::move(path);
+				m_jsonFile.setDirty(true);
+			}
 			return res;
 		}
 
@@ -451,6 +448,17 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchains, const Toolchai
 		}
 
 		m_jsonFile.setDirty(true);
+	}
+
+	if (toolchains[kKeyVersion].get<std::string>().empty())
+	{
+#if defined(CHALET_WIN32)
+		// Only used w/ MSVC for now
+		auto& vsVersion = m_state.msvcEnvironment.detectedVersion();
+		toolchains[kKeyVersion] = !vsVersion.empty() ? vsVersion : std::string();
+#else
+		toolchains[kKeyVersion] = std::string();
+#endif
 	}
 
 	return result;

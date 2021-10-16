@@ -315,28 +315,29 @@ void BuildManager::printBuildInformation()
 		}
 	}
 
-	if (usingCpp && !m_state.toolchain.compilerVersionStringCpp().empty())
+	if (usingCpp && !m_state.toolchain.compilerDescriptionStringCpp().empty())
 	{
 		auto arch = m_state.toolchain.compilerDetectedArchCpp();
 		if (!m_inputs.archOptions().empty())
 		{
 			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
 		}
-		Diagnostic::info("C++ Compiler: {}", m_state.toolchain.compilerVersionStringCpp());
+		Diagnostic::info("C++ Compiler: {}", m_state.toolchain.compilerDescriptionStringCpp());
 
 		if (m_state.info.universalArches().empty())
 			Diagnostic::info("Target Architecture: {}", arch);
 		else
 			Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.info.universalArches(), " / "));
 	}
-	if (usingCc && !m_state.toolchain.compilerVersionStringC().empty())
+
+	if (usingCc && !m_state.toolchain.compilerDescriptionStringC().empty())
 	{
 		auto arch = m_state.toolchain.compilerDetectedArchC();
 		if (!m_inputs.archOptions().empty())
 		{
 			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
 		}
-		Diagnostic::info("C Compiler: {}", m_state.toolchain.compilerVersionStringC());
+		Diagnostic::info("C Compiler: {}", m_state.toolchain.compilerDescriptionStringC());
 
 		if (m_state.info.universalArches().empty())
 			Diagnostic::info("Target Architecture: {}", arch);

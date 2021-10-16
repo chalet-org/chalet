@@ -19,6 +19,14 @@ class BuildState;
 struct CommandLineInputs;
 struct JsonFile;
 
+struct CompilerInfo
+{
+	std::string path;
+	std::string description;
+	std::string version;
+	std::string arch;
+};
+
 struct CompilerTools
 {
 	explicit CompilerTools(const CommandLineInputs& inInputs, BuildState& inState);
@@ -44,8 +52,8 @@ struct CompilerTools
 
 	const std::string& compilerCxx() const noexcept;
 
-	const std::string& compilerVersionStringCpp() const noexcept;
-	const std::string& compilerVersionStringC() const noexcept;
+	const std::string& compilerDescriptionStringCpp() const noexcept;
+	const std::string& compilerDescriptionStringC() const noexcept;
 	const std::string& compilerDetectedArchCpp() const noexcept;
 	const std::string& compilerDetectedArchC() const noexcept;
 
@@ -108,8 +116,8 @@ private:
 	bool detectTargetArchitectureMSVC();
 #endif
 
-	std::string parseVersionMSVC(const std::string& inExecutable, std::string& outArch) const;
-	std::string parseVersionGNU(const std::string& inExecutable, std::string& outArch) const;
+	std::string parseVersionMSVC(CompilerInfo& outInfo) const;
+	std::string parseVersionGNU(CompilerInfo& outInfo) const;
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
@@ -117,8 +125,6 @@ private:
 	mutable std::unordered_map<CodeLanguage, std::unique_ptr<CompilerConfig>> m_configs;
 
 	std::string m_archiver;
-	std::string m_compilerCpp;
-	std::string m_compilerC;
 	std::string m_compilerWindowsResource;
 	std::string m_cmake;
 	std::string m_linker;
@@ -127,14 +133,12 @@ private:
 	std::string m_profiler;
 	std::string m_disassembler;
 
-	std::string m_compilerVersionStringCpp;
-	std::string m_compilerVersionStringC;
-	std::string m_compilerDetectedArchCpp;
-	std::string m_compilerDetectedArchC;
+	CompilerInfo m_compilerCpp;
+	CompilerInfo m_compilerC;
 
 	std::string m_strategyString;
 	std::string m_buildPathStyleString;
-	mutable std::string m_version;
+	std::string m_version;
 
 	uint m_cmakeVersionMajor = 0;
 	uint m_cmakeVersionMinor = 0;

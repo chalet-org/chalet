@@ -31,10 +31,14 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const std::string& inKey, const 
 	using Type = std::decay_t<T>;
 	if constexpr (std::is_same_v<Type, std::string>)
 	{
-		if (notFound || !outNode.at(inKey).is_string())
+		if (notFound || !outNode.at(inKey).is_string() || outNode.at(inKey).get<std::string>().empty())
 		{
-			outNode[inKey] = onAssign();
-			result = true;
+			auto newVal = onAssign();
+			if (!newVal.empty())
+			{
+				outNode[inKey] = std::move(newVal);
+				result = true;
+			}
 		}
 	}
 	else if constexpr (std::is_same_v<Type, bool>)

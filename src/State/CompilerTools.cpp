@@ -134,11 +134,11 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	}
 #endif
 
-	if (!updateToolchainCacheNode(inConfigJson))
-		return false;
-
 	// Note: Expensive!
 	fetchCompilerVersions();
+
+	if (!updateToolchainCacheNode(inConfigJson))
+		return false;
 
 	return true;
 }
@@ -153,7 +153,7 @@ bool CompilerTools::detectTargetArchitectureMSVC()
 	std::string host;
 	std::string target;
 
-	auto& compiler = !m_compilerCpp.empty() ? m_compilerCpp : m_compilerC;
+	auto& compiler = !m_compilerCpp.path.empty() ? m_compilerCpp.path : m_compilerC.path;
 	std::string lower = String::toLowerCase(compiler);
 	auto search = lower.find("/bin/host");
 	if (search == std::string::npos)
@@ -203,7 +203,7 @@ bool CompilerTools::detectToolchainFromPaths()
 	if (toolchain.type == ToolchainType::Unknown)
 	{
 #if defined(CHALET_WIN32)
-		if (String::endsWith("cl.exe", m_compilerCpp) || String::endsWith("cl.exe", m_compilerC))
+		if (String::endsWith("cl.exe", m_compilerCpp.path) || String::endsWith("cl.exe", m_compilerC.path))
 		{
 			toolchain.setType(ToolchainType::MSVC);
 
@@ -212,7 +212,7 @@ bool CompilerTools::detectToolchainFromPaths()
 		}
 		else
 #endif
-			if (String::contains("clang", m_compilerCpp) || String::contains("clang", m_compilerC))
+			if (String::contains("clang", m_compilerCpp.path) || String::contains("clang", m_compilerC.path))
 		{
 			toolchain.setType(ToolchainType::LLVM);
 		}
@@ -229,51 +229,49 @@ bool CompilerTools::detectToolchainFromPaths()
 /*****************************************************************************/
 void CompilerTools::fetchCompilerVersions()
 {
-	if (m_compilerVersionStringCpp.empty())
+	if (m_compilerCpp.description.empty())
 	{
-		if (!m_compilerCpp.empty() && Commands::pathExists(m_compilerCpp))
+		if (!m_compilerCpp.path.empty() && Commands::pathExists(m_compilerCpp.path))
 		{
-			std::string version;
+			std::string description;
 #if defined(CHALET_WIN32)
 			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 			{
-				version = parseVersionMSVC(m_compilerCpp, m_compilerDetectedArchCpp);
+				description = parseVersionMSVC(m_compilerCpp);
 			}
 			else
-			{
-				version = parseVersionGNU(m_compilerCpp, m_compilerDetectedArchCpp);
-			}
 #else
-			version = parseVersionGNU(m_compilerCpp, m_compilerDetectedArchCpp);
+			{
+				description = parseVersionGNU(m_compilerCpp);
+			}
 #endif
-			m_compilerVersionStringCpp = std::move(version);
+				m_compilerCpp.description = std::move(description);
 		}
 	}
 
-	if (m_compilerVersionStringC.empty())
+	if (m_compilerC.description.empty())
 	{
-		auto baseFolderC = String::getPathFolder(m_compilerC);
-		auto baseFolderCpp = String::getPathFolder(m_compilerCpp);
+		auto baseFolderC = String::getPathFolder(m_compilerC.path);
+		auto baseFolderCpp = String::getPathFolder(m_compilerCpp.path);
 		if (String::equals(baseFolderC, baseFolderCpp))
 		{
-			m_compilerVersionStringC = m_compilerVersionStringCpp;
+			m_compilerC.description = m_compilerCpp.description;
 		}
-		else if (!m_compilerC.empty() && Commands::pathExists(m_compilerC))
+		else if (!m_compilerC.path.empty() && Commands::pathExists(m_compilerC.path))
 		{
-			std::string version;
+			std::string description;
 #if defined(CHALET_WIN32)
 			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
 			{
-				version = parseVersionMSVC(m_compilerC, m_compilerDetectedArchC);
+				description = parseVersionMSVC(m_compilerC);
 			}
 			else
-			{
-				version = parseVersionGNU(m_compilerC, m_compilerDetectedArchC);
-			}
 #else
-			version = parseVersionGNU(m_compilerC, m_compilerDetectedArchC);
+			{
+				description = parseVersionGNU(m_compilerC);
+			}
 #endif
-			m_compilerVersionStringC = std::move(version);
+				m_compilerC.description = std::move(description);
 		}
 	}
 }
@@ -323,32 +321,82 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 /*****************************************************************************/
 bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 {
+	const auto& settingsFile = m_inputs.settingsFile();
 	const auto& preference = m_inputs.toolchainPreferenceName();
-	const std::string kKeySettings("settings");
+	const std::string kKeySettings{ "settings" };
+	const std::string kKeyToolchains{ "toolchains" };
+
 	if (!inConfigJson.json.contains(kKeySettings))
 	{
-		Diagnostic::error("Settings did not correctly initialize.");
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeySettings);
+		return false;
+	}
+	if (!inConfigJson.json.contains(kKeyToolchains))
+	{
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
+		return false;
+	}
+
+	auto& toolchains = inConfigJson.json.at(kKeyToolchains);
+	if (!toolchains.contains(preference))
+	{
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
 		return false;
 	}
 
 	auto& buildSettings = inConfigJson.json.at(kKeySettings);
+	auto& toolchain = toolchains.at(preference);
 
-	buildSettings["toolchain"] = preference;
-	buildSettings["architecture"] = m_inputs.targetArchitecture().empty() ? "auto" : m_inputs.targetArchitecture();
-	inConfigJson.setDirty(true);
+	const std::string kKeyToolchain{ "toolchain" };
+	if (buildSettings.contains(kKeyToolchain))
+	{
+		auto& toolchainSetting = buildSettings.at(kKeyToolchain);
+		if (toolchainSetting.is_string() && toolchainSetting.get<std::string>() != preference)
+		{
+			buildSettings[kKeyToolchain] = preference;
+			inConfigJson.setDirty(true);
+		}
+	}
+
+	const std::string kKeyArchitecture{ "architecture" };
+	if (buildSettings.contains(kKeyArchitecture))
+	{
+		std::string archString = m_inputs.targetArchitecture().empty() ? "auto" : m_inputs.targetArchitecture();
+		auto& arch = buildSettings.at(kKeyArchitecture);
+		if (arch.is_string() && arch.get<std::string>() != archString)
+		{
+			buildSettings[kKeyArchitecture] = archString;
+			inConfigJson.setDirty(true);
+		}
+	}
+
+	const std::string kKeyVersion{ "version" };
+	if (toolchain.contains(kKeyVersion))
+	{
+		std::string versionString = m_compilerCpp.version.empty() ? m_compilerC.version : m_compilerCpp.version;
+		versionString = versionString.substr(0, versionString.find_first_not_of("0123456789."));
+
+		auto& version = toolchain.at(kKeyVersion);
+		if (version.is_string() && version.get<std::string>() != versionString)
+		{
+			m_version = versionString;
+			toolchain[kKeyVersion] = std::move(versionString);
+			inConfigJson.setDirty(true);
+		}
+	}
 
 	return true;
 }
 
 /*****************************************************************************/
-std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std::string& outArch) const
+std::string CompilerTools::parseVersionMSVC(CompilerInfo& outInfo) const
 {
 	std::string ret;
 
 #if defined(CHALET_WIN32)
 
 	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-	std::string rawOutput = Commands::subprocessOutput({ inExecutable });
+	std::string rawOutput = Commands::subprocessOutput({ outInfo.path });
 	auto splitOutput = String::split(rawOutput, '\n');
 	if (splitOutput.size() >= 2)
 	{
@@ -357,44 +405,44 @@ std::string CompilerTools::parseVersionMSVC(const std::string& inExecutable, std
 		if (start != std::string::npos && end != std::string::npos)
 		{
 			start += 8;
-			const auto clVersion = splitOutput[1].substr(start, end - start); // cl.exe version
+			outInfo.version = splitOutput[1].substr(start, end - start); // cl.exe version
 
 			// const auto arch = splitOutput[1].substr(end + 5);
-			outArch = m_state.info.targetArchitectureString();
+			outInfo.arch = m_state.info.targetArchitectureString();
 
 			// We want the toolchain version as opposed to the cl.exe version (annoying)
 			const auto& detectedMsvcVersion = m_state.toolchain.version();
 			const auto& toolchainVersion = detectedMsvcVersion.empty() ? m_version : detectedMsvcVersion;
 
-			ret = fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), clVersion, toolchainVersion);
+			ret = fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), outInfo.version, toolchainVersion);
 		}
 	}
 #else
-	UNUSED(inExecutable, outArch);
+	UNUSED(outInfo);
 #endif
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std::string& outArch) const
+std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 {
 	std::string ret;
 
 	// gcc version 10.2.0 (Ubuntu 10.2.0-13ubuntu1)
 	// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
 	// Apple clang version 12.0.5 (clang-1205.0.22.9)
-	const auto exec = String::getPathBaseName(inExecutable);
+	const auto exec = String::getPathBaseName(outInfo.path);
 	// const bool isCpp = String::contains("++", exec);
 	// const bool isC = String::startsWith({ "gcc", "cc" }, exec);
 	std::string rawOutput;
-	if (String::contains("clang", inExecutable))
+	if (String::contains("clang", outInfo.path))
 	{
-		rawOutput = Commands::subprocessOutput({ inExecutable, "-target", m_state.info.targetArchitectureString(), "-v" });
+		rawOutput = Commands::subprocessOutput({ outInfo.path, "-target", m_state.info.targetArchitectureString(), "-v" });
 	}
 	else
 	{
-		rawOutput = Commands::subprocessOutput({ inExecutable, "-v" });
+		rawOutput = Commands::subprocessOutput({ outInfo.path, "-v" });
 	}
 
 	auto splitOutput = String::split(rawOutput, '\n');
@@ -416,7 +464,7 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std:
 			}
 			else if (String::startsWith("Target:", line))
 			{
-				outArch = line.substr(8);
+				outInfo.arch = line.substr(8);
 			}
 			/*else if (String::startsWith("Thread model:", line))
 			{
@@ -431,18 +479,18 @@ std::string CompilerTools::parseVersionGNU(const std::string& inExecutable, std:
 			if (String::startsWith("gcc", compilerRaw))
 			{
 				ret = fmt::format("GNU Compiler Collection C/C++ version {}", versionString);
-				m_version = versionString;
+				outInfo.version = std::move(versionString);
 			}
 			else if (String::startsWith("clang", compilerRaw))
 			{
 				ret = fmt::format("LLVM Clang C/C++ version {}", versionString);
-				m_version = versionString;
+				outInfo.version = std::move(versionString);
 			}
 #if defined(CHALET_MACOS)
 			else if (String::startsWith("Apple clang", compilerRaw))
 			{
 				ret = fmt::format("Apple Clang C/C++ version {}", versionString);
-				m_version = versionString;
+				outInfo.version = std::move(versionString);
 			}
 #endif
 		}
@@ -614,29 +662,29 @@ void CompilerTools::setVersion(const std::string& inValue) noexcept
 const std::string& CompilerTools::compilerCxx() const noexcept
 {
 	if (m_ccDetected)
-		return m_compilerC;
+		return m_compilerC.path;
 	else
-		return m_compilerCpp;
+		return m_compilerCpp.path;
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::compilerVersionStringCpp() const noexcept
+const std::string& CompilerTools::compilerDescriptionStringCpp() const noexcept
 {
-	return m_compilerVersionStringCpp;
+	return m_compilerCpp.description;
 }
 
-const std::string& CompilerTools::compilerVersionStringC() const noexcept
+const std::string& CompilerTools::compilerDescriptionStringC() const noexcept
 {
-	return m_compilerVersionStringC;
+	return m_compilerC.description;
 }
 
 const std::string& CompilerTools::compilerDetectedArchCpp() const noexcept
 {
-	return m_compilerDetectedArchCpp;
+	return m_compilerCpp.arch;
 }
 const std::string& CompilerTools::compilerDetectedArchC() const noexcept
 {
-	return m_compilerDetectedArchC;
+	return m_compilerC.arch;
 }
 
 /*****************************************************************************/
@@ -658,21 +706,21 @@ bool CompilerTools::isArchiverLibTool() const noexcept
 /*****************************************************************************/
 const std::string& CompilerTools::compilerCpp() const noexcept
 {
-	return m_compilerCpp;
+	return m_compilerCpp.path;
 }
 void CompilerTools::setCompilerCpp(std::string&& inValue) noexcept
 {
-	m_compilerCpp = std::move(inValue);
+	m_compilerCpp.path = std::move(inValue);
 }
 
 /*****************************************************************************/
 const std::string& CompilerTools::compilerC() const noexcept
 {
-	return m_compilerC;
+	return m_compilerC.path;
 }
 void CompilerTools::setCompilerC(std::string&& inValue) noexcept
 {
-	m_compilerC = std::move(inValue);
+	m_compilerC.path = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -846,10 +894,10 @@ std::string CompilerTools::getRootPathVariable()
 
 	StringList outList;
 
-	if (auto ccRoot = String::getPathFolder(m_compilerC); !List::contains(pathList, ccRoot))
+	if (auto ccRoot = String::getPathFolder(m_compilerC.path); !List::contains(pathList, ccRoot))
 		outList.emplace_back(std::move(ccRoot));
 
-	if (auto cppRoot = String::getPathFolder(m_compilerCpp); !List::contains(pathList, cppRoot))
+	if (auto cppRoot = String::getPathFolder(m_compilerCpp.path); !List::contains(pathList, cppRoot))
 		outList.emplace_back(std::move(cppRoot));
 
 	for (auto& p : Path::getOSPaths())
