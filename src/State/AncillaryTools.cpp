@@ -707,11 +707,11 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 			if (String::startsWith(inPath, line))
 				continue;
 
+			while (line[beg] == '\t' || line[beg] == ' ')
+				beg++;
+
 	#if defined(CHALET_MACOS)
 			std::size_t end = line.find(".dylib");
-	#else
-			std::size_t end = line.find(" => ");
-	#endif
 			if (end == std::string::npos)
 			{
 				end = line.find(".framework");
@@ -728,9 +728,11 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 			{
 				end += 6;
 			}
-
-			while (line[beg] == '\t')
-				beg++;
+	#else
+			std::size_t end = line.find("=>");
+			if (end != std::string::npos && end > 0)
+				end--;
+	#endif
 
 			std::string dependency = line.substr(beg, end - beg);
 	#if defined(CHALET_MACOS)
@@ -746,9 +748,11 @@ bool AncillaryTools::getExecutableDependencies(const std::string& inPath, String
 				if (lastSlash != std::string::npos)
 					dependency = dependency.substr(lastSlash + 1);
 			}
+	#else
+			dependency = Commands::which(String::getPathFilename(dependency));
 	#endif
 
-			if (String::startsWith("/usr/lib", dependency))
+			if (dependency.empty())
 				continue;
 
 			List::addIfDoesNotExist(outList, std::move(dependency));
