@@ -432,7 +432,6 @@ std::string MakefileGeneratorNMake::getPrinter(const std::string& inPrint) const
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getBuildColor() const
 {
-	auto color = Output::getAnsiStyleUnescaped(Output::theme().build);
-	return fmt::format("\x1b[{}m", color);
+	return Output::getAnsiStyleForMakefile(Output::theme().build);
 }
 }

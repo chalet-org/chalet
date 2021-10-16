@@ -203,7 +203,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 {
 	if (String::equals(kPresetNames.at(0), inValue))
 	{
-		info = Color::BrightWhite;
+		info = Color::Reset;
 		error = Color::BrightRedBold;
 		warning = Color::BrightYellowBold;
 		success = Color::BrightGreenBold;

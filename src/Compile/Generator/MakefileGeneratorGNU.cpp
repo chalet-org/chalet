@@ -559,11 +559,6 @@ std::string MakefileGeneratorGNU::getPrinter(const std::string& inPrint, const b
 /*****************************************************************************/
 std::string MakefileGeneratorGNU::getBuildColor() const
 {
-	auto color = Output::getAnsiStyleUnescaped(Output::theme().build);
-#if defined(CHALET_WIN32)
-	return fmt::format("\x1b[{}m", color);
-#else
-	return fmt::format("\\033[{}m", color);
-#endif
+	return Output::getAnsiStyleForMakefile(Output::theme().build);
 }
 }

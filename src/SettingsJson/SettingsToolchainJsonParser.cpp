@@ -58,7 +58,7 @@ bool SettingsToolchainJsonParser::serialize()
 	{
 		if (!m_inputs.isToolchainPreset())
 		{
-			Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized toolchain name or preset.", m_jsonFile.filename(), preference);
+			Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", m_jsonFile.filename(), preference);
 			return false;
 		}
 

@@ -37,8 +37,7 @@ bool getUserInput(
 bool getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, std::string inNote = std::string());
 
 std::string getAnsiStyle(const Color inColor);
-std::string getAnsiStyleUnescaped(const Color inColor);
-std::string getAnsiStyleUnescaped(const Color inForegroundColor, const Color inBackgroundColor);
+std::string getAnsiStyleForMakefile(const Color inColor);
 
 void displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage);
 void resetStdout();

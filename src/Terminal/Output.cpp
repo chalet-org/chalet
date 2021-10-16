@@ -244,43 +244,28 @@ std::string Output::getAnsiStyle(const Color inColor)
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
 	{
-		if (ansiColorsSupportedInComSpec())
-		{
-			// Note: Use the bright colors since they aren't as harsh
-			//   Command Prompt bolding is all or nothing
-			style = '1';
-			return fmt::format("{esc}[{style}m{esc}[{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
-		}
-		else
-		{
+		if (!ansiColorsSupportedInComSpec())
 			return std::string();
-		}
+
+		return fmt::format("{esc}[{style}m{esc}[{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
 	}
-	else
 #endif
-	{
-		return fmt::format("{esc}[{style};{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
-	}
+
+	return fmt::format("{esc}[{style};{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
 }
 
 /*****************************************************************************/
-std::string Output::getAnsiStyleUnescaped(const Color inColor)
+std::string Output::getAnsiStyleForMakefile(const Color inColor)
 {
-	uchar color = static_cast<std::underlying_type_t<Color>>(inColor);
-	bool bold = color > 100;
-	if (bold)
-		color -= 100;
-
-	char style = bold ? '1' : '0';
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
-	{
-		if (ansiColorsSupportedInComSpec())
-			style = '1';
-	}
+	return getAnsiStyle(inColor);
+#else
+	auto ret = getAnsiStyle(inColor);
+	std::string esc;
+	esc += getEscapeChar();
+	String::replaceAll(ret, esc, "\\033");
+	return ret;
 #endif
-
-	return fmt::format("{style};{color}", FMT_ARG(style), FMT_ARG(color));
 }
 
 /*****************************************************************************/
@@ -338,9 +323,16 @@ void Output::print(const Color inColor, const std::string& inText)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(inColor);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << color << inText << reset << std::endl;
+		if (inColor == Color::Reset)
+		{
+			std::cout << reset << inText << std::endl;
+		}
+		else
+		{
+			const auto color = getAnsiStyle(inColor);
+			std::cout << color << inText << reset << std::endl;
+		}
 	}
 }
 
@@ -349,9 +341,16 @@ void Output::print(const Color inColor, const StringList& inList)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(inColor);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << color << String::join(inList) << reset << std::endl;
+		if (inColor == Color::Reset)
+		{
+			std::cout << reset << String::join(inList) << std::endl;
+		}
+		else
+		{
+			const auto color = getAnsiStyle(inColor);
+			std::cout << color << String::join(inList) << reset << std::endl;
+		}
 	}
 }
 

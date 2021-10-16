@@ -240,12 +240,12 @@ void CompilerTools::fetchCompilerVersions()
 				description = parseVersionMSVC(m_compilerCpp);
 			}
 			else
-#else
+#endif
 			{
 				description = parseVersionGNU(m_compilerCpp);
 			}
-#endif
-				m_compilerCpp.description = std::move(description);
+
+			m_compilerCpp.description = std::move(description);
 		}
 	}
 
@@ -266,12 +266,12 @@ void CompilerTools::fetchCompilerVersions()
 				description = parseVersionMSVC(m_compilerC);
 			}
 			else
-#else
+#endif
 			{
 				description = parseVersionGNU(m_compilerC);
 			}
-#endif
-				m_compilerC.description = std::move(description);
+
+			m_compilerC.description = std::move(description);
 		}
 	}
 }
