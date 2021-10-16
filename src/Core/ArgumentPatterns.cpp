@@ -39,6 +39,7 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		{ Route::SettingsSet, &ArgumentPatterns::commandSettingsSet },
 		{ Route::SettingsUnset, &ArgumentPatterns::commandSettingsUnset },
 		{ Route::Query, &ArgumentPatterns::commandQuery },
+		{ Route::ColorTest, &ArgumentPatterns::commandColorTest },
 	}),
 	m_routeMap({
 		{ "buildrun", Route::BuildRun },
@@ -54,6 +55,7 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		{ "set", Route::SettingsSet },
 		{ "unset", Route::SettingsUnset },
 		{ "query", Route::Query },
+		{ "colortest", Route::ColorTest },
 	}),
 	kArgRunTarget("[<runTarget>]"),
 	kArgRemainingArguments("[ARG...]"),
@@ -882,6 +884,11 @@ void ArgumentPatterns::commandQuery()
 	addStringArgument(ArgumentIdentifier::QueryType, kArgQueryType.c_str())
 		.help(fmt::format("The data type to query ({})", String::join(listNames, ", ")))
 		.required();
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::commandColorTest()
+{
 }
 
 /*****************************************************************************/

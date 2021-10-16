@@ -100,6 +100,7 @@ private:
 	void commandSettingsSet();
 	void commandSettingsUnset();
 	void commandQuery();
+	void commandColorTest();
 
 #if defined(CHALET_DEBUG)
 	void commandDebug();

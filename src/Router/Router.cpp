@@ -18,6 +18,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Terminal/ColorTest.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -46,6 +47,8 @@ bool Router::run()
 	Route command = m_inputs.command();
 	if (command == Route::Query)
 		return cmdQuery();
+	else if (command == Route::ColorTest)
+		return cmdColorTest();
 
 	if (command == Route::Unknown
 		|| static_cast<std::underlying_type_t<Route>>(command) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
@@ -253,6 +256,13 @@ bool Router::cmdQuery()
 
 	QueryController query(m_inputs, prototype);
 	return query.printListOfRequestedType();
+}
+
+/*****************************************************************************/
+bool Router::cmdColorTest()
+{
+	ColorTest colorTest;
+	return colorTest.run();
 }
 
 /*****************************************************************************/

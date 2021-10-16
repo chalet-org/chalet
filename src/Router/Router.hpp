@@ -30,6 +30,7 @@ private:
 	bool cmdInit();
 	bool cmdSettings(const Route inRoute);
 	bool cmdQuery();
+	bool cmdColorTest();
 
 	bool parseTheme();
 	bool xcodebuildRoute(BuildState& inState);
