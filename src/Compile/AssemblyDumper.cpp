@@ -162,6 +162,7 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 		{
 			// objdump
 			std::string archArg;
+#if !defined(CHALET_MACOS)
 			if (!m_state.toolchain.isDisassemblerLLVMObjDump())
 			{
 				Arch::Cpu arch = m_state.info.targetArchitecture();
@@ -170,6 +171,7 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 					archArg = "-Mintel ";
 				}
 			}
+#endif
 			auto asmCommand = fmt::format("\"{disassembler}\" -d -C {archArg}{object} > {target}",
 				FMT_ARG(disassembler),
 				FMT_ARG(archArg),

@@ -882,12 +882,16 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainGNU::addStripSymbolsOption(StringList& outArgList) const
 {
+#if !defined(CHALET_MACOS)
 	if (m_state.configuration.stripSymbols())
 	{
 		std::string strip{ "-s" };
 		// if (isFlagSupported(strip))
 		outArgList.emplace_back(std::move(strip));
 	}
+#else
+	UNUSED(outArgList);
+#endif
 }
 
 /*****************************************************************************/
