@@ -224,10 +224,10 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 		m_dataFile->json = Json::object();
 	}
 
-	auto& rootNode = m_dataFile->json;
-	if (!rootNode.is_object())
+	if (!m_dataFile->json.is_object())
 		m_dataFile->json = Json::object();
 
+	auto& rootNode = m_dataFile->json;
 	if (rootNode.contains(kKeyHashes))
 	{
 		auto& hashes = rootNode.at(kKeyHashes);
