@@ -135,14 +135,10 @@ bool JsonFile::assignStringListAndValidate(StringList& outList, const Json& inNo
 bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA)
 {
 	bool result = false;
-	bool validString = outNode.contains(inKey) && outNode.at(inKey).is_string();
-
-	std::string value;
-	if (validString)
-	{
-		value = outNode.at(inKey).get<std::string>();
-		validString &= !value.empty();
-	}
+	bool containsKey = outNode.contains(inKey);
+	bool isString = containsKey && outNode.at(inKey).is_string();
+	bool valueNotEmpty = isString && !outNode.at(inKey).get<std::string>().empty();
+	bool validString = containsKey && isString && valueNotEmpty;
 
 	if (!validString)
 	{
@@ -157,6 +153,11 @@ bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const std::string&
 		else if (!inValueB.empty())
 		{
 			outNode[inKey] = inValueB;
+			setDirty(true);
+		}
+		else if (!containsKey || !isString)
+		{
+			outNode[inKey] = std::string();
 			setDirty(true);
 		}
 	}

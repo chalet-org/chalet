@@ -70,13 +70,13 @@ bool Router::run()
 
 	if (command != Route::Init && !isSettings)
 	{
-		// Output::lineBreak();
+		Output::lineBreak();
 
 		prototype = std::make_unique<StatePrototype>(m_inputs);
 
 		if (!prototype->initialize())
 		{
-			// Output::lineBreak();
+			Output::previousLine();
 			return false;
 		}
 
