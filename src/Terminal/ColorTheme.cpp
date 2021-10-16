@@ -184,11 +184,11 @@ const std::string& ColorTheme::preset() const noexcept
 void ColorTheme::setPreset(const std::string& inValue)
 {
 	if (!List::contains(kPresetNames, inValue))
-		return;
+		m_preset = kPresetNames.at(0);
+	else
+		m_preset = inValue;
 
-	m_preset = inValue;
-
-	makePreset(inValue);
+	makePreset(m_preset);
 }
 
 bool ColorTheme::isPreset() const noexcept

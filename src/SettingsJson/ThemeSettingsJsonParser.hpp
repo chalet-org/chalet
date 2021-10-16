@@ -20,7 +20,7 @@ struct ThemeSettingsJsonParser
 	bool serialize();
 
 private:
-	bool serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme);
+	bool serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme, const bool inGlobal = false);
 
 	const CommandLineInputs& m_inputs;
 };

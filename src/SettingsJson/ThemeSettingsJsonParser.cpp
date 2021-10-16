@@ -35,7 +35,7 @@ bool ThemeSettingsJsonParser::serialize()
 		if (!jsonFile.load(globalSettings))
 			return false;
 
-		if (!serializeFromJsonRoot(jsonFile.json, theme))
+		if (!serializeFromJsonRoot(jsonFile.json, theme, true))
 		{
 			Diagnostic::error("There was an error parsing {}", jsonFile.filename());
 			return false;
@@ -59,7 +59,7 @@ bool ThemeSettingsJsonParser::serialize()
 }
 
 /*****************************************************************************/
-bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme)
+bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme, const bool inGlobal)
 {
 	const std::string kKeyTheme{ "theme" };
 
@@ -74,6 +74,9 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 		}
 		else if (themeJson.is_object())
 		{
+			if (themeJson.empty() && inGlobal)
+				outTheme.setPreset(ColorTheme::defaultPresetName());
+
 			for (auto& [key, value] : themeJson.items())
 			{
 				if (value.is_string())
