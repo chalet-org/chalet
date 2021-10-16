@@ -54,7 +54,6 @@ bool ThemeSettingsJsonParser::serialize()
 			return false;
 		}
 	}
-	Output::setTheme(theme);
 
 	return true;
 }
@@ -62,22 +61,26 @@ bool ThemeSettingsJsonParser::serialize()
 /*****************************************************************************/
 bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme)
 {
-	if (inJson.is_object())
+	if (inJson.is_object() && inJson.contains(kKeyTheme))
 	{
-		if (inJson.contains(kKeyTheme))
+		const auto& themeJson = inJson.at(kKeyTheme);
+		if (themeJson.is_string())
 		{
-			const auto& themeJson = inJson.at(kKeyTheme);
-			if (themeJson.is_object())
+			auto preset = themeJson.get<std::string>();
+			outTheme.setPreset(preset); // if invalid, goes to default theme
+			Output::setTheme(outTheme);
+		}
+		else if (themeJson.is_object())
+		{
+			for (auto& [key, value] : themeJson.items())
 			{
-				for (auto& [key, value] : themeJson.items())
+				if (value.is_string())
 				{
-					if (value.is_string())
-					{
-						auto str = value.get<std::string>();
-						outTheme.set(key, str);
-					}
+					auto str = value.get<std::string>();
+					outTheme.set(key, str);
 				}
 			}
+			Output::setTheme(outTheme);
 		}
 	}
 

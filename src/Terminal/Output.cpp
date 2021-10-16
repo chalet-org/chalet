@@ -158,12 +158,12 @@ void Output::setShowBenchmarks(const bool inValue)
 }
 
 /*****************************************************************************/
-bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor, std::string note, const std::function<bool(std::string&)>& onValidate)
+bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, std::string note, const std::function<bool(std::string&)>& onValidate)
 {
 	const auto color = Output::getAnsiStyle(sTheme.flair);
 	const auto noteColor = Output::getAnsiStyle(sTheme.note);
-	const auto answerColor = Output::getAnsiStyle(inAnswerColor, true);
-	const auto reset = Output::getAnsiReset();
+	const auto answerColor = Output::getAnsiStyle(sTheme.answer);
+	const auto reset = Output::getAnsiStyle(Color::Reset);
 	const char symbol = '>';
 
 	const auto lineUp = fmt::format("{}[F", getEscapeChar());
@@ -210,20 +210,36 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 }
 
 /*****************************************************************************/
-bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, const Color inAnswerColor, std::string inNote)
+bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, std::string inNote)
 {
 	std::string result{ inDefaultYes ? "yes" : "no" };
-	return getUserInput(inUserQuery, result, inAnswerColor, std::move(inNote), [](std::string& input) {
+	return getUserInput(inUserQuery, result, std::move(inNote), [](std::string& input) {
 		return !String::equals({ "no", "n" }, String::toLowerCase(input));
 	});
 }
 
 /*****************************************************************************/
-std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
+std::string Output::getAnsiStyle(const Color inColor)
 {
 	const auto esc = getEscapeChar();
-	char style = inBold ? '1' : '0';
-	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
+	if (inColor == Color::Reset)
+	{
+#if defined(CHALET_WIN32)
+		if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+		{
+			if (!ansiColorsSupportedInComSpec())
+				return std::string();
+		}
+#endif
+
+		return fmt::format("{esc}[0m", FMT_ARG(esc));
+	}
+
+	uchar color = static_cast<std::underlying_type_t<Color>>(inColor);
+	bool bold = color > 100;
+	if (bold)
+		color -= 100;
+	char style = bold ? '1' : '0';
 
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
@@ -248,38 +264,14 @@ std::string Output::getAnsiStyle(const Color inColor, const bool inBold)
 }
 
 /*****************************************************************************/
-std::string Output::getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
+std::string Output::getAnsiStyleUnescaped(const Color inColor)
 {
-	const auto esc = getEscapeChar();
-	char style = inBold ? '1' : '0';
-	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
-	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
-	{
-		if (ansiColorsSupportedInComSpec())
-		{
-			// Note: Use the bright colors since they aren't as harsh
-			//   Command Prompt bolding is all or nothing
-			style = '1';
-			return fmt::format("{esc}[{style}m{esc}[{fgColor}m{esc}[{bgColor}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
-		}
-		else
-		{
-			return std::string();
-		}
-	}
-	else
-#endif
-	{
-		return fmt::format("{esc}[{style};{fgColor};{bgColor}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
-	}
-}
+	uchar color = static_cast<std::underlying_type_t<Color>>(inColor);
+	bool bold = color > 100;
+	if (bold)
+		color -= 100;
 
-/*****************************************************************************/
-std::string Output::getAnsiStyleUnescaped(const Color inColor, const bool inBold)
-{
-	char style = inBold ? '1' : '0';
+	char style = bold ? '1' : '0';
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
 	{
@@ -287,52 +279,17 @@ std::string Output::getAnsiStyleUnescaped(const Color inColor, const bool inBold
 			style = '1';
 	}
 #endif
-	const int color = static_cast<std::underlying_type_t<Color>>(inColor);
 
 	return fmt::format("{style};{color}", FMT_ARG(style), FMT_ARG(color));
 }
 
 /*****************************************************************************/
-std::string Output::getAnsiStyleUnescaped(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold)
-{
-	char style = inBold ? '1' : '0';
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
-	{
-		if (ansiColorsSupportedInComSpec())
-			style = '1';
-	}
-#endif
-	const int fgColor = static_cast<std::underlying_type_t<Color>>(inForegroundColor);
-	const int bgColor = static_cast<std::underlying_type_t<Color>>(inBackgroundColor) + 10;
-
-	return fmt::format("{style};{fgColor};{bgColor}", FMT_ARG(style), FMT_ARG(fgColor), FMT_ARG(bgColor));
-}
-
-/*****************************************************************************/
-std::string Output::getAnsiReset()
-{
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
-	{
-		if (!ansiColorsSupportedInComSpec())
-		{
-			return std::string();
-		}
-	}
-#endif
-
-	const auto esc = getEscapeChar();
-	return fmt::format("{esc}[0m", FMT_ARG(esc));
-}
-
-/*****************************************************************************/
-void Output::displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage, const bool inBold)
+void Output::displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(inColor, inBold);
-		const auto reset = getAnsiReset();
+		const auto color = getAnsiStyle(inColor);
+		const auto reset = getAnsiStyle(Color::Reset);
 		std::cout << fmt::format("{color}{inSymbol}  {inMessage}", FMT_ARG(color), FMT_ARG(inSymbol), FMT_ARG(inMessage)) << reset << std::endl;
 	}
 }
@@ -340,13 +297,13 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 /*****************************************************************************/
 void Output::resetStdout()
 {
-	std::cout << getAnsiReset() << std::flush;
+	std::cout << getAnsiStyle(Color::Reset) << std::flush;
 }
 
 /*****************************************************************************/
 void Output::resetStderr()
 {
-	std::cerr << getAnsiReset() << std::flush;
+	std::cerr << getAnsiStyle(Color::Reset) << std::flush;
 }
 
 /*****************************************************************************/
@@ -354,7 +311,7 @@ void Output::lineBreak()
 {
 	if (!s_quietNonBuild)
 	{
-		std::cout << getAnsiReset() << std::endl;
+		std::cout << getAnsiStyle(Color::Reset) << std::endl;
 	}
 }
 
@@ -363,7 +320,7 @@ void Output::lineBreakStderr()
 {
 	if (!s_quietNonBuild)
 	{
-		std::cerr << getAnsiReset() << std::endl;
+		std::cerr << getAnsiStyle(Color::Reset) << std::endl;
 	}
 }
 
@@ -377,23 +334,23 @@ void Output::previousLine()
 }
 
 /*****************************************************************************/
-void Output::print(const Color inColor, const std::string& inText, const bool inBold)
+void Output::print(const Color inColor, const std::string& inText)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(inColor, inBold);
-		const auto reset = getAnsiReset();
+		const auto color = getAnsiStyle(inColor);
+		const auto reset = getAnsiStyle(Color::Reset);
 		std::cout << color << inText << reset << std::endl;
 	}
 }
 
 /*****************************************************************************/
-void Output::print(const Color inColor, const StringList& inList, const bool inBold)
+void Output::print(const Color inColor, const StringList& inList)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(inColor, inBold);
-		const auto reset = getAnsiReset();
+		const auto color = getAnsiStyle(inColor);
+		const auto reset = getAnsiStyle(Color::Reset);
 		std::cout << color << String::join(inList) << reset << std::endl;
 	}
 }
@@ -403,8 +360,8 @@ void Output::printCommand(const std::string& inText)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(sTheme.build, false);
-		const auto reset = getAnsiReset();
+		const auto color = getAnsiStyle(sTheme.build);
+		const auto reset = getAnsiStyle(Color::Reset);
 		std::cout << color << inText << reset << std::endl;
 	}
 }
@@ -414,8 +371,8 @@ void Output::printCommand(const StringList& inList)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(sTheme.build, false);
-		const auto reset = getAnsiReset();
+		const auto color = getAnsiStyle(sTheme.build);
+		const auto reset = getAnsiStyle(Color::Reset);
 		std::cout << color << String::join(inList) << reset << std::endl;
 	}
 }
@@ -425,8 +382,8 @@ void Output::printInfo(const std::string& inText)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(sTheme.info, false);
-		const auto reset = getAnsiReset();
+		const auto color = getAnsiStyle(sTheme.info);
+		const auto reset = getAnsiStyle(Color::Reset);
 		std::cout << color << inText << reset << std::endl;
 	}
 }
@@ -436,8 +393,8 @@ void Output::printFlair(const std::string& inText)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(sTheme.flair, false);
-		const auto reset = getAnsiReset();
+		const auto color = getAnsiStyle(sTheme.flair);
+		const auto reset = getAnsiStyle(Color::Reset);
 		std::cout << color << inText << reset << std::endl;
 	}
 }
@@ -447,8 +404,8 @@ void Output::printSeparator(const char inChar)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto color = getAnsiStyle(sTheme.flair, false);
-		const auto reset = getAnsiReset();
+		const auto color = getAnsiStyle(sTheme.flair);
+		const auto reset = getAnsiStyle(Color::Reset);
 		std::cout << color << std::string(80, inChar) << reset << std::endl;
 	}
 }
@@ -478,14 +435,9 @@ void Output::msgUpdatingDependency(const std::string& inGitUrl, const std::strin
 }
 
 /*****************************************************************************/
-void Output::msgDisplayBlack(const std::string& inString)
+void Output::msgRemovedUnusedDependency(const std::string& inDependencyName)
 {
-	if (!s_quietNonBuild)
-	{
-		const auto color = getAnsiStyle(sTheme.flair, true);
-		const auto reset = getAnsiReset();
-		std::cout << color << fmt::format("   {}", inString) << reset << std::endl;
-	}
+	print(sTheme.flair, fmt::format("   Removed unused dependency: '{}'", inDependencyName));
 }
 
 /*****************************************************************************/
@@ -520,8 +472,8 @@ void Output::msgCommandPoolError(const std::string& inMessage)
 {
 	if (!s_quietNonBuild)
 	{
-		const auto colorError = getAnsiStyle(sTheme.error, true);
-		const auto reset = getAnsiReset();
+		const auto colorError = getAnsiStyle(sTheme.error);
+		const auto reset = getAnsiStyle(Color::Reset);
 		std::cout << fmt::format("   {}Error: {}{}", colorError, reset, inMessage) << std::endl;
 	}
 }
@@ -533,8 +485,8 @@ void Output::msgBuildFail()
 	//
 	auto symbol = Unicode::heavyBallotX();
 
-	const auto color = getAnsiStyle(sTheme.error, true);
-	const auto reset = getAnsiReset();
+	const auto color = getAnsiStyle(sTheme.error);
+	const auto reset = getAnsiStyle(Color::Reset);
 
 	std::cout << fmt::format("{}{}  Failed!\n   Review the errors above.", color, symbol) << reset << std::endl;
 }
@@ -631,6 +583,6 @@ void Output::msgCopying(const std::string& inFrom, const std::string& inTo)
 	auto symbol = Unicode::heavyCurvedUpRightArrow();
 	std::string message = fmt::format("Copying: '{}' to '{}'", inFrom, inTo);
 
-	displayStyledSymbol(sTheme.build, symbol, message, false);
+	displayStyledSymbol(sTheme.build, symbol, message);
 }
 }

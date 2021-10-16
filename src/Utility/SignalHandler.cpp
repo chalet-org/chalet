@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -43,8 +42,8 @@ void SignalHandler::handler(const int inSignal)
 	bool exceptionThrown = std::current_exception() != nullptr;
 	bool assertionFailure = Diagnostic::assertionFailure();
 
-	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
-	const auto reset = Output::getAnsiReset();
+	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
+	const auto reset = Output::getAnsiStyle(Color::Reset);
 
 	std::cerr << '\n'
 			  << boldRed;
@@ -97,7 +96,7 @@ void SignalHandler::handler(const int inSignal)
 /*****************************************************************************/
 void SignalHandler::printError(const std::string& inType, const std::string& inDescription)
 {
-	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
+	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
 	std::cerr << boldRed << inType + '\n';
 
 	if (!inDescription.empty())

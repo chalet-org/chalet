@@ -24,6 +24,7 @@ struct GlobalSettingsJsonParser final : ISettingsJsonParser
 
 private:
 	bool makeCache(GlobalSettingsState& outState);
+	void initializeTheme();
 
 	bool serializeFromJsonRoot(Json& inJson, GlobalSettingsState& outState);
 	bool parseSettings(const Json& inNode, GlobalSettingsState& outState);

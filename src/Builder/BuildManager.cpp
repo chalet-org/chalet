@@ -760,7 +760,7 @@ bool BuildManager::cmdRun(const SourceTarget& inProject)
 
 		// Output::lineBreak();
 		Output::printSeparator();
-		Output::print(result ? Output::theme().info : Output::theme().error, message, true);
+		Output::print(result ? Output::theme().info : Output::theme().error, message);
 
 		auto lastSystemMessage = Process::getSystemMessage(lastExitCode);
 		if (!lastSystemMessage.empty())

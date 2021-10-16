@@ -112,7 +112,7 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 				std::string name = it;
 				String::replaceAll(name, fmt::format("{}/", externalDir), "");
 
-				Output::msgDisplayBlack(fmt::format("Removed unused dependency: '{}'", name));
+				Output::msgRemovedUnusedDependency(name);
 				m_fetched |= true;
 			}
 		}

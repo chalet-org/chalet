@@ -265,8 +265,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			break;
 	}
 
-	Diagnostic::error("{}: Schema failed validation for '{}' (expected {}). See details below.", m_file, parentKey, outError.typeName);
-	Output::msgDisplayBlack(fmt::format("   unhandled error: {}\n", static_cast<std::underlying_type<JsonSchemaError>::type>(outError.type)));
+	Diagnostic::error("{}: Schema failed validation for '{}' (expected {}). Unhandled Json type: {}.", m_file, parentKey, outError.typeName, static_cast<std::underlying_type<JsonSchemaError>::type>(outError.type));
 
 	return std::string();
 }

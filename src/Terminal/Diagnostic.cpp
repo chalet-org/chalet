@@ -65,7 +65,7 @@ void Diagnostic::printDone(const std::string& inTime)
 	if (!Output::quietNonBuild())
 	{
 		const auto color = Output::getAnsiStyle(Output::theme().flair);
-		const auto reset = Output::getAnsiReset();
+		const auto reset = Output::getAnsiStyle(Color::Reset);
 
 		destroySpinnerThread();
 
@@ -94,7 +94,7 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 		auto& theme = Output::theme();
 		const auto color = Output::getAnsiStyle(theme.flair);
 		const auto infoColor = Output::getAnsiStyle(theme.info);
-		const auto reset = Output::getAnsiReset();
+		const auto reset = Output::getAnsiStyle(Color::Reset);
 		const auto symbol = '>';
 
 		std::cout << fmt::format("{}{}  {}{}", color, symbol, infoColor, inMessage);
@@ -133,7 +133,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 
 	if (Environment::isBashGenericColorTermOrWindowsTerminal())
 	{
-		const auto boldBlack = Output::getAnsiStyle(Output::theme().flair, true);
+		const auto boldBlack = Output::getAnsiStyle(Output::theme().flair);
 		std::cerr << boldBlack;
 	}
 
@@ -151,10 +151,10 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 		destroySpinnerThread();
 	}
 
-	const auto boldRed = Output::getAnsiStyle(Output::theme().error, true);
-	const auto boldBlack = Output::getAnsiStyle(Output::theme().flair, true);
+	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
+	const auto boldBlack = Output::getAnsiStyle(Output::theme().flair);
 	const auto blue = Output::getAnsiStyle(Output::theme().build);
-	const auto reset = Output::getAnsiReset();
+	const auto reset = Output::getAnsiStyle(Color::Reset);
 
 	std::cerr << '\n'
 			  << boldRed << "Assertion Failed:\n  at " << reset
@@ -187,8 +187,8 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 		destroySpinnerThread();
 	}
 
-	const auto color = Output::getAnsiStyle(inType == Type::Error ? Output::theme().error : Output::theme().warning, true);
-	const auto reset = Output::getAnsiReset();
+	const auto color = Output::getAnsiStyle(inType == Type::Error ? Output::theme().error : Output::theme().warning);
+	const auto reset = Output::getAnsiStyle(Color::Reset);
 
 	out << color << std::move(inTitle) << ':' << reset << std::endl;
 }

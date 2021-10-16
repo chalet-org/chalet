@@ -191,7 +191,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	if (!post.command.empty())
 		++totalCompiles;
 
-	auto reset = Output::getAnsiReset();
+	auto reset = Output::getAnsiStyle(Color::Reset);
 
 	// At the moment, this is only greater than 1 when compiling multiple PCHes for MacOS universal binaries
 	for (auto& it : pre)

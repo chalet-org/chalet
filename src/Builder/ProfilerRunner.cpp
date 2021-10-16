@@ -100,7 +100,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	// Output::lineBreak();
 	Output::printSeparator();
-	Output::print(result ? Output::theme().info : Output::theme().error, message, true);
+	Output::print(result ? Output::theme().info : Output::theme().error, message);
 	Output::lineBreak();
 
 	Diagnostic::info("Run task completed successfully. Profiling data for gprof has been written to gmon.out.");

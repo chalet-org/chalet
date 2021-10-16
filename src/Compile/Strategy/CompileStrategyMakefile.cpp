@@ -258,8 +258,8 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 		options.stdoutOption = PipeOption::Pipe;
 		options.onStdOut = [](std::string inData) {
 			String::replaceAll(inData, "\r\n", "\n");
-			String::replaceAll(inData, ": warning ", Output::getAnsiReset() + ": warning ");
-			String::replaceAll(inData, ": error ", Output::getAnsiReset() + ": error ");
+			String::replaceAll(inData, ": warning ", Output::getAnsiStyle(Color::Reset) + ": warning ");
+			String::replaceAll(inData, ": error ", Output::getAnsiStyle(Color::Reset) + ": error ");
 			std::cout << std::move(inData) << std::flush;
 		};
 	}
@@ -313,10 +313,10 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 #if defined(CHALET_WIN32)
 		if (result == EXIT_SUCCESS)
 #endif
-			std::cout << Output::getAnsiReset() << errorOutput << std::endl;
+			std::cout << Output::getAnsiStyle(Color::Reset) << errorOutput << std::endl;
 #if defined(CHALET_WIN32)
 		else
-			std::cout << Output::getAnsiReset() << errorOutput << std::flush;
+			std::cout << Output::getAnsiStyle(Color::Reset) << errorOutput << std::flush;
 #endif
 	}
 

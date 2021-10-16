@@ -8,7 +8,6 @@
 #include "Cache/SourceCache.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
-#include "Terminal/Color.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"

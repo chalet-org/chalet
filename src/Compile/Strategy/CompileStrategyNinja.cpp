@@ -139,7 +139,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	std::string noWork{ "ninja: no work to do." };
 	std::string data;
 	auto eol = String::eol();
-	auto endlineReplace = fmt::format("\n{}", Output::getAnsiReset());
+	auto endlineReplace = fmt::format("\n{}", Output::getAnsiStyle(Color::Reset));
 
 	auto parsePrintOutput = [&]() {
 		bool canSkip = data.size() > 5 && (String::startsWith(noWork, data) || String::startsWith(data, noWork));
@@ -151,7 +151,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 
 		if (data.front() == '[')
 		{
-			data.replace(0, 1, fmt::format("   {}[", Output::getAnsiReset()));
+			data.replace(0, 1, fmt::format("   {}[", Output::getAnsiStyle(Color::Reset)));
 
 			auto firstEndBracket = data.find(']');
 			if (firstEndBracket != std::string::npos)

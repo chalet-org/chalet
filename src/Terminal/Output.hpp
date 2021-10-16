@@ -32,24 +32,22 @@ bool showBenchmarks();
 void setShowBenchmarks(const bool inValue);
 
 bool getUserInput(
-	const std::string& inUserQuery, std::string& outResult, const Color inAnswerColor, std::string inNote = std::string(),
+	const std::string& inUserQuery, std::string& outResult, std::string inNote = std::string(),
 	const std::function<bool(std::string&)>& onValidate = [](std::string& input) {UNUSED(input);return true; });
-bool getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, const Color inAnswerColor, std::string inNote = std::string());
+bool getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, std::string inNote = std::string());
 
-std::string getAnsiStyle(const Color inColor, const bool inBold = false);
-std::string getAnsiStyle(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold = false);
-std::string getAnsiStyleUnescaped(const Color inColor, const bool inBold = false);
-std::string getAnsiStyleUnescaped(const Color inForegroundColor, const Color inBackgroundColor, const bool inBold = false);
-std::string getAnsiReset();
+std::string getAnsiStyle(const Color inColor);
+std::string getAnsiStyleUnescaped(const Color inColor);
+std::string getAnsiStyleUnescaped(const Color inForegroundColor, const Color inBackgroundColor);
 
-void displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage, const bool inBold = true);
+void displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage);
 void resetStdout();
 void resetStderr();
 void lineBreak();
 void lineBreakStderr();
 void previousLine();
-void print(const Color inColor, const std::string& inText, const bool inBold = false);
-void print(const Color inColor, const StringList& inList, const bool inBold = false);
+void print(const Color inColor, const std::string& inText);
+void print(const Color inColor, const StringList& inList);
 void printCommand(const std::string& inText);
 void printCommand(const StringList& inList);
 void printInfo(const std::string& inText);
@@ -58,7 +56,7 @@ void printSeparator(const char inChar = '-');
 
 void msgFetchingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);
 void msgUpdatingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);
-void msgDisplayBlack(const std::string& inString);
+void msgRemovedUnusedDependency(const std::string& inDependencyName);
 
 void msgConfigureCompleted();
 void msgBuildSuccess();

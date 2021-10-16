@@ -9,7 +9,6 @@
 
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
-#include "Terminal/ColorTheme.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -34,7 +33,7 @@ bool ScriptRunner::run(const StringList& inScripts, const bool inShowExitCode)
 		std::ptrdiff_t i = &scriptPath - &inScripts.front();
 		if (i == 0)
 		{
-			std::cout << Output::getAnsiReset() << std::flush;
+			std::cout << Output::getAnsiStyle(Color::Reset) << std::flush;
 		}
 
 		if (!run(scriptPath, inShowExitCode))
@@ -247,7 +246,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 	if (inShowExitCode || !result)
 	{
 		Output::lineBreak();
-		Output::print(result ? Output::theme().info : Output::theme().error, message, true);
+		Output::print(result ? Output::theme().info : Output::theme().error, message);
 
 		if (!inShowExitCode && !result)
 			Output::lineBreak();

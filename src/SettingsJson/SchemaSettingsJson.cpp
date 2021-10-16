@@ -438,25 +438,17 @@ Json Schema::getSettingsJson()
 		"type": "string"
 	})json"_ojson;
 
+	const auto kEnum = "enum";
 	defs[Defs::ThemeColor] = R"json({
 		"type": "string",
-		"description": "An ANSI color to apply.",
-		"enum": [
-			"reset",
-			"black",
-			"red",
-			"green",
-			"yellow",
-			"blue",
-			"magenta",
-			"cyan",
-			"white"
-		]
+		"description": "An ANSI color to apply."
 	})json"_ojson;
+	defs[Defs::ThemeColor][kEnum] = ColorTheme::getJsonColors();
 
 	//
 
 	const auto kProperties = "properties";
+	const auto kAnyOf = "anyOf";
 
 	auto toolchains = R"json({
 		"type": "object",
@@ -583,14 +575,27 @@ Json Schema::getSettingsJson()
 	const auto kTheme = "theme";
 	ret[kProperties][kTheme] = R"json({
 		"type": "object",
-		"additionalProperties": false,
-		"description": "The color theme to give to Chalet"
+		"description": "The color theme preset or colors to give to Chalet",
+		"anyOf": [
+			{
+				"type": "string",
+				"minLength": 1,
+				"enum": [
+					"default"
+				],
+				"default": "default"
+			},
+			{
+				"type": "object",
+				"additionalProperties": false
+			}
+		]
 	})json"_ojson;
-	ret[kProperties][kTheme][kProperties] = Json::object();
+	ret[kProperties][kTheme][kAnyOf][1][kProperties] = Json::object();
 
 	for (const auto& key : ColorTheme::getKeys())
 	{
-		ret[kProperties][kTheme][kProperties][key] = defs[Defs::ThemeColor];
+		ret[kProperties][kTheme][kAnyOf][1][kProperties][key] = defs[Defs::ThemeColor];
 	}
 
 	return ret;
