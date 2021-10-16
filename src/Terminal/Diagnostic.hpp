@@ -35,6 +35,7 @@ struct Diagnostic
 	static bool assertionFailure() noexcept;
 
 	static void printErrors();
+	static void clearErrors();
 	static void throwCriticalError();
 
 private:

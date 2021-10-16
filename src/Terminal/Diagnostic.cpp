@@ -274,6 +274,16 @@ void Diagnostic::printErrors()
 }
 
 /*****************************************************************************/
+void Diagnostic::clearErrors()
+{
+	if (s_ErrorList != nullptr)
+	{
+		delete s_ErrorList;
+		s_ErrorList = nullptr;
+	}
+}
+
+/*****************************************************************************/
 void Diagnostic::throwCriticalError()
 {
 	destroySpinnerThread();

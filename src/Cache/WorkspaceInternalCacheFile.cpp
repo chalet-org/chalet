@@ -219,59 +219,59 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 
 	m_dataFile = std::make_unique<JsonFile>(m_filename);
 	if (!m_dataFile->load())
-		return false;
-
-	if (Commands::pathExists(m_filename))
 	{
-		auto& rootNode = m_dataFile->json;
-		if (rootNode.is_object())
+		Diagnostic::clearErrors();
+		m_dataFile->json = Json::object();
+	}
+
+	auto& rootNode = m_dataFile->json;
+	if (!rootNode.is_object())
+		m_dataFile->json = Json::object();
+
+	if (rootNode.contains(kKeyHashes))
+	{
+		auto& hashes = rootNode.at(kKeyHashes);
+		if (hashes.is_object())
 		{
-			if (rootNode.contains(kKeyHashes))
+			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashBuild))
 			{
-				auto& hashes = rootNode.at(kKeyHashes);
-				if (hashes.is_object())
+				m_buildHash = std::move(val);
+			}
+
+			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashTheme))
+			{
+				m_hashTheme = std::move(val);
+			}
+
+			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashVersionRelease))
+				m_hashVersion = std::move(val);
+
+			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashVersionDebug))
+				m_hashVersionDebug = std::move(val);
+
+			if (hashes.contains(kKeyHashExtra))
+			{
+				auto& extra = hashes.at(kKeyHashExtra);
+				if (extra.is_array())
 				{
-					if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashBuild))
+					for (auto& item : extra)
 					{
-						m_buildHash = std::move(val);
-					}
+						if (!item.is_string())
+							return false;
 
-					if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashTheme))
-					{
-						m_hashTheme = std::move(val);
-					}
-
-					if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashVersionRelease))
-						m_hashVersion = std::move(val);
-
-					if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashVersionDebug))
-						m_hashVersionDebug = std::move(val);
-
-					if (hashes.contains(kKeyHashExtra))
-					{
-						auto& extra = hashes.at(kKeyHashExtra);
-						if (extra.is_array())
-						{
-							for (auto& item : extra)
-							{
-								if (!item.is_string())
-									return false;
-
-								std::string hash = item.get<std::string>();
-								if (!hash.empty())
-									addExtraHash(std::move(hash));
-							}
-						}
+						std::string hash = item.get<std::string>();
+						if (!hash.empty())
+							addExtraHash(std::move(hash));
 					}
 				}
 			}
-
-			if (std::string rawValue; m_dataFile->assignFromKey(rawValue, rootNode, kKeyLastChaletJsonWriteTime))
-			{
-				std::time_t val = strtoll(rawValue.c_str(), NULL, 0);
-				m_buildFileChanged = val != m_lastBuildFileWrite;
-			}
 		}
+	}
+
+	if (std::string rawValue; m_dataFile->assignFromKey(rawValue, rootNode, kKeyLastChaletJsonWriteTime))
+	{
+		std::time_t val = strtoll(rawValue.c_str(), NULL, 0);
+		m_buildFileChanged = val != m_lastBuildFileWrite;
 	}
 
 	return true;
