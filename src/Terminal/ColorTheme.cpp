@@ -247,6 +247,12 @@ const std::string& ColorTheme::preset() const noexcept
 
 void ColorTheme::setPreset(const std::string& inValue)
 {
+	if (inValue.empty())
+	{
+		m_preset.clear();
+		return;
+	}
+
 	if (!List::contains(kPresetNames, inValue))
 		m_preset = kPresetNames.at(0);
 	else

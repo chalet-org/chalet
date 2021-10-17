@@ -75,7 +75,10 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 		else if (themeJson.is_object())
 		{
 			if (themeJson.empty() && inGlobal)
+			{
 				outTheme.setPreset(ColorTheme::defaultPresetName());
+				outTheme.setPreset(std::string());
+			}
 
 			for (auto& [key, value] : themeJson.items())
 			{

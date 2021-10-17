@@ -69,7 +69,7 @@ bool ColorTest::run()
 	{
 		for (int clfg : { 30, 90, 37, 97, 31, 91, 32, 92, 33, 93, 34, 94, 35, 95, 36, 96 })
 		{
-			std::cout << fmt::format("{esc}[{attr};{clfg}m {attr},{clfg} {esc}[0m",
+			std::cout << fmt::format("{esc}[{attr};{clfg}m {attr};{clfg} {esc}[0m",
 				FMT_ARG(esc),
 				FMT_ARG(attr),
 				FMT_ARG(clfg));
@@ -77,11 +77,16 @@ bool ColorTest::run()
 		std::cout << reset << '\n';
 	}
 
+	auto currentTheme = Output::theme();
 	auto themes = ColorTheme::getAllThemes();
+	if (currentTheme.preset().empty())
+		themes.push_back(std::move(currentTheme));
+
 	for (const auto& theme : themes)
 	{
 		std::string output = lineBreak;
-		output += fmt::format("{}:\n\n", theme.preset());
+		std::string name = theme.preset().empty() ? "Current Theme" : theme.preset();
+		output += fmt::format("{}:\n\n", name);
 		output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){reset}\n",
 			fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
 			fmt::arg("info", Output::getAnsiStyle(theme.info)),
