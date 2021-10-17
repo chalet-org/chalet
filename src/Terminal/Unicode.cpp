@@ -14,7 +14,7 @@ namespace chalet
 const char* Unicode::dot()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "º";
 	else
 #endif
@@ -25,7 +25,7 @@ const char* Unicode::dot()
 const char* Unicode::degree()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "º";
 	else
 #endif
@@ -36,7 +36,7 @@ const char* Unicode::degree()
 const char* Unicode::triangle()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "»";
 	else
 #endif
@@ -47,7 +47,7 @@ const char* Unicode::triangle()
 const char* Unicode::diamond()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "º";
 	else
 #endif
@@ -58,7 +58,7 @@ const char* Unicode::diamond()
 const char* Unicode::heavyCheckmark()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "√";
 	else
 #endif
@@ -69,7 +69,7 @@ const char* Unicode::heavyCheckmark()
 const char* Unicode::heavyBallotX()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "X";
 	else
 #endif
@@ -80,7 +80,7 @@ const char* Unicode::heavyBallotX()
 const char* Unicode::boldSaltire()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "X";
 	else
 #endif
@@ -91,7 +91,7 @@ const char* Unicode::boldSaltire()
 const char* Unicode::warning()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "»";
 	else
 #endif
@@ -102,7 +102,7 @@ const char* Unicode::warning()
 const char* Unicode::circledSaltire()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "X";
 	else
 #endif
@@ -114,7 +114,7 @@ const char* Unicode::circledSaltire()
 const char* Unicode::heavyCurvedDownRightArrow()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "¬";
 	else
 #endif
@@ -125,7 +125,7 @@ const char* Unicode::heavyCurvedDownRightArrow()
 const char* Unicode::heavyCurvedUpRightArrow()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "¬";
 	else
 #endif
@@ -136,7 +136,7 @@ const char* Unicode::heavyCurvedUpRightArrow()
 const char* Unicode::rightwardsTripleArrow()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return "=";
 	else
 #endif
@@ -147,7 +147,7 @@ const char* Unicode::rightwardsTripleArrow()
 const char* Unicode::registered()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 		return " (R)";
 	else
 #endif

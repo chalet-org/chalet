@@ -14,7 +14,6 @@ struct Environment
 	static bool isBashGenericColorTermOrWindowsTerminal();
 	static bool isMicrosoftTerminalOrWindowsBash();
 	static bool isCommandPromptOrPowerShell();
-	static bool isVisualStudioCommandPrompt();
 	static bool isContinuousIntegrationServer();
 
 	static const char* get(const char* inName);

@@ -225,7 +225,7 @@ std::string Output::getAnsiStyle(const Color inColor)
 	if (inColor == Color::Reset)
 	{
 #if defined(CHALET_WIN32)
-		if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+		if (Environment::isCommandPromptOrPowerShell())
 		{
 			if (!ansiColorsSupportedInComSpec())
 				return std::string();
@@ -241,7 +241,7 @@ std::string Output::getAnsiStyle(const Color inColor)
 		color -= (style * static_cast<ushort>(100));
 
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())
+	if (Environment::isCommandPromptOrPowerShell())
 	{
 		if (!ansiColorsSupportedInComSpec())
 			return std::string();
