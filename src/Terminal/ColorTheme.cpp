@@ -34,6 +34,15 @@ OrderedDictionary<Color> kThemeMap{
 	{ "brightCyan", Color::BrightCyan },
 	{ "brightWhite", Color::BrightWhite },
 	//
+	{ "blackBold", Color::BlackBold },
+	{ "redBold", Color::RedBold },
+	{ "greenBold", Color::GreenBold },
+	{ "yellowBold", Color::YellowBold },
+	{ "blueBold", Color::BlueBold },
+	{ "magentaBold", Color::MagentaBold },
+	{ "cyanBold", Color::CyanBold },
+	{ "whiteBold", Color::WhiteBold },
+	//
 	{ "brightBlackBold", Color::BrightBlackBold },
 	{ "brightRedBold", Color::BrightRedBold },
 	{ "brightGreenBold", Color::BrightGreenBold },
@@ -42,6 +51,42 @@ OrderedDictionary<Color> kThemeMap{
 	{ "brightMagentaBold", Color::BrightMagentaBold },
 	{ "brightCyanBold", Color::BrightCyanBold },
 	{ "brightWhiteBold", Color::BrightWhiteBold },
+	//
+	{ "blackDim", Color::BlackDim },
+	{ "redDim", Color::RedDim },
+	{ "greenDim", Color::GreenDim },
+	{ "yellowDim", Color::YellowDim },
+	{ "blueDim", Color::BlueDim },
+	{ "magentaDim", Color::MagentaDim },
+	{ "cyanDim", Color::CyanDim },
+	{ "whiteDim", Color::WhiteDim },
+	//
+	{ "brightBlackDim", Color::BrightBlackDim },
+	{ "brightRedDim", Color::BrightRedDim },
+	{ "brightGreenDim", Color::BrightGreenDim },
+	{ "brightYellowDim", Color::BrightYellowDim },
+	{ "brightBlueDim", Color::BrightBlueDim },
+	{ "brightMagentaDim", Color::BrightMagentaDim },
+	{ "brightCyanDim", Color::BrightCyanDim },
+	{ "brightWhiteDim", Color::BrightWhiteDim },
+	//
+	{ "blackInverted", Color::BlackInverted },
+	{ "redInverted", Color::RedInverted },
+	{ "greenInverted", Color::GreenInverted },
+	{ "yellowInverted", Color::YellowInverted },
+	{ "blueInverted", Color::BlueInverted },
+	{ "magentaInverted", Color::MagentaInverted },
+	{ "cyanInverted", Color::CyanInverted },
+	{ "whiteInverted", Color::WhiteInverted },
+	//
+	{ "brightBlackInverted", Color::BrightBlackInverted },
+	{ "brightRedInverted", Color::BrightRedInverted },
+	{ "brightGreenInverted", Color::BrightGreenInverted },
+	{ "brightYellowInverted", Color::BrightYellowInverted },
+	{ "brightBlueInverted", Color::BrightBlueInverted },
+	{ "brightMagentaInverted", Color::BrightMagentaInverted },
+	{ "brightCyanInverted", Color::BrightCyanInverted },
+	{ "brightWhiteInverted", Color::BrightWhiteInverted },
 };
 
 StringList kPresetNames{
@@ -111,6 +156,25 @@ bool ColorTheme::isValidPreset(const std::string& inPresetName)
 		return false;
 
 	return List::contains(kPresetNames, inPresetName);
+}
+
+/*****************************************************************************/
+std::vector<ColorTheme> ColorTheme::getAllThemes()
+{
+	std::vector<ColorTheme> ret;
+
+	for (auto& preset : kPresetNames)
+	{
+		ret.emplace_back(preset);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+ColorTheme::ColorTheme(const std::string& inPresetName)
+{
+	setPreset(inPresetName);
 }
 
 /*****************************************************************************/
@@ -209,7 +273,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		flair = Color::BrightBlack;
 		header = Color::BrightYellowBold;
 		build = Color::BrightBlue;
-		assembly = Color::Magenta;
+		assembly = Color::BrightMagenta;
 	}
 }
 

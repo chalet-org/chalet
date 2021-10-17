@@ -235,11 +235,10 @@ std::string Output::getAnsiStyle(const Color inColor)
 		return fmt::format("{esc}[0m", FMT_ARG(esc));
 	}
 
-	uchar color = static_cast<std::underlying_type_t<Color>>(inColor);
-	bool bold = color > 100;
-	if (bold)
-		color -= 100;
-	char style = bold ? '1' : '0';
+	auto color = static_cast<std::underlying_type_t<Color>>(inColor);
+	ushort style = color / static_cast<ushort>(100);
+	if (color > 100)
+		color -= (style * static_cast<ushort>(100));
 
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell() || Environment::isVisualStudioCommandPrompt())

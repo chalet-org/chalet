@@ -8,7 +8,7 @@
 
 namespace chalet
 {
-enum class Color : uchar
+enum class Color : ushort
 {
 	Reset = 0,
 	//
@@ -30,14 +30,59 @@ enum class Color : uchar
 	BrightCyan = 96,
 	BrightWhite = 97,
 	//
-	BrightBlackBold = 130,
-	BrightRedBold = 131,
-	BrightGreenBold = 132,
-	BrightYellowBold = 133,
-	BrightBlueBold = 134,
-	BrightMagentaBold = 135,
-	BrightCyanBold = 136,
-	BrightWhiteBold = 137,
+	BlackBold = 130,
+	RedBold = 131,
+	GreenBold = 132,
+	YellowBold = 133,
+	BlueBold = 134,
+	MagentaBold = 135,
+	CyanBold = 136,
+	WhiteBold = 137,
+	//
+	BrightBlackBold = 190,
+	BrightRedBold = 191,
+	BrightGreenBold = 192,
+	BrightYellowBold = 193,
+	BrightBlueBold = 194,
+	BrightMagentaBold = 195,
+	BrightCyanBold = 196,
+	BrightWhiteBold = 197,
+	//
+	BlackDim = 230,
+	RedDim = 231,
+	GreenDim = 232,
+	YellowDim = 233,
+	BlueDim = 234,
+	MagentaDim = 235,
+	CyanDim = 236,
+	WhiteDim = 237,
+	//
+	BrightBlackDim = 290,
+	BrightRedDim = 291,
+	BrightGreenDim = 292,
+	BrightYellowDim = 293,
+	BrightBlueDim = 294,
+	BrightMagentaDim = 295,
+	BrightCyanDim = 296,
+	BrightWhiteDim = 297,
+	//
+	BlackInverted = 730,
+	RedInverted = 731,
+	GreenInverted = 732,
+	YellowInverted = 733,
+	BlueInverted = 734,
+	MagentaInverted = 735,
+	CyanInverted = 736,
+	WhiteInverted = 737,
+	//
+	BrightBlackInverted = 790,
+	BrightRedInverted = 791,
+	BrightGreenInverted = 792,
+	BrightYellowInverted = 793,
+	BrightBlueInverted = 794,
+	BrightMagentaInverted = 795,
+	BrightCyanInverted = 796,
+	BrightWhiteInverted = 797,
 
 };
 }
