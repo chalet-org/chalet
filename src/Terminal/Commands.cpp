@@ -545,9 +545,18 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 				Output::msgCopying(inFrom, inTo);
 		}
 
+		bool result = true;
+		if (Commands::pathExists(inTo))
+		{
+			if (fs::remove(inTo))
+			{
+				CHALET_THROW(std::runtime_error("Failed to remove old file before copying"));
+			}
+		}
+
 		fs::copy(inFrom, inTo, fs::copy_options::skip_existing);
 
-		return true;
+		return result;
 	}
 	CHALET_CATCH(const fs::filesystem_error& err)
 	{

@@ -92,13 +92,13 @@ bool AppBundlerLinux::bundleForPlatform()
 	{
 		const auto filename = fmt::format("{}/{}", bundlePath, m_mainExecutable);
 
-		const auto desktopEntryString = fmt::format("{}.desktop", String::getPathFolderBaseName(filename));
+		const auto desktopEntryFile = fmt::format("{}.desktop", String::getPathFolderBaseName(filename));
 		const auto iconPath = fmt::format("{}/{}", bundlePath, String::getPathFilename(icon));
 
-		if (!Commands::copyRename(desktopEntry, desktopEntryString))
+		if (!Commands::copyRename(desktopEntry, desktopEntryFile))
 			return false;
 
-		if (!Commands::readFileAndReplace(desktopEntryString, [&](std::string& fileContents) {
+		if (!Commands::readFileAndReplace(desktopEntryFile, [&](std::string& fileContents) {
 				String::replaceAll(fileContents, "${mainExecutable}", Commands::getAbsolutePath(filename));
 				String::replaceAll(fileContents, "${path}", Commands::getAbsolutePath(bundlePath));
 				String::replaceAll(fileContents, "${name}", m_bundle.name());
@@ -106,13 +106,13 @@ bool AppBundlerLinux::bundleForPlatform()
 			}))
 			return false;
 
-		if (!Commands::setExecutableFlag(desktopEntryString))
+		if (!Commands::setExecutableFlag(desktopEntryFile))
 			return false;
 
 		// TODO: Flag for this?
 		if (!Environment::isContinuousIntegrationServer())
 		{
-			Commands::copy(desktopEntryString, m_applicationsPath);
+			Commands::copy(desktopEntryFile, m_applicationsPath);
 		}
 	}
 
