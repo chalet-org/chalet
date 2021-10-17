@@ -56,8 +56,8 @@ bool ColorTest::run()
 
 	const auto gray = Output::getAnsiStyle(Color::BrightBlack);
 	const auto reset = Output::getAnsiStyle(Color::Reset);
-	const auto lineBreak = fmt::format("{}{}{}\n", gray, std::string(96, '-'), reset);
-	std::cout << lineBreak;
+	const auto separator = fmt::format("{}{}{}\n", gray, std::string(64, '-'), reset);
+	std::cout << separator;
 
 #if defined(CHALET_WIN32)
 	char esc = '\x1b';
@@ -65,16 +65,57 @@ bool ColorTest::run()
 	char esc = '\033';
 #endif
 
-	for (int attr : { 7, 1, 0, 2 })
+	std::unordered_map<int, std::string> descriptions{
+		{ 7, "inverted" },
+		{ 1, "bold" },
+		{ 0, "normal" },
+		{ 2, "dim" },
+		{ 3, "italic" },
+		{ 4, "underlined" },
+		{ 9, "strikethrough" },
+		{ 5, "blink" },
+	};
+
+	for (int attr : { 7, 1, 0, 2, 3, 4, 9, 5 })
 	{
-		for (int clfg : { 30, 90, 37, 97, 31, 91, 32, 92, 33, 93, 34, 94, 35, 95, 36, 96 })
+		for (int clfg : { 30, 90, 37, 97, 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 })
 		{
-			std::cout << fmt::format("{esc}[{attr};{clfg}m {attr};{clfg} {esc}[0m",
+			std::cout << fmt::format("{esc}[{attr};{clfg}m {clfg} {esc}[0m",
 				FMT_ARG(esc),
 				FMT_ARG(attr),
 				FMT_ARG(clfg));
 		}
-		std::cout << reset << '\n';
+		if (descriptions.find(attr) != descriptions.end())
+		{
+			std::cout << fmt::format("{} - {}({}) {}\n", gray, reset, attr, descriptions.at(attr));
+		}
+		else
+		{
+			std::cout << reset << '\n';
+		}
+	}
+
+	std::cout << separator;
+
+	{
+		int attr = 7;
+		for (int clfg : { 30, 37, 33, 31, 35, 34, 36, 32 })
+		{
+			std::cout << fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
+				FMT_ARG(esc),
+				FMT_ARG(attr),
+				FMT_ARG(clfg));
+		}
+		std::cout << reset << fmt::format("{} - {}normal\n", gray, reset);
+
+		for (int clfg : { 90, 97, 93, 91, 95, 94, 96, 92 })
+		{
+			std::cout << fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
+				FMT_ARG(esc),
+				FMT_ARG(attr),
+				FMT_ARG(clfg));
+		}
+		std::cout << reset << fmt::format("{} - {}bright\n", gray, reset);
 	}
 
 	auto currentTheme = Output::theme();
@@ -82,9 +123,11 @@ bool ColorTest::run()
 	if (currentTheme.preset().empty())
 		themes.push_back(std::move(currentTheme));
 
+	std::cout << separator << std::string(23, ' ') << "Chalet Color Themes\n";
+
 	for (const auto& theme : themes)
 	{
-		std::string output = lineBreak;
+		std::string output = separator;
 		std::string name = theme.preset().empty() ? "Current Theme" : theme.preset();
 		output += fmt::format("{}:\n\n", name);
 		output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){reset}\n",
@@ -102,7 +145,7 @@ bool ColorTest::run()
 		std::cout << output;
 	}
 
-	std::cout << lineBreak << std::endl;
+	std::cout << separator << std::endl;
 
 	return true;
 }
