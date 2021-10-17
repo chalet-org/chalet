@@ -63,6 +63,7 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 {
 	const std::string kKeyTheme{ "theme" };
 
+	bool set = false;
 	if (inJson.is_object() && inJson.contains(kKeyTheme))
 	{
 		const auto& themeJson = inJson.at(kKeyTheme);
@@ -71,6 +72,7 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 			auto preset = themeJson.get<std::string>();
 			outTheme.setPreset(preset); // if invalid, goes to default theme
 			Output::setTheme(outTheme);
+			set = true;
 		}
 		else if (themeJson.is_object())
 		{
@@ -89,7 +91,14 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 				}
 			}
 			Output::setTheme(outTheme);
+			set = true;
 		}
+	}
+
+	if (!set)
+	{
+		outTheme.setPreset(ColorTheme::defaultPresetName());
+		Output::setTheme(outTheme);
 	}
 
 	return true;
