@@ -91,7 +91,7 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 {
 	if (!Output::quietNonBuild())
 	{
-		auto& theme = Output::theme();
+		const auto& theme = Output::theme();
 		const auto color = Output::getAnsiStyle(theme.flair);
 		const auto infoColor = Output::getAnsiStyle(theme.info);
 		const auto reset = Output::getAnsiStyle(Color::Reset);

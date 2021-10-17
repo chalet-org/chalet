@@ -90,7 +90,12 @@ OrderedDictionary<Color> kThemeMap{
 };
 
 StringList kPresetNames{
-	"default"
+	"default",
+	"palapa",
+	"highrise",
+	"teahouse",
+	"skilodge",
+	"temple"
 };
 }
 
@@ -147,6 +152,11 @@ StringList ColorTheme::getKeys()
 const std::string& ColorTheme::defaultPresetName()
 {
 	return kPresetNames.front();
+}
+
+const std::string& ColorTheme::lastPresetName()
+{
+	return kPresetNames.back();
 }
 
 /*****************************************************************************/
@@ -206,16 +216,18 @@ std::string ColorTheme::asString() const
 	if (isPreset())
 		return m_preset;
 
+	using ColorType = std::underlying_type_t<Color>;
+
 	return fmt::format("{} {} {} {} {} {} {} {} {}",
-		static_cast<ushort>(info),
-		static_cast<ushort>(error),
-		static_cast<ushort>(warning),
-		static_cast<ushort>(success),
-		static_cast<ushort>(note),
-		static_cast<ushort>(flair),
-		static_cast<ushort>(header),
-		static_cast<ushort>(build),
-		static_cast<ushort>(assembly));
+		static_cast<ColorType>(info),
+		static_cast<ColorType>(error),
+		static_cast<ColorType>(warning),
+		static_cast<ColorType>(success),
+		static_cast<ColorType>(note),
+		static_cast<ColorType>(flair),
+		static_cast<ColorType>(header),
+		static_cast<ColorType>(build),
+		static_cast<ColorType>(assembly));
 }
 
 /*****************************************************************************/
@@ -269,7 +281,17 @@ bool ColorTheme::isPreset() const noexcept
 /*****************************************************************************/
 void ColorTheme::makePreset(const std::string& inValue)
 {
-	if (String::equals(kPresetNames.at(0), inValue))
+	/*
+		Known "bad" colors:
+			Color::Black & variations - Won't show in Command Prompt default - same color as bg
+			Color::Magenta & variations - Won't show in Powershell default - same color as bg
+
+		... avoid them in theme presets
+	*/
+
+	// default
+	std::size_t i = 0;
+	if (String::equals(kPresetNames.at(i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;
@@ -280,6 +302,71 @@ void ColorTheme::makePreset(const std::string& inValue)
 		header = Color::BrightYellowBold;
 		build = Color::BrightBlue;
 		assembly = Color::BrightMagenta;
+	}
+	// palapa
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::RedBold;
+		warning = Color::YellowBold;
+		success = Color::BrightMagentaBold;
+		note = Color::BlueBold;
+		flair = Color::BrightBlueDim;
+		header = Color::BrightGreenBold;
+		build = Color::BrightCyan;
+		assembly = Color::Yellow;
+	}
+	// highrise
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::BrightRedBold;
+		warning = Color::YellowBold;
+		success = Color::BrightYellowBold;
+		note = Color::BrightMagentaBold;
+		flair = Color::BrightBlack;
+		header = Color::BrightBlueBold;
+		build = Color::BrightMagenta;
+		assembly = Color::BrightCyan;
+	}
+	// teahouse
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::RedBold;
+		warning = Color::YellowBold;
+		success = Color::GreenBold;
+		note = Color::BrightYellowBold;
+		flair = Color::YellowDim;
+		header = Color::YellowBold;
+		build = Color::Cyan;
+		assembly = Color::BrightGreen;
+	}
+	// skilodge
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::BrightRedBold;
+		warning = Color::YellowBold;
+		success = Color::BrightBlueBold;
+		note = Color::BrightBlackBold;
+		flair = Color::BrightBlueDim;
+		header = Color::BrightWhiteBold;
+		build = Color::BrightYellow;
+		assembly = Color::BrightCyan;
+	}
+	// temple
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::BrightRedBold;
+		warning = Color::BrightYellowBold;
+		success = Color::YellowBold;
+		note = Color::BrightMagentaBold;
+		flair = Color::BrightMagentaDim;
+		header = Color::BrightCyanBold;
+		build = Color::BrightRed;
+		assembly = Color::BrightYellow;
 	}
 }
 

@@ -24,6 +24,7 @@ bool ThemeSettingsJsonParser::serialize()
 	const auto globalSettings = m_inputs.getGlobalSettingsFilePath();
 	const auto& localSettings = m_inputs.settingsFile();
 
+	m_updateTheme = false;
 	ColorTheme theme = Output::theme();
 
 	// Keys that aren't valid will get ingored,
@@ -55,6 +56,16 @@ bool ThemeSettingsJsonParser::serialize()
 		}
 	}
 
+	if (!m_updateTheme)
+	{
+		theme.setPreset(ColorTheme::defaultPresetName());
+	}
+
+#if 0
+	theme.setPreset(ColorTheme::lastPresetName());
+#endif
+	Output::setTheme(theme);
+
 	return true;
 }
 
@@ -63,7 +74,6 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 {
 	const std::string kKeyTheme{ "theme" };
 
-	bool set = false;
 	if (inJson.is_object() && inJson.contains(kKeyTheme))
 	{
 		const auto& themeJson = inJson.at(kKeyTheme);
@@ -71,8 +81,7 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 		{
 			auto preset = themeJson.get<std::string>();
 			outTheme.setPreset(preset); // if invalid, goes to default theme
-			Output::setTheme(outTheme);
-			set = true;
+			m_updateTheme = true;
 		}
 		else if (themeJson.is_object())
 		{
@@ -90,15 +99,8 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 					outTheme.set(key, str);
 				}
 			}
-			Output::setTheme(outTheme);
-			set = true;
+			m_updateTheme = true;
 		}
-	}
-
-	if (!set)
-	{
-		outTheme.setPreset(ColorTheme::defaultPresetName());
-		Output::setTheme(outTheme);
 	}
 
 	return true;

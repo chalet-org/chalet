@@ -15,65 +15,50 @@
 namespace chalet
 {
 /*****************************************************************************/
+ColorTest::ColorTest() :
+#if defined(CHALET_WIN32)
+	kEsc('\x1b'),
+#else
+	kEsc('\033'),
+#endif
+	kWidth(64),
+	kSeparator(kWidth, '-')
+{
+}
+
+/*****************************************************************************/
 bool ColorTest::run()
 {
-	// auto printColor = [](const Color inColor) -> std::string {
-	// 	auto outColor = Output::getAnsiStyle(inColor);
-	// 	auto reset = Output::getAnsiStyle(Color::Reset);
-	// 	return fmt::format("{}chalet{}", outColor, reset);
-	// };
+	m_gray = Output::getAnsiStyle(Color::BrightBlack);
+	m_reset = Output::getAnsiStyle(Color::Reset);
+	m_white = Output::getAnsiStyle(Color::BrightWhiteBold);
+	m_separator = fmt::format("{}{}{}\n", m_gray, kSeparator, m_reset);
 
-	// printColor(Color::Reset);
+	std::cout << fmt::format("{esc}[2J{esc}[1;1H", fmt::arg("esc", kEsc));
 
-	// using ColorIterator = EnumIterator<Color, Color::Black, Color::White>;
-	// using BrightColorIterator = EnumIterator<Color, Color::BrightBlack, Color::BrightWhite>;
-	// using BrightBoldColorIterator = EnumIterator<Color, Color::BrightBlackBold, Color::BrightWhiteBold>;
+	printChaletColorThemes();
+	printTerminalCapabilities();
 
-	// StringList lines;
-	// for (auto color : ColorIterator())
-	// {
-	// 	std::string newLine = printColor(color);
-	// 	lines.emplace_back(std::move(newLine));
-	// }
+	std::cout << m_separator << std::endl;
 
-	// int i = 0;
-	// for (auto color : BrightColorIterator())
-	// {
-	// 	lines[i] += printColor(color);
-	// 	++i;
-	// }
+	return true;
+}
 
-	// i = 0;
-	// for (auto color : BrightBoldColorIterator())
-	// {
-	// 	lines[i] += printColor(color);
-	// 	++i;
-	// }
-
-	// std::cout << String::join(lines, '\n') << std::endl;
-
-	// std::cout << std::endl;
-
-	const auto gray = Output::getAnsiStyle(Color::BrightBlack);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
-	const auto separator = fmt::format("{}{}{}\n", gray, std::string(64, '-'), reset);
-	std::cout << separator;
-
-#if defined(CHALET_WIN32)
-	char esc = '\x1b';
-#else
-	char esc = '\033';
-#endif
+/*****************************************************************************/
+void ColorTest::printTerminalCapabilities()
+{
+	std::cout << m_separator << std::string(22, ' ') << "Terminal Capabilities\n"
+			  << m_separator;
 
 	std::unordered_map<int, std::string> descriptions{
-		{ 7, "inverted" },
-		{ 1, "bold" },
 		{ 0, "normal" },
+		{ 1, "bold" },
 		{ 2, "dim" },
 		{ 3, "italic" },
 		{ 4, "underlined" },
-		{ 9, "strikethrough" },
 		{ 5, "blink" },
+		{ 7, "inverted" },
+		{ 9, "strikethrough" },
 	};
 
 	for (int attr : { 7, 1, 0, 2, 3, 4, 9, 5 })
@@ -81,72 +66,75 @@ bool ColorTest::run()
 		for (int clfg : { 30, 90, 37, 97, 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 })
 		{
 			std::cout << fmt::format("{esc}[{attr};{clfg}m {clfg} {esc}[0m",
-				FMT_ARG(esc),
+				fmt::arg("esc", kEsc),
 				FMT_ARG(attr),
 				FMT_ARG(clfg));
 		}
 		if (descriptions.find(attr) != descriptions.end())
 		{
-			std::cout << fmt::format("{} - {}({}) {}\n", gray, reset, attr, descriptions.at(attr));
+			std::cout << fmt::format("{} - {}({}) {}\n", m_gray, m_reset, attr, descriptions.at(attr));
 		}
 		else
 		{
-			std::cout << reset << '\n';
+			std::cout << m_reset << '\n';
 		}
 	}
 
-	std::cout << separator;
+	std::cout << m_separator;
 
 	{
 		int attr = 7;
 		for (int clfg : { 30, 37, 33, 31, 35, 34, 36, 32 })
 		{
 			std::cout << fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
-				FMT_ARG(esc),
+				fmt::arg("esc", kEsc),
 				FMT_ARG(attr),
 				FMT_ARG(clfg));
 		}
-		std::cout << reset << fmt::format("{} - {}normal\n", gray, reset);
+		std::cout << fmt::format("{} - {}(3x) normal\n", m_gray, m_reset);
 
 		for (int clfg : { 90, 97, 93, 91, 95, 94, 96, 92 })
 		{
 			std::cout << fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
-				FMT_ARG(esc),
+				fmt::arg("esc", kEsc),
 				FMT_ARG(attr),
 				FMT_ARG(clfg));
 		}
-		std::cout << reset << fmt::format("{} - {}bright\n", gray, reset);
+		std::cout << fmt::format("{} - {}(9x) bright\n", m_gray, m_reset);
 	}
+}
 
+/*****************************************************************************/
+void ColorTest::printChaletColorThemes()
+{
 	auto currentTheme = Output::theme();
 	auto themes = ColorTheme::getAllThemes();
 	if (currentTheme.preset().empty())
 		themes.push_back(std::move(currentTheme));
 
-	std::cout << separator << std::string(23, ' ') << "Chalet Color Themes\n";
+	std::cout << m_separator << std::string(23, ' ') << "Chalet Color Themes\n";
 
 	for (const auto& theme : themes)
 	{
-		std::string output = separator;
-		std::string name = theme.preset().empty() ? "Current Theme" : theme.preset();
-		output += fmt::format("{}:\n\n", name);
-		output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){reset}\n",
+		std::string output = m_separator;
+		std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
+		output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::\n\n",
+			FMT_ARG(m_gray),
+			FMT_ARG(m_white),
+			FMT_ARG(name));
+		output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){m_reset}\n",
 			fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
 			fmt::arg("info", Output::getAnsiStyle(theme.info)),
-			FMT_ARG(reset));
-		output += fmt::format("{}{}  theme.error{}\n", Output::getAnsiStyle(theme.error), Unicode::heavyBallotX(), reset);
-		output += fmt::format("{}{}  theme.warning{}\n", Output::getAnsiStyle(theme.warning), Unicode::warning(), reset);
-		output += fmt::format("{}{}  theme.success{}\n", Output::getAnsiStyle(theme.success), Unicode::heavyCheckmark(), reset);
-		output += fmt::format("{}{}  theme.note{}\n", Output::getAnsiStyle(theme.note), Unicode::diamond(), reset);
-		output += fmt::format("{}{}  theme.header{}\n", Output::getAnsiStyle(theme.header), Unicode::triangle(), reset);
-		output += fmt::format("   [1/1] {}theme.build{}\n", Output::getAnsiStyle(theme.build), reset);
-		output += fmt::format("   [1/1] {}theme.assembly{}\n\n", Output::getAnsiStyle(theme.assembly), reset);
+			FMT_ARG(m_reset));
+		output += fmt::format("{}{}  theme.header{}\n", Output::getAnsiStyle(theme.header), Unicode::triangle(), m_reset);
+		output += fmt::format("   [1/1] {}theme.build{}\n", Output::getAnsiStyle(theme.build), m_reset);
+		output += fmt::format("   [1/1] {}theme.assembly{}\n", Output::getAnsiStyle(theme.assembly), m_reset);
+		output += fmt::format("{}{}  theme.success{}\n", Output::getAnsiStyle(theme.success), Unicode::heavyCheckmark(), m_reset);
+		output += fmt::format("{}{}  theme.error{}\n", Output::getAnsiStyle(theme.error), Unicode::heavyBallotX(), m_reset);
+		output += fmt::format("{}{}  theme.warning{}\n", Output::getAnsiStyle(theme.warning), Unicode::warning(), m_reset);
+		output += fmt::format("{}{}  theme.note{}\n", Output::getAnsiStyle(theme.note), Unicode::diamond(), m_reset);
 
 		std::cout << output;
 	}
-
-	std::cout << separator << std::endl;
-
-	return true;
 }
 }

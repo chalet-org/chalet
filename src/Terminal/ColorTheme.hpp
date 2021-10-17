@@ -27,6 +27,7 @@ struct ColorTheme
 	static StringList getJsonColors();
 	static StringList getKeys();
 	static const std::string& defaultPresetName();
+	static const std::string& lastPresetName();
 	static bool isValidPreset(const std::string& inPresetName);
 	static std::vector<ColorTheme> getAllThemes();
 

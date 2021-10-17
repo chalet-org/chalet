@@ -10,9 +10,23 @@ namespace chalet
 {
 struct ColorTest
 {
-	ColorTest() = default;
+	ColorTest();
 
 	bool run();
+
+private:
+	void printTerminalCapabilities();
+	void printChaletColorThemes();
+
+	const char kEsc;
+	const std::size_t kWidth;
+
+	const std::string kSeparator;
+
+	std::string m_gray;
+	std::string m_reset;
+	std::string m_white;
+	std::string m_separator;
 };
 }
 

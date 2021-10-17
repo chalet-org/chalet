@@ -23,6 +23,8 @@ private:
 	bool serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme, const bool inGlobal = false);
 
 	const CommandLineInputs& m_inputs;
+
+	bool m_updateTheme = false;
 };
 }
 
