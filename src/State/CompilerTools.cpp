@@ -370,16 +370,19 @@ bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 		}
 	}
 
-	const std::string kKeyVersion{ "version" };
-	if (toolchain.contains(kKeyVersion))
+	if (m_inputs.toolchainPreference().type != ToolchainType::MSVC)
 	{
-		std::string versionString = m_compilerCpp.version.empty() ? m_compilerC.version : m_compilerCpp.version;
-		versionString = versionString.substr(0, versionString.find_first_not_of("0123456789."));
-
-		auto& version = toolchain.at(kKeyVersion);
-		if (version.is_string() && version.get<std::string>() != versionString)
+		const std::string kKeyVersion{ "version" };
+		if (toolchain.contains(kKeyVersion))
 		{
-			m_version = versionString;
+			std::string versionString = m_compilerCpp.version.empty() ? m_compilerC.version : m_compilerCpp.version;
+			versionString = versionString.substr(0, versionString.find_first_not_of("0123456789."));
+
+			auto& version = toolchain.at(kKeyVersion);
+			if (version.is_string() && version.get<std::string>() != versionString)
+			{
+				m_version = versionString;
+			}
 			toolchain[kKeyVersion] = std::move(versionString);
 			inConfigJson.setDirty(true);
 		}
