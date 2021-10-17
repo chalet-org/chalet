@@ -28,6 +28,7 @@ struct ColorTheme
 	static StringList getKeys();
 	static const std::string& defaultPresetName();
 	static const std::string& lastPresetName();
+	static const StringList& presets();
 	static bool isValidPreset(const std::string& inPresetName);
 	static std::vector<ColorTheme> getAllThemes();
 

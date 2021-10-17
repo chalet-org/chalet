@@ -159,6 +159,11 @@ const std::string& ColorTheme::lastPresetName()
 	return kPresetNames.back();
 }
 
+const StringList& ColorTheme::presets()
+{
+	return kPresetNames;
+}
+
 /*****************************************************************************/
 bool ColorTheme::isValidPreset(const std::string& inPresetName)
 {

@@ -595,6 +595,7 @@ Json Schema::getSettingsJson()
 			}
 		]
 	})json"_ojson;
+	ret[kProperties][kTheme][kAnyOf][0][kEnum] = ColorTheme::presets();
 	ret[kProperties][kTheme][kAnyOf][1][kProperties] = Json::object();
 
 	Json themeRef = Json::object();

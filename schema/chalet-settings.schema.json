@@ -411,7 +411,12 @@
 					"type": "string",
 					"minLength": 1,
 					"enum": [
-						"default"
+						"default",
+						"palapa",
+						"highrise",
+						"teahouse",
+						"skilodge",
+						"temple"
 					],
 					"default": "default"
 				},
