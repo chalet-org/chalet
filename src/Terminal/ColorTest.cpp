@@ -74,7 +74,7 @@ bool ColorTest::run()
 				FMT_ARG(attr),
 				FMT_ARG(clfg));
 		}
-		std::cout << '\n';
+		std::cout << reset << '\n';
 	}
 
 	auto themes = ColorTheme::getAllThemes();
