@@ -412,11 +412,18 @@
 					"minLength": 1,
 					"enum": [
 						"default",
+						"none",
 						"palapa",
 						"highrise",
 						"teahouse",
 						"skilodge",
-						"temple"
+						"temple",
+						"bungalow",
+						"chattel",
+						"monastery",
+						"longhouse",
+						"greenhouse",
+						"observatory"
 					],
 					"default": "default"
 				},

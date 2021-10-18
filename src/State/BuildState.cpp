@@ -63,6 +63,7 @@ bool BuildState::initialize()
 	// calls enforceArchitectureInPath 2nd time
 	makePathVariable();
 
+	makeCompilerDiagnosticsVariables();
 	makeLibraryPathVariables();
 
 	return true;
@@ -447,11 +448,35 @@ bool BuildState::makePathVariable()
 }
 
 /*****************************************************************************/
-void BuildState::makeLibraryPathVariables()
+void BuildState::makeCompilerDiagnosticsVariables()
 {
+	// Save the current environment to a file
+	// std::system("printenv > all_variables.txt");
+
 	Environment::set("CLICOLOR_FORCE", "1");
 	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
 
+	{
+		std::string gccColors;
+		const auto& theme = Output::theme();
+		auto error = Output::getAnsiStyleRaw(theme.error);
+		gccColors += fmt::format("error={}:", !error.empty() ? error : "01;31");
+		auto warning = Output::getAnsiStyleRaw(theme.warning);
+		gccColors += fmt::format("warning={}:", !warning.empty() ? warning : "01;33");
+		auto note = Output::getAnsiStyleRaw(theme.note);
+		gccColors += fmt::format("note={}:", !note.empty() ? note : "01;36");
+		auto caret = Output::getAnsiStyleRaw(theme.success);
+		gccColors += fmt::format("caret={}:", !caret.empty() ? caret : "01;32");
+		auto locus = Output::getAnsiStyleRaw(theme.build);
+		gccColors += fmt::format("locus={}:", !locus.empty() ? locus : "00;34");
+		gccColors += "quote=01";
+		Environment::set("GCC_COLORS", gccColors);
+	}
+}
+
+/*****************************************************************************/
+void BuildState::makeLibraryPathVariables()
+{
 #if defined(CHALET_LINUX) || defined(CHALET_MACOS)
 	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
 

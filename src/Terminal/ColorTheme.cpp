@@ -91,11 +91,18 @@ OrderedDictionary<Color> kThemeMap{
 
 StringList kPresetNames{
 	"default",
+	"none",
 	"palapa",
 	"highrise",
 	"teahouse",
 	"skilodge",
-	"temple"
+	"temple",
+	"bungalow",
+	"chattel",
+	"monastery",
+	"longhouse",
+	"greenhouse",
+	"observatory"
 };
 }
 
@@ -302,11 +309,24 @@ void ColorTheme::makePreset(const std::string& inValue)
 		error = Color::BrightRedBold;
 		warning = Color::BrightYellowBold;
 		success = Color::BrightGreenBold;
-		note = Color::BrightMagentaBold;
+		note = Color::BrightCyanBold;
 		flair = Color::BrightBlack;
 		header = Color::BrightYellowBold;
 		build = Color::BrightBlue;
 		assembly = Color::BrightMagenta;
+	}
+	// none
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::None;
+		error = Color::None;
+		warning = Color::None;
+		success = Color::None;
+		note = Color::None;
+		flair = Color::None;
+		header = Color::None;
+		build = Color::None;
+		assembly = Color::None;
 	}
 	// palapa
 	else if (String::equals(kPresetNames.at(++i), inValue))
@@ -372,6 +392,84 @@ void ColorTheme::makePreset(const std::string& inValue)
 		header = Color::BrightCyanBold;
 		build = Color::BrightRed;
 		assembly = Color::BrightYellow;
+	}
+	// bungalow
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::BrightRedBold;
+		warning = Color::BrightYellowBold;
+		success = Color::BrightGreenBold;
+		note = Color::BrightCyanBold;
+		flair = Color::BrightBlack;
+		header = Color::BrightMagentaBold;
+		build = Color::BrightYellow;
+		assembly = Color::BrightBlue;
+	}
+	// chattel
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::BrightMagentaBold;
+		warning = Color::BrightYellowBold;
+		success = Color::BrightGreenBold;
+		note = Color::BrightBlueBold;
+		flair = Color::BrightBlack;
+		header = Color::BrightRedBold;
+		build = Color::Yellow;
+		assembly = Color::BrightWhite;
+	}
+	// monastery
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::BrightRedBold;
+		warning = Color::YellowBold;
+		success = Color::BrightYellowBold;
+		note = Color::BrightCyanBold;
+		flair = Color::BrightGreenDim;
+		header = Color::BrightWhiteBold;
+		build = Color::White;
+		assembly = Color::BrightBlack;
+	}
+	// longhouse
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::RedBold;
+		warning = Color::YellowBold;
+		success = Color::BrightGreenBold;
+		note = Color::BrightBlueBold;
+		flair = Color::BrightBlack;
+		header = Color::WhiteBold;
+		build = Color::BrightBlack;
+		assembly = Color::Green;
+	}
+	// greenhouse
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::BrightRedBold;
+		warning = Color::BrightYellowBold;
+		success = Color::BrightGreenBold;
+		note = Color::BrightBlueBold;
+		flair = Color::BrightBlack;
+		header = Color::BrightMagentaBold;
+		build = Color::BrightGreen;
+		assembly = Color::Green;
+	}
+	// observatory
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::BrightRedBold;
+		warning = Color::BrightYellowBold;
+		success = Color::BrightWhiteBold;
+		note = Color::BrightCyanBold;
+		flair = Color::BrightBlack;
+		header = Color::BrightMagentaBold;
+		build = Color::BrightBlue;
+		assembly = Color::Blue;
 	}
 }
 

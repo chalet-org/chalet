@@ -11,6 +11,7 @@ namespace chalet
 enum class Color : ushort
 {
 	Reset = 0,
+	None = 1, // explicit none
 	//
 	Black = 30,
 	Red = 31,

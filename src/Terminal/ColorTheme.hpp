@@ -12,16 +12,16 @@ namespace chalet
 {
 struct ColorTheme
 {
-	Color info = Color::Reset;
-	Color error = Color::Reset;
-	Color warning = Color::Reset;
-	Color success = Color::Reset;
-	Color note = Color::Reset;
+	Color info = Color::None;
+	Color error = Color::None;
+	Color warning = Color::None;
+	Color success = Color::None;
+	Color note = Color::None;
 	//
-	Color flair = Color::Reset;
-	Color header = Color::Reset;
-	Color build = Color::Reset;
-	Color assembly = Color::Reset;
+	Color flair = Color::None;
+	Color header = Color::None;
+	Color build = Color::None;
+	Color assembly = Color::None;
 
 	static std::string getStringFromColor(const Color inColor);
 	static StringList getJsonColors();

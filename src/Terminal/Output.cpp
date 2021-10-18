@@ -221,19 +221,18 @@ bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefa
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inColor)
 {
-	const auto esc = getEscapeChar();
-	if (inColor == Color::Reset)
-	{
+	if (inColor == Color::None)
+		return std::string();
+
 #if defined(CHALET_WIN32)
-		if (Environment::isCommandPromptOrPowerShell())
-		{
-			if (!ansiColorsSupportedInComSpec())
-				return std::string();
-		}
+	bool isCmdPromptLike = Environment::isCommandPromptOrPowerShell();
+	if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
+		return std::string();
 #endif
 
-		return fmt::format("{esc}[0m", FMT_ARG(esc));
-	}
+	const auto esc = getEscapeChar();
+	if (inColor == Color::Reset)
+		return fmt::format("{}[0m", esc);
 
 	using ColorType = std::underlying_type_t<Color>;
 	ColorType color = static_cast<ColorType>(inColor);
@@ -242,16 +241,35 @@ std::string Output::getAnsiStyle(const Color inColor)
 		color -= (style * static_cast<ColorType>(100));
 
 #if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
-	{
-		if (!ansiColorsSupportedInComSpec())
-			return std::string();
-
-		return fmt::format("{esc}[{style}m{esc}[{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
-	}
+	if (isCmdPromptLike)
+		return fmt::format("{}[{}m{}[{}m", esc, style, esc, color);
 #endif
 
-	return fmt::format("{esc}[{style};{color}m", FMT_ARG(esc), FMT_ARG(style), FMT_ARG(color));
+	return fmt::format("{}[{};{}m", esc, style, color);
+}
+
+/*****************************************************************************/
+std::string Output::getAnsiStyleRaw(const Color inColor)
+{
+	if (inColor == Color::None)
+		return std::string();
+
+#if defined(CHALET_WIN32)
+	bool isCmdPromptLike = Environment::isCommandPromptOrPowerShell();
+	if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
+		return std::string();
+#endif
+
+	if (inColor == Color::Reset)
+		return "0";
+
+	using ColorType = std::underlying_type_t<Color>;
+	ColorType color = static_cast<ColorType>(inColor);
+	ColorType style = color / static_cast<ColorType>(100);
+	if (color > 100)
+		color -= (style * static_cast<ColorType>(100));
+
+	return fmt::format("{};{}", style, color);
 }
 
 /*****************************************************************************/
@@ -275,7 +293,7 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 	{
 		const auto color = getAnsiStyle(inColor);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << fmt::format("{color}{inSymbol}  {inMessage}", FMT_ARG(color), FMT_ARG(inSymbol), FMT_ARG(inMessage)) << reset << std::endl;
+		std::cout << fmt::format("{}{}  {}", color, inSymbol, inMessage) << reset << std::endl;
 	}
 }
 

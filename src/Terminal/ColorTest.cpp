@@ -39,7 +39,7 @@ bool ColorTest::run()
 	printChaletColorThemes();
 	printTerminalCapabilities();
 
-	std::cout << m_separator << std::endl;
+	std::cout << m_separator << std::flush;
 
 	return true;
 }
@@ -109,6 +109,7 @@ void ColorTest::printChaletColorThemes()
 {
 	auto currentTheme = Output::theme();
 	auto themes = ColorTheme::getAllThemes();
+	std::size_t totalThemes = themes.size();
 	if (currentTheme.preset().empty())
 		themes.push_back(std::move(currentTheme));
 
@@ -118,10 +119,11 @@ void ColorTest::printChaletColorThemes()
 	{
 		std::string output = m_separator;
 		std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
-		output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::\n\n",
+		output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::{m_reset}\n\n",
 			FMT_ARG(m_gray),
 			FMT_ARG(m_white),
-			FMT_ARG(name));
+			FMT_ARG(name),
+			FMT_ARG(m_reset));
 		output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){m_reset}\n",
 			fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
 			fmt::arg("info", Output::getAnsiStyle(theme.info)),
@@ -136,5 +138,7 @@ void ColorTest::printChaletColorThemes()
 
 		std::cout << output;
 	}
+
+	std::cout << m_separator << fmt::format("Total built-in themes: {}\n", totalThemes);
 }
 }

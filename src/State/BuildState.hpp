@@ -65,6 +65,7 @@ private:
 	bool validateState();
 
 	bool makePathVariable();
+	void makeCompilerDiagnosticsVariables();
 	void makeLibraryPathVariables();
 	void enforceArchitectureInPath();
 	void enforceArchitectureInPath(std::string& outPathVariable);
