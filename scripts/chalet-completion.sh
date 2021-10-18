@@ -19,6 +19,9 @@ _chalet_completions()
 	query)
 		COMPREPLY=($(compgen -W "$(chalet query list-names)" -- $cur))
 		;;
+	theme)
+		COMPREPLY=($(compgen -W "$(chalet query theme-names)" -- $cur))
+		;;
 	get|getkeys|set|unset)
 		_CMDS[COMP_CWORD-1]=getkeys
 		_CMDS[COMP_CWORD]="${cur//\\\\./\\.}"

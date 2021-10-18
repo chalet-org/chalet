@@ -24,6 +24,8 @@ enum class QueryOption : ushort
 	Configuration,
 	Architecture,
 	RunTarget,
+	//
+	ThemeNames,
 };
 }
 

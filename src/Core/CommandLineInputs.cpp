@@ -26,6 +26,7 @@ const Dictionary<IdeType> kIdeTypes{
 
 const Dictionary<QueryOption> kQueryOptions{
 	{ "list-names", QueryOption::QueryNames },
+	{ "theme-names", QueryOption::ThemeNames},
 	{ "commands", QueryOption::Commands },
 	{ "configurations", QueryOption::Configurations },
 	{ "toolchain-presets", QueryOption::ToolchainPresets },

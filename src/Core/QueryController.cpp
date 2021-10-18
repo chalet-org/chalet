@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Settings/SettingsManager.hpp"
 #include "State/StatePrototype.hpp"
+#include "Terminal/ColorTheme.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -52,6 +53,10 @@ bool QueryController::printListOfRequestedType()
 
 		case QueryOption::QueryNames:
 			output = m_inputs.getCliQueryOptions();
+			break;
+
+		case QueryOption::ThemeNames:
+			output = ColorTheme::presets();
 			break;
 
 		case QueryOption::Architecture:

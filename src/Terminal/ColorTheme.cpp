@@ -344,8 +344,8 @@ void ColorTheme::makePreset(const std::string& inValue)
 		note = Color::BrightYellowBold;
 		flair = Color::YellowDim;
 		header = Color::YellowBold;
-		build = Color::Cyan;
-		assembly = Color::BrightGreen;
+		build = Color::BrightGreen;
+		assembly = Color::Cyan;
 	}
 	// skilodge
 	else if (String::equals(kPresetNames.at(++i), inValue))
