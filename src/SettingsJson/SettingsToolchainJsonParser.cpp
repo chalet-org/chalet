@@ -355,7 +355,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		{
 			auto path = Commands::which(inKey);
 			bool res = !path.empty();
-			if (res || !inNode.at(inKey).is_string() || inNode.at(inKey).get<std::string>().empty())
+			if (res || !inNode[inKey].is_string() || inNode.at(inKey).get<std::string>().empty())
 			{
 				inNode[inKey] = std::move(path);
 				m_jsonFile.setDirty(true);
