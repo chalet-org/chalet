@@ -18,10 +18,18 @@ namespace chalet
 /*****************************************************************************/
 namespace
 {
+
+enum class CommandPoolErrorCode : ushort
+{
+	None,
+	Aborted,
+	BuildFailure,
+	BuildException,
+};
 std::mutex s_mutex;
 std::atomic<uint> s_compileIndex = 0;
-bool s_canceled = false;
-std::function<void()> s_shutdownHandler;
+std::atomic<CommandPoolErrorCode> s_errorCode = CommandPoolErrorCode::None;
+std::function<bool()> s_shutdownHandler;
 
 /*****************************************************************************/
 bool printCommand(std::string prefix, std::string text, uint total = 0)
@@ -73,7 +81,10 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 	options.onStdErr = onOutput;
 
 	if (Process::run(command, options) != EXIT_SUCCESS)
+	{
+		s_errorCode = CommandPoolErrorCode::BuildFailure;
 		return false;
+	}
 
 	return true;
 }
@@ -105,6 +116,7 @@ bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 	if (!errorOutput.empty())
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
+		s_errorCode = CommandPoolErrorCode::BuildFailure;
 		String::replaceAll(errorOutput, "\n", "\r\n");
 		auto error = Output::getAnsiStyle(Output::theme().error);
 		auto reset = Output::getAnsiStyle(Color::Reset);
@@ -142,6 +154,7 @@ bool executeCommand(StringList command, std::string sourceFile)
 	if (!errorOutput.empty())
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
+		s_errorCode = CommandPoolErrorCode::BuildFailure;
 		auto error = Output::getAnsiStyle(Output::theme().error);
 		auto reset = Output::getAnsiStyle(Color::Reset);
 		auto cmdString = String::join(command);
@@ -155,16 +168,14 @@ bool executeCommand(StringList command, std::string sourceFile)
 /*****************************************************************************/
 void signalHandler(int inSignal)
 {
-	if (s_canceled)
-		return;
-
-	if (inSignal == SIGTERM)
+	if (s_shutdownHandler())
 	{
-		// might result in a segfault, but if a SIGTERM has been sent, we really want to halt anyway
-		Process::haltAll(SigNum::Terminate);
+		if (inSignal == SIGTERM)
+		{
+			// might result in a segfault, but if a SIGTERM has been sent, we really want to halt anyway
+			Process::haltAll(SigNum::Terminate);
+		}
 	}
-
-	s_shutdownHandler();
 }
 }
 
@@ -187,18 +198,17 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	::signal(SIGTERM, signalHandler);
 	::signal(SIGABRT, signalHandler);
 
-	s_canceled = false;
+	m_exceptionThrown.clear();
+	s_errorCode = CommandPoolErrorCode::None;
+	m_quiet = quiet;
 
-	s_shutdownHandler = [this]() {
+	s_shutdownHandler = [this]() -> bool {
+		if (s_errorCode != CommandPoolErrorCode::None)
+			return false;
+
 		this->m_threadPool.stop();
-		s_canceled = true;
-	};
-
-	auto onError = [quiet = quiet]() -> bool {
-		Output::setQuietNonBuild(quiet);
-		// Diagnostic::error("Build error...");
-		Output::lineBreak();
-		return false;
+		s_errorCode = CommandPoolErrorCode::Aborted;
+		return true;
 	};
 
 	Output::setQuietNonBuild(false);
@@ -254,7 +264,6 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		}
 	}
 
-	std::string exceptionThrown;
 	for (auto& tr : threadResults)
 	{
 		CHALET_TRY
@@ -266,38 +275,24 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		}
 		CHALET_CATCH(const std::exception& err)
 		{
-			if (!s_canceled && exceptionThrown.empty())
+			if (s_errorCode != CommandPoolErrorCode::None && m_exceptionThrown.empty())
 			{
 				signalHandler(SIGTERM);
-				if (!String::equals("build error", err.what()))
-					exceptionThrown = fmt::format("exception '{}'", err.what());
+				if (String::equals("build error", err.what()))
+				{}
 				else
-					exceptionThrown = "0";
-
-				s_canceled = true;
+				{
+					m_exceptionThrown = fmt::format("exception '{}'", err.what());
+					s_errorCode = CommandPoolErrorCode::BuildException;
+				}
 			}
 		}
 	}
 
-	if (s_canceled)
+	if (s_errorCode != CommandPoolErrorCode::None)
 	{
 		// m_threadPool.stop();
 		threadResults.clear();
-
-		if (!exceptionThrown.empty())
-		{
-			if (!String::equals("0", exceptionThrown))
-			{
-				Output::lineBreak();
-				Output::msgCommandPoolError(exceptionThrown);
-				Output::msgCommandPoolError("Terminated running processes.");
-			}
-		}
-		else
-		{
-			Output::lineBreak();
-			Output::msgCommandPoolError("Aborted by user.");
-		}
 
 		return onError();
 	}
@@ -317,7 +312,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		if (!executeCommandFunc(post.command, post.output))
 			return onError();
 
-		if (s_canceled)
+		if (s_errorCode != CommandPoolErrorCode::None)
 		{
 			threadResults.clear();
 			return onError();
@@ -332,7 +327,25 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	Output::setQuietNonBuild(quiet);
 	// Output::setShowCommandOverride(true);
 
-	const bool completed = !s_canceled;
-	return completed;
+	return true;
+}
+
+/*****************************************************************************/
+bool CommandPool::onError() const
+{
+	if (s_errorCode == CommandPoolErrorCode::Aborted)
+	{
+		Output::msgCommandPoolError("Aborted by user.");
+	}
+	else if (s_errorCode == CommandPoolErrorCode::BuildException)
+	{
+		Output::msgCommandPoolError(m_exceptionThrown);
+		std::cout << "Terminated running processes." << std::endl;
+	}
+
+	Output::setQuietNonBuild(m_quiet);
+	// Diagnostic::error("Build error...");
+	Output::lineBreak();
+	return false;
 }
 }

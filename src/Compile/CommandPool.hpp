@@ -43,7 +43,12 @@ struct CommandPool
 	bool run(const Target& inTarget, const Settings& inSettings) const;
 
 private:
+	bool onError() const;
+
 	mutable ThreadPool m_threadPool;
+
+	mutable std::string m_exceptionThrown;
+	mutable bool m_quiet = false;
 };
 }
 

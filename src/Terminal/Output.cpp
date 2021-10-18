@@ -491,7 +491,7 @@ void Output::msgCommandPoolError(const std::string& inMessage)
 	{
 		const auto colorError = getAnsiStyle(sTheme.error);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << fmt::format("   {}Error: {}{}", colorError, reset, inMessage) << std::endl;
+		std::cout << fmt::format("{}FAILED: {}{}", colorError, reset, inMessage) << std::endl;
 	}
 }
 
