@@ -601,11 +601,11 @@ void CompilerTools::setStrategy(const std::string& inValue) noexcept
 	{
 		m_strategy = StrategyType::Makefile;
 	}
-	else if (String::equals(inValue, "native-experimental"))
+	else if (String::equals("native-experimental", inValue))
 	{
 		m_strategy = StrategyType::Native;
 	}
-	else if (String::equals(inValue, "ninja"))
+	else if (String::equals("ninja", inValue))
 	{
 		m_strategy = StrategyType::Ninja;
 	}

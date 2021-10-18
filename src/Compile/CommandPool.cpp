@@ -282,7 +282,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 				{}
 				else
 				{
-					m_exceptionThrown = fmt::format("exception '{}'", err.what());
+					m_exceptionThrown = std::string(err.what());
 					s_errorCode = CommandPoolErrorCode::BuildException;
 				}
 			}
