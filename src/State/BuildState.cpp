@@ -456,6 +456,10 @@ void BuildState::makeCompilerDiagnosticsVariables()
 	Environment::set("CLICOLOR_FORCE", "1");
 	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
 
+	auto currentGccColors = Environment::getAsString("GCC_COLORS");
+	if (!currentGccColors.empty())
+		return;
+
 	bool usesGcc = false;
 	for (auto& target : targets)
 	{

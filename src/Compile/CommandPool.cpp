@@ -63,7 +63,7 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 		if (String::startsWith(srcFile, inData))
 			return;
 
-		std::cout << std::move(inData) << std::flush;
+		std::cout << inData << std::flush;
 	};
 
 	ProcessOptions options;
@@ -86,7 +86,7 @@ bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 	ProcessOptions options;
 	static auto onStdOut = [](std::string inData) {
 		String::replaceAll(inData, "\n", "\r\n");
-		std::cout << std::move(inData) << std::flush;
+		std::cout << inData << std::flush;
 	};
 
 	std::string errorOutput;
@@ -98,17 +98,22 @@ bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 	options.onStdOut = onStdOut;
 	options.onStdErr = onStdErr;
 
+	bool result = true;
 	if (Process::run(command, options) != EXIT_SUCCESS)
-		return false;
+		result = false;
 
 	if (!errorOutput.empty())
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
 		String::replaceAll(errorOutput, "\n", "\r\n");
-		std::cout << errorOutput << std::flush;
+		auto error = Output::getAnsiStyle(Output::theme().error);
+		auto reset = Output::getAnsiStyle(Color::Reset);
+		auto cmdString = String::join(command);
+
+		std::cout << fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString) << errorOutput << std::flush;
 	}
 
-	return true;
+	return result;
 }
 
 /*****************************************************************************/
@@ -117,13 +122,34 @@ bool executeCommand(StringList command, std::string sourceFile)
 	UNUSED(sourceFile);
 
 	ProcessOptions options;
-	options.stdoutOption = PipeOption::StdOut;
-	options.stderrOption = PipeOption::StdErr;
+	static auto onStdOut = [](std::string inData) {
+		std::cout << inData << std::flush;
+	};
 
+	std::string errorOutput;
+	auto onStdErr = [&errorOutput](std::string inData) {
+		errorOutput += std::move(inData);
+	};
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdOut = onStdOut;
+	options.onStdErr = onStdErr;
+
+	bool result = true;
 	if (Process::run(command, options) != EXIT_SUCCESS)
-		return false;
+		result = false;
 
-	return true;
+	if (!errorOutput.empty())
+	{
+		std::lock_guard<std::mutex> lock(s_mutex);
+		auto error = Output::getAnsiStyle(Output::theme().error);
+		auto reset = Output::getAnsiStyle(Color::Reset);
+		auto cmdString = String::join(command);
+
+		std::cout << fmt::format("{}FAILED: {}{}\n", error, reset, cmdString) << errorOutput << std::flush;
+	}
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -243,7 +269,11 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 			if (!s_canceled && exceptionThrown.empty())
 			{
 				signalHandler(SIGTERM);
-				exceptionThrown = fmt::format("exception '{}'", err.what());
+				if (!String::equals("build error", err.what()))
+					exceptionThrown = fmt::format("exception '{}'", err.what());
+				else
+					exceptionThrown = "0";
+
 				s_canceled = true;
 			}
 		}
@@ -254,15 +284,18 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		// m_threadPool.stop();
 		threadResults.clear();
 
-		Output::lineBreak();
-
 		if (!exceptionThrown.empty())
 		{
-			Output::msgCommandPoolError(exceptionThrown);
-			Output::msgCommandPoolError("Terminated running processes.");
+			if (!String::equals("0", exceptionThrown))
+			{
+				Output::lineBreak();
+				Output::msgCommandPoolError(exceptionThrown);
+				Output::msgCommandPoolError("Terminated running processes.");
+			}
 		}
 		else
 		{
+			Output::lineBreak();
 			Output::msgCommandPoolError("Aborted by user.");
 		}
 
