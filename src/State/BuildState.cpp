@@ -456,6 +456,19 @@ void BuildState::makeCompilerDiagnosticsVariables()
 	Environment::set("CLICOLOR_FORCE", "1");
 	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
 
+	bool usesGcc = false;
+	for (auto& target : targets)
+	{
+		if (target->isProject())
+		{
+			auto& project = static_cast<SourceTarget&>(*target);
+			auto& config = toolchain.getConfig(project.language());
+			if (config.isGcc())
+				usesGcc = true;
+		}
+	}
+
+	if (usesGcc)
 	{
 		std::string gccColors;
 		const auto& theme = Output::theme();
@@ -469,6 +482,8 @@ void BuildState::makeCompilerDiagnosticsVariables()
 		gccColors += fmt::format("caret={}:", !caret.empty() ? caret : "01;32");
 		auto locus = Output::getAnsiStyleRaw(theme.build);
 		gccColors += fmt::format("locus={}:", !locus.empty() ? locus : "00;34");
+		// auto quote = Output::getAnsiStyleRaw(theme.assembly);
+		// gccColors += fmt::format("quote={}:", !quote.empty() ? quote : "01");
 		gccColors += "quote=01";
 		Environment::set("GCC_COLORS", gccColors);
 	}
