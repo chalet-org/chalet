@@ -351,11 +351,11 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	// }
 
 	auto whichAdd = [&](Json& inNode, const std::string& inKey) -> bool {
-		if (!inNode.contains(inKey) || !inNode[inKey].is_string() || inNode[inKey].get<std::string>().empty())
+		if (!inNode.contains(inKey) || !inNode.at(inKey).is_string() || inNode.at(inKey).get<std::string>().empty())
 		{
 			auto path = Commands::which(inKey);
 			bool res = !path.empty();
-			if (res)
+			if (res || inNode.at(inKey).get<std::string>().empty())
 			{
 				inNode[inKey] = std::move(path);
 				m_jsonFile.setDirty(true);
@@ -406,8 +406,8 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 	if (toolchain[kKeyStrategy].get<std::string>().empty())
 	{
-		auto make = toolchain[kKeyMake].get<std::string>();
-		auto ninja = toolchain[kKeyNinja].get<std::string>();
+		auto make = toolchain.at(kKeyMake).get<std::string>();
+		auto ninja = toolchain.at(kKeyNinja).get<std::string>();
 		bool notNative = preference.strategy != StrategyType::Native;
 
 		// Note: this is only for validation. it gets changed later
