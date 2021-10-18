@@ -36,14 +36,12 @@ jobs:
       CC: gcc-10
       CXX: g++-10
     steps:
-      - name: "Setup Ninja"
-        uses: ashutoshvarma/setup-ninja@master
       - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Get GCC 10"
         run: |
           sudo apt update
-          sudo apt install gcc-10 g++-10 libunwind-dev zip
+          sudo apt install gcc-10 g++-10 libunwind-dev zip ninja-build
       - name: "Fetch Dependencies"
         run: bash ./fetch_vendors.sh
         env:
@@ -81,8 +79,6 @@ jobs:
         with:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
           p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-      - name: "Setup Ninja"
-        uses: ashutoshvarma/setup-ninja@master
       - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Fetch Dependencies"
@@ -121,8 +117,6 @@ jobs:
     steps:
       - name: "Get MSVC Environment"
         uses: ilammy/msvc-dev-cmd@v1
-      - name: "Setup Ninja"
-        uses: ashutoshvarma/setup-ninja@master
       - name: "Checkout"
         uses: actions/checkout@v2
       - name: "Fetch Dependencies"
