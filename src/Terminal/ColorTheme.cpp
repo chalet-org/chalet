@@ -98,7 +98,7 @@ StringList kPresetNames{
 	"skilodge",
 	"temple",
 	"bungalow",
-	"chattel",
+	"cottage",
 	"monastery",
 	"longhouse",
 	"greenhouse",
@@ -406,7 +406,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		build = Color::BrightYellow;
 		assembly = Color::BrightBlue;
 	}
-	// chattel
+	// cottage
 	else if (String::equals(kPresetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
@@ -425,11 +425,11 @@ void ColorTheme::makePreset(const std::string& inValue)
 		info = Color::Reset;
 		error = Color::BrightRedBold;
 		warning = Color::YellowBold;
-		success = Color::BrightYellowBold;
-		note = Color::BrightCyanBold;
-		flair = Color::BrightGreenDim;
-		header = Color::BrightWhiteBold;
-		build = Color::White;
+		success = Color::BrightGreenBold;
+		note = Color::BrightBlueBold;
+		flair = Color::CyanDim;
+		header = Color::BrightYellowBold;
+		build = Color::BrightWhite;
 		assembly = Color::BrightBlack;
 	}
 	// longhouse
