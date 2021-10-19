@@ -49,7 +49,7 @@ void removeProcess(const RunningProcess& inProcess)
 
 #if defined(CHALET_WIN32)
 	if (state.procesess.empty())
-		OSTerminal::reset();
+		WindowsTerminal::reset();
 #endif
 }
 
@@ -69,7 +69,7 @@ void subProcessSignalHandler(int inSignal)
 	}
 
 #if defined(CHALET_WIN32)
-	OSTerminal::reset();
+	WindowsTerminal::reset();
 #endif
 }
 }
