@@ -90,7 +90,7 @@ bool CompileStrategyNinja::saveBuildFile() const
 }
 
 /*****************************************************************************/
-bool CompileStrategyNinja::buildProject(const SourceTarget& inProject) const
+bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 {
 	auto& ninjaExec = m_state.toolchain.ninja();
 	if (m_hashes.find(inProject.name()) == m_hashes.end())

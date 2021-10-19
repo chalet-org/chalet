@@ -29,6 +29,7 @@ bool endsWith(const StringList& inFind, const std::string& inString);
 bool onlyContainsCharacters(const std::string& inChars, const std::string& inString);
 std::string fromBoolean(const bool inValue) noexcept;
 void replaceAll(std::string& outString, const std::string_view inFrom, const std::string_view inTo);
+void replaceAll(std::string& outString, const char inFrom, const std::string_view inTo);
 void replaceAll(std::string& outString, const char inFrom, const char inTo);
 std::string toLowerCase(const std::string& inString);
 std::string toUpperCase(const std::string& inString);

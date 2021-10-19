@@ -59,12 +59,13 @@ bool AssemblyDumper::validate() const
 }
 
 /*****************************************************************************/
-bool AssemblyDumper::dumpProject(const std::string& inProjectName, const SourceOutputs& inOutputs, const bool inForced) const
+bool AssemblyDumper::dumpProject(const std::string& inProjectName, const SourceOutputs& inOutputs, const bool inForced)
 {
 	CommandPool::Target target;
 	target.list = getAsmCommands(inOutputs, inForced);
 
 	CommandPool::Settings settings;
+	settings.color = Output::theme().assembly;
 	settings.msvcCommand = false;
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
@@ -109,8 +110,6 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutpu
 			CommandPool::Cmd out;
 			out.output = asmFile;
 			out.command = getAsmGenerate(object, asmFile);
-			out.color = Output::theme().assembly;
-			out.symbol = " ";
 			ret.emplace_back(std::move(out));
 		}
 

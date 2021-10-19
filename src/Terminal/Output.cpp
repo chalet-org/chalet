@@ -70,17 +70,13 @@ std::string getCleanGitPath(const std::string inPath)
 }
 
 /*****************************************************************************/
-char getEscapeChar()
+constexpr char getEscapeChar()
 {
 #if defined(CHALET_WIN32)
 	return '\x1b';
 #else
 	return '\033';
 #endif
-	// if (Environment::isBash())
-	// 	return '\033';
-	// else
-	// 	return '\x1b';
 }
 }
 static ColorTheme sTheme;
@@ -279,11 +275,21 @@ std::string Output::getAnsiStyleForMakefile(const Color inColor)
 	return getAnsiStyle(inColor);
 #else
 	auto ret = getAnsiStyle(inColor);
-	std::string esc;
-	esc += getEscapeChar();
-	String::replaceAll(ret, esc, "\\033");
+	String::replaceAll(ret, getEscapeChar(), "\\033");
 	return ret;
 #endif
+}
+
+/*****************************************************************************/
+std::string Output::getAnsiStyleForceFormatting(const Color inColor, const Formatting inFormatting)
+{
+	using ColorType = std::underlying_type_t<Color>;
+	ColorType color = static_cast<ColorType>(inColor);
+	ColorType baseColor = color % static_cast<ColorType>(100);
+	ColorType style = static_cast<ColorType>(inFormatting);
+	color = style + baseColor;
+
+	return getAnsiStyle(static_cast<Color>(color));
 }
 
 /*****************************************************************************/

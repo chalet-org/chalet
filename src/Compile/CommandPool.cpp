@@ -18,7 +18,6 @@ namespace chalet
 /*****************************************************************************/
 namespace
 {
-
 enum class CommandPoolErrorCode : ushort
 {
 	None,
@@ -27,32 +26,19 @@ enum class CommandPoolErrorCode : ushort
 	BuildException,
 };
 std::mutex s_mutex;
-std::atomic<uint> s_compileIndex = 0;
+uint s_compileIndex = 0;
 std::atomic<CommandPoolErrorCode> s_errorCode = CommandPoolErrorCode::None;
 std::function<bool()> s_shutdownHandler;
 
 /*****************************************************************************/
-bool printCommand(std::string prefix, std::string text, uint total = 0)
+bool printCommand(std::string text)
 {
 	std::lock_guard<std::mutex> lock(s_mutex);
-	if (total > 0)
-	{
-		// auto indexStr = std::to_string(s_compileIndex);
-		uint index = s_compileIndex;
-		// const auto totalStr = std::to_string(total);
-		// while (indexStr.size() < totalStr.size())
-		// {
-		// 	indexStr = " " + indexStr;
-		// }
 
-		std::cout << fmt::format("{}  [{}/{}] {}", prefix, index, total, text) << std::endl;
-	}
-	else
-	{
-		std::cout << fmt::format("{}  {}", prefix, text) << std::endl;
-	}
+	String::replaceAll(text, '#', std::to_string(s_compileIndex));
+	std::cout << text << std::endl;
 
-	s_compileIndex++;
+	++s_compileIndex;
 
 	return true;
 }
@@ -96,7 +82,7 @@ bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 
 	ProcessOptions options;
 	static auto onStdOut = [](std::string inData) {
-		String::replaceAll(inData, "\n", "\r\n");
+		String::replaceAll(inData, '\n', "\r\n");
 		std::cout << inData << std::flush;
 	};
 
@@ -117,7 +103,7 @@ bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
 		s_errorCode = CommandPoolErrorCode::BuildFailure;
-		String::replaceAll(errorOutput, "\n", "\r\n");
+		String::replaceAll(errorOutput, '\n', "\r\n");
 		auto error = Output::getAnsiStyle(Output::theme().error);
 		auto reset = Output::getAnsiStyle(Color::Reset);
 		auto cmdString = String::join(command);
@@ -186,13 +172,13 @@ CommandPool::CommandPool(const std::size_t inThreads) :
 }
 
 /*****************************************************************************/
-bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
+bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 {
 	auto& list = inTarget.list;
 	auto& pre = inTarget.pre;
 	auto& post = inTarget.post;
 
-	auto&& [quiet, showCommmands, msvcCommand, renameAfterCommand] = inSettings;
+	auto&& [cmdColor, quiet, showCommmands, msvcCommand, renameAfterCommand] = inSettings;
 
 	::signal(SIGINT, signalHandler);
 	::signal(SIGTERM, signalHandler);
@@ -212,7 +198,6 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	};
 
 	Output::setQuietNonBuild(false);
-	// Output::setShowCommandOverride(false);
 
 	auto& executeCommandFunc = msvcCommand ?
 		  executeCommandMsvc :
@@ -227,19 +212,16 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	if (!post.command.empty())
 		++totalCompiles;
 
-	auto reset = Output::getAnsiStyle(Color::Reset);
+	m_reset = Output::getAnsiStyle(Color::Reset);
+	auto color = Output::getAnsiStyle(cmdColor);
 
 	// At the moment, this is only greater than 1 when compiling multiple PCHes for MacOS universal binaries
 	for (auto& it : pre)
 	{
 		if (!it.command.empty())
 		{
-			auto color = Output::getAnsiStyle(it.color);
-
-			if (!printCommand(
-					color + it.symbol + reset,
-					color + (showCommmands ? String::join(it.command) : it.output) + reset,
-					totalCompiles))
+			if (!printCommand(getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(it.command) : it.output)),
+					totalCompiles)))
 				return onError();
 
 			if (!executeCommandFunc(it.command, it.output))
@@ -252,13 +234,10 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	{
 		if (!it.command.empty())
 		{
-			auto color = Output::getAnsiStyle(it.color);
-
 			threadResults.emplace_back(m_threadPool.enqueue(
 				printCommand,
-				color + it.symbol + reset,
-				color + (showCommmands ? String::join(it.command) : it.output) + reset,
-				totalCompiles));
+				getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(it.command) : it.output)),
+					totalCompiles)));
 
 			threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.output));
 		}
@@ -301,12 +280,10 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 	{
 		// Output::lineBreak();
 
-		auto color = Output::getAnsiStyle(post.color);
+		// auto postColor = Output::getAnsiStyleForceFormatting(cmdColor, Formatting::Bold);
 
-		if (!printCommand(
-				color + post.symbol + reset,
-				color + post.label + ' ' + (showCommmands ? String::join(post.command) : post.output) + reset,
-				totalCompiles))
+		if (!printCommand(getPrintedText(fmt::format("{}{} {}", color, post.label, (showCommmands ? String::join(post.command) : post.output)),
+				totalCompiles)))
 			return onError();
 
 		if (!executeCommandFunc(post.command, post.output))
@@ -321,17 +298,22 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings) const
 		Output::lineBreak();
 	}
 
-	s_shutdownHandler = nullptr;
-	s_compileIndex = 0;
-
-	Output::setQuietNonBuild(quiet);
-	// Output::setShowCommandOverride(true);
+	cleanup();
 
 	return true;
 }
 
 /*****************************************************************************/
-bool CommandPool::onError() const
+std::string CommandPool::getPrintedText(std::string inText, uint inTotal)
+{
+	if (inTotal > 0)
+		return fmt::format("{}  [#/{}] {}{}", m_reset, inTotal, inText, m_reset);
+	else
+		return fmt::format("{}  {}{}", m_reset, inText, m_reset);
+}
+
+/*****************************************************************************/
+bool CommandPool::onError()
 {
 	if (s_errorCode == CommandPoolErrorCode::Aborted)
 	{
@@ -343,9 +325,21 @@ bool CommandPool::onError() const
 		std::cout << "Terminated running processes." << std::endl;
 	}
 
-	Output::setQuietNonBuild(m_quiet);
-	// Diagnostic::error("Build error...");
+	cleanup();
+
 	Output::lineBreak();
+
 	return false;
+}
+
+/*****************************************************************************/
+void CommandPool::cleanup()
+{
+	s_shutdownHandler = nullptr;
+	s_compileIndex = 0;
+
+	Output::setQuietNonBuild(m_quiet);
+
+	s_errorCode = CommandPoolErrorCode::None;
 }
 }

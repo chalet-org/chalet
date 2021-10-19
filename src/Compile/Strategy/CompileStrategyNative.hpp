@@ -17,12 +17,6 @@ namespace chalet
 {
 class CompileStrategyNative final : public ICompileStrategy
 {
-	struct CmdTemp
-	{
-		StringList command;
-		std::string sourceFile;
-	};
-
 public:
 	explicit CompileStrategyNative(BuildState& inState);
 
@@ -31,15 +25,15 @@ public:
 
 	virtual bool saveBuildFile() const final;
 	virtual bool doPostBuild() const final;
-	virtual bool buildProject(const SourceTarget& inProject) const final;
+	virtual bool buildProject(const SourceTarget& inProject) final;
 
 private:
 	CommandPool::CmdList getPchCommands(const std::string& pchTarget);
 	CommandPool::CmdList getCompileCommands(const SourceFileGroupList& inGroups);
 	CommandPool::Cmd getLinkCommand(const std::string& inTarget, const StringList& inObjects);
 
-	CmdTemp getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
-	CmdTemp getRcCompile(const std::string& source, const std::string& target) const;
+	StringList getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
+	StringList getRcCompile(const std::string& source, const std::string& target) const;
 
 	CommandPool m_commandPool;
 

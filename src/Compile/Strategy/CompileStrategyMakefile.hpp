@@ -20,7 +20,7 @@ struct CompileStrategyMakefile final : ICompileStrategy
 	virtual bool addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
 
 	virtual bool saveBuildFile() const final;
-	virtual bool buildProject(const SourceTarget& inProject) const final;
+	virtual bool buildProject(const SourceTarget& inProject) final;
 
 private:
 	bool buildMake(const SourceTarget& inProject) const;

@@ -26,7 +26,7 @@ const Dictionary<IdeType> kIdeTypes{
 
 const Dictionary<QueryOption> kQueryOptions{
 	{ "list-names", QueryOption::QueryNames },
-	{ "theme-names", QueryOption::ThemeNames},
+	{ "theme-names", QueryOption::ThemeNames },
 	{ "commands", QueryOption::Commands },
 	{ "configurations", QueryOption::Configurations },
 	{ "toolchain-presets", QueryOption::ToolchainPresets },
@@ -536,7 +536,7 @@ std::string CommandLineInputs::getArchWithOptionsAsString(const std::string& inA
 	{
 		auto options = String::join(m_archOptions, '_');
 		String::replaceAll(options, ',', '_');
-		String::replaceAll(options, "-", "");
+		String::replaceAll(options, '-', "");
 #if defined(CHALET_WIN32)
 		String::replaceAll(options, '=', '_');
 #endif

@@ -153,6 +153,19 @@ void String::replaceAll(std::string& outString, const std::string_view inFrom, c
 }
 
 /*****************************************************************************/
+void String::replaceAll(std::string& outString, const char inFrom, const std::string_view inTo)
+{
+	std::size_t pos = 0;
+	while ((pos = outString.find(inFrom, pos)) != std::string::npos)
+	{
+		outString.replace(pos, 1, inTo);
+		pos += inTo.length();
+	}
+
+	return;
+}
+
+/*****************************************************************************/
 void String::replaceAll(std::string& outString, const char inFrom, const char inTo)
 {
 	return std::replace(outString.begin(), outString.end(), inFrom, inTo);

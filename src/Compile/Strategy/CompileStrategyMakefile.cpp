@@ -95,7 +95,7 @@ bool CompileStrategyMakefile::saveBuildFile() const
 }
 
 /*****************************************************************************/
-bool CompileStrategyMakefile::buildProject(const SourceTarget& inProject) const
+bool CompileStrategyMakefile::buildProject(const SourceTarget& inProject)
 {
 	if (m_hashes.find(inProject.name()) == m_hashes.end())
 		return false;
@@ -282,7 +282,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 #if defined(CHALET_WIN32)
 		if (m_state.toolchain.makeIsNMake())
 		{
-			String::replaceAll(errorOutput, "\r", "\r\n");
+			String::replaceAll(errorOutput, '\r', "\r\n");
 
 			if (m_state.toolchain.makeIsJom())
 			{

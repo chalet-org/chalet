@@ -37,7 +37,7 @@ struct ICompileStrategy
 	virtual bool addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
 
 	virtual bool saveBuildFile() const = 0;
-	virtual bool buildProject(const SourceTarget& inProject) const = 0;
+	virtual bool buildProject(const SourceTarget& inProject) = 0;
 	virtual bool doPostBuild() const;
 
 protected:

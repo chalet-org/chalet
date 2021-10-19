@@ -18,8 +18,6 @@ struct CommandPool
 		std::string output;
 		StringList command;
 		std::string label;
-		std::string symbol = " ";
-		Color color = Color::Red;
 	};
 	using CmdList = std::vector<Cmd>;
 
@@ -32,6 +30,7 @@ struct CommandPool
 
 	struct Settings
 	{
+		Color color = Color::Red;
 		bool quiet = false;
 		bool showCommands = false;
 		bool msvcCommand = false;
@@ -40,15 +39,18 @@ struct CommandPool
 
 	explicit CommandPool(const std::size_t inThreads);
 
-	bool run(const Target& inTarget, const Settings& inSettings) const;
+	bool run(const Target& inTarget, const Settings& inSettings);
 
 private:
-	bool onError() const;
+	std::string getPrintedText(std::string inText, uint inTotal);
+	bool onError();
+	void cleanup();
 
-	mutable ThreadPool m_threadPool;
+	ThreadPool m_threadPool;
 
-	mutable std::string m_exceptionThrown;
-	mutable bool m_quiet = false;
+	std::string m_reset;
+	std::string m_exceptionThrown;
+	bool m_quiet = false;
 };
 }
 

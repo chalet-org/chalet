@@ -216,7 +216,7 @@ bool ProjectInitializer::run()
 		Output::lineBreak();
 
 		auto mainCpp = StarterFileTemplates::getMainCxx(props.language, props.specialization);
-		String::replaceAll(mainCpp, "\t", "   ");
+		String::replaceAll(mainCpp, '\t', "   ");
 		std::cout << Output::getAnsiStyle(Output::theme().build) << mainCpp << Output::getAnsiStyle(Color::Reset) << std::endl;
 
 		Commands::sleep(stepTime);

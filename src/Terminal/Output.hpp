@@ -8,6 +8,7 @@
 
 #include "Terminal/Color.hpp"
 #include "Terminal/ColorTheme.hpp"
+#include "Terminal/Formatting.hpp"
 
 namespace chalet
 {
@@ -39,6 +40,7 @@ bool getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, 
 std::string getAnsiStyle(const Color inColor);
 std::string getAnsiStyleRaw(const Color inColor);
 std::string getAnsiStyleForMakefile(const Color inColor);
+std::string getAnsiStyleForceFormatting(const Color inColor, const Formatting inFormatting);
 
 void displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage);
 void resetStdout();

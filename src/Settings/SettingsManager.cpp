@@ -133,7 +133,7 @@ bool SettingsManager::runSettingsKeyQuery(Json& node)
 	StringList keyResultList;
 
 	auto escapeString = [](std::string str) -> std::string {
-		String::replaceAll(str, ".", R"(\\.)");
+		String::replaceAll(str, '.', R"(\\.)");
 		return str;
 	};
 

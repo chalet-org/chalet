@@ -120,7 +120,7 @@ bool CompileStrategyNative::doPostBuild() const
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::buildProject(const SourceTarget& inProject) const
+bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 {
 	if (m_targets.find(inProject.name()) == m_targets.end())
 		return true;
@@ -130,6 +130,7 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject) const
 	const auto& config = m_state.toolchain.getConfig(inProject.language());
 
 	CommandPool::Settings settings;
+	settings.color = Output::theme().build;
 	settings.msvcCommand = config.isMsvc();
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
@@ -177,8 +178,6 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 						CommandPool::Cmd out;
 						out.output = fmt::format("{} ({})", source, arch);
 						out.command = std::move(command);
-						out.color = Output::theme().build;
-						out.symbol = " ";
 						ret.emplace_back(std::move(out));
 					}
 				}
@@ -202,8 +201,6 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 					CommandPool::Cmd out;
 					out.output = std::move(source);
 					out.command = std::move(command);
-					out.color = Output::theme().build;
-					out.symbol = " ";
 					ret.emplace_back(std::move(out));
 				}
 			}
@@ -252,12 +249,9 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 					{
 						m_fileCache.emplace_back(std::move(sourceFile));
 
-						auto tmp = getRcCompile(source, target);
 						CommandPool::Cmd out;
 						out.output = std::move(source);
-						out.command = std::move(tmp.command);
-						out.color = Output::theme().build;
-						out.symbol = " ";
+						out.command = getRcCompile(source, target);
 						ret.emplace_back(std::move(out));
 					}
 				}
@@ -285,12 +279,9 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 					{
 						m_fileCache.emplace_back(std::move(sourceFile));
 
-						auto tmp = getCxxCompile(source, target, specialization);
 						CommandPool::Cmd out;
 						out.output = std::move(source);
-						out.command = std::move(tmp.command);
-						out.color = Output::theme().build;
-						out.symbol = " ";
+						out.command = getCxxCompile(source, target, specialization);
 						ret.emplace_back(std::move(out));
 					}
 				}
@@ -315,46 +306,42 @@ CommandPool::Cmd CompileStrategyNative::getLinkCommand(const std::string& inTarg
 
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 
-	const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
-
 	CommandPool::Cmd ret;
 	ret.command = m_toolchain->getLinkerTargetCommand(inTarget, inObjects, targetBasename);
-	ret.label = std::move(description);
+	ret.label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 	ret.output = inTarget;
-	ret.color = Output::theme().build;
-	ret.symbol = " ";
 	// ret.symbol = Unicode::rightwardsTripleArrow();
 
 	return ret;
 }
 
 /*****************************************************************************/
-CompileStrategyNative::CmdTemp CompileStrategyNative::getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const
+StringList CompileStrategyNative::getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const
 {
 	chalet_assert(m_toolchain != nullptr, "");
 
-	CmdTemp ret;
+	StringList ret;
 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	ret.command = m_toolchain->getCxxCompileCommand(source, target, m_generateDependencies, dependency, specialization);
+	ret = m_toolchain->getCxxCompileCommand(source, target, m_generateDependencies, dependency, specialization);
 
 	return ret;
 }
 
 /*****************************************************************************/
-CompileStrategyNative::CmdTemp CompileStrategyNative::getRcCompile(const std::string& source, const std::string& target) const
+StringList CompileStrategyNative::getRcCompile(const std::string& source, const std::string& target) const
 {
 	chalet_assert(m_toolchain != nullptr, "");
 
-	CmdTemp ret;
+	StringList ret;
 
 #if defined(CHALET_WIN32)
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	ret.command = m_toolchain->getRcCompileCommand(source, target, m_generateDependencies, dependency);
+	ret = m_toolchain->getRcCompileCommand(source, target, m_generateDependencies, dependency);
 #else
 	UNUSED(source, target);
 #endif

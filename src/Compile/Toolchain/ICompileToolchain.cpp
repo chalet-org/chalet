@@ -113,7 +113,7 @@ bool ICompileToolchain::createWindowsApplicationManifest()
 			else
 				manifestContents = PlatformFileTemplates::generalWindowsAppManifest(m_project.name(), m_state.info.targetArchitecture());
 
-			String::replaceAll(manifestContents, "\t", " ");
+			String::replaceAll(manifestContents, '\t', ' ');
 
 			if (!Commands::createFileWithContents(windowsManifestFile, manifestContents))
 			{
