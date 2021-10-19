@@ -7,13 +7,13 @@ _chalet_completions()
 	prev="${_CMDS[COMP_CWORD-1]}"
 
 	case "${prev}" in
-	-c|--configuration)
+	-c|--configuration|options.configuration)
 		COMPREPLY=($(compgen -W "$(chalet query configurations)" -- $cur))
 		;;
-	-t|--toolchain)
+	-t|--toolchain|options.toolchain)
 		COMPREPLY=($(compgen -W "$(chalet query all-toolchains)" -- $cur))
 		;;
-	-a|--arch)
+	-a|--arch|options.architecture)
 		COMPREPLY=($(compgen -W "$(chalet query architectures)" -- $cur))
 		;;
 	query)

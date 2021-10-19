@@ -94,7 +94,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	// TODO: Copy from global cache. If one doesn't exist, do this
 
 	// Create the json cache
-	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyOptions, JsonDataType::object);
 
 	if (!m_jsonFile.json.contains(kKeyToolchains) || !m_jsonFile.json[kKeyToolchains].is_object())
 	{
@@ -139,7 +139,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	}
 #endif
 
-	Json& buildSettings = m_jsonFile.json[kKeySettings];
+	Json& buildSettings = m_jsonFile.json[kKeyOptions];
 
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyShowCommands, m_inputs.showCommands(), inState.showCommands);
@@ -402,16 +402,16 @@ bool SettingsJsonParser::serializeFromJsonRoot(Json& inJson)
 /*****************************************************************************/
 bool SettingsJsonParser::parseSettings(const Json& inNode)
 {
-	if (!inNode.contains(kKeySettings))
+	if (!inNode.contains(kKeyOptions))
 	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeySettings);
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyOptions);
 		return false;
 	}
 
-	const Json& buildSettings = inNode.at(kKeySettings);
+	const Json& buildSettings = inNode.at(kKeyOptions);
 	if (!buildSettings.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeySettings);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyOptions);
 		return false;
 	}
 

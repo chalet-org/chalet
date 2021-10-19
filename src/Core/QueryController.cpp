@@ -248,15 +248,15 @@ StringList QueryController::getCurrentArchitecture() const
 {
 	StringList ret;
 
-	const std::string kKeySettings = "settings";
+	const std::string kKeyOptions = "options";
 	const std::string kKeyArchitecture = "architecture";
 
 	const auto& settingsFile = getSettingsJson();
 	if (settingsFile.is_object())
 	{
-		if (settingsFile.contains(kKeySettings))
+		if (settingsFile.contains(kKeyOptions))
 		{
-			const auto& settings = settingsFile.at(kKeySettings);
+			const auto& settings = settingsFile.at(kKeyOptions);
 			if (settings.contains(kKeyArchitecture))
 			{
 				const auto& arch = settings.at(kKeyArchitecture);
@@ -285,15 +285,15 @@ StringList QueryController::getCurrentBuildConfiguration() const
 {
 	StringList ret;
 
-	const std::string kKeySettings = "settings";
+	const std::string kKeyOptions = "options";
 	const std::string kKeyConfiguration = "configuration";
 
 	const auto& settingsFile = getSettingsJson();
 	if (settingsFile.is_object())
 	{
-		if (settingsFile.contains(kKeySettings))
+		if (settingsFile.contains(kKeyOptions))
 		{
-			const auto& settings = settingsFile.at(kKeySettings);
+			const auto& settings = settingsFile.at(kKeyOptions);
 			if (settings.contains(kKeyConfiguration))
 			{
 				const auto& configuration = settings.at(kKeyConfiguration);
@@ -322,15 +322,15 @@ StringList QueryController::getCurrentToolchain() const
 {
 	StringList ret;
 
-	const std::string kKeySettings = "settings";
+	const std::string kKeyOptions = "options";
 	const std::string kKeyToolchain = "toolchain";
 
 	const auto& settingsFile = getSettingsJson();
 	if (settingsFile.is_object())
 	{
-		if (settingsFile.contains(kKeySettings))
+		if (settingsFile.contains(kKeyOptions))
 		{
-			const auto& settings = settingsFile.at(kKeySettings);
+			const auto& settings = settingsFile.at(kKeyOptions);
 			if (settings.contains(kKeyToolchain))
 			{
 				const auto& toolchain = settings.at(kKeyToolchain);

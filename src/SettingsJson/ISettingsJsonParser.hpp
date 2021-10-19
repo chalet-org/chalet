@@ -13,7 +13,7 @@ struct ISettingsJsonParser
 	virtual ~ISettingsJsonParser() = default;
 
 protected:
-	const std::string kKeySettings = "settings";
+	const std::string kKeyOptions = "options";
 	const std::string kKeyToolchains = "toolchains";
 	const std::string kKeyTools = "tools";
 	const std::string kKeyAppleSdks = "appleSdks";

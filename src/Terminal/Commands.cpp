@@ -898,6 +898,9 @@ std::string Commands::isolateVersion(const std::string& outString)
 /*****************************************************************************/
 std::string Commands::which(const std::string& inExecutable)
 {
+	if (inExecutable.empty())
+		return std::string();
+
 	std::string result;
 #if defined(CHALET_WIN32)
 	if (Output::showCommands())

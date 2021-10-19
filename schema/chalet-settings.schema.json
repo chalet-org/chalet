@@ -3,7 +3,7 @@
 	"type": "object",
 	"additionalProperties": false,
 	"required": [
-		"settings",
+		"options",
 		"tools",
 		"toolchains"
 	],
@@ -212,7 +212,7 @@
 			"type": "object",
 			"description": "A list of Apple platform SDK paths. (MacOS)"
 		},
-		"settings": {
+		"options": {
 			"type": "object",
 			"additionalProperties": false,
 			"description": "A list of settings related to the build.",
@@ -302,6 +302,64 @@
 					"type": "string"
 				}
 			}
+		},
+		"theme": {
+			"description": "The color theme preset or colors to give to Chalet",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1,
+					"enum": [
+						"default",
+						"none",
+						"palapa",
+						"highrise",
+						"teahouse",
+						"skilodge",
+						"temple",
+						"bungalow",
+						"chattel",
+						"monastery",
+						"longhouse",
+						"greenhouse",
+						"observatory"
+					],
+					"default": "default"
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"info": {
+							"$ref": "#/definitions/theme-color"
+						},
+						"error": {
+							"$ref": "#/definitions/theme-color"
+						},
+						"warning": {
+							"$ref": "#/definitions/theme-color"
+						},
+						"success": {
+							"$ref": "#/definitions/theme-color"
+						},
+						"note": {
+							"$ref": "#/definitions/theme-color"
+						},
+						"flair": {
+							"$ref": "#/definitions/theme-color"
+						},
+						"header": {
+							"$ref": "#/definitions/theme-color"
+						},
+						"build": {
+							"$ref": "#/definitions/theme-color"
+						},
+						"assembly": {
+							"$ref": "#/definitions/theme-color"
+						}
+					}
+				}
+			]
 		},
 		"toolchains": {
 			"type": "object",
@@ -402,64 +460,6 @@
 					}
 				}
 			}
-		},
-		"theme": {
-			"description": "The color theme preset or colors to give to Chalet",
-			"oneOf": [
-				{
-					"type": "string",
-					"minLength": 1,
-					"enum": [
-						"default",
-						"none",
-						"palapa",
-						"highrise",
-						"teahouse",
-						"skilodge",
-						"temple",
-						"bungalow",
-						"chattel",
-						"monastery",
-						"longhouse",
-						"greenhouse",
-						"observatory"
-					],
-					"default": "default"
-				},
-				{
-					"type": "object",
-					"additionalProperties": false,
-					"properties": {
-						"info": {
-							"$ref": "#/definitions/theme-color"
-						},
-						"error": {
-							"$ref": "#/definitions/theme-color"
-						},
-						"warning": {
-							"$ref": "#/definitions/theme-color"
-						},
-						"success": {
-							"$ref": "#/definitions/theme-color"
-						},
-						"note": {
-							"$ref": "#/definitions/theme-color"
-						},
-						"flair": {
-							"$ref": "#/definitions/theme-color"
-						},
-						"header": {
-							"$ref": "#/definitions/theme-color"
-						},
-						"build": {
-							"$ref": "#/definitions/theme-color"
-						},
-						"assembly": {
-							"$ref": "#/definitions/theme-color"
-						}
-					}
-				}
-			]
 		}
 	}
 }

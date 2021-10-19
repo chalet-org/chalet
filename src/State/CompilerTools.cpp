@@ -323,12 +323,12 @@ bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 {
 	const auto& settingsFile = m_inputs.settingsFile();
 	const auto& preference = m_inputs.toolchainPreferenceName();
-	const std::string kKeySettings{ "settings" };
+	const std::string kKeyOptions{ "options" };
 	const std::string kKeyToolchains{ "toolchains" };
 
-	if (!inConfigJson.json.contains(kKeySettings))
+	if (!inConfigJson.json.contains(kKeyOptions))
 	{
-		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeySettings);
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyOptions);
 		return false;
 	}
 	if (!inConfigJson.json.contains(kKeyToolchains))
@@ -344,28 +344,28 @@ bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 		return false;
 	}
 
-	auto& buildSettings = inConfigJson.json.at(kKeySettings);
+	auto& optionsJson = inConfigJson.json.at(kKeyOptions);
 	auto& toolchain = toolchains.at(preference);
 
 	const std::string kKeyToolchain{ "toolchain" };
-	if (buildSettings.contains(kKeyToolchain))
+	if (optionsJson.contains(kKeyToolchain))
 	{
-		auto& toolchainSetting = buildSettings.at(kKeyToolchain);
+		auto& toolchainSetting = optionsJson.at(kKeyToolchain);
 		if (toolchainSetting.is_string() && toolchainSetting.get<std::string>() != preference)
 		{
-			buildSettings[kKeyToolchain] = preference;
+			optionsJson[kKeyToolchain] = preference;
 			inConfigJson.setDirty(true);
 		}
 	}
 
 	const std::string kKeyArchitecture{ "architecture" };
-	if (buildSettings.contains(kKeyArchitecture))
+	if (optionsJson.contains(kKeyArchitecture))
 	{
 		std::string archString = m_inputs.targetArchitecture().empty() ? "auto" : m_inputs.targetArchitecture();
-		auto& arch = buildSettings.at(kKeyArchitecture);
+		auto& arch = optionsJson.at(kKeyArchitecture);
 		if (arch.is_string() && arch.get<std::string>() != archString)
 		{
-			buildSettings[kKeyArchitecture] = archString;
+			optionsJson[kKeyArchitecture] = archString;
 			inConfigJson.setDirty(true);
 		}
 	}

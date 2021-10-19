@@ -43,7 +43,7 @@ bool GlobalSettingsJsonParser::serialize(GlobalSettingsState& outState)
 bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 {
 	// Create the json cache
-	m_jsonFile.makeNode(kKeySettings, JsonDataType::object);
+	m_jsonFile.makeNode(kKeyOptions, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyToolchains, JsonDataType::object);
 	m_jsonFile.makeNode(kKeyTools, JsonDataType::object);
 
@@ -53,7 +53,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 
 	initializeTheme();
 
-	Json& buildSettings = m_jsonFile.json.at(kKeySettings);
+	Json& buildSettings = m_jsonFile.json.at(kKeyOptions);
 
 	auto assignSettingsBool = [&](const std::string& inKey, const bool inDefault, const std::function<std::optional<bool>()>& onGetValue) {
 		m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, inKey, [&inDefault]() {
@@ -229,13 +229,13 @@ bool GlobalSettingsJsonParser::serializeFromJsonRoot(Json& inJson, GlobalSetting
 /*****************************************************************************/
 bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsState& outState)
 {
-	if (!inNode.contains(kKeySettings))
+	if (!inNode.contains(kKeyOptions))
 		return true;
 
-	const Json& buildSettings = inNode.at(kKeySettings);
+	const Json& buildSettings = inNode.at(kKeyOptions);
 	if (!buildSettings.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeySettings);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyOptions);
 		return false;
 	}
 
