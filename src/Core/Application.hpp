@@ -7,16 +7,15 @@
 #define CHALET_APPLICATION_HPP
 
 #include "Core/CommandLineInputs.hpp"
-#include "Terminal/OSTerminal.hpp"
 
 namespace chalet
 {
 class Application
 {
-	enum class Status : ushort
+	enum class Status
 	{
-		Success,
-		Failure
+		Success = EXIT_SUCCESS,
+		Failure = EXIT_FAILURE
 	};
 
 public:
@@ -24,10 +23,9 @@ public:
 
 	int run(const int argc = 0, const char* const argv[] = nullptr);
 
-	bool runRouteConductor();
-
 private:
 	bool initialize();
+	bool handleRoute();
 	std::string getMakeExecutable(const std::string& inCompilerPath);
 
 	int onExit(const Status inStatus);
@@ -35,7 +33,6 @@ private:
 
 	void testSignalHandling();
 
-	OSTerminal m_osTerminal;
 	CommandLineInputs m_inputs;
 
 	bool m_initialized = false;

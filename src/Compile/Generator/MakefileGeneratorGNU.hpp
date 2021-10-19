@@ -11,8 +11,6 @@
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 
-#include <unordered_map>
-
 namespace chalet
 {
 struct MakefileGeneratorGNU final : IStrategyGenerator

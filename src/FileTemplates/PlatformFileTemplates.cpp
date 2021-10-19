@@ -28,6 +28,7 @@ const char* getWindowsManifestArch(const Arch::Cpu inCpu)
 	}
 }
 }
+
 /*****************************************************************************/
 std::string PlatformFileTemplates::linuxDesktopEntry()
 {

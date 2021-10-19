@@ -13,105 +13,108 @@ namespace chalet
 {
 namespace
 {
-OrderedDictionary<Color> kThemeMap{
-	{ "reset", Color::Reset },
-	//
-	{ "black", Color::Black },
-	{ "red", Color::Red },
-	{ "green", Color::Green },
-	{ "yellow", Color::Yellow },
-	{ "blue", Color::Blue },
-	{ "magenta", Color::Magenta },
-	{ "cyan", Color::Cyan },
-	{ "white", Color::White },
-	//
-	{ "brightBlack", Color::BrightBlack },
-	{ "brightRed", Color::BrightRed },
-	{ "brightGreen", Color::BrightGreen },
-	{ "brightYellow", Color::BrightYellow },
-	{ "brightBlue", Color::BrightBlue },
-	{ "brightMagenta", Color::BrightMagenta },
-	{ "brightCyan", Color::BrightCyan },
-	{ "brightWhite", Color::BrightWhite },
-	//
-	{ "blackBold", Color::BlackBold },
-	{ "redBold", Color::RedBold },
-	{ "greenBold", Color::GreenBold },
-	{ "yellowBold", Color::YellowBold },
-	{ "blueBold", Color::BlueBold },
-	{ "magentaBold", Color::MagentaBold },
-	{ "cyanBold", Color::CyanBold },
-	{ "whiteBold", Color::WhiteBold },
-	//
-	{ "brightBlackBold", Color::BrightBlackBold },
-	{ "brightRedBold", Color::BrightRedBold },
-	{ "brightGreenBold", Color::BrightGreenBold },
-	{ "brightYellowBold", Color::BrightYellowBold },
-	{ "brightBlueBold", Color::BrightBlueBold },
-	{ "brightMagentaBold", Color::BrightMagentaBold },
-	{ "brightCyanBold", Color::BrightCyanBold },
-	{ "brightWhiteBold", Color::BrightWhiteBold },
-	//
-	{ "blackDim", Color::BlackDim },
-	{ "redDim", Color::RedDim },
-	{ "greenDim", Color::GreenDim },
-	{ "yellowDim", Color::YellowDim },
-	{ "blueDim", Color::BlueDim },
-	{ "magentaDim", Color::MagentaDim },
-	{ "cyanDim", Color::CyanDim },
-	{ "whiteDim", Color::WhiteDim },
-	//
-	{ "brightBlackDim", Color::BrightBlackDim },
-	{ "brightRedDim", Color::BrightRedDim },
-	{ "brightGreenDim", Color::BrightGreenDim },
-	{ "brightYellowDim", Color::BrightYellowDim },
-	{ "brightBlueDim", Color::BrightBlueDim },
-	{ "brightMagentaDim", Color::BrightMagentaDim },
-	{ "brightCyanDim", Color::BrightCyanDim },
-	{ "brightWhiteDim", Color::BrightWhiteDim },
-	//
-	{ "blackInverted", Color::BlackInverted },
-	{ "redInverted", Color::RedInverted },
-	{ "greenInverted", Color::GreenInverted },
-	{ "yellowInverted", Color::YellowInverted },
-	{ "blueInverted", Color::BlueInverted },
-	{ "magentaInverted", Color::MagentaInverted },
-	{ "cyanInverted", Color::CyanInverted },
-	{ "whiteInverted", Color::WhiteInverted },
-	//
-	{ "brightBlackInverted", Color::BrightBlackInverted },
-	{ "brightRedInverted", Color::BrightRedInverted },
-	{ "brightGreenInverted", Color::BrightGreenInverted },
-	{ "brightYellowInverted", Color::BrightYellowInverted },
-	{ "brightBlueInverted", Color::BrightBlueInverted },
-	{ "brightMagentaInverted", Color::BrightMagentaInverted },
-	{ "brightCyanInverted", Color::BrightCyanInverted },
-	{ "brightWhiteInverted", Color::BrightWhiteInverted },
-};
+static struct
+{
+	const OrderedDictionary<Color> themeMap{
+		{ "reset", Color::Reset },
+		//
+		{ "black", Color::Black },
+		{ "red", Color::Red },
+		{ "green", Color::Green },
+		{ "yellow", Color::Yellow },
+		{ "blue", Color::Blue },
+		{ "magenta", Color::Magenta },
+		{ "cyan", Color::Cyan },
+		{ "white", Color::White },
+		//
+		{ "brightBlack", Color::BrightBlack },
+		{ "brightRed", Color::BrightRed },
+		{ "brightGreen", Color::BrightGreen },
+		{ "brightYellow", Color::BrightYellow },
+		{ "brightBlue", Color::BrightBlue },
+		{ "brightMagenta", Color::BrightMagenta },
+		{ "brightCyan", Color::BrightCyan },
+		{ "brightWhite", Color::BrightWhite },
+		//
+		{ "blackBold", Color::BlackBold },
+		{ "redBold", Color::RedBold },
+		{ "greenBold", Color::GreenBold },
+		{ "yellowBold", Color::YellowBold },
+		{ "blueBold", Color::BlueBold },
+		{ "magentaBold", Color::MagentaBold },
+		{ "cyanBold", Color::CyanBold },
+		{ "whiteBold", Color::WhiteBold },
+		//
+		{ "brightBlackBold", Color::BrightBlackBold },
+		{ "brightRedBold", Color::BrightRedBold },
+		{ "brightGreenBold", Color::BrightGreenBold },
+		{ "brightYellowBold", Color::BrightYellowBold },
+		{ "brightBlueBold", Color::BrightBlueBold },
+		{ "brightMagentaBold", Color::BrightMagentaBold },
+		{ "brightCyanBold", Color::BrightCyanBold },
+		{ "brightWhiteBold", Color::BrightWhiteBold },
+		//
+		{ "blackDim", Color::BlackDim },
+		{ "redDim", Color::RedDim },
+		{ "greenDim", Color::GreenDim },
+		{ "yellowDim", Color::YellowDim },
+		{ "blueDim", Color::BlueDim },
+		{ "magentaDim", Color::MagentaDim },
+		{ "cyanDim", Color::CyanDim },
+		{ "whiteDim", Color::WhiteDim },
+		//
+		{ "brightBlackDim", Color::BrightBlackDim },
+		{ "brightRedDim", Color::BrightRedDim },
+		{ "brightGreenDim", Color::BrightGreenDim },
+		{ "brightYellowDim", Color::BrightYellowDim },
+		{ "brightBlueDim", Color::BrightBlueDim },
+		{ "brightMagentaDim", Color::BrightMagentaDim },
+		{ "brightCyanDim", Color::BrightCyanDim },
+		{ "brightWhiteDim", Color::BrightWhiteDim },
+		//
+		{ "blackInverted", Color::BlackInverted },
+		{ "redInverted", Color::RedInverted },
+		{ "greenInverted", Color::GreenInverted },
+		{ "yellowInverted", Color::YellowInverted },
+		{ "blueInverted", Color::BlueInverted },
+		{ "magentaInverted", Color::MagentaInverted },
+		{ "cyanInverted", Color::CyanInverted },
+		{ "whiteInverted", Color::WhiteInverted },
+		//
+		{ "brightBlackInverted", Color::BrightBlackInverted },
+		{ "brightRedInverted", Color::BrightRedInverted },
+		{ "brightGreenInverted", Color::BrightGreenInverted },
+		{ "brightYellowInverted", Color::BrightYellowInverted },
+		{ "brightBlueInverted", Color::BrightBlueInverted },
+		{ "brightMagentaInverted", Color::BrightMagentaInverted },
+		{ "brightCyanInverted", Color::BrightCyanInverted },
+		{ "brightWhiteInverted", Color::BrightWhiteInverted },
+	};
 
-StringList kPresetNames{
-	"default",
-	"none",
-	"palapa",
-	"highrise",
-	"teahouse",
-	"skilodge",
-	"temple",
-	"bungalow",
-	"cottage",
-	"monastery",
-	"longhouse",
-	"greenhouse",
-	"observatory",
-	"yurt"
-};
+	const StringList presetNames{
+		"default",
+		"none",
+		"palapa",
+		"highrise",
+		"teahouse",
+		"skilodge",
+		"temple",
+		"bungalow",
+		"cottage",
+		"monastery",
+		"longhouse",
+		"greenhouse",
+		"observatory",
+		"yurt"
+	};
+} state;
 }
 
 /*****************************************************************************/
 Color ColorTheme::getColorFromKey(const std::string& inString)
 {
-	if (kThemeMap.find(inString) != kThemeMap.end())
-		return kThemeMap.at(inString);
+	if (state.themeMap.find(inString) != state.themeMap.end())
+		return state.themeMap.at(inString);
 
 	return Color::Reset;
 }
@@ -119,7 +122,7 @@ Color ColorTheme::getColorFromKey(const std::string& inString)
 /*****************************************************************************/
 std::string ColorTheme::getStringFromColor(const Color inColor)
 {
-	for (auto& [id, color] : kThemeMap)
+	for (auto& [id, color] : state.themeMap)
 	{
 		if (inColor == color)
 			return id;
@@ -132,7 +135,7 @@ std::string ColorTheme::getStringFromColor(const Color inColor)
 StringList ColorTheme::getJsonColors()
 {
 	StringList ret;
-	for (auto& [id, _] : kThemeMap)
+	for (auto& [id, _] : state.themeMap)
 	{
 		ret.push_back(id);
 	}
@@ -159,17 +162,17 @@ StringList ColorTheme::getKeys()
 /*****************************************************************************/
 const std::string& ColorTheme::defaultPresetName()
 {
-	return kPresetNames.front();
+	return state.presetNames.front();
 }
 
 const std::string& ColorTheme::lastPresetName()
 {
-	return kPresetNames.back();
+	return state.presetNames.back();
 }
 
 const StringList& ColorTheme::presets()
 {
-	return kPresetNames;
+	return state.presetNames;
 }
 
 /*****************************************************************************/
@@ -178,7 +181,7 @@ bool ColorTheme::isValidPreset(const std::string& inPresetName)
 	if (inPresetName.empty())
 		return false;
 
-	return List::contains(kPresetNames, inPresetName);
+	return List::contains(state.presetNames, inPresetName);
 }
 
 /*****************************************************************************/
@@ -186,7 +189,7 @@ std::vector<ColorTheme> ColorTheme::getAllThemes()
 {
 	std::vector<ColorTheme> ret;
 
-	for (auto& preset : kPresetNames)
+	for (auto& preset : state.presetNames)
 	{
 		ret.emplace_back(preset);
 	}
@@ -278,8 +281,8 @@ void ColorTheme::setPreset(const std::string& inValue)
 		return;
 	}
 
-	if (!List::contains(kPresetNames, inValue))
-		m_preset = kPresetNames.at(0);
+	if (!List::contains(state.presetNames, inValue))
+		m_preset = state.presetNames.at(0);
 	else
 		m_preset = inValue;
 
@@ -304,7 +307,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 
 	// default
 	std::size_t i = 0;
-	if (String::equals(kPresetNames.at(i), inValue))
+	if (String::equals(state.presetNames.at(i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;
@@ -317,7 +320,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::BrightMagenta;
 	}
 	// none
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::None;
 		error = Color::None;
@@ -330,7 +333,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::None;
 	}
 	// palapa
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::RedBold;
@@ -343,7 +346,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::Yellow;
 	}
 	// highrise
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;
@@ -356,7 +359,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::BrightCyan;
 	}
 	// teahouse
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::RedBold;
@@ -369,7 +372,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::Cyan;
 	}
 	// skilodge
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;
@@ -382,7 +385,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::BrightCyan;
 	}
 	// temple
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;
@@ -395,7 +398,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::BrightYellow;
 	}
 	// bungalow
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;
@@ -408,7 +411,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::BrightBlue;
 	}
 	// cottage
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightMagentaBold;
@@ -421,7 +424,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::BrightWhite;
 	}
 	// monastery
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;
@@ -434,7 +437,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::BrightBlack;
 	}
 	// longhouse
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::RedBold;
@@ -447,7 +450,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::Green;
 	}
 	// greenhouse
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;
@@ -460,7 +463,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::Green;
 	}
 	// observatory
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;
@@ -473,7 +476,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		assembly = Color::Blue;
 	}
 	// yurt
-	else if (String::equals(kPresetNames.at(++i), inValue))
+	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
 		info = Color::Reset;
 		error = Color::BrightRedBold;

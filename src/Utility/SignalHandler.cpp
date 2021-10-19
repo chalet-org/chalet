@@ -20,13 +20,29 @@
 
 namespace chalet::priv
 {
-/*****************************************************************************/
-SignalHandler::Callback SignalHandler::sOnErrorCallback = nullptr;
+namespace
+{
+static struct
+{
+	SignalHandler::Callback onErrorCallback = nullptr;
+} state;
 
+void printError(const std::string& inType, const std::string& inDescription)
+{
+	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
+	std::cerr << boldRed << inType + '\n';
+
+	if (!inDescription.empty())
+	{
+		std::cerr << inDescription + ":\n";
+	}
+}
+
+}
 /*****************************************************************************/
 void SignalHandler::start(Callback inOnError)
 {
-	sOnErrorCallback = inOnError;
+	state.onErrorCallback = inOnError;
 
 	::signal(SIGABRT, SignalHandler::handler);
 	::signal(SIGFPE, SignalHandler::handler);
@@ -84,22 +100,12 @@ void SignalHandler::handler(const int inSignal)
 			break;
 	}
 
-	if (sOnErrorCallback != nullptr)
-		sOnErrorCallback();
+	if (state.onErrorCallback != nullptr)
+		state.onErrorCallback();
 
 	std::cout << reset << std::flush;
 	std::cerr << reset << std::endl;
 
 	::exit(1);
-}
-
-/*****************************************************************************/
-void SignalHandler::printError(const std::string& inType, const std::string& inDescription)
-{
-	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
-	std::cerr << boldRed << inType + '\n';
-
-	if (!inDescription.empty())
-		std::cerr << inDescription + ":\n";
 }
 }

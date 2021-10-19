@@ -8,21 +8,13 @@
 
 namespace chalet::priv
 {
-class SignalHandler
+namespace SignalHandler
 {
-	using Callback = std::function<void()>;
+using Callback = std::function<void()>;
 
-public:
-	static void start(Callback inOnError = nullptr);
-	static void handler(const int inSignal);
-
-private:
-	SignalHandler() = delete;
-
-	static void printError(const std::string& inType, const std::string& inDescription);
-
-	static Callback sOnErrorCallback;
-};
+void start(Callback inOnError = nullptr);
+void handler(const int inSignal);
+}
 }
 
 #endif // CHALET_SIGNAL_HANDLER_HPP

@@ -13,54 +13,64 @@
 #include "Process/ProcessPipe.hpp"
 #include "Process/RunningProcess.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/OSTerminal.hpp"
 #include "Terminal/Output.hpp"
+
+#if defined(CHALET_WIN32)
+	#include "Terminal/WindowsTerminal.hpp"
+#endif
 
 namespace chalet
 {
 namespace
 {
-std::mutex s_mutex;
-std::vector<RunningProcess*> s_procesess;
-int s_lastErrorCode = 0;
-bool s_initialized = false;
+static std::mutex s_mutex;
+static struct
+{
+	std::vector<RunningProcess*> procesess;
+	int lastErrorCode = 0;
+	bool initialized = false;
+} state;
 
 /*****************************************************************************/
 void removeProcess(const RunningProcess& inProcess)
 {
 	std::lock_guard<std::mutex> lock(s_mutex);
-	auto it = s_procesess.end();
-	while (it != s_procesess.begin())
+	auto it = state.procesess.end();
+	while (it != state.procesess.begin())
 	{
 		--it;
 		RunningProcess* process = (*it);
 		if (*process == inProcess)
 		{
-			it = s_procesess.erase(it);
+			it = state.procesess.erase(it);
 			return;
 		}
 	}
 
-	if (s_procesess.empty())
+#if defined(CHALET_WIN32)
+	if (state.procesess.empty())
 		OSTerminal::reset();
+#endif
 }
 
 /*****************************************************************************/
 void subProcessSignalHandler(int inSignal)
 {
 	std::lock_guard<std::mutex> lock(s_mutex);
-	auto it = s_procesess.end();
-	while (it != s_procesess.begin())
+	auto it = state.procesess.end();
+	while (it != state.procesess.begin())
 	{
 		--it;
 		RunningProcess* process = (*it);
 
 		bool success = process->sendSignal(static_cast<SigNum>(inSignal));
 		if (success)
-			it = s_procesess.erase(it);
+			it = state.procesess.erase(it);
 	}
 
+#if defined(CHALET_WIN32)
 	OSTerminal::reset();
+#endif
 }
 }
 
@@ -69,12 +79,12 @@ int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const
 {
 	CHALET_TRY
 	{
-		if (!s_initialized)
+		if (!state.initialized)
 		{
 			::signal(SIGINT, subProcessSignalHandler);
 			::signal(SIGTERM, subProcessSignalHandler);
 			::signal(SIGABRT, subProcessSignalHandler);
-			s_initialized = true;
+			state.initialized = true;
 		}
 
 		if (inCmd.empty())
@@ -92,11 +102,11 @@ int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const
 		RunningProcess process;
 		if (!process.create(inCmd, inOptions))
 		{
-			s_lastErrorCode = process.waitForResult();
-			return s_lastErrorCode;
+			state.lastErrorCode = process.waitForResult();
+			return state.lastErrorCode;
 		}
 
-		s_procesess.push_back(&process);
+		state.procesess.push_back(&process);
 
 		static std::array<char, 256> buffer{ 0 };
 
@@ -112,7 +122,7 @@ int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const
 		int result = process.waitForResult();
 
 		removeProcess(process);
-		s_lastErrorCode = result;
+		state.lastErrorCode = result;
 
 		return result;
 	}
@@ -126,7 +136,7 @@ int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const
 /*****************************************************************************/
 int Process::getLastExitCode()
 {
-	return s_lastErrorCode;
+	return state.lastErrorCode;
 }
 
 /*****************************************************************************/

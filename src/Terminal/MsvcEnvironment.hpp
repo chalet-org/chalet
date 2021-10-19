@@ -8,10 +8,6 @@
 
 #include "Core/CommandLineInputs.hpp"
 
-#if defined(CHALET_WIN32)
-	#include <unordered_map>
-#endif
-
 namespace chalet
 {
 class BuildState;
@@ -31,11 +27,6 @@ public:
 	bool create(const std::string& inVersion = std::string());
 
 private:
-#if defined(CHALET_WIN32)
-	static int s_exists;
-	static std::string s_vswhere;
-#endif
-
 	bool setVariableToPath(const char* inName);
 	bool saveOriginalEnvironment();
 	bool saveMsvcEnvironment();

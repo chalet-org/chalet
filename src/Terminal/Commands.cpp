@@ -37,9 +37,15 @@ namespace chalet
 namespace
 {
 #if defined(CHALET_WIN32)
-static std::string kCygPath;
+static struct
+{
+	std::string cygPath;
+} state;
 #elif defined(CHALET_MACOS)
-static std::string kXcodePath;
+static struct
+{
+	std::string xcodePath;
+} state;
 #endif
 
 struct stat statBuffer;
@@ -1014,15 +1020,15 @@ std::string Commands::testCompilerFlags(const std::string& inCompilerExec)
 /*****************************************************************************/
 const std::string& Commands::getCygPath()
 {
-	if (kCygPath.empty())
+	if (state.cygPath.empty())
 	{
 		auto cygPath = Commands::which("cygpath");
-		kCygPath = Commands::subprocessOutput({ std::move(cygPath), "-m", "/" });
-		Path::sanitize(kCygPath, true);
-		kCygPath.pop_back();
+		state.cygPath = Commands::subprocessOutput({ std::move(cygPath), "-m", "/" });
+		Path::sanitize(state.cygPath, true);
+		state.cygPath.pop_back();
 	}
 
-	return kCygPath;
+	return state.cygPath;
 }
 #endif
 
@@ -1030,13 +1036,13 @@ const std::string& Commands::getCygPath()
 /*****************************************************************************/
 const std::string& Commands::getXcodePath()
 {
-	if (kXcodePath.empty())
+	if (state.xcodePath.empty())
 	{
 		auto xcodeSelect = "/usr/bin/xcode-select";
-		kXcodePath = Commands::subprocessOutput({ std::move(xcodeSelect), "-p" });
+		state.xcodePath = Commands::subprocessOutput({ std::move(xcodeSelect), "-p" });
 	}
 
-	return kXcodePath;
+	return state.xcodePath;
 }
 #endif
 }

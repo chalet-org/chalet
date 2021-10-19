@@ -17,41 +17,44 @@ namespace chalet
 {
 namespace
 {
-const Dictionary<IdeType> kIdeTypes{
-	{ "vscode", IdeType::VisualStudioCode },
-	{ "vs2019", IdeType::VisualStudio2019 },
-	{ "xcode", IdeType::XCode },
-	// { "codeblocks", IdeType::CodeBlocks },
-};
+static struct
+{
+	const Dictionary<IdeType> ideTypes{
+		{ "vscode", IdeType::VisualStudioCode },
+		{ "vs2019", IdeType::VisualStudio2019 },
+		{ "xcode", IdeType::XCode },
+		// { "codeblocks", IdeType::CodeBlocks },
+	};
 
-const Dictionary<QueryOption> kQueryOptions{
-	{ "list-names", QueryOption::QueryNames },
-	{ "theme-names", QueryOption::ThemeNames },
-	{ "commands", QueryOption::Commands },
-	{ "configurations", QueryOption::Configurations },
-	{ "toolchain-presets", QueryOption::ToolchainPresets },
-	{ "user-toolchains", QueryOption::UserToolchains },
-	{ "all-toolchains", QueryOption::AllToolchains },
-	{ "architectures", QueryOption::Architectures },
-	{ "toolchain", QueryOption::Toolchain },
-	{ "configuration", QueryOption::Configuration },
-	{ "architecture", QueryOption::Architecture },
-	{ "run-target", QueryOption::RunTarget },
-};
+	const Dictionary<QueryOption> queryOptions{
+		{ "list-names", QueryOption::QueryNames },
+		{ "theme-names", QueryOption::ThemeNames },
+		{ "commands", QueryOption::Commands },
+		{ "configurations", QueryOption::Configurations },
+		{ "toolchain-presets", QueryOption::ToolchainPresets },
+		{ "user-toolchains", QueryOption::UserToolchains },
+		{ "all-toolchains", QueryOption::AllToolchains },
+		{ "architectures", QueryOption::Architectures },
+		{ "toolchain", QueryOption::Toolchain },
+		{ "configuration", QueryOption::Configuration },
+		{ "architecture", QueryOption::Architecture },
+		{ "run-target", QueryOption::RunTarget },
+	};
 
 #if defined(CHALET_WIN32)
-const OrderedDictionary<VisualStudioVersion> kVisualStudioPresets{
-	{ "vs-stable", VisualStudioVersion::Stable }, // first
-	{ "vs-preview", VisualStudioVersion::Preview },
-	{ "vs-2022", VisualStudioVersion::VisualStudio2022 },
-	{ "vs-2019", VisualStudioVersion::VisualStudio2019 },
-	{ "vs-2017", VisualStudioVersion::VisualStudio2017 },
-	{ "vs-2015", VisualStudioVersion::VisualStudio2015 },
-	{ "vs-2013", VisualStudioVersion::VisualStudio2013 },
-	{ "vs-2012", VisualStudioVersion::VisualStudio2012 },
-	{ "vs-2010", VisualStudioVersion::VisualStudio2010 },
-};
+	const OrderedDictionary<VisualStudioVersion> visualStudioPresets{
+		{ "vs-stable", VisualStudioVersion::Stable }, // first
+		{ "vs-preview", VisualStudioVersion::Preview },
+		{ "vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "vs-2019", VisualStudioVersion::VisualStudio2019 },
+		{ "vs-2017", VisualStudioVersion::VisualStudio2017 },
+		{ "vs-2015", VisualStudioVersion::VisualStudio2015 },
+		{ "vs-2013", VisualStudioVersion::VisualStudio2013 },
+		{ "vs-2012", VisualStudioVersion::VisualStudio2012 },
+		{ "vs-2010", VisualStudioVersion::VisualStudio2010 },
+	};
 #endif
+} state;
 
 }
 
@@ -708,7 +711,7 @@ StringList CommandLineInputs::getCliQueryOptions() const noexcept
 {
 	StringList ret;
 
-	for (auto& [name, _] : kQueryOptions)
+	for (auto& [name, _] : state.queryOptions)
 	{
 		ret.emplace_back(name);
 	}
@@ -762,7 +765,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	m_visualStudioVersion = VisualStudioVersion::None;
 
 #if defined(CHALET_WIN32)
-	if (kVisualStudioPresets.find(inValue) != kVisualStudioPresets.end())
+	if (state.visualStudioPresets.find(inValue) != state.visualStudioPresets.end())
 	{
 		m_isToolchainPreset = true;
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
@@ -848,9 +851,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 /*****************************************************************************/
 IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) const
 {
-	if (kIdeTypes.find(inValue) != kIdeTypes.end())
+	if (state.ideTypes.find(inValue) != state.ideTypes.end())
 	{
-		return kIdeTypes.at(inValue);
+		return state.ideTypes.at(inValue);
 	}
 	else if (!inValue.empty())
 	{
@@ -863,9 +866,9 @@ IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) cons
 /*****************************************************************************/
 QueryOption CommandLineInputs::getQueryOptionFromString(const std::string& inValue) const
 {
-	if (kQueryOptions.find(inValue) != kQueryOptions.end())
+	if (state.queryOptions.find(inValue) != state.queryOptions.end())
 	{
-		return kQueryOptions.at(inValue);
+		return state.queryOptions.at(inValue);
 	}
 
 	return QueryOption::None;
@@ -875,9 +878,9 @@ QueryOption CommandLineInputs::getQueryOptionFromString(const std::string& inVal
 VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(const std::string& inValue) const
 {
 #if defined(CHALET_WIN32)
-	if (kVisualStudioPresets.find(inValue) != kVisualStudioPresets.end())
+	if (state.visualStudioPresets.find(inValue) != state.visualStudioPresets.end())
 	{
-		return kVisualStudioPresets.at(inValue);
+		return state.visualStudioPresets.at(inValue);
 	}
 #else
 	UNUSED(inValue);

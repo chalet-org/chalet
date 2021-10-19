@@ -12,6 +12,12 @@ namespace chalet
 {
 struct Diagnostic
 {
+	enum class Type : ushort
+	{
+		Warning,
+		Error
+	};
+
 	Diagnostic() = delete;
 
 	static void printDone(const std::string& inTime = std::string());
@@ -39,30 +45,6 @@ struct Diagnostic
 	static void throwCriticalError();
 
 private:
-	enum class Type : ushort
-	{
-		Warning,
-		Error
-	};
-
-	struct Error
-	{
-		Type type;
-		std::string message;
-	};
-	using ErrorList = std::vector<Error>;
-
-	struct CriticalException : std::exception
-	{
-		const char* what() const throw() final;
-	};
-
-	static CriticalException kCriticalError;
-	static ErrorList* s_ErrorList;
-	static bool s_Printed;
-
-	static ErrorList* getErrorList();
-
 	static void showInfo(std::string&& inMessage, const bool inLineBreak);
 	static void showErrorAndAbort(std::string&& inMessage);
 	static void showHeader(const Type inType, std::string&& inTitle);

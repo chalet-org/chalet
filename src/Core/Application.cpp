@@ -12,8 +12,8 @@
 #include "Terminal/Output.hpp"
 #include "Utility/SignalHandler.hpp"
 
-#if defined(CHALET_MSVC)
-	#include "Libraries/WindowsApi.hpp"
+#if defined(CHALET_WIN32)
+	#include "Terminal/WindowsTerminal.hpp"
 #endif
 
 namespace chalet
@@ -36,14 +36,14 @@ int Application::run(const int argc, const char* const argv[])
 	if (m_inputs.command() == Route::Help)
 		return onExit(Status::Success);
 
-	if (!runRouteConductor())
+	if (!handleRoute())
 		return onExit(Status::Failure);
 
 	return onExit(Status::Success);
 }
 
 /*****************************************************************************/
-bool Application::runRouteConductor()
+bool Application::handleRoute()
 {
 	CHALET_TRY
 	{
@@ -63,18 +63,11 @@ bool Application::initialize()
 	if (m_initialized)
 		return false;
 
-	// Output::resetStdout();
-	// Output::resetStderr();
+		// Output::resetStdout();
+		// Output::resetStderr();
 
-	m_osTerminal.initialize();
-
-#if defined(CHALET_DEBUG) && defined(CHALET_MSVC)
-	{
-		_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
-		_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
-		_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
-		_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-	}
+#if defined(CHALET_WIN32)
+	WindowsTerminal::initialize();
 #endif
 
 #if defined(CHALET_DEBUG)
@@ -96,21 +89,15 @@ int Application::onExit(const Status inStatus)
 	Diagnostic::printErrors();
 	cleanup();
 
-	if (inStatus == Status::Success)
-	{
-		return EXIT_SUCCESS;
-	}
-	else
-	{
-		// This exit method just means we've handled the error elsewhere and displayed it
-		return EXIT_FAILURE;
-	}
+	return static_cast<int>(inStatus);
 }
 
 /*****************************************************************************/
 void Application::cleanup()
 {
-	m_osTerminal.cleanup();
+#if defined(CHALET_WIN32)
+	WindowsTerminal::cleanup();
+#endif
 }
 
 /*****************************************************************************/

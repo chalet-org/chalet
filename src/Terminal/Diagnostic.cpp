@@ -16,108 +16,104 @@
 
 namespace chalet
 {
-/*****************************************************************************/
 namespace
 {
 /*****************************************************************************/
-std::unique_ptr<Spinner> s_spinnerThread;
+struct Error
+{
+	Diagnostic::Type type;
+	std::string message;
+};
 
-bool sExceptionThrown = false;
-bool sAssertionFailure = false;
+/*****************************************************************************/
+static struct : std::exception
+{
+	const char* what() const throw() final
+	{
+		return "A critical error occurred. Review output above";
+	}
+} kCriticalError;
 
+/*****************************************************************************/
+static struct
+{
+	std::vector<Error> errorList;
+	std::unique_ptr<Spinner> spinnerThread;
+
+	bool exceptionThrown = false;
+	bool assertionFailure = false;
+} state;
+
+/*****************************************************************************/
 void destroySpinnerThread()
 {
-	if (s_spinnerThread != nullptr)
-	{
-		s_spinnerThread->stop();
-		s_spinnerThread.reset();
-	}
+	if (state.spinnerThread == nullptr)
+		return;
+
+	state.spinnerThread->stop();
+	state.spinnerThread.reset();
 }
-}
-
-/*****************************************************************************/
-const char* Diagnostic::CriticalException::what() const throw()
-{
-	return "A critical error occurred. Review output above";
-}
-
-/*****************************************************************************/
-Diagnostic::CriticalException Diagnostic::kCriticalError;
-Diagnostic::ErrorList* Diagnostic::s_ErrorList = nullptr;
-bool Diagnostic::s_Printed = false;
-
-/*****************************************************************************/
-Diagnostic::ErrorList* Diagnostic::getErrorList()
-{
-	chalet_assert(!s_Printed, "");
-
-	if (s_ErrorList == nullptr)
-	{
-		s_ErrorList = new ErrorList();
-	}
-
-	return s_ErrorList;
 }
 
 /*****************************************************************************/
 void Diagnostic::printDone(const std::string& inTime)
 {
-	if (!Output::quietNonBuild())
+	if (Output::quietNonBuild())
+		return;
+
+	const auto color = Output::getAnsiStyle(Output::theme().flair);
+	const auto reset = Output::getAnsiStyle(Color::Reset);
+
+	destroySpinnerThread();
+
+	std::string done;
+	if (Output::showCommands())
+		done = "... done";
+	else
+		done = "done";
+
+	if (!inTime.empty() && Output::showBenchmarks())
 	{
-		const auto color = Output::getAnsiStyle(Output::theme().flair);
-		const auto reset = Output::getAnsiStyle(Color::Reset);
-
-		destroySpinnerThread();
-
-		std::string done;
-		if (Output::showCommands())
-			done = "... done";
-		else
-			done = "done";
-
-		if (!inTime.empty() && Output::showBenchmarks())
-		{
-			std::cout << fmt::format("{}{} ({}){}", color, done, inTime, reset) << std::endl;
-		}
-		else
-		{
-			std::cout << fmt::format("{}{}{}", color, done, reset) << std::endl;
-		}
+		std::cout << fmt::format("{}{} ({}){}", color, done, inTime, reset) << std::endl;
+	}
+	else
+	{
+		std::cout << fmt::format("{}{}{}", color, done, reset) << std::endl;
 	}
 }
 
 /*****************************************************************************/
 void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 {
-	if (!Output::quietNonBuild())
-	{
-		const auto& theme = Output::theme();
-		const auto color = Output::getAnsiStyle(theme.flair);
-		const auto infoColor = Output::getAnsiStyle(theme.info);
-		const auto reset = Output::getAnsiStyle(Color::Reset);
-		const auto symbol = '>';
+	if (Output::quietNonBuild())
+		return;
 
-		std::cout << fmt::format("{}{}  {}{}", color, symbol, infoColor, inMessage);
-		if (inLineBreak)
+	const auto& theme = Output::theme();
+	const auto color = Output::getAnsiStyle(theme.flair);
+	const auto infoColor = Output::getAnsiStyle(theme.info);
+	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto symbol = '>';
+
+	std::cout << fmt::format("{}{}  {}{}", color, symbol, infoColor, inMessage);
+	if (inLineBreak)
+	{
+		std::cout << reset << std::endl;
+	}
+	else
+	{
+		// std::cout << fmt::format("{} ... {}", color, reset);
+		std::cout << color;
+
+		if (Output::showCommands())
 		{
 			std::cout << reset << std::endl;
 		}
 		else
 		{
-			// std::cout << fmt::format("{} ... {}", color, reset);
-			std::cout << color;
-
-			if (Output::showCommands())
-			{
-				std::cout << reset << std::endl;
-			}
-			else
-			{
-				std::cout << std::flush;
-				destroySpinnerThread();
-				s_spinnerThread = std::make_unique<Spinner>();
-				s_spinnerThread->start();
-			}
+			std::cout << std::flush;
+			destroySpinnerThread();
+			state.spinnerThread = std::make_unique<Spinner>();
+			state.spinnerThread->start();
 		}
 	}
 }
@@ -125,7 +121,7 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 /*****************************************************************************/
 void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 {
-	if (sExceptionThrown)
+	if (state.exceptionThrown)
 		return;
 
 	Diagnostic::showMessage(Type::Error, std::move(inMessage));
@@ -137,7 +133,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 		std::cerr << boldBlack;
 	}
 
-	sExceptionThrown = true;
+	state.exceptionThrown = true;
 
 	priv::SignalHandler::handler(SIGABRT);
 }
@@ -145,7 +141,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 /*****************************************************************************/
 void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber)
 {
-	if (s_spinnerThread != nullptr)
+	if (state.spinnerThread != nullptr)
 	{
 		std::cerr << std::endl;
 		destroySpinnerThread();
@@ -166,7 +162,7 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 				  << boldBlack << inMessage << reset << std::endl;
 	}
 
-	sAssertionFailure = true;
+	state.assertionFailure = true;
 
 	priv::SignalHandler::handler(SIGABRT);
 }
@@ -174,14 +170,14 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 /*****************************************************************************/
 bool Diagnostic::assertionFailure() noexcept
 {
-	return sAssertionFailure;
+	return state.assertionFailure;
 }
 
 /*****************************************************************************/
 void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 {
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
-	if (s_spinnerThread != nullptr)
+	if (state.spinnerThread != nullptr)
 	{
 		out << std::endl;
 		destroySpinnerThread();
@@ -197,7 +193,7 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 {
 	auto& out = inType == Type::Error ? std::cerr : std::cout;
-	if (s_spinnerThread != nullptr)
+	if (state.spinnerThread != nullptr)
 	{
 		out << std::endl;
 		destroySpinnerThread();
@@ -209,78 +205,66 @@ void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 /*****************************************************************************/
 void Diagnostic::addError(const Type inType, std::string&& inMessage)
 {
-	getErrorList()->push_back({ inType, std::move(inMessage) });
+	state.errorList.push_back({ inType, std::move(inMessage) });
 }
 
 /*****************************************************************************/
 void Diagnostic::printErrors()
 {
-	if (s_ErrorList != nullptr)
+	if (state.errorList.empty())
+		return;
+
+	destroySpinnerThread();
+
+	StringList warnings;
+	StringList errors;
+	for (auto& err : state.errorList)
 	{
-		{
-			destroySpinnerThread();
+		if (err.message.empty())
+			continue;
 
-			auto& errorList = *s_ErrorList;
-			StringList warnings;
-			StringList errors;
-			for (auto& err : errorList)
-			{
-				if (err.message.empty())
-					continue;
-
-				if (err.type == Type::Warning)
-					warnings.emplace_back(std::move(err.message));
-				else
-					errors.emplace_back(std::move(err.message));
-			}
-
-			bool hasWarnings = false;
-			if (warnings.size() > 0)
-			{
-				Type type = Type::Warning;
-				Output::lineBreak();
-				Diagnostic::showHeader(type, fmt::format("{}  Warnings", Unicode::warning()));
-
-				for (auto& message : warnings)
-				{
-					Diagnostic::showMessage(type, std::move(message));
-				}
-				if (errors.size() == 0)
-					Output::lineBreak();
-
-				hasWarnings = true;
-			}
-			if (errors.size() > 0)
-			{
-				Type type = Type::Error;
-				if (!hasWarnings)
-					Output::lineBreakStderr();
-
-				Diagnostic::showHeader(type, fmt::format("{}  Errors", Unicode::circledSaltire()));
-
-				for (auto& message : errors)
-				{
-					Diagnostic::showMessage(type, std::move(message));
-				}
-				Output::lineBreak();
-			}
-		}
-
-		delete s_ErrorList;
-		s_ErrorList = nullptr;
+		if (err.type == Type::Warning)
+			warnings.emplace_back(std::move(err.message));
+		else
+			errors.emplace_back(std::move(err.message));
 	}
 
-	s_Printed = true;
+	bool hasWarnings = false;
+	if (warnings.size() > 0)
+	{
+		Type type = Type::Warning;
+		Output::lineBreak();
+		Diagnostic::showHeader(type, fmt::format("{}  Warnings", Unicode::warning()));
+
+		for (auto& message : warnings)
+		{
+			Diagnostic::showMessage(type, std::move(message));
+		}
+		if (errors.size() == 0)
+			Output::lineBreak();
+
+		hasWarnings = true;
+	}
+	if (errors.size() > 0)
+	{
+		Type type = Type::Error;
+		if (!hasWarnings)
+			Output::lineBreakStderr();
+
+		Diagnostic::showHeader(type, fmt::format("{}  Errors", Unicode::circledSaltire()));
+
+		for (auto& message : errors)
+		{
+			Diagnostic::showMessage(type, std::move(message));
+		}
+		Output::lineBreak();
+	}
 }
 
 /*****************************************************************************/
 void Diagnostic::clearErrors()
 {
-	if (s_ErrorList != nullptr)
-	{
-		delete s_ErrorList;
-		s_ErrorList = nullptr;
-	}
+	state.errorList.clear();
 }
 
 /*****************************************************************************/

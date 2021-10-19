@@ -25,20 +25,24 @@ enum class CommandPoolErrorCode : ushort
 	BuildFailure,
 	BuildException,
 };
-std::mutex s_mutex;
-uint s_compileIndex = 0;
-std::atomic<CommandPoolErrorCode> s_errorCode = CommandPoolErrorCode::None;
-std::function<bool()> s_shutdownHandler;
+
+static std::mutex s_mutex;
+static struct
+{
+	uint index = 0;
+	std::atomic<CommandPoolErrorCode> errorCode = CommandPoolErrorCode::None;
+	std::function<bool()> shutdownHandler;
+} state;
 
 /*****************************************************************************/
 bool printCommand(std::string text)
 {
 	std::lock_guard<std::mutex> lock(s_mutex);
 
-	String::replaceAll(text, '#', std::to_string(s_compileIndex));
+	String::replaceAll(text, '#', std::to_string(state.index));
 	std::cout << text << std::endl;
 
-	++s_compileIndex;
+	++state.index;
 
 	return true;
 }
@@ -68,7 +72,8 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 
 	if (Process::run(command, options) != EXIT_SUCCESS)
 	{
-		s_errorCode = CommandPoolErrorCode::BuildFailure;
+		std::lock_guard<std::mutex> lock(s_mutex);
+		state.errorCode = CommandPoolErrorCode::BuildFailure;
 		return false;
 	}
 
@@ -102,7 +107,7 @@ bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 	if (!errorOutput.empty())
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
-		s_errorCode = CommandPoolErrorCode::BuildFailure;
+		state.errorCode = CommandPoolErrorCode::BuildFailure;
 		String::replaceAll(errorOutput, '\n', "\r\n");
 		auto error = Output::getAnsiStyle(Output::theme().error);
 		auto reset = Output::getAnsiStyle(Color::Reset);
@@ -140,7 +145,7 @@ bool executeCommand(StringList command, std::string sourceFile)
 	if (!errorOutput.empty())
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
-		s_errorCode = CommandPoolErrorCode::BuildFailure;
+		state.errorCode = CommandPoolErrorCode::BuildFailure;
 		auto error = Output::getAnsiStyle(Output::theme().error);
 		auto reset = Output::getAnsiStyle(Color::Reset);
 		auto cmdString = String::join(command);
@@ -154,7 +159,7 @@ bool executeCommand(StringList command, std::string sourceFile)
 /*****************************************************************************/
 void signalHandler(int inSignal)
 {
-	if (s_shutdownHandler())
+	if (state.shutdownHandler())
 	{
 		if (inSignal == SIGTERM)
 		{
@@ -185,15 +190,15 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 	::signal(SIGABRT, signalHandler);
 
 	m_exceptionThrown.clear();
-	s_errorCode = CommandPoolErrorCode::None;
+	state.errorCode = CommandPoolErrorCode::None;
 	m_quiet = quiet;
 
-	s_shutdownHandler = [this]() -> bool {
-		if (s_errorCode != CommandPoolErrorCode::None)
+	state.shutdownHandler = [this]() -> bool {
+		if (state.errorCode != CommandPoolErrorCode::None)
 			return false;
 
 		this->m_threadPool.stop();
-		s_errorCode = CommandPoolErrorCode::Aborted;
+		state.errorCode = CommandPoolErrorCode::Aborted;
 		return true;
 	};
 
@@ -205,7 +210,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 		  executeCommandCarriageReturn :
 		  executeCommand;
 
-	s_compileIndex = 1;
+	state.index = 1;
 	uint totalCompiles = static_cast<uint>(list.size());
 	totalCompiles += static_cast<uint>(pre.size());
 
@@ -254,7 +259,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 		}
 		CHALET_CATCH(const std::exception& err)
 		{
-			if (s_errorCode != CommandPoolErrorCode::None && m_exceptionThrown.empty())
+			if (state.errorCode != CommandPoolErrorCode::None && m_exceptionThrown.empty())
 			{
 				signalHandler(SIGTERM);
 				if (String::equals("build error", err.what()))
@@ -262,13 +267,13 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 				else
 				{
 					m_exceptionThrown = std::string(err.what());
-					s_errorCode = CommandPoolErrorCode::BuildException;
+					state.errorCode = CommandPoolErrorCode::BuildException;
 				}
 			}
 		}
 	}
 
-	if (s_errorCode != CommandPoolErrorCode::None)
+	if (state.errorCode != CommandPoolErrorCode::None)
 	{
 		// m_threadPool.stop();
 		threadResults.clear();
@@ -289,7 +294,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 		if (!executeCommandFunc(post.command, post.output))
 			return onError();
 
-		if (s_errorCode != CommandPoolErrorCode::None)
+		if (state.errorCode != CommandPoolErrorCode::None)
 		{
 			threadResults.clear();
 			return onError();
@@ -315,11 +320,11 @@ std::string CommandPool::getPrintedText(std::string inText, uint inTotal)
 /*****************************************************************************/
 bool CommandPool::onError()
 {
-	if (s_errorCode == CommandPoolErrorCode::Aborted)
+	if (state.errorCode == CommandPoolErrorCode::Aborted)
 	{
 		Output::msgCommandPoolError("Aborted by user.");
 	}
-	else if (s_errorCode == CommandPoolErrorCode::BuildException)
+	else if (state.errorCode == CommandPoolErrorCode::BuildException)
 	{
 		Output::msgCommandPoolError(m_exceptionThrown);
 		std::cout << "Terminated running processes." << std::endl;
@@ -335,11 +340,11 @@ bool CommandPool::onError()
 /*****************************************************************************/
 void CommandPool::cleanup()
 {
-	s_shutdownHandler = nullptr;
-	s_compileIndex = 0;
+	state.shutdownHandler = nullptr;
+	state.index = 0;
 
 	Output::setQuietNonBuild(m_quiet);
 
-	s_errorCode = CommandPoolErrorCode::None;
+	state.errorCode = CommandPoolErrorCode::None;
 }
 }

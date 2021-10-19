@@ -19,15 +19,18 @@
 namespace chalet
 {
 #if defined(CHALET_WIN32)
-int MsvcEnvironment::s_exists = -1;
-std::string MsvcEnvironment::s_vswhere = std::string();
+static struct
+{
+	short exists = -1;
+	std::string vswhere;
+} state;
 #endif
 
 /*****************************************************************************/
 bool MsvcEnvironment::exists()
 {
 #if defined(CHALET_WIN32)
-	if (s_exists == -1)
+	if (state.exists == -1)
 	{
 		// TODO:
 		//   Note that if you install vswhere using Chocolatey (instead of the VS/MSBuild installer),
@@ -35,27 +38,27 @@ bool MsvcEnvironment::exists()
 		//   https://stackoverflow.com/questions/54305638/how-to-find-vswhere-exe-path
 
 		std::string progFiles = Environment::getAsString("ProgramFiles(x86)");
-		s_vswhere = fmt::format("{}\\Microsoft Visual Studio\\Installer\\vswhere.exe", progFiles);
+		state.vswhere = fmt::format("{}\\Microsoft Visual Studio\\Installer\\vswhere.exe", progFiles);
 
-		bool vswhereFound = Commands::pathExists(s_vswhere);
+		bool vswhereFound = Commands::pathExists(state.vswhere);
 		if (!vswhereFound)
 		{
 			std::string progFiles64 = Environment::getAsString("ProgramFiles");
-			String::replaceAll(s_vswhere, progFiles, progFiles64);
+			String::replaceAll(state.vswhere, progFiles, progFiles64);
 
-			vswhereFound = Commands::pathExists(s_vswhere);
+			vswhereFound = Commands::pathExists(state.vswhere);
 			if (!vswhereFound)
 			{
 				// Do this one last to try to support legacy (< VS 2017)
-				s_vswhere = Commands::which("vswhere");
-				vswhereFound = !s_vswhere.empty();
+				state.vswhere = Commands::which("vswhere");
+				vswhereFound = !state.vswhere.empty();
 			}
 		}
 
-		s_exists = vswhereFound ? 1 : 0;
+		state.exists = vswhereFound ? 1 : 0;
 	}
 
-	return s_exists == 1;
+	return state.exists == 1;
 #else
 	return false;
 #endif
@@ -94,7 +97,7 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 
 	m_initialized = true;
 
-	// This sets s_vswhere
+	// This sets state.vswhere
 	if (!MsvcEnvironment::exists())
 		return true;
 
@@ -114,7 +117,7 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 	bool genericMsvcFromInput = m_inputs.visualStudioVersion() != VisualStudioVersion::None;
 
 	auto getStartOfVsWhereCommand = [this]() {
-		StringList cmd{ s_vswhere, "-nologo" };
+		StringList cmd{ state.vswhere, "-nologo" };
 		const auto vsVersion = m_inputs.visualStudioVersion();
 		const bool isStable = vsVersion == VisualStudioVersion::Stable;
 		const bool isPreview = vsVersion == VisualStudioVersion::Preview;
@@ -167,7 +170,7 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 		}
 		else if (RegexPatterns::matchesFullVersionString(inVersion))
 		{
-			StringList vswhereCmd{ s_vswhere, "-nologo" };
+			StringList vswhereCmd{ state.vswhere, "-nologo" };
 			vswhereCmd.emplace_back("-prerelease"); // always include prereleases in this scenario since we're search for the exact version
 			vswhereCmd.emplace_back("-version");
 			vswhereCmd.push_back(fmt::format("{}", inVersion));

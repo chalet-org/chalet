@@ -57,6 +57,7 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutp
 
 	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+	const auto& name = inProject.name();
 
 	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !compilerConfig.isMsvc();
 
@@ -77,14 +78,13 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutp
 			}
 		}
 
-		const auto& name = inProject.name();
-
 		if (m_targets.find(name) == m_targets.end())
 		{
 			m_targets.emplace(name, std::move(target));
 		}
-		m_outputs[name] = std::move(inOutputs);
 	}
+
+	m_outputs[name] = std::move(inOutputs);
 
 	m_toolchain = nullptr;
 	m_project = nullptr;

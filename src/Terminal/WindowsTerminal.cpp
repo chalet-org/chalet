@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Terminal/OSTerminal.hpp"
+#include "Terminal/WindowsTerminal.hpp"
 
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Environment.hpp"
@@ -17,15 +17,27 @@
 
 namespace chalet
 {
-/*****************************************************************************/
-void OSTerminal::initialize()
+namespace
 {
-	if (m_initialized)
+static struct
+{
+#if defined(CHALET_WIN32)
+	uint consoleCp = 0;
+	uint consoleOutputCp = 0;
+#endif
+	bool initialized = false;
+} state;
+}
+
+/*****************************************************************************/
+void WindowsTerminal::initialize()
+{
+	if (state.initialized)
 		return;
 
 #if defined(CHALET_WIN32)
-	m_consoleCp = GetConsoleOutputCP();
-	m_consoleOutputCp = GetConsoleCP();
+	state.consoleCp = GetConsoleOutputCP();
+	state.consoleOutputCp = GetConsoleCP();
 
 	{
 		auto result = SetConsoleOutputCP(CP_UTF8);
@@ -48,11 +60,20 @@ void OSTerminal::initialize()
 
 	reset();
 
-	m_initialized = true;
+#if defined(CHALET_DEBUG) && defined(CHALET_MSVC)
+	{
+		_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+		_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+		_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+		_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+	}
+#endif
+
+	state.initialized = true;
 }
 
 /*****************************************************************************/
-void OSTerminal::reset()
+void WindowsTerminal::reset()
 {
 #if defined(CHALET_WIN32)
 	if (Output::ansiColorsSupportedInComSpec())
@@ -73,14 +94,14 @@ void OSTerminal::reset()
 }
 
 /*****************************************************************************/
-void OSTerminal::cleanup()
+void WindowsTerminal::cleanup()
 {
 #if defined(CHALET_WIN32)
-	if (m_consoleOutputCp != 0)
-		SetConsoleOutputCP(m_consoleOutputCp);
+	if (state.consoleOutputCp != 0)
+		SetConsoleOutputCP(state.consoleOutputCp);
 
-	if (m_consoleCp != 0)
-		SetConsoleCP(m_consoleCp);
+	if (state.consoleCp != 0)
+		SetConsoleCP(state.consoleCp);
 #endif
 }
 }

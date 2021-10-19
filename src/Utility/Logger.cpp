@@ -13,7 +13,10 @@ enum class LoggingLevel
 	Normal,
 	Detailed
 };
-LoggingLevel p_loggingLevel = LoggingLevel::Normal;
+static struct
+{
+	LoggingLevel loggingLevel = LoggingLevel::Normal;
+} state;
 }
 
 namespace chalet
@@ -23,11 +26,11 @@ namespace priv
 /*****************************************************************************/
 void logNormal()
 {
-	p_loggingLevel = LoggingLevel::Normal;
+	state.loggingLevel = LoggingLevel::Normal;
 }
 void logDetailed()
 {
-	p_loggingLevel = LoggingLevel::Detailed;
+	state.loggingLevel = LoggingLevel::Detailed;
 }
 
 /*****************************************************************************/
@@ -39,7 +42,7 @@ Logger::Logger(const std::string& inString)
 /*****************************************************************************/
 Logger::Logger(const char* const inFile, const std::string& inFunction)
 {
-	if (p_loggingLevel == LoggingLevel::Detailed)
+	if (state.loggingLevel == LoggingLevel::Detailed)
 		stream << Logger::classMethod(inFile, inFunction) << ": ";
 }
 
