@@ -318,11 +318,12 @@
 						"skilodge",
 						"temple",
 						"bungalow",
-						"chattel",
+						"cottage",
 						"monastery",
 						"longhouse",
 						"greenhouse",
-						"observatory"
+						"observatory",
+						"yurt"
 					],
 					"default": "default"
 				},

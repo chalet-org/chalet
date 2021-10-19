@@ -102,7 +102,8 @@ StringList kPresetNames{
 	"monastery",
 	"longhouse",
 	"greenhouse",
-	"observatory"
+	"observatory",
+	"yurt"
 };
 }
 
@@ -470,6 +471,19 @@ void ColorTheme::makePreset(const std::string& inValue)
 		header = Color::BrightMagentaBold;
 		build = Color::BrightBlue;
 		assembly = Color::Blue;
+	}
+	// yurt
+	else if (String::equals(kPresetNames.at(++i), inValue))
+	{
+		info = Color::Reset;
+		error = Color::BrightRedBold;
+		warning = Color::BrightYellowBold;
+		success = Color::BrightGreenBold;
+		note = Color::BrightBlueBold;
+		flair = Color::BrightBlack;
+		header = Color::BrightWhiteBold;
+		build = Color::Yellow;
+		assembly = Color::BrightMagenta;
 	}
 }
 
