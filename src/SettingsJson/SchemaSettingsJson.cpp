@@ -578,7 +578,6 @@ Json Schema::getSettingsJson()
 
 	const auto kTheme = "theme";
 	ret[kProperties][kTheme] = R"json({
-		"type": "object",
 		"description": "The color theme preset or colors to give to Chalet",
 		"oneOf": [
 			{

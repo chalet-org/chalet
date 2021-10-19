@@ -404,7 +404,6 @@
 			}
 		},
 		"theme": {
-			"type": "object",
 			"description": "The color theme preset or colors to give to Chalet",
 			"oneOf": [
 				{
