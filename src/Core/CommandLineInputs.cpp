@@ -402,6 +402,11 @@ void CommandLineInputs::setToolchainPreference(std::string&& inValue) const noex
 	m_toolchainPreference = getToolchainPreferenceFromString(m_toolchainPreferenceName);
 }
 
+void CommandLineInputs::setToolchainPreferenceType(const ToolchainType inValue) const noexcept
+{
+	m_toolchainPreference.setType(inValue);
+}
+
 /*****************************************************************************/
 const std::string& CommandLineInputs::toolchainPreferenceName() const noexcept
 {

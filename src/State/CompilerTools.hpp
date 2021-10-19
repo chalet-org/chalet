@@ -107,7 +107,8 @@ struct CompilerTools
 
 	std::string getRootPathVariable();
 
-	CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
+	CompilerConfig& getConfig(const CodeLanguage inLanguage);
+	const CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
 
 private:
 	bool initializeCompilerConfigs(const BuildTargetList& inTargets);
@@ -122,7 +123,7 @@ private:
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 
-	mutable std::unordered_map<CodeLanguage, std::unique_ptr<CompilerConfig>> m_configs;
+	std::unordered_map<CodeLanguage, std::unique_ptr<CompilerConfig>> m_configs;
 
 	std::string m_archiver;
 	std::string m_compilerWindowsResource;

@@ -22,11 +22,11 @@ struct ToolchainPreference
 	std::string profiler;
 	std::string disassembler;
 
-	mutable ToolchainType type = ToolchainType::Unknown;
+	ToolchainType type = ToolchainType::Unknown;
 	StrategyType strategy = StrategyType::Makefile;
 	BuildPathStyle buildPathStyle = BuildPathStyle::TargetTriple;
 
-	void setType(const ToolchainType inType) const;
+	void setType(const ToolchainType inType);
 };
 }
 

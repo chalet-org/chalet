@@ -198,7 +198,7 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 }
 
 /*****************************************************************************/
-SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const
+SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly)
 {
 	SourceOutputs ret;
 
@@ -452,7 +452,7 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const
+SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly)
 {
 	SourceFileGroupList ret;
 	bool isMsvc = inConfig.isMsvc();

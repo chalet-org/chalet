@@ -25,14 +25,14 @@ struct AssemblyDumper
 	bool dumpProject(const std::string& inProjectName, const SourceOutputs& inOutputs, const bool inForced = false);
 
 private:
-	CommandPool::CmdList getAsmCommands(const SourceOutputs& inOutputs, const bool inForced) const;
+	CommandPool::CmdList getAsmCommands(const SourceOutputs& inOutputs, const bool inForced);
 	StringList getAsmGenerate(const std::string& object, const std::string& target) const;
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 
 	CommandPool m_commandPool;
-	mutable StringList m_cache;
+	StringList m_cache;
 };
 }
 

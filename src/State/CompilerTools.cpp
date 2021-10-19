@@ -205,7 +205,7 @@ bool CompilerTools::detectToolchainFromPaths()
 #if defined(CHALET_WIN32)
 		if (String::endsWith("cl.exe", m_compilerCpp.path) || String::endsWith("cl.exe", m_compilerC.path))
 		{
-			toolchain.setType(ToolchainType::MSVC);
+			m_inputs.setToolchainPreferenceType(ToolchainType::MSVC);
 
 			if (!detectTargetArchitectureMSVC())
 				return false;
@@ -214,12 +214,12 @@ bool CompilerTools::detectToolchainFromPaths()
 #endif
 			if (String::contains("clang", m_compilerCpp.path) || String::contains("clang", m_compilerC.path))
 		{
-			toolchain.setType(ToolchainType::LLVM);
+			m_inputs.setToolchainPreferenceType(ToolchainType::LLVM);
 		}
 		else
 		{
 			// Treat as some variant of GCC
-			toolchain.setType(ToolchainType::GNU);
+			m_inputs.setToolchainPreferenceType(ToolchainType::GNU);
 		}
 	}
 
@@ -926,7 +926,17 @@ std::string CompilerTools::getRootPathVariable()
 }
 
 /*****************************************************************************/
-CompilerConfig& CompilerTools::getConfig(const CodeLanguage inLanguage) const
+CompilerConfig& CompilerTools::getConfig(const CodeLanguage inLanguage)
+{
+	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
+	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "CompilerTools::getConfig called before being initialized.");
+
+	auto& config = *m_configs.at(inLanguage);
+	return config;
+}
+
+/*****************************************************************************/
+const CompilerConfig& CompilerTools::getConfig(const CodeLanguage inLanguage) const
 {
 	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
 	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "CompilerTools::getConfig called before being initialized.");

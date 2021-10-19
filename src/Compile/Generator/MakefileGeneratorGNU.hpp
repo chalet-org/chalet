@@ -29,9 +29,9 @@ private:
 	std::string getLinkerEcho() const;
 
 	std::string getPchRecipe(const std::string& source, const std::string& object);
-	std::string getRcRecipe(const std::string& ext, const std::string& pchTarget) const;
-	std::string getCxxRecipe(const std::string& ext, const std::string& pchTarget) const;
-	std::string getObjcRecipe(const std::string& ext) const;
+	std::string getRcRecipe(const std::string& ext, const std::string& pchTarget);
+	std::string getCxxRecipe(const std::string& ext, const std::string& pchTarget);
+	std::string getObjcRecipe(const std::string& ext);
 
 	std::string getTargetRecipe(const std::string& linkerTarget) const;
 
@@ -47,7 +47,7 @@ private:
 
 	// StringList m_fileExtensions;
 
-	mutable Dictionary<StringList> m_locationCache;
+	Dictionary<StringList> m_locationCache;
 };
 }
 

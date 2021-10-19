@@ -86,7 +86,7 @@ bool AssemblyDumper::dumpProject(const std::string& inProjectName, const SourceO
 }
 
 /*****************************************************************************/
-CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutputs, const bool inForced) const
+CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutputs, const bool inForced)
 {
 	CommandPool::CmdList ret;
 

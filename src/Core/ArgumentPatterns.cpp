@@ -26,20 +26,20 @@ MappedArgument::MappedArgument(ArgumentIdentifier inId, Variant inValue) :
 ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	m_subCommands({
-		{ Route::BuildRun, &ArgumentPatterns::commandBuildRun },
-		{ Route::Run, &ArgumentPatterns::commandRun },
-		{ Route::Build, &ArgumentPatterns::commandBuild },
-		{ Route::Rebuild, &ArgumentPatterns::commandRebuild },
-		{ Route::Clean, &ArgumentPatterns::commandClean },
-		{ Route::Bundle, &ArgumentPatterns::commandBundle },
-		{ Route::Configure, &ArgumentPatterns::commandConfigure },
-		{ Route::Init, &ArgumentPatterns::commandInit },
-		{ Route::SettingsGet, &ArgumentPatterns::commandSettingsGet },
-		{ Route::SettingsGetKeys, &ArgumentPatterns::commandSettingsGetKeys },
-		{ Route::SettingsSet, &ArgumentPatterns::commandSettingsSet },
-		{ Route::SettingsUnset, &ArgumentPatterns::commandSettingsUnset },
-		{ Route::Query, &ArgumentPatterns::commandQuery },
-		{ Route::ColorTest, &ArgumentPatterns::commandColorTest },
+		{ Route::BuildRun, &ArgumentPatterns::populateBuildRunArguments },
+		{ Route::Run, &ArgumentPatterns::populateRunArguments },
+		{ Route::Build, &ArgumentPatterns::populateBuildArguments },
+		{ Route::Rebuild, &ArgumentPatterns::populateRebuildArguments },
+		{ Route::Clean, &ArgumentPatterns::populateCleanArguments },
+		{ Route::Bundle, &ArgumentPatterns::populateBundleArguments },
+		{ Route::Configure, &ArgumentPatterns::populateConfigureArguments },
+		{ Route::Init, &ArgumentPatterns::populateInitArguments },
+		{ Route::SettingsGet, &ArgumentPatterns::populateSettingsGetArguments },
+		{ Route::SettingsGetKeys, &ArgumentPatterns::populateSettingsGetKeysArguments },
+		{ Route::SettingsSet, &ArgumentPatterns::populateSettingsSetArguments },
+		{ Route::SettingsUnset, &ArgumentPatterns::populateSettingsUnsetArguments },
+		{ Route::Query, &ArgumentPatterns::populateQueryArguments },
+		{ Route::ColorTest, &ArgumentPatterns::populateColorTestArguments },
 	}),
 	m_routeMap({
 		{ "buildrun", Route::BuildRun },
@@ -67,13 +67,13 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 	kArgQueryType("<type>")
 {
 #if defined(CHALET_DEBUG)
-	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::commandDebug);
+	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::populateDebugArguments);
 	m_routeMap.emplace("debug", Route::Debug);
 #endif
 }
 
 /*****************************************************************************/
-bool ArgumentPatterns::parse(const StringList& inArguments)
+bool ArgumentPatterns::resolveFromArguments(const StringList& inArguments)
 {
 	m_argumentMap.clear();
 
@@ -773,7 +773,7 @@ void ArgumentPatterns::addOptionalArguments()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandBuildRun()
+void ArgumentPatterns::populateBuildRunArguments()
 {
 	addOptionalArguments();
 
@@ -782,7 +782,7 @@ void ArgumentPatterns::commandBuildRun()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandRun()
+void ArgumentPatterns::populateRunArguments()
 {
 	addOptionalArguments();
 
@@ -791,37 +791,37 @@ void ArgumentPatterns::commandRun()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandBuild()
+void ArgumentPatterns::populateBuildArguments()
 {
 	addOptionalArguments();
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandRebuild()
+void ArgumentPatterns::populateRebuildArguments()
 {
 	addOptionalArguments();
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandClean()
+void ArgumentPatterns::populateCleanArguments()
 {
 	addOptionalArguments();
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandBundle()
+void ArgumentPatterns::populateBundleArguments()
 {
 	addOptionalArguments();
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandConfigure()
+void ArgumentPatterns::populateConfigureArguments()
 {
 	addOptionalArguments();
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandInit()
+void ArgumentPatterns::populateInitArguments()
 {
 	//
 	addStringArgument(ArgumentIdentifier::InitPath, kArgInitPath.c_str(), ".")
@@ -830,7 +830,7 @@ void ArgumentPatterns::commandInit()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandSettingsGet()
+void ArgumentPatterns::populateSettingsGetArguments()
 {
 	addFileArg();
 	addSettingsTypeArg();
@@ -840,7 +840,7 @@ void ArgumentPatterns::commandSettingsGet()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandSettingsGetKeys()
+void ArgumentPatterns::populateSettingsGetKeysArguments()
 {
 	addFileArg();
 	addSettingsTypeArg();
@@ -853,7 +853,7 @@ void ArgumentPatterns::commandSettingsGetKeys()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandSettingsSet()
+void ArgumentPatterns::populateSettingsSetArguments()
 {
 	addFileArg();
 	addSettingsTypeArg();
@@ -867,7 +867,7 @@ void ArgumentPatterns::commandSettingsSet()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandSettingsUnset()
+void ArgumentPatterns::populateSettingsUnsetArguments()
 {
 	addFileArg();
 	addSettingsTypeArg();
@@ -878,7 +878,7 @@ void ArgumentPatterns::commandSettingsUnset()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandQuery()
+void ArgumentPatterns::populateQueryArguments()
 {
 	auto listNames = m_inputs.getCliQueryOptions();
 	addStringArgument(ArgumentIdentifier::QueryType, kArgQueryType.c_str())
@@ -887,13 +887,13 @@ void ArgumentPatterns::commandQuery()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::commandColorTest()
+void ArgumentPatterns::populateColorTestArguments()
 {
 }
 
 /*****************************************************************************/
 #if defined(CHALET_DEBUG)
-void ArgumentPatterns::commandDebug()
+void ArgumentPatterns::populateDebugArguments()
 {
 	addOptionalArguments();
 }

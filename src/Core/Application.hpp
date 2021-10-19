@@ -26,7 +26,6 @@ public:
 private:
 	bool initialize();
 	bool handleRoute();
-	std::string getMakeExecutable(const std::string& inCompilerPath);
 
 	int onExit(const Status inStatus);
 	void cleanup();

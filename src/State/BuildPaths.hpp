@@ -48,7 +48,7 @@ struct BuildPaths
 	std::string getWindowsIconResourceFilename(const SourceTarget& inProject) const;
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
-	SourceOutputs getOutputs(const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const;
+	SourceOutputs getOutputs(const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly);
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const;
 
 	void replaceVariablesInPath(std::string& outPath, const std::string& inName = std::string()) const;
@@ -67,7 +67,7 @@ private:
 		StringList list;
 	};
 
-	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly) const;
+	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly);
 	std::string getObjectFile(const std::string& inSource, const bool inIsMsvc) const;
 	std::string getAssemblyFile(const std::string& inSource, const bool inIsMsvc) const;
 	std::string getDependencyFile(const std::string& inSource) const;
@@ -88,9 +88,9 @@ private:
 	const StringList m_objectiveCExts;
 	const StringList m_objectiveCppExts;
 
-	mutable StringList m_fileListCache;
-	mutable StringList m_fileListCacheShared;
-	// mutable StringList m_directoryCache;
+	StringList m_fileListCache;
+	StringList m_fileListCacheShared;
+	// StringList m_directoryCache;
 
 	HeapDictionary<SourceGroup> m_fileList;
 	StringList m_allFileExtensions;

@@ -5,6 +5,7 @@
 
 #include "Core/QueryController.hpp"
 
+#include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Settings/SettingsManager.hpp"
 #include "State/StatePrototype.hpp"

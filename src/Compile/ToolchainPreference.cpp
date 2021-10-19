@@ -8,11 +8,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-void ToolchainPreference::setType(const ToolchainType inType) const
+void ToolchainPreference::setType(const ToolchainType inType)
 {
 	if (type == ToolchainType::Unknown)
-	{
 		type = inType;
-	}
 }
 }

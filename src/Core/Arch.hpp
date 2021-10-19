@@ -3,7 +3,6 @@
 
 namespace chalet
 {
-
 struct Arch
 {
 	enum class Cpu : ushort

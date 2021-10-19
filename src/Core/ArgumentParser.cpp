@@ -28,21 +28,20 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		return false;
 
 	StringList arguments = parseRawArguments(argc, argv);
+	m_inputs.setAppPath(arguments.front());
 
 	ArgumentPatterns patterns(m_inputs);
-	bool result = patterns.parse(arguments);
+	bool result = patterns.resolveFromArguments(arguments);
 	if (!result)
 		return false;
 
-	Route command = patterns.route();
-	m_inputs.setCommand(command);
-	if (command == Route::Help)
+	Route route = patterns.route();
+	m_inputs.setCommand(route);
+	if (route == Route::Help)
 		return true;
 
 	if (patterns.arguments().size() == 0)
 		return false;
-
-	m_inputs.setAppPath(arguments.front());
 
 	std::string buildConfiguration;
 	std::string toolchainPreference;
@@ -254,7 +253,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	// must do at the end (after arch & toolchain have been parsed)
 	m_inputs.setToolchainPreference(std::move(toolchainPreference));
 
-	if (command == Route::Query)
+	if (route == Route::Query)
 	{
 		// Output::setQuietNonBuild(true);
 		m_inputs.setCommandList(patterns.getRouteList());

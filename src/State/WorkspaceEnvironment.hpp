@@ -33,13 +33,10 @@ struct WorkspaceEnvironment
 	std::string makePathVariable(const std::string& inRootPath) const;
 
 private:
-	mutable StringList m_searchPaths;
+	StringList m_searchPaths;
 
 	std::string m_workspace;
 	std::string m_version;
-
-	std::string m_pathString;
-	StringList m_pathInternal;
 };
 }
 

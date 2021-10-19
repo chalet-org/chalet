@@ -80,8 +80,10 @@ struct CommandLineInputs
 
 	const ToolchainPreference& toolchainPreference() const noexcept;
 	void setToolchainPreference(std::string&& inValue) const noexcept;
+	void setToolchainPreferenceType(const ToolchainType inValue) const noexcept;
 	const std::string& toolchainPreferenceName() const noexcept;
 	void setToolchainPreferenceName(std::string&& inValue) const noexcept;
+
 	VisualStudioVersion visualStudioVersion() const noexcept;
 	bool isToolchainPreset() const noexcept;
 

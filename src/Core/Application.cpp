@@ -87,7 +87,7 @@ bool Application::initialize()
 int Application::onExit(const Status inStatus)
 {
 	Diagnostic::printErrors();
-	cleanup();
+	this->cleanup();
 
 	return static_cast<int>(inStatus);
 }

@@ -33,7 +33,7 @@ class ArgumentPatterns
 public:
 	ArgumentPatterns(const CommandLineInputs& inInputs);
 
-	bool parse(const StringList& inArguments);
+	bool resolveFromArguments(const StringList& inArguments);
 	const ArgumentMap& arguments() const noexcept;
 
 	Route route() const noexcept;
@@ -49,7 +49,6 @@ private:
 	bool doParse(const StringList& inArguments);
 	bool showHelp();
 	bool populateArgumentMap(const StringList& inArguments);
-	// void populateArgumentMap(const StringList& inArguments);
 	std::string getHelp();
 
 	argparse::Argument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument);
@@ -84,26 +83,25 @@ private:
 	void addGenerateCompileCommandsArg();
 	void addShowCommandsArg();
 	void addBenchmarkArg();
-
 	void addOptionalArguments();
-	void commandBuildRun();
-	void commandRun();
-	void commandBuild();
-	void commandRebuild();
-	void commandClean();
-	void commandBundle();
-	// void commandInstall();
-	void commandConfigure();
-	void commandInit();
-	void commandSettingsGet();
-	void commandSettingsGetKeys();
-	void commandSettingsSet();
-	void commandSettingsUnset();
-	void commandQuery();
-	void commandColorTest();
+
+	void populateBuildRunArguments();
+	void populateRunArguments();
+	void populateBuildArguments();
+	void populateRebuildArguments();
+	void populateCleanArguments();
+	void populateBundleArguments();
+	void populateConfigureArguments();
+	void populateInitArguments();
+	void populateSettingsGetArguments();
+	void populateSettingsGetKeysArguments();
+	void populateSettingsSetArguments();
+	void populateSettingsUnsetArguments();
+	void populateQueryArguments();
+	void populateColorTestArguments();
 
 #if defined(CHALET_DEBUG)
-	void commandDebug();
+	void populateDebugArguments();
 #endif
 
 	const CommandLineInputs& m_inputs;

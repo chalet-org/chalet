@@ -266,7 +266,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std::string& pchTarget) const
+std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std::string& pchTarget)
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -318,7 +318,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std::string& pchTarget) const
+std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std::string& pchTarget)
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -380,7 +380,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
+std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext)
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -430,8 +430,11 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext) const
 /*****************************************************************************/
 bool MakefileGeneratorGNU::locationExists(const std::string& location, const std::string& ext) const
 {
+	if (m_locationCache.find(location) == m_locationCache.end())
+		return false;
+
 	bool found = false;
-	for (auto& e : m_locationCache[location])
+	for (auto& e : m_locationCache.at(location))
 	{
 		if (e == ext)
 		{
