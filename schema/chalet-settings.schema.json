@@ -406,7 +406,7 @@
 		"theme": {
 			"type": "object",
 			"description": "The color theme preset or colors to give to Chalet",
-			"anyOf": [
+			"oneOf": [
 				{
 					"type": "string",
 					"minLength": 1,

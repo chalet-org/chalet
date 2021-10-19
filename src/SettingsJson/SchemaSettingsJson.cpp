@@ -449,7 +449,7 @@ Json Schema::getSettingsJson()
 
 	const auto kDefinitions = "definitions";
 	const auto kProperties = "properties";
-	const auto kAnyOf = "anyOf";
+	const auto kOneOf = "oneOf";
 
 	auto toolchains = R"json({
 		"type": "object",
@@ -580,7 +580,7 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kTheme] = R"json({
 		"type": "object",
 		"description": "The color theme preset or colors to give to Chalet",
-		"anyOf": [
+		"oneOf": [
 			{
 				"type": "string",
 				"minLength": 1,
@@ -595,14 +595,14 @@ Json Schema::getSettingsJson()
 			}
 		]
 	})json"_ojson;
-	ret[kProperties][kTheme][kAnyOf][0][kEnum] = ColorTheme::presets();
-	ret[kProperties][kTheme][kAnyOf][1][kProperties] = Json::object();
+	ret[kProperties][kTheme][kOneOf][0][kEnum] = ColorTheme::presets();
+	ret[kProperties][kTheme][kOneOf][1][kProperties] = Json::object();
 
 	Json themeRef = Json::object();
 	themeRef["$ref"] = std::string("#/definitions/theme-color");
 	for (const auto& key : ColorTheme::getKeys())
 	{
-		ret[kProperties][kTheme][kAnyOf][1][kProperties][key] = themeRef;
+		ret[kProperties][kTheme][kOneOf][1][kProperties][key] = themeRef;
 	}
 
 	return ret;
