@@ -30,7 +30,7 @@ private:
 	void doRegularEllipsis();
 
 	std::atomic<bool> m_running = false;
-	std::unique_ptr<std::thread> m_thread;
+	Unique<std::thread> m_thread;
 	std::mutex m_mutex;
 };
 }

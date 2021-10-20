@@ -13,7 +13,7 @@ namespace chalet
 struct IBuildDependency;
 struct StatePrototype;
 struct CommandLineInputs;
-using BuildDependency = std::unique_ptr<IBuildDependency>;
+using BuildDependency = Unique<IBuildDependency>;
 
 struct IBuildDependency
 {

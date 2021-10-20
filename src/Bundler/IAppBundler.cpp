@@ -21,7 +21,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-[[nodiscard]] std::unique_ptr<IAppBundler> IAppBundler::make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile)
+[[nodiscard]] Unique<IAppBundler> IAppBundler::make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile)
 {
 #if defined(CHALET_WIN32)
 	UNUSED(inInputFile);

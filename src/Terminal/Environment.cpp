@@ -6,7 +6,6 @@
 #include "Terminal/Environment.hpp"
 
 #include "Libraries/WindowsApi.hpp"
-#include "Terminal/MsvcEnvironment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 

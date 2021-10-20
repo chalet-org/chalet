@@ -47,7 +47,7 @@ private:
 	StringList m_removedDirs;
 
 #if defined(CHALET_MACOS)
-	std::unique_ptr<BuildState> m_univeralState;
+	Unique<BuildState> m_univeralState;
 #endif
 
 	std::string m_detectedArch;

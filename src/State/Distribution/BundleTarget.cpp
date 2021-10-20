@@ -255,7 +255,7 @@ bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 		if (!found)
 		{
 
-			for (auto& path : inState.environment.searchPaths())
+			for (auto& path : inState.workspace.searchPaths())
 			{
 				resolved = fmt::format("{}/{}", path, dependency);
 				if (Commands::pathExists(resolved))

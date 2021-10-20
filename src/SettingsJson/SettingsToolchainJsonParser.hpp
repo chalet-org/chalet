@@ -27,6 +27,7 @@ private:
 	bool validatePaths();
 	bool makeToolchain(Json& toolchains, const ToolchainPreference& toolchain);
 	bool parseToolchain(Json& inNode);
+	bool finalizeEnvironment();
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
@@ -47,6 +48,8 @@ private:
 	const std::string kKeyCmake = "cmake";
 	const std::string kKeyMake = "make";
 	const std::string kKeyNinja = "ninja";
+
+	bool m_checkForEnvironment = false;
 };
 }
 

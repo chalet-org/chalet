@@ -19,7 +19,7 @@ struct SourceFileGroup
 	SourceType type = SourceType::Unknown;
 };
 
-using SourceFileGroupList = std::vector<std::unique_ptr<SourceFileGroup>>;
+using SourceFileGroupList = std::vector<Unique<SourceFileGroup>>;
 }
 
 #endif // CHALET_SOURCE_FILE_GROUP_HPP

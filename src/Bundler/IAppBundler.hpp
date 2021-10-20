@@ -28,7 +28,7 @@ struct IAppBundler
 	virtual std::string getExecutablePath() const = 0;
 	virtual std::string getResourcePath() const = 0;
 
-	[[nodiscard]] static std::unique_ptr<IAppBundler> make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile);
+	[[nodiscard]] static Unique<IAppBundler> make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile);
 
 protected:
 	BuildState& m_state;

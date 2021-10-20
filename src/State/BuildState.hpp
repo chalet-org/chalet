@@ -7,6 +7,7 @@
 #define CHALET_BUILD_STATE_HPP
 
 #include "Cache/WorkspaceCache.hpp"
+#include "Compile/Environment/CompileEnvironment.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
@@ -18,7 +19,6 @@
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/MsvcEnvironment.hpp"
 
 namespace chalet
 {
@@ -32,7 +32,7 @@ class BuildState
 	StatePrototype& m_prototype;
 
 public:
-	explicit BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototype);
+	explicit BuildState(CommandLineInputs inInputs, StatePrototype& inStatePrototype);
 
 	const AncillaryTools& tools;
 	const DistributionTargetList& distribution;
@@ -40,10 +40,10 @@ public:
 	BuildDependencyList& externalDependencies;
 
 	BuildInfo info;
-	WorkspaceEnvironment environment;
+	WorkspaceEnvironment workspace;
 	CompilerTools toolchain;
 	BuildPaths paths;
-	MsvcEnvironment msvcEnvironment;
+	Unique<CompileEnvironment> environment;
 	BuildConfiguration configuration;
 	BuildTargetList targets;
 

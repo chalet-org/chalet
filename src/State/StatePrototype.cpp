@@ -43,7 +43,7 @@ bool StatePrototype::initialize()
 	if (!cache.initializeSettings())
 		return false;
 
-	// if (!environment.initialize())
+	// if (!workspace.initialize())
 	// 	return false;
 
 	if (!parseGlobalSettingsJson())

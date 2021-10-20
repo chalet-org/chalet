@@ -19,6 +19,9 @@ typedef std::uint64_t ullong;
 
 typedef long double ldouble;
 
+template <typename PtrType>
+using Unique = std::unique_ptr<PtrType>;
+
 template <typename MapType>
 using OrderedDictionary = std::map<std::string, MapType>;
 
@@ -26,7 +29,7 @@ template <typename MapType>
 using Dictionary = std::unordered_map<std::string, MapType>;
 
 template <typename MapType>
-using HeapDictionary = std::unordered_map<std::string, std::unique_ptr<MapType>>;
+using HeapDictionary = std::unordered_map<std::string, Unique<MapType>>;
 }
 
 #endif // CHALET_UTIL_TYPES_HPP

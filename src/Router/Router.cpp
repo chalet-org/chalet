@@ -63,8 +63,8 @@ bool Router::run()
 		return false;
 	}
 
-	std::unique_ptr<StatePrototype> prototype;
-	std::unique_ptr<BuildState> buildState;
+	Unique<StatePrototype> prototype;
+	Unique<BuildState> buildState;
 
 	const bool isSettings = command == Route::SettingsGet
 		|| command == Route::SettingsSet

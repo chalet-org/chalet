@@ -21,8 +21,8 @@ struct WorkspaceEnvironment
 
 	bool initialize(BuildPaths& inPaths);
 
-	const std::string& workspace() const noexcept;
-	void setWorkspace(std::string&& inValue) noexcept;
+	const std::string& workspaceName() const noexcept;
+	void setWorkspaceName(std::string&& inValue) noexcept;
 
 	const std::string& version() const noexcept;
 	void setVersion(std::string&& inValue) noexcept;
@@ -35,7 +35,7 @@ struct WorkspaceEnvironment
 private:
 	StringList m_searchPaths;
 
-	std::string m_workspace;
+	std::string m_workspaceName;
 	std::string m_version;
 };
 }

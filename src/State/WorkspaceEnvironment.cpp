@@ -43,14 +43,14 @@ bool WorkspaceEnvironment::initialize(BuildPaths& inPaths)
 }
 
 /*****************************************************************************/
-const std::string& WorkspaceEnvironment::workspace() const noexcept
+const std::string& WorkspaceEnvironment::workspaceName() const noexcept
 {
-	return m_workspace;
+	return m_workspaceName;
 }
 
-void WorkspaceEnvironment::setWorkspace(std::string&& inValue) noexcept
+void WorkspaceEnvironment::setWorkspaceName(std::string&& inValue) noexcept
 {
-	m_workspace = std::move(inValue);
+	m_workspaceName = std::move(inValue);
 }
 
 /*****************************************************************************/
