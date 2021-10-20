@@ -200,7 +200,7 @@ bool VisualStudioCompileEnvironment::createFromVersion(const std::string& inVers
 		}
 
 		// Get the delta between the two and save it to a file
-		createEnvironmentDelta(m_varsFileOriginal, m_varsFileMsvc, m_varsFileMsvcDelta, [&msvcInject, &m_path](std::string& line) {
+		createEnvironmentDelta(m_varsFileOriginal, m_varsFileMsvc, m_varsFileMsvcDelta, [&](std::string& line) {
 			if (String::startsWith("__VSCMD_PREINIT_PATH=", line))
 			{
 				if (String::contains(msvcInject, line))

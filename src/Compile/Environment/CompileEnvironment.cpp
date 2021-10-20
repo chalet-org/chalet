@@ -9,6 +9,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Utility/DefinesExperimental.hpp"
 #include "Utility/String.hpp"
 

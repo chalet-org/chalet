@@ -594,7 +594,7 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Sourc
 	}
 
 #if defined(CHALET_WIN32)
-	if (inIsMsvc)
+	if (inConfig.isMsvc())
 	{
 		if (inProject.usesPch())
 		{
