@@ -8,6 +8,7 @@
 #include "Router/Router.hpp"
 
 #include "Core/ArgumentParser.hpp"
+#include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/SignalHandler.hpp"
@@ -24,13 +25,13 @@ int Application::run(const int argc, const char* const argv[])
 	if (!initialize())
 	{
 		Diagnostic::error("Cannot call 'Application::run' more than once.");
-		return onExit(Status::Failure);
+		return onExit(Status::EarlyFailure);
 	}
 
 	{
 		ArgumentParser argParser{ m_inputs };
 		if (!argParser.run(argc, argv))
-			return onExit(Status::Failure);
+			return onExit(Status::EarlyFailure);
 	}
 
 	if (m_inputs.command() == Route::Help)
@@ -86,10 +87,18 @@ bool Application::initialize()
 /*****************************************************************************/
 int Application::onExit(const Status inStatus)
 {
+	if (inStatus == Status::EarlyFailure)
+	{
+		ThemeSettingsJsonParser themeParser(m_inputs);
+		UNUSED(themeParser.serialize());
+	}
+
 	Diagnostic::printErrors();
 	this->cleanup();
 
-	return static_cast<int>(inStatus);
+	int result = static_cast<int>(inStatus);
+
+	return result > 0 ? 1 : 0;
 }
 
 /*****************************************************************************/

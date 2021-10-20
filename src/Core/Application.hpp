@@ -15,7 +15,8 @@ class Application
 	enum class Status
 	{
 		Success = EXIT_SUCCESS,
-		Failure = EXIT_FAILURE
+		Failure = EXIT_FAILURE,
+		EarlyFailure = EXIT_FAILURE + 1
 	};
 
 public:
