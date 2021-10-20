@@ -18,6 +18,7 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 
 	virtual StringList getLinkExclusions() const override;
 
+protected:
 	// Compile
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;

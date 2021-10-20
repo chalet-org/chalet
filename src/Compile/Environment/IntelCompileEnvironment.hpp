@@ -15,10 +15,18 @@ class IntelCompileEnvironment final : public CompileEnvironment
 public:
 	explicit IntelCompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState);
 
-	virtual bool create(const std::string& inVersion = std::string()) final;
+protected:
+	virtual bool createFromVersion(const std::string& inVersion) final;
 
 private:
-	//
+	bool saveIntelEnvironment() const;
+
+	const std::string kVarsId;
+
+	std::string m_varsFileOriginal;
+	std::string m_varsFileIntel;
+	std::string m_varsFileIntelDelta;
+	std::string m_intelSetVars;
 };
 }
 

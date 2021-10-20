@@ -42,7 +42,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	const auto& archFromInput = m_inputs.targetArchitecture();
 	const auto& targetArchString = m_state.info.targetArchitectureString();
 
-	if (toolchainType == ToolchainType::LLVM)
+	if (toolchainType == ToolchainType::LLVM || toolchainType == ToolchainType::IntelLLVM)
 	{
 		bool valid = false;
 		if (!archFromInput.empty())
@@ -103,7 +103,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 		if (!valid)
 			return false;
 	}
-	else if (toolchainType == ToolchainType::GNU)
+	else if (toolchainType == ToolchainType::GNU || toolchainType == ToolchainType::IntelClassic)
 	{
 		if (archFromInput.empty() || !String::contains('-', targetArchString))
 		{

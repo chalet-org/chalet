@@ -10,6 +10,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/DefinesExperimental.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -55,7 +56,6 @@ static struct
 	};
 #endif
 } state;
-
 }
 
 /*****************************************************************************/
@@ -831,6 +831,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.profiler = "gprof";
 		ret.disassembler = "objdump";
 	}
+#if CHALET_ENABLE_INTEL_EXPERIMENTAL
 	else if (String::equals(kToolchainPresetICC, inValue))
 	{
 		m_isToolchainPreset = true;
@@ -838,20 +839,21 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 		// /opt/intel/oneapi
 
-		ret.type = ToolchainType::IntelCompilerClassic;
-		ret.strategy = StrategyType::Makefile;
+		ret.type = ToolchainType::IntelClassic;
+		ret.strategy = StrategyType::Ninja;
 		ret.cpp = "icpc";
 		ret.cc = "icc";
 		ret.rc = "windres";
-#if defined(CHALET_WIN32)
-		ret.linker = "xild";
-#else
+	#if defined(CHALET_WIN32)
 		ret.linker = "xilink";
-#endif
+	#else
+		ret.linker = "xild";
+	#endif
 		ret.archiver = "xiar";
 		ret.profiler = "gprof";
 		ret.disassembler = "objdump";
 	}
+#endif
 	else
 	{
 		ret.type = ToolchainType::Unknown;

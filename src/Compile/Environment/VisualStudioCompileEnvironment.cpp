@@ -66,24 +66,21 @@ bool VisualStudioCompileEnvironment::exists()
 
 /*****************************************************************************/
 VisualStudioCompileEnvironment::VisualStudioCompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState) :
-	CompileEnvironment(inInputs, inState)
+	CompileEnvironment(inInputs, inState),
+	kVarsId("msvc")
 {
+	UNUSED(kVarsId);
 }
 
 /*****************************************************************************/
-bool VisualStudioCompileEnvironment::create(const std::string& inVersion)
+bool VisualStudioCompileEnvironment::createFromVersion(const std::string& inVersion)
 {
 #if defined(CHALET_WIN32)
-	if (m_initialized)
-		return true;
-
 	makeArchitectureCorrections();
 
-	m_varsFileOriginal = m_state.cache.getHashPath("original.env", CacheType::Local);
-	m_varsFileMsvc = m_state.cache.getHashPath("msvc_all.env", CacheType::Local);
-	m_varsFileMsvcDelta = getMsvcVarsPath();
-
-	m_initialized = true;
+	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", kVarsId), CacheType::Local);
+	m_varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", kVarsId), CacheType::Local);
+	m_varsFileMsvcDelta = getVarsPath(kVarsId);
 
 	// This sets state.vswhere
 	if (!VisualStudioCompileEnvironment::exists())
@@ -93,7 +90,7 @@ bool VisualStudioCompileEnvironment::create(const std::string& inVersion)
 
 	// TODO: Check if Visual Studio is even installed
 
-	auto path = Environment::getPath();
+	m_path = Environment::getPath();
 
 	// Note: See Note about __CHALET_MSVC_INJECT__ in Environment.cpp
 	auto appDataPath = Environment::getAsString("APPDATA");
@@ -138,8 +135,7 @@ bool VisualStudioCompileEnvironment::create(const std::string& inVersion)
 	bool deltaExists = Commands::pathExists(m_varsFileMsvcDelta);
 	if (!deltaExists)
 	{
-		// Diagnostic::infoEllipsis("Creating Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta);
-		Diagnostic::infoEllipsis("Creating Microsoft{} Visual C++ Environment Cache", Unicode::registered());
+		Diagnostic::infoEllipsis("Creating Microsoft{} Visual C/C++ Environment Cache", Unicode::registered());
 
 		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) {
 			auto temp = Commands::subprocessOutput(inCmd);
@@ -190,99 +186,57 @@ bool VisualStudioCompileEnvironment::create(const std::string& inVersion)
 		}
 
 		// Read the current environment and save it to a file
-		if (!saveOriginalEnvironment())
+		if (!saveOriginalEnvironment(m_varsFileOriginal))
 		{
-			Diagnostic::error("MSVC Environment could not be fetched.");
+			Diagnostic::error("MSVC Environment could not be fetched: The original environment could not be saved.");
 			return false;
 		}
 
 		// Read the MSVC environment and save it to a file
 		if (!saveMsvcEnvironment())
 		{
-			Diagnostic::error("MSVC Environment could not be fetched: Error saving the full MSVC environment.");
+			Diagnostic::error("MSVC Environment could not be fetched: The expected method returned with error.");
 			return false;
 		}
 
 		// Get the delta between the two and save it to a file
-		{
-			std::ifstream msvcVarsInput(m_varsFileMsvc);
-			std::string msvcVars((std::istreambuf_iterator<char>(msvcVarsInput)), std::istreambuf_iterator<char>());
-
-			std::ifstream inputOrig(m_varsFileOriginal);
-			for (std::string line; std::getline(inputOrig, line);)
+		createEnvironmentDelta(m_varsFileOriginal, m_varsFileMsvc, m_varsFileMsvcDelta, [&msvcInject, &m_path](std::string& line) {
+			if (String::startsWith("__VSCMD_PREINIT_PATH=", line))
 			{
-				String::replaceAll(msvcVars, line, "");
+				if (String::contains(msvcInject, line))
+					String::replaceAll(line, msvcInject + ";", "");
 			}
-
-			std::ofstream(m_varsFileMsvcDelta) << msvcVars;
-
-			msvcVarsInput.close();
-			inputOrig.close();
-		}
-
-		Commands::remove(m_varsFileOriginal);
-		Commands::remove(m_varsFileMsvc);
-
-		{
-			std::string outContents;
-			std::ifstream input(m_varsFileMsvcDelta);
-			for (std::string line; std::getline(input, line);)
+			else if (String::startsWith({ "PATH=", "Path=" }, line))
 			{
-				if (!line.empty())
-				{
-					if (String::startsWith("__VSCMD_PREINIT_PATH=", line))
-					{
-						if (String::contains(msvcInject, line))
-							String::replaceAll(line, msvcInject + ";", "");
-					}
-					else if (String::startsWith({ "PATH=", "Path=" }, line))
-					{
-						String::replaceAll(line, path, "");
-					}
-					String::replaceAll(line, "\\\\", "\\");
-					outContents += line + "\n";
-				}
+				String::replaceAll(line, m_path, "");
 			}
-			input.close();
-			std::ofstream(m_varsFileMsvcDelta) << outContents;
-		}
+			String::replaceAll(line, "\\\\", "\\");
+		});
 	}
 	else
 	{
-		// Diagnostic::infoEllipsis("Reading Microsoft{} Visual C++ Environment Cache [{}]", Unicode::registered(), m_varsFileMsvcDelta);
-		Diagnostic::infoEllipsis("Reading Microsoft{} Visual C++ Environment Cache", Unicode::registered());
+		Diagnostic::infoEllipsis("Reading Microsoft{} Visual C/C++ Environment Cache", Unicode::registered());
 
 		if (genericMsvcFromInput)
 			m_detectedVersion = getMsvcVersion();
 	}
 
 	// Read delta to cache
-	{
-		std::ifstream input(m_varsFileMsvcDelta);
-		for (std::string line; std::getline(input, line);)
-		{
-			auto splitVar = String::split(line, '=');
-			if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
-			{
-				m_variables[std::move(splitVar.front())] = splitVar.back();
-			}
-		}
-		input.close();
-	}
+	cacheEnvironmentDelta(m_varsFileMsvcDelta);
 
 	StringList pathSearch{ "Path", "PATH" };
 	for (auto& [name, var] : m_variables)
 	{
 		if (String::equals(pathSearch, name))
 		{
-			if (String::contains(msvcInject, path))
+			if (String::contains(msvcInject, m_path))
 			{
-				String::replaceAll(path, msvcInject, var);
-				Environment::set(name.c_str(), path);
+				String::replaceAll(m_path, msvcInject, var);
+				Environment::set(name.c_str(), m_path);
 			}
 			else
 			{
-				Environment::set(name.c_str(), path + ";" + var);
+				Environment::set(name.c_str(), m_path + ";" + var);
 			}
 		}
 		else
@@ -313,7 +267,7 @@ bool VisualStudioCompileEnvironment::create(const std::string& inVersion)
 		}
 
 		auto old = m_varsFileMsvcDelta;
-		m_varsFileMsvcDelta = getMsvcVarsPath();
+		m_varsFileMsvcDelta = getVarsPath(kVarsId);
 		if (m_varsFileMsvcDelta != old)
 		{
 			Commands::copyRename(old, m_varsFileMsvcDelta, true);
@@ -330,42 +284,7 @@ bool VisualStudioCompileEnvironment::create(const std::string& inVersion)
 }
 
 /*****************************************************************************/
-bool VisualStudioCompileEnvironment::setVariableToPath(const char* inName)
-{
-#if defined(CHALET_WIN32)
-	auto it = m_variables.find(inName);
-	if (it != m_variables.end())
-	{
-		Environment::set(it->first.c_str(), it->second);
-		return true;
-	}
-#else
-	UNUSED(inName);
-#endif
-
-	return false;
-}
-
-/*****************************************************************************/
-bool VisualStudioCompileEnvironment::saveOriginalEnvironment()
-{
-#if defined(CHALET_WIN32)
-	auto cmdExe = Environment::getComSpec();
-	StringList cmd{
-		std::move(cmdExe),
-		"/c",
-		"SET"
-	};
-	bool result = Commands::subprocessOutputToFile(cmd, m_varsFileOriginal);
-
-	return result;
-#else
-	return false;
-#endif
-}
-
-/*****************************************************************************/
-bool VisualStudioCompileEnvironment::saveMsvcEnvironment()
+bool VisualStudioCompileEnvironment::saveMsvcEnvironment() const
 {
 #if defined(CHALET_WIN32)
 	std::string vcvarsFile{ "vcvarsall" };
@@ -457,11 +376,4 @@ void VisualStudioCompileEnvironment::makeArchitectureCorrections()
 	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 }
 
-/*****************************************************************************/
-std::string VisualStudioCompileEnvironment::getMsvcVarsPath() const
-{
-	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureString());
-	archString += fmt::format("_{}", m_inputs.toolchainPreferenceName());
-	return m_state.cache.getHashPath(fmt::format("msvc_{}.env", archString), CacheType::Local);
-}
 }

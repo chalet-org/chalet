@@ -20,20 +20,16 @@ public:
 
 	static bool exists();
 
-	virtual bool create(const std::string& inVersion = std::string()) final;
+protected:
+	virtual bool createFromVersion(const std::string& inVersion) final;
 
 private:
-	bool setVariableToPath(const char* inName);
-	bool saveOriginalEnvironment();
-	bool saveMsvcEnvironment();
+	bool saveMsvcEnvironment() const;
 	void makeArchitectureCorrections();
-	std::string getMsvcVarsPath() const;
+
+	const std::string kVarsId;
 
 #if defined(CHALET_WIN32)
-	bool m_initialized = false;
-
-	Dictionary<std::string> m_variables;
-
 	std::string m_varsFileOriginal;
 	std::string m_varsFileMsvc;
 	std::string m_varsFileMsvcDelta;

@@ -162,7 +162,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 	if (m_project->usesPch())
 	{
 		const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
 		rules += getPchBuildRule(pchTarget);
 	}
 
@@ -187,7 +187,7 @@ std::string NinjaGenerator::getPchRule()
 		const auto depFile = getDepFile(dependency);
 
 		const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-		const auto object = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+		const auto object = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
@@ -509,7 +509,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 	if (m_project->usesPch())
 	{
 		const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{

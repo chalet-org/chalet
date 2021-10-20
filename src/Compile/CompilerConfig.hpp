@@ -38,6 +38,7 @@ struct CompilerConfig
 	bool isClang() const noexcept;
 	bool isAppleClang() const noexcept;
 	bool isGcc() const noexcept;
+	bool isIntelClassic() const noexcept;
 	bool isMingw() const noexcept;
 	bool isMingwGcc() const noexcept;
 	bool isMsvc() const noexcept;

@@ -11,10 +11,12 @@
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/DefinesExperimental.hpp"
 #include "Utility/String.hpp"
 
 #include "Compile/Toolchain/CompileToolchainApple.hpp"
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
+#include "Compile/Toolchain/CompileToolchainIntelClassic.hpp"
 #include "Compile/Toolchain/CompileToolchainLLVM.hpp"
 #include "Compile/Toolchain/CompileToolchainMSVC.hpp"
 
@@ -66,12 +68,15 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const SourceTarg
 		case CppCompilerType::MingwClang:
 		case CppCompilerType::EmScripten:
 			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
-		case CppCompilerType::Intel:
 		case CppCompilerType::MingwGcc:
 		case CppCompilerType::Gcc:
 			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
 		case CppCompilerType::VisualStudio:
 			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
+		case CppCompilerType::IntelClassic:
+#if CHALET_ENABLE_INTEL_EXPERIMENTAL
+			return std::make_unique<CompileToolchainIntelClassic>(inState, inProject, inConfig);
+#endif
 		case CppCompilerType::Unknown:
 		default:
 			break;

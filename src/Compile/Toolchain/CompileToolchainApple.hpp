@@ -18,6 +18,7 @@ struct CompileToolchainApple final : CompileToolchainLLVM
 
 	virtual bool initialize() final;
 
+protected:
 	// Compiling
 	virtual void addPchInclude(StringList& outArgList) const final;
 	virtual bool addArchitecture(StringList& outArgList) const final;

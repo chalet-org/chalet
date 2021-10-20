@@ -41,7 +41,7 @@ struct BuildPaths
 	std::string getTargetFilename(const SourceTarget& inProject) const;
 	std::string getTargetBasename(const SourceTarget& inProject) const;
 	std::string getPrecompiledHeader(const SourceTarget& inProject) const;
-	std::string getPrecompiledHeaderTarget(const SourceTarget& inProject, const bool inPchExtension = true) const;
+	std::string getPrecompiledHeaderTarget(const SourceTarget& inProject, const CompilerConfig& inConfig) const;
 	std::string getPrecompiledHeaderInclude(const SourceTarget& inProject) const;
 	std::string getWindowsManifestFilename(const SourceTarget& inProject) const;
 	std::string getWindowsManifestResourceFilename(const SourceTarget& inProject) const;
@@ -72,7 +72,7 @@ private:
 	std::string getAssemblyFile(const std::string& inSource, const bool inIsMsvc) const;
 	std::string getDependencyFile(const std::string& inSource) const;
 	SourceType getSourceType(const std::string& inSource) const;
-	StringList getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject, const bool inIsMsvc) const;
+	StringList getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
 	SourceGroup getFiles(const SourceTarget& inProject) const;
 	SourceGroup getDirectories(const SourceTarget& inProject) const;

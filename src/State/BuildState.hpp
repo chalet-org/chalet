@@ -7,7 +7,6 @@
 #define CHALET_BUILD_STATE_HPP
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/CompileEnvironment.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
@@ -25,6 +24,7 @@ namespace chalet
 struct StatePrototype;
 struct AncillaryTools;
 struct WorkspaceCache;
+class CompileEnvironment;
 
 class BuildState
 {
@@ -33,6 +33,8 @@ class BuildState
 
 public:
 	explicit BuildState(CommandLineInputs inInputs, StatePrototype& inStatePrototype);
+	CHALET_DISALLOW_COPY_MOVE(BuildState);
+	~BuildState();
 
 	const AncillaryTools& tools;
 	const DistributionTargetList& distribution;

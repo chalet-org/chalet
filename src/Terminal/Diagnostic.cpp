@@ -67,10 +67,10 @@ void Diagnostic::printDone(const std::string& inTime)
 	destroySpinnerThread();
 
 	std::string done;
-	if (Output::showCommands())
-		done = "... done";
-	else
-		done = "done";
+	// if (Output::showCommands())
+	// 	done = "... done";
+	// else
+	done = "done";
 
 	if (!inTime.empty() && Output::showBenchmarks())
 	{

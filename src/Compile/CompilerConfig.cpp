@@ -154,6 +154,10 @@ bool CompilerConfig::testCompilerMacros()
 	{
 		m_compilerType = CppCompilerType::AppleClang;
 	}
+	else if (gcc && intel)
+	{
+		m_compilerType = CppCompilerType::IntelClassic;
+	}
 	else if (clang && mingw)
 	{
 		m_compilerType = CppCompilerType::MingwClang;
@@ -161,10 +165,6 @@ bool CompilerConfig::testCompilerMacros()
 	else if (clang)
 	{
 		m_compilerType = CppCompilerType::Clang;
-	}
-	else if (intel)
-	{
-		m_compilerType = CppCompilerType::Intel;
 	}
 	else if (gcc && mingw)
 	{
@@ -456,7 +456,11 @@ bool CompilerConfig::isWindowsClang() const noexcept
 
 bool CompilerConfig::isClang() const noexcept
 {
-	return m_compilerType == CppCompilerType::Clang || m_compilerType == CppCompilerType::AppleClang || m_compilerType == CppCompilerType::MingwClang || m_compilerType == CppCompilerType::EmScripten;
+	return m_compilerType == CppCompilerType::Clang
+		|| m_compilerType == CppCompilerType::AppleClang
+		|| m_compilerType == CppCompilerType::IntelClang
+		|| m_compilerType == CppCompilerType::MingwClang
+		|| m_compilerType == CppCompilerType::EmScripten;
 }
 
 bool CompilerConfig::isAppleClang() const noexcept
@@ -466,12 +470,20 @@ bool CompilerConfig::isAppleClang() const noexcept
 
 bool CompilerConfig::isGcc() const noexcept
 {
-	return m_compilerType == CppCompilerType::Gcc || m_compilerType == CppCompilerType::MingwGcc || m_compilerType == CppCompilerType::Intel;
+	return m_compilerType == CppCompilerType::Gcc
+		|| m_compilerType == CppCompilerType::MingwGcc
+		|| m_compilerType == CppCompilerType::IntelClassic;
+}
+
+bool CompilerConfig::isIntelClassic() const noexcept
+{
+	return m_compilerType == CppCompilerType::IntelClassic;
 }
 
 bool CompilerConfig::isMingw() const noexcept
 {
-	return m_compilerType == CppCompilerType::MingwGcc || m_compilerType == CppCompilerType::MingwClang;
+	return m_compilerType == CppCompilerType::MingwGcc
+		|| m_compilerType == CppCompilerType::MingwClang;
 }
 
 bool CompilerConfig::isMingwGcc() const noexcept

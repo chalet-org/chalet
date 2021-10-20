@@ -56,7 +56,7 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutp
 	chalet_assert(m_project != nullptr, "");
 
 	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClangOrMsvc());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
 	const auto& name = inProject.name();
 
 	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !compilerConfig.isMsvc();

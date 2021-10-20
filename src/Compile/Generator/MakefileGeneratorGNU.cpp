@@ -111,7 +111,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 	}*/
 
 	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig.isClang());
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
 	const auto& pch = m_project->pch();
 
 	std::string recipes = getPchRecipe(pch, pchTarget);

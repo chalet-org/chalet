@@ -9,6 +9,7 @@
 #include "Builder/BuildManager.hpp"
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
 
+#include "Compile/Environment/CompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -37,6 +38,9 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inStateProtot
 	paths(m_inputs, m_prototype.workspace)
 {
 }
+
+/*****************************************************************************/
+BuildState::~BuildState() = default;
 
 /*****************************************************************************/
 bool BuildState::initialize()
@@ -172,8 +176,11 @@ bool BuildState::initializeToolchain()
 			  m_inputs.targetArchitecture() :
 			  info.targetArchitectureString();
 
-		auto& toolchainName = m_inputs.toolchainPreferenceName();
-		Diagnostic::error("Requested arch '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
+		if (!targetArch.empty())
+		{
+			auto& toolchainName = m_inputs.toolchainPreferenceName();
+			Diagnostic::error("Requested arch '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
+		}
 		return false;
 	}
 

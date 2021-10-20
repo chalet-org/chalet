@@ -213,9 +213,8 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const Compil
 		List::addIfDoesNotExist(ret.fileExtensions, std::move(ext));
 	}
 
-	const bool isMsvc = inConfig.isMsvc();
-	const bool isNotMsvc = !isMsvc;
-	ret.objectListLinker = getObjectFilesList(files.list, inProject, isMsvc);
+	const bool isNotMsvc = !inConfig.isMsvc();
+	ret.objectListLinker = getObjectFilesList(files.list, inProject, inConfig);
 	files.list = String::excludeIf(inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache, files.list);
 	ret.groups = getSourceFileGroupList(std::move(files), inProject, inConfig, inDumpAssembly);
 	for (auto& group : ret.groups)
@@ -354,12 +353,18 @@ std::string BuildPaths::getPrecompiledHeader(const SourceTarget& inProject) cons
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject, const bool inPchExtension) const
+std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject, const CompilerConfig& inConfig) const
 {
 	std::string ret;
 	if (inProject.usesPch())
 	{
-		auto ext = inPchExtension ? "pch" : "gch";
+		std::string ext;
+		if (inConfig.isClangOrMsvc())
+			ext = "pch";
+		else if (inConfig.isIntelClassic())
+			ext = "pchi";
+		else
+			ext = "gch";
 
 		const std::string base = getPrecompiledHeaderInclude(inProject);
 		ret = fmt::format("{}.{}", base, ext);
@@ -500,7 +505,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		auto group = std::make_unique<SourceFileGroup>();
 
 		group->type = SourceType::CxxPrecompiledHeader;
-		group->objectFile = getPrecompiledHeaderTarget(inProject, inConfig.isClangOrMsvc());
+		group->objectFile = getPrecompiledHeaderTarget(inProject, inConfig);
 		group->dependencyFile = getDependencyFile(inFiles.pch);
 		group->sourceFile = std::move(inFiles.pch);
 
@@ -578,12 +583,12 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 }
 
 /*****************************************************************************/
-StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject, const bool inIsMsvc) const
+StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig) const
 {
 	StringList ret;
 	for (const auto& file : inFiles)
 	{
-		auto outFile = getObjectFile(file, inIsMsvc);
+		auto outFile = getObjectFile(file, inConfig.isMsvc());
 		if (!outFile.empty())
 			ret.emplace_back(std::move(outFile));
 	}
@@ -593,14 +598,14 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Sourc
 	{
 		if (inProject.usesPch())
 		{
-			auto pchTarget = getPrecompiledHeaderTarget(inProject, true);
+			auto pchTarget = getPrecompiledHeaderTarget(inProject, inConfig);
 			String::replaceAll(pchTarget, ".pch", ".obj");
 
 			ret.emplace_back(std::move(pchTarget));
 		}
 	}
 #else
-	UNUSED(inProject, inIsMsvc);
+	UNUSED(inProject, inConfig);
 #endif
 
 	return ret;

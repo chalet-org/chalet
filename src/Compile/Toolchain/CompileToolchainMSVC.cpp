@@ -551,7 +551,8 @@ void CompileToolchainMSVC::addPchInclude(StringList& outArgList) const
 	// TODO: Potential for more than one pch?
 	if (m_project.usesPch())
 	{
-		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project);
+		const auto& compilerConfig = m_state.toolchain.getConfig(m_project.language());
+		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig);
 
 		outArgList.emplace_back(getPathCommand("/Yu", m_pchMinusLocation));
 

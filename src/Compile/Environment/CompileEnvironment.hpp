@@ -23,13 +23,26 @@ public:
 
 	const std::string& detectedVersion() const;
 
-	virtual bool create(const std::string& inVersion = std::string());
+	bool create(const std::string& inVersion = std::string());
 
 protected:
+	virtual bool createFromVersion(const std::string& inVersion);
+
+	std::string getVarsPath(const std::string& inId) const;
+	bool saveOriginalEnvironment(const std::string& inOutputFile) const;
+	void createEnvironmentDelta(const std::string& inOriginalFile, const std::string& inCompilerFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine) const;
+	void cacheEnvironmentDelta(const std::string& inDeltaFile);
+
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 
+	Dictionary<std::string> m_variables;
+
 	std::string m_detectedVersion;
+	std::string m_path;
+
+private:
+	bool m_initialized = false;
 };
 }
 

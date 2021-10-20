@@ -5,6 +5,7 @@
 
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
 
+#include "Compile/Environment/CompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
