@@ -242,7 +242,7 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 {
 	auto& macosBundle = m_bundle.macosBundle();
 
-	const auto& version = m_state.environment.version();
+	const auto& version = m_state.workspace.version();
 	auto icon = fmt::format("{}.icns", m_iconBaseName);
 
 	auto replacePlistVariables = [&](std::string& outContent) {
@@ -301,7 +301,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 {
 	auto& installNameTool = m_state.tools.installNameTool();
 
-	for (auto p : m_state.environment.searchPaths())
+	for (auto p : m_state.workspace.searchPaths())
 	{
 		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
 		Commands::subprocessNoOutput({ installNameTool, "-delete_rpath", fmt::format("@executable_path/{}", p), m_executableOutputPath });

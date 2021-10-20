@@ -54,7 +54,7 @@ private:
 	StringList m_doNotRemoves;
 	StringList m_extraHashes;
 
-	std::unique_ptr<JsonFile> m_dataFile;
+	Unique<JsonFile> m_dataFile;
 
 	std::string m_filename;
 	std::string m_buildHash;

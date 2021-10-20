@@ -13,7 +13,7 @@ namespace chalet
 class BuildState;
 
 struct IBuildTarget;
-using BuildTarget = std::unique_ptr<IBuildTarget>;
+using BuildTarget = Unique<IBuildTarget>;
 
 struct IBuildTarget
 {

@@ -17,7 +17,7 @@
 namespace chalet
 {
 struct ICompileStrategy;
-using CompileStrategy = std::unique_ptr<ICompileStrategy>;
+using CompileStrategy = Unique<ICompileStrategy>;
 
 struct ICompileStrategy
 {

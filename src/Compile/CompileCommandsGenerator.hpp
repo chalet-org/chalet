@@ -28,7 +28,7 @@ private:
 	void addCompileCommand(const std::string& inFile, std::string&& inCommand);
 
 	struct CompileCommand;
-	std::vector<std::unique_ptr<CompileCommand>> m_compileCommands;
+	std::vector<Unique<CompileCommand>> m_compileCommands;
 };
 }
 

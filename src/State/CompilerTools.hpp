@@ -123,7 +123,7 @@ private:
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 
-	std::unordered_map<CodeLanguage, std::unique_ptr<CompilerConfig>> m_configs;
+	std::unordered_map<CodeLanguage, Unique<CompilerConfig>> m_configs;
 
 	std::string m_archiver;
 	std::string m_compilerWindowsResource;

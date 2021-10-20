@@ -28,7 +28,7 @@ struct JsonValidator
 
 private:
 	struct Impl;
-	std::unique_ptr<Impl> m_impl;
+	Unique<Impl> m_impl;
 
 	ValidationErrors m_errors;
 	const std::string& m_file;

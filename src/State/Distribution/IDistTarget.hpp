@@ -13,7 +13,7 @@ namespace chalet
 class BuildState;
 
 struct IDistTarget;
-using DistTarget = std::unique_ptr<IDistTarget>;
+using DistTarget = Unique<IDistTarget>;
 
 struct IDistTarget
 {

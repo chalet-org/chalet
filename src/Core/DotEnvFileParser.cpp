@@ -5,10 +5,10 @@
 
 #include "Core/DotEnvFileParser.hpp"
 
+#include "Compile/Environment/VisualStudioCompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
-#include "Terminal/MsvcEnvironment.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -93,7 +93,7 @@ bool DotEnvFileParser::parseVariablesFromFile(const std::string& inFile) const
 	StringList pathSearch{ "Path", "PATH" };
 
 #if defined(CHALET_WIN32)
-	const bool msvcExists = MsvcEnvironment::exists();
+	const bool msvcExists = VisualStudioCompileEnvironment::exists();
 #endif
 
 	std::ifstream input(inFile);
@@ -136,7 +136,7 @@ bool DotEnvFileParser::parseVariablesFromFile(const std::string& inFile) const
 					//   This would be a problem is someone is using MinGW and wants to detect the MinGW version of Cmake, Ninja,
 					//   or anything else that is also bundled with Visual Studio
 					//   To get around this, and have MSVC Path vars before %Path% as expected,
-					//   we add a fake path (with valid syntax) to inject it into later (See MsvcEnvironment.cpp)
+					//   we add a fake path (with valid syntax) to inject it into later (See VisualStudioCompileEnvironment.cpp)
 					//
 					auto replaceValue = Environment::getAsString(replaceKey.c_str());
 					if (msvcExists && isPath && String::equals(pathSearch, replaceKey))

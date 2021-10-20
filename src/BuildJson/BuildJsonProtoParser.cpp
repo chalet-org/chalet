@@ -110,13 +110,13 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode) const
 	}
 
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "workspace"))
-		m_prototype.environment.setWorkspace(std::move(val));
+		m_prototype.workspace.setWorkspaceName(std::move(val));
 
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "version"))
-		m_prototype.environment.setVersion(std::move(val));
+		m_prototype.workspace.setVersion(std::move(val));
 
 	if (StringList list; assignStringListFromConfig(list, inNode, "searchPaths"))
-		m_prototype.environment.addSearchPaths(std::move(list));
+		m_prototype.workspace.addSearchPaths(std::move(list));
 
 	return true;
 }

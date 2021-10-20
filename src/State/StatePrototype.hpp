@@ -43,7 +43,7 @@ struct StatePrototype
 	const std::string kKeyTargets = "targets";
 	const std::string kKeyAbstracts = "abstracts";
 
-	WorkspaceEnvironment environment;
+	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
 	AncillaryTools tools;
 	DistributionTargetList distribution;

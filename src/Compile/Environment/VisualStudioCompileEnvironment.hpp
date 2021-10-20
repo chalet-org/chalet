@@ -3,9 +3,10 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MSVC_ENVIRONMENT_HPP
-#define CHALET_MSVC_ENVIRONMENT_HPP
+#ifndef CHALET_VISUAL_STUDIO_COMPILE_ENVIRONMENT_HPP
+#define CHALET_VISUAL_STUDIO_COMPILE_ENVIRONMENT_HPP
 
+#include "Compile/Environment/CompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 
 namespace chalet
@@ -13,18 +14,14 @@ namespace chalet
 class BuildState;
 struct CommandLineInputs;
 
-class MsvcEnvironment
+class VisualStudioCompileEnvironment final : public CompileEnvironment
 {
 public:
-	explicit MsvcEnvironment(const CommandLineInputs& inInputs, BuildState& inState);
+	explicit VisualStudioCompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState);
 
 	static bool exists();
 
-#if defined(CHALET_WIN32)
-	const std::string& detectedVersion() const;
-#endif
-
-	bool create(const std::string& inVersion = std::string());
+	virtual bool create(const std::string& inVersion = std::string()) final;
 
 private:
 	bool setVariableToPath(const char* inName);
@@ -32,9 +29,6 @@ private:
 	bool saveMsvcEnvironment();
 	void makeArchitectureCorrections();
 	std::string getMsvcVarsPath() const;
-
-	const CommandLineInputs& m_inputs;
-	BuildState& m_state;
 
 #if defined(CHALET_WIN32)
 	bool m_initialized = false;
@@ -46,10 +40,8 @@ private:
 	std::string m_varsFileMsvcDelta;
 
 	std::string m_vsAppIdDir;
-	std::string m_detectedVersion;
-
 #endif
 };
 }
 
-#endif // CHALET_MSVC_ENVIRONMENT_HPP
+#endif // CHALET_VISUAL_STUDIO_COMPILE_ENVIRONMENT_HPP

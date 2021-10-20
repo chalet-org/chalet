@@ -16,7 +16,7 @@ struct SourceTarget;
 struct CompilerConfig;
 
 struct ICompileToolchain;
-using CompileToolchain = std::unique_ptr<ICompileToolchain>;
+using CompileToolchain = Unique<ICompileToolchain>;
 
 struct ICompileToolchain
 {

@@ -38,7 +38,7 @@ static struct : std::exception
 static struct
 {
 	std::vector<Error> errorList;
-	std::unique_ptr<Spinner> spinnerThread;
+	Unique<Spinner> spinnerThread;
 
 	bool exceptionThrown = false;
 	bool assertionFailure = false;

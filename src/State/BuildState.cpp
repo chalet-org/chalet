@@ -24,18 +24,17 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inJsonPrototype) :
+BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inStatePrototype) :
 	m_inputs(std::move(inInputs)),
-	m_prototype(inJsonPrototype),
+	m_prototype(inStatePrototype),
 	tools(m_prototype.tools),
 	distribution(m_prototype.distribution),
 	cache(m_prototype.cache),
 	externalDependencies(m_prototype.externalDependencies),
 	info(m_inputs),
-	environment(m_prototype.environment), // copy
+	workspace(m_prototype.workspace), // copy
 	toolchain(m_inputs, *this),
-	paths(m_inputs, inJsonPrototype.environment),
-	msvcEnvironment(m_inputs, *this)
+	paths(m_inputs, m_prototype.workspace)
 {
 }
 
@@ -148,7 +147,11 @@ bool BuildState::parseToolchainFromSettingsJson()
 {
 	auto& cacheFile = m_prototype.cache.getSettings(SettingsType::Local);
 	SettingsToolchainJsonParser parser(m_inputs, *this, cacheFile);
-	return parser.serialize();
+	if (!parser.serialize())
+		return false;
+
+	chalet_assert(environment != nullptr, "environment must be created when the toolchain is initialized.");
+	return true;
 }
 
 /*****************************************************************************/
@@ -247,7 +250,7 @@ bool BuildState::initializeBuild()
 	}
 
 	{
-		environment.initialize(paths);
+		workspace.initialize(paths);
 
 		for (auto& target : targets)
 		{
@@ -440,7 +443,7 @@ bool BuildState::makePathVariable()
 	std::string rootPath = String::join(std::move(outList), separator);
 	Path::sanitize(rootPath);
 
-	auto pathVariable = environment.makePathVariable(rootPath);
+	auto pathVariable = workspace.makePathVariable(rootPath);
 	enforceArchitectureInPath(pathVariable);
 	Environment::setPath(pathVariable);
 
@@ -499,12 +502,12 @@ void BuildState::makeLibraryPathVariables()
 #if defined(CHALET_LINUX) || defined(CHALET_MACOS)
 	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
 
-	if (environment.searchPaths().empty())
+	if (workspace.searchPaths().empty())
 		return;
 
 	auto addEnvironmentPath = [this](const char* inKey) {
 		auto path = Environment::getAsString(inKey);
-		auto outPath = environment.makePathVariable(path);
+		auto outPath = workspace.makePathVariable(path);
 		// LOG(outPath);
 		if (outPath != path)
 		{

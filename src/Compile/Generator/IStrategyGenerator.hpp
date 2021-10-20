@@ -15,7 +15,7 @@
 namespace chalet
 {
 struct IStrategyGenerator;
-using StrategyGenerator = std::unique_ptr<IStrategyGenerator>;
+using StrategyGenerator = Unique<IStrategyGenerator>;
 
 struct IStrategyGenerator
 {

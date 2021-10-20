@@ -396,11 +396,6 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 		auto outDir = String::getPathFolder(m_project.pch());
 		List::addIfDoesNotExist(outArgList, getPathCommand(option, outDir));
 	}
-
-	/*for (const auto& dir : m_state.msvcEnvironment.include())
-	{
-		outArgList.emplace_back(getPathCommand(option, dir));
-	}*/
 }
 
 /*****************************************************************************/
@@ -778,11 +773,6 @@ void CompileToolchainMSVC::addLibDirs(StringList& outArgList) const
 	}
 
 	outArgList.emplace_back(getPathCommand(option, m_state.paths.buildOutputDir()));
-
-	/*for (const auto& dir : m_state.msvcEnvironment.lib())
-	{
-		outArgList.emplace_back(getPathCommand(option, dir));
-	}*/
 }
 
 /*****************************************************************************/

@@ -28,14 +28,19 @@ bool SettingsToolchainJsonParser::serialize()
 {
 	Output::setShowCommandOverride(false);
 
-#if defined(CHALET_WIN32)
+	m_checkForEnvironment = false;
 	auto& preference = m_inputs.toolchainPreference();
-	if (preference.type == ToolchainType::MSVC)
+	if (preference.type != ToolchainType::Unknown)
 	{
-		if (!m_state.msvcEnvironment.create())
+		m_state.environment = CompileEnvironment::make(preference.type, m_inputs, m_state);
+
+		if (!m_state.environment->create())
 			return false;
 	}
-#endif
+	else
+	{
+		m_checkForEnvironment = true;
+	}
 
 	// TODO: Move
 	if (String::equals("gcc", m_inputs.toolchainPreferenceName()))
@@ -80,10 +85,12 @@ bool SettingsToolchainJsonParser::serialize(Json& inNode)
 	if (!inNode.is_object())
 		return false;
 
-	auto& preference = m_inputs.toolchainPreference();
-	makeToolchain(inNode, preference);
+	makeToolchain(inNode, m_inputs.toolchainPreference());
 
 	if (!parseToolchain(inNode))
+		return false;
+
+	if (!finalizeEnvironment())
 		return false;
 
 	if (!validatePaths())
@@ -452,13 +459,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 	if (toolchain[kKeyVersion].get<std::string>().empty())
 	{
-#if defined(CHALET_WIN32)
-		// Only used w/ MSVC for now
-		auto& vsVersion = m_state.msvcEnvironment.detectedVersion();
-		toolchain[kKeyVersion] = !vsVersion.empty() ? vsVersion : std::string();
-#else
-		toolchain[kKeyVersion] = std::string();
-#endif
+		toolchain[kKeyVersion] = m_state.environment != nullptr ? m_state.environment->detectedVersion() : std::string();
 	}
 
 	return result;
@@ -508,25 +509,25 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyDisassembler))
 		m_state.toolchain.setDisassembler(std::move(val));
 
-#if defined(CHALET_WIN32)
-	bool checkForMsvc = m_inputs.toolchainPreference().type == ToolchainType::Unknown;
+	return true;
+}
+
+/*****************************************************************************/
+bool SettingsToolchainJsonParser::finalizeEnvironment()
+{
 	if (!m_state.toolchain.detectToolchainFromPaths())
 		return false;
 
-	if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
+	if (m_checkForEnvironment)
 	{
-		if (checkForMsvc)
-		{
-			if (!m_state.msvcEnvironment.create(m_state.toolchain.version()))
-				return false;
-		}
-
-		if (m_state.toolchain.version().empty())
-			m_state.toolchain.setVersion(m_state.msvcEnvironment.detectedVersion());
+		auto& preference = m_inputs.toolchainPreference();
+		m_state.environment = CompileEnvironment::make(preference.type, m_inputs, m_state);
+		if (!m_state.environment->create(m_state.toolchain.version()))
+			return false;
 	}
-#else
-	m_state.toolchain.detectToolchainFromPaths();
-#endif
+
+	if (m_state.toolchain.version().empty())
+		m_state.toolchain.setVersion(m_state.environment->detectedVersion());
 
 	return true;
 }

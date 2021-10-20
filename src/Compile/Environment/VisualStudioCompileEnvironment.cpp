@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Terminal/MsvcEnvironment.hpp"
+#include "Compile/Environment/VisualStudioCompileEnvironment.hpp"
 
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -27,7 +27,7 @@ static struct
 #endif
 
 /*****************************************************************************/
-bool MsvcEnvironment::exists()
+bool VisualStudioCompileEnvironment::exists()
 {
 #if defined(CHALET_WIN32)
 	if (state.exists == -1)
@@ -65,25 +65,13 @@ bool MsvcEnvironment::exists()
 }
 
 /*****************************************************************************/
-MsvcEnvironment::MsvcEnvironment(const CommandLineInputs& inInputs, BuildState& inState) :
-	m_inputs(inInputs),
-	m_state(inState)
+VisualStudioCompileEnvironment::VisualStudioCompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState) :
+	CompileEnvironment(inInputs, inState)
 {
-#if !defined(CHALET_WIN32)
-	UNUSED(m_inputs, m_state);
-#endif
 }
 
-#if defined(CHALET_WIN32)
 /*****************************************************************************/
-const std::string& MsvcEnvironment::detectedVersion() const
-{
-	return m_detectedVersion;
-}
-#endif
-
-/*****************************************************************************/
-bool MsvcEnvironment::create(const std::string& inVersion)
+bool VisualStudioCompileEnvironment::create(const std::string& inVersion)
 {
 #if defined(CHALET_WIN32)
 	if (m_initialized)
@@ -98,7 +86,7 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 	m_initialized = true;
 
 	// This sets state.vswhere
-	if (!MsvcEnvironment::exists())
+	if (!VisualStudioCompileEnvironment::exists())
 		return true;
 
 	Timer timer;
@@ -342,7 +330,7 @@ bool MsvcEnvironment::create(const std::string& inVersion)
 }
 
 /*****************************************************************************/
-bool MsvcEnvironment::setVariableToPath(const char* inName)
+bool VisualStudioCompileEnvironment::setVariableToPath(const char* inName)
 {
 #if defined(CHALET_WIN32)
 	auto it = m_variables.find(inName);
@@ -359,7 +347,7 @@ bool MsvcEnvironment::setVariableToPath(const char* inName)
 }
 
 /*****************************************************************************/
-bool MsvcEnvironment::saveOriginalEnvironment()
+bool VisualStudioCompileEnvironment::saveOriginalEnvironment()
 {
 #if defined(CHALET_WIN32)
 	auto cmdExe = Environment::getComSpec();
@@ -377,7 +365,7 @@ bool MsvcEnvironment::saveOriginalEnvironment()
 }
 
 /*****************************************************************************/
-bool MsvcEnvironment::saveMsvcEnvironment()
+bool VisualStudioCompileEnvironment::saveMsvcEnvironment()
 {
 #if defined(CHALET_WIN32)
 	std::string vcvarsFile{ "vcvarsall" };
@@ -414,7 +402,7 @@ bool MsvcEnvironment::saveMsvcEnvironment()
 }
 
 /*****************************************************************************/
-void MsvcEnvironment::makeArchitectureCorrections()
+void VisualStudioCompileEnvironment::makeArchitectureCorrections()
 {
 	auto normalizeArch = [](const std::string& inArch) -> std::string {
 		if (String::equals("x86_64", inArch))
@@ -470,7 +458,7 @@ void MsvcEnvironment::makeArchitectureCorrections()
 }
 
 /*****************************************************************************/
-std::string MsvcEnvironment::getMsvcVarsPath() const
+std::string VisualStudioCompileEnvironment::getMsvcVarsPath() const
 {
 	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureString());
 	archString += fmt::format("_{}", m_inputs.toolchainPreferenceName());

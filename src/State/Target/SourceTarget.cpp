@@ -17,7 +17,7 @@ namespace chalet
 /*****************************************************************************/
 SourceTarget::SourceTarget(BuildState& inState) :
 	IBuildTarget(inState, BuildTargetType::Project),
-	m_environment(inState.environment),
+	m_environment(inState.workspace),
 	m_warningsPresetString("none")
 {
 }
