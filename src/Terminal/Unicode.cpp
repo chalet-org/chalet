@@ -26,11 +26,8 @@ const char* Unicode::diamond()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "•";
-	else if (Environment::isMicrosoftTerminalOrWindowsBash())
-		return u8"\u25C6";
-	else
 #endif
-		return u8"\u2666";
+	return u8"\u25C6";
 }
 
 /*****************************************************************************/
