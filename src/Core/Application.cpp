@@ -22,11 +22,7 @@ namespace chalet
 /*****************************************************************************/
 int Application::run(const int argc, const char* const argv[])
 {
-	if (!initialize())
-	{
-		Diagnostic::error("Cannot call 'Application::run' more than once.");
-		return onExit(Status::EarlyFailure);
-	}
+	initialize();
 
 	{
 		ArgumentParser argParser{ m_inputs };
@@ -59,13 +55,10 @@ bool Application::handleRoute()
 }
 
 /*****************************************************************************/
-bool Application::initialize()
+void Application::initialize()
 {
-	if (m_initialized)
-		return false;
-
-		// Output::resetStdout();
-		// Output::resetStderr();
+	// Output::resetStdout();
+	// Output::resetStderr();
 
 #if defined(CHALET_WIN32)
 	WindowsTerminal::initialize();
@@ -78,10 +71,6 @@ bool Application::initialize()
 	});
 	testSignalHandling();
 #endif // _DEBUG
-
-	m_initialized = true;
-
-	return true;
 }
 
 /*****************************************************************************/
