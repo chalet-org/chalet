@@ -13,7 +13,6 @@ namespace Environment
 bool isBash();
 bool isBashGenericColorTermOrWindowsTerminal();
 bool isMicrosoftTerminalOrWindowsBash();
-bool isWindowsTerminal();
 bool isCommandPromptOrPowerShell();
 bool isContinuousIntegrationServer();
 

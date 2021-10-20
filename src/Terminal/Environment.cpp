@@ -410,19 +410,6 @@ bool Environment::isMicrosoftTerminalOrWindowsBash()
 }
 
 /*****************************************************************************/
-bool Environment::isWindowsTerminal()
-{
-	if (state.terminalType == ShellType::Unset)
-		setTerminalType();
-
-#if defined(CHALET_WIN32)
-	return state.terminalType == ShellType::WindowsTerminal;
-#else
-	return false;
-#endif
-}
-
-/*****************************************************************************/
 bool Environment::isCommandPromptOrPowerShell()
 {
 	if (state.terminalType == ShellType::Unset)

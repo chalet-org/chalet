@@ -26,7 +26,7 @@ const char* Unicode::diamond()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "•";
-	else if (Environment::isWindowsTerminal())
+	else if (Environment::isMicrosoftTerminalOrWindowsBash())
 		return u8"\u2666";
 	else
 #endif
@@ -39,7 +39,7 @@ const char* Unicode::checkmark()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "√";
-	else if (Environment::isWindowsTerminal())
+	else if (Environment::isMicrosoftTerminalOrWindowsBash())
 		return u8"\u2713";
 	else
 #endif
@@ -63,11 +63,10 @@ const char* Unicode::warning()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "»";
-	else if (Environment::isWindowsTerminal())
-		return u8"\u25B3";
 	else
 #endif
-		return u8"\u26A0";
+		// return u8"\u26A0";
+		return u8"\u25B3";
 }
 
 /*****************************************************************************/
@@ -76,7 +75,7 @@ const char* Unicode::circledX()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "X";
-	else if (Environment::isWindowsTerminal())
+	else if (Environment::isMicrosoftTerminalOrWindowsBash())
 		return u8"\u2BBE";
 	else
 #endif
