@@ -26,11 +26,11 @@ const char* Unicode::diamond()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "•";
+	else if (Environment::isWindowsTerminal())
+		return u8"\u2666";
 	else
-		return u8"\u25C6";
-#else
-	return u8"\u2666";
 #endif
+		return u8"\u25C6";
 }
 
 /*****************************************************************************/
@@ -39,11 +39,11 @@ const char* Unicode::checkmark()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "√";
-	else
+	else if (Environment::isWindowsTerminal())
 		return u8"\u2713";
-#else
-	return u8"\u2714";
+	else
 #endif
+		return u8"\u2714";
 }
 
 /*****************************************************************************/
@@ -63,11 +63,11 @@ const char* Unicode::warning()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "»";
-	else
+	else if (Environment::isWindowsTerminal())
 		return u8"\u25B3";
-#else
-	return u8"\u26A0";
+	else
 #endif
+		return u8"\u26A0";
 }
 
 /*****************************************************************************/
@@ -76,11 +76,11 @@ const char* Unicode::circledX()
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "X";
-	else
+	else if (Environment::isWindowsTerminal())
 		return u8"\u2BBE";
-#else
-	return u8"\u2A02";
+	else
 #endif
+		return u8"\u2A02";
 }
 
 /*****************************************************************************/
