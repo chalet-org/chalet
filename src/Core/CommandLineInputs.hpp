@@ -173,10 +173,13 @@ private:
 	const std::string kArchPresetAuto;
 	const std::string kToolchainPresetGCC;
 	const std::string kToolchainPresetLLVM;
+	const std::string kToolchainPresetICC;
 #if defined(CHALET_WIN32)
 	const std::string kToolchainPresetVisualStudioStable;
 #elif defined(CHALET_MACOS)
 	const std::string kToolchainPresetAppleLLVM;
+#else
+	const std::string kToolchainPresetICX;
 #endif
 
 	std::string m_inputFile;

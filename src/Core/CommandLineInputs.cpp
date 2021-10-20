@@ -71,10 +71,13 @@ CommandLineInputs::CommandLineInputs() :
 	kArchPresetAuto("auto"),
 	kToolchainPresetGCC("gcc"),
 	kToolchainPresetLLVM("llvm"),
+	kToolchainPresetICC("icc"),
 #if defined(CHALET_WIN32)
 	kToolchainPresetVisualStudioStable("vs-stable"),
 #elif defined(CHALET_MACOS)
 	kToolchainPresetAppleLLVM("apple-llvm"),
+#else
+	kToolchainPresetICX("icx"),
 #endif
 	m_settingsFile(kDefaultSettingsFile),
 	m_platform(getPlatform()),
@@ -825,6 +828,27 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.rc = "windres";
 		ret.linker = "ld";
 		ret.archiver = "ar";
+		ret.profiler = "gprof";
+		ret.disassembler = "objdump";
+	}
+	else if (String::equals(kToolchainPresetICC, inValue))
+	{
+		m_isToolchainPreset = true;
+		m_toolchainPreferenceName = inValue;
+
+		// /opt/intel/oneapi
+
+		ret.type = ToolchainType::IntelCompilerClassic;
+		ret.strategy = StrategyType::Makefile;
+		ret.cpp = "icpc";
+		ret.cc = "icc";
+		ret.rc = "windres";
+#if defined(CHALET_WIN32)
+		ret.linker = "xild";
+#else
+		ret.linker = "xilink";
+#endif
+		ret.archiver = "xiar";
 		ret.profiler = "gprof";
 		ret.disassembler = "objdump";
 	}
