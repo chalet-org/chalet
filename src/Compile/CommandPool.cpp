@@ -312,9 +312,9 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 std::string CommandPool::getPrintedText(std::string inText, uint inTotal)
 {
 	if (inTotal > 0)
-		return fmt::format("{}  [#/{}] {}{}", m_reset, inTotal, inText, m_reset);
+		return fmt::format("{}   [#/{}] {}{}", m_reset, inTotal, inText, m_reset);
 	else
-		return fmt::format("{}  {}{}", m_reset, inText, m_reset);
+		return fmt::format("{}   {}{}", m_reset, inText, m_reset);
 }
 
 /*****************************************************************************/
