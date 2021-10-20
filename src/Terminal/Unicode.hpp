@@ -10,15 +10,13 @@ namespace chalet
 {
 namespace Unicode
 {
-const char* dot();
-const char* degree();
 const char* triangle();
 const char* diamond();
-const char* heavyCheckmark();
+const char* checkmark();
 const char* heavyBallotX();
-const char* boldSaltire();
+const char* multiplicationX();
 const char* warning();
-const char* circledSaltire();
+const char* circledX();
 const char* heavyCurvedDownRightArrow();
 const char* heavyCurvedUpRightArrow();
 const char* rightwardsTripleArrow();

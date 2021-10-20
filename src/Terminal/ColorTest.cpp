@@ -37,6 +37,7 @@ bool ColorTest::run()
 	std::cout << fmt::format("{esc}[2J{esc}[1;1H", fmt::arg("esc", kEsc));
 
 	printChaletColorThemes();
+	printUnicodeCharacters();
 	printTerminalCapabilities();
 
 	std::cout << m_separator << std::flush;
@@ -47,8 +48,8 @@ bool ColorTest::run()
 /*****************************************************************************/
 void ColorTest::printTerminalCapabilities()
 {
-	std::cout << m_separator << std::string(22, ' ') << "Terminal Capabilities\n"
-			  << m_separator;
+	printBanner("Terminal Capabilities");
+	std::cout << m_separator;
 
 	std::unordered_map<int, std::string> descriptions{
 		{ 0, "normal" },
@@ -105,6 +106,35 @@ void ColorTest::printTerminalCapabilities()
 }
 
 /*****************************************************************************/
+void ColorTest::printUnicodeCharacters()
+{
+	StringList characters;
+	characters.emplace_back(Unicode::triangle());
+	characters.emplace_back(Unicode::diamond());
+	characters.emplace_back(Unicode::checkmark());
+	characters.emplace_back(Unicode::heavyBallotX());
+	characters.emplace_back(Unicode::multiplicationX());
+	characters.emplace_back(Unicode::warning());
+	characters.emplace_back(Unicode::circledX());
+	characters.emplace_back(Unicode::heavyCurvedDownRightArrow());
+	characters.emplace_back(Unicode::heavyCurvedUpRightArrow());
+	characters.emplace_back(Unicode::rightwardsTripleArrow());
+	characters.emplace_back(Unicode::registered());
+
+	printBanner("Supported Unicode Characters");
+
+	const auto bold = Output::getAnsiStyle(Color::WhiteBold);
+
+	std::string output = m_separator + bold;
+	for (auto& character : characters)
+	{
+		output += fmt::format("{}  ", character);
+	}
+	output += fmt::format("{}\n", m_reset);
+	std::cout << output;
+}
+
+/*****************************************************************************/
 void ColorTest::printChaletColorThemes()
 {
 	auto currentTheme = Output::theme();
@@ -113,7 +143,7 @@ void ColorTest::printChaletColorThemes()
 	if (currentTheme.preset().empty())
 		themes.push_back(std::move(currentTheme));
 
-	std::cout << m_separator << std::string(23, ' ') << "Chalet Color Themes\n";
+	printBanner("Chalet Color Themes");
 
 	for (const auto& theme : themes)
 	{
@@ -131,7 +161,7 @@ void ColorTest::printChaletColorThemes()
 		output += fmt::format("{}{}  theme.header{}\n", Output::getAnsiStyle(theme.header), Unicode::triangle(), m_reset);
 		output += fmt::format("   [1/1] {}theme.build{}\n", Output::getAnsiStyle(theme.build), m_reset);
 		output += fmt::format("   [1/1] {}theme.assembly{}\n", Output::getAnsiStyle(theme.assembly), m_reset);
-		output += fmt::format("{}{}  theme.success{}\n", Output::getAnsiStyle(theme.success), Unicode::heavyCheckmark(), m_reset);
+		output += fmt::format("{}{}  theme.success{}\n", Output::getAnsiStyle(theme.success), Unicode::checkmark(), m_reset);
 		output += fmt::format("{}{}  theme.error{}\n", Output::getAnsiStyle(theme.error), Unicode::heavyBallotX(), m_reset);
 		output += fmt::format("{}{}  theme.warning{}\n", Output::getAnsiStyle(theme.warning), Unicode::warning(), m_reset);
 		output += fmt::format("{}{}  theme.note{}\n", Output::getAnsiStyle(theme.note), Unicode::diamond(), m_reset);
@@ -140,5 +170,14 @@ void ColorTest::printChaletColorThemes()
 	}
 
 	std::cout << m_separator << fmt::format("Total built-in themes: {}\n", totalThemes);
+}
+
+/*****************************************************************************/
+void ColorTest::printBanner(const std::string& inText)
+{
+	auto middle = static_cast<std::size_t>(static_cast<double>(kWidth) * 0.5);
+	auto textMiddle = static_cast<std::size_t>(static_cast<double>(inText.size()) * 0.5);
+	std::string padding(middle - textMiddle, ' ');
+	std::cout << fmt::format("{}{}{}\n", m_separator, padding, inText);
 }
 }

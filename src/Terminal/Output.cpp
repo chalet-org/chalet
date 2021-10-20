@@ -474,14 +474,14 @@ void Output::msgRemovedUnusedDependency(const std::string& inDependencyName)
 /*****************************************************************************/
 void Output::msgConfigureCompleted()
 {
-	auto symbol = Unicode::heavyCheckmark();
+	auto symbol = Unicode::checkmark();
 	displayStyledSymbol(state.theme.success, symbol, "Configured!");
 }
 
 /*****************************************************************************/
 void Output::msgBuildSuccess()
 {
-	auto symbol = Unicode::heavyCheckmark();
+	auto symbol = Unicode::checkmark();
 	displayStyledSymbol(state.theme.success, symbol, "Succeeded!");
 }
 

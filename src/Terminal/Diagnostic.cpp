@@ -251,7 +251,7 @@ void Diagnostic::printErrors()
 		if (!hasWarnings)
 			Output::lineBreakStderr();
 
-		Diagnostic::showHeader(type, fmt::format("{}  Errors", Unicode::circledSaltire()));
+		Diagnostic::showHeader(type, fmt::format("{}  Errors", Unicode::circledX()));
 
 		for (auto& message : errors)
 		{

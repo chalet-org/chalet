@@ -10,29 +10,6 @@
 namespace chalet
 {
 /*****************************************************************************/
-// Looks funky on Mac & Linux with default fonts
-const char* Unicode::dot()
-{
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
-		return "º";
-	else
-#endif
-		return u8"\u25BC"; // triangle
-}
-
-/*****************************************************************************/
-const char* Unicode::degree()
-{
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
-		return "º";
-	else
-#endif
-		return u8"\u2218";
-}
-
-/*****************************************************************************/
 const char* Unicode::triangle()
 {
 #if defined(CHALET_WIN32)
@@ -48,21 +25,21 @@ const char* Unicode::diamond()
 {
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
-		return "º";
+		return "•";
 	else
 #endif
-		return u8"\u2666";
+		return u8"\u25C6";
 }
 
 /*****************************************************************************/
-const char* Unicode::heavyCheckmark()
+const char* Unicode::checkmark()
 {
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "√";
 	else
 #endif
-		return u8"\u2714";
+		return u8"\u2713";
 }
 
 /*****************************************************************************/
@@ -77,14 +54,14 @@ const char* Unicode::heavyBallotX()
 }
 
 /*****************************************************************************/
-const char* Unicode::boldSaltire()
+const char* Unicode::multiplicationX()
 {
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "X";
 	else
 #endif
-		return u8"\xF0\x9F\x9E\xAB";
+		return u8"\u2715";
 }
 
 /*****************************************************************************/
@@ -95,19 +72,18 @@ const char* Unicode::warning()
 		return "»";
 	else
 #endif
-		return u8"\u26A0";
+		return u8"\u25B3";
 }
 
 /*****************************************************************************/
-const char* Unicode::circledSaltire()
+const char* Unicode::circledX()
 {
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "X";
 	else
 #endif
-		// return u8"\u2B59";
-		return u8"\u2A02";
+		return u8"\u2BBE";
 }
 
 /*****************************************************************************/

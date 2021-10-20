@@ -16,7 +16,10 @@ struct ColorTest
 
 private:
 	void printTerminalCapabilities();
+	void printUnicodeCharacters();
 	void printChaletColorThemes();
+
+	void printBanner(const std::string& inText);
 
 	const char kEsc;
 	const std::size_t kWidth;
