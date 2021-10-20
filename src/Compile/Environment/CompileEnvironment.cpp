@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 
+#include "Compile/Environment/IntelCompileEnvironment.hpp"
 #include "Compile/Environment/VisualStudioCompileEnvironment.hpp"
 
 namespace chalet
@@ -28,6 +29,10 @@ CompileEnvironment::CompileEnvironment(const CommandLineInputs& inInputs, BuildS
 	if (inType == ToolchainType::MSVC)
 	{
 		return std::make_unique<VisualStudioCompileEnvironment>(inInputs, inState);
+	}
+	else if (inType == ToolchainType::IntelCompilerClassic || inType == ToolchainType::IntelOneApiDPCXX)
+	{
+		return std::make_unique<IntelCompileEnvironment>(inInputs, inState);
 	}
 
 	return std::make_unique<CompileEnvironment>(inInputs, inState);

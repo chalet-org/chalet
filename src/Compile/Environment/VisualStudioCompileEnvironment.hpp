@@ -7,7 +7,6 @@
 #define CHALET_VISUAL_STUDIO_COMPILE_ENVIRONMENT_HPP
 
 #include "Compile/Environment/CompileEnvironment.hpp"
-#include "Core/CommandLineInputs.hpp"
 
 namespace chalet
 {
