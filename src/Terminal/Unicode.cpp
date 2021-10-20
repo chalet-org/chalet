@@ -27,8 +27,10 @@ const char* Unicode::diamond()
 	if (Environment::isCommandPromptOrPowerShell())
 		return "•";
 	else
-#endif
 		return u8"\u25C6";
+#else
+	return u8"\u2666";
+#endif
 }
 
 /*****************************************************************************/
@@ -38,8 +40,10 @@ const char* Unicode::checkmark()
 	if (Environment::isCommandPromptOrPowerShell())
 		return "√";
 	else
-#endif
 		return u8"\u2713";
+#else
+	return u8"\u2714";
+#endif
 }
 
 /*****************************************************************************/
@@ -54,25 +58,16 @@ const char* Unicode::heavyBallotX()
 }
 
 /*****************************************************************************/
-const char* Unicode::multiplicationX()
-{
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
-		return "X";
-	else
-#endif
-		return u8"\u2715";
-}
-
-/*****************************************************************************/
 const char* Unicode::warning()
 {
 #if defined(CHALET_WIN32)
 	if (Environment::isCommandPromptOrPowerShell())
 		return "»";
 	else
-#endif
 		return u8"\u25B3";
+#else
+	return u8"\u26A0";
+#endif
 }
 
 /*****************************************************************************/
@@ -82,8 +77,10 @@ const char* Unicode::circledX()
 	if (Environment::isCommandPromptOrPowerShell())
 		return "X";
 	else
-#endif
 		return u8"\u2BBE";
+#else
+	return u8"\u2A02";
+#endif
 }
 
 /*****************************************************************************/

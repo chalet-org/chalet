@@ -113,7 +113,6 @@ void ColorTest::printUnicodeCharacters()
 	characters.emplace_back(Unicode::diamond());
 	characters.emplace_back(Unicode::checkmark());
 	characters.emplace_back(Unicode::heavyBallotX());
-	characters.emplace_back(Unicode::multiplicationX());
 	characters.emplace_back(Unicode::warning());
 	characters.emplace_back(Unicode::circledX());
 	characters.emplace_back(Unicode::heavyCurvedDownRightArrow());

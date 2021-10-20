@@ -14,7 +14,6 @@ const char* triangle();
 const char* diamond();
 const char* checkmark();
 const char* heavyBallotX();
-const char* multiplicationX();
 const char* warning();
 const char* circledX();
 const char* heavyCurvedDownRightArrow();
