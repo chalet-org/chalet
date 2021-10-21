@@ -504,7 +504,7 @@ void CompileToolchainGNU::addIncludes(StringList& outArgList) const
 		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, outDir));
 	}
 
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	// must be last
 	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/usr/local/include/"));
 #endif
@@ -521,7 +521,7 @@ void CompileToolchainGNU::addLibDirs(StringList& outArgList) const
 
 	outArgList.emplace_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
 
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	// must be last
 	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/usr/local/lib/"));
 #endif
@@ -889,7 +889,7 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainGNU::addStripSymbolsOption(StringList& outArgList) const
 {
-#if !defined(CHALET_MACOS)
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	if (m_state.configuration.stripSymbols())
 	{
 		std::string strip{ "-s" };
@@ -1074,7 +1074,7 @@ void CompileToolchainGNU::addCompilerSearchPaths(StringList& outArgList) const
 
 	outArgList.emplace_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
 
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	// must be last
 	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/usr/local/lib/"));
 #endif

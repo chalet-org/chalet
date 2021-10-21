@@ -161,7 +161,7 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 		{
 			// objdump
 			std::string archArg;
-#if !defined(CHALET_MACOS)
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 			if (!m_state.toolchain.isDisassemblerLLVMObjDump())
 			{
 				Arch::Cpu arch = m_state.info.targetArchitecture();

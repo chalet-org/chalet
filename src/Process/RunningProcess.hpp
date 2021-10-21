@@ -42,7 +42,7 @@ public:
 	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
 
 private:
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	int getReturnCode(const int inExitCode);
 	CmdPtrArray getCmdVector(const StringList& inCmd);
 #endif

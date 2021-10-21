@@ -225,7 +225,7 @@ bool BuildState::initializeBuild()
 					project.addLocations(std::move(locations));
 				}
 
-#if !defined(CHALET_MACOS)
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 				std::string intermediateDir = paths.intermediateDir();
 				project.addLocation(std::move(intermediateDir));
 #endif

@@ -248,7 +248,7 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const Compil
 	ret.directories.push_back(m_buildOutputDir);
 	ret.directories.push_back(objDir());
 
-#if !defined(CHALET_MACOS)
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	// m_intermediateDir is only used in windows so far
 	if (!inProject.isStaticLibrary())
 		ret.directories.push_back(m_intermediateDir);
@@ -477,7 +477,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		if (type == SourceType::Unknown)
 			continue;
 
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 		if (type == SourceType::WindowsResource)
 			continue;
 #endif

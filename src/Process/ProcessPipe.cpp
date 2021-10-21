@@ -20,7 +20,7 @@ ProcessPipe::~ProcessPipe()
 	closeWrite();
 }
 
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 /*****************************************************************************/
 void ProcessPipe::duplicate(PipeHandle oldFd, PipeHandle newFd)
 {
@@ -115,7 +115,7 @@ void ProcessPipe::create(const bool inInheritable)
 #endif
 }
 
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 /*****************************************************************************/
 void ProcessPipe::duplicateRead(PipeHandle newFd)
 {

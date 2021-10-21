@@ -59,7 +59,7 @@ void Path::sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine)
 /*****************************************************************************/
 StringList Path::getOSPaths()
 {
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	return {
 		"/usr/local/sbin",
 		"/usr/local/bin",

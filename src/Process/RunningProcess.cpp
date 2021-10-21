@@ -403,7 +403,7 @@ void RunningProcess::close()
 
 	m_pid = 0;
 	m_cmd.clear();
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	m_cwd.clear();
 #endif
 }

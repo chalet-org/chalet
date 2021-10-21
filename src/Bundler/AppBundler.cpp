@@ -299,7 +299,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 		++copyCount;
 	}
 
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	for (auto& exec : executables)
 	{
 		const auto filename = String::getPathFilename(exec);
