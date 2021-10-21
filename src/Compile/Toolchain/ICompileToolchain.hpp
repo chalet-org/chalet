@@ -40,6 +40,7 @@ protected:
 	bool createWindowsApplicationManifest();
 	bool createWindowsApplicationIcon();
 	virtual void addExectuable(StringList& outArgList, const std::string& inExecutable) const final;
+	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;
 
 	// Compile
 	virtual void addIncludes(StringList& outArgList) const;

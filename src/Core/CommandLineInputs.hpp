@@ -14,6 +14,7 @@
 #include "Generator/IdeType.hpp"
 #include "Router/Route.hpp"
 #include "Settings/SettingsType.hpp"
+#include "Utility/DefinesExperimental.hpp"
 
 namespace chalet
 {
@@ -173,13 +174,16 @@ private:
 	const std::string kArchPresetAuto;
 	const std::string kToolchainPresetGCC;
 	const std::string kToolchainPresetLLVM;
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	const std::string kToolchainPresetICC;
+#endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	const std::string kToolchainPresetICX;
+#endif
 #if defined(CHALET_WIN32)
 	const std::string kToolchainPresetVisualStudioStable;
 #elif defined(CHALET_MACOS)
 	const std::string kToolchainPresetAppleLLVM;
-#else
-	const std::string kToolchainPresetICX;
 #endif
 
 	std::string m_inputFile;

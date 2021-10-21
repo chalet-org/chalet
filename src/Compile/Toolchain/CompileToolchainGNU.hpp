@@ -32,7 +32,6 @@ protected:
 	virtual StringList getWarningExclusions() const;
 	virtual bool isFlagSupported(const std::string& inFlag) const;
 	virtual bool isLinkSupported(const std::string& inLink) const;
-	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;
 
 	// Compile
 	virtual void addIncludes(StringList& outArgList) const override;

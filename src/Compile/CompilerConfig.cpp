@@ -64,26 +64,37 @@ bool CompilerConfig::configureCompilerPaths()
 
 	std::string path = String::getPathFolder(exec);
 	const std::string lowercasePath = String::toLowerCase(path);
+	// LOG(lowercasePath);
 
 	using CompilerMap = std::vector<CompilerPathStructure>;
 #if defined(CHALET_WIN32)
-	const CompilerMap compilerStructures{
+	const CompilerMap compilerStructures
+	{
 		{ "/bin/hostx64/x64", "/lib/x64", "/include" },
-		{ "/bin/hostx64/x86", "/lib/x86", "/include" },
-		{ "/bin/hostx64/arm64", "/lib/arm64", "/include" },
-		{ "/bin/hostx64/arm", "/lib/arm", "/include" },
-		//
-		{ "/bin/hostx86/x86", "/lib/x86", "/include" },
-		{ "/bin/hostx86/x64", "/lib/x64", "/include" },
-		{ "/bin/hostx86/arm64", "/lib/arm64", "/include" },
-		{ "/bin/hostx86/arm", "/lib/arm", "/include" },
+			{ "/bin/hostx64/x86", "/lib/x86", "/include" },
+			{ "/bin/hostx64/arm64", "/lib/arm64", "/include" },
+			{ "/bin/hostx64/arm", "/lib/arm", "/include" },
+			//
+			{ "/bin/hostx86/x86", "/lib/x86", "/include" },
+			{ "/bin/hostx86/x64", "/lib/x64", "/include" },
+			{ "/bin/hostx86/arm64", "/lib/arm64", "/include" },
+			{ "/bin/hostx86/arm", "/lib/arm", "/include" },
 		// { "/bin/hostx64/x64", "/lib/64", "/include" }, // TODO: Not sure what makes this different from /lib/x64
-		{ "/bin", "/lib", "/include" },
+		//
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+			{ "/bin/intel64", "/compiler/lib/intel64_win", "/compiler/include" },
+			{ "/bin/intel64_ia32", "/compiler/lib/ia32_win", "/compiler/include" },
+	#endif
+			//
+			{ "/bin", "/lib", "/include" },
 	};
 #else
-	const CompilerMap compilerStructures{
+	const CompilerMap compilerStructures
+	{
 		{ "/bin", "/lib", "/include" },
-		{ "/bin/intel64", "/compiler/lib", "/compiler/include" },
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+			{ "/bin/intel64", "/compiler/lib", "/compiler/include" },
+	#endif
 	};
 #endif
 
@@ -163,9 +174,18 @@ bool CompilerConfig::testCompilerMacros()
 		m_compilerType = CppCompilerType::VisualStudio;
 		return true;
 	}
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	else if (String::endsWith("/icl.exe", exec))
+	{
+		m_compilerType = CppCompilerType::IntelClassic;
+		return true;
+	}
+	#endif
 #endif
 
 	const std::string macroResult = getCompilerMacros(exec);
+	// LOG(macroResult);
+	// LOG(exec);
 	// String::replaceAll(macroResult, '\n', ' ');
 	// String::replaceAll(macroResult, "#include ", "");
 	if (macroResult.empty())
@@ -186,38 +206,61 @@ bool CompilerConfig::testCompilerMacros()
 
 	const bool clang = String::contains("__clang__", macroResult);
 	const bool gcc = String::contains("__GNUC__", macroResult);
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	const bool mingw32 = String::contains("__MINGW32__", macroResult);
 	const bool mingw64 = String::contains("__MINGW64__", macroResult);
 	const bool mingw = (mingw32 || mingw64);
+#endif
 	const bool emscripten = String::contains("__EMSCRIPTEN__", macroResult);
-	const bool intel = String::contains({ "__INTEL_COMPILER", "__INTEL_COMPILER_BUILD_DATE" }, macroResult);
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	const bool intelClang = String::contains({ "__INTEL_LLVM_COMPILER", "__INTEL_CLANG_COMPILER" }, macroResult);
+#endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	const bool intelGcc = String::contains({ "__INTEL_COMPILER", "__INTEL_COMPILER_BUILD_DATE" }, macroResult);
+#endif
+#if defined(CHALET_MACOS)
 	const bool appleClang = clang && String::contains("Apple LLVM", macroResult);
+#endif
 	bool result = true;
 
 	if (emscripten)
 	{
 		m_compilerType = CppCompilerType::EmScripten;
 	}
+#if defined(CHALET_MACOS)
 	else if (appleClang)
 	{
 		m_compilerType = CppCompilerType::AppleClang;
 	}
-	else if (gcc && intel)
+#endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	else if (clang && intelClang)
+	{
+		m_compilerType = CppCompilerType::IntelClang;
+	}
+#endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	else if (gcc && intelGcc)
 	{
 		m_compilerType = CppCompilerType::IntelClassic;
 	}
+#endif
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	else if (clang && mingw)
 	{
 		m_compilerType = CppCompilerType::MingwClang;
 	}
+#endif
 	else if (clang)
 	{
 		m_compilerType = CppCompilerType::Clang;
 	}
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	else if (gcc && mingw)
 	{
 		m_compilerType = CppCompilerType::MingwGcc;
 	}
+#endif
 	else if (gcc)
 	{
 		m_compilerType = CppCompilerType::Gcc;
@@ -228,7 +271,7 @@ bool CompilerConfig::testCompilerMacros()
 		result = false;
 	}
 
-	// LOG(fmt::format("gcc: {}, clang: {}, appleClang: {}, mingw32: {}, mingw64: {}, emscripten: {}, intel: {},", gcc, clang, appleClang, mingw32, mingw64, emscripten, intel));
+	// LOG(fmt::format("gcc: {}, clang: {}, appleClang: {}, mingw32: {}, mingw64: {}, emscripten: {}, intelClang: {}, intelGcc: {}", gcc, clang, appleClang, mingw32, mingw64, emscripten, intelClang, intelGcc));
 	// LOG("m_compilerType: ", static_cast<int>(m_compilerType));
 
 	return result;

@@ -83,6 +83,7 @@ int Application::onExit(const Status inStatus)
 	}
 
 	Diagnostic::printErrors();
+
 	this->cleanup();
 
 	int result = static_cast<int>(inStatus);

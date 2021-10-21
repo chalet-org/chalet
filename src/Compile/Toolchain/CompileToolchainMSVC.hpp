@@ -14,54 +14,54 @@ class BuildState;
 struct SourceTarget;
 struct CompilerConfig;
 
-struct CompileToolchainMSVC final : ICompileToolchain
+struct CompileToolchainMSVC : ICompileToolchain
 {
 	explicit CompileToolchainMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 
-	virtual ToolchainType type() const noexcept final;
+	virtual ToolchainType type() const noexcept override;
 
-	virtual bool initialize() final;
+	virtual bool initialize() override;
 
-	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) final;
-	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) final;
-	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) final;
-	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
+	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) override;
+	virtual StringList getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
+	virtual StringList getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;
+	virtual StringList getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 
-private:
+protected:
 	StringList getLinkExclusions() const;
 
 	// Compile
-	virtual void addIncludes(StringList& outArgList) const final;
-	virtual void addWarnings(StringList& outArgList) const final;
-	virtual void addDefines(StringList& outArgList) const final;
-	void addResourceDefines(StringList& outArgList) const;
-	virtual void addPchInclude(StringList& outArgList) const final;
-	virtual void addOptimizationOption(StringList& outArgList) const final;
-	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const final;
-	virtual void addDebuggingInformationOption(StringList& outArgList) const final;
+	virtual void addIncludes(StringList& outArgList) const override;
+	virtual void addWarnings(StringList& outArgList) const override;
+	virtual void addDefines(StringList& outArgList) const override;
+	virtual void addResourceDefines(StringList& outArgList) const;
+	virtual void addPchInclude(StringList& outArgList) const override;
+	virtual void addOptimizationOption(StringList& outArgList) const override;
+	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
+	virtual void addDebuggingInformationOption(StringList& outArgList) const override;
+	virtual void addDiagnosticsOption(StringList& outArgList) const;
 	//
-	virtual void addCompileOptions(StringList& outArgList) const final;
-	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const final;
-	virtual void addNoExceptionsOption(StringList& outArgList) const final;
-	virtual void addThreadModelCompileOption(StringList& outArgList) const final;
-	void addWholeProgramOptimization(StringList& outArgList) const;
+	virtual void addCompileOptions(StringList& outArgList) const override;
+	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;
+	virtual void addNoExceptionsOption(StringList& outArgList) const override;
+	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
+	virtual void addWholeProgramOptimization(StringList& outArgList) const;
 
 	// Linking
-	virtual void addLibDirs(StringList& outArgList) const final;
-	virtual void addLinks(StringList& outArgList) const final;
-	virtual void addLinkerOptions(StringList& outArgList) const final;
-	void addCgThreads(StringList& outArgList) const;
-	virtual void addSubSystem(StringList& outArgList) const final;
-	virtual void addEntryPoint(StringList& outArgList) const final;
+	virtual void addLibDirs(StringList& outArgList) const override;
+	virtual void addLinks(StringList& outArgList) const override;
+	virtual void addLinkerOptions(StringList& outArgList) const override;
+	virtual void addCgThreads(StringList& outArgList) const;
+	virtual void addSubSystem(StringList& outArgList) const override;
+	virtual void addEntryPoint(StringList& outArgList) const override;
 
 	// General
-	void addTargetPlatformArch(StringList& outArgList) const;
+	virtual void addTargetPlatformArch(StringList& outArgList) const;
 
+private:
 	StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 	StringList getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 	StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
-
-	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;
 
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
 	void addPrecompiledHeaderLink(StringList outArgList) const;

@@ -10,7 +10,6 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
-#include "Utility/DefinesExperimental.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -71,13 +70,16 @@ CommandLineInputs::CommandLineInputs() :
 	kArchPresetAuto("auto"),
 	kToolchainPresetGCC("gcc"),
 	kToolchainPresetLLVM("llvm"),
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	kToolchainPresetICC("icc"),
+#endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	kToolchainPresetICX("icx"),
+#endif
 #if defined(CHALET_WIN32)
 	kToolchainPresetVisualStudioStable("vs-stable"),
 #elif defined(CHALET_MACOS)
 	kToolchainPresetAppleLLVM("apple-llvm"),
-#else
-	kToolchainPresetICX("icx"),
 #endif
 	m_settingsFile(kDefaultSettingsFile),
 	m_platform(getPlatform()),
@@ -832,27 +834,47 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.profiler = "gprof";
 		ret.disassembler = "objdump";
 	}
-#if CHALET_ENABLE_INTEL_EXPERIMENTAL
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	else if (String::equals(kToolchainPresetICX, inValue))
+	{
+		m_isToolchainPreset = true;
+		m_toolchainPreferenceName = inValue;
+
+		ret.type = ToolchainType::IntelLLVM;
+		ret.strategy = StrategyType::Ninja;
+		ret.rc = "rc";
+		ret.cpp = "clang++";
+		ret.cc = "clang";
+		ret.linker = "lld";
+		ret.archiver = "llvm-ar";
+		ret.profiler = "gprof";
+		ret.disassembler = "dumpbin";
+	}
+#endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	else if (String::equals(kToolchainPresetICC, inValue))
 	{
 		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
 
-		// /opt/intel/oneapi
-
-		ret.type = ToolchainType::IntelClassic;
 		ret.strategy = StrategyType::Ninja;
+		ret.type = ToolchainType::IntelClassic;
+		ret.rc = "rc";
+	#if defined(CHALET_WIN32)
+		ret.cpp = "icl";
+		ret.cc = "icl";
+		ret.linker = "xilink";
+		ret.archiver = "xilib";
+		ret.profiler = ""; // TODO
+		ret.disassembler = "dumpbin";
+	#else
 		ret.cpp = "icpc";
 		ret.cc = "icc";
-		ret.rc = "windres";
-	#if defined(CHALET_WIN32)
-		ret.linker = "xilink";
-	#else
 		ret.linker = "xild";
-	#endif
 		ret.archiver = "xiar";
-		ret.profiler = "gprof";
+		ret.profiler = ""; // TODO
 		ret.disassembler = "objdump";
+	#endif
 	}
 #endif
 	else

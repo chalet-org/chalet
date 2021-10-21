@@ -469,15 +469,6 @@ bool CompileToolchainGNU::isLinkSupported(const std::string& inLink) const
 }
 
 /*****************************************************************************/
-std::string CompileToolchainGNU::getPathCommand(std::string_view inCmd, const std::string& inPath) const
-{
-	if (m_quotePaths)
-		return fmt::format("{}\"{}\"", inCmd, inPath);
-	else
-		return fmt::format("{}{}", inCmd, inPath);
-}
-
-/*****************************************************************************/
 void CompileToolchainGNU::addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const
 {
 	for (auto& source : sourceObjs)

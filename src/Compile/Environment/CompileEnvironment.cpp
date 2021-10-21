@@ -33,8 +33,14 @@ CompileEnvironment::CompileEnvironment(const CommandLineInputs& inInputs, BuildS
 	{
 		return std::make_unique<VisualStudioCompileEnvironment>(inInputs, inState);
 	}
-#if CHALET_ENABLE_INTEL_EXPERIMENTAL
-	else if (inType == ToolchainType::IntelClassic || inType == ToolchainType::IntelLLVM)
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	else if (inType == ToolchainType::IntelClassic)
+	{
+		return std::make_unique<IntelCompileEnvironment>(inInputs, inState);
+	}
+#endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	else if (inType == ToolchainType::IntelLLVM)
 	{
 		return std::make_unique<IntelCompileEnvironment>(inInputs, inState);
 	}

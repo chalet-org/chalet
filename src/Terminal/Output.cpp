@@ -519,7 +519,7 @@ void Output::msgBuildFail()
 	const auto color = getAnsiStyle(state.theme.error);
 	const auto reset = getAnsiStyle(Color::Reset);
 
-	std::cout << fmt::format("{}{}  Failed!\n   Review the errors above.", color, symbol) << reset << std::endl;
+	std::cout << fmt::format("{}{}  Failed!\n   Review the errors above.{}", color, symbol, reset) << std::endl;
 }
 
 /*****************************************************************************/

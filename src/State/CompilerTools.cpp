@@ -130,7 +130,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	{
 #if defined(CHALET_MACOS)
 		auto arch = m_inputs.hostArchitecture();
-		m_state.info.setTargetArchitecture(fmt::format("{}-apple-darwin-intel64", arch));
+		m_state.info.setTargetArchitecture(fmt::format("{}-intel-darwin", arch));
 #endif
 	}
 #if defined(CHALET_WIN32)
@@ -140,6 +140,11 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 			return false;
 	}
 #endif
+	else
+	{
+		Diagnostic::error("Toolchain was not recognized by Chalet.");
+		return false;
+	}
 
 	// Note: Expensive!
 	fetchCompilerVersions();
@@ -221,13 +226,24 @@ bool CompilerTools::detectToolchainFromPaths()
 #endif
 			if (String::contains("clang", m_compilerCpp.path) || String::contains("clang", m_compilerC.path))
 		{
-			m_inputs.setToolchainPreferenceType(ToolchainType::LLVM);
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+			if (String::contains({ "oneAPI", "Intel", "oneapi", "intel" }, m_compilerCpp.path))
+				m_inputs.setToolchainPreferenceType(ToolchainType::IntelLLVM);
+			else
+#endif
+				m_inputs.setToolchainPreferenceType(ToolchainType::LLVM);
 		}
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if defined(CHALET_WIN32)
+		else if (String::contains("icl", m_compilerCpp.path) || String::contains("icl", m_compilerC.path))
+	#else
 		else if (String::contains("icpc", m_compilerCpp.path) || String::contains("icc", m_compilerC.path))
+	#endif
 		{
 			m_inputs.setToolchainPreferenceType(ToolchainType::IntelClassic);
 		}
 		else
+#endif
 		{
 			// Treat as some variant of GCC
 			m_inputs.setToolchainPreferenceType(ToolchainType::GNU);
@@ -454,16 +470,31 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 	{
 		rawOutput = Commands::subprocessOutput({ outInfo.path, "-target", m_state.info.targetArchitectureString(), "-v" });
 	}
+#if defined(CHALET_WIN32)
+	else if (String::contains("icl.exe", outInfo.path))
+	{
+		rawOutput = Commands::subprocessOutput({ outInfo.path, "-V" });
+	}
+#else
 	else if (String::contains({ "icc", "icpc" }, outInfo.path))
 	{
 		rawOutput = Commands::subprocessOutput({ outInfo.path, "-V" });
 	}
+#endif
 	else
 	{
 		rawOutput = Commands::subprocessOutput({ outInfo.path, "-v" });
 	}
 
-	auto splitOutput = String::split(rawOutput, '\n');
+	StringList splitOutput;
+#if defined(CHALET_WIN32)
+	if (rawOutput.find('\r') != std::string::npos)
+		splitOutput = String::split(rawOutput, "\r\n");
+	else
+		splitOutput = String::split(rawOutput, '\n');
+#else
+	splitOutput = String::split(rawOutput, '\n');
+#endif
 	if (splitOutput.size() >= 2)
 	{
 		std::string versionString;
@@ -484,6 +515,7 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 			{
 				outInfo.arch = line.substr(8);
 			}
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 			else if (String::contains("Intel", line))
 			{
 				compilerRaw = "Intel";
@@ -494,7 +526,18 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 					auto end = line.find(' ', start);
 					versionString = line.substr(start, end - start);
 				}
+				else
+				{
+					start = line.find("Compiler ");
+					if (start != std::string::npos)
+					{
+						start += 9;
+						auto end = line.find(' ', start);
+						versionString = line.substr(start, end - start);
+					}
+				}
 			}
+#endif
 			/*else if (String::startsWith("Thread model:", line))
 			{
 				threadModel = line.substr(14);
@@ -522,11 +565,17 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 				outInfo.version = std::move(versionString);
 			}
 #endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 			else if (String::equals("Intel", compilerRaw))
 			{
-				ret = fmt::format("Intel{} 64 Compiler Classic version {}", Unicode::registered(), versionString);
+				if (m_inputs.toolchainPreference().type == ToolchainType::IntelClassic)
+					ret = fmt::format("Intel{} 64 Compiler Classic version {}", Unicode::registered(), versionString);
+				else
+					ret = fmt::format("Intel{} oneAPI DPC++/C++ version {}", Unicode::registered(), versionString);
+
 				outInfo.version = std::move(versionString);
 			}
+#endif
 		}
 		else
 		{

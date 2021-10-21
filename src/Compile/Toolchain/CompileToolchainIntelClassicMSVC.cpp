@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Toolchain/CompileToolchainIntelClassic.hpp"
+#include "Compile/Toolchain/CompileToolchainIntelClassicMSVC.hpp"
 
 #include "Compile/CompilerConfig.hpp"
 
@@ -16,21 +16,21 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainIntelClassic::CompileToolchainIntelClassic(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
-	CompileToolchainGNU(inState, inProject, inConfig)
+CompileToolchainIntelClassicMSVC::CompileToolchainIntelClassicMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
+	CompileToolchainMSVC(inState, inProject, inConfig)
 {
 }
 
 /*****************************************************************************/
-ToolchainType CompileToolchainIntelClassic::type() const noexcept
+ToolchainType CompileToolchainIntelClassicMSVC::type() const noexcept
 {
 	return ToolchainType::IntelClassic;
 }
 
 /*****************************************************************************/
-bool CompileToolchainIntelClassic::initialize()
+bool CompileToolchainIntelClassicMSVC::initialize()
 {
-	if (!CompileToolchainGNU::initialize())
+	if (!CompileToolchainMSVC::initialize())
 		return false;
 
 	if (m_project.usesPch())
@@ -51,29 +51,24 @@ bool CompileToolchainIntelClassic::initialize()
 }
 
 /*****************************************************************************/
-StringList CompileToolchainIntelClassic::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch)
+StringList CompileToolchainIntelClassicMSVC::getWarningExclusions() const
 {
-	StringList ret = CompileToolchainGNU::getPchCompileCommand(inputFile, outputFile, generateDependency, dependency, arch);
-	ret.pop_back();
-	ret.push_back(m_pchSource);
-
-	return ret;
+	return {};
 }
 
 /*****************************************************************************/
-StringList CompileToolchainIntelClassic::getWarningExclusions() const
+void CompileToolchainIntelClassicMSVC::addIncludes(StringList& outArgList) const
 {
-	return {
-		"pedantic",
-		"cast-align",
-		"double-promotion",
-		"redundant-decls",
-		"odr",
-		"noexcept",
-		"old-style-cast",
-		"strict-null-sentinel",
-		"invalid-pch"
-	};
+	outArgList.push_back("/X");
+
+	CompileToolchainMSVC::addIncludes(outArgList);
+}
+
+/*****************************************************************************/
+void CompileToolchainIntelClassicMSVC::addDiagnosticsOption(StringList& outArgList) const
+{
+	// CompileToolchainMSVC::addDiagnosticsOption(outArgList);
+	UNUSED(outArgList);
 }
 
 }

@@ -45,8 +45,13 @@ bool IntelCompileEnvironment::createFromVersion(const std::string& inVersion)
 	{
 		Diagnostic::infoEllipsis("Creating Intel{} C/C++ Environment Cache", Unicode::registered());
 
+#if defined(CHALET_WIN32)
+		auto oneApiRoot = Environment::get("ONEAPI_ROOT");
+		m_intelSetVars = fmt::format("{}/setvars.bat", oneApiRoot);
+#else
 		const auto& home = m_inputs.homeDirectory();
 		m_intelSetVars = fmt::format("{}/intel/oneapi/setvars.sh", home);
+#endif
 		if (!Commands::pathExists(m_intelSetVars))
 		{
 			m_intelSetVars = "/opt/intel/oneapi/setvars.sh";
@@ -109,9 +114,14 @@ bool IntelCompileEnvironment::createFromVersion(const std::string& inVersion)
 	if (isPresetFromInput)
 	{
 #if defined(CHALET_MACOS)
-		std::string name = fmt::format("{}-apple-darwin-intel64", m_inputs.targetArchitecture());
+		std::string name = fmt::format("{}-apple-darwin-icc", m_inputs.targetArchitecture());
 #else
-		std::string name = fmt::format("{}-intel", m_inputs.targetArchitecture());
+		std::string name;
+		if (m_inputs.toolchainPreference().type == ToolchainType::IntelLLVM)
+			name = fmt::format("{}-pc-windows-icx", m_inputs.targetArchitecture());
+		else
+			name = fmt::format("{}-pc-windows-icc", m_inputs.targetArchitecture());
+
 #endif
 		m_inputs.setToolchainPreferenceName(std::move(name));
 	}
@@ -149,6 +159,16 @@ void IntelCompileEnvironment::makeArchitectureCorrections()
 /*****************************************************************************/
 bool IntelCompileEnvironment::saveIntelEnvironment() const
 {
+#if defined(CHALET_WIN32)
+	StringList cmd{ m_intelSetVars };
+
+	cmd.emplace_back(">");
+	cmd.emplace_back("nul");
+	cmd.emplace_back("&&");
+	cmd.emplace_back("SET");
+	cmd.emplace_back(">");
+	cmd.push_back(m_varsFileIntel);
+#else
 	StringList bashCmd;
 	bashCmd.emplace_back("source");
 	bashCmd.push_back(m_intelSetVars);
@@ -168,6 +188,7 @@ bool IntelCompileEnvironment::saveIntelEnvironment() const
 	cmd.emplace_back("-c");
 	cmd.emplace_back(fmt::format("'{}'", bashCmdString));
 
+#endif
 	auto outCmd = String::join(cmd);
 	bool result = std::system(outCmd.c_str()) == EXIT_SUCCESS;
 

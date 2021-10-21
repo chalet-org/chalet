@@ -72,7 +72,7 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 
 	addExectuable(ret, m_config.compilerExecutable());
 	ret.emplace_back("/nologo");
-	ret.emplace_back("/diagnostics:caret");
+	addDiagnosticsOption(ret);
 
 	if (generateDependency && m_isNinja)
 	{
@@ -148,7 +148,7 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 
 	addExectuable(ret, m_config.compilerExecutable());
 	ret.emplace_back("/nologo");
-	ret.emplace_back("/diagnostics:caret");
+	addDiagnosticsOption(ret);
 	ret.emplace_back("/MP");
 
 	if (generateDependency && m_isNinja)
@@ -694,6 +694,12 @@ void CompileToolchainMSVC::addDebuggingInformationOption(StringList& outArgList)
 }
 
 /*****************************************************************************/
+void CompileToolchainMSVC::addDiagnosticsOption(StringList& outArgList) const
+{
+	outArgList.emplace_back("/diagnostics:caret");
+}
+
+/*****************************************************************************/
 void CompileToolchainMSVC::addCompileOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.compileOptions())
@@ -924,15 +930,6 @@ void CompileToolchainMSVC::addTargetPlatformArch(StringList& outArgList) const
 			// ??
 			break;
 	}
-}
-
-/*****************************************************************************/
-std::string CompileToolchainMSVC::getPathCommand(std::string_view inCmd, const std::string& inPath) const
-{
-	if (m_quotePaths)
-		return fmt::format("{}\"{}\"", inCmd, inPath);
-	else
-		return fmt::format("{}{}", inCmd, inPath);
 }
 
 /*****************************************************************************/

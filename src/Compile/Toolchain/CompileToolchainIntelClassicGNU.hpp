@@ -3,18 +3,18 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_TOOLCHAIN_INTEL_CLASSIC_HPP
-#define CHALET_COMPILE_TOOLCHAIN_INTEL_CLASSIC_HPP
+#ifndef CHALET_COMPILE_TOOLCHAIN_INTEL_CLASSIC_GNU_HPP
+#define CHALET_COMPILE_TOOLCHAIN_INTEL_CLASSIC_GNU_HPP
 
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
 
 namespace chalet
 {
-struct CompileToolchainIntelClassic : CompileToolchainGNU
+struct CompileToolchainIntelClassicGNU final : CompileToolchainGNU
 {
-	explicit CompileToolchainIntelClassic(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
+	explicit CompileToolchainIntelClassicGNU(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 
-	virtual ToolchainType type() const noexcept override;
+	virtual ToolchainType type() const noexcept final;
 
 	virtual bool initialize() final;
 
@@ -32,4 +32,4 @@ protected:
 };
 }
 
-#endif // CHALET_COMPILE_TOOLCHAIN_INTEL_CLASSIC_HPP
+#endif // CHALET_COMPILE_TOOLCHAIN_INTEL_CLASSIC_GNU_HPP
