@@ -16,9 +16,10 @@ struct CompileToolchainLLVM : CompileToolchainGNU
 
 	virtual ToolchainType type() const noexcept override;
 
-	virtual StringList getLinkExclusions() const override;
-
 protected:
+	virtual StringList getLinkExclusions() const override;
+	virtual StringList getWarningExclusions() const override;
+
 	// Compile
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;

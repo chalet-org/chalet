@@ -35,6 +35,15 @@ StringList CompileToolchainLLVM::getLinkExclusions() const
 }
 
 /*****************************************************************************/
+StringList CompileToolchainLLVM::getWarningExclusions() const
+{
+	return {
+		"noexcept",
+		"strict-null-sentinel"
+	};
+}
+
+/*****************************************************************************/
 // Note: Noops mean a flag/feature isn't supported
 
 /*****************************************************************************/
