@@ -225,8 +225,10 @@ bool BuildState::initializeBuild()
 					project.addLocations(std::move(locations));
 				}
 
+#if !defined(CHALET_MACOS)
 				std::string intermediateDir = paths.intermediateDir();
 				project.addLocation(std::move(intermediateDir));
+#endif
 			}
 
 			const bool isMsvc = compilerConfig.isMsvc();

@@ -770,9 +770,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	ret.buildPathStyle = BuildPathStyle::TargetTriple;
 
 	m_isToolchainPreset = false;
-	m_visualStudioVersion = VisualStudioVersion::None;
 
 #if defined(CHALET_WIN32)
+	m_visualStudioVersion = VisualStudioVersion::None;
+
 	if (state.visualStudioPresets.find(inValue) != state.visualStudioPresets.end())
 	{
 		m_isToolchainPreset = true;

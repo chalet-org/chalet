@@ -359,10 +359,10 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject
 	if (inProject.usesPch())
 	{
 		std::string ext;
-		if (inConfig.isClangOrMsvc())
+		if (inConfig.isClangOrMsvc() || inConfig.isIntelClassic())
 			ext = "pch";
-		else if (inConfig.isIntelClassic())
-			ext = "pchi";
+		// else if (inConfig.isIntelClassic())
+		// 	ext = "pchi";
 		else
 			ext = "gch";
 

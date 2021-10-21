@@ -48,12 +48,15 @@ private:
 	void parseGnuHelpList(const StringList& inCommand);
 	void parseClangHelpList();
 
+	std::string getCompilerMacros(const std::string& inCompilerExec);
+
 	const BuildState& m_state;
 
 	std::string m_compilerPath{ "/usr" };
 	std::string m_compilerPathBin{ "/usr/bin" };
 	std::string m_compilerPathLib{ "/usr/lib" };
 	std::string m_compilerPathInclude{ "/usr/include" };
+	std::string m_macrosFile;
 	std::string m_flagsFile;
 
 	Dictionary<bool> m_supportedFlags;

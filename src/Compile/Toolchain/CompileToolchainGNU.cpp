@@ -436,6 +436,12 @@ StringList CompileToolchainGNU::getLinkExclusions() const
 }
 
 /*****************************************************************************/
+StringList CompileToolchainGNU::getWarningExclusions() const
+{
+	return {};
+}
+
+/*****************************************************************************/
 bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 {
 	if (String::contains('=', inFlag))
@@ -533,9 +539,14 @@ void CompileToolchainGNU::addLibDirs(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainGNU::addWarnings(StringList& outArgList) const
 {
+	auto excludes = getWarningExclusions();
+
 	const std::string prefix{ "-W" };
 	for (auto& warning : m_project.warnings())
 	{
+		if (List::contains(excludes, warning))
+			continue;
+
 		std::string out;
 		if (String::equals(warning, "pedantic-errors"))
 		{
@@ -552,9 +563,14 @@ void CompileToolchainGNU::addWarnings(StringList& outArgList) const
 
 	if (m_project.usesPch())
 	{
-		std::string invalidPch = prefix + "invalid-pch";
-		// if (isFlagSupported(invalidPch))
-		List::addIfDoesNotExist(outArgList, std::move(invalidPch));
+		std::string warning = "invalid-pch";
+
+		if (!List::contains(excludes, warning))
+		{
+			std::string invalidPch = prefix + warning;
+			// if (isFlagSupported(invalidPch))
+			List::addIfDoesNotExist(outArgList, std::move(invalidPch));
+		}
 	}
 }
 

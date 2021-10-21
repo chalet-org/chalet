@@ -29,6 +29,7 @@ struct CompileToolchainGNU : ICompileToolchain
 
 protected:
 	virtual StringList getLinkExclusions() const;
+	virtual StringList getWarningExclusions() const;
 	virtual bool isFlagSupported(const std::string& inFlag) const;
 	virtual bool isLinkSupported(const std::string& inLink) const;
 	std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const;

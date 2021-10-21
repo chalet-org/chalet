@@ -78,7 +78,6 @@ bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutput
 std::string isolateVersion(const std::string& outString);
 std::string which(const std::string& inExecutable);
 
-std::string testCompilerFlags(const std::string& inCompilerExec);
 #if defined(CHALET_WIN32)
 const std::string& getCygPath();
 #endif

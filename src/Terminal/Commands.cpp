@@ -993,29 +993,6 @@ std::string Commands::which(const std::string& inExecutable)
 	return result;
 }
 
-/*****************************************************************************/
-std::string Commands::testCompilerFlags(const std::string& inCompilerExec)
-{
-	if (inCompilerExec.empty())
-		return std::string();
-
-#if defined(CHALET_WIN32)
-	std::string null = "nul";
-#else
-	std::string null = "/dev/null";
-#endif
-
-	// Clang/GCC only
-	// This command must be run from the bin directory in order to work
-	//   (or added to path before-hand, but we manipulate the path later)
-	//
-	auto compilerPath = String::getPathFolder(inCompilerExec);
-	StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
-	auto result = Commands::subprocessOutput(command, std::move(compilerPath));
-
-	return result;
-}
-
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
 const std::string& Commands::getCygPath()

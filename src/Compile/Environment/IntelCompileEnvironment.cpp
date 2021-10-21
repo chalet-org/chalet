@@ -11,6 +11,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -28,11 +29,7 @@ bool IntelCompileEnvironment::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
 
-	if (!m_state.tools.bashAvailable())
-	{
-		Diagnostic::error("bash was not found.");
-		return false;
-	}
+	makeArchitectureCorrections();
 
 	Timer timer;
 
@@ -40,6 +37,8 @@ bool IntelCompileEnvironment::createFromVersion(const std::string& inVersion)
 	m_varsFileIntel = m_state.cache.getHashPath(fmt::format("{}_all.env", kVarsId), CacheType::Local);
 	m_varsFileIntelDelta = getVarsPath(kVarsId);
 	m_path = Environment::getPath();
+
+	bool isPresetFromInput = m_inputs.isToolchainPreset();
 
 	bool deltaExists = Commands::pathExists(m_varsFileIntelDelta);
 	if (!deltaExists)
@@ -107,11 +106,44 @@ bool IntelCompileEnvironment::createFromVersion(const std::string& inVersion)
 		}
 	}
 
+	if (isPresetFromInput)
+	{
+#if defined(CHALET_MACOS)
+		std::string name = fmt::format("{}-apple-darwin-intel64", m_inputs.targetArchitecture());
+#else
+		std::string name = fmt::format("{}-intel", m_inputs.targetArchitecture());
+#endif
+		m_inputs.setToolchainPreferenceName(std::move(name));
+	}
+
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileIntelDelta));
 
 	Diagnostic::printDone(timer.asString());
 
 	return true;
+}
+
+/*****************************************************************************/
+void IntelCompileEnvironment::makeArchitectureCorrections()
+{
+	auto target = m_inputs.targetArchitecture();
+	if (target.empty())
+	{
+		// Try to get the architecture from the name
+		const auto& preferenceName = m_inputs.toolchainPreferenceName();
+		auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
+		if (!regexResult.empty())
+		{
+			target = regexResult;
+		}
+		else
+		{
+			target = m_inputs.hostArchitecture();
+		}
+	}
+
+	m_inputs.setTargetArchitecture(target);
+	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 }
 
 /*****************************************************************************/
@@ -129,8 +161,10 @@ bool IntelCompileEnvironment::saveIntelEnvironment() const
 	bashCmd.push_back(m_varsFileIntel);
 	auto bashCmdString = String::join(bashCmd);
 
+	auto sh = Commands::which("sh");
+
 	StringList cmd;
-	cmd.push_back(m_state.tools.bash());
+	cmd.push_back(sh);
 	cmd.emplace_back("-c");
 	cmd.emplace_back(fmt::format("'{}'", bashCmdString));
 

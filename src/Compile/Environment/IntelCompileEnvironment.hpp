@@ -19,6 +19,7 @@ protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
 
 private:
+	void makeArchitectureCorrections();
 	bool saveIntelEnvironment() const;
 
 	const std::string kVarsId;

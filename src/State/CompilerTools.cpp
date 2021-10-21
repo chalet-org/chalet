@@ -103,7 +103,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 		if (!valid)
 			return false;
 	}
-	else if (toolchainType == ToolchainType::GNU || toolchainType == ToolchainType::IntelClassic)
+	else if (toolchainType == ToolchainType::GNU)
 	{
 		if (archFromInput.empty() || !String::contains('-', targetArchString))
 		{
@@ -125,6 +125,13 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 			// if (!String::startsWith(archFromInput, targetArchString))
 			// 	return false;
 		}
+	}
+	else if (toolchainType == ToolchainType::IntelClassic)
+	{
+#if defined(CHALET_MACOS)
+		auto arch = m_inputs.hostArchitecture();
+		m_state.info.setTargetArchitecture(fmt::format("{}-apple-darwin-intel64", arch));
+#endif
 	}
 #if defined(CHALET_WIN32)
 	else if (toolchainType == ToolchainType::MSVC)
@@ -215,6 +222,10 @@ bool CompilerTools::detectToolchainFromPaths()
 			if (String::contains("clang", m_compilerCpp.path) || String::contains("clang", m_compilerC.path))
 		{
 			m_inputs.setToolchainPreferenceType(ToolchainType::LLVM);
+		}
+		else if (String::contains("icpc", m_compilerCpp.path) || String::contains("icc", m_compilerC.path))
+		{
+			m_inputs.setToolchainPreferenceType(ToolchainType::IntelClassic);
 		}
 		else
 		{
@@ -443,6 +454,10 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 	{
 		rawOutput = Commands::subprocessOutput({ outInfo.path, "-target", m_state.info.targetArchitectureString(), "-v" });
 	}
+	else if (String::contains({ "icc", "icpc" }, outInfo.path))
+	{
+		rawOutput = Commands::subprocessOutput({ outInfo.path, "-V" });
+	}
 	else
 	{
 		rawOutput = Commands::subprocessOutput({ outInfo.path, "-v" });
@@ -468,6 +483,17 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 			else if (String::startsWith("Target:", line))
 			{
 				outInfo.arch = line.substr(8);
+			}
+			else if (String::contains("Intel", line))
+			{
+				compilerRaw = "Intel";
+				auto start = line.find("Version ");
+				if (start != std::string::npos)
+				{
+					start += 8;
+					auto end = line.find(' ', start);
+					versionString = line.substr(start, end - start);
+				}
 			}
 			/*else if (String::startsWith("Thread model:", line))
 			{
@@ -496,6 +522,11 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 				outInfo.version = std::move(versionString);
 			}
 #endif
+			else if (String::equals("Intel", compilerRaw))
+			{
+				ret = fmt::format("Intel{} 64 Compiler Classic version {}", Unicode::registered(), versionString);
+				outInfo.version = std::move(versionString);
+			}
 		}
 		else
 		{

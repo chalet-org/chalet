@@ -15,6 +15,12 @@
 
 namespace chalet
 {
+struct CompilerPathStructure
+{
+	std::string binDir;
+	std::string libDir;
+	std::string includeDir;
+};
 /*****************************************************************************/
 CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState) :
 	m_state(inState),
@@ -59,37 +65,42 @@ bool CompilerConfig::configureCompilerPaths()
 	std::string path = String::getPathFolder(exec);
 	const std::string lowercasePath = String::toLowerCase(path);
 
-	const Dictionary<std::string> cmpilerStructures
-	{
+	using CompilerMap = std::vector<CompilerPathStructure>;
 #if defined(CHALET_WIN32)
-		{ "/bin/hostx64/x64", "/lib/x64" },
-			{ "/bin/hostx64/x86", "/lib/x86" },
-			{ "/bin/hostx64/arm64", "/lib/arm64" },
-			{ "/bin/hostx64/arm", "/lib/arm" },
-			//
-			{ "/bin/hostx86/x86", "/lib/x86" },
-			{ "/bin/hostx86/x64", "/lib/x64" },
-			{ "/bin/hostx86/arm64", "/lib/arm64" },
-			{ "/bin/hostx86/arm", "/lib/arm" },
-		// { "/bin/hostx64/x64", "/lib/64" }, // TODO: Not sure what makes this different from /lib/x64
-#endif
-			{ "/bin", "/lib" },
+	const CompilerMap compilerStructures{
+		{ "/bin/hostx64/x64", "/lib/x64", "/include" },
+		{ "/bin/hostx64/x86", "/lib/x86", "/include" },
+		{ "/bin/hostx64/arm64", "/lib/arm64", "/include" },
+		{ "/bin/hostx64/arm", "/lib/arm", "/include" },
+		//
+		{ "/bin/hostx86/x86", "/lib/x86", "/include" },
+		{ "/bin/hostx86/x64", "/lib/x64", "/include" },
+		{ "/bin/hostx86/arm64", "/lib/arm64", "/include" },
+		{ "/bin/hostx86/arm", "/lib/arm", "/include" },
+		// { "/bin/hostx64/x64", "/lib/64", "/include" }, // TODO: Not sure what makes this different from /lib/x64
+		{ "/bin", "/lib", "/include" },
 	};
+#else
+	const CompilerMap compilerStructures{
+		{ "/bin", "/lib", "/include" },
+		{ "/bin/intel64", "/compiler/lib", "/compiler/include" },
+	};
+#endif
 
-	for (const auto& [binDir, libDir] : cmpilerStructures)
+	for (const auto& [binDir, libDir, includeDir] : compilerStructures)
 	{
 		if (String::endsWith(binDir, lowercasePath))
 		{
 			path = path.substr(0, path.size() - binDir.size());
 
 #if defined(CHALET_MACOS)
-			auto& xcodePath = Commands::getXcodePath();
+			const auto& xcodePath = Commands::getXcodePath();
 			String::replaceAll(path, xcodePath, "");
 			String::replaceAll(path, "/Toolchains/XcodeDefault.xctoolchain", "");
 #endif
 			m_compilerPathBin = path + binDir;
 			m_compilerPathLib = path + libDir;
-			m_compilerPathInclude = path + "/include";
+			m_compilerPathInclude = path + includeDir;
 
 			return true;
 		}
@@ -97,6 +108,43 @@ bool CompilerConfig::configureCompilerPaths()
 
 	Diagnostic::error("Invalid compiler structure (no 'bin' folder) found for language: '{}'", language);
 	return false;
+}
+
+/*****************************************************************************/
+std::string CompilerConfig::getCompilerMacros(const std::string& exec)
+{
+	if (exec.empty())
+		return std::string();
+
+	m_macrosFile = m_state.cache.getHashPath(fmt::format("macros_{}.env", exec), CacheType::Local);
+	m_state.cache.file().addExtraHash(String::getPathFilename(m_macrosFile));
+
+	std::string result;
+	if (!Commands::pathExists(m_macrosFile))
+	{
+#if defined(CHALET_WIN32)
+		std::string null = "nul";
+#else
+		std::string null = "/dev/null";
+#endif
+
+		// Clang/GCC only
+		// This command must be run from the bin directory in order to work
+		//   (or added to path before-hand, but we manipulate the path later)
+		//
+		auto compilerPath = String::getPathFolder(exec);
+		StringList command = { exec, "-x", "c", std::move(null), "-dM", "-E" };
+		result = Commands::subprocessOutput(command, std::move(compilerPath));
+
+		std::ofstream(m_macrosFile) << result;
+	}
+	else
+	{
+		std::ifstream input(m_macrosFile);
+		result = std::string((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+	}
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -117,7 +165,7 @@ bool CompilerConfig::testCompilerMacros()
 	}
 #endif
 
-	const std::string macroResult = Commands::testCompilerFlags(exec);
+	const std::string macroResult = getCompilerMacros(exec);
 	// String::replaceAll(macroResult, '\n', ' ');
 	// String::replaceAll(macroResult, "#include ", "");
 	if (macroResult.empty())
@@ -202,10 +250,41 @@ bool CompilerConfig::getSupportedCompilerFlags()
 
 	if (!Commands::pathExists(m_flagsFile))
 	{
-		if (isGcc())
+		if (isIntelClassic())
+		{
+			StringList categories{
+				"codegen",
+				"compatibility",
+				"advanced",
+				"component",
+				"data",
+				"diagnostics",
+				"float",
+				"inline",
+				"ipo",
+				"language",
+				"link",
+				"misc",
+				"opt",
+				"output",
+				"pgo",
+				"preproc",
+				"reports",
+				"openmp",
+			};
+			StringList cmd{ exec, "-Q" };
+			std::string help{ "--help" };
+			for (auto& category : categories)
+			{
+				cmd.push_back(help);
+				cmd.emplace_back(category);
+			}
+			parseGnuHelpList(cmd);
+		}
+		else if (isGcc())
 		{
 			{
-				StringList helps{
+				StringList categories{
 					"common",
 					"optimizers",
 					//"params",
@@ -214,9 +293,9 @@ bool CompilerConfig::getSupportedCompilerFlags()
 					"undocumented",
 				};
 				StringList cmd{ exec, "-Q" };
-				for (auto& help : helps)
+				for (auto& category : categories)
 				{
-					cmd.emplace_back(fmt::format("--help={}", help));
+					cmd.emplace_back(fmt::format("--help={}", category));
 				}
 				parseGnuHelpList(cmd);
 			}
@@ -238,10 +317,7 @@ bool CompilerConfig::getSupportedCompilerFlags()
 			outContents += flag + "\n";
 		}
 
-		if (!outContents.empty())
-		{
-			std::ofstream(m_flagsFile) << outContents;
-		}
+		std::ofstream(m_flagsFile) << outContents;
 	}
 	else
 	{

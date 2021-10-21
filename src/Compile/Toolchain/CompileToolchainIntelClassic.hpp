@@ -21,14 +21,14 @@ struct CompileToolchainIntelClassic : CompileToolchainGNU
 	virtual StringList getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) final;
 
 protected:
+	virtual StringList getWarningExclusions() const final;
 	// Compiling
-	virtual void addWarnings(StringList& outArgList) const final;
-	virtual void addPchInclude(StringList& outArgList) const final;
 
 	// Linking
 
+	StringList m_warningExclusions;
+
 	std::string m_pchSource;
-	std::string m_pchMinusLocation;
 };
 }
 
