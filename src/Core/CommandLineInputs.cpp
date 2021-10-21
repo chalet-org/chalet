@@ -783,7 +783,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 		m_toolchainPreferenceName = inValue;
 
-		ret.type = ToolchainType::MSVC;
+		ret.type = ToolchainType::VisualStudio;
 		ret.strategy = StrategyType::Ninja;
 		ret.buildPathStyle = BuildPathStyle::ToolchainName;
 		ret.cpp = "cl";
@@ -882,7 +882,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.type = ToolchainType::Unknown;
 	}
 
-	if (ret.type != ToolchainType::MSVC)
+	if (ret.type != ToolchainType::VisualStudio)
 	{
 		if (String::equals("x64", m_targetArchitecture))
 		{

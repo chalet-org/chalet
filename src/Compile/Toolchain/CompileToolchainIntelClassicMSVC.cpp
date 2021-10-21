@@ -17,7 +17,7 @@ namespace chalet
 {
 /*****************************************************************************/
 CompileToolchainIntelClassicMSVC::CompileToolchainIntelClassicMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
-	CompileToolchainMSVC(inState, inProject, inConfig)
+	CompileToolchainVisualStudio(inState, inProject, inConfig)
 {
 }
 
@@ -30,7 +30,7 @@ ToolchainType CompileToolchainIntelClassicMSVC::type() const noexcept
 /*****************************************************************************/
 bool CompileToolchainIntelClassicMSVC::initialize()
 {
-	if (!CompileToolchainMSVC::initialize())
+	if (!CompileToolchainVisualStudio::initialize())
 		return false;
 
 	if (m_project.usesPch())
@@ -61,13 +61,13 @@ void CompileToolchainIntelClassicMSVC::addIncludes(StringList& outArgList) const
 {
 	outArgList.push_back("/X");
 
-	CompileToolchainMSVC::addIncludes(outArgList);
+	CompileToolchainVisualStudio::addIncludes(outArgList);
 }
 
 /*****************************************************************************/
 void CompileToolchainIntelClassicMSVC::addDiagnosticsOption(StringList& outArgList) const
 {
-	// CompileToolchainMSVC::addDiagnosticsOption(outArgList);
+	// CompileToolchainVisualStudio::addDiagnosticsOption(outArgList);
 	UNUSED(outArgList);
 }
 

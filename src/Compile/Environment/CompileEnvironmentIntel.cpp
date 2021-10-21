@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Environment/IntelCompileEnvironment.hpp"
+#include "Compile/Environment/CompileEnvironmentIntel.hpp"
 
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
@@ -18,14 +18,21 @@
 namespace chalet
 {
 /*****************************************************************************/
-IntelCompileEnvironment::IntelCompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState) :
-	CompileEnvironment(inInputs, inState),
-	kVarsId("intel")
+CompileEnvironmentIntel::CompileEnvironmentIntel(const CommandLineInputs& inInputs, BuildState& inState, const ToolchainType inType) :
+	ICompileEnvironment(inInputs, inState),
+	kVarsId("intel"),
+	m_type(inType)
 {
 }
 
 /*****************************************************************************/
-bool IntelCompileEnvironment::createFromVersion(const std::string& inVersion)
+ToolchainType CompileEnvironmentIntel::type() const noexcept
+{
+	return m_type;
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
 
@@ -134,7 +141,7 @@ bool IntelCompileEnvironment::createFromVersion(const std::string& inVersion)
 }
 
 /*****************************************************************************/
-void IntelCompileEnvironment::makeArchitectureCorrections()
+void CompileEnvironmentIntel::makeArchitectureCorrections()
 {
 	auto target = m_inputs.targetArchitecture();
 	if (target.empty())
@@ -157,7 +164,7 @@ void IntelCompileEnvironment::makeArchitectureCorrections()
 }
 
 /*****************************************************************************/
-bool IntelCompileEnvironment::saveIntelEnvironment() const
+bool CompileEnvironmentIntel::saveIntelEnvironment() const
 {
 #if defined(CHALET_WIN32)
 	StringList cmd{ m_intelSetVars };

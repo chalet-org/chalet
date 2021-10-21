@@ -13,8 +13,8 @@ enum class ToolchainType : ushort
 	Unknown,
 	GNU,
 	LLVM,
-	Apple,
-	MSVC,
+	AppleLLVM,
+	VisualStudio,
 	IntelClassic,
 	IntelLLVM
 };
@@ -27,7 +27,7 @@ enum class CppCompilerType : ushort
 	AppleClang,
 	MingwGcc,
 	MingwClang,
-	VisualStudio,
+	MSVC,
 	IntelClassic,
 	IntelClang,
 	EmScripten

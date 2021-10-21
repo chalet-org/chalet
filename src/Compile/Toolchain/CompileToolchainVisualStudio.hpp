@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_TOOLCHAIN_MSVC_HPP
-#define CHALET_COMPILE_TOOLCHAIN_MSVC_HPP
+#ifndef CHALET_COMPILE_TOOLCHAIN_VISUAL_STUDIO_HPP
+#define CHALET_COMPILE_TOOLCHAIN_VISUAL_STUDIO_HPP
 
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
@@ -14,9 +14,9 @@ class BuildState;
 struct SourceTarget;
 struct CompilerConfig;
 
-struct CompileToolchainMSVC : ICompileToolchain
+struct CompileToolchainVisualStudio : ICompileToolchain
 {
-	explicit CompileToolchainMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
+	explicit CompileToolchainVisualStudio(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 
 	virtual ToolchainType type() const noexcept override;
 
@@ -73,4 +73,4 @@ private:
 };
 }
 
-#endif // CHALET_COMPILE_TOOLCHAIN_MSVC_HPP
+#endif // CHALET_COMPILE_TOOLCHAIN_VISUAL_STUDIO_HPP

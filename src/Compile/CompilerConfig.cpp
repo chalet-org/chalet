@@ -171,7 +171,7 @@ bool CompilerConfig::testCompilerMacros()
 #if defined(CHALET_WIN32)
 	if (String::endsWith("/cl.exe", exec))
 	{
-		m_compilerType = CppCompilerType::VisualStudio;
+		m_compilerType = CppCompilerType::MSVC;
 		return true;
 	}
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
@@ -613,7 +613,7 @@ bool CompilerConfig::isMingwGcc() const noexcept
 /*****************************************************************************/
 bool CompilerConfig::isMsvc() const noexcept
 {
-	return m_compilerType == CppCompilerType::VisualStudio;
+	return m_compilerType == CppCompilerType::MSVC;
 }
 
 /*****************************************************************************/

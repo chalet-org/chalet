@@ -3,17 +3,18 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_INTEL_COMPILE_ENVIRONMENT_HPP
-#define CHALET_INTEL_COMPILE_ENVIRONMENT_HPP
+#ifndef CHALET_COMPILE_ENVIRONMENT_INTEL_HPP
+#define CHALET_COMPILE_ENVIRONMENT_INTEL_HPP
 
-#include "Compile/Environment/CompileEnvironment.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 
 namespace chalet
 {
-class IntelCompileEnvironment final : public CompileEnvironment
+struct CompileEnvironmentIntel final : ICompileEnvironment
 {
-public:
-	explicit IntelCompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentIntel(const CommandLineInputs& inInputs, BuildState& inState, const ToolchainType inType);
+
+	virtual ToolchainType type() const noexcept final;
 
 protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
@@ -28,7 +29,9 @@ private:
 	std::string m_varsFileIntel;
 	std::string m_varsFileIntelDelta;
 	std::string m_intelSetVars;
+
+	ToolchainType m_type;
 };
 }
 
-#endif // CHALET_INTEL_COMPILE_ENVIRONMENT_HPP
+#endif // CHALET_COMPILE_ENVIRONMENT_INTEL_HPP

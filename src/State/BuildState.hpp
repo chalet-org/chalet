@@ -24,7 +24,7 @@ namespace chalet
 struct StatePrototype;
 struct AncillaryTools;
 struct WorkspaceCache;
-class CompileEnvironment;
+struct ICompileEnvironment;
 
 class BuildState
 {
@@ -45,7 +45,7 @@ public:
 	WorkspaceEnvironment workspace;
 	CompilerTools toolchain;
 	BuildPaths paths;
-	Unique<CompileEnvironment> environment;
+	Unique<ICompileEnvironment> environment;
 	BuildConfiguration configuration;
 	BuildTargetList targets;
 

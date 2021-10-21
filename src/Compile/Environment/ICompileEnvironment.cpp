@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Environment/CompileEnvironment.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
@@ -13,13 +13,16 @@
 #include "Utility/DefinesExperimental.hpp"
 #include "Utility/String.hpp"
 
-#include "Compile/Environment/IntelCompileEnvironment.hpp"
-#include "Compile/Environment/VisualStudioCompileEnvironment.hpp"
+#include "Compile/Environment/CompileEnvironmentAppleLLVM.hpp"
+#include "Compile/Environment/CompileEnvironmentGNU.hpp"
+#include "Compile/Environment/CompileEnvironmentIntel.hpp"
+#include "Compile/Environment/CompileEnvironmentLLVM.hpp"
+#include "Compile/Environment/CompileEnvironmentVisualStudio.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-CompileEnvironment::CompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState) :
+ICompileEnvironment::ICompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState) :
 	m_inputs(inInputs),
 	m_state(inState)
 {
@@ -27,36 +30,40 @@ CompileEnvironment::CompileEnvironment(const CommandLineInputs& inInputs, BuildS
 }
 
 /*****************************************************************************/
-[[nodiscard]] Unique<CompileEnvironment> CompileEnvironment::make(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState)
+[[nodiscard]] Unique<ICompileEnvironment> ICompileEnvironment::make(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState)
 {
-	if (inType == ToolchainType::MSVC)
+	switch (inType)
 	{
-		return std::make_unique<VisualStudioCompileEnvironment>(inInputs, inState);
-	}
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	else if (inType == ToolchainType::IntelClassic)
-	{
-		return std::make_unique<IntelCompileEnvironment>(inInputs, inState);
-	}
+		case ToolchainType::VisualStudio:
+			return std::make_unique<CompileEnvironmentVisualStudio>(inInputs, inState);
+		case ToolchainType::AppleLLVM:
+			return std::make_unique<CompileEnvironmentAppleLLVM>(inInputs, inState);
+		case ToolchainType::LLVM:
+			return std::make_unique<CompileEnvironmentLLVM>(inInputs, inState);
+		case ToolchainType::IntelClassic:
+		case ToolchainType::IntelLLVM:
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+			return std::make_unique<CompileEnvironmentIntel>(inInputs, inState, inType);
 #endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	else if (inType == ToolchainType::IntelLLVM)
-	{
-		return std::make_unique<IntelCompileEnvironment>(inInputs, inState);
+		case ToolchainType::GNU:
+			return std::make_unique<CompileEnvironmentGNU>(inInputs, inState);
+		case ToolchainType::Unknown:
+		default:
+			break;
 	}
-#endif
 
-	return std::make_unique<CompileEnvironment>(inInputs, inState);
+	Diagnostic::error("Unimplemented ToolchainType requested: ", static_cast<int>(inType));
+	return nullptr;
 }
 
 /*****************************************************************************/
-const std::string& CompileEnvironment::detectedVersion() const
+const std::string& ICompileEnvironment::detectedVersion() const
 {
 	return m_detectedVersion;
 }
 
 /*****************************************************************************/
-bool CompileEnvironment::create(const std::string& inVersion)
+bool ICompileEnvironment::create(const std::string& inVersion)
 {
 	UNUSED(inVersion);
 
@@ -75,14 +82,14 @@ bool CompileEnvironment::create(const std::string& inVersion)
 }
 
 /*****************************************************************************/
-bool CompileEnvironment::createFromVersion(const std::string& inVersion)
+bool ICompileEnvironment::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
 	return true;
 }
 
 /*****************************************************************************/
-std::string CompileEnvironment::getVarsPath(const std::string& inId) const
+std::string ICompileEnvironment::getVarsPath(const std::string& inId) const
 {
 	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureString());
 	archString += fmt::format("_{}", m_inputs.toolchainPreferenceName());
@@ -90,7 +97,7 @@ std::string CompileEnvironment::getVarsPath(const std::string& inId) const
 }
 
 /*****************************************************************************/
-bool CompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFile) const
+bool ICompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFile) const
 {
 #if defined(CHALET_WIN32)
 	auto cmdExe = Environment::getComSpec();
@@ -112,7 +119,7 @@ bool CompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFile
 }
 
 /*****************************************************************************/
-void CompileEnvironment::createEnvironmentDelta(const std::string& inOriginalFile, const std::string& inCompilerFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine) const
+void ICompileEnvironment::createEnvironmentDelta(const std::string& inOriginalFile, const std::string& inCompilerFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine) const
 {
 	if (inOriginalFile.empty() || inCompilerFile.empty() || inDeltaFile.empty())
 		return;
@@ -154,7 +161,7 @@ void CompileEnvironment::createEnvironmentDelta(const std::string& inOriginalFil
 }
 
 /*****************************************************************************/
-void CompileEnvironment::cacheEnvironmentDelta(const std::string& inDeltaFile)
+void ICompileEnvironment::cacheEnvironmentDelta(const std::string& inDeltaFile)
 {
 	m_variables.clear();
 

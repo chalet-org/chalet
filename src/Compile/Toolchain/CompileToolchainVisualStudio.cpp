@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Toolchain/CompileToolchainMSVC.hpp"
+#include "Compile/Toolchain/CompileToolchainVisualStudio.hpp"
 
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
@@ -18,7 +18,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
+CompileToolchainVisualStudio::CompileToolchainVisualStudio(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
 	ICompileToolchain(inState, inProject, inConfig),
 	m_compilerType(m_config.compilerType())
 {
@@ -26,13 +26,13 @@ CompileToolchainMSVC::CompileToolchainMSVC(const BuildState& inState, const Sour
 }
 
 /*****************************************************************************/
-ToolchainType CompileToolchainMSVC::type() const noexcept
+ToolchainType CompileToolchainVisualStudio::type() const noexcept
 {
-	return ToolchainType::MSVC;
+	return ToolchainType::VisualStudio;
 }
 
 /*****************************************************************************/
-bool CompileToolchainMSVC::initialize()
+bool CompileToolchainVisualStudio::initialize()
 {
 	if (m_project.usesPch())
 	{
@@ -59,7 +59,7 @@ bool CompileToolchainMSVC::initialize()
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch)
+StringList CompileToolchainVisualStudio::getPchCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch)
 {
 	UNUSED(generateDependency, dependency, arch);
 
@@ -112,7 +112,7 @@ StringList CompileToolchainMSVC::getPchCompileCommand(const std::string& inputFi
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
+StringList CompileToolchainVisualStudio::getRcCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
 {
 	UNUSED(generateDependency, dependency);
 
@@ -135,7 +135,7 @@ StringList CompileToolchainMSVC::getRcCompileCommand(const std::string& inputFil
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization)
+StringList CompileToolchainVisualStudio::getCxxCompileCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization)
 {
 	UNUSED(generateDependency, dependency);
 
@@ -183,7 +183,7 @@ StringList CompileToolchainMSVC::getCxxCompileCommand(const std::string& inputFi
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList CompileToolchainVisualStudio::getLinkerTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFileBase);
 
@@ -203,7 +203,7 @@ StringList CompileToolchainMSVC::getLinkerTargetCommand(const std::string& outpu
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList CompileToolchainVisualStudio::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFile, sourceObjs);
 
@@ -266,7 +266,7 @@ StringList CompileToolchainMSVC::getSharedLibTargetCommand(const std::string& ou
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList CompileToolchainVisualStudio::getStaticLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFile, sourceObjs);
 
@@ -305,7 +305,7 @@ StringList CompileToolchainMSVC::getStaticLibTargetCommand(const std::string& ou
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList CompileToolchainVisualStudio::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFile, sourceObjs);
 
@@ -367,7 +367,7 @@ StringList CompileToolchainMSVC::getExecutableTargetCommand(const std::string& o
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
+void CompileToolchainVisualStudio::addIncludes(StringList& outArgList) const
 {
 	// outArgList.emplace_back("/X"); // ignore "Path"
 
@@ -399,13 +399,13 @@ void CompileToolchainMSVC::addIncludes(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-StringList CompileToolchainMSVC::getLinkExclusions() const
+StringList CompileToolchainVisualStudio::getLinkExclusions() const
 {
 	return { "stdc++fs" };
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
+void CompileToolchainVisualStudio::addWarnings(StringList& outArgList) const
 {
 	// TODO: ProjectWarnings::Custom would need to convert GNU warnings to MSVC warning codes
 
@@ -527,7 +527,7 @@ void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addDefines(StringList& outArgList) const
+void CompileToolchainVisualStudio::addDefines(StringList& outArgList) const
 {
 	const std::string prefix = "/D";
 	for (auto& define : m_project.defines())
@@ -537,7 +537,7 @@ void CompileToolchainMSVC::addDefines(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addResourceDefines(StringList& outArgList) const
+void CompileToolchainVisualStudio::addResourceDefines(StringList& outArgList) const
 {
 	const std::string prefix = "/d";
 	for (auto& define : m_project.defines())
@@ -547,7 +547,7 @@ void CompileToolchainMSVC::addResourceDefines(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addPchInclude(StringList& outArgList) const
+void CompileToolchainVisualStudio::addPchInclude(StringList& outArgList) const
 {
 	// TODO: Potential for more than one pch?
 	if (m_project.usesPch())
@@ -566,7 +566,7 @@ void CompileToolchainMSVC::addPchInclude(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addOptimizationOption(StringList& outArgList) const
+void CompileToolchainVisualStudio::addOptimizationOption(StringList& outArgList) const
 {
 	std::string opt;
 	auto& configuration = m_state.configuration;
@@ -643,7 +643,7 @@ void CompileToolchainMSVC::addOptimizationOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
+void CompileToolchainVisualStudio::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
 {
 	// TODO: Reverse years so c11 / c++14 is checked explicitly & newest year isn't
 	if (specialization == CxxSpecialization::C)
@@ -687,7 +687,7 @@ void CompileToolchainMSVC::addLanguageStandard(StringList& outArgList, const Cxx
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addDebuggingInformationOption(StringList& outArgList) const
+void CompileToolchainVisualStudio::addDebuggingInformationOption(StringList& outArgList) const
 {
 	// TODO! - pdb files etc
 	// /Zi /ZI /debug
@@ -695,13 +695,13 @@ void CompileToolchainMSVC::addDebuggingInformationOption(StringList& outArgList)
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addDiagnosticsOption(StringList& outArgList) const
+void CompileToolchainVisualStudio::addDiagnosticsOption(StringList& outArgList) const
 {
 	outArgList.emplace_back("/diagnostics:caret");
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addCompileOptions(StringList& outArgList) const
+void CompileToolchainVisualStudio::addCompileOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.compileOptions())
 	{
@@ -710,7 +710,7 @@ void CompileToolchainMSVC::addCompileOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addNoRunTimeTypeInformationOption(StringList& outArgList) const
+void CompileToolchainVisualStudio::addNoRunTimeTypeInformationOption(StringList& outArgList) const
 {
 	if (!m_project.rtti())
 	{
@@ -719,7 +719,7 @@ void CompileToolchainMSVC::addNoRunTimeTypeInformationOption(StringList& outArgL
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addNoExceptionsOption(StringList& outArgList) const
+void CompileToolchainVisualStudio::addNoExceptionsOption(StringList& outArgList) const
 {
 	// /EH - Exception handling model
 	// s - standard C++ stack unwinding
@@ -737,7 +737,7 @@ void CompileToolchainMSVC::addNoExceptionsOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addThreadModelCompileOption(StringList& outArgList) const
+void CompileToolchainVisualStudio::addThreadModelCompileOption(StringList& outArgList) const
 {
 	// /MD - multithreaded dll
 	// /MDd - debug multithreaded dll
@@ -763,7 +763,7 @@ void CompileToolchainMSVC::addThreadModelCompileOption(StringList& outArgList) c
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addWholeProgramOptimization(StringList& outArgList) const
+void CompileToolchainVisualStudio::addWholeProgramOptimization(StringList& outArgList) const
 {
 	if (m_state.configuration.linkTimeOptimization())
 	{
@@ -772,7 +772,7 @@ void CompileToolchainMSVC::addWholeProgramOptimization(StringList& outArgList) c
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addLibDirs(StringList& outArgList) const
+void CompileToolchainVisualStudio::addLibDirs(StringList& outArgList) const
 {
 	std::string option{ "/LIBPATH:" };
 	for (const auto& dir : m_project.libDirs())
@@ -784,7 +784,7 @@ void CompileToolchainMSVC::addLibDirs(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addLinks(StringList& outArgList) const
+void CompileToolchainVisualStudio::addLinks(StringList& outArgList) const
 {
 	const bool hasStaticLinks = m_project.staticLinks().size() > 0;
 	const bool hasDynamicLinks = m_project.links().size() > 0;
@@ -862,7 +862,7 @@ void CompileToolchainMSVC::addLinks(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addLinkerOptions(StringList& outArgList) const
+void CompileToolchainVisualStudio::addLinkerOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.linkerOptions())
 	{
@@ -872,7 +872,7 @@ void CompileToolchainMSVC::addLinkerOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addCgThreads(StringList& outArgList) const
+void CompileToolchainVisualStudio::addCgThreads(StringList& outArgList) const
 {
 	uint maxJobs = m_state.info.maxJobs();
 	if (maxJobs > 4)
@@ -883,7 +883,7 @@ void CompileToolchainMSVC::addCgThreads(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
+void CompileToolchainVisualStudio::addSubSystem(StringList& outArgList) const
 {
 	const ProjectKind kind = m_project.kind();
 
@@ -898,7 +898,7 @@ void CompileToolchainMSVC::addSubSystem(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addEntryPoint(StringList& outArgList) const
+void CompileToolchainVisualStudio::addEntryPoint(StringList& outArgList) const
 {
 	const auto entryPoint = getMsvcCompatibleEntryPoint();
 	if (!entryPoint.empty())
@@ -908,7 +908,7 @@ void CompileToolchainMSVC::addEntryPoint(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addTargetPlatformArch(StringList& outArgList) const
+void CompileToolchainVisualStudio::addTargetPlatformArch(StringList& outArgList) const
 {
 	// TODO: /MACHINE - target platform arch
 	const auto arch = m_state.info.targetArchitecture();
@@ -934,7 +934,7 @@ void CompileToolchainMSVC::addTargetPlatformArch(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const
+void CompileToolchainVisualStudio::addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const
 {
 	for (auto& source : sourceObjs)
 	{
@@ -943,7 +943,7 @@ void CompileToolchainMSVC::addSourceObjects(StringList& outArgList, const String
 }
 
 /*****************************************************************************/
-void CompileToolchainMSVC::addPrecompiledHeaderLink(StringList outArgList) const
+void CompileToolchainVisualStudio::addPrecompiledHeaderLink(StringList outArgList) const
 {
 	if (m_project.usesPch())
 	{

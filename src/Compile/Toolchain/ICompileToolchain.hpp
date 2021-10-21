@@ -23,8 +23,6 @@ struct ICompileToolchain
 	explicit ICompileToolchain(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 	virtual ~ICompileToolchain() = default;
 
-	[[nodiscard]] static CompileToolchain make(const ToolchainType inType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
-
 	[[nodiscard]] static CompileToolchain make(const CppCompilerType inType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 
 	virtual ToolchainType type() const noexcept = 0;

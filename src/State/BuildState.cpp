@@ -9,7 +9,7 @@
 #include "Builder/BuildManager.hpp"
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
 
-#include "Compile/Environment/CompileEnvironment.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -555,7 +555,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 	Arch::Cpu targetArch = info.targetArchitecture();
 	auto toolchainType = m_inputs.toolchainPreference().type;
 
-	if (toolchainType != ToolchainType::MSVC)
+	if (toolchainType != ToolchainType::VisualStudio)
 	{
 		std::string lower = String::toLowerCase(outPathVariable);
 

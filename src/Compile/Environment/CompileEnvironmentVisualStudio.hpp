@@ -3,22 +3,23 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VISUAL_STUDIO_COMPILE_ENVIRONMENT_HPP
-#define CHALET_VISUAL_STUDIO_COMPILE_ENVIRONMENT_HPP
+#ifndef CHALET_COMPILE_ENVIRONMENT_VISUAL_STUDIO_HPP
+#define CHALET_COMPILE_ENVIRONMENT_VISUAL_STUDIO_HPP
 
-#include "Compile/Environment/CompileEnvironment.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 
 namespace chalet
 {
 class BuildState;
 struct CommandLineInputs;
 
-class VisualStudioCompileEnvironment final : public CompileEnvironment
+struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 {
-public:
-	explicit VisualStudioCompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentVisualStudio(const CommandLineInputs& inInputs, BuildState& inState);
 
 	static bool exists();
+
+	virtual ToolchainType type() const noexcept final;
 
 protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
@@ -39,4 +40,4 @@ private:
 };
 }
 
-#endif // CHALET_VISUAL_STUDIO_COMPILE_ENVIRONMENT_HPP
+#endif // CHALET_COMPILE_ENVIRONMENT_VISUAL_STUDIO_HPP

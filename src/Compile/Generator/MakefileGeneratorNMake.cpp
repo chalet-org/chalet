@@ -302,7 +302,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 		{
 
 			std::string compilerEcho;
-			if (m_toolchain->type() != ToolchainType::MSVC)
+			if (m_toolchain->type() != ToolchainType::VisualStudio)
 			{
 				compilerEcho = getCompileEchoSources(object) + "\n\t";
 			}
@@ -365,7 +365,7 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	if (!cppCompile.empty())
 	{
 		std::string compilerEcho;
-		if (m_toolchain->type() != ToolchainType::MSVC)
+		if (m_toolchain->type() != ToolchainType::VisualStudio)
 		{
 			compilerEcho = getCompileEchoSources(source) + "\n\t";
 		}

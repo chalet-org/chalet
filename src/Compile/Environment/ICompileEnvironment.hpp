@@ -13,13 +13,17 @@ namespace chalet
 class BuildState;
 struct CommandLineInputs;
 
-class CompileEnvironment
-{
-public:
-	explicit CompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState);
-	virtual ~CompileEnvironment() = default;
+struct ICompileEnvironment;
+using CompileEnvironment = Unique<ICompileEnvironment>;
 
-	[[nodiscard]] static Unique<CompileEnvironment> make(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
+struct ICompileEnvironment
+{
+	explicit ICompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState);
+	virtual ~ICompileEnvironment() = default;
+
+	[[nodiscard]] static Unique<ICompileEnvironment> make(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
+
+	virtual ToolchainType type() const noexcept = 0;
 
 	const std::string& detectedVersion() const;
 

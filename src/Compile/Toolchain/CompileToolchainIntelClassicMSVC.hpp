@@ -6,11 +6,11 @@
 #ifndef CHALET_COMPILE_TOOLCHAIN_INTEL_CLASSIC_MSVC_HPP
 #define CHALET_COMPILE_TOOLCHAIN_INTEL_CLASSIC_MSVC_HPP
 
-#include "Compile/Toolchain/CompileToolchainMSVC.hpp"
+#include "Compile/Toolchain/CompileToolchainVisualStudio.hpp"
 
 namespace chalet
 {
-struct CompileToolchainIntelClassicMSVC final : CompileToolchainMSVC
+struct CompileToolchainIntelClassicMSVC final : CompileToolchainVisualStudio
 {
 	explicit CompileToolchainIntelClassicMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
 

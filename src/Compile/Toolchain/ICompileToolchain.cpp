@@ -20,7 +20,7 @@
 #include "Compile/Toolchain/CompileToolchainIntelClassicMSVC.hpp"
 #include "Compile/Toolchain/CompileToolchainIntelLLVM.hpp"
 #include "Compile/Toolchain/CompileToolchainLLVM.hpp"
-#include "Compile/Toolchain/CompileToolchainMSVC.hpp"
+#include "Compile/Toolchain/CompileToolchainVisualStudio.hpp"
 
 namespace chalet
 {
@@ -38,40 +38,6 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const SourceTarg
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileToolchain ICompileToolchain::make(const ToolchainType inType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig)
-{
-	switch (inType)
-	{
-		case ToolchainType::MSVC:
-			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
-		case ToolchainType::Apple:
-			return std::make_unique<CompileToolchainApple>(inState, inProject, inConfig);
-		case ToolchainType::LLVM:
-			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
-		case ToolchainType::IntelClassic:
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	#if defined(CHALET_WIN32)
-			return std::make_unique<CompileToolchainIntelClassicMSVC>(inState, inProject, inConfig);
-	#else
-			return std::make_unique<CompileToolchainIntelClassicGNU>(inState, inProject, inConfig);
-	#endif
-#endif
-		case ToolchainType::IntelLLVM:
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-			return std::make_unique<CompileToolchainIntelLLVM>(inState, inProject, inConfig);
-#endif
-		case ToolchainType::Unknown:
-		case ToolchainType::GNU:
-			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
-		default:
-			break;
-	}
-
-	Diagnostic::errorAbort("Unimplemented ToolchainType requested: ", static_cast<int>(inType));
-	return nullptr;
-}
-
-/*****************************************************************************/
 [[nodiscard]] CompileToolchain ICompileToolchain::make(const CppCompilerType inCompilerType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig)
 {
 	switch (inCompilerType)
@@ -85,8 +51,8 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const SourceTarg
 		case CppCompilerType::MingwGcc:
 		case CppCompilerType::Gcc:
 			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
-		case CppCompilerType::VisualStudio:
-			return std::make_unique<CompileToolchainMSVC>(inState, inProject, inConfig);
+		case CppCompilerType::MSVC:
+			return std::make_unique<CompileToolchainVisualStudio>(inState, inProject, inConfig);
 		case CppCompilerType::IntelClang:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 			return std::make_unique<CompileToolchainIntelLLVM>(inState, inProject, inConfig);

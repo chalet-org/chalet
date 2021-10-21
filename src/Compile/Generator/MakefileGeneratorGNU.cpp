@@ -19,7 +19,7 @@ namespace chalet
 MakefileGeneratorGNU::MakefileGeneratorGNU(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
-	// m_generateDependencies = inToolchain->type() != ToolchainType::MSVC && !Environment::isContinuousIntegrationServer();
+	// m_generateDependencies = inToolchain->type() != ToolchainType::VisualStudio && !Environment::isContinuousIntegrationServer();
 	m_generateDependencies = true;
 }
 

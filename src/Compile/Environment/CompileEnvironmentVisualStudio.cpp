@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Environment/VisualStudioCompileEnvironment.hpp"
+#include "Compile/Environment/CompileEnvironmentVisualStudio.hpp"
 
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -27,7 +27,7 @@ static struct
 #endif
 
 /*****************************************************************************/
-bool VisualStudioCompileEnvironment::exists()
+bool CompileEnvironmentVisualStudio::exists()
 {
 #if defined(CHALET_WIN32)
 	if (state.exists == -1)
@@ -65,15 +65,21 @@ bool VisualStudioCompileEnvironment::exists()
 }
 
 /*****************************************************************************/
-VisualStudioCompileEnvironment::VisualStudioCompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState) :
-	CompileEnvironment(inInputs, inState),
+CompileEnvironmentVisualStudio::CompileEnvironmentVisualStudio(const CommandLineInputs& inInputs, BuildState& inState) :
+	ICompileEnvironment(inInputs, inState),
 	kVarsId("msvc")
 {
 	UNUSED(kVarsId);
 }
 
 /*****************************************************************************/
-bool VisualStudioCompileEnvironment::createFromVersion(const std::string& inVersion)
+ToolchainType CompileEnvironmentVisualStudio::type() const noexcept
+{
+	return ToolchainType::VisualStudio;
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVersion)
 {
 #if defined(CHALET_WIN32)
 	makeArchitectureCorrections();
@@ -83,7 +89,7 @@ bool VisualStudioCompileEnvironment::createFromVersion(const std::string& inVers
 	m_varsFileMsvcDelta = getVarsPath(kVarsId);
 
 	// This sets state.vswhere
-	if (!VisualStudioCompileEnvironment::exists())
+	if (!CompileEnvironmentVisualStudio::exists())
 		return true;
 
 	Timer timer;
@@ -284,7 +290,7 @@ bool VisualStudioCompileEnvironment::createFromVersion(const std::string& inVers
 }
 
 /*****************************************************************************/
-bool VisualStudioCompileEnvironment::saveMsvcEnvironment() const
+bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
 {
 #if defined(CHALET_WIN32)
 	std::string vcvarsFile{ "vcvarsall" };
@@ -321,7 +327,7 @@ bool VisualStudioCompileEnvironment::saveMsvcEnvironment() const
 }
 
 /*****************************************************************************/
-void VisualStudioCompileEnvironment::makeArchitectureCorrections()
+void CompileEnvironmentVisualStudio::makeArchitectureCorrections()
 {
 	auto normalizeArch = [](const std::string& inArch) -> std::string {
 		if (String::equals("x86_64", inArch))

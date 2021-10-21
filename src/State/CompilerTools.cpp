@@ -134,7 +134,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 #endif
 	}
 #if defined(CHALET_WIN32)
-	else if (toolchainType == ToolchainType::MSVC)
+	else if (toolchainType == ToolchainType::VisualStudio)
 	{
 		if (!detectTargetArchitectureMSVC())
 			return false;
@@ -217,7 +217,7 @@ bool CompilerTools::detectToolchainFromPaths()
 #if defined(CHALET_WIN32)
 		if (String::endsWith("cl.exe", m_compilerCpp.path) || String::endsWith("cl.exe", m_compilerC.path))
 		{
-			m_inputs.setToolchainPreferenceType(ToolchainType::MSVC);
+			m_inputs.setToolchainPreferenceType(ToolchainType::VisualStudio);
 
 			if (!detectTargetArchitectureMSVC())
 				return false;
@@ -262,7 +262,7 @@ void CompilerTools::fetchCompilerVersions()
 		{
 			std::string description;
 #if defined(CHALET_WIN32)
-			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
+			if (m_inputs.toolchainPreference().type == ToolchainType::VisualStudio)
 			{
 				description = parseVersionMSVC(m_compilerCpp);
 			}
@@ -288,7 +288,7 @@ void CompilerTools::fetchCompilerVersions()
 		{
 			std::string description;
 #if defined(CHALET_WIN32)
-			if (m_inputs.toolchainPreference().type == ToolchainType::MSVC)
+			if (m_inputs.toolchainPreference().type == ToolchainType::VisualStudio)
 			{
 				description = parseVersionMSVC(m_compilerC);
 			}
@@ -397,7 +397,7 @@ bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
 		}
 	}
 
-	if (m_inputs.toolchainPreference().type != ToolchainType::MSVC)
+	if (m_inputs.toolchainPreference().type != ToolchainType::VisualStudio)
 	{
 		const std::string kKeyVersion{ "version" };
 		if (toolchain.contains(kKeyVersion))

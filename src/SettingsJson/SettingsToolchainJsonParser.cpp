@@ -5,7 +5,7 @@
 
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
 
-#include "Compile/Environment/CompileEnvironment.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
@@ -33,7 +33,9 @@ bool SettingsToolchainJsonParser::serialize()
 	auto& preference = m_inputs.toolchainPreference();
 	if (preference.type != ToolchainType::Unknown)
 	{
-		m_state.environment = CompileEnvironment::make(preference.type, m_inputs, m_state);
+		m_state.environment = ICompileEnvironment::make(preference.type, m_inputs, m_state);
+		if (m_state.environment == nullptr)
+			return false;
 
 		if (!m_state.environment->create())
 			return false;
@@ -260,7 +262,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 #if defined(CHALET_WIN32)
 		// handles edge case w/ MSVC & MinGW in same path
-		if (preference.type == ToolchainType::MSVC)
+		if (preference.type == ToolchainType::VisualStudio)
 		{
 			if (String::contains("/usr/bin/link", link))
 			{
@@ -383,7 +385,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		// jom.exe - Qt's parallel NMAKE
 		// nmake.exe - MSVC's make-ish build tool, alternative to MSBuild
 		StringList searches;
-		if (preference.type == ToolchainType::MSVC)
+		if (preference.type == ToolchainType::VisualStudio)
 		{
 			searches.emplace_back("jom");
 			searches.emplace_back("nmake");
@@ -522,7 +524,10 @@ bool SettingsToolchainJsonParser::finalizeEnvironment()
 	if (m_checkForEnvironment)
 	{
 		auto& preference = m_inputs.toolchainPreference();
-		m_state.environment = CompileEnvironment::make(preference.type, m_inputs, m_state);
+		m_state.environment = ICompileEnvironment::make(preference.type, m_inputs, m_state);
+		if (m_state.environment == nullptr)
+			return false;
+
 		if (!m_state.environment->create(m_state.toolchain.version()))
 			return false;
 	}
