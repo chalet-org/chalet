@@ -435,7 +435,8 @@ void CompileToolchainMSVC::addWarnings(StringList& outArgList) const
 			break;
 		}
 		case ProjectWarnings::VeryStrict: {
-			outArgList.emplace_back("/Wall");
+			// outArgList.emplace_back("/Wall"); // Note: Lots of messy compiler level warnings that break your build!
+			outArgList.emplace_back("/W4");
 			outArgList.emplace_back("/WX");
 			break;
 		}
