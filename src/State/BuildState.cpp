@@ -560,7 +560,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 #if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
 
-	if (m_state.environment->type() != ToolchainType::VisualStudio)
+	if (m_inputs.toolchainPreference().type != ToolchainType::VisualStudio)
 	{
 		std::string lower = String::toLowerCase(outPathVariable);
 

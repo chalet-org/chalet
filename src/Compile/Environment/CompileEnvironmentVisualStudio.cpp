@@ -87,7 +87,8 @@ StringList CompileEnvironmentVisualStudio::getVersionCommand(const std::string& 
 /*****************************************************************************/
 std::string CompileEnvironmentVisualStudio::getFullCxxCompilerString(const std::string& inVersion) const
 {
-	return fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), inVersion, m_detectedVersion);
+	const auto& vsVersion = m_detectedVersion.empty() ? m_state.toolchain.version() : m_detectedVersion;
+	return fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), inVersion, vsVersion);
 }
 
 /*****************************************************************************/

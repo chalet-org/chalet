@@ -166,7 +166,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	}
 
 	bool isLLVM = preference.type == ToolchainType::LLVM || preference.type == ToolchainType::AppleLLVM || preference.type == ToolchainType::IntelLLVM;
-	bool isGCC = preference.type == ToolchainType::GNU;
 
 	std::string cpp;
 	std::string cc;
@@ -268,7 +267,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			searches.emplace_back("llvm-ar");
 		}
 #if defined(CHALET_MACOS)
-		if (isLLVM || isGCC)
+		if (isLLVM || preference.type == ToolchainType::GNU)
 		{
 			searches.emplace_back("libtool");
 		}
