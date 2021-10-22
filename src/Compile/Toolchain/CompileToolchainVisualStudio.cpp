@@ -481,7 +481,6 @@ void CompileToolchainVisualStudio::addWarnings(StringList& outArgList) const
 					"missing-include-dirs",
 					"non-virtual-dtor",
 					"redundant-decls",
-					"odr",
 					"unreachable-code",
 					"shadow",
 				};

@@ -918,7 +918,6 @@ StringList SourceTarget::parseWarnings(const std::string& inValue)
 	ret.emplace_back("missing-include-dirs");
 	ret.emplace_back("non-virtual-dtor");
 	ret.emplace_back("redundant-decls");
-	ret.emplace_back("odr");
 
 	if (String::equals("strict", inValue))
 	{

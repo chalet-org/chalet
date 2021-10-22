@@ -494,7 +494,7 @@ bool SettingsToolchainJsonParser::finalizeEnvironment()
 	ToolchainType type = ICompileEnvironment::detectToolchainTypeFromPath(m_state.toolchain.compilerCxx());
 	if (preference.type != ToolchainType::Unknown && preference.type != type)
 	{
-		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually.", m_inputs.toolchainPreferenceName());
+		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", m_inputs.toolchainPreferenceName(), Environment::getPathKey());
 		return false;
 	}
 

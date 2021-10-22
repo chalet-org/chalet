@@ -68,7 +68,6 @@ StringList CompileToolchainIntelClassicGNU::getWarningExclusions() const
 		"cast-align",
 		"double-promotion",
 		"redundant-decls",
-		"odr",
 		"noexcept",
 		"old-style-cast",
 		"strict-null-sentinel",
