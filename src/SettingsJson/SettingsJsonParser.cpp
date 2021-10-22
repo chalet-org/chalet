@@ -463,7 +463,7 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastArchitecture))
 	{
-		if (m_inputs.architectureRaw().empty() || String::equals("auto", m_inputs.architectureRaw()))
+		if (m_inputs.architectureRaw().empty())
 			m_inputs.setArchitectureRaw(std::move(val));
 	}
 
