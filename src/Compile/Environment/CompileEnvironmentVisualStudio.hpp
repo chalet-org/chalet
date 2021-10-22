@@ -25,7 +25,7 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 
 protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
-	virtual bool makeArchitectureAdjustments() final;
+	virtual bool validateArchitectureFromInput() final;
 
 private:
 	bool saveMsvcEnvironment() const;

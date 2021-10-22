@@ -22,8 +22,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompilerTools::CompilerTools(const CommandLineInputs& inInputs, BuildState& inState) :
-	m_inputs(inInputs),
+CompilerTools::CompilerTools(BuildState& inState) :
 	m_state(inState)
 {
 }
@@ -31,130 +30,47 @@ CompilerTools::CompilerTools(const CommandLineInputs& inInputs, BuildState& inSt
 /*****************************************************************************/
 bool CompilerTools::initialize(const BuildTargetList& inTargets)
 {
-	ToolchainType toolchainType = m_state.environment->type();
-	Arch::Cpu targetArch = m_state.info.targetArchitecture();
-
-	if (!initializeCompilerConfigs(inTargets))
+	for (auto& target : inTargets)
 	{
-		Diagnostic::error("Compiler was not recognized.");
-		return false;
+		if (target->isProject())
+		{
+			auto& project = static_cast<SourceTarget&>(*target);
+			auto language = project.language();
+
+			if (m_configs.find(language) == m_configs.end())
+			{
+				m_configs.emplace(language, std::make_unique<CompilerConfig>(language, m_state));
+			}
+		}
 	}
 
-	const auto& archFromInput = m_inputs.targetArchitecture();
-	const auto& archTriple = m_state.info.targetArchitectureTriple();
-
-	if (toolchainType == ToolchainType::LLVM || toolchainType == ToolchainType::AppleLLVM || toolchainType == ToolchainType::IntelLLVM)
+	for (auto& [_, config] : m_configs)
 	{
-		bool valid = false;
-		if (!archFromInput.empty())
+		if (!config->configureCompilerPaths())
 		{
-			auto results = Commands::subprocessOutput({ compilerCxx(), "-print-targets" });
-			if (!String::contains("error:", results))
-			{
-				auto split = String::split(results, "\n");
-				for (auto& line : split)
-				{
-					auto start = line.find_first_not_of(' ');
-					auto end = line.find_first_of(' ', start);
-
-					auto result = line.substr(start, end - start);
-					if (targetArch == Arch::Cpu::X64)
-					{
-						if (String::equals({ "x86-64", "x86_64", "x64" }, result))
-							valid = true;
-					}
-					else if (targetArch == Arch::Cpu::X86)
-					{
-						if (String::equals({ "i686", "x86" }, result))
-							valid = true;
-					}
-					else
-					{
-						if (String::startsWith(result, archTriple))
-							valid = true;
-					}
-				}
-			}
-		}
-
-		if (!String::contains('-', archTriple))
-		{
-			auto result = Commands::subprocessOutput({ compilerCxx(), "-dumpmachine" });
-			auto firstDash = result.find_first_of('-');
-			if (!result.empty() && firstDash != std::string::npos)
-			{
-				result = fmt::format("{}{}", archTriple, result.substr(firstDash));
-#if defined(CHALET_MACOS)
-				// Strip out version in auto-detected mac triple
-				auto darwin = result.find("apple-darwin");
-				if (darwin != std::string::npos)
-				{
-					result = result.substr(0, darwin + 12);
-				}
-#endif
-				m_state.info.setTargetArchitecture(result);
-				valid = true;
-			}
-		}
-		else
-		{
-			valid = true;
-		}
-
-		if (!valid)
+			Diagnostic::error("Error configuring compiler paths.");
 			return false;
-	}
-	else if (toolchainType == ToolchainType::GNU)
-	{
-		if (archFromInput.empty() || !String::contains('-', archTriple))
-		{
-			auto result = Commands::subprocessOutput({ compilerCxx(), "-dumpmachine" });
-#if defined(CHALET_MACOS)
-			// Strip out version in auto-detected mac triple
-			auto darwin = result.find("apple-darwin");
-			if (darwin != std::string::npos)
-			{
-				result = result.substr(0, darwin + 12);
-			}
-#endif
-			m_state.info.setTargetArchitecture(result);
 		}
-		else
-		{
-			// Pass along and hope for the best
 
-			// if (!String::startsWith(archFromInput, archTriple))
-			// 	return false;
+		if (!config->testCompilerMacros())
+		{
+			Diagnostic::error("Unimplemented or unknown compiler toolchain.");
+			return false;
+		}
+
+		if (!config->getSupportedCompilerFlags())
+		{
+			auto exec = String::getPathFilename(config->compilerExecutable());
+			Diagnostic::error("Error collecting supported compiler flags for '{}'.", exec);
+			return false;
 		}
 	}
-	else if (toolchainType == ToolchainType::IntelClassic)
-	{
-#if defined(CHALET_MACOS)
-		auto arch = m_inputs.hostArchitecture();
-		m_state.info.setTargetArchitecture(fmt::format("{}-intel-darwin", arch));
-#endif
-	}
-#if defined(CHALET_WIN32)
-	else if (toolchainType == ToolchainType::VisualStudio)
-	{
-		// if (!detectTargetArchitectureMSVC())
-		// 	return false;
-	}
-#endif
-	else
-	{
-		Diagnostic::error("Toolchain was not recognized by Chalet.");
-		return false;
-	}
-
-	// Note: Expensive!
-	fetchCompilerVersions();
 
 	return true;
 }
 
 /*****************************************************************************/
-void CompilerTools::fetchCompilerVersions()
+bool CompilerTools::fetchCompilerVersions()
 {
 	if (m_compilerCpp.description.empty())
 	{
@@ -208,46 +124,6 @@ void CompilerTools::fetchCompilerVersions()
 	if (m_version.empty() || (m_state.environment->type() != ToolchainType::VisualStudio && m_version != versionString))
 	{
 		m_version = versionString;
-	}
-}
-
-/*****************************************************************************/
-bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
-{
-	for (auto& target : inTargets)
-	{
-		if (target->isProject())
-		{
-			auto& project = static_cast<SourceTarget&>(*target);
-			auto language = project.language();
-
-			if (m_configs.find(language) == m_configs.end())
-			{
-				m_configs.emplace(language, std::make_unique<CompilerConfig>(language, m_state));
-			}
-		}
-	}
-
-	for (auto& [_, config] : m_configs)
-	{
-		if (!config->configureCompilerPaths())
-		{
-			Diagnostic::error("Error configuring compiler paths.");
-			return false;
-		}
-
-		if (!config->testCompilerMacros())
-		{
-			Diagnostic::error("Unimplemented or unknown compiler toolchain.");
-			return false;
-		}
-
-		if (!config->getSupportedCompilerFlags())
-		{
-			auto exec = String::getPathFilename(config->compilerExecutable());
-			Diagnostic::error("Error collecting supported compiler flags for '{}'.", exec);
-			return false;
-		}
 	}
 
 	return true;
@@ -314,6 +190,7 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 		std::string versionString;
 		std::string compilerRaw;
 		std::string threadModel;
+		std::string archString;
 		for (auto& line : splitOutput)
 		{
 			if (String::contains("version", line))
@@ -327,7 +204,7 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 			}
 			else if (String::startsWith("Target:", line))
 			{
-				outInfo.arch = line.substr(8);
+				archString = line.substr(8);
 			}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 			else if (String::contains("Intel", line))
@@ -368,6 +245,15 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 		else
 		{
 			ret = "Unrecognized";
+		}
+
+		if (!archString.empty())
+		{
+			outInfo.arch = std::move(archString);
+		}
+		else
+		{
+			outInfo.arch = m_state.info.targetArchitectureTriple();
 		}
 	}
 

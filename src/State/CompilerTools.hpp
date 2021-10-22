@@ -16,7 +16,6 @@
 namespace chalet
 {
 class BuildState;
-struct CommandLineInputs;
 
 struct CompilerInfo
 {
@@ -28,10 +27,10 @@ struct CompilerInfo
 
 struct CompilerTools
 {
-	explicit CompilerTools(const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompilerTools(BuildState& inState);
 
 	bool initialize(const BuildTargetList& inTargets);
-	void fetchCompilerVersions();
+	bool fetchCompilerVersions();
 
 	void fetchMakeVersion();
 	bool fetchCmakeVersion();
@@ -109,12 +108,9 @@ struct CompilerTools
 	const CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
 
 private:
-	bool initializeCompilerConfigs(const BuildTargetList& inTargets);
-
 	std::string parseVersionMSVC(CompilerInfo& outInfo) const;
 	std::string parseVersionGNU(CompilerInfo& outInfo) const;
 
-	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 
 	std::unordered_map<CodeLanguage, Unique<CompilerConfig>> m_configs;

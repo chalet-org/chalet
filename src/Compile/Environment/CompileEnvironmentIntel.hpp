@@ -6,11 +6,11 @@
 #ifndef CHALET_COMPILE_ENVIRONMENT_INTEL_HPP
 #define CHALET_COMPILE_ENVIRONMENT_INTEL_HPP
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Compile/Environment/CompileEnvironmentLLVM.hpp"
 
 namespace chalet
 {
-struct CompileEnvironmentIntel final : ICompileEnvironment
+struct CompileEnvironmentIntel final : CompileEnvironmentLLVM
 {
 	explicit CompileEnvironmentIntel(const CommandLineInputs& inInputs, BuildState& inState, const ToolchainType inType);
 
@@ -20,9 +20,10 @@ struct CompileEnvironmentIntel final : ICompileEnvironment
 
 protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
+	virtual bool validateArchitectureFromInput() final;
+	virtual bool makeArchitectureAdjustments() final;
 
 private:
-	void makeArchitectureCorrections();
 	bool saveIntelEnvironment() const;
 
 	const std::string kVarsId;

@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -37,6 +38,36 @@ std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& i
 
 /*****************************************************************************/
 bool CompileEnvironmentGNU::makeArchitectureAdjustments()
+{
+	const auto& archTriple = m_state.info.targetArchitectureTriple();
+	const auto& compiler = m_state.toolchain.compilerCxx();
+
+	if (m_inputs.targetArchitecture().empty() || !String::contains('-', archTriple))
+	{
+		auto result = Commands::subprocessOutput({ compiler, "-dumpmachine" });
+#if defined(CHALET_MACOS)
+		// Strip out version in auto-detected mac triple
+		auto darwin = result.find("apple-darwin");
+		if (darwin != std::string::npos)
+		{
+			result = result.substr(0, darwin + 12);
+		}
+#endif
+		m_state.info.setTargetArchitecture(result);
+	}
+	else
+	{
+		// Pass along and hope for the best
+
+		// if (!String::startsWith(archFromInput, archTriple))
+		// 	return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentGNU::validateArchitectureFromInput()
 {
 	if (String::equals("gcc", m_inputs.toolchainPreferenceName()))
 	{

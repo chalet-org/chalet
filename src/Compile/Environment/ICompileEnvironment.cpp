@@ -85,7 +85,7 @@ bool ICompileEnvironment::create(const std::string& inVersion)
 
 	m_initialized = true;
 
-	if (!makeArchitectureAdjustments())
+	if (!validateArchitectureFromInput())
 		return false;
 
 	if (!createFromVersion(inVersion))
@@ -98,6 +98,12 @@ bool ICompileEnvironment::create(const std::string& inVersion)
 bool ICompileEnvironment::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
+	return true;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::validateArchitectureFromInput()
+{
 	return true;
 }
 

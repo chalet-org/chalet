@@ -19,7 +19,7 @@ namespace chalet
 {
 /*****************************************************************************/
 CompileEnvironmentIntel::CompileEnvironmentIntel(const CommandLineInputs& inInputs, BuildState& inState, const ToolchainType inType) :
-	ICompileEnvironment(inInputs, inState),
+	CompileEnvironmentLLVM(inInputs, inState),
 	kVarsId("intel"),
 	m_type(inType)
 {
@@ -43,18 +43,16 @@ StringList CompileEnvironmentIntel::getVersionCommand(const std::string& inExecu
 /*****************************************************************************/
 std::string CompileEnvironmentIntel::getFullCxxCompilerString(const std::string& inVersion) const
 {
-	if (m_type == ToolchainType::IntelClassic)
-		return fmt::format("Intel{} 64 Compiler Classic version {}", Unicode::registered(), inVersion);
-	else
+	if (m_type == ToolchainType::IntelLLVM)
 		return fmt::format("Intel{} oneAPI DPC++/C++ version {}", Unicode::registered(), inVersion);
+	else
+		return fmt::format("Intel{} 64 Compiler Classic version {}", Unicode::registered(), inVersion);
 }
 
 /*****************************************************************************/
 bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
-
-	makeArchitectureCorrections();
 
 	Timer timer;
 
@@ -159,12 +157,12 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 }
 
 /*****************************************************************************/
-void CompileEnvironmentIntel::makeArchitectureCorrections()
+bool CompileEnvironmentIntel::validateArchitectureFromInput()
 {
-	auto target = m_inputs.targetArchitecture();
-	if (target.empty())
+	if (m_inputs.targetArchitecture().empty())
 	{
 		// Try to get the architecture from the name
+		std::string target;
 		const auto& preferenceName = m_inputs.toolchainPreferenceName();
 		auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
 		if (!regexResult.empty())
@@ -175,10 +173,28 @@ void CompileEnvironmentIntel::makeArchitectureCorrections()
 		{
 			target = m_inputs.hostArchitecture();
 		}
+
+		m_inputs.setTargetArchitecture(target);
+		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 	}
 
-	m_inputs.setTargetArchitecture(target);
-	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
+	return true;
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentIntel::makeArchitectureAdjustments()
+{
+	if (m_type == ToolchainType::IntelLLVM)
+	{
+		return CompileEnvironmentLLVM::makeArchitectureAdjustments();
+	}
+
+#if defined(CHALET_MACOS)
+	auto arch = m_inputs.hostArchitecture();
+	m_state.info.setTargetArchitecture(fmt::format("{}-intel-darwin", arch));
+#endif
+
+	return true;
 }
 
 /*****************************************************************************/

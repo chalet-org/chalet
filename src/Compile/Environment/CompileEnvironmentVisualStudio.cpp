@@ -338,7 +338,7 @@ bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
 }
 
 /*****************************************************************************/
-bool CompileEnvironmentVisualStudio::makeArchitectureAdjustments()
+bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 {
 #if defined(CHALET_WIN32)
 	if (m_msvcArchitectureSet)
@@ -356,11 +356,7 @@ bool CompileEnvironmentVisualStudio::makeArchitectureAdjustments()
 	std::string host;
 	std::string target;
 
-	const auto& cppCompiler = m_state.toolchain.compilerCpp();
-	const auto& cCompiler = m_state.toolchain.compilerC();
-
-	const auto& compiler = !cppCompiler.empty() ? cppCompiler : cCompiler;
-
+	const auto& compiler = m_state.toolchain.compilerCxx();
 	if (!compiler.empty())
 	{
 		// old: detectTargetArchitectureMSVC()

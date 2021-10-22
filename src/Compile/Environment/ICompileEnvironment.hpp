@@ -28,13 +28,15 @@ struct ICompileEnvironment
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const = 0;
 
+	virtual bool makeArchitectureAdjustments();
+
 	const std::string& detectedVersion() const;
 
 	bool create(const std::string& inVersion = std::string());
 
 protected:
 	virtual bool createFromVersion(const std::string& inVersion);
-	virtual bool makeArchitectureAdjustments();
+	virtual bool validateArchitectureFromInput();
 
 	std::string getVarsPath(const std::string& inId) const;
 	bool saveOriginalEnvironment(const std::string& inOutputFile) const;

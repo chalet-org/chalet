@@ -34,7 +34,7 @@ BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inStateProtot
 	externalDependencies(m_prototype.externalDependencies),
 	info(m_inputs),
 	workspace(m_prototype.workspace), // copy
-	toolchain(m_inputs, *this),
+	toolchain(*this),
 	paths(m_inputs, m_prototype.workspace)
 {
 }
@@ -173,7 +173,11 @@ bool BuildState::parseBuildJson()
 /*****************************************************************************/
 bool BuildState::initializeToolchain()
 {
-	if (!toolchain.initialize(targets))
+	bool result = toolchain.initialize(targets);
+	result &= environment->makeArchitectureAdjustments();
+	result &= toolchain.fetchCompilerVersions();
+
+	if (!result)
 	{
 		const auto& targetArch = environment->type() == ToolchainType::GNU ?
 			  m_inputs.targetArchitecture() :
