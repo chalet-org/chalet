@@ -150,17 +150,23 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 		// otool
 		if (m_state.toolchain.isDisassemblerOtool())
 		{
-			auto asmCommand = fmt::format("{disassembler} -tvV {object} | c++filt > {target}",
-				FMT_ARG(disassembler),
-				FMT_ARG(object),
-				FMT_ARG(target));
-			ret.emplace_back(std::move(asmCommand));
+			StringList cmd{ disassembler };
+			cmd.emplace_back("-tvV");
+			cmd.emplace_back(object);
+			cmd.emplace_back("|");
+			cmd.emplace_back("c++filt");
+			cmd.emplace_back(">");
+			cmd.emplace_back(target);
+			ret.emplace_back(String::join(cmd));
 		}
 		else
 #endif
 		{
 			// objdump
-			std::string archArg;
+			StringList cmd{ fmt::format("\"{}\"", disassembler) };
+			cmd.emplace_back("-d");
+			cmd.emplace_back("-C");
+
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 			if (!m_state.toolchain.isDisassemblerLLVMObjDump())
 			{
@@ -168,26 +174,24 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 	#if defined(CHALET_LINUX)
 				if (arch == Arch::Cpu::X64)
 				{
-					archArg = "-Mintel,x86-64 ";
+					cmd.emplace_back("-Mintel,x86-64");
 				}
 				else if (arch == Arch::Cpu::X86)
 				{
-					archArg = "-Mintel,i686 ";
+					cmd.emplace_back("-Mintel,i686");
 				}
 	#else
 				if (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86)
 				{
-					archArg = "-Mintel ";
+					cmd.emplace_back("-Mintel");
 				}
 	#endif
 			}
 #endif
-			auto asmCommand = fmt::format("\"{disassembler}\" -d -C {archArg}{object} > {target}",
-				FMT_ARG(disassembler),
-				FMT_ARG(archArg),
-				FMT_ARG(object),
-				FMT_ARG(target));
-			ret.emplace_back(std::move(asmCommand));
+			cmd.emplace_back(object);
+			cmd.emplace_back(">");
+			cmd.emplace_back(target);
+			ret.emplace_back(String::join(cmd));
 		}
 	}
 
