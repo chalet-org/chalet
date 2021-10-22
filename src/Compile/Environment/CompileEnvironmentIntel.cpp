@@ -34,7 +34,10 @@ ToolchainType CompileEnvironmentIntel::type() const noexcept
 /*****************************************************************************/
 StringList CompileEnvironmentIntel::getVersionCommand(const std::string& inExecutable) const
 {
-	return { inExecutable, "-V" };
+	if (m_type == ToolchainType::IntelLLVM)
+		return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-v" };
+	else
+		return { inExecutable, "-V" };
 }
 
 /*****************************************************************************/

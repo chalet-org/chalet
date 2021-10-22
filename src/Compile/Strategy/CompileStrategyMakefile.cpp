@@ -162,9 +162,13 @@ bool CompileStrategyMakefile::buildMake(const SourceTarget& inProject) const
 	{
 		command.emplace_back(fmt::format("build_{}", hash));
 		bool result = subprocessMakefile(command);
-
 		if (!result)
+		{
+#if defined(CHALET_WIN32)
+			Output::lineBreak();
+#endif
 			return false;
+		}
 	}
 
 	return true;
