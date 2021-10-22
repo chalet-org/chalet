@@ -1175,7 +1175,7 @@ void CompileToolchainGNU::initializeArchPresets()
 			"i586",
 			"pentium",
 			"lakemont",
-			"ptentium-mmx",
+			"pentium-mmx",
 			"pentiumpro",
 			"i686",
 			"pentium2",

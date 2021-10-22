@@ -605,6 +605,8 @@ void CompilerTools::setDisassembler(std::string&& inValue) noexcept
 #elif defined(CHALET_WIN32)
 	m_isDisassemblerDumpBin = String::endsWith("dumpbin.exe", m_disassembler);
 	m_isDisassemblerLLVMObjDump = String::endsWith("llvm-objdump.exe", m_disassembler);
+#else
+	m_isDisassemblerLLVMObjDump = String::endsWith("llvm-objdump", m_disassembler);
 #endif
 }
 bool CompilerTools::isDisassemblerDumpBin() const noexcept

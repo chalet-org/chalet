@@ -161,14 +161,25 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 		{
 			// objdump
 			std::string archArg;
-#if defined(CHALET_WIN32)
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 			if (!m_state.toolchain.isDisassemblerLLVMObjDump())
 			{
 				Arch::Cpu arch = m_state.info.targetArchitecture();
+	#if defined(CHALET_LINUX)
+				if (arch == Arch::Cpu::X64)
+				{
+					archArg = "-Mintel,x86-64 ";
+				}
+				else if (arch == Arch::Cpu::X86)
+				{
+					archArg = "-Mintel,i686 ";
+				}
+	#else
 				if (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86)
 				{
 					archArg = "-Mintel ";
 				}
+	#endif
 			}
 #endif
 			auto asmCommand = fmt::format("\"{disassembler}\" -d -C {archArg}{object} > {target}",
