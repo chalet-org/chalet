@@ -53,6 +53,20 @@ static struct
 		{ "vs-2012", VisualStudioVersion::VisualStudio2012 },
 		{ "vs-2010", VisualStudioVersion::VisualStudio2010 },
 	};
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	const OrderedDictionary<VisualStudioVersion> intelICCVisualStudioPresets{
+		// { "icc-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "icc-vs-2019", VisualStudioVersion::VisualStudio2019 },
+		{ "icc-vs-2017", VisualStudioVersion::VisualStudio2017 },
+	};
+	#endif
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	const OrderedDictionary<VisualStudioVersion> intelICXVisualStudioPresets{
+		// { "icx-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "icx-vs-2019", VisualStudioVersion::VisualStudio2019 },
+		{ "icx-vs-2017", VisualStudioVersion::VisualStudio2017 },
+	};
+	#endif
 #endif
 } state;
 }
@@ -70,7 +84,7 @@ CommandLineInputs::CommandLineInputs() :
 	kArchPresetAuto("auto"),
 	kToolchainPresetGCC("gcc"),
 	kToolchainPresetLLVM("llvm"),
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
 	kToolchainPresetICC("icc"),
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
@@ -702,11 +716,13 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	StringList ret;
 
 #if defined(CHALET_WIN32)
-	ret.emplace_back(kToolchainPresetVisualStudioStable);
-	ret.emplace_back("vs-preview");
-	ret.emplace_back("vs-2022");
-	ret.emplace_back("vs-2019");
-	ret.emplace_back("vs-2017");
+	for (auto& [name, type] : state.visualStudioPresets)
+	{
+		if (type == VisualStudioVersion::VisualStudio2015)
+			break;
+
+		ret.emplace_back(name);
+	}
 #elif defined(CHALET_MACOS)
 	ret.emplace_back(kToolchainPresetAppleLLVM);
 #endif
@@ -714,9 +730,22 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	ret.emplace_back(kToolchainPresetGCC);
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	ret.emplace_back(kToolchainPresetICX);
+	#if defined(CHALET_WIN32)
+	for (auto& [name, type] : state.intelICXVisualStudioPresets)
+	{
+		ret.emplace_back(name);
+	}
+	#endif
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if defined(CHALET_WIN32)
+	for (auto& [name, type] : state.intelICCVisualStudioPresets)
+	{
+		ret.emplace_back(name);
+	}
+	#else
 	ret.emplace_back(kToolchainPresetICC);
+	#endif
 #endif
 
 	return ret;
@@ -846,10 +875,17 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "objdump";
 	}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if defined(CHALET_WIN32)
+	if (String::equals(kToolchainPresetICX, inValue) || state.intelICXVisualStudioPresets.find(inValue) != state.intelICXVisualStudioPresets.end())
+	#else
 	else if (String::equals(kToolchainPresetICX, inValue))
+	#endif
 	{
 		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
+	#if defined(CHALET_WIN32)
+		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
+	#endif
 
 		ret.type = ToolchainType::IntelLLVM;
 		ret.strategy = StrategyType::Ninja;
@@ -863,10 +899,17 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if defined(CHALET_WIN32)
+	if (state.intelICCVisualStudioPresets.find(inValue) != state.intelICCVisualStudioPresets.end())
+	#else
 	else if (String::equals(kToolchainPresetICC, inValue))
+	#endif
 	{
 		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
+	#if defined(CHALET_WIN32)
+		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
+	#endif
 
 		ret.strategy = StrategyType::Ninja;
 		ret.type = ToolchainType::IntelClassic;
@@ -947,6 +990,19 @@ VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(co
 	{
 		return state.visualStudioPresets.at(inValue);
 	}
+
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	if (state.intelICCVisualStudioPresets.find(inValue) != state.intelICCVisualStudioPresets.end())
+	{
+		return state.intelICCVisualStudioPresets.at(inValue);
+	}
+	#endif
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	if (state.intelICXVisualStudioPresets.find(inValue) != state.intelICXVisualStudioPresets.end())
+	{
+		return state.intelICXVisualStudioPresets.at(inValue);
+	}
+	#endif
 #else
 	UNUSED(inValue);
 #endif

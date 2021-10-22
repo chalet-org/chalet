@@ -174,7 +174,7 @@ private:
 	const std::string kArchPresetAuto;
 	const std::string kToolchainPresetGCC;
 	const std::string kToolchainPresetLLVM;
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
 	const std::string kToolchainPresetICC;
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX

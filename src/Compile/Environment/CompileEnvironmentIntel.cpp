@@ -228,7 +228,13 @@ bool CompileEnvironmentIntel::saveIntelEnvironment() const
 
 	cmd.emplace_back(std::move(arch));
 
-	// TODO: explicit vs2017 & vs2019 - "icx-vs-20XX" presets?
+	const auto vsVersion = m_inputs.visualStudioVersion();
+	if (vsVersion == VisualStudioVersion::VisualStudio2022)
+		cmd.emplace_back("vs2022");
+	if (vsVersion == VisualStudioVersion::VisualStudio2019)
+		cmd.emplace_back("vs2019");
+	if (vsVersion == VisualStudioVersion::VisualStudio2017)
+		cmd.emplace_back("vs2019");
 
 	cmd.emplace_back(">");
 	cmd.emplace_back("nul");
