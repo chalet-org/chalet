@@ -15,6 +15,8 @@ struct CompileEnvironmentIntel final : ICompileEnvironment
 	explicit CompileEnvironmentIntel(const CommandLineInputs& inInputs, BuildState& inState, const ToolchainType inType);
 
 	virtual ToolchainType type() const noexcept final;
+	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
+	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 
 protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;

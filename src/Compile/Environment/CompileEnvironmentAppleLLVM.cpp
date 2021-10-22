@@ -12,7 +12,7 @@ namespace chalet
 {
 /*****************************************************************************/
 CompileEnvironmentAppleLLVM::CompileEnvironmentAppleLLVM(const CommandLineInputs& inInputs, BuildState& inState) :
-	ICompileEnvironment(inInputs, inState)
+	CompileEnvironmentLLVM(inInputs, inState)
 {
 }
 
@@ -20,6 +20,12 @@ CompileEnvironmentAppleLLVM::CompileEnvironmentAppleLLVM(const CommandLineInputs
 ToolchainType CompileEnvironmentAppleLLVM::type() const noexcept
 {
 	return ToolchainType::AppleLLVM;
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentAppleLLVM::getFullCxxCompilerString(const std::string& inVersion) const
+{
+	return fmt::format("Apple Clang C/C++ version {}", inVersion);
 }
 
 }

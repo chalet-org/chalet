@@ -79,11 +79,21 @@ ToolchainType CompileEnvironmentVisualStudio::type() const noexcept
 }
 
 /*****************************************************************************/
+StringList CompileEnvironmentVisualStudio::getVersionCommand(const std::string& inExecutable) const
+{
+	return { inExecutable };
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getFullCxxCompilerString(const std::string& inVersion) const
+{
+	return fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), inVersion, m_detectedVersion);
+}
+
+/*****************************************************************************/
 bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVersion)
 {
 #if defined(CHALET_WIN32)
-	makeArchitectureCorrections();
-
 	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", kVarsId), CacheType::Local);
 	m_varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", kVarsId), CacheType::Local);
 	m_varsFileMsvcDelta = getVarsPath(kVarsId);
@@ -327,8 +337,12 @@ bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
 }
 
 /*****************************************************************************/
-void CompileEnvironmentVisualStudio::makeArchitectureCorrections()
+bool CompileEnvironmentVisualStudio::makeArchitectureAdjustments()
 {
+#if defined(CHALET_WIN32)
+	if (m_msvcArchitectureSet)
+		return true;
+
 	auto normalizeArch = [](const std::string& inArch) -> std::string {
 		if (String::equals("x86_64", inArch))
 			return "x64";
@@ -338,39 +352,80 @@ void CompileEnvironmentVisualStudio::makeArchitectureCorrections()
 		return inArch;
 	};
 
-	auto target = m_inputs.targetArchitecture();
-	if (target.empty())
-	{
-		// Try to get the architecture from the name
-		const auto& preferenceName = m_inputs.toolchainPreferenceName();
-		auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
-		if (!regexResult.empty())
-		{
-			target = regexResult;
-		}
-		else
-		{
-			target = normalizeArch(m_inputs.hostArchitecture());
-		}
-	}
-
 	std::string host;
-	if (String::contains('_', target))
-	{
-		auto split = String::split(target, '_');
-		if (String::equals("64", split.back()))
-		{
-			target = "x64";
-		}
-		else
-		{
-			host = split.front();
-			target = split.back();
-		}
-	}
+	std::string target;
 
-	if (host.empty())
-		host = normalizeArch(m_inputs.hostArchitecture());
+	const auto& cppCompiler = m_state.toolchain.compilerCpp();
+	const auto& cCompiler = m_state.toolchain.compilerC();
+
+	const auto& compiler = !cppCompiler.empty() ? cppCompiler : cCompiler;
+
+	if (!compiler.empty())
+	{
+		// old: detectTargetArchitectureMSVC()
+
+		std::string lower = String::toLowerCase(compiler);
+		auto search = lower.find("/bin/host");
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
+			return false;
+		}
+
+		auto nextPath = lower.find('/', search + 5);
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
+			return false;
+		}
+
+		search += 9;
+		host = lower.substr(search, nextPath - search);
+		search = nextPath + 1;
+		nextPath = lower.find('/', search);
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("MSVC Target architecture was not detected in compiler path: {}", compiler);
+			return false;
+		}
+
+		target = lower.substr(search, nextPath - search);
+	}
+	else
+	{
+		target = m_inputs.targetArchitecture();
+		if (target.empty())
+		{
+			// Try to get the architecture from the name
+			const auto& preferenceName = m_inputs.toolchainPreferenceName();
+			auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
+			if (!regexResult.empty())
+			{
+				target = regexResult;
+			}
+			else
+			{
+				target = normalizeArch(m_inputs.hostArchitecture());
+			}
+		}
+
+		if (String::contains('_', target))
+		{
+			auto split = String::split(target, '_');
+			if (String::equals("64", split.back()))
+			{
+				target = "x64";
+			}
+			else
+			{
+				host = split.front();
+				target = split.back();
+			}
+		}
+
+		if (host.empty())
+			host = normalizeArch(m_inputs.hostArchitecture());
+	}
 
 	m_state.info.setHostArchitecture(host);
 
@@ -380,6 +435,11 @@ void CompileEnvironmentVisualStudio::makeArchitectureCorrections()
 		m_inputs.setTargetArchitecture(fmt::format("{}_{}", host, target));
 
 	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
+
+	m_msvcArchitectureSet = true;
+#endif
+
+	return true;
 }
 
 }

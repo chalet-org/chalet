@@ -795,9 +795,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "dumpbin";
 	}
 	else
-#endif
-#if defined(CHALET_MACOS)
-		if (String::equals({ kToolchainPresetAppleLLVM, kToolchainPresetLLVM }, inValue))
+#elif defined(CHALET_MACOS)
+	bool isAppleClang = String::equals(kToolchainPresetAppleLLVM, inValue);
+	if (isAppleClang || String::equals(kToolchainPresetLLVM, inValue))
 #else
 	if (String::equals(kToolchainPresetLLVM, inValue))
 #endif
@@ -805,7 +805,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
 
+#if defined(CHALET_MACOS)
+		ret.type = isAppleClang ? ToolchainType::AppleLLVM : ToolchainType::LLVM;
+#else
 		ret.type = ToolchainType::LLVM;
+#endif
 		ret.strategy = StrategyType::Ninja;
 		ret.cpp = "clang++";
 		ret.cc = "clang";

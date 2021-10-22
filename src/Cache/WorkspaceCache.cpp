@@ -7,6 +7,7 @@
 
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -18,12 +19,6 @@
 namespace chalet
 {
 /*****************************************************************************/
-WorkspaceCache::WorkspaceCache(const CommandLineInputs& inInputs) :
-	m_inputs(inInputs)
-{
-}
-
-/*****************************************************************************/
 const std::string& WorkspaceCache::getCacheRef(const CacheType inCacheType) const
 {
 	// return inCacheType == Type::Global ? m_cacheFolderGlobal : m_cacheFolderLocal;
@@ -32,13 +27,13 @@ const std::string& WorkspaceCache::getCacheRef(const CacheType inCacheType) cons
 }
 
 /*****************************************************************************/
-bool WorkspaceCache::initialize()
+bool WorkspaceCache::initialize(const CommandLineInputs& inInputs)
 {
-	const auto& outputDirectory = m_inputs.outputDirectory();
+	const auto& outputDirectory = inInputs.outputDirectory();
 	m_cacheFolderLocal = fmt::format("{}/.cache", outputDirectory);
 	// m_cacheFolderGlobal = fmt::format("{}/.chalet", m_inputs.homeDirectory());
 
-	if (!m_cacheFile.initialize(getHashPath("chalet_workspace_file", CacheType::Local), m_inputs.inputFile()))
+	if (!m_cacheFile.initialize(getHashPath("chalet_workspace_file", CacheType::Local), inInputs.inputFile()))
 		return false;
 
 	if (!m_cacheFile.save())
@@ -51,12 +46,12 @@ bool WorkspaceCache::initialize()
 }
 
 /*****************************************************************************/
-bool WorkspaceCache::initializeSettings()
+bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 {
-	if (!m_localSettings.load(m_inputs.settingsFile()))
+	if (!m_localSettings.load(inInputs.settingsFile()))
 		return false;
 
-	if (!m_globalSettings.load(m_inputs.getGlobalSettingsFilePath()))
+	if (!m_globalSettings.load(inInputs.getGlobalSettingsFilePath()))
 		return false;
 
 	m_removeOldCacheFolder = m_localSettings.json.empty();
@@ -236,12 +231,12 @@ bool WorkspaceCache::removeStaleProjectCaches()
 }
 
 /*****************************************************************************/
-bool WorkspaceCache::saveProjectCache()
+bool WorkspaceCache::saveProjectCache(const CommandLineInputs& inInputs)
 {
 	bool result = m_cacheFile.save();
 
 	const auto& cacheRef = getCacheRef(CacheType::Local);
-	const auto& outputDirectory = m_inputs.outputDirectory();
+	const auto& outputDirectory = inInputs.outputDirectory();
 
 	auto removePathIfEmpty = [](const std::string& inPath) {
 		if (Commands::pathIsEmpty(inPath, {}, true))
@@ -255,6 +250,78 @@ bool WorkspaceCache::saveProjectCache()
 	{
 		Diagnostic::error("There was an error saving the workspace cache.");
 		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInputs, const CompilerTools& inToolchain)
+{
+	auto& settingsJson = getSettings(SettingsType::Local);
+
+	const auto& settingsFile = inInputs.settingsFile();
+	const auto& preference = inInputs.toolchainPreferenceName();
+	const std::string kKeyOptions{ "options" };
+	const std::string kKeyToolchains{ "toolchains" };
+
+	if (!settingsJson.json.contains(kKeyOptions))
+	{
+		LOG("no options");
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyOptions);
+		return false;
+	}
+	if (!settingsJson.json.contains(kKeyToolchains))
+	{
+		LOG("no toolchains");
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
+		return false;
+	}
+
+	auto& toolchains = settingsJson.json.at(kKeyToolchains);
+	if (!toolchains.contains(preference))
+	{
+		LOG("no", preference);
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
+		return false;
+	}
+
+	auto& optionsJson = settingsJson.json.at(kKeyOptions);
+	auto& toolchain = toolchains.at(preference);
+
+	const std::string kKeyToolchain{ "toolchain" };
+	if (optionsJson.contains(kKeyToolchain))
+	{
+		auto& toolchainSetting = optionsJson.at(kKeyToolchain);
+		if (toolchainSetting.is_string() && toolchainSetting.get<std::string>() != preference)
+		{
+			optionsJson[kKeyToolchain] = preference;
+			settingsJson.setDirty(true);
+		}
+	}
+
+	const std::string kKeyArchitecture{ "architecture" };
+	if (optionsJson.contains(kKeyArchitecture))
+	{
+		std::string archString = inInputs.targetArchitecture().empty() ? "auto" : inInputs.targetArchitecture();
+		auto& arch = optionsJson.at(kKeyArchitecture);
+		if (arch.is_string() && arch.get<std::string>() != archString)
+		{
+			optionsJson[kKeyArchitecture] = archString;
+			settingsJson.setDirty(true);
+		}
+	}
+
+	const std::string kKeyVersion{ "version" };
+	if (toolchain.contains(kKeyVersion))
+	{
+		const auto& versionString = inToolchain.version();
+		auto& version = toolchain.at(kKeyVersion);
+		if (version.is_string() && version.get<std::string>() != versionString)
+		{
+			toolchain[kKeyVersion] = versionString;
+			settingsJson.setDirty(true);
+		}
 	}
 
 	return true;

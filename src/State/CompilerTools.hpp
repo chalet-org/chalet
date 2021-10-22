@@ -17,7 +17,6 @@ namespace chalet
 {
 class BuildState;
 struct CommandLineInputs;
-struct JsonFile;
 
 struct CompilerInfo
 {
@@ -31,8 +30,7 @@ struct CompilerTools
 {
 	explicit CompilerTools(const CommandLineInputs& inInputs, BuildState& inState);
 
-	bool initialize(const BuildTargetList& inTargets, JsonFile& inConfigJson);
-	bool detectToolchainFromPaths();
+	bool initialize(const BuildTargetList& inTargets);
 	void fetchCompilerVersions();
 
 	void fetchMakeVersion();
@@ -50,8 +48,6 @@ struct CompilerTools
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inValue) noexcept;
 
-	const std::string& compilerCxx() const noexcept;
-
 	const std::string& compilerDescriptionStringCpp() const noexcept;
 	const std::string& compilerDescriptionStringC() const noexcept;
 	const std::string& compilerDetectedArchCpp() const noexcept;
@@ -66,6 +62,8 @@ struct CompilerTools
 
 	const std::string& compilerC() const noexcept;
 	void setCompilerC(std::string&& inValue) noexcept;
+
+	const std::string& compilerCxx() const noexcept;
 
 	const std::string& compilerWindowsResource() const noexcept;
 	void setCompilerWindowsResource(std::string&& inValue) noexcept;
@@ -112,10 +110,6 @@ struct CompilerTools
 
 private:
 	bool initializeCompilerConfigs(const BuildTargetList& inTargets);
-	bool updateToolchainCacheNode(JsonFile& inConfigJson);
-#if defined(CHALET_WIN32)
-	bool detectTargetArchitectureMSVC();
-#endif
 
 	std::string parseVersionMSVC(CompilerInfo& outInfo) const;
 	std::string parseVersionGNU(CompilerInfo& outInfo) const;
@@ -167,9 +161,6 @@ private:
 	bool m_ninjaAvailable = false;
 	bool m_makeIsNMake = false;
 	bool m_makeIsJom = false;
-#if defined(CHALET_WIN32)
-	bool m_msvcArchitectureSet = false;
-#endif
 };
 }
 

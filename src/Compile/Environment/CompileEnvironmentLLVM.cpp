@@ -12,7 +12,7 @@ namespace chalet
 {
 /*****************************************************************************/
 CompileEnvironmentLLVM::CompileEnvironmentLLVM(const CommandLineInputs& inInputs, BuildState& inState) :
-	ICompileEnvironment(inInputs, inState)
+	CompileEnvironmentGNU(inInputs, inState)
 {
 }
 
@@ -22,4 +22,21 @@ ToolchainType CompileEnvironmentLLVM::type() const noexcept
 	return ToolchainType::LLVM;
 }
 
+/*****************************************************************************/
+StringList CompileEnvironmentLLVM::getVersionCommand(const std::string& inExecutable) const
+{
+	return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-v" };
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& inVersion) const
+{
+	return fmt::format("LLVM Clang C/C++ version {}", inVersion);
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentLLVM::makeArchitectureAdjustments()
+{
+	return ICompileEnvironment::makeArchitectureAdjustments();
+}
 }

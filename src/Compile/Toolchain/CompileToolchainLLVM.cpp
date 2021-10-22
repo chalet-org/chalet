@@ -111,7 +111,7 @@ bool CompileToolchainLLVM::addArchitecture(StringList& outArgList) const
 	if (hostArch == targetArch && targetArch != Arch::Cpu::Unknown && archOptions.empty())
 		return false;
 
-	const auto& targetArchString = m_state.info.targetArchitectureString();
+	const auto& targetArchString = m_state.info.targetArchitectureTriple();
 
 	outArgList.emplace_back("-target");
 	outArgList.push_back(targetArchString);

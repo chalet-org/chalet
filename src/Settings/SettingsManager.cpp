@@ -16,7 +16,6 @@ namespace chalet
 /*****************************************************************************/
 SettingsManager::SettingsManager(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
-	m_cache(inInputs),
 	m_key(inInputs.settingsKey()),
 	m_value(inInputs.settingsValue()),
 	m_type(inInputs.settingsType())
@@ -76,7 +75,7 @@ bool SettingsManager::initialize()
 	if (m_initialized)
 		return true;
 
-	if (!m_cache.initializeSettings())
+	if (!m_cache.initializeSettings(m_inputs))
 		return false;
 
 	// if (!m_cache.initialize())

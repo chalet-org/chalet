@@ -32,6 +32,21 @@ ToolchainType CompileEnvironmentIntel::type() const noexcept
 }
 
 /*****************************************************************************/
+StringList CompileEnvironmentIntel::getVersionCommand(const std::string& inExecutable) const
+{
+	return { inExecutable, "-V" };
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentIntel::getFullCxxCompilerString(const std::string& inVersion) const
+{
+	if (m_type == ToolchainType::IntelClassic)
+		return fmt::format("Intel{} 64 Compiler Classic version {}", Unicode::registered(), inVersion);
+	else
+		return fmt::format("Intel{} oneAPI DPC++/C++ version {}", Unicode::registered(), inVersion);
+}
+
+/*****************************************************************************/
 bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
@@ -124,7 +139,7 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 		std::string name = fmt::format("{}-apple-darwin-icc", m_inputs.targetArchitecture());
 #else
 		std::string name;
-		if (m_inputs.toolchainPreference().type == ToolchainType::IntelLLVM)
+		if (m_type == ToolchainType::IntelLLVM)
 			name = fmt::format("{}-pc-windows-icx", m_inputs.targetArchitecture());
 		else
 			name = fmt::format("{}-pc-windows-icc", m_inputs.targetArchitecture());

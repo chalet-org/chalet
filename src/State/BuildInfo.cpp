@@ -54,9 +54,9 @@ Arch::Cpu BuildInfo::hostArchitecture() const noexcept
 	return m_hostArchitecture.val;
 }
 
-const std::string& BuildInfo::hostArchitectureString() const noexcept
+const std::string& BuildInfo::hostArchitectureTriple() const noexcept
 {
-	return m_hostArchitecture.str;
+	return m_hostArchitecture.triple;
 }
 
 void BuildInfo::setHostArchitecture(const std::string& inValue) noexcept
@@ -71,6 +71,11 @@ void BuildInfo::setHostArchitecture(const std::string& inValue) noexcept
 Arch::Cpu BuildInfo::targetArchitecture() const noexcept
 {
 	return m_targetArchitecture.val;
+}
+
+const std::string& BuildInfo::targetArchitectureTriple() const noexcept
+{
+	return m_targetArchitecture.triple;
 }
 
 const std::string& BuildInfo::targetArchitectureString() const noexcept

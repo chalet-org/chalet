@@ -10,11 +10,16 @@
 
 namespace chalet
 {
-struct CompileEnvironmentGNU final : ICompileEnvironment
+struct CompileEnvironmentGNU : ICompileEnvironment
 {
 	explicit CompileEnvironmentGNU(const CommandLineInputs& inInputs, BuildState& inState);
 
-	virtual ToolchainType type() const noexcept final;
+	virtual ToolchainType type() const noexcept override;
+	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
+	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
+
+protected:
+	virtual bool makeArchitectureAdjustments() override;
 };
 }
 

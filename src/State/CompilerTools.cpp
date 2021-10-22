@@ -8,6 +8,7 @@
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -28,9 +29,9 @@ CompilerTools::CompilerTools(const CommandLineInputs& inInputs, BuildState& inSt
 }
 
 /*****************************************************************************/
-bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inConfigJson)
+bool CompilerTools::initialize(const BuildTargetList& inTargets)
 {
-	ToolchainType toolchainType = m_inputs.toolchainPreference().type;
+	ToolchainType toolchainType = m_state.environment->type();
 	Arch::Cpu targetArch = m_state.info.targetArchitecture();
 
 	if (!initializeCompilerConfigs(inTargets))
@@ -40,9 +41,9 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	}
 
 	const auto& archFromInput = m_inputs.targetArchitecture();
-	const auto& targetArchString = m_state.info.targetArchitectureString();
+	const auto& archTriple = m_state.info.targetArchitectureTriple();
 
-	if (toolchainType == ToolchainType::LLVM || toolchainType == ToolchainType::IntelLLVM)
+	if (toolchainType == ToolchainType::LLVM || toolchainType == ToolchainType::AppleLLVM || toolchainType == ToolchainType::IntelLLVM)
 	{
 		bool valid = false;
 		if (!archFromInput.empty())
@@ -69,20 +70,20 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 					}
 					else
 					{
-						if (String::startsWith(result, targetArchString))
+						if (String::startsWith(result, archTriple))
 							valid = true;
 					}
 				}
 			}
 		}
 
-		if (!String::contains('-', targetArchString))
+		if (!String::contains('-', archTriple))
 		{
 			auto result = Commands::subprocessOutput({ compilerCxx(), "-dumpmachine" });
 			auto firstDash = result.find_first_of('-');
 			if (!result.empty() && firstDash != std::string::npos)
 			{
-				result = fmt::format("{}{}", targetArchString, result.substr(firstDash));
+				result = fmt::format("{}{}", archTriple, result.substr(firstDash));
 #if defined(CHALET_MACOS)
 				// Strip out version in auto-detected mac triple
 				auto darwin = result.find("apple-darwin");
@@ -105,7 +106,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 	}
 	else if (toolchainType == ToolchainType::GNU)
 	{
-		if (archFromInput.empty() || !String::contains('-', targetArchString))
+		if (archFromInput.empty() || !String::contains('-', archTriple))
 		{
 			auto result = Commands::subprocessOutput({ compilerCxx(), "-dumpmachine" });
 #if defined(CHALET_MACOS)
@@ -122,7 +123,7 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 		{
 			// Pass along and hope for the best
 
-			// if (!String::startsWith(archFromInput, targetArchString))
+			// if (!String::startsWith(archFromInput, archTriple))
 			// 	return false;
 		}
 	}
@@ -136,8 +137,8 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 #if defined(CHALET_WIN32)
 	else if (toolchainType == ToolchainType::VisualStudio)
 	{
-		if (!detectTargetArchitectureMSVC())
-			return false;
+		// if (!detectTargetArchitectureMSVC())
+		// 	return false;
 	}
 #endif
 	else
@@ -148,107 +149,6 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets, JsonFile& inCon
 
 	// Note: Expensive!
 	fetchCompilerVersions();
-
-	if (!updateToolchainCacheNode(inConfigJson))
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-#if defined(CHALET_WIN32)
-bool CompilerTools::detectTargetArchitectureMSVC()
-{
-	if (m_msvcArchitectureSet)
-		return true;
-
-	std::string host;
-	std::string target;
-
-	auto& compiler = !m_compilerCpp.path.empty() ? m_compilerCpp.path : m_compilerC.path;
-	std::string lower = String::toLowerCase(compiler);
-	auto search = lower.find("/bin/host");
-	if (search == std::string::npos)
-	{
-		Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
-		return false;
-	}
-
-	auto nextPath = lower.find('/', search + 5);
-	if (search == std::string::npos)
-	{
-		Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
-		return false;
-	}
-
-	search += 9;
-	host = lower.substr(search, nextPath - search);
-	search = nextPath + 1;
-	nextPath = lower.find('/', search);
-	if (search == std::string::npos)
-	{
-		Diagnostic::error("MSVC Target architecture was not detected in compiler path: {}", compiler);
-		return false;
-	}
-
-	target = lower.substr(search, nextPath - search);
-
-	m_state.info.setHostArchitecture(host);
-
-	if (host == target)
-		m_inputs.setTargetArchitecture(target);
-	else
-		m_inputs.setTargetArchitecture(fmt::format("{}_{}", host, target));
-
-	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
-
-	m_msvcArchitectureSet = true;
-
-	return true;
-}
-#endif
-
-/*****************************************************************************/
-bool CompilerTools::detectToolchainFromPaths()
-{
-	auto& toolchain = m_inputs.toolchainPreference();
-	if (toolchain.type == ToolchainType::Unknown)
-	{
-#if defined(CHALET_WIN32)
-		if (String::endsWith("cl.exe", m_compilerCpp.path) || String::endsWith("cl.exe", m_compilerC.path))
-		{
-			m_inputs.setToolchainPreferenceType(ToolchainType::VisualStudio);
-
-			if (!detectTargetArchitectureMSVC())
-				return false;
-		}
-		else
-#endif
-			if (String::contains("clang", m_compilerCpp.path) || String::contains("clang", m_compilerC.path))
-		{
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-			if (String::contains({ "oneAPI", "Intel", "oneapi", "intel" }, m_compilerCpp.path))
-				m_inputs.setToolchainPreferenceType(ToolchainType::IntelLLVM);
-			else
-#endif
-				m_inputs.setToolchainPreferenceType(ToolchainType::LLVM);
-		}
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	#if defined(CHALET_WIN32)
-		else if (String::contains("icl", m_compilerCpp.path) || String::contains("icl", m_compilerC.path))
-	#else
-		else if (String::contains("icpc", m_compilerCpp.path) || String::contains("icc", m_compilerC.path))
-	#endif
-		{
-			m_inputs.setToolchainPreferenceType(ToolchainType::IntelClassic);
-		}
-		else
-#endif
-		{
-			// Treat as some variant of GCC
-			m_inputs.setToolchainPreferenceType(ToolchainType::GNU);
-		}
-	}
 
 	return true;
 }
@@ -262,7 +162,7 @@ void CompilerTools::fetchCompilerVersions()
 		{
 			std::string description;
 #if defined(CHALET_WIN32)
-			if (m_inputs.toolchainPreference().type == ToolchainType::VisualStudio)
+			if (m_state.environment->type() == ToolchainType::VisualStudio)
 			{
 				description = parseVersionMSVC(m_compilerCpp);
 			}
@@ -288,7 +188,7 @@ void CompilerTools::fetchCompilerVersions()
 		{
 			std::string description;
 #if defined(CHALET_WIN32)
-			if (m_inputs.toolchainPreference().type == ToolchainType::VisualStudio)
+			if (m_state.environment->type() == ToolchainType::VisualStudio)
 			{
 				description = parseVersionMSVC(m_compilerC);
 			}
@@ -300,6 +200,14 @@ void CompilerTools::fetchCompilerVersions()
 
 			m_compilerC.description = std::move(description);
 		}
+	}
+
+	std::string versionString = m_compilerCpp.version.empty() ? m_compilerC.version : m_compilerCpp.version;
+	versionString = versionString.substr(0, versionString.find_first_not_of("0123456789."));
+
+	if (m_version.empty() || (m_state.environment->type() != ToolchainType::VisualStudio && m_version != versionString))
+	{
+		m_version = versionString;
 	}
 }
 
@@ -346,79 +254,6 @@ bool CompilerTools::initializeCompilerConfigs(const BuildTargetList& inTargets)
 }
 
 /*****************************************************************************/
-bool CompilerTools::updateToolchainCacheNode(JsonFile& inConfigJson)
-{
-	const auto& settingsFile = m_inputs.settingsFile();
-	const auto& preference = m_inputs.toolchainPreferenceName();
-	const std::string kKeyOptions{ "options" };
-	const std::string kKeyToolchains{ "toolchains" };
-
-	if (!inConfigJson.json.contains(kKeyOptions))
-	{
-		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyOptions);
-		return false;
-	}
-	if (!inConfigJson.json.contains(kKeyToolchains))
-	{
-		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
-		return false;
-	}
-
-	auto& toolchains = inConfigJson.json.at(kKeyToolchains);
-	if (!toolchains.contains(preference))
-	{
-		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
-		return false;
-	}
-
-	auto& optionsJson = inConfigJson.json.at(kKeyOptions);
-	auto& toolchain = toolchains.at(preference);
-
-	const std::string kKeyToolchain{ "toolchain" };
-	if (optionsJson.contains(kKeyToolchain))
-	{
-		auto& toolchainSetting = optionsJson.at(kKeyToolchain);
-		if (toolchainSetting.is_string() && toolchainSetting.get<std::string>() != preference)
-		{
-			optionsJson[kKeyToolchain] = preference;
-			inConfigJson.setDirty(true);
-		}
-	}
-
-	const std::string kKeyArchitecture{ "architecture" };
-	if (optionsJson.contains(kKeyArchitecture))
-	{
-		std::string archString = m_inputs.targetArchitecture().empty() ? "auto" : m_inputs.targetArchitecture();
-		auto& arch = optionsJson.at(kKeyArchitecture);
-		if (arch.is_string() && arch.get<std::string>() != archString)
-		{
-			optionsJson[kKeyArchitecture] = archString;
-			inConfigJson.setDirty(true);
-		}
-	}
-
-	if (m_inputs.toolchainPreference().type != ToolchainType::VisualStudio)
-	{
-		const std::string kKeyVersion{ "version" };
-		if (toolchain.contains(kKeyVersion))
-		{
-			std::string versionString = m_compilerCpp.version.empty() ? m_compilerC.version : m_compilerCpp.version;
-			versionString = versionString.substr(0, versionString.find_first_not_of("0123456789."));
-
-			auto& version = toolchain.at(kKeyVersion);
-			if (version.is_string() && version.get<std::string>() != versionString)
-			{
-				m_version = versionString;
-			}
-			toolchain[kKeyVersion] = std::move(versionString);
-			inConfigJson.setDirty(true);
-		}
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 std::string CompilerTools::parseVersionMSVC(CompilerInfo& outInfo) const
 {
 	std::string ret;
@@ -426,7 +261,7 @@ std::string CompilerTools::parseVersionMSVC(CompilerInfo& outInfo) const
 #if defined(CHALET_WIN32)
 
 	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-	std::string rawOutput = Commands::subprocessOutput({ outInfo.path });
+	std::string rawOutput = Commands::subprocessOutput(m_state.environment->getVersionCommand(outInfo.path));
 	auto splitOutput = String::split(rawOutput, '\n');
 	if (splitOutput.size() >= 2)
 	{
@@ -438,13 +273,11 @@ std::string CompilerTools::parseVersionMSVC(CompilerInfo& outInfo) const
 			outInfo.version = splitOutput[1].substr(start, end - start); // cl.exe version
 
 			// const auto arch = splitOutput[1].substr(end + 5);
-			outInfo.arch = m_state.info.targetArchitectureString();
+			outInfo.arch = m_state.info.targetArchitectureTriple();
 
 			// We want the toolchain version as opposed to the cl.exe version (annoying)
-			const auto& detectedMsvcVersion = m_state.toolchain.version();
-			const auto& toolchainVersion = detectedMsvcVersion.empty() ? m_version : detectedMsvcVersion;
 
-			ret = fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), outInfo.version, toolchainVersion);
+			ret = m_state.environment->getFullCxxCompilerString(outInfo.version);
 		}
 	}
 #else
@@ -465,26 +298,7 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 	const auto exec = String::getPathBaseName(outInfo.path);
 	// const bool isCpp = String::contains("++", exec);
 	// const bool isC = String::startsWith({ "gcc", "cc" }, exec);
-	std::string rawOutput;
-	if (String::contains("clang", outInfo.path))
-	{
-		rawOutput = Commands::subprocessOutput({ outInfo.path, "-target", m_state.info.targetArchitectureString(), "-v" });
-	}
-#if defined(CHALET_WIN32)
-	else if (String::contains("icl.exe", outInfo.path))
-	{
-		rawOutput = Commands::subprocessOutput({ outInfo.path, "-V" });
-	}
-#else
-	else if (String::contains({ "icc", "icpc" }, outInfo.path))
-	{
-		rawOutput = Commands::subprocessOutput({ outInfo.path, "-V" });
-	}
-#endif
-	else
-	{
-		rawOutput = Commands::subprocessOutput({ outInfo.path, "-v" });
-	}
+	std::string rawOutput = Commands::subprocessOutput(m_state.environment->getVersionCommand(outInfo.path));
 
 	StringList splitOutput;
 #if defined(CHALET_WIN32)
@@ -546,36 +360,10 @@ std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
 		}
 		UNUSED(threadModel);
 
-		if (!compilerRaw.empty())
+		if (!versionString.empty())
 		{
-			if (String::startsWith("gcc", compilerRaw))
-			{
-				ret = fmt::format("GNU Compiler Collection C/C++ version {}", versionString);
-				outInfo.version = std::move(versionString);
-			}
-			else if (String::startsWith("clang", compilerRaw))
-			{
-				ret = fmt::format("LLVM Clang C/C++ version {}", versionString);
-				outInfo.version = std::move(versionString);
-			}
-#if defined(CHALET_MACOS)
-			else if (String::startsWith("Apple clang", compilerRaw))
-			{
-				ret = fmt::format("Apple Clang C/C++ version {}", versionString);
-				outInfo.version = std::move(versionString);
-			}
-#endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-			else if (String::equals("Intel", compilerRaw))
-			{
-				if (m_inputs.toolchainPreference().type == ToolchainType::IntelClassic)
-					ret = fmt::format("Intel{} 64 Compiler Classic version {}", Unicode::registered(), versionString);
-				else
-					ret = fmt::format("Intel{} oneAPI DPC++/C++ version {}", Unicode::registered(), versionString);
-
-				outInfo.version = std::move(versionString);
-			}
-#endif
+			ret = m_state.environment->getFullCxxCompilerString(versionString);
+			outInfo.version = std::move(versionString);
 		}
 		else
 		{

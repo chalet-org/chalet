@@ -20,13 +20,15 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 	static bool exists();
 
 	virtual ToolchainType type() const noexcept final;
+	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
+	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 
 protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
+	virtual bool makeArchitectureAdjustments() final;
 
 private:
 	bool saveMsvcEnvironment() const;
-	void makeArchitectureCorrections();
 
 	const std::string kVarsId;
 
@@ -36,6 +38,8 @@ private:
 	std::string m_varsFileMsvcDelta;
 
 	std::string m_vsAppIdDir;
+
+	bool m_msvcArchitectureSet = false;
 #endif
 };
 }

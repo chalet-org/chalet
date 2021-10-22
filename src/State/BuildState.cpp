@@ -106,8 +106,8 @@ bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 std::string BuildState::getUniqueIdForState(const StringList& inOther) const
 {
 	std::string ret;
-	const auto& hostArch = info.hostArchitectureString();
-	const auto targetArch = m_inputs.getArchWithOptionsAsString(info.targetArchitectureString());
+	const auto& hostArch = info.hostArchitectureTriple();
+	const auto targetArch = m_inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
 	const auto& toolchainPref = m_inputs.toolchainPreferenceName();
 	const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
@@ -154,7 +154,12 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (!parser.serialize())
 		return false;
 
-	chalet_assert(environment != nullptr, "environment must be created when the toolchain is initialized.");
+	if (environment == nullptr)
+	{
+		Diagnostic::error("environment must be created when the toolchain is initialized.");
+		return false;
+	}
+
 	return true;
 }
 
@@ -168,13 +173,11 @@ bool BuildState::parseBuildJson()
 /*****************************************************************************/
 bool BuildState::initializeToolchain()
 {
-	auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Local);
-
-	if (!toolchain.initialize(targets, settingsFile))
+	if (!toolchain.initialize(targets))
 	{
-		const auto& targetArch = m_inputs.toolchainPreference().type == ToolchainType::GNU ?
+		const auto& targetArch = environment->type() == ToolchainType::GNU ?
 			  m_inputs.targetArchitecture() :
-			  info.targetArchitectureString();
+			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -183,6 +186,9 @@ bool BuildState::initializeToolchain()
 		}
 		return false;
 	}
+
+	if (!cache.updateSettingsFromToolchain(m_inputs, toolchain))
+		return false;
 
 	return true;
 }
@@ -553,9 +559,8 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 	//
 #if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
-	auto toolchainType = m_inputs.toolchainPreference().type;
 
-	if (toolchainType != ToolchainType::VisualStudio)
+	if (m_state.environment->type() != ToolchainType::VisualStudio)
 	{
 		std::string lower = String::toLowerCase(outPathVariable);
 

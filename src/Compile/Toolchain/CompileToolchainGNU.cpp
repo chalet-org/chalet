@@ -32,18 +32,7 @@ ToolchainType CompileToolchainGNU::type() const noexcept
 /*****************************************************************************/
 bool CompileToolchainGNU::initialize()
 {
-	const auto& targetArchString = m_state.info.targetArchitectureString();
-
-	std::string macosVersion;
-	auto triple = String::split(targetArchString, '-');
-	if (triple.size() == 3)
-	{
-		m_arch = triple.front();
-	}
-	else
-	{
-		m_arch = targetArchString;
-	}
+	m_arch = m_state.info.targetArchitectureString();
 
 	initializeArchPresets();
 	// initializeSupportedLinks();

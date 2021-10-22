@@ -39,7 +39,7 @@ bool BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inTool
 		Commands::makeDirectory(outputDirectory);
 	}
 
-	auto arch = m_inputs.getArchWithOptionsAsString(inInfo.targetArchitectureString());
+	auto arch = m_inputs.getArchWithOptionsAsString(inInfo.targetArchitectureTriple());
 	const auto& buildConfig = inInfo.buildConfiguration();
 	const auto& toolchainPreference = m_inputs.toolchainPreferenceName();
 
@@ -54,8 +54,7 @@ bool BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inTool
 	}
 	else if (style == BuildPathStyle::ArchConfiguration)
 	{
-		auto split = String::split(inInfo.targetArchitectureString(), '-');
-		arch = std::move(split.front());
+		arch = inInfo.targetArchitectureString();
 		m_buildOutputDir = fmt::format("{}/{}-{}", outputDirectory, arch, buildConfig);
 	}
 	else

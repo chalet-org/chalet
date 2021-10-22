@@ -306,11 +306,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		}
 		else
 		{
-			std::string targetArch = m_state.info.targetArchitectureString();
-			{
-				auto dash = targetArch.find('-');
-				targetArch = targetArch.substr(0, dash);
-			}
+			const auto& targetArch = m_state.info.targetArchitectureString();
 			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + targetArch);
 		}
 	}

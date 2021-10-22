@@ -16,11 +16,12 @@ namespace chalet
 {
 struct CommandLineInputs;
 struct StatePrototype;
+struct CompilerTools;
 class BuildState;
 
 struct WorkspaceCache
 {
-	explicit WorkspaceCache(const CommandLineInputs& inInputs);
+	WorkspaceCache() = default;
 
 	bool createCacheFolder(const CacheType inCacheType);
 	bool exists(const CacheType inCacheType = CacheType::Local) const;
@@ -34,7 +35,7 @@ struct WorkspaceCache
 	void saveSettings(const SettingsType inType);
 
 	bool removeStaleProjectCaches();
-	bool saveProjectCache();
+	bool saveProjectCache(const CommandLineInputs& inInputs);
 	bool settingsCreated() const noexcept;
 
 private:
@@ -45,10 +46,10 @@ private:
 	const std::string& getCacheRef(const CacheType inCacheType) const;
 	void removeCacheFolder(const CacheType inCacheType);
 
-	bool initialize();
-	bool initializeSettings();
+	bool initialize(const CommandLineInputs& inInputs);
+	bool initializeSettings(const CommandLineInputs& inInputs);
 
-	const CommandLineInputs& m_inputs;
+	bool updateSettingsFromToolchain(const CommandLineInputs& inInputs, const CompilerTools& inToolchain);
 
 	WorkspaceInternalCacheFile m_cacheFile;
 

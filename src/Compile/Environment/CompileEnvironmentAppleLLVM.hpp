@@ -6,15 +6,16 @@
 #ifndef CHALET_COMPILE_ENVIRONMENT_APPLE_LLVM_HPP
 #define CHALET_COMPILE_ENVIRONMENT_APPLE_LLVM_HPP
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Compile/Environment/CompileEnvironmentLLVM.hpp"
 
 namespace chalet
 {
-struct CompileEnvironmentAppleLLVM final : ICompileEnvironment
+struct CompileEnvironmentAppleLLVM final : CompileEnvironmentLLVM
 {
 	explicit CompileEnvironmentAppleLLVM(const CommandLineInputs& inInputs, BuildState& inState);
 
 	virtual ToolchainType type() const noexcept final;
+	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 };
 }
 

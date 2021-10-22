@@ -68,7 +68,7 @@ bool CompileToolchainApple::initialize()
 	if (!CompileToolchainGNU::initialize())
 		return false;
 
-	const auto& targetArchString = m_state.info.targetArchitectureString();
+	const auto& targetArchString = m_state.info.targetArchitectureTriple();
 	std::string macosVersion;
 	auto triple = String::split(targetArchString, '-');
 	if (triple.size() == 3)

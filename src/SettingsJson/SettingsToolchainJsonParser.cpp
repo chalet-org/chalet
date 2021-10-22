@@ -45,33 +45,19 @@ bool SettingsToolchainJsonParser::serialize()
 		m_checkForEnvironment = true;
 	}
 
-	// TODO: Move
-	if (String::equals("gcc", m_inputs.toolchainPreferenceName()))
-	{
-		std::string arch = m_state.info.targetArchitectureString();
-		if (String::contains('-', arch))
-		{
-			auto split = String::split(arch, '-');
-			arch = std::move(split.front());
-		}
-
-		m_inputs.setToolchainPreferenceName(fmt::format("{}-gcc", arch));
-	}
-
 	auto& rootNode = m_jsonFile.json;
-
 	const auto& preferenceName = m_inputs.toolchainPreferenceName();
 	auto& toolchains = rootNode["toolchains"];
-	if (!toolchains.contains(preferenceName))
-	{
-		if (!m_inputs.isToolchainPreset())
-		{
-			Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", m_jsonFile.filename(), preferenceName);
-			return false;
-		}
+	bool containsPref = toolchains.contains(preferenceName);
 
-		toolchains[preferenceName] = JsonDataType::object;
+	if (!containsPref && !m_inputs.isToolchainPreset())
+	{
+		Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", m_jsonFile.filename(), preferenceName);
+		return false;
 	}
+
+	if (!containsPref)
+		toolchains[preferenceName] = JsonDataType::object;
 
 	auto& node = toolchains.at(preferenceName);
 	if (!serialize(node))
@@ -88,7 +74,8 @@ bool SettingsToolchainJsonParser::serialize(Json& inNode)
 	if (!inNode.is_object())
 		return false;
 
-	makeToolchain(inNode, m_inputs.toolchainPreference());
+	if (!makeToolchain(inNode, m_inputs.toolchainPreference()))
+		return false;
 
 	if (!parseToolchain(inNode))
 		return false;
@@ -163,11 +150,6 @@ bool SettingsToolchainJsonParser::validatePaths()
 /*****************************************************************************/
 bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const ToolchainPreference& preference)
 {
-	bool result = true;
-
-	if (preference.type == ToolchainType::Unknown)
-		return result;
-
 	if (!toolchain.contains(kKeyVersion) || !toolchain[kKeyVersion].is_string() || toolchain[kKeyVersion].get<std::string>().empty())
 	{
 		toolchain[kKeyVersion] = std::string();
@@ -183,7 +165,8 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		toolchain[kKeyBuildPathStyle] = std::string();
 	}
 
-	// kKeyBuildPathStyle
+	bool isLLVM = preference.type == ToolchainType::LLVM || preference.type == ToolchainType::AppleLLVM || preference.type == ToolchainType::IntelLLVM;
+	bool isGCC = preference.type == ToolchainType::GNU;
 
 	std::string cpp;
 	std::string cc;
@@ -198,8 +181,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			cpp = Commands::which(preference.cpp);
 		}
 
-		result &= !cpp.empty();
-
 		toolchain[kKeyCompilerCpp] = cpp;
 		m_jsonFile.setDirty(true);
 	}
@@ -213,8 +194,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		{
 			cc = Commands::which(preference.cc);
 		}
-
-		result &= !cc.empty();
 
 		toolchain[kKeyCompilerC] = cc;
 		m_jsonFile.setDirty(true);
@@ -241,7 +220,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string link;
 		StringList searches;
-		if (preference.type == ToolchainType::LLVM)
+		if (isLLVM)
 		{
 			searches.push_back(preference.linker); // lld
 			searches.emplace_back("llvm-link");
@@ -276,8 +255,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		}
 #endif
 
-		result &= !link.empty();
-
 		toolchain[kKeyLinker] = std::move(link);
 		m_jsonFile.setDirty(true);
 	}
@@ -286,12 +263,12 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string ar;
 		StringList searches;
-		if (preference.type == ToolchainType::LLVM)
+		if (isLLVM)
 		{
 			searches.emplace_back("llvm-ar");
 		}
 #if defined(CHALET_MACOS)
-		if (preference.type == ToolchainType::LLVM || preference.type == ToolchainType::GNU)
+		if (isLLVM || isGCC)
 		{
 			searches.emplace_back("libtool");
 		}
@@ -304,8 +281,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			if (!ar.empty())
 				break;
 		}
-
-		result &= !ar.empty();
 
 		toolchain[kKeyArchiver] = std::move(ar);
 		m_jsonFile.setDirty(true);
@@ -324,8 +299,6 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 				break;
 		}
 
-		result &= !prof.empty();
-
 		toolchain[kKeyProfiler] = std::move(prof);
 		m_jsonFile.setDirty(true);
 	}
@@ -334,7 +307,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string disasm;
 		StringList searches;
-		if (preference.type == ToolchainType::LLVM)
+		if (isLLVM)
 		{
 			searches.emplace_back("llvm-objdump");
 		}
@@ -465,7 +438,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		toolchain[kKeyVersion] = m_state.environment != nullptr ? m_state.environment->detectedVersion() : std::string();
 	}
 
-	return result;
+	return true;
 }
 
 /*****************************************************************************/
@@ -518,12 +491,16 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 /*****************************************************************************/
 bool SettingsToolchainJsonParser::finalizeEnvironment()
 {
-	if (!m_state.toolchain.detectToolchainFromPaths())
+	auto& preference = m_inputs.toolchainPreference();
+	ToolchainType type = ICompileEnvironment::detectToolchainTypeFromPath(m_state.toolchain.compilerCxx());
+	if (preference.type != ToolchainType::Unknown && preference.type != type)
+	{
+		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually.", m_inputs.toolchainPreferenceName());
 		return false;
+	}
 
 	if (m_checkForEnvironment)
 	{
-		auto& preference = m_inputs.toolchainPreference();
 		m_state.environment = ICompileEnvironment::make(preference.type, m_inputs, m_state);
 		if (m_state.environment == nullptr)
 			return false;

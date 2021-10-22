@@ -65,45 +65,49 @@ void Arch::set(const std::string& inValue) noexcept
 	// Note: Standalone "mingw32" is used in older mingw builds (4.x)
 	if (String::equals("mingw32", inValue))
 	{
-		str = "i686-pc-mingw32";
+		triple = "i686-pc-mingw32";
 	}
 	else
 	{
-		str = inValue;
+		triple = inValue;
 	}
 
-	std::string arch = str;
-	if (String::contains('-', arch))
+	str = triple;
+	if (String::contains('-', str))
 	{
-		auto split = String::split(arch, '-');
-		arch = split.front();
+		auto split = String::split(str, '-');
+		str = split.front();
 	}
+	std::string preUnderscoreCheck = str;
 
 	// Need to do this for msvc-style arches, but this works for x86_64 too
-	if (String::contains('_', arch))
+	if (String::contains('_', str))
 	{
-		auto split = String::split(arch, '_');
-		arch = split.back();
+		auto split = String::split(str, '_');
+		str = split.back();
 	}
 
-	if (String::equals({ "64", "x64", "amd64" }, arch))
+	if (String::equals({ "64", "x64", "amd64" }, str))
 	{
+		if (String::equals("64", str))
+			str = std::move(preUnderscoreCheck);
+
 		val = Arch::Cpu::X64;
 	}
-	else if (String::equals({ "i686", "x86" }, arch))
+	else if (String::equals({ "i686", "x86" }, str))
 	{
 		val = Arch::Cpu::X86;
 	}
-	else if (String::equals("arm64", arch))
+	else if (String::equals("arm64", str))
 	{
 		val = Arch::Cpu::ARM64;
 	}
-	else if (String::startsWith("arm", arch))
+	else if (String::startsWith("arm", str))
 	{
 		val = Arch::Cpu::ARM;
 	}
 #if defined(CHALET_MACOS)
-	else if (String::startsWith("universal", arch))
+	else if (String::startsWith("universal", str))
 	{
 		val = Arch::Cpu::UniversalMacOS;
 	}

@@ -30,9 +30,19 @@ ICompileEnvironment::ICompileEnvironment(const CommandLineInputs& inInputs, Buil
 }
 
 /*****************************************************************************/
-[[nodiscard]] Unique<ICompileEnvironment> ICompileEnvironment::make(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState)
+[[nodiscard]] Unique<ICompileEnvironment> ICompileEnvironment::make(ToolchainType type, const CommandLineInputs& inInputs, BuildState& inState)
 {
-	switch (inType)
+	if (type == ToolchainType::Unknown)
+	{
+		type = ICompileEnvironment::detectToolchainTypeFromPath(inState.toolchain.compilerCxx());
+		if (type == ToolchainType::Unknown)
+		{
+			Diagnostic::error("Toolchain was not recognized from compiler path: '{}'", inState.toolchain.compilerCxx());
+			return nullptr;
+		}
+	}
+
+	switch (type)
 	{
 		case ToolchainType::VisualStudio:
 			return std::make_unique<CompileEnvironmentVisualStudio>(inInputs, inState);
@@ -43,7 +53,7 @@ ICompileEnvironment::ICompileEnvironment(const CommandLineInputs& inInputs, Buil
 		case ToolchainType::IntelClassic:
 		case ToolchainType::IntelLLVM:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-			return std::make_unique<CompileEnvironmentIntel>(inInputs, inState, inType);
+			return std::make_unique<CompileEnvironmentIntel>(inInputs, inState, type);
 #endif
 		case ToolchainType::GNU:
 			return std::make_unique<CompileEnvironmentGNU>(inInputs, inState);
@@ -52,7 +62,7 @@ ICompileEnvironment::ICompileEnvironment(const CommandLineInputs& inInputs, Buil
 			break;
 	}
 
-	Diagnostic::error("Unimplemented ToolchainType requested: ", static_cast<int>(inType));
+	Diagnostic::error("Unimplemented ToolchainType requested: ", static_cast<int>(type));
 	return nullptr;
 }
 
@@ -75,6 +85,9 @@ bool ICompileEnvironment::create(const std::string& inVersion)
 
 	m_initialized = true;
 
+	if (!makeArchitectureAdjustments())
+		return false;
+
 	if (!createFromVersion(inVersion))
 		return false;
 
@@ -89,9 +102,15 @@ bool ICompileEnvironment::createFromVersion(const std::string& inVersion)
 }
 
 /*****************************************************************************/
+bool ICompileEnvironment::makeArchitectureAdjustments()
+{
+	return true;
+}
+
+/*****************************************************************************/
 std::string ICompileEnvironment::getVarsPath(const std::string& inId) const
 {
-	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureString());
+	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
 	archString += fmt::format("_{}", m_inputs.toolchainPreferenceName());
 	return m_state.cache.getHashPath(fmt::format("{}_{}.env", inId, archString), CacheType::Local);
 }
@@ -176,4 +195,53 @@ void ICompileEnvironment::cacheEnvironmentDelta(const std::string& inDeltaFile)
 	}
 	input.close();
 }
+
+/*****************************************************************************/
+ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string& inExecutable)
+{
+	if (inExecutable.empty())
+		return ToolchainType::Unknown;
+
+#if defined(CHALET_WIN32)
+	if (String::endsWith("cl.exe", inExecutable))
+		return ToolchainType::VisualStudio;
+#endif
+
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	if (String::contains({ "icx", "oneAPI", "Intel", "oneapi", "intel" }, inExecutable))
+		return ToolchainType::IntelLLVM;
+#endif
+
+	if (String::contains("clang", inExecutable))
+	{
+#if defined(CHALET_MACOS)
+		if (String::contains({ "Contents/Developer", "Xcode" }, inExecutable))
+			return ToolchainType::AppleLLVM;
+#endif
+
+		return ToolchainType::LLVM;
+	}
+
+	if (String::contains({ "gcc", "g++" }, inExecutable))
+	{
+#if defined(CHALET_MACOS)
+		if (String::contains({ "Contents/Developer", "Xcode" }, inExecutable))
+			return ToolchainType::AppleLLVM;
+#endif
+
+		return ToolchainType::GNU;
+	}
+
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if defined(CHALET_WIN32)
+	if (String::endsWith("icl.exe", inExecutable))
+	#else
+	if (String::endsWith({ "icpc", "icc" }, inExecutable))
+	#endif
+		return ToolchainType::IntelClassic;
+#endif
+
+	return ToolchainType::Unknown;
+}
+
 }

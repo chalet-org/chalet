@@ -17,6 +17,7 @@ struct Arch
 #endif
 	};
 
+	std::string triple;
 	std::string str;
 	Cpu val = Cpu::Unknown;
 

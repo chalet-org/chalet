@@ -25,7 +25,6 @@ namespace chalet
 {
 /*****************************************************************************/
 StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
-	cache(inInputs),
 	tools(inInputs),
 	m_inputs(inInputs)
 {
@@ -40,7 +39,7 @@ bool StatePrototype::initialize()
 	if (!parseEnvFile())
 		return false;
 
-	if (!cache.initializeSettings())
+	if (!cache.initializeSettings(m_inputs))
 		return false;
 
 	// if (!workspace.initialize())
@@ -64,7 +63,7 @@ bool StatePrototype::initialize()
 	if (!m_chaletJson.load(m_filename))
 		return false;
 
-	if (!cache.initialize())
+	if (!cache.initialize(m_inputs))
 		return false;
 
 	Output::setShowCommandOverride(false);
@@ -122,7 +121,7 @@ bool StatePrototype::initializeForList()
 	if (route != Route::Query)
 		return false;
 
-	if (!cache.initializeSettings())
+	if (!cache.initializeSettings(m_inputs))
 		return false;
 
 	m_filename = m_inputs.inputFile();
@@ -176,7 +175,7 @@ void StatePrototype::saveCaches()
 		cache.saveSettings(SettingsType::Local);
 
 		cache.removeStaleProjectCaches();
-		cache.saveProjectCache();
+		cache.saveProjectCache(m_inputs);
 	}
 }
 
