@@ -77,8 +77,10 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 #endif
 		if (!Commands::pathExists(m_intelSetVars))
 		{
+#if !defined(CHALET_WIN32)
 			m_intelSetVars = "/opt/intel/oneapi/setvars.sh";
 			if (!Commands::pathExists(m_intelSetVars))
+#endif
 			{
 				Diagnostic::error("No suitable Intel C++ compiler installation found. Pleas install the Intel oneAPI Toolkit before continuing.");
 				return false;
@@ -147,6 +149,13 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 
 #endif
 		m_inputs.setToolchainPreferenceName(std::move(name));
+
+		auto old = m_varsFileIntelDelta;
+		m_varsFileIntelDelta = getVarsPath(kVarsId);
+		if (m_varsFileIntelDelta != old)
+		{
+			Commands::copyRename(old, m_varsFileIntelDelta, true);
+		}
 	}
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileIntelDelta));
@@ -202,6 +211,24 @@ bool CompileEnvironmentIntel::saveIntelEnvironment() const
 {
 #if defined(CHALET_WIN32)
 	StringList cmd{ m_intelSetVars };
+
+	const auto inArch = m_state.info.targetArchitecture();
+	if (inArch != Arch::Cpu::X64 && inArch != Arch::Cpu::X86)
+	{
+		auto setVarsFile = String::getPathFilename(m_intelSetVars);
+		Diagnostic::error("Requested arch '{}' is not supported by {}", m_inputs.targetArchitecture(), setVarsFile);
+		return false;
+	}
+
+	std::string arch;
+	if (inArch == Arch::Cpu::X86)
+		arch = "ia32";
+	else
+		arch = "intel64";
+
+	cmd.emplace_back(std::move(arch));
+
+	// TODO: explicit vs2017 & vs2019 - "icx-vs-20XX" presets?
 
 	cmd.emplace_back(">");
 	cmd.emplace_back("nul");
