@@ -134,35 +134,31 @@ bool JsonFile::assignStringListAndValidate(StringList& outList, const Json& inNo
 /*****************************************************************************/
 bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA)
 {
-	bool result = false;
-	bool containsKey = outNode.contains(inKey);
-	bool isString = containsKey && outNode.at(inKey).is_string();
-	bool valueNotEmpty = isString && !outNode.at(inKey).get<std::string>().empty();
-	bool validString = containsKey && isString && valueNotEmpty;
-
-	if (!validString)
+	if (!outNode.contains(inKey) || !outNode.at(inKey).is_string())
 	{
-		if (!inValueA.empty())
-		{
-			if (onAssignA != nullptr)
-				onAssignA();
-
-			outNode[inKey] = inValueA;
-			setDirty(true);
-		}
-		else if (!inValueB.empty())
+		if (!inValueB.empty())
 		{
 			outNode[inKey] = inValueB;
 			setDirty(true);
 		}
-		else if (!containsKey || !isString)
+		else
 		{
 			outNode[inKey] = std::string();
 			setDirty(true);
 		}
 	}
 
-	return result;
+	auto value = outNode.at(inKey).get<std::string>();
+	if (!inValueA.empty() && inValueA != value)
+	{
+		if (onAssignA != nullptr)
+			onAssignA();
+
+		outNode[inKey] = inValueA;
+		setDirty(true);
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
