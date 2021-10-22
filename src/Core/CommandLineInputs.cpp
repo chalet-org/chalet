@@ -712,6 +712,12 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 #endif
 	ret.emplace_back(kToolchainPresetLLVM);
 	ret.emplace_back(kToolchainPresetGCC);
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	ret.emplace_back(kToolchainPresetICX);
+#endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	ret.emplace_back(kToolchainPresetICC);
+#endif
 
 	return ret;
 }
