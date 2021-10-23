@@ -7,13 +7,13 @@
 #define CHALET_BUILD_JSON_PARSER_HPP
 
 #include "Libraries/Json.hpp"
+#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
 struct BundleTarget;
 struct CommandLineInputs;
 struct CMakeTarget;
-struct JsonFile;
 struct SourceTarget;
 struct ScriptBuildTarget;
 struct SubChaletTarget;

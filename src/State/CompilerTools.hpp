@@ -8,11 +8,8 @@
 
 #include "Compile/BuildPathStyle.hpp"
 #include "Compile/CodeLanguage.hpp"
-#include "Compile/CompilerConfig.hpp"
 #include "Compile/CompilerInfo.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
-#include "Compile/Toolchain/ToolchainType.hpp"
-#include "State/Target/IBuildTarget.hpp"
 
 namespace chalet
 {
@@ -22,7 +19,6 @@ struct CompilerTools
 {
 	explicit CompilerTools(BuildState& inState);
 
-	bool initialize(const BuildTargetList& inTargets);
 	bool fetchCompilerVersions();
 
 	void fetchMakeVersion();
@@ -95,15 +91,8 @@ struct CompilerTools
 	uint ninjaVersionPatch() const noexcept;
 	bool ninjaAvailable() const noexcept;
 
-	// std::string getRootPathVariable();
-
-	CompilerConfig& getConfig(const CodeLanguage inLanguage);
-	const CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
-
 private:
 	BuildState& m_state;
-
-	std::unordered_map<CodeLanguage, Unique<CompilerConfig>> m_configs;
 
 	std::string m_archiver;
 	std::string m_cmake;

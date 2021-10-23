@@ -9,6 +9,8 @@
 #include "Builder/BuildManager.hpp"
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
 
+#include "Cache/WorkspaceCache.hpp"
+#include "Compile/CompilerConfig.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/StatePrototype.hpp"
@@ -124,6 +126,26 @@ std::string BuildState::getUniqueIdForState(const StringList& inOther) const
 }
 
 /*****************************************************************************/
+CompilerConfig& BuildState::getCompilerConfig(const CodeLanguage inLanguage)
+{
+	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
+	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "getCompilerConfig called before being initialized.");
+
+	auto& config = *m_configs.at(inLanguage);
+	return config;
+}
+
+/*****************************************************************************/
+const CompilerConfig& BuildState::getCompilerConfig(const CodeLanguage inLanguage) const
+{
+	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
+	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "getCompilerConfig called before being initialized.");
+
+	auto& config = *m_configs.at(inLanguage);
+	return config;
+}
+
+/*****************************************************************************/
 bool BuildState::initializeBuildConfiguration()
 {
 	auto config = m_inputs.buildConfiguration();
@@ -173,7 +195,47 @@ bool BuildState::parseBuildJson()
 /*****************************************************************************/
 bool BuildState::initializeToolchain()
 {
-	bool result = toolchain.initialize(targets);
+	auto initializeImpl = [this]() -> bool {
+		for (auto& target : targets)
+		{
+			if (target->isProject())
+			{
+				auto& project = static_cast<SourceTarget&>(*target);
+				auto language = project.language();
+
+				if (m_configs.find(language) == m_configs.end())
+				{
+					m_configs.emplace(language, std::make_unique<CompilerConfig>(language, *this));
+				}
+			}
+		}
+
+		for (auto& [_, config] : m_configs)
+		{
+			if (!config->configureCompilerPaths())
+			{
+				Diagnostic::error("Error configuring compiler paths.");
+				return false;
+			}
+
+			if (!config->testCompilerMacros())
+			{
+				Diagnostic::error("Unimplemented or unknown compiler toolchain.");
+				return false;
+			}
+
+			if (!config->getSupportedCompilerFlags())
+			{
+				auto exec = String::getPathFilename(config->compilerExecutable());
+				Diagnostic::error("Error collecting supported compiler flags for '{}'.", exec);
+				return false;
+			}
+		}
+
+		return true;
+	};
+
+	bool result = initializeImpl();
 	result &= environment->makeArchitectureAdjustments();
 	result &= toolchain.fetchCompilerVersions();
 
@@ -220,7 +282,7 @@ bool BuildState::initializeBuild()
 		if (target->isProject())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
-			auto& compilerConfig = toolchain.getConfig(project.language());
+			auto& compilerConfig = getCompilerConfig(project.language());
 			project.parseOutputFilename(compilerConfig);
 
 			if (!project.isStaticLibrary())
@@ -341,7 +403,7 @@ bool BuildState::validateState()
 				if (project.language() != CodeLanguage::C && project.language() != CodeLanguage::CPlusPlus)
 					continue;
 
-				auto& compilerConfig = toolchain.getConfig(project.language());
+				auto& compilerConfig = getCompilerConfig(project.language());
 #if defined(CHALET_WIN32)
 				if (compilerConfig.isMsvc() && !toolchain.makeIsNMake())
 				{
@@ -488,7 +550,7 @@ void BuildState::makeCompilerDiagnosticsVariables()
 		if (target->isProject())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
-			auto& config = toolchain.getConfig(project.language());
+			auto& config = getCompilerConfig(project.language());
 			if (config.isGcc())
 				usesGcc = true;
 		}

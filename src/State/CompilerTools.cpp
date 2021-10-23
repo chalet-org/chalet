@@ -28,48 +28,6 @@ CompilerTools::CompilerTools(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool CompilerTools::initialize(const BuildTargetList& inTargets)
-{
-	for (auto& target : inTargets)
-	{
-		if (target->isProject())
-		{
-			auto& project = static_cast<SourceTarget&>(*target);
-			auto language = project.language();
-
-			if (m_configs.find(language) == m_configs.end())
-			{
-				m_configs.emplace(language, std::make_unique<CompilerConfig>(language, m_state));
-			}
-		}
-	}
-
-	for (auto& [_, config] : m_configs)
-	{
-		if (!config->configureCompilerPaths())
-		{
-			Diagnostic::error("Error configuring compiler paths.");
-			return false;
-		}
-
-		if (!config->testCompilerMacros())
-		{
-			Diagnostic::error("Unimplemented or unknown compiler toolchain.");
-			return false;
-		}
-
-		if (!config->getSupportedCompilerFlags())
-		{
-			auto exec = String::getPathFilename(config->compilerExecutable());
-			Diagnostic::error("Error collecting supported compiler flags for '{}'.", exec);
-			return false;
-		}
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool CompilerTools::fetchCompilerVersions()
 {
 	auto createDescription = [&](const std::string& inPath, CompilerInfo& outInfo) {
@@ -484,62 +442,4 @@ bool CompilerTools::isCompilerWindowsResourceLLVMRC() const noexcept
 	return m_isCompilerWindowsResourceLLVMRC;
 }
 
-/*****************************************************************************/
-/*std::string CompilerTools::getRootPathVariable()
-{
-	auto originalPath = Environment::getPath();
-	Path::sanitize(originalPath);
-
-	char separator = Path::getSeparator();
-	auto pathList = String::split(originalPath, separator);
-
-	StringList outList;
-
-	if (auto ccRoot = String::getPathFolder(m_compilerC); !List::contains(pathList, ccRoot))
-		outList.emplace_back(std::move(ccRoot));
-
-	if (auto cppRoot = String::getPathFolder(m_compilerCpp); !List::contains(pathList, cppRoot))
-		outList.emplace_back(std::move(cppRoot));
-
-	for (auto& p : Path::getOSPaths())
-	{
-		if (!Commands::pathExists(p))
-			continue;
-
-		auto path = Commands::getCanonicalPath(p); // probably not needed, but just in case
-
-		if (!List::contains(pathList, path))
-			outList.emplace_back(std::move(path));
-	}
-
-	for (auto& path : pathList)
-	{
-		List::addIfDoesNotExist(outList, std::move(path));
-	}
-
-	std::string ret = String::join(std::move(outList), separator);
-	Path::sanitize(ret);
-
-	return ret;
-}*/
-
-/*****************************************************************************/
-CompilerConfig& CompilerTools::getConfig(const CodeLanguage inLanguage)
-{
-	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
-	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "CompilerTools::getConfig called before being initialized.");
-
-	auto& config = *m_configs.at(inLanguage);
-	return config;
-}
-
-/*****************************************************************************/
-const CompilerConfig& CompilerTools::getConfig(const CodeLanguage inLanguage) const
-{
-	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
-	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "CompilerTools::getConfig called before being initialized.");
-
-	auto& config = *m_configs.at(inLanguage);
-	return config;
-}
 }

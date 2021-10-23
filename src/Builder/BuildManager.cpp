@@ -392,7 +392,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 {
 	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
 
-	auto& compilerConfig = m_state.toolchain.getConfig(inProject.language());
+	auto& compilerConfig = m_state.getCompilerConfig(inProject.language());
 	auto compilerType = compilerConfig.compilerType();
 
 	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
@@ -435,7 +435,7 @@ bool BuildManager::copyRunDependencies(const SourceTarget& inProject)
 	bool result = true;
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto& compilerConfig = m_state.toolchain.getConfig(inProject.language());
+	auto& compilerConfig = m_state.getCompilerConfig(inProject.language());
 	auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
 
 	auto outputFolder = Commands::getAbsolutePath(buildOutputDir);

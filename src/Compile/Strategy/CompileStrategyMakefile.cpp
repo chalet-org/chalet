@@ -5,6 +5,7 @@
 
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 
+#include "Cache/WorkspaceCache.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"

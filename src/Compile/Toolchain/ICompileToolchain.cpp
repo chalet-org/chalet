@@ -6,6 +6,7 @@
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
 #include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerConfig.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "State/BuildState.hpp"

@@ -5,6 +5,7 @@
 
 #include "Compile/CompilerConfig.hpp"
 
+#include "Cache/WorkspaceCache.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"

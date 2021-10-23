@@ -6,6 +6,7 @@
 #include "Compile/AssemblyDumper.hpp"
 
 #include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"

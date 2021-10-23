@@ -59,7 +59,7 @@ bool CMakeTarget::validate()
 	}
 
 #if defined(CHALET_WIN32)
-	const auto& compileConfig = m_state.toolchain.getConfig(CodeLanguage::CPlusPlus);
+	const auto& compileConfig = m_state.getCompilerConfig(CodeLanguage::CPlusPlus);
 	if (compileConfig.isMsvc())
 	{
 		const auto& version = m_state.toolchain.version();

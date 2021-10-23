@@ -7,6 +7,7 @@
 #define CHALET_BUILD_JSON_PROTO_PARSER_HPP
 
 #include "Libraries/Json.hpp"
+#include "Json/JsonFile.hpp"
 
 namespace chalet
 {

@@ -6,6 +6,7 @@
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 
 #include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -55,7 +56,7 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutp
 
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& compilerConfig = m_state.toolchain.getConfig(m_project->language());
+	const auto& compilerConfig = m_state.getCompilerConfig(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
 	const auto& name = inProject.name();
 
@@ -127,7 +128,7 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 
 	auto& target = *m_targets.at(inProject.name());
 
-	const auto& config = m_state.toolchain.getConfig(inProject.language());
+	const auto& config = m_state.getCompilerConfig(inProject.language());
 
 	CommandPool::Settings settings;
 	settings.color = Output::theme().build;

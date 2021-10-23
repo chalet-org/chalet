@@ -6,23 +6,23 @@
 #ifndef CHALET_BUILD_STATE_HPP
 #define CHALET_BUILD_STATE_HPP
 
-#include "Cache/WorkspaceCache.hpp"
-#include "Compile/Strategy/StrategyType.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/WorkspaceEnvironment.hpp"
+
 #include "State/Dependency/IBuildDependency.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 
 namespace chalet
 {
 struct StatePrototype;
 struct AncillaryTools;
+struct CompilerConfig;
 struct WorkspaceCache;
 struct ICompileEnvironment;
 
@@ -56,6 +56,9 @@ public:
 
 	std::string getUniqueIdForState(const StringList& inOther) const;
 
+	CompilerConfig& getCompilerConfig(const CodeLanguage inLanguage);
+	const CompilerConfig& getCompilerConfig(const CodeLanguage inLanguage) const;
+
 private:
 	bool initializeBuildConfiguration();
 	bool parseToolchainFromSettingsJson();
@@ -71,6 +74,8 @@ private:
 	void makeLibraryPathVariables();
 	void enforceArchitectureInPath();
 	void enforceArchitectureInPath(std::string& outPathVariable);
+
+	std::unordered_map<CodeLanguage, Unique<CompilerConfig>> m_configs;
 };
 }
 
