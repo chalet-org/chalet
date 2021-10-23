@@ -409,7 +409,7 @@ CompilerInfo CompileEnvironmentVisualStudio::getCompilerInfoFromExecutable(const
 
 #if defined(CHALET_WIN32)
 	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-	std::string rawOutput = Commands::subprocessOutput(m_state.environment->getVersionCommand(inExecutable));
+	std::string rawOutput = Commands::subprocessOutput(getVersionCommand(inExecutable));
 	auto splitOutput = String::split(rawOutput, '\n');
 	if (splitOutput.size() >= 2)
 	{
@@ -424,7 +424,7 @@ CompilerInfo CompileEnvironmentVisualStudio::getCompilerInfoFromExecutable(const
 
 			// const auto arch = splitOutput[1].substr(end + 5);
 			ret.arch = m_state.info.targetArchitectureTriple();
-			ret.description = m_state.environment->getFullCxxCompilerString(ret.version);
+			ret.description = getFullCxxCompilerString(ret.version);
 		}
 	}
 #else

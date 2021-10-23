@@ -29,22 +29,6 @@ bool SettingsToolchainJsonParser::serialize()
 {
 	Output::setShowCommandOverride(false);
 
-	m_checkForEnvironment = false;
-	auto& preference = m_inputs.toolchainPreference();
-	if (preference.type != ToolchainType::Unknown)
-	{
-		m_state.environment = ICompileEnvironment::make(preference.type, m_inputs, m_state);
-		if (m_state.environment == nullptr)
-			return false;
-
-		if (!m_state.environment->create())
-			return false;
-	}
-	else
-	{
-		m_checkForEnvironment = true;
-	}
-
 	auto& rootNode = m_jsonFile.json;
 	const auto& preferenceName = m_inputs.toolchainPreferenceName();
 	auto& toolchains = rootNode["toolchains"];
@@ -78,12 +62,6 @@ bool SettingsToolchainJsonParser::serialize(Json& inNode)
 		return false;
 
 	if (!parseToolchain(inNode))
-		return false;
-
-	if (!finalizeEnvironment())
-		return false;
-
-	if (!validatePaths())
 		return false;
 
 	return true;
@@ -434,7 +412,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 	if (toolchain[kKeyVersion].get<std::string>().empty())
 	{
-		toolchain[kKeyVersion] = m_state.environment != nullptr ? m_state.environment->detectedVersion() : std::string();
+		toolchain[kKeyVersion] = std::string();
 	}
 
 	return true;
@@ -483,33 +461,6 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyDisassembler))
 		m_state.toolchain.setDisassembler(std::move(val));
-
-	return true;
-}
-
-/*****************************************************************************/
-bool SettingsToolchainJsonParser::finalizeEnvironment()
-{
-	auto& preference = m_inputs.toolchainPreference();
-	ToolchainType type = ICompileEnvironment::detectToolchainTypeFromPath(m_state.toolchain.compilerCxx());
-	if (preference.type != ToolchainType::Unknown && preference.type != type)
-	{
-		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", m_inputs.toolchainPreferenceName(), Environment::getPathKey());
-		return false;
-	}
-
-	if (m_checkForEnvironment)
-	{
-		m_state.environment = ICompileEnvironment::make(preference.type, m_inputs, m_state);
-		if (m_state.environment == nullptr)
-			return false;
-
-		if (!m_state.environment->create(m_state.toolchain.version()))
-			return false;
-	}
-
-	if (m_state.toolchain.version().empty())
-		m_state.toolchain.setVersion(m_state.environment->detectedVersion());
 
 	return true;
 }

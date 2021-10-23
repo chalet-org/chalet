@@ -27,15 +27,45 @@
 
 namespace chalet
 {
+struct BuildState::Impl
+{
+	const CommandLineInputs inputs;
+	StatePrototype& prototype;
+
+	BuildInfo info;
+	WorkspaceEnvironment workspace;
+	CompilerTools toolchain;
+	BuildPaths paths;
+	BuildConfiguration configuration;
+	BuildTargetList targets;
+	CompilerController compilers;
+
+	Unique<ICompileEnvironment> environment;
+
+	bool checkForEnvironment = false;
+
+	Impl(CommandLineInputs&& inInputs, StatePrototype& inPrototype) :
+		inputs(std::move(inInputs)),
+		prototype(inPrototype),
+		info(inputs),
+		workspace(prototype.workspace), // copy
+		paths(inputs, workspace)
+	{
+	}
+};
+
 /*****************************************************************************/
-BuildState::BuildState(CommandLineInputs&& inInputs, StatePrototype& inStatePrototype) :
-	m_inputs(std::make_unique<CommandLineInputs>(std::move(inInputs))),
-	m_prototype(inStatePrototype),
-	tools(m_prototype.tools),
-	cache(m_prototype.cache),
-	info(*m_inputs),
-	workspace(m_prototype.workspace), // copy
-	paths(*m_inputs, m_prototype.workspace)
+BuildState::BuildState(CommandLineInputs&& inInputs, StatePrototype& inPrototype) :
+	m_impl(std::make_unique<Impl>(std::move(inInputs), inPrototype)),
+	tools(m_impl->prototype.tools),
+	cache(m_impl->prototype.cache),
+	info(m_impl->info),
+	workspace(m_impl->workspace),
+	toolchain(m_impl->toolchain),
+	paths(m_impl->paths),
+	configuration(m_impl->configuration),
+	targets(m_impl->targets),
+	compilers(m_impl->compilers)
 {
 }
 
@@ -92,13 +122,13 @@ bool BuildState::initializeForConfigure()
 /*****************************************************************************/
 bool BuildState::doBuild(const bool inShowSuccess)
 {
-	BuildManager mgr(*m_inputs, *this);
-	return mgr.run(m_inputs->command(), inShowSuccess);
+	BuildManager mgr(m_impl->inputs, *this);
+	return mgr.run(m_impl->inputs.command(), inShowSuccess);
 }
 
 bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 {
-	BuildManager mgr(*m_inputs, *this);
+	BuildManager mgr(m_impl->inputs, *this);
 	return mgr.run(inRoute, inShowSuccess);
 }
 
@@ -107,8 +137,8 @@ std::string BuildState::getUniqueIdForState() const
 {
 	std::string ret;
 	const auto& hostArch = info.hostArchitectureTriple();
-	const auto targetArch = m_inputs->getArchWithOptionsAsString(info.targetArchitectureTriple());
-	const auto& toolchainPref = m_inputs->toolchainPreferenceName();
+	const auto targetArch = m_impl->inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
+	const auto& toolchainPref = m_impl->inputs.toolchainPreferenceName();
 	const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
 	const auto extensions = String::join(paths.allFileExtensions(), '_');
@@ -127,17 +157,17 @@ std::string BuildState::getUniqueIdForState() const
 /*****************************************************************************/
 bool BuildState::initializeBuildConfiguration()
 {
-	auto config = m_inputs->buildConfiguration();
+	auto config = m_impl->inputs.buildConfiguration();
 	if (config.empty())
 	{
-		config = m_prototype.anyConfiguration();
+		config = m_impl->prototype.anyConfiguration();
 	}
 
-	const auto& buildConfigurations = m_prototype.buildConfigurations();
+	const auto& buildConfigurations = m_impl->prototype.buildConfigurations();
 
 	if (buildConfigurations.find(config) == buildConfigurations.end())
 	{
-		Diagnostic::error("{}: The build configuration '{}' was not found.", m_inputs->inputFile(), config);
+		Diagnostic::error("{}: The build configuration '{}' was not found.", m_impl->inputs.inputFile(), config);
 		return false;
 	}
 
@@ -150,16 +180,55 @@ bool BuildState::initializeBuildConfiguration()
 /*****************************************************************************/
 bool BuildState::parseToolchainFromSettingsJson()
 {
-	auto& cacheFile = m_prototype.cache.getSettings(SettingsType::Local);
-	SettingsToolchainJsonParser parser(*m_inputs, *this, cacheFile);
+	auto createEnvironment = [this]() {
+		m_impl->environment = ICompileEnvironment::make(m_impl->inputs.toolchainPreference().type, m_impl->inputs, *this);
+		if (m_impl->environment == nullptr)
+		{
+			Diagnostic::error("environment must be created when the toolchain is initialized.");
+			return false;
+		}
+
+		if (!m_impl->environment->create(toolchain.version()))
+			return false;
+
+		return true;
+	};
+
+	m_impl->checkForEnvironment = false;
+	auto& preference = m_impl->inputs.toolchainPreference();
+	if (preference.type != ToolchainType::Unknown)
+	{
+		if (!createEnvironment())
+			return false;
+	}
+	else
+	{
+		m_impl->checkForEnvironment = true;
+	}
+
+	auto& cacheFile = m_impl->prototype.cache.getSettings(SettingsType::Local);
+	SettingsToolchainJsonParser parser(m_impl->inputs, *this, cacheFile);
 	if (!parser.serialize())
 		return false;
 
-	if (environment == nullptr)
+	ToolchainType type = ICompileEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxx());
+	if (preference.type != ToolchainType::Unknown && preference.type != type)
 	{
-		Diagnostic::error("environment must be created when the toolchain is initialized.");
+		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", m_impl->inputs.toolchainPreferenceName(), Environment::getPathKey());
 		return false;
 	}
+
+	if (m_impl->checkForEnvironment)
+	{
+		if (!createEnvironment())
+			return false;
+	}
+
+	if (toolchain.version().empty())
+		toolchain.setVersion(m_impl->environment->detectedVersion());
+
+	if (!parser.validatePaths())
+		return false;
 
 	return true;
 }
@@ -167,7 +236,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 /*****************************************************************************/
 bool BuildState::parseBuildJson()
 {
-	BuildJsonParser parser(*m_inputs, m_prototype, *this);
+	BuildJsonParser parser(m_impl->inputs, m_impl->prototype, *this);
 	return parser.serialize();
 }
 
@@ -193,24 +262,24 @@ bool BuildState::initializeToolchain()
 	};
 
 	bool result = initializeImpl();
-	result &= environment->makeArchitectureAdjustments();
-	result &= toolchain.initialize(*environment);
+	result &= m_impl->environment->makeArchitectureAdjustments();
+	result &= toolchain.initialize(*m_impl->environment);
 
 	if (!result)
 	{
-		const auto& targetArch = environment->type() == ToolchainType::GNU ?
-			  m_inputs->targetArchitecture() :
+		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
+			  m_impl->inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
-			auto& toolchainName = m_inputs->toolchainPreferenceName();
+			auto& toolchainName = m_impl->inputs.toolchainPreferenceName();
 			Diagnostic::error("Requested arch '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
 		}
 		return false;
 	}
 
-	if (!cache.updateSettingsFromToolchain(*m_inputs, toolchain))
+	if (!cache.updateSettingsFromToolchain(m_impl->inputs, toolchain))
 		return false;
 
 	return true;
@@ -316,10 +385,10 @@ bool BuildState::initializeBuild()
 /*****************************************************************************/
 void BuildState::initializeCache()
 {
-	m_prototype.cache.file().checkIfThemeChanged();
+	m_impl->prototype.cache.file().checkIfThemeChanged();
 
-	m_prototype.cache.saveSettings(SettingsType::Local);
-	m_prototype.cache.saveSettings(SettingsType::Global);
+	m_impl->prototype.cache.saveSettings(SettingsType::Local);
+	m_impl->prototype.cache.saveSettings(SettingsType::Global);
 }
 
 /*****************************************************************************/
@@ -329,11 +398,11 @@ bool BuildState::validateState()
 		auto workingDirectory = Commands::getWorkingDirectory();
 		Path::sanitize(workingDirectory, true);
 
-		if (String::toLowerCase(m_inputs->workingDirectory()) != String::toLowerCase(workingDirectory))
+		if (String::toLowerCase(m_impl->inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
 		{
-			if (!Commands::changeWorkingDirectory(m_inputs->workingDirectory()))
+			if (!Commands::changeWorkingDirectory(m_impl->inputs.workingDirectory()))
 			{
-				Diagnostic::error("Error changing directory to '{}'", m_inputs->workingDirectory());
+				Diagnostic::error("Error changing directory to '{}'", m_impl->inputs.workingDirectory());
 				return false;
 			}
 		}
@@ -378,7 +447,7 @@ bool BuildState::validateState()
 #endif
 				if (!compilerConfig.isAppleClang() && project.objectiveCxx())
 				{
-					Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang. Use either 'language.macos' or '\"condition\": \"macos\"' in the '{}' project.", m_inputs->inputFile(), project.name());
+					Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang. Use either 'language.macos' or '\"condition\": \"macos\"' in the '{}' project.", m_impl->inputs.inputFile(), project.name());
 					return false;
 				}
 				break;
@@ -421,9 +490,9 @@ bool BuildState::validateState()
 	}
 	if (hasSubChaletTargets)
 	{
-		if (!m_prototype.tools.resolveOwnExecutable(m_inputs->appPath()))
+		if (!m_impl->prototype.tools.resolveOwnExecutable(m_impl->inputs.appPath()))
 		{
-			Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.tools.chalet());
+			Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_impl->prototype.tools.chalet());
 			return false;
 		}
 	}
@@ -441,7 +510,7 @@ bool BuildState::validateState()
 	if (configuration.enableProfiling())
 	{
 #if defined(CHALET_MACOS)
-		m_prototype.tools.fetchXcodeVersion();
+		m_impl->prototype.tools.fetchXcodeVersion();
 #endif
 	}
 
@@ -586,7 +655,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 #if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
 
-	if (m_inputs->toolchainPreference().type != ToolchainType::VisualStudio)
+	if (m_impl->inputs.toolchainPreference().type != ToolchainType::VisualStudio)
 	{
 		std::string lower = String::toLowerCase(outPathVariable);
 

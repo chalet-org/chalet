@@ -47,7 +47,7 @@ CompilerInfo CompileEnvironmentGNU::getCompilerInfoFromExecutable(const std::str
 	// Apple clang version 12.0.5 (clang-1205.0.22.9)
 
 	const auto exec = String::getPathBaseName(inExecutable);
-	std::string rawOutput = Commands::subprocessOutput(m_state.environment->getVersionCommand(inExecutable));
+	std::string rawOutput = Commands::subprocessOutput(getVersionCommand(inExecutable));
 
 	StringList splitOutput;
 #if defined(CHALET_WIN32)
@@ -74,7 +74,7 @@ CompilerInfo CompileEnvironmentGNU::getCompilerInfoFromExecutable(const std::str
 		version = version.substr(0, version.find_first_not_of("0123456789."));
 		if (!version.empty())
 		{
-			ret.description = m_state.environment->getFullCxxCompilerString(version);
+			ret.description = getFullCxxCompilerString(version);
 			ret.version = std::move(version);
 		}
 		else

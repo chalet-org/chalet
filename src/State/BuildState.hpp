@@ -28,25 +28,24 @@ struct ICompileEnvironment;
 
 class BuildState
 {
-	const Unique<CommandLineInputs> m_inputs;
-	StatePrototype& m_prototype;
+	struct Impl;
+	Unique<Impl> m_impl;
 
 public:
-	explicit BuildState(CommandLineInputs&& inInputs, StatePrototype& inStatePrototype);
+	explicit BuildState(CommandLineInputs&& inInputs, StatePrototype& inPrototype);
 	CHALET_DISALLOW_COPY_MOVE(BuildState);
 	~BuildState();
 
 	const AncillaryTools& tools;
 	WorkspaceCache& cache;
 
-	BuildInfo info;
-	WorkspaceEnvironment workspace;
-	CompilerTools toolchain;
-	BuildPaths paths;
-	Unique<ICompileEnvironment> environment;
-	BuildConfiguration configuration;
-	BuildTargetList targets;
-	CompilerController compilers;
+	BuildInfo& info;
+	WorkspaceEnvironment& workspace;
+	CompilerTools& toolchain;
+	BuildPaths& paths;
+	BuildConfiguration& configuration;
+	BuildTargetList& targets;
+	CompilerController& compilers;
 
 	bool initialize();
 	bool initializeForConfigure();
