@@ -63,9 +63,6 @@ struct CommandLineInputs
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(std::string&& inValue) noexcept;
 
-	const std::string& platform() const noexcept;
-	const StringList& notPlatforms() const noexcept;
-
 	const std::string& runTarget() const noexcept;
 	void setRunTarget(std::string&& inValue) noexcept;
 
@@ -146,9 +143,6 @@ struct CommandLineInputs
 	StringList getCliQueryOptions() const noexcept;
 
 private:
-	std::string getPlatform() const noexcept;
-	StringList getNotPlatforms() const noexcept;
-
 	ToolchainPreference getToolchainPreferenceFromString(const std::string& inValue) const;
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
 	QueryOption getQueryOptionFromString(const std::string& inValue) const;
@@ -157,7 +151,6 @@ private:
 	mutable ToolchainPreference m_toolchainPreference;
 
 	StringList m_runOptions;
-	StringList m_notPlatforms;
 	StringList m_commandList;
 	mutable StringList m_universalArches;
 	mutable StringList m_archOptions;
@@ -194,7 +187,6 @@ private:
 	std::string m_distributionDirectory;
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
-	std::string m_platform;
 	std::string m_runTarget;
 	std::string m_appPath;
 	std::string m_generatorRaw;

@@ -7,6 +7,7 @@
 
 #include "BuildJson/BuildJsonParser.hpp"
 #include "Builder/BuildManager.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
@@ -27,17 +28,16 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inStatePrototype) :
-	m_inputs(std::move(inInputs)),
+BuildState::BuildState(CommandLineInputs&& inInputs, StatePrototype& inStatePrototype) :
+	m_inputs(std::make_unique<CommandLineInputs>(std::move(inInputs))),
 	m_prototype(inStatePrototype),
 	tools(m_prototype.tools),
 	distribution(m_prototype.distribution),
 	cache(m_prototype.cache),
 	externalDependencies(m_prototype.externalDependencies),
-	info(m_inputs),
+	info(*m_inputs),
 	workspace(m_prototype.workspace), // copy
-	toolchain(*this),
-	paths(m_inputs, m_prototype.workspace)
+	paths(*m_inputs, m_prototype.workspace)
 {
 }
 
@@ -94,13 +94,13 @@ bool BuildState::initializeForConfigure()
 /*****************************************************************************/
 bool BuildState::doBuild(const bool inShowSuccess)
 {
-	BuildManager mgr(m_inputs, *this);
-	return mgr.run(m_inputs.command(), inShowSuccess);
+	BuildManager mgr(*m_inputs, *this);
+	return mgr.run(m_inputs->command(), inShowSuccess);
 }
 
 bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 {
-	BuildManager mgr(m_inputs, *this);
+	BuildManager mgr(*m_inputs, *this);
 	return mgr.run(inRoute, inShowSuccess);
 }
 
@@ -109,8 +109,8 @@ std::string BuildState::getUniqueIdForState(const StringList& inOther) const
 {
 	std::string ret;
 	const auto& hostArch = info.hostArchitectureTriple();
-	const auto targetArch = m_inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
-	const auto& toolchainPref = m_inputs.toolchainPreferenceName();
+	const auto targetArch = m_inputs->getArchWithOptionsAsString(info.targetArchitectureTriple());
+	const auto& toolchainPref = m_inputs->toolchainPreferenceName();
 	const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
 
@@ -148,7 +148,7 @@ const CompilerConfig& BuildState::getCompilerConfig(const CodeLanguage inLanguag
 /*****************************************************************************/
 bool BuildState::initializeBuildConfiguration()
 {
-	auto config = m_inputs.buildConfiguration();
+	auto config = m_inputs->buildConfiguration();
 	if (config.empty())
 	{
 		config = m_prototype.anyConfiguration();
@@ -158,7 +158,7 @@ bool BuildState::initializeBuildConfiguration()
 
 	if (buildConfigurations.find(config) == buildConfigurations.end())
 	{
-		Diagnostic::error("{}: The build configuration '{}' was not found.", m_inputs.inputFile(), config);
+		Diagnostic::error("{}: The build configuration '{}' was not found.", m_inputs->inputFile(), config);
 		return false;
 	}
 
@@ -172,7 +172,7 @@ bool BuildState::initializeBuildConfiguration()
 bool BuildState::parseToolchainFromSettingsJson()
 {
 	auto& cacheFile = m_prototype.cache.getSettings(SettingsType::Local);
-	SettingsToolchainJsonParser parser(m_inputs, *this, cacheFile);
+	SettingsToolchainJsonParser parser(*m_inputs, *this, cacheFile);
 	if (!parser.serialize())
 		return false;
 
@@ -188,7 +188,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 /*****************************************************************************/
 bool BuildState::parseBuildJson()
 {
-	BuildJsonParser parser(m_inputs, m_prototype, *this);
+	BuildJsonParser parser(*m_inputs, m_prototype, *this);
 	return parser.serialize();
 }
 
@@ -237,23 +237,23 @@ bool BuildState::initializeToolchain()
 
 	bool result = initializeImpl();
 	result &= environment->makeArchitectureAdjustments();
-	result &= toolchain.initialize();
+	result &= toolchain.initialize(*environment);
 
 	if (!result)
 	{
 		const auto& targetArch = environment->type() == ToolchainType::GNU ?
-			  m_inputs.targetArchitecture() :
+			  m_inputs->targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
-			auto& toolchainName = m_inputs.toolchainPreferenceName();
+			auto& toolchainName = m_inputs->toolchainPreferenceName();
 			Diagnostic::error("Requested arch '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
 		}
 		return false;
 	}
 
-	if (!cache.updateSettingsFromToolchain(m_inputs, toolchain))
+	if (!cache.updateSettingsFromToolchain(*m_inputs, toolchain))
 		return false;
 
 	return true;
@@ -372,11 +372,11 @@ bool BuildState::validateState()
 		auto workingDirectory = Commands::getWorkingDirectory();
 		Path::sanitize(workingDirectory, true);
 
-		if (String::toLowerCase(m_inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
+		if (String::toLowerCase(m_inputs->workingDirectory()) != String::toLowerCase(workingDirectory))
 		{
-			if (!Commands::changeWorkingDirectory(m_inputs.workingDirectory()))
+			if (!Commands::changeWorkingDirectory(m_inputs->workingDirectory()))
 			{
-				Diagnostic::error("Error changing directory to '{}'", m_inputs.workingDirectory());
+				Diagnostic::error("Error changing directory to '{}'", m_inputs->workingDirectory());
 				return false;
 			}
 		}
@@ -421,7 +421,7 @@ bool BuildState::validateState()
 #endif
 				if (!compilerConfig.isAppleClang() && project.objectiveCxx())
 				{
-					Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang. Use either 'language.macos' or '\"condition\": \"macos\"' in the '{}' project.", m_inputs.inputFile(), project.name());
+					Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang. Use either 'language.macos' or '\"condition\": \"macos\"' in the '{}' project.", m_inputs->inputFile(), project.name());
 					return false;
 				}
 				break;
@@ -464,7 +464,7 @@ bool BuildState::validateState()
 	}
 	if (hasSubChaletTargets)
 	{
-		if (!m_prototype.tools.resolveOwnExecutable(m_inputs.appPath()))
+		if (!m_prototype.tools.resolveOwnExecutable(m_inputs->appPath()))
 		{
 			Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_prototype.tools.chalet());
 			return false;
@@ -629,7 +629,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 #if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
 
-	if (m_inputs.toolchainPreference().type != ToolchainType::VisualStudio)
+	if (m_inputs->toolchainPreference().type != ToolchainType::VisualStudio)
 	{
 		std::string lower = String::toLowerCase(outPathVariable);
 

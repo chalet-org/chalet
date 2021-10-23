@@ -5,6 +5,7 @@
 
 #include "Cache/WorkspaceCache.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"

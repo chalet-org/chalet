@@ -86,7 +86,8 @@ bool Router::run()
 		if (command == Route::Configure)
 		{
 			chalet_assert(prototype != nullptr, "");
-			buildState = std::make_unique<BuildState>(m_inputs, *prototype);
+			auto inputs = m_inputs;
+			buildState = std::make_unique<BuildState>(std::move(inputs), *prototype);
 			if (!buildState->initializeForConfigure())
 				return false;
 
@@ -95,7 +96,8 @@ bool Router::run()
 		else if (command != Route::Bundle)
 		{
 			chalet_assert(prototype != nullptr, "");
-			buildState = std::make_unique<BuildState>(m_inputs, *prototype);
+			auto inputs = m_inputs;
+			buildState = std::make_unique<BuildState>(std::move(inputs), *prototype);
 			if (!buildState->initialize())
 			{
 				Output::lineBreak();

@@ -6,11 +6,11 @@
 #ifndef CHALET_PROJECT_INITIALIZER_HPP
 #define CHALET_PROJECT_INITIALIZER_HPP
 
-#include "Core/CommandLineInputs.hpp"
-#include "Init/BuildJsonProps.hpp"
-
 namespace chalet
 {
+struct BuildJsonProps;
+struct CommandLineInputs;
+
 class ProjectInitializer
 {
 public:

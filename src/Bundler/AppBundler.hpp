@@ -19,8 +19,6 @@ struct IAppBundler;
 
 struct AppBundler
 {
-	using StateMap = HeapDictionary<BuildState>;
-
 	explicit AppBundler(const CommandLineInputs& inInputs, StatePrototype& inPrototype);
 
 	bool runBuilds();
@@ -41,14 +39,10 @@ private:
 	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
 
-	StateMap m_states;
+	HeapDictionary<BuildState> m_states;
 	BinaryDependencyMap m_dependencyMap;
 
 	StringList m_removedDirs;
-
-#if defined(CHALET_MACOS)
-	Unique<BuildState> m_univeralState;
-#endif
 
 	std::string m_detectedArch;
 };

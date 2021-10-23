@@ -6,6 +6,7 @@
 #ifndef CHALET_BUILD_JSON_PARSER_HPP
 #define CHALET_BUILD_JSON_PARSER_HPP
 
+#include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
 #include "Json/JsonFile.hpp"
 

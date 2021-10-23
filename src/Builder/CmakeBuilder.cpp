@@ -5,6 +5,7 @@
 
 #include "Builder/CmakeBuilder.hpp"
 
+#include "Compile/CompilerConfig.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
@@ -160,7 +161,7 @@ std::string CmakeBuilder::getGenerator() const
 }
 
 /*****************************************************************************/
-std::string CmakeBuilder::getPlatform() const
+std::string CmakeBuilder::getArchitecture() const
 {
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 	const auto& compileConfig = m_state.getCompilerConfig(CodeLanguage::CPlusPlus);
@@ -202,11 +203,11 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 
 	StringList ret{ cmake, "-G", std::move(generator) };
 
-	std::string platform = getPlatform();
-	if (!platform.empty())
+	std::string arch = getArchitecture();
+	if (!arch.empty())
 	{
 		ret.emplace_back("-A");
-		ret.push_back(platform);
+		ret.emplace_back(std::move(arch));
 	}
 
 	if (!m_buildFile.empty())

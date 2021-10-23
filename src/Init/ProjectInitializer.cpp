@@ -7,6 +7,8 @@
 
 #include "FileTemplates/StarterFileTemplates.hpp"
 
+#include "Core/CommandLineInputs.hpp"
+#include "Init/BuildJsonProps.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Diagnostic.hpp"

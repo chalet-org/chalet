@@ -6,6 +6,7 @@
 #include "State/BuildPaths.hpp"
 
 #include "Compile/CompilerConfig.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/WorkspaceEnvironment.hpp"

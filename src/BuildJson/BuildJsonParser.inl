@@ -13,7 +13,7 @@ bool BuildJsonParser::parseKeyFromConfig(T& outVariable, const Json& inNode, con
 {
 	bool res = m_chaletJson.assignFromKey(outVariable, inNode, inKey);
 
-	const auto& platform = m_inputs.platform();
+	const auto& platform = Platform::platform();
 
 	res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.{}", inKey, platform));
 
@@ -22,7 +22,7 @@ bool BuildJsonParser::parseKeyFromConfig(T& outVariable, const Json& inNode, con
 	res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.{}.{}{}", inKey, platform, notSymbol, m_debugIdentifier));
 	res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
 
-	for (auto& notPlatform : m_inputs.notPlatforms())
+	for (auto& notPlatform : Platform::notPlatforms())
 	{
 		res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform));
 		res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.!{}.{}{}", inKey, notPlatform, notSymbol, m_debugIdentifier));

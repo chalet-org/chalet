@@ -16,8 +16,6 @@
 	#include <winuser.h>
 #endif
 
-#include "Core/CommandLineInputs.hpp"
-
 #include "Libraries/Glob.hpp"
 #include "Process/Process.hpp"
 #include "Terminal/Environment.hpp"

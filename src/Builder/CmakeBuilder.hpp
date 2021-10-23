@@ -20,7 +20,7 @@ public:
 
 private:
 	std::string getGenerator() const;
-	std::string getPlatform() const;
+	std::string getArchitecture() const;
 	StringList getGeneratorCommand(const std::string& inLocation) const;
 	void addCmakeDefines(StringList& outList) const;
 	std::string getCMakeCompatibleBuildConfiguration() const;

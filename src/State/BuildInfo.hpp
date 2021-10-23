@@ -7,10 +7,10 @@
 #define CHALET_BUILD_INFO_HPP
 
 #include "Core/Arch.hpp"
-#include "Core/CommandLineInputs.hpp"
 
 namespace chalet
 {
+struct CommandLineInputs;
 struct BuildInfo
 {
 	explicit BuildInfo(const CommandLineInputs& inInputs);

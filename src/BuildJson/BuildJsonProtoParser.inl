@@ -3,11 +3,6 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-// Note: mind the order
-#include "Core/CommandLineInputs.hpp"
-#include "State/BuildState.hpp"
-#include "State/Dependency/GitDependency.hpp"
-//
 #include "BuildJson/BuildJsonProtoParser.hpp"
 
 namespace chalet
@@ -18,11 +13,11 @@ bool BuildJsonProtoParser::parseKeyFromConfig(T& outVariable, const Json& inNode
 {
 	bool res = m_chaletJson.assignFromKey(outVariable, inNode, inKey);
 
-	const auto& platform = m_inputs.platform();
+	const auto& platform = Platform::platform();
 
 	res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.{}", inKey, platform));
 
-	for (auto& notPlatform : m_inputs.notPlatforms())
+	for (auto& notPlatform : Platform::notPlatforms())
 	{
 		res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform));
 	}

@@ -5,8 +5,6 @@
 
 #include "Terminal/Output.hpp"
 
-#include "Core/CommandLineInputs.hpp"
-
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

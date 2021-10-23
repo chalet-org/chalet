@@ -7,6 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
+#include "Compile/CompilerConfig.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"

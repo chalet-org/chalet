@@ -73,7 +73,6 @@ static struct
 
 /*****************************************************************************/
 CommandLineInputs::CommandLineInputs() :
-	m_notPlatforms(getNotPlatforms()),
 	kDefaultInputFile("chalet.json"),
 	kDefaultSettingsFile(".chaletrc"),
 	kDefaultEnvFile(".env"),
@@ -96,7 +95,6 @@ CommandLineInputs::CommandLineInputs() :
 	kToolchainPresetAppleLLVM("apple-llvm"),
 #endif
 	m_settingsFile(kDefaultSettingsFile),
-	m_platform(getPlatform()),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
 {
 	// LOG("Processor count: ", m_processorCount);
@@ -326,16 +324,6 @@ void CommandLineInputs::setBuildConfiguration(std::string&& inValue) noexcept
 		return;
 
 	m_buildConfiguration = inValue;
-}
-
-/*****************************************************************************/
-const std::string& CommandLineInputs::platform() const noexcept
-{
-	return m_platform;
-}
-const StringList& CommandLineInputs::notPlatforms() const noexcept
-{
-	return m_notPlatforms;
 }
 
 /*****************************************************************************/
@@ -762,42 +750,6 @@ StringList CommandLineInputs::getCliQueryOptions() const noexcept
 	}
 
 	return ret;
-}
-
-/*****************************************************************************/
-std::string CommandLineInputs::getPlatform() const noexcept
-{
-#if defined(CHALET_WIN32)
-	return "windows";
-#elif defined(CHALET_MACOS)
-	return "macos";
-#elif defined(CHALET_LINUX)
-	return "linux";
-#else
-	return "unknown";
-#endif
-}
-
-/*****************************************************************************/
-StringList CommandLineInputs::getNotPlatforms() const noexcept
-{
-#if defined(CHALET_WIN32)
-	return {
-		"macos", "linux"
-	};
-#elif defined(CHALET_MACOS)
-	return {
-		"windows", "linux"
-	};
-#elif defined(CHALET_LINUX)
-	return {
-		"windows", "macos"
-	};
-#else
-	return {
-		"windows", "macos", "linux"
-	};
-#endif
 }
 
 /*****************************************************************************/

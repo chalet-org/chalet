@@ -7,6 +7,7 @@
 
 #include <thread>
 
+#include "Core/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"

@@ -5,6 +5,7 @@
 
 #include "State/Target/SourceTarget.hpp"
 
+#include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"

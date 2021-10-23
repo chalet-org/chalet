@@ -8,7 +8,6 @@
 
 #include "Cache/CacheType.hpp"
 #include "Cache/WorkspaceInternalCacheFile.hpp"
-#include "Core/CommandLineInputs.hpp"
 #include "Settings/SettingsType.hpp"
 #include "Json/JsonFile.hpp"
 

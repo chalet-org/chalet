@@ -552,11 +552,11 @@ bool BuildJsonProtoParser::assignStringListFromConfig(StringList& outList, const
 {
 	bool res = m_chaletJson.assignStringListAndValidate(outList, inNode, inKey);
 
-	const auto& platform = m_inputs.platform();
+	const auto& platform = Platform::platform();
 
 	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
 
-	for (auto& notPlatform : m_inputs.notPlatforms())
+	for (auto& notPlatform : Platform::notPlatforms())
 	{
 		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
 	}
@@ -567,12 +567,12 @@ bool BuildJsonProtoParser::assignStringListFromConfig(StringList& outList, const
 /*****************************************************************************/
 bool BuildJsonProtoParser::conditionIsValid(const std::string& inContent) const
 {
-	const auto& platform = m_inputs.platform();
+	const auto& platform = Platform::platform();
 
 	if (String::equals(platform, inContent))
 		return true;
 
-	for (auto& notPlatform : m_inputs.notPlatforms())
+	for (auto& notPlatform : Platform::notPlatforms())
 	{
 		if (String::equals(fmt::format("!{}", notPlatform), inContent))
 			return true;

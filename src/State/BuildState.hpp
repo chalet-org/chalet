@@ -6,7 +6,6 @@
 #ifndef CHALET_BUILD_STATE_HPP
 #define CHALET_BUILD_STATE_HPP
 
-#include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -23,16 +22,17 @@ namespace chalet
 struct StatePrototype;
 struct AncillaryTools;
 struct CompilerConfig;
+struct CommandLineInputs;
 struct WorkspaceCache;
 struct ICompileEnvironment;
 
 class BuildState
 {
-	const CommandLineInputs m_inputs;
+	const Unique<CommandLineInputs> m_inputs;
 	StatePrototype& m_prototype;
 
 public:
-	explicit BuildState(CommandLineInputs inInputs, StatePrototype& inStatePrototype);
+	explicit BuildState(CommandLineInputs&& inInputs, StatePrototype& inStatePrototype);
 	CHALET_DISALLOW_COPY_MOVE(BuildState);
 	~BuildState();
 

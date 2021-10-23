@@ -5,6 +5,7 @@
 
 #include "Compile/Generator/NinjaGenerator.hpp"
 
+#include "Compile/CompilerConfig.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

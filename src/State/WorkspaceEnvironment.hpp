@@ -6,10 +6,6 @@
 #ifndef CHALET_WORKSPACE_ENVIRONMENT_HPP
 #define CHALET_WORKSPACE_ENVIRONMENT_HPP
 
-#include "Compile/CodeLanguage.hpp"
-#include "Compile/CompilerConfig.hpp"
-#include "Core/CommandLineInputs.hpp"
-
 namespace chalet
 {
 struct BuildPaths;

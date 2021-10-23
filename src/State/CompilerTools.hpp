@@ -13,13 +13,11 @@
 
 namespace chalet
 {
-class BuildState;
+struct ICompileEnvironment;
 
 struct CompilerTools
 {
-	explicit CompilerTools(BuildState& inState);
-
-	bool initialize();
+	bool initialize(ICompileEnvironment& inEnvironment);
 	bool validate();
 
 	void fetchMakeVersion();
@@ -93,8 +91,6 @@ struct CompilerTools
 	bool ninjaAvailable() const noexcept;
 
 private:
-	BuildState& m_state;
-
 	std::string m_archiver;
 	std::string m_cmake;
 	std::string m_compilerC;

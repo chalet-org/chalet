@@ -6,7 +6,6 @@
 #include "State/CompilerTools.hpp"
 
 #include "Core/Arch.hpp"
-#include "Core/CommandLineInputs.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildState.hpp"
@@ -41,13 +40,7 @@ static struct
 }
 
 /*****************************************************************************/
-CompilerTools::CompilerTools(BuildState& inState) :
-	m_state(inState)
-{
-}
-
-/*****************************************************************************/
-bool CompilerTools::initialize()
+bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 {
 	auto createDescription = [&](const std::string& inPath, CompilerInfo& outInfo) {
 		if (!outInfo.description.empty())
@@ -55,7 +48,7 @@ bool CompilerTools::initialize()
 
 		if (!inPath.empty() && Commands::pathExists(inPath))
 		{
-			outInfo = m_state.environment->getCompilerInfoFromExecutable(inPath);
+			outInfo = inEnvironment.getCompilerInfoFromExecutable(inPath);
 		}
 	};
 
@@ -71,7 +64,7 @@ bool CompilerTools::initialize()
 	createDescription(m_compilerC, m_compilerCInfo);
 
 	const auto& version = m_compilerCppInfo.version.empty() ? m_compilerCInfo.version : m_compilerCppInfo.version;
-	if (m_version.empty() || (m_state.environment->compilerVersionIsToolchainVersion() && m_version != version))
+	if (m_version.empty() || (inEnvironment.compilerVersionIsToolchainVersion() && m_version != version))
 	{
 		m_version = version;
 	}

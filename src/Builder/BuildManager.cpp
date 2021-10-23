@@ -9,6 +9,7 @@
 #include "Builder/ProfilerRunner.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
