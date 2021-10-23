@@ -33,7 +33,7 @@ struct ICompileStrategy
 
 	const SourceOutputs& getSourceOutput(const std::string& inTarget);
 
-	virtual bool initialize(const StringList& inFileExtensions) = 0;
+	virtual bool initialize() = 0;
 	virtual bool addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
 
 	virtual bool saveBuildFile() const = 0;

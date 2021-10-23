@@ -232,7 +232,7 @@ bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
 
-				const auto& compilerConfig = inState.getCompilerConfig(project.language());
+				const auto& compilerConfig = inState.compilers.get(project.language());
 				const auto& compilerPathBin = compilerConfig.compilerPathBin();
 
 				resolved = fmt::format("{}/{}", compilerPathBin, dependency);

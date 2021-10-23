@@ -199,7 +199,7 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const SourceFileGroupList
 
 	StringList pches;
 
-	const auto& compilerConfig = m_state.getCompilerConfig(m_project->language());
+	const auto& compilerConfig = m_state.compilers.get(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
 	pches.push_back(pchTarget);
 
@@ -295,7 +295,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 	{
 		const auto quietFlag = getQuietFlag();
 		m_precompiledHeaders.push_back(std::move(pchCache));
-		// const auto& compilerConfig = m_state.getCompilerConfig(m_project->language());
+		// const auto& compilerConfig = m_state.compilers.get(m_project->language());
 
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(source, object, m_generateDependencies, std::string(), std::string()));
 		if (!pchCompile.empty())

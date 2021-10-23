@@ -443,7 +443,7 @@ bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNod
 	// If it's a cmake project, ignore everything else and return
 	// if (cmakeResult)
 
-	// auto& compilerConfig = m_state.getCompilerConfig(outTarget.language());
+	// auto& compilerConfig = m_state.compilers.get(outTarget.language());
 	// outTarget.parseOutputFilename(compilerConfig);
 	// return true;
 

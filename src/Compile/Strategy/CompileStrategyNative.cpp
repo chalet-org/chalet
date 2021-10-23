@@ -29,12 +29,12 @@ CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::initialize(const StringList& inFileExtensions)
+bool CompileStrategyNative::initialize()
 {
 	if (m_initialized)
 		return false;
 
-	const auto uniqueId = m_state.getUniqueIdForState(inFileExtensions);
+	const auto uniqueId = m_state.getUniqueIdForState();
 	std::string cachePath = m_state.cache.getCachePath(uniqueId, CacheType::Local);
 
 	auto& cacheFile = m_state.cache.file();
@@ -57,7 +57,7 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutp
 
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& compilerConfig = m_state.getCompilerConfig(m_project->language());
+	const auto& compilerConfig = m_state.compilers.get(m_project->language());
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
 	const auto& name = inProject.name();
 
@@ -129,7 +129,7 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 
 	auto& target = *m_targets.at(inProject.name());
 
-	const auto& config = m_state.getCompilerConfig(inProject.language());
+	const auto& config = m_state.compilers.get(inProject.language());
 
 	CommandPool::Settings settings;
 	settings.color = Output::theme().build;

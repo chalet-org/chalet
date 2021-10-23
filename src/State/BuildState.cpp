@@ -32,9 +32,7 @@ BuildState::BuildState(CommandLineInputs&& inInputs, StatePrototype& inStateProt
 	m_inputs(std::make_unique<CommandLineInputs>(std::move(inInputs))),
 	m_prototype(inStatePrototype),
 	tools(m_prototype.tools),
-	distribution(m_prototype.distribution),
 	cache(m_prototype.cache),
-	externalDependencies(m_prototype.externalDependencies),
 	info(*m_inputs),
 	workspace(m_prototype.workspace), // copy
 	paths(*m_inputs, m_prototype.workspace)
@@ -105,7 +103,7 @@ bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 }
 
 /*****************************************************************************/
-std::string BuildState::getUniqueIdForState(const StringList& inOther) const
+std::string BuildState::getUniqueIdForState() const
 {
 	std::string ret;
 	const auto& hostArch = info.hostArchitectureTriple();
@@ -113,6 +111,7 @@ std::string BuildState::getUniqueIdForState(const StringList& inOther) const
 	const auto& toolchainPref = m_inputs->toolchainPreferenceName();
 	const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
+	const auto extensions = String::join(paths.allFileExtensions(), '_');
 
 	std::string showCmds;
 	if (toolchain.strategy() != StrategyType::Ninja)
@@ -120,29 +119,9 @@ std::string BuildState::getUniqueIdForState(const StringList& inOther) const
 		showCmds = std::to_string(Output::showCommands() ? 1 : 0);
 	}
 
-	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, toolchainPref, strategy, buildConfig, showCmds, String::join(inOther, '_'));
+	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, toolchainPref, strategy, buildConfig, showCmds, extensions);
 
 	return Hash::string(ret);
-}
-
-/*****************************************************************************/
-CompilerConfig& BuildState::getCompilerConfig(const CodeLanguage inLanguage)
-{
-	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
-	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "getCompilerConfig called before being initialized.");
-
-	auto& config = *m_configs.at(inLanguage);
-	return config;
-}
-
-/*****************************************************************************/
-const CompilerConfig& BuildState::getCompilerConfig(const CodeLanguage inLanguage) const
-{
-	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
-	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "getCompilerConfig called before being initialized.");
-
-	auto& config = *m_configs.at(inLanguage);
-	return config;
 }
 
 /*****************************************************************************/
@@ -203,34 +182,12 @@ bool BuildState::initializeToolchain()
 				auto& project = static_cast<SourceTarget&>(*target);
 				auto language = project.language();
 
-				if (m_configs.find(language) == m_configs.end())
-				{
-					m_configs.emplace(language, std::make_unique<CompilerConfig>(language, *this));
-				}
+				compilers.makeConfigForLanguage(language, *this);
 			}
 		}
 
-		for (auto& [_, config] : m_configs)
-		{
-			if (!config->configureCompilerPaths())
-			{
-				Diagnostic::error("Error configuring compiler paths.");
-				return false;
-			}
-
-			if (!config->testCompilerMacros())
-			{
-				Diagnostic::error("Unimplemented or unknown compiler toolchain.");
-				return false;
-			}
-
-			if (!config->getSupportedCompilerFlags())
-			{
-				auto exec = String::getPathFilename(config->compilerExecutable());
-				Diagnostic::error("Error collecting supported compiler flags for '{}'.", exec);
-				return false;
-			}
-		}
+		if (!compilers.initialize())
+			return false;
 
 		return true;
 	};
@@ -282,7 +239,7 @@ bool BuildState::initializeBuild()
 		if (target->isProject())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
-			auto& compilerConfig = getCompilerConfig(project.language());
+			auto& compilerConfig = compilers.get(project.language());
 			project.parseOutputFilename(compilerConfig);
 
 			if (!project.isStaticLibrary())
@@ -406,7 +363,7 @@ bool BuildState::validateState()
 				if (project.language() != CodeLanguage::C && project.language() != CodeLanguage::CPlusPlus)
 					continue;
 
-				auto& compilerConfig = getCompilerConfig(project.language());
+				auto& compilerConfig = compilers.get(project.language());
 #if defined(CHALET_WIN32)
 				if (compilerConfig.isMsvc() && !toolchain.makeIsNMake())
 				{
@@ -553,7 +510,7 @@ void BuildState::makeCompilerDiagnosticsVariables()
 		if (target->isProject())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
-			auto& config = getCompilerConfig(project.language());
+			auto& config = compilers.get(project.language());
 			if (config.isGcc())
 				usesGcc = true;
 		}

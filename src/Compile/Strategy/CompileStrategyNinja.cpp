@@ -22,12 +22,12 @@ CompileStrategyNinja::CompileStrategyNinja(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool CompileStrategyNinja::initialize(const StringList& inFileExtensions)
+bool CompileStrategyNinja::initialize()
 {
 	if (m_initialized)
 		return false;
 
-	const auto uniqueId = m_state.getUniqueIdForState(inFileExtensions);
+	const auto uniqueId = m_state.getUniqueIdForState();
 
 	auto& cacheFile = m_state.cache.file();
 	m_cacheFolder = m_state.cache.getCachePath(uniqueId, CacheType::Local);

@@ -27,7 +27,7 @@ ProfilerRunner::ProfilerRunner(const CommandLineInputs& inInputs, BuildState& in
 bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
 
-	auto& compilerConfig = m_state.getCompilerConfig(m_project.language());
+	auto& compilerConfig = m_state.compilers.get(m_project.language());
 
 #if defined(CHALET_MACOS)
 	if (compilerConfig.isAppleClang())

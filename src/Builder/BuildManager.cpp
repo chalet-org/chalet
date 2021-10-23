@@ -86,7 +86,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 	// Note: We still have to initialize the build when the command is "run"
 	m_strategy = ICompileStrategy::make(strategy, m_state);
-	if (!m_strategy->initialize(m_state.paths.allFileExtensions()))
+	if (!m_strategy->initialize())
 		return false;
 
 	if (!runCommand)
@@ -393,7 +393,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 {
 	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
 
-	auto& compilerConfig = m_state.getCompilerConfig(inProject.language());
+	auto& compilerConfig = m_state.compilers.get(inProject.language());
 	auto compilerType = compilerConfig.compilerType();
 
 	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
@@ -436,7 +436,7 @@ bool BuildManager::copyRunDependencies(const SourceTarget& inProject)
 	bool result = true;
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto& compilerConfig = m_state.getCompilerConfig(inProject.language());
+	auto& compilerConfig = m_state.compilers.get(inProject.language());
 	auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
 
 	auto outputFolder = Commands::getAbsolutePath(buildOutputDir);

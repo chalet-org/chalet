@@ -16,7 +16,7 @@ struct CompileStrategyMakefile final : ICompileStrategy
 {
 	explicit CompileStrategyMakefile(BuildState& inState);
 
-	virtual bool initialize(const StringList& inFileExtensions) final;
+	virtual bool initialize() final;
 	virtual bool addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
 
 	virtual bool saveBuildFile() const final;

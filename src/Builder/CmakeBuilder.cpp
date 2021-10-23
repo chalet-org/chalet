@@ -105,7 +105,7 @@ std::string CmakeBuilder::getGenerator() const
 {
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 #if defined(CHALET_WIN32)
-	const auto& compileConfig = m_state.getCompilerConfig(CodeLanguage::CPlusPlus);
+	const auto& compileConfig = m_state.compilers.get(CodeLanguage::CPlusPlus);
 #endif
 
 	std::string ret;
@@ -164,7 +164,7 @@ std::string CmakeBuilder::getGenerator() const
 std::string CmakeBuilder::getArchitecture() const
 {
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
-	const auto& compileConfig = m_state.getCompilerConfig(CodeLanguage::CPlusPlus);
+	const auto& compileConfig = m_state.compilers.get(CodeLanguage::CPlusPlus);
 
 	std::string ret;
 
@@ -347,7 +347,7 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 {
 	auto& cmake = m_state.toolchain.cmake();
 	const auto maxJobs = m_state.info.maxJobs();
-	// const auto& compileConfig = m_state.getCompilerConfig(CodeLanguage::CPlusPlus);
+	// const auto& compileConfig = m_state.compilers.get(CodeLanguage::CPlusPlus);
 
 	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
 
