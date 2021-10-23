@@ -237,7 +237,7 @@ bool BuildState::initializeToolchain()
 
 	bool result = initializeImpl();
 	result &= environment->makeArchitectureAdjustments();
-	result &= toolchain.fetchCompilerVersions();
+	result &= toolchain.initialize();
 
 	if (!result)
 	{
@@ -381,6 +381,9 @@ bool BuildState::validateState()
 			}
 		}
 	}
+
+	if (!toolchain.validate())
+		return false;
 
 	auto strat = toolchain.strategy();
 	if (strat == StrategyType::Makefile)

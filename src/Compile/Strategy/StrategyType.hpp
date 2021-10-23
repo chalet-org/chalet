@@ -10,6 +10,7 @@ namespace chalet
 {
 enum class StrategyType : ushort
 {
+	None,
 	Makefile,
 	Ninja,
 	Native

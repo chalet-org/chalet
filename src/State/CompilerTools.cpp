@@ -21,6 +21,25 @@
 
 namespace chalet
 {
+namespace
+{
+static struct
+{
+	const Dictionary<BuildPathStyle> buildPathStyles{
+		{ "target-triple", BuildPathStyle::TargetTriple },
+		{ "toolchain-name", BuildPathStyle::ToolchainName },
+		{ "configuration", BuildPathStyle::Configuration },
+		{ "arch-configuration", BuildPathStyle::ArchConfiguration },
+	};
+
+	const Dictionary<StrategyType> strategyTypes{
+		{ "makefile", StrategyType::Makefile },
+		{ "ninja", StrategyType::Ninja },
+		{ "native-experimental", StrategyType::Native },
+	};
+} state;
+}
+
 /*****************************************************************************/
 CompilerTools::CompilerTools(BuildState& inState) :
 	m_state(inState)
@@ -28,7 +47,7 @@ CompilerTools::CompilerTools(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool CompilerTools::fetchCompilerVersions()
+bool CompilerTools::initialize()
 {
 	auto createDescription = [&](const std::string& inPath, CompilerInfo& outInfo) {
 		if (!outInfo.description.empty())
@@ -58,6 +77,25 @@ bool CompilerTools::fetchCompilerVersions()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool CompilerTools::validate()
+{
+	bool valid = true;
+	if (m_strategy == StrategyType::None)
+	{
+		Diagnostic::error("Invalid toolchain strategy type: {}", m_strategyString);
+		valid = false;
+	}
+
+	if (m_buildPathStyle == BuildPathStyle::None)
+	{
+		Diagnostic::error("Invalid toolchain buildPathStyle type: {}", m_buildPathStyleString);
+		valid = false;
+	}
+
+	return valid;
 }
 
 /*****************************************************************************/
@@ -151,22 +189,11 @@ const std::string& CompilerTools::strategyString() const noexcept
 void CompilerTools::setStrategy(const std::string& inValue) noexcept
 {
 	m_strategyString = inValue;
-	if (String::equals("makefile", inValue))
-	{
-		m_strategy = StrategyType::Makefile;
-	}
-	else if (String::equals("native-experimental", inValue))
-	{
-		m_strategy = StrategyType::Native;
-	}
-	else if (String::equals("ninja", inValue))
-	{
-		m_strategy = StrategyType::Ninja;
-	}
+
+	if (state.strategyTypes.find(inValue) != state.strategyTypes.end())
+		m_strategy = state.strategyTypes.at(inValue);
 	else
-	{
-		Diagnostic::error("Invalid toolchain strategy type: {}", inValue);
-	}
+		m_strategy = StrategyType::None;
 }
 
 /*****************************************************************************/
@@ -183,26 +210,11 @@ const std::string& CompilerTools::buildPathStyleString() const noexcept
 void CompilerTools::setBuildPathStyle(const std::string& inValue) noexcept
 {
 	m_buildPathStyleString = inValue;
-	if (String::equals("target-triple", inValue))
-	{
-		m_buildPathStyle = BuildPathStyle::TargetTriple;
-	}
-	else if (String::equals(inValue, "toolchain-name"))
-	{
-		m_buildPathStyle = BuildPathStyle::ToolchainName;
-	}
-	else if (String::equals(inValue, "configuration"))
-	{
-		m_buildPathStyle = BuildPathStyle::Configuration;
-	}
-	else if (String::equals(inValue, "arch-configuration"))
-	{
-		m_buildPathStyle = BuildPathStyle::ArchConfiguration;
-	}
+
+	if (state.buildPathStyles.find(inValue) != state.buildPathStyles.end())
+		m_buildPathStyle = state.buildPathStyles.at(inValue);
 	else
-	{
-		Diagnostic::error("Invalid toolchain buildPathStyle type: {}", inValue);
-	}
+		m_buildPathStyle = BuildPathStyle::None;
 }
 
 /*****************************************************************************/

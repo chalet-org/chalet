@@ -10,6 +10,7 @@ namespace chalet
 {
 enum class BuildPathStyle : ushort
 {
+	None,
 	Configuration,
 	ArchConfiguration,
 	TargetTriple,

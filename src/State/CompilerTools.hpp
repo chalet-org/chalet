@@ -19,7 +19,8 @@ struct CompilerTools
 {
 	explicit CompilerTools(BuildState& inState);
 
-	bool fetchCompilerVersions();
+	bool initialize();
+	bool validate();
 
 	void fetchMakeVersion();
 	bool fetchCmakeVersion();
@@ -123,8 +124,8 @@ private:
 	uint m_ninjaVersionMinor = 0;
 	uint m_ninjaVersionPatch = 0;
 
-	StrategyType m_strategy = StrategyType::Makefile;
-	BuildPathStyle m_buildPathStyle = BuildPathStyle::TargetTriple;
+	StrategyType m_strategy = StrategyType::None;
+	BuildPathStyle m_buildPathStyle = BuildPathStyle::None;
 
 	bool m_isArchiverLibTool = false;
 	bool m_isProfilerGprof = false;
