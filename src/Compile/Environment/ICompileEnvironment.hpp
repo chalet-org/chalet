@@ -6,6 +6,7 @@
 #ifndef CHALET_COMPILER_ENVIRONMENT_HPP
 #define CHALET_COMPILER_ENVIRONMENT_HPP
 
+#include "Compile/CompilerInfo.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
 
 namespace chalet
@@ -27,8 +28,10 @@ struct ICompileEnvironment
 	virtual ToolchainType type() const noexcept = 0;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const = 0;
+	virtual CompilerInfo getCompilerInfoFromExecutable(const std::string& inExecutable) const = 0;
 
 	virtual bool makeArchitectureAdjustments();
+	virtual bool compilerVersionIsToolchainVersion() const;
 
 	const std::string& detectedVersion() const;
 

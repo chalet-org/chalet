@@ -79,19 +79,6 @@ ToolchainType CompileEnvironmentVisualStudio::type() const noexcept
 }
 
 /*****************************************************************************/
-StringList CompileEnvironmentVisualStudio::getVersionCommand(const std::string& inExecutable) const
-{
-	return { inExecutable };
-}
-
-/*****************************************************************************/
-std::string CompileEnvironmentVisualStudio::getFullCxxCompilerString(const std::string& inVersion) const
-{
-	const auto& vsVersion = m_detectedVersion.empty() ? m_state.toolchain.version() : m_detectedVersion;
-	return fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), inVersion, vsVersion);
-}
-
-/*****************************************************************************/
 bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVersion)
 {
 #if defined(CHALET_WIN32)
@@ -301,43 +288,6 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 }
 
 /*****************************************************************************/
-bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
-{
-#if defined(CHALET_WIN32)
-	std::string vcvarsFile{ "vcvarsall" };
-	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
-
-	const auto& targetArch = m_inputs.targetArchitecture();
-	if (!String::equals(allowedArchesWin, targetArch))
-	{
-		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", targetArch, vcvarsFile);
-		return false;
-	}
-
-	// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
-	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
-	StringList cmd{ vcVarsAll, targetArch };
-
-	for (auto& arg : m_inputs.archOptions())
-	{
-		cmd.push_back(arg);
-	}
-
-	cmd.emplace_back(">");
-	cmd.emplace_back("nul");
-	cmd.emplace_back("&&");
-	cmd.emplace_back("SET");
-	cmd.emplace_back(">");
-	cmd.push_back(m_varsFileMsvc);
-
-	bool result = std::system(String::join(cmd).c_str()) == EXIT_SUCCESS;
-	return result;
-#else
-	return false;
-#endif
-}
-
-/*****************************************************************************/
 bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 {
 #if defined(CHALET_WIN32)
@@ -437,6 +387,94 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 #endif
 
 	return true;
+}
+
+/*****************************************************************************/
+StringList CompileEnvironmentVisualStudio::getVersionCommand(const std::string& inExecutable) const
+{
+	return { inExecutable };
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getFullCxxCompilerString(const std::string& inVersion) const
+{
+	const auto& vsVersion = m_detectedVersion.empty() ? m_state.toolchain.version() : m_detectedVersion;
+	return fmt::format("Microsoft{} Visual C/C++ version {} (VS {})", Unicode::registered(), inVersion, vsVersion);
+}
+
+/*****************************************************************************/
+CompilerInfo CompileEnvironmentVisualStudio::getCompilerInfoFromExecutable(const std::string& inExecutable) const
+{
+	CompilerInfo ret;
+
+#if defined(CHALET_WIN32)
+	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
+	std::string rawOutput = Commands::subprocessOutput(m_state.environment->getVersionCommand(inExecutable));
+	auto splitOutput = String::split(rawOutput, '\n');
+	if (splitOutput.size() >= 2)
+	{
+		auto start = splitOutput[1].find("Version");
+		auto end = splitOutput[1].find(" for ");
+		if (start != std::string::npos && end != std::string::npos)
+		{
+			start += 8;
+			auto version = splitOutput[1].substr(start, end - start); // cl.exe version
+			version = version.substr(0, version.find_first_not_of("0123456789."));
+			ret.version = std::move(version);
+
+			// const auto arch = splitOutput[1].substr(end + 5);
+			ret.arch = m_state.info.targetArchitectureTriple();
+			ret.description = m_state.environment->getFullCxxCompilerString(ret.version);
+		}
+	}
+#else
+	UNUSED(inExecutable);
+#endif
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentVisualStudio::compilerVersionIsToolchainVersion() const
+{
+	return false;
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
+{
+#if defined(CHALET_WIN32)
+	std::string vcvarsFile{ "vcvarsall" };
+	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
+
+	const auto& targetArch = m_inputs.targetArchitecture();
+	if (!String::equals(allowedArchesWin, targetArch))
+	{
+		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", targetArch, vcvarsFile);
+		return false;
+	}
+
+	// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
+	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
+	StringList cmd{ vcVarsAll, targetArch };
+
+	for (auto& arg : m_inputs.archOptions())
+	{
+		cmd.push_back(arg);
+	}
+
+	cmd.emplace_back(">");
+	cmd.emplace_back("nul");
+	cmd.emplace_back("&&");
+	cmd.emplace_back("SET");
+	cmd.emplace_back(">");
+	cmd.push_back(m_varsFileMsvc);
+
+	bool result = std::system(String::join(cmd).c_str()) == EXIT_SUCCESS;
+	return result;
+#else
+	return false;
+#endif
 }
 
 }

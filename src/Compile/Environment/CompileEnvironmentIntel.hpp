@@ -23,6 +23,8 @@ protected:
 	virtual bool validateArchitectureFromInput() final;
 	virtual bool makeArchitectureAdjustments() final;
 
+	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const final;
+
 private:
 	bool saveIntelEnvironment() const;
 

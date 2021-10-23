@@ -114,6 +114,12 @@ bool ICompileEnvironment::makeArchitectureAdjustments()
 }
 
 /*****************************************************************************/
+bool ICompileEnvironment::compilerVersionIsToolchainVersion() const
+{
+	return true;
+}
+
+/*****************************************************************************/
 std::string ICompileEnvironment::getVarsPath(const std::string& inId) const
 {
 	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());

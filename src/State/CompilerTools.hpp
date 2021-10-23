@@ -9,6 +9,7 @@
 #include "Compile/BuildPathStyle.hpp"
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerConfig.hpp"
+#include "Compile/CompilerInfo.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -16,14 +17,6 @@
 namespace chalet
 {
 class BuildState;
-
-struct CompilerInfo
-{
-	std::string path;
-	std::string description;
-	std::string version;
-	std::string arch;
-};
 
 struct CompilerTools
 {
@@ -102,30 +95,29 @@ struct CompilerTools
 	uint ninjaVersionPatch() const noexcept;
 	bool ninjaAvailable() const noexcept;
 
-	std::string getRootPathVariable();
+	// std::string getRootPathVariable();
 
 	CompilerConfig& getConfig(const CodeLanguage inLanguage);
 	const CompilerConfig& getConfig(const CodeLanguage inLanguage) const;
 
 private:
-	std::string parseVersionMSVC(CompilerInfo& outInfo) const;
-	std::string parseVersionGNU(CompilerInfo& outInfo) const;
-
 	BuildState& m_state;
 
 	std::unordered_map<CodeLanguage, Unique<CompilerConfig>> m_configs;
 
 	std::string m_archiver;
-	std::string m_compilerWindowsResource;
 	std::string m_cmake;
+	std::string m_compilerC;
+	std::string m_compilerCpp;
+	std::string m_compilerWindowsResource;
+	std::string m_disassembler;
 	std::string m_linker;
 	std::string m_make;
 	std::string m_ninja;
 	std::string m_profiler;
-	std::string m_disassembler;
 
-	CompilerInfo m_compilerCpp;
-	CompilerInfo m_compilerC;
+	CompilerInfo m_compilerCppInfo;
+	CompilerInfo m_compilerCInfo;
 
 	std::string m_strategyString;
 	std::string m_buildPathStyleString;

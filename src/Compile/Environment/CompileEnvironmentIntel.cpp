@@ -206,6 +206,30 @@ bool CompileEnvironmentIntel::makeArchitectureAdjustments()
 	return true;
 }
 
+void CompileEnvironmentIntel::parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const
+{
+	if (!String::contains("Intel", inLine))
+		return;
+
+	auto start = inLine.find("Version ");
+	if (start != std::string::npos)
+	{
+		start += 8;
+		auto end = inLine.find(' ', start);
+		outVersion = inLine.substr(start, end - start);
+	}
+	else
+	{
+		start = inLine.find("Compiler ");
+		if (start != std::string::npos)
+		{
+			start += 9;
+			auto end = inLine.find(' ', start);
+			outVersion = inLine.substr(start, end - start);
+		}
+	}
+}
+
 /*****************************************************************************/
 bool CompileEnvironmentIntel::saveIntelEnvironment() const
 {

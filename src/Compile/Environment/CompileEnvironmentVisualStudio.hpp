@@ -22,6 +22,9 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 	virtual ToolchainType type() const noexcept final;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
+	virtual CompilerInfo getCompilerInfoFromExecutable(const std::string& inExecutable) const final;
+
+	virtual bool compilerVersionIsToolchainVersion() const final;
 
 protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;

@@ -72,192 +72,34 @@ bool CompilerTools::initialize(const BuildTargetList& inTargets)
 /*****************************************************************************/
 bool CompilerTools::fetchCompilerVersions()
 {
-	if (m_compilerCpp.description.empty())
-	{
-		if (!m_compilerCpp.path.empty() && Commands::pathExists(m_compilerCpp.path))
-		{
-			std::string description;
-#if defined(CHALET_WIN32)
-			if (m_state.environment->type() == ToolchainType::VisualStudio)
-			{
-				description = parseVersionMSVC(m_compilerCpp);
-			}
-			else
-#endif
-			{
-				description = parseVersionGNU(m_compilerCpp);
-			}
+	auto createDescription = [&](const std::string& inPath, CompilerInfo& outInfo) {
+		if (!outInfo.description.empty())
+			return;
 
-			m_compilerCpp.description = std::move(description);
+		if (!inPath.empty() && Commands::pathExists(inPath))
+		{
+			outInfo = m_state.environment->getCompilerInfoFromExecutable(inPath);
 		}
+	};
+
+	createDescription(m_compilerCpp, m_compilerCppInfo);
+
+	auto baseFolderC = String::getPathFolder(m_compilerC);
+	auto baseFolderCpp = String::getPathFolder(m_compilerCpp);
+	if (String::equals(baseFolderC, baseFolderCpp))
+	{
+		m_compilerCInfo = m_compilerCppInfo;
 	}
 
-	if (m_compilerC.description.empty())
+	createDescription(m_compilerC, m_compilerCInfo);
+
+	const auto& version = m_compilerCppInfo.version.empty() ? m_compilerCInfo.version : m_compilerCppInfo.version;
+	if (m_version.empty() || (m_state.environment->compilerVersionIsToolchainVersion() && m_version != version))
 	{
-		auto baseFolderC = String::getPathFolder(m_compilerC.path);
-		auto baseFolderCpp = String::getPathFolder(m_compilerCpp.path);
-		if (String::equals(baseFolderC, baseFolderCpp))
-		{
-			m_compilerC.description = m_compilerCpp.description;
-		}
-		else if (!m_compilerC.path.empty() && Commands::pathExists(m_compilerC.path))
-		{
-			std::string description;
-#if defined(CHALET_WIN32)
-			if (m_state.environment->type() == ToolchainType::VisualStudio)
-			{
-				description = parseVersionMSVC(m_compilerC);
-			}
-			else
-#endif
-			{
-				description = parseVersionGNU(m_compilerC);
-			}
-
-			m_compilerC.description = std::move(description);
-		}
-	}
-
-	std::string versionString = m_compilerCpp.version.empty() ? m_compilerC.version : m_compilerCpp.version;
-	versionString = versionString.substr(0, versionString.find_first_not_of("0123456789."));
-
-	if (m_version.empty() || (m_state.environment->type() != ToolchainType::VisualStudio && m_version != versionString))
-	{
-		m_version = versionString;
+		m_version = version;
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-std::string CompilerTools::parseVersionMSVC(CompilerInfo& outInfo) const
-{
-	std::string ret;
-
-#if defined(CHALET_WIN32)
-
-	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-	std::string rawOutput = Commands::subprocessOutput(m_state.environment->getVersionCommand(outInfo.path));
-	auto splitOutput = String::split(rawOutput, '\n');
-	if (splitOutput.size() >= 2)
-	{
-		auto start = splitOutput[1].find("Version");
-		auto end = splitOutput[1].find(" for ");
-		if (start != std::string::npos && end != std::string::npos)
-		{
-			start += 8;
-			outInfo.version = splitOutput[1].substr(start, end - start); // cl.exe version
-
-			// const auto arch = splitOutput[1].substr(end + 5);
-			outInfo.arch = m_state.info.targetArchitectureTriple();
-
-			// We want the toolchain version as opposed to the cl.exe version (annoying)
-
-			ret = m_state.environment->getFullCxxCompilerString(outInfo.version);
-		}
-	}
-#else
-	UNUSED(outInfo);
-#endif
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string CompilerTools::parseVersionGNU(CompilerInfo& outInfo) const
-{
-	std::string ret;
-
-	// gcc version 10.2.0 (Ubuntu 10.2.0-13ubuntu1)
-	// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
-	// Apple clang version 12.0.5 (clang-1205.0.22.9)
-	const auto exec = String::getPathBaseName(outInfo.path);
-	// const bool isCpp = String::contains("++", exec);
-	// const bool isC = String::startsWith({ "gcc", "cc" }, exec);
-	std::string rawOutput = Commands::subprocessOutput(m_state.environment->getVersionCommand(outInfo.path));
-
-	StringList splitOutput;
-#if defined(CHALET_WIN32)
-	if (rawOutput.find('\r') != std::string::npos)
-		splitOutput = String::split(rawOutput, "\r\n");
-	else
-		splitOutput = String::split(rawOutput, '\n');
-#else
-	splitOutput = String::split(rawOutput, '\n');
-#endif
-	if (splitOutput.size() >= 2)
-	{
-		std::string versionString;
-		std::string compilerRaw;
-		std::string threadModel;
-		std::string archString;
-		for (auto& line : splitOutput)
-		{
-			if (String::contains("version", line))
-			{
-				auto start = line.find("version");
-				compilerRaw = line.substr(0, start - 1);
-				versionString = line.substr(start + 8);
-
-				while (versionString.back() == ' ')
-					versionString.pop_back();
-			}
-			else if (String::startsWith("Target:", line))
-			{
-				archString = line.substr(8);
-			}
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-			else if (String::contains("Intel", line))
-			{
-				compilerRaw = "Intel";
-				auto start = line.find("Version ");
-				if (start != std::string::npos)
-				{
-					start += 8;
-					auto end = line.find(' ', start);
-					versionString = line.substr(start, end - start);
-				}
-				else
-				{
-					start = line.find("Compiler ");
-					if (start != std::string::npos)
-					{
-						start += 9;
-						auto end = line.find(' ', start);
-						versionString = line.substr(start, end - start);
-					}
-				}
-			}
-#endif
-			/*else if (String::startsWith("Thread model:", line))
-			{
-				threadModel = line.substr(14);
-			}*/
-			// Supported LTO compression algorithms:
-		}
-		UNUSED(threadModel);
-
-		if (!versionString.empty())
-		{
-			ret = m_state.environment->getFullCxxCompilerString(versionString);
-			outInfo.version = std::move(versionString);
-		}
-		else
-		{
-			ret = "Unrecognized";
-		}
-
-		if (!archString.empty())
-		{
-			outInfo.arch = std::move(archString);
-		}
-		else
-		{
-			outInfo.arch = m_state.info.targetArchitectureTriple();
-		}
-	}
-
-	return ret;
 }
 
 /*****************************************************************************/
@@ -419,29 +261,29 @@ void CompilerTools::setVersion(const std::string& inValue) noexcept
 const std::string& CompilerTools::compilerCxx() const noexcept
 {
 	if (m_ccDetected)
-		return m_compilerC.path;
+		return m_compilerC;
 	else
-		return m_compilerCpp.path;
+		return m_compilerCpp;
 }
 
 /*****************************************************************************/
 const std::string& CompilerTools::compilerDescriptionStringCpp() const noexcept
 {
-	return m_compilerCpp.description;
+	return m_compilerCppInfo.description;
 }
 
 const std::string& CompilerTools::compilerDescriptionStringC() const noexcept
 {
-	return m_compilerC.description;
+	return m_compilerCInfo.description;
 }
 
 const std::string& CompilerTools::compilerDetectedArchCpp() const noexcept
 {
-	return m_compilerCpp.arch;
+	return m_compilerCppInfo.arch;
 }
 const std::string& CompilerTools::compilerDetectedArchC() const noexcept
 {
-	return m_compilerC.arch;
+	return m_compilerCInfo.arch;
 }
 
 /*****************************************************************************/
@@ -463,21 +305,21 @@ bool CompilerTools::isArchiverLibTool() const noexcept
 /*****************************************************************************/
 const std::string& CompilerTools::compilerCpp() const noexcept
 {
-	return m_compilerCpp.path;
+	return m_compilerCpp;
 }
 void CompilerTools::setCompilerCpp(std::string&& inValue) noexcept
 {
-	m_compilerCpp.path = std::move(inValue);
+	m_compilerCpp = std::move(inValue);
 }
 
 /*****************************************************************************/
 const std::string& CompilerTools::compilerC() const noexcept
 {
-	return m_compilerC.path;
+	return m_compilerC;
 }
 void CompilerTools::setCompilerC(std::string&& inValue) noexcept
 {
-	m_compilerC.path = std::move(inValue);
+	m_compilerC = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -643,7 +485,7 @@ bool CompilerTools::isCompilerWindowsResourceLLVMRC() const noexcept
 }
 
 /*****************************************************************************/
-std::string CompilerTools::getRootPathVariable()
+/*std::string CompilerTools::getRootPathVariable()
 {
 	auto originalPath = Environment::getPath();
 	Path::sanitize(originalPath);
@@ -653,10 +495,10 @@ std::string CompilerTools::getRootPathVariable()
 
 	StringList outList;
 
-	if (auto ccRoot = String::getPathFolder(m_compilerC.path); !List::contains(pathList, ccRoot))
+	if (auto ccRoot = String::getPathFolder(m_compilerC); !List::contains(pathList, ccRoot))
 		outList.emplace_back(std::move(ccRoot));
 
-	if (auto cppRoot = String::getPathFolder(m_compilerCpp.path); !List::contains(pathList, cppRoot))
+	if (auto cppRoot = String::getPathFolder(m_compilerCpp); !List::contains(pathList, cppRoot))
 		outList.emplace_back(std::move(cppRoot));
 
 	for (auto& p : Path::getOSPaths())
@@ -679,7 +521,7 @@ std::string CompilerTools::getRootPathVariable()
 	Path::sanitize(ret);
 
 	return ret;
-}
+}*/
 
 /*****************************************************************************/
 CompilerConfig& CompilerTools::getConfig(const CodeLanguage inLanguage)
