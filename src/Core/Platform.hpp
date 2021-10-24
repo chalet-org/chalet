@@ -12,7 +12,7 @@ namespace Platform
 {
 const std::string& platform() noexcept;
 const StringList& notPlatforms() noexcept;
-};
+}
 }
 
 #endif // CHALET_PLATFORM_HPP
