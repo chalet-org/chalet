@@ -28,7 +28,8 @@ WorkspaceInternalCacheFile::WorkspaceInternalCacheFile() :
 	kKeyBuilds("d"),
 	kKeyBuildLastBuilt("l"),
 	kKeyBuildNative("n"),
-	kKeyBuildFiles("f")
+	kKeyBuildFiles("f"),
+	kKeyDataCache("x")
 {
 }
 
@@ -80,42 +81,64 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 		if (rootNode.contains(kKeyBuilds))
 		{
 			auto& builds = rootNode.at(kKeyBuilds);
-			if (builds.is_object())
+			if (builds.is_object() && builds.contains(inId))
 			{
-				if (builds.contains(inId))
+				auto& value = builds.at(inId);
+				if (value.is_object())
 				{
-					auto& value = builds.at(inId);
-					if (value.is_object())
+					if (std::string rawValue; m_dataFile->assignFromKey(rawValue, value, kKeyBuildLastBuilt))
 					{
-						if (std::string rawValue; m_dataFile->assignFromKey(rawValue, value, kKeyBuildLastBuilt))
+						std::time_t lastBuild = strtoll(rawValue.c_str(), NULL, 0);
+						auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(lastBuild));
+						if (!success)
 						{
-							std::time_t lastBuild = strtoll(rawValue.c_str(), NULL, 0);
-							auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(lastBuild));
-							if (!success)
-							{
-								Diagnostic::error("Error creating cache for {}", inId);
-								return false;
-							}
-
-							m_sources = it->second.get();
+							Diagnostic::error("Error creating cache for {}", inId);
+							return false;
 						}
 
-						if (m_sources != nullptr)
-						{
-							if (bool val; m_dataFile->assignFromKey(val, value, kKeyBuildNative))
-								m_sources->setNative(val);
+						m_sources = it->second.get();
+					}
 
-							if (value.contains(kKeyBuildFiles))
+					if (m_sources != nullptr)
+					{
+						if (bool val; m_dataFile->assignFromKey(val, value, kKeyBuildNative))
+							m_sources->setNative(val);
+
+						if (value.contains(kKeyDataCache))
+						{
+							auto& dataJson = value.at(kKeyDataCache);
+							if (dataJson.is_object())
 							{
-								auto& files = value.at(kKeyBuildFiles);
-								if (files.is_object())
+								for (auto& [file, data] : dataJson.items())
 								{
-									for (auto& [file, val] : files.items())
+									if (data.is_object())
 									{
-										auto rawValue = val.get<std::string>();
-										std::time_t lastWrite = strtoll(rawValue.c_str(), NULL, 0);
-										m_sources->addLastWrite(file, lastWrite);
+										for (auto& [key, val] : data.items())
+										{
+											auto rawValue = val.get<std::string>();
+											m_sources->addDataCache(file, key, rawValue);
+
+											if (key == kKeyBuildFiles)
+											{
+												std::time_t lastWrite = strtoll(rawValue.c_str(), NULL, 0);
+												m_sources->addLastWrite(file, lastWrite);
+											}
+										}
 									}
+								}
+							}
+						}
+
+						if (value.contains(kKeyBuildFiles))
+						{
+							auto& files = value.at(kKeyBuildFiles);
+							if (files.is_object())
+							{
+								for (auto& [file, val] : files.items())
+								{
+									auto rawValue = val.get<std::string>();
+									std::time_t lastWrite = strtoll(rawValue.c_str(), NULL, 0);
+									m_sources->addLastWrite(file, lastWrite);
 								}
 							}
 						}
@@ -234,14 +257,10 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 		if (hashes.is_object())
 		{
 			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashBuild))
-			{
 				m_buildHash = std::move(val);
-			}
 
 			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashTheme))
-			{
 				m_hashTheme = std::move(val);
-			}
 
 			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashVersionRelease))
 				m_hashVersion = std::move(val);
@@ -327,7 +346,7 @@ bool WorkspaceInternalCacheFile::save()
 
 		for (auto& [id, sourceCache] : m_sourceCaches)
 		{
-			rootNode[kKeyBuilds][id] = sourceCache->asJson(kKeyBuildLastBuilt, kKeyBuildNative, kKeyBuildFiles);
+			rootNode[kKeyBuilds][id] = sourceCache->asJson(kKeyBuildLastBuilt, kKeyBuildNative, kKeyBuildFiles, kKeyDataCache);
 		}
 
 		m_dataFile->setContents(std::move(rootNode));
@@ -450,6 +469,7 @@ std::string WorkspaceInternalCacheFile::getAppVersionHash(std::string appPath)
 	{
 		appPath = Commands::which(appPath);
 	}
+
 	auto lastWrite = Commands::getLastWriteTime(appPath);
 	Output::setShowCommandOverride(true);
 

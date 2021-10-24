@@ -17,12 +17,6 @@
 namespace chalet
 {
 /*****************************************************************************/
-AncillaryTools::AncillaryTools(const CommandLineInputs& inInputs) :
-	m_inputs(inInputs)
-{
-}
-
-/*****************************************************************************/
 bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
 {
 	if (m_chalet.empty())
@@ -46,48 +40,10 @@ bool AncillaryTools::validate()
 	fetchBashVersion();
 	fetchBrewVersion();
 
-#if defined(CHALET_MACOS)
-	if (m_inputs.command() == Route::Bundle)
-	{
-		const auto& homeDirectory = m_inputs.homeDirectory();
-		Environment::replaceCommonVariables(m_signingIdentity, homeDirectory);
-	}
-#endif
-
-	return true;
-}
-
-/*****************************************************************************/
-bool AncillaryTools::validateSigningIdentity() const
-{
-#if defined(CHALET_MACOS)
-	// This can take a little of time (60ms), so only call it when it's needed
-	if (m_inputs.command() == Route::Bundle)
-	{
-		Output::setShowCommandOverride(false);
-
-		if (!m_signingIdentity.empty())
-		{
-			// security find-identity -v -p codesigning
-			auto security = Commands::which("security");
-			if (!security.empty())
-			{
-				StringList cmd{ std::move(security), "find-identity", "-v", "-p", "codesigning" };
-				auto identities = Commands::subprocessOutput(cmd);
-				if (!String::contains(m_signingIdentity, identities))
-				{
-					Diagnostic::error("signingIdentity '{}' could not be verified with '{}'", m_signingIdentity, String::join(std::move(cmd)));
-					return false;
-				}
-			}
-		}
-
-		Output::setShowCommandOverride(true);
-	}
-
-#else
-	UNUSED(m_inputs);
-#endif
+	// #if defined(CHALET_MACOS)
+	// 	const auto& homeDirectory = m_inputs.homeDirectory();
+	// 	Environment::replaceCommonVariables(m_signingIdentity, homeDirectory);
+	// #endif
 
 	return true;
 }
@@ -238,6 +194,30 @@ const std::string& AncillaryTools::signingIdentity() const noexcept
 void AncillaryTools::setSigningIdentity(std::string&& inValue) noexcept
 {
 	m_signingIdentity = std::move(inValue);
+}
+bool AncillaryTools::isSigningIdentityValid() const
+{
+#if defined(CHALET_MACOS)
+	// This can take a little bit of time (60ms), so only call it when it's needed
+	if (!m_signingIdentity.empty())
+	{
+		// security find-identity -v -p codesigning
+		auto security = Commands::which("security");
+		if (!security.empty())
+		{
+			StringList cmd{ std::move(security), "find-identity", "-v", "-p", "codesigning" };
+			auto identities = Commands::subprocessOutput(cmd);
+
+			if (!String::contains(m_signingIdentity, identities))
+			{
+				Diagnostic::error("signingIdentity '{}' could not be verified with '{}'", m_signingIdentity, String::join(cmd));
+				return false;
+			}
+		}
+	}
+#endif
+
+	return true;
 }
 
 /*****************************************************************************/

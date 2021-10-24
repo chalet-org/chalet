@@ -5,6 +5,8 @@
 
 #include "Compile/Environment/CompileEnvironmentGNU.hpp"
 
+#include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
@@ -43,51 +45,63 @@ CompilerInfo CompileEnvironmentGNU::getCompilerInfoFromExecutable(const std::str
 {
 	CompilerInfo ret;
 
-	// Expects:
-	// gcc version 10.2.0 (Ubuntu 10.2.0-13ubuntu1)
-	// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
-	// Apple clang version 12.0.5 (clang-1205.0.22.9)
+	auto& sourceCache = m_state.cache.file().sources();
+	std::string cachedVersion;
+	if (sourceCache.versionRequriesUpdate(inExecutable, cachedVersion))
+	{
+		// Expects:
+		// gcc version 10.2.0 (Ubuntu 10.2.0-13ubuntu1)
+		// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
+		// Apple clang version 12.0.5 (clang-1205.0.22.9)
 
-	const auto exec = String::getPathBaseName(inExecutable);
-	std::string rawOutput = Commands::subprocessOutput(getVersionCommand(inExecutable));
+		const auto exec = String::getPathBaseName(inExecutable);
+		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(inExecutable));
 
-	StringList splitOutput;
+		StringList splitOutput;
 #if defined(CHALET_WIN32)
-	if (rawOutput.find('\r') != std::string::npos)
-		splitOutput = String::split(rawOutput, "\r\n");
-	else
-		splitOutput = String::split(rawOutput, '\n');
+		if (rawOutput.find('\r') != std::string::npos)
+			splitOutput = String::split(rawOutput, "\r\n");
+		else
+			splitOutput = String::split(rawOutput, '\n');
 #else
-	splitOutput = String::split(rawOutput, '\n');
+		splitOutput = String::split(rawOutput, '\n');
 #endif
 
-	if (splitOutput.size() >= 2)
+		if (splitOutput.size() >= 2)
+		{
+			std::string version;
+			// std::string threadModel;
+			// std::string arch;
+			for (auto& line : splitOutput)
+			{
+				parseVersionFromVersionOutput(line, version);
+				// parseArchFromVersionOutput(line, arch);
+				// parseThreadModelFromVersionOutput(line, threadModel);
+			}
+
+			version = version.substr(0, version.find_first_not_of("0123456789."));
+			if (!version.empty())
+				cachedVersion = std::move(version);
+
+			// if (!arch.empty())
+			// 	ret.arch = std::move(arch);
+			// else
+			// ret.arch = m_state.info.targetArchitectureTriple();
+		}
+	}
+
+	if (!cachedVersion.empty())
 	{
-		std::string version;
-		// std::string threadModel;
-		std::string arch;
-		for (auto& line : splitOutput)
-		{
-			parseVersionFromVersionOutput(line, version);
-			parseArchFromVersionOutput(line, arch);
-			// parseThreadModelFromVersionOutput(line, threadModel);
-		}
+		ret.version = std::move(cachedVersion);
 
-		version = version.substr(0, version.find_first_not_of("0123456789."));
-		if (!version.empty())
-		{
-			ret.description = getFullCxxCompilerString(version);
-			ret.version = std::move(version);
-		}
-		else
-		{
-			ret.description = "Unrecognized";
-		}
+		sourceCache.addVersion(inExecutable, ret.version);
 
-		if (!arch.empty())
-			ret.arch = std::move(arch);
-		else
-			ret.arch = m_state.info.targetArchitectureTriple();
+		ret.arch = m_state.info.targetArchitectureTriple();
+		ret.description = getFullCxxCompilerString(ret.version);
+	}
+	else
+	{
+		ret.description = "Unrecognized";
 	}
 
 	return ret;
@@ -132,16 +146,23 @@ bool CompileEnvironmentGNU::makeArchitectureAdjustments()
 
 	if (m_inputs.targetArchitecture().empty() || !String::contains('-', archTriple))
 	{
-		auto result = Commands::subprocessOutput({ compiler, "-dumpmachine" });
-#if defined(CHALET_MACOS)
-		// Strip out version in auto-detected mac triple
-		auto darwin = result.find("apple-darwin");
-		if (darwin != std::string::npos)
+		auto& sourceCache = m_state.cache.file().sources();
+		std::string cachedArch;
+		if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 		{
-			result = result.substr(0, darwin + 12);
-		}
+			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
+#if defined(CHALET_MACOS)
+			// Strip out version in auto-detected mac triple
+			auto darwin = cachedArch.find("apple-darwin");
+			if (darwin != std::string::npos)
+			{
+				cachedArch = cachedArch.substr(0, darwin + 12);
+			}
 #endif
-		m_state.info.setTargetArchitecture(result);
+		}
+
+		m_state.info.setTargetArchitecture(cachedArch);
+		sourceCache.addArch(compiler, cachedArch);
 	}
 	else
 	{

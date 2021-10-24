@@ -39,12 +39,8 @@ bool CompileStrategyNative::initialize()
 	if (m_initialized)
 		return false;
 
-	const auto uniqueId = m_state.getUniqueIdForState();
-	std::string cachePath = m_state.cache.getCachePath(uniqueId, CacheType::Local);
-
-	auto& cacheFile = m_state.cache.file();
-
-	cacheFile.setSourceCache(uniqueId, true);
+	const auto& uniqueId = m_state.uniqueId();
+	UNUSED(m_state.cache.getCachePath(uniqueId, CacheType::Local));
 
 	m_initialized = true;
 

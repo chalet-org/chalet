@@ -5,6 +5,8 @@
 
 #include "Compile/Environment/CompileEnvironmentLLVM.hpp"
 
+#include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
@@ -43,62 +45,70 @@ std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& 
 /*****************************************************************************/
 bool CompileEnvironmentLLVM::makeArchitectureAdjustments()
 {
-	// Arch::Cpu targetArch = m_state.info.targetArchitecture();
-	const auto& archTriple = m_state.info.targetArchitectureTriple();
-	const auto& compiler = m_state.toolchain.compilerCxx();
-
 	bool valid = false;
-	// TODO: This logic is interesting, but needs to be refined as "get list of supported architectures"
-	/*if (!m_inputs.targetArchitecture().empty())
+
+	const auto& compiler = m_state.toolchain.compilerCxx();
+	auto& sourceCache = m_state.cache.file().sources();
+	std::string cachedArch;
+	if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 	{
-		auto results = Commands::subprocessOutput({ compiler, "-print-targets" });
+		Arch::Cpu targetArch = m_state.info.targetArchitecture();
+		const auto& archTriple = m_state.info.targetArchitectureTriple();
 
-		if (!String::contains("error:", results))
+		if (!m_inputs.targetArchitecture().empty())
 		{
-			StringList arches64{ "x86-64", "x86_64", "x64" };
-			StringList arches86{ "i686", "x86" };
-			auto split = String::split(results, '\n');
-			for (auto& line : split)
-			{
-				auto start = line.find_first_not_of(' ');
-				auto end = line.find_first_of(' ', start);
+			auto results = Commands::subprocessOutput({ compiler, "-print-targets" });
 
-				auto result = line.substr(start, end - start);
-				if (targetArch == Arch::Cpu::X64)
+			if (!String::contains("error:", results))
+			{
+				StringList arches64{ "x86-64", "x86_64", "x64" };
+				StringList arches86{ "i686", "x86" };
+				auto split = String::split(results, '\n');
+				for (auto& line : split)
 				{
-					if (String::equals(arches64, result))
-						valid = true;
-				}
-				else if (targetArch == Arch::Cpu::X86)
-				{
-					if (String::equals(arches86, result))
-						valid = true;
-				}
-				else
-				{
-					if (String::startsWith(result, archTriple))
-						valid = true;
+					auto start = line.find_first_not_of(' ');
+					auto end = line.find_first_of(' ', start);
+
+					auto result = line.substr(start, end - start);
+					if (targetArch == Arch::Cpu::X64)
+					{
+						if (String::equals(arches64, result))
+							valid = true;
+					}
+					else if (targetArch == Arch::Cpu::X86)
+					{
+						if (String::equals(arches86, result))
+							valid = true;
+					}
+					else
+					{
+						if (String::startsWith(result, archTriple))
+							valid = true;
+					}
 				}
 			}
 		}
-	}*/
 
-	if (!String::contains('-', archTriple))
-	{
-		auto result = Commands::subprocessOutput({ compiler, "-dumpmachine" });
-		auto firstDash = result.find_first_of('-');
-		if (!result.empty() && firstDash != std::string::npos)
+		if (!String::contains('-', archTriple))
 		{
-			result = fmt::format("{}{}", archTriple, result.substr(firstDash));
-#if defined(CHALET_MACOS)
-			// Strip out version in auto-detected mac triple
-			auto darwin = result.find("apple-darwin");
-			if (darwin != std::string::npos)
+			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
+			auto firstDash = cachedArch.find_first_of('-');
+			if (!cachedArch.empty() && firstDash != std::string::npos)
 			{
-				result = result.substr(0, darwin + 12);
-			}
+				cachedArch = fmt::format("{}{}", archTriple, cachedArch.substr(firstDash));
+#if defined(CHALET_MACOS)
+				// Strip out version in auto-detected mac triple
+				auto darwin = cachedArch.find("apple-darwin");
+				if (darwin != std::string::npos)
+				{
+					cachedArch = cachedArch.substr(0, darwin + 12);
+				}
 #endif
-			m_state.info.setTargetArchitecture(result);
+				valid = true;
+			}
+		}
+		else
+		{
 			valid = true;
 		}
 	}
@@ -106,6 +116,10 @@ bool CompileEnvironmentLLVM::makeArchitectureAdjustments()
 	{
 		valid = true;
 	}
+
+	m_state.info.setTargetArchitecture(cachedArch);
+	sourceCache.addArch(compiler, cachedArch);
+
 	return valid;
 }
 

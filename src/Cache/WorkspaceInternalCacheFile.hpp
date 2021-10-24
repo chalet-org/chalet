@@ -82,6 +82,7 @@ private:
 	const std::string kKeyBuildLastBuilt;
 	const std::string kKeyBuildNative;
 	const std::string kKeyBuildFiles;
+	const std::string kKeyDataCache;
 
 	bool m_buildHashChanged = false;
 	bool m_buildFileChanged = false;

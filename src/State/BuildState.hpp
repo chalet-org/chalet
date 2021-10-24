@@ -50,7 +50,7 @@ public:
 	bool doBuild(const bool inShowSuccess = true);
 	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
 
-	std::string getUniqueIdForState() const;
+	const std::string& uniqueId() const noexcept;
 
 private:
 	bool initializeBuildConfiguration();
@@ -60,13 +60,19 @@ private:
 	bool initializeToolchain();
 	bool initializeBuild();
 	void initializeCache();
+
 	bool validateState();
+	bool validateSigningIdentity();
 
 	bool makePathVariable();
 	void makeCompilerDiagnosticsVariables();
 	void makeLibraryPathVariables();
 	void enforceArchitectureInPath();
 	void enforceArchitectureInPath(std::string& outPathVariable);
+
+	std::string getUniqueIdForState() const;
+
+	std::string m_uniqueId;
 };
 }
 

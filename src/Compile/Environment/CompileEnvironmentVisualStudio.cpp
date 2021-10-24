@@ -5,6 +5,7 @@
 
 #include "Compile/Environment/CompileEnvironmentVisualStudio.hpp"
 
+#include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -403,24 +404,44 @@ CompilerInfo CompileEnvironmentVisualStudio::getCompilerInfoFromExecutable(const
 {
 	CompilerInfo ret;
 
-	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-	std::string rawOutput = Commands::subprocessOutput(getVersionCommand(inExecutable));
-	auto splitOutput = String::split(rawOutput, '\n');
-	if (splitOutput.size() >= 2)
-	{
-		auto start = splitOutput[1].find("Version");
-		auto end = splitOutput[1].find(" for ");
-		if (start != std::string::npos && end != std::string::npos)
-		{
-			start += 8;
-			auto version = splitOutput[1].substr(start, end - start); // cl.exe version
-			version = version.substr(0, version.find_first_not_of("0123456789."));
-			ret.version = std::move(version);
+	Timer timer;
 
-			// const auto arch = splitOutput[1].substr(end + 5);
-			ret.arch = m_state.info.targetArchitectureTriple();
-			ret.description = getFullCxxCompilerString(ret.version);
+	auto& sourceCache = m_state.cache.file().sources();
+	std::string cachedVersion;
+	if (sourceCache.versionRequriesUpdate(inExecutable, cachedVersion))
+	{
+		// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
+		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(inExecutable));
+
+		auto splitOutput = String::split(rawOutput, '\n');
+		if (splitOutput.size() >= 2)
+		{
+			auto start = splitOutput[1].find("Version");
+			auto end = splitOutput[1].find(" for ");
+			if (start != std::string::npos && end != std::string::npos)
+			{
+				start += 8;
+				auto version = splitOutput[1].substr(start, end - start); // cl.exe version
+				version = version.substr(0, version.find_first_not_of("0123456789."));
+				cachedVersion = std::move(version);
+
+				// const auto arch = splitOutput[1].substr(end + 5);
+			}
 		}
+	}
+
+	if (!cachedVersion.empty())
+	{
+		ret.version = std::move(cachedVersion);
+
+		sourceCache.addVersion(inExecutable, ret.version);
+
+		ret.arch = m_state.info.targetArchitectureTriple();
+		ret.description = getFullCxxCompilerString(ret.version);
+	}
+	else
+	{
+		ret.description = "Unrecognized";
 	}
 
 	return ret;

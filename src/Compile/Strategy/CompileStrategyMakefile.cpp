@@ -34,12 +34,9 @@ bool CompileStrategyMakefile::initialize()
 	if (m_initialized)
 		return false;
 
-	const auto uniqueId = m_state.getUniqueIdForState();
-
+	const auto& uniqueId = m_state.uniqueId();
 	auto& cacheFile = m_state.cache.file();
 	m_cacheFolder = m_state.cache.getCachePath(uniqueId, CacheType::Local);
-
-	cacheFile.setSourceCache(uniqueId);
 
 	const bool cacheExists = Commands::pathExists(m_cacheFolder);
 	const bool appVersionChanged = cacheFile.appVersionChanged();

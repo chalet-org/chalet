@@ -20,8 +20,11 @@ struct SourceCache
 	bool native() const noexcept;
 	void setNative(const bool inValue) noexcept;
 
+	void addVersion(const std::string& inExecutable, const std::string& inValue);
+	void addArch(const std::string& inExecutable, const std::string& inValue);
+
 	bool dirty() const;
-	Json asJson(const std::string& kKeyBuildLastBuilt, const std::string& kKeyBuildNative, const std::string& kKeyBuildFiles) const;
+	Json asJson(const std::string& kKeyBuildLastBuilt, const std::string& kKeyBuildNative, const std::string& kKeyBuildFiles, const std::string& kKeyDataCache) const;
 
 	bool updateInitializedTime(const std::time_t inTime = 0);
 
@@ -32,12 +35,20 @@ struct SourceCache
 	bool fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const;
 	bool fileChangedOrDependantChanged(const std::string& inFile, const std::string& inDependency) const;
 
+	bool versionRequriesUpdate(const std::string& inFile, std::string& outExistingValue);
+	bool archRequriesUpdate(const std::string& inFile, std::string& outExistingValue);
+
 private:
 	friend struct WorkspaceInternalCacheFile;
+
+	const std::string& dataCache(const std::string& inMainKey, const std::string& inKey) noexcept;
+	void addDataCache(const std::string& inMainKey, const std::string& inKey, const std::string& inValue);
 
 	void makeUpdate(const std::string& inFile, LastWrite& outFileData) const;
 	void forceUpdate(const std::string& inFile, LastWrite& outFileData) const;
 	LastWrite& getLastWrite(const std::string& inFile) const;
+
+	Dictionary<Dictionary<std::string>> m_dataCache;
 
 	mutable SourceLastWriteMap m_lastWrites;
 

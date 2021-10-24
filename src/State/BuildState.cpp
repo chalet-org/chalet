@@ -138,26 +138,9 @@ bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 	return mgr.run(inRoute, inShowSuccess);
 }
 
-/*****************************************************************************/
-std::string BuildState::getUniqueIdForState() const
+const std::string& BuildState::uniqueId() const noexcept
 {
-	std::string ret;
-	const auto& hostArch = info.hostArchitectureTriple();
-	const auto targetArch = m_impl->inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
-	const auto& toolchainPref = m_impl->inputs.toolchainPreferenceName();
-	const auto& strategy = toolchain.strategyString();
-	const auto& buildConfig = info.buildConfiguration();
-	const auto extensions = String::join(paths.allFileExtensions(), '_');
-
-	std::string showCmds;
-	if (toolchain.strategy() != StrategyType::Ninja)
-	{
-		showCmds = std::to_string(Output::showCommands() ? 1 : 0);
-	}
-
-	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, toolchainPref, strategy, buildConfig, showCmds, extensions);
-
-	return Hash::string(ret);
+	return m_uniqueId;
 }
 
 /*****************************************************************************/
@@ -270,9 +253,7 @@ bool BuildState::initializeToolchain()
 	};
 
 	bool result = initializeImpl();
-
 	result &= m_impl->environment->makeArchitectureAdjustments();
-
 	result &= toolchain.initialize(*m_impl->environment);
 
 	if (!result)
@@ -304,7 +285,10 @@ bool BuildState::initializeBuild()
 
 	Diagnostic::infoEllipsis("Initializing");
 
-	if (!tools.validateSigningIdentity())
+	auto& cacheFile = m_impl->prototype.cache.file();
+	cacheFile.setSourceCache(Hash::string("__global__"), true);
+
+	if (!validateSigningIdentity())
 		return false;
 
 	if (!initializeToolchain())
@@ -385,6 +369,9 @@ bool BuildState::initializeBuild()
 	if (!validateState())
 		return false;
 
+	m_uniqueId = getUniqueIdForState();
+	cacheFile.setSourceCache(m_uniqueId, toolchain.strategy() == StrategyType::Native);
+
 	Diagnostic::printDone(timer.asString());
 
 	Output::setShowCommandOverride(true);
@@ -404,34 +391,34 @@ void BuildState::initializeCache()
 /*****************************************************************************/
 bool BuildState::validateState()
 {
-	{
-		auto workingDirectory = Commands::getWorkingDirectory();
-		Path::sanitize(workingDirectory, true);
+	auto workingDirectory = Commands::getWorkingDirectory();
+	Path::sanitize(workingDirectory, true);
 
-		if (String::toLowerCase(m_impl->inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
+	if (String::toLowerCase(m_impl->inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
+	{
+		if (!Commands::changeWorkingDirectory(m_impl->inputs.workingDirectory()))
 		{
-			if (!Commands::changeWorkingDirectory(m_impl->inputs.workingDirectory()))
-			{
-				Diagnostic::error("Error changing directory to '{}'", m_impl->inputs.workingDirectory());
-				return false;
-			}
+			Diagnostic::error("Error changing directory to '{}'", m_impl->inputs.workingDirectory());
+			return false;
 		}
 	}
 
 	if (!toolchain.validate())
 		return false;
 
+	auto& cacheFile = m_impl->prototype.cache.file();
+
 	auto strat = toolchain.strategy();
 	if (strat == StrategyType::Makefile)
 	{
-		toolchain.fetchMakeVersion();
-
 		const auto& makeExec = toolchain.make();
 		if (makeExec.empty() || !Commands::pathExists(makeExec))
 		{
 			Diagnostic::error("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec);
 			return false;
 		}
+
+		toolchain.fetchMakeVersion(cacheFile.sources());
 
 		for (auto& target : targets)
 		{
@@ -466,45 +453,34 @@ bool BuildState::validateState()
 	}
 	else if (strat == StrategyType::Ninja)
 	{
-		toolchain.fetchNinjaVersion();
-
 		auto& ninjaExec = toolchain.ninja();
 		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
 		{
 			Diagnostic::error("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
 			return false;
 		}
+
+		toolchain.fetchNinjaVersion(cacheFile.sources());
 	}
 
 	bool hasCMakeTargets = false;
 	bool hasSubChaletTargets = false;
 	for (auto& target : targets)
 	{
-		if (target->isSubChalet())
-		{
-			hasSubChaletTargets = true;
-		}
-		else if (target->isCMake())
-		{
-			hasCMakeTargets = true;
-		}
+		hasSubChaletTargets |= target->isSubChalet();
+		hasCMakeTargets |= target->isCMake();
 	}
 
-	if (hasCMakeTargets)
+	if (hasCMakeTargets && !toolchain.fetchCmakeVersion(cacheFile.sources()))
 	{
-		if (!toolchain.fetchCmakeVersion())
-		{
-			Diagnostic::error("The path to the CMake executable could not be resolved: {}", toolchain.cmake());
-			return false;
-		}
+		Diagnostic::error("The path to the CMake executable could not be resolved: {}", toolchain.cmake());
+		return false;
 	}
-	if (hasSubChaletTargets)
+
+	if (hasSubChaletTargets && !m_impl->prototype.tools.resolveOwnExecutable(m_impl->inputs.appPath()))
 	{
-		if (!m_impl->prototype.tools.resolveOwnExecutable(m_impl->inputs.appPath()))
-		{
-			Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_impl->prototype.tools.chalet());
-			return false;
-		}
+		Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_impl->prototype.tools.chalet());
+		return false;
 	}
 
 	for (auto& target : targets)
@@ -517,11 +493,22 @@ bool BuildState::validateState()
 		}
 	}
 
-	if (configuration.enableProfiling())
-	{
 #if defined(CHALET_MACOS)
+	if (configuration.enableProfiling())
 		m_impl->prototype.tools.fetchXcodeVersion();
 #endif
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildState::validateSigningIdentity()
+{
+	// Right now, only used w/ Bundle
+	if (m_impl->inputs.command() == Route::Bundle)
+	{
+		if (tools.isSigningIdentityValid())
+			return false;
 	}
 
 	return true;
@@ -707,4 +694,27 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 	UNUSED(outPathVariable);
 #endif
 }
+
+/*****************************************************************************/
+std::string BuildState::getUniqueIdForState() const
+{
+	std::string ret;
+	const auto& hostArch = info.hostArchitectureTriple();
+	const auto targetArch = m_impl->inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
+	const auto& toolchainPref = m_impl->inputs.toolchainPreferenceName();
+	const auto& strategy = toolchain.strategyString();
+	const auto& buildConfig = info.buildConfiguration();
+	const auto extensions = String::join(paths.allFileExtensions(), '_');
+
+	std::string showCmds{ "0" };
+	if (toolchain.strategy() != StrategyType::Ninja)
+	{
+		showCmds = std::to_string(Output::showCommands() ? 1 : 0);
+	}
+
+	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, toolchainPref, strategy, buildConfig, showCmds, extensions);
+
+	return Hash::string(ret);
+}
+
 }

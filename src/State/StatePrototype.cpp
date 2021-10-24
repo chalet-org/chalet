@@ -25,7 +25,6 @@ namespace chalet
 {
 /*****************************************************************************/
 StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
-	tools(inInputs),
 	m_inputs(inInputs)
 {
 }

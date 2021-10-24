@@ -14,15 +14,16 @@
 namespace chalet
 {
 struct ICompileEnvironment;
+struct SourceCache;
 
 struct CompilerTools
 {
 	bool initialize(ICompileEnvironment& inEnvironment);
 	bool validate();
 
-	void fetchMakeVersion();
-	bool fetchCmakeVersion();
-	void fetchNinjaVersion();
+	void fetchMakeVersion(SourceCache& inCache);
+	bool fetchCmakeVersion(SourceCache& inCache);
+	void fetchNinjaVersion(SourceCache& inCache);
 
 	StrategyType strategy() const noexcept;
 	const std::string& strategyString() const noexcept;

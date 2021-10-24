@@ -7,6 +7,7 @@
 
 #include "Core/Arch.hpp"
 
+#include "Cache/SourceCache.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -91,14 +92,20 @@ bool CompilerTools::validate()
 }
 
 /*****************************************************************************/
-void CompilerTools::fetchMakeVersion()
+void CompilerTools::fetchMakeVersion(SourceCache& inCache)
 {
 	if (!m_make.empty() && m_makeVersionMajor == 0 && m_makeVersionMinor == 0)
 	{
-		if (Commands::pathExists(m_make))
+		std::string version;
+		if (inCache.versionRequriesUpdate(m_make, version))
 		{
-			std::string version = Commands::subprocessOutput({ m_make, "--version" });
+			version = Commands::subprocessOutput({ m_make, "--version" });
 			version = Commands::isolateVersion(version);
+		}
+
+		if (!version.empty())
+		{
+			inCache.addVersion(m_make, version);
 
 			auto vals = String::split(version, '.');
 			if (vals.size() == 2)
@@ -114,16 +121,21 @@ void CompilerTools::fetchMakeVersion()
 }
 
 /*****************************************************************************/
-bool CompilerTools::fetchCmakeVersion()
+bool CompilerTools::fetchCmakeVersion(SourceCache& inCache)
 {
 	if (!m_cmake.empty() && m_cmakeVersionMajor == 0 && m_cmakeVersionMinor == 0)
 	{
-		if (Commands::pathExists(m_cmake))
+		std::string version;
+		if (inCache.versionRequriesUpdate(m_cmake, version))
 		{
-			std::string version = Commands::subprocessOutput({ m_cmake, "--version" });
+			version = Commands::subprocessOutput({ m_cmake, "--version" });
 			m_cmakeAvailable = String::startsWith("cmake version ", version);
-
 			version = Commands::isolateVersion(version);
+		}
+
+		if (!version.empty())
+		{
+			inCache.addVersion(m_cmake, version);
 
 			auto vals = String::split(version, '.');
 			if (vals.size() == 3)
@@ -139,14 +151,20 @@ bool CompilerTools::fetchCmakeVersion()
 }
 
 /*****************************************************************************/
-void CompilerTools::fetchNinjaVersion()
+void CompilerTools::fetchNinjaVersion(SourceCache& inCache)
 {
 	if (!m_ninja.empty() && m_ninjaVersionMajor == 0 && m_ninjaVersionMinor == 0)
 	{
-		if (Commands::pathExists(m_ninja))
+		std::string version;
+		if (inCache.versionRequriesUpdate(m_ninja, version))
 		{
-			std::string version = Commands::subprocessOutput({ m_ninja, "--version" });
+			version = Commands::subprocessOutput({ m_ninja, "--version" });
 			version = Commands::isolateVersion(version);
+		}
+
+		if (!version.empty())
+		{
+			inCache.addVersion(m_ninja, version);
 
 			auto vals = String::split(version, '.');
 			if (vals.size() >= 3)

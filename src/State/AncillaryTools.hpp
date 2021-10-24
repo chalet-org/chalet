@@ -8,16 +8,11 @@
 
 namespace chalet
 {
-struct CommandLineInputs;
-
 struct AncillaryTools
 {
-	explicit AncillaryTools(const CommandLineInputs& inInputs);
-
 	bool resolveOwnExecutable(const std::string& inAppPath);
 
 	bool validate();
-	bool validateSigningIdentity() const;
 
 	void fetchBashVersion();
 	void fetchBrewVersion();
@@ -42,6 +37,7 @@ struct AncillaryTools
 
 	const std::string& signingIdentity() const noexcept;
 	void setSigningIdentity(std::string&& inValue) noexcept;
+	bool isSigningIdentityValid() const;
 
 	const std::string& commandPrompt() const noexcept;
 	void setCommandPrompt(std::string&& inValue) noexcept;
@@ -138,8 +134,6 @@ struct AncillaryTools
 	static std::string getPathToGit();
 
 private:
-	const CommandLineInputs& m_inputs;
-
 	Dictionary<std::string> m_applePlatformSdk;
 
 	std::string m_chalet;
