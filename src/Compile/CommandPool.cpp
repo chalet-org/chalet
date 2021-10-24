@@ -57,11 +57,12 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 		srcFile = sourceFile.substr(start, end - start);
 	}
 
-	auto onOutput = [&srcFile](std::string inData) {
+	std::string output;
+	auto onOutput = [&srcFile, &output](std::string inData) {
 		if (String::startsWith(srcFile, inData))
 			return;
 
-		std::cout << inData << std::flush;
+		output += std::move(inData);
 	};
 
 	ProcessOptions options;
@@ -70,14 +71,23 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 	options.onStdOut = onOutput;
 	options.onStdErr = onOutput;
 
+	bool result = true;
 	if (Process::run(command, options) != EXIT_SUCCESS)
+		result = false;
+
+	if (!output.empty() && !result)
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
 		state.errorCode = CommandPoolErrorCode::BuildFailure;
-		return false;
+		String::replaceAll(output, '\n', "\r\n");
+		auto error = Output::getAnsiStyle(Output::theme().error);
+		auto reset = Output::getAnsiStyle(Color::Reset);
+		auto cmdString = String::join(command);
+
+		std::cout << fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString) << output << std::flush;
 	}
 
-	return true;
+	return result;
 }
 
 /*****************************************************************************/
