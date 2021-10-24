@@ -8,10 +8,11 @@
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
-#include "State/BuildState.hpp"
 
 namespace chalet
 {
+class BuildState;
+
 struct CompileStrategyMakefile final : ICompileStrategy
 {
 	explicit CompileStrategyMakefile(BuildState& inState);

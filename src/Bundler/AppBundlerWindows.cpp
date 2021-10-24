@@ -6,6 +6,7 @@
 #include "Bundler/AppBundlerWindows.hpp"
 
 #include "State/AncillaryTools.hpp"
+#include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

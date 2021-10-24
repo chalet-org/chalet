@@ -6,25 +6,23 @@
 #ifndef CHALET_BUILD_STATE_HPP
 #define CHALET_BUILD_STATE_HPP
 
-#include "Compile/CompilerController.hpp"
 #include "Router/Route.hpp"
-#include "State/BuildConfiguration.hpp"
-#include "State/BuildInfo.hpp"
-#include "State/BuildPaths.hpp"
-#include "State/CompilerTools.hpp"
-#include "State/WorkspaceEnvironment.hpp"
-
-#include "State/Dependency/IBuildDependency.hpp"
-#include "State/Target/IBuildTarget.hpp"
 
 namespace chalet
 {
-struct StatePrototype;
+struct BuildConfiguration;
+struct BuildInfo;
+struct BuildPaths;
 struct AncillaryTools;
 struct CompilerConfig;
+struct CompilerController;
+struct CompilerTools;
 struct CommandLineInputs;
+struct StatePrototype;
 struct WorkspaceCache;
+struct WorkspaceEnvironment;
 struct ICompileEnvironment;
+struct IBuildTarget;
 
 class BuildState
 {
@@ -44,7 +42,7 @@ public:
 	CompilerTools& toolchain;
 	BuildPaths& paths;
 	BuildConfiguration& configuration;
-	BuildTargetList& targets;
+	std::vector<Unique<IBuildTarget>>& targets;
 	CompilerController& compilers;
 
 	bool initialize();

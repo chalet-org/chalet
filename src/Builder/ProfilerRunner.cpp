@@ -6,9 +6,13 @@
 #include "Builder/ProfilerRunner.hpp"
 
 #include "Compile/CompilerConfig.hpp"
+#include "Compile/CompilerController.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"

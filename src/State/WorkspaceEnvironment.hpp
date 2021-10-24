@@ -9,7 +9,6 @@
 namespace chalet
 {
 struct BuildPaths;
-struct BuildInfo;
 
 struct WorkspaceEnvironment
 {

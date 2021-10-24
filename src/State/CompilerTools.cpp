@@ -8,7 +8,6 @@
 #include "Core/Arch.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
-#include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

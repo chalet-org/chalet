@@ -6,7 +6,9 @@
 #include "State/Target/CMakeTarget.hpp"
 
 #include "State/AncillaryTools.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

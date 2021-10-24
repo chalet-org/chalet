@@ -6,9 +6,11 @@
 #include "State/Distribution/BundleTarget.hpp"
 
 #include "Compile/CompilerConfig.hpp"
+#include "Compile/CompilerController.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"

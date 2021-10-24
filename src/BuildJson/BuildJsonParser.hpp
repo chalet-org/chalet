@@ -8,6 +8,7 @@
 
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet

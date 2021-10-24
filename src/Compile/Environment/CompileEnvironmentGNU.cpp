@@ -6,7 +6,9 @@
 #include "Compile/Environment/CompileEnvironmentGNU.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 

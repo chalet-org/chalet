@@ -8,6 +8,8 @@
 #include "Core/CommandLineInputs.hpp"
 
 #include "State/AncillaryTools.hpp"
+#include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "Terminal/Commands.hpp"

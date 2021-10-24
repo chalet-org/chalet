@@ -8,11 +8,11 @@
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
-#include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 
 namespace chalet
 {
+class BuildState;
 struct MakefileGeneratorNMake final : IStrategyGenerator
 {
 	explicit MakefileGeneratorNMake(const BuildState& inState);

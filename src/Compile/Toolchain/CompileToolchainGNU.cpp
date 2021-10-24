@@ -8,7 +8,11 @@
 #include "Compile/CompilerConfig.hpp"
 
 #include "State/AncillaryTools.hpp"
+#include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
@@ -617,11 +621,10 @@ void CompileToolchainGNU::addPchInclude(StringList& outArgList) const
 void CompileToolchainGNU::addOptimizationOption(StringList& outArgList) const
 {
 	std::string opt;
-	auto& configuration = m_state.configuration;
 
-	OptimizationLevel level = configuration.optimizationLevel();
+	OptimizationLevel level = m_state.configuration.optimizationLevel();
 
-	if (configuration.debugSymbols()
+	if (m_state.configuration.debugSymbols()
 		&& level != OptimizationLevel::Debug
 		&& level != OptimizationLevel::None
 		&& level != OptimizationLevel::CompilerDefault)

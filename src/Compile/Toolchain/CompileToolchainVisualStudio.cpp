@@ -5,6 +5,11 @@
 
 #include "Compile/Toolchain/CompileToolchainVisualStudio.hpp"
 
+#include "Compile/CompilerController.hpp"
+#include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -568,11 +573,10 @@ void CompileToolchainVisualStudio::addPchInclude(StringList& outArgList) const
 void CompileToolchainVisualStudio::addOptimizationOption(StringList& outArgList) const
 {
 	std::string opt;
-	auto& configuration = m_state.configuration;
 
-	OptimizationLevel level = configuration.optimizationLevel();
+	OptimizationLevel level = m_state.configuration.optimizationLevel();
 
-	if (configuration.debugSymbols()
+	if (m_state.configuration.debugSymbols()
 		&& level != OptimizationLevel::Debug
 		&& level != OptimizationLevel::None
 		&& level != OptimizationLevel::CompilerDefault)
@@ -625,7 +629,7 @@ void CompileToolchainVisualStudio::addOptimizationOption(StringList& outArgList)
 
 	outArgList.emplace_back(std::move(opt));
 
-	if (configuration.debugSymbols())
+	if (m_state.configuration.debugSymbols())
 	{
 		auto buildDir = m_state.paths.buildOutputDir() + '/';
 		outArgList.emplace_back("/Zi"); // separate pdb

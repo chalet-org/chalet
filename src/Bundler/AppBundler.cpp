@@ -8,11 +8,12 @@
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/IAppBundler.hpp"
 #include "Core/CommandLineInputs.hpp"
-
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/StatePrototype.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"

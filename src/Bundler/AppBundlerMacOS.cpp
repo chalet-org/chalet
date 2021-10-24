@@ -8,7 +8,13 @@
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
 #include "State/AncillaryTools.hpp"
+#include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "State/Target/IBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"

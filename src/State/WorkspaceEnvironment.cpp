@@ -7,7 +7,6 @@
 
 #include "Libraries/FileSystem.hpp"
 
-#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

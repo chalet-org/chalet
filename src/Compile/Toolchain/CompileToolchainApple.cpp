@@ -8,6 +8,8 @@
 #include "Compile/CompilerConfig.hpp"
 
 #include "State/AncillaryTools.hpp"
+#include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"

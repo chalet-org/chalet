@@ -7,6 +7,7 @@
 
 #include "Compile/CompilerConfig.hpp"
 
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"

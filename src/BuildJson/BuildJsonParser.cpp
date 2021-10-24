@@ -12,6 +12,7 @@
 
 #include "BuildJson/SchemaBuildJson.hpp"
 #include "Core/Platform.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/Bundle/BundleLinux.hpp"
 #include "State/Bundle/BundleMacOS.hpp"
 #include "State/Bundle/BundleWindows.hpp"

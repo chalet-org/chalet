@@ -10,11 +10,12 @@
 #include "Compile/Toolchain/ICompileToolchain.hpp"
 
 #include "Compile/CommandPool.hpp"
-#include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
+class BuildState;
+
 class CompileStrategyNative final : public ICompileStrategy
 {
 public:

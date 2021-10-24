@@ -7,15 +7,21 @@
 
 #include "BuildJson/BuildJsonParser.hpp"
 #include "Builder/BuildManager.hpp"
-#include "Core/CommandLineInputs.hpp"
-#include "SettingsJson/SettingsToolchainJsonParser.hpp"
-
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerConfig.hpp"
+#include "Compile/CompilerController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
+#include "SettingsJson/SettingsToolchainJsonParser.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/StatePrototype.hpp"
+#include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -37,7 +43,7 @@ struct BuildState::Impl
 	CompilerTools toolchain;
 	BuildPaths paths;
 	BuildConfiguration configuration;
-	BuildTargetList targets;
+	std::vector<BuildTarget> targets;
 	CompilerController compilers;
 
 	Unique<ICompileEnvironment> environment;

@@ -7,10 +7,11 @@
 #define CHALET_MACOS_APP_BUNDLER_HPP
 
 #include "Bundler/IAppBundler.hpp"
-#include "State/BuildState.hpp"
 
 namespace chalet
 {
+class BuildState;
+
 class AppBundlerMacOS : public IAppBundler
 {
 public:

@@ -50,8 +50,6 @@ private:
 	BuildTargetType m_type;
 	bool m_includeInBuild = true;
 };
-
-using BuildTargetList = std::vector<BuildTarget>;
 }
 
 #endif // CHALET_IBUILD_TARGET_HPP

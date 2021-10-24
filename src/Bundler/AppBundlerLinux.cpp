@@ -5,7 +5,11 @@
 
 #include "Bundler/AppBundlerLinux.hpp"
 
+#include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "State/Target/IBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"

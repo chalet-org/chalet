@@ -8,10 +8,11 @@
 
 #include "Bundler/IAppBundler.hpp"
 #include "Libraries/FileSystem.hpp"
-#include "State/BuildState.hpp"
 
 namespace chalet
 {
+class BuildState;
+
 class AppBundlerLinux : public IAppBundler
 {
 public:

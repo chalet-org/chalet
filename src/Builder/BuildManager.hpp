@@ -10,11 +10,11 @@
 #include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Router/Route.hpp"
-#include "State/BuildState.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
 {
+class BuildState;
 struct SubChaletTarget;
 struct CMakeTarget;
 struct SourceTarget;

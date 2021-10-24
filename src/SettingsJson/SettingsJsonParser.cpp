@@ -10,7 +10,6 @@
 #include "SettingsJson/GlobalSettingsState.hpp"
 #include "SettingsJson/SchemaSettingsJson.hpp"
 
-#include "State/BuildState.hpp"
 #include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

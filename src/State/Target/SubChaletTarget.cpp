@@ -5,6 +5,7 @@
 
 #include "State/Target/SubChaletTarget.hpp"
 
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 

@@ -8,10 +8,11 @@
 
 #include "Compile/Generator/NinjaGenerator.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
-#include "State/BuildState.hpp"
 
 namespace chalet
 {
+class BuildState;
+
 struct CompileStrategyNinja final : ICompileStrategy
 {
 	explicit CompileStrategyNinja(BuildState& inState);

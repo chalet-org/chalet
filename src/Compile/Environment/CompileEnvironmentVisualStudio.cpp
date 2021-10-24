@@ -5,9 +5,12 @@
 
 #include "Compile/Environment/CompileEnvironmentVisualStudio.hpp"
 
+#include "Cache/WorkspaceCache.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -18,13 +21,11 @@
 
 namespace chalet
 {
-#if defined(CHALET_WIN32)
 static struct
 {
 	short exists = -1;
 	std::string vswhere;
 } state;
-#endif
 
 /*****************************************************************************/
 bool CompileEnvironmentVisualStudio::exists()
@@ -81,12 +82,11 @@ ToolchainType CompileEnvironmentVisualStudio::type() const noexcept
 /*****************************************************************************/
 bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVersion)
 {
-#if defined(CHALET_WIN32)
 	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", kVarsId), CacheType::Local);
 	m_varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", kVarsId), CacheType::Local);
 	m_varsFileMsvcDelta = getVarsPath(kVarsId);
 
-	// This sets state.vswhere
+	// This sets vswhere
 	if (!CompileEnvironmentVisualStudio::exists())
 		return true;
 
@@ -129,7 +129,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 		return cmd;
 	};
 
-	auto getMsvcVersion = [this, &getStartOfVsWhereCommand]() {
+	auto getMsvcVersion = [&getStartOfVsWhereCommand]() {
 		StringList vswhereCmd = getStartOfVsWhereCommand();
 		vswhereCmd.emplace_back("-property");
 		vswhereCmd.emplace_back("installationVersion");
@@ -281,16 +281,13 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
 
 	Diagnostic::printDone(timer.asString());
-#else
-	UNUSED(inVersion);
-#endif
+
 	return true;
 }
 
 /*****************************************************************************/
 bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 {
-#if defined(CHALET_WIN32)
 	if (m_msvcArchitectureSet)
 		return true;
 
@@ -384,7 +381,6 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 
 	m_msvcArchitectureSet = true;
-#endif
 
 	return true;
 }
@@ -407,7 +403,6 @@ CompilerInfo CompileEnvironmentVisualStudio::getCompilerInfoFromExecutable(const
 {
 	CompilerInfo ret;
 
-#if defined(CHALET_WIN32)
 	// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
 	std::string rawOutput = Commands::subprocessOutput(getVersionCommand(inExecutable));
 	auto splitOutput = String::split(rawOutput, '\n');
@@ -427,9 +422,6 @@ CompilerInfo CompileEnvironmentVisualStudio::getCompilerInfoFromExecutable(const
 			ret.description = getFullCxxCompilerString(ret.version);
 		}
 	}
-#else
-	UNUSED(inExecutable);
-#endif
 
 	return ret;
 }
@@ -443,9 +435,8 @@ bool CompileEnvironmentVisualStudio::compilerVersionIsToolchainVersion() const
 /*****************************************************************************/
 bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
 {
-#if defined(CHALET_WIN32)
 	std::string vcvarsFile{ "vcvarsall" };
-	StringList allowedArchesWin = Arch::getAllowedMsvcArchitectures();
+	StringList allowedArchesWin = getAllowedArchitectures();
 
 	const auto& targetArch = m_inputs.targetArchitecture();
 	if (!String::equals(allowedArchesWin, targetArch))
@@ -472,9 +463,23 @@ bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
 
 	bool result = std::system(String::join(cmd).c_str()) == EXIT_SUCCESS;
 	return result;
-#else
-	return false;
-#endif
 }
 
+/*****************************************************************************/
+StringList CompileEnvironmentVisualStudio::getAllowedArchitectures() const
+{
+	// clang-format off
+	return {
+		"x86",						// any host, x86 target
+		"x86_x64", "x86_amd64",		// any host, x64 target
+		"x86_arm",					// any host, ARM target
+		"x86_arm64",				// any host, ARM64 target
+		//
+		"x64", "amd64",				// x64 host, x64 target
+		"x64_x86", "amd64_x86",		// x64 host, x86 target
+		"x64_arm", "amd64_arm",		// x64 host, ARM target
+		"x64_arm64", "amd64_arm64",	// x64 host, ARMG64 target
+	};
+	// clang-format on
+}
 }

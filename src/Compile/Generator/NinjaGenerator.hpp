@@ -8,11 +8,12 @@
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
-#include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 
 namespace chalet
 {
+class BuildState;
+
 class NinjaGenerator final : public IStrategyGenerator
 {
 	using NinjaRule = std::function<std::string(NinjaGenerator&)>;

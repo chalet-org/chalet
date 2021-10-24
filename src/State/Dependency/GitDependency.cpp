@@ -8,7 +8,6 @@
 #include "Core/CommandLineInputs.hpp"
 
 #include "State/BuildPaths.hpp"
-#include "State/BuildState.hpp"
 #include "State/StatePrototype.hpp"
 #include "Utility/String.hpp"
 

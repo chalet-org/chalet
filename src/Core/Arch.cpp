@@ -38,26 +38,6 @@ std::string Arch::getHostCpuArchitecture()
 }
 
 /*****************************************************************************/
-#if defined(CHALET_WIN32)
-StringList Arch::getAllowedMsvcArchitectures() noexcept
-{
-	// clang-format off
-	return {
-		"x86",						// any host, x86 target
-		"x86_x64", "x86_amd64",		// any host, x64 target
-		"x86_arm",					// any host, ARM target
-		"x86_arm64",				// any host, ARM64 target
-		//
-		"x64", "amd64",				// x64 host, x64 target
-		"x64_x86", "amd64_x86",		// x64 host, x86 target
-		"x64_arm", "amd64_arm",		// x64 host, ARM target
-		"x64_arm64", "amd64_arm64",	// x64 host, ARMG64 target
-	};
-	// clang-format on
-}
-#endif
-
-/*****************************************************************************/
 void Arch::set(const std::string& inValue) noexcept
 {
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html

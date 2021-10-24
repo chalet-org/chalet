@@ -7,7 +7,6 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildPaths.hpp"
-#include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"

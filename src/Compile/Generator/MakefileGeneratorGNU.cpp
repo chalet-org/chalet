@@ -5,7 +5,12 @@
 
 #include "Compile/Generator/MakefileGeneratorGNU.hpp"
 
+#include "Compile/CompilerController.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"

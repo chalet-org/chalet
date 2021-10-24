@@ -6,6 +6,8 @@
 #include "Compile/Strategy/ICompileStrategy.hpp"
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
+#include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
 
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 #include "Compile/Strategy/CompileStrategyNative.hpp"

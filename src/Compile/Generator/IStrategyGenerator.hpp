@@ -8,12 +8,12 @@
 
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/Toolchain/ICompileToolchain.hpp"
-#include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
+class BuildState;
 struct IStrategyGenerator;
 using StrategyGenerator = Unique<IStrategyGenerator>;
 

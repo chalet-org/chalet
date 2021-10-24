@@ -6,12 +6,11 @@
 #ifndef CHALET_PROFILER_RUNNER_HPP
 #define CHALET_PROFILER_RUNNER_HPP
 
-#include "State/BuildState.hpp"
-#include "State/Target/SourceTarget.hpp"
-
 namespace chalet
 {
+class BuildState;
 struct CommandLineInputs;
+struct SourceTarget;
 
 class ProfilerRunner
 {

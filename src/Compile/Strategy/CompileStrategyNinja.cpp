@@ -8,6 +8,8 @@
 #include "Cache/WorkspaceCache.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"

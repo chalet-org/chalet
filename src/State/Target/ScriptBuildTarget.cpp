@@ -5,6 +5,7 @@
 
 #include "State/Target/ScriptBuildTarget.hpp"
 
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"

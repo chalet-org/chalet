@@ -32,10 +32,10 @@ protected:
 
 private:
 	bool saveMsvcEnvironment() const;
+	StringList getAllowedArchitectures() const;
 
 	const std::string kVarsId;
 
-#if defined(CHALET_WIN32)
 	std::string m_varsFileOriginal;
 	std::string m_varsFileMsvc;
 	std::string m_varsFileMsvcDelta;
@@ -43,7 +43,6 @@ private:
 	std::string m_vsAppIdDir;
 
 	bool m_msvcArchitectureSet = false;
-#endif
 };
 }
 

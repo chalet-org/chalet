@@ -7,6 +7,8 @@
 
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "State/Target/IBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 

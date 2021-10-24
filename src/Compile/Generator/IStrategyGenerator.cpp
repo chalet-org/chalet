@@ -8,6 +8,7 @@
 #include "Compile/Generator/MakefileGeneratorGNU.hpp"
 #include "Compile/Generator/MakefileGeneratorNMake.hpp"
 #include "Compile/Generator/NinjaGenerator.hpp"
+#include "State/BuildState.hpp"
 
 namespace chalet
 {
