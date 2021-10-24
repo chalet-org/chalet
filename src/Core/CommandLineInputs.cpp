@@ -831,7 +831,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
-	if (String::equals(kToolchainPresetICX, inValue) || state.intelICXVisualStudioPresets.find(inValue) != state.intelICXVisualStudioPresets.end())
+	else if (String::equals(kToolchainPresetICX, inValue) || state.intelICXVisualStudioPresets.find(inValue) != state.intelICXVisualStudioPresets.end())
 	#else
 	else if (String::equals(kToolchainPresetICX, inValue))
 	#endif
@@ -855,7 +855,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
-	if (state.intelICCVisualStudioPresets.find(inValue) != state.intelICCVisualStudioPresets.end())
+	else if (state.intelICCVisualStudioPresets.find(inValue) != state.intelICCVisualStudioPresets.end())
 	#else
 	else if (String::equals(kToolchainPresetICC, inValue))
 	#endif

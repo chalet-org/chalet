@@ -190,7 +190,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 		m_impl->environment = ICompileEnvironment::make(m_impl->inputs.toolchainPreference().type, m_impl->inputs, *this);
 		if (m_impl->environment == nullptr)
 		{
-			Diagnostic::error("environment must be created when the toolchain is initialized.");
+			Diagnostic::error("The environment must be created when the toolchain is initialized.");
 			return false;
 		}
 
