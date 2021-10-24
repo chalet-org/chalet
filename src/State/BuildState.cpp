@@ -249,6 +249,8 @@ bool BuildState::parseBuildJson()
 /*****************************************************************************/
 bool BuildState::initializeToolchain()
 {
+	Timer timer;
+
 	auto initializeImpl = [this]() -> bool {
 		for (auto& target : targets)
 		{
@@ -268,7 +270,9 @@ bool BuildState::initializeToolchain()
 	};
 
 	bool result = initializeImpl();
+
 	result &= m_impl->environment->makeArchitectureAdjustments();
+
 	result &= toolchain.initialize(*m_impl->environment);
 
 	if (!result)

@@ -12,6 +12,8 @@
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
+#include "Utility/Timer.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -41,17 +43,21 @@ std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& 
 /*****************************************************************************/
 bool CompileEnvironmentLLVM::makeArchitectureAdjustments()
 {
-	Arch::Cpu targetArch = m_state.info.targetArchitecture();
+	// Arch::Cpu targetArch = m_state.info.targetArchitecture();
 	const auto& archTriple = m_state.info.targetArchitectureTriple();
 	const auto& compiler = m_state.toolchain.compilerCxx();
 
 	bool valid = false;
-	if (!m_inputs.targetArchitecture().empty())
+	// TODO: This logic is interesting, but needs to be refined as "get list of supported architectures"
+	/*if (!m_inputs.targetArchitecture().empty())
 	{
 		auto results = Commands::subprocessOutput({ compiler, "-print-targets" });
+
 		if (!String::contains("error:", results))
 		{
-			auto split = String::split(results, "\n");
+			StringList arches64{ "x86-64", "x86_64", "x64" };
+			StringList arches86{ "i686", "x86" };
+			auto split = String::split(results, '\n');
 			for (auto& line : split)
 			{
 				auto start = line.find_first_not_of(' ');
@@ -60,12 +66,12 @@ bool CompileEnvironmentLLVM::makeArchitectureAdjustments()
 				auto result = line.substr(start, end - start);
 				if (targetArch == Arch::Cpu::X64)
 				{
-					if (String::equals({ "x86-64", "x86_64", "x64" }, result))
+					if (String::equals(arches64, result))
 						valid = true;
 				}
 				else if (targetArch == Arch::Cpu::X86)
 				{
-					if (String::equals({ "i686", "x86" }, result))
+					if (String::equals(arches86, result))
 						valid = true;
 				}
 				else
@@ -75,7 +81,7 @@ bool CompileEnvironmentLLVM::makeArchitectureAdjustments()
 				}
 			}
 		}
-	}
+	}*/
 
 	if (!String::contains('-', archTriple))
 	{
@@ -100,7 +106,6 @@ bool CompileEnvironmentLLVM::makeArchitectureAdjustments()
 	{
 		valid = true;
 	}
-
 	return valid;
 }
 

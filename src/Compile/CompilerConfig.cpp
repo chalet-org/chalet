@@ -22,6 +22,7 @@ struct CompilerPathStructure
 	std::string libDir;
 	std::string includeDir;
 };
+
 /*****************************************************************************/
 CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState) :
 	m_state(inState),
@@ -68,35 +69,28 @@ bool CompilerConfig::configureCompilerPaths()
 	// LOG(lowercasePath);
 
 	using CompilerMap = std::vector<CompilerPathStructure>;
+	CompilerMap compilerStructures;
 #if defined(CHALET_WIN32)
-	const CompilerMap compilerStructures
-	{
-		{ "/bin/hostx64/x64", "/lib/x64", "/include" },
-			{ "/bin/hostx64/x86", "/lib/x86", "/include" },
-			{ "/bin/hostx64/arm64", "/lib/arm64", "/include" },
-			{ "/bin/hostx64/arm", "/lib/arm", "/include" },
-			//
-			{ "/bin/hostx86/x86", "/lib/x86", "/include" },
-			{ "/bin/hostx86/x64", "/lib/x64", "/include" },
-			{ "/bin/hostx86/arm64", "/lib/arm64", "/include" },
-			{ "/bin/hostx86/arm", "/lib/arm", "/include" },
-		// { "/bin/hostx64/x64", "/lib/64", "/include" }, // TODO: Not sure what makes this different from /lib/x64
-		//
+	compilerStructures.push_back({ "/bin/hostx64/x64", "/lib/x64", "/include" });
+	compilerStructures.push_back({ "/bin/hostx64/x86", "/lib/x86", "/include" });
+	compilerStructures.push_back({ "/bin/hostx64/arm64", "/lib/arm64", "/include" });
+	compilerStructures.push_back({ "/bin/hostx64/arm", "/lib/arm", "/include" });
+
+	compilerStructures.push_back({ "/bin/hostx86/x86", "/lib/x86", "/include" });
+	compilerStructures.push_back({ "/bin/hostx86/x64", "/lib/x64", "/include" });
+	compilerStructures.push_back({ "/bin/hostx86/arm64", "/lib/arm64", "/include" });
+	compilerStructures.push_back({ "/bin/hostx86/arm", "/lib/arm", "/include" });
+	// compilerStructures.push_back({"/bin/hostx64/x64", "/lib/64", "/include"});
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-			{ "/bin/intel64", "/compiler/lib/intel64_win", "/compiler/include" },
-			{ "/bin/intel64_ia32", "/compiler/lib/ia32_win", "/compiler/include" },
+	compilerStructures.push_back({ "/bin/intel64", "/compiler/lib/intel64_win", "/compiler/include" });
+	compilerStructures.push_back({ "/bin/intel64_ia32", "/compiler/lib/ia32_win", "/compiler/include" });
 	#endif
-			//
-			{ "/bin", "/lib", "/include" },
-	};
-#else
-	const CompilerMap compilerStructures
-	{
-		{ "/bin", "/lib", "/include" },
+#endif
+	compilerStructures.push_back({ "/bin", "/lib", "/include" });
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-			{ "/bin/intel64", "/compiler/lib", "/compiler/include" },
+	compilerStructures.push_back({ "/bin/intel64", "/compiler/lib", "/compiler/include" });
 	#endif
-	};
 #endif
 
 	for (const auto& [binDir, libDir, includeDir] : compilerStructures)

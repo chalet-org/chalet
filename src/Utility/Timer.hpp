@@ -19,7 +19,7 @@ public:
 
 	void restart();
 	std::int64_t stop();
-	std::string asString();
+	std::string asString(const bool inRestart = false);
 
 private:
 	clock::time_point m_start;

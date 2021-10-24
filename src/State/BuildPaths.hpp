@@ -7,13 +7,13 @@
 #define CHALET_BUILD_PATHS_HPP
 
 #include "State/SourceOutputs.hpp"
-#include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
 struct CompilerTools;
 struct CommandLineInputs;
 struct BuildInfo;
+struct SourceTarget;
 struct WorkspaceEnvironment;
 struct CompilerConfig;
 

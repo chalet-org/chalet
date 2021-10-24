@@ -23,17 +23,19 @@ void Timer::restart()
 std::int64_t Timer::stop()
 {
 	m_end = clock::now();
-
 	auto executionTime = m_end - m_start;
 
 	return std::chrono::duration_cast<std::chrono::milliseconds>(executionTime).count();
 }
 
 /*****************************************************************************/
-std::string Timer::asString()
+std::string Timer::asString(const bool inRestart)
 {
 	auto end = clock::now();
 	auto executionTime = end - m_start;
+
+	if (inRestart)
+		m_start = clock::now();
 
 	uint milliseconds = static_cast<uint>(std::chrono::duration_cast<std::chrono::milliseconds>(executionTime).count());
 
