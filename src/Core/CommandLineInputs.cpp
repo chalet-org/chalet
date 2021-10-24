@@ -20,51 +20,51 @@ namespace
 static struct
 {
 	const Dictionary<IdeType> ideTypes{
-		{ "vscode", IdeType::VisualStudioCode },
 		{ "vs2019", IdeType::VisualStudio2019 },
+		{ "vscode", IdeType::VisualStudioCode },
 		{ "xcode", IdeType::XCode },
 		// { "codeblocks", IdeType::CodeBlocks },
 	};
 
 	const Dictionary<QueryOption> queryOptions{
-		{ "list-names", QueryOption::QueryNames },
-		{ "theme-names", QueryOption::ThemeNames },
+		{ "all-toolchains", QueryOption::AllToolchains },
+		{ "architecture", QueryOption::Architecture },
+		{ "architectures", QueryOption::Architectures },
 		{ "commands", QueryOption::Commands },
+		{ "configuration", QueryOption::Configuration },
 		{ "configurations", QueryOption::Configurations },
+		{ "list-names", QueryOption::QueryNames },
+		{ "run-target", QueryOption::RunTarget },
+		{ "theme-names", QueryOption::ThemeNames },
+		{ "toolchain", QueryOption::Toolchain },
 		{ "toolchain-presets", QueryOption::ToolchainPresets },
 		{ "user-toolchains", QueryOption::UserToolchains },
-		{ "all-toolchains", QueryOption::AllToolchains },
-		{ "architectures", QueryOption::Architectures },
-		{ "toolchain", QueryOption::Toolchain },
-		{ "configuration", QueryOption::Configuration },
-		{ "architecture", QueryOption::Architecture },
-		{ "run-target", QueryOption::RunTarget },
 	};
 
 #if defined(CHALET_WIN32)
 	const OrderedDictionary<VisualStudioVersion> visualStudioPresets{
-		{ "vs-stable", VisualStudioVersion::Stable }, // first
-		{ "vs-preview", VisualStudioVersion::Preview },
-		{ "vs-2022", VisualStudioVersion::VisualStudio2022 },
-		{ "vs-2019", VisualStudioVersion::VisualStudio2019 },
-		{ "vs-2017", VisualStudioVersion::VisualStudio2017 },
-		{ "vs-2015", VisualStudioVersion::VisualStudio2015 },
-		{ "vs-2013", VisualStudioVersion::VisualStudio2013 },
-		{ "vs-2012", VisualStudioVersion::VisualStudio2012 },
 		{ "vs-2010", VisualStudioVersion::VisualStudio2010 },
+		{ "vs-2012", VisualStudioVersion::VisualStudio2012 },
+		{ "vs-2013", VisualStudioVersion::VisualStudio2013 },
+		{ "vs-2015", VisualStudioVersion::VisualStudio2015 },
+		{ "vs-2017", VisualStudioVersion::VisualStudio2017 },
+		{ "vs-2019", VisualStudioVersion::VisualStudio2019 },
+		{ "vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "vs-preview", VisualStudioVersion::Preview },
+		{ "vs-stable", VisualStudioVersion::Stable },
 	};
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	const OrderedDictionary<VisualStudioVersion> intelICCVisualStudioPresets{
-		// { "icc-vs-2022", VisualStudioVersion::VisualStudio2022 },
-		{ "icc-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "icc-vs-2017", VisualStudioVersion::VisualStudio2017 },
+		{ "icc-vs-2019", VisualStudioVersion::VisualStudio2019 },
+		// { "icc-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};
 	#endif
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	const OrderedDictionary<VisualStudioVersion> intelICXVisualStudioPresets{
-		// { "icx-vs-2022", VisualStudioVersion::VisualStudio2022 },
-		{ "icx-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "icx-vs-2017", VisualStudioVersion::VisualStudio2017 },
+		{ "icx-vs-2019", VisualStudioVersion::VisualStudio2019 },
+		// { "icx-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};
 	#endif
 #endif
@@ -704,8 +704,9 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	StringList ret;
 
 #if defined(CHALET_WIN32)
-	for (auto& [name, type] : state.visualStudioPresets)
+	for (auto it = state.visualStudioPresets.rbegin(); it != state.visualStudioPresets.rend(); ++it)
 	{
+		auto& [name, type] = *it;
 		if (type == VisualStudioVersion::VisualStudio2015)
 			break;
 
@@ -719,16 +720,18 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	ret.emplace_back(kToolchainPresetICX);
 	#if defined(CHALET_WIN32)
-	for (auto& [name, type] : state.intelICXVisualStudioPresets)
+	for (auto it = state.intelICXVisualStudioPresets.rbegin(); it != state.intelICXVisualStudioPresets.rend(); ++it)
 	{
+		auto& [name, type] = *it;
 		ret.emplace_back(name);
 	}
 	#endif
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
-	for (auto& [name, type] : state.intelICCVisualStudioPresets)
+	for (auto it = state.intelICCVisualStudioPresets.rbegin(); it != state.intelICCVisualStudioPresets.rend(); ++it)
 	{
+		auto& [name, type] = *it;
 		ret.emplace_back(name);
 	}
 	#else
