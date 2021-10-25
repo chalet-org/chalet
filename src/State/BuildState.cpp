@@ -286,7 +286,8 @@ bool BuildState::initializeBuild()
 	Diagnostic::infoEllipsis("Initializing");
 
 	auto& cacheFile = m_impl->prototype.cache.file();
-	cacheFile.setSourceCache(Hash::string("__global__"), true);
+	m_uniqueId = getUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
+	cacheFile.setSourceCache(m_uniqueId, true);
 
 	if (!validateSigningIdentity())
 		return false;
