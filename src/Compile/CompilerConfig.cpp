@@ -6,6 +6,8 @@
 #include "Compile/CompilerConfig.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
+#include "Compile/CompilerConfigController.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -25,9 +27,11 @@ struct CompilerPathStructure
 };
 
 /*****************************************************************************/
-CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState) :
+CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState, ICompileEnvironment& inEnvironment) :
 	m_state(inState),
-	m_language(inLanguage)
+	m_environment(inEnvironment),
+	m_language(inLanguage),
+	m_type(m_environment.type())
 {
 }
 
@@ -167,17 +171,19 @@ bool CompilerConfig::testCompilerMacros()
 #if defined(CHALET_WIN32)
 	if (String::endsWith("/cl.exe", exec))
 	{
-		m_compilerType = CppCompilerType::MSVC;
+		m_compilerType = ToolchainType::VisualStudio;
 		return true;
 	}
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	else if (String::endsWith("/icl.exe", exec))
 	{
-		m_compilerType = CppCompilerType::IntelClassic;
+		m_compilerType = ToolchainType::IntelClassic;
 		return true;
 	}
 	#endif
 #endif
+
+	LOG("type:", static_cast<int>(m_environment.type()));
 
 	const std::string macroResult = getCompilerMacros(exec);
 	// LOG(macroResult);
@@ -221,49 +227,49 @@ bool CompilerConfig::testCompilerMacros()
 
 	if (emscripten)
 	{
-		m_compilerType = CppCompilerType::EmScripten;
+		m_type = ToolchainType::EmScripten;
 	}
 #if defined(CHALET_MACOS)
 	else if (appleClang)
 	{
-		m_compilerType = CppCompilerType::AppleClang;
+		m_type = ToolchainType::AppleLLVM;
 	}
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	else if (clang && intelClang)
 	{
-		m_compilerType = CppCompilerType::IntelClang;
+		m_type = ToolchainType::IntelLLVM;
 	}
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	else if (gcc && intelGcc)
 	{
-		m_compilerType = CppCompilerType::IntelClassic;
+		m_type = ToolchainType::IntelClassic;
 	}
 #endif
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	else if (clang && mingw)
 	{
-		m_compilerType = CppCompilerType::MingwClang;
+		m_type = ToolchainType::MingwLLVM;
 	}
 #endif
 	else if (clang)
 	{
-		m_compilerType = CppCompilerType::Clang;
+		m_type = ToolchainType::LLVM;
 	}
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	else if (gcc && mingw)
 	{
-		m_compilerType = CppCompilerType::MingwGcc;
+		m_type = ToolchainType::MingwGNU;
 	}
 #endif
 	else if (gcc)
 	{
-		m_compilerType = CppCompilerType::Gcc;
+		m_type = ToolchainType::GNU;
 	}
 	else
 	{
-		m_compilerType = CppCompilerType::Unknown;
+		m_type = ToolchainType::Unknown;
 		result = false;
 	}
 
@@ -276,7 +282,7 @@ bool CompilerConfig::testCompilerMacros()
 /*****************************************************************************/
 bool CompilerConfig::getSupportedCompilerFlags()
 {
-	if (m_compilerType == CppCompilerType::Unknown)
+	if (m_type == ToolchainType::Unknown)
 		return false;
 
 	const auto& exec = compilerExecutable();
@@ -289,7 +295,7 @@ bool CompilerConfig::getSupportedCompilerFlags()
 
 	if (!Commands::pathExists(m_flagsFile))
 	{
-		if (isIntelClassic())
+		if (m_state.compilers.isIntelClassic())
 		{
 			StringList categories{
 				"codegen",
@@ -320,7 +326,7 @@ bool CompilerConfig::getSupportedCompilerFlags()
 			}
 			parseGnuHelpList(cmd);
 		}
-		else if (isGcc())
+		else if (m_state.compilers.isGcc())
 		{
 			{
 				StringList categories{
@@ -345,7 +351,7 @@ bool CompilerConfig::getSupportedCompilerFlags()
 
 			// TODO: separate/joined -- kind of weird to check for
 		}
-		else if (isClang())
+		else if (m_state.compilers.isClang())
 		{
 			parseClangHelpList();
 		}
@@ -534,7 +540,7 @@ bool CompilerConfig::isLinkSupported(const std::string& inLink, const StringList
 	if (exec.empty())
 		return false;
 
-	if (isGcc())
+	if (m_state.compilers.isGcc())
 	{
 		// This will print the input if the link is not found in path
 		auto file = fmt::format("lib{}.a", inLink);
@@ -552,78 +558,6 @@ bool CompilerConfig::isLinkSupported(const std::string& inLink, const StringList
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-CppCompilerType CompilerConfig::compilerType() const noexcept
-{
-	return m_compilerType;
-}
-
-/*****************************************************************************/
-bool CompilerConfig::isWindowsClang() const noexcept
-{
-#if defined(CHALET_WIN32)
-	return m_compilerType == CppCompilerType::Clang
-		|| m_compilerType == CppCompilerType::IntelClang;
-#else
-	return false;
-#endif
-}
-
-/*****************************************************************************/
-bool CompilerConfig::isClang() const noexcept
-{
-	return m_compilerType == CppCompilerType::Clang
-		|| m_compilerType == CppCompilerType::AppleClang
-		|| m_compilerType == CppCompilerType::IntelClang
-		|| m_compilerType == CppCompilerType::MingwClang
-		|| m_compilerType == CppCompilerType::EmScripten;
-}
-
-/*****************************************************************************/
-bool CompilerConfig::isAppleClang() const noexcept
-{
-	return m_compilerType == CppCompilerType::AppleClang;
-}
-
-/*****************************************************************************/
-bool CompilerConfig::isGcc() const noexcept
-{
-	return m_compilerType == CppCompilerType::Gcc
-		|| m_compilerType == CppCompilerType::MingwGcc
-		|| m_compilerType == CppCompilerType::IntelClassic;
-}
-
-/*****************************************************************************/
-bool CompilerConfig::isIntelClassic() const noexcept
-{
-	return m_compilerType == CppCompilerType::IntelClassic;
-}
-
-/*****************************************************************************/
-bool CompilerConfig::isMingw() const noexcept
-{
-	return m_compilerType == CppCompilerType::MingwGcc
-		|| m_compilerType == CppCompilerType::MingwClang;
-}
-
-/*****************************************************************************/
-bool CompilerConfig::isMingwGcc() const noexcept
-{
-	return m_compilerType == CppCompilerType::MingwGcc;
-}
-
-/*****************************************************************************/
-bool CompilerConfig::isMsvc() const noexcept
-{
-	return m_compilerType == CppCompilerType::MSVC;
-}
-
-/*****************************************************************************/
-bool CompilerConfig::isClangOrMsvc() const noexcept
-{
-	return isClang() || isMsvc();
 }
 
 /*****************************************************************************/

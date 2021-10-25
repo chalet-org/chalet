@@ -15,7 +15,7 @@ struct CommandLineInputs;
 struct BuildInfo;
 struct SourceTarget;
 struct WorkspaceEnvironment;
-struct CompilerConfig;
+class BuildState;
 
 struct BuildPaths
 {
@@ -41,14 +41,14 @@ struct BuildPaths
 	std::string getTargetFilename(const SourceTarget& inProject) const;
 	std::string getTargetBasename(const SourceTarget& inProject) const;
 	std::string getPrecompiledHeader(const SourceTarget& inProject) const;
-	std::string getPrecompiledHeaderTarget(const SourceTarget& inProject, const CompilerConfig& inConfig) const;
+	std::string getPrecompiledHeaderTarget(const SourceTarget& inProject) const;
 	std::string getPrecompiledHeaderInclude(const SourceTarget& inProject) const;
 	std::string getWindowsManifestFilename(const SourceTarget& inProject) const;
 	std::string getWindowsManifestResourceFilename(const SourceTarget& inProject) const;
 	std::string getWindowsIconResourceFilename(const SourceTarget& inProject) const;
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
-	SourceOutputs getOutputs(const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly);
+	SourceOutputs getOutputs(const SourceTarget& inProject, const bool inDumpAssembly);
 	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const;
 
 	void replaceVariablesInPath(std::string& outPath, const std::string& inName = std::string()) const;
@@ -56,9 +56,9 @@ struct BuildPaths
 private:
 	friend class BuildState;
 
-	explicit BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnvironment& inEnvironment);
+	explicit BuildPaths(const CommandLineInputs& inInputs, const BuildState& inState);
 
-	bool initialize(const BuildInfo& inInfo, const CompilerTools& inToolchain);
+	bool initialize();
 	void populateFileList(const SourceTarget& inProject);
 
 	struct SourceGroup
@@ -67,12 +67,12 @@ private:
 		StringList list;
 	};
 
-	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly);
+	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const bool inDumpAssembly);
 	std::string getObjectFile(const std::string& inSource, const bool inIsMsvc) const;
 	std::string getAssemblyFile(const std::string& inSource, const bool inIsMsvc) const;
 	std::string getDependencyFile(const std::string& inSource) const;
 	SourceType getSourceType(const std::string& inSource) const;
-	StringList getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig) const;
+	StringList getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
 	SourceGroup getFiles(const SourceTarget& inProject) const;
 	SourceGroup getDirectories(const SourceTarget& inProject) const;
@@ -80,7 +80,7 @@ private:
 	StringList getDirectoryList(const SourceTarget& inProject) const;
 
 	const CommandLineInputs& m_inputs;
-	const WorkspaceEnvironment& m_environment;
+	const BuildState& m_state;
 
 	const StringList m_cExts;
 	const StringList m_cppExts;

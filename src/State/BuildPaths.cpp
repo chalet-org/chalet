@@ -5,12 +5,12 @@
 
 #include "State/BuildPaths.hpp"
 
-#include "Compile/CompilerConfig.hpp"
+#include "Compile/CompilerConfigController.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -19,9 +19,9 @@
 
 namespace chalet
 {
-BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnvironment& inEnvironment) :
+BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const BuildState& inState) :
 	m_inputs(inInputs),
-	m_environment(inEnvironment),
+	m_state(inState),
 	m_cExts({ "c" }),
 	m_cppExts({ "cpp", "cc", "cxx", "c++", "C", "CPP", "CC", "CXX", "C++" }),
 	m_resourceExts({ "rc", "RC" }),
@@ -31,7 +31,7 @@ BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const WorkspaceEnviron
 }
 
 /*****************************************************************************/
-bool BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inToolchain)
+bool BuildPaths::initialize()
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
@@ -41,11 +41,11 @@ bool BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inTool
 		Commands::makeDirectory(outputDirectory);
 	}
 
-	auto arch = m_inputs.getArchWithOptionsAsString(inInfo.targetArchitectureTriple());
-	const auto& buildConfig = inInfo.buildConfiguration();
+	auto arch = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+	const auto& buildConfig = m_state.info.buildConfiguration();
 	const auto& toolchainPreference = m_inputs.toolchainPreferenceName();
 
-	auto style = inToolchain.buildPathStyle();
+	auto style = m_state.toolchain.buildPathStyle();
 	if (style == BuildPathStyle::ToolchainName && !toolchainPreference.empty())
 	{
 		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, toolchainPreference, buildConfig);
@@ -56,7 +56,7 @@ bool BuildPaths::initialize(const BuildInfo& inInfo, const CompilerTools& inTool
 	}
 	else if (style == BuildPathStyle::ArchConfiguration)
 	{
-		arch = inInfo.targetArchitectureString();
+		arch = m_state.info.targetArchitectureString();
 		m_buildOutputDir = fmt::format("{}/{}-{}", outputDirectory, arch, buildConfig);
 	}
 	else
@@ -199,7 +199,7 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 }
 
 /*****************************************************************************/
-SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly)
+SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool inDumpAssembly)
 {
 	SourceOutputs ret;
 
@@ -214,10 +214,10 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const Compil
 		List::addIfDoesNotExist(ret.fileExtensions, std::move(ext));
 	}
 
-	const bool isNotMsvc = !inConfig.isMsvc();
-	ret.objectListLinker = getObjectFilesList(files.list, inProject, inConfig);
+	const bool isNotMsvc = !m_state.compilers.isMsvc();
+	ret.objectListLinker = getObjectFilesList(files.list, inProject);
 	files.list = String::excludeIf(inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache, files.list);
-	ret.groups = getSourceFileGroupList(std::move(files), inProject, inConfig, inDumpAssembly);
+	ret.groups = getSourceFileGroupList(std::move(files), inProject, inDumpAssembly);
 	for (auto& group : ret.groups)
 	{
 		SourceType type = group->type;
@@ -354,15 +354,15 @@ std::string BuildPaths::getPrecompiledHeader(const SourceTarget& inProject) cons
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject, const CompilerConfig& inConfig) const
+std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject) const
 {
 	std::string ret;
 	if (inProject.usesPch())
 	{
 		std::string ext;
-		if (inConfig.isClangOrMsvc() || inConfig.isIntelClassic())
+		if (m_state.compilers.isClangOrMsvc() || m_state.compilers.isIntelClassic())
 			ext = "pch";
-		// else if (inConfig.isIntelClassic())
+		// else if (m_state.compilers.isIntelClassic())
 		// 	ext = "pchi";
 		else
 			ext = "gch";
@@ -458,10 +458,10 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig, const bool inDumpAssembly)
+SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const bool inDumpAssembly)
 {
 	SourceFileGroupList ret;
-	bool isMsvc = inConfig.isMsvc();
+	bool isMsvc = m_state.compilers.isMsvc();
 
 	auto& fileListCache = inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache;
 
@@ -506,7 +506,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		auto group = std::make_unique<SourceFileGroup>();
 
 		group->type = SourceType::CxxPrecompiledHeader;
-		group->objectFile = getPrecompiledHeaderTarget(inProject, inConfig);
+		group->objectFile = getPrecompiledHeaderTarget(inProject);
 		group->dependencyFile = getDependencyFile(inFiles.pch);
 		group->sourceFile = std::move(inFiles.pch);
 
@@ -584,29 +584,29 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 }
 
 /*****************************************************************************/
-StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject, const CompilerConfig& inConfig) const
+StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject) const
 {
 	StringList ret;
 	for (const auto& file : inFiles)
 	{
-		auto outFile = getObjectFile(file, inConfig.isMsvc());
+		auto outFile = getObjectFile(file, m_state.compilers.isMsvc());
 		if (!outFile.empty())
 			ret.emplace_back(std::move(outFile));
 	}
 
 #if defined(CHALET_WIN32)
-	if (inConfig.isMsvc())
+	if (m_state.compilers.isMsvc())
 	{
 		if (inProject.usesPch())
 		{
-			auto pchTarget = getPrecompiledHeaderTarget(inProject, inConfig);
+			auto pchTarget = getPrecompiledHeaderTarget(inProject);
 			String::replaceAll(pchTarget, ".pch", ".obj");
 
 			ret.emplace_back(std::move(pchTarget));
 		}
 	}
 #else
-	UNUSED(inProject, inConfig);
+	UNUSED(inProject);
 #endif
 
 	return ret;

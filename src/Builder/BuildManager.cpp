@@ -399,11 +399,9 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
 
 	auto& compilerConfig = m_state.compilers.get(inProject.language());
-	auto compilerType = compilerConfig.compilerType();
 
-	auto buildToolchain = ICompileToolchain::make(compilerType, m_state, inProject, compilerConfig);
-
-	auto outputs = m_state.paths.getOutputs(inProject, compilerConfig, m_state.info.dumpAssembly());
+	auto buildToolchain = ICompileToolchain::make(m_state.compilers.type(), m_state, inProject, compilerConfig);
+	auto outputs = m_state.paths.getOutputs(inProject, m_state.info.dumpAssembly());
 
 	if (!Commands::makeDirectories(outputs.directories, m_directoriesMade))
 	{

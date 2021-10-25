@@ -202,8 +202,7 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const SourceFileGroupList
 
 	StringList pches;
 
-	const auto& compilerConfig = m_state.compilers.get(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	pches.push_back(pchTarget);
 
 	for (auto& group : inGroups)

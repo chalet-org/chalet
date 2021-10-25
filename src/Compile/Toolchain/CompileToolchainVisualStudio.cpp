@@ -24,8 +24,7 @@ namespace chalet
 {
 /*****************************************************************************/
 CompileToolchainVisualStudio::CompileToolchainVisualStudio(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
-	ICompileToolchain(inState, inProject, inConfig),
-	m_compilerType(m_config.compilerType())
+	ICompileToolchain(inState, inProject, inConfig)
 {
 	UNUSED(m_project);
 }
@@ -556,8 +555,7 @@ void CompileToolchainVisualStudio::addPchInclude(StringList& outArgList) const
 	// TODO: Potential for more than one pch?
 	if (m_project.usesPch())
 	{
-		const auto& compilerConfig = m_state.compilers.get(m_project.language());
-		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project, compilerConfig);
+		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project);
 
 		outArgList.emplace_back(getPathCommand("/Yu", m_pchMinusLocation));
 

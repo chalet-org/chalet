@@ -109,9 +109,6 @@ bool CmakeBuilder::run()
 std::string CmakeBuilder::getGenerator() const
 {
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
-#if defined(CHALET_WIN32)
-	const auto& compileConfig = m_state.compilers.get(CodeLanguage::CPlusPlus);
-#endif
 
 	std::string ret;
 	if (isNinja)
@@ -119,7 +116,7 @@ std::string CmakeBuilder::getGenerator() const
 		ret = "Ninja";
 	}
 #if defined(CHALET_WIN32)
-	else if (compileConfig.isMsvc())
+	else if (m_state.compilers.isMsvc())
 	{
 		// Validated in CMakeTarget::validate
 		const auto& version = m_state.toolchain.version();
@@ -169,12 +166,11 @@ std::string CmakeBuilder::getGenerator() const
 std::string CmakeBuilder::getArchitecture() const
 {
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
-	const auto& compileConfig = m_state.compilers.get(CodeLanguage::CPlusPlus);
 
 	std::string ret;
 
 	// Note: The -A flag is only really used by VS
-	if (!isNinja && compileConfig.isMsvc())
+	if (!isNinja && m_state.compilers.isMsvc())
 	{
 		switch (m_state.info.targetArchitecture())
 		{

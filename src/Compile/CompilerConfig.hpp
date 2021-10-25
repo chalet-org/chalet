@@ -12,10 +12,11 @@
 namespace chalet
 {
 class BuildState;
+struct ICompileEnvironment;
 
 struct CompilerConfig
 {
-	explicit CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState);
+	explicit CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState, ICompileEnvironment& inEnvironment);
 
 	CodeLanguage language() const noexcept;
 
@@ -33,17 +34,6 @@ struct CompilerConfig
 	bool isFlagSupported(const std::string& inFlag) const;
 	bool isLinkSupported(const std::string& inLink, const StringList& inDirectories) const;
 
-	CppCompilerType compilerType() const noexcept;
-	bool isWindowsClang() const noexcept;
-	bool isClang() const noexcept;
-	bool isAppleClang() const noexcept;
-	bool isGcc() const noexcept;
-	bool isIntelClassic() const noexcept;
-	bool isMingw() const noexcept;
-	bool isMingwGcc() const noexcept;
-	bool isMsvc() const noexcept;
-	bool isClangOrMsvc() const noexcept;
-
 private:
 	void parseGnuHelpList(const StringList& inCommand);
 	void parseClangHelpList();
@@ -51,6 +41,7 @@ private:
 	std::string getCompilerMacros(const std::string& inCompilerExec);
 
 	const BuildState& m_state;
+	ICompileEnvironment& m_environment;
 
 	std::string m_compilerPath{ "/usr" };
 	std::string m_compilerPathBin{ "/usr/bin" };
@@ -62,7 +53,7 @@ private:
 	Dictionary<bool> m_supportedFlags;
 
 	CodeLanguage m_language = CodeLanguage::None;
-	CppCompilerType m_compilerType = CppCompilerType::Unknown;
+	ToolchainType m_type = ToolchainType::Unknown;
 };
 }
 

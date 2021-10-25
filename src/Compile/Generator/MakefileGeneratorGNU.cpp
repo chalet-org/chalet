@@ -115,8 +115,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 		List::addIfDoesNotExist(m_fileExtensions, ext);
 	}*/
 
-	const auto& compilerConfig = m_state.compilers.get(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	const auto& pch = m_project->pch();
 
 	std::string recipes = getPchRecipe(pch, pchTarget);

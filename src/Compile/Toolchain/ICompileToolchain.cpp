@@ -42,26 +42,26 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const SourceTarg
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileToolchain ICompileToolchain::make(const CppCompilerType inCompilerType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig)
+[[nodiscard]] CompileToolchain ICompileToolchain::make(const ToolchainType inCompilerType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig)
 {
 	switch (inCompilerType)
 	{
-		case CppCompilerType::AppleClang:
+		case ToolchainType::AppleLLVM:
 			return std::make_unique<CompileToolchainApple>(inState, inProject, inConfig);
-		case CppCompilerType::Clang:
-		case CppCompilerType::MingwClang:
-		case CppCompilerType::EmScripten:
+		case ToolchainType::LLVM:
+		case ToolchainType::MingwLLVM:
+			// case ToolchainType::EmScripten:
 			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
-		case CppCompilerType::MingwGcc:
-		case CppCompilerType::Gcc:
+		case ToolchainType::MingwGNU:
+		case ToolchainType::GNU:
 			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
-		case CppCompilerType::MSVC:
+		case ToolchainType::VisualStudio:
 			return std::make_unique<CompileToolchainVisualStudio>(inState, inProject, inConfig);
-		case CppCompilerType::IntelClang:
+		case ToolchainType::IntelLLVM:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 			return std::make_unique<CompileToolchainIntelLLVM>(inState, inProject, inConfig);
 #endif
-		case CppCompilerType::IntelClassic:
+		case ToolchainType::IntelClassic:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
 			return std::make_unique<CompileToolchainIntelClassicMSVC>(inState, inProject, inConfig);
@@ -69,7 +69,7 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const SourceTarg
 			return std::make_unique<CompileToolchainIntelClassicGNU>(inState, inProject, inConfig);
 	#endif
 #endif
-		case CppCompilerType::Unknown:
+		case ToolchainType::Unknown:
 		default:
 			break;
 	}

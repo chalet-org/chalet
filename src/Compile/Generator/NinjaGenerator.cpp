@@ -41,8 +41,7 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 	m_toolchain = inToolchain.get();
 	m_hash = inTargetHash;
 
-	const auto& config = m_state.compilers.get(m_project->language());
-	m_needsMsvcDepsPrefix |= config.isMsvc();
+	m_needsMsvcDepsPrefix |= m_state.compilers.isMsvc();
 
 	const std::string rules = getRules(inOutputs.types);
 	const std::string buildRules = getBuildRules(inOutputs);
@@ -121,8 +120,7 @@ std::string NinjaGenerator::getDepFile(const std::string& inDependency)
 {
 	std::string ret;
 
-	const auto& config = m_state.compilers.get(m_project->language());
-	if (!config.isMsvc())
+	if (!m_state.compilers.isMsvc())
 	{
 		ret = fmt::format(R"ninja(
   depfile = {dependency})ninja",
@@ -166,8 +164,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 
 	if (m_project->usesPch())
 	{
-		const auto& compilerConfig = m_state.compilers.get(m_project->language());
-		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
+		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 		rules += getPchBuildRule(pchTarget);
 	}
 
@@ -191,8 +188,7 @@ std::string NinjaGenerator::getPchRule()
 		const auto dependency = fmt::format("{}/$in.d", depDir);
 		const auto depFile = getDepFile(dependency);
 
-		const auto& compilerConfig = m_state.compilers.get(m_project->language());
-		const auto object = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
+		const auto object = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
@@ -487,8 +483,7 @@ build {pchTarget}: pch_{hash} {pch}
 		}
 
 #if defined(CHALET_WIN32)
-		const auto& config = m_state.compilers.get(m_project->language());
-		if (config.isMsvc())
+		if (m_state.compilers.isMsvc())
 		{
 			std::string pchObj = pchTarget;
 			String::replaceAll(pchObj, ".pch", ".obj");
@@ -513,8 +508,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 	StringList pches;
 	if (m_project->usesPch())
 	{
-		const auto& compilerConfig = m_state.compilers.get(m_project->language());
-		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
+		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{
@@ -606,8 +600,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 std::string NinjaGenerator::getRuleDeps() const
 {
 #if defined(CHALET_WIN32)
-	const auto& config = m_state.compilers.get(m_project->language());
-	return config.isMsvc() ? "msvc" : "gcc";
+	return m_state.compilers.isMsvc() ? "msvc" : "gcc";
 #else
 	return "gcc";
 #endif

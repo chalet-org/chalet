@@ -58,11 +58,10 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutp
 
 	chalet_assert(m_project != nullptr, "");
 
-	const auto& compilerConfig = m_state.compilers.get(m_project->language());
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project, compilerConfig);
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	const auto& name = inProject.name();
 
-	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !compilerConfig.isMsvc();
+	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.compilers.isMsvc();
 
 	auto target = std::make_unique<CommandPool::Target>();
 	target->pre = getPchCommands(pchTarget);
@@ -130,11 +129,9 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 
 	auto& target = *m_targets.at(inProject.name());
 
-	const auto& config = m_state.compilers.get(inProject.language());
-
 	CommandPool::Settings settings;
 	settings.color = Output::theme().build;
-	settings.msvcCommand = config.isMsvc();
+	settings.msvcCommand = m_state.compilers.isMsvc();
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
 	settings.renameAfterCommand = m_generateDependencies;

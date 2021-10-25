@@ -15,25 +15,13 @@ enum class ToolchainType : ushort
 	LLVM,
 	AppleLLVM,
 	VisualStudio,
+	MingwGNU,
+	MingwLLVM,
 	IntelClassic,
-	IntelLLVM
-};
-
-enum class CppCompilerType : ushort
-{
-	Unknown,
-	Gcc,
-	Clang,
-	AppleClang,
-	MingwGcc,
-	MingwClang,
-	MSVC,
-	IntelClassic,
-	IntelClang,
+	IntelLLVM,
 	EmScripten
 	// NVCC / CUDA ?
 };
-
 }
 
 #endif // CHALET_COMPILE_TOOLCHAIN_TYPE_HPP

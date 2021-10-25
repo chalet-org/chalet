@@ -6,6 +6,7 @@
 #include "Compile/CompilerConfigController.hpp"
 
 #include "Compile/CompilerConfig.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "Utility/String.hpp"
 
@@ -32,12 +33,12 @@ const CompilerConfig& CompilerConfigController::get(const CodeLanguage inLanguag
 }
 
 /*****************************************************************************/
-void CompilerConfigController::makeConfigForLanguage(const CodeLanguage inLanguage, const BuildState& inState)
+void CompilerConfigController::makeConfigForLanguage(const CodeLanguage inLanguage, const BuildState& inState, ICompileEnvironment& inEnvironment)
 {
 	if (m_configs.find(inLanguage) != m_configs.end())
 		return;
 
-	m_configs.emplace(inLanguage, std::make_unique<CompilerConfig>(inLanguage, inState));
+	m_configs.emplace(inLanguage, std::make_unique<CompilerConfig>(inLanguage, inState, inEnvironment));
 }
 
 /*****************************************************************************/
@@ -51,11 +52,11 @@ bool CompilerConfigController::initialize()
 			return false;
 		}
 
-		if (!config->testCompilerMacros())
+		/*if (!config->testCompilerMacros())
 		{
 			Diagnostic::error("Unimplemented or unknown compiler toolchain.");
 			return false;
-		}
+		}*/
 
 		if (!config->getSupportedCompilerFlags())
 		{
@@ -66,6 +67,83 @@ bool CompilerConfigController::initialize()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+ToolchainType CompilerConfigController::type() const noexcept
+{
+	return m_type;
+}
+
+void CompilerConfigController::setToolchainType(const ToolchainType inType) noexcept
+{
+	m_type = inType;
+}
+
+/*****************************************************************************/
+bool CompilerConfigController::isWindowsClang() const noexcept
+{
+#if defined(CHALET_WIN32)
+	return m_type == ToolchainType::LLVM
+		|| m_type == ToolchainType::IntelLLVM;
+#else
+	return false;
+#endif
+}
+
+/*****************************************************************************/
+bool CompilerConfigController::isClang() const noexcept
+{
+	return m_type == ToolchainType::LLVM
+		|| m_type == ToolchainType::AppleLLVM
+		|| m_type == ToolchainType::IntelLLVM
+		|| m_type == ToolchainType::MingwLLVM
+		|| m_type == ToolchainType::EmScripten;
+}
+
+/*****************************************************************************/
+bool CompilerConfigController::isAppleClang() const noexcept
+{
+	return m_type == ToolchainType::AppleLLVM;
+}
+
+/*****************************************************************************/
+bool CompilerConfigController::isGcc() const noexcept
+{
+	return m_type == ToolchainType::GNU
+		|| m_type == ToolchainType::MingwGNU
+		|| m_type == ToolchainType::IntelClassic;
+}
+
+/*****************************************************************************/
+bool CompilerConfigController::isIntelClassic() const noexcept
+{
+	return m_type == ToolchainType::IntelClassic;
+}
+
+/*****************************************************************************/
+bool CompilerConfigController::isMingw() const noexcept
+{
+	return m_type == ToolchainType::MingwGNU
+		|| m_type == ToolchainType::MingwLLVM;
+}
+
+/*****************************************************************************/
+bool CompilerConfigController::isMingwGcc() const noexcept
+{
+	return m_type == ToolchainType::MingwGNU;
+}
+
+/*****************************************************************************/
+bool CompilerConfigController::isMsvc() const noexcept
+{
+	return m_type == ToolchainType::VisualStudio;
+}
+
+/*****************************************************************************/
+bool CompilerConfigController::isClangOrMsvc() const noexcept
+{
+	return isClang() || isMsvc();
 }
 
 }

@@ -6,7 +6,7 @@
 #include "Compile/Toolchain/CompileToolchainLLVM.hpp"
 
 #include "Compile/CompilerConfig.hpp"
-
+#include "Compile/CompilerConfigController.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -55,7 +55,7 @@ void CompileToolchainLLVM::addWarnings(StringList& outArgList) const
 {
 	CompileToolchainGNU::addWarnings(outArgList);
 
-	if (m_config.isWindowsClang())
+	if (m_state.compilers.isWindowsClang())
 	{
 		const std::string prefix{ "-W" };
 		std::string noLangExtensions{ "no-language-extension-token" };
@@ -81,7 +81,7 @@ void CompileToolchainLLVM::addLibStdCppCompileOption(StringList& outArgList, con
 void CompileToolchainLLVM::addPositionIndependentCodeOption(StringList& outArgList) const
 {
 #if defined(CHALET_LINUX)
-	// if (!m_config.isMingw())
+	// if (!m_state.compilers.isMingw())
 	{
 		std::string fpic{ "-fPIC" };
 		// if (isFlagSupported(fpic))
@@ -150,7 +150,7 @@ void CompileToolchainLLVM::addLinks(StringList& outArgList) const
 {
 	CompileToolchainGNU::addLinks(outArgList);
 
-	if (m_config.isWindowsClang())
+	if (m_state.compilers.isWindowsClang())
 	{
 		const std::string prefix{ "-l" };
 		for (const char* link : {
@@ -216,7 +216,7 @@ void CompileToolchainLLVM::addStaticCompilerLibraryOptions(StringList& outArgLis
 /*****************************************************************************/
 void CompileToolchainLLVM::addSubSystem(StringList& outArgList) const
 {
-	if (m_config.isWindowsClang())
+	if (m_state.compilers.isWindowsClang())
 	{
 		const ProjectKind kind = m_project.kind();
 		if (kind == ProjectKind::Executable)
@@ -230,7 +230,7 @@ void CompileToolchainLLVM::addSubSystem(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainLLVM::addEntryPoint(StringList& outArgList) const
 {
-	if (m_config.isWindowsClang())
+	if (m_state.compilers.isWindowsClang())
 	{
 		const auto entryPoint = getMsvcCompatibleEntryPoint();
 		if (!entryPoint.empty())

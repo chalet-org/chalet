@@ -6,7 +6,7 @@
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
 
 #include "Compile/CompilerConfig.hpp"
-
+#include "Compile/CompilerConfigController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -309,7 +309,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 	addExectuable(ret, m_config.compilerExecutable());
 
 	ret.emplace_back("-shared");
-	if (m_config.isMingw())
+	if (m_state.compilers.isMingw())
 	{
 		std::string mingwLinkerOptions;
 		if (m_project.windowsOutputDef())
@@ -453,7 +453,7 @@ bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 /*****************************************************************************/
 bool CompileToolchainGNU::isLinkSupported(const std::string& inLink) const
 {
-	if (m_supportedLinksInitialized && m_config.isGcc())
+	if (m_supportedLinksInitialized && m_state.compilers.isGcc())
 	{
 		return m_supportedLinks.find(inLink) != m_supportedLinks.end();
 	}
@@ -765,7 +765,7 @@ void CompileToolchainGNU::addLibStdCppCompileOption(StringList& outArgList, cons
 /*****************************************************************************/
 void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	if (!m_config.isMingw())
+	if (!m_state.compilers.isMingw())
 	{
 		std::string fpic{ "-fPIC" };
 		// if (isFlagSupported(fpic))
@@ -799,7 +799,7 @@ void CompileToolchainGNU::addNoExceptionsOption(StringList& outArgList) const
 void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
-	if (!m_config.isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
+	if (!m_state.compilers.isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
 	{
 		std::string pthread{ "-pthread" };
 		// if (isFlagSupported(pthread))
@@ -813,7 +813,7 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	auto hostArch = m_state.info.hostArchitecture();
 	auto targetArch = m_state.info.targetArchitecture();
 
-	if (m_config.isMingw() && String::equals({ "arm", "arm64" }, m_arch))
+	if (m_state.compilers.isMingw() && String::equals({ "arm", "arm64" }, m_arch))
 	{
 		// don't do anything yet
 		return false;
@@ -932,9 +932,9 @@ void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& outArgList) 
 void CompileToolchainGNU::addThreadModelLinkerOption(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
-	if (!m_config.isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
+	if (!m_state.compilers.isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
 	{
-		if (m_config.isMingw() && m_project.staticLinking())
+		if (m_state.compilers.isMingw() && m_project.staticLinking())
 		{
 			outArgList.emplace_back("-Wl,-Bstatic,--whole-archive");
 			outArgList.emplace_back("-lwinpthread");
@@ -989,7 +989,7 @@ void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& outArgList
 /*****************************************************************************/
 void CompileToolchainGNU::addSubSystem(StringList& outArgList) const
 {
-	if (m_config.isMingwGcc())
+	if (m_state.compilers.isMingwGcc())
 	{
 		// MinGW rolls these together for some reason
 		// -mwindows and -mconsole kind of do some magic behind the scenes, so it's hard to assume anything

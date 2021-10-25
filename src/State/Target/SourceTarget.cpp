@@ -5,7 +5,7 @@
 
 #include "State/Target/SourceTarget.hpp"
 
-#include "Compile/CompilerConfig.hpp"
+#include "Compile/CompilerConfigController.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -815,7 +815,7 @@ WindowsEntryPoint SourceTarget::parseWindowsEntryPoint(const std::string& inValu
 }
 
 /*****************************************************************************/
-void SourceTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
+void SourceTarget::parseOutputFilename(const CompilerConfigController& inCompilers) noexcept
 {
 	const auto& projectName = name();
 	chalet_assert(!projectName.empty(), "parseOutputFilename: name is blank");
@@ -836,7 +836,7 @@ void SourceTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 	if (staticLib)
 	{
 #if defined(CHALET_WIN32)
-		if (inConfig.isMsvc() || inConfig.isWindowsClang())
+		if (inCompilers.isMsvc() || inCompilers.isWindowsClang())
 			libraryExtension = "-s.lib";
 		else
 #endif
@@ -852,7 +852,7 @@ void SourceTarget::parseOutputFilename(const CompilerConfig& inConfig) noexcept
 		}
 		case ProjectKind::SharedLibrary:
 		case ProjectKind::StaticLibrary: {
-			if (!windowsPrefixOutputFilename() || (inConfig.isMsvc() && !m_setWindowsPrefixOutputFilename) || inConfig.isWindowsClang())
+			if (!windowsPrefixOutputFilename() || (inCompilers.isMsvc() && !m_setWindowsPrefixOutputFilename) || inCompilers.isWindowsClang())
 			{
 				m_outputFile = projectName + libraryExtension;
 				m_outputFileNoPrefix = m_outputFile;

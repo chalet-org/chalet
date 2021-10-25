@@ -50,19 +50,19 @@ struct BuildState::Impl
 
 	bool checkForEnvironment = false;
 
-	Impl(CommandLineInputs&& inInputs, StatePrototype& inPrototype) :
+	Impl(CommandLineInputs&& inInputs, StatePrototype& inPrototype, BuildState& inState) :
 		inputs(std::move(inInputs)),
 		prototype(inPrototype),
 		info(inputs),
 		workspace(prototype.workspace), // copy
-		paths(inputs, workspace)
+		paths(inputs, inState)
 	{
 	}
 };
 
 /*****************************************************************************/
 BuildState::BuildState(CommandLineInputs&& inInputs, StatePrototype& inPrototype) :
-	m_impl(std::make_unique<Impl>(std::move(inInputs), inPrototype)),
+	m_impl(std::make_unique<Impl>(std::move(inInputs), inPrototype, *this)),
 	tools(m_impl->prototype.tools),
 	cache(m_impl->prototype.cache),
 	info(m_impl->info),
@@ -146,22 +146,22 @@ const std::string& BuildState::uniqueId() const noexcept
 /*****************************************************************************/
 bool BuildState::initializeBuildConfiguration()
 {
-	auto config = m_impl->inputs.buildConfiguration();
-	if (config.empty())
+	auto buildConfiguration = m_impl->inputs.buildConfiguration();
+	if (buildConfiguration.empty())
 	{
-		config = m_impl->prototype.anyConfiguration();
+		buildConfiguration = m_impl->prototype.anyConfiguration();
 	}
 
 	const auto& buildConfigurations = m_impl->prototype.buildConfigurations();
 
-	if (buildConfigurations.find(config) == buildConfigurations.end())
+	if (buildConfigurations.find(buildConfiguration) == buildConfigurations.end())
 	{
-		Diagnostic::error("{}: The build configuration '{}' was not found.", m_impl->inputs.inputFile(), config);
+		Diagnostic::error("{}: The build configuration '{}' was not found.", m_impl->inputs.inputFile(), buildConfiguration);
 		return false;
 	}
 
-	configuration = buildConfigurations.at(config);
-	info.setBuildConfiguration(config);
+	configuration = buildConfigurations.at(buildConfiguration);
+	info.setBuildConfiguration(buildConfiguration);
 
 	return true;
 }
@@ -179,6 +179,8 @@ bool BuildState::parseToolchainFromSettingsJson()
 
 		if (!m_impl->environment->create(toolchain.version()))
 			return false;
+
+		m_impl->compilers.setToolchainType(m_impl->environment->type());
 
 		return true;
 	};
@@ -234,7 +236,7 @@ bool BuildState::initializeToolchain()
 {
 	Timer timer;
 
-	auto initializeImpl = [this]() -> bool {
+	auto initializeImpl = [this](ICompileEnvironment& inEnvironment) -> bool {
 		for (auto& target : targets)
 		{
 			if (target->isProject())
@@ -242,7 +244,7 @@ bool BuildState::initializeToolchain()
 				auto& project = static_cast<SourceTarget&>(*target);
 				auto language = project.language();
 
-				compilers.makeConfigForLanguage(language, *this);
+				compilers.makeConfigForLanguage(language, *this, inEnvironment);
 			}
 		}
 
@@ -252,7 +254,7 @@ bool BuildState::initializeToolchain()
 		return true;
 	};
 
-	bool result = initializeImpl();
+	bool result = initializeImpl(*m_impl->environment);
 	result &= m_impl->environment->makeArchitectureAdjustments();
 	result &= toolchain.initialize(*m_impl->environment);
 
@@ -295,7 +297,7 @@ bool BuildState::initializeBuild()
 	if (!initializeToolchain())
 		return false;
 
-	if (!paths.initialize(info, toolchain))
+	if (!paths.initialize())
 		return false;
 
 	for (auto& target : targets)
@@ -303,8 +305,7 @@ bool BuildState::initializeBuild()
 		if (target->isProject())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
-			auto& compilerConfig = compilers.get(project.language());
-			project.parseOutputFilename(compilerConfig);
+			project.parseOutputFilename(compilers);
 
 			if (!project.isStaticLibrary())
 			{
@@ -324,9 +325,10 @@ bool BuildState::initializeBuild()
 #endif
 			}
 
-			const bool isMsvc = compilerConfig.isMsvc();
+			const bool isMsvc = compilers.isMsvc();
 			if (!isMsvc)
 			{
+				auto& compilerConfig = compilers.get(project.language());
 				std::string libDir = compilerConfig.compilerPathLib();
 				project.addLibDir(std::move(libDir));
 
@@ -430,20 +432,19 @@ bool BuildState::validateState()
 				if (project.language() != CodeLanguage::C && project.language() != CodeLanguage::CPlusPlus)
 					continue;
 
-				auto& compilerConfig = compilers.get(project.language());
 #if defined(CHALET_WIN32)
-				if (compilerConfig.isMsvc() && !toolchain.makeIsNMake())
+				if (compilers.isMsvc() && !toolchain.makeIsNMake())
 				{
 					Diagnostic::error("If using the 'makefile' strategy alongside MSVC, only NMake or Qt Jom are supported (found GNU make).");
 					return false;
 				}
-				/*else if (compilerConfig.isMingwGcc() && toolchain.makeIsNMake())
+				/*else if (compilers.isMingwGcc() && toolchain.makeIsNMake())
 				{
 					Diagnostic::error("If using the 'makefile' strategy alongside MinGW, only GNU make is suported (found NMake or Qt Jom).");
 					return false;
 				}*/
 #endif
-				if (!compilerConfig.isAppleClang() && project.objectiveCxx())
+				if (!compilers.isAppleClang() && project.objectiveCxx())
 				{
 					Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang. Use either 'language.macos' or '\"condition\": \"macos\"' in the '{}' project.", m_impl->inputs.inputFile(), project.name());
 					return false;
@@ -571,18 +572,7 @@ void BuildState::makeCompilerDiagnosticsVariables()
 	if (!currentGccColors.empty())
 		return;
 
-	bool usesGcc = false;
-	for (auto& target : targets)
-	{
-		if (target->isProject())
-		{
-			auto& project = static_cast<SourceTarget&>(*target);
-			auto& config = compilers.get(project.language());
-			if (config.isGcc())
-				usesGcc = true;
-		}
-	}
-
+	bool usesGcc = compilers.isGcc();
 	if (usesGcc)
 	{
 		std::string gccColors;

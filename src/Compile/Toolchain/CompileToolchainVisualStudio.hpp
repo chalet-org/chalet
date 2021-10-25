@@ -66,8 +66,6 @@ private:
 	void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const;
 	void addPrecompiledHeaderLink(StringList outArgList) const;
 
-	const CppCompilerType m_compilerType;
-
 	std::string m_pchSource;
 	std::string m_pchMinusLocation;
 };
