@@ -28,7 +28,6 @@ struct CompilerConfig
 	const std::string& compilerPathInclude() const noexcept;
 
 	bool configureCompilerPaths();
-	bool testCompilerMacros();
 	bool getSupportedCompilerFlags();
 
 	bool isFlagSupported(const std::string& inFlag) const;
@@ -38,8 +37,6 @@ private:
 	void parseGnuHelpList(const StringList& inCommand);
 	void parseClangHelpList();
 
-	std::string getCompilerMacros(const std::string& inCompilerExec);
-
 	const BuildState& m_state;
 	ICompileEnvironment& m_environment;
 
@@ -47,13 +44,10 @@ private:
 	std::string m_compilerPathBin{ "/usr/bin" };
 	std::string m_compilerPathLib{ "/usr/lib" };
 	std::string m_compilerPathInclude{ "/usr/include" };
-	std::string m_macrosFile;
-	std::string m_flagsFile;
 
 	Dictionary<bool> m_supportedFlags;
 
 	CodeLanguage m_language = CodeLanguage::None;
-	ToolchainType m_type = ToolchainType::Unknown;
 };
 }
 

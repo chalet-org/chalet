@@ -25,9 +25,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-ICompileEnvironment::ICompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState) :
+ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
 	m_inputs(inInputs),
-	m_state(inState)
+	m_state(inState),
+	m_type(inType)
 {
 	UNUSED(m_inputs, m_state);
 }
@@ -48,18 +49,20 @@ ICompileEnvironment::ICompileEnvironment(const CommandLineInputs& inInputs, Buil
 	switch (type)
 	{
 		case ToolchainType::VisualStudio:
-			return std::make_unique<CompileEnvironmentVisualStudio>(inInputs, inState);
+			return std::make_unique<CompileEnvironmentVisualStudio>(type, inInputs, inState);
 		case ToolchainType::AppleLLVM:
-			return std::make_unique<CompileEnvironmentAppleLLVM>(inInputs, inState);
+			return std::make_unique<CompileEnvironmentAppleLLVM>(type, inInputs, inState);
 		case ToolchainType::LLVM:
-			return std::make_unique<CompileEnvironmentLLVM>(inInputs, inState);
+		case ToolchainType::MingwLLVM:
+			return std::make_unique<CompileEnvironmentLLVM>(type, inInputs, inState);
 		case ToolchainType::IntelClassic:
 		case ToolchainType::IntelLLVM:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-			return std::make_unique<CompileEnvironmentIntel>(inInputs, inState, type);
+			return std::make_unique<CompileEnvironmentIntel>(type, inInputs, inState);
 #endif
 		case ToolchainType::GNU:
-			return std::make_unique<CompileEnvironmentGNU>(inInputs, inState);
+		case ToolchainType::MingwGNU:
+			return std::make_unique<CompileEnvironmentGNU>(type, inInputs, inState);
 		case ToolchainType::Unknown:
 		default:
 			break;
@@ -67,6 +70,12 @@ ICompileEnvironment::ICompileEnvironment(const CommandLineInputs& inInputs, Buil
 
 	Diagnostic::error("Unimplemented ToolchainType requested: ", static_cast<int>(type));
 	return nullptr;
+}
+
+/*****************************************************************************/
+ToolchainType ICompileEnvironment::type() const noexcept
+{
+	return m_type;
 }
 
 /*****************************************************************************/
@@ -78,8 +87,6 @@ const std::string& ICompileEnvironment::detectedVersion() const
 /*****************************************************************************/
 bool ICompileEnvironment::create(const std::string& inVersion)
 {
-	UNUSED(inVersion);
-
 	if (m_initialized)
 	{
 		Diagnostic::error("Compiler environment was already initialized.");
@@ -234,6 +241,8 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 			return ToolchainType::AppleLLVM;
 #endif
 
+		// TODO: ToolchainType::MingwLLVM
+
 		return ToolchainType::LLVM;
 	}
 
@@ -243,6 +252,8 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		if (String::contains({ "Contents/Developer", "Xcode" }, inExecutable))
 			return ToolchainType::AppleLLVM;
 #endif
+
+		// TODO: ToolchainType::MingwGNU
 
 		return ToolchainType::GNU;
 	}

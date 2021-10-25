@@ -19,20 +19,21 @@ using CompileEnvironment = Unique<ICompileEnvironment>;
 
 struct ICompileEnvironment
 {
-	explicit ICompileEnvironment(const CommandLineInputs& inInputs, BuildState& inState);
+	explicit ICompileEnvironment(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 	virtual ~ICompileEnvironment() = default;
 
 	[[nodiscard]] static Unique<ICompileEnvironment> make(ToolchainType type, const CommandLineInputs& inInputs, BuildState& inState);
 	static ToolchainType detectToolchainTypeFromPath(const std::string& inExecutable);
 
-	virtual ToolchainType type() const noexcept = 0;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const = 0;
 	virtual CompilerInfo getCompilerInfoFromExecutable(const std::string& inExecutable) const = 0;
+	virtual bool verifyToolchain() = 0;
 
 	virtual bool makeArchitectureAdjustments();
 	virtual bool compilerVersionIsToolchainVersion() const;
 
+	ToolchainType type() const noexcept;
 	const std::string& detectedVersion() const;
 
 	bool create(const std::string& inVersion = std::string());
@@ -53,6 +54,8 @@ protected:
 
 	std::string m_detectedVersion;
 	std::string m_path;
+
+	const ToolchainType m_type;
 
 private:
 	bool m_initialized = false;

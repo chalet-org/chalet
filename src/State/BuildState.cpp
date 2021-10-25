@@ -221,6 +221,12 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (!parser.validatePaths())
 		return false;
 
+	if (!m_impl->environment->verifyToolchain())
+	{
+		Diagnostic::error("Unimplemented or unknown compiler toolchain.");
+		return false;
+	}
+
 	return true;
 }
 

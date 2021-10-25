@@ -20,17 +20,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileEnvironmentIntel::CompileEnvironmentIntel(const CommandLineInputs& inInputs, BuildState& inState, const ToolchainType inType) :
-	CompileEnvironmentLLVM(inInputs, inState),
-	kVarsId("intel"),
-	m_type(inType)
+CompileEnvironmentIntel::CompileEnvironmentIntel(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
+	CompileEnvironmentLLVM(inType, inInputs, inState),
+	kVarsId("intel")
 {
-}
-
-/*****************************************************************************/
-ToolchainType CompileEnvironmentIntel::type() const noexcept
-{
-	return m_type;
 }
 
 /*****************************************************************************/
@@ -49,6 +42,33 @@ std::string CompileEnvironmentIntel::getFullCxxCompilerString(const std::string&
 		return fmt::format("Intel{} oneAPI DPC++/C++ version {}", Unicode::registered(), inVersion);
 	else
 		return fmt::format("Intel{} 64 Compiler Classic version {}", Unicode::registered(), inVersion);
+}
+
+/*****************************************************************************/
+ToolchainType CompileEnvironmentIntel::getToolchainTypeFromMacros(const std::string& inMacros) const
+{
+	if (m_type == ToolchainType::IntelLLVM)
+	{
+		auto llvmType = CompileEnvironmentLLVM::getToolchainTypeFromMacros(inMacros);
+		if (llvmType != ToolchainType::LLVM)
+			return llvmType;
+
+		const bool intelClang = String::contains({ "__INTEL_LLVM_COMPILER", "__INTEL_CLANG_COMPILER" }, inMacros);
+		if (intelClang)
+			return ToolchainType::IntelLLVM;
+	}
+	else
+	{
+		auto gccType = CompileEnvironmentGNU::getToolchainTypeFromMacros(inMacros);
+		if (gccType != ToolchainType::GNU)
+			return gccType;
+
+		const bool intelGcc = String::contains({ "__INTEL_COMPILER", "__INTEL_COMPILER_BUILD_DATE" }, inMacros);
+		if (intelGcc)
+			return ToolchainType::IntelClassic;
+	}
+
+	return ToolchainType::Unknown;
 }
 
 /*****************************************************************************/

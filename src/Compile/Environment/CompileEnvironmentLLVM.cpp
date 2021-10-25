@@ -19,15 +19,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileEnvironmentLLVM::CompileEnvironmentLLVM(const CommandLineInputs& inInputs, BuildState& inState) :
-	CompileEnvironmentGNU(inInputs, inState)
+CompileEnvironmentLLVM::CompileEnvironmentLLVM(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
+	CompileEnvironmentGNU(inType, inInputs, inState)
 {
-}
-
-/*****************************************************************************/
-ToolchainType CompileEnvironmentLLVM::type() const noexcept
-{
-	return ToolchainType::LLVM;
 }
 
 /*****************************************************************************/
@@ -40,6 +34,27 @@ StringList CompileEnvironmentLLVM::getVersionCommand(const std::string& inExecut
 std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& inVersion) const
 {
 	return fmt::format("LLVM Clang C/C++ version {}", inVersion);
+}
+
+/*****************************************************************************/
+ToolchainType CompileEnvironmentLLVM::getToolchainTypeFromMacros(const std::string& inMacros) const
+{
+	auto gnuType = CompileEnvironmentGNU::getToolchainTypeFromMacros(inMacros);
+	if (gnuType != ToolchainType::GNU && gnuType != ToolchainType::MingwGNU)
+		return gnuType;
+
+	const bool clang = String::contains("__clang__", inMacros);
+
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
+	// const bool mingw = gnuType == ToolchainType::MingwGNU;
+	// if (clang && mingw)
+	// 	return ToolchainType::MingwLLVM;
+	// else
+#endif
+	if (clang)
+		return ToolchainType::LLVM;
+
+	return ToolchainType::Unknown;
 }
 
 /*****************************************************************************/

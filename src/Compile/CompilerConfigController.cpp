@@ -52,12 +52,6 @@ bool CompilerConfigController::initialize()
 			return false;
 		}
 
-		/*if (!config->testCompilerMacros())
-		{
-			Diagnostic::error("Unimplemented or unknown compiler toolchain.");
-			return false;
-		}*/
-
 		if (!config->getSupportedCompilerFlags())
 		{
 			auto exec = String::getPathFilename(config->compilerExecutable());

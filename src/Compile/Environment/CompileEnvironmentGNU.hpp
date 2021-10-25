@@ -12,12 +12,12 @@ namespace chalet
 {
 struct CompileEnvironmentGNU : ICompileEnvironment
 {
-	explicit CompileEnvironmentGNU(const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentGNU(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
-	virtual ToolchainType type() const noexcept override;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
 	virtual CompilerInfo getCompilerInfoFromExecutable(const std::string& inExecutable) const override;
+	virtual bool verifyToolchain() override;
 
 	virtual bool makeArchitectureAdjustments() override;
 
@@ -27,6 +27,12 @@ protected:
 	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const;
 	virtual void parseArchFromVersionOutput(const std::string& inLine, std::string& outArch) const;
 	virtual void parseThreadModelFromVersionOutput(const std::string& inLine, std::string& outThreadModel) const;
+
+	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const;
+
+private:
+	bool verifyCompilerExecutable(const std::string& inCompilerExec);
+	std::string getCompilerMacros(const std::string& inCompilerExec);
 };
 }
 

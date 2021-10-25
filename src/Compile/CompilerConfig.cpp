@@ -30,8 +30,7 @@ struct CompilerPathStructure
 CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState, ICompileEnvironment& inEnvironment) :
 	m_state(inState),
 	m_environment(inEnvironment),
-	m_language(inLanguage),
-	m_type(m_environment.type())
+	m_language(inLanguage)
 {
 }
 
@@ -122,178 +121,20 @@ bool CompilerConfig::configureCompilerPaths()
 }
 
 /*****************************************************************************/
-std::string CompilerConfig::getCompilerMacros(const std::string& exec)
-{
-	if (exec.empty())
-		return std::string();
-
-	m_macrosFile = m_state.cache.getHashPath(fmt::format("macros_{}.env", exec), CacheType::Local);
-	m_state.cache.file().addExtraHash(String::getPathFilename(m_macrosFile));
-
-	std::string result;
-	if (!Commands::pathExists(m_macrosFile))
-	{
-#if defined(CHALET_WIN32)
-		std::string null = "nul";
-#else
-		std::string null = "/dev/null";
-#endif
-
-		// Clang/GCC only
-		// This command must be run from the bin directory in order to work
-		//   (or added to path before-hand, but we manipulate the path later)
-		//
-		auto compilerPath = String::getPathFolder(exec);
-		StringList command = { exec, "-x", "c", std::move(null), "-dM", "-E" };
-		result = Commands::subprocessOutput(command, std::move(compilerPath));
-
-		std::ofstream(m_macrosFile) << result;
-	}
-	else
-	{
-		std::ifstream input(m_macrosFile);
-		result = std::string((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
-	}
-
-	return result;
-}
-
-/*****************************************************************************/
-bool CompilerConfig::testCompilerMacros()
-{
-	const auto& exec = compilerExecutable();
-	if (exec.empty())
-	{
-		Diagnostic::error("No compiler executable was found");
-		return false;
-	}
-
-#if defined(CHALET_WIN32)
-	if (String::endsWith("/cl.exe", exec))
-	{
-		m_compilerType = ToolchainType::VisualStudio;
-		return true;
-	}
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	else if (String::endsWith("/icl.exe", exec))
-	{
-		m_compilerType = ToolchainType::IntelClassic;
-		return true;
-	}
-	#endif
-#endif
-
-	LOG("type:", static_cast<int>(m_environment.type()));
-
-	const std::string macroResult = getCompilerMacros(exec);
-	// LOG(macroResult);
-	// LOG(exec);
-	// String::replaceAll(macroResult, '\n', ' ');
-	// String::replaceAll(macroResult, "#include ", "");
-	if (macroResult.empty())
-	{
-		Diagnostic::error("Failed to query predefined compiler macros.");
-		return false;
-	}
-
-	// Notes:
-	// GCC will just have __GNUC__
-	// Clang will have both __clang__ & __GNUC__ (based on GCC 4)
-	// Emscription will have __EMSCRIPTEN__, __clang__ & __GNUC__ (based on Clang)
-	// Apple Clang (Xcode/CommandLineTools) is detected from __VERSION__ (for now),
-	//   since one can install both GCC and Clang from Homebrew, which will also contain __APPLE__ & __APPLE_CC__
-	// GCC in MinGW 32, MinGW-w64 32-bit will have both __GNUC__ and __MINGW32__
-	// GCC in MinGW-w64 64-bit will also have __MINGW64__
-	// Intel will have __INTEL_COMPILER (or at the very least __INTEL_COMPILER_BUILD_DATE) & __GNUC__ (Also GCC-based as far as I know)
-
-	const bool clang = String::contains("__clang__", macroResult);
-	const bool gcc = String::contains("__GNUC__", macroResult);
-#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-	const bool mingw32 = String::contains("__MINGW32__", macroResult);
-	const bool mingw64 = String::contains("__MINGW64__", macroResult);
-	const bool mingw = (mingw32 || mingw64);
-#endif
-	const bool emscripten = String::contains("__EMSCRIPTEN__", macroResult);
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	const bool intelClang = String::contains({ "__INTEL_LLVM_COMPILER", "__INTEL_CLANG_COMPILER" }, macroResult);
-#endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	const bool intelGcc = String::contains({ "__INTEL_COMPILER", "__INTEL_COMPILER_BUILD_DATE" }, macroResult);
-#endif
-#if defined(CHALET_MACOS)
-	const bool appleClang = clang && String::contains("Apple LLVM", macroResult);
-#endif
-	bool result = true;
-
-	if (emscripten)
-	{
-		m_type = ToolchainType::EmScripten;
-	}
-#if defined(CHALET_MACOS)
-	else if (appleClang)
-	{
-		m_type = ToolchainType::AppleLLVM;
-	}
-#endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	else if (clang && intelClang)
-	{
-		m_type = ToolchainType::IntelLLVM;
-	}
-#endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	else if (gcc && intelGcc)
-	{
-		m_type = ToolchainType::IntelClassic;
-	}
-#endif
-#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-	else if (clang && mingw)
-	{
-		m_type = ToolchainType::MingwLLVM;
-	}
-#endif
-	else if (clang)
-	{
-		m_type = ToolchainType::LLVM;
-	}
-#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-	else if (gcc && mingw)
-	{
-		m_type = ToolchainType::MingwGNU;
-	}
-#endif
-	else if (gcc)
-	{
-		m_type = ToolchainType::GNU;
-	}
-	else
-	{
-		m_type = ToolchainType::Unknown;
-		result = false;
-	}
-
-	// LOG(fmt::format("gcc: {}, clang: {}, appleClang: {}, mingw32: {}, mingw64: {}, emscripten: {}, intelClang: {}, intelGcc: {}", gcc, clang, appleClang, mingw32, mingw64, emscripten, intelClang, intelGcc));
-	// LOG("m_compilerType: ", static_cast<int>(m_compilerType));
-
-	return result;
-}
-
-/*****************************************************************************/
 bool CompilerConfig::getSupportedCompilerFlags()
 {
-	if (m_type == ToolchainType::Unknown)
+	if (m_environment.type() == ToolchainType::Unknown)
 		return false;
 
 	const auto& exec = compilerExecutable();
 	if (exec.empty())
 		return false;
 
-	m_flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", exec), CacheType::Local);
+	std::string flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", exec), CacheType::Local);
 
-	m_state.cache.file().addExtraHash(String::getPathFilename(m_flagsFile));
+	m_state.cache.file().addExtraHash(String::getPathFilename(flagsFile));
 
-	if (!Commands::pathExists(m_flagsFile))
+	if (!Commands::pathExists(flagsFile))
 	{
 		if (m_state.compilers.isIntelClassic())
 		{
@@ -362,11 +203,11 @@ bool CompilerConfig::getSupportedCompilerFlags()
 			outContents += flag + "\n";
 		}
 
-		std::ofstream(m_flagsFile) << outContents;
+		std::ofstream(flagsFile) << outContents;
 	}
 	else
 	{
-		std::ifstream input(m_flagsFile);
+		std::ifstream input(flagsFile);
 		for (std::string line; std::getline(input, line);)
 		{
 			m_supportedFlags[std::move(line)] = true;

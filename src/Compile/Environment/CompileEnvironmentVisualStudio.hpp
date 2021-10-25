@@ -15,14 +15,14 @@ struct CommandLineInputs;
 
 struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 {
-	explicit CompileEnvironmentVisualStudio(const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentVisualStudio(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
 	static bool exists();
 
-	virtual ToolchainType type() const noexcept final;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 	virtual CompilerInfo getCompilerInfoFromExecutable(const std::string& inExecutable) const final;
+	virtual bool verifyToolchain() final;
 
 	virtual bool compilerVersionIsToolchainVersion() const final;
 

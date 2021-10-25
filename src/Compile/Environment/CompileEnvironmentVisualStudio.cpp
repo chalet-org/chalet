@@ -67,17 +67,11 @@ bool CompileEnvironmentVisualStudio::exists()
 }
 
 /*****************************************************************************/
-CompileEnvironmentVisualStudio::CompileEnvironmentVisualStudio(const CommandLineInputs& inInputs, BuildState& inState) :
-	ICompileEnvironment(inInputs, inState),
+CompileEnvironmentVisualStudio::CompileEnvironmentVisualStudio(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
+	ICompileEnvironment(inType, inInputs, inState),
 	kVarsId("msvc")
 {
 	UNUSED(kVarsId);
-}
-
-/*****************************************************************************/
-ToolchainType CompileEnvironmentVisualStudio::type() const noexcept
-{
-	return ToolchainType::VisualStudio;
 }
 
 /*****************************************************************************/
@@ -445,6 +439,12 @@ CompilerInfo CompileEnvironmentVisualStudio::getCompilerInfoFromExecutable(const
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentVisualStudio::verifyToolchain()
+{
+	return true;
 }
 
 /*****************************************************************************/

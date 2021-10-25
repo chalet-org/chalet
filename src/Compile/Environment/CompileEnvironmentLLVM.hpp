@@ -12,9 +12,8 @@ namespace chalet
 {
 struct CompileEnvironmentLLVM : CompileEnvironmentGNU
 {
-	explicit CompileEnvironmentLLVM(const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentLLVM(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
-	virtual ToolchainType type() const noexcept override;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
 
@@ -22,6 +21,7 @@ struct CompileEnvironmentLLVM : CompileEnvironmentGNU
 
 protected:
 	virtual bool validateArchitectureFromInput() override;
+	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const override;
 };
 }
 

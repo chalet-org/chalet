@@ -12,9 +12,8 @@ namespace chalet
 {
 struct CompileEnvironmentIntel final : CompileEnvironmentLLVM
 {
-	explicit CompileEnvironmentIntel(const CommandLineInputs& inInputs, BuildState& inState, const ToolchainType inType);
+	explicit CompileEnvironmentIntel(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
-	virtual ToolchainType type() const noexcept final;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 
@@ -24,6 +23,7 @@ protected:
 	virtual bool makeArchitectureAdjustments() final;
 
 	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const final;
+	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const final;
 
 private:
 	bool saveIntelEnvironment() const;
@@ -34,8 +34,6 @@ private:
 	std::string m_varsFileIntel;
 	std::string m_varsFileIntelDelta;
 	std::string m_intelSetVars;
-
-	ToolchainType m_type;
 };
 }
 

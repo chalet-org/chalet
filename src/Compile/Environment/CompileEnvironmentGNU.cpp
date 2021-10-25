@@ -17,15 +17,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileEnvironmentGNU::CompileEnvironmentGNU(const CommandLineInputs& inInputs, BuildState& inState) :
-	ICompileEnvironment(inInputs, inState)
+CompileEnvironmentGNU::CompileEnvironmentGNU(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
+	ICompileEnvironment(inType, inInputs, inState)
 {
-}
-
-/*****************************************************************************/
-ToolchainType CompileEnvironmentGNU::type() const noexcept
-{
-	return ToolchainType::GNU;
 }
 
 /*****************************************************************************/
@@ -108,6 +102,53 @@ CompilerInfo CompileEnvironmentGNU::getCompilerInfoFromExecutable(const std::str
 }
 
 /*****************************************************************************/
+bool CompileEnvironmentGNU::verifyToolchain()
+{
+	const auto& compiler = m_state.toolchain.compilerCxx();
+	if (compiler.empty())
+	{
+		Diagnostic::error("No compiler executable was found");
+		return false;
+	}
+
+	if (!verifyCompilerExecutable(compiler))
+		return false;
+
+	// if (!verifyCompilerExecutable(m_state.toolchain.compilerC()))
+	// 	return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompilerExec)
+{
+	const std::string macroResult = getCompilerMacros(inCompilerExec);
+	// LOG(macroResult);
+	// LOG(exec);
+	// String::replaceAll(macroResult, '\n', ' ');
+	// String::replaceAll(macroResult, "#include ", "");
+	if (macroResult.empty())
+	{
+		Diagnostic::error("Failed to query predefined compiler macros.");
+		return false;
+	}
+
+	// Notes:
+	// GCC will just have __GNUC__
+	// Clang will have both __clang__ & __GNUC__ (based on GCC 4)
+	// Emscription will have __EMSCRIPTEN__, __clang__ & __GNUC__ (based on Clang)
+	// Apple Clang (Xcode/CommandLineTools) is detected from __VERSION__ (for now),
+	//   since one can install both GCC and Clang from Homebrew, which will also contain __APPLE__ & __APPLE_CC__
+	// GCC in MinGW 32, MinGW-w64 32-bit will have both __GNUC__ and __MINGW32__
+	// GCC in MinGW-w64 64-bit will also have __MINGW64__
+	// Intel will have __INTEL_COMPILER (or at the very least __INTEL_COMPILER_BUILD_DATE) & __GNUC__ (Also GCC-based as far as I know)
+
+	ToolchainType detectedType = getToolchainTypeFromMacros(macroResult);
+	return detectedType == m_type;
+}
+
+/*****************************************************************************/
 void CompileEnvironmentGNU::parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const
 {
 	auto start = inLine.find("version");
@@ -185,5 +226,61 @@ bool CompileEnvironmentGNU::validateArchitectureFromInput()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+ToolchainType CompileEnvironmentGNU::getToolchainTypeFromMacros(const std::string& inMacros) const
+{
+	const bool gcc = String::contains("__GNUC__", inMacros);
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
+	// const bool mingw32 = String::contains("__MINGW32__", inMacros);
+	// const bool mingw64 = String::contains("__MINGW64__", inMacros);
+	// const bool mingw = (mingw32 || mingw64);
+
+	// if (gcc && mingw)
+	// 	return ToolchainType::MingwGNU;
+	// else
+#endif
+	if (gcc)
+		return ToolchainType::GNU;
+
+	return ToolchainType::Unknown;
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompilerExec)
+{
+	if (inCompilerExec.empty())
+		return std::string();
+
+	std::string macrosFile = m_state.cache.getHashPath(fmt::format("macros_{}.env", inCompilerExec), CacheType::Local);
+	m_state.cache.file().addExtraHash(String::getPathFilename(macrosFile));
+
+	std::string result;
+	if (!Commands::pathExists(macrosFile))
+	{
+#if defined(CHALET_WIN32)
+		std::string null = "nul";
+#else
+		std::string null = "/dev/null";
+#endif
+
+		// Clang/GCC only
+		// This command must be run from the bin directory in order to work
+		//   (or added to path before-hand, but we manipulate the path later)
+		//
+		auto compilerPath = String::getPathFolder(inCompilerExec);
+		StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
+		result = Commands::subprocessOutput(command, std::move(compilerPath));
+
+		std::ofstream(macrosFile) << result;
+	}
+	else
+	{
+		std::ifstream input(macrosFile);
+		result = std::string((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+	}
+
+	return result;
 }
 }
