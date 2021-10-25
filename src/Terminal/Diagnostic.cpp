@@ -229,7 +229,7 @@ void Diagnostic::printErrors()
 			errors.emplace_back(std::move(err.message));
 	}
 
-	bool hasWarnings = false;
+	// bool hasWarnings = false;
 	if (warnings.size() > 0)
 	{
 		Type type = Type::Warning;
@@ -243,7 +243,7 @@ void Diagnostic::printErrors()
 		// if (errors.size() == 0)
 		// 	Output::lineBreak();
 
-		hasWarnings = true;
+		// hasWarnings = true;
 	}
 	if (errors.size() > 0)
 	{
