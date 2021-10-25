@@ -233,23 +233,23 @@ void Diagnostic::printErrors()
 	if (warnings.size() > 0)
 	{
 		Type type = Type::Warning;
-		Output::lineBreak();
+		// Output::lineBreak();
 		Diagnostic::showHeader(type, fmt::format("{}  Warnings", Unicode::warning()));
 
 		for (auto& message : warnings)
 		{
 			Diagnostic::showMessage(type, std::move(message));
 		}
-		if (errors.size() == 0)
-			Output::lineBreak();
+		// if (errors.size() == 0)
+		// 	Output::lineBreak();
 
 		hasWarnings = true;
 	}
 	if (errors.size() > 0)
 	{
 		Type type = Type::Error;
-		if (!hasWarnings)
-			Output::lineBreakStderr();
+		// if (!hasWarnings)
+		// 	Output::lineBreakStderr();
 
 		Diagnostic::showHeader(type, fmt::format("{}  Errors", Unicode::circledX()));
 
@@ -257,7 +257,7 @@ void Diagnostic::printErrors()
 		{
 			Diagnostic::showMessage(type, std::move(message));
 		}
-		Output::lineBreak();
+		// Output::lineBreak();
 	}
 }
 
