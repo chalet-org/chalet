@@ -5,7 +5,7 @@
 
 #include "Compile/Toolchain/CompileToolchainVisualStudio.hpp"
 
-#include "Compile/CompilerController.hpp"
+#include "Compile/CompilerConfigController.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"

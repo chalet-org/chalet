@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/CompilerController.hpp"
+#include "Compile/CompilerConfigController.hpp"
 
 #include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
@@ -12,7 +12,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompilerConfig& CompilerController::get(const CodeLanguage inLanguage)
+CompilerConfig& CompilerConfigController::get(const CodeLanguage inLanguage)
 {
 	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
 	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "getCompilerConfig called before being initialized.");
@@ -22,7 +22,7 @@ CompilerConfig& CompilerController::get(const CodeLanguage inLanguage)
 }
 
 /*****************************************************************************/
-const CompilerConfig& CompilerController::get(const CodeLanguage inLanguage) const
+const CompilerConfig& CompilerConfigController::get(const CodeLanguage inLanguage) const
 {
 	chalet_assert(inLanguage != CodeLanguage::None, "Invalid language requested.");
 	chalet_assert(m_configs.find(inLanguage) != m_configs.end(), "getCompilerConfig called before being initialized.");
@@ -32,7 +32,7 @@ const CompilerConfig& CompilerController::get(const CodeLanguage inLanguage) con
 }
 
 /*****************************************************************************/
-void CompilerController::makeConfigForLanguage(const CodeLanguage inLanguage, const BuildState& inState)
+void CompilerConfigController::makeConfigForLanguage(const CodeLanguage inLanguage, const BuildState& inState)
 {
 	if (m_configs.find(inLanguage) != m_configs.end())
 		return;
@@ -41,7 +41,7 @@ void CompilerController::makeConfigForLanguage(const CodeLanguage inLanguage, co
 }
 
 /*****************************************************************************/
-bool CompilerController::initialize()
+bool CompilerConfigController::initialize()
 {
 	for (auto& [_, config] : m_configs)
 	{

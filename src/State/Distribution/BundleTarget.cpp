@@ -6,7 +6,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 
 #include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerController.hpp"
+#include "Compile/CompilerConfigController.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"

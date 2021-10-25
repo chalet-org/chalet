@@ -15,7 +15,7 @@ struct BuildInfo;
 struct BuildPaths;
 struct AncillaryTools;
 struct CompilerConfig;
-struct CompilerController;
+struct CompilerConfigController;
 struct CompilerTools;
 struct CommandLineInputs;
 struct StatePrototype;
@@ -43,7 +43,7 @@ public:
 	BuildPaths& paths;
 	BuildConfiguration& configuration;
 	std::vector<Unique<IBuildTarget>>& targets;
-	CompilerController& compilers;
+	CompilerConfigController& compilers;
 
 	bool initialize();
 	bool initializeForConfigure();

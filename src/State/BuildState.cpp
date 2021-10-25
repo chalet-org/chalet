@@ -9,7 +9,7 @@
 #include "Builder/BuildManager.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerController.hpp"
+#include "Compile/CompilerConfigController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
@@ -44,7 +44,7 @@ struct BuildState::Impl
 	BuildPaths paths;
 	BuildConfiguration configuration;
 	std::vector<BuildTarget> targets;
-	CompilerController compilers;
+	CompilerConfigController compilers;
 
 	Unique<ICompileEnvironment> environment;
 

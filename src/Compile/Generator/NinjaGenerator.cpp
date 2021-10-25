@@ -6,7 +6,7 @@
 #include "Compile/Generator/NinjaGenerator.hpp"
 
 #include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerController.hpp"
+#include "Compile/CompilerConfigController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"

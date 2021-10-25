@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_CONTROLLER_HPP
-#define CHALET_COMPILER_CONTROLLER_HPP
+#ifndef CHALET_COMPILER_CONFIG_CONTROLLER_HPP
+#define CHALET_COMPILER_CONFIG_CONTROLLER_HPP
 
 #include "Compile/CodeLanguage.hpp"
 
@@ -13,7 +13,7 @@ namespace chalet
 struct CompilerConfig;
 class BuildState;
 
-struct CompilerController
+struct CompilerConfigController
 {
 	CompilerConfig& get(const CodeLanguage inLanguage);
 	const CompilerConfig& get(const CodeLanguage inLanguage) const;
@@ -28,4 +28,4 @@ private:
 };
 }
 
-#endif // CHALET_COMPILER_CONTROLLER_HPP
+#endif // CHALET_COMPILER_CONFIG_CONTROLLER_HPP

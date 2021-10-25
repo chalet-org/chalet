@@ -6,7 +6,7 @@
 #include "Builder/CmakeBuilder.hpp"
 
 #include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerController.hpp"
+#include "Compile/CompilerConfigController.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"

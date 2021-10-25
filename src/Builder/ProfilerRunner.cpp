@@ -6,7 +6,7 @@
 #include "Builder/ProfilerRunner.hpp"
 
 #include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerController.hpp"
+#include "Compile/CompilerConfigController.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
