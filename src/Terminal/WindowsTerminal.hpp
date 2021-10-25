@@ -12,6 +12,7 @@ namespace WindowsTerminal
 {
 void reset();
 void initialize();
+void initializeCreateProcess();
 void cleanup();
 }
 }

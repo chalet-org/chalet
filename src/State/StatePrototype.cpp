@@ -16,6 +16,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -32,6 +33,10 @@ StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool StatePrototype::initialize()
 {
+#if defined(CHALET_WIN32)
+	WindowsTerminal::initializeCreateProcess();
+#endif
+
 	Route route = m_inputs.command();
 	chalet_assert(route != Route::Query, "");
 

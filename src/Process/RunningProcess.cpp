@@ -272,15 +272,15 @@ bool RunningProcess::create(const StringList& inCmd, const ProcessOptions& inOpt
 		}*/
 
 		BOOL success = ::CreateProcessA(inCmd.front().c_str(),
-			const_cast<LPSTR>(args.c_str()), // program arguments
-			NULL,							 // process security attributes
-			NULL,							 // thread security attributes
-			TRUE,							 // handles are inherited
-			processFlags,					 // creation flags
-			NULL,							 // environment
-			cwd,							 // use parent's current directory
-			&startupInfo,					 // STARTUPINFO pointer
-			&processInfo);					 // receives PROCESS_INFORMATION
+			args.data(),   // program arguments
+			NULL,		   // process security attributes
+			NULL,		   // thread security attributes
+			TRUE,		   // handles are inherited
+			processFlags,  // creation flags
+			NULL,		   // environment
+			cwd,		   // use parent's current directory
+			&startupInfo,  // STARTUPINFO pointer
+			&processInfo); // receives PROCESS_INFORMATION
 
 		m_processInfo = processInfo;
 		m_pid = processInfo.dwProcessId;

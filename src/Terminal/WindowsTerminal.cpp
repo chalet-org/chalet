@@ -6,6 +6,7 @@
 #include "Terminal/WindowsTerminal.hpp"
 
 #include "Libraries/WindowsApi.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 
@@ -26,6 +27,7 @@ static struct
 	uint consoleOutputCp = 0;
 #endif
 	bool initialized = false;
+	bool initializeCreateProcess = false;
 } state;
 }
 
@@ -70,6 +72,23 @@ void WindowsTerminal::initialize()
 #endif
 
 	state.initialized = true;
+}
+
+/*****************************************************************************/
+// A CreateProcess noop prevents misleading benchmarks later on when things need to be measured
+// For example, "On My Machine(TM)", CreateProcess takes about 38ms the first time (MSVC Release)
+// If compiling with MinGW in Debug mode, it's even slower (1.5s)
+//
+void WindowsTerminal::initializeCreateProcess()
+{
+	if (state.initializeCreateProcess)
+		return;
+
+	state.initializeCreateProcess = true;
+#if defined(CHALET_WIN32)
+	auto cmd = Commands::which("rundll32");
+	Commands::subprocessNoOutput({ cmd });
+#endif
 }
 
 /*****************************************************************************/
