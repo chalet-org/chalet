@@ -124,8 +124,16 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 		return cmd;
 	};
 
-	auto getMsvcVersion = [&getStartOfVsWhereCommand]() {
+	auto getProductsOptions = [](StringList& outCmd) {
+		outCmd.emplace_back("-products");
+		outCmd.emplace_back("Microsoft.VisualStudio.Product.Enterprise");
+		outCmd.emplace_back("Microsoft.VisualStudio.Product.Professional");
+		outCmd.emplace_back("Microsoft.VisualStudio.Product.Community");
+	};
+
+	auto getMsvcVersion = [&getStartOfVsWhereCommand, &getProductsOptions]() {
 		StringList vswhereCmd = getStartOfVsWhereCommand();
+		getProductsOptions(vswhereCmd);
 		vswhereCmd.emplace_back("-property");
 		vswhereCmd.emplace_back("installationVersion");
 		return Commands::subprocessOutput(vswhereCmd);
@@ -145,6 +153,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 		if (genericMsvcFromInput)
 		{
 			StringList vswhereCmd = getStartOfVsWhereCommand();
+			getProductsOptions(vswhereCmd);
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 			m_vsAppIdDir = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
@@ -156,7 +165,8 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 			StringList vswhereCmd{ state.vswhere, "-nologo" };
 			vswhereCmd.emplace_back("-prerelease"); // always include prereleases in this scenario since we're search for the exact version
 			vswhereCmd.emplace_back("-version");
-			vswhereCmd.push_back(fmt::format("{}", inVersion));
+			vswhereCmd.push_back(inVersion);
+			getProductsOptions(vswhereCmd);
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 
