@@ -125,11 +125,11 @@ bool CompilerTools::fetchCmakeVersion(SourceCache& inCache)
 {
 	if (!m_cmake.empty() && m_cmakeVersionMajor == 0 && m_cmakeVersionMinor == 0)
 	{
+		m_cmakeAvailable = false;
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_cmake, version))
 		{
 			version = Commands::subprocessOutput({ m_cmake, "--version" });
-			m_cmakeAvailable = String::startsWith("cmake version ", version);
 			version = Commands::isolateVersion(version);
 		}
 
@@ -140,6 +140,7 @@ bool CompilerTools::fetchCmakeVersion(SourceCache& inCache)
 			auto vals = String::split(version, '.');
 			if (vals.size() == 3)
 			{
+				m_cmakeAvailable = true;
 				m_cmakeVersionMajor = std::stoi(vals[0]);
 				m_cmakeVersionMinor = std::stoi(vals[1]);
 				m_cmakeVersionPatch = std::stoi(vals[2]);
@@ -155,6 +156,7 @@ void CompilerTools::fetchNinjaVersion(SourceCache& inCache)
 {
 	if (!m_ninja.empty() && m_ninjaVersionMajor == 0 && m_ninjaVersionMinor == 0)
 	{
+		m_ninjaAvailable = false;
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_ninja, version))
 		{
@@ -169,6 +171,7 @@ void CompilerTools::fetchNinjaVersion(SourceCache& inCache)
 			auto vals = String::split(version, '.');
 			if (vals.size() >= 3)
 			{
+				m_ninjaAvailable = true;
 				m_ninjaVersionMajor = std::stoi(vals[0]);
 				m_ninjaVersionMinor = std::stoi(vals[1]);
 				m_ninjaVersionPatch = std::stoi(vals[2]);
@@ -179,8 +182,6 @@ void CompilerTools::fetchNinjaVersion(SourceCache& inCache)
 					m_ninjaVersionPatch++;
 				}
 			}
-
-			m_ninjaAvailable = m_ninjaVersionMajor > 0 && m_ninjaVersionMinor > 0;
 		}
 	}
 }
