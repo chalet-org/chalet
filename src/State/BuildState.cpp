@@ -510,7 +510,7 @@ bool BuildState::validateSigningIdentity()
 	// Right now, only used w/ Bundle
 	if (m_impl->inputs.route() == Route::Bundle)
 	{
-		if (tools.isSigningIdentityValid())
+		if (!tools.isSigningIdentityValid())
 			return false;
 	}
 
