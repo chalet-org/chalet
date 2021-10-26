@@ -139,4 +139,97 @@ bool CompileEnvironmentLLVM::validateArchitectureFromInput()
 {
 	return ICompileEnvironment::validateArchitectureFromInput();
 }
+
+/*****************************************************************************/
+bool CompileEnvironmentLLVM::populateSupportedFlags(const std::string& inExecutable)
+{
+	StringList cmd{ inExecutable, "-cc1", "--help" };
+	parseSupportedFlagsFromHelpList(cmd);
+	return true;
+}
+
+/*****************************************************************************/
+void CompileEnvironmentLLVM::parseSupportedFlagsFromHelpList(const StringList& inCommand)
+{
+	std::string raw = Commands::subprocessOutput(inCommand);
+	auto split = String::split(raw, '\n');
+
+	for (auto& line : split)
+	{
+		auto beg = line.find_first_not_of(' ');
+		auto end = line.find_first_of('=', beg);
+		if (end == std::string::npos)
+		{
+			end = line.find_first_of('<', beg);
+			if (end == std::string::npos)
+			{
+				end = line.find_first_of(' ', beg);
+			}
+		}
+
+		if (beg != std::string::npos && end != std::string::npos)
+		{
+			line = line.substr(beg, end - beg);
+		}
+
+		if (line.back() == ' ')
+			line.pop_back();
+		if (line.back() == ',')
+			line.pop_back();
+
+		if (String::startsWith('-', line))
+		{
+			if (String::contains('\t', line))
+			{
+				auto afterTab = line.find_last_of('\t');
+				if (afterTab != std::string::npos)
+				{
+					std::string secondFlag = line.substr(afterTab);
+
+					if (String::startsWith('-', secondFlag))
+					{
+						if (secondFlag.back() == ' ')
+							secondFlag.pop_back();
+						if (secondFlag.back() == ',')
+							secondFlag.pop_back();
+
+						if (m_supportedFlags.find(secondFlag) == m_supportedFlags.end())
+							m_supportedFlags.emplace(String::toLowerCase(secondFlag), true);
+					}
+				}
+
+				end = line.find_first_of('"');
+				if (end == std::string::npos)
+				{
+					end = line.find_first_of(' ');
+				}
+
+				line = line.substr(beg, end - beg);
+
+				if (String::startsWith('-', line))
+				{
+					if (line.back() == ' ')
+						line.pop_back();
+					if (line.back() == ',')
+						line.pop_back();
+
+					if (m_supportedFlags.find(line) == m_supportedFlags.end())
+						m_supportedFlags.emplace(String::toLowerCase(line), true);
+				}
+			}
+			else
+			{
+				if (m_supportedFlags.find(line) == m_supportedFlags.end())
+					m_supportedFlags.emplace(String::toLowerCase(line), true);
+			}
+		}
+	}
+
+	// std::string supported;
+	// for (auto& [flag, _] : m_supportedFlags)
+	// {
+	// 	supported += flag + '\n';
+	// }
+	// std::ofstream("clang_flags.txt") << supported;
+}
 }

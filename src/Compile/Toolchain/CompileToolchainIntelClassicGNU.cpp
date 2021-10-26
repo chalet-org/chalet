@@ -5,8 +5,6 @@
 
 #include "Compile/Toolchain/CompileToolchainIntelClassicGNU.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -17,8 +15,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainIntelClassicGNU::CompileToolchainIntelClassicGNU(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
-	CompileToolchainGNU(inState, inProject, inConfig)
+CompileToolchainIntelClassicGNU::CompileToolchainIntelClassicGNU(const BuildState& inState, const SourceTarget& inProject) :
+	CompileToolchainGNU(inState, inProject)
 {
 }
 

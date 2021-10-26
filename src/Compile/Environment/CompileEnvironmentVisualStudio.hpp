@@ -19,13 +19,12 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 
 	static bool exists();
 
+protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 	virtual bool verifyToolchain() final;
 
 	virtual bool compilerVersionIsToolchainVersion() const final;
-
-protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
 	virtual bool validateArchitectureFromInput() final;
 	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const final;

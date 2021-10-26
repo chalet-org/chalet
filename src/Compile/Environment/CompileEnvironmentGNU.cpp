@@ -108,6 +108,35 @@ std::vector<CompilerPathStructure> CompileEnvironmentGNU::getValidCompilerPaths(
 }
 
 /*****************************************************************************/
+bool CompileEnvironmentGNU::populateSupportedFlags(const std::string& inExecutable)
+{
+	{
+		StringList categories{
+			"common",
+			"optimizers",
+			//"params",
+			"target",
+			"warnings",
+			"undocumented",
+		};
+		StringList cmd{ inExecutable, "-Q" };
+		for (auto& category : categories)
+		{
+			cmd.emplace_back(fmt::format("--help={}", category));
+		}
+		parseSupportedFlagsFromHelpList(cmd);
+	}
+	{
+		StringList cmd{ inExecutable, "-Wl,--help" };
+		parseSupportedFlagsFromHelpList(cmd);
+	}
+
+	// TODO: separate/joined -- kind of weird to check for
+
+	return true;
+}
+
+/*****************************************************************************/
 bool CompileEnvironmentGNU::verifyToolchain()
 {
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
@@ -288,5 +317,69 @@ std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompil
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+void CompileEnvironmentGNU::parseSupportedFlagsFromHelpList(const StringList& inCommand)
+{
+	auto path = String::getPathFolder(inCommand.front());
+	std::string raw = Commands::subprocessOutput(inCommand, std::move(path));
+	auto split = String::split(raw, '\n');
+
+	for (auto& line : split)
+	{
+		auto beg = line.find_first_not_of(' ');
+		auto end = line.find_first_of('=', beg);
+		if (end == std::string::npos)
+		{
+			end = line.find_first_of('<', beg);
+			if (end == std::string::npos)
+			{
+				end = line.find_first_of(' ', beg);
+			}
+		}
+
+		if (beg != std::string::npos && end != std::string::npos)
+		{
+			line = line.substr(beg, end - beg);
+		}
+
+		if (String::startsWith('-', line))
+		{
+			if (String::contains('\t', line))
+			{
+				auto afterTab = line.find_last_of('\t');
+				if (afterTab != std::string::npos)
+				{
+					std::string secondFlag = line.substr(afterTab);
+
+					if (String::startsWith('-', secondFlag))
+					{
+						if (m_supportedFlags.find(secondFlag) == m_supportedFlags.end())
+							m_supportedFlags.emplace(String::toLowerCase(secondFlag), true);
+					}
+				}
+
+				end = line.find_first_of('"');
+				if (end == std::string::npos)
+				{
+					end = line.find_first_of(' ');
+				}
+
+				line = line.substr(beg, end - beg);
+
+				if (String::startsWith('-', line))
+				{
+					if (m_supportedFlags.find(line) == m_supportedFlags.end())
+						m_supportedFlags.emplace(String::toLowerCase(line), true);
+				}
+			}
+			else
+			{
+				if (m_supportedFlags.find(line) == m_supportedFlags.end())
+					m_supportedFlags.emplace(String::toLowerCase(line), true);
+			}
+		}
+	}
 }
 }

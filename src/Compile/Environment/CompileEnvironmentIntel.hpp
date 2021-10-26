@@ -14,10 +14,9 @@ struct CompileEnvironmentIntel final : CompileEnvironmentLLVM
 {
 	explicit CompileEnvironmentIntel(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
+protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
-
-protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
 	virtual bool validateArchitectureFromInput() final;
 	virtual bool makeArchitectureAdjustments() final;
@@ -25,6 +24,7 @@ protected:
 
 	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const final;
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const final;
+	virtual bool populateSupportedFlags(const std::string& inExecutable) final;
 
 private:
 	bool saveIntelEnvironment() const;

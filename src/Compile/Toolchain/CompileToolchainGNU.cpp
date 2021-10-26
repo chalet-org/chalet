@@ -5,8 +5,7 @@
 
 #include "Compile/Toolchain/CompileToolchainGNU.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerConfigController.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -22,8 +21,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
-	ICompileToolchain(inState, inProject, inConfig)
+CompileToolchainGNU::CompileToolchainGNU(const BuildState& inState, const SourceTarget& inProject) :
+	ICompileToolchain(inState, inProject)
 {
 }
 
@@ -315,7 +314,7 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 	addExectuable(ret, executable);
 
 	ret.emplace_back("-shared");
-	if (m_state.compilers.isMingw())
+	if (m_state.environment->isMingw())
 	{
 		std::string mingwLinkerOptions;
 		if (m_project.windowsOutputDef())
@@ -450,18 +449,18 @@ bool CompileToolchainGNU::isFlagSupported(const std::string& inFlag) const
 		auto cutoff = inFlag.find('=');
 		// std::string flag = inFlag.substr(cutoff + 1);
 		std::string flag = inFlag.substr(0, cutoff);
-		return m_config.isFlagSupported(String::toLowerCase(flag));
+		return m_state.environment->isCompilerFlagSupported(String::toLowerCase(flag));
 	}
 	else
 	{
-		return m_config.isFlagSupported(String::toLowerCase(inFlag));
+		return m_state.environment->isCompilerFlagSupported(String::toLowerCase(inFlag));
 	}
 }
 
 /*****************************************************************************/
 bool CompileToolchainGNU::isLinkSupported(const std::string& inLink) const
 {
-	if (m_supportedLinksInitialized && m_state.compilers.isGcc())
+	if (m_supportedLinksInitialized && m_state.environment->isGcc())
 	{
 		return m_supportedLinks.find(inLink) != m_supportedLinks.end();
 	}
@@ -773,7 +772,7 @@ void CompileToolchainGNU::addLibStdCppCompileOption(StringList& outArgList, cons
 /*****************************************************************************/
 void CompileToolchainGNU::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	if (!m_state.compilers.isMingw())
+	if (!m_state.environment->isMingw())
 	{
 		std::string fpic{ "-fPIC" };
 		// if (isFlagSupported(fpic))
@@ -807,7 +806,7 @@ void CompileToolchainGNU::addNoExceptionsOption(StringList& outArgList) const
 void CompileToolchainGNU::addThreadModelCompileOption(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
-	if (!m_state.compilers.isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
+	if (!m_state.environment->isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
 	{
 		std::string pthread{ "-pthread" };
 		// if (isFlagSupported(pthread))
@@ -821,7 +820,7 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	auto hostArch = m_state.info.hostArchitecture();
 	auto targetArch = m_state.info.targetArchitecture();
 
-	if (m_state.compilers.isMingw() && String::equals({ "arm", "arm64" }, m_arch))
+	if (m_state.environment->isMingw() && String::equals({ "arm", "arm64" }, m_arch))
 	{
 		// don't do anything yet
 		return false;
@@ -940,9 +939,9 @@ void CompileToolchainGNU::addLinkTimeOptimizationOption(StringList& outArgList) 
 void CompileToolchainGNU::addThreadModelLinkerOption(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
-	if (!m_state.compilers.isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
+	if (!m_state.environment->isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
 	{
-		if (m_state.compilers.isMingw() && m_project.staticLinking())
+		if (m_state.environment->isMingw() && m_project.staticLinking())
 		{
 			outArgList.emplace_back("-Wl,-Bstatic,--whole-archive");
 			outArgList.emplace_back("-lwinpthread");
@@ -997,7 +996,7 @@ void CompileToolchainGNU::addStaticCompilerLibraryOptions(StringList& outArgList
 /*****************************************************************************/
 void CompileToolchainGNU::addSubSystem(StringList& outArgList) const
 {
-	if (m_state.compilers.isMingwGcc())
+	if (m_state.environment->isMingwGcc())
 	{
 		// MinGW rolls these together for some reason
 		// -mwindows and -mconsole kind of do some magic behind the scenes, so it's hard to assume anything
@@ -1257,6 +1256,22 @@ void CompileToolchainGNU::initializeSupportedLinks()
 	bool oldQuotePaths = m_quotePaths;
 	m_quotePaths = false;
 
+	auto isLinkSupportedByExecutable = [](const std::string& inExecutable, const std::string& inLink, const StringList& inDirectories) -> bool {
+		// This will print the input if the link is not found in path
+		auto file = fmt::format("lib{}.a", inLink);
+		StringList cmd{ inExecutable };
+		for (auto& dir : inDirectories)
+		{
+			cmd.push_back(dir);
+		}
+		cmd.emplace_back(fmt::format("-print-file-name={}", file));
+
+		auto raw = Commands::subprocessOutput(cmd);
+		// auto split = String::split(raw, '\n');
+
+		return !String::equals(file, raw);
+	};
+
 	// TODO: Links coming from CMake projects
 
 	StringList cmakeProjects;
@@ -1288,17 +1303,20 @@ void CompileToolchainGNU::initializeSupportedLinks()
 
 	auto excludes = getLinkExclusions();
 
+	const auto& exec = m_state.toolchain.compilerCxx(m_project.language()).path;
+
 	for (auto& staticLink : m_project.staticLinks())
 	{
-		if (m_config.isLinkSupported(staticLink, libDirs) || List::contains(projectLinks, staticLink) || String::contains(cmakeProjects, staticLink))
+		if (isLinkSupportedByExecutable(exec, staticLink, libDirs) || List::contains(projectLinks, staticLink) || String::contains(cmakeProjects, staticLink))
 			m_supportedLinks.emplace(staticLink, true);
 	}
+
 	for (auto& link : m_project.links())
 	{
 		if (List::contains(excludes, link))
 			continue;
 
-		if (m_config.isLinkSupported(link, libDirs) || List::contains(projectLinks, link) || String::contains(cmakeProjects, link))
+		if (isLinkSupportedByExecutable(exec, link, libDirs) || List::contains(projectLinks, link) || String::contains(cmakeProjects, link))
 			m_supportedLinks.emplace(link, true);
 	}
 

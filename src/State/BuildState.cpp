@@ -8,8 +8,6 @@
 #include "BuildJson/BuildJsonParser.hpp"
 #include "Builder/BuildManager.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerConfigController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
@@ -44,7 +42,6 @@ struct BuildState::Impl
 	BuildPaths paths;
 	BuildConfiguration configuration;
 	std::vector<BuildTarget> targets;
-	CompilerConfigController compilers;
 
 	Unique<ICompileEnvironment> environment;
 
@@ -70,8 +67,7 @@ BuildState::BuildState(CommandLineInputs&& inInputs, StatePrototype& inPrototype
 	toolchain(m_impl->toolchain),
 	paths(m_impl->paths),
 	configuration(m_impl->configuration),
-	targets(m_impl->targets),
-	compilers(m_impl->compilers)
+	targets(m_impl->targets)
 {
 }
 
@@ -175,8 +171,6 @@ bool BuildState::parseToolchainFromSettingsJson()
 		if (!m_impl->environment->create(toolchain.version()))
 			return false;
 
-		m_impl->compilers.setToolchainType(m_impl->environment->type());
-
 		return true;
 	};
 
@@ -222,6 +216,8 @@ bool BuildState::parseToolchainFromSettingsJson()
 		return false;
 	}
 
+	environment = m_impl->environment.get();
+
 	return true;
 }
 
@@ -237,26 +233,7 @@ bool BuildState::initializeToolchain()
 {
 	Timer timer;
 
-	auto initializeImpl = [this](ICompileEnvironment& inEnvironment) -> bool {
-		for (auto& target : targets)
-		{
-			if (target->isProject())
-			{
-				auto& project = static_cast<SourceTarget&>(*target);
-				auto language = project.language();
-
-				compilers.makeConfigForLanguage(language, *this, inEnvironment);
-			}
-		}
-
-		if (!compilers.initialize())
-			return false;
-
-		return true;
-	};
-
-	bool result = initializeImpl(*m_impl->environment);
-	result &= m_impl->environment->makeArchitectureAdjustments();
+	bool result = m_impl->environment->makeArchitectureAdjustments();
 	result &= toolchain.initialize(*m_impl->environment);
 
 	if (!result)
@@ -303,7 +280,7 @@ bool BuildState::initializeBuild()
 		if (target->isProject())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
-			project.parseOutputFilename(compilers);
+			project.parseOutputFilename();
 
 			if (!project.isStaticLibrary())
 			{
@@ -323,7 +300,7 @@ bool BuildState::initializeBuild()
 #endif
 			}
 
-			const bool isMsvc = compilers.isMsvc();
+			const bool isMsvc = environment->isMsvc();
 			if (!isMsvc)
 			{
 				auto& compilerInfo = toolchain.compilerCxx(project.language());
@@ -434,18 +411,18 @@ bool BuildState::validateState()
 					continue;
 
 #if defined(CHALET_WIN32)
-				if (compilers.isMsvc() && !toolchain.makeIsNMake())
+				if (environment->isMsvc() && !toolchain.makeIsNMake())
 				{
 					Diagnostic::error("If using the 'makefile' strategy alongside MSVC, only NMake or Qt Jom are supported (found GNU make).");
 					return false;
 				}
-				/*else if (compilers.isMingwGcc() && toolchain.makeIsNMake())
+				/*else if (environment->isMingwGcc() && toolchain.makeIsNMake())
 				{
 					Diagnostic::error("If using the 'makefile' strategy alongside MinGW, only GNU make is suported (found NMake or Qt Jom).");
 					return false;
 				}*/
 #endif
-				if (!compilers.isAppleClang() && project.objectiveCxx())
+				if (!environment->isAppleClang() && project.objectiveCxx())
 				{
 					Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang. Use either 'language.macos' or '\"condition\": \"macos\"' in the '{}' project.", m_impl->inputs.inputFile(), project.name());
 					return false;
@@ -573,7 +550,7 @@ void BuildState::makeCompilerDiagnosticsVariables()
 	if (!currentGccColors.empty())
 		return;
 
-	bool usesGcc = compilers.isGcc();
+	bool usesGcc = environment->isGcc();
 	if (usesGcc)
 	{
 		std::string gccColors;

@@ -12,7 +12,7 @@ namespace chalet
 {
 struct CompileToolchainIntelLLVM final : CompileToolchainLLVM
 {
-	explicit CompileToolchainIntelLLVM(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
+	explicit CompileToolchainIntelLLVM(const BuildState& inState, const SourceTarget& inProject);
 
 	virtual ToolchainType type() const noexcept final;
 

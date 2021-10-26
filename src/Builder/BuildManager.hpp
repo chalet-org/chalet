@@ -7,7 +7,6 @@
 #define CHALET_MAKEFILE_RUNNER_HPP
 
 #include "Compile/AssemblyDumper.hpp"
-#include "Compile/CompilerConfig.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Router/Route.hpp"
 #include "Utility/Timer.hpp"

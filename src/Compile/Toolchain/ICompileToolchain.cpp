@@ -7,7 +7,6 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/CompilerConfig.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -29,46 +28,43 @@
 namespace chalet
 {
 /*****************************************************************************/
-ICompileToolchain::ICompileToolchain(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
+ICompileToolchain::ICompileToolchain(const BuildState& inState, const SourceTarget& inProject) :
 	m_state(inState),
-	m_project(inProject),
-	m_config(inConfig)
+	m_project(inProject)
 {
 	m_quotePaths = m_state.toolchain.strategy() != StrategyType::Native;
 
 	m_isMakefile = m_state.toolchain.strategy() == StrategyType::Makefile;
 	m_isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 	m_isNative = m_state.toolchain.strategy() == StrategyType::Native;
-
-	UNUSED(m_config);
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileToolchain ICompileToolchain::make(const ToolchainType inCompilerType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig)
+[[nodiscard]] CompileToolchain ICompileToolchain::make(const ToolchainType inCompilerType, const BuildState& inState, const SourceTarget& inProject)
 {
 	switch (inCompilerType)
 	{
 		case ToolchainType::AppleLLVM:
-			return std::make_unique<CompileToolchainApple>(inState, inProject, inConfig);
+			return std::make_unique<CompileToolchainApple>(inState, inProject);
 		case ToolchainType::LLVM:
 		case ToolchainType::MingwLLVM:
 			// case ToolchainType::EmScripten:
-			return std::make_unique<CompileToolchainLLVM>(inState, inProject, inConfig);
+			return std::make_unique<CompileToolchainLLVM>(inState, inProject);
 		case ToolchainType::MingwGNU:
 		case ToolchainType::GNU:
-			return std::make_unique<CompileToolchainGNU>(inState, inProject, inConfig);
+			return std::make_unique<CompileToolchainGNU>(inState, inProject);
 		case ToolchainType::VisualStudio:
-			return std::make_unique<CompileToolchainVisualStudio>(inState, inProject, inConfig);
+			return std::make_unique<CompileToolchainVisualStudio>(inState, inProject);
 		case ToolchainType::IntelLLVM:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-			return std::make_unique<CompileToolchainIntelLLVM>(inState, inProject, inConfig);
+			return std::make_unique<CompileToolchainIntelLLVM>(inState, inProject);
 #endif
 		case ToolchainType::IntelClassic:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
-			return std::make_unique<CompileToolchainIntelClassicMSVC>(inState, inProject, inConfig);
+			return std::make_unique<CompileToolchainIntelClassicMSVC>(inState, inProject);
 	#else
-			return std::make_unique<CompileToolchainIntelClassicGNU>(inState, inProject, inConfig);
+			return std::make_unique<CompileToolchainIntelClassicGNU>(inState, inProject);
 	#endif
 #endif
 		case ToolchainType::Unknown:

@@ -19,7 +19,6 @@ namespace chalet
 {
 class BuildState;
 struct WorkspaceEnvironment;
-struct CompilerConfigController;
 
 struct SourceTarget final : public IBuildTarget
 {
@@ -83,7 +82,7 @@ struct SourceTarget final : public IBuildTarget
 	void addMacosFramework(std::string&& inValue);
 
 	//
-	void parseOutputFilename(const CompilerConfigController& inConfig) noexcept;
+	void parseOutputFilename() noexcept;
 
 	const std::string& outputFile() const noexcept;
 	const std::string& outputFileNoPrefix() const noexcept;

@@ -5,8 +5,7 @@
 
 #include "Compile/Generator/NinjaGenerator.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerConfigController.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -41,7 +40,7 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 	m_toolchain = inToolchain.get();
 	m_hash = inTargetHash;
 
-	m_needsMsvcDepsPrefix |= m_state.compilers.isMsvc();
+	m_needsMsvcDepsPrefix |= m_state.environment->isMsvc();
 
 	const std::string rules = getRules(inOutputs.types);
 	const std::string buildRules = getBuildRules(inOutputs);
@@ -120,7 +119,7 @@ std::string NinjaGenerator::getDepFile(const std::string& inDependency)
 {
 	std::string ret;
 
-	if (!m_state.compilers.isMsvc())
+	if (!m_state.environment->isMsvc())
 	{
 		ret = fmt::format(R"ninja(
   depfile = {dependency})ninja",
@@ -483,7 +482,7 @@ build {pchTarget}: pch_{hash} {pch}
 		}
 
 #if defined(CHALET_WIN32)
-		if (m_state.compilers.isMsvc())
+		if (m_state.environment->isMsvc())
 		{
 			std::string pchObj = pchTarget;
 			String::replaceAll(pchObj, ".pch", ".obj");
@@ -600,7 +599,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 std::string NinjaGenerator::getRuleDeps() const
 {
 #if defined(CHALET_WIN32)
-	return m_state.compilers.isMsvc() ? "msvc" : "gcc";
+	return m_state.environment->isMsvc() ? "msvc" : "gcc";
 #else
 	return "gcc";
 #endif

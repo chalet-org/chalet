@@ -242,13 +242,15 @@ bool CompileEnvironmentIntel::makeArchitectureAdjustments()
 	{
 		return CompileEnvironmentLLVM::makeArchitectureAdjustments();
 	}
-
+	else
+	{
 #if defined(CHALET_MACOS)
-	auto arch = m_inputs.hostArchitecture();
-	m_state.info.setTargetArchitecture(fmt::format("{}-intel-darwin", arch));
+		auto arch = m_inputs.hostArchitecture();
+		m_state.info.setTargetArchitecture(fmt::format("{}-intel-darwin", arch));
 #endif
 
-	return true;
+		return true;
+	}
 }
 
 /*****************************************************************************/
@@ -273,6 +275,48 @@ void CompileEnvironmentIntel::parseVersionFromVersionOutput(const std::string& i
 			auto end = inLine.find(' ', start);
 			outVersion = inLine.substr(start, end - start);
 		}
+	}
+}
+
+/*****************************************************************************/
+bool CompileEnvironmentIntel::populateSupportedFlags(const std::string& inExecutable)
+{
+	if (m_type == ToolchainType::IntelLLVM)
+	{
+		return CompileEnvironmentLLVM::populateSupportedFlags(inExecutable);
+	}
+	else
+	{
+		StringList categories{
+			"codegen",
+			"compatibility",
+			"advanced",
+			"component",
+			"data",
+			"diagnostics",
+			"float",
+			"inline",
+			"ipo",
+			"language",
+			"link",
+			"misc",
+			"opt",
+			"output",
+			"pgo",
+			"preproc",
+			"reports",
+			"openmp",
+		};
+		StringList cmd{ inExecutable, "-Q" };
+		std::string help{ "--help" };
+		for (auto& category : categories)
+		{
+			cmd.push_back(help);
+			cmd.emplace_back(category);
+		}
+		CompileEnvironmentGNU::parseSupportedFlagsFromHelpList(cmd);
+
+		return true;
 	}
 }
 

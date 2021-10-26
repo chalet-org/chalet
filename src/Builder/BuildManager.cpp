@@ -9,7 +9,7 @@
 #include "Builder/ProfilerRunner.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
-#include "Compile/CompilerConfigController.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"
 #include "Router/Route.hpp"
@@ -400,9 +400,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 {
 	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
 
-	auto& compilerConfig = m_state.compilers.get(inProject.language());
-
-	auto buildToolchain = ICompileToolchain::make(m_state.compilers.type(), m_state, inProject, compilerConfig);
+	auto buildToolchain = ICompileToolchain::make(m_state.environment->type(), m_state, inProject);
 	auto outputs = m_state.paths.getOutputs(inProject, m_state.info.dumpAssembly());
 
 	if (!Commands::makeDirectories(outputs.directories, m_directoriesMade))
@@ -569,7 +567,7 @@ bool BuildManager::doClean(const SourceTarget& inProject, const std::string& inT
 		Commands::remove(inTarget);
 
 #if defined(CHALET_WIN32)
-		if (m_state.compilers.isMsvc() && inProject.isExecutable() && m_state.configuration.debugSymbols())
+		if (m_state.environment->isMsvc() && inProject.isExecutable() && m_state.configuration.debugSymbols())
 		{
 			auto baseName = String::getPathFolderBaseName(inTarget);
 

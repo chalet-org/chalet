@@ -14,9 +14,8 @@ struct CompileEnvironmentAppleLLVM final : CompileEnvironmentLLVM
 {
 	explicit CompileEnvironmentAppleLLVM(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
-	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
-
 protected:
+	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const override;
 };
 }

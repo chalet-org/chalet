@@ -14,14 +14,15 @@ struct CompileEnvironmentLLVM : CompileEnvironmentGNU
 {
 	explicit CompileEnvironmentLLVM(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
+protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
 
 	virtual bool makeArchitectureAdjustments() override;
-
-protected:
 	virtual bool validateArchitectureFromInput() override;
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const override;
+	virtual bool populateSupportedFlags(const std::string& inExecutable) override;
+	virtual void parseSupportedFlagsFromHelpList(const StringList& inCommand) override;
 };
 }
 

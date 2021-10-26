@@ -5,8 +5,6 @@
 
 #include "Compile/Toolchain/CompileToolchainIntelClassicMSVC.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -17,8 +15,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainIntelClassicMSVC::CompileToolchainIntelClassicMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
-	CompileToolchainVisualStudio(inState, inProject, inConfig)
+CompileToolchainIntelClassicMSVC::CompileToolchainIntelClassicMSVC(const BuildState& inState, const SourceTarget& inProject) :
+	CompileToolchainVisualStudio(inState, inProject)
 {
 }
 

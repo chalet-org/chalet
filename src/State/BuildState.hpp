@@ -14,8 +14,6 @@ struct BuildConfiguration;
 struct BuildInfo;
 struct BuildPaths;
 struct AncillaryTools;
-struct CompilerConfig;
-struct CompilerConfigController;
 struct CompilerTools;
 struct CommandLineInputs;
 struct StatePrototype;
@@ -23,6 +21,7 @@ struct WorkspaceCache;
 struct WorkspaceEnvironment;
 struct ICompileEnvironment;
 struct IBuildTarget;
+struct ICompileEnvironment;
 
 class BuildState
 {
@@ -43,7 +42,7 @@ public:
 	BuildPaths& paths;
 	BuildConfiguration& configuration;
 	std::vector<Unique<IBuildTarget>>& targets;
-	CompilerConfigController& compilers;
+	ICompileEnvironment* environment = nullptr;
 
 	bool initialize();
 	bool doBuild(const bool inShowSuccess = true);

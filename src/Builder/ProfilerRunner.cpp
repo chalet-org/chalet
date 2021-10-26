@@ -5,8 +5,7 @@
 
 #include "Builder/ProfilerRunner.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerConfigController.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
@@ -31,7 +30,7 @@ ProfilerRunner::ProfilerRunner(const CommandLineInputs& inInputs, BuildState& in
 bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
 {
 #if defined(CHALET_MACOS)
-	if (m_state.compilers.isAppleClang())
+	if (m_state.environment->isAppleClang())
 	{
 		/*
 			Notes:
@@ -77,7 +76,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 		}
 	}
 #endif
-	if (m_state.compilers.isGcc() && !m_state.toolchain.profiler().empty())
+	if (m_state.environment->isGcc() && !m_state.toolchain.profiler().empty())
 	{
 		if (m_state.toolchain.isProfilerGprof())
 		{

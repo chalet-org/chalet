@@ -5,8 +5,7 @@
 
 #include "State/Target/CMakeTarget.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerConfigController.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -63,7 +62,7 @@ bool CMakeTarget::validate()
 	}
 
 #if defined(CHALET_WIN32)
-	if (m_state.compilers.isMsvc())
+	if (m_state.environment->isMsvc())
 	{
 		const auto& version = m_state.toolchain.version();
 		if (!String::startsWith({ "17", "16", "15", "14", "12", "11", "10" }, version))

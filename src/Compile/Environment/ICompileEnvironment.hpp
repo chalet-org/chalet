@@ -20,8 +20,28 @@ using CompileEnvironment = Unique<ICompileEnvironment>;
 
 struct ICompileEnvironment
 {
-	explicit ICompileEnvironment(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 	virtual ~ICompileEnvironment() = default;
+
+	ToolchainType type() const noexcept;
+
+	bool isWindowsClang() const noexcept;
+	bool isClang() const noexcept;
+	bool isAppleClang() const noexcept;
+	bool isGcc() const noexcept;
+	bool isIntelClassic() const noexcept;
+	bool isMingw() const noexcept;
+	bool isMingwGcc() const noexcept;
+	bool isMsvc() const noexcept;
+	bool isClangOrMsvc() const noexcept;
+
+	const std::string& detectedVersion() const;
+	bool isCompilerFlagSupported(const std::string& inFlag) const;
+
+protected:
+	friend class BuildState;
+	friend struct CompilerTools;
+
+	explicit ICompileEnvironment(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
 	[[nodiscard]] static Unique<ICompileEnvironment> make(ToolchainType type, const CommandLineInputs& inInputs, BuildState& inState);
 	static ToolchainType detectToolchainTypeFromPath(const std::string& inExecutable);
@@ -29,23 +49,19 @@ struct ICompileEnvironment
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const = 0;
 	virtual bool verifyToolchain() = 0;
+	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const = 0;
+	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const = 0;
 
 	virtual bool makeArchitectureAdjustments();
 	virtual bool compilerVersionIsToolchainVersion() const;
-
-	ToolchainType type() const noexcept;
-	const std::string& detectedVersion() const;
-
-	bool create(const std::string& inVersion = std::string());
-	bool getCompilerInfoFromExecutable(CompilerInfo& outInfo) const;
-
-protected:
 	virtual bool createFromVersion(const std::string& inVersion);
 	virtual bool validateArchitectureFromInput();
+	virtual bool populateSupportedFlags(const std::string& inExecutable);
 
-	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const = 0;
+	bool create(const std::string& inVersion = std::string());
 	bool getCompilerPaths(CompilerInfo& outInfo) const;
-	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const = 0;
+	bool getCompilerInfoFromExecutable(CompilerInfo& outInfo);
+	bool makeSupportedCompilerFlags(const std::string& inExecutable);
 
 	std::string getVarsPath(const std::string& inId) const;
 	bool saveOriginalEnvironment(const std::string& inOutputFile) const;
@@ -56,6 +72,7 @@ protected:
 	BuildState& m_state;
 
 	Dictionary<std::string> m_variables;
+	Dictionary<bool> m_supportedFlags;
 
 	std::string m_detectedVersion;
 	std::string m_path;

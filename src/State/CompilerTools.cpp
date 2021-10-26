@@ -42,7 +42,7 @@ static struct
 /*****************************************************************************/
 bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 {
-	auto createDescription = [&](CompilerInfo& outInfo) -> bool {
+	auto getCompilerInfo = [&](CompilerInfo& outInfo) -> bool {
 		if (!outInfo.description.empty())
 			return false;
 
@@ -55,7 +55,7 @@ bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 		return true;
 	};
 
-	if (!createDescription(m_compilerCpp))
+	if (!getCompilerInfo(m_compilerCpp))
 		return false;
 
 	auto baseFolderC = String::getPathFolder(m_compilerC.path);
@@ -66,7 +66,7 @@ bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 	}
 	else
 	{
-		if (!createDescription(m_compilerC))
+		if (!getCompilerInfo(m_compilerC))
 			return false;
 	}
 

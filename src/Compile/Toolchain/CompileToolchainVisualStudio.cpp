@@ -5,7 +5,6 @@
 
 #include "Compile/Toolchain/CompileToolchainVisualStudio.hpp"
 
-#include "Compile/CompilerConfigController.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -14,7 +13,6 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
-#include "Compile/CompilerConfig.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 
@@ -23,8 +21,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainVisualStudio::CompileToolchainVisualStudio(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
-	ICompileToolchain(inState, inProject, inConfig)
+CompileToolchainVisualStudio::CompileToolchainVisualStudio(const BuildState& inState, const SourceTarget& inProject) :
+	ICompileToolchain(inState, inProject)
 {
 	UNUSED(m_project);
 }

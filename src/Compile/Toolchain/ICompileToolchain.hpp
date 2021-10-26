@@ -13,17 +13,16 @@ namespace chalet
 {
 class BuildState;
 struct SourceTarget;
-struct CompilerConfig;
 
 struct ICompileToolchain;
 using CompileToolchain = Unique<ICompileToolchain>;
 
 struct ICompileToolchain
 {
-	explicit ICompileToolchain(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
+	explicit ICompileToolchain(const BuildState& inState, const SourceTarget& inProject);
 	virtual ~ICompileToolchain() = default;
 
-	[[nodiscard]] static CompileToolchain make(const ToolchainType inType, const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
+	[[nodiscard]] static CompileToolchain make(const ToolchainType inType, const BuildState& inState, const SourceTarget& inProject);
 
 	virtual ToolchainType type() const noexcept = 0;
 
@@ -80,7 +79,6 @@ protected:
 
 	const BuildState& m_state;
 	const SourceTarget& m_project;
-	const CompilerConfig& m_config;
 
 	bool m_quotePaths = true;
 

@@ -12,7 +12,7 @@ namespace chalet
 {
 struct CompileToolchainIntelClassicMSVC final : CompileToolchainVisualStudio
 {
-	explicit CompileToolchainIntelClassicMSVC(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
+	explicit CompileToolchainIntelClassicMSVC(const BuildState& inState, const SourceTarget& inProject);
 
 	virtual ToolchainType type() const noexcept final;
 

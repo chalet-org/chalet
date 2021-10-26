@@ -12,7 +12,7 @@ namespace chalet
 {
 struct CompileToolchainIntelClassicGNU final : CompileToolchainGNU
 {
-	explicit CompileToolchainIntelClassicGNU(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig);
+	explicit CompileToolchainIntelClassicGNU(const BuildState& inState, const SourceTarget& inProject);
 
 	virtual ToolchainType type() const noexcept final;
 

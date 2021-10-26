@@ -5,8 +5,7 @@
 
 #include "Builder/CmakeBuilder.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerConfigController.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -116,7 +115,7 @@ std::string CmakeBuilder::getGenerator() const
 		ret = "Ninja";
 	}
 #if defined(CHALET_WIN32)
-	else if (m_state.compilers.isMsvc())
+	else if (m_state.environment->isMsvc())
 	{
 		// Validated in CMakeTarget::validate
 		const auto& version = m_state.toolchain.version();
@@ -170,7 +169,7 @@ std::string CmakeBuilder::getArchitecture() const
 	std::string ret;
 
 	// Note: The -A flag is only really used by VS
-	if (!isNinja && m_state.compilers.isMsvc())
+	if (!isNinja && m_state.environment->isMsvc())
 	{
 		switch (m_state.info.targetArchitecture())
 		{
@@ -350,8 +349,6 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 {
 	auto& cmake = m_state.toolchain.cmake();
 	const auto maxJobs = m_state.info.maxJobs();
-	// const auto& compileConfig = m_state.compilers.get(CodeLanguage::CPlusPlus);
-
 	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
 
 	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };

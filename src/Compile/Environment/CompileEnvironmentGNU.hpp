@@ -14,22 +14,22 @@ struct CompileEnvironmentGNU : ICompileEnvironment
 {
 	explicit CompileEnvironmentGNU(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
+protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
 	virtual bool verifyToolchain() override;
 
 	virtual bool makeArchitectureAdjustments() override;
-
-protected:
 	virtual bool validateArchitectureFromInput() override;
 	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const final;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const override;
+	virtual bool populateSupportedFlags(const std::string& inExecutable) override;
 
 	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const;
 	virtual void parseArchFromVersionOutput(const std::string& inLine, std::string& outArch) const;
 	virtual void parseThreadModelFromVersionOutput(const std::string& inLine, std::string& outThreadModel) const;
-
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const;
+	virtual void parseSupportedFlagsFromHelpList(const StringList& inCommand);
 
 private:
 	bool verifyCompilerExecutable(const std::string& inCompilerExec);

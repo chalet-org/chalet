@@ -5,7 +5,6 @@
 
 #include "Compile/Generator/MakefileGeneratorNMake.hpp"
 
-#include "Compile/CompilerConfigController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -297,8 +296,6 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 	{
 		const auto quietFlag = getQuietFlag();
 		m_precompiledHeaders.push_back(std::move(pchCache));
-		// const auto& compilerConfig = m_state.compilers.get(m_project->language());
-
 		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(source, object, m_generateDependencies, std::string(), std::string()));
 		if (!pchCompile.empty())
 		{

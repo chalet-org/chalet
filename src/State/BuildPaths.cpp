@@ -5,7 +5,7 @@
 
 #include "State/BuildPaths.hpp"
 
-#include "Compile/CompilerConfigController.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
@@ -214,7 +214,7 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool i
 		List::addIfDoesNotExist(ret.fileExtensions, std::move(ext));
 	}
 
-	const bool isNotMsvc = !m_state.compilers.isMsvc();
+	const bool isNotMsvc = !m_state.environment->isMsvc();
 	ret.objectListLinker = getObjectFilesList(files.list, inProject);
 	files.list = String::excludeIf(inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache, files.list);
 	ret.groups = getSourceFileGroupList(std::move(files), inProject, inDumpAssembly);
@@ -360,9 +360,9 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject
 	if (inProject.usesPch())
 	{
 		std::string ext;
-		if (m_state.compilers.isClangOrMsvc() || m_state.compilers.isIntelClassic())
+		if (m_state.environment->isClangOrMsvc() || m_state.environment->isIntelClassic())
 			ext = "pch";
-		// else if (m_state.compilers.isIntelClassic())
+		// else if (m_state.environment->isIntelClassic())
 		// 	ext = "pchi";
 		else
 			ext = "gch";
@@ -461,7 +461,7 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const bool inDumpAssembly)
 {
 	SourceFileGroupList ret;
-	bool isMsvc = m_state.compilers.isMsvc();
+	bool isMsvc = m_state.environment->isMsvc();
 
 	auto& fileListCache = inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache;
 
@@ -589,13 +589,13 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Sourc
 	StringList ret;
 	for (const auto& file : inFiles)
 	{
-		auto outFile = getObjectFile(file, m_state.compilers.isMsvc());
+		auto outFile = getObjectFile(file, m_state.environment->isMsvc());
 		if (!outFile.empty())
 			ret.emplace_back(std::move(outFile));
 	}
 
 #if defined(CHALET_WIN32)
-	if (m_state.compilers.isMsvc())
+	if (m_state.environment->isMsvc())
 	{
 		if (inProject.usesPch())
 		{

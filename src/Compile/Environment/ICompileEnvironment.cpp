@@ -25,6 +25,92 @@
 namespace chalet
 {
 /*****************************************************************************/
+ToolchainType ICompileEnvironment::type() const noexcept
+{
+	return m_type;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isWindowsClang() const noexcept
+{
+#if defined(CHALET_WIN32)
+	return m_type == ToolchainType::LLVM
+		|| m_type == ToolchainType::IntelLLVM;
+#else
+	return false;
+#endif
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isClang() const noexcept
+{
+	return m_type == ToolchainType::LLVM
+		|| m_type == ToolchainType::AppleLLVM
+		|| m_type == ToolchainType::IntelLLVM
+		|| m_type == ToolchainType::MingwLLVM
+		|| m_type == ToolchainType::EmScripten;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isAppleClang() const noexcept
+{
+	return m_type == ToolchainType::AppleLLVM;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isGcc() const noexcept
+{
+	return m_type == ToolchainType::GNU
+		|| m_type == ToolchainType::MingwGNU
+		|| m_type == ToolchainType::IntelClassic;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isIntelClassic() const noexcept
+{
+	return m_type == ToolchainType::IntelClassic;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isMingw() const noexcept
+{
+	return m_type == ToolchainType::MingwGNU
+		|| m_type == ToolchainType::MingwLLVM;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isMingwGcc() const noexcept
+{
+	return m_type == ToolchainType::MingwGNU;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isMsvc() const noexcept
+{
+	return m_type == ToolchainType::VisualStudio;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isClangOrMsvc() const noexcept
+{
+	return isClang() || isMsvc();
+}
+
+/*****************************************************************************/
+const std::string& ICompileEnvironment::detectedVersion() const
+{
+	return m_detectedVersion;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isCompilerFlagSupported(const std::string& inFlag) const
+{
+	return m_supportedFlags.find(inFlag) != m_supportedFlags.end();
+}
+
+/*****************************************************************************/
+// Protected/Private Town
+//
 ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
 	m_inputs(inInputs),
 	m_state(inState),
@@ -74,18 +160,6 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, const Comma
 }
 
 /*****************************************************************************/
-ToolchainType ICompileEnvironment::type() const noexcept
-{
-	return m_type;
-}
-
-/*****************************************************************************/
-const std::string& ICompileEnvironment::detectedVersion() const
-{
-	return m_detectedVersion;
-}
-
-/*****************************************************************************/
 bool ICompileEnvironment::create(const std::string& inVersion)
 {
 	if (m_initialized)
@@ -106,7 +180,7 @@ bool ICompileEnvironment::create(const std::string& inVersion)
 }
 
 /*****************************************************************************/
-bool ICompileEnvironment::getCompilerInfoFromExecutable(CompilerInfo& outInfo) const
+bool ICompileEnvironment::getCompilerInfoFromExecutable(CompilerInfo& outInfo)
 {
 	if (outInfo.path.empty())
 	{
@@ -121,12 +195,60 @@ bool ICompileEnvironment::getCompilerInfoFromExecutable(CompilerInfo& outInfo) c
 	}
 
 	if (!getCompilerVersionAndDescription(outInfo))
+	{
+		Diagnostic::error("Error getting the version and description for: '{}'", outInfo.path);
 		return false;
+	}
+
+	if (!makeSupportedCompilerFlags(outInfo.path))
+	{
+		Diagnostic::error("Error collecting supported compiler flags.");
+		return false;
+	}
 
 	return true;
 }
 
 /*****************************************************************************/
+bool ICompileEnvironment::makeSupportedCompilerFlags(const std::string& inExecutable)
+{
+	std::string flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", inExecutable), CacheType::Local);
+
+	if (!Commands::pathExists(flagsFile))
+	{
+		if (populateSupportedFlags(inExecutable))
+		{
+			std::string outContents;
+			for (auto& [flag, _] : m_supportedFlags)
+			{
+				outContents += flag + "\n";
+			}
+
+			std::ofstream(flagsFile) << outContents;
+
+			m_state.cache.file().addExtraHash(String::getPathFilename(flagsFile));
+		}
+	}
+	else
+	{
+		std::ifstream input(flagsFile);
+		for (std::string line; std::getline(input, line);)
+		{
+			m_supportedFlags[std::move(line)] = true;
+		}
+
+		m_state.cache.file().addExtraHash(String::getPathFilename(flagsFile));
+	}
+
+	return true;
+}
+
+bool ICompileEnvironment::populateSupportedFlags(const std::string& inExecutable)
+{
+	UNUSED(inExecutable);
+	return true;
+}
+
 bool ICompileEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 {
 	std::string path = String::getPathFolder(outInfo.path);

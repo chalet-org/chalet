@@ -5,8 +5,6 @@
 
 #include "Compile/Toolchain/CompileToolchainApple.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -60,8 +58,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainApple::CompileToolchainApple(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
-	CompileToolchainLLVM(inState, inProject, inConfig)
+CompileToolchainApple::CompileToolchainApple(const BuildState& inState, const SourceTarget& inProject) :
+	CompileToolchainLLVM(inState, inProject)
 {
 }
 

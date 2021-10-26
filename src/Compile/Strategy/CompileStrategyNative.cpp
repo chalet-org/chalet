@@ -7,8 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/CompilerConfig.hpp"
-#include "Compile/CompilerConfigController.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -61,7 +60,7 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutp
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	const auto& name = inProject.name();
 
-	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.compilers.isMsvc();
+	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
 
 	auto target = std::make_unique<CommandPool::Target>();
 	target->pre = getPchCommands(pchTarget);
@@ -131,7 +130,7 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 
 	CommandPool::Settings settings;
 	settings.color = Output::theme().build;
-	settings.msvcCommand = m_state.compilers.isMsvc();
+	settings.msvcCommand = m_state.environment->isMsvc();
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
 	settings.renameAfterCommand = m_generateDependencies;

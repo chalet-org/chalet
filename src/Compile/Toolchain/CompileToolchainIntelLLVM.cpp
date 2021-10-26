@@ -5,8 +5,6 @@
 
 #include "Compile/Toolchain/CompileToolchainIntelLLVM.hpp"
 
-#include "Compile/CompilerConfig.hpp"
-
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -18,8 +16,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainIntelLLVM::CompileToolchainIntelLLVM(const BuildState& inState, const SourceTarget& inProject, const CompilerConfig& inConfig) :
-	CompileToolchainLLVM(inState, inProject, inConfig)
+CompileToolchainIntelLLVM::CompileToolchainIntelLLVM(const BuildState& inState, const SourceTarget& inProject) :
+	CompileToolchainLLVM(inState, inProject)
 {
 }
 
