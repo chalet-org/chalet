@@ -155,59 +155,59 @@ jobs:
             ./dist/chalet-windows-msvc64.zip
             ./dist/chalet-windows-msvc64-installer.zip
           token: ${{ secrets.GITHUB_TOKEN }}
-  Windows-MSYS2:
-    needs: Release
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - name: "Get MSYS2"
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: >-
-            base-devel
-            git
-            zip
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
-      - name: "Checkout"
-        uses: actions/checkout@v2
-      - name: "Fetch Dependencies"
-        run: bash ./fetch_vendors.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: "Build: Debug"
-        run: bash ./build.sh Debug
-      - name: "Color Test"
-        run: build/Debug/chalet-debug colortest
-      - name: "Build: Release"
-        run: build/Debug/chalet-debug --save-schema -t gcc bundle
-      - name: "Run: Tests"
-        run: build/x86_64-w64-mingw32_Release/chalet -c Release run tests_chalet
-      - name: "Zip binary"
-        uses: papeloto/action-zip@v1
-        with:
-          files: dist/chalet.exe schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
-          dest: dist/chalet-windows-mingw64.zip
-      - name: "Make NSIS Installer"
-        uses: joncloud/makensis-action@v3.5
-        with:
-          script-file: "platform/windows/installer/install_script.nsi"
-          additional-plugin-paths: platform/windows/installer/plugins/Plugins
-          arguments: "/WX /V3 /NOCD"
-      - name: "Zip installer"
-        uses: papeloto/action-zip@v1
-        with:
-          files: dist/chalet-windows-installer.exe LICENSE.txt README.md
-          dest: dist/chalet-windows-mingw64-installer.zip
-      - name: "Upload assets"
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            ./dist/chalet-windows-mingw64.zip
-            ./dist/chalet-windows-mingw64-installer.zip
-          token: ${{ secrets.GITHUB_TOKEN }}
+  # Windows-MSYS2:
+  #   needs: Release
+  #   runs-on: windows-latest
+  #   defaults:
+  #     run:
+  #       shell: msys2 {0}
+  #   steps:
+  #     - name: "Get MSYS2"
+  #       uses: msys2/setup-msys2@v2
+  #       with:
+  #         update: true
+  #         install: >-
+  #           base-devel
+  #           git
+  #           zip
+  #           mingw-w64-x86_64-toolchain
+  #           mingw-w64-x86_64-cmake
+  #           mingw-w64-x86_64-ninja
+  #     - name: "Checkout"
+  #       uses: actions/checkout@v2
+  #     - name: "Fetch Dependencies"
+  #       run: bash ./fetch_vendors.sh
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: "Build: Debug"
+  #       run: bash ./build.sh Debug
+  #     - name: "Color Test"
+  #       run: build/Debug/chalet-debug colortest
+  #     - name: "Build: Release"
+  #       run: build/Debug/chalet-debug --save-schema -t gcc bundle
+  #     - name: "Run: Tests"
+  #       run: build/x86_64-w64-mingw32_Release/chalet -c Release run tests_chalet
+  #     - name: "Zip binary"
+  #       uses: papeloto/action-zip@v1
+  #       with:
+  #         files: dist/chalet.exe schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
+  #         dest: dist/chalet-windows-mingw64.zip
+  #     - name: "Make NSIS Installer"
+  #       uses: joncloud/makensis-action@v3.5
+  #       with:
+  #         script-file: "platform/windows/installer/install_script.nsi"
+  #         additional-plugin-paths: platform/windows/installer/plugins/Plugins
+  #         arguments: "/WX /V3 /NOCD"
+  #     - name: "Zip installer"
+  #       uses: papeloto/action-zip@v1
+  #       with:
+  #         files: dist/chalet-windows-installer.exe LICENSE.txt README.md
+  #         dest: dist/chalet-windows-mingw64-installer.zip
+  #     - name: "Upload assets"
+  #       uses: softprops/action-gh-release@v1
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       with:
+  #         files: |
+  #           ./dist/chalet-windows-mingw64.zip
+  #           ./dist/chalet-windows-mingw64-installer.zip
+  #         token: ${{ secrets.GITHUB_TOKEN }}
