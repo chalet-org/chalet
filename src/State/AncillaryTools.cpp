@@ -35,15 +35,16 @@ bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
 }
 
 /*****************************************************************************/
-bool AncillaryTools::validate()
+bool AncillaryTools::validate(const std::string& inHomeDirectory)
 {
 	fetchBashVersion();
 	fetchBrewVersion();
 
-	// #if defined(CHALET_MACOS)
-	// 	const auto& homeDirectory = m_inputs.homeDirectory();
-	// 	Environment::replaceCommonVariables(m_signingIdentity, homeDirectory);
-	// #endif
+#if defined(CHALET_MACOS)
+	Environment::replaceCommonVariables(m_signingIdentity, inHomeDirectory);
+#else
+	UNUSED(inHomeDirectory);
+#endif
 
 	return true;
 }

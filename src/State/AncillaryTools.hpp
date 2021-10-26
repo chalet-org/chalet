@@ -12,7 +12,7 @@ struct AncillaryTools
 {
 	bool resolveOwnExecutable(const std::string& inAppPath);
 
-	bool validate();
+	bool validate(const std::string& inHomeDirectory);
 
 	void fetchBashVersion();
 	void fetchBrewVersion();

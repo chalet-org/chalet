@@ -289,7 +289,7 @@ bool StatePrototype::validateExternalDependencies()
 /*****************************************************************************/
 bool StatePrototype::validateBuildFile()
 {
-	if (!tools.validate())
+	if (!tools.validate(m_inputs.homeDirectory()))
 	{
 		Diagnostic::error("Error validating ancillary tools.");
 		return false;

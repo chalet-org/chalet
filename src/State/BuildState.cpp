@@ -292,9 +292,6 @@ bool BuildState::initializeBuild()
 	m_uniqueId = getUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
 	cacheFile.setSourceCache(m_uniqueId, true);
 
-	if (!validateSigningIdentity())
-		return false;
-
 	if (!initializeToolchain())
 		return false;
 
@@ -371,6 +368,9 @@ bool BuildState::initializeBuild()
 	}
 
 	if (!validateState())
+		return false;
+
+	if (!validateSigningIdentity())
 		return false;
 
 	m_uniqueId = getUniqueIdForState();
