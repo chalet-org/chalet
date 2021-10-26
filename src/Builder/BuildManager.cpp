@@ -566,6 +566,21 @@ bool BuildManager::doClean(const SourceTarget& inProject, const std::string& inT
 	{
 		m_removeCache.push_back(inTarget);
 		Commands::remove(inTarget);
+
+#if defined(CHALET_WIN32)
+		if (m_state.compilers.isMsvc() && inProject.isExecutable() && m_state.configuration.debugSymbols())
+		{
+			auto baseName = String::getPathFolderBaseName(inTarget);
+
+			auto ilk = fmt::format("{}.ilk", baseName);
+			Commands::remove(ilk);
+			m_removeCache.emplace_back(std::move(ilk));
+
+			auto pdb = fmt::format("{}.pdb", baseName);
+			Commands::remove(pdb);
+			m_removeCache.push_back(std::move(pdb));
+		}
+#endif
 	}
 
 	for (auto& group : inGroups)
