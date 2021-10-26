@@ -49,18 +49,19 @@ ToolchainType CompileEnvironmentIntel::getToolchainTypeFromMacros(const std::str
 {
 	if (m_type == ToolchainType::IntelLLVM)
 	{
-		const bool clang = String::contains("__clang__", inMacros);
+		auto llvmType = CompileEnvironmentLLVM::getToolchainTypeFromMacros(inMacros);
+		if (llvmType != ToolchainType::LLVM)
+			return llvmType;
+
 		const bool intelClang = String::contains({ "__INTEL_LLVM_COMPILER", "__INTEL_CLANG_COMPILER" }, inMacros);
-		if (clang && intelClang)
+		if (intelClang)
 			return ToolchainType::IntelLLVM;
 	}
 	else
 	{
 		auto gccType = CompileEnvironmentGNU::getToolchainTypeFromMacros(inMacros);
 		if (gccType != ToolchainType::GNU)
-		{
 			return gccType;
-		}
 
 		const bool intelGcc = String::contains({ "__INTEL_COMPILER", "__INTEL_COMPILER_BUILD_DATE" }, inMacros);
 		if (intelGcc)

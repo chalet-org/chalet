@@ -39,11 +39,7 @@ std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& 
 /*****************************************************************************/
 ToolchainType CompileEnvironmentLLVM::getToolchainTypeFromMacros(const std::string& inMacros) const
 {
-	auto gnuType = CompileEnvironmentGNU::getToolchainTypeFromMacros(inMacros);
-	if (gnuType != ToolchainType::GNU && gnuType != ToolchainType::MingwGNU)
-		return gnuType;
-
-	const bool clang = String::contains("__clang__", inMacros);
+	const bool clang = String::contains({ "__clang__", "__clang_major__", "__clang_version__" }, inMacros);
 
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	// const bool mingw = gnuType == ToolchainType::MingwGNU;
