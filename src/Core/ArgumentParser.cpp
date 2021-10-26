@@ -36,7 +36,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		return false;
 
 	Route route = patterns.route();
-	m_inputs.setCommand(route);
+	m_inputs.setRoute(route);
 	if (route == Route::Help)
 		return true;
 

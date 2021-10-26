@@ -37,7 +37,7 @@ bool StatePrototype::initialize()
 	WindowsTerminal::initializeCreateProcess();
 #endif
 
-	Route route = m_inputs.command();
+	Route route = m_inputs.route();
 	chalet_assert(route != Route::Query, "");
 
 	if (!parseEnvFile())
@@ -93,11 +93,8 @@ bool StatePrototype::initialize()
 	}
 	else
 	{
-		{
-			BuildJsonProtoParser parser(m_inputs, *this);
-			if (!parser.serializeDependenciesOnly())
-				return false;
-		}
+		if (!parseBuildJson())
+			return false;
 
 		// if (!externalDependencies.empty())
 		{
@@ -120,7 +117,7 @@ bool StatePrototype::initialize()
 /*****************************************************************************/
 bool StatePrototype::initializeForList()
 {
-	Route route = m_inputs.command();
+	Route route = m_inputs.route();
 	chalet_assert(route == Route::Query, "");
 	if (route != Route::Query)
 		return false;

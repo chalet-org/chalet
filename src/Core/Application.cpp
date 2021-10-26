@@ -30,7 +30,7 @@ int Application::run(const int argc, const char* const argv[])
 			return onExit(Status::EarlyFailure);
 	}
 
-	if (m_inputs.command() == Route::Help)
+	if (m_inputs.route() == Route::Help)
 		return onExit(Status::Success);
 
 	if (!handleRoute())

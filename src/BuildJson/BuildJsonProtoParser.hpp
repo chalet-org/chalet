@@ -26,7 +26,6 @@ struct BuildJsonProtoParser
 	~BuildJsonProtoParser();
 
 	bool serialize() const;
-	bool serializeDependenciesOnly() const;
 
 private:
 	bool validateAgainstSchema() const;

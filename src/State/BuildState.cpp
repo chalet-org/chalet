@@ -96,31 +96,26 @@ bool BuildState::initialize()
 	if (!parseBuildJson())
 		return false;
 
-	if (!initializeBuild())
-		return false;
+	if (m_impl->inputs.route() != Route::Configure)
+	{
+		if (!initializeBuild())
+			return false;
 
-	// calls enforceArchitectureInPath 2nd time
-	makePathVariable();
+		// calls enforceArchitectureInPath 2nd time
+		makePathVariable();
 
-	makeCompilerDiagnosticsVariables();
-	makeLibraryPathVariables();
+		makeCompilerDiagnosticsVariables();
+		makeLibraryPathVariables();
+	}
+	else
+	{
+		auto& cacheFile = m_impl->prototype.cache.file();
+		m_uniqueId = getUniqueIdForState();
+		cacheFile.setSourceCache(m_uniqueId, true);
 
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildState::initializeForConfigure()
-{
-	enforceArchitectureInPath();
-
-	if (!parseToolchainFromSettingsJson())
-		return false;
-
-	if (!parseBuildJson())
-		return false;
-
-	if (!initializeToolchain())
-		return false;
+		if (!initializeToolchain())
+			return false;
+	}
 
 	return true;
 }
@@ -129,7 +124,7 @@ bool BuildState::initializeForConfigure()
 bool BuildState::doBuild(const bool inShowSuccess)
 {
 	BuildManager mgr(m_impl->inputs, *this);
-	return mgr.run(m_impl->inputs.command(), inShowSuccess);
+	return mgr.run(m_impl->inputs.route(), inShowSuccess);
 }
 
 bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
@@ -513,7 +508,7 @@ bool BuildState::validateState()
 bool BuildState::validateSigningIdentity()
 {
 	// Right now, only used w/ Bundle
-	if (m_impl->inputs.command() == Route::Bundle)
+	if (m_impl->inputs.route() == Route::Bundle)
 	{
 		if (tools.isSigningIdentityValid())
 			return false;

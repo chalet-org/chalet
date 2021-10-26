@@ -57,8 +57,8 @@ struct CommandLineInputs
 	const std::string& distributionDirectory() const noexcept;
 	void setDistributionDirectory(std::string&& inValue) noexcept;
 
-	Route command() const noexcept;
-	void setCommand(const Route inValue) noexcept;
+	Route route() const noexcept;
+	void setRoute(const Route inValue) noexcept;
 
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(std::string&& inValue) noexcept;
@@ -209,7 +209,7 @@ private:
 	std::optional<bool> m_benchmark;
 	std::optional<bool> m_generateCompileCommands;
 
-	Route m_command = Route::Unknown;
+	Route m_route = Route::Unknown;
 	IdeType m_generator = IdeType::None;
 	SettingsType m_settingsType = SettingsType::Local;
 	QueryOption m_queryOption = QueryOption::None;

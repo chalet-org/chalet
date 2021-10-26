@@ -42,26 +42,6 @@ bool BuildJsonProtoParser::serialize() const
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::serializeDependenciesOnly() const
-{
-	if (!validateAgainstSchema())
-		return false;
-
-	const Json& jRoot = m_chaletJson.json;
-
-	if (!jRoot.is_object())
-		return false;
-
-	if (!parseRoot(jRoot))
-		return false;
-
-	if (!parseExternalDependencies(jRoot))
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
 bool BuildJsonProtoParser::validateAgainstSchema() const
 {
 	SchemaBuildJson schemaBuilder;
@@ -91,11 +71,14 @@ bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode) con
 	if (!parseConfiguration(inNode))
 		return false;
 
-	if (!parseDistribution(inNode))
-		return false;
-
 	if (!parseExternalDependencies(inNode))
 		return false;
+
+	if (m_inputs.route() != Route::Configure)
+	{
+		if (!parseDistribution(inNode))
+			return false;
+	}
 
 	return true;
 }

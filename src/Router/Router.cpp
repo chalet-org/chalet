@@ -44,14 +44,14 @@ bool Router::run()
 	if (!parseTheme())
 		return false;
 
-	Route command = m_inputs.command();
-	if (command == Route::Query)
+	Route route = m_inputs.route();
+	if (route == Route::Query)
 		return cmdQuery();
-	else if (command == Route::ColorTest)
+	else if (route == Route::ColorTest)
 		return cmdColorTest();
 
-	if (command == Route::Unknown
-		|| static_cast<std::underlying_type_t<Route>>(command) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
+	if (route == Route::Unknown
+		|| static_cast<std::underlying_type_t<Route>>(route) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
 	{
 		Diagnostic::error("Command not recognized.");
 		return false;
@@ -66,12 +66,12 @@ bool Router::run()
 	Unique<StatePrototype> prototype;
 	Unique<BuildState> buildState;
 
-	const bool isSettings = command == Route::SettingsGet
-		|| command == Route::SettingsSet
-		|| command == Route::SettingsUnset
-		|| command == Route::SettingsGetKeys;
+	const bool isSettings = route == Route::SettingsGet
+		|| route == Route::SettingsSet
+		|| route == Route::SettingsUnset
+		|| route == Route::SettingsGetKeys;
 
-	if (command != Route::Init && !isSettings)
+	if (route != Route::Init && !isSettings)
 	{
 		Output::lineBreak();
 
@@ -83,26 +83,13 @@ bool Router::run()
 			return false;
 		}
 
-		if (command == Route::Configure)
-		{
-			chalet_assert(prototype != nullptr, "");
-			auto inputs = m_inputs;
-			buildState = std::make_unique<BuildState>(std::move(inputs), *prototype);
-			if (!buildState->initializeForConfigure())
-				return false;
-
-			buildState.reset();
-		}
-		else if (command != Route::Bundle)
+		if (route != Route::Bundle)
 		{
 			chalet_assert(prototype != nullptr, "");
 			auto inputs = m_inputs;
 			buildState = std::make_unique<BuildState>(std::move(inputs), *prototype);
 			if (!buildState->initialize())
-			{
-				Output::lineBreak();
 				return false;
-			}
 		}
 	}
 
@@ -120,7 +107,7 @@ bool Router::run()
 	}
 	else
 	{
-		switch (command)
+		switch (route)
 		{
 #if defined(CHALET_DEBUG)
 			case Route::Debug: {
@@ -148,7 +135,7 @@ bool Router::run()
 			case Route::SettingsSet:
 			case Route::SettingsUnset:
 			case Route::SettingsGetKeys: {
-				result = cmdSettings(command);
+				result = cmdSettings(route);
 				break;
 			}
 
@@ -176,8 +163,8 @@ bool Router::run()
 /*****************************************************************************/
 bool Router::cmdConfigure()
 {
-	// TODO: pass command to installDependencies & recheck them
-	// Output::lineBreak();
+	// TODO: pass route to installDependencies & recheck them
+	Output::lineBreak();
 	Output::msgConfigureCompleted();
 	Output::lineBreak();
 

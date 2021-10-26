@@ -621,7 +621,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 	if (scripts.empty())
 		return false;
 
-	const bool isRun = m_inputs.command() == Route::Run || inRunCommand;
+	const bool isRun = m_inputs.route() == Route::Run || inRunCommand;
 	const Color color = isRun ? Output::theme().success : Output::theme().header;
 
 	if (!inScript.description().empty())

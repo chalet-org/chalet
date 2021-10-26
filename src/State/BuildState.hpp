@@ -46,7 +46,6 @@ public:
 	CompilerConfigController& compilers;
 
 	bool initialize();
-	bool initializeForConfigure();
 	bool doBuild(const bool inShowSuccess = true);
 	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
 

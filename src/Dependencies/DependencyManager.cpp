@@ -68,7 +68,7 @@ bool DependencyManager::runGitDependency(const GitDependency& inDependency)
 	if (m_prototype.tools.git().empty())
 		return true;
 
-	bool doNotUpdate = m_inputs.command() != Route::Configure;
+	bool doNotUpdate = m_inputs.route() != Route::Configure;
 
 	GitRunner git(m_prototype, m_inputs, inDependency);
 	if (!git.run(doNotUpdate))

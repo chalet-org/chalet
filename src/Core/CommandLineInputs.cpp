@@ -302,14 +302,14 @@ const std::string& CommandLineInputs::defaultDistributionDirectory() const noexc
 }
 
 /*****************************************************************************/
-Route CommandLineInputs::command() const noexcept
+Route CommandLineInputs::route() const noexcept
 {
-	return m_command;
+	return m_route;
 }
 
-void CommandLineInputs::setCommand(const Route inValue) noexcept
+void CommandLineInputs::setRoute(const Route inValue) noexcept
 {
-	m_command = inValue;
+	m_route = inValue;
 }
 
 /*****************************************************************************/
