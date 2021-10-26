@@ -71,10 +71,12 @@ StringList CompileToolchainVisualStudio::getPchCompileCommand(const std::string&
 
 	StringList ret;
 
-	if (m_config.compilerExecutable().empty())
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+
+	if (executable.empty())
 		return ret;
 
-	addExectuable(ret, m_config.compilerExecutable());
+	addExectuable(ret, executable);
 	ret.emplace_back("/nologo");
 	addDiagnosticsOption(ret);
 
@@ -147,10 +149,12 @@ StringList CompileToolchainVisualStudio::getCxxCompileCommand(const std::string&
 
 	StringList ret;
 
-	if (m_config.compilerExecutable().empty())
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+
+	if (executable.empty())
 		return ret;
 
-	addExectuable(ret, m_config.compilerExecutable());
+	addExectuable(ret, executable);
 	ret.emplace_back("/nologo");
 	addDiagnosticsOption(ret);
 	ret.emplace_back("/MP");

@@ -42,28 +42,35 @@ static struct
 /*****************************************************************************/
 bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 {
-	auto createDescription = [&](const std::string& inPath, CompilerInfo& outInfo) {
+	auto createDescription = [&](CompilerInfo& outInfo) -> bool {
 		if (!outInfo.description.empty())
-			return;
+			return false;
 
-		if (!inPath.empty() && Commands::pathExists(inPath))
+		if (!outInfo.path.empty() && Commands::pathExists(outInfo.path))
 		{
-			outInfo = inEnvironment.getCompilerInfoFromExecutable(inPath);
+			if (!inEnvironment.getCompilerInfoFromExecutable(outInfo))
+				return false;
 		}
+
+		return true;
 	};
 
-	createDescription(m_compilerCpp, m_compilerCppInfo);
+	if (!createDescription(m_compilerCpp))
+		return false;
 
-	auto baseFolderC = String::getPathFolder(m_compilerC);
-	auto baseFolderCpp = String::getPathFolder(m_compilerCpp);
+	auto baseFolderC = String::getPathFolder(m_compilerC.path);
+	auto baseFolderCpp = String::getPathFolder(m_compilerCpp.path);
 	if (String::equals(baseFolderC, baseFolderCpp))
 	{
-		m_compilerCInfo = m_compilerCppInfo;
+		m_compilerC = m_compilerCpp;
+	}
+	else
+	{
+		if (!createDescription(m_compilerC))
+			return false;
 	}
 
-	createDescription(m_compilerC, m_compilerCInfo);
-
-	const auto& version = m_compilerCppInfo.version.empty() ? m_compilerCInfo.version : m_compilerCppInfo.version;
+	const auto& version = m_compilerCpp.version.empty() ? m_compilerC.version : m_compilerCpp.version;
 	if (m_version.empty() || (inEnvironment.compilerVersionIsToolchainVersion() && m_version != version))
 	{
 		m_version = version;
@@ -239,32 +246,21 @@ void CompilerTools::setVersion(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::compilerCxx() const noexcept
+const CompilerInfo& CompilerTools::compilerCxx(const CodeLanguage inLang) const noexcept
 {
-	if (m_ccDetected)
+	if (inLang == CodeLanguage::C)
 		return m_compilerC;
 	else
 		return m_compilerCpp;
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::compilerDescriptionStringCpp() const noexcept
+const CompilerInfo& CompilerTools::compilerCxxAny() const noexcept
 {
-	return m_compilerCppInfo.description;
-}
-
-const std::string& CompilerTools::compilerDescriptionStringC() const noexcept
-{
-	return m_compilerCInfo.description;
-}
-
-const std::string& CompilerTools::compilerDetectedArchCpp() const noexcept
-{
-	return m_compilerCppInfo.arch;
-}
-const std::string& CompilerTools::compilerDetectedArchC() const noexcept
-{
-	return m_compilerCInfo.arch;
+	if (!m_compilerC.path.empty())
+		return m_compilerC;
+	else
+		return m_compilerCpp;
 }
 
 /*****************************************************************************/
@@ -284,23 +280,23 @@ bool CompilerTools::isArchiverLibTool() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::compilerCpp() const noexcept
+const CompilerInfo& CompilerTools::compilerCpp() const noexcept
 {
 	return m_compilerCpp;
 }
 void CompilerTools::setCompilerCpp(std::string&& inValue) noexcept
 {
-	m_compilerCpp = std::move(inValue);
+	m_compilerCpp.path = std::move(inValue);
 }
 
 /*****************************************************************************/
-const std::string& CompilerTools::compilerC() const noexcept
+const CompilerInfo& CompilerTools::compilerC() const noexcept
 {
 	return m_compilerC;
 }
 void CompilerTools::setCompilerC(std::string&& inValue) noexcept
 {
-	m_compilerC = std::move(inValue);
+	m_compilerC.path = std::move(inValue);
 }
 
 /*****************************************************************************/

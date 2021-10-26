@@ -36,22 +36,18 @@ struct CompilerTools
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inValue) noexcept;
 
-	const std::string& compilerDescriptionStringCpp() const noexcept;
-	const std::string& compilerDescriptionStringC() const noexcept;
-	const std::string& compilerDetectedArchCpp() const noexcept;
-	const std::string& compilerDetectedArchC() const noexcept;
-
 	const std::string& archiver() const noexcept;
 	void setArchiver(std::string&& inValue) noexcept;
 	bool isArchiverLibTool() const noexcept;
 
-	const std::string& compilerCpp() const noexcept;
+	const CompilerInfo& compilerCpp() const noexcept;
 	void setCompilerCpp(std::string&& inValue) noexcept;
 
-	const std::string& compilerC() const noexcept;
+	const CompilerInfo& compilerC() const noexcept;
 	void setCompilerC(std::string&& inValue) noexcept;
 
-	const std::string& compilerCxx() const noexcept;
+	const CompilerInfo& compilerCxx(const CodeLanguage inLang) const noexcept;
+	const CompilerInfo& compilerCxxAny() const noexcept;
 
 	const std::string& compilerWindowsResource() const noexcept;
 	void setCompilerWindowsResource(std::string&& inValue) noexcept;
@@ -94,8 +90,6 @@ struct CompilerTools
 private:
 	std::string m_archiver;
 	std::string m_cmake;
-	std::string m_compilerC;
-	std::string m_compilerCpp;
 	std::string m_compilerWindowsResource;
 	std::string m_disassembler;
 	std::string m_linker;
@@ -103,8 +97,8 @@ private:
 	std::string m_ninja;
 	std::string m_profiler;
 
-	CompilerInfo m_compilerCppInfo;
-	CompilerInfo m_compilerCInfo;
+	CompilerInfo m_compilerCpp;
+	CompilerInfo m_compilerC;
 
 	std::string m_strategyString;
 	std::string m_buildPathStyleString;
@@ -127,7 +121,6 @@ private:
 	bool m_isArchiverLibTool = false;
 	bool m_isProfilerGprof = false;
 
-	bool m_ccDetected = false;
 	bool m_isDisassemblerDumpBin = false;
 	bool m_isDisassemblerOtool = false;
 	bool m_isDisassemblerLLVMObjDump = false;

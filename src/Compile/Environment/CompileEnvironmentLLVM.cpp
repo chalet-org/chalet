@@ -58,7 +58,7 @@ bool CompileEnvironmentLLVM::makeArchitectureAdjustments()
 {
 	bool valid = false;
 
-	const auto& compiler = m_state.toolchain.compilerCxx();
+	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedArch;
 	if (sourceCache.archRequriesUpdate(compiler, cachedArch))

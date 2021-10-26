@@ -7,6 +7,7 @@
 
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerConfigController.hpp"
+#include "Compile/CompilerPathStructure.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -19,13 +20,6 @@
 
 namespace chalet
 {
-struct CompilerPathStructure
-{
-	std::string binDir;
-	std::string libDir;
-	std::string includeDir;
-};
-
 /*****************************************************************************/
 CompilerConfig::CompilerConfig(const CodeLanguage inLanguage, const BuildState& inState, ICompileEnvironment& inEnvironment) :
 	m_state(inState),
@@ -47,86 +41,12 @@ bool CompilerConfig::isInitialized() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& CompilerConfig::compilerExecutable() const noexcept
-{
-	if (m_language == CodeLanguage::CPlusPlus)
-		return m_state.toolchain.compilerCpp();
-	else
-		return m_state.toolchain.compilerC();
-}
-
-/*****************************************************************************/
-bool CompilerConfig::configureCompilerPaths()
-{
-	const auto& exec = compilerExecutable();
-	chalet_assert(!exec.empty(), "No compiler was found");
-
-	auto language = m_language == CodeLanguage::CPlusPlus ? "C++" : "C";
-	if (exec.empty())
-	{
-		Diagnostic::error("Compiler executable was empty for language: '{}'", language);
-		return false;
-	}
-
-	std::string path = String::getPathFolder(exec);
-	const std::string lowercasePath = String::toLowerCase(path);
-	// LOG(lowercasePath);
-
-	using CompilerMap = std::vector<CompilerPathStructure>;
-	CompilerMap compilerStructures;
-#if defined(CHALET_WIN32)
-	compilerStructures.push_back({ "/bin/hostx64/x64", "/lib/x64", "/include" });
-	compilerStructures.push_back({ "/bin/hostx64/x86", "/lib/x86", "/include" });
-	compilerStructures.push_back({ "/bin/hostx64/arm64", "/lib/arm64", "/include" });
-	compilerStructures.push_back({ "/bin/hostx64/arm", "/lib/arm", "/include" });
-
-	compilerStructures.push_back({ "/bin/hostx86/x86", "/lib/x86", "/include" });
-	compilerStructures.push_back({ "/bin/hostx86/x64", "/lib/x64", "/include" });
-	compilerStructures.push_back({ "/bin/hostx86/arm64", "/lib/arm64", "/include" });
-	compilerStructures.push_back({ "/bin/hostx86/arm", "/lib/arm", "/include" });
-	// compilerStructures.push_back({"/bin/hostx64/x64", "/lib/64", "/include"});
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	compilerStructures.push_back({ "/bin/intel64", "/compiler/lib/intel64_win", "/compiler/include" });
-	compilerStructures.push_back({ "/bin/intel64_ia32", "/compiler/lib/ia32_win", "/compiler/include" });
-	#endif
-#endif
-	compilerStructures.push_back({ "/bin", "/lib", "/include" });
-#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	compilerStructures.push_back({ "/bin/intel64", "/compiler/lib", "/compiler/include" });
-	#endif
-#endif
-
-	for (const auto& [binDir, libDir, includeDir] : compilerStructures)
-	{
-		if (String::endsWith(binDir, lowercasePath))
-		{
-			path = path.substr(0, path.size() - binDir.size());
-
-#if defined(CHALET_MACOS)
-			const auto& xcodePath = Commands::getXcodePath();
-			String::replaceAll(path, xcodePath, "");
-			String::replaceAll(path, "/Toolchains/XcodeDefault.xctoolchain", "");
-#endif
-			m_compilerPathBin = path + binDir;
-			m_compilerPathLib = path + libDir;
-			m_compilerPathInclude = path + includeDir;
-
-			return true;
-		}
-	}
-
-	Diagnostic::error("Invalid compiler structure (no 'bin' folder) found for language: '{}'", language);
-	return false;
-}
-
-/*****************************************************************************/
 bool CompilerConfig::getSupportedCompilerFlags()
 {
 	if (m_environment.type() == ToolchainType::Unknown)
 		return false;
 
-	const auto& exec = compilerExecutable();
+	const auto& exec = m_state.toolchain.compilerCxx(m_language).path;
 	if (exec.empty())
 		return false;
 
@@ -284,7 +204,7 @@ void CompilerConfig::parseGnuHelpList(const StringList& inCommand)
 /*****************************************************************************/
 void CompilerConfig::parseClangHelpList()
 {
-	const auto& exec = compilerExecutable();
+	const auto& exec = m_state.toolchain.compilerCxx(m_language).path;
 
 	std::string raw = Commands::subprocessOutput({ exec, "-cc1", "--help" });
 	auto split = String::split(raw, '\n');
@@ -377,7 +297,7 @@ bool CompilerConfig::isFlagSupported(const std::string& inFlag) const
 /*****************************************************************************/
 bool CompilerConfig::isLinkSupported(const std::string& inLink, const StringList& inDirectories) const
 {
-	const auto& exec = compilerExecutable();
+	const auto& exec = m_state.toolchain.compilerCxx(m_language).path;
 	if (exec.empty())
 		return false;
 
@@ -400,19 +320,4 @@ bool CompilerConfig::isLinkSupported(const std::string& inLink, const StringList
 
 	return true;
 }
-
-/*****************************************************************************/
-const std::string& CompilerConfig::compilerPathBin() const noexcept
-{
-	return m_compilerPathBin;
-}
-const std::string& CompilerConfig::compilerPathLib() const noexcept
-{
-	return m_compilerPathLib;
-}
-const std::string& CompilerConfig::compilerPathInclude() const noexcept
-{
-	return m_compilerPathInclude;
-}
-
 }

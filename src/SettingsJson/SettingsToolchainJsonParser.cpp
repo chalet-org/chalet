@@ -71,8 +71,14 @@ bool SettingsToolchainJsonParser::serialize(Json& inNode)
 /*****************************************************************************/
 bool SettingsToolchainJsonParser::validatePaths()
 {
+	// TODO: move
 	bool result = true;
-	if (m_state.toolchain.compilerCpp().empty() || !Commands::pathExists(m_state.toolchain.compilerCpp()))
+	const auto& compilerCpp = m_state.toolchain.compilerCpp().path;
+	const auto& compilerC = m_state.toolchain.compilerC().path;
+	const auto& archiver = m_state.toolchain.archiver();
+	const auto& linker = m_state.toolchain.linker();
+
+	if (compilerCpp.empty() || !Commands::pathExists(compilerCpp))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -81,7 +87,7 @@ bool SettingsToolchainJsonParser::validatePaths()
 		result = false;
 	}
 
-	if (m_state.toolchain.compilerC().empty() || !Commands::pathExists(m_state.toolchain.compilerC()))
+	if (compilerC.empty() || !Commands::pathExists(compilerC))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -90,7 +96,7 @@ bool SettingsToolchainJsonParser::validatePaths()
 		result = false;
 	}
 
-	if (m_state.toolchain.archiver().empty() || !Commands::pathExists(m_state.toolchain.archiver()))
+	if (archiver.empty() || !Commands::pathExists(archiver))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -99,7 +105,7 @@ bool SettingsToolchainJsonParser::validatePaths()
 		result = false;
 	}
 
-	if (m_state.toolchain.linker().empty() || !Commands::pathExists(m_state.toolchain.linker()))
+	if (linker.empty() || !Commands::pathExists(linker))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -109,7 +115,8 @@ bool SettingsToolchainJsonParser::validatePaths()
 	}
 
 #if defined(CHALET_WIN32)
-	if (m_state.toolchain.compilerWindowsResource().empty() || !Commands::pathExists(m_state.toolchain.compilerWindowsResource()))
+	const auto& compilerWindowsResource = m_state.toolchain.compilerWindowsResource();
+	if (compilerWindowsResource.empty() || !Commands::pathExists(compilerWindowsResource))
 	{
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();

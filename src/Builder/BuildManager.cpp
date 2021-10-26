@@ -321,14 +321,15 @@ void BuildManager::printBuildInformation()
 		}
 	}
 
-	if (usingCpp && !m_state.toolchain.compilerDescriptionStringCpp().empty())
+	auto& compilerInfoCpp = m_state.toolchain.compilerCpp();
+	if (usingCpp && !compilerInfoCpp.description.empty())
 	{
-		auto arch = m_state.toolchain.compilerDetectedArchCpp();
+		auto arch = compilerInfoCpp.arch;
 		if (!m_inputs.archOptions().empty())
 		{
 			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
 		}
-		Diagnostic::info("C++ Compiler: {}", m_state.toolchain.compilerDescriptionStringCpp());
+		Diagnostic::info("C++ Compiler: {}", compilerInfoCpp.description);
 
 		if (m_state.info.universalArches().empty())
 			Diagnostic::info("Target Architecture: {}", arch);
@@ -336,14 +337,15 @@ void BuildManager::printBuildInformation()
 			Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.info.universalArches(), " / "));
 	}
 
-	if (usingCc && !m_state.toolchain.compilerDescriptionStringC().empty())
+	auto& compilerInfoC = m_state.toolchain.compilerC();
+	if (usingCc && !compilerInfoC.description.empty())
 	{
-		auto arch = m_state.toolchain.compilerDetectedArchC();
+		auto arch = compilerInfoC.arch;
 		if (!m_inputs.archOptions().empty())
 		{
 			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
 		}
-		Diagnostic::info("C Compiler: {}", m_state.toolchain.compilerDescriptionStringC());
+		Diagnostic::info("C Compiler: {}", compilerInfoC.description);
 
 		if (m_state.info.universalArches().empty())
 			Diagnostic::info("Target Architecture: {}", arch);
@@ -439,8 +441,7 @@ bool BuildManager::copyRunDependencies(const SourceTarget& inProject)
 	bool result = true;
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto& compilerConfig = m_state.compilers.get(inProject.language());
-	auto runDependencies = getResolvedRunDependenciesList(inProject.runDependencies(), compilerConfig);
+	auto runDependencies = getResolvedRunDependenciesList(inProject);
 
 	auto outputFolder = Commands::getAbsolutePath(buildOutputDir);
 
@@ -462,12 +463,12 @@ bool BuildManager::copyRunDependencies(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-StringList BuildManager::getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig)
+StringList BuildManager::getResolvedRunDependenciesList(const SourceTarget& inProject)
 {
 	StringList ret;
-	const auto& compilerPathBin = inConfig.compilerPathBin();
+	const auto& compilerPathBin = m_state.toolchain.compilerCxx(inProject.language()).binDir;
 
-	for (auto& dep : inRunDependencies)
+	for (auto& dep : inProject.runDependencies())
 	{
 		if (Commands::pathExists(dep))
 		{

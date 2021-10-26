@@ -39,6 +39,8 @@ ICompileToolchain::ICompileToolchain(const BuildState& inState, const SourceTarg
 	m_isMakefile = m_state.toolchain.strategy() == StrategyType::Makefile;
 	m_isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 	m_isNative = m_state.toolchain.strategy() == StrategyType::Native;
+
+	UNUSED(m_config);
 }
 
 /*****************************************************************************/

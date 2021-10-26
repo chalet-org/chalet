@@ -298,7 +298,7 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 	std::string host;
 	std::string target;
 
-	const auto& compiler = m_state.toolchain.compilerCxx();
+	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 	if (!compiler.empty())
 	{
 		// old: detectTargetArchitectureMSVC()
@@ -394,18 +394,16 @@ std::string CompileEnvironmentVisualStudio::getFullCxxCompilerString(const std::
 }
 
 /*****************************************************************************/
-CompilerInfo CompileEnvironmentVisualStudio::getCompilerInfoFromExecutable(const std::string& inExecutable) const
+bool CompileEnvironmentVisualStudio::getCompilerVersionAndDescription(CompilerInfo& outInfo) const
 {
-	CompilerInfo ret;
-
 	Timer timer;
 
 	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedVersion;
-	if (sourceCache.versionRequriesUpdate(inExecutable, cachedVersion))
+	if (sourceCache.versionRequriesUpdate(outInfo.path, cachedVersion))
 	{
 		// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(inExecutable));
+		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(outInfo.path));
 
 		auto splitOutput = String::split(rawOutput, '\n');
 		if (splitOutput.size() >= 2)
@@ -426,17 +424,38 @@ CompilerInfo CompileEnvironmentVisualStudio::getCompilerInfoFromExecutable(const
 
 	if (!cachedVersion.empty())
 	{
-		ret.version = std::move(cachedVersion);
+		outInfo.version = std::move(cachedVersion);
 
-		sourceCache.addVersion(inExecutable, ret.version);
+		sourceCache.addVersion(outInfo.path, outInfo.version);
 
-		ret.arch = m_state.info.targetArchitectureTriple();
-		ret.description = getFullCxxCompilerString(ret.version);
+		outInfo.arch = m_state.info.targetArchitectureTriple();
+		outInfo.description = getFullCxxCompilerString(outInfo.version);
+		return true;
 	}
 	else
 	{
-		ret.description = "Unrecognized";
+		outInfo.description = "Unrecognized";
+		return false;
 	}
+}
+
+/*****************************************************************************/
+std::vector<CompilerPathStructure> CompileEnvironmentVisualStudio::getValidCompilerPaths() const
+{
+	std::vector<CompilerPathStructure> ret;
+
+#if defined(CHALET_WIN32)
+	ret.push_back({ "/bin/hostx64/x64", "/lib/x64", "/include" });
+	ret.push_back({ "/bin/hostx64/x86", "/lib/x86", "/include" });
+	ret.push_back({ "/bin/hostx64/arm64", "/lib/arm64", "/include" });
+	ret.push_back({ "/bin/hostx64/arm", "/lib/arm", "/include" });
+
+	ret.push_back({ "/bin/hostx86/x86", "/lib/x86", "/include" });
+	ret.push_back({ "/bin/hostx86/x64", "/lib/x64", "/include" });
+	ret.push_back({ "/bin/hostx86/arm64", "/lib/arm64", "/include" });
+	ret.push_back({ "/bin/hostx86/arm", "/lib/arm", "/include" });
+// ret.push_back({"/bin/hostx64/x64", "/lib/64", "/include"});
+#endif
 
 	return ret;
 }

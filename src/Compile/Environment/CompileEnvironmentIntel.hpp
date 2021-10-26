@@ -21,6 +21,7 @@ protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
 	virtual bool validateArchitectureFromInput() final;
 	virtual bool makeArchitectureAdjustments() final;
+	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
 
 	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const final;
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const final;

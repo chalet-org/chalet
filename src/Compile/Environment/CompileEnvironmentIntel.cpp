@@ -72,6 +72,29 @@ ToolchainType CompileEnvironmentIntel::getToolchainTypeFromMacros(const std::str
 }
 
 /*****************************************************************************/
+std::vector<CompilerPathStructure> CompileEnvironmentIntel::getValidCompilerPaths() const
+{
+	std::vector<CompilerPathStructure> ret;
+
+	if (m_type == ToolchainType::IntelLLVM)
+	{
+#if defined(CHALET_WIN32)
+		ret.push_back({ "/bin/intel64", "/compiler/lib/intel64_win", "/compiler/include" });
+		ret.push_back({ "/bin/intel64_ia32", "/compiler/lib/ia32_win", "/compiler/include" });
+#else
+		// TODO: Linux
+#endif
+	}
+	else
+	{
+		ret.push_back({ "/bin/intel64", "/compiler/lib", "/compiler/include" });
+		// TODO: Linux
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
@@ -228,6 +251,7 @@ bool CompileEnvironmentIntel::makeArchitectureAdjustments()
 	return true;
 }
 
+/*****************************************************************************/
 void CompileEnvironmentIntel::parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const
 {
 	if (!String::contains("Intel", inLine))

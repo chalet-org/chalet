@@ -38,10 +38,11 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, const Comma
 {
 	if (type == ToolchainType::Unknown)
 	{
-		type = ICompileEnvironment::detectToolchainTypeFromPath(inState.toolchain.compilerCxx());
+		auto& compiler = inState.toolchain.compilerCxxAny().path;
+		type = ICompileEnvironment::detectToolchainTypeFromPath(compiler);
 		if (type == ToolchainType::Unknown)
 		{
-			Diagnostic::error("Toolchain was not recognized from compiler path: '{}'", inState.toolchain.compilerCxx());
+			Diagnostic::error("Toolchain was not recognized from compiler path: '{}'", compiler);
 			return nullptr;
 		}
 	}
@@ -102,6 +103,57 @@ bool ICompileEnvironment::create(const std::string& inVersion)
 		return false;
 
 	return true;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::getCompilerInfoFromExecutable(CompilerInfo& outInfo) const
+{
+	if (outInfo.path.empty())
+	{
+		Diagnostic::error("Compiler executable was unexpectedly blank: '{}'", outInfo.path);
+		return false;
+	}
+
+	if (!getCompilerPaths(outInfo))
+	{
+		Diagnostic::error("Unexpected compiler toolchain structure found from executable: '{}'", outInfo.path);
+		return false;
+	}
+
+	if (!getCompilerVersionAndDescription(outInfo))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
+{
+	std::string path = String::getPathFolder(outInfo.path);
+	const std::string lowercasePath = String::toLowerCase(path);
+
+	std::vector<CompilerPathStructure> compilerStructures = getValidCompilerPaths();
+
+	for (const auto& [binDir, libDir, includeDir] : compilerStructures)
+	{
+		if (!String::endsWith(binDir, lowercasePath))
+			continue;
+
+		path = path.substr(0, path.size() - binDir.size());
+
+#if defined(CHALET_MACOS)
+		const auto& xcodePath = Commands::getXcodePath();
+		String::replaceAll(path, xcodePath, "");
+		String::replaceAll(path, "/Toolchains/XcodeDefault.xctoolchain", "");
+#endif
+		outInfo.binDir = path + binDir;
+		outInfo.libDir = path + libDir;
+		outInfo.includeDir = path + includeDir;
+
+		return true;
+	}
+
+	return false;
 }
 
 /*****************************************************************************/

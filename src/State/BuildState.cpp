@@ -197,7 +197,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (!parser.serialize())
 		return false;
 
-	ToolchainType type = ICompileEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxx());
+	ToolchainType type = ICompileEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path);
 	if (preference.type != ToolchainType::Unknown && preference.type != type)
 	{
 		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", m_impl->inputs.toolchainPreferenceName(), Environment::getPathKey());
@@ -326,11 +326,11 @@ bool BuildState::initializeBuild()
 			const bool isMsvc = compilers.isMsvc();
 			if (!isMsvc)
 			{
-				auto& compilerConfig = compilers.get(project.language());
-				std::string libDir = compilerConfig.compilerPathLib();
+				auto& compilerInfo = toolchain.compilerCxx(project.language());
+				std::string libDir = compilerInfo.libDir;
 				project.addLibDir(std::move(libDir));
 
-				std::string includeDir = compilerConfig.compilerPathInclude();
+				std::string includeDir = compilerInfo.includeDir;
 				project.addIncludeDir(std::move(includeDir));
 			}
 
@@ -528,10 +528,10 @@ bool BuildState::makePathVariable()
 
 	StringList outList;
 
-	if (auto ccRoot = String::getPathFolder(toolchain.compilerC()); !List::contains(pathList, ccRoot))
+	if (auto ccRoot = String::getPathFolder(toolchain.compilerC().path); !List::contains(pathList, ccRoot))
 		outList.emplace_back(std::move(ccRoot));
 
-	if (auto cppRoot = String::getPathFolder(toolchain.compilerCpp()); !List::contains(pathList, cppRoot))
+	if (auto cppRoot = String::getPathFolder(toolchain.compilerCpp().path); !List::contains(pathList, cppRoot))
 		outList.emplace_back(std::move(cppRoot));
 
 	for (auto& p : Path::getOSPaths())

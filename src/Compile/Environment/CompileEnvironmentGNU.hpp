@@ -16,13 +16,14 @@ struct CompileEnvironmentGNU : ICompileEnvironment
 
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
-	virtual CompilerInfo getCompilerInfoFromExecutable(const std::string& inExecutable) const override;
 	virtual bool verifyToolchain() override;
 
 	virtual bool makeArchitectureAdjustments() override;
 
 protected:
 	virtual bool validateArchitectureFromInput() override;
+	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const final;
+	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const override;
 
 	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const;
 	virtual void parseArchFromVersionOutput(const std::string& inLine, std::string& outArch) const;

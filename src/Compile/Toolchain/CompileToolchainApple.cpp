@@ -11,6 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -103,10 +104,12 @@ StringList CompileToolchainApple::getDynamicLibTargetCommand(const std::string& 
 {
 	StringList ret;
 
-	if (m_config.compilerExecutable().empty())
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+
+	if (executable.empty())
 		return ret;
 
-	addExectuable(ret, m_config.compilerExecutable());
+	addExectuable(ret, executable);
 
 	ret.emplace_back("-dynamiclib");
 	// ret.emplace_back("-fPIC");

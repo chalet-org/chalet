@@ -278,12 +278,14 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 	if (!isDefined["CMAKE_C_COMPILER"])
 	{
-		outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER={}", m_state.toolchain.compilerC()));
+		const auto& compilerC = m_state.toolchain.compilerC().path;
+		outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER={}", compilerC));
 	}
 
 	if (!isDefined["CMAKE_CXX_COMPILER"])
 	{
-		outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER={}", m_state.toolchain.compilerCpp()));
+		const auto& compilerC = m_state.toolchain.compilerCpp().path;
+		outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER={}", compilerC));
 	}
 
 	if (!isDefined["CMAKE_BUILD_TYPE"])

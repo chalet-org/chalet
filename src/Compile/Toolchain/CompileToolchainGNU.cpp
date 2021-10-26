@@ -108,10 +108,12 @@ StringList CompileToolchainGNU::getPchCompileCommand(const std::string& inputFil
 
 	UNUSED(arch);
 
-	if (m_config.compilerExecutable().empty())
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+
+	if (executable.empty())
 		return ret;
 
-	addExectuable(ret, m_config.compilerExecutable());
+	addExectuable(ret, executable);
 
 	if (generateDependency)
 	{
@@ -221,10 +223,12 @@ StringList CompileToolchainGNU::getCxxCompileCommand(const std::string& inputFil
 {
 	StringList ret;
 
-	if (m_config.compilerExecutable().empty())
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+
+	if (executable.empty())
 		return ret;
 
-	addExectuable(ret, m_config.compilerExecutable());
+	addExectuable(ret, executable);
 
 	if (generateDependency)
 	{
@@ -303,10 +307,12 @@ StringList CompileToolchainGNU::getDynamicLibTargetCommand(const std::string& ou
 {
 	StringList ret;
 
-	if (m_config.compilerExecutable().empty())
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+
+	if (executable.empty())
 		return ret;
 
-	addExectuable(ret, m_config.compilerExecutable());
+	addExectuable(ret, executable);
 
 	ret.emplace_back("-shared");
 	if (m_state.compilers.isMingw())
@@ -387,10 +393,12 @@ StringList CompileToolchainGNU::getExecutableTargetCommand(const std::string& ou
 {
 	StringList ret;
 
-	if (m_config.compilerExecutable().empty())
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+
+	if (executable.empty())
 		return ret;
 
-	addExectuable(ret, m_config.compilerExecutable());
+	addExectuable(ret, executable);
 
 	addLibDirs(ret);
 

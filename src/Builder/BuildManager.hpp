@@ -35,7 +35,7 @@ private:
 	std::string getBuildStrategyName() const;
 
 	bool copyRunDependencies(const SourceTarget& inProject);
-	StringList getResolvedRunDependenciesList(const StringList& inRunDependencies, const CompilerConfig& inConfig);
+	StringList getResolvedRunDependenciesList(const SourceTarget& inProject);
 	bool doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean = false);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);

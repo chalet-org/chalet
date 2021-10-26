@@ -235,8 +235,7 @@ bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
 
-				const auto& compilerConfig = inState.compilers.get(project.language());
-				const auto& compilerPathBin = compilerConfig.compilerPathBin();
+				const auto& compilerPathBin = inState.toolchain.compilerCxx(project.language()).binDir;
 
 				resolved = fmt::format("{}/{}", compilerPathBin, dependency);
 				if (Commands::pathExists(resolved))

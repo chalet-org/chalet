@@ -46,16 +46,9 @@ bool CompilerConfigController::initialize()
 {
 	for (auto& [_, config] : m_configs)
 	{
-		if (!config->configureCompilerPaths())
-		{
-			Diagnostic::error("Error configuring compiler paths.");
-			return false;
-		}
-
 		if (!config->getSupportedCompilerFlags())
 		{
-			auto exec = String::getPathFilename(config->compilerExecutable());
-			Diagnostic::error("Error collecting supported compiler flags for '{}'.", exec);
+			Diagnostic::error("Error collecting supported compiler flags.");
 			return false;
 		}
 	}

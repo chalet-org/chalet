@@ -22,12 +22,6 @@ struct CompilerConfig
 
 	bool isInitialized() const noexcept;
 
-	const std::string& compilerExecutable() const noexcept;
-	const std::string& compilerPathBin() const noexcept;
-	const std::string& compilerPathLib() const noexcept;
-	const std::string& compilerPathInclude() const noexcept;
-
-	bool configureCompilerPaths();
 	bool getSupportedCompilerFlags();
 
 	bool isFlagSupported(const std::string& inFlag) const;
@@ -39,11 +33,6 @@ private:
 
 	const BuildState& m_state;
 	ICompileEnvironment& m_environment;
-
-	std::string m_compilerPath{ "/usr" };
-	std::string m_compilerPathBin{ "/usr/bin" };
-	std::string m_compilerPathLib{ "/usr/lib" };
-	std::string m_compilerPathInclude{ "/usr/include" };
 
 	Dictionary<bool> m_supportedFlags;
 

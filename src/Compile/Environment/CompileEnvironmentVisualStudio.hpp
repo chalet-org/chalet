@@ -21,7 +21,6 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
-	virtual CompilerInfo getCompilerInfoFromExecutable(const std::string& inExecutable) const final;
 	virtual bool verifyToolchain() final;
 
 	virtual bool compilerVersionIsToolchainVersion() const final;
@@ -29,6 +28,8 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 protected:
 	virtual bool createFromVersion(const std::string& inVersion) final;
 	virtual bool validateArchitectureFromInput() final;
+	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const final;
+	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
 
 private:
 	bool saveMsvcEnvironment() const;

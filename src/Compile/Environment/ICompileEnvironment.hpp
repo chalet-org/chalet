@@ -7,6 +7,7 @@
 #define CHALET_COMPILER_ENVIRONMENT_HPP
 
 #include "Compile/CompilerInfo.hpp"
+#include "Compile/CompilerPathStructure.hpp"
 #include "Compile/Toolchain/ToolchainType.hpp"
 
 namespace chalet
@@ -27,7 +28,6 @@ struct ICompileEnvironment
 
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const = 0;
-	virtual CompilerInfo getCompilerInfoFromExecutable(const std::string& inExecutable) const = 0;
 	virtual bool verifyToolchain() = 0;
 
 	virtual bool makeArchitectureAdjustments();
@@ -37,10 +37,15 @@ struct ICompileEnvironment
 	const std::string& detectedVersion() const;
 
 	bool create(const std::string& inVersion = std::string());
+	bool getCompilerInfoFromExecutable(CompilerInfo& outInfo) const;
 
 protected:
 	virtual bool createFromVersion(const std::string& inVersion);
 	virtual bool validateArchitectureFromInput();
+
+	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const = 0;
+	bool getCompilerPaths(CompilerInfo& outInfo) const;
+	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const = 0;
 
 	std::string getVarsPath(const std::string& inId) const;
 	bool saveOriginalEnvironment(const std::string& inOutputFile) const;

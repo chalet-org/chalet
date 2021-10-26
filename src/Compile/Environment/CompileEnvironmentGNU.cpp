@@ -35,21 +35,19 @@ std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& i
 }
 
 /*****************************************************************************/
-CompilerInfo CompileEnvironmentGNU::getCompilerInfoFromExecutable(const std::string& inExecutable) const
+bool CompileEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outInfo) const
 {
-	CompilerInfo ret;
-
 	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedVersion;
-	if (sourceCache.versionRequriesUpdate(inExecutable, cachedVersion))
+	if (sourceCache.versionRequriesUpdate(outInfo.path, cachedVersion))
 	{
 		// Expects:
 		// gcc version 10.2.0 (Ubuntu 10.2.0-13ubuntu1)
 		// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
 		// Apple clang version 12.0.5 (clang-1205.0.22.9)
 
-		const auto exec = String::getPathBaseName(inExecutable);
-		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(inExecutable));
+		const auto exec = String::getPathBaseName(outInfo.path);
+		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(outInfo.path));
 
 		StringList splitOutput;
 #if defined(CHALET_WIN32)
@@ -78,33 +76,41 @@ CompilerInfo CompileEnvironmentGNU::getCompilerInfoFromExecutable(const std::str
 				cachedVersion = std::move(version);
 
 			// if (!arch.empty())
-			// 	ret.arch = std::move(arch);
+			// 	outInfo.arch = std::move(arch);
 			// else
-			// ret.arch = m_state.info.targetArchitectureTriple();
+			// outInfo.arch = m_state.info.targetArchitectureTriple();
 		}
 	}
 
 	if (!cachedVersion.empty())
 	{
-		ret.version = std::move(cachedVersion);
+		outInfo.version = std::move(cachedVersion);
 
-		sourceCache.addVersion(inExecutable, ret.version);
+		sourceCache.addVersion(outInfo.path, outInfo.version);
 
-		ret.arch = m_state.info.targetArchitectureTriple();
-		ret.description = getFullCxxCompilerString(ret.version);
+		outInfo.arch = m_state.info.targetArchitectureTriple();
+		outInfo.description = getFullCxxCompilerString(outInfo.version);
+		return true;
 	}
 	else
 	{
-		ret.description = "Unrecognized";
+		outInfo.description = "Unrecognized";
+		return false;
 	}
+}
 
+/*****************************************************************************/
+std::vector<CompilerPathStructure> CompileEnvironmentGNU::getValidCompilerPaths() const
+{
+	std::vector<CompilerPathStructure> ret;
+	ret.push_back({ "/bin", "/lib", "/include" });
 	return ret;
 }
 
 /*****************************************************************************/
 bool CompileEnvironmentGNU::verifyToolchain()
 {
-	const auto& compiler = m_state.toolchain.compilerCxx();
+	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 	if (compiler.empty())
 	{
 		Diagnostic::error("No compiler executable was found");
@@ -183,7 +189,7 @@ void CompileEnvironmentGNU::parseThreadModelFromVersionOutput(const std::string&
 bool CompileEnvironmentGNU::makeArchitectureAdjustments()
 {
 	const auto& archTriple = m_state.info.targetArchitectureTriple();
-	const auto& compiler = m_state.toolchain.compilerCxx();
+	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 
 	if (m_inputs.targetArchitecture().empty() || !String::contains('-', archTriple))
 	{
