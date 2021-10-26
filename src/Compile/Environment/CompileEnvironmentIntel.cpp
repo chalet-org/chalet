@@ -74,7 +74,7 @@ ToolchainType CompileEnvironmentIntel::getToolchainTypeFromMacros(const std::str
 /*****************************************************************************/
 std::vector<CompilerPathStructure> CompileEnvironmentIntel::getValidCompilerPaths() const
 {
-	std::vector<CompilerPathStructure> ret;
+	std::vector<CompilerPathStructure> ret = CompileEnvironmentGNU::getValidCompilerPaths();
 
 	if (m_type == ToolchainType::IntelLLVM)
 	{
