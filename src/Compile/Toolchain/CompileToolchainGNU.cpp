@@ -998,6 +998,9 @@ void CompileToolchainGNU::addSubSystem(StringList& outArgList) const
 		const WindowsSubSystem subSystem = m_project.windowsSubSystem();
 		const WindowsEntryPoint entryPoint = m_project.windowsEntryPoint();
 
+		LOG("kind:", static_cast<int>(kind));
+		LOG("subSystem:", static_cast<int>(subSystem));
+		LOG("entryPoint:", static_cast<int>(entryPoint));
 		if (kind == ProjectKind::Executable)
 		{
 			if (entryPoint == WindowsEntryPoint::WinMainUnicode || entryPoint == WindowsEntryPoint::MainUnicode)

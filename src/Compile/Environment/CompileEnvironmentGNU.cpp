@@ -233,15 +233,15 @@ ToolchainType CompileEnvironmentGNU::getToolchainTypeFromMacros(const std::strin
 {
 	const bool gcc = String::contains("__GNUC__", inMacros);
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-	// const bool mingw32 = String::contains("__MINGW32__", inMacros);
-	// const bool mingw64 = String::contains("__MINGW64__", inMacros);
-	// const bool mingw = (mingw32 || mingw64);
+	const bool mingw32 = String::contains("__MINGW32__", inMacros);
+	const bool mingw64 = String::contains("__MINGW64__", inMacros);
+	const bool mingw = (mingw32 || mingw64);
 
-	// if (gcc && mingw)
-	// 	return ToolchainType::MingwGNU;
-	// else
+	if (gcc && mingw)
+		return ToolchainType::MingwGNU;
+	else
 #endif
-	if (gcc)
+		if (gcc)
 		return ToolchainType::GNU;
 
 	return ToolchainType::Unknown;
