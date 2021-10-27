@@ -24,6 +24,7 @@ protected:
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
 
 	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const final;
+	virtual bool verifyCompilerExecutable(const std::string& inCompilerExec) final;
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const final;
 	virtual bool populateSupportedFlags(const std::string& inExecutable) final;
 

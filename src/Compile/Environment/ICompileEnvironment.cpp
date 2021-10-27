@@ -411,6 +411,15 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		return ToolchainType::VisualStudio;
 #endif
 
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if defined(CHALET_WIN32)
+	if (String::endsWith("/icl.exe", inExecutable))
+	#else
+	if (String::endsWith({ "/icpc", "/icc" }, inExecutable))
+	#endif
+		return ToolchainType::IntelClassic;
+#endif
+
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	if (
 	#if defined(CHALET_WIN32)
@@ -445,15 +454,6 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 
 		return ToolchainType::GNU;
 	}
-
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	#if defined(CHALET_WIN32)
-	if (String::endsWith("/icl.exe", executable))
-	#else
-	if (String::endsWith({ "/icpc", "/icc" }, executable))
-	#endif
-		return ToolchainType::IntelClassic;
-#endif
 
 	return ToolchainType::Unknown;
 }
