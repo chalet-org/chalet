@@ -195,7 +195,7 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 		}
 	}
 
-	StringList exclusions{ "/usr/lib/libSystem" };
+	StringList exclusions{ "/usr/lib/" };
 	for (auto& dep : inDependencies)
 	{
 		if (String::startsWith(exclusions, dep))
