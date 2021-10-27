@@ -55,16 +55,16 @@ static struct
 	};
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	const OrderedDictionary<VisualStudioVersion> intelICCVisualStudioPresets{
-		{ "icc-vs-2017", VisualStudioVersion::VisualStudio2017 },
-		{ "icc-vs-2019", VisualStudioVersion::VisualStudio2019 },
-		// { "icc-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "intel-classic-vs-2017", VisualStudioVersion::VisualStudio2017 },
+		{ "intel-classic-vs-2019", VisualStudioVersion::VisualStudio2019 },
+		// { "intel-classic-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};
 	#endif
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	const OrderedDictionary<VisualStudioVersion> intelICXVisualStudioPresets{
-		{ "icx-vs-2017", VisualStudioVersion::VisualStudio2017 },
-		{ "icx-vs-2019", VisualStudioVersion::VisualStudio2019 },
-		// { "icx-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "intel-llvm-vs-2017", VisualStudioVersion::VisualStudio2017 },
+		{ "intel-llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
+		// { "intel-llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};
 	#endif
 #endif
@@ -84,10 +84,10 @@ CommandLineInputs::CommandLineInputs() :
 	kToolchainPresetGCC("gcc"),
 	kToolchainPresetLLVM("llvm"),
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
-	kToolchainPresetICC("icc"),
+	kToolchainPresetICC("intel-classic"),
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	kToolchainPresetICX("icx"),
+	kToolchainPresetICX("intel-llvm"),
 #endif
 #if defined(CHALET_WIN32)
 	kToolchainPresetVisualStudioStable("vs-stable"),

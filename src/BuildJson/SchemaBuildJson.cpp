@@ -34,11 +34,12 @@ SchemaBuildJson::SchemaBuildJson() :
 	kPatternProjectName(R"(^[\w\-\+\.]{3,}$)"),
 	kPatternProjectLinks(R"(^[\w\-\+\.]+$)"),
 	kPatternDistributionName(R"(^[\w\-\+\.\ \(\)]{3,}$)"),
-	kPatternConditionConfigurations(R"regex((\.((!?(debug)\b\.?)?))?)regex"),
-	kPatternConditionPlatforms(R"regex((\.((!?(windows|macos|linux)\b\.?){0,2}))?)regex"),
-	kPatternConditionConfigurationsPlatforms(R"regex((\.((!?(debug|windows|macos|linux)\b\.?){0,2}))?)regex"),
-	kPatternConditionPlatformsInner(R"regex(((!?(windows|macos|linux))?))regex"),
-	kPatternConditionConfigurationsPlatformsInner(R"regex(((!?(debug|windows|macos|linux)\b\.?){0,2}))regex")
+	kPatternConditionConfigurations(R"regex((\.!?(debug)\b\.?)?)regex"),
+	kPatternConditionPlatforms(R"regex((\.!?(windows|macos|linux)\b){0,2})regex"),
+	kPatternConditionConfigurationsPlatforms(R"regex((\.!?(debug|windows|macos|linux)\b){0,2})regex"),
+	kPatternConditionPlatformsInner(R"regex((!?(windows|macos|linux)\b))regex"),
+	kPatternConditionConfigurationsPlatformsInner(R"regex((!?(debug|windows|macos|linux)\b){0,2})regex"),
+	kPatternCompilers(R"regex(^(msvc|gcc|mingw|llvm|apple-llvm|intel-llvm|intel-classic)(\.!?(debug)\b\.?)?$)regex")
 {
 }
 
@@ -418,14 +419,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxCompileOptions] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
-		"description": "Options to add during the compilation step.",
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
+		"type": "object",
+		"additionalProperties": false,
+		"description": "Addtional options (per compiler type) to add during the compilation step."
+	})json"_ojson;
+	defs[Defs::SourceTargetCxxCompileOptions][kPatternProperties][kPatternCompilers] = R"json({
+		"type": "string",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxCppStandard] = R"json({
@@ -476,14 +476,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxLinkerOptions] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
-		"description": "Options to add during the linking step.",
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
+		"type": "object",
+		"additionalProperties": false,
+		"description": "Addtional options (per compiler type) to add during the linking step."
+	})json"_ojson;
+	defs[Defs::SourceTargetCxxLinkerOptions][kPatternProperties][kPatternCompilers] = R"json({
+		"type": "string",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxLinks] = R"json({
@@ -1198,12 +1197,10 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 		sourceTargetCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCStandard);
 		sourceTargetCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCppStandard);
-		sourceTargetCxx[kPatternProperties][fmt::format("^compileOptions{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCompileOptions);
 		sourceTargetCxx[kPatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxDefines);
 		sourceTargetCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxIncludeDirs);
 		sourceTargetCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLibDirs);
 		sourceTargetCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerScript);
-		sourceTargetCxx[kPatternProperties][fmt::format("^linkerOptions{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxLinkerOptions);
 		sourceTargetCxx[kPatternProperties][fmt::format("^links{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxLinks);
 		sourceTargetCxx[kPatternProperties][fmt::format("^staticLinks{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinks);
 		sourceTargetCxx[kPatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxThreads);

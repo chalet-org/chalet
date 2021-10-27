@@ -45,6 +45,18 @@ bool SourceTarget::initialize()
 
 	m_state.paths.replaceVariablesInPath(m_pch, name());
 
+	if (!m_compileOptionsRaw.empty())
+	{
+		m_state.paths.replaceVariablesInPath(m_compileOptionsRaw, name());
+		m_compileOptions = parseCommandLineOptions(m_compileOptionsRaw);
+	}
+
+	if (!m_linkerOptionsRaw.empty())
+	{
+		m_state.paths.replaceVariablesInPath(m_linkerOptionsRaw, name());
+		m_linkerOptions = parseCommandLineOptions(m_linkerOptionsRaw);
+	}
+
 	return true;
 }
 
@@ -77,7 +89,7 @@ bool SourceTarget::validate()
 		}
 	}
 
-	for (auto& option : m_compileOptions)
+	/*for (auto& option : m_compileOptions)
 	{
 		if (String::equals(option.substr(0, 2), "-W"))
 		{
@@ -105,7 +117,7 @@ bool SourceTarget::validate()
 			Diagnostic::error("Contents of 'linkerOptions' list must begin with '-'");
 			result = false;
 		}
-	}
+	}*/
 
 	if (m_invalidWarningPreset)
 	{
@@ -322,14 +334,9 @@ const StringList& SourceTarget::compileOptions() const noexcept
 	return m_compileOptions;
 }
 
-void SourceTarget::addCompileOptions(StringList&& inList)
+void SourceTarget::addCompileOptions(std::string&& inValue)
 {
-	List::forEach(inList, this, &SourceTarget::addCompileOption);
-}
-
-void SourceTarget::addCompileOption(std::string&& inValue)
-{
-	List::addIfDoesNotExist(m_compileOptions, std::move(inValue));
+	m_compileOptionsRaw = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -337,13 +344,9 @@ const StringList& SourceTarget::linkerOptions() const noexcept
 {
 	return m_linkerOptions;
 }
-void SourceTarget::addLinkerOptions(StringList&& inList)
+void SourceTarget::addLinkerOptions(std::string&& inValue)
 {
-	List::forEach(inList, this, &SourceTarget::addLinkerOption);
-}
-void SourceTarget::addLinkerOption(std::string&& inValue)
-{
-	List::addIfDoesNotExist(m_linkerOptions, std::move(inValue));
+	m_compileOptionsRaw = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -959,6 +962,57 @@ StringList SourceTarget::parseWarnings(const std::string& inValue)
 	// ret.emplace_back("switch-default");
 
 	m_invalidWarningPreset = true;
+
+	return ret;
+}
+
+/*****************************************************************************/
+// Takes a string of command line options and returns a StringList
+StringList SourceTarget::parseCommandLineOptions(std::string inString) const
+{
+	StringList ret;
+	if (inString.empty())
+		return ret;
+
+	char separator = ' ';
+	char quote = '"';
+
+	std::string sub;
+	std::size_t itrQuote = 0;
+	std::size_t itr = 0;
+	std::size_t nextNonChar = 0;
+	while (itr != std::string::npos)
+	{
+		itr = inString.find(separator);
+
+		sub = inString.substr(0, itr);
+		itrQuote = sub.find_first_of(quote);
+
+		if (itrQuote != std::string::npos)
+		{
+			itr = inString.find_first_of(quote, itrQuote + 1);
+			if (itr == std::string::npos)
+				break; // bad string - no closing quote
+
+			++itr;
+			sub = inString.substr(0, itr);
+		}
+		nextNonChar = inString.find_first_not_of(separator, itr);
+
+		const bool nonCharFound = nextNonChar != std::string::npos;
+		inString = inString.substr(nonCharFound ? nextNonChar : itr + 1);
+		if (nonCharFound)
+			itr = nextNonChar;
+
+		if (!sub.empty())
+		{
+			while (sub.back() == separator)
+				sub.pop_back();
+		}
+
+		if (!sub.empty())
+			ret.push_back(sub);
+	}
 
 	return ret;
 }

@@ -9,8 +9,8 @@
 #include "Json/JsonFile.hpp"
 //
 #include "BuildJson/BuildJsonParser.hpp"
-
 #include "BuildJson/SchemaBuildJson.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/Platform.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/Bundle/BundleLinux.hpp"
@@ -508,14 +508,14 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 	else if (std::string val; parseKeyFromConfig(val, inNode, "warnings"))
 		outTarget.setWarningPreset(std::move(val));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "compileOptions"))
-		outTarget.addCompileOptions(std::move(list));
+	if (std::string val; parseToolchainOptionsFromKey(val, inNode, "compileOptions"))
+		outTarget.addCompileOptions(std::move(val));
+
+	if (std::string val; parseToolchainOptionsFromKey(val, inNode, "linkerOptions"))
+		outTarget.addLinkerOptions(std::move(val));
 
 	if (std::string val; parseKeyFromConfig(val, inNode, "linkerScript"))
 		outTarget.setLinkerScript(std::move(val));
-
-	if (StringList list; assignStringListFromConfig(list, inNode, "linkerOptions"))
-		outTarget.addLinkerOptions(std::move(list));
 
 #if defined(CHALET_MACOS)
 	if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, "macosFrameworkPaths"))
@@ -541,6 +541,32 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 		outTarget.addIncludeDirs(std::move(list));
 
 	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::parseToolchainOptionsFromKey(std::string& outVariable, const Json& inNode, const std::string& inKey) const
+{
+	chalet_assert(m_state.environment != nullptr, "");
+
+	if (!inNode.contains(inKey))
+		return false;
+
+	const auto& id = m_state.environment->identifier();
+	auto& options = inNode.at(inKey);
+
+	if (parseKeyFromConfig(outVariable, options, id))
+		return true;
+
+	if (String::endsWith("llvm", id))
+	{
+		return parseKeyFromConfig(outVariable, options, "llvm");
+	}
+	else if (String::equals("mingw", id))
+	{
+		return parseKeyFromConfig(outVariable, options, "gcc");
+	}
+
+	return false;
 }
 
 /*****************************************************************************/

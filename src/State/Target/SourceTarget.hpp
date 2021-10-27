@@ -66,12 +66,10 @@ struct SourceTarget final : public IBuildTarget
 	bool warningsTreatedAsErrors() const noexcept;
 
 	const StringList& compileOptions() const noexcept;
-	void addCompileOptions(StringList&& inList);
-	void addCompileOption(std::string&& inValue);
+	void addCompileOptions(std::string&& inValue);
 
 	const StringList& linkerOptions() const noexcept;
-	void addLinkerOptions(StringList&& inList);
-	void addLinkerOption(std::string&& inValue);
+	void addLinkerOptions(std::string&& inValue);
 
 	const StringList& macosFrameworkPaths() const noexcept;
 	void addMacosFrameworkPaths(StringList&& inList);
@@ -174,6 +172,7 @@ private:
 	WindowsEntryPoint parseWindowsEntryPoint(const std::string& inValue);
 	StringList getWarningPreset();
 	StringList parseWarnings(const std::string& inValue);
+	StringList parseCommandLineOptions(std::string inString) const;
 
 	WorkspaceEnvironment& m_environment;
 
@@ -203,6 +202,8 @@ private:
 	std::string m_cStandard;
 	std::string m_cppStandard;
 	std::string m_pch;
+	std::string m_compileOptionsRaw;
+	std::string m_linkerOptionsRaw;
 	std::string m_linkerScript;
 	std::string m_windowsApplicationManifest;
 	std::string m_windowsApplicationIcon;

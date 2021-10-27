@@ -23,6 +23,15 @@ CompileEnvironmentGNU::CompileEnvironmentGNU(const ToolchainType inType, const C
 }
 
 /*****************************************************************************/
+std::string CompileEnvironmentGNU::getIdentifier() const noexcept
+{
+	if (m_type == ToolchainType::MingwGNU)
+		return std::string("mingw");
+	else
+		return std::string("gcc");
+}
+
+/*****************************************************************************/
 StringList CompileEnvironmentGNU::getVersionCommand(const std::string& inExecutable) const
 {
 	return { inExecutable, "-v" };
@@ -254,10 +263,11 @@ bool CompileEnvironmentGNU::makeArchitectureAdjustments()
 /*****************************************************************************/
 bool CompileEnvironmentGNU::validateArchitectureFromInput()
 {
-	if (String::equals("gcc", m_inputs.toolchainPreferenceName()))
+	auto& toolchain = m_inputs.toolchainPreferenceName();
+	if (m_inputs.isToolchainPreset() && String::equals("gcc", toolchain))
 	{
 		const auto& arch = m_state.info.targetArchitectureString();
-		m_inputs.setToolchainPreferenceName(fmt::format("{}-gcc", arch));
+		m_inputs.setToolchainPreferenceName(fmt::format("{}-{}", arch, toolchain));
 	}
 
 	return true;
@@ -267,16 +277,13 @@ bool CompileEnvironmentGNU::validateArchitectureFromInput()
 ToolchainType CompileEnvironmentGNU::getToolchainTypeFromMacros(const std::string& inMacros) const
 {
 	const bool gcc = String::contains("__GNUC__", inMacros);
-#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	const bool mingw32 = String::contains("__MINGW32__", inMacros);
 	const bool mingw64 = String::contains("__MINGW64__", inMacros);
 	const bool mingw = (mingw32 || mingw64);
 
 	if (gcc && mingw)
 		return ToolchainType::MingwGNU;
-	else
-#endif
-		if (gcc)
+	else if (gcc)
 		return ToolchainType::GNU;
 
 	return ToolchainType::Unknown;

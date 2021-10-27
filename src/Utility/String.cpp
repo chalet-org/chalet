@@ -196,12 +196,13 @@ std::string String::join(const StringList& inList, const char inSeparator)
 {
 	std::string ret;
 
+	std::ptrdiff_t i = 0;
 	for (auto& item : inList)
 	{
 		if (item.empty())
 			continue;
 
-		std::ptrdiff_t i = &item - &inList.front();
+		i = &item - &inList.front();
 		if (i > 0)
 			ret += inSeparator;
 
@@ -216,12 +217,13 @@ std::string String::join(StringList&& inList, const char inSeparator)
 {
 	std::string ret;
 
+	std::ptrdiff_t i = 0;
 	for (auto& item : inList)
 	{
 		if (item.empty())
 			continue;
 
-		std::ptrdiff_t i = &item - &inList.front();
+		i = &item - &inList.front();
 		if (i > 0)
 			ret += inSeparator;
 
@@ -236,12 +238,13 @@ std::string String::join(const StringList& inList, const std::string_view inSepa
 {
 	std::string ret;
 
+	std::ptrdiff_t i = 0;
 	for (auto& item : inList)
 	{
 		if (item.empty())
 			continue;
 
-		std::ptrdiff_t i = &item - &inList.front();
+		i = &item - &inList.front();
 		if (i > 0)
 			ret += inSeparator;
 
@@ -256,12 +259,13 @@ std::string String::join(StringList&& inList, const std::string_view inSeparator
 {
 	std::string ret;
 
+	std::ptrdiff_t i = 0;
 	for (auto& item : inList)
 	{
 		if (item.empty())
 			continue;
 
-		std::ptrdiff_t i = &item - &inList.front();
+		i = &item - &inList.front();
 		if (i > 0)
 			ret += inSeparator;
 
@@ -276,15 +280,20 @@ StringList String::split(std::string inString, const char inSeparator, const std
 {
 	StringList ret;
 
+	std::string sub;
+
 	std::size_t itr = 0;
+	std::size_t nextNonChar = 0;
+
+	bool nonCharFound = false;
 	while (itr != std::string::npos)
 	{
 		itr = inString.find(inSeparator);
 
-		std::string sub = inString.substr(0, itr);
-		std::size_t nextNonChar = inString.find_first_not_of(inSeparator, itr);
+		sub = inString.substr(0, itr);
+		nextNonChar = inString.find_first_not_of(inSeparator, itr);
 
-		const bool nonCharFound = nextNonChar != std::string::npos;
+		nonCharFound = nextNonChar != std::string::npos;
 		inString = inString.substr(nonCharFound ? nextNonChar : itr + 1);
 		if (nonCharFound)
 			itr = nextNonChar;
@@ -307,15 +316,20 @@ StringList String::split(std::string inString, const std::string_view inSeparato
 {
 	StringList ret;
 
+	std::string sub;
+
 	std::size_t itr = 0;
+	std::size_t nextNonChar = 0;
+
+	bool nonCharFound = false;
 	while (itr != std::string::npos)
 	{
 		itr = inString.find(inSeparator);
 
-		std::string sub = inString.substr(0, itr);
-		std::size_t nextNonChar = inString.find_first_not_of(inSeparator, itr);
+		sub = inString.substr(0, itr);
+		nextNonChar = inString.find_first_not_of(inSeparator, itr);
 
-		const bool nonCharFound = nextNonChar != std::string::npos;
+		nonCharFound = nextNonChar != std::string::npos;
 		inString = inString.substr(nonCharFound ? nextNonChar : itr + 1);
 		if (nonCharFound)
 			itr = nextNonChar;

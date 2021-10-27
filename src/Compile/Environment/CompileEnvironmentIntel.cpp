@@ -21,9 +21,17 @@ namespace chalet
 {
 /*****************************************************************************/
 CompileEnvironmentIntel::CompileEnvironmentIntel(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
-	CompileEnvironmentLLVM(inType, inInputs, inState),
-	kVarsId("intel")
+	CompileEnvironmentLLVM(inType, inInputs, inState)
 {
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentIntel::getIdentifier() const noexcept
+{
+	if (m_type == ToolchainType::IntelLLVM)
+		return std::string("intel-llvm");
+	else
+		return std::string("intel-classic");
 }
 
 /*****************************************************************************/
@@ -101,9 +109,9 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 
 	Timer timer;
 
-	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", kVarsId), CacheType::Local);
-	m_varsFileIntel = m_state.cache.getHashPath(fmt::format("{}_all.env", kVarsId), CacheType::Local);
-	m_varsFileIntelDelta = getVarsPath(kVarsId);
+	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
+	m_varsFileIntel = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
+	m_varsFileIntelDelta = getVarsPath(this->identifier());
 	m_path = Environment::getPath();
 
 	bool isPresetFromInput = m_inputs.isToolchainPreset();
@@ -196,7 +204,7 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 		m_inputs.setToolchainPreferenceName(std::move(name));
 
 		auto old = m_varsFileIntelDelta;
-		m_varsFileIntelDelta = getVarsPath(kVarsId);
+		m_varsFileIntelDelta = getVarsPath(this->identifier());
 		if (m_varsFileIntelDelta != old)
 		{
 			Commands::copyRename(old, m_varsFileIntelDelta, true);

@@ -22,6 +22,7 @@ struct ICompileEnvironment
 {
 	virtual ~ICompileEnvironment() = default;
 
+	const std::string& identifier() const noexcept;
 	ToolchainType type() const noexcept;
 
 	bool isWindowsClang() const noexcept;
@@ -46,6 +47,7 @@ protected:
 	[[nodiscard]] static Unique<ICompileEnvironment> make(ToolchainType type, const CommandLineInputs& inInputs, BuildState& inState);
 	static ToolchainType detectToolchainTypeFromPath(const std::string& inExecutable);
 
+	virtual std::string getIdentifier() const noexcept = 0;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const = 0;
 	virtual bool verifyToolchain() = 0;
@@ -80,6 +82,8 @@ protected:
 	const ToolchainType m_type;
 
 private:
+	std::string m_identifier;
+
 	bool m_initialized = false;
 };
 }

@@ -42,6 +42,7 @@ private:
 	bool parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode) const;
 	bool parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract) const;
 	bool parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode) const;
+	bool parseToolchainOptionsFromKey(std::string& outVariable, const Json& inNode, const std::string& inKey) const;
 
 	bool validBuildRequested() const;
 	bool validRunTargetRequested() const;

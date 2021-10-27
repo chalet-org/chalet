@@ -24,6 +24,10 @@
 
 namespace chalet
 {
+const std::string& ICompileEnvironment::identifier() const noexcept
+{
+	return m_identifier;
+}
 /*****************************************************************************/
 ToolchainType ICompileEnvironment::type() const noexcept
 {
@@ -169,6 +173,8 @@ bool ICompileEnvironment::create(const std::string& inVersion)
 	}
 
 	m_initialized = true;
+
+	m_identifier = getIdentifier();
 
 	if (!validateArchitectureFromInput())
 		return false;
@@ -398,20 +404,28 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 	if (inExecutable.empty())
 		return ToolchainType::Unknown;
 
+	auto executable = String::toLowerCase(inExecutable);
+
 #if defined(CHALET_WIN32)
-	if (String::endsWith("/cl.exe", inExecutable))
+	if (String::endsWith("/cl.exe", executable))
 		return ToolchainType::VisualStudio;
 #endif
 
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	if (String::contains({ "icx", "oneAPI", "Intel", "oneapi", "intel" }, inExecutable))
+	if (
+	#if defined(CHALET_WIN32)
+		String::endsWith("/icx.exe", executable)
+	#else
+		String::endsWith("/icx", executable)
+	#endif
+		|| String::contains({ "onepi", "intel" }, executable))
 		return ToolchainType::IntelLLVM;
 #endif
 
-	if (String::contains("clang", inExecutable))
+	if (String::contains("clang", executable))
 	{
 #if defined(CHALET_MACOS)
-		if (String::contains({ "Contents/Developer", "Xcode" }, inExecutable))
+		if (String::contains({ "contents/developer", "code" }, executable))
 			return ToolchainType::AppleLLVM;
 #endif
 
@@ -420,24 +434,23 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		return ToolchainType::LLVM;
 	}
 
-	if (String::contains({ "gcc", "g++" }, inExecutable))
+	if (String::contains({ "gcc", "g++" }, executable))
 	{
 #if defined(CHALET_MACOS)
-		if (String::contains({ "Contents/Developer", "Xcode" }, inExecutable))
+		if (String::contains({ "contents/developer", "xcode" }, executable))
 			return ToolchainType::AppleLLVM;
 #endif
-#if defined(CHALET_WIN32)
-		return ToolchainType::MingwGNU; // TODO: better way of checking - this is a bit of a hack
-#else
+		if (String::contains("mingw", executable))
+			return ToolchainType::MingwGNU;
+
 		return ToolchainType::GNU;
-#endif
 	}
 
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
-	if (String::endsWith("/icl.exe", inExecutable))
+	if (String::endsWith("/icl.exe", executable))
 	#else
-	if (String::endsWith({ "/icpc", "/icc" }, inExecutable))
+	if (String::endsWith({ "/icpc", "/icc" }, executable))
 	#endif
 		return ToolchainType::IntelClassic;
 #endif

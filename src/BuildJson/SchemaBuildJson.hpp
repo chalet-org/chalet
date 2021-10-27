@@ -140,6 +140,7 @@ private:
 	const std::string kPatternConditionConfigurationsPlatforms;
 	const std::string kPatternConditionPlatformsInner;
 	const std::string kPatternConditionConfigurationsPlatformsInner;
+	const std::string kPatternCompilers;
 
 	DefinitionMap m_defs;
 	bool m_useRefs = true;

@@ -68,18 +68,22 @@ bool CompileEnvironmentVisualStudio::exists()
 
 /*****************************************************************************/
 CompileEnvironmentVisualStudio::CompileEnvironmentVisualStudio(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
-	ICompileEnvironment(inType, inInputs, inState),
-	kVarsId("msvc")
+	ICompileEnvironment(inType, inInputs, inState)
 {
-	UNUSED(kVarsId);
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getIdentifier() const noexcept
+{
+	return std::string("msvc");
 }
 
 /*****************************************************************************/
 bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVersion)
 {
-	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", kVarsId), CacheType::Local);
-	m_varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", kVarsId), CacheType::Local);
-	m_varsFileMsvcDelta = getVarsPath(kVarsId);
+	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
+	m_varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
+	m_varsFileMsvcDelta = getVarsPath(this->identifier());
 
 	// This sets vswhere
 	if (!CompileEnvironmentVisualStudio::exists())
@@ -276,7 +280,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 		}
 
 		auto old = m_varsFileMsvcDelta;
-		m_varsFileMsvcDelta = getVarsPath(kVarsId);
+		m_varsFileMsvcDelta = getVarsPath(this->identifier());
 		if (m_varsFileMsvcDelta != old)
 		{
 			Commands::copyRename(old, m_varsFileMsvcDelta, true);

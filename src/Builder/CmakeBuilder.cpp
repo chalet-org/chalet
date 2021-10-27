@@ -119,31 +119,31 @@ std::string CmakeBuilder::getGenerator() const
 	{
 		// Validated in CMakeTarget::validate
 		const auto& version = m_state.toolchain.version();
-		if (String::startsWith("17", version))
+		if (String::startsWith("17.", version))
 		{
 			ret = "Visual Studio 17 2022";
 		}
-		else if (String::startsWith("16", version))
+		else if (String::startsWith("16.", version))
 		{
 			ret = "Visual Studio 16 2019";
 		}
-		else if (String::startsWith("15", version))
+		else if (String::startsWith("15.", version))
 		{
 			ret = "Visual Studio 15 2017";
 		}
-		else if (String::startsWith("14", version))
+		else if (String::startsWith("14.", version))
 		{
 			ret = "Visual Studio 14 2015";
 		}
-		else if (String::startsWith("12", version))
+		else if (String::startsWith("12.", version))
 		{
 			ret = "Visual Studio 12 2013";
 		}
-		else if (String::startsWith("11", version))
+		else if (String::startsWith("11.", version))
 		{
 			ret = "Visual Studio 11 2012";
 		}
-		else if (String::startsWith("10", version))
+		else if (String::startsWith("10.", version))
 		{
 			ret = "Visual Studio 10 2010";
 		}

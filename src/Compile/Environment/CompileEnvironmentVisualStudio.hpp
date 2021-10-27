@@ -20,6 +20,7 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 	static bool exists();
 
 protected:
+	virtual std::string getIdentifier() const noexcept final;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 	virtual bool verifyToolchain() final;
@@ -33,8 +34,6 @@ protected:
 private:
 	bool saveMsvcEnvironment() const;
 	StringList getAllowedArchitectures() const;
-
-	const std::string kVarsId;
 
 	std::string m_varsFileOriginal;
 	std::string m_varsFileMsvc;
