@@ -195,8 +195,12 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 		}
 	}
 
+	StringList exclusions{ "/usr/lib/libSystem" };
 	for (auto& dep : inDependencies)
 	{
+		if (String::startsWith(exclusions, dep))
+			continue;
+
 		auto depFile = String::getPathFilename(dep);
 		if (!Commands::subprocess({ inInstallNameTool, "-change", dep, fmt::format("@rpath/{}", depFile), inOutputFile }))
 		{
