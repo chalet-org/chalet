@@ -45,6 +45,17 @@ std::string CompileEnvironmentIntel::getFullCxxCompilerString(const std::string&
 }
 
 /*****************************************************************************/
+bool CompileEnvironmentIntel::verifyCompilerExecutable(const std::string& inCompilerExec)
+{
+#if defined(CHALET_WIN32)
+	if (m_type == ToolchainType::IntelClassic)
+		return true;
+#endif
+
+	return CompileEnvironmentGNU::verifyCompilerExecutable(inCompilerExec);
+}
+
+/*****************************************************************************/
 ToolchainType CompileEnvironmentIntel::getToolchainTypeFromMacros(const std::string& inMacros) const
 {
 	if (m_type == ToolchainType::IntelLLVM)
@@ -59,6 +70,9 @@ ToolchainType CompileEnvironmentIntel::getToolchainTypeFromMacros(const std::str
 	}
 	else
 	{
+#if defined(CHALET_WIN32)
+		return ToolchainType::IntelClassic;
+#else
 		auto gccType = CompileEnvironmentGNU::getToolchainTypeFromMacros(inMacros);
 		if (gccType != ToolchainType::GNU)
 			return gccType;
@@ -66,6 +80,7 @@ ToolchainType CompileEnvironmentIntel::getToolchainTypeFromMacros(const std::str
 		const bool intelGcc = String::contains({ "__INTEL_COMPILER", "__INTEL_COMPILER_BUILD_DATE" }, inMacros);
 		if (intelGcc)
 			return ToolchainType::IntelClassic;
+#endif
 	}
 
 	return ToolchainType::Unknown;

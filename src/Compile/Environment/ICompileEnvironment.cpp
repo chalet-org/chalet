@@ -403,8 +403,17 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		return ToolchainType::VisualStudio;
 #endif
 
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if defined(CHALET_WIN32)
+	if (String::endsWith("/icl.exe", inExecutable))
+	#else
+	if (String::endsWith({ "/icpc", "/icc" }, inExecutable))
+	#endif
+		return ToolchainType::IntelClassic;
+#endif
+
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	if (String::contains({ "icx", "oneAPI", "Intel", "oneapi", "intel" }, inExecutable))
+	if (String::endsWith("/icx", inExecutable) || String::contains({ "oneAPI", "Intel", "oneapi", "intel" }, inExecutable))
 		return ToolchainType::IntelLLVM;
 #endif
 
@@ -432,15 +441,6 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		return ToolchainType::GNU;
 #endif
 	}
-
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	#if defined(CHALET_WIN32)
-	if (String::endsWith("/icl.exe", inExecutable))
-	#else
-	if (String::endsWith({ "/icpc", "/icc" }, inExecutable))
-	#endif
-		return ToolchainType::IntelClassic;
-#endif
 
 	return ToolchainType::Unknown;
 }
