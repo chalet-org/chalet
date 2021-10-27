@@ -160,9 +160,11 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
 
-	m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, kKeySigningIdentity, [&]() {
-		return inState.signingIdentity;
-	});
+	if (!buildSettings.contains(kKeySigningIdentity) || !buildSettings[kKeySigningIdentity].is_string())
+	{
+		// Note: don't check if string is empty - empty is valid
+		buildSettings[kKeySigningIdentity] = inState.signingIdentity;
+	}
 
 	//
 
