@@ -39,7 +39,7 @@ SchemaBuildJson::SchemaBuildJson() :
 	kPatternConditionConfigurationsPlatforms(R"regex((\.!?(debug|windows|macos|linux)\b){0,2})regex"),
 	kPatternConditionPlatformsInner(R"regex((!?(windows|macos|linux)\b))regex"),
 	kPatternConditionConfigurationsPlatformsInner(R"regex((!?(debug|windows|macos|linux)\b){0,2})regex"),
-	kPatternCompilers(R"regex(^(msvc|gcc|mingw|llvm|apple-llvm|intel-llvm|intel-classic)(\.!?(debug)\b\.?)?$)regex")
+	kPatternCompilers(R"regex(^(msvc|gcc|mingw|llvm|apple-llvm|intel-llvm|intel-classic)(\.!?(debug|windows|macos|linux)\b){0,2}$)regex")
 {
 }
 
