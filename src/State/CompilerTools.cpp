@@ -62,7 +62,9 @@ bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 	auto baseFolderCpp = String::getPathFolder(m_compilerCpp.path);
 	if (String::equals(baseFolderC, baseFolderCpp))
 	{
+		std::string tmp = std::move(m_compilerC.path);
 		m_compilerC = m_compilerCpp;
+		m_compilerC.path = std::move(tmp);
 	}
 	else
 	{
