@@ -763,6 +763,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 	m_isToolchainPreset = false;
 
+	bool hasGccPrefix = String::startsWith("gcc-", inValue);
+	bool hasGccSuffix = String::endsWith("-gcc", inValue);
+	bool hasGccPrefixAndSuffix = String::contains("-gcc-", inValue);
+
 #if defined(CHALET_WIN32)
 	m_visualStudioVersion = VisualStudioVersion::None;
 
@@ -814,18 +818,39 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "objdump";
 #endif
 	}
-	else if (String::equals(kToolchainPresetGCC, inValue))
+	else if (String::equals(kToolchainPresetGCC, inValue) || hasGccPrefix || hasGccPrefix || hasGccPrefixAndSuffix)
 	{
 		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
 
+		std::string suffix;
+		if (hasGccPrefix)
+			suffix = inValue.substr(inValue.find_first_of('-'));
+
+		std::string prefix;
+		if (hasGccSuffix)
+			prefix = inValue.substr(0, inValue.find_last_of('-') + 1);
+
+		LOG(prefix, suffix);
+
 		ret.type = ToolchainType::GNU;
 		ret.strategy = StrategyType::Ninja;
-		ret.cpp = "g++";
-		ret.cc = "gcc";
+		if (hasGccPrefixAndSuffix)
+		{
+			ret.cpp = inValue;
+			ret.cc = inValue;
+			ret.archiver = inValue;
+			String::replaceAll(ret.cpp, "-gcc-", "-g++-");
+			String::replaceAll(ret.archiver, "-gcc-", "-gcc-ar-");
+		}
+		else
+		{
+			ret.cpp = fmt::format("{}g++{}", prefix, suffix);
+			ret.cc = fmt::format("{}gcc{}", prefix, suffix);
+			ret.archiver = fmt::format("{}gcc-ar{}", prefix, suffix); // gcc- will get stripped out later when it's searched
+		}
 		ret.rc = "windres";
 		ret.linker = "ld";
-		ret.archiver = "ar";
 		ret.profiler = "gprof";
 		ret.disassembler = "objdump";
 	}

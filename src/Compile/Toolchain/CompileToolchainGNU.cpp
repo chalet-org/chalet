@@ -1045,20 +1045,32 @@ void CompileToolchainGNU::addEntryPoint(StringList& outArgList) const
 /*****************************************************************************/
 void CompileToolchainGNU::startStaticLinkGroup(StringList& outArgList) const
 {
+#if defined(CHALET_MACOS)
+	UNUSED(outArgList);
+#else
 	outArgList.emplace_back("-Wl,--copy-dt-needed-entries");
 	outArgList.emplace_back("-Wl,-Bstatic");
 	outArgList.emplace_back("-Wl,--start-group");
+#endif
 }
 
 void CompileToolchainGNU::endStaticLinkGroup(StringList& outArgList) const
 {
+#if defined(CHALET_MACOS)
+	UNUSED(outArgList);
+#else
 	outArgList.emplace_back("-Wl,--end-group");
+#endif
 }
 
 /*****************************************************************************/
 void CompileToolchainGNU::startExplicitDynamicLinkGroup(StringList& outArgList) const
 {
+#if defined(CHALET_MACOS)
+	UNUSED(outArgList);
+#else
 	outArgList.emplace_back("-Wl,-Bdynamic");
+#endif
 }
 
 /*****************************************************************************/

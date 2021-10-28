@@ -152,6 +152,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	}
 
 	bool isLLVM = preference.type == ToolchainType::LLVM || preference.type == ToolchainType::AppleLLVM || preference.type == ToolchainType::IntelLLVM;
+	bool isGNU = preference.type == ToolchainType::GNU || preference.type == ToolchainType::MingwGNU;
 
 	std::string cpp;
 	std::string cc;
@@ -252,13 +253,23 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		{
 			searches.emplace_back("llvm-ar");
 		}
+
+		if (isGNU)
+		{
+			std::string tmp = preference.archiver;
+			String::replaceAll(tmp, "gcc-", "");
+			searches.emplace_back(std::move(tmp));
+			searches.push_back(preference.archiver);
+		}
+
 #if defined(CHALET_MACOS)
-		if (isLLVM || preference.type == ToolchainType::GNU)
+		if (isLLVM || isGNU)
 		{
 			searches.emplace_back("libtool");
 		}
 #endif
-		searches.push_back(preference.archiver);
+		if (!isGNU)
+			searches.push_back(preference.archiver);
 
 		for (const auto& search : searches)
 		{
