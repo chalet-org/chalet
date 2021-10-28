@@ -818,7 +818,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "objdump";
 #endif
 	}
-	else if (String::equals(kToolchainPresetGCC, inValue) || hasGccPrefix || hasGccPrefix || hasGccPrefixAndSuffix)
+	else if (String::equals(kToolchainPresetGCC, inValue) || hasGccPrefix || hasGccSuffix || hasGccPrefixAndSuffix)
 	{
 		m_isToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
@@ -831,8 +831,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		if (hasGccSuffix)
 			prefix = inValue.substr(0, inValue.find_last_of('-') + 1);
 
-		LOG(prefix, suffix);
-
 		ret.type = ToolchainType::GNU;
 		ret.strategy = StrategyType::Ninja;
 		if (hasGccPrefixAndSuffix)
@@ -840,19 +838,25 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			ret.cpp = inValue;
 			ret.cc = inValue;
 			ret.archiver = inValue;
+			ret.linker = inValue;
+			ret.disassembler = inValue;
+			ret.profiler = inValue;
 			String::replaceAll(ret.cpp, "-gcc-", "-g++-");
 			String::replaceAll(ret.archiver, "-gcc-", "-gcc-ar-");
+			String::replaceAll(ret.linker, "-gcc-", "-ld-");
+			String::replaceAll(ret.disassembler, "-gcc-", "-objdump-");
+			String::replaceAll(ret.profiler, "-gcc-", "-gprof-");
 		}
 		else
 		{
 			ret.cpp = fmt::format("{}g++{}", prefix, suffix);
 			ret.cc = fmt::format("{}gcc{}", prefix, suffix);
 			ret.archiver = fmt::format("{}gcc-ar{}", prefix, suffix); // gcc- will get stripped out later when it's searched
+			ret.linker = fmt::format("{}ld{}", prefix, suffix);
+			ret.disassembler = fmt::format("{}objdump{}", prefix, suffix);
+			ret.profiler = fmt::format("{}gprof{}", prefix, suffix);
 		}
 		ret.rc = "windres";
-		ret.linker = "ld";
-		ret.profiler = "gprof";
-		ret.disassembler = "objdump";
 	}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)

@@ -213,6 +213,11 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			searches.emplace_back("llvm-ld");
 			searches.emplace_back("ld");
 		}
+		else if (isGNU)
+		{
+			searches.push_back(preference.linker);
+			searches.push_back("ld");
+		}
 		else
 		{
 			searches.push_back(preference.linker);
@@ -253,8 +258,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		{
 			searches.emplace_back("llvm-ar");
 		}
-
-		if (isGNU)
+		else if (isGNU)
 		{
 			std::string tmp = preference.archiver;
 			String::replaceAll(tmp, "gcc-", "");
@@ -286,7 +290,16 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string prof;
 		StringList searches;
-		searches.push_back(preference.profiler);
+
+		if (isGNU)
+		{
+			searches.push_back(preference.profiler);
+			searches.push_back("gprof");
+		}
+		else
+		{
+			searches.push_back(preference.profiler);
+		}
 
 		for (const auto& search : searches)
 		{
@@ -306,8 +319,17 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		if (isLLVM)
 		{
 			searches.emplace_back("llvm-objdump");
+			searches.push_back(preference.disassembler);
 		}
-		searches.push_back(preference.disassembler);
+		else if (isGNU)
+		{
+			searches.push_back(preference.disassembler);
+			searches.push_back("objdump");
+		}
+		else
+		{
+			searches.push_back(preference.disassembler);
+		}
 
 		for (const auto& search : searches)
 		{

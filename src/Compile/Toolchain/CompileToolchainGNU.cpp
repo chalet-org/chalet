@@ -820,7 +820,7 @@ bool CompileToolchainGNU::addArchitecture(StringList& outArgList) const
 	auto hostArch = m_state.info.hostArchitecture();
 	auto targetArch = m_state.info.targetArchitecture();
 
-	if (m_state.environment->isMingw() && String::equals({ "arm", "arm64" }, m_arch))
+	if (m_state.environment->isMingw() || String::equals({ "arm", "arm64" }, m_arch))
 	{
 		// don't do anything yet
 		return false;
