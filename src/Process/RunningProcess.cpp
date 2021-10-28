@@ -167,11 +167,15 @@ int RunningProcess::getReturnCode(const int inExitCode)
 /*****************************************************************************/
 std::string RunningProcess::getErrorMessageFromCode(const int inCode)
 {
+	#if defined(CHALET_MACOS)
 	std::array<char, 256> buffer;
 	buffer.fill(0);
 	UNUSED(::strerror_r(inCode, buffer.data(), buffer.size()));
-
 	return std::string(buffer.data());
+	#else
+	char* errResult = ::strerror(inCode);
+	return std::string(errResult);
+	#endif
 }
 
 /*****************************************************************************/
