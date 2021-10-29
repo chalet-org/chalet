@@ -38,7 +38,7 @@ ICompilerWinResource::ICompilerWinResource(const BuildState& inState, const Sour
 	if (String::equals("rc", executable))
 		return std::make_unique<CompilerWinResourceVisualStudioRC>(inState, inProject);
 	else if (String::equals("llvm-rc", executable))
-		return std::make_unique<CompilerWinResourceVisualStudioRC>(inState, inProject);
+		return std::make_unique<CompilerWinResourceLLVMRC>(inState, inProject);
 
 	return std::make_unique<CompilerWinResourceGNUWindRes>(inState, inProject);
 }

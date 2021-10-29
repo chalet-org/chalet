@@ -209,7 +209,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		if (isLLVM)
 		{
 			searches.push_back(preference.linker); // lld
-			searches.emplace_back("llvm-link");
+			searches.emplace_back("lld-link");
 			searches.emplace_back("llvm-ld");
 			searches.emplace_back("ld");
 		}

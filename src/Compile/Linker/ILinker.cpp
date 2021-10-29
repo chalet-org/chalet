@@ -48,7 +48,7 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 		if (lld && inType == ToolchainType::IntelLLVM)
 		return std::make_unique<LinkerIntelLLD>(inState, inProject);
 
-	if (lld || String::equals({ "llvm-link", "llvm-ld" }, executable) || inType == ToolchainType::LLVM)
+	if (lld || inType == ToolchainType::LLVM)
 		return std::make_unique<LinkerLLVMLLD>(inState, inProject);
 
 	return std::make_unique<LinkerGNULD>(inState, inProject);
