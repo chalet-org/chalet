@@ -23,6 +23,12 @@ LinkerVisualStudioLINK::LinkerVisualStudioLINK(const BuildState& inState, const 
 }
 
 /*****************************************************************************/
+bool LinkerVisualStudioLINK::initialize()
+{
+	return true;
+}
+
+/*****************************************************************************/
 StringList LinkerVisualStudioLINK::getLinkExclusions() const
 {
 	return { "stdc++fs" };

@@ -340,7 +340,7 @@ StringList CompileStrategyNative::getRcCompile(const std::string& source, const 
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	ret = m_toolchain->getRcCompileCommand(source, target, m_generateDependencies, dependency);
+	ret = m_toolchain->compilerWindowsResource->getCommand(source, target, m_generateDependencies, dependency);
 #else
 	UNUSED(source, target);
 #endif
