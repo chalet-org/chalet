@@ -33,6 +33,32 @@ BuildInfo::BuildInfo(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
+bool BuildInfo::initialize()
+{
+#if defined(CHALET_MACOS)
+	std::string macosVersion;
+	auto triple = String::split(m_targetArchitecture.triple, '-');
+	if (triple.size() == 3)
+	{
+		auto& sys = triple.back();
+		sys = String::toLowerCase(sys);
+
+		for (auto& target : StringList{ "macos", "ios", "watchos", "tvos" })
+		{
+			if (String::startsWith(target, sys))
+			{
+				m_osTarget = target;
+				m_osTargetVersion = sys.substr(target.size());
+				break;
+			}
+		}
+	}
+#endif
+
+	return true;
+}
+
+/*****************************************************************************/
 const std::string& BuildInfo::buildConfiguration() const noexcept
 {
 	chalet_assert(!m_buildConfiguration.empty(), "Build configuration is empty");
@@ -107,6 +133,17 @@ const StringList& BuildInfo::archOptions() const noexcept
 const StringList& BuildInfo::universalArches() const noexcept
 {
 	return m_inputs.universalArches();
+}
+
+/*****************************************************************************/
+const std::string& BuildInfo::osTarget() const noexcept
+{
+	return m_osTarget;
+}
+
+const std::string& BuildInfo::osTargetVersion() const noexcept
+{
+	return m_osTargetVersion;
 }
 
 /*****************************************************************************/

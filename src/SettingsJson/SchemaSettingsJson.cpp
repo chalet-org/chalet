@@ -482,22 +482,22 @@ Json Schema::getSettingsJson()
 	auto toolchains = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of compilers and tools needing for the build itself.",
-		"required": [
-			"archiver",
-			"cmake",
-			"compilerCpp",
-			"compilerC",
-			"compilerWindowsResource",
-			"linker",
-			"profiler",
-			"make",
-			"disassembler",
-			"ninja",
-			"strategy",
-			"version"
-		]
+		"description": "A list of compilers and tools needing for the build itself."
 	})json"_ojson;
+	/*toolchains["required"] = {
+		"archiver",
+		"cmake",
+		"compilerCpp",
+		"compilerC",
+		"compilerWindowsResource",
+		"linker",
+		"profiler",
+		"make",
+		"disassembler",
+		"ninja",
+		"strategy",
+		"version"
+	};*/
 	toolchains[kProperties] = Json::object();
 	toolchains[kProperties]["version"] = defs[Defs::Version];
 	toolchains[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];

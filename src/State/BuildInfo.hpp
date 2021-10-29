@@ -15,6 +15,8 @@ struct BuildInfo
 {
 	explicit BuildInfo(const CommandLineInputs& inInputs);
 
+	bool initialize();
+
 	const std::string& buildConfiguration() const noexcept;
 	const std::string& buildConfigurationNoAssert() const noexcept;
 	void setBuildConfiguration(const std::string& inValue) noexcept;
@@ -31,6 +33,9 @@ struct BuildInfo
 	const StringList& archOptions() const noexcept;
 	const StringList& universalArches() const noexcept;
 
+	const std::string& osTarget() const noexcept;
+	const std::string& osTargetVersion() const noexcept;
+
 	uint maxJobs() const noexcept;
 	bool dumpAssembly() const noexcept;
 	bool generateCompileCommands() const noexcept;
@@ -39,6 +44,8 @@ private:
 	const CommandLineInputs& m_inputs;
 
 	std::string m_buildConfiguration;
+	std::string m_osTarget;
+	std::string m_osTargetVersion;
 
 	Arch m_hostArchitecture;
 	Arch m_targetArchitecture;

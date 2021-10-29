@@ -347,6 +347,9 @@ bool BuildState::initializeBuild()
 	if (!validateState())
 		return false;
 
+	if (!info.initialize())
+		return false;
+
 	if (!validateSigningIdentity())
 		return false;
 

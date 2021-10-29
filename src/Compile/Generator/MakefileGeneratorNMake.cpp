@@ -5,6 +5,7 @@
 
 #include "Compile/Generator/MakefileGeneratorNMake.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -255,7 +256,7 @@ std::string MakefileGeneratorNMake::getTargetRecipe(const std::string& linkerTar
 	const auto preReqs = getLinkerPreReqs(objects);
 
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(*m_project);
-	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, objects, linkerTargetBase));
+	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand(linkerTarget, objects, linkerTargetBase));
 
 	if (!linkerCommand.empty())
 	{
@@ -296,12 +297,12 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 	{
 		const auto quietFlag = getQuietFlag();
 		m_precompiledHeaders.push_back(std::move(pchCache));
-		auto pchCompile = String::join(m_toolchain->getPchCompileCommand(source, object, m_generateDependencies, std::string(), std::string()));
+		auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, m_generateDependencies, std::string(), std::string()));
 		if (!pchCompile.empty())
 		{
 
 			std::string compilerEcho;
-			if (m_toolchain->type() != ToolchainType::VisualStudio)
+			if (m_state.environment->type() != ToolchainType::VisualStudio)
 			{
 				compilerEcho = getCompileEchoSources(object) + "\n\t";
 			}
@@ -329,7 +330,7 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 	const auto quietFlag = getQuietFlag();
 
 	std::string dependency;
-	auto rcCompile = String::join(m_toolchain->getRcCompileCommand(source, object, m_generateDependencies, dependency));
+	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand(source, object, m_generateDependencies, dependency));
 	if (!rcCompile.empty())
 	{
 		const auto compilerEcho = getCompileEchoSources(source);
@@ -360,11 +361,11 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 
 	std::string dependency;
 	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
-	auto cppCompile = String::join(m_toolchain->getCxxCompileCommand(source, object, m_generateDependencies, dependency, specialization));
+	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, specialization));
 	if (!cppCompile.empty())
 	{
 		std::string compilerEcho;
-		if (m_toolchain->type() != ToolchainType::VisualStudio)
+		if (m_state.environment->type() != ToolchainType::VisualStudio)
 		{
 			compilerEcho = getCompileEchoSources(source) + "\n\t";
 		}

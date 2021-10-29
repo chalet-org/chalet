@@ -6,7 +6,7 @@
 #ifndef CHALET_COMPILE_COMMANDS_GENERATOR_HPP
 #define CHALET_COMPILE_COMMANDS_GENERATOR_HPP
 
-#include "Compile/Toolchain/ICompileToolchain.hpp"
+#include "Compile/CompileToolchainController.hpp"
 
 namespace chalet
 {

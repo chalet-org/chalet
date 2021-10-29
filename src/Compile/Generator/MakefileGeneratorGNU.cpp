@@ -219,7 +219,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 					dependencies += fmt::format(" {}_{}/{}", baseFolder, lastArch, filename);
 				}
 
-				auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency, arch));
+				auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$<", "$@", m_generateDependencies, dependency, arch));
 				if (!pchCompile.empty())
 				{
 					auto pch = String::getPathFolderBaseName(object);
@@ -244,7 +244,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 		else
 #endif
 		{
-			auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$<", "$@", m_generateDependencies, dependency, std::string()));
+			auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$<", "$@", m_generateDependencies, dependency, std::string()));
 			if (!pchCompile.empty())
 			{
 				auto pch = String::getPathFolderBaseName(object);
@@ -288,7 +288,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 
 		const auto dependency = fmt::format("{}/{}/$*.{}.d", depDir, location, ext);
 
-		auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$<", "$@", m_generateDependencies, dependency));
+		auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand("$<", "$@", m_generateDependencies, dependency));
 		if (!rcCompile.empty())
 		{
 			std::string makeDependency;
@@ -341,7 +341,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 
 		const auto dependency = fmt::format("{}/{}/$*.{}.d", depDir, location, ext);
 
-		auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, dependency, specialization));
+		auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$<", "$@", m_generateDependencies, dependency, specialization));
 		if (!cppCompile.empty())
 		{
 			std::string pch = pchTarget;
@@ -405,7 +405,7 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext)
 		const auto dependency = fmt::format("{}/{}/$*.{}.d", depDir, location, ext);
 
 		const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCPlusPlus;
-		auto objcCompile = String::join(m_toolchain->getCxxCompileCommand("$<", "$@", m_generateDependencies, dependency, specialization));
+		auto objcCompile = String::join(m_toolchain->compilerCxx->getCommand("$<", "$@", m_generateDependencies, dependency, specialization));
 		if (!objcCompile.empty())
 		{
 
@@ -462,7 +462,7 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 	const auto preReqs = getLinkerPreReqs();
 
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(*m_project);
-	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand(linkerTarget, { fmt::format("$(OBJS_{})", m_hash) }, linkerTargetBase));
+	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand(linkerTarget, { fmt::format("$(OBJS_{})", m_hash) }, linkerTargetBase));
 	if (!linkerCommand.empty())
 	{
 		const auto linkerEcho = getLinkerEcho();

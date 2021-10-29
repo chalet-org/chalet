@@ -6,8 +6,8 @@
 #ifndef CHALET_ISTRATEGY_GENERATOR_HPP
 #define CHALET_ISTRATEGY_GENERATOR_HPP
 
+#include "Compile/CompileToolchainController.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
-#include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/SourceTarget.hpp"
 
@@ -32,7 +32,7 @@ struct IStrategyGenerator
 
 protected:
 	const BuildState& m_state;
-	ICompileToolchain* m_toolchain = nullptr;
+	CompileToolchainController* m_toolchain = nullptr;
 	const SourceTarget* m_project = nullptr;
 
 	StringList m_targetRecipes;

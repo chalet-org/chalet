@@ -7,12 +7,12 @@
 #define CHALET_MAKEFILE_GENERATOR_NMAKE_HPP
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
-#include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/SourceOutputs.hpp"
 
 namespace chalet
 {
 class BuildState;
+
 struct MakefileGeneratorNMake final : IStrategyGenerator
 {
 	explicit MakefileGeneratorNMake(const BuildState& inState);

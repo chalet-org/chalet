@@ -7,7 +7,7 @@
 #define CHALET_BUILD_JSON_PROPS_HPP
 
 #include "Compile/CodeLanguage.hpp"
-#include "Compile/Toolchain/CxxSpecialization.hpp"
+#include "Compile/CxxSpecialization.hpp"
 
 namespace chalet
 {

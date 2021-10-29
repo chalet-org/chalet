@@ -7,7 +7,6 @@
 #define CHALET_NINJA_GENERATOR_HPP
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
-#include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/SourceOutputs.hpp"
 
 namespace chalet

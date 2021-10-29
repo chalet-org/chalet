@@ -38,7 +38,6 @@ struct CompilerTools
 
 	const std::string& archiver() const noexcept;
 	void setArchiver(std::string&& inValue) noexcept;
-	bool isArchiverLibTool() const noexcept;
 
 	const CompilerInfo& compilerCpp() const noexcept;
 	void setCompilerCpp(std::string&& inValue) noexcept;
@@ -118,7 +117,6 @@ private:
 	StrategyType m_strategy = StrategyType::None;
 	BuildPathStyle m_buildPathStyle = BuildPathStyle::None;
 
-	bool m_isArchiverLibTool = false;
 	bool m_isProfilerGprof = false;
 
 	bool m_isDisassemblerDumpBin = false;

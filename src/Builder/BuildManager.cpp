@@ -9,6 +9,7 @@
 #include "Builder/ProfilerRunner.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
+#include "Compile/CompileToolchainController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"
@@ -400,7 +401,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 {
 	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
 
-	auto buildToolchain = ICompileToolchain::make(m_state.environment->type(), m_state, inProject);
+	auto buildToolchain = std::make_unique<CompileToolchainController>(m_state, inProject);
 	auto outputs = m_state.paths.getOutputs(inProject, m_state.info.dumpAssembly());
 
 	if (!Commands::makeDirectories(outputs.directories, m_directoriesMade))

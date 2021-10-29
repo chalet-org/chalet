@@ -371,20 +371,6 @@
 					"type": "object",
 					"additionalProperties": false,
 					"description": "A list of compilers and tools needing for the build itself.",
-					"required": [
-						"archiver",
-						"cmake",
-						"compilerCpp",
-						"compilerC",
-						"compilerWindowsResource",
-						"linker",
-						"profiler",
-						"make",
-						"disassembler",
-						"ninja",
-						"strategy",
-						"version"
-					],
 					"properties": {
 						"version": {
 							"type": "string",

@@ -8,7 +8,7 @@
 
 #include "Compile/BuildPathStyle.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
-#include "Compile/Toolchain/ToolchainType.hpp"
+#include "Compile/ToolchainType.hpp"
 
 namespace chalet
 {

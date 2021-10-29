@@ -9,7 +9,6 @@
 #include "Compile/CompileCommandsGenerator.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
-#include "Compile/Toolchain/ICompileToolchain.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/SourceTarget.hpp"
 

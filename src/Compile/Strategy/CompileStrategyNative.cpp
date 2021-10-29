@@ -172,7 +172,7 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 						m_fileCache.emplace_back(std::move(pchCache));
 
 						const auto dependency = fmt::format("{}/{}.d", depDir, source);
-						auto command = m_toolchain->getPchCompileCommand(source, outObject, m_generateDependencies, dependency, arch);
+						auto command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, m_generateDependencies, dependency, arch);
 
 						CommandPool::Cmd out;
 						out.output = fmt::format("{} ({})", source, arch);
@@ -195,7 +195,7 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 					m_fileCache.emplace_back(std::move(pchCache));
 
 					const auto dependency = fmt::format("{}/{}.d", depDir, source);
-					auto command = m_toolchain->getPchCompileCommand(source, pchTarget, m_generateDependencies, dependency, std::string());
+					auto command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, m_generateDependencies, dependency, std::string());
 
 					CommandPool::Cmd out;
 					out.output = std::move(source);
@@ -306,7 +306,7 @@ CommandPool::Cmd CompileStrategyNative::getLinkCommand(const std::string& inTarg
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 
 	CommandPool::Cmd ret;
-	ret.command = m_toolchain->getLinkerTargetCommand(inTarget, inObjects, targetBasename);
+	ret.command = m_toolchain->getOutputTargetCommand(inTarget, inObjects, targetBasename);
 	ret.label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 	ret.output = inTarget;
 	// ret.symbol = Unicode::rightwardsTripleArrow();
@@ -324,7 +324,7 @@ StringList CompileStrategyNative::getCxxCompile(const std::string& source, const
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	ret = m_toolchain->getCxxCompileCommand(source, target, m_generateDependencies, dependency, specialization);
+	ret = m_toolchain->compilerCxx->getCommand(source, target, m_generateDependencies, dependency, specialization);
 
 	return ret;
 }

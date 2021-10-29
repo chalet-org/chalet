@@ -199,7 +199,7 @@ std::string NinjaGenerator::getPchRule()
 			{
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 
-				auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", outObject, m_generateDependencies, dependency, arch));
+				auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$in", outObject, m_generateDependencies, dependency, arch));
 				if (!pchCompile.empty())
 				{
 					String::replaceAll(pchCompile, outObject, "$out");
@@ -222,7 +222,7 @@ rule pch_{arch}_{hash}
 #endif
 		{
 			// Have to pass in object here because MSVC's PCH compile command is wack
-			auto pchCompile = String::join(m_toolchain->getPchCompileCommand("$in", object, m_generateDependencies, dependency, std::string()));
+			auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$in", object, m_generateDependencies, dependency, std::string()));
 			if (!pchCompile.empty())
 			{
 				String::replaceAll(pchCompile, object, "$out");
@@ -254,7 +254,7 @@ std::string NinjaGenerator::getRcRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 	const auto depFile = getDepFile(dependency);
 
-	const auto rcCompile = String::join(m_toolchain->getRcCompileCommand("$in", "$out", m_generateDependencies, dependency));
+	const auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand("$in", "$out", m_generateDependencies, dependency));
 	if (!rcCompile.empty())
 	{
 		ret = fmt::format(R"ninja(
@@ -286,7 +286,7 @@ std::string NinjaGenerator::getCRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 	const auto depFile = getDepFile(dependency);
 
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::C));
+	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::C));
 	if (!cppCompile.empty())
 	{
 		ret = fmt::format(R"ninja(
@@ -318,7 +318,7 @@ std::string NinjaGenerator::getCppRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 	const auto depFile = getDepFile(dependency);
 
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::CPlusPlus));
+	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::CPlusPlus));
 	if (!cppCompile.empty())
 	{
 		ret = fmt::format(R"ninja(
@@ -350,7 +350,7 @@ std::string NinjaGenerator::getObjcRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 	const auto depFile = getDepFile(dependency);
 
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveC));
+	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveC));
 	if (!cppCompile.empty())
 	{
 		ret = fmt::format(R"ninja(
@@ -382,7 +382,7 @@ std::string NinjaGenerator::getObjcppRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 	const auto depFile = getDepFile(dependency);
 
-	const auto cppCompile = String::join(m_toolchain->getCxxCompileCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveCPlusPlus));
+	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveCPlusPlus));
 	if (!cppCompile.empty())
 	{
 		ret = fmt::format(R"ninja(
@@ -409,7 +409,7 @@ std::string NinjaGenerator::getLinkRule()
 	std::string ret;
 
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
-	const auto linkerCommand = String::join(m_toolchain->getLinkerTargetCommand("$out", { "$in" }, targetBasename));
+	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand("$out", { "$in" }, targetBasename));
 
 	if (!linkerCommand.empty())
 	{

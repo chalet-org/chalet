@@ -38,19 +38,19 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 		switch (group.type)
 		{
 			case SourceType::CxxPrecompiledHeader:
-				return inToolchain->getPchCompileCommand(source, object, generateDeps, dep, std::string());
+				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, generateDeps, dep, std::string());
 
 			case SourceType::C:
-				return inToolchain->getCxxCompileCommand(source, object, generateDeps, dep, CxxSpecialization::C);
+				return inToolchain->compilerCxx->getCommand(source, object, generateDeps, dep, CxxSpecialization::C);
 
 			case SourceType::CPlusPlus:
-				return inToolchain->getCxxCompileCommand(source, object, generateDeps, dep, CxxSpecialization::CPlusPlus);
+				return inToolchain->compilerCxx->getCommand(source, object, generateDeps, dep, CxxSpecialization::CPlusPlus);
 
 			case SourceType::ObjectiveC:
-				return inToolchain->getCxxCompileCommand(source, object, generateDeps, dep, CxxSpecialization::ObjectiveC);
+				return inToolchain->compilerCxx->getCommand(source, object, generateDeps, dep, CxxSpecialization::ObjectiveC);
 
 			case SourceType::ObjectiveCPlusPlus:
-				return inToolchain->getCxxCompileCommand(source, object, generateDeps, dep, CxxSpecialization::ObjectiveCPlusPlus);
+				return inToolchain->compilerCxx->getCommand(source, object, generateDeps, dep, CxxSpecialization::ObjectiveCPlusPlus);
 
 			case SourceType::WindowsResource:
 			case SourceType::Unknown:

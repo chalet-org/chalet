@@ -8,7 +8,7 @@
 
 #include "Compile/CompilerInfo.hpp"
 #include "Compile/CompilerPathStructure.hpp"
-#include "Compile/Toolchain/ToolchainType.hpp"
+#include "Compile/ToolchainType.hpp"
 
 namespace chalet
 {

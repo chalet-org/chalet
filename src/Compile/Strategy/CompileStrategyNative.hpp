@@ -7,7 +7,6 @@
 #define CHALET_COMPILE_STRATEGY_NATIVE_HPP
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
-#include "Compile/Toolchain/ICompileToolchain.hpp"
 
 #include "Compile/CommandPool.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -41,7 +40,7 @@ private:
 	StringList m_fileCache;
 
 	const SourceTarget* m_project = nullptr;
-	ICompileToolchain* m_toolchain = nullptr;
+	CompileToolchainController* m_toolchain = nullptr;
 
 	HeapDictionary<CommandPool::Target> m_targets;
 

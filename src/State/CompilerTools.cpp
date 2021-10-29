@@ -273,12 +273,6 @@ const std::string& CompilerTools::archiver() const noexcept
 void CompilerTools::setArchiver(std::string&& inValue) noexcept
 {
 	m_archiver = std::move(inValue);
-
-	m_isArchiverLibTool = String::endsWith("libtool", m_archiver);
-}
-bool CompilerTools::isArchiverLibTool() const noexcept
-{
-	return m_isArchiverLibTool;
 }
 
 /*****************************************************************************/
@@ -453,9 +447,9 @@ void CompilerTools::setCompilerWindowsResource(std::string&& inValue) noexcept
 	m_compilerWindowsResource = std::move(inValue);
 
 #if defined(CHALET_WIN32)
-	m_isCompilerWindowsResourceLLVMRC = String::endsWith({ "llvm-rc.exe", "llvm-rc" }, m_compilerWindowsResource);
+	m_isCompilerWindowsResourceLLVMRC = String::endsWith({ "/llvm-rc.exe", "/llvm-rc" }, m_compilerWindowsResource);
 #else
-	m_isCompilerWindowsResourceLLVMRC = String::endsWith("llvm-rc", m_compilerWindowsResource);
+	m_isCompilerWindowsResourceLLVMRC = String::endsWith("/llvm-rc", m_compilerWindowsResource);
 #endif
 }
 bool CompilerTools::isCompilerWindowsResourceLLVMRC() const noexcept

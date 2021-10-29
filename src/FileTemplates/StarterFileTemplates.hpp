@@ -6,7 +6,7 @@
 #ifndef CHALET_STARTER_FILE_TEMPLATES_HPP
 #define CHALET_STARTER_FILE_TEMPLATES_HPP
 
-#include "Compile/Toolchain/CxxSpecialization.hpp"
+#include "Compile/CxxSpecialization.hpp"
 #include "Init/BuildJsonProps.hpp"
 #include "Libraries/Json.hpp"
 
