@@ -210,6 +210,8 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (!parser.validatePaths())
 		return false;
 
+	Output::setShowCommandOverride(false);
+
 	if (!m_impl->environment->verifyToolchain())
 	{
 		Diagnostic::error("Unimplemented or unknown compiler toolchain.");
@@ -217,6 +219,8 @@ bool BuildState::parseToolchainFromSettingsJson()
 	}
 
 	environment = m_impl->environment.get();
+
+	Output::setShowCommandOverride(true);
 
 	return true;
 }
