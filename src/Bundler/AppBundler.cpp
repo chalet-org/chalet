@@ -82,10 +82,11 @@ bool AppBundler::run(const DistTarget& inTarget)
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
 
 		if (!bundle.description().empty())
-		{
 			Output::msgTargetDescription(bundle.description(), Output::theme().header);
-			Output::lineBreak();
-		}
+		else
+			Output::msgBundle(bundle.name());
+
+		Output::lineBreak();
 
 		chalet_assert(!bundle.configuration().empty(), "State not initialized");
 
