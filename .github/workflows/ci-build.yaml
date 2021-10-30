@@ -41,7 +41,7 @@ jobs:
       - name: "Get GCC 10"
         run: |
           sudo apt update
-          sudo apt install gcc-10 g++-10 zip ninja-build
+          sudo apt install gcc-10 g++-10 zip ninja-build gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabi
       - name: "Fetch Dependencies"
         run: bash ./fetch_vendors.sh
         env:
@@ -50,20 +50,33 @@ jobs:
         run: bash ./build.sh Debug
       - name: "Color Test"
         run: build/Debug/chalet-debug colortest
-      - name: "Build: Release"
+      - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug --save-schema bundle
       - name: "Run: Tests"
         run: build/x86_64-linux-gnu_Release/chalet -c Release run tests_chalet
-      - name: "Zip binary"
+      - name: "Zip binary (x86_64)"
         uses: papeloto/action-zip@v1
         with:
-          files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
-          dest: dist/chalet-linux-ubuntu.zip
+          files: build/x86_64-linux-gnu_Release/chalet schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
+          dest: dist/chalet-x86_64-linux-gnu.zip
+      - name: "Upload assets (x86_64)"
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ./dist/chalet-x86_64-linux-gnu.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Build: Release (arm)"
+        run: build/x86_64-linux-gnu_Release/chalet -t arm-linux-gnueabihf-gcc build arm-linux-gnueabihf_Release
+      - name: "Zip binary (arm)"
+        uses: papeloto/action-zip@v1
+        with:
+          files: build/arm-linux-gnueabihf_Release/chalet schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
+          dest: dist/chalet-arm-linux-gnueabihf.zip
       - name: "Upload assets"
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ./dist/chalet-linux-ubuntu.zip
+          files: ./dist/chalet-arm-linux-gnueabihf.zip
           token: ${{ secrets.GITHUB_TOKEN }}
   MacOS:
     needs: Release
