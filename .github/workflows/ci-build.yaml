@@ -66,7 +66,7 @@ jobs:
           files: ./dist/chalet-x86_64-linux-gnu.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Release (arm)"
-        run: build/x86_64-linux-gnu_Release/chalet -t arm-linux-gnueabihf-gcc build arm-linux-gnueabihf_Release
+        run: build/x86_64-linux-gnu_Release/chalet -t arm-linux-gnueabihf-gcc build
       - name: "Zip binary (arm)"
         uses: papeloto/action-zip@v1
         with:
