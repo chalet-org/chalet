@@ -181,7 +181,7 @@
 	"distribution": {
 		"Chalet": {
 			"kind": "bundle",
-			// "subDirectory": "dist",
+			// "subdirectory": "dist",
 			"configuration": "Release",
 			"buildTargets": [
 				"chalet"

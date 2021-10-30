@@ -106,15 +106,15 @@ void BundleTarget::setWindowsBundle(BundleWindows&& inValue)
 }
 
 /*****************************************************************************/
-const std::string& BundleTarget::subDirectory() const noexcept
+const std::string& BundleTarget::subdirectory() const noexcept
 {
-	return m_subDirectory;
+	return m_subdirectory;
 }
 
-void BundleTarget::setSubDirectory(std::string&& inValue)
+void BundleTarget::setSubdirectory(std::string&& inValue)
 {
-	m_subDirectory = std::move(inValue);
-	Path::sanitize(m_subDirectory);
+	m_subdirectory = std::move(inValue);
+	Path::sanitize(m_subdirectory);
 }
 
 /*****************************************************************************/

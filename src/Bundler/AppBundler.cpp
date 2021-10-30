@@ -545,12 +545,12 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 bool AppBundler::removeOldFiles(IAppBundler& inBundler)
 {
 	const auto& bundle = inBundler.bundle();
-	const auto& subDirectory = bundle.subDirectory();
+	const auto& subdirectory = bundle.subdirectory();
 
-	if (!List::contains(m_removedDirs, subDirectory))
+	if (!List::contains(m_removedDirs, subdirectory))
 	{
-		Commands::removeRecursively(subDirectory);
-		m_removedDirs.push_back(subDirectory);
+		Commands::removeRecursively(subdirectory);
+		m_removedDirs.push_back(subdirectory);
 	}
 
 	if (!inBundler.removeOldFiles())
