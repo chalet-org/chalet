@@ -2,11 +2,6 @@
 	"$schema": "http://json-schema.org/draft-07/schema",
 	"type": "object",
 	"additionalProperties": false,
-	"required": [
-		"options",
-		"tools",
-		"toolchains"
-	],
 	"definitions": {
 		"theme-color": {
 			"type": "string",
@@ -216,21 +211,6 @@
 			"type": "object",
 			"additionalProperties": false,
 			"description": "A list of settings related to the build.",
-			"required": [
-				"dumpAssembly",
-				"maxJobs",
-				"showCommands",
-				"benchmark",
-				"configuration",
-				"toolchain",
-				"architecture",
-				"signingIdentity",
-				"inputFile",
-				"envFile",
-				"rootDir",
-				"outputDir",
-				"distributionDir"
-			],
 			"properties": {
 				"dumpAssembly": {
 					"type": "boolean",

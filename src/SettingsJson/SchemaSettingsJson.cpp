@@ -88,16 +88,17 @@ Json Schema::getSettingsJson()
 	const std::string kDefinitions{ "definitions" };
 	const std::string kProperties{ "properties" };
 	const std::string kOneOf{ "oneOf" };
+	const std::string kRequired{ "required" };
 
 	Json ret;
 	ret["$schema"] = "http://json-schema.org/draft-07/schema";
 	ret["type"] = "object";
 	ret["additionalProperties"] = false;
-	ret["required"] = {
+	/*ret[kRequired] = {
 		"options",
 		"tools",
 		"toolchains"
-	};
+	};*/
 
 	std::unordered_map<Defs, Json> defs;
 
@@ -484,7 +485,7 @@ Json Schema::getSettingsJson()
 		"additionalProperties": false,
 		"description": "A list of compilers and tools needing for the build itself."
 	})json"_ojson;
-	/*toolchains["required"] = {
+	/*toolchains[kRequired] = {
 		"archiver",
 		"cmake",
 		"compilerCpp",
@@ -561,23 +562,23 @@ Json Schema::getSettingsJson()
 	ret[kProperties][kKeyOptions] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A list of settings related to the build.",
-		"required": [
-			"dumpAssembly",
-			"maxJobs",
-			"showCommands",
-			"benchmark",
-			"configuration",
-			"toolchain",
-			"architecture",
-			"signingIdentity",
-			"inputFile",
-			"envFile",
-			"rootDir",
-			"outputDir",
-			"distributionDir"
-		]
+		"description": "A list of settings related to the build."
 	})json"_ojson;
+	/*ret[kProperties][kKeyOptions][kRequired] = {
+		"dumpAssembly",
+		"maxJobs",
+		"showCommands",
+		"benchmark",
+		"configuration",
+		"toolchain",
+		"architecture",
+		"signingIdentity",
+		"inputFile",
+		"envFile",
+		"rootDir",
+		"outputDir",
+		"distributionDir",
+	};*/
 	ret[kProperties][kKeyOptions][kProperties] = Json::object();
 	ret[kProperties][kKeyOptions][kProperties]["dumpAssembly"] = defs[Defs::DumpAssembly];
 	ret[kProperties][kKeyOptions][kProperties]["generateCompileCommands"] = defs[Defs::GenerateCompileCommands];
