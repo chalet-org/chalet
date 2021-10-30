@@ -39,5 +39,5 @@ pacman -S mingw-w64-x86_64-toolchain
 
 A compiler that supports C++17 is required.
 
-1. Install `git` and `cmake` from your package manager, as well as `libunwind-dev`
+1. Install `git` and `cmake` from your package manager
 2. Run `bash ./build_all.sh` from the project root

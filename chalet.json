@@ -70,9 +70,6 @@
 			"links": [
 				"stdc++fs"
 			],
-			"links.linux": [
-				"unwind"
-			],
 			"links.windows": [
 				"imagehlp"
 			]
