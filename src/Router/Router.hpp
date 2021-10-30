@@ -25,18 +25,18 @@ public:
 	bool run();
 
 private:
-	bool cmdConfigure();
-	bool cmdBundle(StatePrototype& inPrototype);
-	bool cmdInit();
-	bool cmdSettings(const Route inRoute);
-	bool cmdQuery();
-	bool cmdColorTest();
+	bool routeConfigure(BuildState& inState);
+	bool routeBundle(StatePrototype& inPrototype);
+	bool routeInit();
+	bool routeSettings(const Route inRoute);
+	bool routeQuery();
+	bool routeColorTest();
 
 	bool parseTheme();
-	bool xcodebuildRoute(BuildState& inState);
+	bool routeXcodeGenTest(BuildState& inState);
 
 #if defined(CHALET_DEBUG)
-	bool cmdDebug();
+	bool routeDebug();
 #endif
 
 	CommandLineInputs& m_inputs;

@@ -131,6 +131,8 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 
 	bool isPresetFromInput = m_inputs.isToolchainPreset();
 
+	m_ouptuttedDescription = true;
+
 	bool deltaExists = Commands::pathExists(m_varsFileIntelDelta);
 	if (!deltaExists)
 	{

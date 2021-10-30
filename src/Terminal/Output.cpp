@@ -470,10 +470,10 @@ void Output::msgRemovedUnusedDependency(const std::string& inDependencyName)
 }
 
 /*****************************************************************************/
-void Output::msgConfigureCompleted()
+void Output::msgConfigureCompleted(const std::string& inWorkspaceName)
 {
 	auto symbol = Unicode::checkmark();
-	displayStyledSymbol(state.theme.success, symbol, "Configured!");
+	displayStyledSymbol(state.theme.success, symbol, fmt::format("The '{}' workspace has been configured!", inWorkspaceName));
 }
 
 /*****************************************************************************/

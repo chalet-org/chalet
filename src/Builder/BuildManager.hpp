@@ -6,7 +6,6 @@
 #ifndef CHALET_MAKEFILE_RUNNER_HPP
 #define CHALET_MAKEFILE_RUNNER_HPP
 
-#include "Compile/AssemblyDumper.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Router/Route.hpp"
 #include "Utility/Timer.hpp"
@@ -17,7 +16,9 @@ class BuildState;
 struct SubChaletTarget;
 struct CMakeTarget;
 struct SourceTarget;
+struct AssemblyDumper;
 struct ScriptBuildTarget;
+struct CommandLineInputs;
 
 class BuildManager
 {
@@ -26,6 +27,8 @@ class BuildManager
 
 public:
 	explicit BuildManager(const CommandLineInputs& inInputs, BuildState& inState);
+	CHALET_DISALLOW_COPY_MOVE(BuildManager);
+	~BuildManager();
 
 	bool run(const Route inRoute, const bool inShowSuccess = true);
 
@@ -62,7 +65,7 @@ private:
 	StringList m_removeCache;
 
 	CompileStrategy m_strategy;
-	AssemblyDumper m_asmDumper;
+	Unique<AssemblyDumper> m_asmDumper;
 
 	Timer m_timer;
 

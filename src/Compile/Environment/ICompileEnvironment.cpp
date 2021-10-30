@@ -113,6 +113,12 @@ bool ICompileEnvironment::isCompilerFlagSupported(const std::string& inFlag) con
 }
 
 /*****************************************************************************/
+bool ICompileEnvironment::ouptuttedDescription() const noexcept
+{
+	return m_ouptuttedDescription;
+}
+
+/*****************************************************************************/
 // Protected/Private Town
 //
 ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :

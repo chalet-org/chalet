@@ -9,6 +9,7 @@
 #include "Builder/ProfilerRunner.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
+#include "Compile/AssemblyDumper.hpp"
 #include "Compile/CompileToolchainController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -48,10 +49,12 @@ BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inStat
 		{ Route::Rebuild, &BuildManager::cmdRebuild },
 		{ Route::Run, &BuildManager::cmdRun },
 		{ Route::Bundle, &BuildManager::cmdBuild },
-	}),
-	m_asmDumper(inInputs, inState)
+	})
 {
 }
+
+/*****************************************************************************/
+BuildManager::~BuildManager() = default;
 
 /*****************************************************************************/
 bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
@@ -79,11 +82,11 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		return false;
 	}
 
-	bool runCommand = inRoute == Route::Run;
+	bool runRoute = inRoute == Route::Run;
 	m_runTargetName = getRunTarget();
 
 	auto strategy = m_state.toolchain.strategy();
-	if (!runCommand)
+	if (!runRoute)
 	{
 		printBuildInformation();
 
@@ -95,9 +98,10 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	if (!m_strategy->initialize())
 		return false;
 
-	if (!runCommand)
+	if (!runRoute)
 	{
-		if (!m_asmDumper.validate())
+		m_asmDumper = std::make_unique<AssemblyDumper>(m_inputs, m_state);
+		if (!m_asmDumper->validate())
 			return false;
 
 		for (auto& target : m_state.targets)
@@ -139,7 +143,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	for (auto& target : m_state.targets)
 	{
 		auto& name = target->name();
-		if (runCommand || inRoute == Route::BuildRun)
+		if (runRoute || inRoute == Route::BuildRun)
 		{
 			if (m_runTargetName == name)
 			{
@@ -169,7 +173,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 					continue;
 				}
 			}
-			else if (runCommand)
+			else if (runRoute)
 				continue;
 		}
 
@@ -201,72 +205,66 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 			Output::lineBreak();
 		}
-		else
+		else if (!runRoute)
 		{
-			if (!runCommand)
+			Timer buildTimer;
+
+			if (!m_buildRoutes[inRoute](*this, static_cast<const SourceTarget&>(*target)))
 			{
-				Timer buildTimer;
-
-				if (!m_buildRoutes[inRoute](*this, static_cast<const SourceTarget&>(*target)))
-				{
-					error = true;
-					break;
-				}
-
-				Output::msgTargetUpToDate(multiTarget, name);
-				auto res = buildTimer.stop();
-				if (res > 0 && Output::showBenchmarks())
-				{
-					Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
-				}
-
-				Output::lineBreak();
+				error = true;
+				break;
 			}
+
+			Output::msgTargetUpToDate(multiTarget, name);
+			auto res = buildTimer.stop();
+			if (res > 0 && Output::showBenchmarks())
+			{
+				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+			}
+
+			Output::lineBreak();
 		}
 	}
 
 	if (error)
 	{
-		if (!runCommand)
+		if (!runRoute)
 		{
 			Output::msgBuildFail(); // TODO: Script failed
 			Output::lineBreak();
 		}
 		return false;
 	}
-	else
+	else if (!runRoute && inShowSuccess)
 	{
-		if (!runCommand && inShowSuccess)
+		if (!m_strategy->doPostBuild())
 		{
-			if (!m_strategy->doPostBuild())
+			Diagnostic::error("The post-build step encountered a problem.");
+			return false;
+		}
+
+		if (m_state.info.generateCompileCommands())
+		{
+			if (!m_strategy->saveCompileCommands())
 			{
 				Diagnostic::error("The post-build step encountered a problem.");
 				return false;
 			}
-
-			if (m_state.info.generateCompileCommands())
-			{
-				if (!m_strategy->saveCompileCommands())
-				{
-					Diagnostic::error("The post-build step encountered a problem.");
-					return false;
-				}
-			}
-
-			Output::msgBuildSuccess();
-
-			auto res = m_timer.stop();
-			if (res > 0 && Output::showBenchmarks())
-			{
-				Output::printInfo(fmt::format("   Total: {}", m_timer.asString()));
-			}
-
-			if (inRoute != Route::BuildRun)
-				Output::lineBreak();
 		}
+
+		Output::msgBuildSuccess();
+
+		auto res = m_timer.stop();
+		if (res > 0 && Output::showBenchmarks())
+		{
+			Output::printInfo(fmt::format("   Total: {}", m_timer.asString()));
+		}
+
+		if (inRoute != Route::BuildRun)
+			Output::lineBreak();
 	}
 
-	if ((inRoute == Route::BuildRun || runCommand))
+	if ((inRoute == Route::BuildRun || runRoute))
 	{
 		if (runTarget == nullptr)
 		{
@@ -282,7 +280,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				return false;
 			}
 
-			// if (runCommand)
+			// if (runRoute)
 			Output::lineBreak();
 
 			return cmdRun(project);
@@ -291,7 +289,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			auto& script = static_cast<const ScriptBuildTarget&>(*runTarget);
 
-			// if (runCommand)
+			// if (runRoute)
 			Output::lineBreak();
 
 			return runScriptTarget(script, true);
@@ -670,7 +668,8 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 
 	if (m_state.info.dumpAssembly())
 	{
-		if (!m_asmDumper.dumpProject(inProject.name(), m_strategy->getSourceOutput(inProject.name())))
+		chalet_assert(m_asmDumper != nullptr, "");
+		if (!m_asmDumper->dumpProject(inProject.name(), m_strategy->getSourceOutput(inProject.name())))
 			return false;
 	}
 
@@ -694,8 +693,9 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 
 	if (m_state.info.dumpAssembly())
 	{
+		chalet_assert(m_asmDumper != nullptr, "");
 		bool forced = true;
-		if (!m_asmDumper.dumpProject(inProject.name(), m_strategy->getSourceOutput(inProject.name()), forced))
+		if (!m_asmDumper->dumpProject(inProject.name(), m_strategy->getSourceOutput(inProject.name()), forced))
 			return false;
 	}
 

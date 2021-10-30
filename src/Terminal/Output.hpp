@@ -60,7 +60,7 @@ void msgFetchingDependency(const std::string& inGitUrl, const std::string& inBra
 void msgUpdatingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);
 void msgRemovedUnusedDependency(const std::string& inDependencyName);
 
-void msgConfigureCompleted();
+void msgConfigureCompleted(const std::string& inWorkspaceName);
 void msgBuildSuccess();
 void msgTargetUpToDate(const bool inMultiTarget, const std::string& inProjectName);
 void msgCommandPoolError(const std::string& inMessage);

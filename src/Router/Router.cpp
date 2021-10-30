@@ -9,11 +9,13 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/QueryController.hpp"
 #include "Process/Process.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -46,9 +48,9 @@ bool Router::run()
 
 	Route route = m_inputs.route();
 	if (route == Route::Query)
-		return cmdQuery();
+		return routeQuery();
 	else if (route == Route::ColorTest)
-		return cmdColorTest();
+		return routeColorTest();
 
 	if (route == Route::Unknown
 		|| static_cast<std::underlying_type_t<Route>>(route) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
@@ -103,7 +105,7 @@ bool Router::run()
 	if (m_inputs.generator() == IdeType::XCode)
 	{
 		chalet_assert(buildState != nullptr, "");
-		result = xcodebuildRoute(*buildState);
+		result = routeXcodeGenTest(*buildState);
 	}
 	else
 	{
@@ -111,23 +113,24 @@ bool Router::run()
 		{
 #if defined(CHALET_DEBUG)
 			case Route::Debug: {
-				result = cmdDebug();
+				result = routeDebug();
 				break;
 			}
 #endif
 			case Route::Bundle: {
 				chalet_assert(prototype != nullptr, "");
-				result = cmdBundle(*prototype);
+				result = routeBundle(*prototype);
 				break;
 			}
 
 			case Route::Configure: {
-				result = cmdConfigure();
+				chalet_assert(buildState != nullptr, "");
+				result = routeConfigure(*buildState);
 				break;
 			}
 
 			case Route::Init: {
-				result = cmdInit();
+				result = routeInit();
 				break;
 			}
 
@@ -135,7 +138,7 @@ bool Router::run()
 			case Route::SettingsSet:
 			case Route::SettingsUnset:
 			case Route::SettingsGetKeys: {
-				result = cmdSettings(route);
+				result = routeSettings(route);
 				break;
 			}
 
@@ -161,18 +164,27 @@ bool Router::run()
 }
 
 /*****************************************************************************/
-bool Router::cmdConfigure()
+bool Router::routeConfigure(BuildState& inState)
 {
 	// TODO: pass route to installDependencies & recheck them
-	Output::lineBreak();
-	Output::msgConfigureCompleted();
+
+	bool addLineBreak = false;
+	if (inState.environment != nullptr)
+	{
+		addLineBreak |= inState.environment->ouptuttedDescription();
+	}
+
+	if (addLineBreak)
+		Output::lineBreak();
+
+	Output::msgConfigureCompleted(inState.workspace.workspaceName());
 	Output::lineBreak();
 
 	return true;
 }
 
 /*****************************************************************************/
-bool Router::cmdBundle(StatePrototype& inPrototype)
+bool Router::routeBundle(StatePrototype& inPrototype)
 {
 	const auto& inputFile = m_inputs.inputFile();
 	if (inPrototype.requiredBuildConfigurations().size() == 0)
@@ -199,7 +211,7 @@ bool Router::cmdBundle(StatePrototype& inPrototype)
 }
 
 /*****************************************************************************/
-bool Router::cmdInit()
+bool Router::routeInit()
 {
 	ProjectInitializer initializer(m_inputs);
 	initializer.run();
@@ -208,7 +220,7 @@ bool Router::cmdInit()
 }
 
 /*****************************************************************************/
-bool Router::cmdSettings(const Route inRoute)
+bool Router::routeSettings(const Route inRoute)
 {
 	SettingsAction action = SettingsAction::Get;
 	switch (inRoute)
@@ -237,7 +249,7 @@ bool Router::cmdSettings(const Route inRoute)
 }
 
 /*****************************************************************************/
-bool Router::cmdQuery()
+bool Router::routeQuery()
 {
 	StatePrototype prototype(m_inputs);
 	if (!prototype.initializeForList())
@@ -248,7 +260,7 @@ bool Router::cmdQuery()
 }
 
 /*****************************************************************************/
-bool Router::cmdColorTest()
+bool Router::routeColorTest()
 {
 	ColorTest colorTest;
 	return colorTest.run();
@@ -265,7 +277,7 @@ bool Router::parseTheme()
 }
 
 /*****************************************************************************/
-bool Router::xcodebuildRoute(BuildState& inState)
+bool Router::routeXcodeGenTest(BuildState& inState)
 {
 #if defined(CHALET_MACOS)
 	// Generate an XcodeGen spec in json based on the build state
@@ -286,9 +298,9 @@ bool Router::xcodebuildRoute(BuildState& inState)
 
 /*****************************************************************************/
 #if defined(CHALET_DEBUG)
-bool Router::cmdDebug()
+bool Router::routeDebug()
 {
-	LOG("Router::cmdDebug()");
+	LOG("Router::routeDebug()");
 
 	return true;
 }

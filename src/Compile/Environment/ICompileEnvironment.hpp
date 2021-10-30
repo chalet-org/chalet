@@ -38,6 +38,8 @@ struct ICompileEnvironment
 	const std::string& detectedVersion() const;
 	bool isCompilerFlagSupported(const std::string& inFlag) const;
 
+	bool ouptuttedDescription() const noexcept;
+
 protected:
 	friend class BuildState;
 	friend struct CompilerTools;
@@ -80,6 +82,8 @@ protected:
 	std::string m_path;
 
 	const ToolchainType m_type;
+
+	bool m_ouptuttedDescription = false;
 
 private:
 	std::string m_identifier;

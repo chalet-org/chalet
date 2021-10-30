@@ -377,12 +377,12 @@ void ColorTheme::makePreset(const std::string& inValue)
 		info = Color::Reset;
 		error = Color::BrightRedBold;
 		warning = Color::YellowBold;
-		success = Color::BrightBlueBold;
+		success = Color::BrightYellowBold;
 		note = Color::BrightBlackBold;
 		flair = Color::BrightBlueDim;
 		header = Color::BrightWhiteBold;
-		build = Color::BrightYellow;
-		assembly = Color::BrightCyan;
+		build = Color::BrightCyan;
+		assembly = Color::BrightBlue;
 	}
 	// temple
 	else if (String::equals(state.presetNames.at(++i), inValue))
@@ -406,9 +406,9 @@ void ColorTheme::makePreset(const std::string& inValue)
 		success = Color::BrightGreenBold;
 		note = Color::BrightCyanBold;
 		flair = Color::BrightBlack;
-		header = Color::BrightMagentaBold;
-		build = Color::BrightYellow;
-		assembly = Color::BrightBlue;
+		header = Color::YellowBold;
+		build = Color::Cyan;
+		assembly = Color::BrightRed;
 	}
 	// cottage
 	else if (String::equals(state.presetNames.at(++i), inValue))
@@ -420,7 +420,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 		note = Color::BrightBlueBold;
 		flair = Color::BrightBlack;
 		header = Color::BrightRedBold;
-		build = Color::Yellow;
+		build = Color::BrightYellow;
 		assembly = Color::BrightWhite;
 	}
 	// monastery

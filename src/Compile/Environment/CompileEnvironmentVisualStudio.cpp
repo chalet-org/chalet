@@ -143,6 +143,8 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 		return Commands::subprocessOutput(vswhereCmd);
 	};
 
+	m_ouptuttedDescription = true;
+
 	bool deltaExists = Commands::pathExists(m_varsFileMsvcDelta);
 	if (!deltaExists)
 	{
