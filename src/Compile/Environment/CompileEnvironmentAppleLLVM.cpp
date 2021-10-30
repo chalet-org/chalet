@@ -26,7 +26,7 @@ std::string CompileEnvironmentAppleLLVM::getIdentifier() const noexcept
 /*****************************************************************************/
 std::string CompileEnvironmentAppleLLVM::getFullCxxCompilerString(const std::string& inVersion) const
 {
-	return fmt::format("Apple Clang C/C++ version {}", inVersion);
+	return fmt::format("Apple Clang version {}", inVersion);
 }
 
 /*****************************************************************************/

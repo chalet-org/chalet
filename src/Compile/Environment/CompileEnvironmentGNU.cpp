@@ -40,7 +40,7 @@ StringList CompileEnvironmentGNU::getVersionCommand(const std::string& inExecuta
 /*****************************************************************************/
 std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& inVersion) const
 {
-	return fmt::format("GNU Compiler Collection C/C++ version {}", inVersion);
+	return fmt::format("GNU Compiler Collection version {}", inVersion);
 }
 
 /*****************************************************************************/
