@@ -218,6 +218,8 @@ void Diagnostic::printErrors()
 
 	StringList warnings;
 	StringList errors;
+	std::reverse(state.errorList.begin(), state.errorList.end());
+
 	for (auto& err : state.errorList)
 	{
 		if (err.message.empty())
