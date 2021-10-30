@@ -267,13 +267,11 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 
 	if (!settingsJson.json.contains(kKeyOptions))
 	{
-		LOG("no options");
 		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyOptions);
 		return false;
 	}
 	if (!settingsJson.json.contains(kKeyToolchains))
 	{
-		LOG("no toolchains");
 		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
 		return false;
 	}
@@ -281,7 +279,6 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 	auto& toolchains = settingsJson.json.at(kKeyToolchains);
 	if (!toolchains.contains(preference))
 	{
-		LOG("no", preference);
 		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
 		return false;
 	}

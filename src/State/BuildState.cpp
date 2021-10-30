@@ -233,22 +233,25 @@ bool BuildState::initializeToolchain()
 {
 	Timer timer;
 
-	bool result = m_impl->environment->makeArchitectureAdjustments();
-	result &= toolchain.initialize(*m_impl->environment);
-
-	if (!result)
-	{
+	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
 			  m_impl->inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
+			Output::lineBreak();
 			auto& toolchainName = m_impl->inputs.toolchainPreferenceName();
 			Diagnostic::error("Requested arch '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
 		}
 		return false;
-	}
+	};
+
+	if (!m_impl->environment->makeArchitectureAdjustments())
+		return onError();
+
+	if (!toolchain.initialize(*m_impl->environment))
+		return onError();
 
 	if (!cache.updateSettingsFromToolchain(m_impl->inputs, toolchain))
 		return false;

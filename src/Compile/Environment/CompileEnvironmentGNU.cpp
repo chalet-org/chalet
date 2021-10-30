@@ -229,7 +229,8 @@ bool CompileEnvironmentGNU::makeArchitectureAdjustments()
 	const auto& archTriple = m_state.info.targetArchitectureTriple();
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 
-	if (m_inputs.targetArchitecture().empty() || !String::contains('-', archTriple))
+	bool emptyInputArch = m_inputs.targetArchitecture().empty();
+	if (emptyInputArch || !String::contains('-', archTriple))
 	{
 		auto& sourceCache = m_state.cache.file().sources();
 		std::string cachedArch;
@@ -244,6 +245,14 @@ bool CompileEnvironmentGNU::makeArchitectureAdjustments()
 				cachedArch = cachedArch.substr(0, darwin + 12);
 			}
 #endif
+		}
+
+		if (!String::startsWith(m_state.info.targetArchitectureString(), cachedArch))
+		{
+			Arch expectedArch;
+			expectedArch.set(cachedArch);
+			Diagnostic::error("Expected: '{}' or '{}'", cachedArch, expectedArch.str);
+			return false;
 		}
 
 		m_state.info.setTargetArchitecture(cachedArch);
