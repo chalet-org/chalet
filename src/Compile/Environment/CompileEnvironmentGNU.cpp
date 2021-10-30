@@ -247,7 +247,7 @@ bool CompileEnvironmentGNU::makeArchitectureAdjustments()
 #endif
 		}
 
-		if (!String::startsWith(m_state.info.targetArchitectureString(), cachedArch))
+		if (!emptyInputArch && !String::startsWith(m_state.info.targetArchitectureString(), cachedArch))
 		{
 			Arch expectedArch;
 			expectedArch.set(cachedArch);
