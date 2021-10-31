@@ -831,10 +831,14 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		if (hasGccSuffix)
 			prefix = inValue.substr(0, inValue.find_last_of('-') + 1);
 
+#if defined(CHALET_WIN32)
+		ret.type = ToolchainType::MingwGNU;
+#else
 		if (String::contains("mingw", inValue))
 			ret.type = ToolchainType::MingwGNU;
 		else
 			ret.type = ToolchainType::GNU;
+#endif
 
 		ret.strategy = StrategyType::Ninja;
 		if (hasGccPrefixAndSuffix)
