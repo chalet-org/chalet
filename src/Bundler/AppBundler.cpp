@@ -34,7 +34,7 @@ AppBundler::AppBundler(const CommandLineInputs& inInputs, StatePrototype& inProt
 bool AppBundler::runBuilds()
 {
 	// Build all required configurations
-	m_detectedArch = m_inputs.targetArchitecture().empty() ? m_inputs.hostArchitecture() : m_inputs.targetArchitecture();
+	m_detectedArch = m_inputs.targetArchitecture().empty() ? "auto" : m_inputs.targetArchitecture();
 
 	auto makeState = [&](std::string arch, const std::string& inConfig) {
 		auto configName = fmt::format("{}_{}", arch, inConfig);
