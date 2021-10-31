@@ -273,7 +273,16 @@ bool ICompileEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 		if (!String::endsWith(binDir, lowercasePath))
 			continue;
 
-		path = path.substr(0, path.size() - binDir.size());
+		auto tmp = path.substr(0, path.size() - binDir.size());
+
+		{
+			std::string tmpLib = fmt::format("{}{}", tmp, libDir);
+			std::string tmpInclude = fmt::format("{}{}", tmp, includeDir);
+			if (!Commands::pathExists(tmpLib) || !Commands::pathExists(tmpInclude))
+				continue;
+		}
+
+		path = std::move(tmp);
 
 #if defined(CHALET_MACOS)
 		const auto& xcodePath = Commands::getXcodePath();
@@ -283,12 +292,6 @@ bool ICompileEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 		outInfo.binDir = path + binDir;
 		outInfo.libDir = path + libDir;
 		outInfo.includeDir = path + includeDir;
-
-		if (!Commands::pathExists(outInfo.libDir) || !Commands::pathExists(outInfo.includeDir))
-		{
-			path = String::getPathFolder(outInfo.path);
-			continue;
-		}
 
 		return true;
 	}
