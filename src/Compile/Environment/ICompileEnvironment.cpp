@@ -284,6 +284,12 @@ bool ICompileEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 		outInfo.libDir = path + libDir;
 		outInfo.includeDir = path + includeDir;
 
+		if (!Commands::pathExists(outInfo.libDir) || !Commands::pathExists(outInfo.includeDir))
+		{
+			path = String::getPathFolder(outInfo.path);
+			continue;
+		}
+
 		return true;
 	}
 
