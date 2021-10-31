@@ -247,8 +247,8 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 	CHALET_CATCH(const std::runtime_error& err)
 	{
 		// LOG(err.what());
-		showHelp();
-		CHALET_EXCEPT_ERROR("{}", err.what());
+		// showHelp();
+		CHALET_EXCEPT_ERROR("There was error during argument parsing: {}", err.what());
 		return false;
 	}
 	CHALET_CATCH(const std::exception& err)
