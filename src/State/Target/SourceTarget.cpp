@@ -835,6 +835,11 @@ void SourceTarget::parseOutputFilename() noexcept
 	std::string executableExtension;
 	std::string libraryExtension{ ".so" };
 #endif
+	if (executableExtension.empty() && m_state.environment->isMingw())
+	{
+		executableExtension = ".exe";
+		libraryExtension = ".dll";
+	}
 
 	if (staticLib)
 	{
