@@ -14,6 +14,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 
 namespace chalet
@@ -160,7 +161,9 @@ void LinkerGNULD::addLibDirs(StringList& outArgList) const
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	// must be last
-	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/usr/local/lib/"));
+	std::string localLib{ "/usr/local/lib/" };
+	if (Commands::pathExists(localLib))
+		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, localLib));
 #endif
 }
 
@@ -409,7 +412,9 @@ void LinkerGNULD::addCompilerSearchPaths(StringList& outArgList) const
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	// must be last
-	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/usr/local/lib/"));
+	std::string localLib{ "/usr/local/lib/" };
+	if (Commands::pathExists(localLib))
+		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, localLib));
 #endif
 }
 

@@ -256,7 +256,9 @@ void CompilerCxxGCC::addIncludes(StringList& outArgList) const
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	// must be last
-	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/usr/local/include/"));
+	std::string localInclude{ "/usr/local/include/" };
+	if (Commands::pathExists(localInclude))
+		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, localInclude));
 #endif
 }
 
