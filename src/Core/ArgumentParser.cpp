@@ -248,10 +248,19 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 		m_inputs.setSettingsFile(std::move(settingsFile));
 
 	m_inputs.setBuildConfiguration(std::move(buildConfiguration));
-	m_inputs.setArchitectureRaw(std::move(architecturePreference));
 
-	// must do at the end (after arch & toolchain have been parsed)
-	m_inputs.setToolchainPreference(std::move(toolchainPreference));
+	if (!toolchainPreference.empty() && architecturePreference.empty())
+	{
+		m_inputs.setArchitectureRaw("auto");
+		m_inputs.setToolchainPreference(std::move(toolchainPreference));
+	}
+	else
+	{
+		m_inputs.setArchitectureRaw(std::move(architecturePreference));
+
+		// must do at the end (after arch & toolchain have been parsed)
+		m_inputs.setToolchainPreference(std::move(toolchainPreference));
+	}
 
 	if (route == Route::Query)
 	{

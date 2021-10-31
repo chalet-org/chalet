@@ -32,9 +32,7 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				// "--generator=vscode",
-				"-c",
-				"Release",
-				"build"
+				"bundle"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",

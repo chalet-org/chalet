@@ -106,8 +106,8 @@
 				"mainExecutable": {
 					"$ref": "#/definitions/distribution-target-mainExecutable"
 				},
-				"subDirectory": {
-					"$ref": "#/definitions/distribution-target-subDirectory"
+				"subdirectory": {
+					"$ref": "#/definitions/distribution-target-subdirectory"
 				}
 			},
 			"patternProperties": {
@@ -273,7 +273,7 @@
 			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'targets' array of the distribution target will be chosen as the main executable.",
 			"minLength": 1
 		},
-		"distribution-target-subDirectory": {
+		"distribution-target-subdirectory": {
 			"type": "string",
 			"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
 			"minLength": 1,

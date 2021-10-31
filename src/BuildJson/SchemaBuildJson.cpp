@@ -1126,7 +1126,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distDef[kProperties]["macos"] = getDefinition(Defs::DistributionTargetMacOS);
 		distDef[kProperties]["windows"] = getDefinition(Defs::DistributionTargetWindows);
 		distDef[kProperties]["mainExecutable"] = getDefinition(Defs::DistributionTargetMainExecutable);
-		distDef[kProperties]["subDirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
+		distDef[kProperties]["subdirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
 		distDef[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
 		distDef[kPatternProperties][fmt::format("^include{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
 		distDef[kPatternProperties][fmt::format("^exclude{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
@@ -1371,7 +1371,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTargetLinux: return "distribution-target-linux";
 		case Defs::DistributionTargetMacOS: return "distribution-target-macos";
 		case Defs::DistributionTargetMainExecutable: return "distribution-target-mainExecutable";
-		case Defs::DistributionTargetOutputDirectory: return "distribution-target-subDirectory";
+		case Defs::DistributionTargetOutputDirectory: return "distribution-target-subdirectory";
 		case Defs::DistributionTargetBuildTargets: return "distribution-target-targets";
 		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//

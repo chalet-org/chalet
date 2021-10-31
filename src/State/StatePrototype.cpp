@@ -221,8 +221,8 @@ bool StatePrototype::validateBundleDestinations()
 
 			if (!distributionDirectory.empty())
 			{
-				auto& subDirectory = bundle.subDirectory();
-				bundle.setSubDirectory(fmt::format("{}/{}", distributionDirectory, subDirectory));
+				auto& subdirectory = bundle.subdirectory();
+				bundle.setSubdirectory(fmt::format("{}/{}", distributionDirectory, subdirectory));
 			}
 
 			for (auto& targetName : bundle.buildTargets())
@@ -230,19 +230,19 @@ bool StatePrototype::validateBundleDestinations()
 				auto res = locations.find(targetName);
 				if (res != locations.end())
 				{
-					if (res->second == bundle.subDirectory())
+					if (res->second == bundle.subdirectory())
 					{
-						Diagnostic::error("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", targetName, bundle.subDirectory(), bundle.name());
+						Diagnostic::error("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", targetName, bundle.subdirectory(), bundle.name());
 						result = false;
 					}
 					else
 					{
-						locations.emplace(targetName, bundle.subDirectory());
+						locations.emplace(targetName, bundle.subdirectory());
 					}
 				}
 				else
 				{
-					locations.emplace(targetName, bundle.subDirectory());
+					locations.emplace(targetName, bundle.subdirectory());
 				}
 			}
 		}

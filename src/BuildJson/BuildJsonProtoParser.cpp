@@ -280,8 +280,8 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
 		outTarget.setDescription(std::move(val));
 
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "subDirectory"))
-		outTarget.setSubDirectory(std::move(val));
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "subdirectory"))
+		outTarget.setSubdirectory(std::move(val));
 
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "mainExecutable"))
 		outTarget.setMainExecutable(std::move(val));

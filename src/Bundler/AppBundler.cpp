@@ -34,7 +34,7 @@ AppBundler::AppBundler(const CommandLineInputs& inInputs, StatePrototype& inProt
 bool AppBundler::runBuilds()
 {
 	// Build all required configurations
-	m_detectedArch = m_inputs.targetArchitecture().empty() ? m_inputs.hostArchitecture() : m_inputs.targetArchitecture();
+	m_detectedArch = m_inputs.targetArchitecture().empty() ? "auto" : m_inputs.targetArchitecture();
 
 	auto makeState = [&](std::string arch, const std::string& inConfig) {
 		auto configName = fmt::format("{}_{}", arch, inConfig);
@@ -82,10 +82,11 @@ bool AppBundler::run(const DistTarget& inTarget)
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
 
 		if (!bundle.description().empty())
-		{
 			Output::msgTargetDescription(bundle.description(), Output::theme().header);
-			Output::lineBreak();
-		}
+		else
+			Output::msgBundle(bundle.name());
+
+		Output::lineBreak();
 
 		chalet_assert(!bundle.configuration().empty(), "State not initialized");
 
@@ -544,12 +545,12 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 bool AppBundler::removeOldFiles(IAppBundler& inBundler)
 {
 	const auto& bundle = inBundler.bundle();
-	const auto& subDirectory = bundle.subDirectory();
+	const auto& subdirectory = bundle.subdirectory();
 
-	if (!List::contains(m_removedDirs, subDirectory))
+	if (!List::contains(m_removedDirs, subdirectory))
 	{
-		Commands::removeRecursively(subDirectory);
-		m_removedDirs.push_back(subDirectory);
+		Commands::removeRecursively(subdirectory);
+		m_removedDirs.push_back(subdirectory);
 	}
 
 	if (!inBundler.removeOldFiles())
