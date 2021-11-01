@@ -31,4 +31,36 @@ bool BuildJsonParser::parseKeyFromConfig(T& outVariable, const Json& inNode, con
 
 	return res;
 }
+
+/*****************************************************************************/
+template <typename T>
+bool BuildJsonParser::parseKeyWithToolchain(T& outVariable, const Json& inNode, const std::string& inKey) const
+{
+	chalet_assert(m_state.environment != nullptr, "");
+
+	if (parseKeyFromConfig(outVariable, inNode, inKey))
+	{
+		return true;
+	}
+	else if (inNode.contains(inKey))
+	{
+		auto& innerNode = inNode.at(inKey);
+		if (innerNode.is_object())
+		{
+			const auto& triple = m_state.info.targetArchitectureTriple();
+			const auto& toolchainName = m_inputs.toolchainPreferenceName();
+
+			bool res = parseKeyFromConfig(outVariable, innerNode, "*");
+
+			if (triple != toolchainName)
+				res |= parseKeyFromConfig(outVariable, innerNode, triple);
+
+			res |= parseKeyFromConfig(outVariable, innerNode, toolchainName);
+
+			return res;
+		}
+	}
+
+	return false;
+}
 }

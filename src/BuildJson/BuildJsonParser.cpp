@@ -4,7 +4,6 @@
 */
 
 // Note: mind the order
-#include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "Json/JsonFile.hpp"
 //
@@ -219,7 +218,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 			return false;
 		}
 
-		std::string extends{ "all" };
+		std::string extends{ "*" };
 		if (targetJson.is_object())
 		{
 			m_chaletJson.assignFromKey(extends, targetJson, "extends");
@@ -249,7 +248,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		}
 		else
 		{
-			if (type == BuildTargetType::Project && !String::equals("all", extends))
+			if (type == BuildTargetType::Project && !String::equals('*', extends))
 			{
 				Diagnostic::error("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name);
 				return false;
@@ -320,13 +319,13 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 	if (!parseFilesAndLocation(outTarget, inNode, inAbstract))
 		return false;
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "runArguments"))
+	if (StringList list; parseStringListFromConfig(list, inNode, "runArguments"))
 		outTarget.addRunArguments(std::move(list));
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "runTarget"))
 		outTarget.setRunTarget(val);
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "runDependencies"))
+	if (StringList list; parseStringListFromConfig(list, inNode, "runDependencies"))
 		outTarget.addRunDependencies(std::move(list));
 
 	{
@@ -373,7 +372,7 @@ bool BuildJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json
 
 	const std::string key{ "script" };
 
-	if (StringList list; assignStringListFromConfig(list, inNode, key))
+	if (StringList list; parseStringListFromConfig(list, inNode, key))
 		outTarget.addScripts(std::move(list));
 	else if (std::string val; parseKeyFromConfig(val, inNode, key))
 		outTarget.addScript(std::move(val));
@@ -383,7 +382,7 @@ bool BuildJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json
 	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
 		outTarget.setDescription(std::move(val));
 
-	// if (StringList list; assignStringListFromConfig(list, inNode, "runArguments"))
+	// if (StringList list; parseStringListFromConfig(list, inNode, "runArguments"))
 	// 	outTarget.addRunArguments(std::move(list));
 
 	if (bool val = false; parseKeyFromConfig(val, inNode, "runTarget"))
@@ -503,15 +502,15 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 	if (std::string val; parseKeyFromConfig(val, inNode, "cStandard"))
 		outTarget.setCStandard(std::move(val));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "warnings"))
-		outTarget.addWarnings(std::move(list));
-	else if (std::string val; parseKeyFromConfig(val, inNode, "warnings"))
+	if (std::string val; parseKeyFromConfig(val, inNode, "warnings"))
 		outTarget.setWarningPreset(std::move(val));
+	else if (StringList list; parseStringListWithToolchain(list, inNode, "warnings"))
+		outTarget.addWarnings(std::move(list));
 
-	if (std::string val; parseToolchainOptionsFromKey(val, inNode, "compileOptions"))
+	if (std::string val; parseKeyWithToolchain(val, inNode, "compileOptions"))
 		outTarget.addCompileOptions(std::move(val));
 
-	if (std::string val; parseToolchainOptionsFromKey(val, inNode, "linkerOptions"))
+	if (std::string val; parseKeyWithToolchain(val, inNode, "linkerOptions"))
 		outTarget.addLinkerOptions(std::move(val));
 
 	if (std::string val; parseKeyFromConfig(val, inNode, "linkerScript"))
@@ -525,45 +524,50 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 		outTarget.addMacosFrameworks(std::move(list));
 #endif
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "defines"))
+	if (StringList list; parseStringListWithToolchain(list, inNode, "defines"))
 		outTarget.addDefines(std::move(list));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "links"))
+	if (StringList list; parseStringListWithToolchain(list, inNode, "links"))
 		outTarget.addLinks(std::move(list));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "staticLinks"))
+	if (StringList list; parseStringListWithToolchain(list, inNode, "staticLinks"))
 		outTarget.addStaticLinks(std::move(list));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "libDirs"))
+	if (StringList list; parseStringListWithToolchain(list, inNode, "libDirs"))
 		outTarget.addLibDirs(std::move(list));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "includeDirs"))
+	if (StringList list; parseStringListWithToolchain(list, inNode, "includeDirs"))
 		outTarget.addIncludeDirs(std::move(list));
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseToolchainOptionsFromKey(std::string& outVariable, const Json& inNode, const std::string& inKey) const
+bool BuildJsonParser::parseStringListWithToolchain(StringList& outList, const Json& inNode, const std::string& inKey) const
 {
 	chalet_assert(m_state.environment != nullptr, "");
 
-	if (!inNode.contains(inKey))
-		return false;
-
-	const auto& id = m_state.environment->identifier();
-	auto& options = inNode.at(inKey);
-
-	if (parseKeyFromConfig(outVariable, options, id))
+	if (parseStringListFromConfig(outList, inNode, inKey))
+	{
 		return true;
-
-	if (String::endsWith("llvm", id))
-	{
-		return parseKeyFromConfig(outVariable, options, "llvm");
 	}
-	else if (String::equals("mingw", id))
+	else if (inNode.contains(inKey))
 	{
-		return parseKeyFromConfig(outVariable, options, "gcc");
+		auto& innerNode = inNode.at(inKey);
+		if (innerNode.is_object())
+		{
+			const auto& triple = m_state.info.targetArchitectureTriple();
+			const auto& toolchainName = m_inputs.toolchainPreferenceName();
+
+			bool res = parseStringListFromConfig(outList, innerNode, "*");
+
+			if (triple != toolchainName)
+				res |= parseStringListFromConfig(outList, innerNode, triple);
+
+			res |= parseStringListFromConfig(outList, innerNode, toolchainName);
+
+			return res;
+		}
 	}
 
 	return false;
@@ -599,7 +603,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outTarget, const
 	{
 		if (hasFiles)
 		{
-			if (StringList list; assignStringListFromConfig(list, inNode, "files"))
+			if (StringList list; parseStringListFromConfig(list, inNode, "files"))
 				outTarget.addFiles(std::move(list));
 
 			return true;
@@ -621,7 +625,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outTarget, const
 	if (node.is_object())
 	{
 		// include is mandatory
-		if (StringList list; assignStringListFromConfig(list, node, "include"))
+		if (StringList list; parseStringListFromConfig(list, node, "include"))
 			outTarget.addLocations(std::move(list));
 		else if (std::string val; parseKeyFromConfig(val, node, "include"))
 			outTarget.addLocation(std::move(val));
@@ -629,7 +633,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outTarget, const
 			return false;
 
 		// exclude is optional
-		if (StringList list; assignStringListFromConfig(list, node, "exclude"))
+		if (StringList list; parseStringListFromConfig(list, node, "exclude"))
 			outTarget.addLocationExcludes(std::move(list));
 		else if (std::string val; parseKeyFromConfig(val, node, "exclude"))
 			outTarget.addLocationExclude(std::move(val));
@@ -646,7 +650,7 @@ bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outTarget, const
 
 /*****************************************************************************/
 /*****************************************************************************/
-bool BuildJsonParser::assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const
+bool BuildJsonParser::parseStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const
 {
 	bool res = m_chaletJson.assignStringListAndValidate(outList, inNode, inKey);
 

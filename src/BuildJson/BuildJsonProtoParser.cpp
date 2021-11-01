@@ -98,7 +98,7 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode) const
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "version"))
 		m_prototype.workspace.setVersion(std::move(val));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "searchPaths"))
+	if (StringList list; parseStringListFromConfig(list, inNode, "searchPaths"))
 		m_prototype.workspace.addSearchPaths(std::move(list));
 
 	return true;
@@ -252,7 +252,7 @@ bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, 
 
 	const std::string key{ "script" };
 
-	if (StringList list; assignStringListFromConfig(list, inNode, key))
+	if (StringList list; parseStringListFromConfig(list, inNode, key))
 		outTarget.addScripts(std::move(list));
 	else if (std::string val; parseKeyFromConfig(val, inNode, key))
 		outTarget.addScript(std::move(val));
@@ -289,13 +289,13 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 	if (bool val; parseKeyFromConfig(val, inNode, "includeDependentSharedLibraries"))
 		outTarget.setIncludeDependentSharedLibraries(val);
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "buildTargets"))
+	if (StringList list; parseStringListFromConfig(list, inNode, "buildTargets"))
 		outTarget.addBuildTargets(std::move(list));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "include"))
+	if (StringList list; parseStringListFromConfig(list, inNode, "include"))
 		outTarget.addIncludes(std::move(list));
 
-	if (StringList list; assignStringListFromConfig(list, inNode, "exclude"))
+	if (StringList list; parseStringListFromConfig(list, inNode, "exclude"))
 		outTarget.addExcludes(std::move(list));
 
 #if defined(CHALET_LINUX)
@@ -531,7 +531,7 @@ bool BuildJsonProtoParser::parseTargetCondition(const Json& inNode) const
 
 /*****************************************************************************/
 /*****************************************************************************/
-bool BuildJsonProtoParser::assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const
+bool BuildJsonProtoParser::parseStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const
 {
 	bool res = m_chaletJson.assignStringListAndValidate(outList, inNode, inKey);
 

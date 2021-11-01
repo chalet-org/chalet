@@ -50,7 +50,7 @@ private:
 	template <typename T>
 	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey) const;
 
-	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const;
+	bool parseStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const;
 
 	bool conditionIsValid(const std::string& inContent) const;
 

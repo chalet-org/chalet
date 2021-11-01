@@ -45,7 +45,7 @@
 		"RelStable",
 		"Profile"
 	],*/
-	"abstracts:all": {
+	"abstracts:*": {
 		"language": "C++",
 		// "runDependencies": [],
 		"settings:Cxx": {

@@ -35,7 +35,7 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	const std::string langStandardKey = cpp ? "cppStandard" : "cStandard";
 	const std::string project = inProps.projectName;
 
-	const std::string kAbstractsAll = "abstracts:all";
+	const std::string kAbstractsAll = "abstracts:*";
 	const std::string kSettingsCxx = "settings:Cxx";
 	const std::string kTargets = "targets";
 	const std::string kDistribution = "distribution";
