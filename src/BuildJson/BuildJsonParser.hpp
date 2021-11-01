@@ -6,15 +6,17 @@
 #ifndef CHALET_BUILD_JSON_PARSER_HPP
 #define CHALET_BUILD_JSON_PARSER_HPP
 
+#include "Core/CommandLineInputs.hpp"
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
+#include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
 {
 struct BundleTarget;
-struct CommandLineInputs;
 struct CMakeTarget;
 struct SourceTarget;
 struct ScriptBuildTarget;
@@ -42,7 +44,6 @@ private:
 	bool parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode) const;
 	bool parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract) const;
 	bool parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode) const;
-	bool parseToolchainOptionsFromKey(std::string& outVariable, const Json& inNode, const std::string& inKey) const;
 
 	bool validBuildRequested() const;
 	bool validRunTargetRequested() const;
@@ -51,7 +52,11 @@ private:
 	template <typename T>
 	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey) const;
 
-	bool assignStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const;
+	template <typename T>
+	bool parseKeyWithToolchain(T& outVariable, const Json& inNode, const std::string& inKey) const;
+
+	bool parseStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const;
+	bool parseStringListWithToolchain(StringList& outList, const Json& inNode, const std::string& inKey) const;
 
 	bool containsComplexKey(const Json& inNode, const std::string& inKey) const;
 

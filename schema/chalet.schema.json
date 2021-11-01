@@ -111,13 +111,13 @@
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^include(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^include(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/distribution-target-include"
 				},
-				"^exclude(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^exclude(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/distribution-target-exclude"
 				}
 			}
@@ -207,7 +207,7 @@
 					"properties": {
 						"background": {
 							"description": "If creating a .dmg image with 'makeDmg', this will define a background image for it.",
-							"anyOf": [
+							"oneOf": [
 								{
 									"type": "string",
 									"minLength": 1
@@ -242,7 +242,7 @@
 				},
 				"infoPropertyList": {
 					"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
-					"anyOf": [
+					"oneOf": [
 						{
 							"type": "string",
 							"minLength": 1
@@ -405,7 +405,7 @@
 			"type": "string",
 			"description": "A rule describing when to include this target in the build.",
 			"minLength": 1,
-			"pattern": "^(!?(debug|windows|macos|linux)\\b){0,2}$"
+			"pattern": "^(!?(debug|windows|macos|linux)\\b){1,2}$"
 		},
 		"target-runTarget": {
 			"type": "boolean",
@@ -453,7 +453,7 @@
 				}
 			},
 			"patternProperties": {
-				"^language(\\.!?(windows|macos|linux)\\b){0,2}$": {
+				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				}
 			}
@@ -510,16 +510,16 @@
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^language(\\.!?(windows|macos|linux)\\b){0,2}$": {
+				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-runTarget"
 				},
-				"^runDependencies(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^runDependencies(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-runDependencies"
 				}
 			}
@@ -567,20 +567,20 @@
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^language(\\.!?(windows|macos|linux)\\b){0,2}$": {
+				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				}
 			}
 		},
 		"source-target-extends": {
 			"type": "string",
-			"description": "A project template to extend. Defaults to 'all' implicitly.",
-			"pattern": "^[A-Za-z_-]+$",
+			"description": "A project template to extend. Defaults to '*' implicitly.",
+			"pattern": "^[A-Za-z-_]+$",
 			"minLength": 1,
-			"default": "all"
+			"default": "*"
 		},
 		"source-target-files": {
 			"type": "array",
@@ -614,9 +614,9 @@
 					"required": [
 						"include"
 					],
-					"patternProperties": {
-						"^exclude(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
-							"anyOf": [
+					"properties": {
+						"include": {
+							"oneOf": [
 								{
 									"type": "string",
 									"minLength": 1
@@ -632,8 +632,44 @@
 								}
 							]
 						},
-						"^include(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
-							"anyOf": [
+						"exclude": {
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"minItems": 1,
+									"items": {
+										"type": "string",
+										"minLength": 1
+									}
+								}
+							]
+						}
+					},
+					"patternProperties": {
+						"^exclude(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"minItems": 1,
+									"items": {
+										"type": "string",
+										"minLength": 1
+									}
+								}
+							]
+						},
+						"^include(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+							"oneOf": [
 								{
 									"type": "string",
 									"minLength": 1
@@ -679,13 +715,55 @@
 					"$ref": "#/definitions/source-target-cxx-cppStandard"
 				},
 				"defines": {
-					"$ref": "#/definitions/source-target-cxx-defines"
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-defines"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-defines"
+								}
+							}
+						}
+					]
 				},
 				"includeDirs": {
-					"$ref": "#/definitions/source-target-cxx-includeDirs"
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-includeDirs"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-includeDirs"
+								}
+							}
+						}
+					]
 				},
 				"libDirs": {
-					"$ref": "#/definitions/source-target-cxx-libDirs"
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-libDirs"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-libDirs"
+								}
+							}
+						}
+					]
 				},
 				"linkerScript": {
 					"$ref": "#/definitions/source-target-cxx-linkerScript"
@@ -694,7 +772,21 @@
 					"$ref": "#/definitions/source-target-cxx-linkerOptions"
 				},
 				"links": {
-					"$ref": "#/definitions/source-target-cxx-links"
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-links"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-links"
+								}
+							}
+						}
+					]
 				},
 				"macosFrameworkPaths": {
 					"$ref": "#/definitions/source-target-cxx-macosFrameworkPaths"
@@ -718,7 +810,21 @@
 					"$ref": "#/definitions/source-target-cxx-staticLinking"
 				},
 				"staticLinks": {
-					"$ref": "#/definitions/source-target-cxx-staticLinks"
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-staticLinks"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-staticLinks"
+								}
+							}
+						}
+					]
 				},
 				"warnings": {
 					"$ref": "#/definitions/source-target-cxx-warnings"
@@ -743,40 +849,40 @@
 				}
 			},
 			"patternProperties": {
-				"^cStandard(\\.!?(windows|macos|linux)\\b){0,2}$": {
+				"^cStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-cStandard"
 				},
-				"^cppStandard(\\.!?(windows|macos|linux)\\b){0,2}$": {
+				"^cppStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-cppStandard"
 				},
-				"^defines(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^defines(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-defines"
 				},
-				"^includeDirs(\\.!?(windows|macos|linux)\\b){0,2}$": {
+				"^includeDirs(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-includeDirs"
 				},
-				"^libDirs(\\.!?(windows|macos|linux)\\b){0,2}$": {
+				"^libDirs(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-libDirs"
 				},
-				"^linkerScript(\\.!?(windows|macos|linux)\\b){0,2}$": {
+				"^linkerScript(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-linkerScript"
 				},
-				"^links(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^links(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-links"
 				},
-				"^staticLinks(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^staticLinks(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-staticLinks"
 				},
-				"^threads(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-threads"
 				},
-				"^rtti(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^rtti(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-rtti"
 				},
-				"^exceptions(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^exceptions(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-exceptions"
 				},
-				"^staticLinking(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^staticLinking(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-staticLinking"
 				},
 				"^windowsApplicationIcon(\\.!?(debug)\\b\\.?)?$": {
@@ -812,7 +918,7 @@
 			"additionalProperties": false,
 			"description": "Addtional options (per compiler type) to add during the compilation step.",
 			"patternProperties": {
-				"^(msvc|gcc|mingw|llvm|apple-llvm|intel-llvm|intel-classic)(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 					"type": "string",
 					"minLength": 1
 				}
@@ -858,7 +964,7 @@
 			"additionalProperties": false,
 			"description": "Addtional options (per compiler type) to add during the linking step.",
 			"patternProperties": {
-				"^(msvc|gcc|mingw|llvm|apple-llvm|intel-llvm|intel-classic)(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 					"type": "string",
 					"minLength": 1
 				}
@@ -939,7 +1045,7 @@
 		},
 		"source-target-cxx-warnings": {
 			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
-			"anyOf": [
+			"oneOf": [
 				{
 					"type": "string",
 					"minLength": 1,
@@ -954,12 +1060,21 @@
 					]
 				},
 				{
-					"type": "array",
+					"type": "object",
+					"additionalProperties": false,
+					"description": "Warnings specific to each compiler",
+					"patternProperties": {
+						"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1,
+								"uniqueItems": true,
+								"minItems": 1
+							}
+						}
+					},
 					"items": {
-						"type": "string",
-						"minLength": 1,
-						"uniqueItems": true,
-						"minItems": 1,
 						"examples": [
 							"abi",
 							"absolute-value",
@@ -1256,12 +1371,21 @@
 							"zero-length-bounds"
 						]
 					}
+				},
+				{
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"uniqueItems": true,
+						"minItems": 1
+					}
 				}
 			]
 		},
 		"source-target-cxx-windowsApplicationManifest": {
 			"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",
-			"anyOf": [
+			"oneOf": [
 				{
 					"type": "string",
 					"minLength": 1
@@ -1341,13 +1465,13 @@
 				}
 			},
 			"patternProperties": {
-				"^script(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^script(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/script-target-script"
 				},
-				"^description(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-runTarget"
 				}
 			}
@@ -1370,17 +1494,17 @@
 				}
 			},
 			"patternProperties": {
-				"^script(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^script(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/script-target-script"
 				},
-				"^description(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				}
 			}
 		},
 		"script-target-script": {
 			"description": "Script(s) to run during this build step.",
-			"anyOf": [
+			"oneOf": [
 				{
 					"type": "string",
 					"minLength": 1
@@ -1431,16 +1555,16 @@
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/cmake-target-buildFile"
 				},
-				"^defines(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^defines(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/cmake-target-defines"
 				},
-				"^toolset(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^toolset(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/cmake-target-toolset"
 				}
 			}
@@ -1504,10 +1628,10 @@
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/chalet-target-buildFile"
 				}
 			}
@@ -1533,9 +1657,9 @@
 			"additionalProperties": false,
 			"description": "A list of abstract build targets",
 			"patternProperties": {
-				"^[A-Za-z_-]+$": {
+				"^(\\*|[A-Za-z-_]+)$": {
 					"$ref": "#/definitions/abstract-target",
-					"description": "An abstract build project. 'all' is implicitely added to each project."
+					"description": "An abstract build target. '*' is a special target that gets implicitely added to each project."
 				}
 			}
 		},
@@ -1549,7 +1673,7 @@
 				"RelStable",
 				"Profile"
 			],
-			"anyOf": [
+			"oneOf": [
 				{
 					"type": "object",
 					"additionalProperties": false,
@@ -1724,11 +1848,11 @@
 		}
 	},
 	"patternProperties": {
-		"^abstracts:[a-z]+$": {
+		"^abstracts:(\\*|[A-Za-z-_]+)$": {
 			"$ref": "#/definitions/abstract-target",
-			"description": "An abstract build project. 'abstracts:all' is a special project that gets implicitely added to each project"
+			"description": "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project"
 		},
-		"^searchPaths(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+		"^searchPaths(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 			"$ref": "#/definitions/environment-searchPaths"
 		}
 	}

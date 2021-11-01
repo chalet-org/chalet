@@ -125,15 +125,16 @@ private:
 	const std::string kDefault;
 	const std::string kEnum;
 	const std::string kExamples;
-	const std::string kAnyOf;
-	const std::string kAllOf;
+	// const std::string kAnyOf;
+	// const std::string kAllOf;
 	const std::string kOneOf;
 	const std::string kThen;
 	const std::string kElse;
 
 	//
-	const std::string kPatternProjectName;
-	const std::string kPatternProjectLinks;
+	const std::string kPatternTargetName;
+	const std::string kPatternAbstractName;
+	const std::string kPatternSourceTargetLinks;
 	const std::string kPatternDistributionName;
 	const std::string kPatternConditionConfigurations;
 	const std::string kPatternConditionPlatforms;
