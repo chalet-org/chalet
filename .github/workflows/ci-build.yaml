@@ -64,7 +64,7 @@ jobs:
           files: ./dist/chalet-arm-linux-gnueabihf.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Release (x86_64)"
-        run: build/Debug/chalet-debug --save-schema -t x86_64-linux-gnu bundle
+        run: build/Debug/chalet-debug --save-schema -t x86_64-linux-gnu-gcc bundle
       - name: "Run: Tests"
         run: build/x86_64-linux-gnu_Release/chalet -c Release run tests_chalet
       - name: "Zip binary (x86_64)"
