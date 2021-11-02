@@ -87,6 +87,8 @@ struct CompilerTools
 	bool ninjaAvailable() const noexcept;
 
 private:
+	bool parseVersionString(CompilerInfo& outInfo);
+
 	std::string m_archiver;
 	std::string m_cmake;
 	std::string m_compilerWindowsResource;

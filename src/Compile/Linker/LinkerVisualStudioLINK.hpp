@@ -27,6 +27,7 @@ protected:
 	virtual void addLibDirs(StringList& outArgList) const override;
 	virtual void addLinks(StringList& outArgList) const override;
 	virtual void addLinkerOptions(StringList& outArgList) const override;
+	virtual void addProfileInformationLinkerOption(StringList& outArgList) const override;
 	virtual void addSubSystem(StringList& outArgList) const override;
 	virtual void addEntryPoint(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;
@@ -35,7 +36,7 @@ protected:
 	virtual void addCgThreads(StringList& outArgList) const;
 
 private:
-	void addPrecompiledHeaderLink(StringList outArgList) const;
+	virtual void addUnsortedOptions(StringList& outArgList, const std::string& outputFileBase) const final;
 };
 }
 

@@ -57,40 +57,11 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 	addLinkerOptions(ret);
 	addLibDirs(ret);
 
-	const bool debugSymbols = m_state.configuration.debugSymbols();
-	if (m_state.configuration.linkTimeOptimization())
-	{
-		// combines w/ /GL - I think this is basically part of MS's link-time optimization
-		// ret.emplace_back("/LTCG");
-
-		// Note: These are also tied to /INCREMENTAL (implied with /debug)
-		if (debugSymbols)
-			ret.emplace_back("/opt:NOREF,NOICF,NOLBR");
-		else
-			ret.emplace_back("/opt:REF,ICF,LBR");
-
-		// OPT:LBR - relates to arm binaries
-	}
-
-	if (debugSymbols)
-	{
-		ret.emplace_back("/debug");
-		ret.emplace_back("/INCREMENTAL");
-
-		ret.emplace_back(fmt::format("/pdb:{}.pdb", outputFileBase));
-	}
-	else
-	{
-		ret.emplace_back("/release");
-		ret.emplace_back("/INCREMENTAL:NO");
-	}
-
-	// TODO /version
-	ret.emplace_back("/version:0.0");
+	addUnsortedOptions(ret, outputFileBase);
 
 	ret.emplace_back(fmt::format("/out:{}", outputFile));
 
-	addPrecompiledHeaderLink(ret);
+	// addPrecompiledHeaderLink(ret);
 	addSourceObjects(ret, sourceObjs);
 	addLinks(ret);
 
@@ -119,40 +90,11 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 	addLinkerOptions(ret);
 	addLibDirs(ret);
 
-	const bool debugSymbols = m_state.configuration.debugSymbols();
-	if (m_state.configuration.linkTimeOptimization())
-	{
-		// combines w/ /GL - I think this is basically part of MS's link-time optimization
-		// ret.emplace_back("/LTCG");
-
-		// Note: These are also tied to /INCREMENTAL (implied with /debug)
-		if (debugSymbols)
-			ret.emplace_back("/opt:NOREF,NOICF,NOLBR");
-		else
-			ret.emplace_back("/opt:REF,ICF,LBR");
-
-		// OPT:LBR - relates to arm binaries
-	}
-
-	if (debugSymbols)
-	{
-		ret.emplace_back("/debug");
-		ret.emplace_back("/INCREMENTAL");
-
-		ret.emplace_back(fmt::format("/pdb:{}.pdb", outputFileBase));
-	}
-	else
-	{
-		ret.emplace_back("/release");
-		ret.emplace_back("/INCREMENTAL:NO");
-	}
-
-	// TODO /version
-	ret.emplace_back("/version:0.0");
+	addUnsortedOptions(ret, outputFileBase);
 
 	ret.emplace_back(fmt::format("/out:{}", outputFile));
 
-	addPrecompiledHeaderLink(ret);
+	// addPrecompiledHeaderLink(ret);
 	addSourceObjects(ret, sourceObjs);
 	addLinks(ret);
 
@@ -162,7 +104,7 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addLibDirs(StringList& outArgList) const
 {
-	std::string option{ "/LIBPATH:" };
+	std::string option{ "/libpath:" };
 	for (const auto& dir : m_project.libDirs())
 	{
 		outArgList.emplace_back(getPathCommand(option, dir));
@@ -260,6 +202,12 @@ void LinkerVisualStudioLINK::addLinkerOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void LinkerVisualStudioLINK::addProfileInformationLinkerOption(StringList& outArgList) const
+{
+	outArgList.emplace_back("/genprofile");
+}
+
+/*****************************************************************************/
 void LinkerVisualStudioLINK::addSubSystem(StringList& outArgList) const
 {
 	const ProjectKind kind = m_project.kind();
@@ -326,18 +274,43 @@ void LinkerVisualStudioLINK::addCgThreads(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerVisualStudioLINK::addPrecompiledHeaderLink(StringList outArgList) const
+void LinkerVisualStudioLINK::addUnsortedOptions(StringList& outArgList, const std::string& outputFileBase) const
 {
-	if (m_project.usesPch())
+	const bool debugSymbols = m_state.configuration.debugSymbols();
+	if (m_state.configuration.linkTimeOptimization())
 	{
-		const auto& objDir = m_state.paths.objDir();
-		const auto& pch = m_project.pch();
-		std::string pchObject = fmt::format("{}/{}.obj", objDir, pch);
-		std::string pchInclude = fmt::format("{}/{}.pch", objDir, pch);
+		// combines w/ /GL - I think this is basically part of MS's link-time optimization
+		// outArgList.emplace_back("/ltcg:NOSTATUS");
+		// outArgList.emplace_back(fmt::format("/pgd:{}.pgd", outputFileBase));
 
-		outArgList.emplace_back(std::move(pchObject));
-		outArgList.emplace_back(std::move(pchInclude));
+		// Note: These are also tied to /INCREMENTAL (implied with /debug)
+		if (debugSymbols)
+			outArgList.emplace_back("/opt:NOREF,NOICF,NOLBR");
+		else
+			outArgList.emplace_back("/opt:REF,ICF,LBR");
+		// outArgList.emplace_back("/opt:REF");
+
+		// OPT:LBR - relates to arm binaries
+
+		// outArgList.emplace_back(fmt::format("/ltcgout:{}.iobj", outputFileBase));
 	}
+
+	outArgList.emplace_back("/dynamicbase");
+	outArgList.emplace_back("/debug");
+	if (debugSymbols)
+	{
+		outArgList.emplace_back("/incremental");
+		outArgList.emplace_back(fmt::format("/pdb:{}.pdb", outputFileBase));
+		outArgList.emplace_back(fmt::format("/ilk:{}.ilk", outputFileBase));
+	}
+	else
+	{
+		outArgList.emplace_back("/nxcompat");
+		outArgList.emplace_back("/incremental:NO");
+	}
+
+	// TODO /version
+	// outArgList.emplace_back("/version:0.0");
 }
 
 /*****************************************************************************/
@@ -400,4 +373,5 @@ std::string LinkerVisualStudioLINK::getMsvcCompatibleEntryPoint(const SourceTarg
 
 	return std::string();
 }
+
 }

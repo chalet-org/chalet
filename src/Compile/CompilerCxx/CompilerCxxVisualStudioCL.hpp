@@ -34,14 +34,18 @@ protected:
 
 	//
 	virtual void addDiagnosticsOption(StringList& outArgList) const;
-	virtual void addResourceDefines(StringList& outArgList) const;
 	virtual void addWholeProgramOptimization(StringList& outArgList) const;
 
 	bool createPrecompiledHeaderSource();
 
 private:
+	virtual void addUnsortedOptions(StringList& outArgList) const final;
+
 	std::string m_pchSource;
 	std::string m_pchMinusLocation;
+
+	uint m_versionMajorMinor = 0;
+	uint m_versionPatch = 0;
 };
 }
 

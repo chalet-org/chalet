@@ -5,8 +5,6 @@
 
 #include "Utility/Variant.hpp"
 
-#include "Utility/Reflect.hpp"
-
 namespace chalet
 {
 /*****************************************************************************/

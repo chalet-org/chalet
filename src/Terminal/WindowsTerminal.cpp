@@ -55,8 +55,8 @@ void WindowsTerminal::initialize()
 	}
 
 	// SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
-	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-	// SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+	// SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+	SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 
 #endif
 

@@ -255,12 +255,14 @@ bool ICompileEnvironment::makeSupportedCompilerFlags(const std::string& inExecut
 	return true;
 }
 
+/*****************************************************************************/
 bool ICompileEnvironment::populateSupportedFlags(const std::string& inExecutable)
 {
 	UNUSED(inExecutable);
 	return true;
 }
 
+/*****************************************************************************/
 bool ICompileEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 {
 	std::string path = String::getPathFolder(outInfo.path);

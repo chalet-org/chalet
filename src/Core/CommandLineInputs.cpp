@@ -43,10 +43,10 @@ static struct
 
 #if defined(CHALET_WIN32)
 	const OrderedDictionary<VisualStudioVersion> visualStudioPresets{
-		{ "vs-2010", VisualStudioVersion::VisualStudio2010 },
-		{ "vs-2012", VisualStudioVersion::VisualStudio2012 },
-		{ "vs-2013", VisualStudioVersion::VisualStudio2013 },
-		{ "vs-2015", VisualStudioVersion::VisualStudio2015 },
+		// { "vs-2010", VisualStudioVersion::VisualStudio2010 }, // untested
+		// { "vs-2012", VisualStudioVersion::VisualStudio2012 }, // untested
+		// { "vs-2013", VisualStudioVersion::VisualStudio2013 }, // untested
+		// { "vs-2015", VisualStudioVersion::VisualStudio2015 }, // untested
 		{ "vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "vs-2022", VisualStudioVersion::VisualStudio2022 },

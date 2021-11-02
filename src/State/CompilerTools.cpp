@@ -50,6 +50,12 @@ bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 		{
 			if (!inEnvironment.getCompilerInfoFromExecutable(outInfo))
 				return false;
+
+			if (!parseVersionString(outInfo))
+			{
+				Diagnostic::error("There was an error parsing the compiler executable's version string.");
+				return false;
+			}
 		}
 
 		return true;
@@ -77,6 +83,36 @@ bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 	{
 		m_version = version;
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CompilerTools::parseVersionString(CompilerInfo& outInfo)
+{
+	outInfo.versionMajorMinor = 0;
+	outInfo.versionPatch = 0;
+
+	const auto& version = outInfo.version;
+	if (version.empty())
+		return true; // TODO: toolchains other than MSVC
+
+	auto split = String::split(version, '.');
+	if (split.size() < 1)
+		return false;
+
+	outInfo.versionMajorMinor = atoi(split[0].c_str());
+	outInfo.versionMajorMinor *= 100;
+
+	if (split.size() < 2)
+		return false;
+
+	outInfo.versionMajorMinor += atoi(split[1].c_str());
+
+	if (split.size() < 3)
+		return false;
+
+	outInfo.versionPatch = atoi(split[2].c_str());
 
 	return true;
 }

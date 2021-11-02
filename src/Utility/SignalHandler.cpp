@@ -13,7 +13,6 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
-#include "Utility/Reflect.hpp"
 #include "Utility/String.hpp"
 
 // Reference: https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/

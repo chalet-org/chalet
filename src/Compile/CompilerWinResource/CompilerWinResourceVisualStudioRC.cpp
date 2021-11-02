@@ -80,7 +80,7 @@ void CompilerWinResourceVisualStudioRC::addDefines(StringList& outArgList) const
 	const std::string prefix = "/D";
 	for (auto& define : m_project.defines())
 	{
-		outArgList.emplace_back(prefix + define);
+		outArgList.emplace_back(fmt::format("{}\"{}\"", prefix, define));
 	}
 }
 

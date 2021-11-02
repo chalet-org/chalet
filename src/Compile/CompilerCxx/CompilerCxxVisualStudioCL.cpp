@@ -5,6 +5,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxVisualStudioCL.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -27,6 +28,9 @@ bool CompilerCxxVisualStudioCL::initialize()
 {
 	if (!createPrecompiledHeaderSource())
 		return false;
+
+	m_versionMajorMinor = m_state.toolchain.compilerCxx(m_project.language()).versionMajorMinor;
+	m_versionPatch = m_state.toolchain.compilerCxx(m_project.language()).versionPatch;
 
 	return true;
 }
@@ -77,6 +81,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 
 	addThreadModelCompileOption(ret);
 	addOptimizationOption(ret);
+	addUnsortedOptions(ret);
 
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 	addLanguageStandard(ret, specialization);
@@ -87,7 +92,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
-	// addWholeProgramOptimization(ret);
+	addWholeProgramOptimization(ret);
 
 	addDefines(ret);
 	addIncludes(ret);
@@ -133,6 +138,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 
 	addThreadModelCompileOption(ret);
 	addOptimizationOption(ret);
+	addUnsortedOptions(ret);
 	addLanguageStandard(ret, specialization);
 	addNoExceptionsOption(ret);
 	addWarnings(ret);
@@ -141,7 +147,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 
 	addCompileOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
-	// addWholeProgramOptimization(ret);
+	addWholeProgramOptimization(ret);
 
 	addDebuggingInformationOption(ret);
 
@@ -316,7 +322,7 @@ void CompilerCxxVisualStudioCL::addDefines(StringList& outArgList) const
 	const std::string prefix = "/D";
 	for (auto& define : m_project.defines())
 	{
-		outArgList.emplace_back(prefix + define);
+		outArgList.emplace_back(fmt::format("{}\"{}\"", prefix, define));
 	}
 }
 
@@ -366,7 +372,7 @@ void CompilerCxxVisualStudioCL::addOptimizationOption(StringList& outArgList) co
 				break;
 
 			case OptimizationLevel::L3:
-				opt = "/Ox";
+				opt = "/O2";
 				break;
 
 			case OptimizationLevel::Size:
@@ -388,27 +394,7 @@ void CompilerCxxVisualStudioCL::addOptimizationOption(StringList& outArgList) co
 		}
 	}
 
-	// Note: in MSVC, one can combine these (annoyingly)
-	//	Might be desireable to add:
-	//    /Oy (suppresses the creation of frame pointers on the call stack for quicker function calls.)
-	//    /Oi (generates intrinsic functions for appropriate function calls.)
-
-	if (opt.empty())
-		return;
-
-	outArgList.emplace_back(std::move(opt));
-
-	if (m_state.configuration.debugSymbols())
-	{
-		auto buildDir = m_state.paths.buildOutputDir() + '/';
-		outArgList.emplace_back("/Zi"); // separate pdb
-		outArgList.emplace_back("/FS"); // Force Synchronous PDB Writes
-		outArgList.emplace_back(getPathCommand("/Fd", buildDir));
-		outArgList.emplace_back(std::move(opt));
-		outArgList.emplace_back("/Ob0");  // disable inline expansion
-		outArgList.emplace_back("/RTC1"); // Enables stack frame run-time error checking, uninitialized variables
-	}
-	else
+	if (!opt.empty())
 	{
 		outArgList.emplace_back(std::move(opt));
 	}
@@ -417,43 +403,68 @@ void CompilerCxxVisualStudioCL::addOptimizationOption(StringList& outArgList) co
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
 {
+	// https://docs.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=msvc-160
+	// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+
 	// TODO: Reverse years so c11 / c++14 is checked explicitly & newest year isn't
 	if (specialization == CxxSpecialization::C)
 	{
 		outArgList.emplace_back("/TC"); // Treat code as C
 
-		std::string langStandard = String::toLowerCase(m_project.cStandard());
-		if (String::equals({ "gnu2x", "gnu18", "gnu17", "c2x", "c18", "c17", "iso9899:2018", "iso9899:2017" }, langStandard))
+		// C standards conformance was added in 2019 16.8
+		if (m_versionMajorMinor >= 1928)
 		{
-			outArgList.emplace_back("/std:c17");
-		}
-		else
-		{
-			outArgList.emplace_back("/std:c11");
+			std::string langStandard = String::toLowerCase(m_project.cStandard());
+			String::replaceAll(langStandard, "gnu", "");
+			String::replaceAll(langStandard, "c", "");
+			if (String::equals({ "2x", "18", "17", "iso9899:2018", "iso9899:2017" }, langStandard))
+			{
+				outArgList.emplace_back("/std:c17");
+			}
+			else
+			{
+				outArgList.emplace_back("/std:c11");
+			}
 		}
 	}
 	else if (specialization == CxxSpecialization::CPlusPlus)
 	{
 		outArgList.emplace_back("/TP"); // Treat code as C++
 
-		std::string langStandard = String::toLowerCase(m_project.cppStandard());
-		if (String::equals({ "c++23", "c++2b", "gnu++23", "gnu++2b" }, langStandard))
+		// 2015 Update 3 or later (/std flag doesn't exist prior
+		if (m_versionMajorMinor > 1900 || (m_versionMajorMinor == 1900 && m_versionPatch >= 24210))
 		{
-			outArgList.emplace_back("/std:c++latest");
-		}
-		else if (String::equals({ "c++20", "c++2a", "gnu++20", "gnu++2a" }, langStandard))
-		{
-			// TODO: c++20 in 2019 16.11 & 17.0 (Preview 3+ presumably)
-			//   https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/
-			outArgList.emplace_back("/std:c++20");
-		}
-		else if (String::equals({ "c++17", "c++1z", "gnu++17", "gnu++1z" }, langStandard))
-		{
-			outArgList.emplace_back("/std:c++17");
-		}
-		else
-		{
-			outArgList.emplace_back("/std:c++14");
+			bool set = false;
+			std::string langStandard = String::toLowerCase(m_project.cppStandard());
+			String::replaceAll(langStandard, "gnu++", "");
+			String::replaceAll(langStandard, "c++", "");
+			if (String::equals({ "20", "2a" }, langStandard))
+			{
+				if (m_versionMajorMinor >= 1929)
+				{
+					outArgList.emplace_back("/std:c++20");
+					set = true;
+				}
+			}
+			else if (String::equals({ "17", "1z" }, langStandard))
+			{
+				if (m_versionMajorMinor >= 1911)
+				{
+					outArgList.emplace_back("/std:c++17");
+					set = true;
+				}
+			}
+			else if (String::equals({ "14", "1y", "11", "0x", "03", "98" }, langStandard))
+			{
+				// Note: There was never "/std:c++11", "/std:c++03" or "/std:c++98"
+				outArgList.emplace_back("/std:c++14");
+				set = true;
+			}
+
+			if (!set)
+			{
+				outArgList.emplace_back("/std:c++latest");
+			}
 		}
 	}
 }
@@ -529,16 +540,6 @@ void CompilerCxxVisualStudioCL::addThreadModelCompileOption(StringList& outArgLi
 }
 
 /*****************************************************************************/
-void CompilerCxxVisualStudioCL::addResourceDefines(StringList& outArgList) const
-{
-	const std::string prefix = "/d";
-	for (auto& define : m_project.defines())
-	{
-		outArgList.emplace_back(prefix + define);
-	}
-}
-
-/*****************************************************************************/
 void CompilerCxxVisualStudioCL::addDiagnosticsOption(StringList& outArgList) const
 {
 	outArgList.emplace_back("/diagnostics:caret");
@@ -547,9 +548,67 @@ void CompilerCxxVisualStudioCL::addDiagnosticsOption(StringList& outArgList) con
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addWholeProgramOptimization(StringList& outArgList) const
 {
-	if (m_state.configuration.linkTimeOptimization())
+	// Doesn't exactly do what it's supposed to - same binary size, more irritating diagnostic messages
+	// if (m_state.configuration.linkTimeOptimization())
+	// {
+	// 	outArgList.emplace_back("/GL");
+	// }
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addUnsortedOptions(StringList& outArgList) const
+{
+	// Note: in MSVC, one can combine these (annoyingly)
+	//	Might be desireable to add:
+	//    /Oy (suppresses the creation of frame pointers on the call stack for quicker function calls.)
+	//    /Oi (generates intrinsic functions for appropriate function calls.)
+
 	{
-		outArgList.emplace_back("/GL");
+		// Buffer security check
+		outArgList.emplace_back("/GS");
+
+		// wchar_t is native type
+		outArgList.emplace_back("/Zc:wchar_t");
+		outArgList.emplace_back("/Zc:inline");
+		outArgList.emplace_back("/Zc:forScope");
+
+		// additional security checks
+		outArgList.emplace_back("/sdl");
+
+		// floating point behavior
+		outArgList.emplace_back("/fp:precise");
+
+		// default calling convention
+		outArgList.emplace_back("/Gd");
+
+		// full path of source code file
+		// outArgList.emplace_back("/FC");
+	}
+
+	auto buildDir = m_state.paths.buildOutputDir() + '/';
+	if (m_state.configuration.debugSymbols())
+	{
+		outArgList.emplace_back("/ZI");							  // separate pdb w/ Edit & Continue
+		outArgList.emplace_back("/FS");							  // Force Synchronous PDB Writes
+		outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
+		outArgList.emplace_back("/Ob0");						  // disable inline expansion
+		outArgList.emplace_back("/RTC1");						  // Enables stack frame run-time error checking, uninitialized variables
+
+		// outArgList.emplace_back(getPathCommand("/Fa", buildDir));
+	}
+	else
+	{
+		// this flag is definitely VS 2017+
+		outArgList.emplace_back("/permissive-"); // standards conformance
+
+		outArgList.emplace_back("/Zi");							  // separate pdb
+		outArgList.emplace_back("/FS");							  // Force Synchronous PDB Writes
+		outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
+		outArgList.emplace_back("/Gy");							  // function level linking
+		outArgList.emplace_back("/Oi");							  // generate intrinsic functions
+
+		// outArgList.emplace_back(getPathCommand("/Fa", buildDir));
 	}
 }
 
