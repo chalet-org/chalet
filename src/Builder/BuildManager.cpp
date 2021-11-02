@@ -308,7 +308,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 void BuildManager::printBuildInformation()
 {
 	bool usingCpp = false;
-	bool usingCc = false;
+	bool usingC = false;
 	for (auto& target : m_state.targets)
 	{
 		if (target->isProject())
@@ -316,45 +316,41 @@ void BuildManager::printBuildInformation()
 			auto& project = static_cast<const SourceTarget&>(*target);
 
 			usingCpp |= project.language() == CodeLanguage::CPlusPlus;
-			usingCc |= project.language() == CodeLanguage::C;
+			usingC |= project.language() == CodeLanguage::C;
 		}
 	}
 
-	auto& compilerInfoCpp = m_state.toolchain.compilerCpp();
-	if (usingCpp && !compilerInfoCpp.description.empty())
-	{
-		auto arch = compilerInfoCpp.arch;
+	auto printDetailsImpl = [this](const CompilerInfo& inInfo, const std::string& inLang) -> void {
+		if (inInfo.description.empty())
+			return;
+
+		auto arch = inInfo.arch;
+		/*if (m_state.environment->isMsvc())
+		{
+			String::replaceAll(arch, "x64_x", "x");
+			String::replaceAll(arch, "x86_x", "x");
+		}*/
+
 		if (!m_inputs.archOptions().empty())
 		{
 			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
 		}
-		Diagnostic::info("C++ Compiler: {}", compilerInfoCpp.description);
+		Diagnostic::info("{} Compiler: {}", inLang, inInfo.description);
 
 		if (m_state.info.universalArches().empty())
 			Diagnostic::info("Target Architecture: {}", arch);
 		else
 			Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.info.universalArches(), " / "));
-	}
+	};
 
-	auto& compilerInfoC = m_state.toolchain.compilerC();
-	if (usingCc && !compilerInfoC.description.empty())
-	{
-		auto arch = compilerInfoC.arch;
-		if (!m_inputs.archOptions().empty())
-		{
-			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
-		}
-		Diagnostic::info("C Compiler: {}", compilerInfoC.description);
+	if (usingCpp)
+		printDetailsImpl(m_state.toolchain.compilerCpp(), "C++");
 
-		if (m_state.info.universalArches().empty())
-			Diagnostic::info("Target Architecture: {}", arch);
-		else
-			Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.info.universalArches(), " / "));
-	}
+	if (usingC)
+		printDetailsImpl(m_state.toolchain.compilerC(), "C");
 
 	const auto strategy = getBuildStrategyName();
 	Diagnostic::info("Strategy: {}", strategy);
-
 	Diagnostic::info("Configuration: {}", m_state.info.buildConfiguration());
 }
 

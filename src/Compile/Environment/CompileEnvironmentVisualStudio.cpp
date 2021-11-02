@@ -385,10 +385,11 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 	m_state.info.setHostArchitecture(host);
 
 	if (host == target)
-		m_inputs.setTargetArchitecture(target);
+		m_varsAllArch = target;
 	else
-		m_inputs.setTargetArchitecture(fmt::format("{}_{}", host, target));
+		m_varsAllArch = fmt::format("{}_{}", host, target);
 
+	m_inputs.setTargetArchitecture(m_varsAllArch);
 	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
 
 	m_msvcArchitectureSet = true;
@@ -494,16 +495,15 @@ bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
 	std::string vcvarsFile{ "vcvarsall" };
 	StringList allowedArchesWin = getAllowedArchitectures();
 
-	const auto& targetArch = m_inputs.targetArchitecture();
-	if (!String::equals(allowedArchesWin, targetArch))
+	if (!String::equals(allowedArchesWin, m_varsAllArch))
 	{
-		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", targetArch, vcvarsFile);
+		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", m_varsAllArch, vcvarsFile);
 		return false;
 	}
 
 	// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
 	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
-	StringList cmd{ vcVarsAll, targetArch };
+	StringList cmd{ vcVarsAll, m_varsAllArch };
 
 	for (auto& arg : m_inputs.archOptions())
 	{
@@ -526,15 +526,15 @@ StringList CompileEnvironmentVisualStudio::getAllowedArchitectures() const
 {
 	// clang-format off
 	return {
-		"x86",						// any host, x86 target
-		"x86_x64", "x86_amd64",		// any host, x64 target
-		"x86_arm",					// any host, ARM target
-		"x86_arm64",				// any host, ARM64 target
+		"x86",								// any host, x86 target
+		"x86_x64", /*"x86_amd64",*/			// any host, x64 target
+		"x86_arm",							// any host, ARM target
+		"x86_arm64",						// any host, ARM64 target
 		//
-		"x64", "amd64",				// x64 host, x64 target
-		"x64_x86", "amd64_x86",		// x64 host, x86 target
-		"x64_arm", "amd64_arm",		// x64 host, ARM target
-		"x64_arm64", "amd64_arm64",	// x64 host, ARMG64 target
+		"x64", /*"amd64",*/					// x64 host, x64 target
+		"x64_x86", /*"amd64_x86",*/			// x64 host, x86 target
+		"x64_arm", /*"amd64_arm",*/			// x64 host, ARM target
+		"x64_arm64", /*"amd64_arm64",*/		// x64 host, ARMG64 target
 	};
 	// clang-format on
 }

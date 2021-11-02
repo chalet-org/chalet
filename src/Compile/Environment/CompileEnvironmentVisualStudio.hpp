@@ -40,6 +40,7 @@ private:
 	std::string m_varsFileMsvcDelta;
 
 	std::string m_vsAppIdDir;
+	std::string m_varsAllArch;
 
 	bool m_msvcArchitectureSet = false;
 };

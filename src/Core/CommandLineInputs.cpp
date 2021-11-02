@@ -928,16 +928,19 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.type = ToolchainType::Unknown;
 	}
 
-	if (ret.type != ToolchainType::VisualStudio)
+	if (ret.type == ToolchainType::VisualStudio)
+	{
+		if (String::equals({ "x86_64", "amd64" }, m_targetArchitecture))
+			setTargetArchitecture("x64");
+		else if (String::equals("i686", m_targetArchitecture))
+			setTargetArchitecture("x86");
+	}
+	else
 	{
 		if (String::equals("x64", m_targetArchitecture))
-		{
 			setTargetArchitecture("x86_64");
-		}
 		else if (String::equals("x86", m_targetArchitecture))
-		{
 			setTargetArchitecture("i686");
-		}
 	}
 
 	if (Environment::isContinuousIntegrationServer())
