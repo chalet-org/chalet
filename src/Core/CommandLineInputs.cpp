@@ -484,7 +484,8 @@ void CommandLineInputs::setArchitectureRaw(std::string&& inValue) const noexcept
 		auto arch = m_architectureRaw.substr(0, firstComma);
 		auto options = String::split(m_architectureRaw.substr(firstComma + 1), ',');
 		setTargetArchitecture(arch);
-		setArchOptions(std::move(options));
+		// setArchOptions(std::move(options));
+		UNUSED(options);
 	}
 	else
 	{
