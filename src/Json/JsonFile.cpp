@@ -190,7 +190,7 @@ bool JsonFile::validate(Json&& inSchemaJson)
 		// false if fatal error
 		if (!validator.printErrors())
 		{
-			Diagnostic::error("{}: Failed to validate against its schema.", m_filename);
+			Diagnostic::error("{}: Failed to validate.", m_filename);
 			return false;
 		}
 	}

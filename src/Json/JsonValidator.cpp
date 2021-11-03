@@ -112,13 +112,13 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 	switch (outError.type)
 	{
 		case JsonSchemaError::schema_ref_unresolved:
-			return "unresolved or freed schema-reference " + std::any_cast<std::string>(data);
+			return "Unresolved or freed schema-reference " + std::any_cast<std::string>(data);
 
 		case JsonSchemaError::no_root_schema_set:
-			return "no root schema has yet been set for validating an instance";
+			return "No root schema has yet been set for validating an instance";
 
 		case JsonSchemaError::logical_not:
-			return "the subschema has succeeded, but it is required to not validate";
+			return "The subschema has succeeded, but it is required to not validate";
 
 		case JsonSchemaError::logical_combination: {
 			auto msg = fmt::format("Invalid key/value found in: {}", String::join(outError.tree, '/'));
@@ -131,14 +131,14 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			JsonValidationError subError = outError;
 			subError.type = msg.first;
 			subError.data = std::move(msg.second);
-			return "at least one subschema has failed, but all of them are required to validate - " + parseRawError(subError);
+			return "At least one subschema has failed, but all of them are required to validate - " + parseRawError(subError);
 		}
 
 		case JsonSchemaError::logical_combination_any_of:
 			return std::string(); // not currently handled
 
 		case JsonSchemaError::logical_combination_one_of:
-			return "more than one subschema has succeeded, but exactly one of them is required to validate";
+			return "More than one subschema has succeeded, but exactly one of them is required to validate";
 
 		case JsonSchemaError::type_instance_unexpected_type: {
 			if (String::equals(kRootKey, parentKey) && String::equals("null", outError.typeName))
@@ -159,28 +159,28 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		}
 
 		case JsonSchemaError::type_instance_not_const:
-			return "instance not const";
+			return "Instance not const";
 
 		case JsonSchemaError::string_min_length: {
 			const std::size_t min_length = std::any_cast<std::size_t>(data);
-			return "instance is too short as per minLength:" + std::to_string(min_length);
+			return "Instance is too short as per minLength:" + std::to_string(min_length);
 		}
 
 		case JsonSchemaError::string_max_length: {
 			const std::size_t max_length = std::any_cast<std::size_t>(data);
-			return "instance is too long as per maxLength:" + std::to_string(max_length);
+			return "Instance is too long as per maxLength:" + std::to_string(max_length);
 		}
 
 		case JsonSchemaError::string_content_checker_not_provided: {
 			auto sub_data = std::any_cast<std::pair<std::string, std::string>>(data);
-			return "a content checker was not provided but a contentEncoding or contentMediaType for this string have been present: '" + sub_data.first + "' '" + sub_data.second + '\'';
+			return "A content checker was not provided but a contentEncoding or contentMediaType for this string have been present: '" + sub_data.first + "' '" + sub_data.second + '\'';
 		}
 
 		case JsonSchemaError::string_content_checker_failed:
-			return "content-checking failed: " + std::any_cast<std::string>(data);
+			return "Content-checking failed: " + std::any_cast<std::string>(data);
 
 		case JsonSchemaError::string_expected_found_binary_data:
-			return "expected string, but get binary data";
+			return "Expected string, but get binary data";
 
 		case JsonSchemaError::string_regex_pattern_mismatch: {
 			auto pattern = std::any_cast<std::string>(data);
@@ -190,28 +190,28 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		}
 
 		case JsonSchemaError::string_format_checker_not_provided:
-			return "a format checker was not provided but a format keyword for this string is present: " + std::any_cast<std::string>(data);
+			return "A format checker was not provided but a format keyword for this string is present: " + std::any_cast<std::string>(data);
 
 		case JsonSchemaError::string_format_checker_failed:
-			return "format-checking failed: " + std::any_cast<std::string>(data);
+			return "Format-checking failed: " + std::any_cast<std::string>(data);
 
 		case JsonSchemaError::numeric_multiple_of: {
 			auto multiple = std::any_cast<Json::number_float_t>(data);
-			return "instance is not a multiple of " + std::to_string(multiple);
+			return "Instance is not a multiple of " + std::to_string(multiple);
 		}
 
 		case JsonSchemaError::numeric_exceeds_maximum: {
 			auto maximum = std::any_cast<Json::number_float_t>(data);
-			return "instance exceeds maximum of " + std::to_string(maximum);
+			return "Instance exceeds maximum of " + std::to_string(maximum);
 		}
 
 		case JsonSchemaError::numeric_below_minimum: {
 			auto minimum = std::any_cast<Json::number_float_t>(data);
-			return "instance is below minimum of " + std::to_string(minimum);
+			return "Instance is below minimum of " + std::to_string(minimum);
 		}
 
 		case JsonSchemaError::null_found_non_null:
-			return "expected to be null";
+			return "Expected to be null";
 
 			// case JsonSchemaError::boolean_false_schema_required_empty_array:
 			// 	return "false-schema required empty array";
@@ -226,10 +226,10 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		}
 
 		case JsonSchemaError::object_too_many_properties:
-			return "too many properties";
+			return "Too many properties";
 
 		case JsonSchemaError::object_too_few_properties:
-			return "too few properties";
+			return "Too few properties";
 
 		case JsonSchemaError::object_required_property_not_found: {
 			auto property = std::any_cast<std::string>(data);
@@ -245,7 +245,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			subError.data = std::move(std::get<1>(msg));
 			const auto& key = std::get<2>(msg);
 
-			return fmt::format("Validation failed on '{}' for additional property '{}': {}", parentKey, key, parseRawError(subError));
+			return fmt::format("Additional property '{}' found in '{}' object: {}", key, parentKey, parseRawError(subError));
 		}
 
 		case JsonSchemaError::array_too_many_items:
@@ -255,10 +255,10 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return fmt::format("Array property '{}' has too few items", parentKey);
 
 		case JsonSchemaError::array_items_must_be_unique:
-			return "items have to be unique for this array";
+			return "Items have to be unique for this array";
 
 		case JsonSchemaError::array_does_not_contain_required_element_per_contains:
-			return "array does not contain required element as per 'contains'";
+			return "Array does not contain required element as per 'contains'";
 
 		case JsonSchemaError::none:
 		default:

@@ -45,13 +45,14 @@ static struct
 } state;
 
 /*****************************************************************************/
-void destroySpinnerThread()
+bool destroySpinnerThread()
 {
 	if (state.spinnerThread == nullptr)
-		return;
+		return false;
 
 	state.spinnerThread->stop();
 	state.spinnerThread.reset();
+	return true;
 }
 }
 
@@ -214,7 +215,11 @@ void Diagnostic::printErrors()
 	if (state.errorList.empty())
 		return;
 
-	destroySpinnerThread();
+	if (destroySpinnerThread())
+	{
+		std::cout << "\n"
+				  << std::endl;
+	}
 
 	StringList warnings;
 	StringList errors;
