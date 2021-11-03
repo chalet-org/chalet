@@ -48,10 +48,10 @@ bool WorkspaceCache::initialize(const CommandLineInputs& inInputs)
 /*****************************************************************************/
 bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 {
-	if (!m_localSettings.load(inInputs.settingsFile()))
+	if (!m_globalSettings.load(inInputs.getGlobalSettingsFilePath()))
 		return false;
 
-	if (!m_globalSettings.load(inInputs.getGlobalSettingsFilePath()))
+	if (!m_localSettings.load(inInputs.settingsFile()))
 		return false;
 
 	m_removeOldCacheFolder = m_localSettings.json.empty();

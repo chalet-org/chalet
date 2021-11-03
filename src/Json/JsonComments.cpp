@@ -34,7 +34,7 @@ bool JsonComments::parse(Json& outJson, const std::string& inFilename)
 	CHALET_CATCH(const std::exception& err)
 	{
 		CHALET_EXCEPT_ERROR("{}", err.what());
-		Diagnostic::error("Error parsing: {}", inFilename);
+		Diagnostic::error("There was a problem parsing the json file: {}", inFilename);
 		outJson = Json();
 		return false;
 	}

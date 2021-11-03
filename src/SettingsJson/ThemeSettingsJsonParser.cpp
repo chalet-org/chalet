@@ -27,34 +27,22 @@ bool ThemeSettingsJsonParser::serialize()
 	m_updateTheme = false;
 	ColorTheme theme = Output::theme();
 
+	auto readFromSettings = [this](const std::string& inFile, ColorTheme& outTheme, const bool inGlobal) -> void {
+		if (!Commands::pathExists(inFile))
+			return;
+
+		JsonFile jsonFile;
+		if (!jsonFile.load(inFile))
+			Diagnostic::clearErrors();
+
+		UNUSED(serializeFromJsonRoot(jsonFile.json, outTheme, inGlobal));
+	};
+
 	// Keys that aren't valid will get ingored,
 	//   so we don't need to validate much other than the json itself
 	//
-	if (Commands::pathExists(globalSettings))
-	{
-		JsonFile jsonFile;
-		if (!jsonFile.load(globalSettings))
-			return false;
-
-		if (!serializeFromJsonRoot(jsonFile.json, theme, true))
-		{
-			Diagnostic::error("There was an error parsing {}", jsonFile.filename());
-			return false;
-		}
-	}
-
-	if (Commands::pathExists(localSettings))
-	{
-		JsonFile jsonFile;
-		if (!jsonFile.load(localSettings))
-			return false;
-
-		if (!serializeFromJsonRoot(jsonFile.json, theme))
-		{
-			Diagnostic::error("There was an error parsing {}", jsonFile.filename());
-			return false;
-		}
-	}
+	readFromSettings(globalSettings, theme, true);
+	readFromSettings(localSettings, theme, false);
 
 	if (!m_updateTheme)
 	{
