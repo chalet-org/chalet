@@ -352,7 +352,8 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 		}
 		else
 		{
-			Diagnostic::error("The toolchain '{}' can only build for the '{}' architecture, but '{}' was requested. Please use a different toolchain or create a new one for this architecture.", preferenceName, targetFromCompilerPath, target);
+			Diagnostic::error("Expected '{}'. Please use a different toolchain or create a new one for this architecture.", targetFromCompilerPath);
+			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", target, preferenceName);
 			return false;
 		}
 	}

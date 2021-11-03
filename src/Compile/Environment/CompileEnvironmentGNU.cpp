@@ -253,7 +253,7 @@ bool CompileEnvironmentGNU::makeArchitectureAdjustments()
 		{
 			Arch expectedArch;
 			expectedArch.set(cachedArch);
-			Diagnostic::error("Expected: '{}' or '{}'", cachedArch, expectedArch.str);
+			Diagnostic::error("Expected '{}' or '{}'. Please use a different toolchain or create a new one for this architecture.", cachedArch, expectedArch.str);
 			return false;
 		}
 
