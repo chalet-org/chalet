@@ -121,7 +121,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return "The subschema has succeeded, but it is required to not validate";
 
 		case JsonSchemaError::logical_combination: {
-			auto msg = fmt::format("Invalid key/value found in: {}", String::join(outError.tree, '/'));
+			auto msg = fmt::format("Invalid value type found in: {}", String::join(outError.tree, '.'));
 			return msg;
 		}
 
@@ -302,6 +302,12 @@ bool JsonValidator::validate(const Json& inJsonContent)
 {
 	CHALET_TRY
 	{
+		if (!inJsonContent.is_object())
+		{
+			Diagnostic::error("{}: Root node must be an object.", m_file);
+			return false;
+		}
+
 		ErrorHandler errorHandler{ m_errors, m_file };
 		m_impl->validator.validate(inJsonContent, errorHandler);
 
