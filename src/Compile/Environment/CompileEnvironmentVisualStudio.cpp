@@ -312,8 +312,9 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 	};
 
 	std::string host;
-	std::string target;
+	std::string target = normalizeArch(m_inputs.targetArchitecture());
 
+	const auto& preferenceName = m_inputs.toolchainPreferenceName();
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 	if (!compiler.empty())
 	{
@@ -344,15 +345,22 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 			return false;
 		}
 
-		target = lower.substr(search, nextPath - search);
+		auto targetFromCompilerPath = lower.substr(search, nextPath - search);
+		if (target.empty() || target == targetFromCompilerPath)
+		{
+			target = lower.substr(search, nextPath - search);
+		}
+		else
+		{
+			Diagnostic::error("The toolchain '{}' can only build for the '{}' architecture, but '{}' was requested. Please use a different toolchain or create a new one for this architecture.", preferenceName, targetFromCompilerPath, target);
+			return false;
+		}
 	}
 	else
 	{
-		target = m_inputs.targetArchitecture();
 		if (target.empty())
 		{
 			// Try to get the architecture from the name
-			const auto& preferenceName = m_inputs.toolchainPreferenceName();
 			auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
 			if (!regexResult.empty())
 			{
