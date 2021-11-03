@@ -29,9 +29,6 @@ bool CompilerCxxVisualStudioCL::initialize()
 	if (!createPrecompiledHeaderSource())
 		return false;
 
-	m_versionMajorMinor = m_state.toolchain.compilerCxx(m_project.language()).versionMajorMinor;
-	m_versionPatch = m_state.toolchain.compilerCxx(m_project.language()).versionPatch;
-
 	return true;
 }
 

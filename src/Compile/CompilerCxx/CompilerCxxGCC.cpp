@@ -391,10 +391,33 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const CxxSpecia
 
 	// TODO: Make this "dumber" so it only the allowed strings used by each compiler
 
+	bool isGcc = m_state.environment->isGcc();
+
 	if (!useC)
 	{
 		if (RegexPatterns::matchesGnuCppStandard(ret))
 		{
+			std::string yearOnly = ret;
+			String::replaceAll(yearOnly, "gnu++", "");
+			String::replaceAll(yearOnly, "c++", "");
+			/*if (String::equals("23", yearOnly) && (isGcc && m_versionMajorMinor < 1200)) // might be 12.x, might be 13.x
+			{
+				String::replaceAll(ret, "23", "2b");
+			}
+			else*/
+			if (String::equals("20", yearOnly) && (isGcc && m_versionMajorMinor < 1000))
+			{
+				String::replaceAll(ret, "20", "2a");
+			}
+			else if (String::equals("17", yearOnly) && (isGcc && m_versionMajorMinor < 730))
+			{
+				String::replaceAll(ret, "17", "1z");
+			}
+			else if (String::equals("14", yearOnly) && (isGcc && m_versionMajorMinor < 500))
+			{
+				String::replaceAll(ret, "14", "1y");
+			}
+
 			ret = "-std=" + ret;
 			outArgList.emplace_back(std::move(ret));
 		}

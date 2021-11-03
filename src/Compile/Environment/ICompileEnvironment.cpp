@@ -65,8 +65,10 @@ bool ICompileEnvironment::isAppleClang() const noexcept
 bool ICompileEnvironment::isGcc() const noexcept
 {
 	return m_type == ToolchainType::GNU
-		|| m_type == ToolchainType::MingwGNU
-		|| m_type == ToolchainType::IntelClassic;
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
+		|| m_type == ToolchainType::IntelClassic
+#endif
+		|| m_type == ToolchainType::MingwGNU;
 }
 
 /*****************************************************************************/

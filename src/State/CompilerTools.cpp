@@ -94,25 +94,25 @@ bool CompilerTools::parseVersionString(CompilerInfo& outInfo)
 	outInfo.versionPatch = 0;
 
 	const auto& version = outInfo.version;
-	if (version.empty())
-		return true; // TODO: toolchains other than MSVC
+	if (!version.empty())
+	{
+		auto split = String::split(version, '.');
+		if (split.size() >= 1)
+		{
+			outInfo.versionMajorMinor = atoi(split[0].c_str());
+			outInfo.versionMajorMinor *= 100;
 
-	auto split = String::split(version, '.');
-	if (split.size() < 1)
-		return false;
+			if (split.size() >= 2)
+			{
+				outInfo.versionMajorMinor += atoi(split[1].c_str());
 
-	outInfo.versionMajorMinor = atoi(split[0].c_str());
-	outInfo.versionMajorMinor *= 100;
-
-	if (split.size() < 2)
-		return false;
-
-	outInfo.versionMajorMinor += atoi(split[1].c_str());
-
-	if (split.size() < 3)
-		return false;
-
-	outInfo.versionPatch = atoi(split[2].c_str());
+				if (split.size() >= 3)
+				{
+					outInfo.versionPatch = atoi(split[2].c_str());
+				}
+			}
+		}
+	}
 
 	return true;
 }

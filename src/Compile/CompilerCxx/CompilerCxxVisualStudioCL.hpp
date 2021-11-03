@@ -43,9 +43,6 @@ private:
 
 	std::string m_pchSource;
 	std::string m_pchMinusLocation;
-
-	uint m_versionMajorMinor = 0;
-	uint m_versionPatch = 0;
 };
 }
 

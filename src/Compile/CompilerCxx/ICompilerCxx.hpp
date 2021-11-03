@@ -39,6 +39,9 @@ protected:
 	virtual void addNoExceptionsOption(StringList& outArgList) const;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const;
+
+	uint m_versionMajorMinor = 0;
+	uint m_versionPatch = 0;
 };
 }
 

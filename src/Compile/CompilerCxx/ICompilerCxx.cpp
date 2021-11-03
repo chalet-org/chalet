@@ -7,6 +7,7 @@
 
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Utility/String.hpp"
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
@@ -23,6 +24,8 @@ namespace chalet
 ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProject) :
 	IToolchainExecutableBase(inState, inProject)
 {
+	m_versionMajorMinor = m_state.toolchain.compilerCxx(m_project.language()).versionMajorMinor;
+	m_versionPatch = m_state.toolchain.compilerCxx(m_project.language()).versionPatch;
 }
 
 /*****************************************************************************/
