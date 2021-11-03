@@ -586,7 +586,7 @@ void Output::msgRebuild(const std::string& inName)
 }
 
 /*****************************************************************************/
-void Output::msgBundle(const std::string& inName)
+void Output::msgDistribution(const std::string& inName)
 {
 	auto symbol = Unicode::triangle();
 	displayStyledSymbol(state.theme.header, symbol, fmt::format("Distribution: {}", inName));

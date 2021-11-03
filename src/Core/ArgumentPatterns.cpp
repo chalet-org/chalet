@@ -41,6 +41,25 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		{ Route::Query, &ArgumentPatterns::populateQueryArguments },
 		{ Route::ColorTest, &ArgumentPatterns::populateColorTestArguments },
 	}),
+	// clang-format off
+	m_optionPairsCache({
+		"-i", "--input-file",
+		"-s", "--settings-file",
+		"-f", "--file",
+		"-r", "--root-dir",
+		"-o", "--output-dir",
+		"-x", "--external-dir",
+		"-d", "--distribution-dir",
+		// "-p", "--project-gen",
+		"-t", "--toolchain",
+		"-j", "--max-jobs",
+		"-e", "--env-file",
+		"-a", "--arch",
+		"-c", "--configuration",
+		"-l", "--local",
+		"-g", "--global",
+	}),
+	// clang-format on
 	m_routeMap({
 		{ "buildrun", Route::BuildRun },
 		{ "run", Route::Run },
@@ -142,6 +161,8 @@ bool ArgumentPatterns::resolveFromArguments(const StringList& inArguments)
 /*****************************************************************************/
 ushort ArgumentPatterns::parseOption(const std::string& inString)
 {
+	chalet_assert(!m_optionPairsCache.empty(), "!m_optionPairsCache.empty()");
+
 	ushort res = 0;
 
 	if (String::equals(m_optionPairsCache, inString))
@@ -452,9 +473,6 @@ argparse::Argument& ArgumentPatterns::addTwoStringArguments(const ArgumentIdenti
 	m_argumentMap.emplace(inShort, MappedArgument{ inId, Variant::Kind::String });
 	m_argumentMap.emplace(inLong, MappedArgument{ inId, Variant::Kind::String });
 
-	m_optionPairsCache.emplace_back(inShort);
-	m_optionPairsCache.emplace_back(inLong);
-
 	return arg;
 }
 
@@ -466,9 +484,6 @@ argparse::Argument& ArgumentPatterns::addTwoIntArguments(const ArgumentIdentifie
 
 	m_argumentMap.emplace(inShort, MappedArgument{ inId, Variant::Kind::OptionalInteger });
 	m_argumentMap.emplace(inLong, MappedArgument{ inId, Variant::Kind::OptionalInteger });
-
-	m_optionPairsCache.emplace_back(inShort);
-	m_optionPairsCache.emplace_back(inLong);
 
 	return arg;
 }
@@ -508,9 +523,6 @@ argparse::Argument& ArgumentPatterns::addTwoBoolArguments(const ArgumentIdentifi
 
 	m_argumentMap.emplace(inShort, MappedArgument{ inId, Variant::Kind::Boolean });
 	m_argumentMap.emplace(inLong, MappedArgument{ inId, Variant::Kind::Boolean });
-
-	m_optionPairsCache.emplace_back(inShort);
-	m_optionPairsCache.emplace_back(inLong);
 
 	return arg;
 }
@@ -602,7 +614,7 @@ void ArgumentPatterns::addExternalDirArg()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::addBundleDirArg()
+void ArgumentPatterns::addDistributionDirArg()
 {
 	const auto& defaultValue = m_inputs.defaultDistributionDirectory();
 	addTwoStringArguments(ArgumentIdentifier::DistributionDirectory, "-d", "--distribution-dir")
@@ -758,6 +770,7 @@ void ArgumentPatterns::addOptionalArguments()
 	addRootDirArg();
 	addExternalDirArg();
 	addOutputDirArg();
+	addDistributionDirArg();
 	addBuildConfigurationArg();
 	addToolchainArg();
 	addArchArg();

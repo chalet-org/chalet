@@ -84,7 +84,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		if (!bundle.description().empty())
 			Output::msgTargetDescription(bundle.description(), Output::theme().header);
 		else
-			Output::msgBundle(bundle.name());
+			Output::msgDistribution(bundle.name());
 
 		Output::lineBreak();
 
