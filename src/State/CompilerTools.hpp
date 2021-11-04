@@ -35,6 +35,8 @@ struct CompilerTools
 
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inValue) noexcept;
+	uint versionMajorMinor() const noexcept;
+	uint versionPatch() const noexcept;
 
 	const std::string& archiver() const noexcept;
 	void setArchiver(std::string&& inValue) noexcept;
@@ -104,6 +106,9 @@ private:
 	std::string m_strategyString;
 	std::string m_buildPathStyleString;
 	std::string m_version;
+
+	uint m_toolchainVersionMajorMinor = 0;
+	uint m_toolchainVersionPatch = 0;
 
 	uint m_cmakeVersionMajor = 0;
 	uint m_cmakeVersionMinor = 0;

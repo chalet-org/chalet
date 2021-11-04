@@ -281,6 +281,40 @@ const std::string& CompilerTools::version() const noexcept
 void CompilerTools::setVersion(const std::string& inValue) noexcept
 {
 	m_version = inValue;
+
+	m_toolchainVersionMajorMinor = 0;
+	m_toolchainVersionPatch = 0;
+
+	if (!m_version.empty())
+	{
+		auto split = String::split(m_version, '.');
+		if (split.size() >= 1)
+		{
+			m_toolchainVersionMajorMinor = atoi(split[0].c_str());
+			m_toolchainVersionMajorMinor *= 100;
+
+			if (split.size() >= 2)
+			{
+				m_toolchainVersionMajorMinor += atoi(split[1].c_str());
+
+				if (split.size() >= 3)
+				{
+					m_toolchainVersionPatch = atoi(split[2].c_str());
+				}
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
+uint CompilerTools::versionMajorMinor() const noexcept
+{
+	return m_toolchainVersionMajorMinor;
+}
+
+uint CompilerTools::versionPatch() const noexcept
+{
+	return m_toolchainVersionPatch;
 }
 
 /*****************************************************************************/

@@ -5,6 +5,7 @@
 
 #include "Compile/Linker/LinkerVisualStudioLINK.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -301,7 +302,11 @@ void LinkerVisualStudioLINK::addUnsortedOptions(StringList& outArgList, const st
 	{
 		outArgList.emplace_back("/incremental");
 		outArgList.emplace_back(fmt::format("/pdb:{}.pdb", outputFileBase));
-		outArgList.emplace_back(fmt::format("/ilk:{}.ilk", outputFileBase));
+
+		if (m_state.toolchain.versionMajorMinor() >= 1600)
+		{
+			outArgList.emplace_back(fmt::format("/ilk:{}.ilk", outputFileBase));
+		}
 	}
 	else
 	{
