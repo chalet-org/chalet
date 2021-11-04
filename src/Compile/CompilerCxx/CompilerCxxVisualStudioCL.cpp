@@ -7,6 +7,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -586,7 +587,12 @@ void CompilerCxxVisualStudioCL::addUnsortedOptions(StringList& outArgList) const
 	auto buildDir = m_state.paths.buildOutputDir() + '/';
 	if (m_state.configuration.debugSymbols())
 	{
-		outArgList.emplace_back("/ZI");							  // separate pdb w/ Edit & Continue
+		const auto arch = m_state.info.targetArchitecture();
+		if (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86)
+			outArgList.emplace_back("/ZI"); // separate pdb w/ Edit & Continue
+		else
+			outArgList.emplace_back("/Zi"); // separate pdb
+
 		outArgList.emplace_back("/FS");							  // Force Synchronous PDB Writes
 		outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
 		outArgList.emplace_back("/Ob0");						  // disable inline expansion
