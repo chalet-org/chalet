@@ -442,7 +442,7 @@ const char* Environment::get(const char* inName)
 }
 
 /*****************************************************************************/
-std::string Environment::getAsString(const char* inName, const std::string& inFallback)
+std::string Environment::getAsString(const char* inName, std::string inFallback)
 {
 	const char* result = std::getenv(inName);
 	if (result != nullptr)
@@ -459,7 +459,11 @@ void Environment::set(const char* inName, const std::string& inValue)
 	// LOG(outValue);
 	int result = putenv(outValue.c_str());
 #else
-	int result = setenv(inName, inValue.c_str(), true);
+	int result = 0;
+	if (!inValue.empty())
+		result = setenv(inName, inValue.c_str(), true);
+	else
+		unsetenv(inName);
 #endif
 	if (result != 0)
 	{

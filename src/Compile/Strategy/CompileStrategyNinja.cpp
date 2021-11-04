@@ -11,6 +11,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
@@ -117,17 +118,18 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 
 	auto& hash = m_hashes.at(inProject.name());
 
-	{
-		// std::cout << Output::getAnsiStyle(Output::theme().build) << std::flush;
+	static const char* kNinjaStatus = "NINJA_STATUS";
+	auto oldNinjaStatus = Environment::getAsString(kNinjaStatus);
 
-		command.emplace_back(fmt::format("build_{}", hash));
-		bool result = subprocessNinja(command);
+	auto color = Output::getAnsiStyle(Output::theme().build);
+	Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
 
-		if (!result)
-			return false;
-	}
+	command.emplace_back(fmt::format("build_{}", hash));
+	bool result = subprocessNinja(command);
 
-	return true;
+	Environment::set(kNinjaStatus, oldNinjaStatus);
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -143,26 +145,11 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	auto endlineReplace = fmt::format("\n{}", Output::getAnsiStyle(Color::Reset));
 
 	auto parsePrintOutput = [&]() {
-		bool canSkip = data.size() > 5 && (String::startsWith(noWork, data) || String::startsWith(data, noWork));
+		bool canSkip = data.size() > 10 && (String::startsWith(noWork, data) || String::startsWith(data, noWork));
 		if (skipOutput || canSkip)
 		{
 			skipOutput = true;
 			return;
-		}
-
-		if (data.front() == '[')
-		{
-			data.replace(0, 1, fmt::format("   {}[", Output::getAnsiStyle(Color::Reset)));
-
-			auto firstEndBracket = data.find(']');
-			if (firstEndBracket != std::string::npos)
-			{
-				if (data.substr(0, firstEndBracket).find('\n') == std::string::npos)
-				{
-					auto color = Output::getAnsiStyle(Output::theme().build);
-					data.replace(firstEndBracket, 1, fmt::format("]{}", color));
-				}
-			}
 		}
 
 		String::replaceAll(data, eol, endlineReplace);
