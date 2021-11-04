@@ -468,10 +468,15 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		if (String::contains({ "contents/developer", "xcode" }, executable))
 			return ToolchainType::AppleLLVM;
 #endif
+
+#if defined(CHALET_WIN32)
+		return ToolchainType::MingwGNU;
+#else
 		if (String::contains("mingw", executable))
 			return ToolchainType::MingwGNU;
 
 		return ToolchainType::GNU;
+#endif
 	}
 
 	return ToolchainType::Unknown;

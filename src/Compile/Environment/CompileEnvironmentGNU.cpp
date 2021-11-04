@@ -171,7 +171,7 @@ bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompil
 {
 	const std::string macroResult = getCompilerMacros(inCompilerExec);
 	// LOG(macroResult);
-	// LOG(exec);
+	// LOG(inCompilerExec);
 	// String::replaceAll(macroResult, '\n', ' ');
 	// String::replaceAll(macroResult, "#include ", "");
 	if (macroResult.empty())
@@ -191,6 +191,7 @@ bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompil
 	// Intel will have __INTEL_COMPILER (or at the very least __INTEL_COMPILER_BUILD_DATE) & __GNUC__ (Also GCC-based as far as I know)
 
 	ToolchainType detectedType = getToolchainTypeFromMacros(macroResult);
+	// LOG("types:", static_cast<int>(detectedType), static_cast<int>(m_type));
 	return detectedType == m_type;
 }
 
