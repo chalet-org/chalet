@@ -145,7 +145,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 /*****************************************************************************/
 std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& inFile) const
 {
-	const auto color = getBuildColor();
+	const auto color = Output::getAnsiStyleForMakefile(Output::theme().build);
 	std::string printer;
 
 	if (Output::cleanOutput())
@@ -163,7 +163,7 @@ std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& inFil
 /*****************************************************************************/
 std::string MakefileGeneratorGNU::getLinkerEcho() const
 {
-	const auto color = getBuildColor();
+	const auto color = Output::getAnsiStyleForMakefile(Output::theme().build);
 	std::string printer;
 
 	if (Output::cleanOutput())
@@ -562,9 +562,4 @@ std::string MakefileGeneratorGNU::getPrinter(const std::string& inPrint, const b
 #endif
 }
 
-/*****************************************************************************/
-std::string MakefileGeneratorGNU::getBuildColor() const
-{
-	return Output::getAnsiStyleForMakefile(Output::theme().build);
-}
 }

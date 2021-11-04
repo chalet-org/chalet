@@ -158,9 +158,6 @@ void CompilerTools::fetchMakeVersion(SourceCache& inCache)
 				m_makeVersionMajor = std::stoi(vals[0]);
 				m_makeVersionMinor = std::stoi(vals[1]);
 			}
-
-			m_makeIsJom = String::endsWith("jom.exe", m_make);
-			m_makeIsNMake = String::endsWith("nmake.exe", m_make) || m_makeIsJom;
 		}
 	}
 }
@@ -409,6 +406,9 @@ const std::string& CompilerTools::make() const noexcept
 void CompilerTools::setMake(std::string&& inValue) noexcept
 {
 	m_make = std::move(inValue);
+
+	m_makeIsJom = String::endsWith("jom.exe", m_make);
+	m_makeIsNMake = String::endsWith("nmake.exe", m_make) || m_makeIsJom;
 }
 
 uint CompilerTools::makeVersionMajor() const noexcept

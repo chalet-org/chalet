@@ -42,8 +42,6 @@ private:
 	std::string getQuietFlag() const;
 	std::string getPrinter(const std::string& inPrint = "") const;
 
-	std::string getBuildColor() const;
-
 	// StringList m_fileExtensions;
 };
 }

@@ -71,6 +71,7 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 	addEntryPoint(ret);
 	// addCgThreads(ret);
 
+	ret.emplace_back(getPathCommand("/implib:", fmt::format("{}.lib", outputFileBase)));
 	ret.emplace_back(getPathCommand("/out:", outputFile));
 
 	addSourceObjects(ret, sourceObjs);

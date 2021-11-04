@@ -75,18 +75,25 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 	if (Process::run(command, options) != EXIT_SUCCESS)
 		result = false;
 
-	if (!output.empty() && !result)
+	if (!output.empty())
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
-		if (!result)
+		String::replaceAll(output, '\n', "\r\n");
+
+		if (result)
+		{
+			std::cout << output << std::flush;
+		}
+		else
+		{
 			state.errorCode = CommandPoolErrorCode::BuildFailure;
 
-		String::replaceAll(output, '\n', "\r\n");
-		auto error = Output::getAnsiStyle(Output::theme().error);
-		auto reset = Output::getAnsiStyle(Color::Reset);
-		auto cmdString = String::join(command);
+			auto error = Output::getAnsiStyle(Output::theme().error);
+			auto reset = Output::getAnsiStyle(Color::Reset);
+			auto cmdString = String::join(command);
 
-		std::cout << fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString) << output << std::flush;
+			std::cout << fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString) << output << std::flush;
+		}
 	}
 
 	return result;
@@ -119,10 +126,11 @@ bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 	if (!errorOutput.empty())
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
+		String::replaceAll(errorOutput, '\n', "\r\n");
+
 		if (!result)
 			state.errorCode = CommandPoolErrorCode::BuildFailure;
 
-		String::replaceAll(errorOutput, '\n', "\r\n");
 		auto error = Output::getAnsiStyle(Output::theme().error);
 		auto reset = Output::getAnsiStyle(Color::Reset);
 		auto cmdString = String::join(command);

@@ -42,8 +42,6 @@ private:
 
 	bool locationExists(const std::string& location, const std::string& ext) const;
 
-	std::string getBuildColor() const;
-
 	// StringList m_fileExtensions;
 
 	Dictionary<StringList> m_locationCache;

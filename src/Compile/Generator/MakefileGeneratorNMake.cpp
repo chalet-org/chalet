@@ -114,17 +114,18 @@ void MakefileGeneratorNMake::reset()
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& file) const
 {
-	const auto blue = getBuildColor();
+	const auto blue = Output::getAnsiStyleForMakefile(Output::theme().build);
+	const auto reset = Output::getAnsiStyleForMakefile(Color::Reset);
 	std::string printer;
 
 	if (Output::cleanOutput())
 	{
 		auto outFile = String::getPathFilename(file);
-		printer = getPrinter(fmt::format("{blue}{outFile}", FMT_ARG(blue), FMT_ARG(outFile)));
+		printer = getPrinter(fmt::format("{blue}{outFile}{reset}", FMT_ARG(blue), FMT_ARG(outFile), FMT_ARG(reset)));
 	}
 	else
 	{
-		printer = getPrinter(std::string(blue));
+		printer = getPrinter(blue);
 	}
 
 	return fmt::format("@{}", printer);
@@ -133,7 +134,8 @@ std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& fil
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& file) const
 {
-	const auto blue = getBuildColor();
+	const auto blue = Output::getAnsiStyleForMakefile(Output::theme().build);
+	const auto reset = Output::getAnsiStyleForMakefile(Color::Reset);
 	std::string printer;
 
 	if (Output::cleanOutput())
@@ -145,11 +147,11 @@ std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& file
 
 		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 
-		printer = getPrinter(fmt::format("{blue}{description} {file}", FMT_ARG(blue), FMT_ARG(description), FMT_ARG(file)));
+		printer = getPrinter(fmt::format("{blue}{description} {file}{reset}", FMT_ARG(blue), FMT_ARG(description), FMT_ARG(file), FMT_ARG(reset)));
 	}
 	else
 	{
-		printer = getPrinter(std::string(blue));
+		printer = getPrinter(blue);
 	}
 
 	return fmt::format("@{}", printer);
@@ -427,11 +429,5 @@ std::string MakefileGeneratorNMake::getPrinter(const std::string& inPrint) const
 	}
 
 	return fmt::format("echo {}", inPrint);
-}
-
-/*****************************************************************************/
-std::string MakefileGeneratorNMake::getBuildColor() const
-{
-	return Output::getAnsiStyleForMakefile(Output::theme().build);
 }
 }

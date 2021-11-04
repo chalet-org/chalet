@@ -364,10 +364,9 @@ void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addDefines(StringList& outArgList) const
 {
-	const std::string prefix = "/D";
 	for (auto& define : m_project.defines())
 	{
-		outArgList.emplace_back(fmt::format("{}\"{}\"", prefix, define));
+		outArgList.emplace_back(getPathCommand("/D", define));
 	}
 }
 
