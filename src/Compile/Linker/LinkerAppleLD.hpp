@@ -17,8 +17,8 @@ struct LinkerAppleLD final : public LinkerLLVMLLD
 protected:
 	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
 
-	virtual void addStripSymbolsOption(StringList& outArgList) const final;
-	virtual void addThreadModelLinkerOption(StringList& outArgList) const final;
+	virtual void addStripSymbols(StringList& outArgList) const final;
+	virtual void addThreadModelLinks(StringList& outArgList) const final;
 	virtual void addProfileInformationLinkerOption(StringList& outArgList) const final;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const final;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const final;

@@ -30,7 +30,7 @@ protected:
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addDefines(StringList& outArgList) const override;
 	virtual void addPchInclude(StringList& outArgList) const override;
-	virtual void addOptimizationOption(StringList& outArgList) const override;
+	virtual void addOptimizations(StringList& outArgList) const override;
 	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
 	virtual void addDebuggingInformationOption(StringList& outArgList) const override;
 	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;

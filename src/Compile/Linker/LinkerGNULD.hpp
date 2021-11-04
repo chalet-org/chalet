@@ -26,14 +26,14 @@ protected:
 	virtual void addLibDirs(StringList& outArgList) const override;
 	virtual void addLinks(StringList& outArgList) const override;
 	virtual void addRunPath(StringList& outArgList) const override;
-	virtual void addStripSymbolsOption(StringList& outArgList) const override;
+	virtual void addStripSymbols(StringList& outArgList) const override;
 	virtual void addLinkerOptions(StringList& outArgList) const override;
 	virtual void addProfileInformationLinkerOption(StringList& outArgList) const override;
-	virtual void addLinkTimeOptimizationOption(StringList& outArgList) const override;
-	virtual void addThreadModelLinkerOption(StringList& outArgList) const override;
+	virtual void addLinkTimeOptimizations(StringList& outArgList) const override;
+	virtual void addThreadModelLinks(StringList& outArgList) const override;
 	virtual void addLinkerScripts(StringList& outArgList) const override;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;
-	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const override;
+	virtual void addStaticCompilerLibraries(StringList& outArgList) const override;
 	virtual void addSubSystem(StringList& outArgList) const override;
 	virtual void addEntryPoint(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;

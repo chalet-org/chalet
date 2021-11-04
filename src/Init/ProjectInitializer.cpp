@@ -115,7 +115,7 @@ bool ProjectInitializer::run()
 	{
 		props.language = CodeLanguage::CPlusPlus;
 		props.specialization = CxxSpecialization::ObjectiveCPlusPlus;
-		props.langStandard = "20";
+		props.langStandard = "17";
 		sourceExts.emplace_back(".mm");
 	}
 #endif
@@ -123,7 +123,7 @@ bool ProjectInitializer::run()
 	{
 		props.language = CodeLanguage::CPlusPlus;
 		props.specialization = CxxSpecialization::CPlusPlus;
-		props.langStandard = "20";
+		props.langStandard = "17";
 		sourceExts.emplace_back(".cpp");
 		sourceExts.emplace_back(".cxx");
 		sourceExts.emplace_back(".cc");

@@ -27,7 +27,7 @@ protected:
 	virtual void addWarnings(StringList& outArgList) const;
 	virtual void addDefines(StringList& outArgList) const;
 	virtual void addPchInclude(StringList& outArgList) const;
-	virtual void addOptimizationOption(StringList& outArgList) const;
+	virtual void addOptimizations(StringList& outArgList) const;
 	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const;
 	virtual void addDebuggingInformationOption(StringList& outArgList) const;
 	virtual void addProfileInformationCompileOption(StringList& outArgList) const;

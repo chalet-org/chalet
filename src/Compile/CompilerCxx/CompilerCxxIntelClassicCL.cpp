@@ -34,9 +34,9 @@ void CompilerCxxIntelClassicCL::addIncludes(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxIntelClassicCL::addDiagnosticsOption(StringList& outArgList) const
+void CompilerCxxIntelClassicCL::addDiagnostics(StringList& outArgList) const
 {
-	// CompileToolchainVisualStudio::addDiagnosticsOption(outArgList);
+	// CompileToolchainVisualStudio::addDiagnostics(outArgList);
 	UNUSED(outArgList);
 }
 

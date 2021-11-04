@@ -28,14 +28,14 @@ protected:
 	virtual void addLibDirs(StringList& outArgList) const;
 	virtual void addLinks(StringList& outArgList) const;
 	virtual void addRunPath(StringList& outArgList) const;
-	virtual void addStripSymbolsOption(StringList& outArgList) const;
+	virtual void addStripSymbols(StringList& outArgList) const;
 	virtual void addLinkerOptions(StringList& outArgList) const;
 	virtual void addProfileInformationLinkerOption(StringList& outArgList) const;
-	virtual void addLinkTimeOptimizationOption(StringList& outArgList) const;
-	virtual void addThreadModelLinkerOption(StringList& outArgList) const;
+	virtual void addLinkTimeOptimizations(StringList& outArgList) const;
+	virtual void addThreadModelLinks(StringList& outArgList) const;
 	virtual void addLinkerScripts(StringList& outArgList) const;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const;
-	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const;
+	virtual void addStaticCompilerLibraries(StringList& outArgList) const;
 	virtual void addSubSystem(StringList& outArgList) const;
 	virtual void addEntryPoint(StringList& outArgList) const;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const;

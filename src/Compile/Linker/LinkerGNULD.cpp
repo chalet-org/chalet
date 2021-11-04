@@ -80,16 +80,16 @@ StringList LinkerGNULD::getSharedLibTargetCommand(const std::string& outputFile,
 		addPositionIndependentCodeOption(ret);
 	}
 
-	addStripSymbolsOption(ret);
+	addStripSymbols(ret);
 	addLinkerOptions(ret);
 	addMacosSysRootOption(ret);
 	addProfileInformationLinkerOption(ret);
-	addLinkTimeOptimizationOption(ret);
-	addThreadModelLinkerOption(ret);
+	addLinkTimeOptimizations(ret);
+	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
-	addStaticCompilerLibraryOptions(ret);
+	addStaticCompilerLibraries(ret);
 	addSubSystem(ret);
 	addEntryPoint(ret);
 	addMacosFrameworkOptions(ret);
@@ -130,17 +130,17 @@ StringList LinkerGNULD::getExecutableTargetCommand(const std::string& outputFile
 
 	addLinks(ret);
 
-	addStripSymbolsOption(ret);
+	addStripSymbols(ret);
 	addLinkerOptions(ret);
 	addMacosSysRootOption(ret);
 	addProfileInformationLinkerOption(ret);
-	addLinkTimeOptimizationOption(ret);
-	addThreadModelLinkerOption(ret);
+	addLinkTimeOptimizations(ret);
+	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
 
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
-	addStaticCompilerLibraryOptions(ret);
+	addStaticCompilerLibraries(ret);
 	addSubSystem(ret);
 	addEntryPoint(ret);
 	addMacosFrameworkOptions(ret);
@@ -214,7 +214,7 @@ void LinkerGNULD::addRunPath(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addStripSymbolsOption(StringList& outArgList) const
+void LinkerGNULD::addStripSymbols(StringList& outArgList) const
 {
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	if (m_state.configuration.stripSymbols())
@@ -253,7 +253,7 @@ void LinkerGNULD::addProfileInformationLinkerOption(StringList& outArgList) cons
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addLinkTimeOptimizationOption(StringList& outArgList) const
+void LinkerGNULD::addLinkTimeOptimizations(StringList& outArgList) const
 {
 	if (m_state.configuration.linkTimeOptimization())
 	{
@@ -264,7 +264,7 @@ void LinkerGNULD::addLinkTimeOptimizationOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addThreadModelLinkerOption(StringList& outArgList) const
+void LinkerGNULD::addThreadModelLinks(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
 	if (!m_state.environment->isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
@@ -301,7 +301,7 @@ void LinkerGNULD::addLibStdCppLinkerOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addStaticCompilerLibraryOptions(StringList& outArgList) const
+void LinkerGNULD::addStaticCompilerLibraries(StringList& outArgList) const
 {
 	// List::addIfDoesNotExist(outArgList, "-libstdc++");
 

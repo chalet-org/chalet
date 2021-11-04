@@ -68,43 +68,62 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	if (executable.empty())
 		return ret;
 
+	std::string pchObject = outputFile;
+	String::replaceAll(pchObject, ".pch", ".obj");
+
+	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
+
 	ret.emplace_back(getQuotedExecutablePath(executable));
 	ret.emplace_back("/nologo");
-	addDiagnosticsOption(ret);
+	ret.emplace_back("/c");
+	ret.emplace_back("/utf-8");
 
 	if (generateDependency && m_isNinja)
 	{
 		ret.emplace_back("/showIncludes");
 	}
 
-	addThreadModelCompileOption(ret);
-	addOptimizationOption(ret);
-	addUnsortedOptions(ret);
-
-	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
-	addLanguageStandard(ret, specialization);
-	addNoExceptionsOption(ret);
-	addWarnings(ret);
-
-	ret.emplace_back("/utf-8");
-
 	addCompileOptions(ret);
-	addNoRunTimeTypeInformationOption(ret);
-	addWholeProgramOptimization(ret);
 
-	addDefines(ret);
+	{
+		addSeparateProgramDatabase(ret);
+		addForceSeparateProgramDatabaseWrites(ret);
+		addNativeJustMyCodeDebugging(ret);
+		addWarnings(ret);
+		addDiagnostics(ret);
+		addAdditionalSecurityChecks(ret);
+		addOptimizations(ret);
+		addGenerateIntrinsicFunctions(ret);
+		addWholeProgramOptimization(ret);
+		addDefines(ret);
+		// /Gm-  // deprecated
+		addNoExceptionsOption(ret);
+		addRuntimeErrorChecks(ret);
+		addThreadModelCompileOption(ret);
+		addBufferSecurityCheck(ret);
+		addFunctionLevelLinking(ret);
+		addFloatingPointBehavior(ret);
+		addStandardsConformance(ret);
+		addStandardBehaviors(ret);
+		addProgramDatabaseOutput(ret);
+		addExternalWarnings(ret);
+		addCallingConvention(ret);
+		// addFullPathSourceCode(ret);
+	}
+
+	// addInlineFunctionExpansion(ret);
+	// addUnsortedOptions(ret);
+
+	addLanguageStandard(ret, specialization);
+	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
 
-	std::string pchObject = outputFile;
-	String::replaceAll(pchObject, ".pch", ".obj");
-
 	ret.emplace_back(getPathCommand("/Fp", outputFile));
-
+	ret.emplace_back(getPathCommand("/Yc", m_pchMinusLocation));
 	ret.emplace_back(getPathCommand("/Fo", pchObject));
+
 	UNUSED(inputFile);
 
-	ret.emplace_back("/c");
-	ret.emplace_back(getPathCommand("/Yc", m_pchMinusLocation));
 	ret.push_back(m_pchSource);
 
 	return ret;
@@ -126,36 +145,54 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 
 	ret.emplace_back(getQuotedExecutablePath(executable));
 	ret.emplace_back("/nologo");
-	addDiagnosticsOption(ret);
-	ret.emplace_back("/MP");
+	ret.emplace_back("/c");
+	ret.emplace_back("/utf-8");
+	// ret.emplace_back("/MP");
 
 	if (generateDependency && m_isNinja)
 	{
 		ret.emplace_back("/showIncludes");
 	}
 
-	addThreadModelCompileOption(ret);
-	addOptimizationOption(ret);
-	addUnsortedOptions(ret);
-	addLanguageStandard(ret, specialization);
-	addNoExceptionsOption(ret);
-	addWarnings(ret);
-
-	ret.emplace_back("/utf-8");
-
 	addCompileOptions(ret);
+
+	{
+		addSeparateProgramDatabase(ret);
+		addForceSeparateProgramDatabaseWrites(ret);
+		addNativeJustMyCodeDebugging(ret);
+		addWarnings(ret);
+		addDiagnostics(ret);
+		addAdditionalSecurityChecks(ret);
+		addOptimizations(ret);
+		addGenerateIntrinsicFunctions(ret);
+		addWholeProgramOptimization(ret);
+		addDefines(ret);
+		// /Gm-  // deprecated
+		addNoExceptionsOption(ret);
+		addRuntimeErrorChecks(ret);
+		addThreadModelCompileOption(ret);
+		addBufferSecurityCheck(ret);
+		addFloatingPointBehavior(ret);
+		addFunctionLevelLinking(ret);
+		addStandardsConformance(ret);
+		addStandardBehaviors(ret);
+		addProgramDatabaseOutput(ret);
+		addExternalWarnings(ret);
+		addCallingConvention(ret);
+		// addFullPathSourceCode(ret);
+	}
+
+	// addInlineFunctionExpansion(ret);
+	// addUnsortedOptions(ret);
+
+	addLanguageStandard(ret, specialization);
 	addNoRunTimeTypeInformationOption(ret);
-	addWholeProgramOptimization(ret);
-
-	addDebuggingInformationOption(ret);
-
-	addDefines(ret);
 	addIncludes(ret);
+
+	addPchInclude(ret);
 
 	ret.emplace_back(getPathCommand("/Fo", outputFile));
 
-	ret.emplace_back("/c");
-	addPchInclude(ret);
 	ret.push_back(inputFile);
 
 	return ret;
@@ -164,7 +201,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addIncludes(StringList& outArgList) const
 {
-	// outArgList.emplace_back("/X"); // ignore "Path"
+	// List::addIfDoesNotExist(outArgList, "/X"); // ignore "Path"
 
 	const std::string option{ "/I" };
 
@@ -189,44 +226,45 @@ void CompilerCxxVisualStudioCL::addIncludes(StringList& outArgList) const
 	if (m_project.usesPch())
 	{
 		auto outDir = String::getPathFolder(m_project.pch());
-		List::addIfDoesNotExist(outArgList, getPathCommand(option, outDir));
+		outArgList.emplace_back(getPathCommand(option, outDir));
 	}
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 {
-	// TODO: ProjectWarnings::Custom would need to convert GNU warnings to MSVC warning codes
+	m_warningFlag.clear();
+	bool warningsAsErrors = false;
 
 	switch (m_project.warningsPreset())
 	{
 		case ProjectWarnings::Minimal:
-			outArgList.emplace_back("/W1");
+			m_warningFlag = "W1";
 			break;
 
 		case ProjectWarnings::Extra:
-			outArgList.emplace_back("/W2");
+			m_warningFlag = "W2";
 			break;
 
 		case ProjectWarnings::Pedantic: {
-			outArgList.emplace_back("/W3");
+			m_warningFlag = "W3";
 			break;
 		}
 		case ProjectWarnings::Error: {
-			outArgList.emplace_back("/W3");
-			outArgList.emplace_back("/WX");
+			m_warningFlag = "W3";
+			warningsAsErrors = true;
 			break;
 		}
 		case ProjectWarnings::Strict:
 		case ProjectWarnings::StrictPedantic: {
-			outArgList.emplace_back("/W4");
-			outArgList.emplace_back("/WX");
+			m_warningFlag = "W4";
+			warningsAsErrors = true;
 			break;
 		}
 		case ProjectWarnings::VeryStrict: {
-			// outArgList.emplace_back("/Wall"); // Note: Lots of messy compiler level warnings that break your build!
-			outArgList.emplace_back("/W4");
-			outArgList.emplace_back("/WX");
+			// m_warningFlag = "Wall"; // Note: Lots of messy compiler level warnings that break your build!
+			m_warningFlag = "W4";
+			warningsAsErrors = true;
 			break;
 		}
 
@@ -254,7 +292,8 @@ void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 				if (!String::equals(veryStrict, w))
 					continue;
 
-				outArgList.emplace_back("/Wall");
+				// m_warningFlag = "Wall";
+				m_warningFlag = "W4";
 				strictSet = true;
 				break;
 			}
@@ -278,7 +317,7 @@ void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 					if (!String::equals(strictPedantic, w))
 						continue;
 
-					outArgList.emplace_back("/W4");
+					m_warningFlag = "W4";
 					strictSet = true;
 					break;
 				}
@@ -288,21 +327,21 @@ void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 			{
 				if (List::contains<std::string>(warnings, "pedantic"))
 				{
-					outArgList.emplace_back("/W3");
+					m_warningFlag = "W3";
 				}
 				else if (List::contains<std::string>(warnings, "extra"))
 				{
-					outArgList.emplace_back("/W2");
+					m_warningFlag = "W2";
 				}
 				else if (List::contains<std::string>(warnings, "all"))
 				{
-					outArgList.emplace_back("/W1");
+					m_warningFlag = "W1";
 				}
 			}
 
 			if (List::contains<std::string>(warnings, "pedantic"))
 			{
-				outArgList.emplace_back("/WX");
+				warningsAsErrors = true;
 			}
 
 			break;
@@ -311,6 +350,14 @@ void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 		case ProjectWarnings::None:
 		default:
 			break;
+	}
+
+	if (!m_warningFlag.empty())
+	{
+		List::addIfDoesNotExist(outArgList, fmt::format("/{}", m_warningFlag));
+
+		if (warningsAsErrors)
+			List::addIfDoesNotExist(outArgList, "/WX");
 	}
 }
 
@@ -343,7 +390,7 @@ void CompilerCxxVisualStudioCL::addPchInclude(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxVisualStudioCL::addOptimizationOption(StringList& outArgList) const
+void CompilerCxxVisualStudioCL::addOptimizations(StringList& outArgList) const
 {
 	std::string opt;
 
@@ -394,7 +441,7 @@ void CompilerCxxVisualStudioCL::addOptimizationOption(StringList& outArgList) co
 
 	if (!opt.empty())
 	{
-		outArgList.emplace_back(std::move(opt));
+		List::addIfDoesNotExist(outArgList, std::move(opt));
 	}
 }
 
@@ -407,7 +454,7 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 	// TODO: Reverse years so c11 / c++14 is checked explicitly & newest year isn't
 	if (specialization == CxxSpecialization::C)
 	{
-		outArgList.emplace_back("/TC"); // Treat code as C
+		List::addIfDoesNotExist(outArgList, "/TC"); // Treat code as C
 
 		// C standards conformance was added in 2019 16.8
 		if (m_versionMajorMinor >= 1928)
@@ -417,17 +464,17 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 			String::replaceAll(langStandard, "c", "");
 			if (String::equals({ "2x", "18", "17", "iso9899:2018", "iso9899:2017" }, langStandard))
 			{
-				outArgList.emplace_back("/std:c17");
+				List::addIfDoesNotExist(outArgList, "/std:c17");
 			}
 			else
 			{
-				outArgList.emplace_back("/std:c11");
+				List::addIfDoesNotExist(outArgList, "/std:c11");
 			}
 		}
 	}
 	else if (specialization == CxxSpecialization::CPlusPlus)
 	{
-		outArgList.emplace_back("/TP"); // Treat code as C++
+		List::addIfDoesNotExist(outArgList, "/TP"); // Treat code as C++
 
 		// 2015 Update 3 or later (/std flag doesn't exist prior
 		if (m_versionMajorMinor > 1900 || (m_versionMajorMinor == 1900 && m_versionPatch >= 24210))
@@ -440,7 +487,7 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 			{
 				if (m_versionMajorMinor >= 1929)
 				{
-					outArgList.emplace_back("/std:c++20");
+					List::addIfDoesNotExist(outArgList, "/std:c++20");
 					set = true;
 				}
 			}
@@ -448,31 +495,23 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 			{
 				if (m_versionMajorMinor >= 1911)
 				{
-					outArgList.emplace_back("/std:c++17");
+					List::addIfDoesNotExist(outArgList, "/std:c++17");
 					set = true;
 				}
 			}
 			else if (String::equals({ "14", "1y", "11", "0x", "03", "98" }, langStandard))
 			{
 				// Note: There was never "/std:c++11", "/std:c++03" or "/std:c++98"
-				outArgList.emplace_back("/std:c++14");
+				List::addIfDoesNotExist(outArgList, "/std:c++14");
 				set = true;
 			}
 
 			if (!set)
 			{
-				outArgList.emplace_back("/std:c++latest");
+				List::addIfDoesNotExist(outArgList, "/std:c++latest");
 			}
 		}
 	}
-}
-
-/*****************************************************************************/
-void CompilerCxxVisualStudioCL::addDebuggingInformationOption(StringList& outArgList) const
-{
-	// TODO! - pdb files etc
-	// /Zi /ZI /debug
-	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
@@ -480,7 +519,7 @@ void CompilerCxxVisualStudioCL::addCompileOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.compileOptions())
 	{
-		List::addIfDoesNotExist(outArgList, option);
+		outArgList.emplace_back(option);
 	}
 }
 
@@ -514,44 +553,206 @@ void CompilerCxxVisualStudioCL::addNoExceptionsOption(StringList& outArgList) co
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addThreadModelCompileOption(StringList& outArgList) const
 {
-	// /MD - multithreaded dll
-	// /MDd - debug multithreaded dll
-	// /MT - multithreaded executable
-	// /MTd - debug multithreaded executable
+	// /MD - dynamically links with MSVCRT.lib
+	// /MDd - dynamically links with MSVCRTD.lib (debug version)
 
-	// TODO: at the moment, assumes threaded
+	// /MT - statically links with LIBCMT.lib
+	// /MTd - statically links with LIBCMTD.lib (debug version)
 
-	if (m_project.isSharedLibrary())
+	if (m_project.staticLinking())
 	{
+		// Note: This will generate a larger binary!
+		//
 		if (m_state.configuration.debugSymbols())
-			outArgList.emplace_back("/MDd");
+			List::addIfDoesNotExist(outArgList, "/MTd");
 		else
-			outArgList.emplace_back("/MD");
+			List::addIfDoesNotExist(outArgList, "/MT");
 	}
 	else
 	{
 		if (m_state.configuration.debugSymbols())
-			outArgList.emplace_back("/MTd");
+			List::addIfDoesNotExist(outArgList, "/MDd");
 		else
-			outArgList.emplace_back("/MT");
+			List::addIfDoesNotExist(outArgList, "/MD");
 	}
 }
 
 /*****************************************************************************/
-void CompilerCxxVisualStudioCL::addDiagnosticsOption(StringList& outArgList) const
+void CompilerCxxVisualStudioCL::addDiagnostics(StringList& outArgList) const
 {
-	outArgList.emplace_back("/diagnostics:caret");
+	List::addIfDoesNotExist(outArgList, "/diagnostics:caret");
+	// List::addIfDoesNotExist(outArgList, "/diagnostics:column");
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addWholeProgramOptimization(StringList& outArgList) const
 {
-	// Doesn't exactly do what it's supposed to - same binary size, more irritating diagnostic messages
-	// if (m_state.configuration.linkTimeOptimization())
-	// {
-	// 	outArgList.emplace_back("/GL");
-	// }
+	// Required by LINK's Link-time code generation (/LTCG)
+	// Basically ends up being quicker compiler times for a slower link time, remedied further by incremental linking
+	if (m_state.configuration.linkTimeOptimization())
+	{
+		outArgList.emplace_back("/GL");
+	}
+	// UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addNativeJustMyCodeDebugging(StringList& outArgList) const
+{
+	if (m_state.configuration.debugSymbols())
+	{
+		List::addIfDoesNotExist(outArgList, "/JMC");
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addBufferSecurityCheck(StringList& outArgList) const
+{
+	List::addIfDoesNotExist(outArgList, "/GS");
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addStandardBehaviors(StringList& outArgList) const
+{
+	List::addIfDoesNotExist(outArgList, "/Zc:wchar_t"); // wchar_t is native type
+	List::addIfDoesNotExist(outArgList, "/Zc:inline");
+	List::addIfDoesNotExist(outArgList, "/Zc:forScope");
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addAdditionalSecurityChecks(StringList& outArgList) const
+{
+	List::addIfDoesNotExist(outArgList, "/sdl");
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addFloatingPointBehavior(StringList& outArgList) const
+{
+	List::addIfDoesNotExist(outArgList, "/fp:precise");
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addCallingConvention(StringList& outArgList) const
+{
+	// default calling convention
+	List::addIfDoesNotExist(outArgList, "/Gd");
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addFullPathSourceCode(StringList& outArgList) const
+{
+	// full path of source code file
+	// List::addIfDoesNotExist(outArgList, "/FC");
 	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addStandardsConformance(StringList& outArgList) const
+{
+	if (!m_state.configuration.debugSymbols())
+	{
+		// this flag is definitely VS 2017+
+		List::addIfDoesNotExist(outArgList, "/permissive-"); // standards conformance
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addSeparateProgramDatabase(StringList& outArgList) const
+{
+	/*
+		/ZI - separate pdb w/ Edit & Continue
+		/Zi - separate pdb
+	*/
+
+	if (m_state.configuration.debugSymbols())
+	{
+		const auto arch = m_state.info.targetArchitecture();
+		if (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86)
+			List::addIfDoesNotExist(outArgList, "/ZI");
+		else
+			List::addIfDoesNotExist(outArgList, "/Zi");
+	}
+	else
+	{
+		List::addIfDoesNotExist(outArgList, "/Zi");
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addForceSeparateProgramDatabaseWrites(StringList& outArgList) const
+{
+	List::addIfDoesNotExist(outArgList, "/FS");
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addProgramDatabaseOutput(StringList& outArgList) const
+{
+	auto buildDir = m_state.paths.buildOutputDir() + '/';
+	if (m_state.configuration.debugSymbols())
+	{
+		outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
+	}
+	else
+	{
+		outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addExternalWarnings(StringList& outArgList) const
+{
+	if (!m_warningFlag.empty())
+	{
+		if (m_versionMajorMinor >= 1913) // added in 15.6
+		{
+			if (m_versionMajorMinor < 1929) // requires experimental
+			{
+				List::addIfDoesNotExist(outArgList, "/experimental:external");
+			}
+
+			List::addIfDoesNotExist(outArgList, fmt::format("/external:{}", m_warningFlag));
+		}
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addRuntimeErrorChecks(StringList& outArgList) const
+{
+	if (m_state.configuration.debugSymbols())
+	{
+		// Enables stack frame run-time error checking, uninitialized variables
+		List::addIfDoesNotExist(outArgList, "/RTC1");
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addInlineFunctionExpansion(StringList& outArgList) const
+{
+	if (m_state.configuration.debugSymbols())
+	{
+		// disable inline expansion
+		List::addIfDoesNotExist(outArgList, "/Ob0");
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addFunctionLevelLinking(StringList& outArgList) const
+{
+	if (!m_state.configuration.debugSymbols())
+	{
+		// function level linking
+		List::addIfDoesNotExist(outArgList, "/Gy");
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addGenerateIntrinsicFunctions(StringList& outArgList) const
+{
+	if (!m_state.configuration.debugSymbols())
+	{
+		// generate intrinsic functions
+		List::addIfDoesNotExist(outArgList, "/Oi");
+	}
 }
 
 /*****************************************************************************/
@@ -560,59 +761,8 @@ void CompilerCxxVisualStudioCL::addUnsortedOptions(StringList& outArgList) const
 	// Note: in MSVC, one can combine these (annoyingly)
 	//	Might be desireable to add:
 	//    /Oy (suppresses the creation of frame pointers on the call stack for quicker function calls.)
-	//    /Oi (generates intrinsic functions for appropriate function calls.)
 
-	{
-		// Buffer security check
-		outArgList.emplace_back("/GS");
-
-		// wchar_t is native type
-		outArgList.emplace_back("/Zc:wchar_t");
-		outArgList.emplace_back("/Zc:inline");
-		outArgList.emplace_back("/Zc:forScope");
-
-		// additional security checks
-		outArgList.emplace_back("/sdl");
-
-		// floating point behavior
-		outArgList.emplace_back("/fp:precise");
-
-		// default calling convention
-		outArgList.emplace_back("/Gd");
-
-		// full path of source code file
-		// outArgList.emplace_back("/FC");
-	}
-
-	auto buildDir = m_state.paths.buildOutputDir() + '/';
-	if (m_state.configuration.debugSymbols())
-	{
-		const auto arch = m_state.info.targetArchitecture();
-		if (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86)
-			outArgList.emplace_back("/ZI"); // separate pdb w/ Edit & Continue
-		else
-			outArgList.emplace_back("/Zi"); // separate pdb
-
-		outArgList.emplace_back("/FS");							  // Force Synchronous PDB Writes
-		outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
-		outArgList.emplace_back("/Ob0");						  // disable inline expansion
-		outArgList.emplace_back("/RTC1");						  // Enables stack frame run-time error checking, uninitialized variables
-
-		// outArgList.emplace_back(getPathCommand("/Fa", buildDir));
-	}
-	else
-	{
-		// this flag is definitely VS 2017+
-		outArgList.emplace_back("/permissive-"); // standards conformance
-
-		outArgList.emplace_back("/Zi");							  // separate pdb
-		outArgList.emplace_back("/FS");							  // Force Synchronous PDB Writes
-		outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
-		outArgList.emplace_back("/Gy");							  // function level linking
-		outArgList.emplace_back("/Oi");							  // generate intrinsic functions
-
-		// outArgList.emplace_back(getPathCommand("/Fa", buildDir));
-	}
+	UNUSED(outArgList);
 }
 
 }

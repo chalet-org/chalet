@@ -51,20 +51,29 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/dll");
 
-	addArchitecture(ret, std::string());
-	addSubSystem(ret);
-	addEntryPoint(ret);
-	addCgThreads(ret);
 	addLinkerOptions(ret);
-	addLibDirs(ret);
 
-	addUnsortedOptions(ret, outputFileBase);
+	{
+		addIncremental(ret, outputFileBase);
+		addLibDirs(ret);
+		addLinks(ret);
+		// addPrecompiledHeaderLink(ret);
+		addDebug(ret, outputFileBase);
+		addSubSystem(ret);
+		addLinkTimeOptimizations(ret);
+		addLinkTimeCodeGeneration(ret, outputFileBase);
+		addUnsortedOptions(ret);
+		addDynamicBase(ret);
+		addCompatibleWithDataExecutionPrevention(ret);
+		addMachine(ret);
+	}
 
-	ret.emplace_back(fmt::format("/out:{}", outputFile));
+	addEntryPoint(ret);
+	// addCgThreads(ret);
 
-	// addPrecompiledHeaderLink(ret);
+	ret.emplace_back(getPathCommand("/out:", outputFile));
+
 	addSourceObjects(ret, sourceObjs);
-	addLinks(ret);
 
 	return ret;
 }
@@ -84,20 +93,29 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.linker()));
 	ret.emplace_back("/nologo");
 
-	addArchitecture(ret, std::string());
-	addSubSystem(ret);
-	addEntryPoint(ret);
-	addCgThreads(ret);
 	addLinkerOptions(ret);
-	addLibDirs(ret);
 
-	addUnsortedOptions(ret, outputFileBase);
+	{
+		addIncremental(ret, outputFileBase);
+		addLibDirs(ret);
+		addLinks(ret);
+		// addPrecompiledHeaderLink(ret);
+		addDebug(ret, outputFileBase);
+		addSubSystem(ret);
+		addLinkTimeOptimizations(ret);
+		addLinkTimeCodeGeneration(ret, outputFileBase);
+		addUnsortedOptions(ret);
+		addDynamicBase(ret);
+		addCompatibleWithDataExecutionPrevention(ret);
+		addMachine(ret);
+	}
 
-	ret.emplace_back(fmt::format("/out:{}", outputFile));
+	addEntryPoint(ret);
+	// addCgThreads(ret);
 
-	// addPrecompiledHeaderLink(ret);
+	ret.emplace_back(getPathCommand("/out:", outputFile));
+
 	addSourceObjects(ret, sourceObjs);
-	addLinks(ret);
 
 	return ret;
 }
@@ -129,7 +147,7 @@ void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 				auto& project = static_cast<const SourceTarget&>(*target);
 				if (List::contains(m_project.projectStaticLinks(), project.name()))
 				{
-					outArgList.push_back(project.outputFile());
+					List::addIfDoesNotExist(outArgList, project.outputFile());
 				}
 			}
 		}
@@ -156,7 +174,7 @@ void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 						if (String::endsWith(".dll", outputFile))
 						{
 							String::replaceAll(outputFile, ".dll", ".lib");
-							outArgList.emplace_back(std::move(outputFile));
+							List::addIfDoesNotExist(outArgList, std::move(outputFile));
 							found = true;
 							break;
 						}
@@ -166,7 +184,7 @@ void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 
 			if (!found)
 			{
-				outArgList.emplace_back(fmt::format("{}.lib", link));
+				List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
 			}
 		}
 	}
@@ -180,12 +198,14 @@ void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 			 "user32",
 			 "gdi32",
 			 "winspool",
+			 "comdlg32",
+			 "advapi32",
 			 "shell32",
 			 "ole32",
 			 "oleaut32",
 			 "uuid",
-			 "comdlg32",
-			 "advapi32",
+			 //  "odbc32",
+			 //  "odbccp32",
 		 })
 	{
 		List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
@@ -198,14 +218,14 @@ void LinkerVisualStudioLINK::addLinkerOptions(StringList& outArgList) const
 	for (auto& option : m_project.linkerOptions())
 	{
 		// if (isFlagSupported(option))
-		outArgList.push_back(option);
+		outArgList.emplace_back(option);
 	}
 }
 
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addProfileInformationLinkerOption(StringList& outArgList) const
 {
-	outArgList.emplace_back("/genprofile");
+	List::addIfDoesNotExist(outArgList, "/genprofile");
 }
 
 /*****************************************************************************/
@@ -234,33 +254,59 @@ void LinkerVisualStudioLINK::addEntryPoint(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-bool LinkerVisualStudioLINK::addArchitecture(StringList& outArgList, const std::string& inArch) const
+void LinkerVisualStudioLINK::addLinkTimeOptimizations(StringList& outArgList) const
 {
-	UNUSED(inArch);
-
-	// TODO: /MACHINE - target platform arch
-	const auto arch = m_state.info.targetArchitecture();
-	switch (arch)
+	// if (m_state.configuration.linkTimeOptimization())
 	{
-		case Arch::Cpu::X64:
-			outArgList.emplace_back("/machine:x64");
-			break;
+		const auto arch = m_state.info.targetArchitecture();
+		bool isArm = arch == Arch::Cpu::ARM || arch == Arch::Cpu::ARM64;
 
-		case Arch::Cpu::X86:
-			outArgList.emplace_back("/machine:x86");
-			break;
+		// Note: These are also tied to /incremental (implied with /debug)
+		if (m_state.configuration.debugSymbols())
+		{
+			List::addIfDoesNotExist(outArgList, "/opt:NOREF");
+			List::addIfDoesNotExist(outArgList, "/opt:NOICF");
 
-		case Arch::Cpu::ARM:
-			outArgList.emplace_back("/machine:arm");
-			break;
+			if (isArm)
+				List::addIfDoesNotExist(outArgList, "/opt:NOLBR");
+		}
+		else
+		{
+			List::addIfDoesNotExist(outArgList, "/opt:REF");
+			List::addIfDoesNotExist(outArgList, "/opt:ICF");
 
-		case Arch::Cpu::ARM64:
-		default:
-			// ??
-			break;
+			if (isArm)
+				List::addIfDoesNotExist(outArgList, "/opt:LBR"); // relates to arm binaries
+		}
 	}
+}
 
-	return true;
+/*****************************************************************************/
+void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::string& outputFileBase) const
+{
+	if (m_state.configuration.debugSymbols())
+	{
+		outArgList.emplace_back("/incremental");
+
+		if (m_state.toolchain.versionMajorMinor() >= 1600)
+		{
+			outArgList.emplace_back(getPathCommand("/ilk:", fmt::format("{}.ilk", outputFileBase)));
+		}
+	}
+	else
+	{
+		outArgList.emplace_back("/incremental:NO");
+	}
+}
+
+/*****************************************************************************/
+void LinkerVisualStudioLINK::addDebug(StringList& outArgList, const std::string& outputFileBase) const
+{
+	if (!m_state.configuration.debugSymbols())
+	{
+		outArgList.emplace_back("/debug");
+		outArgList.emplace_back(getPathCommand("/pdb:", fmt::format("{}.pdb", outputFileBase)));
+	}
 }
 
 /*****************************************************************************/
@@ -275,47 +321,70 @@ void LinkerVisualStudioLINK::addCgThreads(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerVisualStudioLINK::addUnsortedOptions(StringList& outArgList, const std::string& outputFileBase) const
+void LinkerVisualStudioLINK::addDynamicBase(StringList& outArgList) const
 {
-	const bool debugSymbols = m_state.configuration.debugSymbols();
+	List::addIfDoesNotExist(outArgList, "/dynamicbase");
+}
+
+/*****************************************************************************/
+void LinkerVisualStudioLINK::addCompatibleWithDataExecutionPrevention(StringList& outArgList) const
+{
+	if (!m_state.configuration.debugSymbols())
+	{
+		List::addIfDoesNotExist(outArgList, "/nxcompat");
+	}
+}
+
+/*****************************************************************************/
+void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
+{
+	// TODO: /MACHINE - target platform arch
+	const auto arch = m_state.info.targetArchitecture();
+	switch (arch)
+	{
+		case Arch::Cpu::X64:
+			List::addIfDoesNotExist(outArgList, "/machine:X64");
+			break;
+
+		case Arch::Cpu::X86:
+			List::addIfDoesNotExist(outArgList, "/machine:X86");
+			break;
+
+		case Arch::Cpu::ARM:
+			List::addIfDoesNotExist(outArgList, "/machine:ARM");
+			break;
+
+		case Arch::Cpu::ARM64:
+		default:
+			// ??
+			break;
+	}
+}
+
+/*****************************************************************************/
+void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const
+{
 	if (m_state.configuration.linkTimeOptimization())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
-		// outArgList.emplace_back("/ltcg:NOSTATUS");
+		outArgList.emplace_back("/ltcg:incremental");
+		outArgList.emplace_back(fmt::format("/ltcgout:{}.iobj", outputFileBase));
+	}
+}
+
+/*****************************************************************************/
+void LinkerVisualStudioLINK::addUnsortedOptions(StringList& outArgList) const
+{
+
+	// if (m_state.configuration.linkTimeOptimization())
+	{
 		// outArgList.emplace_back(fmt::format("/pgd:{}.pgd", outputFileBase));
-
-		// Note: These are also tied to /INCREMENTAL (implied with /debug)
-		if (debugSymbols)
-			outArgList.emplace_back("/opt:NOREF,NOICF,NOLBR");
-		else
-			outArgList.emplace_back("/opt:REF,ICF,LBR");
-		// outArgList.emplace_back("/opt:REF");
-
-		// OPT:LBR - relates to arm binaries
-
-		// outArgList.emplace_back(fmt::format("/ltcgout:{}.iobj", outputFileBase));
 	}
 
-	outArgList.emplace_back("/dynamicbase");
-	outArgList.emplace_back("/debug");
-	if (debugSymbols)
-	{
-		outArgList.emplace_back("/incremental");
-		outArgList.emplace_back(fmt::format("/pdb:{}.pdb", outputFileBase));
+	// TODO
+	// outArgList.emplace_back("/VERSION:0.0");
 
-		if (m_state.toolchain.versionMajorMinor() >= 1600)
-		{
-			outArgList.emplace_back(fmt::format("/ilk:{}.ilk", outputFileBase));
-		}
-	}
-	else
-	{
-		outArgList.emplace_back("/nxcompat");
-		outArgList.emplace_back("/incremental:NO");
-	}
-
-	// TODO /version
-	// outArgList.emplace_back("/version:0.0");
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/

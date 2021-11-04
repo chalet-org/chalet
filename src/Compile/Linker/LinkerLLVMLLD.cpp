@@ -54,7 +54,7 @@ void LinkerLLVMLLD::addLinks(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerLLVMLLD::addStripSymbolsOption(StringList& outArgList) const
+void LinkerLLVMLLD::addStripSymbols(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
@@ -74,7 +74,7 @@ void LinkerLLVMLLD::addLibStdCppLinkerOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerLLVMLLD::addStaticCompilerLibraryOptions(StringList& outArgList) const
+void LinkerLLVMLLD::addStaticCompilerLibraries(StringList& outArgList) const
 {
 	if (m_project.staticLinking())
 	{

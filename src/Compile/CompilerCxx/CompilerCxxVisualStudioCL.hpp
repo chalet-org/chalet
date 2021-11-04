@@ -24,23 +24,40 @@ protected:
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addDefines(StringList& outArgList) const override;
 	virtual void addPchInclude(StringList& outArgList) const override;
-	virtual void addOptimizationOption(StringList& outArgList) const override;
+	virtual void addOptimizations(StringList& outArgList) const override;
 	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
-	virtual void addDebuggingInformationOption(StringList& outArgList) const override;
 	virtual void addCompileOptions(StringList& outArgList) const override;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;
 	virtual void addNoExceptionsOption(StringList& outArgList) const override;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 
 	//
-	virtual void addDiagnosticsOption(StringList& outArgList) const;
+	virtual void addDiagnostics(StringList& outArgList) const;
 	virtual void addWholeProgramOptimization(StringList& outArgList) const;
+
+	virtual void addNativeJustMyCodeDebugging(StringList& outArgList) const;
+	virtual void addBufferSecurityCheck(StringList& outArgList) const;
+	virtual void addStandardBehaviors(StringList& outArgList) const;
+	virtual void addAdditionalSecurityChecks(StringList& outArgList) const;
+	virtual void addFloatingPointBehavior(StringList& outArgList) const;
+	virtual void addCallingConvention(StringList& outArgList) const;
+	virtual void addFullPathSourceCode(StringList& outArgList) const;
+	virtual void addStandardsConformance(StringList& outArgList) const;
+	virtual void addSeparateProgramDatabase(StringList& outArgList) const;
+	virtual void addForceSeparateProgramDatabaseWrites(StringList& outArgList) const;
+	virtual void addProgramDatabaseOutput(StringList& outArgList) const;
+	virtual void addExternalWarnings(StringList& outArgList) const;
+	virtual void addRuntimeErrorChecks(StringList& outArgList) const;
+	virtual void addInlineFunctionExpansion(StringList& outArgList) const;
+	virtual void addFunctionLevelLinking(StringList& outArgList) const;
+	virtual void addGenerateIntrinsicFunctions(StringList& outArgList) const;
 
 	bool createPrecompiledHeaderSource();
 
 private:
 	virtual void addUnsortedOptions(StringList& outArgList) const final;
 
+	mutable std::string m_warningFlag;
 	std::string m_pchSource;
 	std::string m_pchMinusLocation;
 };

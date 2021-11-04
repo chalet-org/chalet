@@ -135,7 +135,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	}
 
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
-	addOptimizationOption(ret);
+	addOptimizations(ret);
 	addLanguageStandard(ret, specialization);
 	addWarnings(ret);
 
@@ -192,7 +192,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 		ret.push_back(dependency);
 	}
 
-	addOptimizationOption(ret);
+	addOptimizations(ret);
 	addLanguageStandard(ret, specialization);
 	addWarnings(ret);
 	addObjectiveCxxCompileOption(ret, specialization);
@@ -324,7 +324,7 @@ void CompilerCxxGCC::addPchInclude(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxGCC::addOptimizationOption(StringList& outArgList) const
+void CompilerCxxGCC::addOptimizations(StringList& outArgList) const
 {
 	std::string opt;
 

@@ -17,7 +17,7 @@ LinkerIntelLLD::LinkerIntelLLD(const BuildState& inState, const SourceTarget& in
 }
 
 /*****************************************************************************/
-void LinkerIntelLLD::addThreadModelLinkerOption(StringList& outArgList) const
+void LinkerIntelLLD::addThreadModelLinks(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }

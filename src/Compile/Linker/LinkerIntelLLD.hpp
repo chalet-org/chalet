@@ -15,7 +15,7 @@ struct LinkerIntelLLD final : public LinkerLLVMLLD
 	explicit LinkerIntelLLD(const BuildState& inState, const SourceTarget& inProject);
 
 protected:
-	virtual void addThreadModelLinkerOption(StringList& outArgList) const final;
+	virtual void addThreadModelLinks(StringList& outArgList) const final;
 };
 }
 

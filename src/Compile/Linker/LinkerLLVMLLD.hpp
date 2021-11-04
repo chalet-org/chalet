@@ -18,10 +18,10 @@ protected:
 	virtual StringList getLinkExclusions() const override;
 
 	virtual void addLinks(StringList& outArgList) const override;
-	virtual void addStripSymbolsOption(StringList& outArgList) const override;
+	virtual void addStripSymbols(StringList& outArgList) const override;
 	virtual void addLinkerScripts(StringList& outArgList) const override;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;
-	virtual void addStaticCompilerLibraryOptions(StringList& outArgList) const override;
+	virtual void addStaticCompilerLibraries(StringList& outArgList) const override;
 	virtual void addSubSystem(StringList& outArgList) const override;
 	virtual void addEntryPoint(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;

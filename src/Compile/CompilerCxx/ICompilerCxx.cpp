@@ -82,7 +82,7 @@ void ICompilerCxx::addPchInclude(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ICompilerCxx::addOptimizationOption(StringList& outArgList) const
+void ICompilerCxx::addOptimizations(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }

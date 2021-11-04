@@ -40,17 +40,17 @@ StringList LinkerAppleLD::getSharedLibTargetCommand(const std::string& outputFil
 
 	UNUSED(outputFileBase);
 
-	addStripSymbolsOption(ret);
+	addStripSymbols(ret);
 	addLinkerOptions(ret);
 	addMacosSysRootOption(ret);
 	addProfileInformationLinkerOption(ret);
-	addLinkTimeOptimizationOption(ret);
-	addThreadModelLinkerOption(ret);
+	addLinkTimeOptimizations(ret);
+	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
 
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
-	addStaticCompilerLibraryOptions(ret);
+	addStaticCompilerLibraries(ret);
 	addSubSystem(ret);
 	addEntryPoint(ret);
 	addMacosFrameworkOptions(ret);
@@ -68,13 +68,13 @@ StringList LinkerAppleLD::getSharedLibTargetCommand(const std::string& outputFil
 }
 
 /*****************************************************************************/
-void LinkerAppleLD::addStripSymbolsOption(StringList& outArgList) const
+void LinkerAppleLD::addStripSymbols(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void LinkerAppleLD::addThreadModelLinkerOption(StringList& outArgList) const
+void LinkerAppleLD::addThreadModelLinks(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }

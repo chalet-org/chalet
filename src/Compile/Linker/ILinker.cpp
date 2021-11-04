@@ -89,7 +89,7 @@ void ILinker::addRunPath(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ILinker::addStripSymbolsOption(StringList& outArgList) const
+void ILinker::addStripSymbols(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
@@ -107,13 +107,13 @@ void ILinker::addProfileInformationLinkerOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ILinker::addLinkTimeOptimizationOption(StringList& outArgList) const
+void ILinker::addLinkTimeOptimizations(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void ILinker::addThreadModelLinkerOption(StringList& outArgList) const
+void ILinker::addThreadModelLinks(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
@@ -131,7 +131,7 @@ void ILinker::addLibStdCppLinkerOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ILinker::addStaticCompilerLibraryOptions(StringList& outArgList) const
+void ILinker::addStaticCompilerLibraries(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
