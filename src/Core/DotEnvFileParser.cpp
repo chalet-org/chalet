@@ -10,7 +10,10 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Timer.hpp"
+
+#if defined(CHALET_DEBUG)
+	#include "Utility/Timer.hpp"
+#endif
 
 namespace chalet
 {
@@ -45,7 +48,9 @@ bool DotEnvFileParser::serialize()
 			return true; // don't care
 	}
 
+#if defined(CHALET_DEBUG)
 	Timer timer;
+#endif
 	Diagnostic::infoEllipsis("Reading Environment [{}]", envFile);
 
 	if (!parseVariablesFromFile(envFile))
@@ -54,7 +59,11 @@ bool DotEnvFileParser::serialize()
 		return false;
 	}
 
+#if defined(CHALET_DEBUG)
 	Diagnostic::printDone(timer.asString());
+#else
+	Diagnostic::printDone();
+#endif
 	return true;
 }
 
