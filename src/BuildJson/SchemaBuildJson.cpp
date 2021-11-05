@@ -66,7 +66,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::ConfigurationLinkTimeOptimizations] = R"json({
 		"type": "boolean",
-		"description": "true to use link-time optimization, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-flto' option to the linker.\nIn MSVC, this enables the '/GL' option (Whole Program Optimization - which implies link-time optimization).",
+		"description": "true to use link-time optimization, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-flto' option to the linker.",
 		"default": false
 	})json"_ojson;
 

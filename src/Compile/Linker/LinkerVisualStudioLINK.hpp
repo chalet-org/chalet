@@ -41,6 +41,7 @@ protected:
 	virtual void addMachine(StringList& outArgList) const;
 	virtual void addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const;
 	virtual void addVerbosity(StringList& outArgList) const;
+	virtual void addWarningsTreatedAsErrors(StringList& outArgList) const;
 
 private:
 	virtual void addUnsortedOptions(StringList& outArgList) const final;

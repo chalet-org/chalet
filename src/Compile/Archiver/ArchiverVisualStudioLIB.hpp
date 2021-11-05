@@ -17,7 +17,10 @@ struct ArchiverVisualStudioLIB : public IArchiver
 	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const override;
 
 protected:
-	virtual void addTargetPlatformArch(StringList& outArgList) const final;
+	virtual void addMachine(StringList& outArgList) const;
+
+	virtual void addLinkTimeCodeGeneration(StringList& outArgList) const;
+	virtual void addWarningsTreatedAsErrors(StringList& outArgList) const;
 };
 }
 

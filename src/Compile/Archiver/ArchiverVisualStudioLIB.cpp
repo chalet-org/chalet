@@ -21,6 +21,8 @@ ArchiverVisualStudioLIB::ArchiverVisualStudioLIB(const BuildState& inState, cons
 /*****************************************************************************/
 StringList ArchiverVisualStudioLIB::getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const
 {
+	UNUSED(outputFileBase);
+
 	chalet_assert(!outputFile.empty() && !sourceObjs.empty(), "");
 
 	StringList ret;
@@ -31,24 +33,11 @@ StringList ArchiverVisualStudioLIB::getCommand(const std::string& outputFile, co
 	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.archiver()));
 	ret.emplace_back("/nologo");
 
-	addTargetPlatformArch(ret);
+	addMachine(ret);
+	addLinkTimeCodeGeneration(ret);
+	addWarningsTreatedAsErrors(ret);
 
-	/*if (m_state.configuration.linkTimeOptimization())
-	{
-		// combines w/ /GL - I think this is basically part of MS's link-time optimization
-		ret.emplace_back("/LTCG");
-	}*/
-
-	if (m_project.warningsTreatedAsErrors())
-		ret.emplace_back("/WX");
-
-	// const auto& objDir = m_state.paths.objDir();
-	// ret.emplace_back(fmt::format("/DEF:{}/{}.def", objDir, outputFileBase));
-	UNUSED(outputFileBase);
-
-	// TODO: /SUBSYSTEM
-
-	ret.emplace_back(fmt::format("/out:{}", outputFile));
+	ret.emplace_back(getPathCommand("/out:", outputFile));
 
 	addSourceObjects(ret, sourceObjs);
 
@@ -56,22 +45,22 @@ StringList ArchiverVisualStudioLIB::getCommand(const std::string& outputFile, co
 }
 
 /*****************************************************************************/
-void ArchiverVisualStudioLIB::addTargetPlatformArch(StringList& outArgList) const
+void ArchiverVisualStudioLIB::addMachine(StringList& outArgList) const
 {
 	// TODO: /MACHINE - target platform arch
 	const auto arch = m_state.info.targetArchitecture();
 	switch (arch)
 	{
 		case Arch::Cpu::X64:
-			outArgList.emplace_back("/machine:x64");
+			outArgList.emplace_back("/machine:X64");
 			break;
 
 		case Arch::Cpu::X86:
-			outArgList.emplace_back("/machine:x86");
+			outArgList.emplace_back("/machine:X86");
 			break;
 
 		case Arch::Cpu::ARM:
-			outArgList.emplace_back("/machine:arm");
+			outArgList.emplace_back("/machine:ARM");
 			break;
 
 		case Arch::Cpu::ARM64:
@@ -79,6 +68,24 @@ void ArchiverVisualStudioLIB::addTargetPlatformArch(StringList& outArgList) cons
 			// ??
 			break;
 	}
+}
+
+/*****************************************************************************/
+void ArchiverVisualStudioLIB::addLinkTimeCodeGeneration(StringList& outArgList) const
+{
+	// Requires /GL
+	/*if (m_state.configuration.linkTimeOptimization())
+	{
+		ret.emplace_back("/LTCG");
+	}*/
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void ArchiverVisualStudioLIB::addWarningsTreatedAsErrors(StringList& outArgList) const
+{
+	if (m_project.warningsTreatedAsErrors())
+		outArgList.emplace_back("/WX");
 }
 
 }

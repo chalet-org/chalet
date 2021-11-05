@@ -68,6 +68,7 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 		addMachine(ret);
 	}
 
+	addWarningsTreatedAsErrors(ret);
 	addEntryPoint(ret);
 	// addCgThreads(ret);
 	// addVerbosity(ret);
@@ -112,6 +113,7 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 		addMachine(ret);
 	}
 
+	addWarningsTreatedAsErrors(ret);
 	addEntryPoint(ret);
 	// addCgThreads(ret);
 	// addVerbosity(ret);
@@ -381,6 +383,13 @@ void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList, c
 void LinkerVisualStudioLINK::addVerbosity(StringList& outArgList) const
 {
 	outArgList.emplace_back("/verbose:UNUSEDLIBS");
+}
+
+/*****************************************************************************/
+void LinkerVisualStudioLINK::addWarningsTreatedAsErrors(StringList& outArgList) const
+{
+	if (m_project.warningsTreatedAsErrors())
+		outArgList.emplace_back("/WX");
 }
 
 /*****************************************************************************/
