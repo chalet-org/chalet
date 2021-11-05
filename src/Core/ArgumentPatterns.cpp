@@ -56,8 +56,6 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		"-e", "--env-file",
 		"-a", "--arch",
 		"-c", "--configuration",
-		"-l", "--local",
-		"-g", "--global",
 	}),
 	// clang-format on
 	m_routeMap({
