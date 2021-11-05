@@ -145,7 +145,7 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	auto endlineReplace = fmt::format("\n{}", Output::getAnsiStyle(Color::Reset));
 
 	auto parsePrintOutput = [&]() {
-		bool canSkip = data.size() > 10 && (String::startsWith(noWork, data) || String::startsWith(data, noWork));
+		bool canSkip = data.size() > 5 && (String::startsWith(noWork, data) || String::startsWith(data, noWork));
 		if (skipOutput || canSkip)
 		{
 			skipOutput = true;
