@@ -311,6 +311,24 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 		return inArch;
 	};
 
+	auto splitHostTarget = [](std::string& outHost, std::string& outTarget) {
+		if (String::contains('_', outTarget))
+		{
+			auto split = String::split(outTarget, '_');
+			if (String::equals("64", split.back()))
+			{
+				outTarget = "x64";
+			}
+			else
+			{
+				if (outHost.empty())
+					outHost = split.front();
+
+				outTarget = split.back();
+			}
+		}
+	};
+
 	std::string host;
 	std::string target = normalizeArch(m_inputs.targetArchitecture());
 
@@ -345,6 +363,7 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 			return false;
 		}
 
+		splitHostTarget(host, target);
 		auto targetFromCompilerPath = lower.substr(search, nextPath - search);
 		if (target.empty() || target == targetFromCompilerPath)
 		{
@@ -373,19 +392,7 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 			}
 		}
 
-		if (String::contains('_', target))
-		{
-			auto split = String::split(target, '_');
-			if (String::equals("64", split.back()))
-			{
-				target = "x64";
-			}
-			else
-			{
-				host = split.front();
-				target = split.back();
-			}
-		}
+		splitHostTarget(host, target);
 
 		if (host.empty())
 			host = normalizeArch(m_inputs.hostArchitecture());
