@@ -586,13 +586,15 @@ void CompilerCxxVisualStudioCL::addDiagnostics(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addWholeProgramOptimization(StringList& outArgList) const
 {
+	// NOTE: Can't use dumpbin with .obj files compiled with /GL
+
 	// Required by LINK's Link-time code generation (/LTCG)
 	// Basically ends up being quicker compiler times for a slower link time, remedied further by incremental linking
-	if (m_state.configuration.linkTimeOptimization())
+	/*if (m_state.configuration.linkTimeOptimization())
 	{
 		outArgList.emplace_back("/GL");
-	}
-	// UNUSED(outArgList);
+	}*/
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/

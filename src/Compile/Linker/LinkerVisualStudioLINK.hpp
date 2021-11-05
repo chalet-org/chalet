@@ -40,6 +40,7 @@ protected:
 	virtual void addCompatibleWithDataExecutionPrevention(StringList& outArgList) const;
 	virtual void addMachine(StringList& outArgList) const;
 	virtual void addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const;
+	virtual void addVerbosity(StringList& outArgList) const;
 
 private:
 	virtual void addUnsortedOptions(StringList& outArgList) const final;

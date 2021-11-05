@@ -70,6 +70,7 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 
 	addEntryPoint(ret);
 	// addCgThreads(ret);
+	// addVerbosity(ret);
 
 	ret.emplace_back(getPathCommand("/implib:", fmt::format("{}.lib", outputFileBase)));
 	ret.emplace_back(getPathCommand("/out:", outputFile));
@@ -113,6 +114,7 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 
 	addEntryPoint(ret);
 	// addCgThreads(ret);
+	// addVerbosity(ret);
 
 	ret.emplace_back(getPathCommand("/out:", outputFile));
 
@@ -365,12 +367,20 @@ void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const
 {
-	if (m_state.configuration.linkTimeOptimization())
+	/*if (m_state.configuration.linkTimeOptimization())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
-		outArgList.emplace_back("/ltcg:incremental");
+		outArgList.emplace_back("/ltcg");
+		// outArgList.emplace_back("/ltcg:INCREMENTAL");
 		outArgList.emplace_back(fmt::format("/ltcgout:{}.iobj", outputFileBase));
-	}
+	}*/
+	UNUSED(outArgList, outputFileBase);
+}
+
+/*****************************************************************************/
+void LinkerVisualStudioLINK::addVerbosity(StringList& outArgList) const
+{
+	outArgList.emplace_back("/verbose:UNUSEDLIBS");
 }
 
 /*****************************************************************************/
