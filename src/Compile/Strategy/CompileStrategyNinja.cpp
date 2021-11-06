@@ -138,38 +138,28 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 	// if (Output::showCommands())
 	// 	Output::print(Output::theme().build, inCmd);
 
-	bool outputtedData = false;
 	std::string data;
 	auto eol = String::eol();
-	std::string noWork = fmt::format("ninja: no work to do.{}", eol);
-	auto endlineReplace = fmt::format("\n{}", Output::getAnsiStyle(Color::Reset));
+	auto endlineReplace = fmt::format("{}\n", Output::getAnsiStyle(Color::Reset));
 
-	auto parsePrintOutput = [&]() -> void {
-		String::replaceAll(data, noWork, "");
+	ProcessOptions::PipeFunc onStdOut = [&](std::string inData) -> void {
+		String::replaceAll(inData, eol, endlineReplace);
+		std::cout << inData << std::flush;
 
-		if (data.empty())
-			return;
-
-		String::replaceAll(data, eol, endlineReplace);
-		std::cout << data << std::flush;
-		data.clear();
-		outputtedData = true;
-	};
-
-	ProcessOptions::PipeFunc onStdOut = [&data, &parsePrintOutput](std::string inData) -> void {
 		auto lineBreak = inData.find('\n');
 		if (lineBreak == std::string::npos)
 		{
 			data += std::move(inData);
-			return;
 		}
-
-		data += inData.substr(0, lineBreak + 1);
-		parsePrintOutput();
-		auto tmp = inData.substr(lineBreak + 1);
-
-		if (!tmp.empty())
-			data += std::move(tmp);
+		else
+		{
+			data += inData.substr(0, lineBreak + 1);
+			auto tmp = inData.substr(lineBreak + 1);
+			if (!tmp.empty())
+			{
+				data = std::move(tmp);
+			}
+		}
 	};
 
 	ProcessOptions options;
@@ -183,12 +173,13 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 #if defined(CHALET_WIN32)
 	if (data.size() > 0)
 	{
-		parsePrintOutput();
+		std::string noWork = fmt::format("ninja: no work to do.{}", endlineReplace);
+		if (String::endsWith(noWork, data))
+			Output::previousLine();
+		else
+			Output::lineBreak();
 	}
 #endif
-
-	if (outputtedData)
-		Output::lineBreak();
 
 	return result == EXIT_SUCCESS;
 }
