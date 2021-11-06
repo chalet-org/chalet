@@ -26,11 +26,19 @@ void Path::sanitize(std::string& outValue, const bool inRemoveNewLine)
 	String::replaceAll(outValue, "\\\\", "/");
 	String::replaceAll(outValue, '\\', '/');
 
-	while (outValue.back() == ' ')
+	if (String::endsWith("/.", outValue))
+	{
 		outValue.pop_back();
+		outValue.pop_back();
+	}
+	else
+	{
+		while (outValue.back() == ' ')
+			outValue.pop_back();
 
-	while (outValue.back() == '/')
-		outValue.pop_back();
+		while (outValue.back() == '/')
+			outValue.pop_back();
+	}
 }
 
 /*****************************************************************************/
