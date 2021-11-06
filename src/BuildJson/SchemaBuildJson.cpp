@@ -1145,10 +1145,21 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"type": "object",
 			"additionalProperties": false,
 			"description": "Properties to describe an individual distribution target.",
-			"required": [
-				"kind",
-				"buildTargets"
+			"anyOf": [
+				{
+					"required": [
+						"kind",
+						"buildTargets"
+					]
+				},
+				{
+					"required": [
+						"kind",
+						"include"
+					]
+				}
 			]
+
 		})json"_ojson;
 		distDef[kProperties] = Json::object();
 		distDef[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
@@ -1413,7 +1424,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTargetMacOS: return "distribution-target-macos";
 		case Defs::DistributionTargetMainExecutable: return "distribution-target-mainExecutable";
 		case Defs::DistributionTargetOutputDirectory: return "distribution-target-subdirectory";
-		case Defs::DistributionTargetBuildTargets: return "distribution-target-targets";
+		case Defs::DistributionTargetBuildTargets: return "distribution-target-buildTargets";
 		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
