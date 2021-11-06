@@ -17,7 +17,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
+Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 {
 	auto getLanguage = [](CxxSpecialization inSpecialization) -> std::string {
 		switch (inSpecialization)
@@ -33,7 +33,7 @@ Json StarterFileTemplates::getBuildJson(const BuildJsonProps& inProps)
 	const bool objectiveCxx = inProps.specialization == CxxSpecialization::ObjectiveC || inProps.specialization == CxxSpecialization::ObjectiveCPlusPlus;
 	const std::string language = getLanguage(inProps.specialization);
 	const std::string langStandardKey = cpp ? "cppStandard" : "cStandard";
-	const std::string project = inProps.projectName;
+	const auto& project = inProps.projectName;
 
 	const std::string kAbstractsAll = "abstracts:*";
 	const std::string kSettingsCxx = "settings:Cxx";
@@ -273,6 +273,68 @@ std::string StarterFileTemplates::getDotEnv()
 #else
 	std::string ret = R"(PATH=$PATH)";
 #endif
+
+	return ret;
+}
+
+/*****************************************************************************/
+Json StarterFileTemplates::getCMakeStarterChaletJson(const BuildJsonProps& inProps)
+{
+	const std::string kTargets = "targets";
+	const std::string kDistribution = "distribution";
+	const auto& project = inProps.projectName;
+
+	Json ret;
+	ret["workspace"] = inProps.workspaceName;
+	ret["version"] = inProps.version;
+
+	ret[kTargets] = Json::object();
+	ret[kTargets][project] = Json::object();
+	ret[kTargets][project]["kind"] = "cmakeProject";
+	ret[kTargets][project]["location"] = ".";
+	ret[kTargets][project]["recheck"] = true;
+	ret[kTargets][project]["runExecutable"] = project;
+
+	ret[kDistribution] = Json::object();
+	ret[kDistribution][project] = Json::object();
+	ret[kDistribution][project]["kind"] = "bundle";
+	ret[kDistribution][project]["include"] = Json::array();
+	ret[kDistribution][project]["include"][0] = fmt::format("${{buildDir}}/{}", project);
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string StarterFileTemplates::getCMakeStarter(const BuildJsonProps& inProps)
+{
+	UNUSED(inProps);
+	const auto& version = inProps.version;
+	const auto& workspaceName = inProps.workspaceName;
+	const auto& projectName = inProps.projectName;
+	const auto& location = inProps.location;
+	auto main = fmt::format("{}/{}", location, inProps.mainSource);
+	auto pch = fmt::format("{}/{}", location, inProps.precompiledHeader);
+
+	std::string ret = fmt::format(R"cmake(cmake_minimum_required(VERSION 3.16)
+
+project({workspaceName} VERSION {version})
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(TARGET_NAME {projectName})
+file(GLOB_RECURSE SOURCES {main})
+add_executable(${{TARGET_NAME}} ${{SOURCES}})
+target_precompile_headers(${{TARGET_NAME}} PRIVATE {pch})
+target_include_directories(${{TARGET_NAME}} PRIVATE {location}/)
+)cmake",
+		FMT_ARG(version),
+		FMT_ARG(workspaceName),
+		FMT_ARG(projectName),
+		FMT_ARG(main),
+		FMT_ARG(pch),
+		FMT_ARG(location));
 
 	return ret;
 }

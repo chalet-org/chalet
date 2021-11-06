@@ -280,7 +280,7 @@ bool ProjectInitializer::run()
 		Output::printInfo("chalet.json");
 		Output::lineBreak();
 
-		auto jsonFile = StarterFileTemplates::getBuildJson(props);
+		auto jsonFile = StarterFileTemplates::getStandardChaletJson(props);
 		std::cout << Output::getAnsiStyle(Output::theme().build) << jsonFile.dump(3, ' ') << Output::getAnsiStyle(Color::Reset) << std::endl;
 
 		Commands::sleep(stepTime);
@@ -398,7 +398,7 @@ bool ProjectInitializer::makeBuildJson(const BuildJsonProps& inProps)
 {
 	const auto buildJsonPath = fmt::format("{}/chalet.json", m_rootPath);
 
-	auto jsonFile = StarterFileTemplates::getBuildJson(inProps);
+	auto jsonFile = StarterFileTemplates::getStandardChaletJson(inProps);
 
 	JsonFile::saveToFile(jsonFile, buildJsonPath);
 

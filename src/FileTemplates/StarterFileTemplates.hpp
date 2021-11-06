@@ -14,11 +14,14 @@ namespace chalet
 {
 namespace StarterFileTemplates
 {
-Json getBuildJson(const BuildJsonProps& inProps);
+Json getStandardChaletJson(const BuildJsonProps& inProps);
 std::string getMainCxx(const CodeLanguage inLanguage, const CxxSpecialization inSpecialization);
 std::string getPch(const std::string& inFile, const CodeLanguage inLanguage, const CxxSpecialization inSpecialization);
 std::string getGitIgnore(const std::string& inBuildFolder, const std::string& inSettingsFile);
 std::string getDotEnv();
+//
+Json getCMakeStarterChaletJson(const BuildJsonProps& inProps);
+std::string getCMakeStarter(const BuildJsonProps& inProps);
 }
 }
 
