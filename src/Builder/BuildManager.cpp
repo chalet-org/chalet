@@ -189,52 +189,55 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				continue;
 		}
 
-		if (target->isSubChalet())
+		if (!runRoute)
 		{
-			if (!runSubChaletTarget(static_cast<const SubChaletTarget&>(*target)))
-				return false;
-		}
-		else if (target->isCMake())
-		{
-			if (!runCMakeTarget(static_cast<const CMakeTarget&>(*target)))
-				return false;
-		}
-		else if (target->isScript())
-		{
-			Timer buildTimer;
-
-			if (!runScriptTarget(static_cast<const ScriptBuildTarget&>(*target), false))
+			if (target->isSubChalet())
 			{
-				error = true;
-				break;
+				if (!runSubChaletTarget(static_cast<const SubChaletTarget&>(*target)))
+					return false;
 			}
-
-			auto res = buildTimer.stop();
-			if (res > 0 && Output::showBenchmarks())
+			else if (target->isCMake())
 			{
-				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+				if (!runCMakeTarget(static_cast<const CMakeTarget&>(*target)))
+					return false;
 			}
-
-			Output::lineBreak();
-		}
-		else if (!runRoute)
-		{
-			Timer buildTimer;
-
-			if (!m_buildRoutes[inRoute](*this, static_cast<const SourceTarget&>(*target)))
+			else if (target->isScript())
 			{
-				error = true;
-				break;
-			}
+				Timer buildTimer;
 
-			Output::msgTargetUpToDate(multiTarget, name);
-			auto res = buildTimer.stop();
-			if (res > 0 && Output::showBenchmarks())
+				if (!runScriptTarget(static_cast<const ScriptBuildTarget&>(*target), false))
+				{
+					error = true;
+					break;
+				}
+
+				auto res = buildTimer.stop();
+				if (res > 0 && Output::showBenchmarks())
+				{
+					Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+				}
+
+				Output::lineBreak();
+			}
+			else
 			{
-				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
-			}
+				Timer buildTimer;
 
-			Output::lineBreak();
+				if (!m_buildRoutes[inRoute](*this, static_cast<const SourceTarget&>(*target)))
+				{
+					error = true;
+					break;
+				}
+
+				Output::msgTargetUpToDate(multiTarget, name);
+				auto res = buildTimer.stop();
+				if (res > 0 && Output::showBenchmarks())
+				{
+					Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+				}
+
+				Output::lineBreak();
+			}
 		}
 	}
 
@@ -797,7 +800,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	{
 		bool result = Commands::subprocess(cmd);
 
-		auto outFile = fmt::format("{}/{}", buildOutputDir, outputFile);
+		auto outFile = outputFile;
 		m_inputs.clearWorkingDirectory(outFile);
 
 		int lastExitCode = Process::getLastExitCode();

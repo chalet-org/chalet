@@ -29,6 +29,7 @@ private:
 	bool makeBuildJson(const BuildJsonProps& inProps);
 	bool makeMainCpp(const BuildJsonProps& inProps);
 	bool makePch(const BuildJsonProps& inProps);
+	bool makeCMakeLists(const BuildJsonProps& inProps);
 	bool makeGitIgnore();
 	bool makeReadme();
 	bool makeDotEnv();

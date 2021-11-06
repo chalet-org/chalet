@@ -880,6 +880,56 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 }
 
 /*****************************************************************************/
+bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
+{
+	// if (Output::showCommands())
+	// 	Output::print(Output::theme().build, inCmd);
+
+	std::string data;
+	auto eol = String::eol();
+	auto endlineReplace = fmt::format("{}\n", Output::getAnsiStyle(Color::Reset));
+
+	ProcessOptions::PipeFunc onStdOut = [&data, &eol, &endlineReplace](std::string inData) -> void {
+		String::replaceAll(inData, eol, endlineReplace);
+		std::cout << inData << std::flush;
+
+		auto lineBreak = inData.find('\n');
+		if (lineBreak == std::string::npos)
+		{
+			data += std::move(inData);
+		}
+		else
+		{
+			data += inData.substr(0, lineBreak + 1);
+			auto tmp = inData.substr(lineBreak + 1);
+			if (!tmp.empty())
+			{
+				data = std::move(tmp);
+			}
+		}
+	};
+
+	ProcessOptions options;
+	options.cwd = std::move(inCwd);
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::StdErr;
+	options.onStdOut = std::move(onStdOut);
+
+	int result = Process::run(inCmd, options);
+
+	if (data.size() > 0)
+	{
+		std::string noWork = fmt::format("ninja: no work to do.{}", endlineReplace);
+		if (String::endsWith(noWork, data))
+			Output::previousLine();
+		else
+			Output::lineBreak();
+	}
+
+	return result == EXIT_SUCCESS;
+}
+
+/*****************************************************************************/
 std::string Commands::isolateVersion(const std::string& outString)
 {
 	std::string ret = outString;

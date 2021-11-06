@@ -75,6 +75,8 @@ std::string subprocessOutput(const StringList& inCmd, std::string inWorkingDirec
 inline bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile);
 bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr);
 
+bool subprocessNinjaBuild(const StringList& inCmd, std::string inCwd = std::string());
+
 std::string isolateVersion(const std::string& outString);
 std::string which(const std::string& inExecutable);
 

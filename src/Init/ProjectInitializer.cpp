@@ -73,7 +73,7 @@ bool ProjectInitializer::run()
 		result = initializeNormalWorkspace(props);
 	}
 
-	if (!result || isCmakeTemplate)
+	if (!result)
 		return false;
 
 	Output::lineBreak();
@@ -98,11 +98,9 @@ bool ProjectInitializer::initializeNormalWorkspace(BuildJsonProps& outProps)
 	outProps.version = getWorkspaceVersion();
 	outProps.projectName = getProjectName(outProps.workspaceName);
 
-	{
-		auto&& [lang, specialization] = getCodeLanguage();
-		outProps.language = lang;
-		outProps.specialization = specialization;
-	}
+	auto&& [language, specialization] = getCodeLanguage();
+	outProps.language = language;
+	outProps.specialization = specialization;
 
 	outProps.langStandard = getLanguageStandard(outProps.language);
 	outProps.useLocation = getUseLocation();
@@ -144,9 +142,53 @@ bool ProjectInitializer::initializeNormalWorkspace(BuildJsonProps& outProps)
 /*****************************************************************************/
 bool ProjectInitializer::initializeCMakeWorkspace(BuildJsonProps& outProps)
 {
-	LOG("CMake stuff here");
+	Diagnostic::info("Template: CMake");
 
-	UNUSED(outProps);
+	outProps.workspaceName = getWorkspaceName();
+	outProps.version = getWorkspaceVersion();
+	outProps.projectName = getProjectName(outProps.workspaceName);
+
+	auto&& [language, specialization] = getCodeLanguage();
+	outProps.language = language;
+	outProps.specialization = specialization;
+
+	outProps.langStandard = getLanguageStandard(outProps.language);
+	outProps.useLocation = getUseLocation();
+	outProps.location = getRootSourceDirectory();
+	outProps.mainSource = getMainSourceFile(outProps.language);
+	outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language, outProps.specialization);
+	// outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
+	outProps.envFile = getMakeEnvFile();
+	outProps.makeGitRepository = getMakeGitRepository();
+
+	printUserInputSplit();
+
+	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.specialization);
+		String::replaceAll(mainCpp, '\t', "   ");
+		return mainCpp;
+	});
+
+	printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
+		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language, outProps.specialization);
+	});
+
+	printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
+		return StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
+	});
+
+	printFileNameAndContents(outProps.envFile, m_inputs.platformEnv(), []() {
+		return StarterFileTemplates::getDotEnv();
+	});
+
+	printFileNameAndContents(true, "chalet.json", [&outProps]() {
+		auto jsonFile = StarterFileTemplates::getCMakeStarterChaletJson(outProps);
+		return jsonFile.dump(3, ' ');
+	});
+
+	printFileNameAndContents(true, "CMakeLists.txt", [&outProps]() {
+		return StarterFileTemplates::getCMakeStarter(outProps);
+	});
 
 	return true;
 }
@@ -185,6 +227,12 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 		if (inProps.envFile)
 		{
 			if (!makeDotEnv())
+				result = false;
+		}
+
+		if (m_inputs.initTemplate() == InitTemplateType::CMake)
+		{
+			if (!makeCMakeLists(inProps))
 				result = false;
 		}
 
@@ -245,11 +293,17 @@ bool ProjectInitializer::makeBuildJson(const BuildJsonProps& inProps)
 {
 	const auto buildJsonPath = fmt::format("{}/chalet.json", m_rootPath);
 
-	auto jsonFile = StarterFileTemplates::getStandardChaletJson(inProps);
+	Json jsonFile;
+	if (m_inputs.initTemplate() == InitTemplateType::CMake)
+	{
+		jsonFile = StarterFileTemplates::getCMakeStarterChaletJson(inProps);
+	}
+	else
+	{
+		jsonFile = StarterFileTemplates::getStandardChaletJson(inProps);
+	}
 
-	JsonFile::saveToFile(jsonFile, buildJsonPath);
-
-	return true;
+	return JsonFile::saveToFile(jsonFile, buildJsonPath);
 }
 
 /*****************************************************************************/
@@ -271,10 +325,18 @@ bool ProjectInitializer::makePch(const BuildJsonProps& inProps)
 }
 
 /*****************************************************************************/
+bool ProjectInitializer::makeCMakeLists(const BuildJsonProps& inProps)
+{
+	const auto outFile = fmt::format("{}/CMakeLists.txt", m_rootPath);
+	const auto contents = StarterFileTemplates::getCMakeStarter(inProps);
+
+	return Commands::createFileWithContents(outFile, contents);
+}
+
+/*****************************************************************************/
 bool ProjectInitializer::makeGitIgnore()
 {
 	const auto outFile = fmt::format("{}/.gitignore", m_rootPath);
-
 	const auto contents = StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
 
 	return Commands::createFileWithContents(outFile, contents);
@@ -515,14 +577,14 @@ std::string ProjectInitializer::getLanguageStandard(const CodeLanguage inLang) c
 	if (inLang == CodeLanguage::CPlusPlus)
 	{
 		ret = "20";
-		Output::getUserInput("C++ Standard:", ret, "Common choices: 20 17 14 11", [](std::string& input) {
+		Output::getUserInput("C++ Standard:", ret, "Common choices: 23 20 17 14 11", [](std::string& input) {
 			return RegexPatterns::matchesCxxStandardShort(input) || RegexPatterns::matchesGnuCppStandard(input);
 		});
 	}
 	else
 	{
 		ret = "17";
-		Output::getUserInput("C Standard:", ret, "Common choices: 17 11", [](std::string& input) {
+		Output::getUserInput("C Standard:", ret, "Common choices: 23 17 11", [](std::string& input) {
 			return RegexPatterns::matchesCxxStandardShort(input) || RegexPatterns::matchesGnuCStandard(input);
 		});
 	}
@@ -533,7 +595,14 @@ std::string ProjectInitializer::getLanguageStandard(const CodeLanguage inLang) c
 /*****************************************************************************/
 bool ProjectInitializer::getUseLocation() const
 {
-	return Output::getUserInputYesNo("Detect source files automatically?", true, "If yes, 'location' is used, otherwise 'files' must be added explicitly");
+	if (m_inputs.initTemplate() == InitTemplateType::CMake)
+	{
+		return Output::getUserInputYesNo("Detect source files automatically?", true, "If yes, sources are globbed, otherwise they must be managed explicitly");
+	}
+	else
+	{
+		return Output::getUserInputYesNo("Detect source files automatically?", true, "If yes, 'location' is used, otherwise 'files' must be managed explicitly");
+	}
 }
 
 /*****************************************************************************/

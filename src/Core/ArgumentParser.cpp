@@ -312,7 +312,7 @@ StringList ArgumentParser::parseRawArguments(const int argc, const char* const a
 				arg.pop_back();
 		}
 
-		if (String::startsWith("--", arg) && String::contains('=', arg))
+		if (String::startsWith('-', arg) && String::contains('=', arg))
 		{
 			String::replaceAll(arg, "=true", "=1");
 			String::replaceAll(arg, "=false", "=0");

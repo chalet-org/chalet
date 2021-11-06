@@ -147,7 +147,11 @@ bool BuildState::initializeBuildConfiguration()
 
 	if (buildConfigurations.find(buildConfiguration) == buildConfigurations.end())
 	{
-		Diagnostic::error("{}: The build configuration '{}' was not found.", m_impl->inputs.inputFile(), buildConfiguration);
+		auto defaultBuildConfigs = BuildConfiguration::getDefaultBuildConfigurationNames();
+		if (List::contains(defaultBuildConfigs, buildConfiguration))
+			Diagnostic::error("{}: The build configuration '{}' is disabled in this workspace.", m_impl->inputs.inputFile(), buildConfiguration);
+		else
+			Diagnostic::error("{}: The build configuration '{}' was not found.", m_impl->inputs.inputFile(), buildConfiguration);
 		return false;
 	}
 

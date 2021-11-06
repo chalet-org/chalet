@@ -400,12 +400,12 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const CxxSpecia
 			std::string yearOnly = ret;
 			String::replaceAll(yearOnly, "gnu++", "");
 			String::replaceAll(yearOnly, "c++", "");
-			/*if (String::equals("23", yearOnly) && (isGcc && m_versionMajorMinor < 1200)) // might be 12.x, might be 13.x
+
+			if (String::equals("23", yearOnly) && (isGcc && m_versionMajorMinor < 1200)) // might be 12.x, might be 13.x
 			{
 				String::replaceAll(ret, "23", "2b");
 			}
-			else*/
-			if (String::equals("20", yearOnly) && (isGcc && m_versionMajorMinor < 1000))
+			else if (String::equals("20", yearOnly) && (isGcc && m_versionMajorMinor < 1000))
 			{
 				String::replaceAll(ret, "20", "2a");
 			}

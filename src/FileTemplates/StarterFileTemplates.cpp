@@ -51,17 +51,17 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 	ret["workspace"] = inProps.workspaceName;
 	ret["version"] = inProps.version;
 
-	ret[kAbstractsAll] = Json::object();
-	ret[kAbstractsAll]["language"] = language;
-	ret[kAbstractsAll][kSettingsCxx] = Json::object();
-	ret[kAbstractsAll][kSettingsCxx][langStandardKey] = std::move(langStandard);
-	ret[kAbstractsAll][kSettingsCxx]["warnings"] = "pedantic";
-
 	if (inProps.defaultConfigs)
 	{
 		ret[kConfigurations] = Json::array();
 		ret[kConfigurations] = BuildConfiguration::getDefaultBuildConfigurationNames();
 	}
+
+	ret[kAbstractsAll] = Json::object();
+	ret[kAbstractsAll]["language"] = language;
+	ret[kAbstractsAll][kSettingsCxx] = Json::object();
+	ret[kAbstractsAll][kSettingsCxx][langStandardKey] = std::move(langStandard);
+	ret[kAbstractsAll][kSettingsCxx]["warnings"] = "pedantic";
 
 	if (objectiveCxx)
 	{
@@ -288,11 +288,18 @@ Json StarterFileTemplates::getCMakeStarterChaletJson(const BuildJsonProps& inPro
 {
 	const std::string kTargets = "targets";
 	const std::string kDistribution = "distribution";
+	const std::string kConfigurations = "configurations";
 	const auto& project = inProps.projectName;
 
 	Json ret;
 	ret["workspace"] = inProps.workspaceName;
 	ret["version"] = inProps.version;
+
+	ret[kConfigurations] = Json::array();
+	auto configs = BuildConfiguration::getDefaultBuildConfigurationNames();
+	configs.pop_back(); // Remove Profile
+	configs.pop_back(); // Remove RelStable
+	ret[kConfigurations] = std::move(configs);
 
 	ret[kTargets] = Json::object();
 	ret[kTargets][project] = Json::object();
@@ -320,44 +327,100 @@ std::string StarterFileTemplates::getCMakeStarter(const BuildJsonProps& inProps)
 	const auto& location = inProps.location;
 	auto main = fmt::format("{}/{}", location, inProps.mainSource);
 	auto pch = fmt::format("{}/{}", location, inProps.precompiledHeader);
+	auto sourceExt = String::getPathSuffix(inProps.mainSource);
+
+	std::string minimumCMakeVersion{ "3.12" };
+	std::string precompiledHeader;
+	if (!inProps.precompiledHeader.empty())
+	{
+		minimumCMakeVersion = "3.16";
+		precompiledHeader = fmt::format(R"cmake(
+target_precompile_headers(${{TARGET_NAME}} PRIVATE {pch}))cmake",
+			FMT_ARG(pch));
+	}
 
 	std::string standard;
 	std::string standardRequired;
-	if (inProps.language == CodeLanguage::C)
+	std::string extraSettings;
+	std::string extraProperties;
+	if (inProps.specialization == CxxSpecialization::C)
 	{
+		if (String::equals({ "17", "23" }, inProps.langStandard))
+			minimumCMakeVersion = "3.21";
+
 		standard = fmt::format("CMAKE_C_STANDARD {}", inProps.langStandard);
 		standardRequired = "CMAKE_C_STANDARD_REQUIRED";
 	}
+#if defined(CHALET_MACOS)
+	else if (inProps.specialization == CxxSpecialization::ObjectiveCPlusPlus)
+	{
+		standard = fmt::format("CMAKE_OBJCXX_STANDARD {}", inProps.langStandard);
+		standardRequired = "CMAKE_OBJCXX_STANDARD_REQUIRED";
+		extraSettings = R"cmake(
+enable_language(OBJCXX))cmake";
+		extraProperties = R"cmake(
+target_link_libraries(${TARGET_NAME} PRIVATE "-framework Foundation")
+)cmake";
+	}
+	else if (inProps.specialization == CxxSpecialization::ObjectiveC)
+	{
+		standard = fmt::format("CMAKE_OBJC_STANDARD {}", inProps.langStandard);
+		standardRequired = "CMAKE_OBJC_STANDARD_REQUIRED";
+		extraSettings = R"cmake(
+enable_language(OBJC))cmake";
+		extraProperties = R"cmake(
+target_link_libraries(${TARGET_NAME} PRIVATE "-framework Foundation")
+)cmake";
+	}
+#endif
 	else
 	{
+		if (String::equals("23", inProps.langStandard))
+			minimumCMakeVersion = "3.20";
+
 		standard = fmt::format("CMAKE_CXX_STANDARD {}", inProps.langStandard);
 		standardRequired = "CMAKE_CXX_STANDARD_REQUIRED";
 	}
 
-	std::string ret = fmt::format(R"cmake(cmake_minimum_required(VERSION 3.16)
+	std::string sources;
+	if (inProps.useLocation)
+	{
+		sources = fmt::format(R"cmake(file(GLOB_RECURSE SOURCES {location}/*.{sourceExt}))cmake",
+			FMT_ARG(location),
+			FMT_ARG(sourceExt));
+	}
+	else
+	{
+		sources = fmt::format(R"cmake(set(SOURCES {main}))cmake",
+			FMT_ARG(main));
+	}
+
+	std::string ret = fmt::format(R"cmake(cmake_minimum_required(VERSION {minimumCMakeVersion})
 
 project({workspaceName} VERSION {version})
 
-set({standard})
-set({standardRequired} ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set({standard})
+set({standardRequired} ON){extraSettings}
 
 set(TARGET_NAME {projectName})
-file(GLOB_RECURSE SOURCES {main})
+{sources}
+
 add_executable(${{TARGET_NAME}} ${{SOURCES}})
-target_precompile_headers(${{TARGET_NAME}} PRIVATE {pch})
-target_include_directories(${{TARGET_NAME}} PRIVATE {location}/)
-)cmake",
+{precompiledHeader}
+target_include_directories(${{TARGET_NAME}} PRIVATE {location}/){extraProperties})cmake",
+		FMT_ARG(minimumCMakeVersion),
 		FMT_ARG(workspaceName),
 		FMT_ARG(version),
 		FMT_ARG(standard),
 		FMT_ARG(standardRequired),
+		FMT_ARG(extraSettings),
 		FMT_ARG(projectName),
-		FMT_ARG(main),
-		FMT_ARG(pch),
-		FMT_ARG(location));
+		FMT_ARG(sources),
+		FMT_ARG(precompiledHeader),
+		FMT_ARG(location),
+		FMT_ARG(extraProperties));
 
 	return ret;
 }
-
 }

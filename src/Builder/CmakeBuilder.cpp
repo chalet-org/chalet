@@ -58,11 +58,11 @@ bool CmakeBuilder::run()
 	auto oldNinjaStatus = Environment::getAsString(kNinjaStatus);
 
 	auto onRunFailure = [this, &oldNinjaStatus, &isNinja]() -> bool {
-		Commands::removeRecursively(m_outputLocation);
+		if (!m_target.recheck())
+			Commands::removeRecursively(m_outputLocation);
+
 		if (isNinja)
-		{
 			Environment::set(kNinjaStatus, oldNinjaStatus);
-		}
 
 		return false;
 	};
@@ -78,46 +78,44 @@ bool CmakeBuilder::run()
 		if (isNinja)
 		{
 			auto color = Output::getAnsiStyle(Output::theme().build);
-			auto reset = Output::getAnsiStyle(Color::Reset);
-			Environment::set(kNinjaStatus, fmt::format("{}   [%f/%t] {}", color, reset));
+			Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
 		}
 
-		{
-			StringList generatorCommand = getGeneratorCommand(location);
+		StringList command;
+		command = getGeneratorCommand(location);
 
 #if defined(CHALET_WIN32)
-			if (Environment::isBash())
-			{
-				ProcessOptions options;
-				options.stderrOption = PipeOption::StdErr;
-				options.stdoutOption = PipeOption::Pipe;
-				options.onStdOut = [](std::string inData) {
-					String::replaceAll(inData, "\r\n", "\n");
-					std::cout << std::move(inData) << std::flush;
-				};
-				if (Process::run(generatorCommand, options) != EXIT_SUCCESS)
-					return onRunFailure();
-			}
-			else
-#endif
-			{
-				if (!Commands::subprocess(generatorCommand))
-					return onRunFailure();
-			}
-		}
-
+		if (Environment::isBash())
 		{
-			StringList buildCommand = getBuildCommand(m_outputLocation);
-			if (!Commands::subprocess(buildCommand, PipeOption::StdOut))
+			ProcessOptions options;
+			options.stderrOption = PipeOption::StdErr;
+			options.stdoutOption = PipeOption::Pipe;
+			options.onStdOut = [](std::string inData) {
+				String::replaceAll(inData, "\r\n", "\n");
+				std::cout << std::move(inData) << std::flush;
+			};
+			if (Process::run(command, options) != EXIT_SUCCESS)
 				return onRunFailure();
 		}
+		else
+#endif
+		{
+			if (!Commands::subprocess(command))
+				return onRunFailure();
+		}
+
+		Output::lineBreak();
+
+		command = getBuildCommand(m_outputLocation);
+
+		// this will control ninja output, and other build outputs should be unaffected
+		if (!Commands::subprocessNinjaBuild(command))
+			return onRunFailure();
 
 		if (isNinja)
 		{
 			Environment::set(kNinjaStatus, oldNinjaStatus);
 		}
-
-		Output::lineBreak();
 	}
 
 	//
