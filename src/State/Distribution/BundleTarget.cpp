@@ -229,7 +229,7 @@ bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 		bool found = false;
 		for (auto& target : inState.targets)
 		{
-			if (target->isProject())
+			if (target->isSources())
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
 

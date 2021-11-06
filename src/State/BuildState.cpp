@@ -284,7 +284,7 @@ bool BuildState::initializeBuild()
 
 	for (auto& target : targets)
 	{
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
 			project.parseOutputFilename();
@@ -325,7 +325,7 @@ bool BuildState::initializeBuild()
 
 			for (auto& t : targets)
 			{
-				if (t->isProject())
+				if (t->isSources())
 				{
 					auto& p = static_cast<SourceTarget&>(*t);
 					bool staticLib = p.kind() == ProjectKind::StaticLibrary;
@@ -342,7 +342,7 @@ bool BuildState::initializeBuild()
 		{
 			target->initialize();
 
-			if (target->isProject())
+			if (target->isSources())
 			{
 				paths.populateFileList(static_cast<SourceTarget&>(*target));
 			}
@@ -413,7 +413,7 @@ bool BuildState::validateState()
 
 		for (auto& target : targets)
 		{
-			if (target->isProject())
+			if (target->isSources())
 			{
 				auto& project = static_cast<SourceTarget&>(*target);
 

@@ -381,7 +381,7 @@ StringList QueryController::getCurrentRunTarget() const
 					continue;
 
 				auto kindValue = kind.get<std::string>();
-				if (!String::equals({ "executable", "script" }, kindValue))
+				if (!String::equals({ "executable", "script", "cmakeProject" }, kindValue))
 					continue;
 
 				executableProjects.push_back(key);

@@ -12,6 +12,7 @@
 #include "Core/QueryOption.hpp"
 #include "Core/VisualStudioVersion.hpp"
 #include "Generator/IdeType.hpp"
+#include "Init/InitTemplateType.hpp"
 #include "Router/Route.hpp"
 #include "Settings/SettingsType.hpp"
 #include "Utility/DefinesExperimental.hpp"
@@ -88,6 +89,9 @@ struct CommandLineInputs
 	const std::string& initPath() const noexcept;
 	void setInitPath(std::string&& inValue) noexcept;
 
+	InitTemplateType initTemplate() const noexcept;
+	void setInitTemplate(std::string&& inValue) noexcept;
+
 	const std::string& envFile() const noexcept;
 	void setEnvFile(std::string&& inValue) noexcept;
 
@@ -140,6 +144,7 @@ struct CommandLineInputs
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
 	StringList getToolchainPresets() const noexcept;
+	StringList getProjectInitializationPresets() const noexcept;
 	StringList getCliQueryOptions() const noexcept;
 
 private:
@@ -147,6 +152,7 @@ private:
 	IdeType getIdeTypeFromString(const std::string& inValue) const;
 	QueryOption getQueryOptionFromString(const std::string& inValue) const;
 	VisualStudioVersion getVisualStudioVersionFromPresetString(const std::string& inValue) const;
+	InitTemplateType getInitTemplateFromString(const std::string& inValue) const;
 
 	mutable ToolchainPreference m_toolchainPreference;
 
@@ -213,6 +219,7 @@ private:
 	IdeType m_generator = IdeType::None;
 	SettingsType m_settingsType = SettingsType::Local;
 	QueryOption m_queryOption = QueryOption::None;
+	InitTemplateType m_initTemplate = InitTemplateType::None;
 
 	mutable VisualStudioVersion m_visualStudioVersion = VisualStudioVersion::None;
 

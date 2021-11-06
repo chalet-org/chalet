@@ -106,7 +106,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 		for (auto& target : m_state.targets)
 		{
-			if (target->isProject())
+			if (target->isSources())
 			{
 				if (!addProjectToBuild(static_cast<const SourceTarget&>(*target), inRoute))
 					return false;
@@ -147,10 +147,16 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			if (m_runTargetName == name)
 			{
-				if (target->isProject())
+				if (target->isSources())
 				{
 					auto& project = static_cast<const SourceTarget&>(*target);
 					if (project.isExecutable())
+						runTarget = target.get();
+				}
+				else if (target->isCMake())
+				{
+					auto& project = static_cast<const CMakeTarget&>(*target);
+					if (!project.runExecutable().empty())
 						runTarget = target.get();
 				}
 				else if (target->isScript())
@@ -161,10 +167,16 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			}
 			else if (m_runTargetName.empty() && runTarget == nullptr)
 			{
-				if (target->isProject())
+				if (target->isSources())
 				{
 					auto& project = static_cast<const SourceTarget&>(*target);
 					if (project.isExecutable())
+						runTarget = target.get();
+				}
+				else if (target->isCMake())
+				{
+					auto& project = static_cast<const CMakeTarget&>(*target);
+					if (!project.runExecutable().empty())
 						runTarget = target.get();
 				}
 				else if (target->isScript())
@@ -271,19 +283,12 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			Diagnostic::error("No executable project was found to run.");
 			return false;
 		}
-		else if (runTarget->isProject())
+		else if (runTarget->isSources() || runTarget->isCMake())
 		{
-			auto& project = static_cast<const SourceTarget&>(*runTarget);
-			if (!Commands::pathExists(m_state.paths.getTargetFilename(project)))
-			{
-				Diagnostic::error("Requested configuration '{}' must be built for run target: '{}'", m_state.info.buildConfiguration(), project.name());
-				return false;
-			}
-
 			// if (runRoute)
 			Output::lineBreak();
 
-			return cmdRun(project);
+			return cmdRun(*runTarget);
 		}
 		else if (runTarget->isScript())
 		{
@@ -311,7 +316,7 @@ void BuildManager::printBuildInformation()
 	bool usingC = false;
 	for (auto& target : m_state.targets)
 	{
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 
@@ -429,12 +434,12 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 }
 
 /*****************************************************************************/
-bool BuildManager::copyRunDependencies(const SourceTarget& inProject)
+bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget)
 {
 	bool result = true;
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto runDependencies = getResolvedRunDependenciesList(inProject);
+	auto runDependencies = getResolvedRunDependenciesList(inTarget);
 
 	auto outputFolder = Commands::getAbsolutePath(buildOutputDir);
 
@@ -456,12 +461,12 @@ bool BuildManager::copyRunDependencies(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-StringList BuildManager::getResolvedRunDependenciesList(const SourceTarget& inProject)
+StringList BuildManager::getResolvedRunDependenciesList(const IBuildTarget& inTarget)
 {
 	StringList ret;
-	const auto& compilerPathBin = m_state.toolchain.compilerCxx(inProject.language()).binDir;
 
-	for (auto& dep : inProject.runDependencies())
+	std::string resolved;
+	for (auto& dep : inTarget.runDependencies())
 	{
 		if (Commands::pathExists(dep))
 		{
@@ -469,11 +474,17 @@ StringList BuildManager::getResolvedRunDependenciesList(const SourceTarget& inPr
 			continue;
 		}
 
-		auto resolved = fmt::format("{}/{}", compilerPathBin, dep);
-		if (Commands::pathExists(resolved))
+		if (inTarget.isSources())
 		{
-			ret.emplace_back(std::move(resolved));
-			continue;
+			auto& project = static_cast<const SourceTarget&>(inTarget);
+			const auto& compilerPathBin = m_state.toolchain.compilerCxx(project.language()).binDir;
+
+			resolved = fmt::format("{}/{}", compilerPathBin, dep);
+			if (Commands::pathExists(resolved))
+			{
+				ret.emplace_back(std::move(resolved));
+				continue;
+			}
 		}
 
 		for (auto& path : m_state.workspace.searchPaths())
@@ -699,35 +710,50 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool BuildManager::cmdRun(const SourceTarget& inProject)
+bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 {
 	for (auto& target : m_state.targets)
 	{
-		if (target->isProject())
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.runDependencies().empty())
-				continue;
+		if (target->runDependencies().empty())
+			continue;
 
-			if (!copyRunDependencies(project))
-			{
-				Diagnostic::error("There was an error copying run dependencies for: {}", project.name());
-				return false;
-			}
+		if (!copyRunDependencies(*target))
+		{
+			Diagnostic::error("There was an error copying run dependencies for: {}", target->name());
+			return false;
 		}
 	}
 
-	auto outputFile = inProject.outputFile();
-	if (outputFile.empty())
-		return false;
-
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+
+	std::string outputFile;
+	if (inTarget.isSources())
+	{
+		auto& project = static_cast<const SourceTarget&>(inTarget);
+		outputFile = m_state.paths.getTargetFilename(project);
+	}
+	else if (inTarget.isCMake())
+	{
+		auto& project = static_cast<const CMakeTarget&>(inTarget);
+		outputFile = project.runExecutable();
+
+		if (!Commands::pathExists(outputFile))
+		{
+			outputFile = fmt::format("{}/{}", buildOutputDir, outputFile);
+		}
+	}
+
+	if (outputFile.empty() || !Commands::pathExists(outputFile))
+	{
+		Diagnostic::error("Requested configuration '{}' must be built for run target: '{}'", m_state.info.buildConfiguration(), inTarget.name());
+		return false;
+	}
+
 	const auto& runOptions = m_inputs.runOptions();
+	const auto& runArguments = inTarget.runArguments();
 
-	const auto& runArguments = inProject.runArguments();
-
-	if (!inProject.description().empty())
-		Output::msgTargetDescription(inProject.description(), Output::theme().success);
+	if (!inTarget.description().empty())
+		Output::msgTargetDescription(inTarget.description(), Output::theme().success);
 	else
 		Output::msgRun(outputFile);
 
@@ -737,8 +763,7 @@ bool BuildManager::cmdRun(const SourceTarget& inProject)
 	Output::printSeparator();
 	// Output::lineBreak();
 
-	auto file = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), outputFile);
-
+	auto file = Commands::getAbsolutePath(outputFile);
 	if (!Commands::pathExists(file))
 	{
 		Diagnostic::error("Couldn't find file: {}", file);
@@ -763,7 +788,12 @@ bool BuildManager::cmdRun(const SourceTarget& inProject)
 		cmd.push_back(arg);
 	}
 
-	if (!m_state.configuration.enableProfiling())
+	if (inTarget.isSources() && m_state.configuration.enableProfiling())
+	{
+		auto& project = static_cast<const SourceTarget&>(inTarget);
+		return runProfiler(project, cmd, file, m_state.paths.buildOutputDir());
+	}
+	else
 	{
 		bool result = Commands::subprocess(cmd);
 
@@ -788,8 +818,6 @@ bool BuildManager::cmdRun(const SourceTarget& inProject)
 
 		return result;
 	}
-
-	return runProfiler(inProject, cmd, file, m_state.paths.buildOutputDir());
 }
 
 /*****************************************************************************/
@@ -862,11 +890,22 @@ std::string BuildManager::getRunTarget()
 	for (auto& target : m_state.targets)
 	{
 		auto& name = target->name();
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.isExecutable() && project.runTarget())
+			if (project.isExecutable() && target->runTarget())
 				return name; // just get the top one
+		}
+		else if (target->isCMake())
+		{
+			auto& project = static_cast<const CMakeTarget&>(*target);
+			if (!project.runExecutable().empty() && target->runTarget())
+				return name;
+		}
+		else if (target->isScript())
+		{
+			if (target->runTarget())
+				return name;
 		}
 	}
 

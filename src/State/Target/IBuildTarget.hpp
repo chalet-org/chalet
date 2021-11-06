@@ -22,11 +22,12 @@ struct IBuildTarget
 
 	[[nodiscard]] static BuildTarget make(const BuildTargetType inType, BuildState& inState);
 
-	virtual bool initialize() = 0;
 	virtual bool validate() = 0;
 
+	virtual bool initialize();
+
 	BuildTargetType type() const noexcept;
-	bool isProject() const noexcept;
+	bool isSources() const noexcept;
 	bool isScript() const noexcept;
 	bool isSubChalet() const noexcept;
 	bool isCMake() const noexcept;
@@ -37,17 +38,34 @@ struct IBuildTarget
 	const std::string& description() const noexcept;
 	void setDescription(std::string&& inValue) noexcept;
 
+	const StringList& runArguments() const noexcept;
+	void addRunArguments(StringList&& inList);
+	void addRunArgument(std::string&& inValue);
+
+	const StringList& runDependencies() const noexcept;
+	void addRunDependencies(StringList&& inList);
+	void addRunDependency(std::string&& inValue);
+
+	bool runTarget() const noexcept;
+	void setRunTarget(const bool inValue) noexcept;
+
 	bool includeInBuild() const noexcept;
 	void setIncludeInBuild(const bool inValue);
 
 protected:
+	void replaceVariablesInPathList(StringList& outList);
+
 	const BuildState& m_state;
 
 private:
+	StringList m_runArguments;
+	StringList m_runDependencies;
+
 	std::string m_name;
 	std::string m_description;
 
-	BuildTargetType m_type;
+	BuildTargetType m_type = BuildTargetType::Unknown;
+	bool m_runTarget = false;
 	bool m_includeInBuild = true;
 };
 }

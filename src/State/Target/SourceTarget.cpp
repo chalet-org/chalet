@@ -27,33 +27,28 @@ SourceTarget::SourceTarget(BuildState& inState) :
 /*****************************************************************************/
 bool SourceTarget::initialize()
 {
+	if (!IBuildTarget::initialize())
+		return false;
+
+	replaceVariablesInPathList(m_libDirs);
+	replaceVariablesInPathList(m_includeDirs);
+	replaceVariablesInPathList(m_macosFrameworkPaths);
+	replaceVariablesInPathList(m_files);
+	replaceVariablesInPathList(m_locations);
+	replaceVariablesInPathList(m_locationExcludes);
+
 	const auto& targetName = this->name();
-	auto parse = [&](StringList& outList) {
-		for (auto& dir : outList)
-		{
-			m_state.paths.replaceVariablesInPath(dir, targetName);
-		}
-	};
-
-	parse(m_libDirs);
-	parse(m_includeDirs);
-	parse(m_runDependencies);
-	parse(m_macosFrameworkPaths);
-	parse(m_files);
-	parse(m_locations);
-	parse(m_locationExcludes);
-
-	m_state.paths.replaceVariablesInPath(m_pch, name());
+	m_state.paths.replaceVariablesInPath(m_pch, targetName);
 
 	if (!m_compileOptionsRaw.empty())
 	{
-		m_state.paths.replaceVariablesInPath(m_compileOptionsRaw, name());
+		m_state.paths.replaceVariablesInPath(m_compileOptionsRaw, targetName);
 		m_compileOptions = parseCommandLineOptions(m_compileOptionsRaw);
 	}
 
 	if (!m_linkerOptionsRaw.empty())
 	{
-		m_state.paths.replaceVariablesInPath(m_linkerOptionsRaw, name());
+		m_state.paths.replaceVariablesInPath(m_linkerOptionsRaw, targetName);
 		m_linkerOptions = parseCommandLineOptions(m_linkerOptionsRaw);
 	}
 
@@ -266,25 +261,6 @@ void SourceTarget::addIncludeDir(std::string&& inValue)
 		inValue += '/';
 
 	addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
-}
-
-/*****************************************************************************/
-const StringList& SourceTarget::runDependencies() const noexcept
-{
-	return m_runDependencies;
-}
-
-void SourceTarget::addRunDependencies(StringList&& inList)
-{
-	List::forEach(inList, this, &SourceTarget::addRunDependency);
-}
-
-void SourceTarget::addRunDependency(std::string&& inValue)
-{
-	// if (inValue.back() != '/')
-	// 	inValue += '/'; // no!
-
-	List::addIfDoesNotExist(m_runDependencies, std::move(inValue));
 }
 
 /*****************************************************************************/
@@ -519,22 +495,6 @@ bool SourceTarget::usesPch() const noexcept
 }
 
 /*****************************************************************************/
-const StringList& SourceTarget::runArguments() const noexcept
-{
-	return m_runArguments;
-}
-
-void SourceTarget::addRunArguments(StringList&& inList)
-{
-	List::forEach(inList, this, &SourceTarget::addRunArgument);
-}
-
-void SourceTarget::addRunArgument(std::string&& inValue)
-{
-	m_runArguments.emplace_back(std::move(inValue));
-}
-
-/*****************************************************************************/
 const std::string& SourceTarget::linkerScript() const noexcept
 {
 	return m_linkerScript;
@@ -670,17 +630,6 @@ bool SourceTarget::exceptions() const noexcept
 void SourceTarget::setExceptions(const bool inValue) noexcept
 {
 	m_exceptions = inValue;
-}
-
-/*****************************************************************************/
-bool SourceTarget::runTarget() const noexcept
-{
-	return m_runTarget;
-}
-
-void SourceTarget::setRunTarget(const bool inValue) noexcept
-{
-	m_runTarget = inValue;
 }
 
 /*****************************************************************************/

@@ -95,7 +95,7 @@ bool BuildJsonParser::validBuildRequested() const
 	{
 		count++;
 
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.language() == CodeLanguage::None)
@@ -118,17 +118,24 @@ bool BuildJsonParser::validRunTargetRequestedFromInput() const
 	for (auto& target : m_state.targets)
 	{
 		auto& name = target->name();
-		bool isProjectFromArgs = !inputRunTarget.empty() && name == inputRunTarget;
-		if (target->isProject())
+		if (name != inputRunTarget)
+			continue;
+
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
-			if (isProjectFromArgs && project.isExecutable())
+			if (project.isExecutable())
+				return true;
+		}
+		else if (target->isCMake())
+		{
+			auto& project = static_cast<const CMakeTarget&>(*target);
+			if (!project.runExecutable().empty())
 				return true;
 		}
 		else if (target->isScript())
 		{
-			if (isProjectFromArgs)
-				return true;
+			return true;
 		}
 	}
 
@@ -319,14 +326,8 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 	if (!parseFilesAndLocation(outTarget, inNode, inAbstract))
 		return false;
 
-	if (StringList list; parseStringListFromConfig(list, inNode, "runArguments"))
-		outTarget.addRunArguments(std::move(list));
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "runTarget"))
-		outTarget.setRunTarget(val);
-
-	if (StringList list; parseStringListFromConfig(list, inNode, "runDependencies"))
-		outTarget.addRunDependencies(std::move(list));
+	if (!parseRunTargetProperties(outTarget, inNode))
+		return false;
 
 	{
 		const auto compilerSettings{ "settings" };
@@ -382,11 +383,8 @@ bool BuildJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json
 	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
 		outTarget.setDescription(std::move(val));
 
-	// if (StringList list; parseStringListFromConfig(list, inNode, "runArguments"))
-	// 	outTarget.addRunArguments(std::move(list));
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "runTarget"))
-		outTarget.setRunTarget(val);
+	if (!parseRunTargetProperties(outTarget, inNode))
+		return false;
 
 	return true;
 }
@@ -440,6 +438,12 @@ bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNod
 	if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, "defines"))
 		outTarget.addDefines(std::move(list));
 
+	if (std::string val; parseKeyFromConfig(val, inNode, "runExecutable"))
+		outTarget.setRunExecutable(std::move(val));
+
+	if (!parseRunTargetProperties(outTarget, inNode))
+		return false;
+
 	return true;
 }
 
@@ -456,6 +460,21 @@ bool BuildJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& 
 	}
 
 	return outTarget.includeInBuild();
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
+{
+	if (StringList list; parseStringListFromConfig(list, inNode, "runArguments"))
+		outTarget.addRunArguments(std::move(list));
+
+	if (bool val = false; parseKeyFromConfig(val, inNode, "runTarget"))
+		outTarget.setRunTarget(val);
+
+	if (StringList list; parseStringListFromConfig(list, inNode, "runDependencies"))
+		outTarget.addRunDependencies(std::move(list));
+
+	return true;
 }
 
 /*****************************************************************************/

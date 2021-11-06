@@ -49,7 +49,7 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 
 	for (auto& target : m_state.targets)
 	{
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			if (List::contains(inProject.projectStaticLinks(), project.name()))

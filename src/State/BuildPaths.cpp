@@ -22,11 +22,31 @@ namespace chalet
 BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const BuildState& inState) :
 	m_inputs(inInputs),
 	m_state(inState),
-	m_cExts({ "c" }),
-	m_cppExts({ "cpp", "cc", "cxx", "c++", "C", "CPP", "CC", "CXX", "C++" }),
-	m_resourceExts({ "rc", "RC" }),
-	m_objectiveCExts({ "m", "M" }),
-	m_objectiveCppExts({ "mm" })
+	m_cExts({
+		"c",
+	}),
+	m_cppExts({
+		"cpp",
+		"cc",
+		"cxx",
+		"c++",
+		"C",
+		"CPP",
+		"CC",
+		"CXX",
+		"C++",
+	}),
+	m_resourceExts({
+		"rc",
+		"RC",
+	}),
+	m_objectiveCExts({
+		"m",
+		"M",
+	}),
+	m_objectiveCppExts({
+		"mm",
+	})
 {
 }
 

@@ -13,6 +13,7 @@
 namespace chalet
 {
 class BuildState;
+struct IBuildTarget;
 struct SubChaletTarget;
 struct CMakeTarget;
 struct SourceTarget;
@@ -36,8 +37,8 @@ private:
 	void printBuildInformation();
 	std::string getBuildStrategyName() const;
 
-	bool copyRunDependencies(const SourceTarget& inProject);
-	StringList getResolvedRunDependenciesList(const SourceTarget& inProject);
+	bool copyRunDependencies(const IBuildTarget& inProject);
+	StringList getResolvedRunDependenciesList(const IBuildTarget& inProject);
 	bool doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean = false);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
@@ -48,7 +49,7 @@ private:
 	// commands
 	bool cmdBuild(const SourceTarget& inProject);
 	bool cmdRebuild(const SourceTarget& inProject);
-	bool cmdRun(const SourceTarget& inProject);
+	bool cmdRun(const IBuildTarget& inTarget);
 	bool cmdClean();
 
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(chalet-debug VERSION 0.32)
+project(chalet-debug VERSION 0.3.0)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 	message(FATAL_ERROR "Build must be Debug")
@@ -18,8 +18,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	set(CLANG ON)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	set(GNU ON)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
-	set(INTEL ON)
 endif()
 
 if (MSVC)

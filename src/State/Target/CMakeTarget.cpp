@@ -25,6 +25,9 @@ CMakeTarget::CMakeTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool CMakeTarget::initialize()
 {
+	if (!IBuildTarget::initialize())
+		return false;
+
 	const auto& targetName = this->name();
 	m_state.paths.replaceVariablesInPath(m_buildFile, targetName);
 	m_state.paths.replaceVariablesInPath(m_location, targetName);
@@ -33,6 +36,8 @@ bool CMakeTarget::initialize()
 	{
 		m_state.paths.replaceVariablesInPath(define, targetName);
 	}
+
+	m_state.paths.replaceVariablesInPath(m_runExecutable, targetName);
 
 	return true;
 }
@@ -125,6 +130,17 @@ const std::string& CMakeTarget::location() const noexcept
 void CMakeTarget::setLocation(std::string&& inValue) noexcept
 {
 	m_location = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& CMakeTarget::runExecutable() const noexcept
+{
+	return m_runExecutable;
+}
+
+void CMakeTarget::setRunExecutable(std::string&& inValue) noexcept
+{
+	m_runExecutable = std::move(inValue);
 }
 
 /*****************************************************************************/

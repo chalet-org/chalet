@@ -123,6 +123,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 						m_inputs.setInitPath(std::move(value));
 						break;
 
+					case ArgumentIdentifier::InitTemplate:
+						m_inputs.setInitTemplate(std::move(value));
+						break;
+
 					case ArgumentIdentifier::SettingsKey:
 						m_inputs.setSettingsKey(std::move(value));
 						break;

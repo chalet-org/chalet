@@ -1099,6 +1099,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"description": "If true, Chalet will be invoked each time during the build."
 	})json"_ojson;
 
+	defs[Defs::CMakeTargetRunExecutable] = R"json({
+		"type": "string",
+		"description": "The path to an executable to run, relative to the build directory.",
+		"minLength": 1
+	})json"_ojson;
+
 	auto getDefinitionwithCompilerOptions = [this](const Defs inDef) {
 		Json ret = R"json({
 			"oneOf": [
@@ -1348,10 +1354,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetCMake[kProperties]["toolset"] = getDefinition(Defs::CMakeTargetToolset);
 		targetCMake[kProperties]["recheck"] = getDefinition(Defs::CMakeTargetRecheck);
 		targetCMake[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
+		targetCMake[kProperties]["runTarget"] = getDefinition(Defs::TargetRunTarget);
+		targetCMake[kProperties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
+		targetCMake[kProperties]["runExecutable"] = getDefinition(Defs::CMakeTargetRunExecutable);
 		targetCMake[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
 		targetCMake[kPatternProperties][fmt::format("^buildFile{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::CMakeTargetBuildFile);
 		targetCMake[kPatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::CMakeTargetDefines);
 		targetCMake[kPatternProperties][fmt::format("^toolset{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::CMakeTargetToolset);
+		targetCMake[kPatternProperties][fmt::format("^runTarget{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunTarget);
+		targetCMake[kPatternProperties][fmt::format("^runExecutable{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::CMakeTargetRunExecutable);
 		defs[Defs::CMakeTarget] = std::move(targetCMake);
 	}
 
@@ -1465,6 +1476,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::CMakeTargetDefines: return "cmake-target-defines";
 		case Defs::CMakeTargetRecheck: return "cmake-target-recheck";
 		case Defs::CMakeTargetToolset: return "cmake-target-toolset";
+		case Defs::CMakeTargetRunExecutable: return "cmake-target-runExecutable";
 		//
 		case Defs::ChaletTarget: return "chalet-target";
 		case Defs::ChaletTargetLocation: return "chalet-target-location";

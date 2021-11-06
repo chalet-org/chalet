@@ -21,6 +21,9 @@ ScriptBuildTarget::ScriptBuildTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ScriptBuildTarget::initialize()
 {
+	if (!IBuildTarget::initialize())
+		return false;
+
 	const auto& targetName = this->name();
 	for (auto& script : m_scripts)
 	{
@@ -50,30 +53,6 @@ void ScriptBuildTarget::addScripts(StringList&& inList)
 void ScriptBuildTarget::addScript(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_scripts, std::move(inValue));
-}
-
-/*****************************************************************************/
-const StringList& ScriptBuildTarget::runArguments() const noexcept
-{
-	return m_runArguments;
-}
-void ScriptBuildTarget::addRunArguments(StringList&& inList)
-{
-	List::forEach(inList, this, &ScriptBuildTarget::addRunArgument);
-}
-void ScriptBuildTarget::addRunArgument(std::string&& inValue)
-{
-	m_runArguments.emplace_back(std::move(inValue));
-}
-
-/*****************************************************************************/
-bool ScriptBuildTarget::runTarget() const noexcept
-{
-	return m_runTarget;
-}
-void ScriptBuildTarget::setRunTarget(const bool inValue) noexcept
-{
-	m_runTarget = inValue;
 }
 
 }

@@ -5,11 +5,13 @@
 
 #include "State/Target/IBuildTarget.hpp"
 
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -42,11 +44,29 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 }
 
 /*****************************************************************************/
+bool IBuildTarget::initialize()
+{
+	replaceVariablesInPathList(m_runDependencies);
+
+	return true;
+}
+
+/*****************************************************************************/
+void IBuildTarget::replaceVariablesInPathList(StringList& outList)
+{
+	const auto& targetName = this->name();
+	for (auto& dir : outList)
+	{
+		m_state.paths.replaceVariablesInPath(dir, targetName);
+	}
+}
+
+/*****************************************************************************/
 BuildTargetType IBuildTarget::type() const noexcept
 {
 	return m_type;
 }
-bool IBuildTarget::isProject() const noexcept
+bool IBuildTarget::isSources() const noexcept
 {
 	return m_type == BuildTargetType::Project;
 }
@@ -80,6 +100,52 @@ const std::string& IBuildTarget::description() const noexcept
 void IBuildTarget::setDescription(std::string&& inValue) noexcept
 {
 	m_description = std::move(inValue);
+}
+
+/*****************************************************************************/
+const StringList& IBuildTarget::runArguments() const noexcept
+{
+	return m_runArguments;
+}
+
+void IBuildTarget::addRunArguments(StringList&& inList)
+{
+	List::forEach(inList, this, &SourceTarget::addRunArgument);
+}
+
+void IBuildTarget::addRunArgument(std::string&& inValue)
+{
+	m_runArguments.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
+const StringList& IBuildTarget::runDependencies() const noexcept
+{
+	return m_runDependencies;
+}
+
+void IBuildTarget::addRunDependencies(StringList&& inList)
+{
+	List::forEach(inList, this, &SourceTarget::addRunDependency);
+}
+
+void IBuildTarget::addRunDependency(std::string&& inValue)
+{
+	// if (inValue.back() != '/')
+	// 	inValue += '/'; // no!
+
+	List::addIfDoesNotExist(m_runDependencies, std::move(inValue));
+}
+
+/*****************************************************************************/
+bool IBuildTarget::runTarget() const noexcept
+{
+	return m_runTarget;
+}
+
+void IBuildTarget::setRunTarget(const bool inValue) noexcept
+{
+	m_runTarget = inValue;
 }
 
 /*****************************************************************************/

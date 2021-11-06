@@ -54,10 +54,6 @@ struct SourceTarget final : public IBuildTarget
 	void addIncludeDirs(StringList&& inList);
 	void addIncludeDir(std::string&& inValue);
 
-	const StringList& runDependencies() const noexcept;
-	void addRunDependencies(StringList&& inList);
-	void addRunDependency(std::string&& inValue);
-
 	const StringList& warnings() const noexcept;
 	void addWarnings(StringList&& inList);
 	void addWarning(std::string&& inValue);
@@ -110,10 +106,6 @@ struct SourceTarget final : public IBuildTarget
 	void setPch(std::string&& inValue) noexcept;
 	bool usesPch() const noexcept;
 
-	const StringList& runArguments() const noexcept;
-	void addRunArguments(StringList&& inList);
-	void addRunArgument(std::string&& inValue);
-
 	const std::string& linkerScript() const noexcept;
 	void setLinkerScript(std::string&& inValue) noexcept;
 
@@ -152,9 +144,6 @@ struct SourceTarget final : public IBuildTarget
 	bool exceptions() const noexcept;
 	void setExceptions(const bool inValue) noexcept;
 
-	bool runTarget() const noexcept;
-	void setRunTarget(const bool inValue) noexcept;
-
 	bool staticLinking() const noexcept;
 	void setStaticLinking(const bool inValue) noexcept;
 
@@ -183,7 +172,6 @@ private:
 	StringList m_staticLinks;
 	StringList m_libDirs;
 	StringList m_includeDirs;
-	StringList m_runDependencies;
 	StringList m_warnings;
 	StringList m_compileOptions;
 	StringList m_linkerOptions;
@@ -192,7 +180,6 @@ private:
 	StringList m_files;
 	StringList m_locations;
 	StringList m_locationExcludes;
-	StringList m_runArguments;
 
 	std::string m_productionDependencies;
 	std::string m_productionExcludes;
@@ -218,7 +205,6 @@ private:
 	bool m_objectiveCxx = false;
 	bool m_rtti = true;
 	bool m_exceptions = true;
-	bool m_runTarget = false;
 	bool m_staticLinking = false;
 	bool m_posixThreads = true;
 	bool m_invalidWarningPreset = false;

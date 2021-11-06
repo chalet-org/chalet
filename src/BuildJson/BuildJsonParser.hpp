@@ -41,6 +41,7 @@ private:
 	bool parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode) const;
 	bool parseCMakeTarget(CMakeTarget& outProject, const Json& inNode) const;
 	bool parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const;
+	bool parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode) const;
 	bool parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract) const;
 	bool parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode) const;

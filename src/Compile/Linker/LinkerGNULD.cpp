@@ -520,7 +520,7 @@ void LinkerGNULD::addPositionIndependentCodeOption(StringList& outArgList) const
 	StringList projectLinks;
 	for (auto& target : m_state.targets)
 	{
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.isExecutable())

@@ -21,18 +21,8 @@ struct ScriptBuildTarget final : public IBuildTarget
 	void addScripts(StringList&& inList);
 	void addScript(std::string&& inValue);
 
-	const StringList& runArguments() const noexcept;
-	void addRunArguments(StringList&& inList);
-	void addRunArgument(std::string&& inValue);
-
-	bool runTarget() const noexcept;
-	void setRunTarget(const bool inValue) noexcept;
-
 private:
 	StringList m_scripts;
-	StringList m_runArguments;
-
-	bool m_runTarget = false;
 };
 }
 

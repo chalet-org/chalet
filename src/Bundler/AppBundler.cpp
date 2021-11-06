@@ -240,7 +240,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	uint copyCount = 0;
 	for (auto& target : inState.targets)
 	{
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 
@@ -356,7 +356,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 	StringList searchDirs;
 	for (auto& target : inState.targets)
 	{
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			for (auto& dir : project.libDirs())
@@ -372,7 +372,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 
 		for (auto& target : inState.targets)
 		{
-			if (target->isProject())
+			if (target->isSources())
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
 

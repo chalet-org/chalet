@@ -36,9 +36,12 @@ enum class ArgumentIdentifier : ushort
 	ShowCommands,
 	Benchmark,
 	//
+	// Init
+	InitPath,
+	InitTemplate,
+	//
 	// Other
 	RouteString,
-	InitPath,
 	SettingsKey,
 	SettingsValue,
 	QueryType,

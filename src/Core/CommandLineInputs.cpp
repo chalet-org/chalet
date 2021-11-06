@@ -26,6 +26,10 @@ static struct
 		// { "codeblocks", IdeType::CodeBlocks },
 	};
 
+	const Dictionary<InitTemplateType> initTemplates{
+		{ "cmake", InitTemplateType::CMake },
+	};
+
 	const Dictionary<QueryOption> queryOptions{
 		{ "all-toolchains", QueryOption::AllToolchains },
 		{ "architecture", QueryOption::Architecture },
@@ -454,6 +458,20 @@ void CommandLineInputs::setInitPath(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+InitTemplateType CommandLineInputs::initTemplate() const noexcept
+{
+	return m_initTemplate;
+}
+
+void CommandLineInputs::setInitTemplate(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_initTemplate = getInitTemplateFromString(inValue);
+}
+
+/*****************************************************************************/
 const std::string& CommandLineInputs::envFile() const noexcept
 {
 	return m_envFile;
@@ -744,6 +762,19 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 }
 
 /*****************************************************************************/
+StringList CommandLineInputs::getProjectInitializationPresets() const noexcept
+{
+	StringList ret;
+
+	for (auto& [name, _] : state.initTemplates)
+	{
+		ret.emplace_back(name);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 StringList CommandLineInputs::getCliQueryOptions() const noexcept
 {
 	StringList ret;
@@ -1004,5 +1035,16 @@ VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(co
 #endif
 
 	return VisualStudioVersion::Stable;
+}
+
+/*****************************************************************************/
+InitTemplateType CommandLineInputs::getInitTemplateFromString(const std::string& inValue) const
+{
+	if (state.initTemplates.find(inValue) != state.initTemplates.end())
+	{
+		return state.initTemplates.at(inValue);
+	}
+
+	return InitTemplateType::None;
 }
 }

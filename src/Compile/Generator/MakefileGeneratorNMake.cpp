@@ -396,7 +396,7 @@ std::string MakefileGeneratorNMake::getLinkerPreReqs(const StringList& objects) 
 
 	for (auto& target : m_state.targets)
 	{
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			if (List::contains(m_project->projectStaticLinks(), project.name()))

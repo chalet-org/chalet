@@ -46,6 +46,8 @@ bool ProjectInitializer::run()
 			return false;
 	}
 
+	LOG("template:", m_inputs.initTemplate() == InitTemplateType::CMake ? "cmake" : "none");
+
 	// At the moment, only initialize an empty path
 	m_rootPath = Commands::getCanonicalPath(path);
 	if (!Commands::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))

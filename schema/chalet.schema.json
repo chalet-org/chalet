@@ -1552,6 +1552,15 @@
 				},
 				"condition": {
 					"$ref": "#/definitions/target-condition"
+				},
+				"runTarget": {
+					"$ref": "#/definitions/target-runTarget"
+				},
+				"runArguments": {
+					"$ref": "#/definitions/target-runArguments"
+				},
+				"runExecutable": {
+					"$ref": "#/definitions/cmake-target-runExecutable"
 				}
 			},
 			"patternProperties": {
@@ -1566,6 +1575,12 @@
 				},
 				"^toolset(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/cmake-target-toolset"
+				},
+				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-runTarget"
+				},
+				"^runExecutable(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/cmake-target-runExecutable"
 				}
 			}
 		},
@@ -1597,6 +1612,11 @@
 		"cmake-target-toolset": {
 			"type": "string",
 			"description": "A toolset to be passed to CMake with the -T option.",
+			"minLength": 1
+		},
+		"cmake-target-runExecutable": {
+			"type": "string",
+			"description": "The path to an executable to run, relative to the build directory.",
 			"minLength": 1
 		},
 		"chalet-target": {

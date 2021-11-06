@@ -495,7 +495,7 @@ std::string MakefileGeneratorGNU::getLinkerPreReqs() const
 	uint count = 0;
 	for (auto& target : m_state.targets)
 	{
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			/*if (List::contains(m_project->links(), project.name()))

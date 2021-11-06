@@ -97,6 +97,7 @@ class SchemaBuildJson
 		CMakeTargetDefines,
 		CMakeTargetRecheck,
 		CMakeTargetToolset,
+		CMakeTargetRunExecutable,
 		//
 		ChaletTarget,
 		ChaletTargetLocation,

@@ -56,6 +56,8 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		"-e", "--env-file",
 		"-a", "--arch",
 		"-c", "--configuration",
+		//
+		"--template",
 	}),
 	// clang-format on
 	m_routeMap({
@@ -635,7 +637,7 @@ void ArgumentPatterns::addToolchainArg()
 	const auto toolchains = m_inputs.getToolchainPresets();
 	const auto& defaultValue = m_inputs.defaultToolchainPreset();
 	addTwoStringArguments(ArgumentIdentifier::Toolchain, "-t", "--toolchain")
-		.help(fmt::format("Toolchain preference ({}, ...) [default: \"{}\"]", String::join(toolchains, ", "), defaultValue));
+		.help(fmt::format("A toolchain preset to use (ex: {}) [default: \"{}\"]", String::join(toolchains, ", "), defaultValue));
 }
 
 /*****************************************************************************/
@@ -834,7 +836,10 @@ void ArgumentPatterns::populateConfigureArguments()
 /*****************************************************************************/
 void ArgumentPatterns::populateInitArguments()
 {
-	//
+	const auto templates = m_inputs.getToolchainPresets();
+	addTwoStringArguments(ArgumentIdentifier::InitTemplate, "-t", "--template")
+		.help(fmt::format("The project template to use during initialization (ex: {})", String::join(templates, ", ")));
+
 	addStringArgument(ArgumentIdentifier::InitPath, kArgInitPath.c_str(), ".")
 		.help("The path of the project to initialize")
 		.required();

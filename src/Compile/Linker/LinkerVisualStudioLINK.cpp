@@ -147,7 +147,7 @@ void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 	{
 		for (auto& target : m_state.targets)
 		{
-			if (target->isProject())
+			if (target->isSources())
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
 				if (List::contains(m_project.projectStaticLinks(), project.name()))
@@ -170,7 +170,7 @@ void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 			bool found = false;
 			for (auto& target : m_state.targets)
 			{
-				if (target->isProject())
+				if (target->isSources())
 				{
 					auto& project = static_cast<const SourceTarget&>(*target);
 					if (project.name() == link && project.isSharedLibrary())

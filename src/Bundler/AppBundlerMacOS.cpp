@@ -332,7 +332,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 	uint i = 0;
 	for (auto& target : m_state.targets)
 	{
-		if (target->isProject())
+		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			for (auto& framework : project.macosFrameworks())
