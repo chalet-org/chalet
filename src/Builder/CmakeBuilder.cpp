@@ -289,8 +289,8 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 	if (!isDefined["CMAKE_BUILD_TYPE"])
 	{
-		std::string buildConfiguration = getCMakeCompatibleBuildConfiguration();
-		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + buildConfiguration);
+		auto buildConfiguration = getCMakeCompatibleBuildConfiguration();
+		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + std::move(buildConfiguration));
 	}
 
 #if defined(CHALET_WIN32)
@@ -305,12 +305,12 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		if (!m_state.info.universalArches().empty())
 		{
 			auto value = String::join(m_state.info.universalArches(), ';');
-			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + value);
+			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + std::move(value));
 		}
 		else
 		{
 			const auto& targetArch = m_state.info.targetArchitectureString();
-			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + targetArch);
+			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + std::move(targetArch));
 		}
 	}
 

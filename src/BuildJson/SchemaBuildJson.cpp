@@ -31,16 +31,16 @@ SchemaBuildJson::SchemaBuildJson() :
 	kOneOf("oneOf"),
 	kThen("then"),
 	kElse("else"),
-	kPatternTargetName(R"(^[\w\-\+\.]{3,}$)"),
+	kPatternTargetName(R"(^[\w\-+.]{3,}$)"),
 	kPatternAbstractName(R"([A-Za-z-_]+)"),
-	kPatternSourceTargetLinks(R"(^[\w\-\+\.]+$)"),
-	kPatternDistributionName(R"(^[\w\-\+\.\ \(\)]{3,}$)"),
+	kPatternSourceTargetLinks(R"(^[\w\-+.]+$)"),
+	kPatternDistributionName(R"(^[\w\-+. ()]{3,}$)"),
 	kPatternConditionConfigurations(R"regex((\.!?(debug)\b\.?)?)regex"),
 	kPatternConditionPlatforms(R"regex((\.!?(windows|macos|linux)\b){1,2})regex"),
 	kPatternConditionConfigurationsPlatforms(R"regex((\.!?(debug|windows|macos|linux)\b){1,2})regex"),
 	kPatternConditionPlatformsInner(R"regex((!?(windows|macos|linux)\b))regex"),
 	kPatternConditionConfigurationsPlatformsInner(R"regex((!?(debug|windows|macos|linux)\b){1,2})regex"),
-	kPatternCompilers(R"regex(^(\*|[\w\-\+\.]{3,})(\.!?(debug|windows|macos|linux)\b){0,2}$)regex")
+	kPatternCompilers(R"regex(^(\*|[\w\-+.]{3,})(\.!?(debug|windows|macos|linux)\b){0,2}$)regex")
 {
 }
 
@@ -1664,7 +1664,6 @@ Json SchemaBuildJson::get()
 				}
 			}
 		}
-
 	})json"_ojson;
 	ret[kProperties][targets][kPatternProperties][kPatternTargetName][kThen] = getDefinition(Defs::ExecutableSourceTarget);
 	ret[kProperties][targets][kPatternProperties][kPatternTargetName][kElse][kThen] = getDefinition(Defs::LibrarySourceTarget);

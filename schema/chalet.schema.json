@@ -288,7 +288,7 @@
 				"type": "string",
 				"description": "The name of the build target.",
 				"minLength": 1,
-				"pattern": "^[\\w\\-\\+\\.]{3,}$"
+				"pattern": "^[\\w\\-+.]{3,}$"
 			}
 		},
 		"distribution-target-windows": {
@@ -724,7 +724,7 @@
 							"additionalProperties": false,
 							"description": "Options specific to each compiler",
 							"patternProperties": {
-								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 									"$ref": "#/definitions/source-target-cxx-defines"
 								}
 							}
@@ -741,7 +741,7 @@
 							"additionalProperties": false,
 							"description": "Options specific to each compiler",
 							"patternProperties": {
-								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 									"$ref": "#/definitions/source-target-cxx-includeDirs"
 								}
 							}
@@ -758,7 +758,7 @@
 							"additionalProperties": false,
 							"description": "Options specific to each compiler",
 							"patternProperties": {
-								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 									"$ref": "#/definitions/source-target-cxx-libDirs"
 								}
 							}
@@ -781,7 +781,7 @@
 							"additionalProperties": false,
 							"description": "Options specific to each compiler",
 							"patternProperties": {
-								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 									"$ref": "#/definitions/source-target-cxx-links"
 								}
 							}
@@ -819,7 +819,7 @@
 							"additionalProperties": false,
 							"description": "Options specific to each compiler",
 							"patternProperties": {
-								"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 									"$ref": "#/definitions/source-target-cxx-staticLinks"
 								}
 							}
@@ -918,7 +918,7 @@
 			"additionalProperties": false,
 			"description": "Addtional options (per compiler type) to add during the compilation step.",
 			"patternProperties": {
-				"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 					"type": "string",
 					"minLength": 1
 				}
@@ -964,7 +964,7 @@
 			"additionalProperties": false,
 			"description": "Addtional options (per compiler type) to add during the linking step.",
 			"patternProperties": {
-				"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+				"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 					"type": "string",
 					"minLength": 1
 				}
@@ -978,7 +978,7 @@
 			"items": {
 				"type": "string",
 				"minLength": 1,
-				"pattern": "^[\\w\\-\\+\\.]+$"
+				"pattern": "^[\\w\\-+.]+$"
 			}
 		},
 		"source-target-cxx-macosFrameworkPaths": {
@@ -1040,7 +1040,7 @@
 			"items": {
 				"type": "string",
 				"minLength": 1,
-				"pattern": "^[\\w\\-\\+\\.]+$"
+				"pattern": "^[\\w\\-+.]+$"
 			}
 		},
 		"source-target-cxx-warnings": {
@@ -1064,7 +1064,7 @@
 					"additionalProperties": false,
 					"description": "Warnings specific to each compiler",
 					"patternProperties": {
-						"^(\\*|[\\w\\-\\+\\.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+						"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 							"type": "array",
 							"items": {
 								"type": "string",
@@ -1728,7 +1728,7 @@
 			"additionalProperties": false,
 			"description": "A sequential list of distribution targets to be created during the bundle phase.",
 			"patternProperties": {
-				"^[\\w\\-\\+\\.\\ \\(\\)]{3,}$": {
+				"^[\\w\\-+. ()]{3,}$": {
 					"type": "object",
 					"description": "A single distribution target or script.",
 					"if": {
@@ -1778,7 +1778,7 @@
 			"additionalProperties": false,
 			"description": "A sequential list of build targets, cmake targets, or scripts.",
 			"patternProperties": {
-				"^[\\w\\-\\+\\.]{3,}$": {
+				"^[\\w\\-+.]{3,}$": {
 					"type": "object",
 					"description": "A single build target or script.",
 					"if": {

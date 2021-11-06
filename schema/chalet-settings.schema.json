@@ -347,7 +347,7 @@
 			"additionalProperties": false,
 			"description": "A list of toolchains.",
 			"patternProperties": {
-				"^[\\w\\-\\+\\.]{3,}$": {
+				"^[\\w\\-+.]{3,}$": {
 					"type": "object",
 					"additionalProperties": false,
 					"description": "A list of compilers and tools needing for the build itself.",

@@ -606,7 +606,7 @@ Json Schema::getSettingsJson()
 		"additionalProperties": false,
 		"description": "A list of toolchains."
 	})json"_ojson;
-	ret[kProperties][kKeyToolchains]["patternProperties"][R"(^[\w\-\+\.]{3,}$)"] = toolchains;
+	ret[kProperties][kKeyToolchains]["patternProperties"][R"(^[\w\-+.]{3,}$)"] = toolchains;
 
 	return ret;
 }
