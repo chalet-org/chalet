@@ -6,6 +6,7 @@
 #include "Core/CommandLineInputs.hpp"
 
 #include "Core/Arch.hpp"
+#include "Core/Platform.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -485,6 +486,13 @@ void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 
 	Path::sanitize(m_envFile);
 	// clearWorkingDirectory(m_envFile);
+}
+
+/*****************************************************************************/
+std::string CommandLineInputs::platformEnv() const noexcept
+{
+	const auto& platform = Platform::platform();
+	return fmt::format("{}.{}", kDefaultEnvFile, platform);
 }
 
 /*****************************************************************************/

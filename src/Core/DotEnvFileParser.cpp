@@ -26,15 +26,7 @@ DotEnvFileParser::DotEnvFileParser(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool DotEnvFileParser::serialize()
 {
-#if defined(CHALET_WIN32)
-	std::string platformEnv = fmt::format("{}.windows", m_inputs.defaultEnvFile());
-#elif defined(CHALET_MACOS)
-	std::string platformEnv = fmt::format("{}.macos", m_inputs.defaultEnvFile());
-#else
-	std::string platformEnv = fmt::format("{}.linux", m_inputs.defaultEnvFile());
-#endif
-
-	std::string envFile = searchDotEnv(m_inputs.envFile(), platformEnv);
+	std::string envFile = searchDotEnv(m_inputs.envFile(), m_inputs.platformEnv());
 	if (envFile.empty())
 	{
 		envFile = searchDotEnv(m_inputs.envFile(), m_inputs.defaultEnvFile());

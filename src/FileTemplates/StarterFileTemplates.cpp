@@ -35,6 +35,12 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 	const std::string langStandardKey = cpp ? "cppStandard" : "cStandard";
 	const auto& project = inProps.projectName;
 
+	std::string langStandard;
+	if (inProps.langStandard.size() <= 2)
+	{
+		langStandard = cpp ? fmt::format("c++{}", inProps.langStandard) : fmt::format("c{}", inProps.langStandard);
+	}
+
 	const std::string kAbstractsAll = "abstracts:*";
 	const std::string kSettingsCxx = "settings:Cxx";
 	const std::string kTargets = "targets";
@@ -48,7 +54,7 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 	ret[kAbstractsAll] = Json::object();
 	ret[kAbstractsAll]["language"] = language;
 	ret[kAbstractsAll][kSettingsCxx] = Json::object();
-	ret[kAbstractsAll][kSettingsCxx][langStandardKey] = inProps.langStandard;
+	ret[kAbstractsAll][kSettingsCxx][langStandardKey] = std::move(langStandard);
 	ret[kAbstractsAll][kSettingsCxx]["warnings"] = "pedantic";
 
 	if (inProps.defaultConfigs)
@@ -315,12 +321,25 @@ std::string StarterFileTemplates::getCMakeStarter(const BuildJsonProps& inProps)
 	auto main = fmt::format("{}/{}", location, inProps.mainSource);
 	auto pch = fmt::format("{}/{}", location, inProps.precompiledHeader);
 
+	std::string standard;
+	std::string standardRequired;
+	if (inProps.language == CodeLanguage::C)
+	{
+		standard = fmt::format("CMAKE_C_STANDARD {}", inProps.langStandard);
+		standardRequired = "CMAKE_C_STANDARD_REQUIRED";
+	}
+	else
+	{
+		standard = fmt::format("CMAKE_CXX_STANDARD {}", inProps.langStandard);
+		standardRequired = "CMAKE_CXX_STANDARD_REQUIRED";
+	}
+
 	std::string ret = fmt::format(R"cmake(cmake_minimum_required(VERSION 3.16)
 
 project({workspaceName} VERSION {version})
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set({standard})
+set({standardRequired} ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(TARGET_NAME {projectName})
@@ -329,8 +348,10 @@ add_executable(${{TARGET_NAME}} ${{SOURCES}})
 target_precompile_headers(${{TARGET_NAME}} PRIVATE {pch})
 target_include_directories(${{TARGET_NAME}} PRIVATE {location}/)
 )cmake",
-		FMT_ARG(version),
 		FMT_ARG(workspaceName),
+		FMT_ARG(version),
+		FMT_ARG(standard),
+		FMT_ARG(standardRequired),
 		FMT_ARG(projectName),
 		FMT_ARG(main),
 		FMT_ARG(pch),
