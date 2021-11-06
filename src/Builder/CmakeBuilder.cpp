@@ -52,8 +52,18 @@ bool CmakeBuilder::run()
 	m_outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.location());
 	Path::sanitize(m_outputLocation);
 
-	auto onRunFailure = [this]() -> bool {
+	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+
+	static const char* kNinjaStatus = "NINJA_STATUS";
+	auto oldNinjaStatus = Environment::getAsString(kNinjaStatus);
+
+	auto onRunFailure = [this, &oldNinjaStatus, &isNinja]() -> bool {
 		Commands::removeRecursively(m_outputLocation);
+		if (isNinja)
+		{
+			Environment::set(kNinjaStatus, oldNinjaStatus);
+		}
+
 		return false;
 	};
 
@@ -64,6 +74,13 @@ bool CmakeBuilder::run()
 	{
 		if (outDirectoryDoesNotExist)
 			Commands::makeDirectory(m_outputLocation);
+
+		if (isNinja)
+		{
+			auto color = Output::getAnsiStyle(Output::theme().build);
+			auto reset = Output::getAnsiStyle(Color::Reset);
+			Environment::set(kNinjaStatus, fmt::format("{}   [%f/%t] {}", color, reset));
+		}
 
 		{
 			StringList generatorCommand = getGeneratorCommand(location);
@@ -93,6 +110,11 @@ bool CmakeBuilder::run()
 			StringList buildCommand = getBuildCommand(m_outputLocation);
 			if (!Commands::subprocess(buildCommand, PipeOption::StdOut))
 				return onRunFailure();
+		}
+
+		if (isNinja)
+		{
+			Environment::set(kNinjaStatus, oldNinjaStatus);
 		}
 
 		Output::lineBreak();

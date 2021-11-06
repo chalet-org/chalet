@@ -1126,7 +1126,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	// Complex Definitions
 	//
 	{
-
 		auto configuration = R"json({
 			"type": "object",
 			"additionalProperties": false,
@@ -1159,7 +1158,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 					]
 				}
 			]
-
 		})json"_ojson;
 		distDef[kProperties] = Json::object();
 		distDef[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
@@ -1347,7 +1345,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	}
 
 	{
-
 		auto targetCMake = R"json({
 			"type": "object",
 			"description": "Build the location with CMake",
@@ -1378,7 +1375,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	}
 
 	{
-
 		auto targetChalet = R"json({
 			"type": "object",
 			"description": "Build the location with Chalet",

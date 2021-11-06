@@ -170,7 +170,6 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 
 	int result = Process::run(inCmd, options);
 
-#if defined(CHALET_WIN32)
 	if (data.size() > 0)
 	{
 		std::string noWork = fmt::format("ninja: no work to do.{}", endlineReplace);
@@ -179,7 +178,6 @@ bool CompileStrategyNinja::subprocessNinja(const StringList& inCmd, std::string 
 		else
 			Output::lineBreak();
 	}
-#endif
 
 	return result == EXIT_SUCCESS;
 }
