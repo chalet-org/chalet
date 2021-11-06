@@ -46,10 +46,9 @@ bool ProjectInitializer::run()
 			return false;
 	}
 
-	LOG("template:", m_inputs.initTemplate() == InitTemplateType::CMake ? "cmake" : "none");
-
 	// At the moment, only initialize an empty path
 	m_rootPath = Commands::getCanonicalPath(path);
+
 	if (!Commands::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))
 	{
 		Diagnostic::error("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath);
@@ -60,10 +59,43 @@ bool ProjectInitializer::run()
 
 	Output::print(Color::Reset, getBannerV2());
 
+	bool isCmakeTemplate = m_inputs.initTemplate() == InitTemplateType::CMake;
+
+	bool result = false;
 	BuildJsonProps props;
-	props.workspaceName = String::getPathBaseName(m_rootPath);
+	if (isCmakeTemplate)
 	{
-		auto& str = props.workspaceName;
+		result = initializeCMakeWorkspace(props);
+	}
+	else
+	{
+		result = initializeNormalWorkspace(props);
+	}
+
+	if (!result || isCmakeTemplate)
+		return false;
+
+	Output::lineBreak();
+
+	if (Output::getUserInputYesNo("Does everything look okay?", true))
+	{
+		return doRun(props);
+	}
+	else
+	{
+		Output::lineBreak();
+		Output::displayStyledSymbol(Output::theme().info, " ", "Exiting...");
+		Output::lineBreak();
+		return false;
+	}
+}
+
+/*****************************************************************************/
+bool ProjectInitializer::initializeNormalWorkspace(BuildJsonProps& outProps)
+{
+	outProps.workspaceName = String::getPathBaseName(m_rootPath);
+	{
+		auto& str = outProps.workspaceName;
 		std::string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890-_";
 		auto search = str.find_first_not_of(validChars.c_str());
 		if (search != std::string::npos)
@@ -73,17 +105,17 @@ bool ProjectInitializer::run()
 			});
 		}
 	}
-	props.projectName = props.workspaceName;
-	props.version = "1.0.0";
-	props.location = "src";
+	outProps.projectName = outProps.workspaceName;
+	outProps.version = "1.0.0";
+	outProps.location = "src";
 
 	std::string language = "C++";
 
-	Output::getUserInput("Workspace name:", props.workspaceName, "This should identify the entire workspace, as opposed to a build target");
-	Output::getUserInput("Version:", props.version, "The initial version of the application or library", [](std::string& input) {
+	Output::getUserInput("Workspace name:", outProps.workspaceName, "This should identify the entire workspace, as opposed to a build target");
+	Output::getUserInput("Version:", outProps.version, "The initial version of the application or library", [](std::string& input) {
 		return input.find_first_not_of("1234567890.") == std::string::npos;
 	});
-	Output::getUserInput("Project target name:", props.projectName, "Allowed characters: A-Z a-z 0-9 _+-.", [](std::string& input) {
+	Output::getUserInput("Project target name:", outProps.projectName, "Allowed characters: A-Z a-z 0-9 _+-.", [](std::string& input) {
 		auto lower = String::toLowerCase(input);
 		bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
 		return validChars && input.size() >= 3;
@@ -100,68 +132,68 @@ bool ProjectInitializer::run()
 	StringList sourceExts;
 	if (String::equals("C", language))
 	{
-		props.language = CodeLanguage::C;
-		props.specialization = CxxSpecialization::C;
-		props.langStandard = "17";
+		outProps.language = CodeLanguage::C;
+		outProps.specialization = CxxSpecialization::C;
+		outProps.langStandard = "17";
 		sourceExts.emplace_back(".c");
 	}
 #if defined(CHALET_MACOS)
 	else if (String::equals("Objective-C", language))
 	{
-		props.language = CodeLanguage::C;
-		props.specialization = CxxSpecialization::ObjectiveC;
-		props.langStandard = "17";
+		outProps.language = CodeLanguage::C;
+		outProps.specialization = CxxSpecialization::ObjectiveC;
+		outProps.langStandard = "17";
 		sourceExts.emplace_back(".m");
 	}
 	else if (String::equals("Objective-C++", language))
 	{
-		props.language = CodeLanguage::CPlusPlus;
-		props.specialization = CxxSpecialization::ObjectiveCPlusPlus;
-		props.langStandard = "17";
+		outProps.language = CodeLanguage::CPlusPlus;
+		outProps.specialization = CxxSpecialization::ObjectiveCPlusPlus;
+		outProps.langStandard = "17";
 		sourceExts.emplace_back(".mm");
 	}
 #endif
 	else
 	{
-		props.language = CodeLanguage::CPlusPlus;
-		props.specialization = CxxSpecialization::CPlusPlus;
-		props.langStandard = "17";
+		outProps.language = CodeLanguage::CPlusPlus;
+		outProps.specialization = CxxSpecialization::CPlusPlus;
+		outProps.langStandard = "17";
 		sourceExts.emplace_back(".cpp");
 		sourceExts.emplace_back(".cxx");
 		sourceExts.emplace_back(".cc");
 	}
 
-	bool isC = props.language == CodeLanguage::C;
+	bool isC = outProps.language == CodeLanguage::C;
 	if (!isC)
 	{
-		Output::getUserInput("C++ Standard:", props.langStandard, "Common choices: 20 17 14 11", [](std::string& input) {
+		Output::getUserInput("C++ Standard:", outProps.langStandard, "Common choices: 20 17 14 11", [](std::string& input) {
 			return RegexPatterns::matchesCxxStandardShort(input) || RegexPatterns::matchesGnuCppStandard(input);
 		});
 
-		if (props.langStandard.size() <= 2)
-			props.langStandard = fmt::format("c++{}", props.langStandard);
+		if (outProps.langStandard.size() <= 2)
+			outProps.langStandard = fmt::format("c++{}", outProps.langStandard);
 	}
 	else
 	{
-		Output::getUserInput("C Standard:", props.langStandard, "Common choices: 17 11", [](std::string& input) {
+		Output::getUserInput("C Standard:", outProps.langStandard, "Common choices: 17 11", [](std::string& input) {
 			return RegexPatterns::matchesCxxStandardShort(input) || RegexPatterns::matchesGnuCStandard(input);
 		});
 
-		if (props.langStandard.size() <= 2)
-			props.langStandard = fmt::format("c{}", props.langStandard);
+		if (outProps.langStandard.size() <= 2)
+			outProps.langStandard = fmt::format("c{}", outProps.langStandard);
 	}
 
-	props.useLocation = Output::getUserInputYesNo("Detect source files automatically?", true, "If yes, 'location' is used, otherwise 'files' must be added explicitly");
+	outProps.useLocation = Output::getUserInputYesNo("Detect source files automatically?", true, "If yes, 'location' is used, otherwise 'files' must be added explicitly");
 
-	Output::getUserInput("Root source directory:", props.location, "The primary location for source files", [](std::string& input) {
+	Output::getUserInput("Root source directory:", outProps.location, "The primary location for source files", [](std::string& input) {
 		auto lower = String::toLowerCase(input);
 		bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-") == std::string::npos;
 		return validChars && input.size() >= 3;
 	});
 
-	props.mainSource = fmt::format("main{}", sourceExts.front());
+	outProps.mainSource = fmt::format("main{}", sourceExts.front());
 
-	Output::getUserInput(fmt::format("Main source file:"), props.mainSource, fmt::format("Must end in: {}", String::join(sourceExts, " ")), [&sourceExts, isC = isC](std::string& input) {
+	Output::getUserInput(fmt::format("Main source file:"), outProps.mainSource, fmt::format("Must end in: {}", String::join(sourceExts, " ")), [&sourceExts, isC = isC](std::string& input) {
 		auto lower = String::toLowerCase(input);
 		bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
 		if (validChars && ((isC && !String::endsWith(sourceExts, input)) || (!isC && !String::endsWith(sourceExts, lower))))
@@ -171,7 +203,7 @@ bool ProjectInitializer::run()
 		return validChars;
 	});
 
-	if (props.specialization != CxxSpecialization::ObjectiveC)
+	if (outProps.specialization != CxxSpecialization::ObjectiveC)
 	{
 		if (Output::getUserInputYesNo("Use a precompiled header?", true, "Precompiled headers are a way of reducing compile times"))
 		{
@@ -188,9 +220,9 @@ bool ProjectInitializer::run()
 				headerExts.emplace_back(".h");
 			}
 
-			props.precompiledHeader = fmt::format("pch{}", headerExts.front());
+			outProps.precompiledHeader = fmt::format("pch{}", headerExts.front());
 
-			Output::getUserInput(fmt::format("Precompiled header file:"), props.precompiledHeader, fmt::format("Must end in: {}", String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
+			Output::getUserInput(fmt::format("Precompiled header file:"), outProps.precompiledHeader, fmt::format("Must end in: {}", String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
 				auto lower = String::toLowerCase(input);
 				bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
 				if (validChars && ((isC && !String::endsWith(headerExts, input)) || (!isC && !String::endsWith(headerExts, lower))))
@@ -202,9 +234,9 @@ bool ProjectInitializer::run()
 		}
 	}
 
-	props.defaultConfigs = Output::getUserInputYesNo("Include default build configurations in build file?", false, "Optional, but can be customized or restricted to certain configurations");
-	props.envFile = Output::getUserInputYesNo("Include a .env file?", false, "Optionally add environment variables or search paths to the build");
-	props.makeGitRepository = Output::getUserInputYesNo("Initialize a git repository?", false, "This will also create a .gitignore file");
+	outProps.defaultConfigs = Output::getUserInputYesNo("Include default build configurations in build file?", false, "Optional, but can be customized or restricted to certain configurations");
+	outProps.envFile = Output::getUserInputYesNo("Include a .env file?", false, "Optionally add environment variables or search paths to the build");
+	outProps.makeGitRepository = Output::getUserInputYesNo("Initialize a git repository?", false, "This will also create a .gitignore file");
 
 	const std::string blankLine(80, ' ');
 	std::cout << blankLine << std::flush;
@@ -216,10 +248,10 @@ bool ProjectInitializer::run()
 	double stepTime = 0.1;
 
 	{
-		Output::printInfo(fmt::format("{}/{}", props.location, props.mainSource));
+		Output::printInfo(fmt::format("{}/{}", outProps.location, outProps.mainSource));
 		Output::lineBreak();
 
-		auto mainCpp = StarterFileTemplates::getMainCxx(props.language, props.specialization);
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.specialization);
 		String::replaceAll(mainCpp, '\t', "   ");
 		std::cout << Output::getAnsiStyle(Output::theme().build) << mainCpp << Output::getAnsiStyle(Color::Reset) << std::endl;
 
@@ -229,12 +261,12 @@ bool ProjectInitializer::run()
 		Output::printSeparator();
 	}
 
-	if (!props.precompiledHeader.empty())
+	if (!outProps.precompiledHeader.empty())
 	{
-		Output::printInfo(fmt::format("{}/{}", props.location, props.precompiledHeader));
+		Output::printInfo(fmt::format("{}/{}", outProps.location, outProps.precompiledHeader));
 		Output::lineBreak();
 
-		const auto pch = StarterFileTemplates::getPch(props.precompiledHeader, props.language, props.specialization);
+		const auto pch = StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language, outProps.specialization);
 		std::cout << Output::getAnsiStyle(Output::theme().build) << pch << Output::getAnsiStyle(Color::Reset) << std::endl;
 
 		Commands::sleep(stepTime);
@@ -243,7 +275,7 @@ bool ProjectInitializer::run()
 		Output::printSeparator();
 	}
 
-	if (props.makeGitRepository)
+	if (outProps.makeGitRepository)
 	{
 		Output::printInfo(".gitignore");
 		Output::lineBreak();
@@ -257,7 +289,7 @@ bool ProjectInitializer::run()
 		Output::printSeparator();
 	}
 
-	if (props.envFile)
+	if (outProps.envFile)
 	{
 #if defined(CHALET_WIN32)
 		std::string env{ ".env.windows" };
@@ -280,7 +312,7 @@ bool ProjectInitializer::run()
 		Output::printInfo("chalet.json");
 		Output::lineBreak();
 
-		auto jsonFile = StarterFileTemplates::getStandardChaletJson(props);
+		auto jsonFile = StarterFileTemplates::getStandardChaletJson(outProps);
 		std::cout << Output::getAnsiStyle(Output::theme().build) << jsonFile.dump(3, ' ') << Output::getAnsiStyle(Color::Reset) << std::endl;
 
 		Commands::sleep(stepTime);
@@ -289,19 +321,17 @@ bool ProjectInitializer::run()
 		Output::printSeparator();
 	}
 
-	Output::lineBreak();
+	return true;
+}
 
-	if (Output::getUserInputYesNo("Does everything look okay?", true))
-	{
-		return doRun(props);
-	}
-	else
-	{
-		Output::lineBreak();
-		Output::displayStyledSymbol(Output::theme().info, " ", "Exiting...");
-		Output::lineBreak();
-		return false;
-	}
+/*****************************************************************************/
+bool ProjectInitializer::initializeCMakeWorkspace(BuildJsonProps& outProps)
+{
+	LOG("CMake stuff here");
+
+	UNUSED(outProps);
+
+	return true;
 }
 
 /*****************************************************************************/

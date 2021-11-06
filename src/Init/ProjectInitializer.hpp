@@ -19,6 +19,9 @@ public:
 	bool run();
 
 private:
+	bool initializeNormalWorkspace(BuildJsonProps& outProps);
+	bool initializeCMakeWorkspace(BuildJsonProps& outProps);
+
 	bool doRun(const BuildJsonProps& inProps);
 
 	bool makeBuildJson(const BuildJsonProps& inProps);
