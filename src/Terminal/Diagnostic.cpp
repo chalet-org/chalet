@@ -102,16 +102,14 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 	}
 	else
 	{
-		// std::cout << fmt::format("{} ... {}", color, reset);
-		std::cout << color;
-
 		if (Output::showCommands())
 		{
-			std::cout << reset << std::endl;
+
+			std::cout << fmt::format("{} ... {}", color, reset) << std::flush;
 		}
 		else
 		{
-			std::cout << std::flush;
+			std::cout << color << std::flush;
 			destroySpinnerThread();
 			state.spinnerThread = std::make_unique<Spinner>();
 			state.spinnerThread->start();

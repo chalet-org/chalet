@@ -32,6 +32,8 @@ private:
 
 	std::string m_outputLocation;
 	std::string m_buildFile;
+
+	uint m_cmakeVersionMajorMinor = 0;
 };
 }
 

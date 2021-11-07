@@ -194,12 +194,18 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			if (target->isSubChalet())
 			{
 				if (!runSubChaletTarget(static_cast<const SubChaletTarget&>(*target)))
-					return false;
+				{
+					error = true;
+					break;
+				}
 			}
 			else if (target->isCMake())
 			{
 				if (!runCMakeTarget(static_cast<const CMakeTarget&>(*target)))
-					return false;
+				{
+					error = true;
+					break;
+				}
 			}
 			else if (target->isScript())
 			{

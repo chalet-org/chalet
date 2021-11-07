@@ -882,8 +882,8 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 /*****************************************************************************/
 bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 {
-	// if (Output::showCommands())
-	// 	Output::print(Output::theme().build, inCmd);
+	if (Output::showCommands())
+		Output::printCommand(inCmd);
 
 	std::string data;
 	auto eol = String::eol();

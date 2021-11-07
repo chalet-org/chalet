@@ -28,6 +28,9 @@ CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarge
 	m_state(inState),
 	m_target(inTarget)
 {
+	m_cmakeVersionMajorMinor = m_state.toolchain.cmakeVersionMajor();
+	m_cmakeVersionMajorMinor *= 100;
+	m_cmakeVersionMajorMinor += m_state.toolchain.cmakeVersionMinor();
 }
 
 /*****************************************************************************/
@@ -58,6 +61,8 @@ bool CmakeBuilder::run()
 	auto oldNinjaStatus = Environment::getAsString(kNinjaStatus);
 
 	auto onRunFailure = [this, &oldNinjaStatus, &isNinja]() -> bool {
+		Output::previousLine();
+
 		if (!m_target.recheck())
 			Commands::removeRecursively(m_outputLocation);
 
@@ -87,21 +92,39 @@ bool CmakeBuilder::run()
 #if defined(CHALET_WIN32)
 		if (Environment::isBash())
 		{
+			if (Output::showCommands())
+				Output::printCommand(command);
+
 			ProcessOptions options;
-			options.stderrOption = PipeOption::StdErr;
+			options.stderrOption = PipeOption::Pipe;
 			options.stdoutOption = PipeOption::Pipe;
 			options.onStdOut = [](std::string inData) {
 				String::replaceAll(inData, "\r\n", "\n");
 				std::cout << std::move(inData) << std::flush;
 			};
+			options.onStdErr = options.onStdOut;
+
+			if (m_cmakeVersionMajorMinor < 313)
+			{
+				options.cwd = m_outputLocation;
+			}
+
 			if (Process::run(command, options) != EXIT_SUCCESS)
 				return onRunFailure();
 		}
 		else
 #endif
 		{
-			if (!Commands::subprocess(command))
-				return onRunFailure();
+			if (m_cmakeVersionMajorMinor >= 313)
+			{
+				if (!Commands::subprocess(command))
+					return onRunFailure();
+			}
+			else
+			{
+				if (!Commands::subprocess(command, m_outputLocation))
+					return onRunFailure();
+			}
 		}
 
 		Output::lineBreak();
@@ -245,11 +268,18 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 
 	addCmakeDefines(ret);
 
-	ret.emplace_back("-S");
-	ret.push_back(inLocation);
+	if (m_cmakeVersionMajorMinor >= 313)
+	{
+		ret.emplace_back("-S");
+		ret.push_back(inLocation);
 
-	ret.emplace_back("-B");
-	ret.push_back(m_outputLocation);
+		ret.emplace_back("-B");
+		ret.push_back(m_outputLocation);
+	}
+	else
+	{
+		ret.push_back(inLocation);
+	}
 
 	return ret;
 }
