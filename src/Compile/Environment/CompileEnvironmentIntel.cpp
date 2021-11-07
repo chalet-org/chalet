@@ -10,6 +10,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Unicode.hpp"
@@ -238,10 +239,10 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 /*****************************************************************************/
 bool CompileEnvironmentIntel::validateArchitectureFromInput()
 {
-	if (m_inputs.targetArchitecture().empty())
+	std::string target = m_inputs.targetArchitecture();
+	if (target.empty())
 	{
 		// Try to get the architecture from the name
-		std::string target;
 		const auto& preferenceName = m_inputs.toolchainPreferenceName();
 		auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
 		if (!regexResult.empty())

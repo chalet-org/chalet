@@ -178,7 +178,9 @@ private:
 	const std::string kToolchainPresetICC;
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if !defined(CHALET_WIN32)
 	const std::string kToolchainPresetICX;
+	#endif
 #endif
 #if defined(CHALET_WIN32)
 	const std::string kToolchainPresetVisualStudioStable;

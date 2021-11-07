@@ -92,7 +92,9 @@ CommandLineInputs::CommandLineInputs() :
 	kToolchainPresetICC("intel-classic"),
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if !defined(CHALET_WIN32)
 	kToolchainPresetICX("intel-llvm"),
+	#endif
 #endif
 #if defined(CHALET_WIN32)
 	kToolchainPresetVisualStudioStable("vs-stable"),
@@ -745,13 +747,14 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	ret.emplace_back(kToolchainPresetLLVM);
 	ret.emplace_back(kToolchainPresetGCC);
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	ret.emplace_back(kToolchainPresetICX);
 	#if defined(CHALET_WIN32)
 	for (auto it = state.intelICXVisualStudioPresets.rbegin(); it != state.intelICXVisualStudioPresets.rend(); ++it)
 	{
 		auto& [name, type] = *it;
 		ret.emplace_back(name);
 	}
+	#else
+	ret.emplace_back(kToolchainPresetICX);
 	#endif
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
@@ -908,7 +911,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
-	else if (String::equals(kToolchainPresetICX, inValue) || state.intelICXVisualStudioPresets.find(inValue) != state.intelICXVisualStudioPresets.end())
+	else if (state.intelICXVisualStudioPresets.find(inValue) != state.intelICXVisualStudioPresets.end())
 	#else
 	else if (String::equals(kToolchainPresetICX, inValue))
 	#endif
