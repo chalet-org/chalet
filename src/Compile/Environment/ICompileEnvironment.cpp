@@ -337,7 +337,7 @@ std::string ICompileEnvironment::getVarsPath() const
 }
 
 /*****************************************************************************/
-bool ICompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFile) const
+bool ICompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFile)
 {
 #if defined(CHALET_WIN32)
 	auto cmdExe = Environment::getComSpec();
@@ -359,7 +359,7 @@ bool ICompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFil
 }
 
 /*****************************************************************************/
-void ICompileEnvironment::createEnvironmentDelta(const std::string& inOriginalFile, const std::string& inCompilerFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine) const
+void ICompileEnvironment::createEnvironmentDelta(const std::string& inOriginalFile, const std::string& inCompilerFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine)
 {
 	if (inOriginalFile.empty() || inCompilerFile.empty() || inDeltaFile.empty())
 		return;
@@ -401,17 +401,15 @@ void ICompileEnvironment::createEnvironmentDelta(const std::string& inOriginalFi
 }
 
 /*****************************************************************************/
-void ICompileEnvironment::cacheEnvironmentDelta(const std::string& inDeltaFile)
+void ICompileEnvironment::cacheEnvironmentDelta(const std::string& inDeltaFile, Dictionary<std::string>& outVariables)
 {
-	m_variables.clear();
-
 	std::ifstream input(inDeltaFile);
 	for (std::string line; std::getline(input, line);)
 	{
 		auto splitVar = String::split(line, '=');
 		if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
 		{
-			m_variables[std::move(splitVar.front())] = splitVar.back();
+			outVariables[std::move(splitVar.front())] = splitVar.back();
 		}
 	}
 	input.close();

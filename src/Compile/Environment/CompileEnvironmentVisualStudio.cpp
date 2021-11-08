@@ -169,11 +169,11 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 	m_state.info.setHostArchitecture(host);
 
 	if (host == target)
-		m_varsAllArch = target;
+		m_config.varsAllArch = target;
 	else
-		m_varsAllArch = fmt::format("{}_{}", host, target);
+		m_config.varsAllArch = fmt::format("{}_{}", host, target);
 
-	m_inputs.setTargetArchitecture(m_varsAllArch);
+	m_inputs.setTargetArchitecture(m_config.varsAllArch);
 	m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", Arch::toGnuArch(target)));
 
 	// TODO: universal windows platform - uwp-windows-msvc
@@ -184,34 +184,22 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 }
 
 /*****************************************************************************/
-bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVersion)
+// Other environments (Intel) might want to inherit the MSVC environment, so we make some of these function static
+//
+bool CompileEnvironmentVisualStudio::makeEnvironment(VisualStudioEnvironmentConfig& outConfig, const std::string& inVersion)
 {
-	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
-	m_varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
-	m_varsFileMsvcDelta = getVarsPath();
-
-	// This sets vswhere
-	if (!CompileEnvironmentVisualStudio::exists())
-		return true;
-
-	Timer timer;
-
-	// TODO: Check if Visual Studio is even installed
-
-	m_path = Environment::getPath();
+	outConfig.pathVariable = Environment::getPath();
 
 	// Note: See Note about __CHALET_MSVC_INJECT__ in Environment.cpp
 	auto appDataPath = Environment::getAsString("APPDATA");
-	std::string msvcInject = fmt::format("{}\\__CHALET_MSVC_INJECT__", appDataPath);
-
-	std::string installationVersion;
+	outConfig.pathInject = fmt::format("{}\\__CHALET_MSVC_INJECT__", appDataPath);
 
 	// we got here from a preset in the command line
-	bool isPresetFromInput = m_inputs.visualStudioVersion() != VisualStudioVersion::None;
+	outConfig.isPreset = outConfig.inVersion != VisualStudioVersion::None;
 
-	auto getStartOfVsWhereCommand = [this]() {
+	auto getStartOfVsWhereCommand = [&]() {
 		StringList cmd{ state.vswhere, "-nologo" };
-		const auto vsVersion = m_inputs.visualStudioVersion();
+		const auto vsVersion = outConfig.inVersion;
 		const bool isStable = vsVersion == VisualStudioVersion::Stable;
 		const bool isPreview = vsVersion == VisualStudioVersion::Preview;
 
@@ -248,9 +236,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 		return Commands::subprocessOutput(vswhereCmd);
 	};
 
-	m_ouptuttedDescription = true;
-
-	bool deltaExists = Commands::pathExists(m_varsFileMsvcDelta);
+	bool deltaExists = Commands::pathExists(outConfig.varsFileMsvcDelta);
 	if (!deltaExists)
 	{
 		Diagnostic::infoEllipsis("Creating Microsoft{} Visual C/C++ Environment Cache", Unicode::registered());
@@ -261,15 +247,16 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 			return split.front();
 		};
 
-		if (isPresetFromInput)
+		if (outConfig.isPreset)
 		{
 			StringList vswhereCmd = getStartOfVsWhereCommand();
 			getProductsOptions(vswhereCmd);
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
-			m_vsAppIdDir = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
 
-			m_detectedVersion = getMsvcVersion();
+			outConfig.visualStudioPath = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
+
+			outConfig.detectedVersion = getMsvcVersion();
 		}
 		else if (RegexPatterns::matchesFullVersionString(inVersion))
 		{
@@ -281,11 +268,11 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 
-			m_vsAppIdDir = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
-			if (String::startsWith("Error", m_vsAppIdDir))
-				m_vsAppIdDir.clear();
+			outConfig.visualStudioPath = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
+			if (String::startsWith("Error", outConfig.visualStudioPath))
+				outConfig.visualStudioPath.clear();
 
-			m_detectedVersion = inVersion;
+			outConfig.detectedVersion = inVersion;
 		}
 		else
 		{
@@ -293,42 +280,42 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 			return false;
 		}
 
-		if (m_vsAppIdDir.empty())
+		if (outConfig.visualStudioPath.empty())
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: vswhere could not find a matching Visual Studio installation.");
 			return false;
 		}
 
-		if (!Commands::pathExists(m_vsAppIdDir))
+		if (!Commands::pathExists(outConfig.visualStudioPath))
 		{
-			Diagnostic::error("MSVC Environment could not be fetched: The path to Visual Studio could not be found. ({})", m_vsAppIdDir);
+			Diagnostic::error("MSVC Environment could not be fetched: The path to Visual Studio could not be found. ({})", outConfig.visualStudioPath);
 			return false;
 		}
 
 		// Read the current environment and save it to a file
-		if (!saveOriginalEnvironment(m_varsFileOriginal))
+		if (!ICompileEnvironment::saveOriginalEnvironment(outConfig.varsFileOriginal))
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: The original environment could not be saved.");
 			return false;
 		}
 
 		// Read the MSVC environment and save it to a file
-		if (!saveMsvcEnvironment())
+		if (!CompileEnvironmentVisualStudio::saveMsvcEnvironment(outConfig))
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: The expected method returned with error.");
 			return false;
 		}
 
 		// Get the delta between the two and save it to a file
-		createEnvironmentDelta(m_varsFileOriginal, m_varsFileMsvc, m_varsFileMsvcDelta, [&](std::string& line) {
+		ICompileEnvironment::createEnvironmentDelta(outConfig.varsFileOriginal, outConfig.varsFileMsvc, outConfig.varsFileMsvcDelta, [&](std::string& line) {
 			if (String::startsWith("__VSCMD_PREINIT_PATH=", line))
 			{
-				if (String::contains(msvcInject, line))
-					String::replaceAll(line, msvcInject + ";", "");
+				if (String::contains(outConfig.pathInject, line))
+					String::replaceAll(line, outConfig.pathInject + ";", "");
 			}
 			else if (String::startsWith({ "PATH=", "Path=" }, line))
 			{
-				String::replaceAll(line, m_path, "");
+				String::replaceAll(line, outConfig.pathVariable, "");
 			}
 			String::replaceAll(line, "\\\\", "\\");
 		});
@@ -337,26 +324,29 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 	{
 		Diagnostic::infoEllipsis("Reading Microsoft{} Visual C/C++ Environment Cache", Unicode::registered());
 
-		if (isPresetFromInput)
-			m_detectedVersion = getMsvcVersion();
+		if (outConfig.isPreset)
+			outConfig.detectedVersion = getMsvcVersion();
 	}
 
-	// Read delta to cache
-	cacheEnvironmentDelta(m_varsFileMsvcDelta);
+	return true;
+}
 
-	StringList pathSearch{ "Path", "PATH" };
-	for (auto& [name, var] : m_variables)
+/*****************************************************************************/
+void CompileEnvironmentVisualStudio::populateVariables(VisualStudioEnvironmentConfig& outConfig, Dictionary<std::string>& outVariables)
+{
+	const auto pathKey = Environment::getPathKey();
+	for (auto& [name, var] : outVariables)
 	{
-		if (String::equals(pathSearch, name))
+		if (String::equals(pathKey, name))
 		{
-			if (String::contains(msvcInject, m_path))
+			if (String::contains(outConfig.pathInject, outConfig.pathVariable))
 			{
-				String::replaceAll(m_path, msvcInject, var);
-				Environment::set(name.c_str(), m_path);
+				String::replaceAll(outConfig.pathVariable, outConfig.pathInject, var);
+				Environment::set(name.c_str(), outConfig.pathVariable);
 			}
 			else
 			{
-				Environment::set(name.c_str(), m_path + ";" + var);
+				Environment::set(name.c_str(), outConfig.pathVariable + ";" + var);
 			}
 		}
 		else
@@ -365,19 +355,52 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 		}
 	}
 
-	if (m_vsAppIdDir.empty())
+	if (outConfig.visualStudioPath.empty())
 	{
-		auto vsappDir = m_variables.find("VSINSTALLDIR");
-		if (vsappDir != m_variables.end())
+		auto vsappDir = outVariables.find("VSINSTALLDIR");
+		if (vsappDir != outVariables.end())
 		{
-			m_vsAppIdDir = vsappDir->second;
+			outConfig.visualStudioPath = vsappDir->second;
 		}
 	}
+}
 
-	if (isPresetFromInput)
+/*****************************************************************************/
+bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVersion)
+{
+	// This sets vswhere
+	if (!CompileEnvironmentVisualStudio::exists())
+		return true;
+
+	Timer timer;
+
+	// TODO: Check if Visual Studio is even installed
+
+	m_config.varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
+	m_config.varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
+	m_config.varsFileMsvcDelta = getVarsPath();
+	m_config.varsAllArchOptions = m_inputs.archOptions();
+	m_config.inVersion = m_inputs.visualStudioVersion();
+
+	m_ouptuttedDescription = true;
+
+	if (!CompileEnvironmentVisualStudio::makeEnvironment(m_config, inVersion))
+		return false;
+
+	m_detectedVersion = std::move(m_config.detectedVersion);
+
+	// Read delta to cache
+	Dictionary<std::string> variables;
+	ICompileEnvironment::cacheEnvironmentDelta(m_config.varsFileMsvcDelta, variables);
+
+	CompileEnvironmentVisualStudio::populateVariables(m_config, variables);
+
+	if (m_config.isPreset)
 		m_inputs.setToolchainPreferenceName(makeToolchainName());
 
-	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
+	m_state.cache.file().addExtraHash(String::getPathFilename(m_config.varsFileMsvcDelta));
+
+	m_config.pathVariable.clear();
 
 	Diagnostic::printDone(timer.asString());
 
@@ -393,9 +416,9 @@ std::string CompileEnvironmentVisualStudio::makeToolchainName() const
 		auto versionSplit = String::split(m_detectedVersion, '.');
 		if (versionSplit.size() >= 1)
 		{
-			chalet_assert(!m_varsAllArch.empty(), "vcVarsAll arch was not set");
+			chalet_assert(!m_config.varsAllArch.empty(), "vcVarsAll arch was not set");
 
-			ret = fmt::format("{}{}{}", m_varsAllArch, m_state.info.targetArchitectureTripleSuffix(), versionSplit.front());
+			ret = fmt::format("{}{}{}", m_config.varsAllArch, m_state.info.targetArchitectureTripleSuffix(), versionSplit.front());
 		}
 	}
 	return ret;
@@ -493,22 +516,22 @@ bool CompileEnvironmentVisualStudio::compilerVersionIsToolchainVersion() const
 }
 
 /*****************************************************************************/
-bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
+bool CompileEnvironmentVisualStudio::saveMsvcEnvironment(VisualStudioEnvironmentConfig& outConfig)
 {
 	std::string vcvarsFile{ "vcvarsall" };
-	StringList allowedArchesWin = getAllowedArchitectures();
+	StringList allowedArchesWin = CompileEnvironmentVisualStudio::getAllowedArchitectures();
 
-	if (!String::equals(allowedArchesWin, m_varsAllArch))
+	if (!String::equals(allowedArchesWin, outConfig.varsAllArch))
 	{
-		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", m_varsAllArch, vcvarsFile);
+		Diagnostic::error("Requested arch '{}' is not supported by {}.bat", outConfig.varsAllArch, vcvarsFile);
 		return false;
 	}
 
 	// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
-	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_vsAppIdDir, vcvarsFile);
-	StringList cmd{ vcVarsAll, m_varsAllArch };
+	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", outConfig.visualStudioPath, vcvarsFile);
+	StringList cmd{ vcVarsAll, outConfig.varsAllArch };
 
-	for (auto& arg : m_inputs.archOptions())
+	for (auto& arg : outConfig.varsAllArchOptions)
 	{
 		cmd.push_back(arg);
 	}
@@ -518,14 +541,14 @@ bool CompileEnvironmentVisualStudio::saveMsvcEnvironment() const
 	cmd.emplace_back("&&");
 	cmd.emplace_back("SET");
 	cmd.emplace_back(">");
-	cmd.push_back(m_varsFileMsvc);
+	cmd.push_back(outConfig.varsFileMsvc);
 
 	bool result = std::system(String::join(cmd).c_str()) == EXIT_SUCCESS;
 	return result;
 }
 
 /*****************************************************************************/
-StringList CompileEnvironmentVisualStudio::getAllowedArchitectures() const
+StringList CompileEnvironmentVisualStudio::getAllowedArchitectures()
 {
 	// clang-format off
 	return {

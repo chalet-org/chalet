@@ -7,17 +7,40 @@
 #define CHALET_COMPILE_ENVIRONMENT_VISUAL_STUDIO_HPP
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/VisualStudioVersion.hpp"
 
 namespace chalet
 {
 class BuildState;
 struct CommandLineInputs;
 
+struct VisualStudioEnvironmentConfig
+{
+	// inputs
+	std::string varsFileOriginal;
+	std::string varsFileMsvc;
+	std::string varsFileMsvcDelta;
+	std::string varsAllArch;
+	StringList varsAllArchOptions;
+
+	VisualStudioVersion inVersion = VisualStudioVersion::None;
+
+	// set during creation
+	std::string pathVariable;
+	std::string pathInject;
+	std::string visualStudioPath;
+	std::string detectedVersion;
+
+	bool isPreset = false;
+};
+
 struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 {
 	explicit CompileEnvironmentVisualStudio(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
 	static bool exists();
+	static bool makeEnvironment(VisualStudioEnvironmentConfig& outConfig, const std::string& inVersion);
+	static void populateVariables(VisualStudioEnvironmentConfig& outConfig, Dictionary<std::string>& outVariables);
 
 protected:
 	virtual std::string getIdentifier() const noexcept final;
@@ -33,15 +56,10 @@ protected:
 
 private:
 	std::string makeToolchainName() const;
-	bool saveMsvcEnvironment() const;
-	StringList getAllowedArchitectures() const;
+	static bool saveMsvcEnvironment(VisualStudioEnvironmentConfig& outConfig);
+	static StringList getAllowedArchitectures();
 
-	std::string m_varsFileOriginal;
-	std::string m_varsFileMsvc;
-	std::string m_varsFileMsvcDelta;
-
-	std::string m_vsAppIdDir;
-	std::string m_varsAllArch;
+	VisualStudioEnvironmentConfig m_config;
 
 	bool m_msvcArchitectureSet = false;
 };

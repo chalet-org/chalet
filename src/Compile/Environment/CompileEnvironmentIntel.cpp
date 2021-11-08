@@ -7,6 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
+#include "Compile/Environment/CompileEnvironmentVisualStudio.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -139,16 +140,16 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
 
-	Timer timer;
-
 	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
 	m_varsFileIntel = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
 	m_varsFileIntelDelta = getVarsPath();
-	m_path = Environment::getPath();
+	std::string pathVariable = Environment::getPath();
 
 	bool isPresetFromInput = m_inputs.isToolchainPreset();
 
 	m_ouptuttedDescription = true;
+
+	Timer timer;
 
 	bool deltaExists = Commands::pathExists(m_varsFileIntelDelta);
 	if (!deltaExists)
@@ -187,10 +188,10 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 			return false;
 		}
 
-		createEnvironmentDelta(m_varsFileOriginal, m_varsFileIntel, m_varsFileIntelDelta, [this](std::string& line) {
+		createEnvironmentDelta(m_varsFileOriginal, m_varsFileIntel, m_varsFileIntelDelta, [&pathVariable](std::string& line) {
 			if (String::startsWith({ "PATH=", "Path=" }, line))
 			{
-				String::replaceAll(line, m_path, "");
+				String::replaceAll(line, pathVariable, "");
 			}
 		});
 	}
@@ -199,23 +200,25 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 		Diagnostic::infoEllipsis("Reading Intel{} C/C++ Environment Cache", Unicode::registered());
 	}
 
-	// Read delta to cache
-	cacheEnvironmentDelta(m_varsFileIntelDelta);
+	if (isPresetFromInput)
+		m_inputs.setToolchainPreferenceName(makeToolchainName());
 
-	StringList pathSearch{ "Path", "PATH" };
-	for (auto& [name, var] : m_variables)
+	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileIntelDelta));
+
+	Dictionary<std::string> variables;
+	// Read delta to cache
+	ICompileEnvironment::cacheEnvironmentDelta(m_varsFileIntelDelta, variables);
+
+	const auto pathKey = Environment::getPathKey();
+	for (auto& [name, var] : variables)
 	{
-		if (String::equals(pathSearch, name))
+		if (String::equals(pathKey, name))
 		{
-			// if (String::contains(inject, m_path))
-			// {
-			// 	String::replaceAll(m_path, inject, var);
-			// 	Environment::set(name.c_str(), m_path);
-			// }
-			// else
-			{
-				Environment::set(name.c_str(), m_path + ":" + var);
-			}
+#if defined(CHALET_WIN32)
+			Environment::set(name.c_str(), pathVariable + ";" + var);
+#else
+			Environment::set(name.c_str(), pathVariable + ":" + var);
+#endif
 		}
 		else
 		{
@@ -223,12 +226,39 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 		}
 	}
 
-	if (isPresetFromInput)
-		m_inputs.setToolchainPreferenceName(makeToolchainName());
-
-	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileIntelDelta));
-
 	Diagnostic::printDone(timer.asString());
+
+#if defined(CHALET_WIN32)
+	/*if (m_type == ToolchainType::IntelClassic)
+	{
+		Timer vsTimer;
+
+		VisualStudioEnvironmentConfig vsConfig;
+		vsConfig.inVersion = m_inputs.visualStudioVersion();
+
+		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
+			vsConfig.varsAllArch += "x64";
+		if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
+			vsConfig.varsAllArch += "x86";
+
+		vsConfig.varsAllArchOptions = m_inputs.archOptions();
+		vsConfig.varsFileOriginal = m_state.cache.getHashPath("msvc_original.env", CacheType::Local);
+		vsConfig.varsFileMsvc = m_state.cache.getHashPath("msvc_all.env", CacheType::Local);
+		vsConfig.varsFileMsvcDelta = m_state.cache.getHashPath(fmt::format("msvc_{}_delta.env", vsConfig.varsAllArch), CacheType::Local);
+		vsConfig.varsAllArchOptions = m_inputs.archOptions();
+		vsConfig.isPreset = isPresetFromInput;
+
+		if (!CompileEnvironmentVisualStudio::makeEnvironment(vsConfig, std::string()))
+			return false;
+
+		variables.clear();
+		ICompileEnvironment::cacheEnvironmentDelta(vsConfig.varsFileMsvcDelta, variables);
+
+		CompileEnvironmentVisualStudio::populateVariables(vsConfig, variables);
+
+		Diagnostic::printDone(vsTimer.asString());
+	}*/
+#endif
 
 	return true;
 }
