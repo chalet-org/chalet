@@ -83,11 +83,6 @@ bool CompileEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outIn
 			version = version.substr(0, version.find_first_not_of("0123456789."));
 			if (!version.empty())
 				cachedVersion = std::move(version);
-
-			// if (!arch.empty())
-			// 	outInfo.arch = std::move(arch);
-			// else
-			// outInfo.arch = m_state.info.targetArchitectureTriple();
 		}
 	}
 
@@ -97,7 +92,6 @@ bool CompileEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outIn
 
 		sourceCache.addVersion(outInfo.path, outInfo.version);
 
-		outInfo.arch = m_state.info.targetArchitectureTriple();
 		outInfo.description = getFullCxxCompilerString(outInfo.version);
 		return true;
 	}
@@ -227,7 +221,7 @@ void CompileEnvironmentGNU::parseThreadModelFromVersionOutput(const std::string&
 }
 
 /*****************************************************************************/
-bool CompileEnvironmentGNU::makeArchitectureAdjustments()
+bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 {
 	const auto& archTriple = m_state.info.targetArchitectureTriple();
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
@@ -260,13 +254,6 @@ bool CompileEnvironmentGNU::makeArchitectureAdjustments()
 
 		m_state.info.setTargetArchitecture(cachedArch);
 		sourceCache.addArch(compiler, cachedArch);
-	}
-	else
-	{
-		// Pass along and hope for the best
-
-		// if (!String::startsWith(archFromInput, archTriple))
-		// 	return false;
 	}
 
 	return true;

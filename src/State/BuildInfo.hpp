@@ -22,12 +22,13 @@ struct BuildInfo
 	void setBuildConfiguration(const std::string& inValue) noexcept;
 
 	Arch::Cpu hostArchitecture() const noexcept;
-	const std::string& hostArchitectureTriple() const noexcept;
+	const std::string& hostArchitectureString() const noexcept;
 	void setHostArchitecture(const std::string& inValue) noexcept;
 
 	Arch::Cpu targetArchitecture() const noexcept;
 	const std::string& targetArchitectureTriple() const noexcept;
 	const std::string& targetArchitectureString() const noexcept;
+	const std::string& targetArchitectureTripleSuffix() const noexcept;
 	void setTargetArchitecture(const std::string& inValue) noexcept;
 
 	const StringList& archOptions() const noexcept;

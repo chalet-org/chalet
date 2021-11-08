@@ -541,19 +541,20 @@ void CommandLineInputs::setTargetArchitecture(const std::string& inValue) const 
 	}
 	else
 	{
-		m_targetArchitecture = inValue;
-	}
-
 #if defined(CHALET_MACOS)
-	if (String::equals({ "universal", "universal2" }, m_targetArchitecture))
-	{
-		m_universalArches = { "x86_64", "arm64" };
-	}
-	else if (String::equals("universal1", m_targetArchitecture))
-	{
-		m_universalArches = { "x86_64", "i386" };
-	}
+		if (String::equals({ "universal", "universal2" }, inValue))
+		{
+			m_universalArches = { "x86_64", "arm64" };
+		}
+		else if (String::equals("universal1", inValue))
+		{
+			m_universalArches = { "x86_64", "i386" };
+		}
 #endif
+
+		// This will convert the input into a GNU-compatible arch
+		m_targetArchitecture = Arch::toGnuArch(inValue);
+	}
 }
 
 /*****************************************************************************/
@@ -924,12 +925,13 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 		ret.type = ToolchainType::IntelLLVM;
 		ret.strategy = StrategyType::Ninja;
+		ret.buildPathStyle = BuildPathStyle::ToolchainName;
 		ret.rc = "rc";
 		ret.cpp = "clang++";
 		ret.cc = "clang";
 		ret.linker = "lld";
 		ret.archiver = "llvm-ar";
-		ret.profiler = "gprof";
+		ret.profiler = ""; // TODO
 		ret.disassembler = "dumpbin";
 	}
 #endif
@@ -948,6 +950,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 		ret.strategy = StrategyType::Ninja;
 		ret.type = ToolchainType::IntelClassic;
+		ret.buildPathStyle = BuildPathStyle::ToolchainName;
 		ret.rc = "rc";
 	#if defined(CHALET_WIN32)
 		ret.cpp = "icl";
@@ -969,21 +972,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	else
 	{
 		ret.type = ToolchainType::Unknown;
-	}
-
-	if (ret.type == ToolchainType::VisualStudio)
-	{
-		if (String::equals({ "x86_64", "amd64" }, m_targetArchitecture))
-			setTargetArchitecture("x64");
-		else if (String::equals("i686", m_targetArchitecture))
-			setTargetArchitecture("x86");
-	}
-	else
-	{
-		if (String::equals("x64", m_targetArchitecture))
-			setTargetArchitecture("x86_64");
-		else if (String::equals("x86", m_targetArchitecture))
-			setTargetArchitecture("i686");
 	}
 
 	if (Environment::isContinuousIntegrationServer())

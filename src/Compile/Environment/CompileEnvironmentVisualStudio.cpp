@@ -79,11 +79,116 @@ std::string CompileEnvironmentVisualStudio::getIdentifier() const noexcept
 }
 
 /*****************************************************************************/
+bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
+{
+	if (m_msvcArchitectureSet)
+		return true;
+
+	auto gnuArchToMsvcArch = [](const std::string& inArch) -> std::string {
+		if (String::equals("x86_64", inArch))
+			return "x64";
+		else if (String::equals("i686", inArch))
+			return "x86";
+		else if (String::equals("aarch64", inArch))
+			return "arm64";
+
+		return inArch;
+	};
+
+	auto splitHostTarget = [](std::string& outHost, std::string& outTarget) -> void {
+		if (!String::contains('_', outTarget))
+			return;
+
+		auto split = String::split(outTarget, '_');
+
+		if (outHost.empty())
+			outHost = split.front();
+
+		outTarget = split.back();
+	};
+
+	std::string host;
+	std::string target = gnuArchToMsvcArch(m_inputs.targetArchitecture());
+
+	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
+	if (!compiler.empty())
+	{
+		std::string lower = String::toLowerCase(compiler);
+		auto search = lower.find("/bin/host");
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
+			return false;
+		}
+
+		auto nextPath = lower.find('/', search + 5);
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
+			return false;
+		}
+
+		search += 9;
+		std::string hostFromCompilerPath = lower.substr(search, nextPath - search);
+		search = nextPath + 1;
+		nextPath = lower.find('/', search);
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("MSVC Target architecture was not detected in compiler path: {}", compiler);
+			return false;
+		}
+
+		splitHostTarget(host, target);
+		if (host.empty())
+			host = hostFromCompilerPath;
+
+		std::string targetFromCompilerPath = lower.substr(search, nextPath - search);
+		if (target.empty() || (target == targetFromCompilerPath && host == hostFromCompilerPath))
+		{
+			target = lower.substr(search, nextPath - search);
+		}
+		else
+		{
+			const auto& preferenceName = m_inputs.toolchainPreferenceName();
+			Diagnostic::error("Expected host '{}' and target '{}'. Please use a different toolchain or create a new one for this architecture.", hostFromCompilerPath, targetFromCompilerPath);
+			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", m_inputs.targetArchitecture(), preferenceName);
+			return false;
+		}
+	}
+	else
+	{
+		if (target.empty())
+			target = gnuArchToMsvcArch(m_inputs.hostArchitecture());
+
+		splitHostTarget(host, target);
+
+		if (host.empty())
+			host = gnuArchToMsvcArch(m_inputs.hostArchitecture());
+	}
+
+	m_state.info.setHostArchitecture(host);
+
+	if (host == target)
+		m_varsAllArch = target;
+	else
+		m_varsAllArch = fmt::format("{}_{}", host, target);
+
+	m_inputs.setTargetArchitecture(m_varsAllArch);
+	m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", Arch::toGnuArch(target)));
+
+	// TODO: universal windows platform - uwp-windows-msvc
+
+	m_msvcArchitectureSet = true;
+
+	return true;
+}
+
+/*****************************************************************************/
 bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVersion)
 {
 	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
 	m_varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
-	m_varsFileMsvcDelta = getVarsPath(this->identifier());
+	m_varsFileMsvcDelta = getVarsPath();
 
 	// This sets vswhere
 	if (!CompileEnvironmentVisualStudio::exists())
@@ -276,139 +381,17 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 			auto versionSplit = String::split(m_detectedVersion, '.');
 			if (versionSplit.size() >= 1)
 			{
-				std::string name = fmt::format("{}-pc-windows-msvc{}", m_inputs.targetArchitecture(), versionSplit.front());
+				chalet_assert(!m_varsAllArch.empty(), "vcVarsAll arch was not set");
+
+				std::string name = fmt::format("{}{}{}", m_varsAllArch, m_state.info.targetArchitectureTripleSuffix(), versionSplit.front());
 				m_inputs.setToolchainPreferenceName(std::move(name));
 			}
-		}
-
-		auto old = m_varsFileMsvcDelta;
-		m_varsFileMsvcDelta = getVarsPath(this->identifier());
-		if (m_varsFileMsvcDelta != old)
-		{
-			Commands::copyRename(old, m_varsFileMsvcDelta, true);
 		}
 	}
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
 
 	Diagnostic::printDone(timer.asString());
-
-	return true;
-}
-
-/*****************************************************************************/
-bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
-{
-	if (m_msvcArchitectureSet)
-		return true;
-
-	auto normalizeArch = [](const std::string& inArch) -> std::string {
-		if (String::equals("x86_64", inArch))
-			return "x64";
-		else if (String::equals("i686", inArch))
-			return "x86";
-
-		return inArch;
-	};
-
-	auto splitHostTarget = [](std::string& outHost, std::string& outTarget) {
-		if (String::contains('_', outTarget))
-		{
-			auto split = String::split(outTarget, '_');
-			if (String::equals("64", split.back()))
-			{
-				outTarget = "x64";
-			}
-			else
-			{
-				if (outHost.empty())
-					outHost = split.front();
-
-				outTarget = split.back();
-			}
-		}
-	};
-
-	std::string host;
-	std::string target = normalizeArch(m_inputs.targetArchitecture());
-
-	const auto& preferenceName = m_inputs.toolchainPreferenceName();
-	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
-	if (!compiler.empty())
-	{
-		// old: detectTargetArchitectureMSVC()
-
-		std::string lower = String::toLowerCase(compiler);
-		auto search = lower.find("/bin/host");
-		if (search == std::string::npos)
-		{
-			Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
-			return false;
-		}
-
-		auto nextPath = lower.find('/', search + 5);
-		if (search == std::string::npos)
-		{
-			Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
-			return false;
-		}
-
-		search += 9;
-		host = lower.substr(search, nextPath - search);
-		search = nextPath + 1;
-		nextPath = lower.find('/', search);
-		if (search == std::string::npos)
-		{
-			Diagnostic::error("MSVC Target architecture was not detected in compiler path: {}", compiler);
-			return false;
-		}
-
-		splitHostTarget(host, target);
-		auto targetFromCompilerPath = lower.substr(search, nextPath - search);
-		if (target.empty() || target == targetFromCompilerPath)
-		{
-			target = lower.substr(search, nextPath - search);
-		}
-		else
-		{
-			Diagnostic::error("Expected '{}'. Please use a different toolchain or create a new one for this architecture.", targetFromCompilerPath);
-			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", target, preferenceName);
-			return false;
-		}
-	}
-	else
-	{
-		if (target.empty())
-		{
-			// Try to get the architecture from the name
-			auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
-			if (!regexResult.empty())
-			{
-				target = regexResult;
-			}
-			else
-			{
-				target = normalizeArch(m_inputs.hostArchitecture());
-			}
-		}
-
-		splitHostTarget(host, target);
-
-		if (host.empty())
-			host = normalizeArch(m_inputs.hostArchitecture());
-	}
-
-	m_state.info.setHostArchitecture(host);
-
-	if (host == target)
-		m_varsAllArch = target;
-	else
-		m_varsAllArch = fmt::format("{}_{}", host, target);
-
-	m_inputs.setTargetArchitecture(m_varsAllArch);
-	m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
-
-	m_msvcArchitectureSet = true;
 
 	return true;
 }
@@ -461,7 +444,6 @@ bool CompileEnvironmentVisualStudio::getCompilerVersionAndDescription(CompilerIn
 
 		sourceCache.addVersion(outInfo.path, outInfo.version);
 
-		outInfo.arch = m_state.info.targetArchitectureTriple();
 		outInfo.description = getFullCxxCompilerString(outInfo.version);
 		return true;
 	}

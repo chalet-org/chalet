@@ -20,7 +20,7 @@ protected:
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 	virtual bool createFromVersion(const std::string& inVersion) final;
 	virtual bool validateArchitectureFromInput() final;
-	virtual bool makeArchitectureAdjustments() final;
+	virtual bool readArchitectureTripleFromCompiler() final;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
 
 	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const final;

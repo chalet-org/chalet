@@ -181,7 +181,6 @@ bool ICompileEnvironment::create(const std::string& inVersion)
 	}
 
 	m_initialized = true;
-
 	m_identifier = getIdentifier();
 
 	if (!validateArchitectureFromInput())
@@ -317,7 +316,7 @@ bool ICompileEnvironment::validateArchitectureFromInput()
 }
 
 /*****************************************************************************/
-bool ICompileEnvironment::makeArchitectureAdjustments()
+bool ICompileEnvironment::readArchitectureTripleFromCompiler()
 {
 	return true;
 }
@@ -329,11 +328,12 @@ bool ICompileEnvironment::compilerVersionIsToolchainVersion() const
 }
 
 /*****************************************************************************/
-std::string ICompileEnvironment::getVarsPath(const std::string& inId) const
+std::string ICompileEnvironment::getVarsPath() const
 {
-	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
-	archString += fmt::format("_{}", m_inputs.toolchainPreferenceName());
-	return m_state.cache.getHashPath(fmt::format("{}_{}.env", inId, archString), CacheType::Local);
+	const auto id = identifier();
+	const auto& hostArch = m_state.info.hostArchitecture();
+	const auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+	return m_state.cache.getHashPath(fmt::format("{}_{}_{}.env", id, hostArch, archString), CacheType::Local);
 }
 
 /*****************************************************************************/

@@ -20,7 +20,7 @@ protected:
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
 	virtual bool verifyToolchain() override;
 
-	virtual bool makeArchitectureAdjustments() override;
+	virtual bool readArchitectureTripleFromCompiler() override;
 	virtual bool validateArchitectureFromInput() override;
 	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const final;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const override;

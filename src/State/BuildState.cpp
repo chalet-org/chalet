@@ -255,7 +255,7 @@ bool BuildState::initializeToolchain()
 		return false;
 	};
 
-	if (!m_impl->environment->makeArchitectureAdjustments())
+	if (!m_impl->environment->readArchitectureTripleFromCompiler())
 		return onError();
 
 	if (!toolchain.initialize(*m_impl->environment))
@@ -682,7 +682,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 std::string BuildState::getUniqueIdForState() const
 {
 	std::string ret;
-	const auto& hostArch = info.hostArchitectureTriple();
+	const auto& hostArch = info.hostArchitectureString();
 	const auto targetArch = m_impl->inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
 	const auto& toolchainPref = m_impl->inputs.toolchainPreferenceName();
 	const auto& strategy = toolchain.strategyString();

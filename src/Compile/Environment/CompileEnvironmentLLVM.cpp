@@ -60,90 +60,51 @@ ToolchainType CompileEnvironmentLLVM::getToolchainTypeFromMacros(const std::stri
 }
 
 /*****************************************************************************/
-bool CompileEnvironmentLLVM::makeArchitectureAdjustments()
+bool CompileEnvironmentLLVM::validateArchitectureFromInput()
 {
-	bool valid = false;
+	return ICompileEnvironment::validateArchitectureFromInput();
+}
 
+/*****************************************************************************/
+bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
+{
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
+
+	if (compiler.empty())
+		return false;
+
 	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedArch;
 	if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 	{
-		Arch::Cpu targetArch = m_state.info.targetArchitecture();
 		const auto& archTriple = m_state.info.targetArchitectureTriple();
 
-		if (!m_inputs.targetArchitecture().empty())
-		{
-			auto results = Commands::subprocessOutput({ compiler, "-print-targets" });
-
-			if (!String::contains("error:", results))
-			{
-				StringList arches64{ "x86-64", "x86_64", "x64" };
-				StringList arches86{ "i686", "x86" };
-				auto split = String::split(results, '\n');
-				for (auto& line : split)
-				{
-					auto start = line.find_first_not_of(' ');
-					auto end = line.find_first_of(' ', start);
-
-					auto result = line.substr(start, end - start);
-					if (targetArch == Arch::Cpu::X64)
-					{
-						if (String::equals(arches64, result))
-							valid = true;
-					}
-					else if (targetArch == Arch::Cpu::X86)
-					{
-						if (String::equals(arches86, result))
-							valid = true;
-					}
-					else
-					{
-						if (String::startsWith(result, archTriple))
-							valid = true;
-					}
-				}
-			}
-		}
-
-		if (!String::contains('-', archTriple))
+		bool emptyInputArch = m_inputs.targetArchitecture().empty();
+		if (emptyInputArch || !String::contains('-', archTriple))
 		{
 			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
 			auto firstDash = cachedArch.find_first_of('-');
-			if (!cachedArch.empty() && firstDash != std::string::npos)
-			{
-				cachedArch = fmt::format("{}{}", archTriple, cachedArch.substr(firstDash));
+
+			bool valid = !cachedArch.empty() && firstDash != std::string::npos;
+			if (!valid)
+				return false;
+
+			cachedArch = fmt::format("{}{}", archTriple, cachedArch.substr(firstDash));
 #if defined(CHALET_MACOS)
-				// Strip out version in auto-detected mac triple
-				auto darwin = cachedArch.find("apple-darwin");
-				if (darwin != std::string::npos)
-				{
-					cachedArch = cachedArch.substr(0, darwin + 12);
-				}
-#endif
-				valid = true;
+			// Strip out version in auto-detected mac triple
+			auto darwin = cachedArch.find("apple-darwin");
+			if (darwin != std::string::npos)
+			{
+				cachedArch = cachedArch.substr(0, darwin + 12);
 			}
+#endif
 		}
-		else
-		{
-			valid = true;
-		}
-	}
-	else
-	{
-		valid = true;
 	}
 
 	m_state.info.setTargetArchitecture(cachedArch);
 	sourceCache.addArch(compiler, cachedArch);
 
-	return valid;
-}
-
-/*****************************************************************************/
-bool CompileEnvironmentLLVM::validateArchitectureFromInput()
-{
-	return ICompileEnvironment::validateArchitectureFromInput();
+	return true;
 }
 
 /*****************************************************************************/

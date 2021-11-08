@@ -56,7 +56,7 @@ protected:
 	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const = 0;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const = 0;
 
-	virtual bool makeArchitectureAdjustments();
+	virtual bool readArchitectureTripleFromCompiler();
 	virtual bool compilerVersionIsToolchainVersion() const;
 	virtual bool createFromVersion(const std::string& inVersion);
 	virtual bool validateArchitectureFromInput();
@@ -67,7 +67,7 @@ protected:
 	bool getCompilerInfoFromExecutable(CompilerInfo& outInfo);
 	bool makeSupportedCompilerFlags(const std::string& inExecutable);
 
-	std::string getVarsPath(const std::string& inId) const;
+	std::string getVarsPath() const;
 	bool saveOriginalEnvironment(const std::string& inOutputFile) const;
 	void createEnvironmentDelta(const std::string& inOriginalFile, const std::string& inCompilerFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine) const;
 	void cacheEnvironmentDelta(const std::string& inDeltaFile);

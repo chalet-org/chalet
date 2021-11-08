@@ -5,6 +5,7 @@
 
 #include "Compile/Environment/CompileEnvironmentIntel.hpp"
 
+#include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
@@ -119,6 +120,21 @@ std::vector<CompilerPathStructure> CompileEnvironmentIntel::getValidCompilerPath
 }
 
 /*****************************************************************************/
+bool CompileEnvironmentIntel::validateArchitectureFromInput()
+{
+	std::string target = m_inputs.targetArchitecture();
+	if (target.empty())
+	{
+		target = m_inputs.hostArchitecture();
+
+		m_inputs.setTargetArchitecture(target);
+		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
@@ -127,7 +143,7 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 
 	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
 	m_varsFileIntel = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
-	m_varsFileIntelDelta = getVarsPath(this->identifier());
+	m_varsFileIntelDelta = getVarsPath();
 	m_path = Environment::getPath();
 
 	bool isPresetFromInput = m_inputs.isToolchainPreset();
@@ -210,23 +226,16 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 	if (isPresetFromInput)
 	{
 #if defined(CHALET_MACOS)
-		std::string name = fmt::format("{}-apple-darwin-icc", m_inputs.targetArchitecture());
+		std::string name = fmt::format("{}-apple-darwin-intel", m_inputs.targetArchitecture());
 #else
 		std::string name;
 		if (m_type == ToolchainType::IntelLLVM)
-			name = fmt::format("{}-pc-windows-icx", m_inputs.targetArchitecture());
+			name = fmt::format("{}-pc-windows-intel", m_inputs.targetArchitecture());
 		else
-			name = fmt::format("{}-pc-windows-icc", m_inputs.targetArchitecture());
-
+			name = fmt::format("{}-pc-windows-intel", m_inputs.targetArchitecture());
 #endif
-		m_inputs.setToolchainPreferenceName(std::move(name));
 
-		auto old = m_varsFileIntelDelta;
-		m_varsFileIntelDelta = getVarsPath(this->identifier());
-		if (m_varsFileIntelDelta != old)
-		{
-			Commands::copyRename(old, m_varsFileIntelDelta, true);
-		}
+		m_inputs.setToolchainPreferenceName(std::move(name));
 	}
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileIntelDelta));
@@ -237,46 +246,12 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 }
 
 /*****************************************************************************/
-bool CompileEnvironmentIntel::validateArchitectureFromInput()
-{
-	std::string target = m_inputs.targetArchitecture();
-	if (target.empty())
-	{
-		// Try to get the architecture from the name
-		const auto& preferenceName = m_inputs.toolchainPreferenceName();
-		auto regexResult = RegexPatterns::matchesTargetArchitectureWithResult(preferenceName);
-		if (!regexResult.empty())
-		{
-			target = regexResult;
-		}
-		else
-		{
-			target = m_inputs.hostArchitecture();
-		}
-
-		m_inputs.setTargetArchitecture(target);
-		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool CompileEnvironmentIntel::makeArchitectureAdjustments()
+bool CompileEnvironmentIntel::readArchitectureTripleFromCompiler()
 {
 	if (m_type == ToolchainType::IntelLLVM)
-	{
-		return CompileEnvironmentLLVM::makeArchitectureAdjustments();
-	}
-	else
-	{
-#if defined(CHALET_MACOS)
-		auto arch = m_inputs.hostArchitecture();
-		m_state.info.setTargetArchitecture(fmt::format("{}-intel-darwin", arch));
-#endif
+		return CompileEnvironmentLLVM::readArchitectureTripleFromCompiler();
 
-		return true;
-	}
+	return true;
 }
 
 /*****************************************************************************/
@@ -374,7 +349,7 @@ bool CompileEnvironmentIntel::saveIntelEnvironment() const
 	if (vsVersion == VisualStudioVersion::VisualStudio2019)
 		cmd.emplace_back("vs2019");
 	if (vsVersion == VisualStudioVersion::VisualStudio2017)
-		cmd.emplace_back("vs2019");
+		cmd.emplace_back("vs2017");
 
 	cmd.emplace_back(">");
 	cmd.emplace_back("nul");

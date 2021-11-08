@@ -61,7 +61,6 @@ bool BuildPaths::initialize()
 		Commands::makeDirectory(outputDirectory);
 	}
 
-	auto arch = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
 	const auto& buildConfig = m_state.info.buildConfiguration();
 	const auto& toolchainPreference = m_inputs.toolchainPreferenceName();
 
@@ -76,11 +75,12 @@ bool BuildPaths::initialize()
 	}
 	else if (style == BuildPathStyle::ArchConfiguration)
 	{
-		arch = m_state.info.targetArchitectureString();
-		m_buildOutputDir = fmt::format("{}/{}-{}", outputDirectory, arch, buildConfig);
+		const auto& arch = m_state.info.targetArchitectureString();
+		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
 	}
-	else
+	else // BuildPathStyle::TargetTriple
 	{
+		const auto& arch = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
 		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
 	}
 

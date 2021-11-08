@@ -19,11 +19,13 @@ struct Arch
 
 	std::string triple;
 	std::string str;
+	std::string suffix;
 	Cpu val = Cpu::Unknown;
 
 	static std::string getHostCpuArchitecture();
+	static std::string toGnuArch(const std::string& inValue);
 
-	void set(const std::string& inValue) noexcept;
+	void set(const std::string& inValue);
 };
 }
 

@@ -19,7 +19,7 @@ protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
 
-	virtual bool makeArchitectureAdjustments() override;
+	virtual bool readArchitectureTripleFromCompiler() override;
 	virtual bool validateArchitectureFromInput() override;
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const override;
 	virtual bool populateSupportedFlags(const std::string& inExecutable) override;

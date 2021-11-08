@@ -18,7 +18,7 @@ std::string Arch::getHostCpuArchitecture()
 {
 #if defined(CHALET_MACOS)
 	#if defined(TARGET_CPU_ARM64) && TARGET_CPU_ARM64
-	return "arm64";
+	return "aarch64";
 	#elif defined(TARGET_CPU_X86_64) && TARGET_CPU_X86_64
 	return "x86_64";
 	#else
@@ -28,7 +28,7 @@ std::string Arch::getHostCpuArchitecture()
 	#if (defined(__x86_64__) && __x86_64__) || (defined(_M_AMD64) && _M_AMD64 == 100)
 	return "x86_64";
 	#elif (defined(__aarch64__) && __aarch64__) || (defined(_M_ARM64) && _M_ARM64 == 1)
-	return "arm64";
+	return "aarch64";
 	#elif (defined(__arm__) && __arm__) || (defined(_M_ARM) && _M_ARM == 7)
 	return "arm";
 	#else
@@ -38,7 +38,23 @@ std::string Arch::getHostCpuArchitecture()
 }
 
 /*****************************************************************************/
-void Arch::set(const std::string& inValue) noexcept
+std::string Arch::toGnuArch(const std::string& inValue)
+{
+	if (String::equals({ "x64", "amd64" }, inValue))
+		return "x86_64";
+	else if (String::equals("x86", inValue))
+		return "i686";
+	else if (String::equals("arm64", inValue))
+		return "aarch64";
+	else
+		return inValue;
+}
+
+/*****************************************************************************/
+// The goal with this class is to take some kind of architecture input and
+// get a valid GNU-style architecture (hopefully a triple) out of it
+//
+void Arch::set(const std::string& inValue)
 {
 	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 
@@ -52,33 +68,42 @@ void Arch::set(const std::string& inValue) noexcept
 		triple = inValue;
 	}
 
-	str = triple;
-	if (String::contains('-', str))
+	auto firstDash = triple.find('-');
+	if (firstDash != std::string::npos)
 	{
-		auto split = String::split(str, '-');
-		str = split.front();
+		str = triple.substr(0, firstDash);
+		suffix = triple.substr(firstDash);
 	}
+	else
+	{
+		str = triple;
+		suffix.clear();
+	}
+
 	std::string preUnderscoreCheck = str;
 
-	// Need to do this for msvc-style arches, but this works for x86_64 too
-	if (String::contains('_', str))
+	auto firstUnderScore = str.find_last_of('_');
+	if (firstUnderScore != std::string::npos)
 	{
-		auto split = String::split(str, '_');
-		str = split.back();
-	}
-
-	if (String::equals({ "64", "x64", "amd64" }, str))
-	{
+		str = str.substr(firstUnderScore + 1);
 		if (String::equals("64", str))
 			str = std::move(preUnderscoreCheck);
+	}
+	else
+	{
+		str = Arch::toGnuArch(str);
+		triple = fmt::format("{}{}", str, suffix);
+	}
 
+	if (String::equals("x86_64", str))
+	{
 		val = Arch::Cpu::X64;
 	}
-	else if (String::equals({ "i686", "x86" }, str))
+	else if (String::equals("i686", str))
 	{
 		val = Arch::Cpu::X86;
 	}
-	else if (String::equals("arm64", str))
+	else if (String::equals("aarch64", str))
 	{
 		val = Arch::Cpu::ARM64;
 	}
@@ -97,4 +122,5 @@ void Arch::set(const std::string& inValue) noexcept
 		val = Arch::Cpu::Unknown;
 	}
 }
+
 }

@@ -338,23 +338,7 @@ void BuildManager::printBuildInformation()
 		if (inInfo.description.empty())
 			return;
 
-		auto arch = inInfo.arch;
-		/*if (m_state.environment->isMsvc())
-		{
-			String::replaceAll(arch, "x64_x", "x");
-			String::replaceAll(arch, "x86_x", "x");
-		}*/
-
-		if (!m_inputs.archOptions().empty())
-		{
-			arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
-		}
 		Diagnostic::info("{} Compiler: {}", inLang, inInfo.description);
-
-		if (m_state.info.universalArches().empty())
-			Diagnostic::info("Target Architecture: {}", arch);
-		else
-			Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.info.universalArches(), " / "));
 	};
 
 	if (usingCpp)
@@ -362,6 +346,22 @@ void BuildManager::printBuildInformation()
 
 	if (usingC)
 		printDetailsImpl(m_state.toolchain.compilerC(), "C");
+
+	const auto& hostArch = m_state.info.hostArchitectureString();
+	if (hostArch != m_state.info.targetArchitectureString())
+	{
+		Diagnostic::info("Host Architecture: {}", hostArch);
+	}
+
+	auto arch = m_state.info.targetArchitectureTriple();
+	if (!m_inputs.archOptions().empty())
+	{
+		arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
+	}
+	if (m_state.info.universalArches().empty())
+		Diagnostic::info("Target Architecture: {}", arch);
+	else
+		Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.info.universalArches(), " / "));
 
 	const auto strategy = getBuildStrategyName();
 	Diagnostic::info("Strategy: {}", strategy);

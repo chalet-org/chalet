@@ -13,7 +13,7 @@ struct CompilerInfo
 	std::string path;
 	std::string description;
 	std::string version;
-	std::string arch;
+	// std::string arch;
 	std::string binDir;
 	std::string libDir;
 	std::string includeDir;
