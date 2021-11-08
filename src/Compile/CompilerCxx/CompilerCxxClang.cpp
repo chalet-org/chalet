@@ -100,22 +100,13 @@ bool CompilerCxxClang::addArchitectureToCommand(StringList& outArgList, const st
 
 	UNUSED(inArch);
 
-	Arch::Cpu hostArch = inState.info.hostArchitecture();
-	Arch::Cpu targetArch = inState.info.targetArchitecture();
-	const auto& archOptions = inState.info.archOptions();
-
-	if (hostArch == targetArch && targetArch != Arch::Cpu::Unknown && archOptions.empty())
-		return false;
-
 	const auto& targetArchString = inState.info.targetArchitectureTriple();
 
 	outArgList.emplace_back("-target");
 	outArgList.push_back(targetArchString);
 
-	if (hostArch == targetArch && targetArch != Arch::Cpu::Unknown && archOptions.empty())
-		return false;
-
-	if (!archOptions.empty() && archOptions.size() == 3) // <cpu-name>,<fpu-name>,<fabi>
+	const auto& archOptions = inState.info.archOptions();
+	if (archOptions.size() == 3) // <cpu-name>,<fpu-name>,<fabi>
 	{
 		outArgList.emplace_back(fmt::format("-mcpu={}", archOptions[0]));
 		outArgList.emplace_back(fmt::format("-mfpu={}", archOptions[1]));
