@@ -39,7 +39,7 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 	explicit CompileEnvironmentVisualStudio(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
 	static bool exists();
-	static bool makeEnvironment(VisualStudioEnvironmentConfig& outConfig, const std::string& inVersion);
+	static bool makeEnvironment(VisualStudioEnvironmentConfig& outConfig, const std::string& inVersion, const BuildState& inState);
 	static void populateVariables(VisualStudioEnvironmentConfig& outConfig, Dictionary<std::string>& outVariables);
 
 protected:

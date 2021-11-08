@@ -186,7 +186,7 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 /*****************************************************************************/
 // Other environments (Intel) might want to inherit the MSVC environment, so we make some of these function static
 //
-bool CompileEnvironmentVisualStudio::makeEnvironment(VisualStudioEnvironmentConfig& outConfig, const std::string& inVersion)
+bool CompileEnvironmentVisualStudio::makeEnvironment(VisualStudioEnvironmentConfig& outConfig, const std::string& inVersion, const BuildState& inState)
 {
 	outConfig.pathVariable = Environment::getPath();
 
@@ -293,7 +293,7 @@ bool CompileEnvironmentVisualStudio::makeEnvironment(VisualStudioEnvironmentConf
 		}
 
 		// Read the current environment and save it to a file
-		if (!ICompileEnvironment::saveOriginalEnvironment(outConfig.varsFileOriginal))
+		if (!ICompileEnvironment::saveOriginalEnvironment(outConfig.varsFileOriginal, inState))
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: The original environment could not be saved.");
 			return false;
@@ -384,7 +384,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 
 	m_ouptuttedDescription = true;
 
-	if (!CompileEnvironmentVisualStudio::makeEnvironment(m_config, inVersion))
+	if (!CompileEnvironmentVisualStudio::makeEnvironment(m_config, inVersion, m_state))
 		return false;
 
 	m_detectedVersion = std::move(m_config.detectedVersion);

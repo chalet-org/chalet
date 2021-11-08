@@ -337,7 +337,7 @@ std::string ICompileEnvironment::getVarsPath() const
 }
 
 /*****************************************************************************/
-bool ICompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFile)
+bool ICompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFile, const BuildState& inState)
 {
 #if defined(CHALET_WIN32)
 	auto cmdExe = Environment::getComSpec();
@@ -347,10 +347,10 @@ bool ICompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFil
 		"SET"
 	};
 #else
-	chalet_assert(m_state.tools.bashAvailable(), "");
+	chalet_assert(inState.tools.bashAvailable(), "");
 
 	StringList cmd;
-	cmd.push_back(m_state.tools.bash());
+	cmd.push_back(inState.tools.bash());
 	cmd.emplace_back("-c");
 	cmd.emplace_back("printenv");
 #endif

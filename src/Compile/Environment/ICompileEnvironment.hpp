@@ -22,7 +22,7 @@ struct ICompileEnvironment
 {
 	virtual ~ICompileEnvironment() = default;
 
-	static bool saveOriginalEnvironment(const std::string& inOutputFile);
+	static bool saveOriginalEnvironment(const std::string& inOutputFile, const BuildState& inState);
 
 	const std::string& identifier() const noexcept;
 	ToolchainType type() const noexcept;

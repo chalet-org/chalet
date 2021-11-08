@@ -176,7 +176,7 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 		}
 
 		// Read the current environment and save it to a file
-		if (!saveOriginalEnvironment(m_varsFileOriginal))
+		if (!saveOriginalEnvironment(m_varsFileOriginal, m_state))
 		{
 			Diagnostic::error("Intel Environment could not be fetched: The original environment could not be saved.");
 			return false;
