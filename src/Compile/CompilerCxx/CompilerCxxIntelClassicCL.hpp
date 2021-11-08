@@ -19,6 +19,10 @@ struct CompilerCxxIntelClassicCL final : public CompilerCxxVisualStudioCL
 protected:
 	virtual void addIncludes(StringList& outArgList) const final;
 	virtual void addDiagnostics(StringList& outArgList) const final;
+	virtual void addForceSeparateProgramDatabaseWrites(StringList& outArgList) const final;
+	virtual void addNativeJustMyCodeDebugging(StringList& outArgList) const final;
+	virtual void addAdditionalSecurityChecks(StringList& outArgList) const final;
+	virtual void addExternalWarnings(StringList& outArgList) const final;
 };
 }
 

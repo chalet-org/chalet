@@ -40,4 +40,28 @@ void CompilerCxxIntelClassicCL::addDiagnostics(StringList& outArgList) const
 	UNUSED(outArgList);
 }
 
+/*****************************************************************************/
+void CompilerCxxIntelClassicCL::addForceSeparateProgramDatabaseWrites(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void CompilerCxxIntelClassicCL::addNativeJustMyCodeDebugging(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void CompilerCxxIntelClassicCL::addAdditionalSecurityChecks(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void CompilerCxxIntelClassicCL::addExternalWarnings(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
 }
