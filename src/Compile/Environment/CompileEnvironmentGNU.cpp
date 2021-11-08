@@ -234,12 +234,21 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 		if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 		{
 			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
+
+			// Make our corrections here
+			//
 #if defined(CHALET_MACOS)
 			// Strip out version in auto-detected mac triple
 			auto darwin = cachedArch.find("apple-darwin");
 			if (darwin != std::string::npos)
 			{
 				cachedArch = cachedArch.substr(0, darwin + 12);
+			}
+#else
+			// Note: Standalone "mingw32" is used in 32-bit TDM GCC MinGW builds for some reason
+			if (String::equals("mingw32", cachedArch))
+			{
+				cachedArch = "i686-pc-windows-gnu";
 			}
 #endif
 		}

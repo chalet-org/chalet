@@ -56,17 +56,8 @@ std::string Arch::toGnuArch(const std::string& inValue)
 //
 void Arch::set(const std::string& inValue)
 {
-	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
-
-	// Note: Standalone "mingw32" is used in older mingw builds (4.x)
-	if (String::equals("mingw32", inValue))
-	{
-		triple = "i686-pc-mingw32";
-	}
-	else
-	{
-		triple = inValue;
-	}
+	// hopefully we got a triple, but it might not be
+	triple = inValue;
 
 	auto firstDash = triple.find('-');
 	if (firstDash != std::string::npos)
