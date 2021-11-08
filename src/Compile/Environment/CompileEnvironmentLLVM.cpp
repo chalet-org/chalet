@@ -99,7 +99,14 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 			}
 #endif
 		}
+		else
+		{
+			cachedArch = archTriple;
+		}
 	}
+
+	if (cachedArch.empty())
+		return false;
 
 	m_state.info.setTargetArchitecture(cachedArch);
 	sourceCache.addArch(compiler, cachedArch);
