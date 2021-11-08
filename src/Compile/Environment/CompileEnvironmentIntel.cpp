@@ -244,11 +244,11 @@ std::string CompileEnvironmentIntel::makeToolchainName() const
 #if defined(CHALET_WIN32)
 		const auto vsVersion = m_inputs.visualStudioVersion();
 		if (vsVersion == VisualStudioVersion::VisualStudio2022)
-			ret += "-vs2022";
+			ret += "-vs-2022";
 		if (vsVersion == VisualStudioVersion::VisualStudio2019)
-			ret += "-vs2019";
+			ret += "-vs-2019";
 		if (vsVersion == VisualStudioVersion::VisualStudio2017)
-			ret += "-vs2017";
+			ret += "-vs-2017";
 #endif
 	}
 	else
