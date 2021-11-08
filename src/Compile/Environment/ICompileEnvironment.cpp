@@ -346,6 +346,7 @@ bool ICompileEnvironment::saveOriginalEnvironment(const std::string& inOutputFil
 		"/c",
 		"SET"
 	};
+	UNUSED(inState);
 #else
 	chalet_assert(inState.tools.bashAvailable(), "");
 
