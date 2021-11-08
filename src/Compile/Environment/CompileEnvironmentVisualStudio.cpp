@@ -207,7 +207,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 	std::string installationVersion;
 
 	// we got here from a preset in the command line
-	bool genericMsvcFromInput = m_inputs.visualStudioVersion() != VisualStudioVersion::None;
+	bool isPresetFromInput = m_inputs.visualStudioVersion() != VisualStudioVersion::None;
 
 	auto getStartOfVsWhereCommand = [this]() {
 		StringList cmd{ state.vswhere, "-nologo" };
@@ -261,7 +261,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 			return split.front();
 		};
 
-		if (genericMsvcFromInput)
+		if (isPresetFromInput)
 		{
 			StringList vswhereCmd = getStartOfVsWhereCommand();
 			getProductsOptions(vswhereCmd);
@@ -337,7 +337,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 	{
 		Diagnostic::infoEllipsis("Reading Microsoft{} Visual C/C++ Environment Cache", Unicode::registered());
 
-		if (genericMsvcFromInput)
+		if (isPresetFromInput)
 			m_detectedVersion = getMsvcVersion();
 	}
 
@@ -374,26 +374,31 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 		}
 	}
 
-	if (genericMsvcFromInput)
-	{
-		if (!m_detectedVersion.empty())
-		{
-			auto versionSplit = String::split(m_detectedVersion, '.');
-			if (versionSplit.size() >= 1)
-			{
-				chalet_assert(!m_varsAllArch.empty(), "vcVarsAll arch was not set");
-
-				std::string name = fmt::format("{}{}{}", m_varsAllArch, m_state.info.targetArchitectureTripleSuffix(), versionSplit.front());
-				m_inputs.setToolchainPreferenceName(std::move(name));
-			}
-		}
-	}
+	if (isPresetFromInput)
+		m_inputs.setToolchainPreferenceName(makeToolchainName());
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileMsvcDelta));
 
 	Diagnostic::printDone(timer.asString());
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::makeToolchainName() const
+{
+	std::string ret;
+	if (!m_detectedVersion.empty())
+	{
+		auto versionSplit = String::split(m_detectedVersion, '.');
+		if (versionSplit.size() >= 1)
+		{
+			chalet_assert(!m_varsAllArch.empty(), "vcVarsAll arch was not set");
+
+			ret = fmt::format("{}{}{}", m_varsAllArch, m_state.info.targetArchitectureTripleSuffix(), versionSplit.front());
+		}
+	}
+	return ret;
 }
 
 /*****************************************************************************/

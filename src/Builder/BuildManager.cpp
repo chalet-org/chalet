@@ -334,7 +334,7 @@ void BuildManager::printBuildInformation()
 		}
 	}
 
-	auto printDetailsImpl = [this](const CompilerInfo& inInfo, const std::string& inLang) -> void {
+	auto printDetailsImpl = [](const CompilerInfo& inInfo, const std::string& inLang) -> void {
 		if (inInfo.description.empty())
 			return;
 

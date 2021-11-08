@@ -224,19 +224,7 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 	}
 
 	if (isPresetFromInput)
-	{
-#if defined(CHALET_MACOS)
-		std::string name = fmt::format("{}-apple-darwin-intel", m_inputs.targetArchitecture());
-#else
-		std::string name;
-		if (m_type == ToolchainType::IntelLLVM)
-			name = fmt::format("{}-pc-windows-intel", m_inputs.targetArchitecture());
-		else
-			name = fmt::format("{}-pc-windows-intel", m_inputs.targetArchitecture());
-#endif
-
-		m_inputs.setToolchainPreferenceName(std::move(name));
-	}
+		m_inputs.setToolchainPreferenceName(makeToolchainName());
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileIntelDelta));
 
@@ -246,10 +234,45 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 }
 
 /*****************************************************************************/
+std::string CompileEnvironmentIntel::makeToolchainName() const
+{
+	std::string ret;
+	if (m_type == ToolchainType::IntelLLVM)
+	{
+		ret = fmt::format("{}-intel-llvm", m_state.info.targetArchitectureString());
+
+#if defined(CHALET_WIN32)
+		const auto vsVersion = m_inputs.visualStudioVersion();
+		if (vsVersion == VisualStudioVersion::VisualStudio2022)
+			ret += "-vs2022";
+		if (vsVersion == VisualStudioVersion::VisualStudio2019)
+			ret += "-vs2019";
+		if (vsVersion == VisualStudioVersion::VisualStudio2017)
+			ret += "-vs2017";
+#endif
+	}
+	else
+	{
+		ret = fmt::format("{}-intel-classic", m_state.info.targetArchitectureString());
+	}
+	return ret;
+}
+
+/*****************************************************************************/
 bool CompileEnvironmentIntel::readArchitectureTripleFromCompiler()
 {
 	if (m_type == ToolchainType::IntelLLVM)
+	{
 		return CompileEnvironmentLLVM::readArchitectureTripleFromCompiler();
+	}
+	else
+	{
+#if defined(CHALET_WIN32)
+		//
+#else
+		return CompileEnvironmentGNU::readArchitectureTripleFromCompiler();
+#endif
+	}
 
 	return true;
 }

@@ -32,6 +32,7 @@ protected:
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
 
 private:
+	std::string makeToolchainName() const;
 	bool saveMsvcEnvironment() const;
 	StringList getAllowedArchitectures() const;
 

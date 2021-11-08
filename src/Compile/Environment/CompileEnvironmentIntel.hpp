@@ -29,6 +29,7 @@ protected:
 	virtual bool populateSupportedFlags(const std::string& inExecutable) final;
 
 private:
+	std::string makeToolchainName() const;
 	bool saveIntelEnvironment() const;
 
 	std::string m_varsFileOriginal;
