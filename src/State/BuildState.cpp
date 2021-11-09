@@ -684,7 +684,7 @@ std::string BuildState::getUniqueIdForState() const
 	std::string ret;
 	const auto& hostArch = info.hostArchitectureString();
 	const auto targetArch = m_impl->inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
-	const auto envId = m_impl->environment->identifier();
+	const auto envId = m_impl->environment->identifier() + toolchain.version();
 	const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
 	const auto extensions = String::join(paths.allFileExtensions(), '_');

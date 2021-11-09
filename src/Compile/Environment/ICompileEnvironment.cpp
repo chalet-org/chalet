@@ -337,7 +337,9 @@ std::string ICompileEnvironment::getVarsPath() const
 {
 	const auto id = identifier();
 	const auto& hostArch = m_state.info.hostArchitecture();
-	const auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+	archString += fmt::format("_{}", m_inputs.toolchainPreferenceName());
+
 	return m_state.cache.getHashPath(fmt::format("{}_{}_{}.env", id, hostArch, archString), CacheType::Local);
 }
 
