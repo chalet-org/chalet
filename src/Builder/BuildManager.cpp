@@ -13,7 +13,7 @@
 #include "Compile/CompileToolchainController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Process/Process.hpp"
+#include "Process/ProcessController.hpp"
 #include "Router/Route.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -821,14 +821,14 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		auto outFile = outputFile;
 		m_inputs.clearWorkingDirectory(outFile);
 
-		int lastExitCode = Process::getLastExitCode();
+		int lastExitCode = ProcessController::getLastExitCode();
 		auto message = fmt::format("{} exited with code: {}", outFile, lastExitCode);
 
 		// Output::lineBreak();
 		Output::printSeparator();
 		Output::print(result ? Output::theme().info : Output::theme().error, message);
 
-		auto lastSystemMessage = Process::getSystemMessage(lastExitCode);
+		auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
 		if (!lastSystemMessage.empty())
 		{
 #if defined(CHALET_WIN32)

@@ -13,11 +13,11 @@ bool BuildJsonProtoParser::parseKeyFromConfig(T& outVariable, const Json& inNode
 {
 	bool res = m_chaletJson.assignFromKey(outVariable, inNode, inKey);
 
-	const auto& platform = Platform::platform();
+	const auto& platform = m_platform;
 
 	res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.{}", inKey, platform));
 
-	for (auto& notPlatform : Platform::notPlatforms())
+	for (auto& notPlatform : m_notPlatforms)
 	{
 		res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform));
 	}

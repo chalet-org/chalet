@@ -5,7 +5,7 @@
 
 #include "Core/DotEnvFileParser.hpp"
 
-#include "Compile/Environment/CompileEnvironmentVisualStudio.hpp"
+#include "Compile/Environment/VisualStudioEnvironmentScript.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -94,7 +94,7 @@ bool DotEnvFileParser::parseVariablesFromFile(const std::string& inFile) const
 	StringList pathSearch{ "Path", "PATH" };
 
 #if defined(CHALET_WIN32)
-	const bool msvcExists = CompileEnvironmentVisualStudio::exists();
+	const bool msvcExists = VisualStudioEnvironmentScript::visualStudioExists();
 #endif
 
 	std::ifstream input(inFile);

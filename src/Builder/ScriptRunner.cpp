@@ -7,7 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 
-#include "Process/Process.hpp"
+#include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -236,7 +236,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 	command.emplace_back(std::move(outScriptPath));
 
 	bool result = Commands::subprocess(command);
-	auto exitCode = Process::getLastExitCode();
+	auto exitCode = ProcessController::getLastExitCode();
 
 	std::string script = inScript;
 	m_inputs.clearWorkingDirectory(script);

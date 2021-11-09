@@ -20,23 +20,18 @@ namespace chalet
 {
 namespace
 {
+#if defined(CHALET_WIN32)
 static struct
 {
-#if defined(CHALET_WIN32)
 	uint consoleCp = 0;
 	uint consoleOutputCp = 0;
-#endif
-	bool initialized = false;
-	bool initializeCreateProcess = false;
 } state;
+#endif
 }
 
 /*****************************************************************************/
 void WindowsTerminal::initialize()
 {
-	if (state.initialized)
-		return;
-
 #if defined(CHALET_WIN32)
 	state.consoleCp = GetConsoleOutputCP();
 	state.consoleOutputCp = GetConsoleCP();
@@ -70,21 +65,16 @@ void WindowsTerminal::initialize()
 		_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 	}
 #endif
-
-	state.initialized = true;
 }
 
 /*****************************************************************************/
 // A CreateProcess noop prevents misleading benchmarks later on when things need to be measured
 // For example, "On My Machine(TM)", CreateProcess takes about 38ms the first time (MSVC Release)
-// If compiling with MinGW in Debug mode, it's even slower (1.5s)
+// If compiling with MinGW in Debug mode, it's even slower (1.5s),
+// so we'll incur this penalty before we actually make any subsequent CreateProcess calls
 //
 void WindowsTerminal::initializeCreateProcess()
 {
-	if (state.initializeCreateProcess)
-		return;
-
-	state.initializeCreateProcess = true;
 #if defined(CHALET_WIN32)
 	auto cmd = Commands::which("rundll32");
 	Commands::subprocessNoOutput({ cmd });

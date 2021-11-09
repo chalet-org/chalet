@@ -38,7 +38,10 @@ BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, StatePrototy
 	m_filename(inPrototype.filename()),
 	m_state(inState),
 	kKeyAbstracts(inPrototype.kKeyAbstracts),
-	kKeyTargets(inPrototype.kKeyTargets)
+	kKeyTargets(inPrototype.kKeyTargets),
+	m_debugIdentifier("debug"),
+	m_notPlatforms(Platform::notPlatforms()),
+	m_platform(Platform::platform())
 {
 }
 
@@ -673,7 +676,7 @@ bool BuildJsonParser::parseStringListFromConfig(StringList& outList, const Json&
 {
 	bool res = m_chaletJson.assignStringListAndValidate(outList, inNode, inKey);
 
-	const auto& platform = Platform::platform();
+	const auto& platform = m_platform;
 
 	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
 
@@ -682,7 +685,7 @@ bool BuildJsonParser::parseStringListFromConfig(StringList& outList, const Json&
 	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
 	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}.{}{}", inKey, platform, notSymbol, m_debugIdentifier));
 
-	for (auto& notPlatform : Platform::notPlatforms())
+	for (auto& notPlatform : m_notPlatforms)
 	{
 		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
 		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}.{}{}", inKey, notPlatform, notSymbol, m_debugIdentifier));
@@ -697,7 +700,7 @@ bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& 
 {
 	bool res = inNode.contains(inKey);
 
-	const auto& platform = Platform::platform();
+	const auto& platform = m_platform;
 
 	res |= inNode.contains(fmt::format("{}.{}", inKey, platform));
 
@@ -706,7 +709,7 @@ bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& 
 	res |= inNode.contains(fmt::format("{}.{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
 	res |= inNode.contains(fmt::format("{}.{}.{}{}", inKey, platform, notSymbol, m_debugIdentifier));
 
-	for (auto& notPlatform : Platform::notPlatforms())
+	for (auto& notPlatform : m_notPlatforms)
 	{
 		res |= inNode.contains(fmt::format("{}.!{}", inKey, notPlatform));
 		res |= inNode.contains(fmt::format("{}.!{}.{}{}", inKey, notPlatform, notSymbol, m_debugIdentifier));
@@ -719,7 +722,7 @@ bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& 
 /*****************************************************************************/
 bool BuildJsonParser::conditionIsValid(const std::string& inContent) const
 {
-	const auto& platform = Platform::platform();
+	const auto& platform = m_platform;
 
 	if (String::equals(platform, inContent))
 		return true;
@@ -735,7 +738,7 @@ bool BuildJsonParser::conditionIsValid(const std::string& inContent) const
 	if (String::equals(fmt::format("{}.{}{}", platform, notSymbol, m_debugIdentifier), inContent))
 		return true;
 
-	for (auto& notPlatform : Platform::notPlatforms())
+	for (auto& notPlatform : m_notPlatforms)
 	{
 		if (String::equals(fmt::format("!{}", notPlatform), inContent))
 			return true;

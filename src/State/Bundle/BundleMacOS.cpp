@@ -16,17 +16,15 @@ namespace chalet
 {
 namespace
 {
-#if defined(CHALET_MACOS)
-static struct
+Dictionary<MacOSBundleType> getBundleTypes()
 {
-	const Dictionary<MacOSBundleType> bundleTypes{
+	return {
 		{ "app", MacOSBundleType::Application },
 		{ "framework", MacOSBundleType::Framework },
 		{ "plugin", MacOSBundleType::Plugin },
 		{ "kext", MacOSBundleType::KernelExtension },
 	};
-} state;
-#endif
+}
 }
 
 /*****************************************************************************/
@@ -203,14 +201,11 @@ void BundleMacOS::setDmgBackground2x(std::string&& inValue)
 /*****************************************************************************/
 MacOSBundleType BundleMacOS::getBundleTypeFromString(const std::string& inValue) const
 {
-#if defined(CHALET_MACOS)
-	if (state.bundleTypes.find(inValue) != state.bundleTypes.end())
+	auto bundleTypes = getBundleTypes();
+	if (bundleTypes.find(inValue) != bundleTypes.end())
 	{
-		return state.bundleTypes.at(inValue);
+		return bundleTypes.at(inValue);
 	}
-#else
-	UNUSED(inValue);
-#endif
 
 	return MacOSBundleType::None;
 }

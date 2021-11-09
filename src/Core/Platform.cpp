@@ -7,69 +7,34 @@
 
 namespace chalet
 {
-namespace
-{
-static struct
-{
-	std::string platform;
-	StringList notPlatforms;
-
-} state;
-
-std::string getPlatform()
+/*****************************************************************************/
+std::string Platform::platform() noexcept
 {
 #if defined(CHALET_WIN32)
-	return "windows";
+	return std::string("windows");
 #elif defined(CHALET_MACOS)
-	return "macos";
+	return std::string("macos");
 #elif defined(CHALET_LINUX)
-	return "linux";
+	return std::string("linux");
 #else
-	return "unknown";
+	return std::string("unknown");
 #endif
 }
 
-StringList getNotPlatforms()
+/*****************************************************************************/
+StringList Platform::notPlatforms() noexcept
 {
-#if defined(CHALET_WIN32)
-	return {
-		"macos", "linux"
-	};
-#elif defined(CHALET_MACOS)
-	return {
-		"windows", "linux"
-	};
-#elif defined(CHALET_LINUX)
-	return {
-		"windows", "macos"
-	};
-#else
-	return {
-		"windows", "macos", "linux"
-	};
+	return
+	{
+#if !defined(CHALET_WIN32)
+		"windows",
 #endif
-}
-}
-
-/*****************************************************************************/
-const std::string& Platform::platform() noexcept
-{
-	if (state.platform.empty())
-	{
-		state.platform = getPlatform();
-	}
-
-	return state.platform;
-}
-
-/*****************************************************************************/
-const StringList& Platform::notPlatforms() noexcept
-{
-	if (state.notPlatforms.empty())
-	{
-		state.notPlatforms = getNotPlatforms();
-	}
-
-	return state.notPlatforms;
+#if !defined(CHALET_MACOS)
+			"macos",
+#endif
+#if !defined(CHALET_LINUX)
+			"linux",
+#endif
+	};
 }
 }

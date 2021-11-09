@@ -7,7 +7,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Process/Process.hpp"
+#include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -97,7 +97,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 	auto outFile = fmt::format("{}/{}", inOutputFolder, outputFile);
 	m_inputs.clearWorkingDirectory(outFile);
 
-	auto message = fmt::format("{} exited with code: {}", outFile, Process::getLastExitCode());
+	auto message = fmt::format("{} exited with code: {}", outFile, ProcessController::getLastExitCode());
 
 	// Output::lineBreak();
 	Output::printSeparator();

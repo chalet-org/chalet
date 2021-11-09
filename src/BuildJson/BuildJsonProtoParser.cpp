@@ -21,7 +21,9 @@ BuildJsonProtoParser::BuildJsonProtoParser(const CommandLineInputs& inInputs, St
 	m_inputs(inInputs),
 	m_prototype(inPrototype),
 	m_chaletJson(inPrototype.chaletJson()),
-	m_filename(inPrototype.filename())
+	m_filename(inPrototype.filename()),
+	m_notPlatforms(Platform::notPlatforms()),
+	m_platform(Platform::platform())
 {
 }
 
@@ -535,11 +537,11 @@ bool BuildJsonProtoParser::parseStringListFromConfig(StringList& outList, const 
 {
 	bool res = m_chaletJson.assignStringListAndValidate(outList, inNode, inKey);
 
-	const auto& platform = Platform::platform();
+	const auto& platform = m_platform;
 
 	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
 
-	for (auto& notPlatform : Platform::notPlatforms())
+	for (auto& notPlatform : m_notPlatforms)
 	{
 		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
 	}
@@ -550,12 +552,12 @@ bool BuildJsonProtoParser::parseStringListFromConfig(StringList& outList, const 
 /*****************************************************************************/
 bool BuildJsonProtoParser::conditionIsValid(const std::string& inContent) const
 {
-	const auto& platform = Platform::platform();
+	const auto& platform = m_platform;
 
 	if (String::equals(platform, inContent))
 		return true;
 
-	for (auto& notPlatform : Platform::notPlatforms())
+	for (auto& notPlatform : m_notPlatforms)
 	{
 		if (String::equals(fmt::format("!{}", notPlatform), inContent))
 			return true;

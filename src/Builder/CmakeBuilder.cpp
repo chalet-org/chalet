@@ -6,7 +6,7 @@
 #include "Builder/CmakeBuilder.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
-#include "Process/Process.hpp"
+#include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -109,7 +109,7 @@ bool CmakeBuilder::run()
 				options.cwd = m_outputLocation;
 			}
 
-			if (Process::run(command, options) != EXIT_SUCCESS)
+			if (ProcessController::run(command, options) != EXIT_SUCCESS)
 				return onRunFailure();
 		}
 		else

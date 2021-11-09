@@ -29,6 +29,10 @@ void setPath(const std::string& inValue);
 std::string getUserDirectory();
 std::string getShell();
 std::string getComSpec();
+
+bool saveToEnvFile(const std::string& inOutputFile);
+void createDeltaEnvFile(const std::string& inBeforeFile, const std::string& inAfterFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine);
+void readEnvFileToDictionary(const std::string& inDeltaFile, Dictionary<std::string>& outVariables);
 }
 }
 

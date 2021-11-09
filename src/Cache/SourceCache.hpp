@@ -52,6 +52,9 @@ private:
 
 	mutable SourceLastWriteMap m_lastWrites;
 
+	const std::string kDataVersion;
+	const std::string kDataArch;
+
 	std::time_t m_initializedTime = 0;
 	std::time_t m_lastBuildTime = 0;
 

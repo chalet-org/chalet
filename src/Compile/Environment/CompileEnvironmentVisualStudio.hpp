@@ -13,34 +13,13 @@ namespace chalet
 {
 class BuildState;
 struct CommandLineInputs;
-
-struct VisualStudioEnvironmentConfig
-{
-	// inputs
-	std::string varsFileOriginal;
-	std::string varsFileMsvc;
-	std::string varsFileMsvcDelta;
-	std::string varsAllArch;
-	StringList varsAllArchOptions;
-
-	VisualStudioVersion inVersion = VisualStudioVersion::None;
-
-	// set during creation
-	std::string pathVariable;
-	std::string pathInject;
-	std::string visualStudioPath;
-	std::string detectedVersion;
-
-	bool isPreset = false;
-};
+struct VisualStudioEnvironmentScript;
 
 struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 {
 	explicit CompileEnvironmentVisualStudio(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
-
-	static bool exists();
-	static bool makeEnvironment(VisualStudioEnvironmentConfig& outConfig, const std::string& inVersion, const BuildState& inState);
-	static void populateVariables(VisualStudioEnvironmentConfig& outConfig, Dictionary<std::string>& outVariables);
+	CHALET_DISALLOW_COPY_MOVE(CompileEnvironmentVisualStudio);
+	~CompileEnvironmentVisualStudio();
 
 protected:
 	virtual std::string getIdentifier() const noexcept final;
@@ -55,17 +34,9 @@ protected:
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
 
 private:
-	std::string makeToolchainName() const;
-	static bool saveMsvcEnvironment(VisualStudioEnvironmentConfig& outConfig);
-	static StringList getAllowedArchitectures();
+	std::string makeToolchainName(const std::string& inArch) const;
 
-	static StringList getStartOfVsWhereCommand(const VisualStudioVersion inVersion);
-	static void addProductOptions(StringList& outCmd);
-	static std::string getVisualStudioVersion(const VisualStudioVersion inVersion);
-
-	VisualStudioEnvironmentConfig m_config;
-
-	bool m_msvcArchitectureSet = false;
+	Unique<VisualStudioEnvironmentScript> m_config;
 };
 }
 

@@ -5,152 +5,471 @@
 
 #include "Process/Process.hpp"
 
-#include <array>
-#include <atomic>
-#include <mutex>
-
-#include "Libraries/Format.hpp"
-#include "Process/ProcessPipe.hpp"
-#include "Process/RunningProcess.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Output.hpp"
-
 #if defined(CHALET_WIN32)
-	#include "Terminal/WindowsTerminal.hpp"
+#else
+	#include <sys/wait.h>
+	#include <unistd.h>
+	#include <string.h>
+	#include <array>
+#endif
+
+#include "Utility/String.hpp"
+
+#if !defined(CHALET_MSVC)
+extern char** environ;
 #endif
 
 namespace chalet
 {
+#if defined(CHALET_WIN32)
 namespace
 {
-static std::mutex s_mutex;
-static struct
-{
-	std::vector<RunningProcess*> procesess;
-	int lastErrorCode = 0;
-	bool initialized = false;
-} state;
-
 /*****************************************************************************/
-void removeProcess(const RunningProcess& inProcess)
+std::string escapeShellArgument(const std::string& inArg)
 {
-	std::lock_guard<std::mutex> lock(s_mutex);
-	auto it = state.procesess.end();
-	while (it != state.procesess.begin())
-	{
-		--it;
-		RunningProcess* process = (*it);
-		if (*process == inProcess)
-		{
-			it = state.procesess.erase(it);
-			return;
-		}
-	}
+	bool needsQuote = inArg.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890._-+/") != std::string::npos;
+	if (!needsQuote)
+		return inArg;
 
-#if defined(CHALET_WIN32)
-	if (state.procesess.empty())
-		WindowsTerminal::reset();
-#endif
+	std::string result = "\"";
+	for (auto& c : inArg)
+	{
+		if (c == '\"' || c == '\\')
+			result += '\\';
+
+		result += c;
+	}
+	result += "\"";
+
+	return result;
 }
 
 /*****************************************************************************/
-void subProcessSignalHandler(int inSignal)
+std::string getWindowsArguments(const StringList& inCmd)
 {
-	std::lock_guard<std::mutex> lock(s_mutex);
-	auto it = state.procesess.end();
-	while (it != state.procesess.begin())
+	std::string args;
+	for (std::size_t i = 0; i < inCmd.size(); ++i)
 	{
-		--it;
-		RunningProcess* process = (*it);
+		if (i > 0)
+			args += ' ';
 
-		bool success = process->sendSignal(static_cast<SigNum>(inSignal));
-		if (success)
-			it = state.procesess.erase(it);
+		args += escapeShellArgument(inCmd[i]);
 	}
 
-#if defined(CHALET_WIN32)
-	WindowsTerminal::reset();
-#endif
+	return args;
 }
 }
 
 /*****************************************************************************/
-int Process::run(const StringList& inCmd, const ProcessOptions& inOptions, const std::uint8_t inBufferSize)
+int Process::waitForResult()
 {
-	CHALET_TRY
+	if (m_pid == 0)
 	{
-		if (!state.initialized)
-		{
-			::signal(SIGINT, subProcessSignalHandler);
-			::signal(SIGTERM, subProcessSignalHandler);
-			::signal(SIGABRT, subProcessSignalHandler);
-			state.initialized = true;
-		}
-
-		if (inCmd.empty())
-		{
-			Diagnostic::error("Subprocess: Command cannot be empty.");
-			return -1;
-		}
-
-		if (!Commands::pathExists(inCmd.front()))
-		{
-			Diagnostic::error("Subprocess: Executable not found: {}", inCmd.front());
-			return -1;
-		}
-
-		RunningProcess process;
-		if (!process.create(inCmd, inOptions))
-		{
-			state.lastErrorCode = process.waitForResult();
-			return state.lastErrorCode;
-		}
-
-		state.procesess.push_back(&process);
-
-		static std::array<char, 256> buffer{ 0 };
-
-		{
-			std::lock_guard<std::mutex> lock(s_mutex);
-			if (inOptions.stdoutOption == PipeOption::Pipe && inOptions.onStdOut != nullptr)
-				process.read(FileNo::StdOut, buffer, inBufferSize, inOptions.onStdOut);
-
-			if (inOptions.stderrOption == PipeOption::Pipe && inOptions.onStdErr != nullptr)
-				process.read(FileNo::StdErr, buffer, inBufferSize, inOptions.onStdErr);
-		}
-
-		int result = process.waitForResult();
-
-		removeProcess(process);
-		state.lastErrorCode = result;
-
-		return result;
+		DWORD error = ::GetLastError();
+		return static_cast<int>(error);
 	}
-	CHALET_CATCH(const std::exception& err)
+
+	DWORD waitMs = INFINITE;
+	DWORD result = ::WaitForSingleObject(m_processInfo.hProcess, waitMs);
+	if (result == WAIT_TIMEOUT)
 	{
-		CHALET_EXCEPT_ERROR("Subprocess error: {}", err.what());
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject WAIT_TIMEOUT error: {}", error);
 		return -1;
 	}
+	else if (result == WAIT_ABANDONED)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject WAIT_ABANDONED error: {}", error);
+		return -1;
+	}
+	else if (result == WAIT_FAILED)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject WAIT_FAILED error: {}", error);
+		return -1;
+	}
+
+	if (result != WAIT_OBJECT_0)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject error: {}", error);
+		return -1;
+	}
+
+	DWORD exitCode;
+	bool ret = ::GetExitCodeProcess(m_processInfo.hProcess, &exitCode) == TRUE;
+	if (!ret)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("GetExitCodeProcess error: {}", error);
+		return -1;
+	}
+
+	close();
+	return static_cast<int>(exitCode);
 }
 
 /*****************************************************************************/
-int Process::getLastExitCode()
+std::string Process::getErrorMessageFromCode(const int inCode)
 {
-	return state.lastErrorCode;
-}
-
-/*****************************************************************************/
-std::string Process::getSystemMessage(const int inExitCode)
-{
-	if (inExitCode == 0)
+	DWORD messageId = static_cast<DWORD>(inCode);
+	if (messageId == 0)
 		return std::string();
 
-	return RunningProcess::getErrorMessageFromCode(inExitCode);
+	LPSTR messageBuffer = NULL;
+	DWORD dwFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+	DWORD size = FormatMessageA(dwFlags,
+		NULL,
+		messageId,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPSTR)&messageBuffer,
+		0,
+		NULL);
+
+	std::string message(messageBuffer, static_cast<std::size_t>(size));
+
+	LocalFree(messageBuffer);
+
+	return message;
+}
+#else
+/*****************************************************************************/
+int Process::waitForResult()
+{
+	int exitCode;
+	while (true)
+	{
+		ProcessID child = ::waitpid(m_pid, &exitCode, 0);
+		if (child == -1 && errno == EINTR)
+			continue;
+
+		break;
+	}
+
+	int result = getReturnCode(exitCode);
+
+	close();
+	return result;
 }
 
 /*****************************************************************************/
-void Process::haltAll(const SigNum inSignal)
+int Process::getReturnCode(const int inExitCode)
 {
-	subProcessSignalHandler(static_cast<std::underlying_type_t<SigNum>>(inSignal));
+	if (WIFEXITED(inExitCode))
+		return WEXITSTATUS(inExitCode);
+	else if (WIFSIGNALED(inExitCode))
+		return -WTERMSIG(inExitCode);
+	else
+		return 1;
 }
+
+/*****************************************************************************/
+std::string Process::getErrorMessageFromCode(const int inCode)
+{
+	#if defined(CHALET_MACOS)
+	std::array<char, 256> buffer;
+	buffer.fill(0);
+	UNUSED(::strerror_r(inCode, buffer.data(), buffer.size()));
+	return std::string(buffer.data());
+	#else
+	char* errResult = ::strerror(inCode);
+	return std::string(errResult);
+	#endif
+}
+
+/*****************************************************************************/
+Process::CmdPtrArray Process::getCmdVector(const StringList& inCmd)
+{
+	CmdPtrArray cmd;
+
+	cmd.reserve(inCmd.size() + 1);
+	for (std::size_t i = 0; i < inCmd.size(); ++i)
+	{
+		cmd.emplace_back(const_cast<char*>(inCmd.at(i).data()));
+	}
+	cmd.push_back(nullptr);
+
+	return cmd;
+}
+
+#endif
+
+/*****************************************************************************/
+ProcessPipe& Process::getFilePipe(const HandleInput inFileNo)
+{
+	if (inFileNo == FileNo::StdErr)
+	{
+		return m_err;
+	}
+	else
+	{
+		return m_out;
+	}
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+Process::~Process()
+{
+	close();
+}
+
+/*****************************************************************************/
+bool Process::operator==(const Process& inProcess)
+{
+	return m_pid == inProcess.m_pid;
+}
+
+/*****************************************************************************/
+bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
+{
+#if defined(CHALET_WIN32)
+	STARTUPINFOA startupInfo;
+	::ZeroMemory(&startupInfo, sizeof(startupInfo));
+
+	PROCESS_INFORMATION processInfo;
+	::ZeroMemory(&processInfo, sizeof(processInfo));
+
+	startupInfo.cb = sizeof(startupInfo);
+	startupInfo.hStdInput = ::GetStdHandle(FileNo::StdIn);
+	startupInfo.hStdOutput = ::GetStdHandle(FileNo::StdOut);
+	startupInfo.hStdError = ::GetStdHandle(FileNo::StdErr);
+	startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+	// m_in.create();
+
+	// input = read
+	// output = write
+
+	if (inOptions.stdoutOption == PipeOption::Pipe || inOptions.stdoutOption == PipeOption::Close)
+	{
+		m_out.create();
+		startupInfo.hStdOutput = m_out.m_write;
+		m_out.setInheritable(m_out.m_read, false);
+	}
+
+	if (inOptions.stderrOption == PipeOption::Pipe || inOptions.stderrOption == PipeOption::Close)
+	{
+		m_err.create();
+		startupInfo.hStdError = m_err.m_write;
+		m_err.setInheritable(m_err.m_read, false);
+	}
+	else if (inOptions.stderrOption == PipeOption::StdOut)
+	{
+		startupInfo.hStdError = startupInfo.hStdOutput;
+	}
+
+	if (inOptions.stdoutOption == PipeOption::StdErr)
+	{
+		startupInfo.hStdOutput = startupInfo.hStdError;
+	}
+
+	{
+		const char* cwd = inOptions.cwd.empty() ? nullptr : inOptions.cwd.c_str();
+		std::string args = getWindowsArguments(inCmd);
+
+		DWORD processFlags = HIGH_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
+		/*if (m_newProcessGroup)
+		{
+			processFlags |= CREATE_NEW_PROCESS_GROUP;
+		}*/
+
+		BOOL success = ::CreateProcessA(inCmd.front().c_str(),
+			args.data(),   // program arguments
+			NULL,		   // process security attributes
+			NULL,		   // thread security attributes
+			TRUE,		   // handles are inherited
+			processFlags,  // creation flags
+			NULL,		   // environment
+			cwd,		   // use parent's current directory
+			&startupInfo,  // STARTUPINFO pointer
+			&processInfo); // receives PROCESS_INFORMATION
+
+		m_processInfo = processInfo;
+		m_pid = processInfo.dwProcessId;
+
+		if (m_out.m_read != m_out.m_write)
+			m_out.closeWrite();
+
+		if (m_err.m_read != m_err.m_write)
+			m_err.closeWrite();
+
+		if (inOptions.stdoutOption == PipeOption::Close)
+			m_out.close();
+
+		if (inOptions.stderrOption == PipeOption::Close)
+			m_err.close();
+
+		if (!success)
+			return false;
+	}
+
+#else
+	m_cmd = getCmdVector(inCmd);
+
+	bool openStdOut = inOptions.stdoutOption == PipeOption::Pipe;
+	bool openStdErr = inOptions.stderrOption == PipeOption::Pipe;
+
+	// m_in.create();
+
+	if (openStdOut)
+		m_out.create();
+
+	if (openStdErr)
+		m_err.create();
+
+	m_pid = fork();
+	if (m_pid == -1)
+	{
+		Diagnostic::error("can't fork process. Error: {}", errno);
+		return false;
+	}
+	else if (m_pid == 0)
+	{
+		if (!inOptions.cwd.empty())
+		{
+			if (::chdir(inOptions.cwd.c_str()) != 0)
+			{
+				Diagnostic::error("Error changing working directory for subprocess: {}", inOptions.cwd);
+				return false;
+			}
+		}
+
+		// m_in.duplicateRead(FileNo::StdIn);
+		// m_in.closeWrite();
+
+		ProcessPipe::close(FileNo::StdIn);
+
+		if (openStdOut)
+		{
+			m_out.duplicateWrite(FileNo::StdOut);
+			m_out.closeRead();
+		}
+		else if (inOptions.stdoutOption == PipeOption::Close)
+		{
+			ProcessPipe::close(FileNo::StdOut);
+		}
+
+		if (openStdErr)
+		{
+			m_err.duplicateWrite(FileNo::StdErr);
+			m_err.closeRead();
+		}
+		else if (inOptions.stderrOption == PipeOption::StdOut)
+		{
+			ProcessPipe::duplicate(FileNo::StdOut, FileNo::StdErr);
+		}
+		else if (inOptions.stderrOption == PipeOption::Close)
+		{
+			ProcessPipe::close(FileNo::StdErr);
+		}
+
+		if (inOptions.stdoutOption == PipeOption::StdErr)
+		{
+			ProcessPipe::duplicate(FileNo::StdErr, FileNo::StdOut);
+		}
+
+		int result = execve(inCmd.front().c_str(), m_cmd.data(), environ);
+		_exit(result == EXIT_SUCCESS ? 0 : errno);
+	}
+
+	// UNUSED(m_in);
+
+	// m_in.closeRead();
+
+	if (openStdOut)
+		m_out.closeWrite();
+
+	if (openStdErr)
+		m_err.closeWrite();
+#endif
+
+	if (inOptions.onCreate != nullptr)
+	{
+		inOptions.onCreate(static_cast<int>(m_pid));
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+void Process::close()
+{
+	m_out.close();
+	m_err.close();
+
+#if defined(CHALET_WIN32)
+	::CloseHandle(m_processInfo.hProcess);
+	::CloseHandle(m_processInfo.hThread);
+	::ZeroMemory(&m_processInfo, sizeof(m_processInfo));
+#endif
+
+	m_pid = 0;
+	m_cmd.clear();
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
+	m_cwd.clear();
+#endif
+}
+
+/*****************************************************************************/
+bool Process::sendSignal(const SigNum inSignal)
+{
+#if defined(CHALET_WIN32)
+	if (m_pid == 0)
+		return false;
+
+	m_killed = true;
+
+	if (inSignal == SigNum::Kill)
+	{
+		return ::TerminateProcess(m_processInfo.hProcess, 137) == TRUE;
+	}
+	else if (inSignal == SigNum::Interrupt)
+	{
+		if (::GenerateConsoleCtrlEvent(CTRL_C_EVENT, m_pid) == FALSE)
+		{
+			DWORD error = ::GetLastError();
+			Diagnostic::error("GenerateConsoleCtrlEvent CTRL_C_EVENT error: {}", error);
+			return false;
+		}
+	}
+	else
+	{
+		if (::GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, m_pid) == FALSE)
+		{
+			DWORD error = ::GetLastError();
+			Diagnostic::error("GenerateConsoleCtrlEvent CTRL_BREAK_EVENT error: {}", error);
+			return false;
+		}
+	}
+
+#else
+	if (m_pid == -1)
+		return false;
+
+	m_killed = true;
+
+	if (::kill(m_pid, static_cast<int>(inSignal)) != 0)
+	{
+		Diagnostic::error("Error shutting down process: {}", m_pid);
+		return false;
+	}
+#endif
+
+	return true;
+}
+
+/*****************************************************************************/
+bool Process::terminate()
+{
+	return sendSignal(SigNum::Terminate);
+}
+
+/*****************************************************************************/
+bool Process::kill()
+{
+	return sendSignal(SigNum::Kill);
+}
+
 }

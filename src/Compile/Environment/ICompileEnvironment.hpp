@@ -22,8 +22,6 @@ struct ICompileEnvironment
 {
 	virtual ~ICompileEnvironment() = default;
 
-	static bool saveOriginalEnvironment(const std::string& inOutputFile, const BuildState& inState);
-
 	const std::string& identifier() const noexcept;
 	ToolchainType type() const noexcept;
 
@@ -71,8 +69,6 @@ protected:
 	bool makeSupportedCompilerFlags(const std::string& inExecutable);
 
 	std::string getVarsPath(const std::string& inUniqueId) const;
-	static void createEnvironmentDelta(const std::string& inOriginalFile, const std::string& inCompilerFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine);
-	static void cacheEnvironmentDelta(const std::string& inDeltaFile, Dictionary<std::string>& outVariables);
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;

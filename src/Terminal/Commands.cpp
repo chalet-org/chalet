@@ -17,7 +17,7 @@
 #endif
 
 #include "Libraries/Glob.hpp"
-#include "Process/Process.hpp"
+#include "Process/ProcessController.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
@@ -804,7 +804,7 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 	options.stderrOption = inStdErr;
 	options.onCreate = std::move(inOnCreate);
 
-	return Process::run(inCmd, options) == EXIT_SUCCESS;
+	return ProcessController::run(inCmd, options) == EXIT_SUCCESS;
 }
 
 /*****************************************************************************/
@@ -844,7 +844,7 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 		};
 	}
 
-	UNUSED(Process::run(inCmd, options));
+	UNUSED(ProcessController::run(inCmd, options));
 
 	stripLastEndLine(ret);
 
@@ -874,7 +874,7 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 		options.onStdErr = options.onStdOut;
 	}
 
-	bool result = Process::run(inCmd, options) == EXIT_SUCCESS;
+	bool result = ProcessController::run(inCmd, options) == EXIT_SUCCESS;
 	outputStream << std::endl;
 	return result;
 }
@@ -915,7 +915,7 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 	options.stderrOption = PipeOption::StdErr;
 	options.onStdOut = std::move(onStdOut);
 
-	int result = Process::run(inCmd, options);
+	int result = ProcessController::run(inCmd, options);
 
 	if (data.size() > 0)
 	{

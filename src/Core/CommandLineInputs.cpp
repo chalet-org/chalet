@@ -18,20 +18,27 @@ namespace chalet
 {
 namespace
 {
-static struct
+/*****************************************************************************/
+Dictionary<IdeType> getIdeTypes()
 {
-	const Dictionary<IdeType> ideTypes{
+	return {
 		{ "vs2019", IdeType::VisualStudio2019 },
 		{ "vscode", IdeType::VisualStudioCode },
 		{ "xcode", IdeType::XCode },
 		// { "codeblocks", IdeType::CodeBlocks },
 	};
+}
 
-	const Dictionary<InitTemplateType> initTemplates{
+Dictionary<InitTemplateType> getInitTemplates()
+{
+	return {
 		{ "cmake", InitTemplateType::CMake },
 	};
+}
 
-	const Dictionary<QueryOption> queryOptions{
+Dictionary<QueryOption> getQueryOptions()
+{
+	return {
 		{ "all-toolchains", QueryOption::AllToolchains },
 		{ "architecture", QueryOption::Architecture },
 		{ "architectures", QueryOption::Architectures },
@@ -45,9 +52,12 @@ static struct
 		{ "toolchain-presets", QueryOption::ToolchainPresets },
 		{ "user-toolchains", QueryOption::UserToolchains },
 	};
+}
 
 #if defined(CHALET_WIN32)
-	const OrderedDictionary<VisualStudioVersion> visualStudioPresets{
+OrderedDictionary<VisualStudioVersion> getVisualStudioPresets()
+{
+	return {
 		// { "vs-2010", VisualStudioVersion::VisualStudio2010 }, // untested
 		// { "vs-2012", VisualStudioVersion::VisualStudio2012 }, // untested
 		// { "vs-2013", VisualStudioVersion::VisualStudio2013 }, // untested
@@ -58,22 +68,28 @@ static struct
 		{ "vs-preview", VisualStudioVersion::Preview },
 		{ "vs-stable", VisualStudioVersion::Stable },
 	};
+}
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	const OrderedDictionary<VisualStudioVersion> intelICCVisualStudioPresets{
+OrderedDictionary<VisualStudioVersion> getIntelClassicVSPresets()
+{
+	return {
 		{ "intel-classic-vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "intel-classic-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		// { "intel-classic-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};
+}
 	#endif
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	const OrderedDictionary<VisualStudioVersion> intelICXVisualStudioPresets{
+OrderedDictionary<VisualStudioVersion> getIntelClangVSPresets()
+{
+	return {
 		{ "intel-llvm-vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "intel-llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		// { "intel-llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};
+}
 	#endif
 #endif
-} state;
 }
 
 /*****************************************************************************/
@@ -734,7 +750,8 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	StringList ret;
 
 #if defined(CHALET_WIN32)
-	for (auto it = state.visualStudioPresets.rbegin(); it != state.visualStudioPresets.rend(); ++it)
+	auto visualStudioPresets = getVisualStudioPresets();
+	for (auto it = visualStudioPresets.rbegin(); it != visualStudioPresets.rend(); ++it)
 	{
 		auto& [name, type] = *it;
 		if (type == VisualStudioVersion::VisualStudio2015)
@@ -749,7 +766,8 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	ret.emplace_back(kToolchainPresetGCC);
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
-	for (auto it = state.intelICXVisualStudioPresets.rbegin(); it != state.intelICXVisualStudioPresets.rend(); ++it)
+	auto intelClangPresets = getIntelClangVSPresets();
+	for (auto it = intelClangPresets.rbegin(); it != intelClangPresets.rend(); ++it)
 	{
 		auto& [name, type] = *it;
 		ret.emplace_back(name);
@@ -760,7 +778,8 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
-	for (auto it = state.intelICCVisualStudioPresets.rbegin(); it != state.intelICCVisualStudioPresets.rend(); ++it)
+	auto intelClassicPresets = getIntelClassicVSPresets();
+	for (auto it = intelClassicPresets.rbegin(); it != intelClassicPresets.rend(); ++it)
 	{
 		auto& [name, type] = *it;
 		ret.emplace_back(name);
@@ -778,7 +797,8 @@ StringList CommandLineInputs::getProjectInitializationPresets() const noexcept
 {
 	StringList ret;
 
-	for (auto& [name, _] : state.initTemplates)
+	auto initTemplates = getInitTemplates();
+	for (auto& [name, _] : initTemplates)
 	{
 		ret.emplace_back(name);
 	}
@@ -791,7 +811,8 @@ StringList CommandLineInputs::getCliQueryOptions() const noexcept
 {
 	StringList ret;
 
-	for (auto& [name, _] : state.queryOptions)
+	auto queryOptions = getQueryOptions();
+	for (auto& [name, _] : queryOptions)
 	{
 		ret.emplace_back(name);
 	}
@@ -814,7 +835,15 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #if defined(CHALET_WIN32)
 	m_visualStudioVersion = VisualStudioVersion::None;
 
-	if (state.visualStudioPresets.find(inValue) != state.visualStudioPresets.end())
+	auto visualStudioPresets = getVisualStudioPresets();
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	auto intelClassicPresets = getIntelClassicVSPresets();
+	#endif
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	auto intelClangPresets = getIntelClangVSPresets();
+	#endif
+
+	if (visualStudioPresets.find(inValue) != visualStudioPresets.end())
 	{
 		m_isToolchainPreset = true;
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
@@ -912,7 +941,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
-	else if (state.intelICXVisualStudioPresets.find(inValue) != state.intelICXVisualStudioPresets.end())
+	else if (intelClangPresets.find(inValue) != intelClangPresets.end())
 	#else
 	else if (String::equals(kToolchainPresetICX, inValue))
 	#endif
@@ -937,7 +966,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
-	else if (state.intelICCVisualStudioPresets.find(inValue) != state.intelICCVisualStudioPresets.end())
+	else if (intelClassicPresets.find(inValue) != intelClassicPresets.end())
 	#else
 	else if (String::equals(kToolchainPresetICC, inValue))
 	#endif
@@ -985,9 +1014,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 /*****************************************************************************/
 IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) const
 {
-	if (state.ideTypes.find(inValue) != state.ideTypes.end())
+	auto ideTypes = getIdeTypes();
+
+	if (ideTypes.find(inValue) != ideTypes.end())
 	{
-		return state.ideTypes.at(inValue);
+		return ideTypes.at(inValue);
 	}
 	else if (!inValue.empty())
 	{
@@ -1000,9 +1031,10 @@ IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) cons
 /*****************************************************************************/
 QueryOption CommandLineInputs::getQueryOptionFromString(const std::string& inValue) const
 {
-	if (state.queryOptions.find(inValue) != state.queryOptions.end())
+	auto queryOptions = getQueryOptions();
+	if (queryOptions.find(inValue) != queryOptions.end())
 	{
-		return state.queryOptions.at(inValue);
+		return queryOptions.at(inValue);
 	}
 
 	return QueryOption::None;
@@ -1012,21 +1044,24 @@ QueryOption CommandLineInputs::getQueryOptionFromString(const std::string& inVal
 VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(const std::string& inValue) const
 {
 #if defined(CHALET_WIN32)
-	if (state.visualStudioPresets.find(inValue) != state.visualStudioPresets.end())
+	auto visualStudioPresets = getVisualStudioPresets();
+	if (visualStudioPresets.find(inValue) != visualStudioPresets.end())
 	{
-		return state.visualStudioPresets.at(inValue);
+		return visualStudioPresets.at(inValue);
 	}
 
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	if (state.intelICCVisualStudioPresets.find(inValue) != state.intelICCVisualStudioPresets.end())
+	auto intelClassicPresets = getIntelClassicVSPresets();
+	if (intelClassicPresets.find(inValue) != intelClassicPresets.end())
 	{
-		return state.intelICCVisualStudioPresets.at(inValue);
+		return intelClassicPresets.at(inValue);
 	}
 	#endif
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	if (state.intelICXVisualStudioPresets.find(inValue) != state.intelICXVisualStudioPresets.end())
+	auto intelClangPresets = getIntelClangVSPresets();
+	if (intelClangPresets.find(inValue) != intelClangPresets.end())
 	{
-		return state.intelICXVisualStudioPresets.at(inValue);
+		return intelClangPresets.at(inValue);
 	}
 	#endif
 #else
@@ -1039,9 +1074,10 @@ VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(co
 /*****************************************************************************/
 InitTemplateType CommandLineInputs::getInitTemplateFromString(const std::string& inValue) const
 {
-	if (state.initTemplates.find(inValue) != state.initTemplates.end())
+	auto initTemplates = getInitTemplates();
+	if (initTemplates.find(inValue) != initTemplates.end())
 	{
-		return state.initTemplates.at(inValue);
+		return initTemplates.at(inValue);
 	}
 
 	return InitTemplateType::None;

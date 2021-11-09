@@ -6,7 +6,7 @@
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Process/Process.hpp"
+#include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"

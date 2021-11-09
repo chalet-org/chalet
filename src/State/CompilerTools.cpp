@@ -22,21 +22,24 @@ namespace chalet
 {
 namespace
 {
-static struct
+Dictionary<BuildPathStyle> getBuildPathstyles()
 {
-	const Dictionary<BuildPathStyle> buildPathStyles{
+	return {
 		{ "target-triple", BuildPathStyle::TargetTriple },
 		{ "toolchain-name", BuildPathStyle::ToolchainName },
 		{ "configuration", BuildPathStyle::Configuration },
 		{ "arch-configuration", BuildPathStyle::ArchConfiguration },
 	};
+}
 
-	const Dictionary<StrategyType> strategyTypes{
+Dictionary<StrategyType> getStrategyTypes()
+{
+	return {
 		{ "makefile", StrategyType::Makefile },
 		{ "ninja", StrategyType::Ninja },
 		{ "native-experimental", StrategyType::Native },
 	};
-} state;
+}
 }
 
 /*****************************************************************************/
@@ -243,8 +246,9 @@ void CompilerTools::setStrategy(const std::string& inValue) noexcept
 {
 	m_strategyString = inValue;
 
-	if (state.strategyTypes.find(inValue) != state.strategyTypes.end())
-		m_strategy = state.strategyTypes.at(inValue);
+	auto strategyTypes = getStrategyTypes();
+	if (strategyTypes.find(inValue) != strategyTypes.end())
+		m_strategy = strategyTypes.at(inValue);
 	else
 		m_strategy = StrategyType::None;
 }
@@ -264,8 +268,9 @@ void CompilerTools::setBuildPathStyle(const std::string& inValue) noexcept
 {
 	m_buildPathStyleString = inValue;
 
-	if (state.buildPathStyles.find(inValue) != state.buildPathStyles.end())
-		m_buildPathStyle = state.buildPathStyles.at(inValue);
+	auto buildPathStyles = getBuildPathstyles();
+	if (buildPathStyles.find(inValue) != buildPathStyles.end())
+		m_buildPathStyle = buildPathStyles.at(inValue);
 	else
 		m_buildPathStyle = BuildPathStyle::None;
 }

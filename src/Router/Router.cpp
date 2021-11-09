@@ -11,7 +11,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/QueryController.hpp"
-#include "Process/Process.hpp"
+#include "Process/ProcessController.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"

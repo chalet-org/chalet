@@ -6,7 +6,7 @@
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Process/Process.hpp"
+#include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -279,7 +279,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 
 #endif
 
-	int result = Process::run(inCmd, options);
+	int result = ProcessController::run(inCmd, options);
 	if (!errorOutput.empty())
 	{
 		std::size_t cutoff = std::string::npos;

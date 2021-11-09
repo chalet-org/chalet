@@ -10,9 +10,13 @@
 
 namespace chalet
 {
+struct IntelEnvironmentScript;
+
 struct CompileEnvironmentIntel final : CompileEnvironmentLLVM
 {
 	explicit CompileEnvironmentIntel(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
+	CHALET_DISALLOW_COPY_MOVE(CompileEnvironmentIntel);
+	~CompileEnvironmentIntel();
 
 protected:
 	virtual std::string getIdentifier() const noexcept final;
@@ -29,13 +33,9 @@ protected:
 	virtual bool populateSupportedFlags(const std::string& inExecutable) final;
 
 private:
-	std::string makeToolchainName() const;
-	bool saveIntelEnvironment() const;
+	std::string makeToolchainName(const std::string& inArch) const;
 
-	std::string m_varsFileOriginal;
-	std::string m_varsFileIntel;
-	std::string m_varsFileIntelDelta;
-	std::string m_intelSetVars;
+	Unique<IntelEnvironmentScript> m_config;
 };
 }
 

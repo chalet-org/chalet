@@ -3,13 +3,13 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Process/RunningProcess.hpp"
+#include "Process/Process.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
 template <std::size_t Size>
-void RunningProcess::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead)
+void Process::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead)
 {
 	auto& pipe = getFilePipe(inFileNo);
 #if defined(CHALET_WIN32)

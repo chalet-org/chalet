@@ -7,7 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/CompileEnvironmentVisualStudio.hpp"
+#include "Compile/Environment/IntelEnvironmentScript.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -27,6 +27,9 @@ CompileEnvironmentIntel::CompileEnvironmentIntel(const ToolchainType inType, con
 	CompileEnvironmentLLVM(inType, inInputs, inState)
 {
 }
+
+/*****************************************************************************/
+CompileEnvironmentIntel::~CompileEnvironmentIntel() = default;
 
 /*****************************************************************************/
 std::string CompileEnvironmentIntel::getIdentifier() const noexcept
@@ -140,91 +143,32 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 {
 	UNUSED(inVersion);
 
-	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
-	m_varsFileIntel = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
-	m_varsFileIntelDelta = getVarsPath("0");
-	std::string pathVariable = Environment::getPath();
+	Timer timer;
 
-	bool isPresetFromInput = m_inputs.isToolchainPreset();
+	m_config = std::make_unique<IntelEnvironmentScript>(m_inputs);
+
+	m_config->setEnvVarsFileBefore(m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local));
+	m_config->setEnvVarsFileAfter(m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local));
+	m_config->setEnvVarsFileDelta(getVarsPath("0"));
 
 	m_ouptuttedDescription = true;
 
-	Timer timer;
-
-	bool deltaExists = Commands::pathExists(m_varsFileIntelDelta);
-	if (!deltaExists)
-	{
+	if (m_config->envVarsFileDeltaExists())
+		Diagnostic::infoEllipsis("Reading Intel{} C/C++ Environment Cache", Unicode::registered());
+	else
 		Diagnostic::infoEllipsis("Creating Intel{} C/C++ Environment Cache", Unicode::registered());
 
-#if defined(CHALET_WIN32)
-		auto oneApiRoot = Environment::get("ONEAPI_ROOT");
-		m_intelSetVars = fmt::format("{}/setvars.bat", oneApiRoot);
-#else
-		const auto& home = m_inputs.homeDirectory();
-		m_intelSetVars = fmt::format("{}/intel/oneapi/setvars.sh", home);
-#endif
-		if (!Commands::pathExists(m_intelSetVars))
-		{
-#if !defined(CHALET_WIN32)
-			m_intelSetVars = "/opt/intel/oneapi/setvars.sh";
-			if (!Commands::pathExists(m_intelSetVars))
-#endif
-			{
-				Diagnostic::error("No suitable Intel C++ compiler installation found. Pleas install the Intel oneAPI Toolkit before continuing.");
-				return false;
-			}
-		}
+	if (!m_config->makeEnvironment(m_state))
+		return false;
 
-		// Read the current environment and save it to a file
-		if (!saveOriginalEnvironment(m_varsFileOriginal, m_state))
-		{
-			Diagnostic::error("Intel Environment could not be fetched: The original environment could not be saved.");
-			return false;
-		}
+	m_config->readEnvironmentVariablesFromDeltaFile();
 
-		if (!saveIntelEnvironment())
-		{
-			Diagnostic::error("Intel Environment could not be fetched: The expected method returned with error.");
-			return false;
-		}
+	if (m_config->isPreset())
+		m_inputs.setToolchainPreferenceName(makeToolchainName(m_state.info.targetArchitectureString()));
 
-		createEnvironmentDelta(m_varsFileOriginal, m_varsFileIntel, m_varsFileIntelDelta, [&pathVariable](std::string& line) {
-			if (String::startsWith({ "PATH=", "Path=" }, line))
-			{
-				String::replaceAll(line, pathVariable, "");
-			}
-		});
-	}
-	else
-	{
-		Diagnostic::infoEllipsis("Reading Intel{} C/C++ Environment Cache", Unicode::registered());
-	}
+	m_state.cache.file().addExtraHash(String::getPathFilename(m_config->envVarsFileDelta()));
 
-	if (isPresetFromInput)
-		m_inputs.setToolchainPreferenceName(makeToolchainName());
-
-	m_state.cache.file().addExtraHash(String::getPathFilename(m_varsFileIntelDelta));
-
-	Dictionary<std::string> variables;
-	// Read delta to cache
-	ICompileEnvironment::cacheEnvironmentDelta(m_varsFileIntelDelta, variables);
-
-	const auto pathKey = Environment::getPathKey();
-	for (auto& [name, var] : variables)
-	{
-		if (String::equals(pathKey, name))
-		{
-#if defined(CHALET_WIN32)
-			Environment::set(name.c_str(), pathVariable + ";" + var);
-#else
-			Environment::set(name.c_str(), pathVariable + ":" + var);
-#endif
-		}
-		else
-		{
-			Environment::set(name.c_str(), var);
-		}
-	}
+	m_config.reset(); // No longer needed
 
 	Diagnostic::printDone(timer.asString());
 
@@ -252,7 +196,7 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 			return false;
 
 		variables.clear();
-		ICompileEnvironment::cacheEnvironmentDelta(vsConfig.varsFileMsvcDelta, variables);
+		Environment::readEnvFileToDictionary(vsConfig.varsFileMsvcDelta, variables);
 
 		CompileEnvironmentVisualStudio::populateVariables(vsConfig, variables);
 
@@ -264,12 +208,12 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentIntel::makeToolchainName() const
+std::string CompileEnvironmentIntel::makeToolchainName(const std::string& inArch) const
 {
 	std::string ret;
 	if (m_type == ToolchainType::IntelLLVM)
 	{
-		ret = fmt::format("{}-intel-llvm", m_state.info.targetArchitectureString());
+		ret = fmt::format("{}-intel-llvm", inArch);
 
 #if defined(CHALET_WIN32)
 		const auto vsVersion = m_inputs.visualStudioVersion();
@@ -283,7 +227,7 @@ std::string CompileEnvironmentIntel::makeToolchainName() const
 	}
 	else
 	{
-		ret = fmt::format("{}-intel-classic", m_state.info.targetArchitectureString());
+		ret = fmt::format("{}-intel-classic", inArch);
 	}
 	return ret;
 }
@@ -366,68 +310,5 @@ bool CompileEnvironmentIntel::populateSupportedFlags(const std::string& inExecut
 
 		return true;
 	}
-}
-
-/*****************************************************************************/
-bool CompileEnvironmentIntel::saveIntelEnvironment() const
-{
-#if defined(CHALET_WIN32)
-	StringList cmd{ m_intelSetVars };
-
-	const auto inArch = m_state.info.targetArchitecture();
-	if (inArch != Arch::Cpu::X64 && inArch != Arch::Cpu::X86)
-	{
-		auto setVarsFile = String::getPathFilename(m_intelSetVars);
-		Diagnostic::error("Requested arch '{}' is not supported by {}", m_inputs.targetArchitecture(), setVarsFile);
-		return false;
-	}
-
-	std::string arch;
-	if (inArch == Arch::Cpu::X86)
-		arch = "ia32";
-	else
-		arch = "intel64";
-
-	cmd.emplace_back(std::move(arch));
-
-	const auto vsVersion = m_inputs.visualStudioVersion();
-	if (vsVersion == VisualStudioVersion::VisualStudio2022)
-		cmd.emplace_back("vs2022");
-	if (vsVersion == VisualStudioVersion::VisualStudio2019)
-		cmd.emplace_back("vs2019");
-	if (vsVersion == VisualStudioVersion::VisualStudio2017)
-		cmd.emplace_back("vs2017");
-
-	cmd.emplace_back(">");
-	cmd.emplace_back("nul");
-	cmd.emplace_back("&&");
-	cmd.emplace_back("SET");
-	cmd.emplace_back(">");
-	cmd.push_back(m_varsFileIntel);
-#else
-	StringList bashCmd;
-	bashCmd.emplace_back("source");
-	bashCmd.push_back(m_intelSetVars);
-	bashCmd.emplace_back("--force");
-	bashCmd.emplace_back(">");
-	bashCmd.emplace_back("/dev/null");
-	bashCmd.emplace_back("&&");
-	bashCmd.emplace_back("printenv");
-	bashCmd.emplace_back(">");
-	bashCmd.push_back(m_varsFileIntel);
-	auto bashCmdString = String::join(bashCmd);
-
-	auto sh = Commands::which("sh");
-
-	StringList cmd;
-	cmd.push_back(sh);
-	cmd.emplace_back("-c");
-	cmd.emplace_back(fmt::format("'{}'", bashCmdString));
-
-#endif
-	auto outCmd = String::join(cmd);
-	bool result = std::system(outCmd.c_str()) == EXIT_SUCCESS;
-
-	return result;
 }
 }

@@ -6,6 +6,7 @@
 #include "Terminal/Environment.hpp"
 
 #include "Libraries/WindowsApi.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 
@@ -19,7 +20,6 @@
 	#include <libproc.h>
 	#include <array>
 #else
-	#include "Terminal/Commands.hpp"
 
 	#include <sys/types.h>
 	#include <unistd.h>
@@ -576,6 +576,88 @@ std::string Environment::getShell()
 std::string Environment::getComSpec()
 {
 	return getAsString("COMSPEC", "cmd.exe");
+}
+
+/*****************************************************************************/
+bool Environment::saveToEnvFile(const std::string& inOutputFile)
+{
+#if defined(CHALET_WIN32)
+	auto cmdExe = getComSpec();
+	StringList cmd{
+		std::move(cmdExe),
+		"/c",
+		"SET"
+	};
+	UNUSED(inState);
+#else
+	auto shell = getShell();
+	if (shell.empty())
+		return false;
+
+	StringList cmd;
+	cmd.emplace_back(std::move(shell));
+	cmd.emplace_back("-c");
+	cmd.emplace_back("printenv");
+#endif
+	bool result = Commands::subprocessOutputToFile(cmd, inOutputFile);
+	return result;
+}
+
+/*****************************************************************************/
+void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std::string& inAfterFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine)
+{
+	if (inBeforeFile.empty() || inAfterFile.empty() || inDeltaFile.empty())
+		return;
+
+	{
+		std::ifstream afterVars(inAfterFile);
+		std::string deltaVars((std::istreambuf_iterator<char>(afterVars)), std::istreambuf_iterator<char>());
+
+		std::ifstream beforeVars(inBeforeFile);
+		for (std::string line; std::getline(beforeVars, line);)
+		{
+			String::replaceAll(deltaVars, line, "");
+		}
+
+		std::ofstream(inDeltaFile) << deltaVars;
+
+		afterVars.close();
+		beforeVars.close();
+	}
+
+	Commands::remove(inBeforeFile);
+	Commands::remove(inAfterFile);
+
+	{
+		std::string outContents;
+		std::ifstream input(inDeltaFile);
+		for (std::string line; std::getline(input, line);)
+		{
+			if (!line.empty())
+			{
+				onReadLine(line);
+				outContents += line + "\n";
+			}
+		}
+		input.close();
+
+		std::ofstream(inDeltaFile) << outContents;
+	}
+}
+
+/*****************************************************************************/
+void Environment::readEnvFileToDictionary(const std::string& inFile, Dictionary<std::string>& outVariables)
+{
+	std::ifstream input(inFile);
+	for (std::string line; std::getline(input, line);)
+	{
+		auto splitVar = String::split(line, '=');
+		if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
+		{
+			outVariables[std::move(splitVar.front())] = splitVar.back();
+		}
+	}
+	input.close();
 }
 }
 

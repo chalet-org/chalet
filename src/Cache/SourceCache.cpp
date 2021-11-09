@@ -9,16 +9,11 @@
 
 namespace chalet
 {
-namespace
-{
-static struct
-{
-	const std::string kDataVersion{ "v" };
-	const std::string kDataArch{ "a" };
-} state;
-}
+
 /*****************************************************************************/
 SourceCache::SourceCache(const std::time_t inLastBuildTime) :
+	kDataVersion("v"),
+	kDataArch("a"),
 	m_initializedTime(inLastBuildTime),
 	m_lastBuildTime(inLastBuildTime)
 {
@@ -38,13 +33,13 @@ void SourceCache::setNative(const bool inValue) noexcept
 /*****************************************************************************/
 void SourceCache::addVersion(const std::string& inExecutable, const std::string& inValue)
 {
-	addDataCache(inExecutable, state.kDataVersion, inValue);
+	addDataCache(inExecutable, kDataVersion, inValue);
 }
 
 /*****************************************************************************/
 void SourceCache::addArch(const std::string& inExecutable, const std::string& inValue)
 {
-	addDataCache(inExecutable, state.kDataArch, inValue);
+	addDataCache(inExecutable, kDataArch, inValue);
 }
 
 /*****************************************************************************/
@@ -209,7 +204,7 @@ bool SourceCache::fileChangedOrDependantChanged(const std::string& inFile, const
 /*****************************************************************************/
 bool SourceCache::versionRequriesUpdate(const std::string& inFile, std::string& outExistingValue)
 {
-	outExistingValue = dataCache(inFile, state.kDataVersion);
+	outExistingValue = dataCache(inFile, kDataVersion);
 	bool result = outExistingValue.empty() || fileChangedOrDoesNotExist(inFile);
 	return result;
 }
@@ -217,7 +212,7 @@ bool SourceCache::versionRequriesUpdate(const std::string& inFile, std::string& 
 /*****************************************************************************/
 bool SourceCache::archRequriesUpdate(const std::string& inFile, std::string& outExistingValue)
 {
-	outExistingValue = dataCache(inFile, state.kDataArch);
+	outExistingValue = dataCache(inFile, kDataArch);
 	bool result = outExistingValue.empty() || fileChangedOrDoesNotExist(inFile);
 	return result;
 }

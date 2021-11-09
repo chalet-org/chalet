@@ -73,7 +73,10 @@ private:
 
 	HeapDictionary<SourceTarget> m_abstractSourceTarget;
 
-	std::string m_debugIdentifier{ "debug" };
+	std::string m_debugIdentifier;
+
+	StringList m_notPlatforms;
+	std::string m_platform;
 };
 }
 
