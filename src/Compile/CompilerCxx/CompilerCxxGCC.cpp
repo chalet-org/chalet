@@ -518,7 +518,9 @@ void CompilerCxxGCC::addNoExceptionsOption(StringList& outArgList) const
 void CompilerCxxGCC::addThreadModelCompileOption(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
-	if (!m_state.environment->isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
+	if (!m_state.environment->isWindowsClang()
+		&& !m_state.environment->isMingwClang()
+		&& (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
 	{
 		std::string pthread{ "-pthread" };
 		// if (isFlagSupported(pthread))

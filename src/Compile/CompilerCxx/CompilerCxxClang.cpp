@@ -38,14 +38,6 @@ StringList CompilerCxxClang::getWarningExclusions() const
 void CompilerCxxClang::addWarnings(StringList& outArgList) const
 {
 	CompilerCxxGCC::addWarnings(outArgList);
-
-	if (m_state.environment->isWindowsClang())
-	{
-		const std::string prefix{ "-W" };
-		std::string noLangExtensions{ "no-language-extension-token" };
-		if (!List::contains(m_project.warnings(), noLangExtensions))
-			outArgList.emplace_back(prefix + noLangExtensions);
-	}
 }
 
 /*****************************************************************************/

@@ -34,6 +34,7 @@ struct ICompileEnvironment
 	bool isIntelClassic() const noexcept;
 	bool isMingw() const noexcept;
 	bool isMingwGcc() const noexcept;
+	bool isMingwClang() const noexcept;
 	bool isMsvc() const noexcept;
 	bool isClangOrMsvc() const noexcept;
 
@@ -80,7 +81,7 @@ protected:
 
 	std::string m_detectedVersion;
 
-	const ToolchainType m_type;
+	mutable ToolchainType m_type;
 
 	bool m_ouptuttedDescription = false;
 

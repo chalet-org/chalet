@@ -48,12 +48,17 @@ ToolchainType CompileEnvironmentLLVM::getToolchainTypeFromMacros(const std::stri
 	const bool clang = String::contains({ "__clang__", "__clang_major__", "__clang_version__" }, inMacros);
 
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-	// const bool mingw = gnuType == ToolchainType::MingwGNU;
-	// if (clang && mingw)
-	// 	return ToolchainType::MingwLLVM;
-	// else
+	auto gnuType = CompileEnvironmentGNU::getToolchainTypeFromMacros(inMacros);
+	const bool mingw = gnuType == ToolchainType::MingwGNU;
+	if (clang && mingw)
+	{
+		m_type = ToolchainType::MingwLLVM;
+
+		return ToolchainType::MingwLLVM;
+	}
+	else
 #endif
-	if (clang)
+		if (clang)
 		return ToolchainType::LLVM;
 
 	return ToolchainType::Unknown;

@@ -267,7 +267,9 @@ void LinkerGNULD::addLinkTimeOptimizations(StringList& outArgList) const
 void LinkerGNULD::addThreadModelLinks(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
-	if (!m_state.environment->isWindowsClang() && (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
+	if (!m_state.environment->isWindowsClang()
+		&& !m_state.environment->isMingwClang()
+		&& (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
 	{
 		if (m_state.environment->isMingw() && m_project.staticLinking())
 		{

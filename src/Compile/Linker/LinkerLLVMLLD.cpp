@@ -31,7 +31,7 @@ void LinkerLLVMLLD::addLinks(StringList& outArgList) const
 {
 	LinkerGNULD::addLinks(outArgList);
 
-	if (m_state.environment->isWindowsClang())
+	if (m_state.environment->isWindowsClang() || m_state.environment->isMingwClang())
 	{
 		const std::string prefix{ "-l" };
 		for (const char* link : {
@@ -94,6 +94,7 @@ void LinkerLLVMLLD::addSubSystem(StringList& outArgList) const
 		const ProjectKind kind = m_project.kind();
 		if (kind == ProjectKind::Executable)
 		{
+			// bit of a hack for now
 			const auto subSystem = LinkerVisualStudioLINK::getMsvcCompatibleSubSystem(m_project);
 			List::addIfDoesNotExist(outArgList, fmt::format("-Wl,/subsystem:{}", subSystem));
 		}
@@ -108,6 +109,7 @@ void LinkerLLVMLLD::addEntryPoint(StringList& outArgList) const
 		const auto entryPoint = LinkerVisualStudioLINK::getMsvcCompatibleEntryPoint(m_project);
 		if (!entryPoint.empty())
 		{
+			// bit of a hack for now
 			List::addIfDoesNotExist(outArgList, fmt::format("-Wl,/entry:{}", entryPoint));
 		}
 	}

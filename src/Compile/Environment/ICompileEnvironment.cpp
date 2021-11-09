@@ -80,14 +80,19 @@ bool ICompileEnvironment::isIntelClassic() const noexcept
 /*****************************************************************************/
 bool ICompileEnvironment::isMingw() const noexcept
 {
-	return m_type == ToolchainType::MingwGNU
-		|| m_type == ToolchainType::MingwLLVM;
+	return isMingwGcc() || isMingwClang();
 }
 
 /*****************************************************************************/
 bool ICompileEnvironment::isMingwGcc() const noexcept
 {
 	return m_type == ToolchainType::MingwGNU;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isMingwClang() const noexcept
+{
+	return m_type == ToolchainType::MingwLLVM;
 }
 
 /*****************************************************************************/
@@ -455,8 +460,6 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		if (String::contains({ "contents/developer", "code" }, executable))
 			return ToolchainType::AppleLLVM;
 #endif
-
-		// TODO: ToolchainType::MingwLLVM
 
 		return ToolchainType::LLVM;
 	}

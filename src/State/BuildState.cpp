@@ -684,7 +684,7 @@ std::string BuildState::getUniqueIdForState() const
 	std::string ret;
 	const auto& hostArch = info.hostArchitectureString();
 	const auto targetArch = m_impl->inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
-	const auto& toolchainPref = m_impl->inputs.toolchainPreferenceName();
+	const auto envId = m_impl->environment->identifier();
 	const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
 	const auto extensions = String::join(paths.allFileExtensions(), '_');
@@ -695,7 +695,7 @@ std::string BuildState::getUniqueIdForState() const
 		showCmds = std::to_string(Output::showCommands() ? 1 : 0);
 	}
 
-	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, toolchainPref, strategy, buildConfig, showCmds, extensions);
+	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, envId, strategy, buildConfig, showCmds, extensions);
 
 	return Hash::string(ret);
 }
