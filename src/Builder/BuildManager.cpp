@@ -750,6 +750,18 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		{
 			outputFile = fmt::format("{}/{}", buildOutputDir, outputFile);
 		}
+#if defined(CHALET_WIN32)
+		if (!Commands::pathExists(outputFile))
+		{
+			outputFile = fmt::format("{}.exe", outputFile);
+		}
+#else
+		if (!Commands::pathExists(outputFile))
+		{
+			if (String::endsWith(".exe", outputFile))
+				outputFile = outputFile.substr(0, outputFile.size() - 4);
+		}
+#endif
 	}
 
 	if (outputFile.empty() || !Commands::pathExists(outputFile))
