@@ -309,8 +309,8 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		else if (String::contains("CMAKE_BUILD_TYPE", define))
 			isDefined["CMAKE_BUILD_TYPE"] = true;
 #if defined(CHALET_WIN32)
-		else if (String::contains("CMAKE_SH", define))
-			isDefined["CMAKE_SH"] = true;
+			// else if (String::contains("CMAKE_SH", define))
+			// 	isDefined["CMAKE_SH"] = true;
 #elif defined(CHALET_MACOS)
 		else if (String::contains("CMAKE_OSX_ARCHITECTURES", define))
 			isDefined["CMAKE_OSX_ARCHITECTURES"] = true;
@@ -344,11 +344,11 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 	}
 
 #if defined(CHALET_WIN32)
-	if (!isDefined["CMAKE_SH"])
+	/*if (!isDefined["CMAKE_SH"])
 	{
 		if (Commands::which("sh").empty())
 			outList.emplace_back("-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"");
-	}
+	}*/
 #elif defined(CHALET_MACOS)
 	if (!isDefined["CMAKE_OSX_ARCHITECTURES"])
 	{
