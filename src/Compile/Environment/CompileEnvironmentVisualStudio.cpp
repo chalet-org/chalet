@@ -184,6 +184,50 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 }
 
 /*****************************************************************************/
+StringList CompileEnvironmentVisualStudio::getStartOfVsWhereCommand(const VisualStudioVersion inVersion)
+{
+	StringList cmd{ state.vswhere, "-nologo" };
+	const bool isStable = inVersion == VisualStudioVersion::Stable;
+	const bool isPreview = inVersion == VisualStudioVersion::Preview;
+
+	if (!isStable)
+		cmd.emplace_back("-prerelease");
+
+	if (isStable || isPreview)
+	{
+		cmd.emplace_back("-latest");
+	}
+	else
+	{
+		ushort ver = static_cast<ushort>(inVersion);
+		ushort next = ver + 1;
+		cmd.emplace_back("-version");
+		cmd.emplace_back(fmt::format("[{},{})", ver, next));
+	}
+
+	return cmd;
+}
+
+/*****************************************************************************/
+void CompileEnvironmentVisualStudio::addProductOptions(StringList& outCmd)
+{
+	outCmd.emplace_back("-products");
+	outCmd.emplace_back("Microsoft.VisualStudio.Product.Enterprise");
+	outCmd.emplace_back("Microsoft.VisualStudio.Product.Professional");
+	outCmd.emplace_back("Microsoft.VisualStudio.Product.Community");
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getVisualStudioVersion(const VisualStudioVersion inVersion)
+{
+	StringList vswhereCmd = getStartOfVsWhereCommand(inVersion);
+	addProductOptions(vswhereCmd);
+	vswhereCmd.emplace_back("-property");
+	vswhereCmd.emplace_back("installationVersion");
+	return Commands::subprocessOutput(vswhereCmd);
+}
+
+/*****************************************************************************/
 // Other environments (Intel) might want to inherit the MSVC environment, so we make some of these function static
 //
 bool CompileEnvironmentVisualStudio::makeEnvironment(VisualStudioEnvironmentConfig& outConfig, const std::string& inVersion, const BuildState& inState)
@@ -196,45 +240,6 @@ bool CompileEnvironmentVisualStudio::makeEnvironment(VisualStudioEnvironmentConf
 
 	// we got here from a preset in the command line
 	outConfig.isPreset = outConfig.inVersion != VisualStudioVersion::None;
-
-	auto getStartOfVsWhereCommand = [&]() {
-		StringList cmd{ state.vswhere, "-nologo" };
-		const auto vsVersion = outConfig.inVersion;
-		const bool isStable = vsVersion == VisualStudioVersion::Stable;
-		const bool isPreview = vsVersion == VisualStudioVersion::Preview;
-
-		if (!isStable)
-			cmd.emplace_back("-prerelease");
-
-		if (isStable || isPreview)
-		{
-			cmd.emplace_back("-latest");
-		}
-		else
-		{
-			ushort ver = static_cast<ushort>(vsVersion);
-			ushort next = ver + 1;
-			cmd.emplace_back("-version");
-			cmd.emplace_back(fmt::format("[{},{})", ver, next));
-		}
-
-		return cmd;
-	};
-
-	auto getProductsOptions = [](StringList& outCmd) {
-		outCmd.emplace_back("-products");
-		outCmd.emplace_back("Microsoft.VisualStudio.Product.Enterprise");
-		outCmd.emplace_back("Microsoft.VisualStudio.Product.Professional");
-		outCmd.emplace_back("Microsoft.VisualStudio.Product.Community");
-	};
-
-	auto getMsvcVersion = [&getStartOfVsWhereCommand, &getProductsOptions]() {
-		StringList vswhereCmd = getStartOfVsWhereCommand();
-		getProductsOptions(vswhereCmd);
-		vswhereCmd.emplace_back("-property");
-		vswhereCmd.emplace_back("installationVersion");
-		return Commands::subprocessOutput(vswhereCmd);
-	};
 
 	bool deltaExists = Commands::pathExists(outConfig.varsFileMsvcDelta);
 	if (!deltaExists)
@@ -249,14 +254,15 @@ bool CompileEnvironmentVisualStudio::makeEnvironment(VisualStudioEnvironmentConf
 
 		if (outConfig.isPreset)
 		{
-			StringList vswhereCmd = getStartOfVsWhereCommand();
-			getProductsOptions(vswhereCmd);
+			StringList vswhereCmd = CompileEnvironmentVisualStudio::getStartOfVsWhereCommand(outConfig.inVersion);
+			CompileEnvironmentVisualStudio::addProductOptions(vswhereCmd);
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 
 			outConfig.visualStudioPath = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
 
-			outConfig.detectedVersion = getMsvcVersion();
+			if (outConfig.detectedVersion.empty())
+				outConfig.detectedVersion = CompileEnvironmentVisualStudio::getVisualStudioVersion(outConfig.inVersion);
 		}
 		else if (RegexPatterns::matchesFullVersionString(inVersion))
 		{
@@ -264,7 +270,7 @@ bool CompileEnvironmentVisualStudio::makeEnvironment(VisualStudioEnvironmentConf
 			vswhereCmd.emplace_back("-prerelease"); // always include prereleases in this scenario since we're search for the exact version
 			vswhereCmd.emplace_back("-version");
 			vswhereCmd.push_back(inVersion);
-			getProductsOptions(vswhereCmd);
+			CompileEnvironmentVisualStudio::addProductOptions(vswhereCmd);
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 
@@ -324,8 +330,8 @@ bool CompileEnvironmentVisualStudio::makeEnvironment(VisualStudioEnvironmentConf
 	{
 		Diagnostic::infoEllipsis("Reading Microsoft{} Visual C/C++ Environment Cache", Unicode::registered());
 
-		if (outConfig.isPreset)
-			outConfig.detectedVersion = getMsvcVersion();
+		if (outConfig.isPreset && outConfig.detectedVersion.empty())
+			outConfig.detectedVersion = CompileEnvironmentVisualStudio::getVisualStudioVersion(outConfig.inVersion);
 	}
 
 	return true;
@@ -374,23 +380,15 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 
 	Timer timer;
 
-	std::string uid;
-	if (inVersion.empty())
+	m_config.detectedVersion = inVersion;
+	if (m_config.detectedVersion.empty())
 	{
-		uid = std::to_string(static_cast<std::underlying_type_t<VisualStudioVersion>>(m_inputs.visualStudioVersion()));
-	}
-	else
-	{
-		auto firstPeriod = inVersion.find_first_not_of("0123456789");
-		if (firstPeriod != std::string::npos)
-			uid = inVersion.substr(0, firstPeriod);
-		else
-			uid = inVersion;
+		m_config.detectedVersion = CompileEnvironmentVisualStudio::getVisualStudioVersion(m_inputs.visualStudioVersion());
 	}
 
 	m_config.varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
 	m_config.varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
-	m_config.varsFileMsvcDelta = getVarsPath(uid);
+	m_config.varsFileMsvcDelta = getVarsPath(m_config.detectedVersion);
 	m_config.varsAllArchOptions = m_inputs.archOptions();
 	m_config.inVersion = m_inputs.visualStudioVersion();
 

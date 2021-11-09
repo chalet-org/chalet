@@ -59,6 +59,10 @@ private:
 	static bool saveMsvcEnvironment(VisualStudioEnvironmentConfig& outConfig);
 	static StringList getAllowedArchitectures();
 
+	static StringList getStartOfVsWhereCommand(const VisualStudioVersion inVersion);
+	static void addProductOptions(StringList& outCmd);
+	static std::string getVisualStudioVersion(const VisualStudioVersion inVersion);
+
 	VisualStudioEnvironmentConfig m_config;
 
 	bool m_msvcArchitectureSet = false;
