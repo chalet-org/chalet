@@ -462,15 +462,10 @@ void WorkspaceInternalCacheFile::addExtraHash(std::string&& inHash)
 }
 
 /*****************************************************************************/
-std::string WorkspaceInternalCacheFile::getAppVersionHash(std::string appPath)
+std::string WorkspaceInternalCacheFile::getAppVersionHash(const std::string& inAppPath)
 {
 	Output::setShowCommandOverride(false);
-	if (!Commands::pathExists(appPath))
-	{
-		appPath = Commands::which(appPath);
-	}
-
-	auto lastWrite = Commands::getLastWriteTime(appPath);
+	auto lastWrite = Commands::getLastWriteTime(inAppPath);
 	Output::setShowCommandOverride(true);
 
 	return Hash::string(std::to_string(lastWrite));

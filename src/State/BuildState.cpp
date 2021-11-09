@@ -569,18 +569,25 @@ void BuildState::makeCompilerDiagnosticsVariables()
 	{
 		std::string gccColors;
 		const auto& theme = Output::theme();
+
 		auto error = Output::getAnsiStyleRaw(theme.error);
 		gccColors += fmt::format("error={}:", !error.empty() ? error : "01;31");
+
 		auto warning = Output::getAnsiStyleRaw(theme.warning);
 		gccColors += fmt::format("warning={}:", !warning.empty() ? warning : "01;33");
+
 		auto note = Output::getAnsiStyleRaw(theme.note);
 		gccColors += fmt::format("note={}:", !note.empty() ? note : "01;36");
+
 		auto caret = Output::getAnsiStyleRaw(theme.success);
 		gccColors += fmt::format("caret={}:", !caret.empty() ? caret : "01;32");
+
 		auto locus = Output::getAnsiStyleRaw(theme.build);
 		gccColors += fmt::format("locus={}:", !locus.empty() ? locus : "00;34");
+
 		// auto quote = Output::getAnsiStyleRaw(theme.assembly);
 		// gccColors += fmt::format("quote={}:", !quote.empty() ? quote : "01");
+
 		gccColors += "quote=01";
 		Environment::set("GCC_COLORS", gccColors);
 	}

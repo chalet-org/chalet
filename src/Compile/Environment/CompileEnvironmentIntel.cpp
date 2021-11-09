@@ -142,7 +142,7 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 
 	m_varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
 	m_varsFileIntel = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
-	m_varsFileIntelDelta = getVarsPath();
+	m_varsFileIntelDelta = getVarsPath("0");
 	std::string pathVariable = Environment::getPath();
 
 	bool isPresetFromInput = m_inputs.isToolchainPreset();
@@ -292,17 +292,11 @@ std::string CompileEnvironmentIntel::makeToolchainName() const
 bool CompileEnvironmentIntel::readArchitectureTripleFromCompiler()
 {
 	if (m_type == ToolchainType::IntelLLVM)
-	{
 		return CompileEnvironmentLLVM::readArchitectureTripleFromCompiler();
-	}
+#if !defined(CHALET_WIN32)
 	else
-	{
-#if defined(CHALET_WIN32)
-		//
-#else
 		return CompileEnvironmentGNU::readArchitectureTripleFromCompiler();
 #endif
-	}
 
 	return true;
 }

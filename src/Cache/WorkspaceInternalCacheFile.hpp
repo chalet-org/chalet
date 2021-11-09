@@ -49,7 +49,7 @@ struct WorkspaceInternalCacheFile
 private:
 	void setBuildHash(const std::string& inValue) noexcept;
 
-	std::string getAppVersionHash(std::string appPath);
+	std::string getAppVersionHash(const std::string& inAppPath);
 
 	StringList m_doNotRemoves;
 	StringList m_extraHashes;

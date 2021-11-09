@@ -70,7 +70,7 @@ protected:
 	bool getCompilerInfoFromExecutable(CompilerInfo& outInfo);
 	bool makeSupportedCompilerFlags(const std::string& inExecutable);
 
-	std::string getVarsPath() const;
+	std::string getVarsPath(const std::string& inUniqueId) const;
 	static void createEnvironmentDelta(const std::string& inOriginalFile, const std::string& inCompilerFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine);
 	static void cacheEnvironmentDelta(const std::string& inDeltaFile, Dictionary<std::string>& outVariables);
 

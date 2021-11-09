@@ -30,7 +30,8 @@ static std::mutex s_mutex;
 static struct
 {
 	uint index = 0;
-	std::atomic<CommandPoolErrorCode> errorCode = CommandPoolErrorCode::None;
+	// std::atomic<CommandPoolErrorCode> errorCode = CommandPoolErrorCode::None;
+	CommandPoolErrorCode errorCode = CommandPoolErrorCode::None;
 	std::function<bool()> shutdownHandler;
 } state;
 

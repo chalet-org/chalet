@@ -159,14 +159,14 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, const Comma
 		case ToolchainType::LLVM:
 		case ToolchainType::MingwLLVM:
 			return std::make_unique<CompileEnvironmentLLVM>(type, inInputs, inState);
+		case ToolchainType::GNU:
+		case ToolchainType::MingwGNU:
+			return std::make_unique<CompileEnvironmentGNU>(type, inInputs, inState);
 		case ToolchainType::IntelClassic:
 		case ToolchainType::IntelLLVM:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 			return std::make_unique<CompileEnvironmentIntel>(type, inInputs, inState);
 #endif
-		case ToolchainType::GNU:
-		case ToolchainType::MingwGNU:
-			return std::make_unique<CompileEnvironmentGNU>(type, inInputs, inState);
 		case ToolchainType::Unknown:
 		default:
 			break;
@@ -333,14 +333,15 @@ bool ICompileEnvironment::compilerVersionIsToolchainVersion() const
 }
 
 /*****************************************************************************/
-std::string ICompileEnvironment::getVarsPath() const
+std::string ICompileEnvironment::getVarsPath(const std::string& inUniqueId) const
 {
 	const auto id = identifier();
 	const auto& hostArch = m_state.info.hostArchitecture();
-	auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
-	archString += fmt::format("_{}", m_inputs.toolchainPreferenceName());
+	const auto& archString = m_state.info.targetArchitectureTriple();
+	// auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+	const auto& uniqueId = String::equals('0', inUniqueId) ? m_inputs.toolchainPreferenceName() : inUniqueId;
 
-	return m_state.cache.getHashPath(fmt::format("{}_{}_{}.env", id, hostArch, archString), CacheType::Local);
+	return m_state.cache.getHashPath(fmt::format("{}_{}_{}_{}.env", id, hostArch, archString, uniqueId), CacheType::Local);
 }
 
 /*****************************************************************************/

@@ -374,11 +374,23 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 
 	Timer timer;
 
-	// TODO: Check if Visual Studio is even installed
+	std::string uid;
+	if (inVersion.empty())
+	{
+		uid = std::to_string(static_cast<std::underlying_type_t<VisualStudioVersion>>(m_inputs.visualStudioVersion()));
+	}
+	else
+	{
+		auto firstPeriod = inVersion.find_first_not_of("0123456789");
+		if (firstPeriod != std::string::npos)
+			uid = inVersion.substr(0, firstPeriod);
+		else
+			uid = inVersion;
+	}
 
 	m_config.varsFileOriginal = m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local);
 	m_config.varsFileMsvc = m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local);
-	m_config.varsFileMsvcDelta = getVarsPath();
+	m_config.varsFileMsvcDelta = getVarsPath(uid);
 	m_config.varsAllArchOptions = m_inputs.archOptions();
 	m_config.inVersion = m_inputs.visualStudioVersion();
 
@@ -497,7 +509,8 @@ std::vector<CompilerPathStructure> CompileEnvironmentVisualStudio::getValidCompi
 	ret.push_back({ "/bin/hostx86/x64", "/lib/x64", "/include" });
 	ret.push_back({ "/bin/hostx86/arm64", "/lib/arm64", "/include" });
 	ret.push_back({ "/bin/hostx86/arm", "/lib/arm", "/include" });
-// ret.push_back({"/bin/hostx64/x64", "/lib/64", "/include"});
+
+	// ret.push_back({"/bin/hostx64/x64", "/lib/64", "/include"});
 #endif
 
 	return ret;
