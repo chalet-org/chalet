@@ -588,7 +588,6 @@ bool Environment::saveToEnvFile(const std::string& inOutputFile)
 		"/c",
 		"SET"
 	};
-	UNUSED(inState);
 #else
 	auto shell = getShell();
 	if (shell.empty())
