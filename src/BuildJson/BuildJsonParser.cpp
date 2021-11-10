@@ -37,8 +37,8 @@ BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, StatePrototy
 	m_chaletJson(inPrototype.chaletJson()),
 	m_filename(inPrototype.filename()),
 	m_state(inState),
-	kKeyAbstracts(inPrototype.kKeyAbstracts),
-	kKeyTargets(inPrototype.kKeyTargets),
+	kKeyTargets("targets"),
+	kKeyAbstracts("abstracts"),
 	m_debugIdentifier("debug"),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())

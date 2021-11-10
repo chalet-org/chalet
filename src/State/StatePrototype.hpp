@@ -40,9 +40,6 @@ struct StatePrototype
 	const std::string& releaseConfiguration() const noexcept;
 	const std::string& anyConfiguration() const noexcept;
 
-	const std::string kKeyTargets = "targets";
-	const std::string kKeyAbstracts = "abstracts";
-
 	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
 	AncillaryTools tools;
