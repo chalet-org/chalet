@@ -401,8 +401,20 @@ bool BuildState::validateState()
 	if (!toolchain.validate())
 		return false;
 
-	auto& cacheFile = m_impl->prototype.cache.file();
+	for (auto& target : targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<SourceTarget&>(*target);
+			if (!environment->isAppleClang() && project.objectiveCxx())
+			{
+				Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang.", m_impl->inputs.inputFile());
+				return false;
+			}
+		}
+	}
 
+	auto& cacheFile = m_impl->prototype.cache.file();
 	auto strat = toolchain.strategy();
 	if (strat == StrategyType::Makefile)
 	{
@@ -415,16 +427,11 @@ bool BuildState::validateState()
 
 		toolchain.fetchMakeVersion(cacheFile.sources());
 
+#if defined(CHALET_WIN32)
 		for (auto& target : targets)
 		{
 			if (target->isSources())
 			{
-				auto& project = static_cast<SourceTarget&>(*target);
-
-				if (project.language() != CodeLanguage::C && project.language() != CodeLanguage::CPlusPlus)
-					continue;
-
-#if defined(CHALET_WIN32)
 				if (environment->isMsvc() && !toolchain.makeIsNMake())
 				{
 					Diagnostic::error("If using the 'makefile' strategy alongside MSVC, only NMake or Qt Jom are supported (found GNU make).");
@@ -435,15 +442,10 @@ bool BuildState::validateState()
 					Diagnostic::error("If using the 'makefile' strategy alongside MinGW, only GNU make is suported (found NMake or Qt Jom).");
 					return false;
 				}*/
-#endif
-				if (!environment->isAppleClang() && project.objectiveCxx())
-				{
-					Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang. Use either 'language.macos' or '\"condition\": \"macos\"' in the '{}' project.", m_impl->inputs.inputFile(), project.name());
-					return false;
-				}
-				break;
+				break; // note: break because we only care if there's any source targets
 			}
 		}
+#endif
 	}
 	else if (strat == StrategyType::Ninja)
 	{
