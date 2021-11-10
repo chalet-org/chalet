@@ -369,12 +369,13 @@ void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const
 {
-	if (m_state.configuration.linkTimeOptimization() && !m_state.info.dumpAssembly())
+	/*if (m_state.configuration.linkTimeOptimization() && !m_state.info.dumpAssembly())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
 		outArgList.emplace_back("/ltcg:INCREMENTAL");
 		outArgList.emplace_back(fmt::format("/ltcgout:{}.iobj", outputFileBase));
-	}
+	}*/
+	UNUSED(outArgList, outputFileBase);
 }
 
 /*****************************************************************************/

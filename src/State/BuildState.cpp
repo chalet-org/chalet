@@ -714,10 +714,10 @@ std::string BuildState::getUniqueIdForState() const
 	}
 
 	int dumpAssembly = 0;
-	if (m_impl->environment->type() == ToolchainType::VisualStudio)
+	/*if (m_impl->environment->type() == ToolchainType::VisualStudio)
 	{
 		dumpAssembly = info.dumpAssembly() ? 1 : 0;
-	}
+	}*/
 
 	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, envId, strategy, buildConfig, showCmds, dumpAssembly, extensions);
 

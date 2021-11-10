@@ -590,10 +590,11 @@ void CompilerCxxVisualStudioCL::addWholeProgramOptimization(StringList& outArgLi
 
 	// Required by LINK's Link-time code generation (/LTCG)
 	// Basically ends up being quicker compiler times for a slower link time, remedied further by incremental linking
-	if (m_state.configuration.linkTimeOptimization() && !m_state.info.dumpAssembly())
+	/*if (m_state.configuration.linkTimeOptimization() && !m_state.info.dumpAssembly())
 	{
 		outArgList.emplace_back("/GL");
-	}
+	}*/
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
