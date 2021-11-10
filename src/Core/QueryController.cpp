@@ -5,9 +5,11 @@
 
 #include "Core/QueryController.hpp"
 
+#include "BuildJson/SchemaBuildJson.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Settings/SettingsManager.hpp"
+#include "SettingsJson/SchemaSettingsJson.hpp"
 #include "State/StatePrototype.hpp"
 #include "Terminal/ColorTheme.hpp"
 #include "Utility/List.hpp"
@@ -82,6 +84,14 @@ bool QueryController::printListOfRequestedType()
 			output = List::combine(std::move(userToolchains), std::move(presets));
 			break;
 		}
+
+		case QueryOption::ChaletSchema:
+			output = getChaletSchema();
+			break;
+
+		case QueryOption::SettingsSchema:
+			output = getSettingsSchema();
+			break;
 
 		default:
 			break;
@@ -407,6 +417,30 @@ StringList QueryController::getCurrentRunTarget() const
 	{
 		ret.emplace_back(executableProjects.front());
 	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getChaletSchema() const
+{
+	StringList ret;
+
+	SchemaBuildJson schemaBuilder;
+	Json schema = schemaBuilder.get();
+	ret.emplace_back(schema.dump());
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getSettingsSchema() const
+{
+	StringList ret;
+
+	SchemaSettingsJson schemaBuilder;
+	Json schema = schemaBuilder.get();
+	ret.emplace_back(schema.dump());
 
 	return ret;
 }

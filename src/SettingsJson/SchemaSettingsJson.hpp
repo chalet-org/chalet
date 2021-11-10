@@ -10,10 +10,11 @@
 
 namespace chalet
 {
-namespace Schema
+class SchemaSettingsJson
 {
-Json getSettingsJson();
-}
+public:
+	Json get();
+};
 }
 
 #endif // CHALET_SCHEMA_SETTINGS_JSON_HPP

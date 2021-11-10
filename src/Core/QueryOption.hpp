@@ -26,6 +26,9 @@ enum class QueryOption : ushort
 	RunTarget,
 	//
 	ThemeNames,
+	//
+	ChaletSchema,
+	SettingsSchema,
 };
 }
 

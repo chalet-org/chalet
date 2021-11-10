@@ -29,6 +29,8 @@ private:
 	StringList getCurrentBuildConfiguration() const;
 	StringList getCurrentToolchain() const;
 	StringList getCurrentRunTarget() const;
+	StringList getChaletSchema() const;
+	StringList getSettingsSchema() const;
 
 	const CommandLineInputs& m_inputs;
 	const StatePrototype& m_prototype;

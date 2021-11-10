@@ -16,8 +16,8 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Timer.hpp"
 #include "Json/JsonFile.hpp"
+// #include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -32,14 +32,16 @@ SettingsJsonParser::SettingsJsonParser(CommandLineInputs& inInputs, StatePrototy
 /*****************************************************************************/
 bool SettingsJsonParser::serialize(const GlobalSettingsState& inState)
 {
-	Json schema = Schema::getSettingsJson();
+	// Timer timer;
+
+	SchemaSettingsJson schemaBuilder;
+	Json schema = schemaBuilder.get();
 
 	if (m_inputs.saveSchemaToFile())
 	{
 		JsonFile::saveToFile(schema, "schema/chalet-settings.schema.json");
 	}
 
-	Timer timer;
 	/*bool cacheExists = m_prototype.cache.exists();
 	if (cacheExists)
 	{

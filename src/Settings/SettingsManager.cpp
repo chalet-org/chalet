@@ -292,7 +292,8 @@ bool SettingsManager::runSettingsSet(Json& node)
 	{
 		if (String::endsWith(settings.filename(), ".chaletrc"))
 		{
-			Json schema = Schema::getSettingsJson();
+			SchemaSettingsJson schemaBuilder;
+			Json schema = schemaBuilder.get();
 			if (!settings.validate(std::move(schema)))
 			{
 				settings.setDirty(false);

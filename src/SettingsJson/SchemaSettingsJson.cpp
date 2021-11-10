@@ -82,7 +82,7 @@ enum class Defs : ushort
 };
 }
 /*****************************************************************************/
-Json Schema::getSettingsJson()
+Json SchemaSettingsJson::get()
 {
 	const std::string kEnum{ "enum" };
 	const std::string kDefinitions{ "definitions" };
