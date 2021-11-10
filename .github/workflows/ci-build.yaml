@@ -51,11 +51,11 @@ jobs:
       - name: "Color Test"
         run: build/Debug/chalet-debug colortest
       - name: "Build: Release (arm)"
-        run: build/Debug/chalet-debug --save-schema -t arm-linux-gnueabihf-gcc bundle
+        run: build/Debug/chalet-debug -t arm-linux-gnueabihf-gcc bundle
       - name: "Zip binary (arm)"
         uses: papeloto/action-zip@v1
         with:
-          files: build/arm-linux-gnueabihf_Release/chalet schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
+          files: build/arm-linux-gnueabihf_Release/chalet dist/chalet-completion.sh LICENSE.txt README.md
           dest: dist/chalet-arm-linux-gnueabihf.zip
       - name: "Upload assets (arm)"
         uses: softprops/action-gh-release@v1
@@ -64,13 +64,13 @@ jobs:
           files: ./dist/chalet-arm-linux-gnueabihf.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Release (x86_64)"
-        run: build/Debug/chalet-debug --save-schema -t x86_64-linux-gnu-gcc bundle
+        run: build/Debug/chalet-debug -t x86_64-linux-gnu-gcc bundle
       - name: "Run: Tests"
         run: build/x86_64-linux-gnu_Release/chalet -c Release run tests_chalet
       - name: "Zip binary (x86_64)"
         uses: papeloto/action-zip@v1
         with:
-          files: build/x86_64-linux-gnu_Release/chalet schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
+          files: build/x86_64-linux-gnu_Release/chalet dist/chalet-completion.sh LICENSE.txt README.md
           dest: dist/chalet-x86_64-linux-gnu.zip
       - name: "Upload assets (x86_64)"
         uses: softprops/action-gh-release@v1
@@ -107,13 +107,13 @@ jobs:
       - name: "Color Test"
         run: build/Debug/chalet-debug colortest
       - name: "Build: Release"
-        run: build/Debug/chalet-debug --save-schema --arch universal bundle
+        run: build/Debug/chalet-debug --arch universal bundle
       - name: "Run: Tests"
         run: build/universal-apple-darwin_Release/chalet -c Release run tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
-          files: dist/chalet schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
+          files: dist/chalet dist/chalet-completion.sh LICENSE.txt README.md
           dest: dist/chalet-universal-apple-darwin.zip
       - name: "Upload assets"
         uses: softprops/action-gh-release@v1
@@ -141,13 +141,13 @@ jobs:
       - name: "Color Test"
         run: build/msvc_Debug/chalet-debug colortest
       - name: "Build: Release"
-        run: build/msvc_Debug/chalet-debug --save-schema -t vs-stable -a x64 bundle
+        run: build/msvc_Debug/chalet-debug -t vs-stable -a x64 bundle
       - name: "Run: Tests"
         run: build/msvc_Debug/chalet-debug -c Release run tests_chalet
       - name: "Zip binary"
         uses: papeloto/action-zip@v1
         with:
-          files: dist/chalet.exe schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
+          files: dist/chalet.exe dist/chalet-completion.sh LICENSE.txt README.md
           dest: dist/chalet-x64-pc-windows-msvc.zip
       - name: "Make NSIS Installer"
         uses: joncloud/makensis-action@v3.5
@@ -197,13 +197,13 @@ jobs:
   #     - name: "Color Test"
   #       run: build/Debug/chalet-debug colortest
   #     - name: "Build: Release"
-  #       run: build/Debug/chalet-debug --save-schema -t gcc bundle
+  #       run: build/Debug/chalet-debug -t gcc bundle
   #     - name: "Run: Tests"
   #       run: build/x86_64-w64-mingw32_Release/chalet -c Release run tests_chalet
   #     - name: "Zip binary"
   #       uses: papeloto/action-zip@v1
   #       with:
-  #         files: dist/chalet.exe schema/chalet-settings.schema.json schema/chalet.schema.json dist/chalet-completion.sh LICENSE.txt README.md
+  #         files: dist/chalet.exe dist/chalet-completion.sh LICENSE.txt README.md
   #         dest: dist/chalet-windows-mingw64.zip
   #     - name: "Make NSIS Installer"
   #       uses: joncloud/makensis-action@v3.5

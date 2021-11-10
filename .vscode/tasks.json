@@ -19,7 +19,7 @@
 	"tasks": [
 		{
 			"label": "Configure",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema configure",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} configure",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -175,7 +175,7 @@
 		},
 		{
 			"label": "Bundle",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema bundle",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} bundle",
 			"type": "shell",
 			"group": {
 				"kind": "build",

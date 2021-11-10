@@ -6,7 +6,6 @@ Unicode true
 
 ; folders
 	!define FOLDERS_DIST "dist"
-	!define FOLDERS_SCHEMA "schema"
 	!define FOLDERS_SCRIPTS "scripts"
 	!define FOLDERS_BIN "bin"
 	!define FOLDERS_PLATFORM "platform\windows\installer"
@@ -23,8 +22,6 @@ Unicode true
 	!define FILES_LICENSE "LICENSE.txt"
 	!define FILES_README "README.md"
 	!define FILES_CMD "chalet.cmd"
-	!define FILES_SCHEMA_BUILD "${FOLDERS_SCHEMA}\chalet.schema.json"
-	!define FILES_SCHEMA_SETTINGS "${FOLDERS_SCHEMA}\chalet-settings.schema.json"
 	!define FILES_SCRIPTS_BASH_COMPLETION "${FOLDERS_SCRIPTS}\chalet-completion.sh"
 
 ; output
@@ -193,9 +190,6 @@ Section "MainSection" SEC01
 	File "${FOLDERS_PLATFORM}\${FILES_CMD}"
 	File "${FOLDERS_DIST}\${FILES_MAIN}"
 
-	SetOutPath "$INSTDIR\${FOLDERS_SCHEMA}"
-	File "${FILES_SCHEMA_BUILD}"
-	File "${FILES_SCHEMA_SETTINGS}"
 	File "${FILES_SCRIPTS_BASH_COMPLETION}"
 
 ; Shortcuts
@@ -284,8 +278,6 @@ Section Uninstall
 	Delete "$INSTDIR\${FILES_LICENSE}"
 	Delete "$INSTDIR\${FILES_README}"
 	Delete "$INSTDIR\${FILES_SCRIPTS_BASH_COMPLETION}"
-	Delete "$INSTDIR\${FILES_SCHEMA_SETTINGS}"
-	Delete "$INSTDIR\${FILES_SCHEMA_BUILD}"
 	Delete "${OUT_BIN}\${FILES_MAIN}"
 	Delete "${OUT_BIN}\${FILES_CMD}"
 
@@ -298,7 +290,6 @@ Section Uninstall
 	; RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
 
 	RMDir "${OUT_BIN}"
-	RMDir "$INSTDIR\${FOLDERS_SCHEMA}"
 	RMDir "$INSTDIR"
 
 	DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"

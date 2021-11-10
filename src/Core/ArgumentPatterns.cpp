@@ -172,7 +172,7 @@ ushort ArgumentPatterns::parseOption(const std::string& inString)
 	}
 	else if (String::startsWith('-', inString))
 	{
-		// one arg (--save-schema)
+		// one arg (ie. --save-schema)
 		res = 1;
 	}
 
