@@ -1,0 +1,1889 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"version",
+		"workspace",
+		"targets"
+	],
+	"definitions": {
+		"configuration": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Properties to describe a single build configuration type.",
+			"properties": {
+				"debugSymbols": {
+					"$ref": "#/definitions/config-debugSymbols"
+				},
+				"enableProfiling": {
+					"$ref": "#/definitions/config-enableProfiling"
+				},
+				"linkTimeOptimization": {
+					"$ref": "#/definitions/config-linkTimeOptimizations"
+				},
+				"optimizationLevel": {
+					"$ref": "#/definitions/config-optimizationLevel"
+				},
+				"stripSymbols": {
+					"$ref": "#/definitions/config-stripSymbols"
+				}
+			}
+		},
+		"config-debugSymbols": {
+			"type": "boolean",
+			"description": "true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-g3' option (-g & macro expansion information) and forces '-O0' if the optimizationLevel is not '0' or 'debug'.\nIn MSVC, this enables '/debug', '/incremental' and forces '/Od' if the optimizationLevel is not '0' or 'debug'.\nThis flag is also the determining factor whether the ':debug' suffix is used in a chalet.json property.",
+			"default": false
+		},
+		"config-enableProfiling": {
+			"type": "boolean",
+			"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-pg' option.\nIn MSVC, this doesn't do anything yet.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
+			"default": false
+		},
+		"config-linkTimeOptimizations": {
+			"type": "boolean",
+			"description": "true to use link-time optimization, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-flto' option to the linker.",
+			"default": false
+		},
+		"config-optimizationLevel": {
+			"type": "string",
+			"description": "The optimization level of the build.\nIn GNU-based compilers, This maps 1:1 with its respective '-O' option, except for 'debug' (-Od) and 'size' (-Os).\nIn MSVC, it's mapped as follows: 0 (/Od), 1 (/O1), 2 (/O2), 3 (/Ox), size (/Os), fast (/Ot), debug (/Od)\nIf this value is unset, no optimization level will be used (implying the compiler's default).",
+			"minLength": 1,
+			"enum": [
+				"0",
+				"1",
+				"2",
+				"3",
+				"debug",
+				"size",
+				"fast"
+			]
+		},
+		"config-stripSymbols": {
+			"type": "boolean",
+			"description": "true to strip symbols from the build, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-s' option at link time. In MSVC, this is not applicable (symbols are stored in .pdb files).",
+			"default": false
+		},
+		"distribution-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Properties to describe an individual distribution target.",
+			"anyOf": [
+				{
+					"required": [
+						"kind",
+						"buildTargets"
+					]
+				},
+				{
+					"required": [
+						"kind",
+						"include"
+					]
+				}
+			],
+			"properties": {
+				"kind": {
+					"$ref": "#/definitions/distribution-target-kind"
+				},
+				"buildTargets": {
+					"$ref": "#/definitions/distribution-target-buildTargets"
+				},
+				"configuration": {
+					"$ref": "#/definitions/distribution-target-configuration"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"exclude": {
+					"$ref": "#/definitions/distribution-target-exclude"
+				},
+				"include": {
+					"$ref": "#/definitions/distribution-target-include"
+				},
+				"includeDependentSharedLibraries": {
+					"$ref": "#/definitions/distribution-target-includeDependentSharedLibraries"
+				},
+				"linux": {
+					"$ref": "#/definitions/distribution-target-linux"
+				},
+				"macos": {
+					"$ref": "#/definitions/distribution-target-macos"
+				},
+				"windows": {
+					"$ref": "#/definitions/distribution-target-windows"
+				},
+				"mainExecutable": {
+					"$ref": "#/definitions/distribution-target-mainExecutable"
+				},
+				"subdirectory": {
+					"$ref": "#/definitions/distribution-target-subdirectory"
+				}
+			},
+			"patternProperties": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^include(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/distribution-target-include"
+				},
+				"^exclude(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/distribution-target-exclude"
+				}
+			}
+		},
+		"distribution-target-kind": {
+			"type": "string",
+			"description": "Whether the distribution target is a bundle or script.",
+			"minLength": 1,
+			"enum": [
+				"bundle",
+				"script"
+			]
+		},
+		"distribution-target-configuration": {
+			"type": "string",
+			"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
+			"minLength": 1,
+			"default": "Release"
+		},
+		"distribution-target-exclude": {
+			"type": "array",
+			"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string"
+			}
+		},
+		"distribution-target-include": {
+			"type": "array",
+			"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"description": "A single file or folder to copy.",
+				"minLength": 1
+			}
+		},
+		"distribution-target-includeDependentSharedLibraries": {
+			"type": "boolean",
+			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
+			"default": true
+		},
+		"distribution-target-linux": {
+			"type": "object",
+			"description": "Properties to describe the Linux distribution. At the moment, these only apply to desktop environments that support the XDG Desktop Entry Specification",
+			"additionalProperties": false,
+			"required": [
+				"icon",
+				"desktopEntry"
+			],
+			"properties": {
+				"desktopEntry": {
+					"type": "string",
+					"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
+					"minLength": 1
+				},
+				"icon": {
+					"type": "string",
+					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)",
+					"minLength": 1
+				}
+			}
+		},
+		"distribution-target-macos": {
+			"type": "object",
+			"description": "Properties to describe the MacOS distribution. Only one application bundle can be defined per distribution target.",
+			"additionalProperties": false,
+			"required": [
+				"bundleType"
+			],
+			"properties": {
+				"bundleType": {
+					"type": "string",
+					"description": "The MacOS bundle type (only .app is supported currently)",
+					"minLength": 1,
+					"enum": [
+						"app"
+					],
+					"default": "app"
+				},
+				"dmg": {
+					"type": "object",
+					"description": "If defined, a .dmg image will be created after the application bundle.",
+					"additionalProperties": false,
+					"properties": {
+						"background": {
+							"description": "If creating a .dmg image with 'makeDmg', this will define a background image for it.",
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1
+								},
+								{
+									"type": "object",
+									"additionalProperties": false,
+									"required": [
+										"1x"
+									],
+									"properties": {
+										"1x": {
+											"type": "string",
+											"description": "The path to a background image in PNG format created for 1x pixel density.",
+											"minLength": 1
+										},
+										"2x": {
+											"type": "string",
+											"description": "The path to a background image in PNG format created for 2x pixel density.",
+											"minLength": 1
+										}
+									}
+								}
+							]
+						}
+					}
+				},
+				"icon": {
+					"type": "string",
+					"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
+					"minLength": 1
+				},
+				"infoPropertyList": {
+					"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
+					"oneOf": [
+						{
+							"type": "string",
+							"minLength": 1
+						},
+						{
+							"type": "object",
+							"default": {
+								"CFBundleDevelopmentRegion": "en-US",
+								"CFBundleDisplayName": "${name}",
+								"CFBundleExecutable": "${mainExecutable}",
+								"CFBundleIconFile": "${icon}",
+								"CFBundleIdentifier": "com.developer.application",
+								"CFBundleInfoDictionaryVersion": "6.0",
+								"CFBundleName": "${bundleName}",
+								"CFBundlePackageType": "APPL",
+								"CFBundleShortVersionString": "${version}",
+								"CFBundleVersion": "${version}",
+								"CFBundleSignature": "????",
+								"LSMinimumSystemVersion": "10.8"
+							}
+						}
+					]
+				}
+			}
+		},
+		"distribution-target-mainExecutable": {
+			"type": "string",
+			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'targets' array of the distribution target will be chosen as the main executable.",
+			"minLength": 1
+		},
+		"distribution-target-subdirectory": {
+			"type": "string",
+			"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
+			"minLength": 1,
+			"default": "dist"
+		},
+		"distribution-target-buildTargets": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "An array of build target names to include in this distribution target.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"description": "The name of the build target.",
+				"minLength": 1,
+				"pattern": "^[\\w\\-+.]{3,}$"
+			}
+		},
+		"distribution-target-windows": {
+			"type": "object",
+			"description": "Properties to describe the Windows distribution.\nAt the moment, metadata like versioning and descriptions are typically added during the build phase via an application manifest.",
+			"additionalProperties": false,
+			"properties": {
+				"nsisScript": {
+					"type": "string",
+					"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target.",
+					"minLength": 1
+				}
+			}
+		},
+		"external-dependency": {
+			"type": "object",
+			"oneOf": [
+				{
+					"additionalProperties": false,
+					"required": [
+						"repository",
+						"tag"
+					],
+					"properties": {
+						"repository": {
+							"$ref": "#/definitions/external-git-repository"
+						},
+						"submodules": {
+							"$ref": "#/definitions/external-git-submodules"
+						},
+						"tag": {
+							"$ref": "#/definitions/external-git-tag"
+						}
+					}
+				},
+				{
+					"additionalProperties": false,
+					"required": [
+						"repository"
+					],
+					"properties": {
+						"repository": {
+							"$ref": "#/definitions/external-git-repository"
+						},
+						"submodules": {
+							"$ref": "#/definitions/external-git-submodules"
+						},
+						"branch": {
+							"$ref": "#/definitions/external-git-branch"
+						},
+						"commit": {
+							"$ref": "#/definitions/external-git-commit"
+						}
+					}
+				}
+			]
+		},
+		"external-git-repository": {
+			"type": "string",
+			"description": "The url of the git repository.",
+			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$",
+			"minLength": 1
+		},
+		"external-git-branch": {
+			"type": "string",
+			"description": "The branch to checkout. Uses the repository's default if not set.",
+			"minLength": 1
+		},
+		"external-git-commit": {
+			"type": "string",
+			"description": "The SHA1 hash of the commit to checkout.",
+			"pattern": "^[0-9a-f]{7,40}$",
+			"minLength": 1
+		},
+		"external-git-tag": {
+			"type": "string",
+			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
+			"minLength": 1
+		},
+		"external-git-submodules": {
+			"type": "boolean",
+			"description": "Do submodules need to be cloned?",
+			"default": false
+		},
+		"environment-searchPaths": {
+			"type": "array",
+			"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDir}",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"target-description": {
+			"type": "string",
+			"description": "A description of the target to display during the build.",
+			"minLength": 1
+		},
+		"target-kind": {
+			"type": "string",
+			"description": "The type of the target's compiled binary, a script or external project.",
+			"minLength": 1,
+			"enum": [
+				"staticLibrary",
+				"sharedLibrary",
+				"executable",
+				"cmakeProject",
+				"chaletProject",
+				"script"
+			]
+		},
+		"target-condition": {
+			"type": "string",
+			"description": "A rule describing when to include this target in the build.",
+			"minLength": 1,
+			"pattern": "^(!?(debug|windows|macos|linux)\\b){1,2}$"
+		},
+		"target-runTarget": {
+			"type": "boolean",
+			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runTarget is given, it will be prioritized. If no executable targets are defined as the runTarget, the first executable one will be chosen.",
+			"default": false
+		},
+		"target-runArguments": {
+			"type": "array",
+			"description": "If the project is the run target, a string of arguments to pass to the run command.",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"target-runDependencies": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"abstract-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"settings:Cxx": {
+					"$ref": "#/definitions/source-target-cxx"
+				},
+				"settings": {
+					"type": "object",
+					"description": "Settings for each language",
+					"additionalProperties": false,
+					"properties": {
+						"Cxx": {
+							"$ref": "#/definitions/source-target-cxx"
+						}
+					}
+				},
+				"language": {
+					"$ref": "#/definitions/source-target-language"
+				}
+			},
+			"patternProperties": {
+				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				}
+			}
+		},
+		"executable-source-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			],
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"extends": {
+					"$ref": "#/definitions/source-target-extends"
+				},
+				"files": {
+					"$ref": "#/definitions/source-target-files"
+				},
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
+				"language": {
+					"$ref": "#/definitions/source-target-language"
+				},
+				"location": {
+					"$ref": "#/definitions/source-target-location"
+				},
+				"settings": {
+					"type": "object",
+					"description": "Settings for each language",
+					"additionalProperties": false,
+					"properties": {
+						"Cxx": {
+							"$ref": "#/definitions/source-target-cxx"
+						}
+					}
+				},
+				"settings:Cxx": {
+					"$ref": "#/definitions/source-target-cxx"
+				},
+				"runTarget": {
+					"$ref": "#/definitions/target-runTarget"
+				},
+				"runArguments": {
+					"$ref": "#/definitions/target-runArguments"
+				},
+				"runDependencies": {
+					"$ref": "#/definitions/target-runDependencies"
+				}
+			},
+			"patternProperties": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-runTarget"
+				},
+				"^runDependencies(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-runDependencies"
+				}
+			}
+		},
+		"library-source-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			],
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"extends": {
+					"$ref": "#/definitions/source-target-extends"
+				},
+				"files": {
+					"$ref": "#/definitions/source-target-files"
+				},
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
+				"language": {
+					"$ref": "#/definitions/source-target-language"
+				},
+				"location": {
+					"$ref": "#/definitions/source-target-location"
+				},
+				"settings": {
+					"type": "object",
+					"description": "Settings for each language",
+					"additionalProperties": false,
+					"properties": {
+						"Cxx": {
+							"$ref": "#/definitions/source-target-cxx"
+						}
+					}
+				},
+				"settings:Cxx": {
+					"$ref": "#/definitions/source-target-cxx"
+				}
+			},
+			"patternProperties": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				}
+			}
+		},
+		"source-target-extends": {
+			"type": "string",
+			"description": "A project template to extend. Defaults to '*' implicitly.",
+			"pattern": "^[A-Za-z-_]+$",
+			"minLength": 1,
+			"default": "*"
+		},
+		"source-target-files": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "Explicitly define the source files, relative to the working directory.",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"source-target-location": {
+			"description": "The root path of the source files, relative to the working directory.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": [
+						"include"
+					],
+					"properties": {
+						"include": {
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"minItems": 1,
+									"items": {
+										"type": "string",
+										"minLength": 1
+									}
+								}
+							]
+						},
+						"exclude": {
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"minItems": 1,
+									"items": {
+										"type": "string",
+										"minLength": 1
+									}
+								}
+							]
+						}
+					},
+					"patternProperties": {
+						"^exclude(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"minItems": 1,
+									"items": {
+										"type": "string",
+										"minLength": 1
+									}
+								}
+							]
+						},
+						"^include(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1
+								},
+								{
+									"type": "array",
+									"uniqueItems": true,
+									"minItems": 1,
+									"items": {
+										"type": "string",
+										"minLength": 1
+									}
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		"source-target-language": {
+			"type": "string",
+			"description": "The target language of the project.",
+			"minLength": 1,
+			"enum": [
+				"C",
+				"C++",
+				"Objective-C",
+				"Objective-C++"
+			],
+			"default": "C++"
+		},
+		"source-target-cxx": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"cStandard": {
+					"$ref": "#/definitions/source-target-cxx-cStandard"
+				},
+				"compileOptions": {
+					"$ref": "#/definitions/source-target-cxx-compileOptions"
+				},
+				"cppStandard": {
+					"$ref": "#/definitions/source-target-cxx-cppStandard"
+				},
+				"defines": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-defines"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-defines"
+								}
+							}
+						}
+					]
+				},
+				"includeDirs": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-includeDirs"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-includeDirs"
+								}
+							}
+						}
+					]
+				},
+				"libDirs": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-libDirs"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-libDirs"
+								}
+							}
+						}
+					]
+				},
+				"linkerScript": {
+					"$ref": "#/definitions/source-target-cxx-linkerScript"
+				},
+				"linkerOptions": {
+					"$ref": "#/definitions/source-target-cxx-linkerOptions"
+				},
+				"links": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-links"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-links"
+								}
+							}
+						}
+					]
+				},
+				"macosFrameworkPaths": {
+					"$ref": "#/definitions/source-target-cxx-macosFrameworkPaths"
+				},
+				"macosFrameworks": {
+					"$ref": "#/definitions/source-target-cxx-macosFrameworks"
+				},
+				"pch": {
+					"$ref": "#/definitions/source-target-cxx-pch"
+				},
+				"threads": {
+					"$ref": "#/definitions/source-target-cxx-threads"
+				},
+				"rtti": {
+					"$ref": "#/definitions/source-target-cxx-rtti"
+				},
+				"exceptions": {
+					"$ref": "#/definitions/source-target-cxx-exceptions"
+				},
+				"staticLinking": {
+					"$ref": "#/definitions/source-target-cxx-staticLinking"
+				},
+				"staticLinks": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/source-target-cxx-staticLinks"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/source-target-cxx-staticLinks"
+								}
+							}
+						}
+					]
+				},
+				"warnings": {
+					"$ref": "#/definitions/source-target-cxx-warnings"
+				},
+				"windowsPrefixOutputFilename": {
+					"$ref": "#/definitions/source-target-cxx-windowsPrefixOutputFilename"
+				},
+				"windowsOutputDef": {
+					"$ref": "#/definitions/source-target-cxx-windowsOutputDef"
+				},
+				"windowsApplicationIcon": {
+					"$ref": "#/definitions/source-target-cxx-windowsAppIcon"
+				},
+				"windowsApplicationManifest": {
+					"$ref": "#/definitions/source-target-cxx-windowsApplicationManifest"
+				},
+				"windowsSubSystem": {
+					"$ref": "#/definitions/source-target-cxx-windowsSubSystem"
+				},
+				"windowsEntryPoint": {
+					"$ref": "#/definitions/source-target-cxx-windowsEntryPoint"
+				}
+			},
+			"patternProperties": {
+				"^cStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-cStandard"
+				},
+				"^cppStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-cppStandard"
+				},
+				"^defines(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-defines"
+				},
+				"^includeDirs(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-includeDirs"
+				},
+				"^libDirs(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-libDirs"
+				},
+				"^linkerScript(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-linkerScript"
+				},
+				"^links(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-links"
+				},
+				"^staticLinks(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-staticLinks"
+				},
+				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-threads"
+				},
+				"^rtti(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-rtti"
+				},
+				"^exceptions(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-exceptions"
+				},
+				"^staticLinking(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-staticLinking"
+				},
+				"^windowsApplicationIcon(\\.!?(debug)\\b\\.?)?$": {
+					"$ref": "#/definitions/source-target-cxx-windowsAppIcon"
+				},
+				"^windowsApplicationManifest(\\.!?(debug)\\b\\.?)?$": {
+					"$ref": "#/definitions/source-target-cxx-windowsApplicationManifest"
+				},
+				"^windowsSubSystem(\\.!?(debug)\\b\\.?)?$": {
+					"$ref": "#/definitions/source-target-cxx-windowsSubSystem"
+				},
+				"^windowsEntryPoint(\\.!?(debug)\\b\\.?)?$": {
+					"$ref": "#/definitions/source-target-cxx-windowsEntryPoint"
+				}
+			}
+		},
+		"source-target-cxx-cStandard": {
+			"type": "string",
+			"description": "The C standard to use in the compilation",
+			"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
+			"minLength": 1,
+			"default": "c11"
+		},
+		"source-target-cxx-cppStandard": {
+			"type": "string",
+			"description": "The C++ standard to use in the compilation",
+			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
+			"minLength": 1,
+			"default": "c++17"
+		},
+		"source-target-cxx-compileOptions": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Addtional options (per compiler type) to add during the compilation step.",
+			"patternProperties": {
+				"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+					"type": "string",
+					"minLength": 1
+				}
+			}
+		},
+		"source-target-cxx-defines": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "Macro definitions to be used by the preprocessor",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"source-target-cxx-includeDirs": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "A list of directories to include with the project.",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"source-target-cxx-libDirs": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"source-target-cxx-linkerScript": {
+			"type": "string",
+			"description": "An LD linker script path (.ld file) to pass to the linker command",
+			"minLength": 1
+		},
+		"source-target-cxx-linkerOptions": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Addtional options (per compiler type) to add during the linking step.",
+			"patternProperties": {
+				"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+					"type": "string",
+					"minLength": 1
+				}
+			}
+		},
+		"source-target-cxx-links": {
+			"type": "array",
+			"uniqueItems": true,
+			"minItems": 1,
+			"description": "A list of dynamic links to use with the linker",
+			"items": {
+				"type": "string",
+				"minLength": 1,
+				"pattern": "^[\\w\\-+.]+$"
+			}
+		},
+		"source-target-cxx-macosFrameworkPaths": {
+			"type": "array",
+			"description": "A list of paths to search for MacOS Frameworks",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"source-target-cxx-macosFrameworks": {
+			"type": "array",
+			"description": "A list of MacOS Frameworks to link to the project",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"source-target-cxx-pch": {
+			"type": "string",
+			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root.",
+			"minLength": 1
+		},
+		"source-target-cxx-threads": {
+			"type": "string",
+			"description": "The thread model to use.",
+			"minLength": 1,
+			"enum": [
+				"auto",
+				"posix",
+				"none"
+			],
+			"default": "auto"
+		},
+		"source-target-cxx-rtti": {
+			"type": "boolean",
+			"description": "true to include run-time type information (default), false to exclude.",
+			"default": true
+		},
+		"source-target-cxx-exceptions": {
+			"type": "boolean",
+			"description": "true to use exceptions (default), false to turn off exceptions.",
+			"default": true
+		},
+		"source-target-cxx-staticLinking": {
+			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
+			"type": "boolean",
+			"default": false
+		},
+		"source-target-cxx-staticLinks": {
+			"type": "array",
+			"description": "A list of static links to use with the linker",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1,
+				"pattern": "^[\\w\\-+.]+$"
+			}
+		},
+		"source-target-cxx-warnings": {
+			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1,
+					"enum": [
+						"none",
+						"minimal",
+						"error",
+						"pedantic",
+						"strict",
+						"strictPedantic",
+						"veryStrict"
+					]
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"description": "Warnings specific to each compiler",
+					"patternProperties": {
+						"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1,
+								"uniqueItems": true,
+								"minItems": 1
+							}
+						}
+					},
+					"items": {
+						"examples": [
+							"abi",
+							"absolute-value",
+							"address",
+							"aggregate-return",
+							"all",
+							"alloc-size-larger-than=CC_ALLOC_SIZE_LARGER_THAN",
+							"alloc-zero",
+							"alloca",
+							"alloca-larger-than=CC_ALLOCA_LARGER_THAN",
+							"arith-conversion",
+							"array-bounds",
+							"array-bounds=1",
+							"array-bounds=2",
+							"array-parameter",
+							"array-parameter=1",
+							"array-parameter=2",
+							"attribute-alias",
+							"attribute-alias=0",
+							"attribute-alias=1",
+							"attribute-alias=2",
+							"bad-function-cast",
+							"bool-compare",
+							"bool-operation",
+							"c90-c99-compat",
+							"c99-c11-compat",
+							"c11-c2x-compat",
+							"c++-compat",
+							"c++11-compat",
+							"c++14-compat",
+							"c++17-compat",
+							"c++20-compat",
+							"cast-align",
+							"cast-align=strict",
+							"cast-function-type",
+							"cast-qual",
+							"catch-value",
+							"char-subscripts",
+							"clobbered",
+							"comment",
+							"comments",
+							"conversion",
+							"dangling-else",
+							"date-time",
+							"declaration-after-statement",
+							"deprecated-copy",
+							"disabled-optimization",
+							"double-promotion",
+							"duplicate-decl-specifier",
+							"duplicated-branches",
+							"duplicated-cond",
+							"empty-body",
+							"enum-compare",
+							"enum-conversion",
+							"effc++",
+							"extra",
+							"error",
+							"expansion-to-defined",
+							"fatal-errors",
+							"float-conversion",
+							"float-equal",
+							"format",
+							"format=0",
+							"format=1",
+							"format=2",
+							"format-nonliteral",
+							"format-overflow",
+							"format-overflow=1",
+							"format-overflow=2",
+							"format-security",
+							"format-signedness",
+							"format-truncation",
+							"format-truncation=1",
+							"format-truncation=2",
+							"format-y2k",
+							"frame-address",
+							"frame-larger-than=CC_FRAME_LARGER_THAN",
+							"ignored-qualifiers",
+							"implicit-fallthrough",
+							"implicit-fallthrough=0",
+							"implicit-fallthrough=1",
+							"implicit-fallthrough=2",
+							"implicit-fallthrough=3",
+							"implicit-fallthrough=4",
+							"implicit-fallthrough=5",
+							"implicit",
+							"implicit-int",
+							"implicit-function-declaration",
+							"init-self",
+							"inline",
+							"int-in-bool-context",
+							"invalid-memory-model",
+							"invalid-pch",
+							"jump-misses-init",
+							"larger-than=CC_LARGER_THAN",
+							"logical-not-parentheses",
+							"logical-op",
+							"long-long",
+							"main",
+							"maybe-uninitialized",
+							"memset-elt-size",
+							"memset-transposed-args",
+							"misleading-indentation",
+							"missing-attributes",
+							"missing-braces",
+							"missing-declarations",
+							"missing-field-initializers",
+							"missing-include-dirs",
+							"missing-parameter-type",
+							"missing-prototypes",
+							"multistatement-macros",
+							"narrowing",
+							"nested-externs",
+							"no-address-of-packed-member",
+							"no-aggressive-loop-optimizations",
+							"no-alloc-size-larger-than",
+							"no-alloca-larger-than",
+							"no-attribute-alias",
+							"no-attribute-warning",
+							"no-attributes",
+							"no-builtin-declaration-mismatch",
+							"no-builtin-macro-redefined",
+							"no-coverate-mismatch",
+							"no-cpp",
+							"no-deprecated",
+							"no-deprecated-declarations",
+							"no-designated-init",
+							"no-discarded-qualifier",
+							"no-discarded-array-qualifiers",
+							"no-div-by-zero",
+							"no-endif-labels",
+							"no-incompatible-pointer-types",
+							"no-int-conversion",
+							"no-format-contains-nul",
+							"no-format-extra-args",
+							"no-format-zero-length",
+							"no-frame-larger-than",
+							"no-free-nonheap-object",
+							"no-if-not-aligned",
+							"no-ignored-attributes",
+							"no-implicit-int",
+							"no-implicit-function-declaration",
+							"no-int-to-pointer-cast",
+							"no-invalid-memory-model",
+							"no-larger-than",
+							"no-long-long",
+							"no-lto-type-mismatch",
+							"no-missing-profile",
+							"no-missing-field-initializers",
+							"no-multichar",
+							"no-odr",
+							"no-overflow",
+							"no-overlength-strings",
+							"no-override-init-side-effects",
+							"no-pedantic-ms-format",
+							"no-pointer-compare",
+							"no-pointer-to-int-cast",
+							"no-pragmas",
+							"no-prio-ctor-dtor",
+							"no-return-local-addr",
+							"no-scalar-storage-order",
+							"no-shadow-ivar",
+							"no-shift-count-negative",
+							"no-shift-count-overflow",
+							"no-shift-overflow",
+							"no-sizeof-array-argument",
+							"no-stack-usage",
+							"no-stringop-overflow",
+							"no-stringop-overread",
+							"no-stringop-truncation",
+							"no-switch-bool",
+							"no-switch-outside-range",
+							"no-switch-unreachable",
+							"no-trigraphs",
+							"no-unused-function",
+							"no-unused-result",
+							"no-unused-variable",
+							"no-varargs",
+							"no-variadic-macros",
+							"no-vla",
+							"no-vla-larger-than",
+							"noexcept",
+							"non-virtual-dtor",
+							"nonnull",
+							"nonnull-compare",
+							"nopacked-bitfield-compat",
+							"normalized=none",
+							"normalized=id",
+							"normalized=nfc",
+							"normalized=nfkc",
+							"null-dereference",
+							"odr",
+							"old-style-cast",
+							"old-style-declaration",
+							"old-style-definition",
+							"openmp-simd",
+							"overlength-strings",
+							"overloaded-virtual",
+							"override-init",
+							"packed",
+							"packed-not-aligned",
+							"padded",
+							"parentheses",
+							"pedantic",
+							"pedantic-errors",
+							"pessimizing-move",
+							"pointer-arith",
+							"pointer-sign",
+							"range-loop-construct",
+							"redundant-decls",
+							"redundant-move",
+							"reorder",
+							"restrict",
+							"return-type",
+							"scrict-null-sentinel",
+							"sequence-point",
+							"shadow",
+							"shadow=global",
+							"shadow=local",
+							"shadow=compatible-local",
+							"shift-negative-value",
+							"shift-overflow=1",
+							"shift-overflow=2",
+							"sign-compare",
+							"sign-conversion",
+							"sign-promo",
+							"sizeof-array-div",
+							"sizeof-pointer-div",
+							"sizeof-pointer-memaccess",
+							"stack-protector",
+							"stack-usage=CC_STACK_USAGE",
+							"strict-aliasing",
+							"strict-aliasing=1",
+							"strict-aliasing=2",
+							"strict-aliasing=3",
+							"strict-overflow",
+							"strict-overflow=1",
+							"strict-overflow=2",
+							"strict-overflow=3",
+							"strict-overflow=4",
+							"strict-overflow=5",
+							"strict-prototypes",
+							"string-compare",
+							"stringop-overflow",
+							"stringop-overflow=1",
+							"stringop-overflow=2",
+							"stringop-overflow=3",
+							"stringop-overflow=4",
+							"suggest-attribute=pure",
+							"suggest-attribute=const",
+							"suggest-attribute=noreturn",
+							"suggest-attribute=format",
+							"suggest-attribute=cold",
+							"suggest-attribute=malloc",
+							"switch",
+							"switch-default",
+							"switch-enum",
+							"switch-unreachable",
+							"sync-nand",
+							"system-headers",
+							"tautological-compare",
+							"traditional",
+							"traditional-conversion",
+							"trampolines",
+							"trigraphs",
+							"type-limits",
+							"undef",
+							"uninitialized",
+							"unknown-pragmas",
+							"unreachable-code",
+							"unsafe-loop-optimizations",
+							"unsuffixed-float-constants",
+							"unused",
+							"unused-but-set-parameter",
+							"unused-but-set-variable",
+							"unused-const-variable",
+							"unused-const-variable=1",
+							"unused-const-variable=2",
+							"unused-function",
+							"unused-label",
+							"unused-local-typedefs",
+							"unused-macros",
+							"unused-parameter",
+							"unused-value",
+							"unused-variable",
+							"variadic-macros",
+							"vector-operation-performance",
+							"vla",
+							"vla-larger-than=CC_VLA_LARGER_THAN",
+							"vla-parameter",
+							"volatile-register-var",
+							"write-strings",
+							"zero-as-null-pointer-constant",
+							"zero-length-bounds"
+						]
+					}
+				},
+				{
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"uniqueItems": true,
+						"minItems": 1
+					}
+				}
+			]
+		},
+		"source-target-cxx-windowsApplicationManifest": {
+			"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "boolean",
+					"const": false
+				}
+			]
+		},
+		"source-target-cxx-windowsAppIcon": {
+			"type": "string",
+			"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)",
+			"minLength": 1
+		},
+		"source-target-cxx-windowsOutputDef": {
+			"type": "boolean",
+			"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
+			"default": false
+		},
+		"source-target-cxx-windowsPrefixOutputFilename": {
+			"type": "boolean",
+			"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
+			"default": true
+		},
+		"source-target-cxx-windowsSubSystem": {
+			"type": "string",
+			"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to 'console'",
+			"minLength": 1,
+			"enum": [
+				"console",
+				"windows",
+				"bootApplication",
+				"native",
+				"posix",
+				"efiApplication",
+				"efiBootServer",
+				"efiRom",
+				"efiRuntimeDriver"
+			],
+			"default": "console"
+		},
+		"source-target-cxx-windowsEntryPoint": {
+			"type": "string",
+			"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to 'main'",
+			"minLength": 1,
+			"enum": [
+				"main",
+				"wmain",
+				"WinMain",
+				"wWinMain",
+				"DllMain"
+			],
+			"default": "main"
+		},
+		"build-script-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			],
+			"properties": {
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
+				"script": {
+					"$ref": "#/definitions/script-target-script"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"runTarget": {
+					"$ref": "#/definitions/target-runTarget"
+				}
+			},
+			"patternProperties": {
+				"^script(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/script-target-script"
+				},
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-runTarget"
+				}
+			}
+		},
+		"distribution-script-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"kind": {
+					"$ref": "#/definitions/distribution-target-kind"
+				},
+				"script": {
+					"$ref": "#/definitions/script-target-script"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				}
+			},
+			"patternProperties": {
+				"^script(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/script-target-script"
+				},
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				}
+			}
+		},
+		"script-target-script": {
+			"description": "Script(s) to run during this build step.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"cmake-target": {
+			"type": "object",
+			"description": "Build the location with CMake",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"location"
+			],
+			"properties": {
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"location": {
+					"$ref": "#/definitions/cmake-target-location"
+				},
+				"buildFile": {
+					"$ref": "#/definitions/cmake-target-buildFile"
+				},
+				"defines": {
+					"$ref": "#/definitions/cmake-target-defines"
+				},
+				"toolset": {
+					"$ref": "#/definitions/cmake-target-toolset"
+				},
+				"recheck": {
+					"$ref": "#/definitions/cmake-target-recheck"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"runTarget": {
+					"$ref": "#/definitions/target-runTarget"
+				},
+				"runArguments": {
+					"$ref": "#/definitions/target-runArguments"
+				},
+				"runExecutable": {
+					"$ref": "#/definitions/cmake-target-runExecutable"
+				}
+			},
+			"patternProperties": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/cmake-target-buildFile"
+				},
+				"^defines(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/cmake-target-defines"
+				},
+				"^toolset(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/cmake-target-toolset"
+				},
+				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-runTarget"
+				},
+				"^runExecutable(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/cmake-target-runExecutable"
+				}
+			}
+		},
+		"cmake-target-location": {
+			"type": "string",
+			"description": "The folder path of the root CMakeLists.txt for the project.",
+			"minLength": 1
+		},
+		"cmake-target-buildFile": {
+			"type": "string",
+			"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)",
+			"minLength": 1
+		},
+		"cmake-target-defines": {
+			"type": "array",
+			"description": "Macro definitions to be passed into CMake. (-D)",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"cmake-target-recheck": {
+			"type": "boolean",
+			"description": "If true, CMake will be invoked each time during the build.",
+			"default": false
+		},
+		"cmake-target-toolset": {
+			"type": "string",
+			"description": "A toolset to be passed to CMake with the -T option.",
+			"minLength": 1
+		},
+		"cmake-target-runExecutable": {
+			"type": "string",
+			"description": "The path to an executable to run, relative to the build directory.",
+			"minLength": 1
+		},
+		"chalet-target": {
+			"type": "object",
+			"description": "Build the location with Chalet",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"location"
+			],
+			"properties": {
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"location": {
+					"$ref": "#/definitions/chalet-target-location"
+				},
+				"buildFile": {
+					"$ref": "#/definitions/chalet-target-buildFile"
+				},
+				"recheck": {
+					"$ref": "#/definitions/chalet-target-recheck"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				}
+			},
+			"patternProperties": {
+				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-description"
+				},
+				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/chalet-target-buildFile"
+				}
+			}
+		},
+		"chalet-target-location": {
+			"type": "string",
+			"description": "The folder path of the root chalet.json for the project.",
+			"minLength": 1
+		},
+		"chalet-target-buildFile": {
+			"type": "string",
+			"description": "The build file to use, if not chalet.json, relative to the location.",
+			"minLength": 1
+		},
+		"chalet-target-recheck": {
+			"type": "boolean",
+			"description": "If true, Chalet will be invoked each time during the build."
+		}
+	},
+	"properties": {
+		"abstracts": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "A list of abstract build targets",
+			"patternProperties": {
+				"^(\\*|[A-Za-z-_]+)$": {
+					"$ref": "#/definitions/abstract-target",
+					"description": "An abstract build target. '*' is a special target that gets implicitely added to each project."
+				}
+			}
+		},
+		"configurations": {
+			"description": "An array of allowed build configuration presets, or an object of custom build configurations.",
+			"default": [
+				"Release",
+				"Debug",
+				"MinSizeRel",
+				"RelWithDebInfo",
+				"RelStable",
+				"Profile"
+			],
+			"oneOf": [
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"patternProperties": {
+						"^[A-Za-z]{3,}$": {
+							"$ref": "#/definitions/configuration"
+						}
+					}
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"description": "A configuration preset",
+						"minLength": 1,
+						"enum": [
+							"Release",
+							"Debug",
+							"MinSizeRel",
+							"RelWithDebInfo",
+							"RelStable",
+							"Profile"
+						]
+					}
+				}
+			]
+		},
+		"distribution": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "A sequential list of distribution targets to be created during the bundle phase.",
+			"patternProperties": {
+				"^[\\w\\-+. ()]{3,}$": {
+					"type": "object",
+					"description": "A single distribution target or script.",
+					"if": {
+						"properties": {
+							"kind": {
+								"const": "bundle"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/distribution-target"
+					},
+					"else": {
+						"if": {
+							"properties": {
+								"kind": {
+									"const": "script"
+								}
+							}
+						},
+						"then": {
+							"$ref": "#/definitions/distribution-script-target"
+						},
+						"else": {
+							"type": "object",
+							"additionalProperties": false
+						}
+					}
+				}
+			}
+		},
+		"externalDependencies": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'externalDir'.",
+			"patternProperties": {
+				"^[\\w\\-\\+\\.]{3,100}$": {
+					"$ref": "#/definitions/external-dependency"
+				}
+			}
+		},
+		"searchPaths": {
+			"$ref": "#/definitions/environment-searchPaths"
+		},
+		"targets": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "A sequential list of build targets, cmake targets, or scripts.",
+			"patternProperties": {
+				"^[\\w\\-+.]{3,}$": {
+					"type": "object",
+					"description": "A single build target or script.",
+					"if": {
+						"properties": {
+							"kind": {
+								"const": "executable"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/executable-source-target"
+					},
+					"else": {
+						"if": {
+							"properties": {
+								"kind": {
+									"enum": [
+										"staticLibrary",
+										"sharedLibrary"
+									]
+								}
+							}
+						},
+						"then": {
+							"$ref": "#/definitions/library-source-target"
+						},
+						"else": {
+							"if": {
+								"properties": {
+									"kind": {
+										"const": "cmakeProject"
+									}
+								}
+							},
+							"then": {
+								"$ref": "#/definitions/cmake-target"
+							},
+							"else": {
+								"if": {
+									"properties": {
+										"kind": {
+											"const": "chaletProject"
+										}
+									}
+								},
+								"then": {
+									"$ref": "#/definitions/chalet-target"
+								},
+								"else": {
+									"if": {
+										"properties": {
+											"kind": {
+												"const": "script"
+											}
+										}
+									},
+									"then": {
+										"$ref": "#/definitions/build-script-target"
+									},
+									"else": {
+										"type": "object",
+										"additionalProperties": false,
+										"properties": {
+											"kind": {
+												"$ref": "#/definitions/target-kind"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"version": {
+			"type": "string",
+			"description": "Version of the workspace project.",
+			"minLength": 1,
+			"pattern": "^[\\w\\-\\+\\.]+$"
+		},
+		"workspace": {
+			"type": "string",
+			"description": "The name of the workspace.",
+			"minLength": 1,
+			"pattern": "^[\\w\\-\\+ ]+$"
+		}
+	},
+	"patternProperties": {
+		"^abstracts:(\\*|[A-Za-z-_]+)$": {
+			"$ref": "#/definitions/abstract-target",
+			"description": "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project"
+		},
+		"^searchPaths(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+			"$ref": "#/definitions/environment-searchPaths"
+		}
+	}
+}
