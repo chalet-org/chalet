@@ -707,13 +707,19 @@ std::string BuildState::getUniqueIdForState() const
 	const auto& buildConfig = info.buildConfiguration();
 	const auto extensions = String::join(paths.allFileExtensions(), '_');
 
-	std::string showCmds{ "0" };
+	int showCmds = 0;
 	if (toolchain.strategy() != StrategyType::Ninja)
 	{
-		showCmds = std::to_string(Output::showCommands() ? 1 : 0);
+		showCmds = Output::showCommands() ? 1 : 0;
 	}
 
-	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, envId, strategy, buildConfig, showCmds, extensions);
+	int dumpAssembly = 0;
+	if (m_impl->environment->type() == ToolchainType::VisualStudio)
+	{
+		dumpAssembly = info.dumpAssembly() ? 1 : 0;
+	}
+
+	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, envId, strategy, buildConfig, showCmds, dumpAssembly, extensions);
 
 	return Hash::string(ret);
 }

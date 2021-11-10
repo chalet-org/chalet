@@ -885,26 +885,29 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
 
-	std::string data;
-	auto eol = String::eol();
-	auto endlineReplace = fmt::format("{}\n", Output::getAnsiStyle(Color::Reset));
+	struct
+	{
+		std::string data;
+		std::string eol = String::eol();
+		std::string endlineReplace = fmt::format("{}\n", Output::getAnsiStyle(Color::Reset));
+	} cap;
 
-	ProcessOptions::PipeFunc onStdOut = [&data, &eol, &endlineReplace](std::string inData) -> void {
-		String::replaceAll(inData, eol, endlineReplace);
+	ProcessOptions::PipeFunc onStdOut = [&cap](std::string inData) -> void {
+		String::replaceAll(inData, cap.eol, cap.endlineReplace);
 		std::cout << inData << std::flush;
 
 		auto lineBreak = inData.find('\n');
 		if (lineBreak == std::string::npos)
 		{
-			data += std::move(inData);
+			cap.data += std::move(inData);
 		}
 		else
 		{
-			data += inData.substr(0, lineBreak + 1);
+			cap.data += inData.substr(0, lineBreak + 1);
 			auto tmp = inData.substr(lineBreak + 1);
 			if (!tmp.empty())
 			{
-				data = std::move(tmp);
+				cap.data = std::move(tmp);
 			}
 		}
 	};
@@ -917,10 +920,10 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 
 	int result = ProcessController::run(inCmd, options);
 
-	if (data.size() > 0)
+	if (cap.data.size() > 0)
 	{
-		std::string noWork = fmt::format("ninja: no work to do.{}", endlineReplace);
-		if (String::endsWith(noWork, data))
+		std::string noWork = fmt::format("ninja: no work to do.{}", cap.endlineReplace);
+		if (String::endsWith(noWork, cap.data))
 			Output::previousLine();
 		else
 			Output::lineBreak();

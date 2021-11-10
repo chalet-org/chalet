@@ -525,7 +525,8 @@ void CompilerCxxVisualStudioCL::addCompileOptions(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addNoRunTimeTypeInformationOption(StringList& outArgList) const
 {
-	if (!m_project.rtti())
+	// must also disable rtti for no exceptions
+	if (!m_project.rtti() || !m_project.exceptions())
 	{
 		List::addIfDoesNotExist(outArgList, "/GR-");
 	}
@@ -540,7 +541,6 @@ void CompilerCxxVisualStudioCL::addNoExceptionsOption(StringList& outArgList) co
 
 	if (!m_project.exceptions())
 	{
-		List::addIfDoesNotExist(outArgList, "/GR-"); // must also disable rtti
 		List::addIfDoesNotExist(outArgList, "/D_HAS_EXCEPTIONS=0");
 	}
 	else
@@ -590,11 +590,10 @@ void CompilerCxxVisualStudioCL::addWholeProgramOptimization(StringList& outArgLi
 
 	// Required by LINK's Link-time code generation (/LTCG)
 	// Basically ends up being quicker compiler times for a slower link time, remedied further by incremental linking
-	/*if (m_state.configuration.linkTimeOptimization())
+	if (m_state.configuration.linkTimeOptimization() && !m_state.info.dumpAssembly())
 	{
 		outArgList.emplace_back("/GL");
-	}*/
-	UNUSED(outArgList);
+	}
 }
 
 /*****************************************************************************/
