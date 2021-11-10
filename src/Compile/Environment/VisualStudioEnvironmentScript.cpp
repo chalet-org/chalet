@@ -114,9 +114,9 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 	UNUSED(inState);
 	m_pathVariable = Environment::getPath();
 
-	// Note: See Note about __CHALET_MSVC_INJECT__ in Environment.cpp
+	// Note: See Note about __CHALET_PATH_INJECT__ in Environment.cpp
 	auto appDataPath = Environment::getAsString("APPDATA");
-	m_pathInject = fmt::format("{}\\__CHALET_MSVC_INJECT__", appDataPath);
+	m_pathInject = fmt::format("{}\\__CHALET_PATH_INJECT__", appDataPath);
 
 	if (!m_envVarsFileDeltaExists)
 	{
@@ -192,7 +192,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 			if (String::startsWith("__VSCMD_PREINIT_PATH=", line))
 			{
 				if (String::contains(m_pathInject, line))
-					String::replaceAll(line, m_pathInject + ";", "");
+					String::replaceAll(line, m_pathInject + Environment::getPathSeparator(), "");
 			}
 			else if (String::startsWith({ "PATH=", "Path=" }, line))
 			{
@@ -217,6 +217,7 @@ void VisualStudioEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 	Environment::readEnvFileToDictionary(m_envVarsFileDelta, variables);
 
 	const auto pathKey = Environment::getPathKey();
+	const char pathSep = Environment::getPathSeparator();
 	for (auto& [name, var] : variables)
 	{
 		if (String::equals(pathKey, name))
@@ -228,7 +229,7 @@ void VisualStudioEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 			}
 			else
 			{
-				Environment::set(name.c_str(), m_pathVariable + ";" + var);
+				Environment::set(name.c_str(), fmt::format("{}{}{}", m_pathVariable, pathSep, var));
 			}
 		}
 		else

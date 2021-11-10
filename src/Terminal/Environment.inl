@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Terminal/Path.hpp"
+#include "Terminal/Environment.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-constexpr char Path::getSeparator()
+constexpr char Environment::getPathSeparator()
 {
 #if defined(CHALET_WIN32)
 	return ';';

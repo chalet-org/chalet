@@ -12,11 +12,7 @@ namespace Path
 {
 void sanitize(std::string& outValue, const bool inRemoveNewLine = false);
 void sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine = false);
-StringList getOSPaths();
-constexpr char getSeparator();
 }
 }
-
-#include "Terminal/Path.inl"
 
 #endif // CHALET_PATHS_HPP

@@ -25,6 +25,7 @@ void replaceCommonVariables(std::string& outString, const std::string& inHomeDir
 std::string getPath();
 const char* getPathKey();
 void setPath(const std::string& inValue);
+constexpr char getPathSeparator();
 
 std::string getUserDirectory();
 std::string getShell();
@@ -35,5 +36,7 @@ void createDeltaEnvFile(const std::string& inBeforeFile, const std::string& inAf
 void readEnvFileToDictionary(const std::string& inDeltaFile, Dictionary<std::string>& outVariables);
 }
 }
+
+#include "Terminal/Environment.inl"
 
 #endif // CHALET_ENVIRONMENT_HPP

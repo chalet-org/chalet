@@ -263,7 +263,7 @@ std::string StarterFileTemplates::getDotEnv()
 	auto gitPath = String::getPathFolder(git);
 	const bool gitExists = !git.empty();
 
-	auto paths = String::split(Environment::getPath(), ";");
+	auto paths = String::split(Environment::getPath(), Environment::getPathSeparator());
 	if (gitExists && !List::contains(paths, gitPath))
 	{
 		auto programFiles = Environment::getAsString("ProgramFiles");

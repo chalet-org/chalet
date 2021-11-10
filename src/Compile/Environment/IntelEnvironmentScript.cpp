@@ -10,6 +10,7 @@
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -85,15 +86,12 @@ void IntelEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 	Environment::readEnvFileToDictionary(m_envVarsFileDelta, variables);
 
 	const auto pathKey = Environment::getPathKey();
+	const char pathSep = Environment::getPathSeparator();
 	for (auto& [name, var] : variables)
 	{
 		if (String::equals(pathKey, name))
 		{
-#if defined(CHALET_WIN32)
-			Environment::set(name.c_str(), m_pathVariable + ";" + var);
-#else
-			Environment::set(name.c_str(), m_pathVariable + ":" + var);
-#endif
+			Environment::set(name.c_str(), fmt::format("{}{}{}", m_pathVariable, pathSep, var));
 		}
 		else
 		{

@@ -514,7 +514,7 @@ bool BuildState::makePathVariable()
 	auto originalPath = Environment::getPath();
 	Path::sanitize(originalPath);
 
-	char separator = Path::getSeparator();
+	char separator = Environment::getPathSeparator();
 	auto pathList = String::split(originalPath, separator);
 
 	StringList outList;
@@ -525,7 +525,17 @@ bool BuildState::makePathVariable()
 	if (auto cppRoot = String::getPathFolder(toolchain.compilerCpp().path); !List::contains(pathList, cppRoot))
 		outList.emplace_back(std::move(cppRoot));
 
-	for (auto& p : Path::getOSPaths())
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
+	StringList osPaths{
+		"/usr/local/sbin",
+		"/usr/local/bin",
+		"/usr/sbin",
+		"/usr/bin",
+		"/sbin",
+		"/bin",
+	};
+
+	for (auto& p : osPaths)
 	{
 		if (!Commands::pathExists(p))
 			continue;
@@ -535,6 +545,7 @@ bool BuildState::makePathVariable()
 		if (!List::contains(pathList, path))
 			outList.emplace_back(std::move(path));
 	}
+#endif
 
 	for (auto& path : pathList)
 	{

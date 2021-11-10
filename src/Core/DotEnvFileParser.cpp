@@ -71,18 +71,15 @@ std::string DotEnvFileParser::searchDotEnv(const std::string& inRelativeEnv, con
 			if (Commands::pathExists(toSearch))
 				return toSearch;
 		}
-
-		if (Commands::pathExists(inEnv))
-			return inEnv;
 	}
 	else
 	{
 		if (Commands::pathExists(inRelativeEnv))
 			return inRelativeEnv;
-
-		if (Commands::pathExists(inEnv))
-			return inEnv;
 	}
+
+	if (Commands::pathExists(inEnv))
+		return inEnv;
 
 	return std::string();
 }
@@ -107,73 +104,73 @@ bool DotEnvFileParser::parseVariablesFromFile(const std::string& inFile) const
 			continue;
 
 		auto splitVar = String::split(line, '=');
-		if (splitVar.size() == 2 && !splitVar.front().empty())
+		if (splitVar.size() != 2 || splitVar.front().empty())
+			continue;
+
+		auto& key = splitVar.front();
+		if (String::startsWith(' ', key))
 		{
-			auto& key = splitVar.front();
-			if (String::startsWith(' ', key))
+			std::size_t afterSpaces = key.find_first_not_of(' ');
+			key = key.substr(afterSpaces);
+		}
+
+		auto& value = splitVar.back();
+		if (value.empty())
+			continue;
+
+#if defined(CHALET_WIN32)
+		const bool isPath = String::equals(pathSearch, key);
+		for (std::size_t end = value.find_last_of('%'); end != std::string::npos;)
+		{
+			std::size_t beg = value.substr(0, end).find_last_of('%');
+			if (beg == std::string::npos)
+				break;
+
+			std::size_t length = (end + 1) - beg;
+
+			std::string capture = value.substr(beg, length);
+			std::string replaceKey = value.substr(beg + 1, length - 2);
+
+			// Note: If someone writes "Path=C:\MyPath;%Path%", MSVC Path variables would be placed before C:\MyPath.
+			//   This would be a problem is someone is using MinGW and wants to detect the MinGW version of Cmake, Ninja,
+			//   or anything else that is also bundled with Visual Studio
+			//   To get around this, and have MSVC Path vars before %Path% as expected,
+			//   we add a fake path (with valid syntax) to inject it into later (See CompileEnvironmentVisualStudio.cpp)
+			//
+			auto replaceValue = Environment::getAsString(replaceKey.c_str());
+			if (msvcExists && isPath && String::equals(pathSearch, replaceKey))
 			{
-				std::size_t afterSpaces = key.find_first_not_of(' ');
-				key = key.substr(afterSpaces);
+				value.replace(beg, length, fmt::format("{}\\__CHALET_PATH_INJECT__;{}", appDataPath, replaceValue));
+			}
+			else
+			{
+				value.replace(beg, length, replaceValue);
 			}
 
-			auto& value = splitVar.back();
-
-			if (!value.empty())
-			{
-#if defined(CHALET_WIN32)
-				const bool isPath = String::equals(pathSearch, key);
-				for (std::size_t end = value.find_last_of('%'); end != std::string::npos;)
-				{
-					std::size_t beg = value.substr(0, end).find_last_of('%');
-					if (beg == std::string::npos)
-						break;
-
-					std::size_t length = (end + 1) - beg;
-
-					std::string capture = value.substr(beg, length);
-					std::string replaceKey = value.substr(beg + 1, length - 2);
-
-					// Note: If someone writes "Path=C:\MyPath;%Path%", MSVC Path variables would be placed before C:\MyPath.
-					//   This would be a problem is someone is using MinGW and wants to detect the MinGW version of Cmake, Ninja,
-					//   or anything else that is also bundled with Visual Studio
-					//   To get around this, and have MSVC Path vars before %Path% as expected,
-					//   we add a fake path (with valid syntax) to inject it into later (See CompileEnvironmentVisualStudio.cpp)
-					//
-					auto replaceValue = Environment::getAsString(replaceKey.c_str());
-					if (msvcExists && isPath && String::equals(pathSearch, replaceKey))
-					{
-						value.replace(beg, length, fmt::format("{}\\__CHALET_MSVC_INJECT__;{}", appDataPath, replaceValue));
-					}
-					else
-					{
-						value.replace(beg, length, replaceValue);
-					}
-
-					end = value.find_last_of("%");
-				}
+			end = value.find_last_of("%");
+		}
 #else
-				for (std::size_t beg = value.find_last_of('$'); beg != std::string::npos;)
-				{
-					std::size_t end = value.find_first_of(':', beg);
-					if (end == std::string::npos)
-						end = value.size();
+		for (std::size_t beg = value.find_last_of('$'); beg != std::string::npos;)
+		{
+			std::size_t end = value.find_first_of(':', beg);
+			if (end == std::string::npos)
+				end = value.size();
 
-					std::size_t length = end - beg;
+			std::size_t length = end - beg;
 
-					std::string capture = value.substr(beg, length);
-					std::string replaceKey = value.substr(beg + 1, length - 1);
+			std::string capture = value.substr(beg, length);
+			std::string replaceKey = value.substr(beg + 1, length - 1);
 
-					auto replaceValue = Environment::getAsString(replaceKey.c_str());
-					value.replace(beg, length, replaceValue);
+			auto replaceValue = Environment::getAsString(replaceKey.c_str());
+			value.replace(beg, length, replaceValue);
 
-					beg = value.find_last_of('$');
-				}
+			beg = value.find_last_of('$');
+		}
 #endif
 
-				Environment::set(key.c_str(), value);
-			}
-		}
+		Environment::set(key.c_str(), value);
 	}
+
 	input.close();
 
 	return true;
