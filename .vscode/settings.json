@@ -13,21 +13,5 @@
 		"build": true,
 		"platform/windows/installer/plugins": true
 	},
-	"terminal.integrated.automationShell.windows": "C:/Program Files/Git/bin/bash.exe",
-	"json.schemas": [
-		{
-			"fileMatch": [
-				"chalet.json",
-				"chalet-*.json"
-			],
-			"url": "./schema/chalet.schema.json"
-		},
-		{
-			"fileMatch": [
-				".chaletrc",
-				"build/chalet-settings.json"
-			],
-			"url": "./schema/chalet-settings.schema.json"
-		}
-	]
+	"terminal.integrated.automationShell.windows": "C:/Program Files/Git/bin/bash.exe"
 }
