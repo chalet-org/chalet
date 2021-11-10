@@ -14,6 +14,6 @@ fi
 
 bash ./fetch_vendors.sh
 
-bash ./build.sh Debug && build/Debug/chalet-debug --save-schema -c Release buildrun
+bash ./build.sh Debug && build/Debug/chalet-debug -c Release buildrun
 
 echo "exited with code $?"

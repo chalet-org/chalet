@@ -31,7 +31,7 @@
 		},
 		{
 			"label": "Build & Run: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release buildrun",
+			"command": "${CHALET_DEBUG} -c Release buildrun",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -43,7 +43,7 @@
 		},
 		{
 			"label": "Build: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release build",
+			"command": "${CHALET_DEBUG} -c Release build",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -55,7 +55,7 @@
 		},
 		{
 			"label": "Run: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release run",
+			"command": "${CHALET_DEBUG} -c Release run",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -67,7 +67,7 @@
 		},
 		{
 			"label": "Rebuild: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release rebuild",
+			"command": "${CHALET_DEBUG} -c Release rebuild",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -79,7 +79,7 @@
 		},
 		{
 			"label": "Clean: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release clean",
+			"command": "${CHALET_DEBUG} -c Release clean",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -91,7 +91,7 @@
 		},
 		{
 			"label": "Build & Run: Debug",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} -c Release --save-schema buildrun",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} -c Release buildrun",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -127,7 +127,7 @@
 		},
 		{
 			"label": "Build & Run: Profile",
-			"command": "${CHALET_DEBUG} --save-schema buildrun Profile chalet 'build MinSizeRel'",
+			"command": "${CHALET_DEBUG} buildrun Profile chalet 'build MinSizeRel'",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -139,7 +139,7 @@
 		},
 		{
 			"label": "Build & Run: Tests",
-			"command": "${CHALET_DEBUG} --save-schema -c Release buildrun tests_chalet",
+			"command": "${CHALET_DEBUG} -c Release buildrun tests_chalet",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -151,7 +151,7 @@
 		},
 		{
 			"label": "Run: Tests",
-			"command": "${CHALET_DEBUG} --save-schema -c Release run tests_chalet",
+			"command": "${CHALET_DEBUG} -c Release run tests_chalet",
 			"type": "shell",
 			"group": {
 				"kind": "build",
@@ -163,7 +163,7 @@
 		},
 		{
 			"label": "Debug (Chalet Command)",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release debug",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} -c Release debug",
 			"type": "shell",
 			"group": {
 				"kind": "build",

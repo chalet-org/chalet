@@ -15,7 +15,6 @@
         "msvc_x64_x64"
       ],
       "args": [
-        "--save-schema",
         "-c",
         "Release",
         "-t",
