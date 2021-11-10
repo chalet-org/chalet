@@ -161,7 +161,7 @@ Unicode true
 	InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 	ShowInstDetails show
 	ShowUnInstDetails show
-	RequestExecutionLevel user
+	RequestExecutionLevel highest
 
 ; TODO: Compile dist\chalet.exe in 32-bits and support it here
 
