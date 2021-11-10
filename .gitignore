@@ -7,10 +7,11 @@ vendor/
 
 # Chalet
 .chaletrc
-build
-dist
+build/
+dist/
 chalet_external/
 .env*
+schema/
 
 # Profiling
 gmon.out
