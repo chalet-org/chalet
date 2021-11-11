@@ -64,13 +64,13 @@ bool BuildJsonParser::serialize()
 	if (!validBuildRequested())
 	{
 		const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
-		Diagnostic::error("{}: No valid targets to build in '{}' configuration. Check usage of 'condition' property", m_filename, buildConfiguration);
+		Diagnostic::error("{}: No valid targets to build for '{}' configuration. Check usage of 'condition' property", m_filename, buildConfiguration);
 		return false;
 	}
 
 	if (!validRunTargetRequestedFromInput())
 	{
-		Diagnostic::error("{}: Requested runTarget of '{}' was not a valid project name.", m_filename, m_inputs.runTarget());
+		Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, is excluded from the build configuration '{}' or excluded on this platform.", m_filename, m_inputs.runTarget(), m_state.configuration.name());
 		return false;
 	}
 

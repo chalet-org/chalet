@@ -123,7 +123,10 @@ bool StatePrototype::initializeForList()
 		return false;
 
 	if (!cache.initializeSettings(m_inputs))
+	{
+		Diagnostic::clearErrors();
 		return false;
+	}
 
 	m_filename = m_inputs.inputFile();
 	if (m_filename.empty())
@@ -135,7 +138,10 @@ bool StatePrototype::initializeForList()
 		return true;
 
 	if (!m_chaletJson.load(m_filename))
+	{
+		Diagnostic::clearErrors();
 		return false;
+	}
 
 	return true;
 }
