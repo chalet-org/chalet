@@ -240,7 +240,7 @@ StringList QueryController::getArchitectures() const
 				"x86_64",
 				"i686",
 				"arm",
-				"arm64",
+				"aarch64",
 			};
 		}
 #if defined(CHALET_MACOS)
@@ -250,7 +250,7 @@ StringList QueryController::getArchitectures() const
 				std::move(kAuto),
 				"universal",
 				"x86_64",
-				"arm64",
+				"aarch64",
 			};
 		}
 #endif
