@@ -562,7 +562,7 @@ void CommandLineInputs::setTargetArchitecture(const std::string& inValue) const 
 #if defined(CHALET_MACOS)
 		if (String::equals({ "universal", "universal2" }, inValue))
 		{
-			m_universalArches = { "x86_64", "arm64" };
+			m_universalArches = { "x86_64", "aarch64" };
 		}
 		else if (String::equals("universal1", inValue))
 		{

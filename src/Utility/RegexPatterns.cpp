@@ -70,32 +70,6 @@ bool RegexPatterns::matchesCxxStandardShort(const std::string& inValue)
 }
 
 /*****************************************************************************/
-std::string RegexPatterns::matchesTargetArchitectureWithResult(const std::string& inValue)
-{
-	std::string result;
-
-	// #ifdef CHALET_REGEX_CTRE
-	// 	static constexpr auto regex = ctll::fixed_string{ "^.*?((x64|x86)?_?(x86|x64|arm64|arm)).*?$" };
-	// 	if (auto m = ctre::match<regex>(inValue))
-	// 	{
-	// 		result = m.get<1>();
-	// 	}
-	// #else
-	static std::regex regex{ "^.*?((x64|x86)?_?(x86|x64|arm64|arm)).*?$" };
-	std::smatch m;
-	if (std::regex_match(inValue, m, regex))
-	{
-		if (m.size() >= 2)
-		{
-			result = m[1].str();
-		}
-	}
-	// #endif
-
-	return result;
-}
-
-/*****************************************************************************/
 bool RegexPatterns::matchesFullVersionString(const std::string& inValue)
 {
 	if (inValue.empty())

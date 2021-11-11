@@ -13,7 +13,6 @@ namespace RegexPatterns
 bool matchesGnuCppStandard(const std::string& inValue);
 bool matchesGnuCStandard(const std::string& inValue);
 bool matchesCxxStandardShort(const std::string& inValue);
-std::string matchesTargetArchitectureWithResult(const std::string& inValue);
 bool matchesFullVersionString(const std::string& inValue);
 bool matchAndReplace(std::string& outText, const std::string& inValue, const std::string& inReplaceValue);
 }
