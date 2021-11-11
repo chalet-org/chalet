@@ -18,7 +18,7 @@ std::string Arch::getHostCpuArchitecture()
 {
 #if defined(CHALET_MACOS)
 	#if defined(TARGET_CPU_ARM64) && TARGET_CPU_ARM64
-	return "aarch64";
+	return "arm64";
 	#elif defined(TARGET_CPU_X86_64) && TARGET_CPU_X86_64
 	return "x86_64";
 	#else
@@ -28,7 +28,7 @@ std::string Arch::getHostCpuArchitecture()
 	#if (defined(__x86_64__) && __x86_64__) || (defined(_M_AMD64) && _M_AMD64 == 100)
 	return "x86_64";
 	#elif (defined(__aarch64__) && __aarch64__) || (defined(_M_ARM64) && _M_ARM64 == 1)
-	return "aarch64";
+	return "arm64";
 	#elif (defined(__arm__) && __arm__) || (defined(_M_ARM) && _M_ARM == 7)
 	return "arm";
 	#else
@@ -44,8 +44,8 @@ std::string Arch::toGnuArch(const std::string& inValue)
 		return "x86_64";
 	else if (String::equals("x86", inValue))
 		return "i686";
-	else if (String::equals("arm64", inValue))
-		return "aarch64";
+	else if (String::equals("aarch64", inValue))
+		return "arm64";
 	else
 		return inValue;
 }
@@ -94,7 +94,7 @@ void Arch::set(const std::string& inValue)
 	{
 		val = Arch::Cpu::X86;
 	}
-	else if (String::equals("aarch64", str))
+	else if (String::equals("arm64", str))
 	{
 		val = Arch::Cpu::ARM64;
 	}
