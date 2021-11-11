@@ -224,34 +224,95 @@ StringList QueryController::getUserToolchainList() const
 /*****************************************************************************/
 StringList QueryController::getArchitectures() const
 {
-	StringList ret{ "auto" };
+	std::string kAuto{ "auto" };
 
+	// TODO: Link these up with the toolchain presets declared in CommandLineInputs
+
+	const auto& queryData = m_inputs.queryData();
+	if (!queryData.empty())
+	{
+		const auto& toolchain = queryData.front();
+
+		if (String::equals("llvm", toolchain))
+		{
+			return {
+				std::move(kAuto),
+				"x86_64",
+				"i686",
+				"arm",
+				"arm64",
+			};
+		}
 #if defined(CHALET_MACOS)
-	ret.emplace_back("universal");
-	ret.emplace_back("x86_64");
-	ret.emplace_back("arm64");
-#elif defined(CHALET_WIN32)
-	ret.emplace_back("x64");
-	ret.emplace_back("x64_x86");
-	ret.emplace_back("x64_arm");
-	ret.emplace_back("x64_arm64");
-	ret.emplace_back("x86_x64");
-	ret.emplace_back("x86");
-	ret.emplace_back("x86_arm");
-	ret.emplace_back("x86_arm64");
-
-	ret.emplace_back("i686");
-	ret.emplace_back("x86_64");
-	ret.emplace_back("arm");
-	ret.emplace_back("arm64");
-#else
-	ret.emplace_back("i686");
-	ret.emplace_back("x86_64");
-	ret.emplace_back("arm");
-	ret.emplace_back("arm64");
+		else if (String::equals("apple-llvm", toolchain))
+		{
+			return {
+				std::move(kAuto),
+				"universal",
+				"x86_64",
+				"arm64",
+			};
+		}
 #endif
+		else if (String::equals("gcc", toolchain))
+		{
+#if defined(CHALET_WIN32)
+			return {
+				std::move(kAuto),
+				"x86_64",
+				"i686",
+			};
+#else
+			return {
+				std::move(kAuto),
+				m_inputs.hostArchitecture(),
+			};
+#endif
+		}
+#if defined(CHALET_WIN32)
+		else if (String::startsWith("vs-", toolchain))
+		{
+			return {
+				std::move(kAuto),
+				"x64",
+				"x64_x86",
+				"x64_arm",
+				"x64_arm64",
+				"x86_x64",
+				"x86",
+				"x86_arm",
+				"x86_arm64",
+			};
+		}
+#endif
+#if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC)
+		else if (String::startsWith("intel-classic", toolchain))
+		{
+			return
+			{
+				std::move(kAuto),
+					"x86_64",
+	#if !defined(CHALET_MACOS)
+					"i686",
+	#endif
+			};
+		}
+#endif
+#if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX)
+		else if (String::startsWith("intel-llvm", toolchain))
+		{
+			return {
+				std::move(kAuto),
+				"x86_64",
+				"i686",
+			};
+		}
+#endif
+	}
 
-	return ret;
+	return {
+		std::move(kAuto),
+	};
 }
 
 /*****************************************************************************/

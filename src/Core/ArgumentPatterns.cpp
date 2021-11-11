@@ -83,7 +83,8 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 	kArgSettingsKey("<key>"),
 	kArgSettingsKeyQuery("<query>"),
 	kArgSettingsValue("<value>"),
-	kArgQueryType("<type>")
+	kArgQueryType("<type>"),
+	kArgQueryData("<data>")
 {
 #if defined(CHALET_DEBUG)
 	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::populateDebugArguments);
@@ -900,6 +901,9 @@ void ArgumentPatterns::populateQueryArguments()
 	addStringArgument(ArgumentIdentifier::QueryType, kArgQueryType.c_str())
 		.help(fmt::format("The data type to query ({})", String::join(listNames, ", ")))
 		.required();
+
+	addRemainingArguments(ArgumentIdentifier::QueryDataRemainingArgs, kArgRemainingArguments.c_str())
+		.help("Data to provide to the query (architecture: <toolchain-name>)");
 }
 
 /*****************************************************************************/

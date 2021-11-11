@@ -123,6 +123,7 @@ private:
 	const std::string kArgSettingsKeyQuery;
 	const std::string kArgSettingsValue;
 	const std::string kArgQueryType;
+	const std::string kArgQueryData;
 
 	Route m_route;
 };

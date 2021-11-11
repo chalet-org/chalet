@@ -621,6 +621,16 @@ void CommandLineInputs::setCommandList(StringList&& inList) noexcept
 }
 
 /*****************************************************************************/
+const StringList& CommandLineInputs::queryData() const noexcept
+{
+	return m_queryData;
+}
+void CommandLineInputs::setQueryData(StringList&& inList) noexcept
+{
+	m_queryData = std::move(inList);
+}
+
+/*****************************************************************************/
 bool CommandLineInputs::saveSchemaToFile() const noexcept
 {
 	return m_saveSchemaToFile;

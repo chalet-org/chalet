@@ -112,6 +112,9 @@ struct CommandLineInputs
 	const StringList& commandList() const noexcept;
 	void setCommandList(StringList&& inList) noexcept;
 
+	const StringList& queryData() const noexcept;
+	void setQueryData(StringList&& inList) noexcept;
+
 	bool saveSchemaToFile() const noexcept;
 	void setSaveSchemaToFile(const bool inValue) noexcept;
 
@@ -159,6 +162,7 @@ private:
 
 	StringList m_runOptions;
 	StringList m_commandList;
+	StringList m_queryData;
 	mutable StringList m_universalArches;
 	mutable StringList m_archOptions;
 

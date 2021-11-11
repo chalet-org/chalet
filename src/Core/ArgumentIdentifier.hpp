@@ -45,6 +45,7 @@ enum class ArgumentIdentifier : ushort
 	SettingsKey,
 	SettingsValue,
 	QueryType,
+	QueryDataRemainingArgs,
 	SettingsKeysRemainingArgs,
 };
 }

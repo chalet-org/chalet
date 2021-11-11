@@ -155,6 +155,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				{
 					// ignore
 				}
+				else if (arg.id == ArgumentIdentifier::QueryDataRemainingArgs)
+				{
+					m_inputs.setQueryData(arg.value.asStringList());
+				}
 				break;
 			}
 
