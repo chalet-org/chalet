@@ -25,10 +25,13 @@ private:
 	StringList getBuildConfigurationList() const;
 	StringList getUserToolchainList() const;
 	StringList getArchitectures() const;
+	StringList getArchitectures(const std::string& inToolchain) const;
 	StringList getCurrentArchitecture() const;
 	StringList getCurrentBuildConfiguration() const;
 	StringList getCurrentToolchain() const;
 	StringList getCurrentRunTarget() const;
+	StringList getChaletJsonState() const;
+	StringList getSettingsJsonState() const;
 	StringList getChaletSchema() const;
 	StringList getSettingsSchema() const;
 

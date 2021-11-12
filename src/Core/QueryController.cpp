@@ -85,6 +85,14 @@ bool QueryController::printListOfRequestedType()
 			break;
 		}
 
+		case QueryOption::ChaletJsonState:
+			output = getChaletJsonState();
+			break;
+
+		case QueryOption::SettingsJsonState:
+			output = getSettingsJsonState();
+			break;
+
 		case QueryOption::ChaletSchema:
 			output = getChaletSchema();
 			break;
@@ -124,7 +132,7 @@ StringList QueryController::getBuildConfigurationList() const
 {
 	StringList ret;
 
-	const auto defaultBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
+	auto defaultBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
 	const auto& buildJson = m_prototype.chaletJson().json;
 
 	const std::string kKeyConfigurations = "configurations";
@@ -163,36 +171,34 @@ StringList QueryController::getBuildConfigurationList() const
 		return ret;
 	}
 
-	if (!buildConfigurations.empty())
-	{
-		StringList defaults;
-		StringList userDefined;
-		for (const auto& name : buildConfigurations)
-		{
-			if (List::contains(defaultBuildConfigurations, name))
-				defaults.push_back(name);
-			else
-				userDefined.emplace_back(name);
-		}
-
-		// Order as defaults first, user defined second
-		if (!defaults.empty())
-		{
-			for (auto& name : defaultBuildConfigurations)
-			{
-				if (List::contains(defaults, name))
-					ret.emplace_back(name);
-			}
-		}
-
-		for (auto&& name : userDefined)
-		{
-			ret.emplace_back(std::move(name));
-		}
-	}
-	else
+	if (buildConfigurations.empty())
 	{
 		return defaultBuildConfigurations;
+	}
+
+	StringList defaults;
+	StringList userDefined;
+	for (const auto& name : buildConfigurations)
+	{
+		if (List::contains(defaultBuildConfigurations, name))
+			defaults.push_back(name);
+		else
+			userDefined.emplace_back(name);
+	}
+
+	// Order as defaults first, user defined second
+	if (!defaults.empty())
+	{
+		for (auto& name : defaultBuildConfigurations)
+		{
+			if (List::contains(defaults, name))
+				ret.emplace_back(name);
+		}
+	}
+
+	for (auto&& name : userDefined)
+	{
+		ret.emplace_back(std::move(name));
 	}
 
 	return ret;
@@ -224,91 +230,102 @@ StringList QueryController::getUserToolchainList() const
 /*****************************************************************************/
 StringList QueryController::getArchitectures() const
 {
-	std::string kAuto{ "auto" };
-
-	// TODO: Link these up with the toolchain presets declared in CommandLineInputs
-
 	const auto& queryData = m_inputs.queryData();
 	if (!queryData.empty())
 	{
 		const auto& toolchain = queryData.front();
+		return getArchitectures(toolchain);
+	}
+	else
+	{
+		return {
+			"auto",
+		};
+	}
+}
 
-		if (String::equals("llvm", toolchain))
-		{
-			return {
-				std::move(kAuto),
-				"x86_64",
-				"i686",
-				"arm",
-				"arm64",
-			};
-		}
+/*****************************************************************************/
+StringList QueryController::getArchitectures(const std::string& inToolchain) const
+{
+	std::string kAuto{ "auto" };
+
+	// TODO: Link these up with the toolchain presets declared in CommandLineInputs
+
+	if (String::equals("llvm", inToolchain))
+	{
+		return {
+			std::move(kAuto),
+			"x86_64",
+			"i686",
+			"arm",
+			"arm64",
+		};
+	}
 #if defined(CHALET_MACOS)
-		else if (String::equals("apple-llvm", toolchain))
-		{
-			return {
-				std::move(kAuto),
-				"universal",
-				"x86_64",
-				"arm64",
-			};
-		}
+	else if (String::equals("apple-llvm", inToolchain))
+	{
+		return {
+			std::move(kAuto),
+			"universal",
+			"x86_64",
+			"arm64",
+		};
+	}
 #endif
-		else if (String::equals("gcc", toolchain))
-		{
+	else if (String::equals("gcc", inToolchain))
+	{
 #if defined(CHALET_WIN32)
-			return {
-				std::move(kAuto),
-				"x86_64",
-				"i686",
-			};
+		return {
+			std::move(kAuto),
+			"x86_64",
+			"i686",
+		};
 #else
-			return {
-				std::move(kAuto),
-				m_inputs.hostArchitecture(),
-			};
-#endif
-		}
-#if defined(CHALET_WIN32)
-		else if (String::startsWith("vs-", toolchain))
-		{
-			return {
-				std::move(kAuto),
-				"x64",
-				"x64_x86",
-				"x64_arm",
-				"x64_arm64",
-				"x86_x64",
-				"x86",
-				"x86_arm",
-				"x86_arm64",
-			};
-		}
-#endif
-#if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC)
-		else if (String::startsWith("intel-classic", toolchain))
-		{
-			return
-			{
-				std::move(kAuto),
-					"x86_64",
-	#if !defined(CHALET_MACOS)
-					"i686",
-	#endif
-			};
-		}
-#endif
-#if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX)
-		else if (String::startsWith("intel-llvm", toolchain))
-		{
-			return {
-				std::move(kAuto),
-				"x86_64",
-				"i686",
-			};
-		}
+		return {
+			std::move(kAuto),
+			m_inputs.hostArchitecture(),
+		};
 #endif
 	}
+#if defined(CHALET_WIN32)
+	else if (String::startsWith("vs-", inToolchain))
+	{
+		return {
+			std::move(kAuto),
+			"x64",
+			"x64_x86",
+			"x64_arm",
+			"x64_arm64",
+			"x86_x64",
+			"x86",
+			"x86_arm",
+			"x86_arm64",
+		};
+	}
+#endif
+#if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC)
+	else if (String::startsWith("intel-classic", inToolchain))
+	{
+		return
+		{
+			std::move(kAuto),
+				"x86_64",
+	#if !defined(CHALET_MACOS)
+				"i686",
+	#endif
+		};
+	}
+#endif
+#if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX)
+	else if (String::startsWith("intel-llvm", inToolchain))
+	{
+		return {
+			std::move(kAuto),
+			"x86_64",
+			"i686",
+		};
+	}
+#endif
 
 	return {
 		std::move(kAuto),
@@ -478,6 +495,56 @@ StringList QueryController::getCurrentRunTarget() const
 	{
 		ret.emplace_back(executableProjects.front());
 	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getChaletJsonState() const
+{
+	StringList ret;
+
+	Json output = Json::object();
+	output["configurations"] = getBuildConfigurationList();
+
+	auto runTargetRes = getCurrentRunTarget();
+	if (!runTargetRes.empty())
+		output["runTarget"] = std::move(runTargetRes.front());
+
+	ret.emplace_back(output.dump());
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getSettingsJsonState() const
+{
+	StringList ret;
+
+	Json output = Json::object();
+	auto toolchainPresets = m_inputs.getToolchainPresets();
+	auto userToolchains = getUserToolchainList();
+	output["allToolchains"] = List::combine(userToolchains, toolchainPresets);
+	output["toolchainPresets"] = std::move(toolchainPresets);
+	output["userToolchains"] = std::move(userToolchains);
+
+	auto archRes = getCurrentArchitecture();
+	if (!archRes.empty())
+		output["architecture"] = std::move(archRes.front());
+
+	auto configRes = getCurrentBuildConfiguration();
+	if (!configRes.empty())
+		output["configuration"] = std::move(configRes.front());
+
+	auto toolchainRes = getCurrentToolchain();
+	if (!toolchainRes.empty())
+	{
+		auto toolchain = std::move(toolchainRes.front());
+		output["architectures"] = getArchitectures(toolchain);
+		output["toolchain"] = std::move(toolchain);
+	}
+
+	ret.emplace_back(output.dump());
 
 	return ret;
 }

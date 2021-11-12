@@ -27,6 +27,9 @@ enum class QueryOption : ushort
 	//
 	ThemeNames,
 	//
+	ChaletJsonState,
+	SettingsJsonState,
+	//
 	ChaletSchema,
 	SettingsSchema,
 };
