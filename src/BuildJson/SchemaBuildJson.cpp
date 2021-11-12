@@ -279,9 +279,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::ExternalDependencyGitRepository] = R"json({
 		"type": "string",
 		"description": "The url of the git repository.",
-		"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$",
 		"minLength": 1
 	})json"_ojson;
+	defs[Defs::ExternalDependencyGitRepository][kPattern] = R"regex(^(?:git|ssh|git\+ssh|https?|git@[\w\-.]+):(\/\/)?(.*?)(\.git)(\/?|#[\w\d\-._]+?)$)regex";
 
 	defs[Defs::ExternalDependencyGitBranch] = R"json({
 		"type": "string",
@@ -1615,7 +1615,7 @@ Json SchemaBuildJson::get()
 		"additionalProperties": false,
 		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'externalDir'."
 	})json"_ojson;
-	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-\\+\\.]{3,100}$"] = getDefinition(Defs::ExternalDependency);
+	ret[kProperties]["externalDependencies"][kPatternProperties]["^[\\w\\-+.]{3,100}$"] = getDefinition(Defs::ExternalDependency);
 
 	ret[kProperties]["searchPaths"] = getDefinition(Defs::EnvironmentSearchPaths);
 	ret[kPatternProperties][fmt::format("^searchPaths{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::EnvironmentSearchPaths);

@@ -359,8 +359,8 @@
 		"external-git-repository": {
 			"type": "string",
 			"description": "The url of the git repository.",
-			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[-\\w.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|\\#[-\\d\\w._]+?)$",
-			"minLength": 1
+			"minLength": 1,
+			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[\\w\\-.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|#[\\w\\d\\-._]+?)$"
 		},
 		"external-git-branch": {
 			"type": "string",
@@ -1775,7 +1775,7 @@
 			"additionalProperties": false,
 			"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'externalDir'.",
 			"patternProperties": {
-				"^[\\w\\-\\+\\.]{3,100}$": {
+				"^[\\w\\-+.]{3,100}$": {
 					"$ref": "#/definitions/external-dependency"
 				}
 			}
