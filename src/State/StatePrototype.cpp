@@ -122,11 +122,7 @@ bool StatePrototype::initializeForList()
 	if (route != Route::Query)
 		return false;
 
-	if (!cache.initializeSettings(m_inputs))
-	{
-		Diagnostic::clearErrors();
-		return false;
-	}
+	UNUSED(cache.initializeSettings(m_inputs));
 
 	m_filename = m_inputs.inputFile();
 	if (m_filename.empty())
@@ -137,11 +133,8 @@ bool StatePrototype::initializeForList()
 	if (!Commands::pathExists(m_filename))
 		return true;
 
-	if (!m_chaletJson.load(m_filename))
-	{
-		Diagnostic::clearErrors();
-		return false;
-	}
+	UNUSED(m_chaletJson.load(m_filename));
+	Diagnostic::clearErrors();
 
 	return true;
 }
