@@ -238,7 +238,6 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 		switch (group->type)
 		{
 			case SourceType::WindowsResource: {
-#if defined(CHALET_WIN32)
 				bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
@@ -254,9 +253,6 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 						ret.emplace_back(std::move(out));
 					}
 				}
-#else
-				continue;
-#endif
 				break;
 			}
 			case SourceType::C:
@@ -336,14 +332,10 @@ StringList CompileStrategyNative::getRcCompile(const std::string& source, const 
 
 	StringList ret;
 
-#if defined(CHALET_WIN32)
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
 	ret = m_toolchain->compilerWindowsResource->getCommand(source, target, m_generateDependencies, dependency);
-#else
-	UNUSED(source, target);
-#endif
 
 	return ret;
 }

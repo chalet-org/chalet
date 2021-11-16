@@ -269,11 +269,12 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool i
 	ret.directories.push_back(m_buildOutputDir);
 	ret.directories.push_back(objDir());
 
-#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-	// m_intermediateDir is only used in windows so far
-	if (!inProject.isStaticLibrary())
-		ret.directories.push_back(m_intermediateDir);
-#endif
+	if (!m_state.toolchain.compilerWindowsResource().empty())
+	{
+		// so far, intermediateDir is just used with resource files
+		if (!inProject.isStaticLibrary())
+			ret.directories.push_back(m_intermediateDir);
+	}
 
 	ret.directories.insert(ret.directories.end(), objSubDirs.begin(), objSubDirs.end());
 
@@ -410,7 +411,6 @@ std::string BuildPaths::getPrecompiledHeaderInclude(const SourceTarget& inProjec
 /*****************************************************************************/
 std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject) const
 {
-#if defined(CHALET_WIN32)
 	if (!inProject.isStaticLibrary() && inProject.windowsApplicationManifestGenerationEnabled())
 	{
 		if (inProject.windowsApplicationManifest().empty())
@@ -427,16 +427,13 @@ std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject
 			return inProject.windowsApplicationManifest();
 		}
 	}
-#else
-	UNUSED(inProject);
-#endif
+
 	return std::string();
 }
 
 /*****************************************************************************/
 std::string BuildPaths::getWindowsManifestResourceFilename(const SourceTarget& inProject) const
 {
-#if defined(CHALET_WIN32)
 	if (!inProject.isStaticLibrary() && inProject.windowsApplicationManifestGenerationEnabled())
 	{
 		/*if (inProject.windowsApplicationManifest().empty())
@@ -449,9 +446,6 @@ std::string BuildPaths::getWindowsManifestResourceFilename(const SourceTarget& i
 			return fmt::format("{}/{}_manifest.rc", intermediateDir(), name);
 		}
 	}
-#else
-	UNUSED(inProject);
-#endif
 
 	return std::string();
 }
@@ -459,20 +453,14 @@ std::string BuildPaths::getWindowsManifestResourceFilename(const SourceTarget& i
 /*****************************************************************************/
 std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inProject) const
 {
-	std::string ret;
-
-#if defined(CHALET_WIN32)
 	if (inProject.isExecutable() && !inProject.windowsApplicationIcon().empty())
 	{
 		const auto& name = inProject.name();
 
-		ret = fmt::format("{}/{}_win32_icon.rc", intermediateDir(), name);
+		return fmt::format("{}/{}_win32_icon.rc", intermediateDir(), name);
 	}
-#else
-	UNUSED(inProject);
-#endif
 
-	return ret;
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -498,10 +486,9 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		if (type == SourceType::Unknown)
 			continue;
 
-#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-		if (type == SourceType::WindowsResource)
+		if (m_state.toolchain.compilerWindowsResource().empty() && type == SourceType::WindowsResource)
 			continue;
-#endif
+
 		auto group = std::make_unique<SourceFileGroup>();
 		group->type = type;
 		group->objectFile = getObjectFile(file, isMsvc);
@@ -541,16 +528,15 @@ std::string BuildPaths::getObjectFile(const std::string& inSource, const bool in
 {
 	if (String::endsWith(m_resourceExts, inSource))
 	{
-#if defined(CHALET_WIN32)
-		return fmt::format("{}/{}.res", objDir(), inSource);
-#else
-		return std::string();
-#endif
+		if (!m_state.toolchain.compilerWindowsResource().empty())
+			return fmt::format("{}/{}.res", objDir(), inSource);
 	}
 	else
 	{
 		return fmt::format("{}/{}.{}", objDir(), inSource, inIsMsvc ? "obj" : "o");
 	}
+
+	return std::string();
 }
 
 /*****************************************************************************/

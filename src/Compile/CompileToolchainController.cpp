@@ -25,17 +25,25 @@ bool CompileToolchainController::initialize()
 {
 	ToolchainType type = m_state.environment->type();
 
-	compilerCxx = ICompilerCxx::make(type, m_state.toolchain.compilerCxx(m_project.language()).path, m_state, m_project);
-	compilerWindowsResource = ICompilerWinResource::make(type, m_state.toolchain.compilerWindowsResource(), m_state, m_project);
+	const auto& cxxPath = m_state.toolchain.compilerCxx(m_project.language()).path;
+	if (!cxxPath.empty())
+	{
+		compilerCxx = ICompilerCxx::make(type, cxxPath, m_state, m_project);
+		if (!compilerCxx->initialize())
+			return false;
+	}
+
+	const auto& windRes = m_state.toolchain.compilerWindowsResource();
+	if (!windRes.empty())
+	{
+		compilerWindowsResource = ICompilerWinResource::make(type, windRes, m_state, m_project);
+		if (!compilerWindowsResource->initialize())
+			return false;
+	}
+
 	m_archiver = IArchiver::make(type, m_state.toolchain.archiver(), m_state, m_project);
+
 	m_linker = ILinker::make(type, m_state.toolchain.linker(), m_state, m_project);
-
-	if (!compilerCxx->initialize())
-		return false;
-
-	if (!compilerWindowsResource->initialize())
-		return false;
-
 	if (!m_linker->initialize())
 		return false;
 

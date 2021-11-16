@@ -46,13 +46,11 @@ ICompilerWinResource::ICompilerWinResource(const BuildState& inState, const Sour
 /*****************************************************************************/
 bool ICompilerWinResource::initialize()
 {
-#if defined(CHALET_WIN32)
 	if (!createWindowsApplicationManifest())
 		return false;
 
 	if (!createWindowsApplicationIcon())
 		return false;
-#endif
 
 	return true;
 }
