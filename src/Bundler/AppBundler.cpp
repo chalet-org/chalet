@@ -161,7 +161,6 @@ BuildState* AppBundler::getBuildState(const std::string& inBuildConfiguration) c
 bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 {
 	auto& bundle = inBundler.bundle();
-	const auto& buildOutputDir = inState.paths.buildOutputDir();
 	const auto& buildTargets = inBundler.bundle().buildTargets();
 
 	const auto bundlePath = inBundler.getBundlePath();
