@@ -35,3 +35,4 @@ _chalet_completions()
 }
 
 complete -o nospace -F _chalet_completions chalet
+complete -o nospace -F _chalet_completions chalet-debug
