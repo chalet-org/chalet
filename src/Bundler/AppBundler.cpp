@@ -235,9 +235,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 			if (!List::contains(buildTargets, project.name()))
 				continue;
 
-			const auto& outputFile = project.outputFile();
-			auto outputFilePath = fmt::format("{}/{}", buildOutputDir, outputFile);
-
+			auto outputFilePath = inState.paths.getTargetFilename(project);
 			if (project.isStaticLibrary())
 			{
 				List::addIfDoesNotExist(dependenciesToCopy, outputFilePath);
@@ -310,7 +308,6 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 		return true;
 
 	const auto& buildTargets = inTarget.buildTargets();
-	const auto& buildOutputDir = inState.paths.buildOutputDir();
 
 	m_dependencyMap.addExcludesFromList(inTarget.includes());
 	m_dependencyMap.clearSearchDirs();
@@ -342,8 +339,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 			if (!List::contains(buildTargets, project.name()))
 				continue;
 
-			const auto& outputFile = project.outputFile();
-			auto outputFilePath = fmt::format("{}/{}", buildOutputDir, outputFile);
+			auto outputFilePath = inState.paths.getTargetFilename(project);
 			if (project.isStaticLibrary())
 				continue;
 

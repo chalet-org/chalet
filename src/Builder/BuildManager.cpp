@@ -511,10 +511,10 @@ StringList BuildManager::getResolvedRunDependenciesList(const IBuildTarget& inTa
 }
 
 /*****************************************************************************/
-bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
+bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable)
 {
 	ProfilerRunner profiler(m_inputs, m_state, inProject);
-	return profiler.run(inCommand, inExecutable, inOutputFolder);
+	return profiler.run(inCommand, inExecutable);
 }
 
 /*****************************************************************************/
@@ -812,7 +812,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	if (inTarget.isSources() && m_state.configuration.enableProfiling())
 	{
 		auto& project = static_cast<const SourceTarget&>(inTarget);
-		return runProfiler(project, cmd, file, m_state.paths.buildOutputDir());
+		return runProfiler(project, cmd, file);
 	}
 	else
 	{

@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -27,7 +28,7 @@ ProfilerRunner::ProfilerRunner(const CommandLineInputs& inInputs, BuildState& in
 }
 
 /*****************************************************************************/
-bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
+bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecutable)
 {
 #if defined(CHALET_MACOS)
 	if (m_state.environment->isAppleClang())
@@ -68,11 +69,11 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 
 		if (xctraceAvailable || instrumentsAvailable)
 		{
-			return runWithInstruments(inCommand, inExecutable, inOutputFolder, useXcTrace);
+			return runWithInstruments(inCommand, inExecutable, useXcTrace);
 		}
 		else
 		{
-			return runWithSample(inCommand, inExecutable, inOutputFolder);
+			return runWithSample(inCommand, inExecutable);
 		}
 	}
 #endif
@@ -80,7 +81,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 	{
 		if (m_state.toolchain.isProfilerGprof())
 		{
-			return ProfilerRunner::runWithGprof(inCommand, inExecutable, inOutputFolder);
+			return ProfilerRunner::runWithGprof(inCommand, inExecutable);
 		}
 	}
 
@@ -89,12 +90,11 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 }
 
 /*****************************************************************************/
-bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
+bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable)
 {
 	const bool result = Commands::subprocess(inCommand);
 
-	const auto& outputFile = m_project.outputFile();
-	auto outFile = fmt::format("{}/{}", inOutputFolder, outputFile);
+	auto outFile = m_state.paths.getTargetFilename(m_project);
 	m_inputs.clearWorkingDirectory(outFile);
 
 	auto message = fmt::format("{} exited with code: {}", outFile, ProcessController::getLastExitCode());
@@ -106,7 +106,8 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	Diagnostic::info("Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
 
-	const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
+	const auto& buildDir = m_state.paths.buildOutputDir();
+	const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", buildDir);
 	Output::msgProfilerStartedGprof(profStatsFile);
 	Output::lineBreak();
 
@@ -125,12 +126,13 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 #if defined(CHALET_MACOS)
 
 /*****************************************************************************/
-bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder, const bool inUseXcTrace)
+bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::string& inExecutable, const bool inUseXcTrace)
 {
 	// TOOD: profile could be defined elsewhere (maybe the cache json?)
 	std::string profile = "Time Profiler";
 
-	auto instrumentsTrace = fmt::format("{}/profiler_analysis.trace", inOutputFolder);
+	const auto& buildDir = m_state.paths.buildOutputDir();
+	auto instrumentsTrace = fmt::format("{}/profiler_analysis.trace", buildDir);
 	if (Commands::pathExists(instrumentsTrace))
 	{
 		if (!Commands::removeRecursively(instrumentsTrace))
@@ -189,10 +191,10 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 }
 
 /*****************************************************************************/
-bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder)
+bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::string& inExecutable)
 {
-
-	auto profStatsFile = fmt::format("{}/profiler_analysis.stats", inOutputFolder);
+	const auto& buildDir = m_state.paths.buildOutputDir();
+	auto profStatsFile = fmt::format("{}/profiler_analysis.stats", buildDir);
 
 	bool sampleResult = true;
 	auto onCreate = [&](int pid) -> void {

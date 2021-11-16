@@ -57,7 +57,7 @@ private:
 	bool runCMakeTarget(const CMakeTarget& inTarget);
 	std::string getRunTarget();
 	bool createAppBundle();
-	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
+	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;

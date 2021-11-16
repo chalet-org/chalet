@@ -17,13 +17,13 @@ class ProfilerRunner
 public:
 	explicit ProfilerRunner(const CommandLineInputs& inInputs, BuildState& inState, const SourceTarget& inProject);
 
-	bool run(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
+	bool run(const StringList& inCommand, const std::string& inExecutable);
 
 private:
-	bool runWithGprof(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
+	bool runWithGprof(const StringList& inCommand, const std::string& inExecutable);
 #if defined(CHALET_MACOS)
-	bool runWithInstruments(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder, const bool inUseXcTrace);
-	bool runWithSample(const StringList& inCommand, const std::string& inExecutable, const std::string& inOutputFolder);
+	bool runWithInstruments(const StringList& inCommand, const std::string& inExecutable, const bool inUseXcTrace);
+	bool runWithSample(const StringList& inCommand, const std::string& inExecutable);
 #endif
 
 	const CommandLineInputs& m_inputs;
