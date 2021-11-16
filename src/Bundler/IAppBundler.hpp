@@ -6,7 +6,7 @@
 #ifndef CHALET_IAPP_BUNDLER_HPP
 #define CHALET_IAPP_BUNDLER_HPP
 
-#include "Bundler/BinaryDependencyMap.hpp"
+#include "Builder/BinaryDependencyMap.hpp"
 
 namespace chalet
 {

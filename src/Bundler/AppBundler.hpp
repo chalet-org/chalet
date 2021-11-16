@@ -6,7 +6,7 @@
 #ifndef CHALET_APP_BUNDLER_HPP
 #define CHALET_APP_BUNDLER_HPP
 
-#include "Bundler/BinaryDependencyMap.hpp"
+#include "Builder/BinaryDependencyMap.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 
 namespace chalet
@@ -25,9 +25,7 @@ struct AppBundler
 
 	bool run(const DistTarget& inTarget);
 
-	const BinaryDependencyMap& dependencyMap() const noexcept;
 	bool gatherDependencies(const BundleTarget& inTarget, BuildState& inState);
-	void logDependencies() const;
 
 private:
 	bool runBundleTarget(IAppBundler& inBundler, BuildState& inState);

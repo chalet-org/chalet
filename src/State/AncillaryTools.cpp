@@ -10,8 +10,6 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
-#include "Utility/DependencyWalker.hpp"
-#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -631,121 +629,6 @@ bool AncillaryTools::plistConvertToJson(const std::string& inInput, const std::s
 #else
 	UNUSED(inInput, inOutput);
 	return false;
-#endif
-}
-
-/*****************************************************************************/
-bool AncillaryTools::getExecutableDependencies(const std::string& inPath, StringList& outList) const
-{
-#if defined(CHALET_WIN32)
-	DependencyWalker depsWalker;
-	if (!depsWalker.read(inPath, outList))
-	{
-		Diagnostic::error("Dependencies for file '{}' could not be read.", inPath);
-		return false;
-	}
-
-	return true;
-#else
-	#if defined(CHALET_MACOS)
-	if (m_otool.empty())
-	{
-		Diagnostic::error("Dependencies for file '{}' could not be read. 'otool' was not found in cache.", inPath);
-		return false;
-	}
-	#else
-	if (m_ldd.empty())
-	{
-		Diagnostic::error("Dependencies for file '{}' could not be read. 'ldd' was not found in cache.", inPath);
-		return false;
-	}
-	#endif
-
-	CHALET_TRY
-	{
-		StringList cmd;
-	#if defined(CHALET_MACOS)
-		cmd = { m_otool, "-L", inPath };
-	#else
-		// This block detects the dependencies of each target and adds them to a list
-		// The list resolves each path, favoring the paths supplied by chalet.json
-		// Note: this doesn't seem to work in standalone builds of GCC (tested 7.3.0)
-		//   but works fine w/ MSYS2
-		cmd = { m_ldd, inPath };
-	#endif
-		std::string targetDeps = Commands::subprocessOutput(cmd);
-
-		std::string line;
-		std::istringstream stream(targetDeps);
-
-		while (std::getline(stream, line))
-		{
-			std::size_t beg = 0;
-
-			if (String::startsWith("Archive", line))
-				break;
-
-			if (String::startsWith(inPath, line))
-				continue;
-
-			while (line[beg] == '\t' || line[beg] == ' ')
-				beg++;
-
-	#if defined(CHALET_MACOS)
-			std::size_t end = line.find(".dylib");
-			if (end == std::string::npos)
-			{
-				end = line.find(".framework");
-				if (end == std::string::npos)
-				{
-					continue;
-				}
-				else
-				{
-					end += 10;
-				}
-			}
-			else
-			{
-				end += 6;
-			}
-	#else
-			std::size_t end = line.find("=>");
-			if (end != std::string::npos && end > 0)
-				end--;
-	#endif
-
-			std::string dependency = line.substr(beg, end - beg);
-	#if defined(CHALET_MACOS)
-			if (String::startsWith("/System/Library/Frameworks/", dependency))
-				continue;
-
-			// rpath, etc
-			// We just want the main filename, and will try to resolve the path later
-			//
-			if (String::startsWith('@', dependency) || String::contains(".framework", dependency))
-			{
-				auto lastSlash = dependency.find_last_of('/');
-				if (lastSlash != std::string::npos)
-					dependency = dependency.substr(lastSlash + 1);
-			}
-	#else
-			dependency = Commands::which(String::getPathFilename(dependency));
-	#endif
-
-			if (dependency.empty())
-				continue;
-
-			List::addIfDoesNotExist(outList, std::move(dependency));
-		}
-
-		return true;
-	}
-	CHALET_CATCH(const std::runtime_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what());
-		return false;
-	}
 #endif
 }
 

@@ -61,7 +61,9 @@ bool CmakeBuilder::run()
 	auto oldNinjaStatus = Environment::getAsString(kNinjaStatus);
 
 	auto onRunFailure = [this, &oldNinjaStatus, &isNinja]() -> bool {
+#if defined(CHALET_WIN32)
 		Output::previousLine();
+#endif
 
 		if (!m_target.recheck())
 			Commands::removeRecursively(m_outputLocation);

@@ -166,7 +166,7 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath) const
+bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath) const
 {
 	for (auto& [file, dependencies] : inDependencyMap)
 	{
