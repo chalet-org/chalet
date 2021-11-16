@@ -78,7 +78,7 @@ OrderedDictionary<VisualStudioVersion> getIntelClassicVSPresets()
 {
 	return {
 		{ "intel-classic-vs-2017", VisualStudioVersion::VisualStudio2017 },
-		{ "intel-classic-vs-2019", VisualStudioVersion::VisualStudio2019 },
+		// { "intel-classic-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		// { "intel-classic-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};
 }
@@ -87,7 +87,7 @@ OrderedDictionary<VisualStudioVersion> getIntelClassicVSPresets()
 OrderedDictionary<VisualStudioVersion> getIntelClangVSPresets()
 {
 	return {
-		{ "intel-llvm-vs-2017", VisualStudioVersion::VisualStudio2017 },
+		// { "intel-llvm-vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "intel-llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		// { "intel-llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};

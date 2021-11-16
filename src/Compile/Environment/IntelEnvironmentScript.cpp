@@ -36,8 +36,12 @@ bool IntelEnvironmentScript::makeEnvironment(const BuildState& inState)
 	if (!m_envVarsFileDeltaExists)
 	{
 #if defined(CHALET_WIN32)
-		auto oneApiRoot = Environment::get("ONEAPI_ROOT");
+		auto oneApiRoot = Environment::getAsString("ONEAPI_ROOT");
+		if (oneApiRoot.back() == '/' || oneApiRoot.back() == '\\')
+			oneApiRoot.pop_back();
+
 		m_intelSetVars = fmt::format("{}/setvars.bat", oneApiRoot);
+		Path::sanitize(m_intelSetVars);
 #else
 		const auto& home = m_inputs.homeDirectory();
 		m_intelSetVars = fmt::format("{}/intel/oneapi/setvars.sh", home);

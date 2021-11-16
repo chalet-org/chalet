@@ -198,6 +198,9 @@ bool BuildState::parseToolchainFromSettingsJson()
 	ToolchainType type = ICompileEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path);
 	if (preference.type != ToolchainType::Unknown && preference.type != type)
 	{
+		// TODO: If using intel clang on windows, and another clang.exe is found in Path, this gets triggered
+		//
+
 		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", m_impl->inputs.toolchainPreferenceName(), Environment::getPathKey());
 		return false;
 	}
