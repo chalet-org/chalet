@@ -936,11 +936,13 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			ret.linker = inValue;
 			ret.disassembler = inValue;
 			ret.profiler = inValue;
+			ret.rc = inValue;
 			String::replaceAll(ret.cpp, "-gcc-", "-g++-");
 			String::replaceAll(ret.archiver, "-gcc-", "-gcc-ar-");
 			String::replaceAll(ret.linker, "-gcc-", "-ld-");
 			String::replaceAll(ret.disassembler, "-gcc-", "-objdump-");
 			String::replaceAll(ret.profiler, "-gcc-", "-gprof-");
+			String::replaceAll(ret.rc, "-gcc-", "-windres-");
 		}
 		else
 		{
@@ -950,8 +952,8 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			ret.linker = fmt::format("{}ld{}", prefix, suffix);
 			ret.disassembler = fmt::format("{}objdump{}", prefix, suffix);
 			ret.profiler = fmt::format("{}gprof{}", prefix, suffix);
+			ret.rc = fmt::format("{}windres{}", prefix, suffix);
 		}
-		ret.rc = "windres";
 	}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
