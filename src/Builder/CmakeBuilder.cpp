@@ -352,7 +352,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			outList.emplace_back("-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"");
 	}*/
 #elif defined(CHALET_MACOS)
-	if (!isDefined["CMAKE_OSX_ARCHITECTURES"])
+	if (m_state.environment->isAppleClang() && !isDefined["CMAKE_OSX_ARCHITECTURES"])
 	{
 		if (!m_state.info.universalArches().empty())
 		{
