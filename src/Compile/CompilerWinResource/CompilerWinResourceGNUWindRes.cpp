@@ -25,7 +25,7 @@ StringList CompilerWinResourceGNUWindRes::getCommand(const std::string& inputFil
 {
 	StringList ret;
 
-	if (m_state.toolchain.compilerWindowsResource().empty())
+	if (!m_state.toolchain.canCompilerWindowsResources())
 		return ret;
 
 	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.compilerWindowsResource()));

@@ -132,9 +132,12 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 		}
 	}
 
-	for (auto& ext : String::filterIf(m_state.paths.resourceExtensions(), inOutputs.fileExtensions))
+	if (m_state.toolchain.canCompilerWindowsResources())
 	{
-		recipes += getRcRecipe(ext, pchTarget);
+		for (auto& ext : String::filterIf(m_state.paths.resourceExtensions(), inOutputs.fileExtensions))
+		{
+			recipes += getRcRecipe(ext, pchTarget);
+		}
 	}
 
 	recipes += getTargetRecipe(inOutputs.target);

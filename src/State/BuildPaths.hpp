@@ -40,7 +40,6 @@ struct BuildPaths
 
 	std::string getTargetFilename(const SourceTarget& inProject) const;
 	std::string getTargetBasename(const SourceTarget& inProject) const;
-	std::string getPrecompiledHeader(const SourceTarget& inProject) const;
 	std::string getPrecompiledHeaderTarget(const SourceTarget& inProject) const;
 	std::string getPrecompiledHeaderInclude(const SourceTarget& inProject) const;
 	std::string getWindowsManifestFilename(const SourceTarget& inProject) const;

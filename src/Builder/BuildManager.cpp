@@ -426,8 +426,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 
 	if (inRoute == Route::Rebuild)
 	{
-		bool fullClean = true;
-		doClean(inProject, outputs.target, outputs.groups, fullClean);
+		doClean(inProject, outputs.target, outputs.groups);
 	}
 
 	if (!m_strategy->addProject(inProject, std::move(outputs), buildToolchain))
@@ -558,15 +557,42 @@ bool BuildManager::doLazyClean()
 }
 
 /*****************************************************************************/
-bool BuildManager::doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups, const bool inFullClean)
+bool BuildManager::doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups)
 {
-	auto pch = m_state.paths.getPrecompiledHeader(inProject);
+	SourceFileGroupList pches;
+	if (inProject.usesPch())
+	{
+		auto pch = m_state.paths.getPrecompiledHeaderTarget(inProject);
+		auto baseFolder = String::getPathFolder(pch);
+		auto object = String::getPathFilename(pch);
+		auto source = String::getPathFilename(inProject.pch());
+#if defined(CHALET_MACOS)
+		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
+		{
+			for (auto& arch : m_state.info.universalArches())
+			{
+				auto outPch = std::make_unique<SourceFileGroup>();
+				outPch->type = SourceType::CxxPrecompiledHeader;
+				outPch->sourceFile = fmt::format("{}_{}/{}", baseFolder, arch, source);
+				outPch->dependencyFile = fmt::format("{}.d", outPch->sourceFile);
+				outPch->objectFile = fmt::format("{}_{}/{}", baseFolder, arch, object);
+				pches.emplace_back(std::move(outPch));
+			}
+		}
+		else
+#endif
+		{
+			auto outPch = std::make_unique<SourceFileGroup>();
+			outPch->type = SourceType::CxxPrecompiledHeader;
+			outPch->sourceFile = fmt::format("{}/{}", baseFolder, source);
+			outPch->dependencyFile = fmt::format("{}.d", outPch->sourceFile);
+			outPch->objectFile = fmt::format("{}/{}", baseFolder, object);
+			pches.emplace_back(std::move(outPch));
+		}
+	}
 
 	auto cacheAndRemove = [=](const std::string& inFile, StringList& outCache) -> void {
 		if (inFile.empty())
-			return;
-
-		if (!inFullClean && (inProject.usesPch() && String::contains(pch, inFile)))
 			return;
 
 		if (List::contains(outCache, inFile))
@@ -597,8 +623,18 @@ bool BuildManager::doClean(const SourceTarget& inProject, const std::string& inT
 #endif
 	}
 
+	for (auto& group : pches)
+	{
+		cacheAndRemove(group->sourceFile, m_removeCache);
+		cacheAndRemove(group->objectFile, m_removeCache);
+		cacheAndRemove(group->dependencyFile, m_removeCache);
+	}
+
 	for (auto& group : inGroups)
 	{
+		if (group->type == SourceType::CxxPrecompiledHeader)
+			continue;
+
 		cacheAndRemove(group->objectFile, m_removeCache);
 		cacheAndRemove(group->dependencyFile, m_removeCache);
 	}

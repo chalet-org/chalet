@@ -269,7 +269,7 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool i
 	ret.directories.push_back(m_buildOutputDir);
 	ret.directories.push_back(objDir());
 
-	if (!m_state.toolchain.compilerWindowsResource().empty())
+	if (m_state.toolchain.canCompilerWindowsResources())
 	{
 		// so far, intermediateDir is just used with resource files
 		if (!inProject.isStaticLibrary())
@@ -360,18 +360,6 @@ std::string BuildPaths::getTargetBasename(const SourceTarget& inProject) const
 	}
 
 	return fmt::format("{}/{}", buildOutputDir(), base);
-}
-
-/*****************************************************************************/
-std::string BuildPaths::getPrecompiledHeader(const SourceTarget& inProject) const
-{
-	std::string ret;
-	if (inProject.usesPch())
-	{
-		ret = inProject.pch();
-	}
-
-	return ret;
 }
 
 /*****************************************************************************/
@@ -486,7 +474,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		if (type == SourceType::Unknown)
 			continue;
 
-		if (m_state.toolchain.compilerWindowsResource().empty() && type == SourceType::WindowsResource)
+		if (!m_state.toolchain.canCompilerWindowsResources() && type == SourceType::WindowsResource)
 			continue;
 
 		auto group = std::make_unique<SourceFileGroup>();
@@ -528,7 +516,7 @@ std::string BuildPaths::getObjectFile(const std::string& inSource, const bool in
 {
 	if (String::endsWith(m_resourceExts, inSource))
 	{
-		if (!m_state.toolchain.compilerWindowsResource().empty())
+		if (m_state.toolchain.canCompilerWindowsResources())
 			return fmt::format("{}/{}.res", objDir(), inSource);
 	}
 	else
@@ -878,7 +866,7 @@ BuildPaths::SourceGroup BuildPaths::getFiles(const SourceTarget& inProject) cons
 {
 	SourceGroup ret;
 	ret.list = getFileList(inProject);
-	ret.pch = getPrecompiledHeader(inProject);
+	ret.pch = inProject.pch();
 
 	return ret;
 }

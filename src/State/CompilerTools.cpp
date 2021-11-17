@@ -532,4 +532,9 @@ bool CompilerTools::isCompilerWindowsResourceLLVMRC() const noexcept
 	return m_isCompilerWindowsResourceLLVMRC;
 }
 
+bool CompilerTools::canCompilerWindowsResources() const noexcept
+{
+	return !m_compilerWindowsResource.empty();
+}
+
 }
