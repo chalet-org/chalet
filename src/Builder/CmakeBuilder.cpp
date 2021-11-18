@@ -402,6 +402,7 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 	auto& cmake = m_state.toolchain.cmake();
 	const auto maxJobs = m_state.info.maxJobs();
 	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
+	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 
 	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };
 
@@ -415,6 +416,11 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 		ret.emplace_back("--no-builtin-rules");
 		ret.emplace_back("--no-builtin-variables");
 		ret.emplace_back("--no-print-directory");
+	}
+	else if (isNinja && Output::showCommands())
+	{
+		ret.emplace_back("--");
+		ret.emplace_back("-v");
 	}
 
 	// LOG(String::join(ret));
