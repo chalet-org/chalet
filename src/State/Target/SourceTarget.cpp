@@ -601,6 +601,15 @@ void SourceTarget::setWindowsEntryPoint(const std::string& inValue)
 	m_windowsEntryPoint = parseWindowsEntryPoint(inValue);
 }
 
+bool SourceTarget::cppModules() const noexcept
+{
+	return m_cppModules;
+}
+void SourceTarget::setCppModules(const bool inValue) noexcept
+{
+	m_cppModules = inValue;
+}
+
 /*****************************************************************************/
 bool SourceTarget::objectiveCxx() const noexcept
 {

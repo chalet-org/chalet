@@ -22,6 +22,7 @@ struct BuildJsonProps
 	std::string langStandard;
 	CodeLanguage language = CodeLanguage::None;
 	CxxSpecialization specialization = CxxSpecialization::CPlusPlus;
+	bool modules = false;
 	bool makeGitRepository = false;
 	bool useLocation = true;
 	bool defaultConfigs = true;

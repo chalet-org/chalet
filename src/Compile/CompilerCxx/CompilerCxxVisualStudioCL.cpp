@@ -154,6 +154,16 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 		ret.emplace_back("/showIncludes");
 	}
 
+	addLanguageStandard(ret, specialization);
+
+	if (m_project.cppModules())
+	{
+		ret.emplace_back("/experimental:module");
+		ret.emplace_back("/interface");
+		ret.emplace_back(getPathCommand("/ifcOutput", m_state.paths.modulesDir()));
+		ret.emplace_back(getPathCommand("/ifcSearchDir", m_state.paths.modulesDir()));
+	}
+
 	addCompileOptions(ret);
 
 	{
@@ -185,7 +195,6 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	// addInlineFunctionExpansion(ret);
 	// addUnsortedOptions(ret);
 
-	addLanguageStandard(ret, specialization);
 	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
 

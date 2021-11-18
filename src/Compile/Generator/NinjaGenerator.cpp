@@ -273,7 +273,7 @@ rule rc_{hash}
 }
 
 /*****************************************************************************/
-std::string NinjaGenerator::getCRule()
+std::string NinjaGenerator::getCxxRule(const std::string inId, const CxxSpecialization inSpecialization)
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -286,15 +286,16 @@ std::string NinjaGenerator::getCRule()
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 	const auto depFile = getDepFile(dependency);
 
-	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::C));
+	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, inSpecialization));
 	if (!cppCompile.empty())
 	{
 		ret = fmt::format(R"ninja(
-rule cc_{hash}
+rule {id}_{hash}
   deps = {deps}{depFile}
   description = $in
   command = {cppCompile}
 )ninja",
+			fmt::arg("id", inId),
 			fmt::arg("hash", m_hash),
 			FMT_ARG(deps),
 			FMT_ARG(depFile),
@@ -302,102 +303,30 @@ rule cc_{hash}
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+std::string NinjaGenerator::getCRule()
+{
+	return getCxxRule("cc", CxxSpecialization::C);
 }
 
 /*****************************************************************************/
 std::string NinjaGenerator::getCppRule()
 {
-	chalet_assert(m_project != nullptr, "");
-	chalet_assert(m_toolchain != nullptr, "");
-
-	std::string ret;
-
-	const auto deps = getRuleDeps();
-
-	const auto& depDir = m_state.paths.depDir();
-	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
-	const auto depFile = getDepFile(dependency);
-
-	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::CPlusPlus));
-	if (!cppCompile.empty())
-	{
-		ret = fmt::format(R"ninja(
-rule cpp_{hash}
-  deps = {deps}{depFile}
-  description = $in
-  command = {cppCompile}
-)ninja",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(deps),
-			FMT_ARG(depFile),
-			FMT_ARG(cppCompile));
-	}
-
-	return ret;
+	return getCxxRule("cpp", CxxSpecialization::CPlusPlus);
 }
 
 /*****************************************************************************/
 std::string NinjaGenerator::getObjcRule()
 {
-	chalet_assert(m_project != nullptr, "");
-	chalet_assert(m_toolchain != nullptr, "");
-
-	std::string ret;
-
-	const auto deps = getRuleDeps();
-
-	const auto& depDir = m_state.paths.depDir();
-	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
-	const auto depFile = getDepFile(dependency);
-
-	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveC));
-	if (!cppCompile.empty())
-	{
-		ret = fmt::format(R"ninja(
-rule objc_{hash}
-  deps = {deps}{depFile}
-  description = $in
-  command = {cppCompile}
-)ninja",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(deps),
-			FMT_ARG(depFile),
-			FMT_ARG(cppCompile));
-	}
-
-	return ret;
+	return getCxxRule("objc", CxxSpecialization::ObjectiveC);
 }
 
 /*****************************************************************************/
 std::string NinjaGenerator::getObjcppRule()
 {
-	chalet_assert(m_project != nullptr, "");
-	chalet_assert(m_toolchain != nullptr, "");
-
-	std::string ret;
-
-	const auto deps = getRuleDeps();
-
-	const auto& depDir = m_state.paths.depDir();
-	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
-	const auto depFile = getDepFile(dependency);
-
-	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, CxxSpecialization::ObjectiveCPlusPlus));
-	if (!cppCompile.empty())
-	{
-		ret = fmt::format(R"ninja(
-rule objcpp_{hash}
-  deps = {deps}{depFile}
-  description = $in
-  command = {cppCompile}
-)ninja",
-			fmt::arg("hash", m_hash),
-			FMT_ARG(deps),
-			FMT_ARG(depFile),
-			FMT_ARG(cppCompile));
-	}
-
-	return ret;
+	return getCxxRule("objcpp", CxxSpecialization::ObjectiveCPlusPlus);
 }
 
 /*****************************************************************************/

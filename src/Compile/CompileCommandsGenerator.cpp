@@ -29,7 +29,6 @@ CompileCommandsGenerator::~CompileCommandsGenerator() = default;
 bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain, SourceOutputs& inOutputs)
 {
 	auto getCommand = [&inToolchain](const SourceFileGroup& group) -> StringList {
-		StringList ret;
 		const auto& source = group.sourceFile;
 		const auto& object = group.objectFile;
 		bool generateDeps = false;
@@ -58,7 +57,7 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 				break;
 		}
 
-		return ret;
+		return StringList();
 	};
 
 	for (auto& group : inOutputs.groups)

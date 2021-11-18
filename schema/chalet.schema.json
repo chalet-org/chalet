@@ -810,6 +810,9 @@
 				"threads": {
 					"$ref": "#/definitions/source-target-cxx-threads"
 				},
+				"cppModules": {
+					"$ref": "#/definitions/source-target-cxx-cppModules"
+				},
 				"rtti": {
 					"$ref": "#/definitions/source-target-cxx-rtti"
 				},
@@ -885,6 +888,9 @@
 				},
 				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-threads"
+				},
+				"^modules(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-cppModules"
 				},
 				"^rtti(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-rtti"
@@ -1026,6 +1032,11 @@
 				"none"
 			],
 			"default": "auto"
+		},
+		"source-target-cxx-cppModules": {
+			"type": "boolean",
+			"description": "true to enable C++20 modules, false to disable (default).",
+			"default": true
 		},
 		"source-target-cxx-rtti": {
 			"type": "boolean",

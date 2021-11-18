@@ -509,6 +509,9 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 	if (bool val = false; parseKeyFromConfig(val, inNode, "rtti"))
 		outTarget.setRtti(val);
 
+	if (bool val = false; parseKeyFromConfig(val, inNode, "cppModules"))
+		outTarget.setCppModules(val);
+
 	if (bool val = false; parseKeyFromConfig(val, inNode, "exceptions"))
 		outTarget.setExceptions(val);
 

@@ -409,6 +409,31 @@ bool BuildState::validateState()
 		if (target->isSources())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
+			if (project.cppModules())
+			{
+				if (project.language() != CodeLanguage::CPlusPlus)
+				{
+					Diagnostic::error("{}: C++ modules are only supported with C++. Found C target with 'modules' enabled.", m_impl->inputs.inputFile());
+					return false;
+				}
+
+				if (project.objectiveCxx())
+				{
+					Diagnostic::error("{}: C++ modules are not supported alongside Objective-C++", m_impl->inputs.inputFile());
+					return false;
+				}
+
+				auto langStandard = project.cppStandard();
+				String::replaceAll(langStandard, "gnu++", "");
+				String::replaceAll(langStandard, "c++", "");
+
+				if (langStandard.empty() || langStandard.front() != '2')
+				{
+					Diagnostic::error("{}: C++ modules are only supported with the c++20 standard or higher.", m_impl->inputs.inputFile());
+					return false;
+				}
+			}
+
 			if (!environment->isAppleClang() && project.objectiveCxx())
 			{
 				Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang.", m_impl->inputs.inputFile());

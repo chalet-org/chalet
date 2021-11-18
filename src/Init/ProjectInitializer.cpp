@@ -103,6 +103,9 @@ bool ProjectInitializer::initializeNormalWorkspace(BuildJsonProps& outProps)
 	outProps.specialization = specialization;
 
 	outProps.langStandard = getLanguageStandard(outProps.language);
+	outProps.modules = getUseCxxModules(outProps.language, outProps.langStandard);
+	m_sourceExts = getSourceExtensions(outProps.specialization, outProps.modules);
+
 	outProps.useLocation = getUseLocation();
 	outProps.location = getRootSourceDirectory();
 	outProps.mainSource = getMainSourceFile(outProps.language);
@@ -114,7 +117,7 @@ bool ProjectInitializer::initializeNormalWorkspace(BuildJsonProps& outProps)
 	printUserInputSplit();
 
 	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.specialization);
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.specialization, outProps.modules);
 		String::replaceAll(mainCpp, '\t', "   ");
 		return mainCpp;
 	});
@@ -164,7 +167,7 @@ bool ProjectInitializer::initializeCMakeWorkspace(BuildJsonProps& outProps)
 	printUserInputSplit();
 
 	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.specialization);
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.specialization, outProps.modules);
 		String::replaceAll(mainCpp, '\t', "   ");
 		return mainCpp;
 	});
@@ -310,7 +313,7 @@ bool ProjectInitializer::makeBuildJson(const BuildJsonProps& inProps)
 bool ProjectInitializer::makeMainCpp(const BuildJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.mainSource);
-	const auto contents = StarterFileTemplates::getMainCxx(inProps.language, inProps.specialization);
+	const auto contents = StarterFileTemplates::getMainCxx(inProps.specialization, inProps.modules);
 
 	return Commands::createFileWithContents(outFile, contents);
 }
@@ -521,11 +524,10 @@ std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage i
 }
 
 /*****************************************************************************/
-std::pair<CodeLanguage, CxxSpecialization> ProjectInitializer::getCodeLanguage()
+std::pair<CodeLanguage, CxxSpecialization> ProjectInitializer::getCodeLanguage() const
 {
 	std::pair<CodeLanguage, CxxSpecialization> ret;
 
-	m_sourceExts.clear();
 #if defined(CHALET_MACOS)
 	StringList allowedLangs{ "C++", "C", "Objective-C", "Objective-C++" };
 #else
@@ -541,29 +543,58 @@ std::pair<CodeLanguage, CxxSpecialization> ProjectInitializer::getCodeLanguage()
 	{
 		ret.first = CodeLanguage::C;
 		ret.second = CxxSpecialization::C;
-		m_sourceExts.emplace_back(".c");
 	}
 #if defined(CHALET_MACOS)
 	else if (String::equals("Objective-C", language))
 	{
 		ret.first = CodeLanguage::C;
 		ret.second = CxxSpecialization::ObjectiveC;
-		m_sourceExts.emplace_back(".m");
 	}
 	else if (String::equals("Objective-C++", language))
 	{
 		ret.first = CodeLanguage::CPlusPlus;
 		ret.second = CxxSpecialization::ObjectiveCPlusPlus;
-		m_sourceExts.emplace_back(".mm");
 	}
 #endif
 	else
 	{
 		ret.first = CodeLanguage::CPlusPlus;
 		ret.second = CxxSpecialization::CPlusPlus;
-		m_sourceExts.emplace_back(".cpp");
-		m_sourceExts.emplace_back(".cxx");
-		m_sourceExts.emplace_back(".cc");
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList ProjectInitializer::getSourceExtensions(const CxxSpecialization inCxxSpecialization, const bool inModules) const
+{
+	StringList ret;
+	if (inCxxSpecialization == CxxSpecialization::C)
+	{
+		ret.emplace_back(".c");
+	}
+#if defined(CHALET_MACOS)
+	else if (inCxxSpecialization == CxxSpecialization::ObjectiveCPlusPlus)
+	{
+		ret.emplace_back(".mm");
+	}
+	else if (inCxxSpecialization == CxxSpecialization::C)
+	{
+		ret.emplace_back(".m");
+	}
+#endif
+	else
+	{
+		if (inModules)
+		{
+			ret.emplace_back(".cppm");
+			ret.emplace_back(".ixx");
+			ret.emplace_back(".mxx");
+		}
+
+		ret.emplace_back(".cpp");
+		ret.emplace_back(".cxx");
+		ret.emplace_back(".cc");
 	}
 
 	return ret;
@@ -590,6 +621,23 @@ std::string ProjectInitializer::getLanguageStandard(const CodeLanguage inLang) c
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+bool ProjectInitializer::getUseCxxModules(const CodeLanguage inLang, std::string langStandard) const
+{
+	if (inLang != CodeLanguage::CPlusPlus)
+		return false;
+
+	String::replaceAll(langStandard, "gnu++", "");
+	String::replaceAll(langStandard, "c++", "");
+
+	if (!langStandard.empty() && langStandard.front() == '2')
+	{
+		return Output::getUserInputYesNo("Enable C++20 modules?", false, "If true, C++ source files in are treated as modules (experimental)");
+	}
+
+	return false;
 }
 
 /*****************************************************************************/
@@ -651,5 +699,4 @@ void ProjectInitializer::printUserInputSplit() const
 	Output::lineBreak();
 	Output::printSeparator();
 }
-
 }

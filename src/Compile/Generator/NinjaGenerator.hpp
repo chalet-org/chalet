@@ -38,6 +38,8 @@ private:
 	std::string getObjcRule();
 	std::string getObjcppRule();
 
+	std::string getCxxRule(const std::string inId, const CxxSpecialization inSpecialization);
+
 	std::string getLinkRule();
 
 	std::string getPchBuildRule(const std::string& pchTarget);

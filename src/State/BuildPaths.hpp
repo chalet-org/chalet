@@ -25,16 +25,13 @@ struct BuildPaths
 	const std::string& outputDirectory() const noexcept;
 	const std::string& buildOutputDir() const noexcept;
 	const std::string& objDir() const noexcept;
+	const std::string& modulesDir() const noexcept;
 	const std::string& depDir() const noexcept;
 	const std::string& asmDir() const noexcept;
 	const std::string& intermediateDir() const noexcept;
 
 	const StringList& allFileExtensions() const noexcept;
-	const StringList& cExtensions() const noexcept;
-	const StringList& cppExtensions() const noexcept;
 	StringList cxxExtensions() const noexcept;
-	const StringList& objectiveCExtensions() const noexcept;
-	const StringList& objectiveCppExtensions() const noexcept;
 	StringList objectiveCxxExtensions() const noexcept;
 	const StringList& resourceExtensions() const noexcept;
 
@@ -83,6 +80,7 @@ private:
 
 	const StringList m_cExts;
 	const StringList m_cppExts;
+	const StringList m_cppModuleExts;
 	const StringList m_resourceExts;
 	const StringList m_objectiveCExts;
 	const StringList m_objectiveCppExts;
@@ -96,6 +94,7 @@ private:
 
 	std::string m_buildOutputDir;
 	std::string m_objDir;
+	std::string m_modulesDir;
 	std::string m_depDir;
 	std::string m_asmDir;
 	std::string m_intermediateDir;

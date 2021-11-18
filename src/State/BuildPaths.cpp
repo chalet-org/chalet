@@ -36,6 +36,11 @@ BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const BuildState& inSt
 		"CXX",
 		"C++",
 	}),
+	m_cppModuleExts({
+		"cppm",
+		"mxx",
+		"ixx",
+	}),
 	m_resourceExts({
 		"rc",
 		"RC",
@@ -147,6 +152,12 @@ const std::string& BuildPaths::objDir() const noexcept
 	return m_objDir;
 }
 
+const std::string& BuildPaths::modulesDir() const noexcept
+{
+	chalet_assert(!m_modulesDir.empty(), "BuildPaths::modulesDir() called before BuildPaths::initialize().");
+	return m_modulesDir;
+}
+
 const std::string& BuildPaths::depDir() const noexcept
 {
 	chalet_assert(!m_depDir.empty(), "BuildPaths::depDir() called before BuildPaths::initialize().");
@@ -170,25 +181,9 @@ const StringList& BuildPaths::allFileExtensions() const noexcept
 {
 	return m_allFileExtensions;
 }
-const StringList& BuildPaths::cExtensions() const noexcept
-{
-	return m_cExts;
-}
-const StringList& BuildPaths::cppExtensions() const noexcept
-{
-	return m_cppExts;
-}
 StringList BuildPaths::cxxExtensions() const noexcept
 {
-	return List::combine(m_cExts, m_cppExts);
-}
-const StringList& BuildPaths::objectiveCExtensions() const noexcept
-{
-	return m_objectiveCExts;
-}
-const StringList& BuildPaths::objectiveCppExtensions() const noexcept
-{
-	return m_objectiveCppExts;
+	return List::combine(m_cExts, m_cppExts, m_cppModuleExts);
 }
 StringList BuildPaths::objectiveCxxExtensions() const noexcept
 {
@@ -213,6 +208,11 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 		m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 		// m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 		m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
+	}
+
+	if (inProject.cppModules())
+	{
+		m_modulesDir = fmt::format("{}/modules", m_buildOutputDir);
 	}
 
 	m_depDir = m_objDir;
@@ -268,6 +268,11 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool i
 
 	ret.directories.push_back(m_buildOutputDir);
 	ret.directories.push_back(objDir());
+
+	if (inProject.cppModules())
+	{
+		ret.directories.push_back(modulesDir());
+	}
 
 	if (m_state.toolchain.canCompilerWindowsResources())
 	{
@@ -552,7 +557,7 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 	const auto ext = String::getPathSuffix(inSource);
 	if (!ext.empty())
 	{
-		if (String::equals(m_cppExts, ext))
+		if (String::equals(m_cppExts, ext) || String::equals(m_cppModuleExts, ext))
 		{
 			return SourceType::CPlusPlus;
 		}
@@ -623,7 +628,7 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 	auto manifestResource = getWindowsManifestResourceFilename(inProject);
 	auto iconResource = getWindowsIconResourceFilename(inProject);
 
-	StringList extensions = List::combine(m_cExts, m_cppExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
+	StringList extensions = List::combine(m_cExts, m_cppExts, m_cppModuleExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
 
 	const auto& files = inProject.files();
 	if (files.size() > 0)

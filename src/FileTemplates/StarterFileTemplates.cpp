@@ -89,6 +89,14 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 		ret[kTargets][project][kSettingsCxx]["pch"] = fmt::format("{}/{}", inProps.location, inProps.precompiledHeader);
 	}
 
+	if (inProps.modules)
+	{
+		if (!ret[kTargets][project][kSettingsCxx].is_object())
+			ret[kTargets][project][kSettingsCxx] = Json::object();
+
+		ret[kTargets][project][kSettingsCxx]["cppModules"] = true;
+	}
+
 	ret[kDistribution] = Json::object();
 	ret[kDistribution][project] = Json::object();
 	ret[kDistribution][project]["kind"] = "bundle";
@@ -99,28 +107,27 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage, const CxxSpecialization inSpecialization)
+std::string StarterFileTemplates::getMainCxx(const CxxSpecialization inSpecialization, const bool inModules)
 {
 	std::string ret;
-	if (inLanguage == CodeLanguage::CPlusPlus)
+	if (inSpecialization == CxxSpecialization::CPlusPlus)
 	{
-		if (inSpecialization == CxxSpecialization::ObjectiveCPlusPlus)
+		if (inModules)
 		{
-			ret = R"objc(#import <Foundation/Foundation.h>
+			ret = R"cpp(import <iostream>;
 
-int main(int argc, const char * argv[])
+int main(const int argc, const char* const argv[])
 {
-	@autoreleasepool {
-		NSLog(@"Hello, World!\n");
-		NSLog(@"Args:");
+	std::cout << "Hello world!\n\n";
+	std::cout << "Args:\n";
 
-		for (int i=0; i < argc; ++i)
-		{
-			NSLog(@"%@\n", @(argv[i]));
-		}
+	for (int i=0; i < argc; ++i)
+	{
+		std::cout << "  " << argv[i] << '\n';
 	}
+
 	return 0;
-})objc";
+})cpp";
 		}
 		else
 		{
@@ -140,11 +147,27 @@ int main(const int argc, const char* const argv[])
 })cpp";
 		}
 	}
-	else
+	else if (inSpecialization == CxxSpecialization::C)
 	{
-		if (inSpecialization == CxxSpecialization::ObjectiveC)
-		{
-			ret = R"objc(#import <Foundation/Foundation.h>
+
+		ret = R"c(#include <stdio.h>
+
+int main(const int argc, const char* const argv[])
+{
+	printf("Hello, World!\n\n");
+	printf("Args:\n");
+
+	for (int i=0; i < argc; ++i)
+	{
+		printf("%s\n",argv[i]);
+	}
+
+	return 0;
+})c";
+	}
+	else if (inSpecialization == CxxSpecialization::ObjectiveCPlusPlus)
+	{
+		ret = R"objc(#import <Foundation/Foundation.h>
 
 int main(int argc, const char * argv[])
 {
@@ -159,24 +182,25 @@ int main(int argc, const char * argv[])
 	}
 	return 0;
 })objc";
-		}
-		else
-		{
-			ret = R"c(#include <stdio.h>
-
-int main(const int argc, const char* const argv[])
-{
-	printf("Hello, World!\n\n");
-	printf("Args:\n");
-
-	for (int i=0; i < argc; ++i)
-	{
-		printf("%s\n",argv[i]);
 	}
 
-	return 0;
-})c";
+	else if (inSpecialization == CxxSpecialization::ObjectiveC)
+	{
+		ret = R"objc(#import <Foundation/Foundation.h>
+
+int main(int argc, const char * argv[])
+{
+	@autoreleasepool {
+		NSLog(@"Hello, World!\n");
+		NSLog(@"Args:");
+
+		for (int i=0; i < argc; ++i)
+		{
+			NSLog(@"%@\n", @(argv[i]));
 		}
+	}
+	return 0;
+})objc";
 	}
 
 	return ret;

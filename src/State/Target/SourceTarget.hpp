@@ -135,6 +135,9 @@ struct SourceTarget final : public IBuildTarget
 	void setWindowsEntryPoint(const WindowsEntryPoint inValue) noexcept;
 	void setWindowsEntryPoint(const std::string& inValue);
 
+	bool cppModules() const noexcept;
+	void setCppModules(const bool inValue) noexcept;
+
 	bool objectiveCxx() const noexcept;
 	void setObjectiveCxx(const bool inValue) noexcept;
 
@@ -202,6 +205,7 @@ private:
 	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;
 
+	bool m_cppModules = false;
 	bool m_objectiveCxx = false;
 	bool m_rtti = true;
 	bool m_exceptions = true;

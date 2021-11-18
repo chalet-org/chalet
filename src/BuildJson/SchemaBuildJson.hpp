@@ -75,6 +75,7 @@ class SchemaBuildJson
 		SourceTargetCxxMacOsFrameworks,
 		SourceTargetCxxPrecompiledHeader,
 		SourceTargetCxxThreads,
+		SourceTargetCxxModules,
 		SourceTargetCxxRunTimeTypeInfo,
 		SourceTargetCxxExceptions,
 		SourceTargetCxxStaticLinking,
