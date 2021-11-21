@@ -54,7 +54,7 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 {
 	std::string output;
 	auto onOutput = [&sourceFile, &output](std::string inData) {
-		if (String::startsWith(sourceFile, inData))
+		if (!sourceFile.empty() && String::startsWith(sourceFile, inData))
 			return;
 
 		output += std::move(inData);
@@ -199,7 +199,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 	auto& pre = inTarget.pre;
 	auto& post = inTarget.post;
 
-	auto&& [cmdColor, quiet, showCommmands, msvcCommand, renameAfterCommand] = inSettings;
+	auto&& [cmdColor, startIndex, total, quiet, showCommmands, msvcCommand, renameAfterCommand] = inSettings;
 
 	::signal(SIGINT, signalHandler);
 	::signal(SIGTERM, signalHandler);
@@ -228,12 +228,16 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 		  executeCommandCarriageReturn :
 		  executeCommand;
 
-	state.index = 1;
-	uint totalCompiles = static_cast<uint>(list.size());
-	totalCompiles += static_cast<uint>(pre.size());
+	state.index = startIndex > 0 ? startIndex : 1;
+	uint totalCompiles = total;
+	if (totalCompiles == 0)
+	{
+		totalCompiles = static_cast<uint>(list.size());
+		totalCompiles += static_cast<uint>(pre.size());
 
-	if (!post.command.empty())
-		++totalCompiles;
+		if (!post.command.empty())
+			++totalCompiles;
+	}
 
 	m_reset = Output::getAnsiStyle(Color::Reset);
 	auto color = Output::getAnsiStyle(cmdColor);

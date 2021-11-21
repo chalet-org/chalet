@@ -80,6 +80,7 @@ void msgTargetDescription(const std::string& inDescription, const Color inColor)
 void msgRun(const std::string& inName);
 void msgScanningForModuleDependencies();
 void msgBuildingRequiredHeaderUnits();
+void msgModulesCompiling();
 
 // void msgRemoving(const std::string& inPath);
 void msgCopying(const std::string& inFrom, const std::string& inTo);

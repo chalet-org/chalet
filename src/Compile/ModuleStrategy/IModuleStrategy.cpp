@@ -52,6 +52,17 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, const SourceOu
 	m_oldStrategy = m_state.toolchain.strategy();
 	m_state.toolchain.setStrategy(StrategyType::Native);
 
+	if (m_msvcToolsDirectory.empty())
+	{
+		m_msvcToolsDirectory = Environment::getAsString("VCToolsInstallDir");
+		Path::sanitize(m_msvcToolsDirectory);
+	}
+
+	const auto& objDir = m_state.paths.objDir();
+	const auto& modulesDir = m_state.paths.modulesDir();
+
+	auto moduleId = m_state.getModuleId();
+
 	auto onFailure = [this]() -> bool {
 		m_state.toolchain.setStrategy(m_oldStrategy);
 		return false;
@@ -68,22 +79,10 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, const SourceOu
 
 	CommandPool::Target target;
 	// target.pre = getPchCommands(pchTarget);
-	target.list = getModuleDependencyCommands(*inToolchain, inOutputs.groups);
-	// bool targetExists = Commands::pathExists(inOutputs.target);
+	target.list = getModuleCommands(*inToolchain, inOutputs.groups, ModuleFileType::ModuleDependency);
 
 	if (!target.list.empty())
-	// if (!target.list.empty() || !targetExists)
 	{
-		/*if (m_sourcesChanged || !targetExists)
-		{
-			if (!List::contains(m_fileCache, inOutputs.target))
-			{
-				m_fileCache.push_back(inOutputs.target);
-
-				target->post = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
-			}
-		}*/
-
 		// Scan sources for module dependencies
 
 		Output::msgScanningForModuleDependencies();
@@ -203,25 +202,21 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, const SourceOu
 		{
 			SourceFileGroupList headerUnitList;
 
-			const auto& id = m_state.uniqueId();
-			const auto& objDir = m_state.paths.objDir();
-			const auto& modulesDir = m_state.paths.modulesDir();
-
-			for (auto& header : headerUnits)
+			for (const auto& header : headerUnits)
 			{
 				auto file = String::getPathFilename(header);
 
 				auto group = std::make_unique<chalet::SourceFileGroup>();
 				group->type = SourceType::CPlusPlus;
-				group->sourceFile = std::move(header);
-				group->objectFile = fmt::format("{}/{}_{}.obj", objDir, file, id);
-				group->dependencyFile = fmt::format("{}/{}_{}.module.json", modulesDir, file, id);
-				group->otherFile = fmt::format("{}/{}_{}.ifc", objDir, file, id);
+				group->sourceFile = header;
+				group->objectFile = fmt::format("{}/{}_{}.obj", objDir, file, moduleId);
+				group->dependencyFile = fmt::format("{}/{}_{}.module.json", modulesDir, file, moduleId);
+				group->otherFile = fmt::format("{}/{}_{}.ifc", modulesDir, file, moduleId);
 
 				headerUnitList.emplace_back(std::move(group));
 			}
 
-			target.list = getModuleDependencyCommands(*inToolchain, headerUnitList);
+			target.list = getModuleCommands(*inToolchain, headerUnitList, ModuleFileType::HeaderUnitDependency);
 
 			if (!target.list.empty())
 			{
@@ -239,43 +234,118 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, const SourceOu
 		}
 
 		// Header units compiled first
-		/*{
-			SourceFileGroupList headerUnitList;
+		target.list.clear();
+		std::vector<Unique<CommandPool::Target>> buildPortions;
+		{
+			SourceFileGroupList headerCompiles;
 
-			const auto& id = m_state.uniqueId();
-			const auto& objDir = m_state.paths.objDir();
-			const auto& modulesDir = m_state.paths.modulesDir();
-
-			for (auto& header : headerUnits)
+			for (const auto& header : headerUnits)
 			{
 				auto file = String::getPathFilename(header);
 
 				auto group = std::make_unique<chalet::SourceFileGroup>();
 				group->type = SourceType::CPlusPlus;
-				group->sourceFile = std::move(header);
-				group->objectFile = fmt::format("{}/{}_{}.obj", objDir, file, id);
-				group->dependencyFile = fmt::format("{}/{}_{}.module.json", modulesDir, file, id);
-				group->otherFile = fmt::format("{}/{}_{}.ifc", objDir, file, id);
+				group->sourceFile = header;
+				group->objectFile = fmt::format("{}/{}_{}.obj", objDir, file, moduleId);
+				group->dependencyFile = fmt::format("{}/{}_{}.ifc.d.json", modulesDir, file, moduleId);
+				group->otherFile = fmt::format("{}/{}_{}.ifc", modulesDir, file, moduleId);
 
-				headerUnitList.emplace_back(std::move(group));
+				headerCompiles.emplace_back(std::move(group));
 			}
 
-			target.list = getModuleDependencyCommands(*inToolchain, headerUnitList);
-
-			if (!target.list.empty())
+			auto portion = std::make_unique<CommandPool::Target>();
+			portion->list = getModuleCommands(*inToolchain, headerCompiles, ModuleFileType::HeaderUnitObject);
+			if (!portion->list.empty())
 			{
-				// Scan sources for module dependencies
+				buildPortions.emplace_back(std::move(portion));
+			}
+		}
 
-				Output::msgBuildingRequiredHeaderUnits();
-				Output::lineBreak();
+		{
+			SourceFileGroupList sourceCompiles;
+			for (auto& inGroup : inOutputs.groups)
+			{
+				if (inGroup->type != SourceType::CPlusPlus)
+					continue;
 
+				auto file = String::getPathFilename(inGroup->sourceFile);
+
+				auto group = std::make_unique<chalet::SourceFileGroup>();
+				group->type = SourceType::CPlusPlus;
+				group->sourceFile = inGroup->sourceFile;
+				group->objectFile = inGroup->objectFile;
+				group->dependencyFile = fmt::format("{}/{}.ifc.d.json", modulesDir, file);
+				group->otherFile = fmt::format("{}/{}.ifc", modulesDir, file);
+
+				sourceCompiles.emplace_back(std::move(group));
+			}
+
+			auto portion = std::make_unique<CommandPool::Target>();
+			portion->list = getModuleCommands(*inToolchain, sourceCompiles, ModuleFileType::ModuleObject);
+			if (!portion->list.empty())
+			{
+				buildPortions.emplace_back(std::move(portion));
+			}
+		}
+
+		//
+
+		if (!buildPortions.empty())
+		{
+			addCompileCommands(buildPortions.front()->list, *inToolchain, inOutputs.groups);
+		}
+		else
+		{
+			auto portion = std::make_unique<CommandPool::Target>();
+			addCompileCommands(portion->list, *inToolchain, inOutputs.groups);
+			if (!portion->list.empty())
+			{
+				buildPortions.emplace_back(std::move(portion));
+			}
+		}
+
+		bool targetExists = Commands::pathExists(inOutputs.target);
+		if (!buildPortions.empty() || !targetExists)
+		{
+			// Scan sources for module dependencies
+
+			Output::msgModulesCompiling();
+			Output::lineBreak();
+
+			settings.startIndex = 1;
+			settings.total = 0;
+
+			if (!buildPortions.empty())
+			{
+				buildPortions.back()->post = getLinkCommand(*inToolchain, inProject, inOutputs);
+
+				for (auto& portion : buildPortions)
+				{
+					settings.total += static_cast<uint>(portion->list.size());
+					if (!portion->post.command.empty())
+						settings.total += 1;
+				}
+			}
+			else
+			{
+				auto portion = std::make_unique<CommandPool::Target>();
+				portion->post = getLinkCommand(*inToolchain, inProject, inOutputs);
+				buildPortions.emplace_back(std::move(portion));
+
+				settings.total = 1;
+			}
+
+			for (auto& portion : buildPortions)
+			{
 				CommandPool commandPool(m_state.info.maxJobs());
-				if (!commandPool.run(target, settings))
+				if (!commandPool.run(*portion, settings))
 					return onFailure();
 
-				Output::lineBreak();
+				settings.startIndex += static_cast<uint>(portion->list.size());
 			}
-		}*/
+
+			Output::lineBreak();
+		}
 	}
 
 	// Build in groups after dependencies / order have been resolved
@@ -286,12 +356,14 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, const SourceOu
 }
 
 /*****************************************************************************/
-CommandPool::CmdList IModuleStrategy::getModuleDependencyCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
+CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const ModuleFileType inType)
 {
 	auto& sourceCache = m_state.cache.file().sources();
 
 	CommandPool::CmdList ret;
-	const auto& objDir = m_state.paths.objDir();
+	const auto& modulesDir = m_state.paths.modulesDir();
+
+	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
 
 	for (auto& group : inGroups)
 	{
@@ -302,41 +374,50 @@ CommandPool::CmdList IModuleStrategy::getModuleDependencyCommands(CompileToolcha
 
 		const auto& target = group->objectFile;
 		const auto& dependency = group->dependencyFile;
-		auto interfaceFile = group->otherFile;
-		if (interfaceFile.empty())
-		{
-			interfaceFile = fmt::format("{}/{}.ifc", objDir, source);
-		}
 
-		if (group->type == SourceType::CPlusPlus)
+		if (group->type != SourceType::CPlusPlus)
+			continue;
+
+		if (m_compileCache.find(source) == m_compileCache.end())
+			m_compileCache[source] = false;
+
+		bool sourceChanged = m_compileCache[source] || sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency);
+		m_sourcesChanged |= sourceChanged;
+		if (sourceChanged)
 		{
-			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, dependency);
-			m_sourcesChanged |= sourceChanged;
-			if (sourceChanged)
+			auto interfaceFile = group->otherFile;
+			if (interfaceFile.empty())
 			{
-				CommandPool::Cmd out;
-				out.output = dependency;
-				out.command = inToolchain.compilerCxx->getModuleDependencyCommand(source, target, dependency, interfaceFile);
+				interfaceFile = fmt::format("{}/{}.ifc", modulesDir, source);
+			}
+
+			CommandPool::Cmd out;
+			out.output = isObject ? source : dependency;
+			if (String::startsWith(m_msvcToolsDirectory, out.output))
+			{
+				out.output = String::getPathFilename(out.output);
+			}
+
+			out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, inType);
 
 #if defined(CHALET_WIN32)
-				if (m_state.environment->isMsvc())
-					out.outputReplace = String::getPathFilename(source);
+			if (m_state.environment->isMsvc())
+				out.outputReplace = String::getPathFilename(source);
 #endif
 
-				ret.emplace_back(std::move(out));
-			}
+			ret.emplace_back(std::move(out));
 		}
+
+		m_compileCache[source] = m_sourcesChanged;
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-CommandPool::CmdList IModuleStrategy::getCompileCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
+void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
 {
 	auto& sourceCache = m_state.cache.file().sources();
-
-	CommandPool::CmdList ret;
 
 	for (auto& group : inGroups)
 	{
@@ -350,7 +431,10 @@ CommandPool::CmdList IModuleStrategy::getCompileCommands(CompileToolchainControl
 
 		if (group->type == SourceType::WindowsResource)
 		{
-			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
+			if (m_compileCache.find(source) == m_compileCache.end())
+				m_compileCache[source] = false;
+
+			bool sourceChanged = m_compileCache[source] || sourceCache.fileChangedOrDoesNotExist(source, target) || m_compileCache[source];
 			m_sourcesChanged |= sourceChanged;
 			if (sourceChanged)
 			{
@@ -363,36 +447,11 @@ CommandPool::CmdList IModuleStrategy::getCompileCommands(CompileToolchainControl
 					out.outputReplace = String::getPathFilename(out.output);
 #endif
 
-				ret.emplace_back(std::move(out));
+				outList.emplace_back(std::move(out));
 			}
-		}
-		else if (group->type == SourceType::CPlusPlus)
-		{
-			CxxSpecialization specialization = CxxSpecialization::CPlusPlus;
-			if (group->type == SourceType::ObjectiveC)
-				specialization = CxxSpecialization::ObjectiveC;
-			else if (group->type == SourceType::ObjectiveCPlusPlus)
-				specialization = CxxSpecialization::ObjectiveCPlusPlus;
-
-			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
-			m_sourcesChanged |= sourceChanged;
-			if (sourceChanged)
-			{
-				CommandPool::Cmd out;
-				out.output = source;
-				out.command = inToolchain.compilerCxx->getCommand(source, target, false, dependency, specialization);
-
-#if defined(CHALET_WIN32)
-				if (m_state.environment->isMsvc())
-					out.outputReplace = String::getPathFilename(out.output);
-#endif
-
-				ret.emplace_back(std::move(out));
-			}
+			m_compileCache[source] = m_sourcesChanged;
 		}
 	}
-
-	return ret;
 }
 
 /*****************************************************************************/

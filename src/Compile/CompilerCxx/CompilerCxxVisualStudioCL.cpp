@@ -167,18 +167,6 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 
 	addLanguageStandard(ret, specialization);
 
-	if (m_project.cppModules())
-	{
-		ret.emplace_back("/experimental:module");
-		ret.emplace_back("/interface");
-		// ret.emplace_back(getPathCommand("/stdIfcDir", m_state.paths.modulesDir()));
-		ret.emplace_back(getPathCommand("/ifcOutput", m_state.paths.modulesDir()));
-		ret.emplace_back(getPathCommand("/ifcSearchDir", m_state.paths.modulesDir()));
-		// /BCD "C:\Users\Rew\source\repos\ConsoleModules1\ConsoleModules1\\"
-		ret.emplace_back(getPathCommand("/sourceDependencies:directives", m_state.paths.modulesDir()));
-		// /sourceDependencies "x64\Debug\std.ixx.ifc.dt.d.json"
-	}
-
 	addCompileOptions(ret);
 
 	{
@@ -223,7 +211,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 }
 
 /*****************************************************************************/
-StringList CompilerCxxVisualStudioCL::getModuleDependencyCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile)
+StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const ModuleFileType inType)
 {
 	chalet_assert(!outputFile.empty(), "");
 
@@ -234,7 +222,10 @@ StringList CompilerCxxVisualStudioCL::getModuleDependencyCommand(const std::stri
 	if (executable.empty() || dependencyFile.empty() || interfaceFile.empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(executable));
+	bool isDependency = inType == ModuleFileType::ModuleDependency || inType == ModuleFileType::HeaderUnitDependency;
+	bool isHeaderUnit = inType == ModuleFileType::HeaderUnitObject || inType == ModuleFileType::HeaderUnitDependency;
+
+	ret.emplace_back(executable);
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
 	ret.emplace_back("/utf-8");
@@ -243,10 +234,22 @@ StringList CompilerCxxVisualStudioCL::getModuleDependencyCommand(const std::stri
 	addLanguageStandard(ret, CxxSpecialization::CPlusPlus);
 
 	ret.emplace_back("/experimental:module");
-	ret.emplace_back("/interface");
-	ret.emplace_back(getPathCommand("/stdIfcDir", m_ifcDirectory));
-	ret.emplace_back(getPathCommand("/ifcOutput", interfaceFile));
-	ret.emplace_back(getPathCommand("/sourceDependencies:directives", dependencyFile));
+	ret.emplace_back("/stdIfcDir");
+	ret.emplace_back(m_ifcDirectory);
+	ret.emplace_back("/ifcOutput");
+	ret.emplace_back(interfaceFile);
+
+	if (isDependency)
+		ret.emplace_back("/sourceDependencies:directives");
+	else
+		ret.emplace_back("/sourceDependencies");
+
+	ret.emplace_back(dependencyFile);
+
+	if (isHeaderUnit)
+		ret.emplace_back("/exportHeader");
+	else
+		ret.emplace_back("/interface");
 
 	addCompileOptions(ret);
 

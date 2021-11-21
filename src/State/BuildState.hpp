@@ -49,6 +49,7 @@ public:
 	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
 
 	const std::string& uniqueId() const noexcept;
+	std::string getModuleId() const;
 
 private:
 	bool initializeBuildConfiguration();

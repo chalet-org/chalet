@@ -760,4 +760,18 @@ std::string BuildState::getUniqueIdForState() const
 	return Hash::string(ret);
 }
 
+/*****************************************************************************/
+std::string BuildState::getModuleId() const
+{
+	std::string ret;
+	const auto& hostArch = info.hostArchitectureString();
+	const auto targetArch = m_impl->inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
+	const auto envId = m_impl->environment->identifier() + toolchain.version();
+	const auto& buildConfig = info.buildConfiguration();
+
+	ret = fmt::format("{}_{}_{}_{}", hostArch, targetArch, envId, buildConfig);
+
+	return Hash::string(ret);
+}
+
 }

@@ -30,11 +30,14 @@ struct IModuleStrategy
 	virtual bool buildProject(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain);
 
 protected:
-	CommandPool::CmdList getModuleDependencyCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
-	CommandPool::CmdList getCompileCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
+	CommandPool::CmdList getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const ModuleFileType inType);
+	void addCompileCommands(CommandPool::CmdList& outList, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
 	CommandPool::Cmd getLinkCommand(CompileToolchainController& inToolchain, const SourceTarget& inProject, const SourceOutputs& inOutputs);
 
 	BuildState& m_state;
+
+	std::string m_msvcToolsDirectory;
+	Dictionary<bool> m_compileCache;
 
 	StrategyType m_oldStrategy = StrategyType::None;
 

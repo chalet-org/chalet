@@ -34,6 +34,8 @@ struct CommandPool
 	struct Settings
 	{
 		Color color = Color::Red;
+		uint startIndex = 0;
+		uint total = 0;
 		bool quiet = false;
 		bool showCommands = false;
 		bool msvcCommand = false;

@@ -626,6 +626,12 @@ void Output::msgBuildingRequiredHeaderUnits()
 }
 
 /*****************************************************************************/
+void Output::msgModulesCompiling()
+{
+	print(state.theme.build, "   Compiling...");
+}
+
+/*****************************************************************************/
 void Output::msgCopying(const std::string& inFrom, const std::string& inTo)
 {
 	auto symbol = Unicode::heavyCurvedUpRightArrow();

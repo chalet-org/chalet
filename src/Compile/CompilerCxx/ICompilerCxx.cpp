@@ -58,9 +58,9 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 }
 
 /*****************************************************************************/
-StringList ICompilerCxx::getModuleDependencyCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile)
+StringList ICompilerCxx::getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const ModuleFileType inType)
 {
-	UNUSED(inputFile, outputFile, dependencyFile, interfaceFile);
+	UNUSED(inputFile, outputFile, dependencyFile, interfaceFile, inType);
 	return StringList();
 }
 
