@@ -152,12 +152,6 @@ const std::string& BuildPaths::objDir() const noexcept
 	return m_objDir;
 }
 
-const std::string& BuildPaths::modulesDir() const noexcept
-{
-	chalet_assert(!m_modulesDir.empty(), "BuildPaths::modulesDir() called before BuildPaths::initialize().");
-	return m_modulesDir;
-}
-
 const std::string& BuildPaths::depDir() const noexcept
 {
 	chalet_assert(!m_depDir.empty(), "BuildPaths::depDir() called before BuildPaths::initialize().");
@@ -208,11 +202,6 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 		m_objDir = fmt::format("{}/obj", m_buildOutputDir);
 		// m_depDir = fmt::format("{}/dep", m_buildOutputDir);
 		m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
-	}
-
-	if (inProject.cppModules())
-	{
-		m_modulesDir = fmt::format("{}/modules", m_buildOutputDir);
 	}
 
 	m_depDir = m_objDir;
@@ -268,11 +257,6 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool i
 
 	ret.directories.push_back(m_buildOutputDir);
 	ret.directories.push_back(objDir());
-
-	if (inProject.cppModules())
-	{
-		ret.directories.push_back(modulesDir());
-	}
 
 	if (m_state.toolchain.canCompilerWindowsResources())
 	{
@@ -488,7 +472,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		group->objectFile = getObjectFile(file, isMsvc);
 
 		if (type == SourceType::CPlusPlus && isModule)
-			group->dependencyFile = m_state.environment->getModuleDependencyFile(file, modulesDir());
+			group->dependencyFile = m_state.environment->getModuleDependencyFile(file, objDir());
 		else
 			group->dependencyFile = getDependencyFile(file);
 

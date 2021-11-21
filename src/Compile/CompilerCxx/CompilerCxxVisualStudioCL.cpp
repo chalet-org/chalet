@@ -237,7 +237,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	/*if (!isDependency)
 	{
 		ret.emplace_back("/ifcSearchDir");
-		ret.emplace_back(m_state.paths.modulesDir());
+		ret.emplace_back(m_state.paths.objDir());
 	}*/
 
 	ret.emplace_back("/stdIfcDir");

@@ -29,6 +29,7 @@ struct CommandPool
 		CmdList pre;
 		Cmd post;
 		CmdList list;
+		uint threads = 0;
 	};
 
 	struct Settings

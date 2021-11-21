@@ -61,7 +61,6 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 	}
 
 	const auto& objDir = m_state.paths.objDir();
-	const auto& modulesDir = m_state.paths.modulesDir();
 
 	Dictionary<ModuleLookup> modules;
 	Dictionary<ModulePayload> modulePayload;
@@ -95,8 +94,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 	{
 		// Scan sources for module dependencies
 
-		Output::msgScanningForModuleDependencies();
-		Output::lineBreak();
+		// Output::msgScanningForModuleDependencies();
+		// Output::lineBreak();
 
 		CommandPool commandPool(m_state.info.maxJobs());
 		if (!commandPool.run(target, settings))
@@ -216,81 +215,65 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 		}
 	}
 
-	StringList addedHeaderUnits;
 	StringList headerUnitObjects;
 	SourceFileGroupList headerUnitList;
 
-	for (auto& [name, module] : modules)
 	{
-		if (String::equals(name, kRootModule))
-			m_rootModule = module.source;
-
-		modulePayload[module.source] = ModulePayload();
-
-		for (const auto& imported : module.importedModules)
+		StringList addedHeaderUnits;
+		for (auto& [name, module] : modules)
 		{
-			if (modules.find(imported) == modules.end())
-				continue;
+			if (String::equals(name, kRootModule))
+				m_rootModule = module.source;
 
-			const auto& otherModule = modules.at(imported);
+			modulePayload[module.source] = ModulePayload();
 
-			auto filename = String::getPathFilename(otherModule.source);
-			auto ifcFile = fmt::format("{}/{}.ifc", modulesDir, filename);
+			addHeaderUnitsRecursively(module, module, modules, modulePayload);
 
-			List::addIfDoesNotExist(modulePayload[module.source].moduleTranslations, fmt::format("{}={}", imported, ifcFile));
-
-			for (auto& header : otherModule.importedHeaderUnits)
+			for (const auto& header : module.importedHeaderUnits)
 			{
-				List::addIfDoesNotExist(module.importedHeaderUnits, header);
+				auto file = String::getPathFilename(header);
+				auto ifcFile = fmt::format("{}/{}_{}.ifc", objDir, file, moduleId);
+
+				List::addIfDoesNotExist(modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", header, ifcFile));
+
+				if (List::contains(addedHeaderUnits, header))
+					continue;
+
+				addedHeaderUnits.push_back(header);
+
+				auto group = std::make_unique<SourceFileGroup>();
+				group->type = SourceType::CPlusPlus;
+				group->sourceFile = header;
+				group->objectFile = fmt::format("{}/{}_{}.obj", objDir, file, moduleId);
+				group->dependencyFile = fmt::format("{}/{}_{}.module.json", objDir, file, moduleId);
+				group->otherFile = ifcFile;
+
+				headerUnitObjects.emplace_back(group->objectFile);
+				headerUnitList.emplace_back(std::move(group));
 			}
-		}
-
-		for (const auto& header : module.importedHeaderUnits)
-		{
-			auto file = String::getPathFilename(header);
-			auto ifcFile = fmt::format("{}/{}_{}.ifc", modulesDir, file, moduleId);
-
-			List::addIfDoesNotExist(modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", header, ifcFile));
-
-			if (List::contains(addedHeaderUnits, header))
-				continue;
-
-			addedHeaderUnits.push_back(header);
-
-			auto group = std::make_unique<chalet::SourceFileGroup>();
-			group->type = SourceType::CPlusPlus;
-			group->sourceFile = header;
-			group->objectFile = fmt::format("{}/{}_{}.obj", objDir, file, moduleId);
-			group->dependencyFile = fmt::format("{}/{}_{}.module.json", modulesDir, file, moduleId);
-			group->otherFile = ifcFile;
-
-			headerUnitObjects.emplace_back(group->objectFile);
-			headerUnitList.emplace_back(std::move(group));
 		}
 	}
 
-	modules.clear(); // No longer needed
-
 	/*for (auto& [source, data] : modulePayload)
-		{
-			LOG(source);
+	{
+		LOG(source);
 
-			LOG("  Imported modules:");
-			for (auto& item : data.moduleTranslations)
-				LOG("    ", item);
+		LOG("  Imported modules:");
+		for (auto& item : data.moduleTranslations)
+			LOG("    ", item);
 
-			LOG("  Imported headers:");
-			for (auto& item : data.headerUnitTranslations)
-				LOG("    ", item);
-		}*/
+		LOG("  Imported headers:");
+		for (auto& item : data.headerUnitTranslations)
+			LOG("    ", item);
+	}*/
 
 	target.list = getModuleCommands(*inToolchain, headerUnitList, modulePayload, ModuleFileType::HeaderUnitDependency);
 	if (!target.list.empty())
 	{
 		// Scan sources for module dependencies
 
-		Output::msgBuildingRequiredHeaderUnits();
-		Output::lineBreak();
+		// Output::msgBuildingRequiredHeaderUnits();
+		// Output::lineBreak();
 
 		CommandPool commandPool(m_state.info.maxJobs());
 		if (!commandPool.run(target, settings))
@@ -303,137 +286,244 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 	StringList headerUnitTranslations;
 
 	target.list.clear();
-	std::vector<Unique<CommandPool::Target>> buildPortions;
+	std::vector<Unique<CommandPool::Target>> buildBatches;
 	{
 		for (const auto& group : headerUnitList)
 		{
 			auto file = String::getPathFilename(group->sourceFile);
-			group->dependencyFile = fmt::format("{}/{}_{}.ifc.d.json", modulesDir, file, moduleId);
+			group->dependencyFile = fmt::format("{}/{}_{}.ifc.d.json", objDir, file, moduleId);
 		}
 
-		auto portion = std::make_unique<CommandPool::Target>();
-		portion->list = getModuleCommands(*inToolchain, headerUnitList, modulePayload, ModuleFileType::HeaderUnitObject);
-		if (!portion->list.empty())
+		auto batch = std::make_unique<CommandPool::Target>();
+		batch->list = getModuleCommands(*inToolchain, headerUnitList, modulePayload, ModuleFileType::HeaderUnitObject);
+		if (!batch->list.empty())
 		{
-			buildPortions.emplace_back(std::move(portion));
+			buildBatches.emplace_back(std::move(batch));
 		}
 	}
 	headerUnitList.clear(); // No longer needed
 
 	{
-		std::unique_ptr<SourceFileGroup> rootModule;
-		SourceFileGroupList sourceCompiles;
-		for (auto& inGroup : inOutputs.groups)
-		{
+		auto addSourceGroup = [&](SourceFileGroup* inGroup, SourceFileGroupList& outList) {
 			if (inGroup->type != SourceType::CPlusPlus)
-				continue;
+				return;
 
-			auto file = String::getPathFilename(inGroup->sourceFile);
-
-			auto group = std::make_unique<chalet::SourceFileGroup>();
+			auto group = std::make_unique<SourceFileGroup>();
 			group->type = SourceType::CPlusPlus;
 			group->sourceFile = inGroup->sourceFile;
 			group->objectFile = inGroup->objectFile;
-			group->dependencyFile = fmt::format("{}/{}.ifc.d.json", modulesDir, file);
-			group->otherFile = fmt::format("{}/{}.ifc", modulesDir, file);
+			group->dependencyFile = fmt::format("{}/{}.ifc.d.json", objDir, inGroup->sourceFile);
+			group->otherFile = fmt::format("{}/{}.ifc", objDir, inGroup->sourceFile);
 
-			if (String::equals(inGroup->sourceFile, m_rootModule))
+			outList.emplace_back(std::move(group));
+		};
+
+		auto makeBatch = [&](const SourceFileGroupList& inList, const uint threads) {
+			if (inList.empty())
+				return;
+
+			auto batch = std::make_unique<CommandPool::Target>();
+			batch->threads = threads;
+			batch->list = getModuleCommands(*inToolchain, inList, modulePayload, ModuleFileType::ModuleObject);
+			if (!batch->list.empty())
 			{
-				rootModule = std::move(group);
+				buildBatches.emplace_back(std::move(batch));
+			}
+		};
+
+		SourceFileGroupList sourceCompiles;
+		DependencyGraph dependencyGraph;
+		{
+			Dictionary<SourceFileGroup*> outGroups;
+			for (auto& group : inOutputs.groups)
+			{
+				if (group->type != SourceType::CPlusPlus)
+					continue;
+
+				outGroups[group->sourceFile] = group.get();
+			}
+
+			for (const auto& [name, module] : modules)
+			{
+				if (outGroups.find(module.source) == outGroups.end())
+					continue;
+
+				dependencyGraph[outGroups.at(module.source)] = {};
+
+				for (auto& m : module.importedModules)
+				{
+					if (modules.find(m) == modules.end())
+						continue;
+
+					const auto& otherModule = modules.at(m);
+					dependencyGraph[outGroups.at(module.source)].push_back(outGroups.at(otherModule.source));
+				}
+			}
+		}
+
+		std::vector<SourceFileGroup*> groupsAdded;
+
+		{
+			auto itr = dependencyGraph.begin();
+			while (itr != dependencyGraph.end())
+			{
+				if (itr->second.empty())
+				{
+					auto group = itr->first;
+					addSourceGroup(group, sourceCompiles);
+					groupsAdded.push_back(group);
+					itr = dependencyGraph.erase(itr);
+				}
+				else
+					++itr;
+			}
+		}
+
+		if (!sourceCompiles.empty())
+		{
+			/*LOG("group:");
+			for (auto& group : sourceCompiles)
+			{
+				LOG("  ", group->sourceFile);
+			}*/
+			makeBatch(sourceCompiles, 0); // multi-threaded - because these don't have any dependencies
+			sourceCompiles.clear();
+		}
+
+		auto itr = dependencyGraph.begin();
+		while (!dependencyGraph.empty())
+		{
+			bool canAdd = true;
+			for (auto& dep : itr->second)
+			{
+				canAdd &= List::contains(groupsAdded, dep);
+			}
+
+			if (canAdd)
+			{
+				auto group = itr->first;
+				addSourceGroup(group, sourceCompiles);
+				groupsAdded.push_back(group);
+				itr = dependencyGraph.erase(itr);
 			}
 			else
+				++itr;
+
+			if (itr == dependencyGraph.end())
 			{
-				sourceCompiles.emplace_back(std::move(group));
-			}
-		}
+				if (!sourceCompiles.empty())
+				{
+					// LOG("group:");
+					for (auto& group : sourceCompiles)
+					{
+						// LOG("  ", group->sourceFile);
+						groupsAdded.push_back(group.get());
+					}
 
-		auto portion = std::make_unique<CommandPool::Target>();
-		portion->list = getModuleCommands(*inToolchain, sourceCompiles, modulePayload, ModuleFileType::ModuleObject);
-		if (!portion->list.empty())
-		{
-			buildPortions.emplace_back(std::move(portion));
-		}
-
-		if (rootModule != nullptr)
-		{
-			sourceCompiles.clear();
-			sourceCompiles.emplace_back(std::move(rootModule));
-
-			portion = std::make_unique<CommandPool::Target>();
-			portion->list = getModuleCommands(*inToolchain, sourceCompiles, modulePayload, ModuleFileType::ModuleObject);
-			if (!portion->list.empty())
-			{
-				buildPortions.emplace_back(std::move(portion));
+					// TODO: These batches are single-threaded for now, because there can still be dependency collisions between files
+					//   aka one command could be writing files while another tries to read them
+					//
+					makeBatch(sourceCompiles, 1); // single threaded
+					sourceCompiles.clear();
+				}
+				itr = dependencyGraph.begin();
 			}
 		}
 	}
+
+	modules.clear(); // No longer needed
 
 	//
 
-	if (!buildPortions.empty())
+	if (!buildBatches.empty())
 	{
-		addCompileCommands(buildPortions.back()->list, *inToolchain, inOutputs.groups);
+		addCompileCommands(buildBatches.back()->list, *inToolchain, inOutputs.groups);
 	}
 	else
 	{
-		auto portion = std::make_unique<CommandPool::Target>();
-		addCompileCommands(portion->list, *inToolchain, inOutputs.groups);
-		if (!portion->list.empty())
+		auto batch = std::make_unique<CommandPool::Target>();
+		addCompileCommands(batch->list, *inToolchain, inOutputs.groups);
+		if (!batch->list.empty())
 		{
-			buildPortions.emplace_back(std::move(portion));
+			buildBatches.emplace_back(std::move(batch));
 		}
 	}
 
 	bool targetExists = Commands::pathExists(inOutputs.target);
-	if (!buildPortions.empty() || !targetExists)
+	if (!buildBatches.empty() || !targetExists)
 	{
 		// Scan sources for module dependencies
 
-		Output::msgModulesCompiling();
-		Output::lineBreak();
+		// Output::msgModulesCompiling();
+		// Output::lineBreak();
 
 		settings.startIndex = 1;
 		settings.total = 0;
 
 		StringList links = List::combine(std::move(inOutputs.objectListLinker), std::move(headerUnitObjects));
 
-		if (!buildPortions.empty())
+		if (!buildBatches.empty())
 		{
-			buildPortions.back()->post = getLinkCommand(*inToolchain, inProject, inOutputs.target, links);
+			buildBatches.back()->post = getLinkCommand(*inToolchain, inProject, inOutputs.target, links);
 
-			for (auto& portion : buildPortions)
+			for (auto& batch : buildBatches)
 			{
-				settings.total += static_cast<uint>(portion->list.size());
-				if (!portion->post.command.empty())
+				settings.total += static_cast<uint>(batch->list.size());
+				if (!batch->post.command.empty())
 					settings.total += 1;
 			}
 		}
 		else
 		{
-			auto portion = std::make_unique<CommandPool::Target>();
-			portion->post = getLinkCommand(*inToolchain, inProject, inOutputs.target, links);
-			buildPortions.emplace_back(std::move(portion));
+			auto batch = std::make_unique<CommandPool::Target>();
+			batch->post = getLinkCommand(*inToolchain, inProject, inOutputs.target, links);
+			buildBatches.emplace_back(std::move(batch));
 
 			settings.total = 1;
 		}
 
-		for (auto& portion : buildPortions)
+		for (auto& batch : buildBatches)
 		{
-			CommandPool commandPool(m_state.info.maxJobs());
-			if (!commandPool.run(*portion, settings))
+			CommandPool commandPool(batch->threads == 0 ? m_state.info.maxJobs() : batch->threads);
+			if (!commandPool.run(*batch, settings))
 				return onFailure();
 
-			settings.startIndex += static_cast<uint>(portion->list.size());
+			settings.startIndex += static_cast<uint>(batch->list.size());
 		}
 
-		Output::lineBreak();
+		// Output::lineBreak();
 	}
 
 	// Build in groups after dependencies / order have been resolved
 
 	m_state.toolchain.setStrategy(m_oldStrategy);
-	UNUSED(inProject, inToolchain);
+
 	return true;
+}
+
+/*****************************************************************************/
+void IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload)
+{
+	const auto& objDir = m_state.paths.objDir();
+
+	for (const auto& imported : inModule.importedModules)
+	{
+		if (inModules.find(imported) == inModules.end())
+			continue;
+
+		const auto& otherModule = inModules.at(imported);
+
+		auto ifcFile = fmt::format("{}/{}.ifc", objDir, otherModule.source);
+
+		List::addIfDoesNotExist(outPayload[outModule.source].moduleTranslations, fmt::format("{}={}", imported, ifcFile));
+
+		for (auto& header : otherModule.importedHeaderUnits)
+		{
+			List::addIfDoesNotExist(outModule.importedHeaderUnits, header);
+		}
+
+		addHeaderUnitsRecursively(outModule, otherModule, inModules, outPayload);
+	}
 }
 
 /*****************************************************************************/
@@ -442,7 +532,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 	auto& sourceCache = m_state.cache.file().sources();
 
 	CommandPool::CmdList ret;
-	const auto& modulesDir = m_state.paths.modulesDir();
+	const auto& objDir = m_state.paths.objDir();
 
 	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
 
@@ -462,14 +552,14 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		if (m_compileCache.find(source) == m_compileCache.end())
 			m_compileCache[source] = false;
 
-		bool sourceChanged = m_compileCache[source] || sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency);
+		bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency) || m_compileCache[source];
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
 		{
 			auto interfaceFile = group->otherFile;
 			if (interfaceFile.empty())
 			{
-				interfaceFile = fmt::format("{}/{}.ifc", modulesDir, source);
+				interfaceFile = fmt::format("{}/{}.ifc", objDir, source);
 			}
 
 			CommandPool::Cmd out;
@@ -503,7 +593,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			ret.emplace_back(std::move(out));
 		}
 
-		m_compileCache[source] = m_sourcesChanged;
+		m_compileCache[source] = sourceChanged;
 	}
 
 	return ret;
@@ -529,7 +619,7 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 			if (m_compileCache.find(source) == m_compileCache.end())
 				m_compileCache[source] = false;
 
-			bool sourceChanged = m_compileCache[source] || sourceCache.fileChangedOrDoesNotExist(source, target);
+			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target) || m_compileCache[source];
 			m_sourcesChanged |= sourceChanged;
 			if (sourceChanged)
 			{
@@ -544,7 +634,7 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 
 				outList.emplace_back(std::move(out));
 			}
-			m_compileCache[source] = m_sourcesChanged;
+			m_compileCache[source] = sourceChanged;
 		}
 	}
 }
