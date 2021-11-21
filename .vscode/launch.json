@@ -31,7 +31,7 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				// "--generator=vscode",
-				"build"
+				"rebuild"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/../modules-project",

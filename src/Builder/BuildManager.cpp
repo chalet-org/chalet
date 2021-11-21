@@ -748,8 +748,16 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 
 	Output::lineBreak();
 
-	if (!m_strategy->buildProject(inProject))
-		return false;
+	if (inProject.cppModules())
+	{
+		if (!m_strategy->buildProjectModules(inProject))
+			return false;
+	}
+	else
+	{
+		if (!m_strategy->buildProject(inProject))
+			return false;
+	}
 
 	if (m_state.info.dumpAssembly())
 	{
