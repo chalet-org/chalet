@@ -60,7 +60,85 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 		Path::sanitize(m_msvcToolsDirectory);
 	}
 
+	const std::string kRootModule{ "__root_module__" };
+
+	const std::string kKeyVersion{ "Version" };
+	const std::string kKeyData{ "Data" };
+	// const std::string kKeyIncludes{ "Includes" };
+	const std::string kKeyProvidedModule{ "ProvidedModule" };
+	const std::string kKeyImportedModules{ "ImportedModules" };
+	const std::string kKeyImportedHeaderUnits{ "ImportedHeaderUnits" };
+
+	// const std::string kKeyBMI{ "BMI" };
+
 	const auto& objDir = m_state.paths.objDir();
+
+	auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
+	Path::sanitize(cwd);
+	if (cwd.back() != '/')
+		cwd += '/';
+
+	/*for (auto& group : inOutputs.groups)
+	{
+		if (group->type != SourceType::CPlusPlus)
+			continue;
+
+		auto dependencyFile = fmt::format("{}/{}.ifc.d.json", objDir, group->sourceFile);
+
+		if (!Commands::pathExists(dependencyFile))
+			continue;
+
+		Json json;
+		if (!JsonComments::parse(json, group->dependencyFile))
+			continue;
+
+		if (!json.contains(kKeyVersion) || !json.at(kKeyVersion).is_string())
+			continue;
+
+		std::string version = json.at(kKeyVersion).get<std::string>();
+		if (!String::equals("1.1", version))
+			continue;
+
+		if (!json.contains(kKeyData) || !json.at(kKeyData).is_object())
+			continue;
+
+		const auto& data = json.at(kKeyData);
+		if (!data.contains(kKeyIncludes) || !data.at(kKeyIncludes).is_array())
+			continue;
+
+		if (!data.contains(kKeyImportedModules) || !data.at(kKeyImportedModules).is_array())
+			continue;
+
+		if (!data.contains(kKeyImportedHeaderUnits) || !data.at(kKeyImportedHeaderUnits).is_array())
+			continue;
+
+		for (auto& moduleItr : data.at(kKeyIncludes).items())
+		{
+			auto& mod = moduleItr.value();
+			if (!mod.is_string())
+				break;
+		}
+
+		for (auto& moduleItr : data.at(kKeyImportedModules).items())
+		{
+			auto& mod = moduleItr.value();
+			if (!mod.is_object())
+				break;
+
+			// Name / BMI
+			if (mod.contains(
+			auto bmi = mod.at
+		}
+
+		for (auto& fileItr : data.at(kKeyImportedHeaderUnits).items())
+		{
+			auto& file = fileItr.value();
+			if (!file.is_object())
+				break;
+
+			// Header / BMI
+		}
+	}*/
 
 	Dictionary<ModuleLookup> modules;
 	Dictionary<ModulePayload> modulePayload;
@@ -78,11 +156,6 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
 	settings.renameAfterCommand = false;
-
-	auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
-	Path::sanitize(cwd);
-	if (cwd.back() != '/')
-		cwd += '/';
 
 	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(inProject);
 
@@ -107,111 +180,94 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 	// Read dependency files for header units and determine build order
 	// Build header units (build order shouldn't matter)
 
-	const std::string kRootModule{ "__root_module__" };
-
 	// Timer timer;
 
 	// Version 1.1
 
-	const std::string kKeyVersion{ "Version" };
-	const std::string kKeyData{ "Data" };
-	const std::string kKeySource{ "Source" };
-	const std::string kKeyProvidedModule{ "ProvidedModule" };
-	const std::string kKeyImportedModules{ "ImportedModules" };
-	const std::string kKeyImportedHeaderUnits{ "ImportedHeaderUnits" };
-
 	for (auto& group : inOutputs.groups)
 	{
-		if (group->type == SourceType::CPlusPlus)
+		if (group->type != SourceType::CPlusPlus)
+			continue;
+
+		if (!Commands::pathExists(group->dependencyFile))
+			continue;
+
+		Json json;
+		if (!JsonComments::parse(json, group->dependencyFile))
 		{
-			Json json;
-			if (!Commands::pathExists(group->dependencyFile))
-				continue;
+			Diagnostic::error("Failed to parse: {}", group->dependencyFile);
+			return onFailure();
+		}
 
-			if (!JsonComments::parse(json, group->dependencyFile))
+		if (!json.contains(kKeyVersion) || !json.at(kKeyVersion).is_string())
+		{
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyVersion);
+			return onFailure();
+		}
+
+		std::string version = json.at(kKeyVersion).get<std::string>();
+		if (!String::equals("1.1", version))
+		{
+			Diagnostic::error("{}: Found version '{}', but only '1.1' is supported", group->dependencyFile, version);
+			return onFailure();
+		}
+
+		if (!json.contains(kKeyData) || !json.at(kKeyData).is_object())
+		{
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyData);
+			return onFailure();
+		}
+
+		const auto& data = json.at(kKeyData);
+		if (!data.contains(kKeyProvidedModule) || !data.at(kKeyProvidedModule).is_string())
+		{
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyProvidedModule);
+			return onFailure();
+		}
+
+		if (!data.contains(kKeyImportedModules) || !data.at(kKeyImportedModules).is_array())
+		{
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyImportedModules);
+			return onFailure();
+		}
+
+		if (!data.contains(kKeyImportedHeaderUnits) || !data.at(kKeyImportedHeaderUnits).is_array())
+		{
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyImportedHeaderUnits);
+			return onFailure();
+		}
+
+		auto name = data.at(kKeyProvidedModule).get<std::string>();
+		if (name.empty())
+			name = kRootModule;
+
+		modules[name].source = group->sourceFile;
+
+		for (auto& moduleItr : data.at(kKeyImportedModules).items())
+		{
+			auto& mod = moduleItr.value();
+			if (!mod.is_string())
 			{
-				Diagnostic::error("Failed to parse: {}", group->dependencyFile);
+				Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, kKeyImportedModules);
 				return onFailure();
 			}
 
-			if (!json.contains(kKeyVersion) || !json.at(kKeyVersion).is_string())
+			List::addIfDoesNotExist(modules[name].importedModules, mod.get<std::string>());
+		}
+
+		for (auto& fileItr : data.at(kKeyImportedHeaderUnits).items())
+		{
+			auto& file = fileItr.value();
+			if (!file.is_string())
 			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyVersion);
+				Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, kKeyImportedHeaderUnits);
 				return onFailure();
 			}
 
-			std::string version = json.at(kKeyVersion).get<std::string>();
-			if (!String::equals("1.1", version))
-			{
-				Diagnostic::error("{}: Found version '{}', but only '1.1' is supported", group->dependencyFile, version);
-				return onFailure();
-			}
+			auto outHeader = file.get<std::string>();
+			Path::sanitize(outHeader);
 
-			if (!json.contains(kKeyData) || !json.at(kKeyData).is_object())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyData);
-				return onFailure();
-			}
-
-			const auto& data = json.at(kKeyData);
-			if (!data.contains(kKeySource) || !data.at(kKeySource).is_string())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeySource);
-				return onFailure();
-			}
-
-			if (!data.contains(kKeyProvidedModule) || !data.at(kKeyProvidedModule).is_string())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyProvidedModule);
-				return onFailure();
-			}
-
-			if (!data.contains(kKeyImportedModules) || !data.at(kKeyImportedModules).is_array())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyImportedModules);
-				return onFailure();
-			}
-
-			if (!data.contains(kKeyImportedHeaderUnits) || !data.at(kKeyImportedHeaderUnits).is_array())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyImportedHeaderUnits);
-				return onFailure();
-			}
-
-			auto name = data.at(kKeyProvidedModule).get<std::string>();
-			if (name.empty())
-				name = kRootModule;
-
-			modules[name].source = data.at(kKeySource).get<std::string>();
-			Path::sanitize(modules[name].source);
-			String::replaceAll(modules[name].source, cwd, "");
-
-			for (auto& moduleItr : data.at(kKeyImportedModules).items())
-			{
-				auto& mod = moduleItr.value();
-				if (!mod.is_string())
-				{
-					Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, kKeyImportedModules);
-					return onFailure();
-				}
-
-				List::addIfDoesNotExist(modules[name].importedModules, mod.get<std::string>());
-			}
-
-			for (auto& fileItr : data.at(kKeyImportedHeaderUnits).items())
-			{
-				auto& file = fileItr.value();
-				if (!file.is_string())
-				{
-					Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, kKeyImportedHeaderUnits);
-					return onFailure();
-				}
-
-				auto outHeader = file.get<std::string>();
-				Path::sanitize(outHeader);
-
-				List::addIfDoesNotExist(modules[name].importedHeaderUnits, std::move(outHeader));
-			}
+			List::addIfDoesNotExist(modules[name].importedHeaderUnits, std::move(outHeader));
 		}
 	}
 
