@@ -234,10 +234,20 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	addLanguageStandard(ret, CxxSpecialization::CPlusPlus);
 
 	ret.emplace_back("/experimental:module");
+	if (!isDependency)
+	{
+		ret.emplace_back("/ifcSearchDir");
+		ret.emplace_back(m_state.paths.modulesDir());
+	}
+
 	ret.emplace_back("/stdIfcDir");
 	ret.emplace_back(m_ifcDirectory);
-	ret.emplace_back("/ifcOutput");
-	ret.emplace_back(interfaceFile);
+
+	if (inType != ModuleFileType::ModuleObjectRoot)
+	{
+		ret.emplace_back("/ifcOutput");
+		ret.emplace_back(interfaceFile);
+	}
 
 	if (isDependency)
 		ret.emplace_back("/sourceDependencies:directives");
