@@ -211,7 +211,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 }
 
 /*****************************************************************************/
-StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const ModuleFileType inType)
+StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const StringList& inModuleReferences, const StringList& inHeaderUnits, const ModuleFileType inType)
 {
 	chalet_assert(!outputFile.empty(), "");
 
@@ -234,11 +234,11 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	addLanguageStandard(ret, CxxSpecialization::CPlusPlus);
 
 	ret.emplace_back("/experimental:module");
-	if (!isDependency)
+	/*if (!isDependency)
 	{
 		ret.emplace_back("/ifcSearchDir");
 		ret.emplace_back(m_state.paths.modulesDir());
-	}
+	}*/
 
 	ret.emplace_back("/stdIfcDir");
 	ret.emplace_back(m_ifcDirectory);
@@ -258,8 +258,20 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 
 	if (isHeaderUnit)
 		ret.emplace_back("/exportHeader");
-	else
+	else if (inType != ModuleFileType::ModuleObjectRoot)
 		ret.emplace_back("/interface");
+
+	for (const auto& item : inModuleReferences)
+	{
+		ret.emplace_back("/reference");
+		ret.emplace_back(item);
+	}
+
+	for (const auto& item : inHeaderUnits)
+	{
+		ret.emplace_back("/headerUnit");
+		ret.emplace_back(item);
+	}
 
 	addCompileOptions(ret);
 

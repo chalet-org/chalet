@@ -116,11 +116,11 @@ bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
 		auto& toolchain = m_toolchains.at(name);
 
 		auto moduleStrategy = IModuleStrategy::make(m_state.environment->type(), m_state);
-		if (!moduleStrategy->buildProject(inProject, outputs, toolchain))
+		if (!moduleStrategy->buildProject(inProject, std::move(outputs), toolchain))
 			return false;
 	}
 
-	// Compile commands - Not sure if it's even relevant?
+	// Compile commands - Not sure if/when they'd be usable - for now, outputs are moved
 
 	UNUSED(inProject);
 
