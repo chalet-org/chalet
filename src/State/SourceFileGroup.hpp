@@ -15,7 +15,7 @@ struct SourceFileGroup
 	std::string sourceFile;
 	std::string objectFile;
 	std::string dependencyFile;
-	std::string assemblyFile;
+	std::string otherFile;
 	SourceType type = SourceType::Unknown;
 };
 

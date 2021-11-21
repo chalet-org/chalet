@@ -58,6 +58,13 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 }
 
 /*****************************************************************************/
+StringList ICompilerCxx::getModuleDependencyCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile)
+{
+	UNUSED(inputFile, outputFile, dependencyFile, interfaceFile);
+	return StringList();
+}
+
+/*****************************************************************************/
 void ICompilerCxx::addIncludes(StringList& outArgList) const
 {
 	UNUSED(outArgList);

@@ -49,18 +49,12 @@ bool printCommand(std::string text)
 }
 
 /*****************************************************************************/
+#if defined(CHALET_WIN32)
 bool executeCommandMsvc(StringList command, std::string sourceFile)
 {
-	std::string srcFile;
-	{
-		auto start = sourceFile.find_last_of('/') + 1;
-		auto end = sourceFile.find_last_of('.');
-		srcFile = sourceFile.substr(start, end - start);
-	}
-
 	std::string output;
-	auto onOutput = [&srcFile, &output](std::string inData) {
-		if (String::startsWith(srcFile, inData))
+	auto onOutput = [&sourceFile, &output](std::string inData) {
+		if (String::startsWith(sourceFile, inData))
 			return;
 
 		output += std::move(inData);
@@ -99,12 +93,11 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 
 	return result;
 }
+#endif
 
 /*****************************************************************************/
-bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
+bool executeCommandCarriageReturn(StringList command)
 {
-	UNUSED(sourceFile);
-
 	ProcessOptions options;
 	static auto onStdOut = [](std::string inData) {
 		String::replaceAll(inData, '\n', "\r\n");
@@ -143,10 +136,8 @@ bool executeCommandCarriageReturn(StringList command, std::string sourceFile)
 }
 
 /*****************************************************************************/
-bool executeCommand(StringList command, std::string sourceFile)
+bool executeCommand(StringList command)
 {
-	UNUSED(sourceFile);
-
 	ProcessOptions options;
 	static auto onStdOut = [](std::string inData) {
 		std::cout << inData << std::flush;
@@ -214,6 +205,10 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 	::signal(SIGTERM, signalHandler);
 	::signal(SIGABRT, signalHandler);
 
+#if !defined(CHALET_WIN32)
+	UNUSED(msvcCommand);
+#endif
+
 	m_exceptionThrown.clear();
 	state.errorCode = CommandPoolErrorCode::None;
 	m_quiet = quiet;
@@ -229,9 +224,7 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 
 	Output::setQuietNonBuild(false);
 
-	auto& executeCommandFunc = msvcCommand ?
-		  executeCommandMsvc :
-		Environment::isMicrosoftTerminalOrWindowsBash() ?
+	auto& executeCommandFunc = Environment::isMicrosoftTerminalOrWindowsBash() ?
 		  executeCommandCarriageReturn :
 		  executeCommand;
 
@@ -254,8 +247,18 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 					totalCompiles)))
 				return onError();
 
-			if (!executeCommandFunc(it.command, it.output))
-				return onError();
+#if defined(CHALET_WIN32)
+			if (msvcCommand)
+			{
+				if (!executeCommandMsvc(it.command, it.outputReplace))
+					return onError();
+			}
+			else
+#endif
+			{
+				if (!executeCommandFunc(it.command))
+					return onError();
+			}
 		}
 	}
 
@@ -269,7 +272,16 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 				getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(it.command) : it.output)),
 					totalCompiles)));
 
-			threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command, it.output));
+#if defined(CHALET_WIN32)
+			if (msvcCommand)
+			{
+				threadResults.emplace_back(m_threadPool.enqueue(executeCommandMsvc, it.command, it.outputReplace));
+			}
+			else
+#endif
+			{
+				threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command));
+			}
 		}
 	}
 
@@ -316,8 +328,18 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 				totalCompiles)))
 			return onError();
 
-		if (!executeCommandFunc(post.command, post.output))
-			return onError();
+#if defined(CHALET_WIN32)
+		if (msvcCommand)
+		{
+			if (!executeCommandMsvc(post.command, post.outputReplace))
+				return onError();
+		}
+		else
+#endif
+		{
+			if (!executeCommandFunc(post.command))
+				return onError();
+		}
 
 		if (state.errorCode != CommandPoolErrorCode::None)
 		{

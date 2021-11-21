@@ -11,6 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
@@ -82,7 +83,8 @@ bool ICompilerWinResource::createWindowsApplicationManifest()
 
 	if (!windowsManifestFile.empty() && manifestChanged)
 	{
-		if (!m_isNative && Commands::pathExists(windowsManifestResourceFile))
+		const bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
+		if (!isNative && Commands::pathExists(windowsManifestResourceFile))
 			Commands::remove(windowsManifestResourceFile);
 
 		if (!Commands::pathExists(windowsManifestFile))
@@ -129,7 +131,8 @@ bool ICompilerWinResource::createWindowsApplicationIcon()
 
 	if (!windowsIconFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconFile))
 	{
-		if (!m_isNative && Commands::pathExists(windowsIconResourceFile))
+		const bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
+		if (!isNative && Commands::pathExists(windowsIconResourceFile))
 			Commands::remove(windowsIconResourceFile);
 
 		if (!Commands::pathExists(windowsIconFile))

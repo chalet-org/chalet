@@ -44,6 +44,7 @@ struct ICompileEnvironment
 protected:
 	friend class BuildState;
 	friend struct CompilerTools;
+	friend struct BuildPaths;
 
 	explicit ICompileEnvironment(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
 
@@ -62,6 +63,7 @@ protected:
 	virtual bool createFromVersion(const std::string& inVersion);
 	virtual bool validateArchitectureFromInput();
 	virtual bool populateSupportedFlags(const std::string& inExecutable);
+	virtual std::string getModuleDependencyFile(const std::string& inSource, const std::string& inModuleDir) const;
 
 	bool create(const std::string& inVersion = std::string());
 	bool getCompilerPaths(CompilerInfo& outInfo) const;

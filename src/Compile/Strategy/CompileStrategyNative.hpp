@@ -21,7 +21,7 @@ public:
 	explicit CompileStrategyNative(BuildState& inState);
 
 	virtual bool initialize() final;
-	virtual bool addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) final;
+	virtual bool addProject(const SourceTarget& inProject) final;
 
 	virtual bool saveBuildFile() const final;
 	virtual bool doPostBuild() const final;

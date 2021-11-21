@@ -237,6 +237,11 @@ StrategyType CompilerTools::strategy() const noexcept
 	return m_strategy;
 }
 
+void CompilerTools::setStrategy(const StrategyType inValue) noexcept
+{
+	m_strategy = inValue;
+}
+
 const std::string& CompilerTools::strategyString() const noexcept
 {
 	return m_strategyString;

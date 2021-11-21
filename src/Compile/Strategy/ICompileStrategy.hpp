@@ -27,27 +27,34 @@ struct ICompileStrategy
 
 	StrategyType type() const noexcept;
 
-	bool addCompileCommands(const SourceTarget& inProject, CompileToolchain& inToolchain);
 	bool saveCompileCommands() const;
 
 	const SourceOutputs& getSourceOutput(const std::string& inTarget);
+	void setSourceOutputs(const SourceTarget& inProject, SourceOutputs&& inOutputs);
+	void setToolchainController(const SourceTarget& inProject, CompileToolchain&& inToolchain);
 
 	virtual bool initialize() = 0;
-	virtual bool addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain) = 0;
+	virtual bool addProject(const SourceTarget& inProject);
 
 	virtual bool saveBuildFile() const = 0;
 	virtual bool buildProject(const SourceTarget& inProject) = 0;
 	virtual bool doPostBuild() const;
 
+	bool buildProjectModules(const SourceTarget& inProject);
+
 protected:
 	BuildState& m_state;
 
 	Dictionary<SourceOutputs> m_outputs;
+	Dictionary<CompileToolchain> m_toolchains;
 
 	StrategyGenerator m_generator;
 	CompileCommandsGenerator m_compileCommandsGenerator;
 
 	StrategyType m_type;
+
+private:
+	bool addCompileCommands(const SourceTarget& inProject);
 };
 
 }

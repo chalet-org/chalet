@@ -13,6 +13,8 @@
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -29,6 +31,13 @@ bool CompilerCxxVisualStudioCL::initialize()
 {
 	if (!createPrecompiledHeaderSource())
 		return false;
+
+	if (m_project.cppModules())
+	{
+		auto toolsDir = Environment::getAsString("VCToolsInstallDir");
+		Path::sanitize(toolsDir);
+		m_ifcDirectory = fmt::format("{}/ifc/x64", toolsDir);
+	}
 
 	return true;
 }
@@ -78,7 +87,8 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	ret.emplace_back("/c");
 	ret.emplace_back("/utf-8");
 
-	if (generateDependency && m_isNinja)
+	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+	if (generateDependency && isNinja)
 	{
 		ret.emplace_back("/showIncludes");
 	}
@@ -149,7 +159,8 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	ret.emplace_back("/utf-8");
 	// ret.emplace_back("/MP");
 
-	if (generateDependency && m_isNinja)
+	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+	if (generateDependency && isNinja)
 	{
 		ret.emplace_back("/showIncludes");
 	}
@@ -160,8 +171,12 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	{
 		ret.emplace_back("/experimental:module");
 		ret.emplace_back("/interface");
+		// ret.emplace_back(getPathCommand("/stdIfcDir", m_state.paths.modulesDir()));
 		ret.emplace_back(getPathCommand("/ifcOutput", m_state.paths.modulesDir()));
 		ret.emplace_back(getPathCommand("/ifcSearchDir", m_state.paths.modulesDir()));
+		// /BCD "C:\Users\Rew\source\repos\ConsoleModules1\ConsoleModules1\\"
+		ret.emplace_back(getPathCommand("/sourceDependencies:directives", m_state.paths.modulesDir()));
+		// /sourceDependencies "x64\Debug\std.ixx.ifc.dt.d.json"
 	}
 
 	addCompileOptions(ret);
@@ -199,6 +214,75 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	addIncludes(ret);
 
 	addPchInclude(ret);
+
+	ret.emplace_back(getPathCommand("/Fo", outputFile));
+
+	ret.push_back(inputFile);
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList CompilerCxxVisualStudioCL::getModuleDependencyCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile)
+{
+	chalet_assert(!outputFile.empty(), "");
+
+	StringList ret;
+
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+
+	if (executable.empty() || dependencyFile.empty() || interfaceFile.empty())
+		return ret;
+
+	ret.emplace_back(getQuotedExecutablePath(executable));
+	ret.emplace_back("/nologo");
+	ret.emplace_back("/c");
+	ret.emplace_back("/utf-8");
+	// ret.emplace_back("/MP");
+
+	addLanguageStandard(ret, CxxSpecialization::CPlusPlus);
+
+	ret.emplace_back("/experimental:module");
+	ret.emplace_back("/interface");
+	ret.emplace_back(getPathCommand("/stdIfcDir", m_ifcDirectory));
+	ret.emplace_back(getPathCommand("/ifcOutput", interfaceFile));
+	ret.emplace_back(getPathCommand("/sourceDependencies:directives", dependencyFile));
+
+	addCompileOptions(ret);
+
+	{
+		addSeparateProgramDatabase(ret);
+		addForceSeparateProgramDatabaseWrites(ret);
+		addNativeJustMyCodeDebugging(ret);
+		addWarnings(ret);
+		addDiagnostics(ret);
+		addAdditionalSecurityChecks(ret);
+		addOptimizations(ret);
+		addGenerateIntrinsicFunctions(ret);
+		addWholeProgramOptimization(ret);
+		addDefines(ret);
+		// /Gm-  // deprecated
+		addNoExceptionsOption(ret);
+		addRuntimeErrorChecks(ret);
+		addThreadModelCompileOption(ret);
+		addBufferSecurityCheck(ret);
+		addFloatingPointBehavior(ret);
+		addFunctionLevelLinking(ret);
+		addStandardsConformance(ret);
+		addStandardBehaviors(ret);
+		addProgramDatabaseOutput(ret);
+		addExternalWarnings(ret);
+		addCallingConvention(ret);
+		// addFullPathSourceCode(ret);
+	}
+
+	// addInlineFunctionExpansion(ret);
+	// addUnsortedOptions(ret);
+
+	addNoRunTimeTypeInformationOption(ret);
+	addIncludes(ret);
+
+	// addPchInclude(ret);
 
 	ret.emplace_back(getPathCommand("/Fo", outputFile));
 

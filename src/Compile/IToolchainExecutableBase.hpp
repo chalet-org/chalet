@@ -25,12 +25,6 @@ protected:
 
 	const BuildState& m_state;
 	const SourceTarget& m_project;
-
-	bool m_quotePaths = true;
-
-	bool m_isMakefile = false;
-	bool m_isNinja = false;
-	bool m_isNative = false;
 };
 }
 

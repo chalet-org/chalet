@@ -409,7 +409,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 {
 	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
 
-	auto buildToolchain = std::make_unique<CompileToolchainController>(m_state, inProject);
+	auto buildToolchain = std::make_unique<CompileToolchainController>(inProject);
 	auto outputs = m_state.paths.getOutputs(inProject, m_state.info.dumpAssembly());
 
 	if (!Commands::makeDirectories(outputs.directories, m_directoriesMade))
@@ -418,7 +418,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 		return false;
 	}
 
-	if (!buildToolchain->initialize())
+	if (!buildToolchain->initialize(m_state))
 	{
 		Diagnostic::error("Error preparing the build for project: {}", inProject.name());
 		return false;
@@ -429,12 +429,12 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 		doClean(inProject, outputs.target, outputs.groups);
 	}
 
-	if (!m_strategy->addProject(inProject, std::move(outputs), buildToolchain))
-		return false;
+	m_strategy->setSourceOutputs(inProject, std::move(outputs));
+	m_strategy->setToolchainController(inProject, std::move(buildToolchain));
 
-	if (m_state.info.generateCompileCommands())
+	if (!inProject.cppModules())
 	{
-		if (!m_strategy->addCompileCommands(inProject, buildToolchain))
+		if (!m_strategy->addProject(inProject))
 			return false;
 	}
 
@@ -715,8 +715,16 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 
 	Output::lineBreak();
 
-	if (!m_strategy->buildProject(inProject))
-		return false;
+	if (inProject.cppModules())
+	{
+		if (!m_strategy->buildProjectModules(inProject))
+			return false;
+	}
+	else
+	{
+		if (!m_strategy->buildProject(inProject))
+			return false;
+	}
 
 	if (m_state.info.dumpAssembly())
 	{

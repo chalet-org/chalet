@@ -19,9 +19,9 @@ struct SourceTarget;
 
 struct CompileToolchainController
 {
-	explicit CompileToolchainController(const BuildState& inState, const SourceTarget& inProject);
+	explicit CompileToolchainController(const SourceTarget& inProject);
 
-	bool initialize();
+	bool initialize(const BuildState& inState);
 
 	StringList getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 
@@ -29,7 +29,6 @@ struct CompileToolchainController
 	Unique<ICompilerWinResource> compilerWindowsResource;
 
 private:
-	const BuildState& m_state;
 	const SourceTarget& m_project;
 
 	Unique<IArchiver> m_archiver;

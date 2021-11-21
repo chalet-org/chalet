@@ -465,6 +465,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 	bool isMsvc = m_state.environment->isMsvc();
 
 	auto& fileListCache = inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache;
+	const bool isModule = inProject.cppModules();
 
 	for (auto& file : inFiles.list)
 	{
@@ -485,7 +486,12 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		auto group = std::make_unique<SourceFileGroup>();
 		group->type = type;
 		group->objectFile = getObjectFile(file, isMsvc);
-		group->dependencyFile = getDependencyFile(file);
+
+		if (type == SourceType::CPlusPlus && isModule)
+			group->dependencyFile = m_state.environment->getModuleDependencyFile(file, modulesDir());
+		else
+			group->dependencyFile = getDependencyFile(file);
+
 		group->sourceFile = std::move(file);
 
 		ret.push_back(std::move(group));
@@ -496,7 +502,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 	{
 		for (auto& group : ret)
 		{
-			group->assemblyFile = getAssemblyFile(group->sourceFile, isMsvc);
+			group->otherFile = getAssemblyFile(group->sourceFile, isMsvc);
 		}
 	}
 

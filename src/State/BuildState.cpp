@@ -417,6 +417,12 @@ bool BuildState::validateState()
 					return false;
 				}
 
+				if (!environment->isMsvc())
+				{
+					Diagnostic::error("{}: C++ modules are only supported with MSVC.", m_impl->inputs.inputFile());
+					return false;
+				}
+
 				if (project.objectiveCxx())
 				{
 					Diagnostic::error("{}: C++ modules are not supported alongside Objective-C++", m_impl->inputs.inputFile());

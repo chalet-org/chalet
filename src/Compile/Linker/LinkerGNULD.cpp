@@ -497,9 +497,6 @@ void LinkerGNULD::addPositionIndependentCodeOption(StringList& outArgList) const
 /*****************************************************************************/
 /*void LinkerGNULD::initializeSupportedLinks()
 {
-	bool oldQuotePaths = m_quotePaths;
-	m_quotePaths = false;
-
 	auto isLinkSupportedByExecutable = [](const std::string& inExecutable, const std::string& inLink, const StringList& inDirectories) -> bool {
 		// This will print the input if the link is not found in path
 		auto file = fmt::format("lib{}.a", inLink);
@@ -563,8 +560,6 @@ void LinkerGNULD::addPositionIndependentCodeOption(StringList& outArgList) const
 		if (isLinkSupportedByExecutable(exec, link, libDirs) || List::contains(projectLinks, link) || String::contains(cmakeProjects, link))
 			m_supportedLinks.emplace(link, true);
 	}
-
-	m_quotePaths = oldQuotePaths;
 
 	m_supportedLinksInitialized = true;
 }*/

@@ -97,7 +97,7 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutpu
 
 	for (auto& group : inOutputs.groups)
 	{
-		const auto& asmFile = group->assemblyFile;
+		const auto& asmFile = group->otherFile;
 
 		if (asmFile.empty() || List::contains(m_cache, asmFile))
 			continue;

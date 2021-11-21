@@ -47,10 +47,12 @@ bool CompileStrategyNative::initialize()
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
+bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 {
+	const auto& name = inProject.name();
+
 	m_project = &inProject;
-	m_toolchain = inToolchain.get();
+	m_toolchain = m_toolchains.at(name).get();
 
 	m_pchChanged = false;
 	m_sourcesChanged = false;
@@ -58,24 +60,24 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutp
 	chalet_assert(m_project != nullptr, "");
 
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
-	const auto& name = inProject.name();
+	const auto& outputs = m_outputs.at(name);
 
 	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
 
 	auto target = std::make_unique<CommandPool::Target>();
 	target->pre = getPchCommands(pchTarget);
-	target->list = getCompileCommands(inOutputs.groups);
-	bool targetExists = Commands::pathExists(inOutputs.target);
+	target->list = getCompileCommands(outputs.groups);
+	bool targetExists = Commands::pathExists(outputs.target);
 
 	if (!target->list.empty() || !targetExists)
 	{
 		if (m_sourcesChanged || m_pchChanged || !targetExists)
 		{
-			if (!List::contains(m_fileCache, inOutputs.target))
+			if (!List::contains(m_fileCache, outputs.target))
 			{
-				m_fileCache.push_back(inOutputs.target);
+				m_fileCache.push_back(outputs.target);
 
-				target->post = getLinkCommand(inOutputs.target, inOutputs.objectListLinker);
+				target->post = getLinkCommand(outputs.target, outputs.objectListLinker);
 			}
 		}
 
@@ -85,12 +87,10 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject, SourceOutp
 		}
 	}
 
-	m_outputs[name] = std::move(inOutputs);
-
 	m_toolchain = nullptr;
 	m_project = nullptr;
 
-	return true;
+	return ICompileStrategy::addProject(inProject);
 }
 
 /*****************************************************************************/
@@ -200,6 +200,12 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 					CommandPool::Cmd out;
 					out.output = std::move(source);
 					out.command = std::move(command);
+
+#if defined(CHALET_WIN32)
+					if (m_state.environment->isMsvc())
+						out.outputReplace = String::getPathFilename(out.output);
+#endif
+
 					ret.emplace_back(std::move(out));
 				}
 			}
@@ -250,6 +256,12 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 						CommandPool::Cmd out;
 						out.output = std::move(source);
 						out.command = getRcCompile(source, target);
+
+#if defined(CHALET_WIN32)
+						if (m_state.environment->isMsvc())
+							out.outputReplace = String::getPathFilename(out.output);
+#endif
+
 						ret.emplace_back(std::move(out));
 					}
 				}
@@ -277,6 +289,12 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 						CommandPool::Cmd out;
 						out.output = std::move(source);
 						out.command = getCxxCompile(source, target, specialization);
+
+#if defined(CHALET_WIN32)
+						if (m_state.environment->isMsvc())
+							out.outputReplace = String::getPathFilename(out.output);
+#endif
+
 						ret.emplace_back(std::move(out));
 					}
 				}

@@ -286,4 +286,10 @@ bool CompileEnvironmentVisualStudio::compilerVersionIsToolchainVersion() const
 	return false;
 }
 
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getModuleDependencyFile(const std::string& inSource, const std::string& inModuleDir) const
+{
+	return fmt::format("{}/{}.module.json", inModuleDir, String::getPathFilename(inSource));
+}
+
 }

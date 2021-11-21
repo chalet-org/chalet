@@ -14,36 +14,35 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainController::CompileToolchainController(const BuildState& inState, const SourceTarget& inProject) :
-	m_state(inState),
+CompileToolchainController::CompileToolchainController(const SourceTarget& inProject) :
 	m_project(inProject)
 {
 }
 
 /*****************************************************************************/
-bool CompileToolchainController::initialize()
+bool CompileToolchainController::initialize(const BuildState& inState)
 {
-	ToolchainType type = m_state.environment->type();
+	ToolchainType type = inState.environment->type();
 
-	const auto& cxxPath = m_state.toolchain.compilerCxx(m_project.language()).path;
+	const auto& cxxPath = inState.toolchain.compilerCxx(m_project.language()).path;
 	if (!cxxPath.empty())
 	{
-		compilerCxx = ICompilerCxx::make(type, cxxPath, m_state, m_project);
+		compilerCxx = ICompilerCxx::make(type, cxxPath, inState, m_project);
 		if (!compilerCxx->initialize())
 			return false;
 	}
 
-	const auto& windRes = m_state.toolchain.compilerWindowsResource();
+	const auto& windRes = inState.toolchain.compilerWindowsResource();
 	if (!windRes.empty())
 	{
-		compilerWindowsResource = ICompilerWinResource::make(type, windRes, m_state, m_project);
+		compilerWindowsResource = ICompilerWinResource::make(type, windRes, inState, m_project);
 		if (!compilerWindowsResource->initialize())
 			return false;
 	}
 
-	m_archiver = IArchiver::make(type, m_state.toolchain.archiver(), m_state, m_project);
+	m_archiver = IArchiver::make(type, inState.toolchain.archiver(), inState, m_project);
 
-	m_linker = ILinker::make(type, m_state.toolchain.linker(), m_state, m_project);
+	m_linker = ILinker::make(type, inState.toolchain.linker(), inState, m_project);
 	if (!m_linker->initialize())
 		return false;
 

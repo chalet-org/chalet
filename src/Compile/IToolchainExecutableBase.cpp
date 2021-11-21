@@ -16,17 +16,12 @@ IToolchainExecutableBase::IToolchainExecutableBase(const BuildState& inState, co
 	m_state(inState),
 	m_project(inProject)
 {
-	m_quotePaths = m_state.toolchain.strategy() != StrategyType::Native;
-
-	m_isMakefile = m_state.toolchain.strategy() == StrategyType::Makefile;
-	m_isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
-	m_isNative = m_state.toolchain.strategy() == StrategyType::Native;
 }
 
 /*****************************************************************************/
 std::string IToolchainExecutableBase::getQuotedExecutablePath(const std::string& inExecutable) const
 {
-	if (m_isNative)
+	if (m_state.toolchain.strategy() == StrategyType::Native)
 		return inExecutable;
 	else
 		return fmt::format("\"{}\"", inExecutable);
@@ -35,7 +30,7 @@ std::string IToolchainExecutableBase::getQuotedExecutablePath(const std::string&
 /*****************************************************************************/
 std::string IToolchainExecutableBase::getPathCommand(std::string_view inCmd, const std::string& inPath) const
 {
-	if (m_quotePaths)
+	if (m_state.toolchain.strategy() != StrategyType::Native)
 		return fmt::format("{}\"{}\"", inCmd, inPath);
 	else
 		return fmt::format("{}{}", inCmd, inPath);

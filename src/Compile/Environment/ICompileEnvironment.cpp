@@ -269,6 +269,13 @@ bool ICompileEnvironment::populateSupportedFlags(const std::string& inExecutable
 }
 
 /*****************************************************************************/
+std::string ICompileEnvironment::getModuleDependencyFile(const std::string& inSource, const std::string& inModuleDir) const
+{
+	// Note: This isn't an actual convention, just a placeholder until GCC/Clang have one
+	return fmt::format("{}/{}.d.module", inModuleDir, inSource);
+}
+
+/*****************************************************************************/
 bool ICompileEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 {
 	std::string path = String::getPathFolder(outInfo.path);

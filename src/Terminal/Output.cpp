@@ -614,6 +614,18 @@ void Output::msgRun(const std::string& inName)
 }
 
 /*****************************************************************************/
+void Output::msgScanningForModuleDependencies()
+{
+	print(state.theme.build, "   Scanning sources for module dependencies...");
+}
+
+/*****************************************************************************/
+void Output::msgBuildingRequiredHeaderUnits()
+{
+	print(state.theme.build, "   Building required header units...");
+}
+
+/*****************************************************************************/
 void Output::msgCopying(const std::string& inFrom, const std::string& inTo)
 {
 	auto symbol = Unicode::heavyCurvedUpRightArrow();

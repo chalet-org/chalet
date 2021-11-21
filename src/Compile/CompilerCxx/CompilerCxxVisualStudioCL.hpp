@@ -19,6 +19,8 @@ struct CompilerCxxVisualStudioCL : public ICompilerCxx
 	virtual StringList getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) override;
 	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;
 
+	virtual StringList getModuleDependencyCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile) override;
+
 protected:
 	virtual void addIncludes(StringList& outArgList) const override;
 	virtual void addWarnings(StringList& outArgList) const override;
@@ -60,6 +62,7 @@ private:
 	mutable std::string m_warningFlag;
 	std::string m_pchSource;
 	std::string m_pchMinusLocation;
+	std::string m_ifcDirectory;
 };
 }
 

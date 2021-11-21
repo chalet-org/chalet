@@ -32,6 +32,7 @@ protected:
 	virtual bool validateArchitectureFromInput() final;
 	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const final;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
+	virtual std::string getModuleDependencyFile(const std::string& inSource, const std::string& inModuleDir) const final;
 
 private:
 	std::string makeToolchainName(const std::string& inArch) const;

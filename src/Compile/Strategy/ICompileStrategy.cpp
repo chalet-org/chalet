@@ -5,10 +5,14 @@
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
+#include "Compile/ModuleStrategy/IModuleStrategy.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 
+#include "Compile/CompileToolchainController.hpp"
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
@@ -49,19 +53,6 @@ StrategyType ICompileStrategy::type() const noexcept
 }
 
 /*****************************************************************************/
-bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject, CompileToolchain& inToolchain)
-{
-	const auto& name = inProject.name();
-	if (m_outputs.find(name) != m_outputs.end())
-	{
-		auto& outputs = m_outputs.at(name);
-		return m_compileCommandsGenerator.addCompileCommands(inToolchain, outputs);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool ICompileStrategy::saveCompileCommands() const
 {
 	const auto& buildDir = m_state.paths.buildOutputDir();
@@ -79,8 +70,75 @@ const SourceOutputs& ICompileStrategy::getSourceOutput(const std::string& inTarg
 }
 
 /*****************************************************************************/
+void ICompileStrategy::setSourceOutputs(const SourceTarget& inProject, SourceOutputs&& inOutputs)
+{
+	const auto& name = inProject.name();
+	m_outputs[name] = std::move(inOutputs);
+}
+
+/*****************************************************************************/
+void ICompileStrategy::setToolchainController(const SourceTarget& inProject, CompileToolchain&& inToolchain)
+{
+	const auto& name = inProject.name();
+	m_toolchains[name] = std::move(inToolchain);
+}
+
+/*****************************************************************************/
 bool ICompileStrategy::doPostBuild() const
 {
 	return true;
 }
+
+/*****************************************************************************/
+bool ICompileStrategy::addProject(const SourceTarget& inProject)
+{
+	if (inProject.cppModules())
+	{
+		if (!buildProjectModules(inProject))
+			return false;
+	}
+	if (m_state.info.generateCompileCommands())
+	{
+		if (!addCompileCommands(inProject))
+			return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
+{
+	const auto& name = inProject.name();
+	if (m_outputs.find(name) != m_outputs.end())
+	{
+		auto& outputs = m_outputs.at(name);
+		auto& toolchain = m_toolchains.at(name);
+
+		auto moduleStrategy = IModuleStrategy::make(m_state.environment->type(), m_state);
+		if (!moduleStrategy->buildProject(inProject, outputs, toolchain))
+			return false;
+	}
+
+	// Compile commands - Not sure if it's even relevant?
+
+	UNUSED(inProject);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject)
+{
+	const auto& name = inProject.name();
+	if (m_outputs.find(name) != m_outputs.end())
+	{
+		auto& outputs = m_outputs.at(name);
+		auto& toolchain = m_toolchains.at(name);
+		return m_compileCommandsGenerator.addCompileCommands(toolchain, outputs);
+	}
+
+	return true;
+}
+
 }

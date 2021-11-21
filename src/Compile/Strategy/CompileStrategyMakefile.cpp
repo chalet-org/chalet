@@ -55,15 +55,16 @@ bool CompileStrategyMakefile::initialize()
 }
 
 /*****************************************************************************/
-bool CompileStrategyMakefile::addProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
+bool CompileStrategyMakefile::addProject(const SourceTarget& inProject)
 {
 	if (!m_initialized)
 		return false;
 
 	auto& name = inProject.name();
+	const auto& outputs = m_outputs.at(name);
 	if (m_hashes.find(name) == m_hashes.end())
 	{
-		m_hashes.emplace(name, Hash::string(inOutputs.target));
+		m_hashes.emplace(name, Hash::string(outputs.target));
 	}
 	if (m_buildFiles.find(name) == m_buildFiles.end())
 	{
@@ -74,7 +75,8 @@ bool CompileStrategyMakefile::addProject(const SourceTarget& inProject, SourceOu
 	if (m_cacheNeedsUpdate || !Commands::pathExists(buildFile))
 	{
 		auto& hash = m_hashes.at(name);
-		m_generator->addProjectRecipes(inProject, inOutputs, inToolchain, hash);
+		auto& toolchain = m_toolchains.at(name);
+		m_generator->addProjectRecipes(inProject, outputs, toolchain, hash);
 
 		std::ofstream(buildFile) << m_generator->getContents(buildFile)
 								 << std::endl;
@@ -82,9 +84,7 @@ bool CompileStrategyMakefile::addProject(const SourceTarget& inProject, SourceOu
 		m_generator->reset();
 	}
 
-	m_outputs[name] = std::move(inOutputs);
-
-	return true;
+	return ICompileStrategy::addProject(inProject);
 }
 
 /*****************************************************************************/

@@ -78,6 +78,8 @@ void msgDistribution(const std::string& inName);
 void msgScript(const std::string& inName, const Color inColor);
 void msgTargetDescription(const std::string& inDescription, const Color inColor);
 void msgRun(const std::string& inName);
+void msgScanningForModuleDependencies();
+void msgBuildingRequiredHeaderUnits();
 
 // void msgRemoving(const std::string& inPath);
 void msgCopying(const std::string& inFrom, const std::string& inTo);

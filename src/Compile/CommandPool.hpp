@@ -18,6 +18,9 @@ struct CommandPool
 		std::string output;
 		StringList command;
 		std::string label;
+#if defined(CHALET_WIN32)
+		std::string outputReplace;
+#endif
 	};
 	using CmdList = std::vector<Cmd>;
 
