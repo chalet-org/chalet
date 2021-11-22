@@ -417,6 +417,48 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 			}
 		}
 
+		// Check for dependency changes
+		{
+			std::vector<SourceFileGroup*> needsRebuild;
+			for (auto& [group, dependencies] : dependencyGraph)
+			{
+				if (m_compileCache[group->sourceFile])
+					needsRebuild.push_back(group);
+			}
+
+			auto dependencyGraphCopy = dependencyGraph;
+			auto itr = dependencyGraphCopy.begin();
+			while (itr != dependencyGraphCopy.end())
+			{
+				if (!itr->second.empty())
+				{
+					bool erased = false;
+					for (auto dep : itr->second)
+					{
+						if (!List::contains(needsRebuild, dep))
+							continue;
+
+						auto group = itr->first;
+						m_compileCache[group->sourceFile] = true;
+						needsRebuild.push_back(group);
+						itr = dependencyGraphCopy.erase(itr);
+						itr = dependencyGraphCopy.begin(); // We need to rescan
+						erased = true;
+						break;
+					}
+					if (!erased)
+						++itr;
+				}
+				else
+				{
+					// no dependencies - we don't care about it
+					itr = dependencyGraphCopy.erase(itr);
+				}
+			}
+		}
+
+		//
+
 		std::vector<SourceFileGroup*> groupsAdded;
 
 		{
@@ -446,13 +488,14 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 			sourceCompiles.clear();
 		}
 
+		std::vector<SourceFileGroup*> addedThisLoop;
 		auto itr = dependencyGraph.begin();
 		while (!dependencyGraph.empty())
 		{
 			bool canAdd = true;
 			for (auto& dep : itr->second)
 			{
-				canAdd &= List::contains(groupsAdded, dep);
+				canAdd &= (List::contains(groupsAdded, dep) && !List::contains(addedThisLoop, dep));
 			}
 
 			if (canAdd)
@@ -460,6 +503,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 				auto group = itr->first;
 				addSourceGroup(group, sourceCompiles);
 				groupsAdded.push_back(group);
+				addedThisLoop.push_back(group);
 				itr = dependencyGraph.erase(itr);
 			}
 			else
@@ -467,6 +511,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 
 			if (itr == dependencyGraph.end())
 			{
+				addedThisLoop.clear();
 				if (!sourceCompiles.empty())
 				{
 					// LOG("group:");
@@ -479,7 +524,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 					// TODO: These batches are single-threaded for now, because there can still be dependency collisions between files
 					//   aka one command could be writing files while another tries to read them
 					//
-					makeBatch(sourceCompiles, 1); // single threaded
+					makeBatch(sourceCompiles, 0);
 					sourceCompiles.clear();
 				}
 				itr = dependencyGraph.begin();
