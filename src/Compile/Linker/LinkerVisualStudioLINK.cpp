@@ -307,7 +307,7 @@ void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::s
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addDebug(StringList& outArgList, const std::string& outputFileBase) const
 {
-	if (!m_state.configuration.debugSymbols())
+	if (m_state.configuration.debugSymbols())
 	{
 		outArgList.emplace_back("/debug");
 		outArgList.emplace_back(getPathCommand("/pdb:", fmt::format("{}.pdb", outputFileBase)));
