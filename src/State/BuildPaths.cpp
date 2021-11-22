@@ -38,8 +38,10 @@ BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const BuildState& inSt
 	}),
 	m_cppModuleExts({
 		"cppm",
-		"mxx",
+		"mpp",
 		"ixx",
+		"mxx",
+		"cpm",
 	}),
 	m_resourceExts({
 		"rc",

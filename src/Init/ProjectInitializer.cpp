@@ -588,6 +588,7 @@ StringList ProjectInitializer::getSourceExtensions(const CxxSpecialization inCxx
 		if (inModules)
 		{
 			ret.emplace_back(".cppm");
+			ret.emplace_back(".mpp");
 			ret.emplace_back(".ixx");
 			ret.emplace_back(".mxx");
 		}
