@@ -29,7 +29,7 @@ enum class CommandPoolErrorCode : ushort
 static std::mutex s_mutex;
 static struct
 {
-	uint index = 0;
+	std::atomic<uint> index = 0;
 	// std::atomic<CommandPoolErrorCode> errorCode = CommandPoolErrorCode::None;
 	CommandPoolErrorCode errorCode = CommandPoolErrorCode::None;
 	std::function<bool()> shutdownHandler;
@@ -38,10 +38,12 @@ static struct
 /*****************************************************************************/
 bool printCommand(std::string text)
 {
-	std::lock_guard<std::mutex> lock(s_mutex);
-
 	String::replaceAll(text, '#', std::to_string(state.index));
-	std::cout << text << std::endl;
+
+	{
+		std::lock_guard<std::mutex> lock(s_mutex);
+		std::cout << text << std::endl;
+	}
 
 	++state.index;
 
@@ -122,14 +124,21 @@ bool executeCommandCarriageReturn(StringList command)
 		std::lock_guard<std::mutex> lock(s_mutex);
 		String::replaceAll(errorOutput, '\n', "\r\n");
 
-		if (!result)
+		if (result)
+		{
+			// Warnings
+			std::cout << errorOutput << std::flush;
+		}
+		else
+		{
 			state.errorCode = CommandPoolErrorCode::BuildFailure;
 
-		auto error = Output::getAnsiStyle(Output::theme().error);
-		auto reset = Output::getAnsiStyle(Color::Reset);
-		auto cmdString = String::join(command);
+			auto error = Output::getAnsiStyle(Output::theme().error);
+			auto reset = Output::getAnsiStyle(Color::Reset);
+			auto cmdString = String::join(command);
 
-		std::cout << fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString) << errorOutput << std::flush;
+			std::cout << fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString) << errorOutput << std::flush;
+		}
 	}
 
 	return result;
@@ -159,14 +168,22 @@ bool executeCommand(StringList command)
 	if (!errorOutput.empty())
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
-		if (!result)
+
+		if (result)
+		{
+			// Warnings
+			std::cout << errorOutput << std::flush;
+		}
+		else
+		{
 			state.errorCode = CommandPoolErrorCode::BuildFailure;
 
-		auto error = Output::getAnsiStyle(Output::theme().error);
-		auto reset = Output::getAnsiStyle(Color::Reset);
-		auto cmdString = String::join(command);
+			auto error = Output::getAnsiStyle(Output::theme().error);
+			auto reset = Output::getAnsiStyle(Color::Reset);
+			auto cmdString = String::join(command);
 
-		std::cout << fmt::format("{}FAILED: {}{}\n", error, reset, cmdString) << errorOutput << std::flush;
+			std::cout << fmt::format("{}FAILED: {}{}\n", error, reset, cmdString) << errorOutput << std::flush;
+		}
 	}
 
 	return result;
