@@ -44,7 +44,7 @@ ThreadPool::ThreadPool(const std::size_t inThreads)
 	{
 		std::thread thread(&ThreadPool::workerThread, this);
 #if defined(CHALET_WIN32)
-		::SetThreadPriority((HANDLE)thread.native_handle(), THREAD_PRIORITY_HIGHEST);
+		::SetThreadPriority((HANDLE)thread.native_handle(), THREAD_PRIORITY_TIME_CRITICAL);
 #else
 		sched_param schedParams;
 		schedParams.sched_priority = 20;
