@@ -426,7 +426,8 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 
 	if (inRoute == Route::Rebuild)
 	{
-		doClean(inProject, outputs.target, outputs.groups);
+		// doClean(inProject, outputs.target, outputs.groups);
+		doLazyClean();
 	}
 
 	m_strategy->setSourceOutputs(inProject, std::move(outputs));
@@ -517,7 +518,7 @@ bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& 
 }
 
 /*****************************************************************************/
-bool BuildManager::doLazyClean()
+bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 {
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& outputDirectory = m_state.paths.outputDirectory();
@@ -532,16 +533,11 @@ bool BuildManager::doLazyClean()
 		dirToClean = buildOutputDir;
 
 	if (!Commands::pathExists(dirToClean))
-	{
-		Output::msgNothingToClean();
-		Output::lineBreak();
-		return true;
-	}
+		return false;
 
 	if (Output::cleanOutput())
 	{
-		Output::msgCleaning();
-		Output::lineBreak();
+		onClean();
 	}
 
 	Commands::removeRecursively(dirToClean);
@@ -549,9 +545,6 @@ bool BuildManager::doLazyClean()
 	// TODO: Clean CMake targets
 	// TODO: Flag to clean externalDependencies
 	// TODO: Also clean cache files specific to build configuration
-
-	if (Output::showCommands())
-		Output::lineBreak();
 
 	return true;
 }
@@ -637,6 +630,19 @@ bool BuildManager::doClean(const SourceTarget& inProject, const std::string& inT
 
 		cacheAndRemove(group->objectFile, m_removeCache);
 		cacheAndRemove(group->dependencyFile, m_removeCache);
+	}
+
+	if (inProject.cppModules())
+	{
+		for (auto& group : inGroups)
+		{
+			if (group->type != SourceType::CPlusPlus)
+				continue;
+
+			cacheAndRemove(m_state.environment->getModuleBinaryInterfaceFile(group->sourceFile), m_removeCache);
+			cacheAndRemove(m_state.environment->getModuleDirectivesDependencyFile(group->sourceFile), m_removeCache);
+			cacheAndRemove(m_state.environment->getModuleBinaryInterfaceDependencyFile(group->sourceFile), m_removeCache);
+		}
 	}
 
 	return true;
@@ -902,10 +908,19 @@ bool BuildManager::cmdClean()
 	Output::msgClean(inputBuild.empty() ? inputBuild : buildConfiguration);
 	Output::lineBreak();
 
-	if (!doLazyClean())
+	auto onClean = []() {
+		Output::msgCleaning();
+		Output::lineBreak();
+	};
+
+	if (!doLazyClean(onClean))
 	{
-		return false;
+		Output::msgNothingToClean();
+		Output::lineBreak();
 	}
+
+	if (Output::showCommands())
+		Output::lineBreak();
 
 	return true;
 }

@@ -42,7 +42,7 @@ private:
 	bool doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
-	bool doLazyClean();
+	bool doLazyClean(const std::function<void()>& onClean = nullptr);
 
 	bool addProjectToBuild(const SourceTarget& inProject, const Route inRoute);
 
