@@ -11,6 +11,7 @@
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -287,9 +288,39 @@ bool CompileEnvironmentVisualStudio::compilerVersionIsToolchainVersion() const
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentVisualStudio::getModuleDependencyFile(const std::string& inSource, const std::string& inModuleDir) const
+std::string CompileEnvironmentVisualStudio::getObjectFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.module.json", inModuleDir, inSource);
+	return fmt::format("{}/{}.obj", m_state.paths.objDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getAssemblyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.obj.asm", m_state.paths.asmDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.d.json", m_state.paths.depDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getModuleDirectivesDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.module.json", m_state.paths.depDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getModuleBinaryInterfaceFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.ifc", m_state.paths.objDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentVisualStudio::getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.ifc.d.json", m_state.paths.depDir(), inSource);
 }
 
 }

@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -269,10 +270,42 @@ bool ICompileEnvironment::populateSupportedFlags(const std::string& inExecutable
 }
 
 /*****************************************************************************/
-std::string ICompileEnvironment::getModuleDependencyFile(const std::string& inSource, const std::string& inModuleDir) const
+std::string ICompileEnvironment::getObjectFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.o", m_state.paths.objDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string ICompileEnvironment::getAssemblyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.o.asm", m_state.paths.asmDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string ICompileEnvironment::getDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.d", m_state.paths.depDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string ICompileEnvironment::getModuleDirectivesDependencyFile(const std::string& inSource) const
 {
 	// Note: This isn't an actual convention, just a placeholder until GCC/Clang have one
-	return fmt::format("{}/{}.d.module", inModuleDir, inSource);
+	return fmt::format("{}/{}.d.module", m_state.paths.depDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string ICompileEnvironment::getModuleBinaryInterfaceFile(const std::string& inSource) const
+{
+	// Note: This isn't an actual convention, just a placeholder until GCC/Clang have one
+	return fmt::format("{}/{}.bmi", m_state.paths.objDir(), inSource);
+}
+
+/*****************************************************************************/
+std::string ICompileEnvironment::getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const
+{
+	// Note: This isn't an actual convention, just a placeholder until GCC/Clang have one
+	return fmt::format("{}/{}.bmi.d", m_state.paths.depDir(), inSource);
 }
 
 /*****************************************************************************/

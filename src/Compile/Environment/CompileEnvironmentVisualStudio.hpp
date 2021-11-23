@@ -21,6 +21,13 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 	CHALET_DISALLOW_COPY_MOVE(CompileEnvironmentVisualStudio);
 	~CompileEnvironmentVisualStudio();
 
+	virtual std::string getObjectFile(const std::string& inSource) const final;
+	virtual std::string getDependencyFile(const std::string& inSource) const final;
+	virtual std::string getAssemblyFile(const std::string& inSource) const final;
+	virtual std::string getModuleDirectivesDependencyFile(const std::string& inSource) const final;
+	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const final;
+	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const final;
+
 protected:
 	virtual std::string getIdentifier() const noexcept final;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
@@ -32,7 +39,6 @@ protected:
 	virtual bool validateArchitectureFromInput() final;
 	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const final;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
-	virtual std::string getModuleDependencyFile(const std::string& inSource, const std::string& inModuleDir) const final;
 
 private:
 	std::string makeToolchainName(const std::string& inArch) const;

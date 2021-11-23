@@ -19,14 +19,15 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 // #include "Utility/Timer.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
-#include "Json/JsonComments.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
 IModuleStrategy::IModuleStrategy(BuildState& inState) :
-	m_state(inState)
+	m_state(inState),
+	kRootModule{ "__root_module__" }
 {
 }
 
@@ -54,25 +55,14 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 	m_state.toolchain.setStrategy(StrategyType::Native);
 	m_rootModule.clear();
 
-	if (m_msvcToolsDirectory.empty())
-	{
-		m_msvcToolsDirectory = Environment::getAsString("VCToolsInstallDir");
-		Path::sanitize(m_msvcToolsDirectory);
-	}
-
-	const std::string kRootModule{ "__root_module__" };
-
-	const auto& objDir = m_state.paths.objDir();
-
 	auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
 	Path::sanitize(cwd);
 	if (cwd.back() != '/')
 		cwd += '/';
 
 	Dictionary<ModuleLookup> modules;
-	Dictionary<ModulePayload> modulePayload;
 
-	auto moduleId = m_state.getModuleId();
+	auto moduleId = getModuleId();
 
 	auto onFailure = [this]() -> bool {
 		m_state.toolchain.setStrategy(m_oldStrategy);
@@ -90,8 +80,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 
 	CommandPool::Target target;
 	// target.pre = getPchCommands(pchTarget);
-	target.list = getModuleCommands(*inToolchain, inOutputs.groups, modulePayload, ModuleFileType::ModuleDependency);
-
+	target.list = getModuleCommands(*inToolchain, inOutputs.groups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
 	if (!target.list.empty())
 	{
 		// Scan sources for module dependencies
@@ -111,102 +100,10 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 
 	// Timer timer;
 
-	// Version 1.1
-	{
-		const std::string kKeyVersion{ "Version" };
-		const std::string kKeyData{ "Data" };
-		const std::string kKeyProvidedModule{ "ProvidedModule" };
-		const std::string kKeyImportedModules{ "ImportedModules" };
-		const std::string kKeyImportedHeaderUnits{ "ImportedHeaderUnits" };
+	if (!readModuleDependencies(inOutputs, modules))
+		return onFailure();
 
-		for (auto& group : inOutputs.groups)
-		{
-			if (group->type != SourceType::CPlusPlus)
-				continue;
-
-			if (!Commands::pathExists(group->dependencyFile))
-				continue;
-
-			Json json;
-			if (!JsonComments::parse(json, group->dependencyFile))
-			{
-				Diagnostic::error("Failed to parse: {}", group->dependencyFile);
-				return onFailure();
-			}
-
-			if (!json.contains(kKeyVersion) || !json.at(kKeyVersion).is_string())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyVersion);
-				return onFailure();
-			}
-
-			std::string version = json.at(kKeyVersion).get<std::string>();
-			if (!String::equals("1.1", version))
-			{
-				Diagnostic::error("{}: Found version '{}', but only '1.1' is supported", group->dependencyFile, version);
-				return onFailure();
-			}
-
-			if (!json.contains(kKeyData) || !json.at(kKeyData).is_object())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyData);
-				return onFailure();
-			}
-
-			const auto& data = json.at(kKeyData);
-			if (!data.contains(kKeyProvidedModule) || !data.at(kKeyProvidedModule).is_string())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyProvidedModule);
-				return onFailure();
-			}
-
-			if (!data.contains(kKeyImportedModules) || !data.at(kKeyImportedModules).is_array())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyImportedModules);
-				return onFailure();
-			}
-
-			if (!data.contains(kKeyImportedHeaderUnits) || !data.at(kKeyImportedHeaderUnits).is_array())
-			{
-				Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyImportedHeaderUnits);
-				return onFailure();
-			}
-
-			auto name = data.at(kKeyProvidedModule).get<std::string>();
-			if (name.empty())
-				name = kRootModule;
-
-			modules[name].source = group->sourceFile;
-
-			for (auto& moduleItr : data.at(kKeyImportedModules).items())
-			{
-				auto& mod = moduleItr.value();
-				if (!mod.is_string())
-				{
-					Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, kKeyImportedModules);
-					return onFailure();
-				}
-
-				List::addIfDoesNotExist(modules[name].importedModules, mod.get<std::string>());
-			}
-
-			for (auto& fileItr : data.at(kKeyImportedHeaderUnits).items())
-			{
-				auto& file = fileItr.value();
-				if (!file.is_string())
-				{
-					Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, kKeyImportedHeaderUnits);
-					return onFailure();
-				}
-
-				auto outHeader = file.get<std::string>();
-				Path::sanitize(outHeader);
-
-				List::addIfDoesNotExist(modules[name].importedHeaderUnits, std::move(outHeader));
-			}
-		}
-	}
-
+	Dictionary<ModulePayload> modulePayload;
 	StringList headerUnitObjects;
 	SourceFileGroupList headerUnitList;
 
@@ -224,7 +121,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 			for (const auto& header : module.importedHeaderUnits)
 			{
 				auto file = String::getPathFilename(header);
-				auto ifcFile = fmt::format("{}/{}_{}.ifc", objDir, file, moduleId);
+				auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(fmt::format("{}_{}", file, moduleId));
 
 				List::addIfDoesNotExist(modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", header, ifcFile));
 
@@ -236,8 +133,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 				auto group = std::make_unique<SourceFileGroup>();
 				group->type = SourceType::CPlusPlus;
 				group->sourceFile = header;
-				group->objectFile = fmt::format("{}/{}_{}.obj", objDir, file, moduleId);
-				group->dependencyFile = fmt::format("{}/{}_{}.module.json", objDir, file, moduleId);
+				group->objectFile = m_state.environment->getObjectFile(fmt::format("{}_{}", file, moduleId));
+				group->dependencyFile = m_state.environment->getModuleDirectivesDependencyFile(fmt::format("{}_{}", file, moduleId));
 				group->otherFile = ifcFile;
 
 				headerUnitObjects.emplace_back(group->objectFile);
@@ -283,7 +180,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 		for (const auto& group : headerUnitList)
 		{
 			auto file = String::getPathFilename(group->sourceFile);
-			group->dependencyFile = fmt::format("{}/{}_{}.ifc.d.json", objDir, file, moduleId);
+			group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(fmt::format("{}_{}", file, moduleId));
 		}
 
 		auto batch = std::make_unique<CommandPool::Target>();
@@ -304,18 +201,17 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 			group->type = SourceType::CPlusPlus;
 			group->sourceFile = inGroup->sourceFile;
 			group->objectFile = inGroup->objectFile;
-			group->dependencyFile = fmt::format("{}/{}.ifc.d.json", objDir, inGroup->sourceFile);
-			group->otherFile = fmt::format("{}/{}.ifc", objDir, inGroup->sourceFile);
+			group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(inGroup->sourceFile);
+			group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(inGroup->sourceFile);
 
 			outList.emplace_back(std::move(group));
 		};
 
-		auto makeBatch = [&](const SourceFileGroupList& inList, const uint threads) {
+		auto makeBatch = [&](const SourceFileGroupList& inList) {
 			if (inList.empty())
 				return;
 
 			auto batch = std::make_unique<CommandPool::Target>();
-			batch->threads = threads;
 			batch->list = getModuleCommands(*inToolchain, inList, modulePayload, ModuleFileType::ModuleObject);
 			if (!batch->list.empty())
 			{
@@ -420,7 +316,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 			{
 				LOG("  ", group->sourceFile);
 			}*/
-			makeBatch(sourceCompiles, 0); // multi-threaded - because these don't have any dependencies
+			makeBatch(sourceCompiles);
 			sourceCompiles.clear();
 		}
 
@@ -457,10 +353,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 						groupsAdded.push_back(group.get());
 					}
 
-					// TODO: These batches are single-threaded for now, because there can still be dependency collisions between files
-					//   aka one command could be writing files while another tries to read them
-					//
-					makeBatch(sourceCompiles, 0);
+					makeBatch(sourceCompiles);
 					sourceCompiles.clear();
 				}
 				itr = dependencyGraph.begin();
@@ -519,6 +412,14 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 			settings.total = 1;
 		}
 
+		inOutputs.directories.clear();
+		inOutputs.fileExtensions.clear();
+		inOutputs.groups.clear();
+		inOutputs.objectListLinker.clear();
+		inOutputs.pch.clear();
+		inOutputs.target.clear();
+		inOutputs.types.clear();
+
 		for (auto& batch : buildBatches)
 		{
 			CommandPool commandPool(batch->threads == 0 ? m_state.info.maxJobs() : batch->threads);
@@ -539,28 +440,9 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 }
 
 /*****************************************************************************/
-void IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload)
+std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject)
 {
-	const auto& objDir = m_state.paths.objDir();
-
-	for (const auto& imported : inModule.importedModules)
-	{
-		if (inModules.find(imported) == inModules.end())
-			continue;
-
-		const auto& otherModule = inModules.at(imported);
-
-		auto ifcFile = fmt::format("{}/{}.ifc", objDir, otherModule.source);
-
-		List::addIfDoesNotExist(outPayload[outModule.source].moduleTranslations, fmt::format("{}={}", imported, ifcFile));
-
-		for (auto& header : otherModule.importedHeaderUnits)
-		{
-			List::addIfDoesNotExist(outModule.importedHeaderUnits, header);
-		}
-
-		addHeaderUnitsRecursively(outModule, otherModule, inModules, outPayload);
-	}
+	return inIsObject ? inSource.sourceFile : inSource.dependencyFile;
 }
 
 /*****************************************************************************/
@@ -568,8 +450,8 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 {
 	auto& sourceCache = m_state.cache.file().sources();
 
+	StringList blankList;
 	CommandPool::CmdList ret;
-	const auto& objDir = m_state.paths.objDir();
 
 	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
 
@@ -596,15 +478,11 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			auto interfaceFile = group->otherFile;
 			if (interfaceFile.empty())
 			{
-				interfaceFile = fmt::format("{}/{}.ifc", objDir, source);
+				interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
 			}
 
 			CommandPool::Cmd out;
-			out.output = isObject ? source : dependency;
-			if (String::startsWith(m_msvcToolsDirectory, out.output))
-			{
-				out.output = String::getPathFilename(out.output);
-			}
+			out.output = getBuildOutputForFile(*group, isObject);
 
 			ModuleFileType type = inType;
 			if (inType == ModuleFileType::ModuleObject && String::equals(m_rootModule, source))
@@ -618,8 +496,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			}
 			else
 			{
-				StringList blank;
-				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blank, blank, type);
+				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type);
 			}
 
 #if defined(CHALET_WIN32)
@@ -687,6 +564,43 @@ CommandPool::Cmd IModuleStrategy::getLinkCommand(CompileToolchainController& inT
 	ret.output = inTarget;
 
 	return ret;
+}
+
+/*****************************************************************************/
+void IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload)
+{
+	for (const auto& imported : inModule.importedModules)
+	{
+		if (inModules.find(imported) == inModules.end())
+			continue;
+
+		const auto& otherModule = inModules.at(imported);
+
+		auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(otherModule.source);
+
+		List::addIfDoesNotExist(outPayload[outModule.source].moduleTranslations, fmt::format("{}={}", imported, ifcFile));
+
+		for (auto& header : otherModule.importedHeaderUnits)
+		{
+			List::addIfDoesNotExist(outModule.importedHeaderUnits, header);
+		}
+
+		addHeaderUnitsRecursively(outModule, otherModule, inModules, outPayload);
+	}
+}
+
+/*****************************************************************************/
+std::string IModuleStrategy::getModuleId() const
+{
+	std::string ret;
+	const auto& hostArch = m_state.info.hostArchitectureString();
+	const auto targetArch = m_state.info.targetArchitectureTriple();
+	const auto envId = m_state.environment->identifier() + m_state.toolchain.version();
+	const auto& buildConfig = m_state.info.buildConfiguration();
+
+	ret = fmt::format("{}_{}_{}_{}", hostArch, targetArch, envId, buildConfig);
+
+	return Hash::string(ret);
 }
 
 }

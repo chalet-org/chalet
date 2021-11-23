@@ -63,9 +63,8 @@ private:
 	};
 
 	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const bool inDumpAssembly);
-	std::string getObjectFile(const std::string& inSource, const bool inIsMsvc) const;
-	std::string getAssemblyFile(const std::string& inSource, const bool inIsMsvc) const;
-	std::string getDependencyFile(const std::string& inSource) const;
+	std::string getObjectFile(const std::string& inSource) const;
+	std::string getAssemblyFile(const std::string& inSource) const;
 	SourceType getSourceType(const std::string& inSource) const;
 	StringList getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;

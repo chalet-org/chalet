@@ -41,6 +41,13 @@ struct ICompileEnvironment
 
 	bool ouptuttedDescription() const noexcept;
 
+	virtual std::string getObjectFile(const std::string& inSource) const;
+	virtual std::string getDependencyFile(const std::string& inSource) const;
+	virtual std::string getAssemblyFile(const std::string& inSource) const;
+	virtual std::string getModuleDirectivesDependencyFile(const std::string& inSource) const;
+	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const;
+	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const;
+
 protected:
 	friend class BuildState;
 	friend struct CompilerTools;
@@ -63,7 +70,6 @@ protected:
 	virtual bool createFromVersion(const std::string& inVersion);
 	virtual bool validateArchitectureFromInput();
 	virtual bool populateSupportedFlags(const std::string& inExecutable);
-	virtual std::string getModuleDependencyFile(const std::string& inSource, const std::string& inModuleDir) const;
 
 	bool create(const std::string& inVersion = std::string());
 	bool getCompilerPaths(CompilerInfo& outInfo) const;

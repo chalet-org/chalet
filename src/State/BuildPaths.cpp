@@ -448,7 +448,6 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const bool inDumpAssembly)
 {
 	SourceFileGroupList ret;
-	bool isMsvc = m_state.environment->isMsvc();
 
 	auto& fileListCache = inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache;
 	const bool isModule = inProject.cppModules();
@@ -471,12 +470,12 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 
 		auto group = std::make_unique<SourceFileGroup>();
 		group->type = type;
-		group->objectFile = getObjectFile(file, isMsvc);
+		group->objectFile = getObjectFile(file);
 
 		if (type == SourceType::CPlusPlus && isModule)
-			group->dependencyFile = m_state.environment->getModuleDependencyFile(file, objDir());
+			group->dependencyFile = m_state.environment->getModuleDirectivesDependencyFile(file);
 		else
-			group->dependencyFile = getDependencyFile(file);
+			group->dependencyFile = m_state.environment->getDependencyFile(file);
 
 		group->sourceFile = std::move(file);
 
@@ -488,7 +487,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 	{
 		for (auto& group : ret)
 		{
-			group->otherFile = getAssemblyFile(group->sourceFile, isMsvc);
+			group->otherFile = getAssemblyFile(group->sourceFile);
 		}
 	}
 
@@ -499,7 +498,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 
 		group->type = SourceType::CxxPrecompiledHeader;
 		group->objectFile = getPrecompiledHeaderTarget(inProject);
-		group->dependencyFile = getDependencyFile(inFiles.pch);
+		group->dependencyFile = m_state.environment->getDependencyFile(inFiles.pch);
 		group->sourceFile = std::move(inFiles.pch);
 
 		ret.push_back(std::move(group));
@@ -509,7 +508,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getObjectFile(const std::string& inSource, const bool inIsMsvc) const
+std::string BuildPaths::getObjectFile(const std::string& inSource) const
 {
 	if (String::endsWith(m_resourceExts, inSource))
 	{
@@ -518,14 +517,14 @@ std::string BuildPaths::getObjectFile(const std::string& inSource, const bool in
 	}
 	else
 	{
-		return fmt::format("{}/{}.{}", objDir(), inSource, inIsMsvc ? "obj" : "o");
+		return m_state.environment->getObjectFile(inSource);
 	}
 
 	return std::string();
 }
 
 /*****************************************************************************/
-std::string BuildPaths::getAssemblyFile(const std::string& inSource, const bool inIsMsvc) const
+std::string BuildPaths::getAssemblyFile(const std::string& inSource) const
 {
 	if (String::endsWith(m_resourceExts, inSource))
 	{
@@ -533,14 +532,8 @@ std::string BuildPaths::getAssemblyFile(const std::string& inSource, const bool 
 	}
 	else
 	{
-		return fmt::format("{}/{}.{}.asm", asmDir(), inSource, inIsMsvc ? "obj" : "o");
+		return m_state.environment->getAssemblyFile(inSource);
 	}
-}
-
-/*****************************************************************************/
-std::string BuildPaths::getDependencyFile(const std::string& inSource) const
-{
-	return fmt::format("{}/{}.d", depDir(), inSource);
 }
 
 /*****************************************************************************/
@@ -580,7 +573,7 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Sourc
 	StringList ret;
 	for (const auto& file : inFiles)
 	{
-		auto outFile = getObjectFile(file, m_state.environment->isMsvc());
+		auto outFile = getObjectFile(file);
 		if (!outFile.empty())
 			ret.emplace_back(std::move(outFile));
 	}

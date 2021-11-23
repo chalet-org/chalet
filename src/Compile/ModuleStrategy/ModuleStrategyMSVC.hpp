@@ -13,6 +13,17 @@ namespace chalet
 struct ModuleStrategyMSVC final : public IModuleStrategy
 {
 	explicit ModuleStrategyMSVC(BuildState& inState);
+
+	virtual bool initialize() final;
+
+protected:
+	virtual std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) final;
+	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) final;
+
+private:
+#if defined(CHALET_WIN32)
+	std::string m_msvcToolsDirectory;
+#endif
 };
 }
 

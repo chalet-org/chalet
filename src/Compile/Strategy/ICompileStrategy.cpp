@@ -116,6 +116,9 @@ bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
 		auto& toolchain = m_toolchains.at(name);
 
 		auto moduleStrategy = IModuleStrategy::make(m_state.environment->type(), m_state);
+		if (!moduleStrategy->initialize())
+			return false;
+
 		if (!moduleStrategy->buildProject(inProject, std::move(outputs), toolchain))
 			return false;
 	}

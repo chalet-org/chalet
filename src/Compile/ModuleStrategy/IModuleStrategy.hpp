@@ -16,19 +16,11 @@
 namespace chalet
 {
 class BuildState;
-struct IModuleStrategy;
+class IModuleStrategy;
 using ModuleStrategy = Unique<IModuleStrategy>;
 
-struct IModuleStrategy
+class IModuleStrategy
 {
-	explicit IModuleStrategy(BuildState& inState);
-	CHALET_DISALLOW_COPY_MOVE(IModuleStrategy);
-	virtual ~IModuleStrategy() = default;
-
-	[[nodiscard]] static ModuleStrategy make(const ToolchainType inType, BuildState& inState);
-
-	virtual bool buildProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain);
-
 protected:
 	struct ModuleLookup
 	{
@@ -44,6 +36,21 @@ protected:
 	};
 	using DependencyGraph = std::map<SourceFileGroup*, std::vector<SourceFileGroup*>>;
 
+public:
+	explicit IModuleStrategy(BuildState& inState);
+	CHALET_DISALLOW_COPY_MOVE(IModuleStrategy);
+	virtual ~IModuleStrategy() = default;
+
+	[[nodiscard]] static ModuleStrategy make(const ToolchainType inType, BuildState& inState);
+
+	virtual bool buildProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain);
+
+	virtual bool initialize() = 0;
+	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) = 0;
+
+protected:
+	virtual std::string getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject);
+
 	CommandPool::CmdList getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType);
 	void addCompileCommands(CommandPool::CmdList& outList, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
 	CommandPool::Cmd getLinkCommand(CompileToolchainController& inToolchain, const SourceTarget& inProject, const std::string& inTarget, const StringList& inLinks);
@@ -52,14 +59,18 @@ protected:
 
 	BuildState& m_state;
 
+	const std::string kRootModule;
+
 	std::string m_rootModule;
-	std::string m_msvcToolsDirectory;
 	Dictionary<bool> m_compileCache;
 
 	StrategyType m_oldStrategy = StrategyType::None;
 
 	bool m_sourcesChanged = false;
 	bool m_generateDependencies = false;
+
+private:
+	std::string getModuleId() const;
 };
 }
 
