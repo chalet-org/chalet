@@ -21,9 +21,7 @@ protected:
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) final;
 
 private:
-#if defined(CHALET_WIN32)
 	std::string m_msvcToolsDirectory;
-#endif
 };
 }
 
