@@ -20,8 +20,10 @@ struct CompileStrategyMakefile final : ICompileStrategy
 	virtual bool initialize() final;
 	virtual bool addProject(const SourceTarget& inProject) final;
 
-	virtual bool saveBuildFile() const final;
+	virtual bool doPreBuild() final;
 	virtual bool buildProject(const SourceTarget& inProject) final;
+
+	virtual bool doPostBuild() const final;
 
 private:
 	bool buildMake(const SourceTarget& inProject) const;
@@ -30,6 +32,7 @@ private:
 #endif
 
 	bool subprocessMakefile(const StringList& inCmd, std::string inCwd = std::string()) const;
+	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const;
 
 	std::string m_cacheFolder;
 

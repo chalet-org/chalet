@@ -45,6 +45,8 @@ private:
 
 	bool addProjectToBuild(const SourceTarget& inProject);
 
+	bool saveCompileCommands() const;
+
 	// commands
 	bool cmdBuild(const SourceTarget& inProject);
 	bool cmdRebuild(const SourceTarget& inProject);

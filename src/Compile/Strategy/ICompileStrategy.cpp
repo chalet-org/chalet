@@ -63,14 +63,7 @@ bool ICompileStrategy::saveCompileCommands() const
 }
 
 /*****************************************************************************/
-const SourceOutputs& ICompileStrategy::getSourceOutput(const std::string& inTarget)
-{
-	chalet_assert(m_outputs.find(inTarget) != m_outputs.end(), "");
-	return m_outputs.at(inTarget);
-}
-
-/*****************************************************************************/
-void ICompileStrategy::setSourceOutputs(const SourceTarget& inProject, SourceOutputs&& inOutputs)
+void ICompileStrategy::setSourceOutputs(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs)
 {
 	const auto& name = inProject.name();
 	m_outputs[name] = std::move(inOutputs);
@@ -84,6 +77,12 @@ void ICompileStrategy::setToolchainController(const SourceTarget& inProject, Com
 }
 
 /*****************************************************************************/
+bool ICompileStrategy::doPreBuild()
+{
+	return true;
+}
+
+/*****************************************************************************/
 bool ICompileStrategy::doPostBuild() const
 {
 	return true;
@@ -92,16 +91,17 @@ bool ICompileStrategy::doPostBuild() const
 /*****************************************************************************/
 bool ICompileStrategy::addProject(const SourceTarget& inProject)
 {
-	if (inProject.cppModules())
-	{
-		if (!buildProjectModules(inProject))
-			return false;
-	}
-	if (m_state.info.generateCompileCommands())
+	if (m_state.info.generateCompileCommands()) // TODO: Not available yet w/ modules
 	{
 		if (!addCompileCommands(inProject))
 			return false;
 	}
+
+	auto& outputs = m_outputs.at(inProject.name());
+	outputs.reset();
+
+	auto& toolchain = m_toolchains.at(inProject.name());
+	toolchain.reset();
 
 	return true;
 }
@@ -119,11 +119,9 @@ bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
 		if (!moduleStrategy->initialize())
 			return false;
 
-		if (!moduleStrategy->buildProject(inProject, std::move(outputs), toolchain))
+		if (!moduleStrategy->buildProject(inProject, std::move(outputs), std::move(toolchain)))
 			return false;
 	}
-
-	// Compile commands - Not sure if/when they'd be usable - for now, outputs are moved
 
 	UNUSED(inProject);
 
@@ -138,7 +136,7 @@ bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject)
 	{
 		auto& outputs = m_outputs.at(name);
 		auto& toolchain = m_toolchains.at(name);
-		return m_compileCommandsGenerator.addCompileCommands(toolchain, outputs);
+		return m_compileCommandsGenerator.addCompileCommands(toolchain, *outputs);
 	}
 
 	return true;

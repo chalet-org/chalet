@@ -45,7 +45,6 @@ private:
 	void addDataCache(const std::string& inMainKey, const std::string& inKey, const std::string& inValue);
 
 	void makeUpdate(const std::string& inFile, LastWrite& outFileData) const;
-	void forceUpdate(const std::string& inFile, LastWrite& outFileData) const;
 	LastWrite& getLastWrite(const std::string& inFile) const;
 
 	Dictionary<Dictionary<std::string>> m_dataCache;

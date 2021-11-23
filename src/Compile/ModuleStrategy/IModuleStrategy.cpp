@@ -47,7 +47,7 @@ IModuleStrategy::IModuleStrategy(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain)
+bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain)
 {
 	m_sourcesChanged = false;
 	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
@@ -82,7 +82,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 
 	CommandPool::Target target;
 	// target.pre = getPchCommands(pchTarget);
-	target.list = getModuleCommands(*inToolchain, inOutputs.groups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
+	target.list = getModuleCommands(*inToolchain, inOutputs->groups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
 	if (!target.list.empty())
 	{
 		// Scan sources for module dependencies
@@ -102,7 +102,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 
 	// Timer timer;
 
-	if (!readModuleDependencies(inOutputs, modules))
+	if (!readModuleDependencies(*inOutputs, modules))
 		return onFailure();
 
 	Dictionary<ModulePayload> modulePayload;
@@ -227,7 +227,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 		DependencyGraph dependencyGraph;
 		{
 			Dictionary<SourceFileGroup*> outGroups;
-			for (auto& group : inOutputs.groups)
+			for (auto& group : inOutputs->groups)
 			{
 				if (group->type != SourceType::CPlusPlus)
 					continue;
@@ -371,19 +371,19 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 
 	if (!buildBatches.empty())
 	{
-		addCompileCommands(buildBatches.back()->list, *inToolchain, inOutputs.groups);
+		addCompileCommands(buildBatches.back()->list, *inToolchain, inOutputs->groups);
 	}
 	else
 	{
 		auto batch = std::make_unique<CommandPool::Target>();
-		addCompileCommands(batch->list, *inToolchain, inOutputs.groups);
+		addCompileCommands(batch->list, *inToolchain, inOutputs->groups);
 		if (!batch->list.empty())
 		{
 			buildBatches.emplace_back(std::move(batch));
 		}
 	}
 
-	bool targetExists = Commands::pathExists(inOutputs.target);
+	bool targetExists = Commands::pathExists(inOutputs->target);
 	if (!buildBatches.empty() || !targetExists)
 	{
 		// Scan sources for module dependencies
@@ -394,11 +394,11 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 		settings.startIndex = 1;
 		settings.total = 0;
 
-		StringList links = List::combine(std::move(inOutputs.objectListLinker), std::move(headerUnitObjects));
+		StringList links = List::combine(std::move(inOutputs->objectListLinker), std::move(headerUnitObjects));
 
 		if (!buildBatches.empty())
 		{
-			buildBatches.back()->post = getLinkCommand(*inToolchain, inProject, inOutputs.target, links);
+			buildBatches.back()->post = getLinkCommand(*inToolchain, inProject, inOutputs->target, links);
 
 			for (auto& batch : buildBatches)
 			{
@@ -410,19 +410,14 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 		else
 		{
 			auto batch = std::make_unique<CommandPool::Target>();
-			batch->post = getLinkCommand(*inToolchain, inProject, inOutputs.target, links);
+			batch->post = getLinkCommand(*inToolchain, inProject, inOutputs->target, links);
 			buildBatches.emplace_back(std::move(batch));
 
 			settings.total = 1;
 		}
 
-		inOutputs.directories.clear();
-		inOutputs.fileExtensions.clear();
-		inOutputs.groups.clear();
-		inOutputs.objectListLinker.clear();
-		inOutputs.pch.clear();
-		inOutputs.target.clear();
-		inOutputs.types.clear();
+		inOutputs.reset();
+		inToolchain.reset();
 		m_compileCache.clear();
 
 		for (auto& batch : buildBatches)

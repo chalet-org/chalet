@@ -102,9 +102,12 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 	if (!runRoute)
 	{
-		m_asmDumper = std::make_unique<AssemblyDumper>(m_inputs, m_state);
-		if (!m_asmDumper->validate())
-			return false;
+		if (m_state.info.dumpAssembly())
+		{
+			m_asmDumper = std::make_unique<AssemblyDumper>(m_inputs, m_state);
+			if (!m_asmDumper->validate())
+				return false;
+		}
 
 		for (auto& target : m_state.targets)
 		{
@@ -129,7 +132,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		}
 	}
 
-	m_strategy->saveBuildFile();
+	m_strategy->doPreBuild();
 
 	if (inRoute == Route::Rebuild || m_directoriesMade)
 	{
@@ -395,7 +398,6 @@ std::string BuildManager::getBuildStrategyName() const
 			}
 			else
 			{
-
 				ret = "GNU Make";
 			}
 			break;
@@ -410,9 +412,9 @@ std::string BuildManager::getBuildStrategyName() const
 bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 {
 	auto buildToolchain = std::make_unique<CompileToolchainController>(inProject);
-	auto outputs = m_state.paths.getOutputs(inProject, m_state.info.dumpAssembly());
+	auto outputs = m_state.paths.getOutputs(inProject, false);
 
-	if (!Commands::makeDirectories(outputs.directories, m_directoriesMade))
+	if (!Commands::makeDirectories(outputs->directories, m_directoriesMade))
 	{
 		Diagnostic::error("Error creating paths for project: {}", inProject.name());
 		return false;
@@ -627,7 +629,9 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 	if (m_state.info.dumpAssembly())
 	{
 		chalet_assert(m_asmDumper != nullptr, "");
-		if (!m_asmDumper->dumpProject(inProject.name(), m_strategy->getSourceOutput(inProject.name())))
+
+		auto outputs = m_state.paths.getOutputs(inProject, true);
+		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs)))
 			return false;
 	}
 
@@ -660,8 +664,10 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 	if (m_state.info.dumpAssembly())
 	{
 		chalet_assert(m_asmDumper != nullptr, "");
+
+		auto outputs = m_state.paths.getOutputs(inProject, true);
 		bool forced = true;
-		if (!m_asmDumper->dumpProject(inProject.name(), m_strategy->getSourceOutput(inProject.name()), forced))
+		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs), forced))
 			return false;
 	}
 

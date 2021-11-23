@@ -209,9 +209,9 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 }
 
 /*****************************************************************************/
-SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool inDumpAssembly)
+Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, const bool inDumpAssembly)
 {
-	SourceOutputs ret;
+	auto ret = std::make_unique<SourceOutputs>();
 
 	setBuildDirectoriesBasedOnProjectKind(inProject);
 
@@ -223,17 +223,17 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool i
 	for (const auto& file : files.list)
 	{
 		auto ext = String::getPathSuffix(file);
-		List::addIfDoesNotExist(ret.fileExtensions, std::move(ext));
+		List::addIfDoesNotExist(ret->fileExtensions, std::move(ext));
 	}
 
 	const bool isNotMsvc = !m_state.environment->isMsvc();
-	ret.objectListLinker = getObjectFilesList(files.list, inProject);
+	ret->objectListLinker = getObjectFilesList(files.list, inProject);
 	files.list = String::excludeIf(inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache, files.list);
-	ret.groups = getSourceFileGroupList(std::move(files), inProject, inDumpAssembly);
-	for (auto& group : ret.groups)
+	ret->groups = getSourceFileGroupList(std::move(files), inProject, inDumpAssembly);
+	for (auto& group : ret->groups)
 	{
 		SourceType type = group->type;
-		List::addIfDoesNotExist(ret.types, std::move(type));
+		List::addIfDoesNotExist(ret->types, std::move(type));
 	}
 
 	StringList objSubDirs = getOutputDirectoryList(directories, objDir());
@@ -246,61 +246,45 @@ SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool i
 		asmSubDirs = getOutputDirectoryList(directories, asmDir());
 
 		if (isNotMsvc)
-			ret.directories.reserve(4 + objSubDirs.size() + depSubDirs.size() + asmSubDirs.size());
+			ret->directories.reserve(4 + objSubDirs.size() + depSubDirs.size() + asmSubDirs.size());
 		else
-			ret.directories.reserve(4 + objSubDirs.size() + asmSubDirs.size());
+			ret->directories.reserve(4 + objSubDirs.size() + asmSubDirs.size());
 	}
 	else
 	{
 		if (isNotMsvc)
-			ret.directories.reserve(3 + objSubDirs.size() + depSubDirs.size());
+			ret->directories.reserve(3 + objSubDirs.size() + depSubDirs.size());
 		else
-			ret.directories.reserve(3 + objSubDirs.size());
+			ret->directories.reserve(3 + objSubDirs.size());
 	}
 
-	ret.directories.push_back(m_buildOutputDir);
-	ret.directories.push_back(objDir());
+	ret->directories.push_back(m_buildOutputDir);
+	ret->directories.push_back(objDir());
 
 	if (m_state.toolchain.canCompilerWindowsResources())
 	{
 		// so far, intermediateDir is just used with resource files
 		if (!inProject.isStaticLibrary())
-			ret.directories.push_back(m_intermediateDir);
+			ret->directories.push_back(m_intermediateDir);
 	}
 
-	ret.directories.insert(ret.directories.end(), objSubDirs.begin(), objSubDirs.end());
+	ret->directories.insert(ret->directories.end(), objSubDirs.begin(), objSubDirs.end());
 
 	if (isNotMsvc)
 	{
-		ret.directories.push_back(depDir());
-		ret.directories.insert(ret.directories.end(), depSubDirs.begin(), depSubDirs.end());
+		ret->directories.push_back(depDir());
+		ret->directories.insert(ret->directories.end(), depSubDirs.begin(), depSubDirs.end());
 	}
 
 	if (inDumpAssembly)
 	{
-		ret.directories.push_back(asmDir());
-		ret.directories.insert(ret.directories.end(), asmSubDirs.begin(), asmSubDirs.end());
+		ret->directories.push_back(asmDir());
+		ret->directories.insert(ret->directories.end(), asmSubDirs.begin(), asmSubDirs.end());
 	}
 
-	ret.target = getTargetFilename(inProject);
+	ret->target = getTargetFilename(inProject);
 
 	return ret;
-}
-
-/*****************************************************************************/
-void BuildPaths::setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const
-{
-	auto objects = String::join(inOutput.objectListLinker);
-	Environment::set(fmt::format("OBJS_{}", inHash).c_str(), objects);
-
-	StringList depends;
-	for (auto& group : inOutput.groups)
-	{
-		depends.push_back(group->dependencyFile);
-	}
-
-	auto depdendencies = String::join(std::move(depends));
-	Environment::set(fmt::format("DEPS_{}", inHash).c_str(), depdendencies);
 }
 
 /*****************************************************************************/

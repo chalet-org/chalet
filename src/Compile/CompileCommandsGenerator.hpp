@@ -19,7 +19,7 @@ struct CompileCommandsGenerator
 	CHALET_DISALLOW_COPY_MOVE(CompileCommandsGenerator);
 	~CompileCommandsGenerator();
 
-	bool addCompileCommands(CompileToolchain& inToolchain, SourceOutputs& inOutputs);
+	bool addCompileCommands(CompileToolchain& inToolchain, const SourceOutputs& inOutputs);
 
 	bool save(const std::string& inOutputFolder) const;
 

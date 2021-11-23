@@ -43,7 +43,7 @@ public:
 
 	[[nodiscard]] static ModuleStrategy make(const ToolchainType inType, BuildState& inState);
 
-	virtual bool buildProject(const SourceTarget& inProject, SourceOutputs&& inOutputs, CompileToolchain& inToolchain);
+	virtual bool buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain);
 
 	virtual bool initialize() = 0;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) = 0;

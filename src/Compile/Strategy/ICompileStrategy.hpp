@@ -29,14 +29,13 @@ struct ICompileStrategy
 
 	bool saveCompileCommands() const;
 
-	const SourceOutputs& getSourceOutput(const std::string& inTarget);
-	void setSourceOutputs(const SourceTarget& inProject, SourceOutputs&& inOutputs);
+	void setSourceOutputs(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs);
 	void setToolchainController(const SourceTarget& inProject, CompileToolchain&& inToolchain);
 
 	virtual bool initialize() = 0;
 	virtual bool addProject(const SourceTarget& inProject);
 
-	virtual bool saveBuildFile() const = 0;
+	virtual bool doPreBuild();
 	virtual bool buildProject(const SourceTarget& inProject) = 0;
 	virtual bool doPostBuild() const;
 
@@ -45,7 +44,7 @@ struct ICompileStrategy
 protected:
 	BuildState& m_state;
 
-	Dictionary<SourceOutputs> m_outputs;
+	Dictionary<Unique<SourceOutputs>> m_outputs;
 	Dictionary<CompileToolchain> m_toolchains;
 
 	StrategyGenerator m_generator;

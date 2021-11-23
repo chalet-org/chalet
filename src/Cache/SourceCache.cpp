@@ -112,7 +112,7 @@ Json SourceCache::asJson(const std::string& kKeyBuildLastBuilt, const std::strin
 				continue;
 
 			if (data.needsUpdate)
-				forceUpdate(file, data);
+				makeUpdate(file, data);
 
 			if (m_dataCache.find(file) != m_dataCache.end())
 				ret[kKeyDataCache][file][kKeyBuildFiles] = std::to_string(data.lastWrite);
@@ -235,16 +235,6 @@ void SourceCache::makeUpdate(const std::string& inFile, LastWrite& outFileData) 
 
 	outFileData.needsUpdate = false;
 	m_dirty = true;
-}
-
-/*****************************************************************************/
-void SourceCache::forceUpdate(const std::string& inFile, LastWrite& outFileData) const
-{
-	auto lastWrite = Commands::getLastWriteTime(inFile);
-	if (lastWrite == 0)
-		lastWrite = m_initializedTime;
-
-	outFileData.lastWrite = lastWrite;
 }
 
 /*****************************************************************************/

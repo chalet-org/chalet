@@ -26,7 +26,7 @@ CompileCommandsGenerator::CompileCommandsGenerator() = default;
 CompileCommandsGenerator::~CompileCommandsGenerator() = default;
 
 /*****************************************************************************/
-bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain, SourceOutputs& inOutputs)
+bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain, const SourceOutputs& inOutputs)
 {
 	auto getCommand = [&inToolchain](const SourceFileGroup& group) -> StringList {
 		const auto& source = group.sourceFile;

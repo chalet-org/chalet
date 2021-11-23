@@ -22,7 +22,7 @@ struct AssemblyDumper
 
 	bool validate() const;
 
-	bool dumpProject(const std::string& inProjectName, const SourceOutputs& inOutputs, const bool inForced = false);
+	bool dumpProject(const std::string& inProjectName, Unique<SourceOutputs>&& inOutputs, const bool inForced = false);
 
 private:
 	CommandPool::CmdList getAsmCommands(const SourceOutputs& inOutputs, const bool inForced);

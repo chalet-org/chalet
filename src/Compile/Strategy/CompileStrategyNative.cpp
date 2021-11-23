@@ -66,18 +66,18 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 
 	auto target = std::make_unique<CommandPool::Target>();
 	target->pre = getPchCommands(pchTarget);
-	target->list = getCompileCommands(outputs.groups);
-	bool targetExists = Commands::pathExists(outputs.target);
+	target->list = getCompileCommands(outputs->groups);
+	bool targetExists = Commands::pathExists(outputs->target);
 
 	if (!target->list.empty() || !targetExists)
 	{
 		if (m_sourcesChanged || m_pchChanged || !targetExists)
 		{
-			if (!List::contains(m_fileCache, outputs.target))
+			if (!List::contains(m_fileCache, outputs->target))
 			{
-				m_fileCache.push_back(outputs.target);
+				m_fileCache.push_back(outputs->target);
 
-				target->post = getLinkCommand(outputs.target, outputs.objectListLinker);
+				target->post = getLinkCommand(outputs->target, outputs->objectListLinker);
 			}
 		}
 
@@ -94,30 +94,15 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool CompileStrategyNative::saveBuildFile() const
+bool CompileStrategyNative::doPreBuild()
 {
-	return true;
+	return ICompileStrategy::doPreBuild();
 }
 
 /*****************************************************************************/
 bool CompileStrategyNative::doPostBuild() const
 {
-	/*if (m_generateDependencies)
-	{
-		auto& sources = m_state.cache.file().sources();
-		for (auto& [target, outputs] : m_outputs)
-		{
-			for (auto& group : outputs.groups)
-			{
-				if (sources.fileChangedOrDoesNotExist(group->objectFile, group->dependencyFile))
-				{
-					// std::ofstream(group->dependencyFile) << fmt::format("{}: \\\n  {}\n", group->objectFile, group->sourceFile);
-				}
-			}
-		}
-	}*/
-
-	return true;
+	return ICompileStrategy::doPostBuild();
 }
 
 /*****************************************************************************/

@@ -9,7 +9,6 @@
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
-#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -64,7 +63,7 @@ bool CompileStrategyMakefile::addProject(const SourceTarget& inProject)
 	const auto& outputs = m_outputs.at(name);
 	if (m_hashes.find(name) == m_hashes.end())
 	{
-		m_hashes.emplace(name, Hash::string(outputs.target));
+		m_hashes.emplace(name, Hash::string(outputs->target));
 	}
 	if (m_buildFiles.find(name) == m_buildFiles.end())
 	{
@@ -76,7 +75,7 @@ bool CompileStrategyMakefile::addProject(const SourceTarget& inProject)
 	{
 		auto& hash = m_hashes.at(name);
 		auto& toolchain = m_toolchains.at(name);
-		m_generator->addProjectRecipes(inProject, outputs, toolchain, hash);
+		m_generator->addProjectRecipes(inProject, *outputs, toolchain, hash);
 
 		std::ofstream(buildFile) << m_generator->getContents(buildFile)
 								 << std::endl;
@@ -84,16 +83,18 @@ bool CompileStrategyMakefile::addProject(const SourceTarget& inProject)
 		m_generator->reset();
 	}
 
+	auto& hash = m_hashes.at(inProject.name());
+	setBuildEnvironment(*outputs, hash);
+
 	return ICompileStrategy::addProject(inProject);
 }
 
 /*****************************************************************************/
-bool CompileStrategyMakefile::saveBuildFile() const
+bool CompileStrategyMakefile::doPreBuild()
 {
-	if (!m_initialized || !m_generator->hasProjectRecipes())
-		return false;
+	// if (m_initialized && m_generator->hasProjectRecipes()) {}
 
-	return true;
+	return ICompileStrategy::doPreBuild();
 }
 
 /*****************************************************************************/
@@ -153,9 +154,6 @@ bool CompileStrategyMakefile::buildMake(const SourceTarget& inProject) const
 	}
 
 	auto& hash = m_hashes.at(inProject.name());
-
-	auto& outputs = m_outputs.at(inProject.name());
-	m_state.paths.setBuildEnvironment(outputs, hash);
 
 #if defined(CHALET_WIN32)
 	std::cout << Output::getAnsiStyle(Output::theme().build);
@@ -327,5 +325,34 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	}
 
 	return result == EXIT_SUCCESS;
+}
+
+/*****************************************************************************/
+void CompileStrategyMakefile::setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const
+{
+	auto objects = String::join(inOutput.objectListLinker);
+	Environment::set(fmt::format("OBJS_{}", inHash).c_str(), objects);
+
+	StringList depends;
+	for (auto& group : inOutput.groups)
+	{
+		depends.push_back(group->dependencyFile);
+	}
+
+	auto depdendencies = String::join(std::move(depends));
+	Environment::set(fmt::format("DEPS_{}", inHash).c_str(), depdendencies);
+}
+
+/*****************************************************************************/
+bool CompileStrategyMakefile::doPostBuild() const
+{
+	std::string emptyString;
+	for (auto& [_, hash] : m_hashes)
+	{
+		Environment::set(fmt::format("OBJS_{}", hash).c_str(), emptyString);
+		Environment::set(fmt::format("DEPS_{}", hash).c_str(), emptyString);
+	}
+
+	return ICompileStrategy::doPostBuild();
 }
 }

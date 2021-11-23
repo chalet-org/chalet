@@ -43,8 +43,7 @@ struct BuildPaths
 	std::string getWindowsIconResourceFilename(const SourceTarget& inProject) const;
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
-	SourceOutputs getOutputs(const SourceTarget& inProject, const bool inDumpAssembly);
-	void setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const;
+	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, const bool inDumpAssembly);
 
 	void replaceVariablesInPath(std::string& outPath, const std::string& inName = std::string()) const;
 

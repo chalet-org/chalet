@@ -62,32 +62,32 @@ bool CompileStrategyNinja::addProject(const SourceTarget& inProject)
 	const auto& outputs = m_outputs.at(name);
 	if (m_hashes.find(name) == m_hashes.end())
 	{
-		m_hashes.emplace(name, Hash::string(outputs.target));
+		m_hashes.emplace(name, Hash::string(outputs->target));
 	}
 
 	if (m_cacheNeedsUpdate)
 	{
 		auto& hash = m_hashes.at(name);
 		auto& toolchain = m_toolchains.at(name);
-		m_generator->addProjectRecipes(inProject, outputs, toolchain, hash);
+		m_generator->addProjectRecipes(inProject, *outputs, toolchain, hash);
 	}
 
 	return ICompileStrategy::addProject(inProject);
 }
 
 /*****************************************************************************/
-bool CompileStrategyNinja::saveBuildFile() const
+bool CompileStrategyNinja::doPreBuild()
 {
-	if (!m_initialized || !m_generator->hasProjectRecipes())
-		return false;
-
-	if (m_cacheNeedsUpdate)
+	if (m_initialized && m_generator->hasProjectRecipes())
 	{
-		std::ofstream(m_cacheFile) << m_generator->getContents(m_cacheFolder)
-								   << std::endl;
+		if (m_cacheNeedsUpdate)
+		{
+			std::ofstream(m_cacheFile) << m_generator->getContents(m_cacheFolder)
+									   << std::endl;
+		}
 	}
 
-	return true;
+	return ICompileStrategy::doPreBuild();
 }
 
 /*****************************************************************************/

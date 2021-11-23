@@ -23,7 +23,7 @@ public:
 	virtual bool initialize() final;
 	virtual bool addProject(const SourceTarget& inProject) final;
 
-	virtual bool saveBuildFile() const final;
+	virtual bool doPreBuild() final;
 	virtual bool doPostBuild() const final;
 	virtual bool buildProject(const SourceTarget& inProject) final;
 
