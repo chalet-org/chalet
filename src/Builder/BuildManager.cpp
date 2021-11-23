@@ -537,7 +537,8 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 
 	if (Output::cleanOutput())
 	{
-		onClean();
+		if (onClean != nullptr)
+			onClean();
 	}
 
 	Commands::removeRecursively(dirToClean);
