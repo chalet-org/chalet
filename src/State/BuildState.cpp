@@ -423,6 +423,13 @@ bool BuildState::validateState()
 					return false;
 				}
 
+				uint versionMajorMinor = toolchain.compilerCxx(project.language()).versionMajorMinor;
+				if (versionMajorMinor < 1928)
+				{
+					Diagnostic::error("{}: C++ modules are only supported in Chalet with MSVC versions >= 19.28 (found {})", m_impl->inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
+					return false;
+				}
+
 				if (project.objectiveCxx())
 				{
 					Diagnostic::error("{}: C++ modules are not supported alongside Objective-C++", m_impl->inputs.inputFile());
