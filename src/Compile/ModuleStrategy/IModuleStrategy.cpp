@@ -119,7 +119,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 			modulePayload[module.source] = ModulePayload();
 
 			if (!addHeaderUnitsRecursively(module, module, modules, modulePayload))
-				return false;
+				return onFailure();
 
 			for (const auto& header : module.importedHeaderUnits)
 			{
@@ -423,6 +423,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 		inOutputs.pch.clear();
 		inOutputs.target.clear();
 		inOutputs.types.clear();
+		m_compileCache.clear();
 
 		for (auto& batch : buildBatches)
 		{
@@ -573,17 +574,6 @@ CommandPool::Cmd IModuleStrategy::getLinkCommand(CompileToolchainController& inT
 /*****************************************************************************/
 bool IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload)
 {
-	if (!m_previousSource.empty() && String::equals(outModule.source, inModule.source))
-	{
-		auto error = Output::getAnsiStyle(Output::theme().error);
-		auto reset = Output::getAnsiStyle(Color::Reset);
-
-		std::cout << fmt::format("{}FAILED: {}Cannot build the following source file due to a cyclical dependency: {} depends on {} depends on {}", error, reset, outModule.source, m_previousSource, outModule.source) << std::endl;
-		Output::lineBreak();
-
-		return false;
-	}
-
 	for (const auto& imported : inModule.importedModules)
 	{
 		if (inModules.find(imported) == inModules.end())
@@ -600,9 +590,22 @@ bool IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const M
 			List::addIfDoesNotExist(outModule.importedHeaderUnits, header);
 		}
 
-		if (!String::equals(otherModule.source, outModule.source))
-			m_previousSource = otherModule.source;
+		if (String::equals(otherModule.source, outModule.source))
+			continue;
 
+		// LOG(m_previousSource, outModule.source, inModule.source);
+		if (!m_previousSource.empty() && String::equals(otherModule.source, m_previousSource))
+		{
+			auto error = Output::getAnsiStyle(Output::theme().error);
+			auto reset = Output::getAnsiStyle(Color::Reset);
+
+			std::cout << fmt::format("{}FAILED: {}Cannot build the following source file due to a cyclical dependency: {} depends on {} depends on {}", error, reset, inModule.source, m_previousSource, inModule.source) << std::endl;
+			Output::lineBreak();
+
+			return false;
+		}
+
+		m_previousSource = inModule.source;
 		if (!addHeaderUnitsRecursively(outModule, otherModule, inModules, outPayload))
 			return false;
 	}
