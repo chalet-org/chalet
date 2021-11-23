@@ -135,7 +135,13 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 	settings.quiet = Output::quietNonBuild();
 	settings.renameAfterCommand = m_generateDependencies;
 
-	return m_commandPool.run(target, settings);
+	if (!m_commandPool.run(target, settings))
+	{
+		m_state.cache.file().setDisallowSave(true);
+		return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/

@@ -313,7 +313,7 @@ bool WorkspaceInternalCacheFile::save()
 		m_dirty |= sourceCache->dirty();
 	}
 
-	if (m_dirty && m_dataFile != nullptr)
+	if (m_dirty && m_dataFile != nullptr && !m_disallowSave)
 	{
 		Json rootNode = Json::object();
 
@@ -459,6 +459,12 @@ void WorkspaceInternalCacheFile::checkIfAppVersionChanged(const std::string& inA
 void WorkspaceInternalCacheFile::addExtraHash(std::string&& inHash)
 {
 	List::addIfDoesNotExist(m_extraHashes, std::move(inHash));
+}
+
+/*****************************************************************************/
+void WorkspaceInternalCacheFile::setDisallowSave(const bool inValue)
+{
+	m_disallowSave = inValue;
 }
 
 /*****************************************************************************/
