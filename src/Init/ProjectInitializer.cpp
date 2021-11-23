@@ -103,13 +103,21 @@ bool ProjectInitializer::initializeNormalWorkspace(BuildJsonProps& outProps)
 	outProps.specialization = specialization;
 
 	outProps.langStandard = getLanguageStandard(outProps.language);
+
+#if defined(CHALET_WIN32) // modules can only be used in MSVC so far
 	outProps.modules = getUseCxxModules(outProps.language, outProps.langStandard);
+#endif
 	m_sourceExts = getSourceExtensions(outProps.specialization, outProps.modules);
 
 	outProps.useLocation = getUseLocation();
 	outProps.location = getRootSourceDirectory();
 	outProps.mainSource = getMainSourceFile(outProps.language);
-	outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language, outProps.specialization);
+
+	if (!outProps.modules)
+	{
+		outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language, outProps.specialization);
+	}
+
 	outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
 	outProps.envFile = getMakeEnvFile();
 	outProps.makeGitRepository = getMakeGitRepository();

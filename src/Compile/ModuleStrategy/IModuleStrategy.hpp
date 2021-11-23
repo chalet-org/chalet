@@ -55,11 +55,13 @@ protected:
 	void addCompileCommands(CommandPool::CmdList& outList, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
 	CommandPool::Cmd getLinkCommand(CompileToolchainController& inToolchain, const SourceTarget& inProject, const std::string& inTarget, const StringList& inLinks);
 
-	void addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload);
+	bool addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload);
 
 	BuildState& m_state;
 
 	const std::string kRootModule;
+
+	std::string m_previousSource;
 
 	std::string m_rootModule;
 	Dictionary<bool> m_compileCache;

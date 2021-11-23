@@ -54,6 +54,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 	m_oldStrategy = m_state.toolchain.strategy();
 	m_state.toolchain.setStrategy(StrategyType::Native);
 	m_rootModule.clear();
+	m_previousSource.clear();
 
 	auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
 	Path::sanitize(cwd);
@@ -116,7 +117,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 
 			modulePayload[module.source] = ModulePayload();
 
-			addHeaderUnitsRecursively(module, module, modules, modulePayload);
+			if (!addHeaderUnitsRecursively(module, module, modules, modulePayload))
+				return false;
 
 			for (const auto& header : module.importedHeaderUnits)
 			{
@@ -568,8 +570,19 @@ CommandPool::Cmd IModuleStrategy::getLinkCommand(CompileToolchainController& inT
 }
 
 /*****************************************************************************/
-void IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload)
+bool IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload)
 {
+	if (!m_previousSource.empty() && String::equals(outModule.source, inModule.source))
+	{
+		auto error = Output::getAnsiStyle(Output::theme().error);
+		auto reset = Output::getAnsiStyle(Color::Reset);
+
+		std::cout << fmt::format("{}FAILED: {}Cannot build the following source file due to a cyclical dependency: {} depends on {} depends on {}", error, reset, outModule.source, m_previousSource, outModule.source) << std::endl;
+		Output::lineBreak();
+
+		return false;
+	}
+
 	for (const auto& imported : inModule.importedModules)
 	{
 		if (inModules.find(imported) == inModules.end())
@@ -586,8 +599,15 @@ void IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const M
 			List::addIfDoesNotExist(outModule.importedHeaderUnits, header);
 		}
 
-		addHeaderUnitsRecursively(outModule, otherModule, inModules, outPayload);
+		if (!String::equals(otherModule.source, outModule.source))
+			m_previousSource = otherModule.source;
+
+		if (!addHeaderUnitsRecursively(outModule, otherModule, inModules, outPayload))
+			return false;
 	}
+
+	m_previousSource.clear();
+	return true;
 }
 
 /*****************************************************************************/

@@ -41,6 +41,7 @@ BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const BuildState& inSt
 		"mpp",
 		"ixx",
 		"mxx",
+		"ccm",
 		"cpm",
 	}),
 	m_resourceExts({
