@@ -121,7 +121,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 			for (const auto& header : module.importedHeaderUnits)
 			{
 				auto file = String::getPathFilename(header);
-				auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(fmt::format("{}_{}", file, moduleId));
+				file = fmt::format("{}_{}", file, moduleId);
+				auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(file);
 
 				List::addIfDoesNotExist(modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", header, ifcFile));
 
@@ -133,8 +134,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, SourceOutputs&
 				auto group = std::make_unique<SourceFileGroup>();
 				group->type = SourceType::CPlusPlus;
 				group->sourceFile = header;
-				group->objectFile = m_state.environment->getObjectFile(fmt::format("{}_{}", file, moduleId));
-				group->dependencyFile = m_state.environment->getModuleDirectivesDependencyFile(fmt::format("{}_{}", file, moduleId));
+				group->objectFile = m_state.environment->getObjectFile(file);
+				group->dependencyFile = m_state.environment->getModuleDirectivesDependencyFile(file);
 				group->otherFile = ifcFile;
 
 				headerUnitObjects.emplace_back(group->objectFile);
