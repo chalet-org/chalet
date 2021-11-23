@@ -61,8 +61,6 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 {
 	m_timer.restart();
 
-	m_removeCache.clear();
-
 	if (inRoute == Route::Clean)
 	{
 		Output::lineBreak();
@@ -73,6 +71,11 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		Output::msgBuildSuccess();
 		Output::lineBreak();
 		return true;
+	}
+	else if (inRoute == Route::Rebuild)
+	{
+		// Don't produce any output from this
+		doLazyClean();
 	}
 
 	if (m_buildRoutes.find(inRoute) == m_buildRoutes.end())
@@ -85,7 +88,6 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	bool runRoute = inRoute == Route::Run;
 	m_runTargetName = getRunTarget();
 
-	auto strategy = m_state.toolchain.strategy();
 	if (!runRoute)
 	{
 		printBuildInformation();
@@ -94,7 +96,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	}
 
 	// Note: We still have to initialize the build when the command is "run"
-	m_strategy = ICompileStrategy::make(strategy, m_state);
+	m_strategy = ICompileStrategy::make(m_state.toolchain.strategy(), m_state);
 	if (!m_strategy->initialize())
 		return false;
 
@@ -108,7 +110,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			if (target->isSources())
 			{
-				if (!addProjectToBuild(static_cast<const SourceTarget&>(*target), inRoute))
+				if (!addProjectToBuild(static_cast<const SourceTarget&>(*target)))
 					return false;
 			}
 			else if (inRoute == Route::Rebuild)
@@ -405,10 +407,8 @@ std::string BuildManager::getBuildStrategyName() const
 }
 
 /*****************************************************************************/
-bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route inRoute)
+bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 {
-	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
-
 	auto buildToolchain = std::make_unique<CompileToolchainController>(inProject);
 	auto outputs = m_state.paths.getOutputs(inProject, m_state.info.dumpAssembly());
 
@@ -422,12 +422,6 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject, const Route 
 	{
 		Diagnostic::error("Error preparing the build for project: {}", inProject.name());
 		return false;
-	}
-
-	if (inRoute == Route::Rebuild)
-	{
-		// doClean(inProject, outputs.target, outputs.groups);
-		doLazyClean();
 	}
 
 	m_strategy->setSourceOutputs(inProject, std::move(outputs));
@@ -542,109 +536,6 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 	}
 
 	Commands::removeRecursively(dirToClean);
-
-	// TODO: Clean CMake targets
-	// TODO: Flag to clean externalDependencies
-	// TODO: Also clean cache files specific to build configuration
-
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildManager::doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups)
-{
-	SourceFileGroupList pches;
-	if (inProject.usesPch())
-	{
-		auto pch = m_state.paths.getPrecompiledHeaderTarget(inProject);
-		auto baseFolder = String::getPathFolder(pch);
-		auto object = String::getPathFilename(pch);
-		auto source = String::getPathFilename(inProject.pch());
-#if defined(CHALET_MACOS)
-		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
-		{
-			for (auto& arch : m_state.info.universalArches())
-			{
-				auto outPch = std::make_unique<SourceFileGroup>();
-				outPch->type = SourceType::CxxPrecompiledHeader;
-				outPch->sourceFile = fmt::format("{}_{}/{}", baseFolder, arch, source);
-				outPch->dependencyFile = fmt::format("{}.d", outPch->sourceFile);
-				outPch->objectFile = fmt::format("{}_{}/{}", baseFolder, arch, object);
-				pches.emplace_back(std::move(outPch));
-			}
-		}
-		else
-#endif
-		{
-			auto outPch = std::make_unique<SourceFileGroup>();
-			outPch->type = SourceType::CxxPrecompiledHeader;
-			outPch->sourceFile = fmt::format("{}/{}", baseFolder, source);
-			outPch->dependencyFile = fmt::format("{}.d", outPch->sourceFile);
-			outPch->objectFile = fmt::format("{}/{}", baseFolder, object);
-			pches.emplace_back(std::move(outPch));
-		}
-	}
-
-	auto cacheAndRemove = [=](const std::string& inFile, StringList& outCache) -> void {
-		if (inFile.empty())
-			return;
-
-		if (List::contains(outCache, inFile))
-			return;
-
-		outCache.push_back(inFile);
-		Commands::remove(inFile);
-	};
-
-	if (!List::contains(m_removeCache, inTarget))
-	{
-		m_removeCache.push_back(inTarget);
-		Commands::remove(inTarget);
-
-#if defined(CHALET_WIN32)
-		if (m_state.environment->isMsvc() && inProject.isExecutable() && m_state.configuration.debugSymbols())
-		{
-			auto baseName = String::getPathFolderBaseName(inTarget);
-
-			auto ilk = fmt::format("{}.ilk", baseName);
-			Commands::remove(ilk);
-			m_removeCache.emplace_back(std::move(ilk));
-
-			auto pdb = fmt::format("{}.pdb", baseName);
-			Commands::remove(pdb);
-			m_removeCache.push_back(std::move(pdb));
-		}
-#endif
-	}
-
-	for (auto& group : pches)
-	{
-		cacheAndRemove(group->sourceFile, m_removeCache);
-		cacheAndRemove(group->objectFile, m_removeCache);
-		cacheAndRemove(group->dependencyFile, m_removeCache);
-	}
-
-	for (auto& group : inGroups)
-	{
-		if (group->type == SourceType::CxxPrecompiledHeader)
-			continue;
-
-		cacheAndRemove(group->objectFile, m_removeCache);
-		cacheAndRemove(group->dependencyFile, m_removeCache);
-	}
-
-	if (inProject.cppModules())
-	{
-		for (auto& group : inGroups)
-		{
-			if (group->type != SourceType::CPlusPlus)
-				continue;
-
-			cacheAndRemove(m_state.environment->getModuleBinaryInterfaceFile(group->sourceFile), m_removeCache);
-			cacheAndRemove(m_state.environment->getModuleDirectivesDependencyFile(group->sourceFile), m_removeCache);
-			cacheAndRemove(m_state.environment->getModuleBinaryInterfaceDependencyFile(group->sourceFile), m_removeCache);
-		}
-	}
 
 	return true;
 }
@@ -918,10 +809,14 @@ bool BuildManager::cmdClean()
 	{
 		Output::msgNothingToClean();
 		Output::lineBreak();
+		return true;
 	}
 
 	if (Output::showCommands())
 		Output::lineBreak();
+
+	// TODO: Flag to clean externalDependencies
+	// TODO: Also clean cache files specific to build configuration
 
 	return true;
 }

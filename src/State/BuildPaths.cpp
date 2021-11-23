@@ -109,8 +109,6 @@ void BuildPaths::populateFileList(const SourceTarget& inProject)
 	if (m_fileList.find(inProject.name()) != m_fileList.end())
 		return;
 
-	// setBuildDirectoriesBasedOnProjectKind(inProject);
-
 	SourceGroup files = getFiles(inProject);
 
 	for (auto& file : files.list)
@@ -213,6 +211,8 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 SourceOutputs BuildPaths::getOutputs(const SourceTarget& inProject, const bool inDumpAssembly)
 {
 	SourceOutputs ret;
+
+	setBuildDirectoriesBasedOnProjectKind(inProject);
 
 	chalet_assert(m_fileList.find(inProject.name()) != m_fileList.end(), "");
 

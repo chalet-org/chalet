@@ -39,12 +39,11 @@ private:
 
 	bool copyRunDependencies(const IBuildTarget& inProject);
 	StringList getResolvedRunDependenciesList(const IBuildTarget& inProject);
-	bool doClean(const SourceTarget& inProject, const std::string& inTarget, const SourceFileGroupList& inGroups);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
 	bool doLazyClean(const std::function<void()>& onClean = nullptr);
 
-	bool addProjectToBuild(const SourceTarget& inProject, const Route inRoute);
+	bool addProjectToBuild(const SourceTarget& inProject);
 
 	// commands
 	bool cmdBuild(const SourceTarget& inProject);
@@ -63,7 +62,6 @@ private:
 	BuildState& m_state;
 
 	BuildRouteList m_buildRoutes;
-	StringList m_removeCache;
 
 	CompileStrategy m_strategy;
 	Unique<AssemblyDumper> m_asmDumper;
