@@ -68,7 +68,7 @@ ThreadPool::~ThreadPool()
 void ThreadPool::stop()
 {
 	std::lock_guard<std::mutex> lock(m_queueMutex);
-	m_stop = true;
+	m_stopped = true;
 
 	while (!m_tasks.empty())
 		m_tasks.pop();
@@ -78,7 +78,7 @@ void ThreadPool::stop()
 void ThreadPool::workerThread()
 {
 	auto waitCondition = [this]() {
-		return this->m_stop || !this->m_tasks.empty();
+		return this->m_stopped || !this->m_tasks.empty();
 	};
 
 	while (true)
@@ -89,7 +89,7 @@ void ThreadPool::workerThread()
 			std::unique_lock<std::mutex> lock(m_queueMutex);
 			m_condition.wait(lock, waitCondition);
 
-			if (m_stop && m_tasks.empty())
+			if (m_stopped && m_tasks.empty())
 				return;
 
 			task = std::move(m_tasks.front());

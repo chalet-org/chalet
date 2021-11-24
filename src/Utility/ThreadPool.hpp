@@ -42,6 +42,7 @@ class ThreadPool
 {
 public:
 	explicit ThreadPool(const std::size_t inThreads);
+	CHALET_DISALLOW_COPY_MOVE(ThreadPool);
 	~ThreadPool();
 
 	template <class T, class... Args>
@@ -58,7 +59,7 @@ private:
 	std::mutex m_queueMutex;
 	std::condition_variable m_condition;
 
-	std::atomic_bool m_stop = false;
+	std::atomic_bool m_stopped = false;
 };
 }
 
