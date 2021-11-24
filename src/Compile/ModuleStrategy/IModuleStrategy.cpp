@@ -546,6 +546,8 @@ CommandPool::CmdList IModuleStrategy::getLinkCommand(CompileToolchainController&
 
 		auto label = inProject.isStaticLibrary() ? "Archiving" : "Linking";
 		out.output = fmt::format("{} {}", label, inTarget);
+
+		ret.emplace_back(std::move(out));
 	}
 
 	return ret;
