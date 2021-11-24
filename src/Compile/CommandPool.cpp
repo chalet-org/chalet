@@ -101,6 +101,7 @@ bool executeCommandCarriageReturn(StringList command)
 	ProcessOptions options;
 	static auto onStdOut = [](std::string inData) {
 		String::replaceAll(inData, '\n', "\r\n");
+		std::lock_guard<std::mutex> lock(s_mutex);
 		std::cout << inData << std::flush;
 	};
 
@@ -147,6 +148,7 @@ bool executeCommand(StringList command)
 {
 	ProcessOptions options;
 	static auto onStdOut = [](std::string inData) {
+		std::lock_guard<std::mutex> lock(s_mutex);
 		std::cout << inData << std::flush;
 	};
 

@@ -32,7 +32,14 @@ static struct
 } state;
 
 /*****************************************************************************/
-void removeProcess(const Process& inProcess)
+void addProcess(Process& inProcess)
+{
+	std::lock_guard<std::mutex> lock(s_mutex);
+	state.procesess.push_back(&inProcess);
+}
+
+/*****************************************************************************/
+void removeProcess(const Process& inProcess, int lastErrorCode)
 {
 	std::lock_guard<std::mutex> lock(s_mutex);
 	auto it = state.procesess.end();
@@ -46,6 +53,8 @@ void removeProcess(const Process& inProcess)
 			return;
 		}
 	}
+
+	state.lastErrorCode = lastErrorCode;
 
 #if defined(CHALET_WIN32)
 	if (state.procesess.empty())
@@ -106,12 +115,10 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 			return state.lastErrorCode;
 		}
 
-		state.procesess.push_back(&process);
-
-		static std::array<char, 256> buffer{ 0 };
+		addProcess(process);
 
 		{
-			// std::lock_guard<std::mutex> lock(s_mutex);
+			std::array<char, 128> buffer{ 0 };
 			if (inOptions.stdoutOption == PipeOption::Pipe && inOptions.onStdOut != nullptr)
 				process.read(FileNo::StdOut, buffer, inBufferSize, inOptions.onStdOut);
 
@@ -121,8 +128,7 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 
 		int result = process.waitForResult();
 
-		removeProcess(process);
-		state.lastErrorCode = result;
+		removeProcess(process, result);
 
 		return result;
 	}
