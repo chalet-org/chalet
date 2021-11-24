@@ -29,7 +29,7 @@ enum class CommandPoolErrorCode : ushort
 static std::mutex s_mutex;
 static struct
 {
-	std::atomic<uint> index = 0;
+	uint index = 0;
 	// std::atomic<CommandPoolErrorCode> errorCode = CommandPoolErrorCode::None;
 	CommandPoolErrorCode errorCode = CommandPoolErrorCode::None;
 	std::function<bool()> shutdownHandler;
@@ -38,12 +38,10 @@ static struct
 /*****************************************************************************/
 bool printCommand(std::string text)
 {
+	std::lock_guard<std::mutex> lock(s_mutex);
 	String::replaceAll(text, '#', std::to_string(state.index));
 
-	{
-		std::lock_guard<std::mutex> lock(s_mutex);
-		std::cout << text << std::endl;
-	}
+	std::cout << text << std::endl;
 
 	++state.index;
 
