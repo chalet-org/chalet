@@ -205,7 +205,7 @@ void signalHandler(int inSignal)
 
 /*****************************************************************************/
 CommandPool::CommandPool(const std::size_t inThreads) :
-	m_threadPool(static_cast<uint_fast32_t>(inThreads))
+	m_threadPool(inThreads)
 {
 	::signal(SIGINT, signalHandler);
 	::signal(SIGTERM, signalHandler);
@@ -253,9 +253,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 		if (state.errorCode != CommandPoolErrorCode::None)
 			return false;
 
-		this->m_threadPool.paused = true;
-		this->m_threadPool.wait_for_tasks();
-
+		this->m_threadPool.stop();
 		state.errorCode = CommandPoolErrorCode::Aborted;
 		return true;
 	};
@@ -312,7 +310,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 			if (it.command.empty())
 				continue;
 
-			threadResults.emplace_back(m_threadPool.submit(
+			threadResults.emplace_back(m_threadPool.enqueue(
 				printCommand,
 				getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(it.command) : it.output)),
 					totalCompiles)));
@@ -320,12 +318,12 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 #if defined(CHALET_WIN32)
 			if (msvcCommand)
 			{
-				threadResults.emplace_back(m_threadPool.submit(executeCommandMsvc, it.command, it.outputReplace));
+				threadResults.emplace_back(m_threadPool.enqueue(executeCommandMsvc, it.command, it.outputReplace));
 			}
 			else
 #endif
 			{
-				threadResults.emplace_back(m_threadPool.submit(executeCommandFunc, it.command));
+				threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command));
 			}
 		}
 

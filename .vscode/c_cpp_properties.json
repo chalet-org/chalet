@@ -11,7 +11,6 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
-                "${workspaceFolder}/vendor/thread-pool",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
                 "/usr/local/include/**",
@@ -42,7 +41,6 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
-                "${workspaceFolder}/vendor/thread-pool",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
                 "/usr/local/include/"
@@ -67,7 +65,6 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
-                "${workspaceFolder}/vendor/thread-pool",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test"
             ],
@@ -94,7 +91,6 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
-                "${workspaceFolder}/vendor/thread-pool",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test"
             ],
