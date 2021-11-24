@@ -64,6 +64,9 @@ void Application::initialize()
 	WindowsTerminal::initialize();
 #endif
 
+	std::ios::sync_with_stdio(false);
+	std::cin.tie(nullptr);
+
 #if defined(CHALET_DEBUG)
 	priv::SignalHandler::start([this]() noexcept {
 		Diagnostic::printErrors();
