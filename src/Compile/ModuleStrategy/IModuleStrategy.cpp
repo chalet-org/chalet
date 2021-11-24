@@ -406,7 +406,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		m_compileCache.clear();
 
 		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.runAll(std::move(buildJobs), settings))
+		if (!commandPool.runAll(buildJobs, settings))
 			return onFailure();
 
 		Output::lineBreak();

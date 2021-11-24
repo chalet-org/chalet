@@ -209,7 +209,7 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 }
 
 /*****************************************************************************/
-Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, const bool inDumpAssembly)
+Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly)
 {
 	auto ret = std::make_unique<SourceOutputs>();
 
@@ -217,7 +217,7 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, cons
 
 	chalet_assert(m_fileList.find(inProject.name()) != m_fileList.end(), "");
 
-	SourceGroup files = std::move(*m_fileList.at(inProject.name()));
+	SourceGroup files = *m_fileList.at(inProject.name());
 	SourceGroup directories = getDirectories(inProject);
 
 	for (const auto& file : files.list)
@@ -226,10 +226,12 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, cons
 		List::addIfDoesNotExist(ret->fileExtensions, std::move(ext));
 	}
 
+	// inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache
+
 	const bool isNotMsvc = !m_state.environment->isMsvc();
 	ret->objectListLinker = getObjectFilesList(files.list, inProject);
-	files.list = String::excludeIf(inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache, files.list);
-	ret->groups = getSourceFileGroupList(std::move(files), inProject, inDumpAssembly);
+	files.list = String::excludeIf(outFileCache, files.list);
+	ret->groups = getSourceFileGroupList(std::move(files), inProject, outFileCache, inDumpAssembly);
 	for (auto& group : ret->groups)
 	{
 		SourceType type = group->type;
@@ -430,11 +432,10 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const bool inDumpAssembly)
+SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly)
 {
 	SourceFileGroupList ret;
 
-	auto& fileListCache = inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache;
 	const bool isModule = inProject.cppModules();
 
 	for (auto& file : inFiles.list)
@@ -443,7 +444,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 			continue;
 
 		if (m_useCache)
-			fileListCache.push_back(file);
+			outFileCache.push_back(file);
 
 		SourceType type = getSourceType(file);
 

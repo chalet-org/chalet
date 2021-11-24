@@ -207,10 +207,13 @@ void signalHandler(int inSignal)
 CommandPool::CommandPool(const std::size_t inThreads) :
 	m_threadPool(inThreads)
 {
+	::signal(SIGINT, signalHandler);
+	::signal(SIGTERM, signalHandler);
+	::signal(SIGABRT, signalHandler);
 }
 
 /*****************************************************************************/
-bool CommandPool::runAll(JobList&& inJobs, Settings& inSettings)
+bool CommandPool::runAll(JobList& inJobs, Settings& inSettings)
 {
 	inSettings.startIndex = 1;
 	inSettings.total = 0;
@@ -237,10 +240,6 @@ bool CommandPool::runAll(JobList&& inJobs, Settings& inSettings)
 bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 {
 	auto&& [cmdColor, startIndex, total, quiet, showCommmands, msvcCommand] = inSettings;
-
-	::signal(SIGINT, signalHandler);
-	::signal(SIGTERM, signalHandler);
-	::signal(SIGABRT, signalHandler);
 
 #if !defined(CHALET_WIN32)
 	UNUSED(msvcCommand);

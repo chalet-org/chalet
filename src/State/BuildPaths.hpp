@@ -43,7 +43,8 @@ struct BuildPaths
 	std::string getWindowsIconResourceFilename(const SourceTarget& inProject) const;
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
-	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, const bool inDumpAssembly);
+	void clearOutputCaches();
+	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly);
 
 	void replaceVariablesInPath(std::string& outPath, const std::string& inName = std::string()) const;
 
@@ -61,7 +62,7 @@ private:
 		StringList list;
 	};
 
-	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, const bool inDumpAssembly);
+	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly);
 	std::string getObjectFile(const std::string& inSource) const;
 	std::string getAssemblyFile(const std::string& inSource) const;
 	SourceType getSourceType(const std::string& inSource) const;
@@ -81,10 +82,6 @@ private:
 	const StringList m_resourceExts;
 	const StringList m_objectiveCExts;
 	const StringList m_objectiveCppExts;
-
-	StringList m_fileListCache;
-	StringList m_fileListCacheShared;
-	// StringList m_directoryCache;
 
 	HeapDictionary<SourceGroup> m_fileList;
 	StringList m_allFileExtensions;

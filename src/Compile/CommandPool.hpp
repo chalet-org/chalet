@@ -42,7 +42,7 @@ struct CommandPool
 
 	explicit CommandPool(const std::size_t inThreads);
 
-	bool runAll(JobList&& inJobs, Settings& inSettings);
+	bool runAll(JobList& inJobs, Settings& inSettings);
 	bool run(const Job& inTarget, const Settings& inSettings);
 
 private:

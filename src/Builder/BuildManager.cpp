@@ -133,6 +133,8 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	}
 
 	m_strategy->doPreBuild();
+	m_fileListCacheShared.clear();
+	m_fileListCache.clear();
 
 	if (inRoute == Route::Rebuild || m_directoriesMade)
 	{
@@ -412,7 +414,8 @@ std::string BuildManager::getBuildStrategyName() const
 bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 {
 	auto buildToolchain = std::make_unique<CompileToolchainController>(inProject);
-	auto outputs = m_state.paths.getOutputs(inProject, false);
+	auto& fileCache = inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache;
+	auto outputs = m_state.paths.getOutputs(inProject, fileCache, m_state.info.dumpAssembly());
 
 	if (!Commands::makeDirectories(outputs->directories, m_directoriesMade))
 	{
@@ -630,7 +633,8 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 	{
 		chalet_assert(m_asmDumper != nullptr, "");
 
-		auto outputs = m_state.paths.getOutputs(inProject, true);
+		StringList fileCache;
+		auto outputs = m_state.paths.getOutputs(inProject, fileCache, true);
 		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs)))
 			return false;
 	}
@@ -665,7 +669,8 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 	{
 		chalet_assert(m_asmDumper != nullptr, "");
 
-		auto outputs = m_state.paths.getOutputs(inProject, true);
+		StringList fileCache;
+		auto outputs = m_state.paths.getOutputs(inProject, fileCache, true);
 		bool forced = true;
 		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs), forced))
 			return false;

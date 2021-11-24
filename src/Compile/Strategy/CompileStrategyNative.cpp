@@ -143,15 +143,13 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 		settings.showCommands = Output::showCommands();
 		settings.quiet = Output::quietNonBuild();
 
-		if (!m_commandPool.runAll(std::move(m_targets.at(inProject.name())), settings))
+		if (!m_commandPool.runAll(m_targets.at(inProject.name()), settings))
 		{
 			m_state.cache.file().setDisallowSave(true);
 			return false;
 		}
 
 		Output::lineBreak();
-
-		buildJobs.clear();
 	}
 
 	return true;
