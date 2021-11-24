@@ -64,7 +64,7 @@ bool AssemblyDumper::validate() const
 /*****************************************************************************/
 bool AssemblyDumper::dumpProject(const std::string& inProjectName, Unique<SourceOutputs>&& inOutputs, const bool inForced)
 {
-	CommandPool::Target target;
+	CommandPool::Job target;
 	target.list = getAsmCommands(*inOutputs, inForced);
 
 	CommandPool::Settings settings;
@@ -72,7 +72,6 @@ bool AssemblyDumper::dumpProject(const std::string& inProjectName, Unique<Source
 	settings.msvcCommand = false;
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
-	settings.renameAfterCommand = false;
 
 	inOutputs.reset();
 

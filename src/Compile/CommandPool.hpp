@@ -17,20 +17,18 @@ struct CommandPool
 	{
 		std::string output;
 		StringList command;
-		std::string label;
 #if defined(CHALET_WIN32)
 		std::string outputReplace;
 #endif
 	};
 	using CmdList = std::vector<Cmd>;
 
-	struct Target
+	struct Job
 	{
-		CmdList pre;
-		Cmd post;
 		CmdList list;
 		uint threads = 0;
 	};
+	using JobList = std::vector<Unique<CommandPool::Job>>;
 
 	struct Settings
 	{
@@ -40,12 +38,12 @@ struct CommandPool
 		bool quiet = false;
 		bool showCommands = false;
 		bool msvcCommand = false;
-		bool renameAfterCommand = false;
 	};
 
 	explicit CommandPool(const std::size_t inThreads);
 
-	bool run(const Target& inTarget, const Settings& inSettings);
+	bool runAll(JobList&& inJobs, Settings& inSettings);
+	bool run(const Job& inTarget, const Settings& inSettings);
 
 private:
 	std::string getPrintedText(std::string inText, uint inTotal);

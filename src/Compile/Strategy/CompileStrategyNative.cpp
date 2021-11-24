@@ -63,27 +63,49 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 	const auto& outputs = m_outputs.at(name);
 
 	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
-
-	auto target = std::make_unique<CommandPool::Target>();
-	target->pre = getPchCommands(pchTarget);
-	target->list = getCompileCommands(outputs->groups);
 	bool targetExists = Commands::pathExists(outputs->target);
 
-	if (!target->list.empty() || !targetExists)
 	{
-		if (m_sourcesChanged || m_pchChanged || !targetExists)
-		{
-			if (!List::contains(m_fileCache, outputs->target))
-			{
-				m_fileCache.push_back(outputs->target);
+		CommandPool::JobList jobs;
 
-				target->post = getLinkCommand(outputs->target, outputs->objectListLinker);
+		{
+			auto target = std::make_unique<CommandPool::Job>();
+			target->list = getPchCommands(pchTarget);
+			if (!target->list.empty() || !targetExists)
+			{
+				jobs.emplace_back(std::move(target));
 			}
 		}
 
-		if (m_targets.find(name) == m_targets.end())
+		bool compileTarget = m_sourcesChanged || m_pchChanged || !targetExists;
 		{
-			m_targets.emplace(name, std::move(target));
+			auto target = std::make_unique<CommandPool::Job>();
+			target->list = getCompileCommands(outputs->groups);
+			if (!target->list.empty() || !targetExists)
+			{
+				jobs.emplace_back(std::move(target));
+				compileTarget = true;
+			}
+		}
+
+		if (compileTarget && !List::contains(m_fileCache, outputs->target))
+		{
+			m_fileCache.push_back(outputs->target);
+
+			auto target = std::make_unique<CommandPool::Job>();
+			target->list = getLinkCommand(outputs->target, outputs->objectListLinker);
+			if (!target->list.empty())
+			{
+				jobs.emplace_back(std::move(target));
+			}
+		}
+
+		if (!jobs.empty())
+		{
+			if (m_targets.find(name) == m_targets.end())
+			{
+				m_targets.emplace(name, std::move(jobs));
+			}
 		}
 	}
 
@@ -111,19 +133,25 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 	if (m_targets.find(inProject.name()) == m_targets.end())
 		return true;
 
-	auto& target = *m_targets.at(inProject.name());
+	auto& buildJobs = m_targets.at(inProject.name());
 
-	CommandPool::Settings settings;
-	settings.color = Output::theme().build;
-	settings.msvcCommand = m_state.environment->isMsvc();
-	settings.showCommands = Output::showCommands();
-	settings.quiet = Output::quietNonBuild();
-	settings.renameAfterCommand = m_generateDependencies;
-
-	if (!m_commandPool.run(target, settings))
+	if (!buildJobs.empty())
 	{
-		m_state.cache.file().setDisallowSave(true);
-		return false;
+		CommandPool::Settings settings;
+		settings.color = Output::theme().build;
+		settings.msvcCommand = m_state.environment->isMsvc();
+		settings.showCommands = Output::showCommands();
+		settings.quiet = Output::quietNonBuild();
+
+		if (!m_commandPool.runAll(std::move(m_targets.at(inProject.name())), settings))
+		{
+			m_state.cache.file().setDisallowSave(true);
+			return false;
+		}
+
+		Output::lineBreak();
+
+		buildJobs.clear();
 	}
 
 	return true;
@@ -303,18 +331,25 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 }
 
 /*****************************************************************************/
-CommandPool::Cmd CompileStrategyNative::getLinkCommand(const std::string& inTarget, const StringList& inObjects)
+CommandPool::CmdList CompileStrategyNative::getLinkCommand(const std::string& inTarget, const StringList& inObjects)
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
 
 	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
 
-	CommandPool::Cmd ret;
-	ret.command = m_toolchain->getOutputTargetCommand(inTarget, inObjects, targetBasename);
-	ret.label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
-	ret.output = inTarget;
-	// ret.symbol = Unicode::rightwardsTripleArrow();
+	CommandPool::CmdList ret;
+
+	{
+		CommandPool::Cmd out;
+		out.command = m_toolchain->getOutputTargetCommand(inTarget, inObjects, targetBasename);
+
+		auto label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+		out.output = fmt::format("{} {}", label, inTarget);
+		// ret.symbol = Unicode::rightwardsTripleArrow();
+
+		ret.emplace_back(std::move(out));
+	}
 
 	return ret;
 }

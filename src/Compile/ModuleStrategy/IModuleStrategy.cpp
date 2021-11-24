@@ -76,11 +76,10 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	settings.msvcCommand = m_state.environment->isMsvc();
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
-	settings.renameAfterCommand = false;
 
 	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(inProject);
 
-	CommandPool::Target target;
+	CommandPool::Job target;
 	// target.pre = getPchCommands(pchTarget);
 	target.list = getModuleCommands(*inToolchain, inOutputs->groups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
 	if (!target.list.empty())
@@ -179,7 +178,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	StringList headerUnitTranslations;
 
 	target.list.clear();
-	std::vector<Unique<CommandPool::Target>> buildBatches;
+	CommandPool::JobList buildJobs;
 	{
 		for (const auto& group : headerUnitList)
 		{
@@ -187,11 +186,11 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(fmt::format("{}_{}", file, moduleId));
 		}
 
-		auto batch = std::make_unique<CommandPool::Target>();
-		batch->list = getModuleCommands(*inToolchain, headerUnitList, modulePayload, ModuleFileType::HeaderUnitObject);
-		if (!batch->list.empty())
+		auto job = std::make_unique<CommandPool::Job>();
+		job->list = getModuleCommands(*inToolchain, headerUnitList, modulePayload, ModuleFileType::HeaderUnitObject);
+		if (!job->list.empty())
 		{
-			buildBatches.emplace_back(std::move(batch));
+			buildJobs.emplace_back(std::move(job));
 		}
 	}
 	headerUnitList.clear(); // No longer needed
@@ -215,11 +214,11 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			if (inList.empty())
 				return;
 
-			auto batch = std::make_unique<CommandPool::Target>();
-			batch->list = getModuleCommands(*inToolchain, inList, modulePayload, ModuleFileType::ModuleObject);
-			if (!batch->list.empty())
+			auto job = std::make_unique<CommandPool::Job>();
+			job->list = getModuleCommands(*inToolchain, inList, modulePayload, ModuleFileType::ModuleObject);
+			if (!job->list.empty())
 			{
-				buildBatches.emplace_back(std::move(batch));
+				buildJobs.emplace_back(std::move(job));
 			}
 		};
 
@@ -369,22 +368,22 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 	//
 
-	if (!buildBatches.empty())
+	if (!buildJobs.empty())
 	{
-		addCompileCommands(buildBatches.back()->list, *inToolchain, inOutputs->groups);
+		addCompileCommands(buildJobs.back()->list, *inToolchain, inOutputs->groups);
 	}
 	else
 	{
-		auto batch = std::make_unique<CommandPool::Target>();
-		addCompileCommands(batch->list, *inToolchain, inOutputs->groups);
-		if (!batch->list.empty())
+		auto job = std::make_unique<CommandPool::Job>();
+		addCompileCommands(job->list, *inToolchain, inOutputs->groups);
+		if (!job->list.empty())
 		{
-			buildBatches.emplace_back(std::move(batch));
+			buildJobs.emplace_back(std::move(job));
 		}
 	}
 
 	bool targetExists = Commands::pathExists(inOutputs->target);
-	if (!buildBatches.empty() || !targetExists)
+	if (!buildJobs.empty() || !targetExists)
 	{
 		// Scan sources for module dependencies
 
@@ -396,40 +395,21 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 		StringList links = List::combine(std::move(inOutputs->objectListLinker), std::move(headerUnitObjects));
 
-		if (!buildBatches.empty())
 		{
-			buildBatches.back()->post = getLinkCommand(*inToolchain, inProject, inOutputs->target, links);
-
-			for (auto& batch : buildBatches)
-			{
-				settings.total += static_cast<uint>(batch->list.size());
-				if (!batch->post.command.empty())
-					settings.total += 1;
-			}
-		}
-		else
-		{
-			auto batch = std::make_unique<CommandPool::Target>();
-			batch->post = getLinkCommand(*inToolchain, inProject, inOutputs->target, links);
-			buildBatches.emplace_back(std::move(batch));
-
-			settings.total = 1;
+			auto job = std::make_unique<CommandPool::Job>();
+			job->list = getLinkCommand(*inToolchain, inProject, inOutputs->target, links);
+			buildJobs.emplace_back(std::move(job));
 		}
 
 		inOutputs.reset();
 		inToolchain.reset();
 		m_compileCache.clear();
 
-		for (auto& batch : buildBatches)
-		{
-			CommandPool commandPool(batch->threads == 0 ? m_state.info.maxJobs() : batch->threads);
-			if (!commandPool.run(*batch, settings))
-				return onFailure();
+		CommandPool commandPool(m_state.info.maxJobs());
+		if (!commandPool.runAll(std::move(buildJobs), settings))
+			return onFailure();
 
-			settings.startIndex += static_cast<uint>(batch->list.size());
-		}
-
-		// Output::lineBreak();
+		Output::lineBreak();
 	}
 
 	// Build in groups after dependencies / order have been resolved
@@ -554,14 +534,19 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 }
 
 /*****************************************************************************/
-CommandPool::Cmd IModuleStrategy::getLinkCommand(CompileToolchainController& inToolchain, const SourceTarget& inProject, const std::string& inTarget, const StringList& inLinks)
+CommandPool::CmdList IModuleStrategy::getLinkCommand(CompileToolchainController& inToolchain, const SourceTarget& inProject, const std::string& inTarget, const StringList& inLinks)
 {
 	const auto targetBasename = m_state.paths.getTargetBasename(inProject);
 
-	CommandPool::Cmd ret;
-	ret.command = inToolchain.getOutputTargetCommand(inTarget, inLinks, targetBasename);
-	ret.label = inProject.isStaticLibrary() ? "Archiving" : "Linking";
-	ret.output = inTarget;
+	CommandPool::CmdList ret;
+
+	{
+		CommandPool::Cmd out;
+		out.command = inToolchain.getOutputTargetCommand(inTarget, inLinks, targetBasename);
+
+		auto label = inProject.isStaticLibrary() ? "Archiving" : "Linking";
+		out.output = fmt::format("{} {}", label, inTarget);
+	}
 
 	return ret;
 }

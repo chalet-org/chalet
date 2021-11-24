@@ -210,13 +210,33 @@ CommandPool::CommandPool(const std::size_t inThreads) :
 }
 
 /*****************************************************************************/
-bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
+bool CommandPool::runAll(JobList&& inJobs, Settings& inSettings)
 {
-	auto& list = inTarget.list;
-	auto& pre = inTarget.pre;
-	auto& post = inTarget.post;
+	inSettings.startIndex = 1;
+	inSettings.total = 0;
 
-	auto&& [cmdColor, startIndex, total, quiet, showCommmands, msvcCommand, renameAfterCommand] = inSettings;
+	for (auto& job : inJobs)
+	{
+		inSettings.total += static_cast<uint>(job->list.size());
+	}
+
+	for (auto& job : inJobs)
+	{
+		if (!run(*job, inSettings))
+			return false;
+
+		inSettings.startIndex += static_cast<uint>(job->list.size());
+		job.reset();
+	}
+
+	inJobs.clear();
+	return true;
+}
+
+/*****************************************************************************/
+bool CommandPool::run(const Job& inJob, const Settings& inSettings)
+{
+	auto&& [cmdColor, startIndex, total, quiet, showCommmands, msvcCommand] = inSettings;
 
 	::signal(SIGINT, signalHandler);
 	::signal(SIGTERM, signalHandler);
@@ -249,21 +269,19 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 	uint totalCompiles = total;
 	if (totalCompiles == 0)
 	{
-		totalCompiles = static_cast<uint>(list.size());
-		totalCompiles += static_cast<uint>(pre.size());
-
-		if (!post.command.empty())
-			++totalCompiles;
+		totalCompiles = static_cast<uint>(inJob.list.size());
 	}
 
 	m_reset = Output::getAnsiStyle(Color::Reset);
 	auto color = Output::getAnsiStyle(cmdColor);
 
-	// At the moment, this is only greater than 1 when compiling multiple PCHes for MacOS universal binaries
-	for (auto& it : pre)
+	if (totalCompiles <= 1 || inJob.threads == 1)
 	{
-		if (!it.command.empty())
+		for (auto& it : inJob.list)
 		{
+			if (it.command.empty())
+				continue;
+
 			if (!printCommand(getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(it.command) : it.output)),
 					totalCompiles)))
 				return onError();
@@ -281,13 +299,18 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 					return onError();
 			}
 		}
-	}
 
-	std::vector<std::future<bool>> threadResults;
-	for (auto& it : list)
+		if (state.errorCode != CommandPoolErrorCode::None)
+			return onError();
+	}
+	else
 	{
-		if (!it.command.empty())
+		std::vector<std::future<bool>> threadResults;
+		for (auto& it : inJob.list)
 		{
+			if (it.command.empty())
+				continue;
+
 			threadResults.emplace_back(m_threadPool.enqueue(
 				printCommand,
 				getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(it.command) : it.output)),
@@ -304,71 +327,39 @@ bool CommandPool::run(const Target& inTarget, const Settings& inSettings)
 				threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, it.command));
 			}
 		}
-	}
 
-	for (auto& tr : threadResults)
-	{
-		CHALET_TRY
+		for (auto& tr : threadResults)
 		{
-			if (!tr.get())
+			CHALET_TRY
 			{
-				CHALET_THROW(std::runtime_error("build error"));
-			}
-		}
-		CHALET_CATCH(const std::exception& err)
-		{
-			if (state.errorCode != CommandPoolErrorCode::None && m_exceptionThrown.empty())
-			{
-				signalHandler(SIGTERM);
-				if (String::equals("build error", err.what()))
-				{}
-				else
+				if (!tr.get())
 				{
-					m_exceptionThrown = std::string(err.what());
-					state.errorCode = CommandPoolErrorCode::BuildException;
+					CHALET_THROW(std::runtime_error("build error"));
 				}
 			}
-		}
-	}
-
-	if (state.errorCode != CommandPoolErrorCode::None)
-	{
-		// m_threadPool.stop();
-		threadResults.clear();
-
-		return onError();
-	}
-
-	if (!post.command.empty())
-	{
-		// Output::lineBreak();
-
-		// auto postColor = Output::getAnsiStyleForceFormatting(cmdColor, Formatting::Bold);
-
-		if (!printCommand(getPrintedText(fmt::format("{}{} {}", color, post.label, (showCommmands ? String::join(post.command) : post.output)),
-				totalCompiles)))
-			return onError();
-
-#if defined(CHALET_WIN32)
-		if (msvcCommand)
-		{
-			if (!executeCommandMsvc(post.command, post.outputReplace))
-				return onError();
-		}
-		else
-#endif
-		{
-			if (!executeCommandFunc(post.command))
-				return onError();
+			CHALET_CATCH(const std::exception& err)
+			{
+				if (state.errorCode != CommandPoolErrorCode::None && m_exceptionThrown.empty())
+				{
+					signalHandler(SIGTERM);
+					if (String::equals("build error", err.what()))
+					{}
+					else
+					{
+						m_exceptionThrown = std::string(err.what());
+						state.errorCode = CommandPoolErrorCode::BuildException;
+					}
+				}
+			}
 		}
 
 		if (state.errorCode != CommandPoolErrorCode::None)
 		{
+			// m_threadPool.stop();
 			threadResults.clear();
+
 			return onError();
 		}
-
-		Output::lineBreak();
 	}
 
 	cleanup();

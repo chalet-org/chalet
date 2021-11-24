@@ -30,7 +30,7 @@ public:
 private:
 	CommandPool::CmdList getPchCommands(const std::string& pchTarget);
 	CommandPool::CmdList getCompileCommands(const SourceFileGroupList& inGroups);
-	CommandPool::Cmd getLinkCommand(const std::string& inTarget, const StringList& inObjects);
+	CommandPool::CmdList getLinkCommand(const std::string& inTarget, const StringList& inObjects);
 
 	StringList getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
 	StringList getRcCompile(const std::string& source, const std::string& target) const;
@@ -42,7 +42,7 @@ private:
 	const SourceTarget* m_project = nullptr;
 	CompileToolchainController* m_toolchain = nullptr;
 
-	HeapDictionary<CommandPool::Target> m_targets;
+	Dictionary<CommandPool::JobList> m_targets;
 
 	bool m_generateDependencies = false;
 	bool m_pchChanged = false;
