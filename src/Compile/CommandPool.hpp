@@ -6,8 +6,8 @@
 #ifndef CHALET_COMMAND_POOL_HPP
 #define CHALET_COMMAND_POOL_HPP
 
+#include "Libraries/ThreadPool.hpp"
 #include "Terminal/Color.hpp"
-#include "Utility/ThreadPool.hpp"
 
 namespace chalet
 {

@@ -11,6 +11,7 @@ vendors=(
 	'glob'
 	'json-schema-validator'
 	'nlohmann'
+	'thread-pool'
 )
 
 repositories=(
@@ -22,6 +23,7 @@ repositories=(
 	'chalet-org/glob'
 	'chalet-org/json-schema-validator'
 	'nlohmann/json'
+	'chalet-org/thread-pool'
 )
 tags=(
 	'master'
@@ -32,12 +34,14 @@ tags=(
 	'master'
 	'master'
 	'v3.10.2'
+	'v2.0.0'
 )
 
 commits=(
 	0
 	0
 	1
+	0
 	0
 	0
 	0
