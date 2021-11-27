@@ -151,7 +151,6 @@ struct SourceTarget final : public IBuildTarget
 	void setStaticLinking(const bool inValue) noexcept;
 
 	bool windowsPrefixOutputFilename() const noexcept;
-	void setWindowsPrefixOutputFilename(const bool inValue) noexcept;
 
 	bool windowsOutputDef() const noexcept;
 	void setWindowsOutputDef(const bool inValue) noexcept;
@@ -213,7 +212,6 @@ private:
 	bool m_posixThreads = true;
 	bool m_invalidWarningPreset = false;
 	bool m_windowsApplicationManifestGenerationEnabled = true;
-	bool m_windowsPrefixOutputFilename = true;
 	bool m_setWindowsPrefixOutputFilename = false;
 	bool m_windowsOutputDef = false;
 };

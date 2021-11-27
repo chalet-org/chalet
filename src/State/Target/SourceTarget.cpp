@@ -656,14 +656,7 @@ void SourceTarget::setStaticLinking(const bool inValue) noexcept
 // TODO: string prefix (lib) / suffix (-s) control
 bool SourceTarget::windowsPrefixOutputFilename() const noexcept
 {
-	bool staticLib = m_kind == ProjectKind::StaticLibrary;
-	return m_windowsPrefixOutputFilename || staticLib;
-}
-
-void SourceTarget::setWindowsPrefixOutputFilename(const bool inValue) noexcept
-{
-	m_windowsPrefixOutputFilename = inValue;
-	m_setWindowsPrefixOutputFilename = true;
+	return !m_state.environment->isMsvc() && !m_state.environment->isWindowsClang();
 }
 
 /*****************************************************************************/
@@ -818,15 +811,15 @@ void SourceTarget::parseOutputFilename() noexcept
 		}
 		case ProjectKind::SharedLibrary:
 		case ProjectKind::StaticLibrary: {
-			if (!windowsPrefixOutputFilename() || (m_state.environment->isMsvc() && !m_setWindowsPrefixOutputFilename) || m_state.environment->isWindowsClang())
-			{
-				m_outputFile = projectName + libraryExtension;
-				m_outputFileNoPrefix = m_outputFile;
-			}
-			else
+			if (windowsPrefixOutputFilename())
 			{
 				m_outputFileNoPrefix = projectName + libraryExtension;
 				m_outputFile = "lib" + m_outputFileNoPrefix;
+			}
+			else
+			{
+				m_outputFile = projectName + libraryExtension;
+				m_outputFileNoPrefix = m_outputFile;
 			}
 			break;
 		}

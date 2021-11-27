@@ -497,9 +497,6 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 	if (std::string val; parseKeyFromConfig(val, inNode, "windowsEntryPoint"))
 		outTarget.setWindowsEntryPoint(val);
 
-	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "windowsPrefixOutputFilename"))
-		outTarget.setWindowsPrefixOutputFilename(val);
-
 	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "windowsOutputDef"))
 		outTarget.setWindowsOutputDef(val);
 

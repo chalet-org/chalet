@@ -996,12 +996,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::SourceTargetCxxWindowsPrefixOutputFilename] = R"json({
-		"type": "boolean",
-		"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
-		"default": true
-	})json"_ojson;
-
 	defs[Defs::SourceTargetCxxWindowsSubSystem] = R"json({
 		"type": "string",
 		"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to 'console'",
@@ -1240,7 +1234,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kProperties]["staticLinking"] = getDefinition(Defs::SourceTargetCxxStaticLinking);
 		sourceTargetCxx[kProperties]["staticLinks"] = getDefinitionwithCompilerOptions(Defs::SourceTargetCxxStaticLinks);
 		sourceTargetCxx[kProperties]["warnings"] = getDefinition(Defs::SourceTargetCxxWarnings);
-		sourceTargetCxx[kProperties]["windowsPrefixOutputFilename"] = getDefinition(Defs::SourceTargetCxxWindowsPrefixOutputFilename);
 		sourceTargetCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::SourceTargetCxxWindowsOutputDef);
 		sourceTargetCxx[kProperties]["windowsApplicationIcon"] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
 		sourceTargetCxx[kProperties]["windowsApplicationManifest"] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
@@ -1478,7 +1471,6 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::SourceTargetCxxWindowsAppManifest: return "source-target-cxx-windowsApplicationManifest";
 		case Defs::SourceTargetCxxWindowsAppIcon: return "source-target-cxx-windowsAppIcon";
 		case Defs::SourceTargetCxxWindowsOutputDef: return "source-target-cxx-windowsOutputDef";
-		case Defs::SourceTargetCxxWindowsPrefixOutputFilename: return "source-target-cxx-windowsPrefixOutputFilename";
 		case Defs::SourceTargetCxxWindowsSubSystem: return "source-target-cxx-windowsSubSystem";
 		case Defs::SourceTargetCxxWindowsEntryPoint: return "source-target-cxx-windowsEntryPoint";
 		//
