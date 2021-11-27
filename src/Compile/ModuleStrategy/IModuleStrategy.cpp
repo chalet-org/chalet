@@ -109,6 +109,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	SourceFileGroupList headerUnitList;
 
 	{
+		const auto& objDir = m_state.paths.objDir();
 		StringList addedHeaderUnits;
 		for (auto& [name, module] : modules)
 		{
@@ -122,8 +123,29 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 			for (const auto& header : module.importedHeaderUnits)
 			{
-				auto file = String::getPathFilename(header);
-				file = fmt::format("{}_{}", file, moduleId);
+				std::string file;
+
+				auto group = std::make_unique<SourceFileGroup>();
+				if (auto f = String::toLowerCase(header); String::startsWith(cwd, f))
+				{
+					file = header.substr(cwd.size());
+					auto p = String::getPathFolder(file);
+					auto dir = fmt::format("{}/{}", objDir, p);
+					if (!Commands::pathExists(dir))
+						Commands::makeDirectory(dir);
+
+					group->sourceFile = file;
+					group->dataType = SourceDataType::UserHeaderUnit;
+				}
+				else
+				{
+					file = String::getPathFilename(header);
+					file = fmt::format("{}_{}", file, moduleId);
+
+					group->sourceFile = header;
+					group->dataType = SourceDataType::SystemHeaderUnit;
+				}
+
 				auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(file);
 
 				List::addIfDoesNotExist(modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", header, ifcFile));
@@ -133,9 +155,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 				addedHeaderUnits.push_back(header);
 
-				auto group = std::make_unique<SourceFileGroup>();
 				group->type = SourceType::CPlusPlus;
-				group->sourceFile = header;
 				group->objectFile = m_state.environment->getObjectFile(file);
 				group->dependencyFile = m_state.environment->getModuleDirectivesDependencyFile(file);
 				group->otherFile = ifcFile;
@@ -182,8 +202,15 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	{
 		for (const auto& group : headerUnitList)
 		{
-			auto file = String::getPathFilename(group->sourceFile);
-			group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(fmt::format("{}_{}", file, moduleId));
+			if (group->dataType == SourceDataType::UserHeaderUnit)
+			{
+				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(group->sourceFile);
+			}
+			else
+			{
+				auto file = String::getPathFilename(group->sourceFile);
+				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(fmt::format("{}_{}", file, moduleId));
+			}
 		}
 
 		auto job = std::make_unique<CommandPool::Job>();
