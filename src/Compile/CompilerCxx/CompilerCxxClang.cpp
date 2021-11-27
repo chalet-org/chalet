@@ -107,4 +107,27 @@ bool CompilerCxxClang::addArchitectureToCommand(StringList& outArgList, const st
 
 	return true;
 }
+
+/*****************************************************************************/
+void CompilerCxxClang::addCppCoroutines(StringList& outArgList) const
+{
+	if (m_project.cppCoroutines() && m_versionMajorMinor >= 500)
+	{
+		std::string option{ "-fcoroutines-ts" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxClang::addCppConcepts(StringList& outArgList) const
+{
+	if (m_project.cppConcepts() && m_versionMajorMinor >= 600 && m_versionMajorMinor < 1000)
+	{
+		std::string option{ "-fconcepts-ts" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
+	}
+}
+
 }

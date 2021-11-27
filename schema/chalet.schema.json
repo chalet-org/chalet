@@ -842,9 +842,6 @@
 				"warnings": {
 					"$ref": "#/definitions/source-target-cxx-warnings"
 				},
-				"windowsPrefixOutputFilename": {
-					"$ref": "#/definitions/source-target-cxx-windowsPrefixOutputFilename"
-				},
 				"windowsOutputDef": {
 					"$ref": "#/definitions/source-target-cxx-windowsOutputDef"
 				},
@@ -1426,11 +1423,6 @@
 			"type": "boolean",
 			"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
 			"default": false
-		},
-		"source-target-cxx-windowsPrefixOutputFilename": {
-			"type": "boolean",
-			"description": "Only applies to shared library targets (kind=sharedLibrary) on windows. If true, prefixes the output dll with 'lib'. This may not be desirable with standalone dlls.",
-			"default": true
 		},
 		"source-target-cxx-windowsSubSystem": {
 			"type": "string",

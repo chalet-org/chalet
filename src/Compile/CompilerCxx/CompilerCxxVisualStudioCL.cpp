@@ -93,6 +93,9 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 		ret.emplace_back("/showIncludes");
 	}
 
+	addLanguageStandard(ret, specialization);
+	addCppCoroutines(ret);
+
 	addCompileOptions(ret);
 
 	{
@@ -124,7 +127,6 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	// addInlineFunctionExpansion(ret);
 	// addUnsortedOptions(ret);
 
-	addLanguageStandard(ret, specialization);
 	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
 
@@ -166,6 +168,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	}
 
 	addLanguageStandard(ret, specialization);
+	addCppCoroutines(ret);
 
 	addCompileOptions(ret);
 
@@ -232,6 +235,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	// ret.emplace_back("/MP");
 
 	addLanguageStandard(ret, CxxSpecialization::CPlusPlus);
+	addCppCoroutines(ret);
 
 	ret.emplace_back("/experimental:module");
 	/*if (!isDependency)
@@ -871,6 +875,22 @@ void CompilerCxxVisualStudioCL::addGenerateIntrinsicFunctions(StringList& outArg
 	{
 		// generate intrinsic functions
 		List::addIfDoesNotExist(outArgList, "/Oi");
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addCppCoroutines(StringList& outArgList) const
+{
+	if (m_project.cppCoroutines())
+	{
+		if (m_versionMajorMinor >= 1929)
+		{
+			List::addIfDoesNotExist(outArgList, "/await:strict");
+		}
+		else
+		{
+			List::addIfDoesNotExist(outArgList, "/await");
+		}
 	}
 }
 

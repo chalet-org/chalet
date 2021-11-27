@@ -603,9 +603,21 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": "auto"
 	})json"_ojson;
 
-	defs[Defs::SourceTargetCxxModules] = R"json({
+	defs[Defs::SourceTargetCxxCppModules] = R"json({
 		"type": "boolean",
 		"description": "true to enable C++20 modules, false to disable (default).",
+		"default": true
+	})json"_ojson;
+
+	defs[Defs::SourceTargetCxxCppCoroutines] = R"json({
+		"type": "boolean",
+		"description": "true to enable C++20 coroutines, false to disable (default).",
+		"default": true
+	})json"_ojson;
+
+	defs[Defs::SourceTargetCxxCppConcepts] = R"json({
+		"type": "boolean",
+		"description": "true to enable C++20 concepts in previous language standards (equivalent to '-fconcepts' or '-fconcepts-ts'), false to disable (default).",
 		"default": true
 	})json"_ojson;
 
@@ -1228,7 +1240,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kProperties]["macosFrameworks"] = getDefinition(Defs::SourceTargetCxxMacOsFrameworks);
 		sourceTargetCxx[kProperties]["pch"] = getDefinition(Defs::SourceTargetCxxPrecompiledHeader);
 		sourceTargetCxx[kProperties]["threads"] = getDefinition(Defs::SourceTargetCxxThreads);
-		sourceTargetCxx[kProperties]["cppModules"] = getDefinition(Defs::SourceTargetCxxModules);
+		sourceTargetCxx[kProperties]["cppModules"] = getDefinition(Defs::SourceTargetCxxCppModules);
+		sourceTargetCxx[kProperties]["cppCoroutines"] = getDefinition(Defs::SourceTargetCxxCppCoroutines);
+		sourceTargetCxx[kProperties]["cppConcepts"] = getDefinition(Defs::SourceTargetCxxCppConcepts);
 		sourceTargetCxx[kProperties]["rtti"] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
 		sourceTargetCxx[kProperties]["exceptions"] = getDefinition(Defs::SourceTargetCxxExceptions);
 		sourceTargetCxx[kProperties]["staticLinking"] = getDefinition(Defs::SourceTargetCxxStaticLinking);
@@ -1249,7 +1263,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kPatternProperties][fmt::format("^links{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxLinks);
 		sourceTargetCxx[kPatternProperties][fmt::format("^staticLinks{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinks);
 		sourceTargetCxx[kPatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxThreads);
-		sourceTargetCxx[kPatternProperties][fmt::format("^modules{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxModules);
+		sourceTargetCxx[kPatternProperties][fmt::format("^cppModules{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCppModules);
+		sourceTargetCxx[kPatternProperties][fmt::format("^cppCoroutines{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCppCoroutines);
+		sourceTargetCxx[kPatternProperties][fmt::format("^cppConcepts{}$", kPatternConditionPlatforms)] = getDefinition(Defs::SourceTargetCxxCppConcepts);
 		sourceTargetCxx[kPatternProperties][fmt::format("^rtti{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxRunTimeTypeInfo);
 		sourceTargetCxx[kPatternProperties][fmt::format("^exceptions{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxExceptions);
 		sourceTargetCxx[kPatternProperties][fmt::format("^staticLinking{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::SourceTargetCxxStaticLinking);
@@ -1462,7 +1478,9 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::SourceTargetCxxMacOsFrameworks: return "source-target-cxx-macosFrameworks";
 		case Defs::SourceTargetCxxPrecompiledHeader: return "source-target-cxx-pch";
 		case Defs::SourceTargetCxxThreads: return "source-target-cxx-threads";
-		case Defs::SourceTargetCxxModules: return "source-target-cxx-cppModules";
+		case Defs::SourceTargetCxxCppModules: return "source-target-cxx-cppModules";
+		case Defs::SourceTargetCxxCppCoroutines: return "source-target-cxx-cppCoroutines";
+		case Defs::SourceTargetCxxCppConcepts: return "source-target-cxx-cppConcepts";
 		case Defs::SourceTargetCxxRunTimeTypeInfo: return "source-target-cxx-rtti";
 		case Defs::SourceTargetCxxExceptions: return "source-target-cxx-exceptions";
 		case Defs::SourceTargetCxxStaticLinking: return "source-target-cxx-staticLinking";

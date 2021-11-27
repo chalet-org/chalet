@@ -137,6 +137,8 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 	addOptimizations(ret);
 	addLanguageStandard(ret, specialization);
+	addCppCoroutines(ret);
+	addCppConcepts(ret);
 	addWarnings(ret);
 
 	addLibStdCppCompileOption(ret, specialization);
@@ -194,6 +196,8 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 
 	addOptimizations(ret);
 	addLanguageStandard(ret, specialization);
+	addCppCoroutines(ret);
+	addCppConcepts(ret);
 	addWarnings(ret);
 	addObjectiveCxxCompileOption(ret, specialization);
 
@@ -293,9 +297,9 @@ void CompilerCxxGCC::addWarnings(StringList& outArgList) const
 
 		if (!List::contains(excludes, warning))
 		{
-			std::string invalidPch = prefix + warning;
-			// if (isFlagSupported(invalidPch))
-			List::addIfDoesNotExist(outArgList, std::move(invalidPch));
+			std::string option = prefix + warning;
+			// if (isFlagSupported(option))
+			List::addIfDoesNotExist(outArgList, std::move(option));
 		}
 	}
 }
@@ -451,9 +455,9 @@ void CompilerCxxGCC::addProfileInformationCompileOption(StringList& outArgList) 
 	{
 		if (!m_project.isSharedLibrary())
 		{
-			std::string profileInfo{ "-pg" };
-			// if (isFlagSupported(profileInfo))
-			outArgList.emplace_back(std::move(profileInfo));
+			std::string option{ "-pg" };
+			// if (isFlagSupported(option))
+			outArgList.emplace_back(std::move(option));
 		}
 	}
 }
@@ -470,9 +474,9 @@ void CompilerCxxGCC::addCompileOptions(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addDiagnosticColorOption(StringList& outArgList) const
 {
-	std::string diagnosticColor{ "-fdiagnostics-color=always" };
-	if (isFlagSupported(diagnosticColor))
-		List::addIfDoesNotExist(outArgList, std::move(diagnosticColor));
+	std::string option{ "-fdiagnostics-color=always" };
+	if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
 }
 
 /*****************************************************************************/
@@ -486,9 +490,9 @@ void CompilerCxxGCC::addPositionIndependentCodeOption(StringList& outArgList) co
 {
 	if (!m_state.environment->isMingw())
 	{
-		std::string fpic{ "-fPIC" };
-		// if (isFlagSupported(fpic))
-		List::addIfDoesNotExist(outArgList, std::move(fpic));
+		std::string option{ "-fPIC" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
 	}
 }
 
@@ -497,9 +501,9 @@ void CompilerCxxGCC::addNoRunTimeTypeInformationOption(StringList& outArgList) c
 {
 	if (!m_project.rtti())
 	{
-		std::string noRtti{ "-fno-rtti" };
-		// if (isFlagSupported(noRtti))
-		List::addIfDoesNotExist(outArgList, std::move(noRtti));
+		std::string option{ "-fno-rtti" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
 	}
 }
 
@@ -508,9 +512,9 @@ void CompilerCxxGCC::addNoExceptionsOption(StringList& outArgList) const
 {
 	if (!m_project.exceptions())
 	{
-		std::string noExceptions{ "-fno-exceptions" };
-		// if (isFlagSupported(noExceptions))
-		List::addIfDoesNotExist(outArgList, std::move(noExceptions));
+		std::string option{ "-fno-exceptions" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
 	}
 }
 
@@ -522,9 +526,9 @@ void CompilerCxxGCC::addThreadModelCompileOption(StringList& outArgList) const
 		&& !m_state.environment->isMingwClang()
 		&& (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
 	{
-		std::string pthread{ "-pthread" };
-		// if (isFlagSupported(pthread))
-		List::addIfDoesNotExist(outArgList, std::move(pthread));
+		std::string option{ "-pthread" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
 	}
 }
 
@@ -532,6 +536,28 @@ void CompilerCxxGCC::addThreadModelCompileOption(StringList& outArgList) const
 bool CompilerCxxGCC::addArchitecture(StringList& outArgList, const std::string& inArch) const
 {
 	return CompilerCxxGCC::addArchitectureToCommand(outArgList, inArch, m_state);
+}
+
+/*****************************************************************************/
+void CompilerCxxGCC::addCppCoroutines(StringList& outArgList) const
+{
+	if (m_project.cppCoroutines() && m_versionMajorMinor >= 1000)
+	{
+		std::string option{ "-fcoroutines" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxGCC::addCppConcepts(StringList& outArgList) const
+{
+	if (m_project.cppConcepts() && m_versionMajorMinor >= 600)
+	{
+		std::string option{ "-fconcepts" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
+	}
 }
 
 /*****************************************************************************/

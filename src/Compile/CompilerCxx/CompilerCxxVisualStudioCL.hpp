@@ -54,6 +54,8 @@ protected:
 	virtual void addFunctionLevelLinking(StringList& outArgList) const;
 	virtual void addGenerateIntrinsicFunctions(StringList& outArgList) const;
 
+	virtual void addCppCoroutines(StringList& outArgList) const;
+
 	bool createPrecompiledHeaderSource();
 
 private:

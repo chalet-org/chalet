@@ -601,6 +601,7 @@ void SourceTarget::setWindowsEntryPoint(const std::string& inValue)
 	m_windowsEntryPoint = parseWindowsEntryPoint(inValue);
 }
 
+/*****************************************************************************/
 bool SourceTarget::cppModules() const noexcept
 {
 	return m_cppModules;
@@ -608,6 +609,28 @@ bool SourceTarget::cppModules() const noexcept
 void SourceTarget::setCppModules(const bool inValue) noexcept
 {
 	m_cppModules = inValue;
+}
+
+/*****************************************************************************/
+bool SourceTarget::cppCoroutines() const noexcept
+{
+	return m_cppCoroutines;
+}
+
+void SourceTarget::setCppCoroutines(const bool inValue) noexcept
+{
+	m_cppCoroutines = inValue;
+}
+
+/*****************************************************************************/
+bool SourceTarget::cppConcepts() const noexcept
+{
+	return m_cppConcepts;
+}
+
+void SourceTarget::setCppConcepts(const bool inValue) noexcept
+{
+	m_cppConcepts = inValue;
 }
 
 /*****************************************************************************/

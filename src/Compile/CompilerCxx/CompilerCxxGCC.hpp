@@ -43,6 +43,9 @@ protected:
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;
 
+	virtual void addCppCoroutines(StringList& outArgList) const;
+	virtual void addCppConcepts(StringList& outArgList) const;
+
 	// Objective-C / Objective-C++
 	virtual void addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const;
 	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const;

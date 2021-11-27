@@ -138,6 +138,12 @@ struct SourceTarget final : public IBuildTarget
 	bool cppModules() const noexcept;
 	void setCppModules(const bool inValue) noexcept;
 
+	bool cppCoroutines() const noexcept;
+	void setCppCoroutines(const bool inValue) noexcept;
+
+	bool cppConcepts() const noexcept;
+	void setCppConcepts(const bool inValue) noexcept;
+
 	bool objectiveCxx() const noexcept;
 	void setObjectiveCxx(const bool inValue) noexcept;
 
@@ -205,6 +211,8 @@ private:
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;
 
 	bool m_cppModules = false;
+	bool m_cppCoroutines = false;
+	bool m_cppConcepts = false;
 	bool m_objectiveCxx = false;
 	bool m_rtti = true;
 	bool m_exceptions = true;
