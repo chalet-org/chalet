@@ -848,9 +848,6 @@
 				"warnings": {
 					"$ref": "#/definitions/source-target-cxx-warnings"
 				},
-				"windowsOutputDef": {
-					"$ref": "#/definitions/source-target-cxx-windowsOutputDef"
-				},
 				"windowsApplicationIcon": {
 					"$ref": "#/definitions/source-target-cxx-windowsAppIcon"
 				},
@@ -1440,11 +1437,6 @@
 			"type": "string",
 			"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)",
 			"minLength": 1
-		},
-		"source-target-cxx-windowsOutputDef": {
-			"type": "boolean",
-			"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
-			"default": false
 		},
 		"source-target-cxx-windowsSubSystem": {
 			"type": "string",
