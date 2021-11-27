@@ -606,19 +606,19 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::SourceTargetCxxCppModules] = R"json({
 		"type": "boolean",
 		"description": "true to enable C++20 modules, false to disable (default).",
-		"default": true
+		"default": false
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxCppCoroutines] = R"json({
 		"type": "boolean",
 		"description": "true to enable C++20 coroutines, false to disable (default).",
-		"default": true
+		"default": false
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxCppConcepts] = R"json({
 		"type": "boolean",
 		"description": "true to enable C++20 concepts in previous language standards (equivalent to '-fconcepts' or '-fconcepts-ts'), false to disable (default).",
-		"default": true
+		"default": false
 	})json"_ojson;
 
 	defs[Defs::SourceTargetCxxRunTimeTypeInfo] = R"json({
@@ -1002,11 +1002,11 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::SourceTargetCxxWindowsOutputDef] = R"json({
+	/*defs[Defs::SourceTargetCxxWindowsOutputDef] = R"json({
 		"type": "boolean",
 		"description": "If true for a shared library (kind=sharedLibrary) target on Windows, a .def file will be created",
 		"default": false
-	})json"_ojson;
+	})json"_ojson;*/
 
 	defs[Defs::SourceTargetCxxWindowsSubSystem] = R"json({
 		"type": "string",
@@ -1248,7 +1248,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kProperties]["staticLinking"] = getDefinition(Defs::SourceTargetCxxStaticLinking);
 		sourceTargetCxx[kProperties]["staticLinks"] = getDefinitionwithCompilerOptions(Defs::SourceTargetCxxStaticLinks);
 		sourceTargetCxx[kProperties]["warnings"] = getDefinition(Defs::SourceTargetCxxWarnings);
-		sourceTargetCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::SourceTargetCxxWindowsOutputDef);
+		// sourceTargetCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::SourceTargetCxxWindowsOutputDef);
 		sourceTargetCxx[kProperties]["windowsApplicationIcon"] = getDefinition(Defs::SourceTargetCxxWindowsAppIcon);
 		sourceTargetCxx[kProperties]["windowsApplicationManifest"] = getDefinition(Defs::SourceTargetCxxWindowsAppManifest);
 		sourceTargetCxx[kProperties]["windowsSubSystem"] = getDefinition(Defs::SourceTargetCxxWindowsSubSystem);
@@ -1488,7 +1488,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::SourceTargetCxxWarnings: return "source-target-cxx-warnings";
 		case Defs::SourceTargetCxxWindowsAppManifest: return "source-target-cxx-windowsApplicationManifest";
 		case Defs::SourceTargetCxxWindowsAppIcon: return "source-target-cxx-windowsAppIcon";
-		case Defs::SourceTargetCxxWindowsOutputDef: return "source-target-cxx-windowsOutputDef";
+		// case Defs::SourceTargetCxxWindowsOutputDef: return "source-target-cxx-windowsOutputDef";
 		case Defs::SourceTargetCxxWindowsSubSystem: return "source-target-cxx-windowsSubSystem";
 		case Defs::SourceTargetCxxWindowsEntryPoint: return "source-target-cxx-windowsEntryPoint";
 		//

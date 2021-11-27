@@ -813,6 +813,12 @@
 				"cppModules": {
 					"$ref": "#/definitions/source-target-cxx-cppModules"
 				},
+				"cppCoroutines": {
+					"$ref": "#/definitions/source-target-cxx-cppCoroutines"
+				},
+				"cppConcepts": {
+					"$ref": "#/definitions/source-target-cxx-cppConcepts"
+				},
 				"rtti": {
 					"$ref": "#/definitions/source-target-cxx-rtti"
 				},
@@ -886,8 +892,14 @@
 				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-threads"
 				},
-				"^modules(\\.!?(windows|macos|linux)\\b){1,2}$": {
+				"^cppModules(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-cppModules"
+				},
+				"^cppCoroutines(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-cppCoroutines"
+				},
+				"^cppConcepts(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-cppConcepts"
 				},
 				"^rtti(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-rtti"
@@ -1033,7 +1045,17 @@
 		"source-target-cxx-cppModules": {
 			"type": "boolean",
 			"description": "true to enable C++20 modules, false to disable (default).",
-			"default": true
+			"default": false
+		},
+		"source-target-cxx-cppCoroutines": {
+			"type": "boolean",
+			"description": "true to enable C++20 coroutines, false to disable (default).",
+			"default": false
+		},
+		"source-target-cxx-cppConcepts": {
+			"type": "boolean",
+			"description": "true to enable C++20 concepts in previous language standards (equivalent to '-fconcepts' or '-fconcepts-ts'), false to disable (default).",
+			"default": false
 		},
 		"source-target-cxx-rtti": {
 			"type": "boolean",
