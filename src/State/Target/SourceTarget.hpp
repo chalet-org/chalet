@@ -38,7 +38,7 @@ struct SourceTarget final : public IBuildTarget
 	const StringList& links() const noexcept;
 	void addLinks(StringList&& inList);
 	void addLink(std::string&& inValue);
-	void resolveLinksFromProject(const std::string& inProjectName, const bool inStaticLib);
+	bool resolveLinksFromProject(const std::vector<BuildTarget>& inTargets, const std::string& inInputFile);
 
 	const StringList& projectStaticLinks() const noexcept;
 

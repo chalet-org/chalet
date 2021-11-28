@@ -333,15 +333,8 @@ bool BuildState::initializeBuild()
 			project.addMacosFrameworkPath("/System/Library/Frameworks");
 #endif
 
-			for (auto& t : targets)
-			{
-				if (t->isSources())
-				{
-					auto& p = static_cast<SourceTarget&>(*t);
-					bool staticLib = p.kind() == ProjectKind::StaticLibrary;
-					project.resolveLinksFromProject(p.name(), staticLib);
-				}
-			}
+			if (!project.resolveLinksFromProject(targets, m_impl->inputs.inputFile()))
+				return false;
 		}
 	}
 

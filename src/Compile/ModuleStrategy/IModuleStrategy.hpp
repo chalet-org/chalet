@@ -73,6 +73,7 @@ protected:
 
 private:
 	std::string getModuleId() const;
+	bool rebuildRequiredFromLinks(const SourceTarget& inProject) const;
 };
 }
 

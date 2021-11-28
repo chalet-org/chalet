@@ -173,31 +173,40 @@ void SourceTarget::addLink(std::string&& inValue)
 	List::addIfDoesNotExist(m_links, std::move(inValue));
 }
 
-void SourceTarget::resolveLinksFromProject(const std::string& inProjectName, const bool inStaticLib)
+bool SourceTarget::resolveLinksFromProject(const std::vector<BuildTarget>& inTargets, const std::string& inInputFile)
 {
-	// TODO: should this behavior be separated as "projectLinks"?
-	for (auto& link : m_links)
-	{
-		if (link != inProjectName)
-			continue;
+	std::string suffix{ "-s" };
 
-		// List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
-		if (inStaticLib)
+	for (auto& target : inTargets)
+	{
+		if (target->isSources())
 		{
-			link += "-s";
+			auto& project = static_cast<SourceTarget&>(*target);
+			const auto& projectName = project.name();
+			if (project.kind() == ProjectKind::StaticLibrary)
+			{
+				for (auto& link : m_links)
+				{
+					if (!String::equals(projectName, link))
+						continue;
+
+					Diagnostic::error("{}: Static library target '{}' found in links for target '{}' (move to 'staticLinks')", inInputFile, projectName, this->name());
+					return false;
+				}
+
+				for (auto& link : m_staticLinks)
+				{
+					if (!String::equals(projectName, link))
+						continue;
+
+					List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
+					link += suffix;
+				}
+			}
 		}
 	}
-	for (auto& link : m_staticLinks)
-	{
-		if (link != inProjectName)
-			continue;
 
-		List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
-		if (inStaticLib)
-		{
-			link += "-s";
-		}
-	}
+	return true;
 }
 
 /*****************************************************************************/

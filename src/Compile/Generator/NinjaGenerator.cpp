@@ -52,6 +52,9 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
+			if (String::equals(project.name(), inProject.name()))
+				break;
+
 			if (List::contains(inProject.projectStaticLinks(), project.name()))
 			{
 				objects += " " + m_state.paths.getTargetFilename(project);

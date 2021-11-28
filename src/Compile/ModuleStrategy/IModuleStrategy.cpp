@@ -109,7 +109,9 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	SourceFileGroupList headerUnitList;
 
 	{
+		auto& sourceCache = m_state.cache.file().sources();
 		const auto& objDir = m_state.paths.objDir();
+
 		StringList addedHeaderUnits;
 		for (auto& [name, module] : modules)
 		{
@@ -121,6 +123,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			if (!addHeaderUnitsRecursively(module, module, modules, modulePayload))
 				return onFailure();
 
+			bool rebuildFromHeader = false;
 			for (auto& header : module.importedHeaderUnits)
 			{
 				std::string file;
@@ -148,6 +151,13 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 					group->dataType = SourceDataType::SystemHeaderUnit;
 				}
 
+				{
+					if (m_compileCache.find(header) == m_compileCache.end())
+						m_compileCache[header] = false;
+
+					rebuildFromHeader |= sourceCache.fileChangedOrDoesNotExist(header) || m_compileCache[header];
+				}
+
 				auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(file);
 
 				List::addIfDoesNotExist(modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", header, ifcFile));
@@ -165,6 +175,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 				headerUnitObjects.emplace_back(group->objectFile);
 				headerUnitList.emplace_back(std::move(group));
 			}
+
+			m_compileCache[module.source] |= rebuildFromHeader;
 		}
 	}
 
@@ -412,7 +424,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	}
 
 	bool targetExists = Commands::pathExists(inOutputs->target);
-	if (!buildJobs.empty() || !targetExists)
+	if (!buildJobs.empty() || !targetExists || rebuildRequiredFromLinks(inProject))
 	{
 		// Scan sources for module dependencies
 
@@ -621,18 +633,6 @@ bool IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const M
 			return false;
 	}
 
-	auto& sourceCache = m_state.cache.file().sources();
-	bool rebuildFromHeader = false;
-	for (auto& header : outModule.importedHeaderUnits)
-	{
-		if (m_compileCache.find(header) == m_compileCache.end())
-			m_compileCache[header] = false;
-
-		rebuildFromHeader |= sourceCache.fileChangedOrDoesNotExist(header) || m_compileCache[header];
-	}
-
-	m_compileCache[outModule.source] |= rebuildFromHeader;
-
 	m_previousSource.clear();
 	return true;
 }
@@ -649,6 +649,31 @@ std::string IModuleStrategy::getModuleId() const
 	ret = fmt::format("{}_{}_{}_{}", hostArch, targetArch, envId, buildConfig);
 
 	return Hash::string(ret);
+}
+
+/*****************************************************************************/
+bool IModuleStrategy::rebuildRequiredFromLinks(const SourceTarget& inProject) const
+{
+	auto& sourceCache = m_state.cache.file().sources();
+
+	bool result = false;
+
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<const SourceTarget&>(*target);
+
+			if (String::equals(project.name(), inProject.name()))
+				break;
+
+			if (List::contains(inProject.projectStaticLinks(), project.name()))
+			{
+				result |= sourceCache.fileChangedOrDoesNotExist(m_state.paths.getTargetFilename(project));
+			}
+		}
+	}
+	return result;
 }
 
 }
