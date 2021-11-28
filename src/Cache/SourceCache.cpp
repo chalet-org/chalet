@@ -221,7 +221,7 @@ bool SourceCache::archRequriesUpdate(const std::string& inFile, std::string& out
 void SourceCache::makeUpdate(const std::string& inFile, LastWrite& outFileData) const
 {
 	auto lastWrite = Commands::getLastWriteTime(inFile);
-	if (lastWrite >= m_initializedTime)
+	if (lastWrite > m_initializedTime)
 	{
 		outFileData.lastWrite = m_initializedTime;
 	}
