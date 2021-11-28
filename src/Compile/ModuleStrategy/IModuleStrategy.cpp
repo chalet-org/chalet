@@ -121,7 +121,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			if (!addHeaderUnitsRecursively(module, module, modules, modulePayload))
 				return onFailure();
 
-			for (const auto& header : module.importedHeaderUnits)
+			for (auto& header : module.importedHeaderUnits)
 			{
 				std::string file;
 
@@ -133,6 +133,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 					auto dir = fmt::format("{}/{}", objDir, p);
 					if (!Commands::pathExists(dir))
 						Commands::makeDirectory(dir);
+
+					header = file;
 
 					group->sourceFile = file;
 					group->dataType = SourceDataType::UserHeaderUnit;
@@ -618,6 +620,18 @@ bool IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const M
 		if (!addHeaderUnitsRecursively(outModule, otherModule, inModules, outPayload))
 			return false;
 	}
+
+	auto& sourceCache = m_state.cache.file().sources();
+	bool rebuildFromHeader = false;
+	for (auto& header : outModule.importedHeaderUnits)
+	{
+		if (m_compileCache.find(header) == m_compileCache.end())
+			m_compileCache[header] = false;
+
+		rebuildFromHeader |= sourceCache.fileChangedOrDoesNotExist(header) || m_compileCache[header];
+	}
+
+	m_compileCache[outModule.source] |= rebuildFromHeader;
 
 	m_previousSource.clear();
 	return true;

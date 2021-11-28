@@ -34,7 +34,7 @@ protected:
 		StringList moduleTranslations;
 		StringList headerUnitTranslations;
 	};
-	using DependencyGraph = std::map<SourceFileGroup*, std::vector<SourceFileGroup*>>;
+	using DependencyGraph = std::unordered_map<SourceFileGroup*, std::vector<SourceFileGroup*>>;
 
 public:
 	explicit IModuleStrategy(BuildState& inState);
