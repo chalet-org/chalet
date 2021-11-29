@@ -19,12 +19,12 @@ struct Spinner
 	~Spinner();
 
 	void start();
-	void stop();
+	bool stop();
 
 private:
 	using clock = std::chrono::steady_clock;
 
-	void destroy();
+	bool destroy();
 	bool sleepWithContext(const std::chrono::milliseconds& inLength);
 
 	void doRegularEllipsis();

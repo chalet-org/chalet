@@ -36,27 +36,31 @@ void Spinner::start()
 
 	destroy();
 
-	m_running = true;
 	m_thread = std::make_unique<std::thread>(&Spinner::doRegularEllipsis, this);
 }
 
 /*****************************************************************************/
-void Spinner::stop()
+bool Spinner::stop()
 {
-	destroy();
+	return destroy();
 }
 
 /*****************************************************************************/
-void Spinner::destroy()
+bool Spinner::destroy()
 {
+	bool result = m_running;
+
 	if (m_thread != nullptr)
 	{
 		m_running = false;
 		m_thread->join();
 		m_thread.reset();
 	}
+
+	return result;
 }
 
+/*****************************************************************************/
 bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 {
 	auto start = clock::now();
@@ -79,8 +83,10 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 /*****************************************************************************/
 void Spinner::doRegularEllipsis()
 {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	std::cout << " ... " << std::flush;
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		std::cout << " ... " << std::flush;
+	}
 
 	if (Environment::isContinuousIntegrationServer())
 		return;
@@ -90,6 +96,8 @@ void Spinner::doRegularEllipsis()
 	// first "frame" - keep output minimal
 	if (!sleepWithContext(frameTime))
 		return;
+
+	m_running = true;
 
 	uint i = 0;
 	while (m_running)
@@ -104,7 +112,11 @@ void Spinner::doRegularEllipsis()
 			default: break;
 		}
 
-		std::cout << output << std::flush;
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			std::cout << output << std::flush;
+		}
+
 		if (!sleepWithContext(frameTime))
 			break;
 

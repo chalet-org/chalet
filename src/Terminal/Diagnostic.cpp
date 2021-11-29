@@ -50,9 +50,9 @@ bool destroySpinnerThread()
 	if (state.spinnerThread == nullptr)
 		return false;
 
-	state.spinnerThread->stop();
+	bool result = state.spinnerThread->stop();
 	state.spinnerThread.reset();
-	return true;
+	return result;
 }
 }
 
@@ -219,6 +219,10 @@ void Diagnostic::printErrors()
 		std::cout << "\n"
 				  << std::endl;
 #endif
+	}
+	else
+	{
+		std::cout << std::endl;
 	}
 
 	StringList warnings;

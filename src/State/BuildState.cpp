@@ -527,10 +527,18 @@ bool BuildState::validateState()
 		}
 	}
 
-#if defined(CHALET_MACOS)
 	if (configuration.enableProfiling())
+	{
+		if (!environment->isAppleClang() && !(environment->isGcc() && !toolchain.profiler().empty() && toolchain.isProfilerGprof()))
+		{
+			Diagnostic::error("A profiler was either not found, or profiling on this toolchain is not yet supported.");
+			return false;
+		}
+
+#if defined(CHALET_MACOS)
 		m_impl->prototype.tools.fetchXcodeVersion();
 #endif
+	}
 
 	return true;
 }

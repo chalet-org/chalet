@@ -78,15 +78,13 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 		}
 	}
 #endif
-	if (m_state.environment->isGcc() && !m_state.toolchain.profiler().empty())
+
+	if (m_state.environment->isGcc() && !m_state.toolchain.profiler().empty() && m_state.toolchain.isProfilerGprof())
 	{
-		if (m_state.toolchain.isProfilerGprof())
-		{
-			return ProfilerRunner::runWithGprof(inCommand, inExecutable);
-		}
+		return ProfilerRunner::runWithGprof(inCommand, inExecutable);
 	}
 
-	Diagnostic::error("A profiler was either not found, or profiling on this toolchain is not yet supported.");
+	// Not supported - THis should be validated in BuildState::validate()
 	return false;
 }
 
