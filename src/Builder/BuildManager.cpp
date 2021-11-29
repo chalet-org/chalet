@@ -836,7 +836,7 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 	auto result = buildTimer.stop();
 	if (result > 0 && Output::showBenchmarks())
 	{
-		Output::printInfo(fmt::format("   Build time: {}ms", result));
+		Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
 	}
 
 	Output::lineBreak();
@@ -856,7 +856,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 	auto result = buildTimer.stop();
 	if (result > 0 && Output::showBenchmarks())
 	{
-		Output::printInfo(fmt::format("   Build time: {}ms", result));
+		Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
 	}
 
 	Output::lineBreak();
