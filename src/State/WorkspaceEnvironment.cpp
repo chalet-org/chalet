@@ -87,6 +87,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 {
 	auto separator = Environment::getPathSeparator();
 	StringList outList;
+	StringList rootPaths = String::split(inRootPath, separator);
 
 	for (auto& p : m_searchPaths)
 	{
@@ -102,9 +103,9 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 	if (outList.empty())
 		return inRootPath;
 
-	if (!inRootPath.empty())
+	for (auto& p : rootPaths)
 	{
-		outList.push_back(inRootPath);
+		outList.push_back(std::move(p));
 	}
 
 	std::string ret = String::join(std::move(outList), separator);
@@ -118,6 +119,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 {
 	auto separator = Environment::getPathSeparator();
 	StringList outList;
+	StringList rootPaths = String::split(inRootPath, separator);
 
 	for (auto& p : m_searchPaths)
 	{
@@ -125,7 +127,9 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 			continue;
 
 		auto path = Commands::getCanonicalPath(p); // for any relative paths
-		List::addIfDoesNotExist(outList, std::move(path));
+
+		if (!List::contains(rootPaths, path))
+			List::addIfDoesNotExist(outList, std::move(path));
 	}
 
 	for (auto& p : inAdditionalPaths)
@@ -134,15 +138,17 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 			continue;
 
 		auto path = Commands::getCanonicalPath(p); // for any relative paths
-		List::addIfDoesNotExist(outList, std::move(path));
+
+		if (!List::contains(rootPaths, path))
+			List::addIfDoesNotExist(outList, std::move(path));
 	}
 
 	if (outList.empty())
 		return inRootPath;
 
-	if (!inRootPath.empty())
+	for (auto& p : rootPaths)
 	{
-		outList.push_back(inRootPath);
+		outList.push_back(std::move(p));
 	}
 
 	std::string ret = String::join(std::move(outList), separator);
