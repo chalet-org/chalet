@@ -362,7 +362,7 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 bool StatePrototype::parseEnvFile()
 {
 	DotEnvFileParser envParser(m_inputs);
-	return envParser.serialize();
+	return envParser.readVariablesFromInputs();
 }
 /*****************************************************************************/
 bool StatePrototype::parseGlobalSettingsJson()

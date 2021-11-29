@@ -18,7 +18,6 @@
 namespace chalet
 {
 class BuildState;
-struct WorkspaceEnvironment;
 
 struct SourceTarget final : public IBuildTarget
 {
@@ -170,8 +169,6 @@ private:
 	StringList getWarningPreset();
 	StringList parseWarnings(const std::string& inValue);
 	StringList parseCommandLineOptions(std::string inString) const;
-
-	WorkspaceEnvironment& m_environment;
 
 	StringList m_fileExtensions;
 	StringList m_defines;

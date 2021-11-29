@@ -311,12 +311,6 @@ bool AppBundlerMacOS::setExecutablePaths() const
 {
 	auto& installNameTool = m_state.tools.installNameTool();
 
-	for (auto p : m_state.workspace.searchPaths())
-	{
-		String::replaceAll(p, m_state.paths.buildOutputDir() + '/', "");
-		Commands::subprocessNoOutput({ installNameTool, "-delete_rpath", fmt::format("@executable_path/{}", p), m_executableOutputPath });
-	}
-
 	// install_name_tool
 	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../MacOS", m_executableOutputPath }))
 		return false;
@@ -335,6 +329,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
+
 			for (auto& framework : project.macosFrameworks())
 			{
 				for (auto& path : project.macosFrameworkPaths())

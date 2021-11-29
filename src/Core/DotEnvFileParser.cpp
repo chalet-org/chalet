@@ -24,7 +24,7 @@ DotEnvFileParser::DotEnvFileParser(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-bool DotEnvFileParser::serialize()
+bool DotEnvFileParser::readVariablesFromInputs()
 {
 	std::string envFile = searchDotEnv(m_inputs.envFile(), m_inputs.platformEnv());
 	if (envFile.empty())
@@ -45,7 +45,7 @@ bool DotEnvFileParser::serialize()
 #endif
 	Diagnostic::infoEllipsis("Reading Environment [{}]", envFile);
 
-	if (!parseVariablesFromFile(envFile))
+	if (!readVariablesFromFile(envFile))
 	{
 		Diagnostic::error("There was an error parsing the env file: {}", envFile);
 		return false;
@@ -60,37 +60,12 @@ bool DotEnvFileParser::serialize()
 }
 
 /*****************************************************************************/
-std::string DotEnvFileParser::searchDotEnv(const std::string& inRelativeEnv, const std::string& inEnv) const
+bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 {
-	if (String::endsWith(m_inputs.defaultEnvFile(), inRelativeEnv))
-	{
-		auto toSearch = String::getPathFolder(inRelativeEnv);
-		if (!toSearch.empty())
-		{
-			toSearch = fmt::format("{}/{}", toSearch, inEnv);
-			if (Commands::pathExists(toSearch))
-				return toSearch;
-		}
-	}
-	else
-	{
-		if (Commands::pathExists(inRelativeEnv))
-			return inRelativeEnv;
-	}
-
-	if (Commands::pathExists(inEnv))
-		return inEnv;
-
-	return std::string();
-}
-
-/*****************************************************************************/
-bool DotEnvFileParser::parseVariablesFromFile(const std::string& inFile) const
-{
-	auto appDataPath = Environment::getAsString("APPDATA");
-	StringList pathSearch{ "Path", "PATH" };
-
 #if defined(CHALET_WIN32)
+	auto appDataPath = Environment::getAsString("APPDATA");
+	auto pathKey = Environment::getPathKey();
+
 	const bool msvcExists = VisualStudioEnvironmentScript::visualStudioExists();
 #endif
 
@@ -119,7 +94,7 @@ bool DotEnvFileParser::parseVariablesFromFile(const std::string& inFile) const
 			continue;
 
 #if defined(CHALET_WIN32)
-		const bool isPath = String::equals(pathSearch, key);
+		const bool isPath = String::equals(pathKey, key);
 		for (std::size_t end = value.find_last_of('%'); end != std::string::npos;)
 		{
 			std::size_t beg = value.substr(0, end).find_last_of('%');
@@ -138,7 +113,7 @@ bool DotEnvFileParser::parseVariablesFromFile(const std::string& inFile) const
 			//   we add a fake path (with valid syntax) to inject it into later (See CompileEnvironmentVisualStudio.cpp)
 			//
 			auto replaceValue = Environment::getAsString(replaceKey.c_str());
-			if (msvcExists && isPath && String::equals(pathSearch, replaceKey))
+			if (msvcExists && isPath && String::equals(pathKey, replaceKey))
 			{
 				value.replace(beg, length, fmt::format("{}\\__CHALET_PATH_INJECT__;{}", appDataPath, replaceValue));
 			}
@@ -174,6 +149,31 @@ bool DotEnvFileParser::parseVariablesFromFile(const std::string& inFile) const
 	input.close();
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string DotEnvFileParser::searchDotEnv(const std::string& inRelativeEnv, const std::string& inEnv) const
+{
+	if (String::endsWith(m_inputs.defaultEnvFile(), inRelativeEnv))
+	{
+		auto toSearch = String::getPathFolder(inRelativeEnv);
+		if (!toSearch.empty())
+		{
+			toSearch = fmt::format("{}/{}", toSearch, inEnv);
+			if (Commands::pathExists(toSearch))
+				return toSearch;
+		}
+	}
+	else
+	{
+		if (Commands::pathExists(inRelativeEnv))
+			return inRelativeEnv;
+	}
+
+	if (Commands::pathExists(inEnv))
+		return inEnv;
+
+	return std::string();
 }
 
 }

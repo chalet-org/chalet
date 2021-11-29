@@ -14,11 +14,11 @@ struct DotEnvFileParser
 {
 	explicit DotEnvFileParser(const CommandLineInputs& inInputs);
 
-	bool serialize();
+	bool readVariablesFromInputs();
+	bool readVariablesFromFile(const std::string& inFile) const;
 
 private:
 	std::string searchDotEnv(const std::string& inRelativeEnv, const std::string& inEnv) const;
-	bool parseVariablesFromFile(const std::string& inFile) const;
 
 	const CommandLineInputs& m_inputs;
 };

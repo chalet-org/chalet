@@ -214,7 +214,7 @@ bool CompileStrategyMakefile::buildNMake(const SourceTarget& inProject) const
 	if (inProject.usesPch())
 	{
 		command.back() = fmt::format("pch_{}", hash);
-		Environment::set("CL", "");
+		// Environment::set("CL", "");
 
 		bool result = subprocessMakefile(command);
 		if (!result)
@@ -224,7 +224,7 @@ bool CompileStrategyMakefile::buildNMake(const SourceTarget& inProject) const
 	{
 
 		command.back() = fmt::format("build_{}", hash);
-		Environment::set("CL", "/MP"); // doesn't work
+		// Environment::set("CL", "/MP"); // doesn't work
 
 		bool result = subprocessMakefile(command);
 		if (!result)

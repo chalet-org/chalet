@@ -48,6 +48,8 @@ public:
 	bool doBuild(const bool inShowSuccess = true);
 	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
 
+	void makeLibraryPathVariables();
+
 	const std::string& uniqueId() const noexcept;
 
 private:
@@ -64,7 +66,6 @@ private:
 
 	bool makePathVariable();
 	void makeCompilerDiagnosticsVariables();
-	void makeLibraryPathVariables();
 	void enforceArchitectureInPath();
 	void enforceArchitectureInPath(std::string& outPathVariable);
 

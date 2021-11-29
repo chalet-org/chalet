@@ -99,7 +99,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 		auto path = Commands::getCanonicalPath(p); // for any relative paths
 
 		if (!String::contains(path, inRootPath))
-			outList.emplace_back(std::move(path));
+			List::addIfDoesNotExist(outList, std::move(path));
 	}
 
 	if (outList.empty())
@@ -116,4 +116,42 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 	return ret;
 }
 
+/*****************************************************************************/
+std::string WorkspaceEnvironment::makePathVariableWithKey(const char* inKey, const StringList& inAdditionalPaths) const
+{
+	auto separator = Environment::getPathSeparator();
+	StringList outList;
+
+	for (auto& p : m_searchPaths)
+	{
+		if (!Commands::pathExists(p))
+			continue;
+
+		auto path = Commands::getCanonicalPath(p); // for any relative paths
+		List::addIfDoesNotExist(outList, std::move(path));
+	}
+
+	for (auto& p : inAdditionalPaths)
+	{
+		if (!Commands::pathExists(p))
+			continue;
+
+		auto path = Commands::getCanonicalPath(p); // for any relative paths
+		List::addIfDoesNotExist(outList, std::move(path));
+	}
+
+	if (outList.empty())
+		return std::string();
+
+#if defined(CHALET_WIN32)
+	outList.push_back(fmt::format("%{}%", inKey));
+#else
+	outList.push_back(fmt::format("${}", inKey));
+#endif
+
+	std::string ret = String::join(std::move(outList), separator);
+	Path::sanitize(ret);
+
+	return ret;
+}
 }

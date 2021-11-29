@@ -10,6 +10,8 @@
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Core/DotEnvFileGenerator.hpp"
+#include "Core/DotEnvFileParser.hpp"
 #include "SettingsJson/SettingsToolchainJsonParser.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -101,7 +103,6 @@ bool BuildState::initialize()
 		makePathVariable();
 
 		makeCompilerDiagnosticsVariables();
-		makeLibraryPathVariables();
 	}
 	else
 	{
@@ -646,32 +647,52 @@ void BuildState::makeCompilerDiagnosticsVariables()
 /*****************************************************************************/
 void BuildState::makeLibraryPathVariables()
 {
+	DotEnvFileGenerator dotEnvGen(fmt::format("{}/run.env", paths.buildOutputDir()));
 #if defined(CHALET_LINUX) || defined(CHALET_MACOS)
 	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
 
-	if (workspace.searchPaths().empty())
-		return;
+	auto addEnvironmentPath = [this, &dotEnvGen](const char* inKey, const StringList& inAdditionalPaths = StringList()) {
+		// auto path = Environment::getAsString(inKey);
+		// auto outPath = workspace.makePathVariable(path);
+		auto outPath = workspace.makePathVariableWithKey(inKey, inAdditionalPaths);
 
-	auto addEnvironmentPath = [this](const char* inKey) {
-		auto path = Environment::getAsString(inKey);
-		auto outPath = workspace.makePathVariable(path);
-		// LOG(outPath);
-		if (outPath != path)
+		if (!outPath.empty())
 		{
-			// LOG(inKey, outPath);
-			Environment::set(inKey, outPath);
+			dotEnvGen.set(inKey, outPath);
 		}
 	};
 
+	StringList libDirs;
+	StringList frameworks;
+	for (auto& target : targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<SourceTarget&>(*target);
+			for (auto& p : project.libDirs())
+			{
+				libDirs.push_back(p);
+			}
+			for (auto& p : project.macosFrameworkPaths())
+			{
+				frameworks.push_back(p);
+			}
+		}
+	}
+
 	#if defined(CHALET_LINUX)
-	addEnvironmentPath("LD_LIBRARY_PATH");
-	addEnvironmentPath("LIBRARY_PATH");
+	addEnvironmentPath("LD_LIBRARY_PATH", libDirs);
+	// addEnvironmentPath("LIBRARY_PATH"); // only used by gcc / ld
 	#elif defined(CHALET_MACOS)
-	addEnvironmentPath("DYLD_FALLBACK_LIBRARY_PATH");
-	addEnvironmentPath("DYLD_FALLBACK_FRAMEWORK_PATH");
+	addEnvironmentPath("DYLD_FALLBACK_LIBRARY_PATH", libDirs);
+	addEnvironmentPath("DYLD_FALLBACK_FRAMEWORK_PATH", frameworks);
 	// DYLD_LIBRARY_PATH
 	#endif
 #endif
+	dotEnvGen.save();
+
+	DotEnvFileParser parser(m_impl->inputs);
+	parser.readVariablesFromFile(dotEnvGen.filename());
 }
 
 /*****************************************************************************/

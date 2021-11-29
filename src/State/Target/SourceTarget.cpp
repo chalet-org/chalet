@@ -19,7 +19,6 @@ namespace chalet
 /*****************************************************************************/
 SourceTarget::SourceTarget(BuildState& inState) :
 	IBuildTarget(inState, BuildTargetType::Project),
-	m_environment(inState.workspace),
 	m_warningsPresetString("none")
 {
 }
@@ -352,7 +351,6 @@ void SourceTarget::addMacosFrameworkPath(std::string&& inValue)
 		inValue += '/';
 
 	List::addIfDoesNotExist(m_macosFrameworkPaths, inValue);
-	m_environment.addSearchPath(std::move(inValue));
 }
 
 /*****************************************************************************/

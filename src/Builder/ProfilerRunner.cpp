@@ -14,6 +14,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
@@ -139,6 +140,9 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 			return false;
 	}
 
+	auto libPath = Environment::get("DYLD_FALLBACK_LIBRARY_PATH");
+	auto frameworkPath = Environment::get("DYLD_FALLBACK_FRAMEWORK_PATH");
+
 	// TODO: Could attach iPhone device here
 	if (inUseXcTrace)
 	{
@@ -155,6 +159,12 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 		cmd.emplace_back("--target-stdin");
 		cmd.emplace_back("-");
 
+		cmd.emplace_back("--env");
+		cmd.emplace_back(fmt::format("DYLD_FALLBACK_LIBRARY_PATH={}", libPath));
+
+		cmd.emplace_back("--env");
+		cmd.emplace_back(fmt::format("DYLD_FALLBACK_FRAMEWORK_PATH={}", frameworkPath));
+
 		cmd.emplace_back("--launch");
 		cmd.emplace_back("--");
 		for (auto& arg : inCommand)
@@ -168,6 +178,15 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 	else
 	{
 		StringList cmd{ m_state.tools.instruments(), "-t", std::move(profile), "-D", instrumentsTrace };
+
+		cmd.emplace_back("-e");
+		cmd.emplace_back("DYLD_FALLBACK_LIBRARY_PATH");
+		cmd.emplace_back(std::move(libPath));
+
+		cmd.emplace_back("-e");
+		cmd.emplace_back("DYLD_FALLBACK_FRAMEWORK_PATH");
+		cmd.emplace_back(std::move(frameworkPath));
+
 		for (auto& arg : inCommand)
 		{
 			cmd.push_back(arg);
