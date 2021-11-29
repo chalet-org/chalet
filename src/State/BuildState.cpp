@@ -652,14 +652,11 @@ void BuildState::makeLibraryPathVariables()
 	// Linux uses LD_LIBRARY_PATH & LIBRARY_PATH to resolve the correct file dependencies at runtime
 
 	auto addEnvironmentPath = [this, &dotEnvGen](const char* inKey, const StringList& inAdditionalPaths = StringList()) {
-		// auto path = Environment::getAsString(inKey);
-		// auto outPath = workspace.makePathVariable(path);
-		auto outPath = workspace.makePathVariableWithKey(inKey, inAdditionalPaths);
+		auto path = Environment::getAsString(inKey);
+		auto outPath = workspace.makePathVariable(path, inAdditionalPaths);
 
-		if (!outPath.empty())
-		{
-			dotEnvGen.set(inKey, outPath);
-		}
+		// if (!String::equals(outPath, path))
+		dotEnvGen.set(inKey, outPath);
 	};
 
 	StringList libDirs;
@@ -680,6 +677,8 @@ void BuildState::makeLibraryPathVariables()
 		}
 	}
 
+	StringList allPaths = List::combine(libDirs, frameworks);
+	addEnvironmentPath("PATH", allPaths);
 	#if defined(CHALET_LINUX)
 	addEnvironmentPath("LD_LIBRARY_PATH", libDirs);
 	// addEnvironmentPath("LIBRARY_PATH"); // only used by gcc / ld

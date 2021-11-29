@@ -26,7 +26,7 @@ struct WorkspaceEnvironment
 	void addSearchPaths(StringList&& inList);
 	void addSearchPath(std::string&& inValue);
 	std::string makePathVariable(const std::string& inRootPath) const;
-	std::string makePathVariableWithKey(const char* inKey, const StringList& inAdditionalPaths) const;
+	std::string makePathVariable(const std::string& inRootPath, const StringList& inAdditionalPaths) const;
 
 private:
 	StringList m_searchPaths;

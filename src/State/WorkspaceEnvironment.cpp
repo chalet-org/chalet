@@ -85,9 +85,6 @@ void WorkspaceEnvironment::addSearchPath(std::string&& inValue)
 /*****************************************************************************/
 std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath) const
 {
-	if (m_searchPaths.empty())
-		return inRootPath;
-
 	auto separator = Environment::getPathSeparator();
 	StringList outList;
 
@@ -117,7 +114,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 }
 
 /*****************************************************************************/
-std::string WorkspaceEnvironment::makePathVariableWithKey(const char* inKey, const StringList& inAdditionalPaths) const
+std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath, const StringList& inAdditionalPaths) const
 {
 	auto separator = Environment::getPathSeparator();
 	StringList outList;
@@ -141,13 +138,12 @@ std::string WorkspaceEnvironment::makePathVariableWithKey(const char* inKey, con
 	}
 
 	if (outList.empty())
-		return std::string();
+		return inRootPath;
 
-#if defined(CHALET_WIN32)
-	outList.push_back(fmt::format("%{}%", inKey));
-#else
-	outList.push_back(fmt::format("${}", inKey));
-#endif
+	if (!inRootPath.empty())
+	{
+		outList.push_back(inRootPath);
+	}
 
 	std::string ret = String::join(std::move(outList), separator);
 	Path::sanitize(ret);
