@@ -13,6 +13,7 @@
 #include "Terminal/Spinner.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/SignalHandler.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -213,17 +214,9 @@ void Diagnostic::printErrors()
 	if (state.errorList.empty())
 		return;
 
-	if (destroySpinnerThread())
-	{
-#if defined(CHALET_WIN32)
-		std::cout << "\n"
-				  << std::endl;
-#endif
-	}
-	else
-	{
-		std::cout << std::endl;
-	}
+	destroySpinnerThread();
+
+	Output::lineBreak();
 
 	StringList warnings;
 	StringList errors;
@@ -240,11 +233,12 @@ void Diagnostic::printErrors()
 			errors.emplace_back(std::move(err.message));
 	}
 
-	bool hasWarnings = false;
+	// bool hasWarnings = false;
 	if (warnings.size() > 0)
 	{
 		Type type = Type::Warning;
-		Output::lineBreak();
+		// Output::lineBreak();
+
 		Diagnostic::showHeader(type, fmt::format("{}  Warnings", Unicode::warning()));
 
 		for (auto& message : warnings)
@@ -254,13 +248,14 @@ void Diagnostic::printErrors()
 		if (errors.size() == 0)
 			Output::lineBreak();
 
-		hasWarnings = true;
+		// hasWarnings = true;
 	}
+
 	if (errors.size() > 0)
 	{
 		Type type = Type::Error;
-		if (!hasWarnings)
-			Output::lineBreakStderr();
+		// if (!hasWarnings)
+		// 	Output::lineBreakStderr();
 
 		Diagnostic::showHeader(type, fmt::format("{}  Errors", Unicode::circledX()));
 
