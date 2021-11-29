@@ -668,11 +668,11 @@ void BuildState::makeLibraryPathVariables()
 			auto& project = static_cast<SourceTarget&>(*target);
 			for (auto& p : project.libDirs())
 			{
-				libDirs.push_back(p);
+				List::addIfDoesNotExist(libDirs, p);
 			}
 			for (auto& p : project.macosFrameworkPaths())
 			{
-				frameworks.push_back(p);
+				List::addIfDoesNotExist(frameworks, p);
 			}
 		}
 	}
