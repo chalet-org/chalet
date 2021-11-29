@@ -1082,7 +1082,7 @@
 		},
 		"source-target-cxx-warnings": {
 			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
-			"anyOf": [
+			"oneOf": [
 				{
 					"type": "string",
 					"minLength": 1,
@@ -1103,11 +1103,11 @@
 					"patternProperties": {
 						"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 							"type": "array",
+							"uniqueItems": true,
+							"minItems": 1,
 							"items": {
 								"type": "string",
 								"minLength": 1,
-								"uniqueItems": true,
-								"minItems": 1,
 								"examples": [
 									"abi",
 									"absolute-value",
@@ -1409,11 +1409,11 @@
 				},
 				{
 					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
 					"items": {
 						"type": "string",
 						"minLength": 1,
-						"uniqueItems": true,
-						"minItems": 1,
 						"examples": [
 							"abi",
 							"absolute-value",

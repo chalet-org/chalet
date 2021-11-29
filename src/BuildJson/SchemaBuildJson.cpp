@@ -26,7 +26,7 @@ SchemaBuildJson::SchemaBuildJson() :
 	kDefault("default"),
 	kEnum("enum"),
 	kExamples("examples"),
-	kAnyOf("anyOf"),
+	// kAnyOf("anyOf"),
 	// kAllOf("allOf"),
 	kOneOf("oneOf"),
 	kThen("then"),
@@ -653,7 +653,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::SourceTargetCxxWarnings] = R"json({
 		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
-		"anyOf": [
+		"oneOf": [
 			{
 				"type": "string",
 				"minLength": 1,
@@ -670,23 +670,23 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			{},
 			{
 				"type": "array",
+				"uniqueItems": true,
+				"minItems": 1,
 				"items": {
 					"type": "string",
-					"minLength": 1,
-					"uniqueItems": true,
-					"minItems": 1
+					"minLength": 1
 				}
 			}
 		]
 	})json"_ojson;
-	defs[Defs::SourceTargetCxxWarnings][kAnyOf][1] = R"json({
+	defs[Defs::SourceTargetCxxWarnings][kOneOf][1] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "Warnings specific to each compiler"
 	})json"_ojson;
-	defs[Defs::SourceTargetCxxWarnings][kAnyOf][1][kPatternProperties][kPatternCompilers] = defs[Defs::SourceTargetCxxWarnings][kAnyOf][2];
+	defs[Defs::SourceTargetCxxWarnings][kOneOf][1][kPatternProperties][kPatternCompilers] = defs[Defs::SourceTargetCxxWarnings][kOneOf][2];
 
-	defs[Defs::SourceTargetCxxWarnings][kAnyOf][2][kItems][kExamples] = {
+	defs[Defs::SourceTargetCxxWarnings][kOneOf][2][kItems][kExamples] = {
 		"abi",
 		"absolute-value",
 		"address",
@@ -981,7 +981,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"zero-as-null-pointer-constant",
 		"zero-length-bounds"
 	};
-	defs[Defs::SourceTargetCxxWarnings][kAnyOf][1][kPatternProperties][kPatternCompilers][kItems][kExamples] = defs[Defs::SourceTargetCxxWarnings][kAnyOf][2][kItems][kExamples];
+	defs[Defs::SourceTargetCxxWarnings][kOneOf][1][kPatternProperties][kPatternCompilers][kItems][kExamples] = defs[Defs::SourceTargetCxxWarnings][kOneOf][2][kItems][kExamples];
 
 	defs[Defs::SourceTargetCxxWindowsAppManifest] = R"json({
 		"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",
