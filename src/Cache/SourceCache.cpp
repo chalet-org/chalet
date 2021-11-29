@@ -76,7 +76,8 @@ Json SourceCache::asJson(const std::string& kKeyBuildLastBuilt, const std::strin
 {
 	Json ret = Json::object();
 
-	ret[kKeyBuildLastBuilt] = std::to_string(m_dirty ? m_initializedTime : m_lastBuildTime);
+	time_t lastBuilt = m_dirty ? m_initializedTime : m_lastBuildTime;
+	ret[kKeyBuildLastBuilt] = std::to_string(++lastBuilt);
 
 	if (m_native)
 		ret[kKeyBuildNative] = true;
