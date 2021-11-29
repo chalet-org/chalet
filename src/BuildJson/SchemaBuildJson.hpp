@@ -129,7 +129,7 @@ private:
 	const std::string kDefault;
 	const std::string kEnum;
 	const std::string kExamples;
-	// const std::string kAnyOf;
+	const std::string kAnyOf;
 	// const std::string kAllOf;
 	const std::string kOneOf;
 	const std::string kThen;

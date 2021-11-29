@@ -26,7 +26,7 @@ SchemaBuildJson::SchemaBuildJson() :
 	kDefault("default"),
 	kEnum("enum"),
 	kExamples("examples"),
-	// kAnyOf("anyOf"),
+	kAnyOf("anyOf"),
 	// kAllOf("allOf"),
 	kOneOf("oneOf"),
 	kThen("then"),
@@ -653,7 +653,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::SourceTargetCxxWarnings] = R"json({
 		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
-		"oneOf": [
+		"anyOf": [
 			{
 				"type": "string",
 				"minLength": 1,
@@ -679,23 +679,23 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			}
 		]
 	})json"_ojson;
-	defs[Defs::SourceTargetCxxWarnings][kOneOf][1] = R"json({
+	defs[Defs::SourceTargetCxxWarnings][kAnyOf][1] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "Warnings specific to each compiler"
 	})json"_ojson;
-	defs[Defs::SourceTargetCxxWarnings][kOneOf][1][kPatternProperties][kPatternCompilers] = defs[Defs::SourceTargetCxxWarnings][kOneOf][2];
+	defs[Defs::SourceTargetCxxWarnings][kAnyOf][1][kPatternProperties][kPatternCompilers] = defs[Defs::SourceTargetCxxWarnings][kAnyOf][2];
 
-	defs[Defs::SourceTargetCxxWarnings][kOneOf][1][kItems][kExamples] = {
+	defs[Defs::SourceTargetCxxWarnings][kAnyOf][2][kItems][kExamples] = {
 		"abi",
 		"absolute-value",
 		"address",
 		"aggregate-return",
 		"all",
-		"alloc-size-larger-than=CC_ALLOC_SIZE_LARGER_THAN",
+		"alloc-size-larger-than=VAL",
 		"alloc-zero",
 		"alloca",
-		"alloca-larger-than=CC_ALLOCA_LARGER_THAN",
+		"alloca-larger-than=VAL",
 		"arith-conversion",
 		"array-bounds",
 		"array-bounds=1",
@@ -762,7 +762,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"format-truncation=2",
 		"format-y2k",
 		"frame-address",
-		"frame-larger-than=CC_FRAME_LARGER_THAN",
+		"frame-larger-than=VAL",
 		"ignored-qualifiers",
 		"implicit-fallthrough",
 		"implicit-fallthrough=0",
@@ -780,7 +780,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"invalid-memory-model",
 		"invalid-pch",
 		"jump-misses-init",
-		"larger-than=CC_LARGER_THAN",
+		"larger-than=VAL",
 		"logical-not-parentheses",
 		"logical-op",
 		"long-long",
@@ -916,7 +916,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"sizeof-pointer-div",
 		"sizeof-pointer-memaccess",
 		"stack-protector",
-		"stack-usage=CC_STACK_USAGE",
+		"stack-usage=VAL",
 		"strict-aliasing",
 		"strict-aliasing=1",
 		"strict-aliasing=2",
@@ -974,13 +974,14 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"variadic-macros",
 		"vector-operation-performance",
 		"vla",
-		"vla-larger-than=CC_VLA_LARGER_THAN",
+		"vla-larger-than=VAL",
 		"vla-parameter",
 		"volatile-register-var",
 		"write-strings",
 		"zero-as-null-pointer-constant",
 		"zero-length-bounds"
 	};
+	defs[Defs::SourceTargetCxxWarnings][kAnyOf][1][kPatternProperties][kPatternCompilers][kItems][kExamples] = defs[Defs::SourceTargetCxxWarnings][kAnyOf][2][kItems][kExamples];
 
 	defs[Defs::SourceTargetCxxWindowsAppManifest] = R"json({
 		"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",
