@@ -286,6 +286,11 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 			if (dependency.empty())
 				continue;
 
+	#if defined(CHALET_LINUX)
+			if (String::startsWith("/usr/lib/", dependency))
+				continue;
+	#endif
+
 			List::addIfDoesNotExist(outList, std::move(dependency));
 		}
 
