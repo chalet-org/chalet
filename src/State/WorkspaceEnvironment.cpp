@@ -105,7 +105,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 
 	for (auto& p : rootPaths)
 	{
-		outList.push_back(std::move(p));
+		List::addIfDoesNotExist(outList, std::move(p));
 	}
 
 	std::string ret = String::join(std::move(outList), separator);
@@ -148,7 +148,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 
 	for (auto& p : rootPaths)
 	{
-		outList.push_back(std::move(p));
+		List::addIfDoesNotExist(outList, std::move(p));
 	}
 
 	std::string ret = String::join(std::move(outList), separator);

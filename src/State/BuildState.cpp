@@ -679,13 +679,13 @@ void BuildState::makeLibraryPathVariables()
 
 	StringList allPaths = List::combine(libDirs, frameworks);
 	addEnvironmentPath("PATH", allPaths);
+
 	#if defined(CHALET_LINUX)
 	addEnvironmentPath("LD_LIBRARY_PATH", libDirs);
 	// addEnvironmentPath("LIBRARY_PATH"); // only used by gcc / ld
 	#elif defined(CHALET_MACOS)
 	addEnvironmentPath("DYLD_FALLBACK_LIBRARY_PATH", libDirs);
 	addEnvironmentPath("DYLD_FALLBACK_FRAMEWORK_PATH", frameworks);
-	// DYLD_LIBRARY_PATH
 	#endif
 #endif
 	dotEnvGen.save();
