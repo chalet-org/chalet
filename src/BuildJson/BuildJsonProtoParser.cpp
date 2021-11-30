@@ -343,14 +343,6 @@ bool BuildJsonProtoParser::parseDistributionBundleLinux(BundleTarget& outTarget,
 	if (assigned == 0)
 		return false; // not an error
 
-	if (assigned == 1)
-	{
-		Diagnostic::error("{}: '{bundle}.linux.icon' & '{bundle}.linux.desktopEntry' are both required.",
-			m_filename,
-			fmt::arg("bundle", kKeyDistribution));
-		return false;
-	}
-
 	outTarget.setLinuxBundle(std::move(linuxBundle));
 
 	return true;

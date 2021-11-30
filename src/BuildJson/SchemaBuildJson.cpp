@@ -143,10 +143,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"type": "object",
 		"description": "Properties to describe the Linux distribution. At the moment, these only apply to desktop environments that support the XDG Desktop Entry Specification",
 		"additionalProperties": false,
-		"required": [
-			"icon",
-			"desktopEntry"
-		],
 		"properties": {
 			"desktopEntry": {
 				"type": "string",

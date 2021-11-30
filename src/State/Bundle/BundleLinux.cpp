@@ -19,9 +19,9 @@ bool BundleLinux::validate()
 
 	if (!m_icon.empty())
 	{
-		if (!String::endsWith(".png", m_icon))
+		if (!String::endsWith({ ".png", ".svg" }, m_icon))
 		{
-			Diagnostic::error("distribution.linux.icon must end with '.png', but was '{}'.", m_icon);
+			Diagnostic::error("distribution.linux.icon must end with '.png' or '.svg', but was '{}'.", m_icon);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_icon))
