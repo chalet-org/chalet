@@ -267,7 +267,7 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 	};
 
 	std::string tmpInfoPlist = fmt::format("{}/Info.plist.json", m_bundle.subdirectory());
-	const auto& infoPropertyList = macosBundle.infoPropertyList();
+	std::string infoPropertyList = macosBundle.infoPropertyList();
 	std::string infoPropertyListContent = macosBundle.infoPropertyListContent();
 
 	if (infoPropertyListContent.empty())
@@ -282,6 +282,8 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 		{
 			if (!m_state.tools.plistConvertToJson(infoPropertyList, tmpInfoPlist))
 				return false;
+
+			infoPropertyList = tmpInfoPlist;
 		}
 		else if (!String::endsWith(".json", infoPropertyList))
 		{

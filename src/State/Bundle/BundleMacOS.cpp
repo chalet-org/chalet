@@ -54,14 +54,22 @@ bool BundleMacOS::validate()
 
 	if (!m_infoPropertyList.empty())
 	{
-		if (!String::endsWith(".json", m_infoPropertyList))
+		if (!String::endsWith({ ".plist", ".json" }, m_infoPropertyList))
 		{
 			Diagnostic::error("distribution.macos.infoPropertyList must end with '.plist' or '.json', but was '{}'.", m_infoPropertyList);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_infoPropertyList))
 		{
-			std::ofstream(m_infoPropertyList) << PlatformFileTemplates::macosInfoPlist();
+			if (String::endsWith(".plist", m_infoPropertyList))
+			{
+				Diagnostic::error("distribution.macos.infoPropertyList '{}' was not found.", m_infoPropertyList);
+				result = false;
+			}
+			else
+			{
+				std::ofstream(m_infoPropertyList) << PlatformFileTemplates::macosInfoPlist();
+			}
 		}
 	}
 
@@ -144,14 +152,7 @@ const std::string& BundleMacOS::infoPropertyList() const noexcept
 
 void BundleMacOS::setInfoPropertyList(std::string&& inValue)
 {
-	if (String::endsWith(".plist", inValue))
-	{
-		m_infoPropertyList = inValue + ".json";
-	}
-	else
-	{
-		m_infoPropertyList = std::move(inValue);
-	}
+	m_infoPropertyList = std::move(inValue);
 }
 
 /*****************************************************************************/
