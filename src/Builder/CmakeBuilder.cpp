@@ -68,6 +68,8 @@ bool CmakeBuilder::run()
 		if (!m_target.recheck())
 			Commands::removeRecursively(m_outputLocation);
 
+		Output::lineBreak();
+
 		if (isNinja)
 			Environment::set(kNinjaStatus, oldNinjaStatus);
 
