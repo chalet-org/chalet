@@ -74,7 +74,7 @@ bool AppBundlerLinux::bundleForPlatform()
 {
 	const auto& icon = m_bundle.linuxBundle().icon();
 	const auto& desktopEntry = m_bundle.linuxBundle().desktopEntry();
-	if (icon.empty() || desktopEntry.empty())
+	if (desktopEntry.empty())
 		return true; // Nothing to do
 
 	if (!getMainExecutable())
