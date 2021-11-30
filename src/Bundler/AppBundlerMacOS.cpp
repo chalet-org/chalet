@@ -59,7 +59,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 	auto& macosBundle = m_bundle.macosBundle();
 
 	m_bundlePath = getBundlePath();
-	m_frameworkPath = getFrameworksPath();
+	m_frameworksPath = getFrameworksPath();
 	m_resourcePath = getResourcePath();
 	m_executablePath = getExecutablePath();
 
@@ -68,12 +68,15 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
 
-	if (!Commands::pathExists(m_frameworkPath))
-		Commands::makeDirectory(m_frameworkPath);
+	if (!Commands::pathExists(m_frameworksPath))
+		Commands::makeDirectory(m_frameworksPath);
 
 	auto& installNameTool = m_state.tools.installNameTool();
 	if (m_bundle.updateRPaths())
 	{
+		if (!changeRPathOfDependents(installNameTool, m_dependencyMap, m_frameworksPath))
+			return false;
+
 		if (!changeRPathOfDependents(installNameTool, m_dependencyMap, m_executablePath))
 			return false;
 	}
@@ -348,10 +351,10 @@ bool AppBundlerMacOS::setExecutablePaths() const
 
 					addedFrameworks.push_back(framework);
 
-					if (!Commands::copySkipExisting(filename, m_frameworkPath))
+					if (!Commands::copySkipExisting(filename, m_frameworksPath))
 						return false;
 
-					const auto resolvedFramework = fmt::format("{}/{}.framework", m_frameworkPath, framework);
+					const auto resolvedFramework = fmt::format("{}/{}.framework", m_frameworksPath, framework);
 
 					if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), m_executableOutputPath }))
 						return false;
@@ -495,7 +498,7 @@ bool AppBundlerMacOS::signAppBundle() const
 		signPaths.push_back(m_executablePath);
 		if (isBundle)
 		{
-			signPaths.push_back(m_frameworkPath);
+			signPaths.push_back(m_frameworksPath);
 			signPaths.push_back(m_resourcePath);
 		}
 

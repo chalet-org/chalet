@@ -55,6 +55,12 @@ std::string AppBundlerWindows::getResourcePath() const
 }
 
 /*****************************************************************************/
+std::string AppBundlerWindows::getFrameworksPath() const
+{
+	return m_bundle.subdirectory();
+}
+
+/*****************************************************************************/
 bool AppBundlerWindows::createWindowsInstaller() const
 {
 	// TODO: ignore on CI for now

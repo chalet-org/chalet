@@ -23,13 +23,12 @@ public:
 	virtual std::string getBundlePath() const final;
 	virtual std::string getExecutablePath() const final;
 	virtual std::string getResourcePath() const final;
+	virtual std::string getFrameworksPath() const final;
 
 	bool changeRPathOfDependents(const std::string& inInstallNameTool, const BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath) const;
 	bool changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const;
 
 private:
-	std::string getFrameworksPath() const;
-
 	bool createBundleIcon();
 	bool createPListAndReplaceVariables() const;
 	bool setExecutablePaths() const;
@@ -40,7 +39,7 @@ private:
 	const std::string& m_inputFile;
 
 	std::string m_bundlePath;
-	std::string m_frameworkPath;
+	std::string m_frameworksPath;
 	std::string m_resourcePath;
 	std::string m_executablePath;
 	std::string m_executableOutputPath;

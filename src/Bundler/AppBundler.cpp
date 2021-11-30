@@ -165,9 +165,10 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	const auto bundlePath = inBundler.getBundlePath();
 	const auto executablePath = inBundler.getExecutablePath();
+	const auto frameworksPath = inBundler.getFrameworksPath();
 	const auto resourcePath = inBundler.getResourcePath();
 
-	makeBundlePath(bundlePath, executablePath, resourcePath);
+	makeBundlePath(bundlePath, executablePath, frameworksPath, resourcePath);
 
 	// Timer timer;
 
@@ -199,32 +200,29 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	for (auto& dep : bundle.includes())
 	{
 #if defined(CHALET_MACOS)
-		if (!String::endsWith(".framework", dep))
-		{
-			if (String::endsWith(".dylib", dep))
-			{
-				if (!copyIncludedPath(dep, executablePath))
-					return false;
+		if (String::endsWith(".framework", dep))
+			continue;
 
-				// auto filename = String::getPathFilename(dep);
-				// auto dylib = fmt::format("{}/{}", executablePath);
-			}
-			else
-			{
-				if (!copyIncludedPath(dep, resourcePath))
-					return false;
-			}
+		if (String::endsWith(".dylib", dep))
+		{
+			if (!copyIncludedPath(dep, frameworksPath))
+				return false;
+
+			// auto filename = String::getPathFilename(dep);
+			// auto dylib = fmt::format("{}/{}", executablePath);
 		}
-#else
-		if (!copyIncludedPath(dep, resourcePath))
-			return false;
+		else
 #endif
+		{
+			if (!copyIncludedPath(dep, resourcePath))
+				return false;
+		}
 	}
 
 	StringList executables;
 	StringList dependenciesToCopy;
 	StringList excludes;
-	uint copyCount = 0;
+
 	for (auto& target : inState.targets)
 	{
 		if (target->isSources())
@@ -246,8 +244,16 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 				List::addIfDoesNotExist(executables, std::move(outTarget));
 			}
 
-			if (!copyIncludedPath(outputFilePath, executablePath))
-				continue;
+			if (project.isSharedLibrary())
+			{
+				if (!copyIncludedPath(outputFilePath, frameworksPath))
+					continue;
+			}
+			else
+			{
+				if (!copyIncludedPath(outputFilePath, executablePath))
+					continue;
+			}
 
 			excludes.emplace_back(std::move(outputFilePath));
 		}
@@ -259,14 +265,20 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	for (auto& dep : dependenciesToCopy)
 	{
 #if defined(CHALET_MACOS)
-		if (!String::endsWith(".framework", dep))
+		if (String::endsWith(".framework", dep))
+			continue;
+
+		if (String::endsWith(".dylib", dep))
+		{
+			if (!copyIncludedPath(dep, frameworksPath))
+				continue;
+		}
+		else
 #endif
 		{
 			if (!copyIncludedPath(dep, executablePath))
 				continue;
 		}
-
-		++copyCount;
 	}
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
@@ -288,11 +300,6 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	Commands::forEachGlobMatch(resourcePath, bundle.excludes(), GlobMatch::FilesAndFolders, [&](const fs::path& inPath) {
 		Commands::remove(inPath.string());
 	});
-
-	if (copyCount > 0)
-	{
-		// Output::lineBreak();
-	}
 
 	if (!inBundler.bundleForPlatform())
 		return false;
@@ -401,10 +408,11 @@ bool AppBundler::removeOldFiles(IAppBundler& inBundler)
 }
 
 /*****************************************************************************/
-bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath)
+bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inFrameworksPath, const std::string& inResourcePath)
 {
 	StringList dirList{ inBundlePath };
 	List::addIfDoesNotExist(dirList, inExecutablePath);
+	List::addIfDoesNotExist(dirList, inFrameworksPath);
 	List::addIfDoesNotExist(dirList, inResourcePath);
 
 	// make prod dir

@@ -143,4 +143,10 @@ std::string AppBundlerLinux::getResourcePath() const
 	return m_bundle.subdirectory();
 }
 
+/*****************************************************************************/
+std::string AppBundlerLinux::getFrameworksPath() const
+{
+	return m_bundle.subdirectory();
+}
+
 }

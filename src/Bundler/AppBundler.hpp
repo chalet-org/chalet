@@ -31,7 +31,7 @@ private:
 	bool runBundleTarget(IAppBundler& inBundler, BuildState& inState);
 	bool runScriptTarget(const ScriptDistTarget& inScript, const std::string& inInputFile);
 	bool removeOldFiles(IAppBundler& inBundler);
-	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inResourcePath);
+	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inFrameworksPath, const std::string& inResourcePath);
 	BuildState* getBuildState(const std::string& inBuildConfiguration) const;
 
 	const CommandLineInputs& m_inputs;
