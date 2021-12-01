@@ -39,7 +39,7 @@ void addProcess(Process& inProcess)
 }
 
 /*****************************************************************************/
-void removeProcess(const Process& inProcess, int lastErrorCode)
+void removeProcess(const Process& inProcess)
 {
 	std::lock_guard<std::mutex> lock(s_mutex);
 	auto it = state.procesess.end();
@@ -53,8 +53,6 @@ void removeProcess(const Process& inProcess, int lastErrorCode)
 			return;
 		}
 	}
-
-	state.lastErrorCode = lastErrorCode;
 
 #if defined(CHALET_WIN32)
 	if (state.procesess.empty())
@@ -126,11 +124,11 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 				process.read(FileNo::StdErr, buffer, inBufferSize, inOptions.onStdErr);
 		}
 
-		int result = process.waitForResult();
+		state.lastErrorCode = process.waitForResult();
 
-		removeProcess(process, result);
+		removeProcess(process);
 
-		return result;
+		return state.lastErrorCode;
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
