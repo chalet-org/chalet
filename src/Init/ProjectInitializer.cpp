@@ -164,6 +164,9 @@ bool ProjectInitializer::initializeCMakeWorkspace(BuildJsonProps& outProps)
 	outProps.specialization = specialization;
 
 	outProps.langStandard = getLanguageStandard(outProps.language);
+
+	m_sourceExts = getSourceExtensions(outProps.specialization, outProps.modules);
+
 	outProps.useLocation = getUseLocation();
 	outProps.location = getRootSourceDirectory();
 	outProps.mainSource = getMainSourceFile(outProps.language);
