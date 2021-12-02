@@ -87,6 +87,8 @@ bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 		m_version = version;
 	}
 
+	m_isWindowsTarget = inEnvironment.isWindowsTarget();
+
 	return true;
 }
 
@@ -539,7 +541,7 @@ bool CompilerTools::isCompilerWindowsResourceLLVMRC() const noexcept
 
 bool CompilerTools::canCompilerWindowsResources() const noexcept
 {
-	return !m_compilerWindowsResource.empty();
+	return !m_compilerWindowsResource.empty() && m_isWindowsTarget;
 }
 
 }

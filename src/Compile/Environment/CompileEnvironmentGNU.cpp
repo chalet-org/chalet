@@ -265,7 +265,7 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 		sourceCache.addArch(compiler, cachedArch);
 	}
 
-	m_isWindowsTarget = String::contains({ "windows", "win32", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
+	m_isWindowsTarget = String::contains({ "windows", "win32", "msvc", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
 
 	return true;
 }

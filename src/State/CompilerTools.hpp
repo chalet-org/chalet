@@ -131,6 +131,7 @@ private:
 	bool m_isDisassemblerDumpBin = false;
 	bool m_isDisassemblerOtool = false;
 	bool m_isDisassemblerLLVMObjDump = false;
+	bool m_isWindowsTarget = false;
 	bool m_isCompilerWindowsResourceLLVMRC = false;
 	bool m_cmakeAvailable = false;
 	bool m_ninjaAvailable = false;
