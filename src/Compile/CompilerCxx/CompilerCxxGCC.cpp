@@ -488,7 +488,7 @@ void CompilerCxxGCC::addLibStdCppCompileOption(StringList& outArgList, const Cxx
 /*****************************************************************************/
 void CompilerCxxGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	if (!m_state.environment->isMingw())
+	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
 	{
 		std::string option{ "-fPIC" };
 		// if (isFlagSupported(option))

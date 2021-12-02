@@ -816,7 +816,7 @@ void SourceTarget::parseOutputFilename() noexcept
 	std::string executableExtension;
 	std::string libraryExtension{ ".so" };
 #endif
-	if (executableExtension.empty() && m_state.environment->isMingw())
+	if (executableExtension.empty() && (m_state.environment->isMingw() || m_state.environment->isWindowsTarget()))
 	{
 		executableExtension = ".exe";
 		libraryExtension = ".dll";
@@ -824,11 +824,9 @@ void SourceTarget::parseOutputFilename() noexcept
 
 	if (staticLib)
 	{
-#if defined(CHALET_WIN32)
 		if (m_state.environment->isMsvc() || m_state.environment->isWindowsClang())
 			libraryExtension = "-s.lib";
 		else
-#endif
 			libraryExtension = "-s.a";
 	}
 

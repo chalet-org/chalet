@@ -486,7 +486,7 @@ bool LinkerGNULD::addMacosSysRootOption(StringList& outArgList) const
 
 void LinkerGNULD::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	if (!m_state.environment->isMingw())
+	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
 	{
 		std::string fpic{ "-fPIC" };
 		// if (isFlagSupported(fpic))

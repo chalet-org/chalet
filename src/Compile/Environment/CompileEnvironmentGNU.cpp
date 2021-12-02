@@ -248,7 +248,7 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 			// Note: Standalone "mingw32" is used in 32-bit TDM GCC MinGW builds for some reason
 			if (String::equals("mingw32", cachedArch))
 			{
-				cachedArch = "i686-pc-windows-gnu";
+				cachedArch = "i686-pc-mingw32";
 			}
 #endif
 		}
@@ -264,6 +264,8 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 		m_state.info.setTargetArchitecture(cachedArch);
 		sourceCache.addArch(compiler, cachedArch);
 	}
+
+	m_isWindowsTarget = String::contains({ "windows", "win32", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
 
 	return true;
 }

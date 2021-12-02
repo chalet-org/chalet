@@ -79,6 +79,12 @@ bool ICompileEnvironment::isIntelClassic() const noexcept
 }
 
 /*****************************************************************************/
+bool ICompileEnvironment::isWindowsTarget() const noexcept
+{
+	return m_isWindowsTarget;
+}
+
+/*****************************************************************************/
 bool ICompileEnvironment::isMingw() const noexcept
 {
 	return isMingwGcc() || isMingwClang();

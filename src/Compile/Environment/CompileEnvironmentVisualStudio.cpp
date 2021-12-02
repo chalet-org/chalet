@@ -132,6 +132,8 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 	m_inputs.setTargetArchitecture(m_config->architecture());
 	m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", Arch::toGnuArch(target)));
 
+	m_isWindowsTarget = true;
+
 	// TODO: universal windows platform - uwp-windows-msvc
 
 	return true;
