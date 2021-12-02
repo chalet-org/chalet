@@ -2,7 +2,7 @@
     "configurations": [
         {
             "name": "Linux",
-            "intelliSenseMode": "gcc-x64",
+            "intelliSenseMode": "linux-gcc-x64",
             "compilerPath": "/usr/bin/g++",
             "includePath": [
                 "${workspaceFolder}/src",
@@ -28,7 +28,7 @@
         },
         {
             "name": "Mac",
-            "intelliSenseMode": "clang-x64",
+            "intelliSenseMode": "macos-clang-x64",
             "compilerPath": "/usr/bin/clang",
             "macFrameworkPath": [
                 "/System/Library/Frameworks",
@@ -57,7 +57,7 @@
         },
         {
             "name": "Win32",
-            "intelliSenseMode": "msvc-x64",
+            "intelliSenseMode": "windows-msvc-x64",
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/vendor/nlohmann/single_include",
@@ -82,7 +82,7 @@
         },
         {
             "name": "Win32 (MinGW)",
-            "intelliSenseMode": "gcc-x64",
+            "intelliSenseMode": "windows-gcc-x64",
             "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
             "includePath": [
                 "${workspaceFolder}/src",
