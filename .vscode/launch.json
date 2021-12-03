@@ -21,9 +21,7 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				"init",
-				"-t",
-				"cmake"
+				"bundle"
 			],
 		},
 		{

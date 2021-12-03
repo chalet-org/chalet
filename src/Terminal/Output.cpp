@@ -600,6 +600,13 @@ void Output::msgScript(const std::string& inName, const Color inColor)
 }
 
 /*****************************************************************************/
+void Output::msgArchive(const std::string& inName, const Color inColor)
+{
+	auto symbol = Unicode::triangle();
+	displayStyledSymbol(inColor, symbol, fmt::format("Archive: {}", inName));
+}
+
+/*****************************************************************************/
 void Output::msgTargetDescription(const std::string& inDescription, const Color inColor)
 {
 	auto symbol = Unicode::triangle();

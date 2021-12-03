@@ -35,6 +35,9 @@ class SchemaBuildJson
 		DistributionTargetBuildTargets,
 		DistributionTargetWindows,
 		//
+		DistArchiveTarget,
+		DistArchiveTargetBundles,
+		//
 		ExternalDependency,
 		ExternalDependencyGitRepository,
 		ExternalDependencyGitBranch,

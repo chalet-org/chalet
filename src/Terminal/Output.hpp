@@ -76,6 +76,7 @@ void msgBuild(const std::string& inName);
 void msgRebuild(const std::string& inName);
 void msgDistribution(const std::string& inName);
 void msgScript(const std::string& inName, const Color inColor);
+void msgArchive(const std::string& inName, const Color inColor);
 void msgTargetDescription(const std::string& inDescription, const Color inColor);
 void msgRun(const std::string& inName);
 void msgScanningForModuleDependencies();

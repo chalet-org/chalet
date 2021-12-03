@@ -5,6 +5,7 @@
 
 #include "State/Distribution/IDistTarget.hpp"
 
+#include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 
@@ -25,6 +26,8 @@ IDistTarget::IDistTarget(const DistTargetType inType) :
 			return std::make_unique<BundleTarget>();
 		case DistTargetType::Script:
 			return std::make_unique<ScriptDistTarget>();
+		case DistTargetType::BundleArchive:
+			return std::make_unique<BundleArchiveTarget>();
 		default:
 			break;
 	}
@@ -45,6 +48,10 @@ bool IDistTarget::isScript() const noexcept
 bool IDistTarget::isDistributionBundle() const noexcept
 {
 	return m_type == DistTargetType::DistributionBundle;
+}
+bool IDistTarget::isArchive() const noexcept
+{
+	return m_type == DistTargetType::BundleArchive;
 }
 
 /*****************************************************************************/

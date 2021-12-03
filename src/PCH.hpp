@@ -6,47 +6,51 @@
 #ifndef CHALET_PRECOMPILED_HEADER_HPP
 #define CHALET_PRECOMPILED_HEADER_HPP
 
-#ifndef _DEBUG
-	#ifndef NDEBUG
-		#define NDEBUG
-	#endif
-#endif // _DEBUG
+#ifdef __cplusplus
 
-// Typical stdafx.h
-#include <algorithm>
-#include <cstdio>
-#include <deque>
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <list>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <unordered_map>
-#include <vector>
+	#ifndef _DEBUG
+		#ifndef NDEBUG
+			#define NDEBUG
+		#endif
+	#endif // _DEBUG
 
-// // Additional C/C++ libs
-#include <cassert>
-#include <sstream>
+	// Typical stdafx.h
+	#include <algorithm>
+	#include <cstdio>
+	#include <deque>
+	#include <fstream>
+	#include <functional>
+	#include <iostream>
+	#include <list>
+	#include <map>
+	#include <memory>
+	#include <set>
+	#include <string>
+	#include <unordered_map>
+	#include <vector>
 
-// Defines
-#include "Utility/DefinesCompiler.hpp"
-#include "Utility/DefinesPlatform.hpp"
-//
-#include "Utility/DefinesExceptions.hpp"
+	// // Additional C/C++ libs
+	#include <cassert>
+	#include <sstream>
 
-// Utils
-#include "Utility/Types.hpp"
+	// Defines
+	#include "Utility/DefinesCompiler.hpp"
+	#include "Utility/DefinesPlatform.hpp"
+	//
+	#include "Utility/DefinesExceptions.hpp"
 
-#include "Libraries/FileSystem.hpp"
-#include "Libraries/Format.hpp"
+	// Utils
+	#include "Utility/Types.hpp"
 
-#include "Terminal/Diagnostic.hpp"
-#include "Utility/Logger.hpp"
-#include "Utility/Macros.hpp"
-#include "Utility/StringList.hpp"
-#include "Utility/Unused.hpp"
+	#include "Libraries/FileSystem.hpp"
+	#include "Libraries/Format.hpp"
+
+	#include "Terminal/Diagnostic.hpp"
+	#include "Utility/Logger.hpp"
+	#include "Utility/Macros.hpp"
+	#include "Utility/StringList.hpp"
+	#include "Utility/Unused.hpp"
+
+#endif // __cplusplus
 
 #endif // CHALET_PRECOMPILED_HEADER_HPP

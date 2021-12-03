@@ -11,6 +11,7 @@ vendors=(
 	'glob'
 	'json-schema-validator'
 	'nlohmann'
+	'zip'
 )
 
 repositories=(
@@ -22,6 +23,7 @@ repositories=(
 	'chalet-org/glob'
 	'chalet-org/json-schema-validator'
 	'nlohmann/json'
+	'kuba--/zip'
 )
 tags=(
 	'master'
@@ -32,12 +34,14 @@ tags=(
 	'master'
 	'master'
 	'v3.10.2'
+	'v0.2.0'
 )
 
 commits=(
 	0
 	0
 	1
+	0
 	0
 	0
 	0

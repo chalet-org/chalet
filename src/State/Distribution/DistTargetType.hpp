@@ -12,6 +12,7 @@ enum class DistTargetType
 {
 	DistributionBundle,
 	Script,
+	BundleArchive
 };
 }
 

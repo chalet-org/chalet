@@ -18,6 +18,7 @@ struct JsonFile;
 struct GitDependency;
 struct BundleTarget;
 struct ScriptDistTarget;
+struct BundleArchiveTarget;
 
 struct BuildJsonProtoParser
 {
@@ -37,6 +38,7 @@ private:
 
 	bool parseDistribution(const Json& inNode) const;
 	bool parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionBundle(BundleTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionBundleLinux(BundleTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionBundleMacOS(BundleTarget& outTarget, const Json& inNode) const;

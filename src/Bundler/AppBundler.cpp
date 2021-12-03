@@ -10,6 +10,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -119,6 +120,19 @@ bool AppBundler::run(const DistTarget& inTarget)
 		Timer buildTimer;
 
 		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget), inputFile))
+			return false;
+
+		auto res = buildTimer.stop();
+		if (res > 0 && Output::showBenchmarks())
+		{
+			Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+		}
+	}
+	else if (inTarget->isArchive())
+	{
+		Timer buildTimer;
+
+		if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget), inputFile))
 			return false;
 
 		auto res = buildTimer.stop();
@@ -385,6 +399,25 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 		Output::lineBreak();
 		return false;
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const std::string& inInputFile)
+{
+	const auto& targets = inArchive.targets();
+	if (targets.empty())
+		return false;
+
+	if (!inArchive.description().empty())
+		Output::msgTargetDescription(inArchive.description(), Output::theme().header);
+	else
+		Output::msgArchive(inArchive.name(), Output::theme().header);
+
+	Output::lineBreak();
+
+	UNUSED(inInputFile);
 
 	return true;
 }

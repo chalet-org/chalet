@@ -100,7 +100,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minLength": 1,
 		"enum": [
 			"bundle",
-			"script"
+			"script",
+			"archive"
 		]
 	})json"_ojson;
 
@@ -266,6 +267,18 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 				"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target.",
 				"minLength": 1
 			}
+		}
+	})json"_ojson;
+
+	//
+	defs[Defs::DistArchiveTargetBundles] = R"json({
+		"type": "array",
+		"description": "distribution bundle targets to include in the zip archive",
+		"uniqueItems": true,
+		"minItems": 1,
+		"items": {
+			"type": "string",
+			"minLength": 1
 		}
 	})json"_ojson;
 
@@ -1188,6 +1201,21 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	}
 
 	{
+		auto distArchiveDef = R"json({
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Properties to describe an individual distribution archive.",
+			"required": [
+				"kind",
+				"bundles"
+			]
+		})json"_ojson;
+		distArchiveDef[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
+		distArchiveDef[kProperties]["bundles"] = getDefinition(Defs::DistArchiveTargetBundles);
+		defs[Defs::DistArchiveTarget] = std::move(distArchiveDef);
+	}
+
+	{
 		auto externalDependency = R"json({
 			"type": "object",
 			"oneOf": [
@@ -1437,6 +1465,9 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTargetBuildTargets: return "distribution-target-buildTargets";
 		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//
+		case Defs::DistArchiveTarget: return "distribution-archive-target";
+		case Defs::DistArchiveTargetBundles: return "distribution-archive-target-bundles";
+		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
 		case Defs::ExternalDependencyGitBranch: return "external-git-branch";
@@ -1618,13 +1649,22 @@ Json SchemaBuildJson::get()
 			},
 			"then": {},
 			"else": {
-				"type": "object",
-				"additionalProperties": false
+				"if": {
+					"properties": {
+						"kind": { "const": "archive" }
+					}
+				},
+				"then": {},
+				"else": {
+					"type": "object",
+					"additionalProperties": false
+				}
 			}
 		}
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kThen] = getDefinition(Defs::DistributionTarget);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kThen] = getDefinition(Defs::DistScriptTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kThen] = getDefinition(Defs::DistArchiveTarget);
 
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "object",

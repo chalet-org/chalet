@@ -138,7 +138,8 @@
 			"minLength": 1,
 			"enum": [
 				"bundle",
-				"script"
+				"script",
+				"archive"
 			]
 		},
 		"distribution-target-configuration": {
@@ -307,6 +308,33 @@
 					"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target.",
 					"minLength": 1
 				}
+			}
+		},
+		"distribution-archive-target": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Properties to describe an individual distribution archive.",
+			"required": [
+				"kind",
+				"bundles"
+			],
+			"properties": {
+				"kind": {
+					"$ref": "#/definitions/distribution-target-kind"
+				},
+				"bundles": {
+					"$ref": "#/definitions/distribution-archive-target-bundles"
+				}
+			}
+		},
+		"distribution-archive-target-bundles": {
+			"type": "array",
+			"description": "distribution bundle targets to include in the zip archive",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
 			}
 		},
 		"external-dependency": {
@@ -2069,8 +2097,20 @@
 							"$ref": "#/definitions/distribution-script-target"
 						},
 						"else": {
-							"type": "object",
-							"additionalProperties": false
+							"if": {
+								"properties": {
+									"kind": {
+										"const": "archive"
+									}
+								}
+							},
+							"then": {
+								"$ref": "#/definitions/distribution-archive-target"
+							},
+							"else": {
+								"type": "object",
+								"additionalProperties": false
+							}
 						}
 					}
 				}

@@ -214,7 +214,11 @@ void Diagnostic::printErrors()
 	if (state.errorList.empty())
 		return;
 
-	destroySpinnerThread();
+	if (state.spinnerThread != nullptr && !destroySpinnerThread())
+	{
+		std::cout << '\n'
+				  << std::endl;
+	}
 
 	Output::lineBreak();
 
@@ -245,6 +249,7 @@ void Diagnostic::printErrors()
 		{
 			Diagnostic::showMessage(type, std::move(message));
 		}
+
 		if (errors.size() == 0)
 			Output::lineBreak();
 
@@ -263,6 +268,7 @@ void Diagnostic::printErrors()
 		{
 			Diagnostic::showMessage(type, std::move(message));
 		}
+
 		Output::lineBreak();
 	}
 }

@@ -8,6 +8,7 @@
 #include "BuildJson/SchemaBuildJson.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/Dependency/GitDependency.hpp"
+#include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -224,6 +225,10 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 			{
 				type = DistTargetType::Script;
 			}
+			else if (String::equals("archive", val))
+			{
+				type = DistTargetType::BundleArchive;
+			}
 		}
 
 		DistTarget target = IDistTarget::make(type);
@@ -234,7 +239,12 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 			if (!parseDistributionScript(static_cast<ScriptDistTarget&>(*target), targetJson))
 				continue;
 		}
-		else
+		else if (target->isArchive())
+		{
+			if (!parseDistributionArchive(static_cast<BundleArchiveTarget&>(*target), targetJson))
+				return false;
+		}
+		else if (target->isDistributionBundle())
 		{
 			if (!parseDistributionBundle(static_cast<BundleTarget&>(*target), targetJson))
 				return false;
@@ -266,6 +276,15 @@ bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, 
 
 	// if (!parsePlatformConfigExclusions(outProject, inNode))
 	// 	return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const
+{
+	if (StringList list; parseStringListFromConfig(list, inNode, "bundles"))
+		outTarget.addTargets(std::move(list));
 
 	return true;
 }

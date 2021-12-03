@@ -28,6 +28,7 @@ struct IDistTarget
 	DistTargetType type() const noexcept;
 	bool isScript() const noexcept;
 	bool isDistributionBundle() const noexcept;
+	bool isArchive() const noexcept;
 
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;

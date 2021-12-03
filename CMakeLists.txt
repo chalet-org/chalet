@@ -30,13 +30,27 @@ else()
 	set(CMAKE_CXX_FLAGS_DEBUG "-g3")
 endif()
 
-file(GLOB_RECURSE SOURCES
-	src/*.cpp
-	src/*.rc
+file(GLOB_RECURSE JSONSV_SOURCES
 	vendor/json-schema-validator/src/*.cpp
 )
 
-add_executable(${TARGET_NAME} ${SOURCES})
+add_library(json-schema-validator STATIC ${JSONSV_SOURCES})
+target_include_directories(json-schema-validator PRIVATE
+	vendor/nlohmann/single_include/
+	vendor/json-schema-validator/src/
+)
+
+add_library(zip STATIC vendor/zip/src/zip.c)
+target_include_directories(zip PRIVATE
+	vendor/zip/src/
+)
+
+file(GLOB_RECURSE TARGET_SOURCES
+	src/*.cpp
+	src/*.rc
+)
+
+add_executable(${TARGET_NAME} ${TARGET_SOURCES})
 add_definitions(-DJSON_NOEXCEPTION -DJSONSV_NOEXCEPTION)
 
 target_precompile_headers(${TARGET_NAME} PRIVATE src/PCH.hpp)
@@ -49,6 +63,7 @@ target_include_directories(${TARGET_NAME}
 		vendor/fmt/include/
 		vendor/argparse/include/
 		vendor/glob/single_include/
+		vendor/zip/src/
 		vendor/
 )
 
@@ -64,18 +79,22 @@ endif()
 
 find_package(Threads REQUIRED)
 
+set(STATIC_LINKS
+	json-schema-validator
+	zip
+)
 # imagehlp
 
 if(WIN32)
 	if (MSVC)
-		target_link_libraries(${TARGET_NAME} Threads::Threads DbgHelp)
+		target_link_libraries(${TARGET_NAME} Threads::Threads ${STATIC_LINKS} DbgHelp)
 	else()
-		target_link_libraries(${TARGET_NAME} -static Threads::Threads stdc++fs imagehlp)
+		target_link_libraries(${TARGET_NAME} -static Threads::Threads ${STATIC_LINKS} stdc++fs imagehlp)
 	endif()
 elseif (CLANG)
-	target_link_libraries(${TARGET_NAME} Threads::Threads)
+	target_link_libraries(${TARGET_NAME} Threads::Threads ${STATIC_LINKS})
 else()
-	target_link_libraries(${TARGET_NAME} Threads::Threads stdc++fs)
+	target_link_libraries(${TARGET_NAME} Threads::Threads ${STATIC_LINKS} stdc++fs)
 endif()
 
 if(MSVC)

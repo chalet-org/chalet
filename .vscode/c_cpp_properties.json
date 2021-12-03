@@ -11,6 +11,7 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
+                "${workspaceFolder}/vendor/zip/src",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
                 "/usr/local/include/**",
@@ -41,6 +42,7 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
+                "${workspaceFolder}/vendor/zip/src",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
                 "/usr/local/include/"
@@ -65,6 +67,7 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
+                "${workspaceFolder}/vendor/zip/src",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test"
             ],
@@ -91,6 +94,7 @@
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
                 "${workspaceFolder}/vendor/glob/single_include",
+                "${workspaceFolder}/vendor/zip/src",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test"
             ],
