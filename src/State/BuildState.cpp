@@ -159,63 +159,10 @@ bool BuildState::initializeBuildConfiguration()
 	configuration = buildConfigurations.at(buildConfiguration);
 	info.setBuildConfiguration(buildConfiguration);
 
-	if (!configuration.validate(m_impl->environment->isClang()))
-		return false;
-
-	// TODO: Validate sanitizers against toolchains here
-	// MSVC only has Address sanitizer for instance
-
-	if (configuration.sanitizeHardwareAddress() && info.targetArchitecture() != Arch::Cpu::ARM64)
+	if (!configuration.validate(*this))
 	{
-		Diagnostic::error("The 'hwaddress' sanitizer is only supported with 'arm64' targets, so the '{}' configuration cannot be built.", configuration.name());
+		Diagnostic::error("The build configuration '{}' can not be built.", configuration.name());
 		return false;
-	}
-
-	if (configuration.enableSanitizers())
-	{
-		if (m_impl->environment->isMsvc())
-		{
-			if (!configuration.sanitizeAddress())
-			{
-				Diagnostic::error("Only the 'address' sanitizer is not supported on MSVC, so the '{}' configuration cannot be built.", configuration.name());
-				return false;
-			}
-
-			uint versionMajorMinor = toolchain.compilerCxxAny().versionMajorMinor;
-			if (versionMajorMinor < 1928)
-			{
-				Diagnostic::error("The address sanitizer is only supported in MSVC >= 19.28 (found {})", toolchain.compilerCxxAny().version);
-				return false;
-			}
-		}
-		else if (m_impl->environment->isAppleClang())
-		{
-			if (configuration.sanitizeHardwareAddress())
-			{
-				Diagnostic::error("The 'hwaddress' sanitizer is not yet supported on Apple clang, so the '{}' configuration cannot be built.", configuration.name());
-				return false;
-			}
-			if (configuration.sanitizeMemory())
-			{
-				Diagnostic::error("The 'memory' sanitizer is not supported on Apple clang, so the '{}' configuration cannot be built.", configuration.name());
-				return false;
-			}
-			if (configuration.sanitizeLeaks())
-			{
-				Diagnostic::error("The 'leak' sanitizer is not supported on Apple clang, so the '{}' configuration cannot be built.", configuration.name());
-				return false;
-			}
-		}
-		else if (m_impl->environment->isMingwGcc())
-		{
-			Diagnostic::error("Sanitizers are not yet supported in MinGW, so the '{}' configuration cannot be built.", configuration.name());
-			return false;
-		}
-		else if (m_impl->environment->isIntelClassic())
-		{
-			Diagnostic::error("Sanitizers are not supported on Intel Compiler Classic, so the '{}' configuration cannot be built.", configuration.name());
-			return false;
-		}
 	}
 
 	return true;

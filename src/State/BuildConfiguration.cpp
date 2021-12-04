@@ -5,6 +5,10 @@
 
 #include "State/BuildConfiguration.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "State/BuildInfo.hpp"
+#include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 
@@ -152,7 +156,7 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 }
 
 /*****************************************************************************/
-bool BuildConfiguration::validate(const bool isClang)
+bool BuildConfiguration::validate(const BuildState& inState)
 {
 	bool result = true;
 
@@ -164,7 +168,7 @@ bool BuildConfiguration::validate(const bool isClang)
 
 	bool asan = sanitizeAddress() || sanitizeHardwareAddress();
 
-	if (isClang && (asan && sanitizeLeaks()))
+	if (inState.environment->isClang() && (asan && sanitizeLeaks()))
 	{
 		// In Clang, LeakSanitizer is integrated into AddressSanitizer
 		m_sanitizeOptions &= ~SanitizeOptions::Leak;
@@ -174,6 +178,62 @@ bool BuildConfiguration::validate(const bool isClang)
 	{
 		Diagnostic::error("Sanitizer 'thread' cannot be combined with 'address', 'hwaddress' or 'leak'");
 		result = false;
+	}
+
+	// TODO: Validate sanitizers against toolchains here
+	// MSVC only has Address sanitizer for instance
+
+	if (enableSanitizers())
+	{
+		if (sanitizeHardwareAddress() && inState.info.targetArchitecture() != Arch::Cpu::ARM64)
+		{
+			Diagnostic::error("The 'hwaddress' sanitizer is only supported with 'arm64' targets.");
+			result = false;
+		}
+
+		if (inState.environment->isMsvc())
+		{
+			if (!sanitizeAddress())
+			{
+				Diagnostic::error("Only the 'address' sanitizer is supported on MSVC.");
+				result = false;
+			}
+
+			uint versionMajorMinor = inState.toolchain.compilerCxxAny().versionMajorMinor;
+			if (versionMajorMinor < 1928)
+			{
+				Diagnostic::error("The 'address' sanitizer is only supported in MSVC >= 19.28 (found {})", inState.toolchain.compilerCxxAny().version);
+				result = false;
+			}
+		}
+		else if (inState.environment->isAppleClang())
+		{
+			if (sanitizeHardwareAddress())
+			{
+				Diagnostic::error("The 'hwaddress' sanitizer is not yet supported on Apple clang.");
+				result = false;
+			}
+			if (sanitizeMemory())
+			{
+				Diagnostic::error("The 'memory' sanitizer is not supported on Apple clang.");
+				result = false;
+			}
+			if (sanitizeLeaks())
+			{
+				Diagnostic::error("The 'leak' sanitizer is not supported on Apple clang.");
+				result = false;
+			}
+		}
+		else if (inState.environment->isMingwGcc())
+		{
+			Diagnostic::error("Sanitizers are not yet supported in MinGW.");
+			result = false;
+		}
+		else if (inState.environment->isIntelClassic())
+		{
+			Diagnostic::error("Sanitizers are not supported on Intel Compiler Classic.");
+			result = false;
+		}
 	}
 
 	return result;
