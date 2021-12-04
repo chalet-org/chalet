@@ -40,6 +40,7 @@ struct BuildConfiguration
 	void addSanitizeOption(std::string&& inValue);
 	bool enableSanitizers() const noexcept;
 	bool sanitizeAddress() const noexcept;
+	bool sanitizeHardwareAddress() const noexcept;
 	bool sanitizeThread() const noexcept;
 	bool sanitizeMemory() const noexcept;
 	bool sanitizeLeaks() const noexcept;

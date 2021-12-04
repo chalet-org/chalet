@@ -101,6 +101,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"minLength": 1,
 			"enum": [
 				"address",
+				"hwaddress",
 				"thread",
 				"memory",
 				"leak",

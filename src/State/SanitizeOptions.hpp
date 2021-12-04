@@ -14,10 +14,11 @@ enum
 {
 	None = 0,
 	Address = 1 << 0,
-	Thread = 1 << 1,
-	Memory = 1 << 2,
-	Leak = 1 << 3,
-	UndefinedBehavior = 1 << 4,
+	HardwareAddress = 1 << 1,
+	Thread = 1 << 2,
+	Memory = 1 << 3,
+	Leak = 1 << 4,
+	UndefinedBehavior = 1 << 5,
 };
 using Type = uchar;
 }

@@ -330,6 +330,10 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 		if (m_state.configuration.sanitizeAddress())
 			addFlag("-static-libasan");
 
+		// Not yet
+		// if (m_state.configuration.sanitizeHardwareAddress())
+		// 	addFlag("-static-libhwasan");
+
 		if (m_state.configuration.sanitizeThread())
 			addFlag("-static-libtsan");
 

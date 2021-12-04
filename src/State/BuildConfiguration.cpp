@@ -23,7 +23,9 @@ StringList BuildConfiguration::getDefaultBuildConfigurationNames()
 
 		// Sanitizers
 		"DebugSanitize",
+		"DebugSanitizeHW",
 		"DebugSanitizeAddress",
+		"DebugSanitizeHWAddress",
 		"DebugSanitizeThread",
 		"DebugSanitizeMemory",
 		"DebugSanitizeLeak",
@@ -98,10 +100,24 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 			"leak",
 		});
 	}
+	else if (String::equals("DebugSanitizeHW", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOptions({
+			"hwaddress",
+			"undefined",
+			"leak",
+		});
+	}
 	else if (String::equals("DebugSanitizeAddress", inName))
 	{
 		makeDebug(outConfig);
 		outConfig.addSanitizeOption("address");
+	}
+	else if (String::equals("DebugSanitizeHWAddress", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOption("hwaddress");
 	}
 	else if (String::equals("DebugSanitizeThread", inName))
 	{
@@ -140,15 +156,23 @@ bool BuildConfiguration::validate(const bool isClang)
 {
 	bool result = true;
 
-	if (isClang && (sanitizeAddress() && sanitizeLeaks()))
+	if (sanitizeAddress() && sanitizeHardwareAddress())
+	{
+		Diagnostic::error("Sanitizer 'address' cannot be combined with 'hwaddress'");
+		result = false;
+	}
+
+	bool asan = sanitizeAddress() || sanitizeHardwareAddress();
+
+	if (isClang && (asan && sanitizeLeaks()))
 	{
 		// In Clang, LeakSanitizer is integrated into AddressSanitizer
 		m_sanitizeOptions &= ~SanitizeOptions::Leak;
 	}
 
-	if (sanitizeThread() && (sanitizeAddress() || sanitizeLeaks()))
+	if (sanitizeThread() && (asan || sanitizeLeaks()))
 	{
-		Diagnostic::error("sanitizer 'thread' cannot be combined with 'address' or 'leak'");
+		Diagnostic::error("Sanitizer 'thread' cannot be combined with 'address', 'hwaddress' or 'leak'");
 		result = false;
 	}
 
@@ -235,6 +259,10 @@ void BuildConfiguration::addSanitizeOption(std::string&& inValue)
 	{
 		m_sanitizeOptions |= SanitizeOptions::Address;
 	}
+	else if (String::equals("hwaddress", inValue))
+	{
+		m_sanitizeOptions |= SanitizeOptions::HardwareAddress;
+	}
 	else if (String::equals("thread", inValue))
 	{
 		m_sanitizeOptions |= SanitizeOptions::Thread;
@@ -261,6 +289,10 @@ bool BuildConfiguration::enableSanitizers() const noexcept
 bool BuildConfiguration::sanitizeAddress() const noexcept
 {
 	return (m_sanitizeOptions & SanitizeOptions::Address) == SanitizeOptions::Address;
+}
+bool BuildConfiguration::sanitizeHardwareAddress() const noexcept
+{
+	return (m_sanitizeOptions & SanitizeOptions::HardwareAddress) == SanitizeOptions::HardwareAddress;
 }
 bool BuildConfiguration::sanitizeThread() const noexcept
 {

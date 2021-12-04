@@ -184,6 +184,11 @@ bool BuildState::initializeBuildConfiguration()
 		}
 		else if (m_impl->environment->isAppleClang())
 		{
+			if (configuration.sanitizeHardwareAddress())
+			{
+				Diagnostic::error("The 'hwaddress' sanitizer is not yet supported on Apple clang, so the '{}' configuration cannot be built.", configuration.name());
+				return false;
+			}
 			if (configuration.sanitizeMemory())
 			{
 				Diagnostic::error("The 'memory' sanitizer is not supported on Apple clang, so the '{}' configuration cannot be built.", configuration.name());

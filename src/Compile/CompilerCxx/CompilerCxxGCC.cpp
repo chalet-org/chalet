@@ -474,6 +474,10 @@ void CompilerCxxGCC::addSanitizerOptions(StringList& outArgList, const BuildStat
 	{
 		sanitizers.emplace_back("address");
 	}
+	if (inState.configuration.sanitizeHardwareAddress())
+	{
+		sanitizers.emplace_back("hwaddress");
+	}
 	if (inState.configuration.sanitizeThread())
 	{
 		sanitizers.emplace_back("thread");
