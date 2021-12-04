@@ -36,12 +36,12 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 {
 	outConfig = BuildConfiguration();
 
-	auto makeDebug = [](BuildConfiguration& outConfig) {
-		outConfig.setOptimizationLevel("0");
-		outConfig.setDebugSymbols(true);
-		outConfig.setLinkTimeOptimization(false);
-		outConfig.setStripSymbols(false);
-		outConfig.setEnableProfiling(false);
+	auto makeDebug = [](BuildConfiguration& config) {
+		config.setOptimizationLevel("0");
+		config.setDebugSymbols(true);
+		config.setLinkTimeOptimization(false);
+		config.setStripSymbols(false);
+		config.setEnableProfiling(false);
 	};
 
 	if (String::equals("Release", inName))
