@@ -182,7 +182,9 @@
 				"chalet"
 			],
 			"include": [
-				"scripts/chalet-completion.sh"
+				"scripts/chalet-completion.sh",
+				"LICENSE.txt",
+				"README.md"
 			],
 			"exclude": [
 				"**.psd",
@@ -214,10 +216,10 @@
 			"script.!windows": "scripts/script_shell.sh",
 			"script.windows": "scripts/script_batch.bat"
 		},
-		"chalet-archive": {
+		"chalet-(triple)": {
 			"kind": "archive",
 			"includes": [
-				"chalet"
+				"*"
 			]
 		}
 	} /*,
