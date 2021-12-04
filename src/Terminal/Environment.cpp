@@ -363,6 +363,15 @@ void setTerminalType()
 }
 
 /*****************************************************************************/
+bool Environment::isSubprocess()
+{
+	if (state.terminalType == ShellType::Unset)
+		setTerminalType();
+
+	return state.terminalType == ShellType::Subprocess;
+}
+
+/*****************************************************************************/
 bool Environment::isBash()
 {
 	if (state.terminalType == ShellType::Unset)

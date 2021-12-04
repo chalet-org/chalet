@@ -216,20 +216,10 @@ void Diagnostic::printErrors()
 
 	if (state.spinnerThread != nullptr && !destroySpinnerThread())
 	{
-#if defined(CHALET_WIN32)
-		if (Environment::isBash())
+		if (!Environment::isSubprocess())
 		{
 			std::cout << std::endl;
 		}
-#elif defined(CHALET_MACOS)
-		if (Environment::isBash())
-		{
-			std::cout << std::endl;
-		}
-#else
-		std::cout << '\n'
-				  << std::endl;
-#endif
 	}
 
 	Output::lineBreak();

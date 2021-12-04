@@ -10,6 +10,7 @@ namespace chalet
 {
 namespace Environment
 {
+bool isSubprocess();
 bool isBash();
 bool isBashGenericColorTermOrWindowsTerminal();
 bool isMicrosoftTerminalOrWindowsBash();
