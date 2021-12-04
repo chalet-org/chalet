@@ -799,7 +799,7 @@ void CompilerCxxVisualStudioCL::addSeparateProgramDatabase(StringList& outArgLis
 		/Zi - separate pdb
 	*/
 
-	if (m_state.configuration.debugSymbols())
+	if (m_state.configuration.debugSymbols() && !m_state.configuration.enableSanitizers())
 	{
 		const auto arch = m_state.info.targetArchitecture();
 		if (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86)
