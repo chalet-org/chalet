@@ -271,7 +271,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	})json"_ojson;
 
 	//
-	defs[Defs::DistArchiveTargetIncludes] = R"json({
+	defs[Defs::DistributionArchiveTargetInclude] = R"json({
 		"description": "A list of files or folders to add to the archive, relative to the root bundle directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
 		"oneOf": [
 			{
@@ -355,6 +355,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 	defs[Defs::TargetCondition][kPattern] = fmt::format("^{}$", kPatternConditionConfigurationsPlatformsInner);
+
+	defs[Defs::DistributionTargetCondition] = R"json({
+		"type": "string",
+		"description": "A rule describing when to include this target in the distribution.",
+		"minLength": 1
+	})json"_ojson;
+	defs[Defs::DistributionTargetCondition][kPattern] = fmt::format("^{}$", kPatternConditionPlatformsInner);
 
 	defs[Defs::SourceTargetExtends] = R"json({
 		"type": "string",
@@ -1171,7 +1178,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	}
 
 	{
-		auto distDef = R"json({
+		auto distributionTarget = R"json({
 			"type": "object",
 			"additionalProperties": false,
 			"description": "Properties to describe an individual distribution target.",
@@ -1190,27 +1197,28 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 				}
 			]
 		})json"_ojson;
-		distDef[kProperties] = Json::object();
-		distDef[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
-		distDef[kProperties]["buildTargets"] = getDefinition(Defs::DistributionTargetBuildTargets);
-		distDef[kProperties]["configuration"] = getDefinition(Defs::DistributionTargetConfiguration);
-		distDef[kProperties]["description"] = getDefinition(Defs::TargetDescription);
-		distDef[kProperties]["exclude"] = getDefinition(Defs::DistributionTargetExclude);
-		distDef[kProperties]["include"] = getDefinition(Defs::DistributionTargetInclude);
-		distDef[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionTargetIncludeDependentSharedLibraries);
-		distDef[kProperties]["linux"] = getDefinition(Defs::DistributionTargetLinux);
-		distDef[kProperties]["macos"] = getDefinition(Defs::DistributionTargetMacOS);
-		distDef[kProperties]["windows"] = getDefinition(Defs::DistributionTargetWindows);
-		distDef[kProperties]["mainExecutable"] = getDefinition(Defs::DistributionTargetMainExecutable);
-		distDef[kProperties]["subdirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
-		distDef[kPatternProperties][fmt::format("^description{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
-		distDef[kPatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
-		distDef[kPatternProperties][fmt::format("^exclude{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
-		defs[Defs::DistributionTarget] = std::move(distDef);
+		distributionTarget[kProperties] = Json::object();
+		distributionTarget[kProperties]["condition"] = getDefinition(Defs::DistributionTargetCondition);
+		distributionTarget[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
+		distributionTarget[kProperties]["buildTargets"] = getDefinition(Defs::DistributionTargetBuildTargets);
+		distributionTarget[kProperties]["configuration"] = getDefinition(Defs::DistributionTargetConfiguration);
+		distributionTarget[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+		distributionTarget[kProperties]["exclude"] = getDefinition(Defs::DistributionTargetExclude);
+		distributionTarget[kProperties]["include"] = getDefinition(Defs::DistributionTargetInclude);
+		distributionTarget[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionTargetIncludeDependentSharedLibraries);
+		distributionTarget[kProperties]["linux"] = getDefinition(Defs::DistributionTargetLinux);
+		distributionTarget[kProperties]["macos"] = getDefinition(Defs::DistributionTargetMacOS);
+		distributionTarget[kProperties]["windows"] = getDefinition(Defs::DistributionTargetWindows);
+		distributionTarget[kProperties]["mainExecutable"] = getDefinition(Defs::DistributionTargetMainExecutable);
+		distributionTarget[kProperties]["subdirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
+		distributionTarget[kPatternProperties][fmt::format("^description{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
+		distributionTarget[kPatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
+		distributionTarget[kPatternProperties][fmt::format("^exclude{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
+		defs[Defs::DistributionTarget] = std::move(distributionTarget);
 	}
 
 	{
-		auto distArchiveDef = R"json({
+		auto distributionArchive = R"json({
 			"type": "object",
 			"additionalProperties": false,
 			"description": "Properties to describe an individual distribution archive.",
@@ -1219,10 +1227,11 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 				"include"
 			]
 		})json"_ojson;
-		distArchiveDef[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
-		distArchiveDef[kProperties]["include"] = getDefinition(Defs::DistArchiveTargetIncludes);
-		distArchiveDef[kPatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistArchiveTargetIncludes);
-		defs[Defs::DistArchiveTarget] = std::move(distArchiveDef);
+		distributionArchive[kProperties]["condition"] = getDefinition(Defs::DistributionTargetCondition);
+		distributionArchive[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
+		distributionArchive[kProperties]["include"] = getDefinition(Defs::DistributionArchiveTargetInclude);
+		distributionArchive[kPatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionArchiveTargetInclude);
+		defs[Defs::DistributionArchiveTarget] = std::move(distributionArchive);
 	}
 
 	{
@@ -1383,17 +1392,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	}
 
 	{
-		auto targetDistScript = R"json({
+		auto distributionScript = R"json({
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
-		targetDistScript[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
-		targetDistScript[kProperties]["script"] = getDefinition(Defs::ScriptTargetScript);
-		targetDistScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
-		targetDistScript[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetDistScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionPlatforms)] = getDefinition(Defs::ScriptTargetScript);
-		targetDistScript[kPatternProperties][fmt::format("^description{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
-		defs[Defs::DistScriptTarget] = std::move(targetDistScript);
+		distributionScript[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
+		distributionScript[kProperties]["script"] = getDefinition(Defs::ScriptTargetScript);
+		distributionScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+		distributionScript[kProperties]["condition"] = getDefinition(Defs::DistributionTargetCondition);
+		distributionScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionPlatforms)] = getDefinition(Defs::ScriptTargetScript);
+		distributionScript[kPatternProperties][fmt::format("^description{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
+		defs[Defs::DistributionScriptTarget] = std::move(distributionScript);
 	}
 
 	{
@@ -1463,6 +1472,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::ConfigurationStripSymbols: return "config-stripSymbols";
 		//
 		case Defs::DistributionTarget: return "distribution-target";
+		case Defs::DistributionTargetCondition: return "distribution-target-condition";
 		case Defs::DistributionTargetKind: return "distribution-target-kind";
 		case Defs::DistributionTargetConfiguration: return "distribution-target-configuration";
 		case Defs::DistributionTargetInclude: return "distribution-target-include";
@@ -1475,8 +1485,8 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTargetBuildTargets: return "distribution-target-buildTargets";
 		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//
-		case Defs::DistArchiveTarget: return "distribution-archive-target";
-		case Defs::DistArchiveTargetIncludes: return "distribution-archive-target-include";
+		case Defs::DistributionArchiveTarget: return "distribution-archive-target";
+		case Defs::DistributionArchiveTargetInclude: return "distribution-archive-target-include";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
@@ -1531,7 +1541,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::SourceTargetCxxWindowsEntryPoint: return "source-target-cxx-windowsEntryPoint";
 		//
 		case Defs::BuildScriptTarget: return "build-script-target";
-		case Defs::DistScriptTarget: return "distribution-script-target";
+		case Defs::DistributionScriptTarget: return "distribution-script-target";
 		case Defs::ScriptTargetScript: return "script-target-script";
 		//
 		case Defs::CMakeTarget: return "cmake-target";
@@ -1673,8 +1683,8 @@ Json SchemaBuildJson::get()
 		}
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kThen] = getDefinition(Defs::DistributionTarget);
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kThen] = getDefinition(Defs::DistScriptTarget);
-	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kThen] = getDefinition(Defs::DistArchiveTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kThen] = getDefinition(Defs::DistributionScriptTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kThen] = getDefinition(Defs::DistributionArchiveTarget);
 
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "object",

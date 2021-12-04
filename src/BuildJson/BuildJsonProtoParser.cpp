@@ -283,6 +283,9 @@ bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, 
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const
 {
+	if (!parseTargetCondition(inNode))
+		return true;
+
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
 		outTarget.setDescription(std::move(val));
 
@@ -298,6 +301,9 @@ bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarg
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode) const
 {
+	if (!parseTargetCondition(inNode))
+		return true;
+
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "configuration"))
 	{
 		outTarget.setConfiguration(std::move(val));

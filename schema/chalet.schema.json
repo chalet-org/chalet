@@ -83,6 +83,9 @@
 				}
 			],
 			"properties": {
+				"condition": {
+					"$ref": "#/definitions/distribution-target-condition"
+				},
 				"kind": {
 					"$ref": "#/definitions/distribution-target-kind"
 				},
@@ -319,6 +322,9 @@
 				"include"
 			],
 			"properties": {
+				"condition": {
+					"$ref": "#/definitions/distribution-target-condition"
+				},
 				"kind": {
 					"$ref": "#/definitions/distribution-target-kind"
 				},
@@ -350,6 +356,12 @@
 					}
 				}
 			]
+		},
+		"distribution-target-condition": {
+			"type": "string",
+			"description": "A rule describing when to include this target in the distribution.",
+			"minLength": 1,
+			"pattern": "^(!?(windows|macos|linux)\\b)$"
 		},
 		"external-dependency": {
 			"type": "object",
@@ -1848,7 +1860,7 @@
 					"$ref": "#/definitions/target-description"
 				},
 				"condition": {
-					"$ref": "#/definitions/target-condition"
+					"$ref": "#/definitions/distribution-target-condition"
 				}
 			},
 			"patternProperties": {

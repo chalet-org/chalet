@@ -35,8 +35,10 @@ class SchemaBuildJson
 		DistributionTargetBuildTargets,
 		DistributionTargetWindows,
 		//
-		DistArchiveTarget,
-		DistArchiveTargetIncludes,
+		DistributionArchiveTarget,
+		DistributionArchiveTargetInclude,
+		//
+		DistributionTargetCondition,
 		//
 		ExternalDependency,
 		ExternalDependencyGitRepository,
@@ -94,7 +96,7 @@ class SchemaBuildJson
 		SourceTargetCxxWindowsEntryPoint,
 		//
 		BuildScriptTarget,
-		DistScriptTarget,
+		DistributionScriptTarget,
 		ScriptTargetScript,
 		//
 		CMakeTarget,
