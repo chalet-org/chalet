@@ -195,6 +195,11 @@ bool BuildState::initializeBuildConfiguration()
 				return false;
 			}
 		}
+		else if (m_impl->environment->isMingwGcc())
+		{
+			Diagnostic::error("Sanitizers are not yet supported in MinGW.", configuration.name());
+			return false;
+		}
 		else if (m_impl->environment->isIntelClassic())
 		{
 			Diagnostic::error("Sanitizers are not supported on Intel Compiler Classic.", configuration.name());
