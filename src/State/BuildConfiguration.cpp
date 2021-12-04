@@ -136,12 +136,13 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 }
 
 /*****************************************************************************/
-bool BuildConfiguration::validate(const bool isAppleClang)
+bool BuildConfiguration::validate(const bool isClang)
 {
 	bool result = true;
 
-	if (isAppleClang && enableSanitizers() && m_sanitizeOptions != SanitizeOptions::Leak)
+	if (isClang && (sanitizeAddress() && sanitizeLeaks()))
 	{
+		// In Clang, LeakSanitizer is integrated into AddressSanitizer
 		m_sanitizeOptions &= ~SanitizeOptions::Leak;
 	}
 

@@ -159,7 +159,7 @@ bool BuildState::initializeBuildConfiguration()
 	configuration = buildConfigurations.at(buildConfiguration);
 	info.setBuildConfiguration(buildConfiguration);
 
-	if (!configuration.validate(m_impl->environment->isAppleClang()))
+	if (!configuration.validate(m_impl->environment->isClang()))
 		return false;
 
 	// TODO: Validate sanitizers against toolchains here
