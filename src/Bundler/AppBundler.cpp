@@ -132,16 +132,8 @@ bool AppBundler::run(const DistTarget& inTarget)
 	}
 	else if (inTarget->isArchive())
 	{
-		Timer buildTimer;
-
 		if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget), inputFile))
 			return false;
-
-		auto res = buildTimer.stop();
-		if (res > 0 && Output::showBenchmarks())
-		{
-			Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
-		}
 	}
 
 	Output::lineBreak();
@@ -412,19 +404,23 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const st
 	if (includes.empty())
 		return false;
 
-	auto filename = inArchive.name();
+	Timer timer;
+
+	auto baseName = inArchive.name();
 
 	BuildState* state = getBuildState(m_prototype.anyConfiguration());
 	if (state != nullptr)
 	{
-		String::replaceAll(filename, "(triple)", state->info.targetArchitectureTriple());
-		String::replaceAll(filename, "(arch)", state->info.targetArchitectureString());
+		String::replaceAll(baseName, "(triple)", state->info.targetArchitectureTriple());
+		String::replaceAll(baseName, "(arch)", state->info.targetArchitectureString());
 	}
+
+	auto filename = fmt::format("{}.zip", baseName);
 
 	if (!inArchive.description().empty())
 		Output::msgTargetDescription(inArchive.description(), Output::theme().header);
 	else
-		Output::msgArchive(fmt::format("{}.zip", filename), Output::theme().header);
+		Output::msgArchive(filename, Output::theme().header);
 
 	Output::lineBreak();
 
@@ -436,16 +432,15 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const st
 		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
 
-	// auto cwd = fmt::format("{}/", m_inputs.distributionDirectory());
-	/*for (auto& include : resolvedIncludes)
-	{
-		String::replaceAll(include, cwd, "");
-	}*/
+	Diagnostic::infoEllipsis("Archiving files");
 
 	ZipArchiver zipArchiver(m_prototype);
-	if (!zipArchiver.archive(filename, resolvedIncludes, m_inputs.distributionDirectory()))
+	if (!zipArchiver.archive(baseName, resolvedIncludes, m_inputs.distributionDirectory(), m_archives))
 		return false;
 
+	m_archives.emplace_back(fmt::format("{}/{}", m_inputs.distributionDirectory(), filename));
+
+	Diagnostic::printDone(timer.asString());
 	return true;
 }
 

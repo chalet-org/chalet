@@ -43,6 +43,7 @@ private:
 	BinaryDependencyMap m_dependencyMap;
 
 	StringList m_removedDirs;
+	StringList m_archives;
 
 	std::string m_detectedArch;
 };

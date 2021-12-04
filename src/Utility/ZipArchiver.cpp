@@ -7,6 +7,7 @@
 
 #include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -18,7 +19,7 @@ ZipArchiver::ZipArchiver(const StatePrototype& inPrototype) :
 }
 
 /*****************************************************************************/
-bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFiles, const std::string& inCwd)
+bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFiles, const std::string& inCwd, const StringList& inExcludes)
 {
 	std::string filename;
 	if (!String::endsWith(".zip", inFilename))
@@ -54,6 +55,9 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 
 	for (auto& file : inFiles)
 	{
+		if (List::contains(inExcludes, file))
+			continue;
+
 		Commands::copySilent(file, tmpDirectory);
 
 		auto outFile = fmt::format("{}{}", inFilename, file.substr(inCwd.size()));

@@ -14,7 +14,7 @@ struct ZipArchiver
 {
 	explicit ZipArchiver(const StatePrototype& inPrototype);
 
-	bool archive(const std::string& inFilename, const StringList& inFiles, const std::string& inCwd);
+	bool archive(const std::string& inFilename, const StringList& inFiles, const std::string& inCwd, const StringList& inExcludes);
 
 private:
 	const StatePrototype& m_prototype;
