@@ -485,7 +485,6 @@ void CompilerCxxGCC::addSanitizerOptions(StringList& outArgList, const BuildStat
 	if (inState.configuration.sanitizeUndefinedBehavior())
 	{
 		sanitizers.emplace_back("undefined");
-		sanitizers.emplace_back("integer");
 	}
 
 	if (!sanitizers.empty())
