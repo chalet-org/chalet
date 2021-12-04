@@ -165,6 +165,12 @@ bool BuildState::initializeBuildConfiguration()
 	// TODO: Validate sanitizers against toolchains here
 	// MSVC only has Address sanitizer for instance
 
+	if (configuration.sanitizeHardwareAddress() && info.targetArchitecture() != Arch::Cpu::ARM64)
+	{
+		Diagnostic::error("The 'hwaddress' sanitizer is only supported with 'arm64' targets, so the '{}' configuration cannot be built.", configuration.name());
+		return false;
+	}
+
 	if (configuration.enableSanitizers())
 	{
 		if (m_impl->environment->isMsvc())
