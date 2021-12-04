@@ -34,7 +34,8 @@ private:
 
 	bool parseRoot(const Json& inNode) const;
 
-	bool parseConfiguration(const Json& inNode) const;
+	bool parseDefaultConfigurations(const Json& inNode) const;
+	bool parseConfigurations(const Json& inNode) const;
 
 	bool parseDistribution(const Json& inNode) const;
 	bool parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const;
@@ -66,6 +67,7 @@ private:
 
 	const std::string kKeyDistribution = "distribution";
 	const std::string kKeyConfigurations = "configurations";
+	const std::string kKeyDefaultConfigurations = "defaultConfigurations";
 	const std::string kKeyExternalDependencies = "externalDependencies";
 };
 }

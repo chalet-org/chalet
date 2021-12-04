@@ -1644,29 +1644,26 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["abstracts"][kPatternProperties][fmt::format("^(\\*|{})$", kPatternAbstractName)] = getDefinition(Defs::AbstractTarget);
 	ret[kProperties]["abstracts"][kPatternProperties][fmt::format("^(\\*|{})$", kPatternAbstractName)][kDescription] = "An abstract build target. '*' is a special target that gets implicitely added to each project.";
 
-	ret[kProperties]["configurations"] = R"json({
-		"description": "An array of allowed build configuration presets, or an object of custom build configurations.",
+	ret[kProperties]["defaultConfigurations"] = R"json({
+		"type": "array",
+		"description": "An array of allowed default build configuration names.",
+		"uniqueItems": true,
 		"default": [],
-		"oneOf": [
-			{
-				"type": "object",
-				"additionalProperties": false
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"type": "string",
-					"description": "A configuration preset",
-					"minLength": 1
-				}
-			}
-		]
+		"items": {
+			"type": "string",
+			"description": "A default configuration name",
+			"minLength": 1
+		}
 	})json"_ojson;
-	ret[kProperties]["configurations"][kOneOf][0][kPatternProperties][R"(^[A-Za-z]{3,}$)"] = getDefinition(Defs::Configuration);
-	ret[kProperties]["configurations"][kDefault] = BuildConfiguration::getDefaultBuildConfigurationNames();
-	ret[kProperties]["configurations"][kOneOf][1][kItems][kEnum] = BuildConfiguration::getDefaultBuildConfigurationNames();
+	ret[kProperties]["defaultConfigurations"][kDefault] = BuildConfiguration::getDefaultBuildConfigurationNames();
+	ret[kProperties]["defaultConfigurations"][kItems][kEnum] = BuildConfiguration::getDefaultBuildConfigurationNames();
+
+	ret[kProperties]["configurations"] = R"json({
+		"type": "object",
+		"description": "An object of custom build configurations. If one has the same name as a default build configuration, the default will be replaced.",
+		"additionalProperties": false
+	})json"_ojson;
+	ret[kProperties]["configurations"][kPatternProperties][R"(^[A-Za-z]{3,}$)"] = getDefinition(Defs::Configuration);
 
 	ret[kProperties]["distribution"] = R"json({
 		"type": "object",

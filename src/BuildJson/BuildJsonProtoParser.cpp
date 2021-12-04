@@ -71,7 +71,10 @@ bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode) con
 	if (!parseRoot(inNode))
 		return false;
 
-	if (!parseConfiguration(inNode))
+	if (!parseDefaultConfigurations(inNode))
+		return false;
+
+	if (!parseConfigurations(inNode))
 		return false;
 
 	if (!parseExternalDependencies(inNode))
@@ -108,69 +111,72 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseConfiguration(const Json& inNode) const
+bool BuildJsonProtoParser::parseDefaultConfigurations(const Json& inNode) const
 {
-	if (!inNode.contains(kKeyConfigurations))
+	bool addedDefaults = false;
+	if (inNode.contains(kKeyDefaultConfigurations))
 	{
-		return m_prototype.makeDefaultBuildConfigurations();
-	}
-
-	const Json& configurations = inNode.at(kKeyConfigurations);
-	if (configurations.is_object())
-	{
-		for (auto& [name, configJson] : configurations.items())
+		const Json& defaultConfigurations = inNode.at(kKeyDefaultConfigurations);
+		if (defaultConfigurations.is_array())
 		{
-			if (!configJson.is_object())
+			addedDefaults = true;
+			for (auto& configJson : defaultConfigurations)
 			{
-				Diagnostic::error("{}: configuration '{}' must be an object.", m_filename, name);
-				return false;
-			}
-
-			if (name.empty())
-			{
-				Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations);
-				return false;
-			}
-
-			BuildConfiguration config;
-			config.setName(name);
-
-			if (std::string val; m_chaletJson.assignFromKey(val, configJson, "optimizationLevel"))
-				config.setOptimizationLevel(std::move(val));
-
-			if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "linkTimeOptimization"))
-				config.setLinkTimeOptimization(val);
-
-			if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "stripSymbols"))
-				config.setStripSymbols(val);
-
-			if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "debugSymbols"))
-				config.setDebugSymbols(val);
-
-			if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "enableProfiling"))
-				config.setEnableProfiling(val);
-
-			if (StringList list; parseStringListFromConfig(list, inNode, "sanitize"))
-				config.addSanitizeOptions(std::move(list));
-
-			if (m_prototype.releaseConfiguration().empty())
-			{
-				if (!config.isDebuggable())
+				if (configJson.is_string())
 				{
-					m_prototype.setReleaseConfiguration(config.name());
+					auto name = configJson.get<std::string>();
+					if (name.empty())
+					{
+						Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations);
+						return false;
+					}
+
+					BuildConfiguration config;
+					if (!BuildConfiguration::makeDefaultConfiguration(config, name))
+					{
+						Diagnostic::error("{}: Error creating the default build configuration '{}'", m_filename, name);
+						return false;
+					}
+
+					if (m_prototype.releaseConfiguration().empty())
+					{
+						if (!config.isDebuggable())
+						{
+							m_prototype.setReleaseConfiguration(config.name());
+						}
+					}
+
+					m_prototype.addBuildConfiguration(name, std::move(config));
 				}
 			}
-
-			m_prototype.addBuildConfiguration(std::string(name), std::move(config));
 		}
 	}
-	else if (configurations.is_array())
+
+	if (!addedDefaults)
 	{
-		for (auto& configJson : configurations)
+		if (!m_prototype.makeDefaultBuildConfigurations())
+			return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::parseConfigurations(const Json& inNode) const
+{
+	if (inNode.contains(kKeyConfigurations))
+	{
+		const Json& configurations = inNode.at(kKeyConfigurations);
+		if (configurations.is_object())
 		{
-			if (configJson.is_string())
+			for (auto& [name, configJson] : configurations.items())
 			{
-				auto name = configJson.get<std::string>();
+				if (!configJson.is_object())
+				{
+					Diagnostic::error("{}: configuration '{}' must be an object.", m_filename, name);
+					return false;
+				}
+
 				if (name.empty())
 				{
 					Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations);
@@ -178,11 +184,25 @@ bool BuildJsonProtoParser::parseConfiguration(const Json& inNode) const
 				}
 
 				BuildConfiguration config;
-				if (!BuildConfiguration::makeDefaultConfiguration(config, name))
-				{
-					Diagnostic::error("{}: Error creating the default build configuration '{}'", m_filename, name);
-					return false;
-				}
+				config.setName(name);
+
+				if (std::string val; m_chaletJson.assignFromKey(val, configJson, "optimizationLevel"))
+					config.setOptimizationLevel(std::move(val));
+
+				if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "linkTimeOptimization"))
+					config.setLinkTimeOptimization(val);
+
+				if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "stripSymbols"))
+					config.setStripSymbols(val);
+
+				if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "debugSymbols"))
+					config.setDebugSymbols(val);
+
+				if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "enableProfiling"))
+					config.setEnableProfiling(val);
+
+				if (StringList list; parseStringListFromConfig(list, inNode, "sanitize"))
+					config.addSanitizeOptions(std::move(list));
 
 				if (m_prototype.releaseConfiguration().empty())
 				{
@@ -192,7 +212,7 @@ bool BuildJsonProtoParser::parseConfiguration(const Json& inNode) const
 					}
 				}
 
-				m_prototype.addBuildConfiguration(std::move(name), std::move(config));
+				m_prototype.addBuildConfiguration(name, std::move(config));
 			}
 		}
 	}

@@ -64,7 +64,7 @@ private:
 	bool validateBundleDestinations();
 
 	bool makeDefaultBuildConfigurations();
-	void addBuildConfiguration(const std::string&& inName, BuildConfiguration&& inConfig);
+	void addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig);
 	void setReleaseConfiguration(const std::string& inName);
 	void addRequiredBuildConfiguration(std::string inValue);
 

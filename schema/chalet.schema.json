@@ -2074,8 +2074,10 @@
 				}
 			}
 		},
-		"configurations": {
-			"description": "An array of allowed build configuration presets, or an object of custom build configurations.",
+		"defaultConfigurations": {
+			"type": "array",
+			"description": "An array of allowed default build configuration names.",
+			"uniqueItems": true,
 			"default": [
 				"Release",
 				"Debug",
@@ -2092,43 +2094,37 @@
 				"DebugSanitizeLeak",
 				"DebugSanitizeUndefined"
 			],
-			"oneOf": [
-				{
-					"type": "object",
-					"additionalProperties": false,
-					"patternProperties": {
-						"^[A-Za-z]{3,}$": {
-							"$ref": "#/definitions/configuration"
-						}
-					}
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"description": "A configuration preset",
-						"minLength": 1,
-						"enum": [
-							"Release",
-							"Debug",
-							"MinSizeRel",
-							"RelWithDebInfo",
-							"RelStable",
-							"Profile",
-							"DebugSanitize",
-							"DebugSanitizeHW",
-							"DebugSanitizeAddress",
-							"DebugSanitizeHWAddress",
-							"DebugSanitizeThread",
-							"DebugSanitizeMemory",
-							"DebugSanitizeLeak",
-							"DebugSanitizeUndefined"
-						]
-					}
+			"items": {
+				"type": "string",
+				"description": "A default configuration name",
+				"minLength": 1,
+				"enum": [
+					"Release",
+					"Debug",
+					"MinSizeRel",
+					"RelWithDebInfo",
+					"RelStable",
+					"Profile",
+					"DebugSanitize",
+					"DebugSanitizeHW",
+					"DebugSanitizeAddress",
+					"DebugSanitizeHWAddress",
+					"DebugSanitizeThread",
+					"DebugSanitizeMemory",
+					"DebugSanitizeLeak",
+					"DebugSanitizeUndefined"
+				]
+			}
+		},
+		"configurations": {
+			"type": "object",
+			"description": "An object of custom build configurations. If one has the same name as a default build configuration, the default will be replaced.",
+			"additionalProperties": false,
+			"patternProperties": {
+				"^[A-Za-z]{3,}$": {
+					"$ref": "#/definitions/configuration"
 				}
-			]
+			}
 		},
 		"distribution": {
 			"type": "object",

@@ -135,70 +135,48 @@ StringList QueryController::getBuildConfigurationList() const
 	auto defaultBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
 	const auto& buildJson = m_prototype.chaletJson().json;
 
+	const std::string kKeyDefaultConfigurations = "defaultConfigurations";
 	const std::string kKeyConfigurations = "configurations";
 
-	if (!buildJson.contains(kKeyConfigurations))
+	bool addedDefaults = false;
+	if (buildJson.contains(kKeyDefaultConfigurations))
 	{
-		return defaultBuildConfigurations;
-	}
-
-	StringList buildConfigurations;
-	const Json& configurations = buildJson.at(kKeyConfigurations);
-	if (configurations.is_object())
-	{
-		for (auto& [name, configJson] : configurations.items())
+		const Json& defaultConfigurations = buildJson.at(kKeyDefaultConfigurations);
+		if (defaultConfigurations.is_array())
 		{
-			if (!configJson.is_object() || name.empty())
-				continue;
-
-			buildConfigurations.emplace_back(name);
-		}
-	}
-	else if (configurations.is_array())
-	{
-		for (auto& configJson : configurations)
-		{
-			if (configJson.is_string())
+			addedDefaults = true;
+			for (auto& configJson : defaultConfigurations)
 			{
-				auto name = configJson.get<std::string>();
-				if (name.empty() || !List::contains(defaultBuildConfigurations, name))
-					continue;
+				if (configJson.is_string())
+				{
+					auto name = configJson.get<std::string>();
+					if (name.empty() || !List::contains(defaultBuildConfigurations, name))
+						continue;
 
-				ret.emplace_back(std::move(name));
+					ret.emplace_back(std::move(name));
+				}
 			}
 		}
-
-		return ret;
 	}
 
-	if (buildConfigurations.empty())
+	if (!addedDefaults)
 	{
-		return defaultBuildConfigurations;
+		ret = defaultBuildConfigurations;
 	}
 
-	StringList defaults;
-	StringList userDefined;
-	for (const auto& name : buildConfigurations)
+	if (buildJson.contains(kKeyConfigurations))
 	{
-		if (List::contains(defaultBuildConfigurations, name))
-			defaults.push_back(name);
-		else
-			userDefined.emplace_back(name);
-	}
-
-	// Order as defaults first, user defined second
-	if (!defaults.empty())
-	{
-		for (auto& name : defaultBuildConfigurations)
+		const Json& configurations = buildJson.at(kKeyConfigurations);
+		if (configurations.is_object())
 		{
-			if (List::contains(defaults, name))
-				ret.emplace_back(name);
-		}
-	}
+			for (auto& [name, configJson] : configurations.items())
+			{
+				if (!configJson.is_object() || name.empty())
+					continue;
 
-	for (auto&& name : userDefined)
-	{
-		ret.emplace_back(std::move(name));
+				List::addIfDoesNotExist(ret, name);
+			}
+		}
 	}
 
 	return ret;

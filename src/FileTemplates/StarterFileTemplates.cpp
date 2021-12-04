@@ -45,7 +45,7 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 	const std::string kSettingsCxx = "settings:Cxx";
 	const std::string kTargets = "targets";
 	const std::string kDistribution = "distribution";
-	const std::string kConfigurations = "configurations";
+	const std::string kDefaultConfigurations = "defaultConfigurations";
 
 	Json ret;
 	ret["workspace"] = inProps.workspaceName;
@@ -53,8 +53,8 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 
 	if (inProps.defaultConfigs)
 	{
-		ret[kConfigurations] = Json::array();
-		ret[kConfigurations] = BuildConfiguration::getDefaultBuildConfigurationNames();
+		ret[kDefaultConfigurations] = Json::array();
+		ret[kDefaultConfigurations] = BuildConfiguration::getDefaultBuildConfigurationNames();
 	}
 
 	ret[kAbstractsAll] = Json::object();
@@ -312,15 +312,15 @@ Json StarterFileTemplates::getCMakeStarterChaletJson(const BuildJsonProps& inPro
 {
 	const std::string kTargets = "targets";
 	const std::string kDistribution = "distribution";
-	const std::string kConfigurations = "configurations";
+	const std::string kDefaultConfigurations = "defaultConfigurations";
 	const auto& project = inProps.projectName;
 
 	Json ret;
 	ret["workspace"] = inProps.workspaceName;
 	ret["version"] = inProps.version;
 
-	ret[kConfigurations] = Json::array();
-	ret[kConfigurations] = {
+	ret[kDefaultConfigurations] = Json::array();
+	ret[kDefaultConfigurations] = {
 		"Release",
 		"Debug",
 		"MinSizeRel",

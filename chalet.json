@@ -2,7 +2,42 @@
 	"version": "0.0.1",
 	"workspace": "Chalet",
 	// "searchPaths": [],
-	/*"configurations": [
+	/*"configurations": {
+		"Release": {
+			"optimizationLevel": "3",
+			"linkTimeOptimization": true,
+			"stripSymbols": true
+		},
+		"Debug": {
+			"optimizationLevel": "0",
+			"debugSymbols": true
+		},
+		"RelWithDebInfo": {
+			"optimizationLevel": "2",
+			"debugSymbols": true
+		},
+		"MinSizeRel": {
+			"optimizationLevel": "size",
+			// "linkTimeOptimization": true,
+			"stripSymbols": true
+		},
+		"RelStable": {
+			"optimizationLevel": "2",
+			"linkTimeOptimization": false,
+			"stripSymbols": true
+		},
+		"Profile": {
+			"optimizationLevel": "0",
+			"debugSymbols": true,
+			"enableProfiling": true
+		},
+		"RelCustom": {
+			"optimizationLevel": "3",
+			"linkTimeOptimization": true,
+			"stripSymbols": true
+		}
+	},*/
+	/*"defaultConfigurations": [
 		"Release",
 		"Debug",
 		"RelWithDebInfo",

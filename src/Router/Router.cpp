@@ -80,10 +80,7 @@ bool Router::run()
 		prototype = std::make_unique<StatePrototype>(m_inputs);
 
 		if (!prototype->initialize())
-		{
-			Output::previousLine();
 			return false;
-		}
 
 		if (route != Route::Bundle)
 		{

@@ -405,16 +405,23 @@ bool StatePrototype::makeDefaultBuildConfigurations()
 			return false;
 		}
 
-		m_buildConfigurations.emplace(std::move(name), std::move(config));
+		m_buildConfigurations.emplace(name, std::move(config));
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-void StatePrototype::addBuildConfiguration(const std::string&& inName, BuildConfiguration&& inConfig)
+void StatePrototype::addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig)
 {
-	m_buildConfigurations.emplace(std::move(inName), std::move(inConfig));
+	if (m_buildConfigurations.find(inName) != m_buildConfigurations.end())
+	{
+		m_buildConfigurations[inName] = std::move(inConfig);
+	}
+	else
+	{
+		m_buildConfigurations.emplace(inName, std::move(inConfig));
+	}
 }
 
 /*****************************************************************************/
