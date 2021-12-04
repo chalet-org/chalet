@@ -248,7 +248,7 @@ void SourceTarget::addLibDir(std::string&& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
+	Commands::addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
 }
 
 /*****************************************************************************/
@@ -268,7 +268,7 @@ void SourceTarget::addIncludeDir(std::string&& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
+	Commands::addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
 }
 
 /*****************************************************************************/
@@ -450,7 +450,7 @@ void SourceTarget::addFiles(StringList&& inList)
 
 void SourceTarget::addFile(std::string&& inValue)
 {
-	addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
+	Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
 }
 
 /*****************************************************************************/
@@ -466,7 +466,7 @@ void SourceTarget::addLocations(StringList&& inList)
 
 void SourceTarget::addLocation(std::string&& inValue)
 {
-	addPathToListWithGlob(std::move(inValue), m_locations, GlobMatch::Folders);
+	Commands::addPathToListWithGlob(std::move(inValue), m_locations, GlobMatch::Folders);
 }
 
 /*****************************************************************************/
@@ -482,7 +482,7 @@ void SourceTarget::addLocationExcludes(StringList&& inList)
 
 void SourceTarget::addLocationExclude(std::string&& inValue)
 {
-	addPathToListWithGlob(std::move(inValue), m_locationExcludes, GlobMatch::FilesAndFolders);
+	Commands::addPathToListWithGlob(std::move(inValue), m_locationExcludes, GlobMatch::FilesAndFolders);
 }
 
 /*****************************************************************************/
@@ -697,24 +697,6 @@ bool SourceTarget::windowsOutputDef() const noexcept
 void SourceTarget::setWindowsOutputDef(const bool inValue) noexcept
 {
 	m_windowsOutputDef = inValue;
-}
-
-/*****************************************************************************/
-void SourceTarget::addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings)
-{
-	if (String::contains('*', inValue))
-	{
-		Commands::forEachGlobMatch(inValue, inSettings, [&](const fs::path& inPath) {
-			auto path = inPath.string();
-			Path::sanitize(path);
-
-			List::addIfDoesNotExist(outList, std::move(path));
-		});
-	}
-	else
-	{
-		List::addIfDoesNotExist(outList, std::move(inValue));
-	}
 }
 
 /*****************************************************************************/

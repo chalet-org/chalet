@@ -17,12 +17,12 @@ struct BundleArchiveTarget final : public IDistTarget
 	virtual bool initialize(const BuildState& inState) final;
 	virtual bool validate() final;
 
-	const StringList& targets() const noexcept;
-	void addTargets(StringList&& inList);
-	void addTarget(std::string&& inValue);
+	const StringList& includes() const noexcept;
+	void addIncludes(StringList&& inList);
+	void addInclude(std::string&& inValue);
 
 private:
-	StringList m_targets;
+	StringList m_includes;
 };
 }
 

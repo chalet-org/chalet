@@ -720,6 +720,24 @@ void Commands::forEachGlobMatch(const std::string& inPath, const StringList& inP
 }
 
 /*****************************************************************************/
+void Commands::addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings)
+{
+	if (String::contains('*', inValue))
+	{
+		Commands::forEachGlobMatch(inValue, inSettings, [&](const fs::path& inPath) {
+			auto path = inPath.string();
+			Path::sanitize(path);
+
+			List::addIfDoesNotExist(outList, std::move(path));
+		});
+	}
+	else
+	{
+		List::addIfDoesNotExist(outList, std::move(inValue));
+	}
+}
+
+/*****************************************************************************/
 // TODO: This doesn't quite fit here
 //
 bool Commands::readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace)

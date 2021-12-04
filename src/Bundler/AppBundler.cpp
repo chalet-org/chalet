@@ -406,8 +406,8 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 /*****************************************************************************/
 bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const std::string& inInputFile)
 {
-	const auto& targets = inArchive.targets();
-	if (targets.empty())
+	const auto& includes = inArchive.includes();
+	if (includes.empty())
 		return false;
 
 	if (!inArchive.description().empty())
@@ -418,6 +418,26 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const st
 	Output::lineBreak();
 
 	UNUSED(inInputFile);
+
+	const auto& distributionDirectory = m_inputs.distributionDirectory();
+
+	StringList resolvedIncludes;
+	for (auto& include : inArchive.includes())
+	{
+		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
+	}
+
+	auto zip = Commands::which("zip");
+	StringList cmdPrefix{
+		std::move(zip),
+		"-r",
+		"-X",
+		fmt::format("{}/test.zip", distributionDirectory),
+	};
+
+	auto cmd = List::combine(cmdPrefix, resolvedIncludes);
+
+	Commands::subprocessNoOutput(cmd);
 
 	return true;
 }

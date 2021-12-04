@@ -316,20 +316,20 @@
 			"description": "Properties to describe an individual distribution archive.",
 			"required": [
 				"kind",
-				"bundles"
+				"includes"
 			],
 			"properties": {
 				"kind": {
 					"$ref": "#/definitions/distribution-target-kind"
 				},
-				"bundles": {
-					"$ref": "#/definitions/distribution-archive-target-bundles"
+				"includes": {
+					"$ref": "#/definitions/distribution-archive-target-includes"
 				}
 			}
 		},
-		"distribution-archive-target-bundles": {
+		"distribution-archive-target-includes": {
 			"type": "array",
-			"description": "distribution bundle targets to include in the zip archive",
+			"description": "A list of files or folders to add to the archive, relative to the root bundle directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {

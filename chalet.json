@@ -62,7 +62,6 @@
 				"vendor/fmt/include",
 				"vendor/argparse/include",
 				"vendor/glob/single_include",
-				"vendor/zip/src",
 				"vendor"
 			],
 			"links": [
@@ -74,14 +73,6 @@
 		}
 	},
 	"targets": {
-		"zip": {
-			"kind": "staticLibrary",
-			"location": "vendor/zip/src",
-			"language": "C",
-			"settings:Cxx": {
-				"warnings": "minimal"
-			}
-		},
 		"json-schema-validator": {
 			"kind": "staticLibrary",
 			"location": "vendor/json-schema-validator/src"
@@ -93,8 +84,7 @@
 				"pch": "src/PCH.hpp",
 				"windowsApplicationManifest": "platform/windows/app.manifest",
 				"staticLinks": [
-					"json-schema-validator",
-					"zip"
+					"json-schema-validator"
 				]
 			},
 			"runTarget": true
@@ -112,8 +102,7 @@
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"staticLinks": [
-					"json-schema-validator",
-					"zip"
+					"json-schema-validator"
 				],
 				"includeDirs": [
 					"vendor/catch2/single_include"
@@ -225,10 +214,10 @@
 			"script.!windows": "scripts/script_shell.sh",
 			"script.windows": "scripts/script_batch.bat"
 		},
-		"zip-it": {
+		"chalet-archive": {
 			"kind": "archive",
-			"bundles": [
-				"Chalet"
+			"includes": [
+				"chalet"
 			]
 		}
 	} /*,

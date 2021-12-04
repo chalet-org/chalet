@@ -7,6 +7,8 @@
 
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "Terminal/Commands.hpp"
+#include "Utility/GlobMatch.hpp"
 #include "Utility/List.hpp"
 
 namespace chalet
@@ -21,9 +23,9 @@ BundleArchiveTarget::BundleArchiveTarget() :
 bool BundleArchiveTarget::initialize(const BuildState& inState)
 {
 	UNUSED(inState);
-	for (auto& target : m_targets)
+	for (auto& target : m_includes)
 	{
-		LOG("target:", target);
+		LOG("include:", target);
 	}
 
 	return true;
@@ -36,19 +38,19 @@ bool BundleArchiveTarget::validate()
 }
 
 /*****************************************************************************/
-const StringList& BundleArchiveTarget::targets() const noexcept
+const StringList& BundleArchiveTarget::includes() const noexcept
 {
-	return m_targets;
+	return m_includes;
 }
 
-void BundleArchiveTarget::addTargets(StringList&& inList)
+void BundleArchiveTarget::addIncludes(StringList&& inList)
 {
-	List::forEach(inList, this, &BundleArchiveTarget::addTarget);
+	List::forEach(inList, this, &BundleArchiveTarget::addInclude);
 }
 
-void BundleArchiveTarget::addTarget(std::string&& inValue)
+void BundleArchiveTarget::addInclude(std::string&& inValue)
 {
-	List::addIfDoesNotExist(m_targets, std::move(inValue));
+	List::addIfDoesNotExist(m_includes, std::move(inValue));
 }
 
 }

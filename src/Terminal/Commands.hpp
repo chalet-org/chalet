@@ -51,6 +51,8 @@ void forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, 
 void forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
 void forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
 
+void addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings);
+
 bool readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace);
 std::string readShebangFromFile(const std::string& inFile);
 void sleep(const double inSeconds);

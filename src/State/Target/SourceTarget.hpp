@@ -161,7 +161,6 @@ struct SourceTarget final : public IBuildTarget
 	void setWindowsOutputDef(const bool inValue) noexcept;
 
 private:
-	void addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings);
 	ProjectKind parseProjectKind(const std::string& inValue);
 	ThreadType parseThreadType(const std::string& inValue);
 	WindowsSubSystem parseWindowsSubSystem(const std::string& inValue);

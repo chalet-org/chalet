@@ -40,11 +40,6 @@ target_include_directories(json-schema-validator PRIVATE
 	vendor/json-schema-validator/src/
 )
 
-add_library(zip STATIC vendor/zip/src/zip.c)
-target_include_directories(zip PRIVATE
-	vendor/zip/src/
-)
-
 file(GLOB_RECURSE TARGET_SOURCES
 	src/*.cpp
 	src/*.rc
@@ -63,7 +58,6 @@ target_include_directories(${TARGET_NAME}
 		vendor/fmt/include/
 		vendor/argparse/include/
 		vendor/glob/single_include/
-		vendor/zip/src/
 		vendor/
 )
 
@@ -81,7 +75,6 @@ find_package(Threads REQUIRED)
 
 set(STATIC_LINKS
 	json-schema-validator
-	zip
 )
 # imagehlp
 

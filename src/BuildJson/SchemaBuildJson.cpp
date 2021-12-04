@@ -271,9 +271,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	})json"_ojson;
 
 	//
-	defs[Defs::DistArchiveTargetBundles] = R"json({
+	defs[Defs::DistArchiveTargetIncludes] = R"json({
 		"type": "array",
-		"description": "distribution bundle targets to include in the zip archive",
+		"description": "A list of files or folders to add to the archive, relative to the root bundle directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
@@ -1207,11 +1207,11 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"description": "Properties to describe an individual distribution archive.",
 			"required": [
 				"kind",
-				"bundles"
+				"includes"
 			]
 		})json"_ojson;
 		distArchiveDef[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
-		distArchiveDef[kProperties]["bundles"] = getDefinition(Defs::DistArchiveTargetBundles);
+		distArchiveDef[kProperties]["includes"] = getDefinition(Defs::DistArchiveTargetIncludes);
 		defs[Defs::DistArchiveTarget] = std::move(distArchiveDef);
 	}
 
@@ -1466,7 +1466,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//
 		case Defs::DistArchiveTarget: return "distribution-archive-target";
-		case Defs::DistArchiveTargetBundles: return "distribution-archive-target-bundles";
+		case Defs::DistArchiveTargetIncludes: return "distribution-archive-target-includes";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
