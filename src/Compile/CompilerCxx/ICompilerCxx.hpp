@@ -34,6 +34,7 @@ protected:
 	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const;
 	virtual void addDebuggingInformationOption(StringList& outArgList) const;
 	virtual void addProfileInformationCompileOption(StringList& outArgList) const;
+	virtual void addSanitizerOptions(StringList& outArgList) const;
 	virtual void addCompileOptions(StringList& outArgList) const;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const;
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const;

@@ -20,6 +20,7 @@ struct CompilerCxxGCC : public ICompilerCxx
 	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;
 
 	static bool addArchitectureToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
+	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
 protected:
 	virtual std::string getPragmaId() const;
@@ -34,6 +35,7 @@ protected:
 	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
 	virtual void addDebuggingInformationOption(StringList& outArgList) const override;
 	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;
+	virtual void addSanitizerOptions(StringList& outArgList) const override;
 	virtual void addCompileOptions(StringList& outArgList) const override;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const override;
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const override;

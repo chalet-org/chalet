@@ -113,6 +113,12 @@ void ICompilerCxx::addProfileInformationCompileOption(StringList& outArgList) co
 }
 
 /*****************************************************************************/
+void ICompilerCxx::addSanitizerOptions(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void ICompilerCxx::addCompileOptions(StringList& outArgList) const
 {
 	UNUSED(outArgList);

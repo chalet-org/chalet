@@ -131,6 +131,12 @@ void ILinker::addLibStdCppLinkerOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void ILinker::addSanitizerOptions(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void ILinker::addStaticCompilerLibraries(StringList& outArgList) const
 {
 	UNUSED(outArgList);

@@ -15,6 +15,7 @@ struct CompilerCxxClang : public CompilerCxxGCC
 	explicit CompilerCxxClang(const BuildState& inState, const SourceTarget& inProject);
 
 	static bool addArchitectureToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
+	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
 protected:
 	virtual std::string getPragmaId() const override;
@@ -22,6 +23,7 @@ protected:
 
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;
+	virtual void addSanitizerOptions(StringList& outArgList) const override;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const override;
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const override;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;

@@ -32,6 +32,7 @@ protected:
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;
 	virtual void addNoExceptionsOption(StringList& outArgList) const override;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
+	virtual void addSanitizerOptions(StringList& outArgList) const override;
 
 	//
 	virtual void addDiagnostics(StringList& outArgList) const;

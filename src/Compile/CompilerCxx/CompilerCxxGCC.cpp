@@ -153,6 +153,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 
 	addDebuggingInformationOption(ret);
 	addProfileInformationCompileOption(ret);
+	addSanitizerOptions(ret);
 
 	addDefines(ret);
 	addIncludes(ret);
@@ -213,6 +214,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 
 	addDebuggingInformationOption(ret);
 	addProfileInformationCompileOption(ret);
+	addSanitizerOptions(ret);
 
 	addDefines(ret);
 
@@ -459,6 +461,45 @@ void CompilerCxxGCC::addProfileInformationCompileOption(StringList& outArgList) 
 			// if (isFlagSupported(option))
 			outArgList.emplace_back(std::move(option));
 		}
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxGCC::addSanitizerOptions(StringList& outArgList, const BuildState& inState)
+{
+	// TODO: hwaddress
+
+	StringList sanitizers;
+	if (inState.configuration.sanitizeAddress())
+	{
+		sanitizers.emplace_back("address");
+	}
+	if (inState.configuration.sanitizeThread())
+	{
+		sanitizers.emplace_back("thread");
+	}
+	if (inState.configuration.sanitizeLeaks())
+	{
+		sanitizers.emplace_back("leak");
+	}
+	if (inState.configuration.sanitizeUndefined())
+	{
+		sanitizers.emplace_back("undefined");
+	}
+
+	if (!sanitizers.empty())
+	{
+		auto list = String::join(sanitizers, ',');
+		outArgList.emplace_back(fmt::format("-fsanitize={}", list));
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxGCC::addSanitizerOptions(StringList& outArgList) const
+{
+	if (m_state.configuration.enableSanitizers())
+	{
+		CompilerCxxGCC::addSanitizerOptions(outArgList, m_state);
 	}
 }
 

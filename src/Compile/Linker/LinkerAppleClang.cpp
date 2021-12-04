@@ -6,6 +6,7 @@
 #include "Compile/Linker/LinkerAppleClang.hpp"
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -50,6 +51,7 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
+	addSanitizerOptions(ret);
 	addStaticCompilerLibraries(ret);
 	addSubSystem(ret);
 	addEntryPoint(ret);
@@ -95,6 +97,15 @@ void LinkerAppleClang::addLibStdCppLinkerOption(StringList& outArgList) const
 		List::addIfDoesNotExist(outArgList, std::move(flag));
 
 		// TODO: Apple has a "-stdlib=libstdc++" flag that is pre-C++11 for compatibility
+	}
+}
+
+/*****************************************************************************/
+void LinkerAppleClang::addSanitizerOptions(StringList& outArgList) const
+{
+	if (m_state.configuration.enableSanitizers())
+	{
+		CompilerCxxAppleClang::addSanitizerOptions(outArgList, m_state);
 	}
 }
 

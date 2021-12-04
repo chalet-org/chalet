@@ -21,6 +21,7 @@ protected:
 	virtual void addThreadModelLinks(StringList& outArgList) const final;
 	virtual void addProfileInformationLinkerOption(StringList& outArgList) const final;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const final;
+	virtual void addSanitizerOptions(StringList& outArgList) const final;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const final;
 
 	// Objective-C / Objective-C++

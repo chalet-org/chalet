@@ -6,10 +6,12 @@
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -45,6 +47,49 @@ void CompilerCxxClang::addProfileInformationCompileOption(StringList& outArgList
 {
 	// TODO: "-pg" was added in a recent version of Clang (12 or 13 maybe?)
 	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void CompilerCxxClang::addSanitizerOptions(StringList& outArgList, const BuildState& inState)
+{
+	// TODO: others?
+
+	StringList sanitizers;
+	if (inState.configuration.sanitizeAddress())
+	{
+		sanitizers.emplace_back("address");
+	}
+	if (inState.configuration.sanitizeThread())
+	{
+		sanitizers.emplace_back("thread");
+	}
+	if (inState.configuration.sanitizeMemory())
+	{
+		sanitizers.emplace_back("memory");
+	}
+	if (inState.configuration.sanitizeLeaks())
+	{
+		sanitizers.emplace_back("leak");
+	}
+	if (inState.configuration.sanitizeUndefined())
+	{
+		sanitizers.emplace_back("undefined");
+	}
+
+	if (!sanitizers.empty())
+	{
+		auto list = String::join(sanitizers, ',');
+		outArgList.emplace_back(fmt::format("-fsanitize={}", list));
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxClang::addSanitizerOptions(StringList& outArgList) const
+{
+	if (m_state.configuration.enableSanitizers())
+	{
+		CompilerCxxClang::addSanitizerOptions(outArgList, m_state);
+	}
 }
 
 /*****************************************************************************/

@@ -91,6 +91,24 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": false
 	})json"_ojson;
 
+	defs[Defs::ConfigurationSanitize] = R"json({
+		"type": "array",
+		"description": "An array of sanitizers to enable. If combined with staticLinking, the selected sanitizers will be statically linked, if available by the toolchain.",
+		"uniqueItems": true,
+		"minItems": 1,
+		"items": {
+			"type": "string",
+			"minLength": 1,
+			"enum": [
+				"address",
+				"thread",
+				"memory",
+				"leak",
+				"undefined"
+			]
+		}
+	})json"_ojson;
+
 	//
 	// distribution
 	//
@@ -1174,6 +1192,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		configuration[kProperties]["linkTimeOptimization"] = getDefinition(Defs::ConfigurationLinkTimeOptimizations);
 		configuration[kProperties]["optimizationLevel"] = getDefinition(Defs::ConfigurationOptimizationLevel);
 		configuration[kProperties]["stripSymbols"] = getDefinition(Defs::ConfigurationStripSymbols);
+		configuration[kProperties]["sanitize"] = getDefinition(Defs::ConfigurationSanitize);
 		defs[Defs::Configuration] = std::move(configuration);
 	}
 
@@ -1465,11 +1484,12 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 	switch (inDef)
 	{
 		case Defs::Configuration: return "configuration";
-		case Defs::ConfigurationDebugSymbols: return "config-debugSymbols";
-		case Defs::ConfigurationEnableProfiling: return "config-enableProfiling";
-		case Defs::ConfigurationLinkTimeOptimizations: return "config-linkTimeOptimizations";
-		case Defs::ConfigurationOptimizationLevel: return "config-optimizationLevel";
-		case Defs::ConfigurationStripSymbols: return "config-stripSymbols";
+		case Defs::ConfigurationDebugSymbols: return "configuration-debugSymbols";
+		case Defs::ConfigurationEnableProfiling: return "configuration-enableProfiling";
+		case Defs::ConfigurationLinkTimeOptimizations: return "configuration-linkTimeOptimizations";
+		case Defs::ConfigurationOptimizationLevel: return "configuration-optimizationLevel";
+		case Defs::ConfigurationStripSymbols: return "configuration-stripSymbols";
+		case Defs::ConfigurationSanitize: return "configuration-sanitize";
 		//
 		case Defs::DistributionTarget: return "distribution-target";
 		case Defs::DistributionTargetCondition: return "distribution-target-condition";

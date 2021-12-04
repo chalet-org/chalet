@@ -8,7 +8,7 @@
 
 #include "Compile/CodeLanguage.hpp"
 #include "State/ProjectKind.hpp"
-#include "State/ProjectWarnings.hpp"
+#include "State/ProjectWarningPresets.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/ThreadType.hpp"
 #include "State/WindowsEntryPoint.hpp"
@@ -57,7 +57,7 @@ struct SourceTarget final : public IBuildTarget
 	void addWarnings(StringList&& inList);
 	void addWarning(std::string&& inValue);
 	void setWarningPreset(std::string&& inValue);
-	ProjectWarnings warningsPreset() const noexcept;
+	ProjectWarningPresets warningsPreset() const noexcept;
 	bool warningsTreatedAsErrors() const noexcept;
 
 	const StringList& compileOptions() const noexcept;
@@ -201,7 +201,7 @@ private:
 
 	ProjectKind m_kind = ProjectKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
-	ProjectWarnings m_warningsPreset = ProjectWarnings::None;
+	ProjectWarningPresets m_warningsPreset = ProjectWarningPresets::None;
 	ThreadType m_threadType = ThreadType::Auto;
 	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;

@@ -8,6 +8,7 @@
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Compile/Linker/LinkerVisualStudioLINK.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
@@ -74,13 +75,25 @@ void LinkerLLVMClang::addLibStdCppLinkerOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void LinkerLLVMClang::addSanitizerOptions(StringList& outArgList) const
+{
+	if (m_state.configuration.enableSanitizers())
+	{
+		CompilerCxxClang::addSanitizerOptions(outArgList, m_state);
+	}
+}
+
+/*****************************************************************************/
 void LinkerLLVMClang::addStaticCompilerLibraries(StringList& outArgList) const
 {
-	if (m_project.staticLinking())
+	if (m_state.configuration.enableSanitizers())
 	{
-		std::string flag{ "-static-libsan" };
-		// if (isFlagSupported(flag))
-		List::addIfDoesNotExist(outArgList, std::move(flag));
+		if (m_project.staticLinking())
+		{
+			std::string flag{ "-static-libsan" };
+			// if (isFlagSupported(flag))
+			List::addIfDoesNotExist(outArgList, std::move(flag));
+		}
 
 		// TODO: Investigate for other -static candidates on clang/mac
 	}

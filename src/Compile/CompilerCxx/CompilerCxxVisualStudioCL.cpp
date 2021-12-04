@@ -127,6 +127,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	// addInlineFunctionExpansion(ret);
 	// addUnsortedOptions(ret);
 
+	addSanitizerOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
 
@@ -201,6 +202,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	// addInlineFunctionExpansion(ret);
 	// addUnsortedOptions(ret);
 
+	addSanitizerOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
 
@@ -308,6 +310,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	// addInlineFunctionExpansion(ret);
 	// addUnsortedOptions(ret);
 
+	addSanitizerOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
 
@@ -360,37 +363,37 @@ void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 
 	switch (m_project.warningsPreset())
 	{
-		case ProjectWarnings::Minimal:
+		case ProjectWarningPresets::Minimal:
 			m_warningFlag = "W1";
 			break;
 
-		case ProjectWarnings::Extra:
+		case ProjectWarningPresets::Extra:
 			m_warningFlag = "W2";
 			break;
 
-		case ProjectWarnings::Pedantic: {
+		case ProjectWarningPresets::Pedantic: {
 			m_warningFlag = "W3";
 			break;
 		}
-		case ProjectWarnings::Error: {
+		case ProjectWarningPresets::Error: {
 			m_warningFlag = "W3";
 			warningsAsErrors = true;
 			break;
 		}
-		case ProjectWarnings::Strict:
-		case ProjectWarnings::StrictPedantic: {
+		case ProjectWarningPresets::Strict:
+		case ProjectWarningPresets::StrictPedantic: {
 			m_warningFlag = "W4";
 			warningsAsErrors = true;
 			break;
 		}
-		case ProjectWarnings::VeryStrict: {
+		case ProjectWarningPresets::VeryStrict: {
 			// m_warningFlag = "Wall"; // Note: Lots of messy compiler level warnings that break your build!
 			m_warningFlag = "W4";
 			warningsAsErrors = true;
 			break;
 		}
 
-		case ProjectWarnings::Custom: {
+		case ProjectWarningPresets::Custom: {
 			// TODO: Refactor this so the strict warnings are stored somewhere GNU can use
 			auto& warnings = m_project.warnings();
 
@@ -469,7 +472,7 @@ void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 			break;
 		}
 
-		case ProjectWarnings::None:
+		case ProjectWarningPresets::None:
 		default:
 			break;
 	}
@@ -695,6 +698,15 @@ void CompilerCxxVisualStudioCL::addThreadModelCompileOption(StringList& outArgLi
 			List::addIfDoesNotExist(outArgList, "/MDd");
 		else
 			List::addIfDoesNotExist(outArgList, "/MD");
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addSanitizerOptions(StringList& outArgList) const
+{
+	if (m_versionMajorMinor >= 1928 && m_state.configuration.sanitizeAddress())
+	{
+		List::addIfDoesNotExist(outArgList, "/fsanitize=address");
 	}
 }
 

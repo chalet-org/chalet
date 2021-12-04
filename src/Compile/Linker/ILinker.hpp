@@ -35,6 +35,7 @@ protected:
 	virtual void addThreadModelLinks(StringList& outArgList) const;
 	virtual void addLinkerScripts(StringList& outArgList) const;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const;
+	virtual void addSanitizerOptions(StringList& outArgList) const;
 	virtual void addStaticCompilerLibraries(StringList& outArgList) const;
 	virtual void addSubSystem(StringList& outArgList) const;
 	virtual void addEntryPoint(StringList& outArgList) const;

@@ -150,6 +150,9 @@ bool BuildJsonProtoParser::parseConfiguration(const Json& inNode) const
 			if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "enableProfiling"))
 				config.setEnableProfiling(val);
 
+			if (StringList list; parseStringListFromConfig(list, inNode, "sanitize"))
+				config.addSanitizeOptions(std::move(list));
+
 			if (m_prototype.releaseConfiguration().empty())
 			{
 				if (!config.isDebuggable())

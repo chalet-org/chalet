@@ -20,6 +20,14 @@ StringList BuildConfiguration::getDefaultBuildConfigurationNames()
 		"RelWithDebInfo",
 		"RelStable",
 		"Profile",
+
+		// Sanitizers
+		"DebugSanitize",
+		"DebugSanitizeAddress",
+		"DebugSanitizeThread",
+		"DebugSanitizeMemory",
+		"DebugSanitizeLeak",
+		"DebugSanitizeUndefined",
 	};
 }
 
@@ -28,16 +36,25 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 {
 	outConfig = BuildConfiguration();
 
+	auto makeDebug = [](BuildConfiguration& outConfig) {
+		outConfig.setOptimizationLevel("0");
+		outConfig.setDebugSymbols(true);
+		outConfig.setLinkTimeOptimization(false);
+		outConfig.setStripSymbols(false);
+		outConfig.setEnableProfiling(false);
+	};
+
 	if (String::equals("Release", inName))
 	{
 		outConfig.setOptimizationLevel("3");
+		outConfig.setDebugSymbols(false);
 		outConfig.setLinkTimeOptimization(true);
 		outConfig.setStripSymbols(true);
+		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("Debug", inName))
 	{
-		outConfig.setOptimizationLevel("0");
-		outConfig.setDebugSymbols(true);
+		makeDebug(outConfig);
 	}
 	// these two are the same as cmake
 	else if (String::equals("RelWithDebInfo", inName))
@@ -45,24 +62,76 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 		outConfig.setOptimizationLevel("2");
 		outConfig.setDebugSymbols(true);
 		outConfig.setLinkTimeOptimization(false);
+		outConfig.setStripSymbols(false);
+		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("MinSizeRel", inName))
 	{
 		outConfig.setOptimizationLevel("size");
+		outConfig.setDebugSymbols(false);
 		outConfig.setLinkTimeOptimization(false);
 		outConfig.setStripSymbols(true);
+		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("RelStable", inName))
 	{
 		outConfig.setOptimizationLevel("2");
+		outConfig.setDebugSymbols(false);
 		outConfig.setLinkTimeOptimization(false);
 		outConfig.setStripSymbols(true);
+		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("Profile", inName))
 	{
 		outConfig.setOptimizationLevel("0");
 		outConfig.setDebugSymbols(true);
+		outConfig.setLinkTimeOptimization(false);
+		outConfig.setStripSymbols(false);
 		outConfig.setEnableProfiling(true);
+	}
+	else if (String::equals("DebugSanitize", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOptions({
+			"address",
+			"undefined",
+			"leak",
+		});
+	}
+	else if (String::equals("DebugSanitizeAddress", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOptions({
+			"address",
+		});
+	}
+	else if (String::equals("DebugSanitizeThread", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOptions({
+			"thread",
+		});
+	}
+	else if (String::equals("DebugSanitizeMemory", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOptions({
+			"memory",
+		});
+	}
+	else if (String::equals("DebugSanitizeLeak", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOptions({
+			"leak",
+		});
+	}
+	else if (String::equals("DebugSanitizeUndefined", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOptions({
+			"undefined",
+		});
 	}
 	else
 	{
@@ -74,6 +143,25 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 	outConfig.setName(inName);
 
 	return true;
+}
+
+/*****************************************************************************/
+bool BuildConfiguration::validate(const bool isAppleClang)
+{
+	bool result = true;
+
+	if (isAppleClang && enableSanitizers() && m_sanitizeOptions != SanitizeOptions::Leak)
+	{
+		m_sanitizeOptions &= ~SanitizeOptions::Leak;
+	}
+
+	if (sanitizeThread() && (sanitizeAddress() || sanitizeLeaks()))
+	{
+		Diagnostic::error("sanitizer 'thread' cannot be combined with 'address' or 'leak'");
+		result = false;
+	}
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -138,6 +226,66 @@ bool BuildConfiguration::enableProfiling() const noexcept
 void BuildConfiguration::setEnableProfiling(const bool inValue) noexcept
 {
 	m_enableProfiling = inValue;
+}
+
+/*****************************************************************************/
+void BuildConfiguration::addSanitizeOptions(StringList&& inList)
+{
+	for (auto&& item : inList)
+	{
+		addSanitizeOption(std::move(item));
+	}
+}
+
+/*****************************************************************************/
+void BuildConfiguration::addSanitizeOption(std::string&& inValue)
+{
+	if (String::equals("address", inValue))
+	{
+		m_sanitizeOptions |= SanitizeOptions::Address;
+	}
+	else if (String::equals("thread", inValue))
+	{
+		m_sanitizeOptions |= SanitizeOptions::Thread;
+	}
+	else if (String::equals("memory", inValue))
+	{
+		m_sanitizeOptions |= SanitizeOptions::Memory;
+	}
+	else if (String::equals("leak", inValue))
+	{
+		m_sanitizeOptions |= SanitizeOptions::Leak;
+	}
+	else if (String::equals("undefined", inValue))
+	{
+		m_sanitizeOptions |= SanitizeOptions::Undefined;
+	}
+}
+
+/*****************************************************************************/
+bool BuildConfiguration::enableSanitizers() const noexcept
+{
+	return m_sanitizeOptions != SanitizeOptions::None;
+}
+bool BuildConfiguration::sanitizeAddress() const noexcept
+{
+	return (m_sanitizeOptions & SanitizeOptions::Address) == SanitizeOptions::Address;
+}
+bool BuildConfiguration::sanitizeThread() const noexcept
+{
+	return (m_sanitizeOptions & SanitizeOptions::Thread) == SanitizeOptions::Thread;
+}
+bool BuildConfiguration::sanitizeMemory() const noexcept
+{
+	return (m_sanitizeOptions & SanitizeOptions::Memory) == SanitizeOptions::Memory;
+}
+bool BuildConfiguration::sanitizeLeaks() const noexcept
+{
+	return (m_sanitizeOptions & SanitizeOptions::Leak) == SanitizeOptions::Leak;
+}
+bool BuildConfiguration::sanitizeUndefined() const noexcept
+{
+	return (m_sanitizeOptions & SanitizeOptions::Undefined) == SanitizeOptions::Undefined;
 }
 
 /*****************************************************************************/

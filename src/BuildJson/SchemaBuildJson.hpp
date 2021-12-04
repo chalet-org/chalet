@@ -21,6 +21,7 @@ class SchemaBuildJson
 		ConfigurationLinkTimeOptimizations,
 		ConfigurationOptimizationLevel,
 		ConfigurationStripSymbols,
+		ConfigurationSanitize,
 		//
 		DistributionTarget,
 		DistributionTargetKind,

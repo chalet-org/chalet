@@ -280,7 +280,7 @@ const StringList& SourceTarget::warnings() const noexcept
 void SourceTarget::addWarnings(StringList&& inList)
 {
 	List::forEach(inList, this, &SourceTarget::addWarning);
-	m_warningsPreset = ProjectWarnings::Custom;
+	m_warningsPreset = ProjectWarningPresets::Custom;
 }
 
 void SourceTarget::addWarning(std::string&& inValue)
@@ -301,7 +301,7 @@ void SourceTarget::setWarningPreset(std::string&& inValue)
 	m_warnings = parseWarnings(m_warningsPresetString);
 }
 
-ProjectWarnings SourceTarget::warningsPreset() const noexcept
+ProjectWarningPresets SourceTarget::warningsPreset() const noexcept
 {
 	return m_warningsPreset;
 }
@@ -309,7 +309,7 @@ ProjectWarnings SourceTarget::warningsPreset() const noexcept
 /*****************************************************************************/
 bool SourceTarget::warningsTreatedAsErrors() const noexcept
 {
-	return static_cast<int>(m_warningsPreset) >= static_cast<int>(ProjectWarnings::Error);
+	return static_cast<int>(m_warningsPreset) >= static_cast<int>(ProjectWarningPresets::Error);
 }
 
 /*****************************************************************************/
@@ -847,21 +847,21 @@ StringList SourceTarget::parseWarnings(const std::string& inValue)
 
 	if (String::equals("none", inValue))
 	{
-		m_warningsPreset = ProjectWarnings::None;
+		m_warningsPreset = ProjectWarningPresets::None;
 		return ret;
 	}
 
 	ret.emplace_back("all");
 	if (String::equals("minimal", inValue))
 	{
-		m_warningsPreset = ProjectWarnings::Minimal;
+		m_warningsPreset = ProjectWarningPresets::Minimal;
 		return ret;
 	}
 
 	ret.emplace_back("extra");
 	if (String::equals("extra", inValue))
 	{
-		m_warningsPreset = ProjectWarnings::Extra;
+		m_warningsPreset = ProjectWarningPresets::Extra;
 		return ret;
 	}
 
@@ -870,14 +870,14 @@ StringList SourceTarget::parseWarnings(const std::string& inValue)
 
 	if (String::equals("pedantic", inValue))
 	{
-		m_warningsPreset = ProjectWarnings::Pedantic;
+		m_warningsPreset = ProjectWarningPresets::Pedantic;
 		return ret;
 	}
 
 	ret.emplace_back("error");
 	if (String::equals("error", inValue))
 	{
-		m_warningsPreset = ProjectWarnings::Error;
+		m_warningsPreset = ProjectWarningPresets::Error;
 		return ret;
 	}
 
@@ -892,7 +892,7 @@ StringList SourceTarget::parseWarnings(const std::string& inValue)
 
 	if (String::equals("strict", inValue))
 	{
-		m_warningsPreset = ProjectWarnings::Strict;
+		m_warningsPreset = ProjectWarningPresets::Strict;
 		return ret;
 	}
 
@@ -901,7 +901,7 @@ StringList SourceTarget::parseWarnings(const std::string& inValue)
 
 	if (String::equals("strictPedantic", inValue))
 	{
-		m_warningsPreset = ProjectWarnings::StrictPedantic;
+		m_warningsPreset = ProjectWarningPresets::StrictPedantic;
 		return ret;
 	}
 
@@ -919,7 +919,7 @@ StringList SourceTarget::parseWarnings(const std::string& inValue)
 
 	if (String::equals("veryStrict", inValue))
 	{
-		m_warningsPreset = ProjectWarnings::VeryStrict;
+		m_warningsPreset = ProjectWarningPresets::VeryStrict;
 		return ret;
 	}
 

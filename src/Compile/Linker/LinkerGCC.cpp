@@ -89,6 +89,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	addArchitecture(ret, std::string());
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
+	addSanitizerOptions(ret);
 	addStaticCompilerLibraries(ret);
 	addSubSystem(ret);
 	addEntryPoint(ret);
@@ -140,6 +141,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
+	addSanitizerOptions(ret);
 	addStaticCompilerLibraries(ret);
 	addSubSystem(ret);
 	addEntryPoint(ret);
@@ -303,6 +305,15 @@ void LinkerGCC::addLibStdCppLinkerOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void LinkerGCC::addSanitizerOptions(StringList& outArgList) const
+{
+	if (m_state.configuration.enableSanitizers())
+	{
+		CompilerCxxGCC::addSanitizerOptions(outArgList, m_state);
+	}
+}
+
+/*****************************************************************************/
 void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 {
 	// List::addIfDoesNotExist(outArgList, "-libstdc++");
@@ -315,10 +326,19 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 		};
 
 		addFlag("-static-libgcc");
-		addFlag("-static-libasan");	 // address sanitizer
-		addFlag("-static-libtsan");	 // thread sanitizer
-		addFlag("-static-liblsan");	 // leak sanitizer
-		addFlag("-static-libubsan"); // undefined behavior sanitizer
+
+		if (m_state.configuration.sanitizeAddress())
+			addFlag("-static-libasan");
+
+		if (m_state.configuration.sanitizeThread())
+			addFlag("-static-libtsan");
+
+		if (m_state.configuration.sanitizeLeaks())
+			addFlag("-static-liblsan");
+
+		if (m_state.configuration.sanitizeUndefined())
+			addFlag("-static-libubsan");
+
 		addFlag("-static-libstdc++");
 	}
 }

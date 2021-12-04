@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROJECT_WARNINGS_HPP
-#define CHALET_PROJECT_WARNINGS_HPP
+#ifndef CHALET_PROJECT_WARNING_PRESETS_HPP
+#define CHALET_PROJECT_WARNING_PRESETS_HPP
 
 namespace chalet
 {
-enum class ProjectWarnings : ushort
+enum class ProjectWarningPresets : ushort
 {
 	None,
 	Custom,
@@ -22,4 +22,4 @@ enum class ProjectWarnings : ushort
 };
 }
 
-#endif // CHALET_PROJECT_WARNINGS_HPP
+#endif // CHALET_PROJECT_WARNING_PRESETS_HPP

@@ -320,10 +320,12 @@ Json StarterFileTemplates::getCMakeStarterChaletJson(const BuildJsonProps& inPro
 	ret["version"] = inProps.version;
 
 	ret[kConfigurations] = Json::array();
-	auto configs = BuildConfiguration::getDefaultBuildConfigurationNames();
-	configs.pop_back(); // Remove Profile
-	configs.pop_back(); // Remove RelStable
-	ret[kConfigurations] = std::move(configs);
+	ret[kConfigurations] = {
+		"Release",
+		"Debug",
+		"MinSizeRel",
+		"RelWithDebInfo",
+	};
 
 	ret[kTargets] = Json::object();
 	ret[kTargets][project] = Json::object();
