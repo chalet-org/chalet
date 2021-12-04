@@ -272,14 +272,23 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	//
 	defs[Defs::DistArchiveTargetIncludes] = R"json({
-		"type": "array",
 		"description": "A list of files or folders to add to the archive, relative to the root bundle directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
+		"oneOf": [
+			{
+				"type": "string",
+				"minLength": 1,
+				"default": "*"
+			},
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"minItems": 1,
+				"items": {
+					"type": "string",
+					"minLength": 1
+				}
+			}
+		]
 	})json"_ojson;
 
 	//
@@ -1194,9 +1203,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distDef[kProperties]["windows"] = getDefinition(Defs::DistributionTargetWindows);
 		distDef[kProperties]["mainExecutable"] = getDefinition(Defs::DistributionTargetMainExecutable);
 		distDef[kProperties]["subdirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
-		distDef[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
-		distDef[kPatternProperties][fmt::format("^include{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
-		distDef[kPatternProperties][fmt::format("^exclude{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
+		distDef[kPatternProperties][fmt::format("^description{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
+		distDef[kPatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionTargetInclude);
+		distDef[kPatternProperties][fmt::format("^exclude{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionTargetExclude);
 		defs[Defs::DistributionTarget] = std::move(distDef);
 	}
 
@@ -1207,11 +1216,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"description": "Properties to describe an individual distribution archive.",
 			"required": [
 				"kind",
-				"includes"
+				"include"
 			]
 		})json"_ojson;
 		distArchiveDef[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
-		distArchiveDef[kProperties]["includes"] = getDefinition(Defs::DistArchiveTargetIncludes);
+		distArchiveDef[kProperties]["include"] = getDefinition(Defs::DistArchiveTargetIncludes);
+		distArchiveDef[kPatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistArchiveTargetIncludes);
 		defs[Defs::DistArchiveTarget] = std::move(distArchiveDef);
 	}
 
@@ -1381,8 +1391,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetDistScript[kProperties]["script"] = getDefinition(Defs::ScriptTargetScript);
 		targetDistScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		targetDistScript[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetDistScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::ScriptTargetScript);
-		targetDistScript[kPatternProperties][fmt::format("^description{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetDescription);
+		targetDistScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionPlatforms)] = getDefinition(Defs::ScriptTargetScript);
+		targetDistScript[kPatternProperties][fmt::format("^description{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
 		defs[Defs::DistScriptTarget] = std::move(targetDistScript);
 	}
 
@@ -1466,7 +1476,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//
 		case Defs::DistArchiveTarget: return "distribution-archive-target";
-		case Defs::DistArchiveTargetIncludes: return "distribution-archive-target-includes";
+		case Defs::DistArchiveTargetIncludes: return "distribution-archive-target-include";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";

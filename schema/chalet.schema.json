@@ -121,13 +121,13 @@
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^description(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^include(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^include(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/distribution-target-include"
 				},
-				"^exclude(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^exclude(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/distribution-target-exclude"
 				}
 			}
@@ -316,26 +316,40 @@
 			"description": "Properties to describe an individual distribution archive.",
 			"required": [
 				"kind",
-				"includes"
+				"include"
 			],
 			"properties": {
 				"kind": {
 					"$ref": "#/definitions/distribution-target-kind"
 				},
-				"includes": {
-					"$ref": "#/definitions/distribution-archive-target-includes"
+				"include": {
+					"$ref": "#/definitions/distribution-archive-target-include"
+				}
+			},
+			"patternProperties": {
+				"^include(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/distribution-archive-target-include"
 				}
 			}
 		},
-		"distribution-archive-target-includes": {
-			"type": "array",
+		"distribution-archive-target-include": {
 			"description": "A list of files or folders to add to the archive, relative to the root bundle directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1,
+					"default": "*"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"external-dependency": {
 			"type": "object",
@@ -1838,10 +1852,10 @@
 				}
 			},
 			"patternProperties": {
-				"^script(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^script(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/script-target-script"
 				},
-				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^description(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				}
 			}

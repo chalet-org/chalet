@@ -286,8 +286,11 @@ bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarg
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
 		outTarget.setDescription(std::move(val));
 
-	if (StringList list; parseStringListFromConfig(list, inNode, "includes"))
+	const std::string include{ "include" };
+	if (StringList list; parseStringListFromConfig(list, inNode, include))
 		outTarget.addIncludes(std::move(list));
+	else if (std::string val; parseKeyFromConfig(val, inNode, include))
+		outTarget.addInclude(std::move(val));
 
 	return true;
 }

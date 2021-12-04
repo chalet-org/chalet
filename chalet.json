@@ -218,9 +218,7 @@
 		},
 		"chalet-(triple)": {
 			"kind": "archive",
-			"includes": [
-				"*"
-			]
+			"include": "*"
 		}
 	} /*,
 	"externalDependencies": {
