@@ -462,6 +462,16 @@ void AncillaryTools::setXcrun(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& AncillaryTools::zip() const noexcept
+{
+	return m_zip;
+}
+void AncillaryTools::setZip(std::string&& inValue) noexcept
+{
+	m_zip = std::move(inValue);
+}
+
+/*****************************************************************************/
 bool AncillaryTools::installHomebrewPackage(const std::string& inPackage) const
 {
 #if defined(CHALET_MACOS)

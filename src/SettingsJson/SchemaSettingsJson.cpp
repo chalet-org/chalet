@@ -42,6 +42,7 @@ enum class Defs : ushort
 	XcodeBuild,
 	// XcodeGen,
 	XcRun,
+	Zip,
 
 	/* Toolchains */
 	Version,
@@ -250,6 +251,12 @@ Json SchemaSettingsJson::get()
 		"type": "string",
 		"description": "The executable path to Apple's xcrun command-line utility. (MacOS)",
 		"default": "/usr/bin/xcrun"
+	})json"_ojson;
+
+	defs[Defs::Zip] = R"json({
+		"type": "string",
+		"description": "The executable path to zip.",
+		"default": "/usr/bin/zip"
 	})json"_ojson;
 
 	//
@@ -552,6 +559,7 @@ Json SchemaSettingsJson::get()
 	ret[kProperties][kKeyTools][kProperties]["xcodebuild"] = defs[Defs::XcodeBuild];
 	// ret[kProperties][kKeyTools][kProperties]["xcodegen"] = defs[Defs::XcodeGen];
 	ret[kProperties][kKeyTools][kProperties]["xcrun"] = defs[Defs::XcRun];
+	ret[kProperties][kKeyTools][kProperties]["zip"] = defs[Defs::Zip];
 
 	ret[kProperties]["appleSdks"] = R"json({
 		"type": "object",

@@ -263,6 +263,10 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	whichAdd(tools, kKeyXcrun, HostPlatform::MacOS);
 #endif
 
+#if !defined(CHALET_WIN32)
+	whichAdd(tools, kKeyZip);
+#endif
+
 #if defined(CHALET_WIN32)
 	{
 		// Try really hard to find these tools
@@ -602,6 +606,9 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 
 	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcrun))
 		m_prototype.tools.setXcrun(std::move(val));
+
+	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyZip))
+		m_prototype.tools.setZip(std::move(val));
 
 	return true;
 }

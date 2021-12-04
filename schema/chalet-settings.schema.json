@@ -200,6 +200,11 @@
 					"type": "string",
 					"description": "The executable path to Apple's xcrun command-line utility. (MacOS)",
 					"default": "/usr/bin/xcrun"
+				},
+				"zip": {
+					"type": "string",
+					"description": "The executable path to zip.",
+					"default": "/usr/bin/zip"
 				}
 			}
 		},

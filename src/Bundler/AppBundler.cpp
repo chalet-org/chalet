@@ -8,6 +8,7 @@
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/IAppBundler.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
@@ -21,6 +22,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Utility/ZipArchiver.hpp"
 
 namespace chalet
 {
@@ -410,16 +412,23 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const st
 	if (includes.empty())
 		return false;
 
+	auto filename = inArchive.name();
+
+	BuildState* state = getBuildState(m_prototype.anyConfiguration());
+	if (state != nullptr)
+	{
+		String::replaceAll(filename, "(triple)", state->info.targetArchitectureTriple());
+		String::replaceAll(filename, "(arch)", state->info.targetArchitectureString());
+	}
+
 	if (!inArchive.description().empty())
 		Output::msgTargetDescription(inArchive.description(), Output::theme().header);
 	else
-		Output::msgArchive(inArchive.name(), Output::theme().header);
+		Output::msgArchive(fmt::format("{}.zip", filename), Output::theme().header);
 
 	Output::lineBreak();
 
 	UNUSED(inInputFile);
-
-	const auto& distributionDirectory = m_inputs.distributionDirectory();
 
 	StringList resolvedIncludes;
 	for (auto& include : inArchive.includes())
@@ -427,17 +436,15 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const st
 		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
 
-	auto zip = Commands::which("zip");
-	StringList cmdPrefix{
-		std::move(zip),
-		"-r",
-		"-X",
-		fmt::format("{}/test.zip", distributionDirectory),
-	};
+	// auto cwd = fmt::format("{}/", m_inputs.distributionDirectory());
+	/*for (auto& include : resolvedIncludes)
+	{
+		String::replaceAll(include, cwd, "");
+	}*/
 
-	auto cmd = List::combine(cmdPrefix, resolvedIncludes);
-
-	Commands::subprocessNoOutput(cmd);
+	ZipArchiver zipArchiver(m_prototype);
+	if (!zipArchiver.archive(filename, resolvedIncludes, m_inputs.distributionDirectory()))
+		return false;
 
 	return true;
 }

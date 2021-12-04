@@ -65,6 +65,7 @@ private:
 	const std::string kKeyXcodebuild = "xcodebuild";
 	// const std::string kKeyXcodegen = "xcodegen";
 	const std::string kKeyXcrun = "xcrun";
+	const std::string kKeyZip = "zip";
 };
 }
 

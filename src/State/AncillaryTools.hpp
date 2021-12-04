@@ -111,6 +111,9 @@ struct AncillaryTools
 	const std::string& xcrun() const noexcept;
 	void setXcrun(std::string&& inValue) noexcept;
 
+	const std::string& zip() const noexcept;
+	void setZip(std::string&& inValue) noexcept;
+
 	// Commands
 
 	bool installHomebrewPackage(const std::string& inPackage) const;
@@ -164,6 +167,7 @@ private:
 	std::string m_xcodebuild;
 	std::string m_xcodegen;
 	std::string m_xcrun;
+	std::string m_zip;
 
 	std::string m_signingIdentity;
 
