@@ -46,6 +46,25 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 	auto tmpDirectory = fmt::format("{}/{}", inCwd, inFilename);
 	Commands::makeDirectory(tmpDirectory);
 
+#if defined(CHALET_WIN32)
+
+	for (auto& file : inFiles)
+	{
+		if (List::contains(inExcludes, file))
+			continue;
+
+		Commands::copySilent(file, tmpDirectory);
+	}
+
+	StringList cmd{
+		powershell,
+		"Compress-Archive",
+		"-Path",
+		inFilename,
+		"-DestinationPath",
+		filename,
+	};
+#else
 	StringList cmd{
 		zip,
 		"-r",
@@ -63,6 +82,7 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 		auto outFile = fmt::format("{}{}", inFilename, file.substr(inCwd.size()));
 		cmd.emplace_back(std::move(outFile));
 	}
+#endif
 
 	bool result = Commands::subprocessNoOutput(cmd, inCwd);
 
