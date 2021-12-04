@@ -221,6 +221,11 @@ void Diagnostic::printErrors()
 		{
 			std::cout << std::endl;
 		}
+#elif defined(CHALET_MACOS)
+		if (Environment::isBash())
+		{
+			std::cout << std::endl;
+		}
 #else
 		std::cout << '\n'
 				  << std::endl;

@@ -371,7 +371,7 @@ bool Environment::isBash()
 #if defined(CHALET_WIN32)
 	return state.terminalType == ShellType::Bash;
 #else
-	return state.terminalType != ShellType::Unset; // isBash() just looks for a bash-like
+	return state.terminalType != ShellType::Subprocess && state.terminalType != ShellType::Unset; // isBash() just looks for a bash-like
 #endif
 }
 
