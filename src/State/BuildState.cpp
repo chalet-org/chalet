@@ -159,12 +159,6 @@ bool BuildState::initializeBuildConfiguration()
 	configuration = buildConfigurations.at(buildConfiguration);
 	info.setBuildConfiguration(buildConfiguration);
 
-	if (!configuration.validate(*this))
-	{
-		Diagnostic::error("The build configuration '{}' can not be built.", configuration.name());
-		return false;
-	}
-
 	return true;
 }
 
@@ -273,6 +267,12 @@ bool BuildState::initializeToolchain()
 
 	if (!cache.updateSettingsFromToolchain(m_impl->inputs, toolchain))
 		return false;
+
+	if (!configuration.validateSanitizers(*this))
+	{
+		Diagnostic::error("The build configuration '{}' can not be built.", configuration.name());
+		return false;
+	}
 
 	return true;
 }

@@ -156,7 +156,7 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 }
 
 /*****************************************************************************/
-bool BuildConfiguration::validate(const BuildState& inState)
+bool BuildConfiguration::validateSanitizers(const BuildState& inState)
 {
 	bool result = true;
 
