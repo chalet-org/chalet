@@ -6,13 +6,13 @@
 #ifndef CHALET_LINKER_APPLE_LLD_HPP
 #define CHALET_LINKER_APPLE_LLD_HPP
 
-#include "Compile/Linker/LinkerLLVMLLD.hpp"
+#include "Compile/Linker/LinkerLLVMClang.hpp"
 
 namespace chalet
 {
-struct LinkerAppleLD final : public LinkerLLVMLLD
+struct LinkerAppleClang final : public LinkerLLVMClang
 {
-	explicit LinkerAppleLD(const BuildState& inState, const SourceTarget& inProject);
+	explicit LinkerAppleClang(const BuildState& inState, const SourceTarget& inProject);
 
 protected:
 	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;

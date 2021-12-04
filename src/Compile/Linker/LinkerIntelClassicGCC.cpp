@@ -3,7 +3,7 @@
 	 See accompanying file LICENSE.txt for details.
  */
 
-#include "Compile/Linker/LinkerIntelClassicLD.hpp"
+#include "Compile/Linker/LinkerIntelClassicGCC.hpp"
 
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -11,8 +11,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-LinkerIntelClassicLD::LinkerIntelClassicLD(const BuildState& inState, const SourceTarget& inProject) :
-	LinkerGNULD(inState, inProject)
+LinkerIntelClassicGCC::LinkerIntelClassicGCC(const BuildState& inState, const SourceTarget& inProject) :
+	LinkerGCC(inState, inProject)
 {
 }
 }

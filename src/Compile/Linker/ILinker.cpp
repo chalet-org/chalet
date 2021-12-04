@@ -9,12 +9,12 @@
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/String.hpp"
 
-#include "Compile/Linker/LinkerAppleLD.hpp"
-#include "Compile/Linker/LinkerGNULD.hpp"
-#include "Compile/Linker/LinkerIntelClassicLD.hpp"
+#include "Compile/Linker/LinkerAppleClang.hpp"
+#include "Compile/Linker/LinkerGCC.hpp"
+#include "Compile/Linker/LinkerIntelClang.hpp"
+#include "Compile/Linker/LinkerIntelClassicGCC.hpp"
 #include "Compile/Linker/LinkerIntelClassicLINK.hpp"
-#include "Compile/Linker/LinkerIntelLLD.hpp"
-#include "Compile/Linker/LinkerLLVMLLD.hpp"
+#include "Compile/Linker/LinkerLLVMClang.hpp"
 #include "Compile/Linker/LinkerVisualStudioLINK.hpp"
 
 namespace chalet
@@ -40,18 +40,18 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	else
 #elif defined(CHALET_MACOS)
 	if (inType == ToolchainType::AppleLLVM)
-		return std::make_unique<LinkerAppleLD>(inState, inProject);
+		return std::make_unique<LinkerAppleClang>(inState, inProject);
 	else if (inType == ToolchainType::IntelClassic && String::equals("xild", executable))
-		return std::make_unique<LinkerIntelClassicLD>(inState, inProject);
+		return std::make_unique<LinkerIntelClassicGCC>(inState, inProject);
 	else
 #endif
 		if (lld && inType == ToolchainType::IntelLLVM)
-		return std::make_unique<LinkerIntelLLD>(inState, inProject);
+		return std::make_unique<LinkerIntelClang>(inState, inProject);
 
 	if (lld || inType == ToolchainType::LLVM)
-		return std::make_unique<LinkerLLVMLLD>(inState, inProject);
+		return std::make_unique<LinkerLLVMClang>(inState, inProject);
 
-	return std::make_unique<LinkerGNULD>(inState, inProject);
+	return std::make_unique<LinkerGCC>(inState, inProject);
 }
 
 /*****************************************************************************/

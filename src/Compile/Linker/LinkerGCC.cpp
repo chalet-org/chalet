@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Linker/LinkerGNULD.hpp"
+#include "Compile/Linker/LinkerGCC.hpp"
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
@@ -20,13 +20,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-LinkerGNULD::LinkerGNULD(const BuildState& inState, const SourceTarget& inProject) :
+LinkerGCC::LinkerGCC(const BuildState& inState, const SourceTarget& inProject) :
 	ILinker(inState, inProject)
 {
 }
 
 /*****************************************************************************/
-bool LinkerGNULD::initialize()
+bool LinkerGCC::initialize()
 {
 	// initializeSupportedLinks();
 
@@ -34,13 +34,13 @@ bool LinkerGNULD::initialize()
 }
 
 /*****************************************************************************/
-StringList LinkerGNULD::getLinkExclusions() const
+StringList LinkerGCC::getLinkExclusions() const
 {
 	return {};
 }
 
 /*****************************************************************************/
-bool LinkerGNULD::isLinkSupported(const std::string& inLink) const
+bool LinkerGCC::isLinkSupported(const std::string& inLink) const
 {
 	if (!m_supportedLinks.empty() && m_state.environment->isGcc())
 	{
@@ -51,7 +51,7 @@ bool LinkerGNULD::isLinkSupported(const std::string& inLink) const
 }
 
 /*****************************************************************************/
-StringList LinkerGNULD::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	StringList ret;
 
@@ -107,7 +107,7 @@ StringList LinkerGNULD::getSharedLibTargetCommand(const std::string& outputFile,
 }
 
 /*****************************************************************************/
-StringList LinkerGNULD::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFileBase);
 
@@ -149,7 +149,7 @@ StringList LinkerGNULD::getExecutableTargetCommand(const std::string& outputFile
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addLibDirs(StringList& outArgList) const
+void LinkerGCC::addLibDirs(StringList& outArgList) const
 {
 	const std::string prefix{ "-L" };
 	for (const auto& dir : m_project.libDirs())
@@ -168,7 +168,7 @@ void LinkerGNULD::addLibDirs(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addLinks(StringList& outArgList) const
+void LinkerGCC::addLinks(StringList& outArgList) const
 {
 	const std::string prefix{ "-l" };
 	const bool hasStaticLinks = m_project.staticLinks().size() > 0;
@@ -204,7 +204,7 @@ void LinkerGNULD::addLinks(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addRunPath(StringList& outArgList) const
+void LinkerGCC::addRunPath(StringList& outArgList) const
 {
 #if defined(CHALET_LINUX)
 	outArgList.emplace_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
@@ -214,7 +214,7 @@ void LinkerGNULD::addRunPath(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addStripSymbols(StringList& outArgList) const
+void LinkerGCC::addStripSymbols(StringList& outArgList) const
 {
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	if (m_state.configuration.stripSymbols())
@@ -229,7 +229,7 @@ void LinkerGNULD::addStripSymbols(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addLinkerOptions(StringList& outArgList) const
+void LinkerGCC::addLinkerOptions(StringList& outArgList) const
 {
 	for (auto& option : m_project.linkerOptions())
 	{
@@ -239,7 +239,7 @@ void LinkerGNULD::addLinkerOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addProfileInformationLinkerOption(StringList& outArgList) const
+void LinkerGCC::addProfileInformationLinkerOption(StringList& outArgList) const
 {
 	const bool enableProfiling = m_state.configuration.enableProfiling();
 	if (enableProfiling && m_project.isExecutable())
@@ -253,7 +253,7 @@ void LinkerGNULD::addProfileInformationLinkerOption(StringList& outArgList) cons
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addLinkTimeOptimizations(StringList& outArgList) const
+void LinkerGCC::addLinkTimeOptimizations(StringList& outArgList) const
 {
 	if (m_state.configuration.linkTimeOptimization())
 	{
@@ -264,7 +264,7 @@ void LinkerGNULD::addLinkTimeOptimizations(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addThreadModelLinks(StringList& outArgList) const
+void LinkerGCC::addThreadModelLinks(StringList& outArgList) const
 {
 	auto threadType = m_project.threadType();
 	if (!m_state.environment->isWindowsClang()
@@ -285,7 +285,7 @@ void LinkerGNULD::addThreadModelLinks(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addLinkerScripts(StringList& outArgList) const
+void LinkerGCC::addLinkerScripts(StringList& outArgList) const
 {
 	const auto& linkerScript = m_project.linkerScript();
 	if (!linkerScript.empty())
@@ -296,14 +296,14 @@ void LinkerGNULD::addLinkerScripts(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addLibStdCppLinkerOption(StringList& outArgList) const
+void LinkerGCC::addLibStdCppLinkerOption(StringList& outArgList) const
 {
 	// Not used in GCC
 	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addStaticCompilerLibraries(StringList& outArgList) const
+void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 {
 	// List::addIfDoesNotExist(outArgList, "-libstdc++");
 
@@ -324,7 +324,7 @@ void LinkerGNULD::addStaticCompilerLibraries(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addSubSystem(StringList& outArgList) const
+void LinkerGCC::addSubSystem(StringList& outArgList) const
 {
 	if (m_state.environment->isMingwGcc())
 	{
@@ -362,7 +362,7 @@ void LinkerGNULD::addSubSystem(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addEntryPoint(StringList& outArgList) const
+void LinkerGCC::addEntryPoint(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 
@@ -370,7 +370,7 @@ void LinkerGNULD::addEntryPoint(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::startStaticLinkGroup(StringList& outArgList) const
+void LinkerGCC::startStaticLinkGroup(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
 	UNUSED(outArgList);
@@ -381,7 +381,7 @@ void LinkerGNULD::startStaticLinkGroup(StringList& outArgList) const
 #endif
 }
 
-void LinkerGNULD::endStaticLinkGroup(StringList& outArgList) const
+void LinkerGCC::endStaticLinkGroup(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
 	UNUSED(outArgList);
@@ -391,7 +391,7 @@ void LinkerGNULD::endStaticLinkGroup(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::startExplicitDynamicLinkGroup(StringList& outArgList) const
+void LinkerGCC::startExplicitDynamicLinkGroup(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
 	UNUSED(outArgList);
@@ -401,7 +401,7 @@ void LinkerGNULD::startExplicitDynamicLinkGroup(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addCompilerSearchPaths(StringList& outArgList) const
+void LinkerGCC::addCompilerSearchPaths(StringList& outArgList) const
 {
 	// Same as addLinks, but with -B, so far, just used in specific gcc calls
 	const std::string prefix{ "-B" };
@@ -421,7 +421,7 @@ void LinkerGNULD::addCompilerSearchPaths(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addObjectiveCxxLink(StringList& outArgList) const
+void LinkerGCC::addObjectiveCxxLink(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 
@@ -437,7 +437,7 @@ void LinkerGNULD::addObjectiveCxxLink(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGNULD::addMacosFrameworkOptions(StringList& outArgList) const
+void LinkerGCC::addMacosFrameworkOptions(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
 	// TODO: Test Homebrew LLVM/GCC with this
@@ -468,13 +468,13 @@ void LinkerGNULD::addMacosFrameworkOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-bool LinkerGNULD::addArchitecture(StringList& outArgList, const std::string& inArch) const
+bool LinkerGCC::addArchitecture(StringList& outArgList, const std::string& inArch) const
 {
 	return CompilerCxxGCC::addArchitectureToCommand(outArgList, inArch, m_state);
 }
 
 /*****************************************************************************/
-bool LinkerGNULD::addMacosSysRootOption(StringList& outArgList) const
+bool LinkerGCC::addMacosSysRootOption(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
 	return CompilerCxxAppleClang::addMacosSysRootOption(outArgList, m_state);
@@ -484,7 +484,7 @@ bool LinkerGNULD::addMacosSysRootOption(StringList& outArgList) const
 #endif
 }
 
-void LinkerGNULD::addPositionIndependentCodeOption(StringList& outArgList) const
+void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 {
 	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
 	{
@@ -495,7 +495,7 @@ void LinkerGNULD::addPositionIndependentCodeOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-/*void LinkerGNULD::initializeSupportedLinks()
+/*void LinkerGCC::initializeSupportedLinks()
 {
 	auto isLinkSupportedByExecutable = [](const std::string& inExecutable, const std::string& inLink, const StringList& inDirectories) -> bool {
 		// This will print the input if the link is not found in path

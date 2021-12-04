@@ -3,16 +3,16 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LINKER_LLVM_LLD_HPP
-#define CHALET_LINKER_LLVM_LLD_HPP
+#ifndef CHALET_LINKER_LLVM_CLANG_HPP
+#define CHALET_LINKER_LLVM_CLANG_HPP
 
-#include "Compile/Linker/LinkerGNULD.hpp"
+#include "Compile/Linker/LinkerGCC.hpp"
 
 namespace chalet
 {
-struct LinkerLLVMLLD : public LinkerGNULD
+struct LinkerLLVMClang : public LinkerGCC
 {
-	explicit LinkerLLVMLLD(const BuildState& inState, const SourceTarget& inProject);
+	explicit LinkerLLVMClang(const BuildState& inState, const SourceTarget& inProject);
 
 protected:
 	virtual StringList getLinkExclusions() const override;
@@ -33,4 +33,4 @@ protected:
 };
 }
 
-#endif // CHALET_LINKER_LLVM_LLD_HPP
+#endif // CHALET_LINKER_LLVM_CLANG_HPP

@@ -3,16 +3,16 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LINKER_GNU_LD_HPP
-#define CHALET_LINKER_GNU_LD_HPP
+#ifndef CHALET_LINKER_GCC_HPP
+#define CHALET_LINKER_GCC_HPP
 
 #include "Compile/Linker/ILinker.hpp"
 
 namespace chalet
 {
-struct LinkerGNULD : public ILinker
+struct LinkerGCC : public ILinker
 {
-	explicit LinkerGNULD(const BuildState& inState, const SourceTarget& inProject);
+	explicit LinkerGCC(const BuildState& inState, const SourceTarget& inProject);
 
 	virtual bool initialize() override;
 
@@ -61,4 +61,4 @@ private:
 };
 }
 
-#endif // CHALET_LINKER_GNU_LD_HPP
+#endif // CHALET_LINKER_GCC_HPP

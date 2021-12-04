@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Linker/LinkerAppleLD.hpp"
+#include "Compile/Linker/LinkerAppleClang.hpp"
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "State/BuildInfo.hpp"
@@ -15,15 +15,15 @@
 namespace chalet
 {
 /*****************************************************************************/
-LinkerAppleLD::LinkerAppleLD(const BuildState& inState, const SourceTarget& inProject) :
-	LinkerLLVMLLD(inState, inProject)
+LinkerAppleClang::LinkerAppleClang(const BuildState& inState, const SourceTarget& inProject) :
+	LinkerLLVMClang(inState, inProject)
 {
 }
 
 // ="-Wl,-flat_namespace,-undefined,suppress
 
 /*****************************************************************************/
-StringList LinkerAppleLD::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	StringList ret;
 
@@ -68,25 +68,25 @@ StringList LinkerAppleLD::getSharedLibTargetCommand(const std::string& outputFil
 }
 
 /*****************************************************************************/
-void LinkerAppleLD::addStripSymbols(StringList& outArgList) const
+void LinkerAppleClang::addStripSymbols(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void LinkerAppleLD::addThreadModelLinks(StringList& outArgList) const
+void LinkerAppleClang::addThreadModelLinks(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void LinkerAppleLD::addProfileInformationLinkerOption(StringList& outArgList) const
+void LinkerAppleClang::addProfileInformationLinkerOption(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void LinkerAppleLD::addLibStdCppLinkerOption(StringList& outArgList) const
+void LinkerAppleClang::addLibStdCppLinkerOption(StringList& outArgList) const
 {
 	if (m_project.language() == CodeLanguage::CPlusPlus)
 	{
@@ -99,13 +99,13 @@ void LinkerAppleLD::addLibStdCppLinkerOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-bool LinkerAppleLD::addArchitecture(StringList& outArgList, const std::string& inArch) const
+bool LinkerAppleClang::addArchitecture(StringList& outArgList, const std::string& inArch) const
 {
 #if defined(CHALET_MACOS)
 	if (m_state.info.targetArchitecture() != Arch::Cpu::UniversalMacOS)
 #endif
 	{
-		if (!LinkerLLVMLLD::addArchitecture(outArgList, inArch))
+		if (!LinkerLLVMClang::addArchitecture(outArgList, inArch))
 			return false;
 
 		if (!CompilerCxxAppleClang::addArchitectureToCommand(outArgList, m_state))
@@ -123,7 +123,7 @@ bool LinkerAppleLD::addArchitecture(StringList& outArgList, const std::string& i
 }
 
 /*****************************************************************************/
-void LinkerAppleLD::addObjectiveCxxLink(StringList& outArgList) const
+void LinkerAppleClang::addObjectiveCxxLink(StringList& outArgList) const
 {
 	// Unused in AppleClang
 	UNUSED(outArgList);

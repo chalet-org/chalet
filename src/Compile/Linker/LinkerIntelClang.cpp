@@ -3,7 +3,7 @@
 	 See accompanying file LICENSE.txt for details.
  */
 
-#include "Compile/Linker/LinkerIntelLLD.hpp"
+#include "Compile/Linker/LinkerIntelClang.hpp"
 
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -11,13 +11,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-LinkerIntelLLD::LinkerIntelLLD(const BuildState& inState, const SourceTarget& inProject) :
-	LinkerLLVMLLD(inState, inProject)
+LinkerIntelClang::LinkerIntelClang(const BuildState& inState, const SourceTarget& inProject) :
+	LinkerLLVMClang(inState, inProject)
 {
 }
 
 /*****************************************************************************/
-void LinkerIntelLLD::addThreadModelLinks(StringList& outArgList) const
+void LinkerIntelClang::addThreadModelLinks(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }

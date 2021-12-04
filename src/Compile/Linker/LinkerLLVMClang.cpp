@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/Linker/LinkerLLVMLLD.hpp"
+#include "Compile/Linker/LinkerLLVMClang.hpp"
 
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
@@ -15,21 +15,21 @@
 namespace chalet
 {
 /*****************************************************************************/
-LinkerLLVMLLD::LinkerLLVMLLD(const BuildState& inState, const SourceTarget& inProject) :
-	LinkerGNULD(inState, inProject)
+LinkerLLVMClang::LinkerLLVMClang(const BuildState& inState, const SourceTarget& inProject) :
+	LinkerGCC(inState, inProject)
 {
 }
 
 /*****************************************************************************/
-StringList LinkerLLVMLLD::getLinkExclusions() const
+StringList LinkerLLVMClang::getLinkExclusions() const
 {
 	return { "stdc++fs" };
 }
 
 /*****************************************************************************/
-void LinkerLLVMLLD::addLinks(StringList& outArgList) const
+void LinkerLLVMClang::addLinks(StringList& outArgList) const
 {
-	LinkerGNULD::addLinks(outArgList);
+	LinkerGCC::addLinks(outArgList);
 
 	if (m_state.environment->isWindowsClang() || m_state.environment->isMingwClang())
 	{
@@ -54,13 +54,13 @@ void LinkerLLVMLLD::addLinks(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerLLVMLLD::addStripSymbols(StringList& outArgList) const
+void LinkerLLVMClang::addStripSymbols(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void LinkerLLVMLLD::addLinkerScripts(StringList& outArgList) const
+void LinkerLLVMClang::addLinkerScripts(StringList& outArgList) const
 {
 	// TODO: Check if there's a clang/apple clang version of this
 	// If using LD with "-fuse-ld=lld-link", you can pass linkerscripts supposedly
@@ -68,13 +68,13 @@ void LinkerLLVMLLD::addLinkerScripts(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerLLVMLLD::addLibStdCppLinkerOption(StringList& outArgList) const
+void LinkerLLVMClang::addLibStdCppLinkerOption(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
 
 /*****************************************************************************/
-void LinkerLLVMLLD::addStaticCompilerLibraries(StringList& outArgList) const
+void LinkerLLVMClang::addStaticCompilerLibraries(StringList& outArgList) const
 {
 	if (m_project.staticLinking())
 	{
@@ -87,7 +87,7 @@ void LinkerLLVMLLD::addStaticCompilerLibraries(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerLLVMLLD::addSubSystem(StringList& outArgList) const
+void LinkerLLVMClang::addSubSystem(StringList& outArgList) const
 {
 	if (m_state.environment->isWindowsClang())
 	{
@@ -102,7 +102,7 @@ void LinkerLLVMLLD::addSubSystem(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerLLVMLLD::addEntryPoint(StringList& outArgList) const
+void LinkerLLVMClang::addEntryPoint(StringList& outArgList) const
 {
 	if (m_state.environment->isWindowsClang())
 	{
@@ -116,7 +116,7 @@ void LinkerLLVMLLD::addEntryPoint(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-bool LinkerLLVMLLD::addArchitecture(StringList& outArgList, const std::string& inArch) const
+bool LinkerLLVMClang::addArchitecture(StringList& outArgList, const std::string& inArch) const
 {
 	return CompilerCxxClang::addArchitectureToCommand(outArgList, inArch, m_state);
 }
@@ -124,17 +124,17 @@ bool LinkerLLVMLLD::addArchitecture(StringList& outArgList, const std::string& i
 /*****************************************************************************/
 // TOOD: I think Clang on Linux could still use the system linker (LD), in which case,
 //   These flags could be used
-void LinkerLLVMLLD::startStaticLinkGroup(StringList& outArgList) const
+void LinkerLLVMClang::startStaticLinkGroup(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
 
-void LinkerLLVMLLD::endStaticLinkGroup(StringList& outArgList) const
+void LinkerLLVMClang::endStaticLinkGroup(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
 
-void LinkerLLVMLLD::startExplicitDynamicLinkGroup(StringList& outArgList) const
+void LinkerLLVMClang::startExplicitDynamicLinkGroup(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }
