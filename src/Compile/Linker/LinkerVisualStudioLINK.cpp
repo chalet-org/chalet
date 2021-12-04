@@ -289,7 +289,7 @@ void LinkerVisualStudioLINK::addLinkTimeOptimizations(StringList& outArgList) co
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::string& outputFileBase) const
 {
-	if (m_state.configuration.debugSymbols())
+	if (m_state.configuration.debugSymbols() && !m_state.configuration.enableSanitizers())
 	{
 		outArgList.emplace_back("/incremental");
 
