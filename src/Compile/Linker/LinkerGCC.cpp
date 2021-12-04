@@ -315,10 +315,10 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 		};
 
 		addFlag("-static-libgcc");
-		addFlag("-static-libasan");
-		addFlag("-static-libtsan");
-		addFlag("-static-liblsan");
-		addFlag("-static-libubsan");
+		addFlag("-static-libasan");	 // address sanitizer
+		addFlag("-static-libtsan");	 // thread sanitizer
+		addFlag("-static-liblsan");	 // leak sanitizer
+		addFlag("-static-libubsan"); // undefined behavior sanitizer
 		addFlag("-static-libstdc++");
 	}
 }
