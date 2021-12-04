@@ -216,8 +216,10 @@ void Diagnostic::printErrors()
 
 	if (state.spinnerThread != nullptr && !destroySpinnerThread())
 	{
+#if !defined(CHALET_WIN32)
 		std::cout << '\n'
 				  << std::endl;
+#endif
 	}
 
 	Output::lineBreak();
