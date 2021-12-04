@@ -101,37 +101,27 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 	else if (String::equals("DebugSanitizeAddress", inName))
 	{
 		makeDebug(outConfig);
-		outConfig.addSanitizeOptions({
-			"address",
-		});
+		outConfig.addSanitizeOption("address");
 	}
 	else if (String::equals("DebugSanitizeThread", inName))
 	{
 		makeDebug(outConfig);
-		outConfig.addSanitizeOptions({
-			"thread",
-		});
+		outConfig.addSanitizeOption("thread");
 	}
 	else if (String::equals("DebugSanitizeMemory", inName))
 	{
 		makeDebug(outConfig);
-		outConfig.addSanitizeOptions({
-			"memory",
-		});
+		outConfig.addSanitizeOption("memory");
 	}
 	else if (String::equals("DebugSanitizeLeak", inName))
 	{
 		makeDebug(outConfig);
-		outConfig.addSanitizeOptions({
-			"leak",
-		});
+		outConfig.addSanitizeOption("leak");
 	}
 	else if (String::equals("DebugSanitizeUndefined", inName))
 	{
 		makeDebug(outConfig);
-		outConfig.addSanitizeOptions({
-			"undefined",
-		});
+		outConfig.addSanitizeOption("undefined");
 	}
 	else
 	{
