@@ -336,7 +336,7 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 		if (m_state.configuration.sanitizeLeaks())
 			addFlag("-static-liblsan");
 
-		if (m_state.configuration.sanitizeUndefined())
+		if (m_state.configuration.sanitizeUndefinedBehavior())
 			addFlag("-static-libubsan");
 
 		addFlag("-static-libstdc++");

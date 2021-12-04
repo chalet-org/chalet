@@ -195,6 +195,11 @@ bool BuildState::initializeBuildConfiguration()
 				return false;
 			}
 		}
+		else if (m_impl->environment->isIntelClassic())
+		{
+			Diagnostic::error("Sanitizers are not supported on Intel Compiler Classic.", configuration.name());
+			return false;
+		}
 	}
 
 	return true;

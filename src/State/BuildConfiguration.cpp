@@ -249,7 +249,7 @@ void BuildConfiguration::addSanitizeOption(std::string&& inValue)
 	}
 	else if (String::equals("undefined", inValue))
 	{
-		m_sanitizeOptions |= SanitizeOptions::Undefined;
+		m_sanitizeOptions |= SanitizeOptions::UndefinedBehavior;
 	}
 }
 
@@ -274,9 +274,9 @@ bool BuildConfiguration::sanitizeLeaks() const noexcept
 {
 	return (m_sanitizeOptions & SanitizeOptions::Leak) == SanitizeOptions::Leak;
 }
-bool BuildConfiguration::sanitizeUndefined() const noexcept
+bool BuildConfiguration::sanitizeUndefinedBehavior() const noexcept
 {
-	return (m_sanitizeOptions & SanitizeOptions::Undefined) == SanitizeOptions::Undefined;
+	return (m_sanitizeOptions & SanitizeOptions::UndefinedBehavior) == SanitizeOptions::UndefinedBehavior;
 }
 
 /*****************************************************************************/

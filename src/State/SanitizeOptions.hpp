@@ -17,7 +17,7 @@ enum
 	Thread = 1 << 1,
 	Memory = 1 << 2,
 	Leak = 1 << 3,
-	Undefined = 1 << 4,
+	UndefinedBehavior = 1 << 4,
 };
 using Type = uchar;
 }

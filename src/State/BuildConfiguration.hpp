@@ -43,7 +43,7 @@ struct BuildConfiguration
 	bool sanitizeThread() const noexcept;
 	bool sanitizeMemory() const noexcept;
 	bool sanitizeLeaks() const noexcept;
-	bool sanitizeUndefined() const noexcept;
+	bool sanitizeUndefinedBehavior() const noexcept;
 
 	bool isReleaseWithDebugInfo() const noexcept;
 	bool isMinSizeRelease() const noexcept;

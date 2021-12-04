@@ -71,9 +71,10 @@ void CompilerCxxClang::addSanitizerOptions(StringList& outArgList, const BuildSt
 	{
 		sanitizers.emplace_back("leak");
 	}
-	if (inState.configuration.sanitizeUndefined())
+	if (inState.configuration.sanitizeUndefinedBehavior())
 	{
 		sanitizers.emplace_back("undefined");
+		sanitizers.emplace_back("integer");
 	}
 
 	if (!sanitizers.empty())

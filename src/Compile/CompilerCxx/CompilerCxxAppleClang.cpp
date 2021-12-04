@@ -151,9 +151,10 @@ void CompilerCxxAppleClang::addSanitizerOptions(StringList& outArgList, const Bu
 	{
 		sanitizers.emplace_back("leak");
 	}*/
-	if (inState.configuration.sanitizeUndefined())
+	if (inState.configuration.sanitizeUndefinedBehavior())
 	{
 		sanitizers.emplace_back("undefined");
+		sanitizers.emplace_back("integer");
 	}
 
 	if (!sanitizers.empty())
