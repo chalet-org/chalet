@@ -121,7 +121,7 @@ int main(const int argc, const char* const argv[])
 	std::cout << "Hello world!\n\n";
 	std::cout << "Args:\n";
 
-	for (int i=0; i < argc; ++i)
+	for (int i = 0; i < argc; ++i)
 	{
 		std::cout << "  " << argv[i] << '\n';
 	}
@@ -138,7 +138,7 @@ int main(const int argc, const char* const argv[])
 	std::cout << "Hello world!\n\n";
 	std::cout << "Args:\n";
 
-	for (int i=0; i < argc; ++i)
+	for (int i = 0; i < argc; ++i)
 	{
 		std::cout << "  " << argv[i] << '\n';
 	}
@@ -157,7 +157,7 @@ int main(const int argc, const char* const argv[])
 	printf("Hello, World!\n\n");
 	printf("Args:\n");
 
-	for (int i=0; i < argc; ++i)
+	for (int i = 0; i < argc; ++i)
 	{
 		printf("%s\n",argv[i]);
 	}
@@ -175,7 +175,7 @@ int main(int argc, const char * argv[])
 		NSLog(@"Hello, World!\n");
 		NSLog(@"Args:");
 
-		for (int i=0; i < argc; ++i)
+		for (int i = 0; i < argc; ++i)
 		{
 			NSLog(@"%@\n", @(argv[i]));
 		}
@@ -194,7 +194,7 @@ int main(int argc, const char * argv[])
 		NSLog(@"Hello, World!\n");
 		NSLog(@"Args:");
 
-		for (int i=0; i < argc; ++i)
+		for (int i = 0; i < argc; ++i)
 		{
 			NSLog(@"%@\n", @(argv[i]));
 		}
