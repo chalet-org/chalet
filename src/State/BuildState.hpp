@@ -33,7 +33,7 @@ public:
 	CHALET_DISALLOW_COPY_MOVE(BuildState);
 	~BuildState();
 
-	const AncillaryTools& tools;
+	AncillaryTools& tools;
 	WorkspaceCache& cache;
 
 	BuildInfo& info;

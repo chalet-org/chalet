@@ -76,6 +76,7 @@ struct CompilerTools
 	const std::string& profiler() const noexcept;
 	void setProfiler(std::string&& inValue) noexcept;
 	bool isProfilerGprof() const noexcept;
+	bool isProfilerVSInstruments() const noexcept;
 
 	const std::string& disassembler() const noexcept;
 	void setDisassembler(std::string&& inValue) noexcept;
@@ -127,6 +128,7 @@ private:
 	BuildPathStyle m_buildPathStyle = BuildPathStyle::None;
 
 	bool m_isProfilerGprof = false;
+	bool m_isProfilerVSInstruments = false;
 
 	bool m_isDisassemblerDumpBin = false;
 	bool m_isDisassemblerOtool = false;

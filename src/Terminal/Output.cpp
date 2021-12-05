@@ -548,10 +548,10 @@ void Output::msgProfilerDone(const std::string& inProfileAnalysis)
 }
 
 /*****************************************************************************/
-void Output::msgProfilerDoneInstruments(const std::string& inProfileAnalysis)
+void Output::msgProfilerDoneAndLaunching(const std::string& inProfileAnalysis, const std::string& inApplication)
 {
 	auto symbol = Unicode::diamond();
-	displayStyledSymbol(state.theme.note, symbol, fmt::format("Profiler Completed! Launching {} in Instruments.", inProfileAnalysis));
+	displayStyledSymbol(state.theme.note, symbol, fmt::format("Profiler Completed! Launching {} in {}.", inProfileAnalysis, inApplication));
 }
 
 // Leave the commands as separate functions in case symbols and things change

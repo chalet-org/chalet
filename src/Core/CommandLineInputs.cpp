@@ -872,7 +872,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.rc = "rc";
 		ret.linker = "link";
 		ret.archiver = "lib";
-		ret.profiler = ""; // TODO
+		ret.profiler = "vsinstr"; // TODO
 		ret.disassembler = "dumpbin";
 	}
 	else
@@ -899,7 +899,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.linker = "lld";
 		ret.archiver = "ar";
 		ret.profiler = ""; // TODO
-#if defined(CHALET_MACOS)
+#if defined(CHALET_WIN32)
+		ret.disassembler = "dumpbin";
+#elif defined(CHALET_MACOS)
 		ret.disassembler = "otool";
 #else
 		ret.disassembler = "objdump";
@@ -976,7 +978,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.cc = "clang";
 		ret.linker = "lld";
 		ret.archiver = "llvm-ar";
-		ret.profiler = ""; // TODO
+		ret.profiler = "";
 		ret.disassembler = "dumpbin";
 	}
 #endif
@@ -1002,7 +1004,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.cc = "icl";
 		ret.linker = "xilink";
 		ret.archiver = "xilib";
-		ret.profiler = ""; // TODO
+		ret.profiler = "";
 		ret.disassembler = "dumpbin";
 	#else
 		ret.cpp = "icpc";

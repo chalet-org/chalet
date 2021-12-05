@@ -70,7 +70,7 @@ void msgNothingToClean();
 void msgProfilerStartedGprof(const std::string& inProfileAnalysis);
 void msgProfilerStartedSample(const std::string& inExecutable, const uint inDuration, const uint inSamplingInterval);
 void msgProfilerDone(const std::string& inProfileAnalysis);
-void msgProfilerDoneInstruments(const std::string& inProfileAnalysis);
+void msgProfilerDoneAndLaunching(const std::string& inProfileAnalysis, const std::string& inApplication);
 void msgClean(const std::string& inBuildConfiguration);
 void msgBuild(const std::string& inName);
 void msgRebuild(const std::string& inName);

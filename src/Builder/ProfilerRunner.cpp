@@ -31,6 +31,11 @@ ProfilerRunner::ProfilerRunner(const CommandLineInputs& inInputs, BuildState& in
 /*****************************************************************************/
 bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecutable)
 {
+	if (!m_state.toolchain.profiler().empty() && m_state.toolchain.isProfilerGprof())
+	{
+		return runWithGprof(inCommand, inExecutable);
+	}
+
 #if defined(CHALET_MACOS)
 	if (m_state.environment->isAppleClang())
 	{
@@ -79,12 +84,14 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 	}
 #endif
 
-	if (m_state.environment->isGcc() && !m_state.toolchain.profiler().empty() && m_state.toolchain.isProfilerGprof())
+#if defined(CHALET_WIN32)
+	if (!m_state.toolchain.profiler().empty() && m_state.environment->isMsvc() && m_state.toolchain.isProfilerVSInstruments())
 	{
-		return ProfilerRunner::runWithGprof(inCommand, inExecutable);
+		return runWithVisualStudioInstruments(inCommand, inExecutable);
 	}
+#endif
 
-	// Not supported - THis should be validated in BuildState::validate()
+	// Not supported - This should be validated in BuildState::validate()
 	return false;
 }
 
@@ -122,8 +129,65 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 	return result;
 }
 
-#if defined(CHALET_MACOS)
+#if defined(CHALET_WIN32)
+/*****************************************************************************/
+bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand, const std::string& inExecutable)
+{
+	const auto& vsperfcmd = m_state.tools.vsperfcmd();
+	chalet_assert(!vsperfcmd.empty(), "");
+	if (vsperfcmd.empty())
+		return false;
 
+	const auto& buildDir = m_state.paths.buildOutputDir();
+	auto analysisFile = fmt::format("{}/profiler_analysis.vsp", buildDir);
+	if (Commands::pathExists(analysisFile))
+	{
+		if (!Commands::removeRecursively(analysisFile))
+			return false;
+	}
+
+	// This returns false if the executable didn't change and the profiler pdb already exists,
+	//   so we don't care about the result
+	//
+	Commands::subprocessNoOutput({ m_state.toolchain.profiler(), "/U", inExecutable });
+
+	if (!Commands::subprocessNoOutput({ vsperfcmd, "/start:trace", fmt::format("/output:{}", analysisFile) }))
+	{
+		Diagnostic::error("Failed to start trace: {}", analysisFile);
+		return false;
+	}
+
+	bool result = Commands::subprocessWithInput(inCommand);
+	result &= Commands::subprocessNoOutput({ vsperfcmd, "/shutdown" });
+
+	if (!result)
+	{
+		Diagnostic::error("Failed to save: {}", analysisFile);
+		return false;
+	}
+
+	auto absAnalysisFile = Commands::getAbsolutePath(analysisFile);
+
+	auto devEnvDir = Environment::getAsString("DevEnvDir");
+	auto visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
+	if (devEnvDir.empty() || !Commands::pathExists(visualStudio))
+	{
+		Diagnostic::error("Failed to launch in Visual Studio: {}", analysisFile);
+		return false;
+	}
+
+	Output::printSeparator();
+	Output::msgProfilerDoneAndLaunching(analysisFile, "Visual Studio");
+	Output::lineBreak();
+
+	Commands::sleep(1.0);
+
+	Commands::subprocessNoOutput({ visualStudio, absAnalysisFile }, devEnvDir);
+
+	return true;
+}
+
+#elif defined(CHALET_MACOS)
 /*****************************************************************************/
 bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::string& inExecutable, const bool inUseXcTrace)
 {
@@ -198,7 +262,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 	}
 
 	Output::printSeparator();
-	Output::msgProfilerDoneInstruments(instrumentsTrace);
+	Output::msgProfilerDoneAndLaunching(instrumentsTrace, "Instruments");
 	Output::lineBreak();
 
 	Commands::sleep(1.0);

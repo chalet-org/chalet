@@ -230,7 +230,10 @@ void LinkerVisualStudioLINK::addLinkerOptions(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addProfileInformationLinkerOption(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "/genprofile");
+	if (m_state.configuration.enableProfiling())
+	{
+		List::addIfDoesNotExist(outArgList, "/profile");
+	}
 }
 
 /*****************************************************************************/
@@ -269,7 +272,11 @@ void LinkerVisualStudioLINK::addLinkTimeOptimizations(StringList& outArgList) co
 		// Note: These are also tied to /incremental (implied with /debug)
 		if (m_state.configuration.debugSymbols())
 		{
-			List::addIfDoesNotExist(outArgList, "/opt:NOREF");
+			if (m_state.configuration.enableProfiling())
+				List::addIfDoesNotExist(outArgList, "/opt:REF");
+			else
+				List::addIfDoesNotExist(outArgList, "/opt:NOREF");
+
 			List::addIfDoesNotExist(outArgList, "/opt:NOICF");
 
 			if (isArm)
@@ -289,7 +296,7 @@ void LinkerVisualStudioLINK::addLinkTimeOptimizations(StringList& outArgList) co
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::string& outputFileBase) const
 {
-	if (m_state.configuration.debugSymbols() && !m_state.configuration.enableSanitizers())
+	if (m_state.configuration.debugSymbols() && !m_state.configuration.enableSanitizers() && !m_state.configuration.enableProfiling())
 	{
 		outArgList.emplace_back("/incremental");
 
@@ -301,15 +308,28 @@ void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::s
 	else
 	{
 		outArgList.emplace_back("/incremental:NO");
+
+		if (m_state.configuration.enableProfiling())
+		{
+			outArgList.emplace_back("/fixed:NO");
+		}
 	}
 }
 
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addDebug(StringList& outArgList, const std::string& outputFileBase) const
 {
-	if (m_state.configuration.debugSymbols())
+	if (m_state.configuration.debugSymbols() || m_state.configuration.enableProfiling())
 	{
-		outArgList.emplace_back("/debug");
+		if (m_state.configuration.enableProfiling())
+		{
+			outArgList.emplace_back("/debug:FULL");
+			outArgList.emplace_back("/debugtype:cv,fixup");
+		}
+		else
+		{
+			outArgList.emplace_back("/debug");
+		}
 		outArgList.emplace_back(getPathCommand("/pdb:", fmt::format("{}.pdb", outputFileBase)));
 	}
 }
@@ -466,5 +486,4 @@ std::string LinkerVisualStudioLINK::getMsvcCompatibleEntryPoint(const SourceTarg
 
 	return std::string();
 }
-
 }

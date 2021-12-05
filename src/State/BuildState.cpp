@@ -535,11 +535,42 @@ bool BuildState::validateState()
 
 	if (configuration.enableProfiling())
 	{
-		if (!environment->isAppleClang() && !(environment->isGcc() && !toolchain.profiler().empty() && toolchain.isProfilerGprof()))
+#if defined(CHALET_MACOS)
+		bool profilerAvailable = true;
+#else
+		bool profilerAvailable = !toolchain.profiler().empty() && Commands::pathExists(toolchain.profiler());
+#endif
+		if (!profilerAvailable)
 		{
-			Diagnostic::error("A profiler was either not found, or profiling on this toolchain is not yet supported.");
+			Diagnostic::error("The profiler for this toolchain was either blank or not found.");
 			return false;
 		}
+
+		profilerAvailable = false;
+#if defined(CHALET_MACOS)
+		profilerAvailable |= environment->isAppleClang();
+#elif defined(CHALET_WIN32)
+		bool requiresVisualStudio = environment->isMsvc() && toolchain.isProfilerVSInstruments();
+		profilerAvailable |= requiresVisualStudio;
+#endif
+		profilerAvailable |= toolchain.isProfilerGprof();
+		if (!profilerAvailable)
+		{
+			Diagnostic::error("Profiling on this toolchain is not yet supported.");
+			return false;
+		}
+#if defined(CHALET_WIN32)
+		if (requiresVisualStudio)
+		{
+			auto vsperfcmd = Commands::which("vsperfcmd");
+			if (vsperfcmd.empty())
+			{
+				Diagnostic::error("Profiling with MSVC requires vsperfcmd.exe, but it was not found in Path.");
+				return false;
+			}
+			tools.setVsperfcmd(std::move(vsperfcmd));
+		}
+#endif
 
 #if defined(CHALET_MACOS)
 		m_impl->prototype.tools.fetchXcodeVersion();

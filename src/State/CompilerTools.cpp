@@ -419,8 +419,9 @@ void CompilerTools::setMake(std::string&& inValue) noexcept
 {
 	m_make = std::move(inValue);
 
-	m_makeIsJom = String::endsWith("jom.exe", m_make);
-	m_makeIsNMake = String::endsWith("nmake.exe", m_make) || m_makeIsJom;
+	auto lower = String::toLowerCase(m_make);
+	m_makeIsJom = String::endsWith("jom.exe", lower);
+	m_makeIsNMake = String::endsWith("nmake.exe", lower) || m_makeIsJom;
 }
 
 uint CompilerTools::makeVersionMajor() const noexcept
@@ -477,15 +478,22 @@ void CompilerTools::setProfiler(std::string&& inValue) noexcept
 {
 	m_profiler = std::move(inValue);
 
+	auto lower = String::toLowerCase(m_profiler);
 #if defined(CHALET_WIN32)
-	m_isProfilerGprof = String::endsWith("gprof.exe", m_profiler);
+	m_isProfilerGprof = String::endsWith("gprof.exe", lower);
+	m_isProfilerVSInstruments = String::endsWith("vsinstr.exe", lower);
 #else
-	m_isProfilerGprof = String::endsWith("gprof", m_profiler);
+	m_isProfilerGprof = String::endsWith("gprof", lower);
+	m_isProfilerVSInstruments = false;
 #endif
 }
 bool CompilerTools::isProfilerGprof() const noexcept
 {
 	return m_isProfilerGprof;
+}
+bool CompilerTools::isProfilerVSInstruments() const noexcept
+{
+	return m_isProfilerVSInstruments;
 }
 
 /*****************************************************************************/
@@ -497,13 +505,15 @@ void CompilerTools::setDisassembler(std::string&& inValue) noexcept
 {
 	m_disassembler = std::move(inValue);
 
+	auto lower = String::toLowerCase(m_disassembler);
 #if defined(CHALET_MACOS)
-	m_isDisassemblerOtool = String::endsWith("otool", m_disassembler);
+	m_isDisassemblerOtool = String::endsWith("otool", lower);
 #elif defined(CHALET_WIN32)
-	m_isDisassemblerDumpBin = String::endsWith("dumpbin.exe", m_disassembler);
-	m_isDisassemblerLLVMObjDump = String::endsWith("llvm-objdump.exe", m_disassembler);
+	m_isDisassemblerLLVMObjDump = String::endsWith("llvm-objdump.exe", lower);
+	m_isDisassemblerDumpBin = String::endsWith("dumpbin.exe", lower);
 #else
-	m_isDisassemblerLLVMObjDump = String::endsWith("llvm-objdump", m_disassembler);
+	m_isDisassemblerLLVMObjDump = String::endsWith("llvm-objdump", lower);
+	m_isDisassemblerDumpBin = false;
 #endif
 }
 bool CompilerTools::isDisassemblerDumpBin() const noexcept
@@ -528,10 +538,11 @@ void CompilerTools::setCompilerWindowsResource(std::string&& inValue) noexcept
 {
 	m_compilerWindowsResource = std::move(inValue);
 
+	auto lower = String::toLowerCase(m_compilerWindowsResource);
 #if defined(CHALET_WIN32)
-	m_isCompilerWindowsResourceLLVMRC = String::endsWith({ "/llvm-rc.exe", "/llvm-rc" }, m_compilerWindowsResource);
+	m_isCompilerWindowsResourceLLVMRC = String::endsWith({ "llvm-rc.exe", "llvm-rc" }, lower);
 #else
-	m_isCompilerWindowsResourceLLVMRC = String::endsWith("/llvm-rc", m_compilerWindowsResource);
+	m_isCompilerWindowsResourceLLVMRC = String::endsWith("llvm-rc", lower);
 #endif
 }
 bool CompilerTools::isCompilerWindowsResourceLLVMRC() const noexcept

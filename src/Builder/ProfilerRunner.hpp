@@ -21,7 +21,9 @@ public:
 
 private:
 	bool runWithGprof(const StringList& inCommand, const std::string& inExecutable);
-#if defined(CHALET_MACOS)
+#if defined(CHALET_WIN32)
+	bool runWithVisualStudioInstruments(const StringList& inCommand, const std::string& inExecutable);
+#elif defined(CHALET_MACOS)
 	bool runWithInstruments(const StringList& inCommand, const std::string& inExecutable, const bool inUseXcTrace);
 	bool runWithSample(const StringList& inCommand, const std::string& inExecutable);
 #endif

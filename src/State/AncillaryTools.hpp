@@ -114,6 +114,10 @@ struct AncillaryTools
 	const std::string& zip() const noexcept;
 	void setZip(std::string&& inValue) noexcept;
 
+	// NOT cached
+	const std::string& vsperfcmd() const noexcept;
+	void setVsperfcmd(std::string&& inValue) noexcept;
+
 	// Commands
 
 	bool installHomebrewPackage(const std::string& inPackage) const;
@@ -168,6 +172,8 @@ private:
 	std::string m_xcodegen;
 	std::string m_xcrun;
 	std::string m_zip;
+
+	std::string m_vsperfcmd;
 
 	std::string m_signingIdentity;
 

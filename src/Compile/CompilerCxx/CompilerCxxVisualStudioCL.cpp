@@ -799,13 +799,13 @@ void CompilerCxxVisualStudioCL::addSeparateProgramDatabase(StringList& outArgLis
 		/Zi - separate pdb
 	*/
 
-	if (m_state.configuration.debugSymbols() && !m_state.configuration.enableSanitizers())
+	const auto arch = m_state.info.targetArchitecture();
+	if (m_state.configuration.debugSymbols()
+		&& !m_state.configuration.enableSanitizers()
+		&& !m_state.configuration.enableProfiling()
+		&& (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86))
 	{
-		const auto arch = m_state.info.targetArchitecture();
-		if (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86)
-			List::addIfDoesNotExist(outArgList, "/ZI");
-		else
-			List::addIfDoesNotExist(outArgList, "/Zi");
+		List::addIfDoesNotExist(outArgList, "/ZI");
 	}
 	else
 	{

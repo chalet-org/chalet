@@ -472,6 +472,16 @@ void AncillaryTools::setZip(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& AncillaryTools::vsperfcmd() const noexcept
+{
+	return m_vsperfcmd;
+}
+void AncillaryTools::setVsperfcmd(std::string&& inValue) noexcept
+{
+	m_vsperfcmd = std::move(inValue);
+}
+
+/*****************************************************************************/
 bool AncillaryTools::installHomebrewPackage(const std::string& inPackage) const
 {
 #if defined(CHALET_MACOS)
