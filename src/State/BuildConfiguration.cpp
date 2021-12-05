@@ -27,13 +27,13 @@ StringList BuildConfiguration::getDefaultBuildConfigurationNames()
 
 		// Sanitizers
 		"DebugSanitize",
-		"DebugSanitizeHW",
 		"DebugSanitizeAddress",
-		"DebugSanitizeHWAddress",
 		"DebugSanitizeThread",
 		"DebugSanitizeMemory",
 		"DebugSanitizeLeak",
 		"DebugSanitizeUndefined",
+		"DebugSanitizeHW",
+		"DebugSanitizeHWAddress",
 	};
 }
 
@@ -104,24 +104,10 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 			"leak",
 		});
 	}
-	else if (String::equals("DebugSanitizeHW", inName))
-	{
-		makeDebug(outConfig);
-		outConfig.addSanitizeOptions({
-			"hwaddress",
-			"undefined",
-			"leak",
-		});
-	}
 	else if (String::equals("DebugSanitizeAddress", inName))
 	{
 		makeDebug(outConfig);
 		outConfig.addSanitizeOption("address");
-	}
-	else if (String::equals("DebugSanitizeHWAddress", inName))
-	{
-		makeDebug(outConfig);
-		outConfig.addSanitizeOption("hwaddress");
 	}
 	else if (String::equals("DebugSanitizeThread", inName))
 	{
@@ -142,6 +128,20 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 	{
 		makeDebug(outConfig);
 		outConfig.addSanitizeOption("undefined");
+	}
+	else if (String::equals("DebugSanitizeHW", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOptions({
+			"hwaddress",
+			"undefined",
+			"leak",
+		});
+	}
+	else if (String::equals("DebugSanitizeHWAddress", inName))
+	{
+		makeDebug(outConfig);
+		outConfig.addSanitizeOption("hwaddress");
 	}
 	else
 	{

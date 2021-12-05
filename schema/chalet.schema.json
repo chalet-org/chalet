@@ -2086,13 +2086,13 @@
 				"RelStable",
 				"Profile",
 				"DebugSanitize",
-				"DebugSanitizeHW",
 				"DebugSanitizeAddress",
-				"DebugSanitizeHWAddress",
 				"DebugSanitizeThread",
 				"DebugSanitizeMemory",
 				"DebugSanitizeLeak",
-				"DebugSanitizeUndefined"
+				"DebugSanitizeUndefined",
+				"DebugSanitizeHW",
+				"DebugSanitizeHWAddress"
 			],
 			"items": {
 				"type": "string",
@@ -2106,13 +2106,13 @@
 					"RelStable",
 					"Profile",
 					"DebugSanitize",
-					"DebugSanitizeHW",
 					"DebugSanitizeAddress",
-					"DebugSanitizeHWAddress",
 					"DebugSanitizeThread",
 					"DebugSanitizeMemory",
 					"DebugSanitizeLeak",
-					"DebugSanitizeUndefined"
+					"DebugSanitizeUndefined",
+					"DebugSanitizeHW",
+					"DebugSanitizeHWAddress"
 				]
 			}
 		},
