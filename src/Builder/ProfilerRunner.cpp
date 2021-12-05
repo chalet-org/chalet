@@ -91,7 +91,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 /*****************************************************************************/
 bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable)
 {
-	const bool result = Commands::subprocess(inCommand);
+	const bool result = Commands::subprocessWithInput(inCommand);
 
 	auto outFile = m_state.paths.getTargetFilename(m_project);
 	m_inputs.clearWorkingDirectory(outFile);
@@ -170,7 +170,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 			cmd.push_back(arg);
 		}
 
-		if (!Commands::subprocess(cmd))
+		if (!Commands::subprocessWithInput(cmd))
 			return false;
 	}
 	else
@@ -193,7 +193,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 		Diagnostic::info("Running {} through instruments without output...", inExecutable);
 		Output::lineBreak();
 
-		if (!Commands::subprocess(cmd))
+		if (!Commands::subprocessWithInput(cmd))
 			return false;
 	}
 
@@ -224,7 +224,7 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 			Commands::subprocess({ m_state.tools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close);
 	};
 
-	bool result = Commands::subprocess(inCommand, std::move(onCreate));
+	bool result = Commands::subprocessWithInput(inCommand, std::move(onCreate));
 	if (!sampleResult)
 		Diagnostic::error("Error running sample...");
 

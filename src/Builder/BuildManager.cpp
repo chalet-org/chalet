@@ -769,7 +769,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	}
 	else
 	{
-		bool result = Commands::subprocess(cmd);
+		bool result = Commands::subprocessWithInput(cmd);
 
 		auto outFile = outputFile;
 		m_inputs.clearWorkingDirectory(outFile);

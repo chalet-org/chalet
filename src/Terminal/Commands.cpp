@@ -826,6 +826,25 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 }
 
 /*****************************************************************************/
+bool Commands::subprocessWithInput(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr)
+{
+	if (Output::showCommands())
+		Output::printCommand(inCmd);
+
+	chalet_assert(inStdOut != PipeOption::Pipe, "Commands::subprocess must implement onStdOut");
+	chalet_assert(inStdErr != PipeOption::Pipe, "Commands::subprocess must implement onStdErr");
+
+	ProcessOptions options;
+	options.cwd = std::move(inCwd);
+	options.stdinOption = PipeOption::StdIn;
+	options.stdoutOption = inStdOut;
+	options.stderrOption = inStdErr;
+	options.onCreate = std::move(inOnCreate);
+
+	return ProcessController::run(inCmd, options) == EXIT_SUCCESS;
+}
+
+/*****************************************************************************/
 std::string Commands::subprocessOutput(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr)
 {
 	return subprocessOutput(inCmd, getWorkingDirectory(), inStdOut, inStdErr);

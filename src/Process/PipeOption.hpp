@@ -8,9 +8,10 @@
 
 namespace chalet
 {
-enum class PipeOption : int
+enum class PipeOption : char
 {
 	Inherit,
+	StdIn,
 	StdOut,
 	StdErr,
 	Pipe,

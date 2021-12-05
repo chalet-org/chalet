@@ -69,13 +69,17 @@ inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOpt
 inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr);
 inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut);
 inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr);
+inline bool subprocessWithInput(const StringList& inCmd);
+inline bool subprocessWithInput(const StringList& inCmd, CreateSubprocessFunc inOnCreate);
 inline bool subprocessNoOutput(const StringList& inCmd);
 inline bool subprocessNoOutput(const StringList& inCmd, std::string inCwd);
+inline bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile);
+
 bool subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr);
+bool subprocessWithInput(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr);
+bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr);
 std::string subprocessOutput(const StringList& inCmd, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
 std::string subprocessOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
-inline bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile);
-bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr);
 
 bool subprocessNinjaBuild(const StringList& inCmd, std::string inCwd = std::string());
 

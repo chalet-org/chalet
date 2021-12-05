@@ -16,11 +16,13 @@ struct ProcessOptions
 	using CreateFunc = std::function<void(int /* pid */)>;
 
 	std::string cwd;
-	PipeOption stdoutOption = PipeOption::Close;
-	PipeOption stderrOption = PipeOption::Close;
 	PipeFunc onStdOut = nullptr;
 	PipeFunc onStdErr = nullptr;
 	CreateFunc onCreate = nullptr;
+
+	PipeOption stdinOption = PipeOption::Close;
+	PipeOption stdoutOption = PipeOption::Close;
+	PipeOption stderrOption = PipeOption::Close;
 };
 }
 

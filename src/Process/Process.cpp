@@ -311,6 +311,8 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 	bool openStdOut = inOptions.stdoutOption == PipeOption::Pipe;
 	bool openStdErr = inOptions.stderrOption == PipeOption::Pipe;
 
+	bool closeStdIn = inOptions.stdinOption == PipeOption::Close;
+
 	// m_in.create();
 
 	if (openStdOut)
@@ -339,7 +341,8 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 		// m_in.duplicateRead(FileNo::StdIn);
 		// m_in.closeWrite();
 
-		ProcessPipe::close(FileNo::StdIn);
+		if (closeStdIn)
+			ProcessPipe::close(FileNo::StdIn);
 
 		if (openStdOut)
 		{
