@@ -75,11 +75,7 @@ std::string getCleanGitPath(const std::string inPath)
 /*****************************************************************************/
 constexpr char getEscapeChar()
 {
-#if defined(CHALET_WIN32)
 	return '\x1b';
-#else
-	return '\033';
-#endif
 }
 }
 
