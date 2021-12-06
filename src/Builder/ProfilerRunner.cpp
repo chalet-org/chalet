@@ -141,7 +141,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 #if defined(CHALET_WIN32)
 	if (m_state.info.launchProfiler())
 	{
-		Output::msgProfilerDoneAndLaunching(profStatsFile, "cmd type");
+		Output::msgProfilerDoneAndLaunching(profStatsFile, std::string());
 		Output::lineBreak();
 
 		Commands::sleep(1.0);
@@ -154,7 +154,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 #else
 	if (m_state.info.launchProfiler() && m_state.tools.bashAvailable())
 	{
-		Output::msgProfilerDoneAndLaunching(profStatsFile, "cat");
+		Output::msgProfilerDoneAndLaunching(profStatsFile, std::string());
 		Output::lineBreak();
 
 		Commands::sleep(1.0);
@@ -414,7 +414,7 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 
 	if (m_state.info.launchProfiler() && m_state.tools.bashAvailable())
 	{
-		Output::msgProfilerDoneAndLaunching(profStatsFile, "cat");
+		Output::msgProfilerDoneAndLaunching(profStatsFile, std::string());
 		Output::lineBreak();
 
 		Commands::sleep(1.0);
