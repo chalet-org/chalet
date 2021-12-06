@@ -881,7 +881,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.rc = "rc";
 		ret.linker = "link";
 		ret.archiver = "lib";
-		ret.profiler = "vsinstr"; // TODO
+		ret.profiler = "vsinstr";
 		ret.disassembler = "dumpbin";
 	}
 	else
@@ -907,7 +907,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.rc = "llvm-rc";
 		ret.linker = "lld";
 		ret.archiver = "ar";
-		ret.profiler = ""; // TODO
+		ret.profiler = "gprof";
 #if defined(CHALET_WIN32)
 		ret.disassembler = "dumpbin";
 #elif defined(CHALET_MACOS)
@@ -1020,7 +1020,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.cc = "icc";
 		ret.linker = "xild";
 		ret.archiver = "xiar";
-		ret.profiler = ""; // TODO
+		ret.profiler = "gprof";
 		ret.disassembler = "objdump";
 	#endif
 	}
