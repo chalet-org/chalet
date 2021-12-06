@@ -133,6 +133,9 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 /*****************************************************************************/
 bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand, const std::string& inExecutable)
 {
+	// https://docs.microsoft.com/en-us/visualstudio/profiling/how-to-instrument-a-native-component-and-collect-timing-data?view=vs-2017
+	//
+
 	const auto& vsperfcmd = m_state.tools.vsperfcmd();
 	chalet_assert(!vsperfcmd.empty(), "");
 	if (vsperfcmd.empty())
@@ -146,18 +149,35 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			return false;
 	}
 
-	// This returns false if the executable didn't change and the profiler pdb already exists,
+	// This returns false if the executable didn't change and the profiler *.instr.pdb already exists,
 	//   so we don't care about the result
-	//
 	Commands::subprocessNoOutput({ m_state.toolchain.profiler(), "/U", inExecutable });
 
+	// We need *.instr.pdb files for shared libraries as well
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<SourceTarget&>(*target);
+			if (project.isSharedLibrary())
+			{
+				auto file = m_state.paths.getTargetFilename(project);
+				Commands::subprocessNoOutput({ m_state.toolchain.profiler(), "/U", file });
+			}
+		}
+	}
+
+	// Start the trace service
 	if (!Commands::subprocessNoOutput({ vsperfcmd, "/start:trace", fmt::format("/output:{}", analysisFile) }))
 	{
 		Diagnostic::error("Failed to start trace: {}", analysisFile);
 		return false;
 	}
 
+	// Run the command
 	bool result = Commands::subprocessWithInput(inCommand);
+
+	// Shut down the service
 	result &= Commands::subprocessNoOutput({ vsperfcmd, "/shutdown" });
 
 	if (!result)
