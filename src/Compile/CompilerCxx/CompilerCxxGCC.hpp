@@ -34,7 +34,7 @@ protected:
 	virtual void addOptimizations(StringList& outArgList) const override;
 	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
 	virtual void addDebuggingInformationOption(StringList& outArgList) const override;
-	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;
+	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;
 	virtual void addCompileOptions(StringList& outArgList) const override;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const override;

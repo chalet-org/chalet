@@ -30,7 +30,7 @@ protected:
 	virtual void addRunPath(StringList& outArgList) const;
 	virtual void addStripSymbols(StringList& outArgList) const;
 	virtual void addLinkerOptions(StringList& outArgList) const;
-	virtual void addProfileInformationLinkerOption(StringList& outArgList) const;
+	virtual void addProfileInformation(StringList& outArgList) const;
 	virtual void addLinkTimeOptimizations(StringList& outArgList) const;
 	virtual void addThreadModelLinks(StringList& outArgList) const;
 	virtual void addLinkerScripts(StringList& outArgList) const;
@@ -42,6 +42,9 @@ protected:
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const;
 
 	virtual void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const final;
+
+	uint m_versionMajorMinor = 0;
+	uint m_versionPatch = 0;
 };
 }
 

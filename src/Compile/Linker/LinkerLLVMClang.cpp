@@ -69,6 +69,17 @@ void LinkerLLVMClang::addLinkerScripts(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void LinkerLLVMClang::addProfileInformation(StringList& outArgList) const
+{
+	if (m_state.configuration.enableProfiling() && m_project.isExecutable())
+	{
+		std::string profileInfo{ "-pg" };
+		// if (isFlagSupported(profileInfo))
+		outArgList.emplace_back(std::move(profileInfo));
+	}
+}
+
+/*****************************************************************************/
 void LinkerLLVMClang::addLibStdCppLinkerOption(StringList& outArgList) const
 {
 	UNUSED(outArgList);

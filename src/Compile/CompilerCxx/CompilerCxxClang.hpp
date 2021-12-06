@@ -22,7 +22,7 @@ protected:
 	virtual StringList getWarningExclusions() const override;
 
 	virtual void addWarnings(StringList& outArgList) const override;
-	virtual void addProfileInformationCompileOption(StringList& outArgList) const override;
+	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const override;
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const override;

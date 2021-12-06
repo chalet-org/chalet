@@ -44,7 +44,7 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
 	addMacosSysRootOption(ret);
-	addProfileInformationLinkerOption(ret);
+	addProfileInformation(ret);
 	addLinkTimeOptimizations(ret);
 	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
@@ -82,7 +82,7 @@ void LinkerAppleClang::addThreadModelLinks(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerAppleClang::addProfileInformationLinkerOption(StringList& outArgList) const
+void LinkerAppleClang::addProfileInformation(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }

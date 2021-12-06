@@ -228,7 +228,7 @@ void LinkerVisualStudioLINK::addLinkerOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerVisualStudioLINK::addProfileInformationLinkerOption(StringList& outArgList) const
+void LinkerVisualStudioLINK::addProfileInformation(StringList& outArgList) const
 {
 	if (m_state.configuration.enableProfiling())
 	{

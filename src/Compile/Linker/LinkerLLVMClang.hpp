@@ -20,6 +20,7 @@ protected:
 	virtual void addLinks(StringList& outArgList) const override;
 	virtual void addStripSymbols(StringList& outArgList) const override;
 	virtual void addLinkerScripts(StringList& outArgList) const override;
+	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;
 	virtual void addStaticCompilerLibraries(StringList& outArgList) const override;

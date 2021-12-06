@@ -19,6 +19,7 @@ namespace chalet
 CompilerCxxClang::CompilerCxxClang(const BuildState& inState, const SourceTarget& inProject) :
 	CompilerCxxGCC(inState, inProject)
 {
+	LOG(m_versionMajorMinor);
 }
 
 /*****************************************************************************/
@@ -43,10 +44,10 @@ void CompilerCxxClang::addWarnings(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxClang::addProfileInformationCompileOption(StringList& outArgList) const
+void CompilerCxxClang::addProfileInformation(StringList& outArgList) const
 {
 	// TODO: "-pg" was added in a recent version of Clang (12 or 13 maybe?)
-	UNUSED(outArgList);
+	CompilerCxxGCC::addProfileInformation(outArgList);
 }
 
 /*****************************************************************************/

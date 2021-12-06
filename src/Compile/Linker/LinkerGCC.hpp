@@ -28,7 +28,7 @@ protected:
 	virtual void addRunPath(StringList& outArgList) const override;
 	virtual void addStripSymbols(StringList& outArgList) const override;
 	virtual void addLinkerOptions(StringList& outArgList) const override;
-	virtual void addProfileInformationLinkerOption(StringList& outArgList) const override;
+	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addLinkTimeOptimizations(StringList& outArgList) const override;
 	virtual void addThreadModelLinks(StringList& outArgList) const override;
 	virtual void addLinkerScripts(StringList& outArgList) const override;

@@ -152,7 +152,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	addArchitecture(ret, arch);
 
 	addDebuggingInformationOption(ret);
-	addProfileInformationCompileOption(ret);
+	addProfileInformation(ret);
 	addSanitizerOptions(ret);
 
 	addDefines(ret);
@@ -213,7 +213,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addArchitecture(ret, std::string());
 
 	addDebuggingInformationOption(ret);
-	addProfileInformationCompileOption(ret);
+	addProfileInformation(ret);
 	addSanitizerOptions(ret);
 
 	addDefines(ret);
@@ -449,7 +449,7 @@ void CompilerCxxGCC::addDebuggingInformationOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxGCC::addProfileInformationCompileOption(StringList& outArgList) const
+void CompilerCxxGCC::addProfileInformation(StringList& outArgList) const
 {
 	// TODO: gcc/clang distinction on mac?
 

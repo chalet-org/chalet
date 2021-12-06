@@ -20,6 +20,7 @@ struct CompilerCxxAppleClang final : public CompilerCxxClang
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
 protected:
+	virtual void addProfileInformation(StringList& outArgList) const final;
 	virtual void addSanitizerOptions(StringList& outArgList) const final;
 	virtual void addPchInclude(StringList& outArgList) const final;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const final;

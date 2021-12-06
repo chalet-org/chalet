@@ -139,7 +139,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 	// Output::lineBreak();
 	if (m_state.info.launchProfiler() && m_state.tools.bashAvailable())
 	{
-		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unit cat");
+		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unix cat");
 		Output::lineBreak();
 
 		Commands::sleep(1.0);
@@ -400,7 +400,7 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 
 	if (m_state.info.launchProfiler() && m_state.tools.bashAvailable())
 	{
-		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unit cat");
+		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unix cat");
 		Output::lineBreak();
 
 		Commands::sleep(1.0);

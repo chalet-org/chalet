@@ -83,7 +83,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
 	addMacosSysRootOption(ret);
-	addProfileInformationLinkerOption(ret);
+	addProfileInformation(ret);
 	addLinkTimeOptimizations(ret);
 	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
@@ -134,7 +134,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
 	addMacosSysRootOption(ret);
-	addProfileInformationLinkerOption(ret);
+	addProfileInformation(ret);
 	addLinkTimeOptimizations(ret);
 	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
@@ -241,10 +241,9 @@ void LinkerGCC::addLinkerOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGCC::addProfileInformationLinkerOption(StringList& outArgList) const
+void LinkerGCC::addProfileInformation(StringList& outArgList) const
 {
-	const bool enableProfiling = m_state.configuration.enableProfiling();
-	if (enableProfiling && m_project.isExecutable())
+	if (m_state.configuration.enableProfiling() && m_project.isExecutable())
 	{
 		outArgList.emplace_back("-Wl,--allow-multiple-definition");
 

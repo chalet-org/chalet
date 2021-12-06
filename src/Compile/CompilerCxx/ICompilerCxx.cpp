@@ -107,7 +107,7 @@ void ICompilerCxx::addDebuggingInformationOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ICompilerCxx::addProfileInformationCompileOption(StringList& outArgList) const
+void ICompilerCxx::addProfileInformation(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }

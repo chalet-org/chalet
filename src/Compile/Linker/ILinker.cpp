@@ -6,6 +6,7 @@
 #include "Compile/Linker/ILinker.hpp"
 
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/String.hpp"
 
@@ -23,6 +24,10 @@ namespace chalet
 ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	IToolchainExecutableBase(inState, inProject)
 {
+	m_versionMajorMinor = m_state.toolchain.compilerCxx(m_project.language()).versionMajorMinor;
+	m_versionPatch = m_state.toolchain.compilerCxx(m_project.language()).versionPatch;
+
+	LOG(m_versionMajorMinor, m_versionPatch);
 }
 
 /*****************************************************************************/
@@ -101,7 +106,7 @@ void ILinker::addLinkerOptions(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ILinker::addProfileInformationLinkerOption(StringList& outArgList) const
+void ILinker::addProfileInformation(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }

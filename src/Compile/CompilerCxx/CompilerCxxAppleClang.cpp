@@ -128,6 +128,12 @@ bool CompilerCxxAppleClang::addMultiArchOptionsToCommand(StringList& outArgList,
 }
 
 /*****************************************************************************/
+void CompilerCxxAppleClang::addProfileInformation(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void CompilerCxxAppleClang::addSanitizerOptions(StringList& outArgList, const BuildState& inState)
 {
 	// TODO: others?

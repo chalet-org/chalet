@@ -27,7 +27,7 @@ protected:
 	virtual void addLibDirs(StringList& outArgList) const override;
 	virtual void addLinks(StringList& outArgList) const override;
 	virtual void addLinkerOptions(StringList& outArgList) const override;
-	virtual void addProfileInformationLinkerOption(StringList& outArgList) const override;
+	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addSubSystem(StringList& outArgList) const override;
 	virtual void addEntryPoint(StringList& outArgList) const override;
 	virtual void addLinkTimeOptimizations(StringList& outArgList) const override;
