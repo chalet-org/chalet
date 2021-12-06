@@ -28,6 +28,8 @@ private:
 	bool runWithSample(const StringList& inCommand, const std::string& inExecutable);
 #endif
 
+	void printExitedWithCode(const bool inResult) const;
+
 	const CommandLineInputs& m_inputs;
 	const BuildState& m_state;
 	const SourceTarget& m_project;

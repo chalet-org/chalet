@@ -93,11 +93,8 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 	return false;
 }
 
-/*****************************************************************************/
-bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable)
+void ProfilerRunner::printExitedWithCode(const bool inResult) const
 {
-	const bool result = Commands::subprocessWithInput(inCommand);
-
 	auto outFile = m_state.paths.getTargetFilename(m_project);
 	m_inputs.clearWorkingDirectory(outFile);
 
@@ -105,28 +102,53 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	// Output::lineBreak();
 	Output::printSeparator();
-	Output::print(result ? Output::theme().info : Output::theme().error, message);
+	Output::print(inResult ? Output::theme().info : Output::theme().error, message);
 	Output::lineBreak();
+}
 
-	Diagnostic::info("Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
+/*****************************************************************************/
+bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable)
+{
+	const bool result = Commands::subprocessWithInput(inCommand);
+
+	printExitedWithCode(result);
 
 	auto executableName = String::getPathFilename(inExecutable);
 
 	const auto& buildDir = m_state.paths.buildOutputDir();
 	const auto profStatsFile = fmt::format("{}/{}.stats", buildDir, executableName);
-	Output::msgProfilerStartedGprof(profStatsFile);
-	Output::lineBreak();
+	// Output::msgProfilerStartedGprof(profStatsFile);
+	// Output::lineBreak();
 
-	if (!Commands::subprocessOutputToFile({ m_state.toolchain.profiler(), "-Q", "-b", inExecutable, "gmon.out" }, profStatsFile, PipeOption::StdOut))
+	std::string gmonOut{ "gmon.out" };
+
+	if (!Commands::subprocessOutputToFile({ m_state.toolchain.profiler(), "-Q", "-b", inExecutable, gmonOut }, profStatsFile, PipeOption::StdOut))
 	{
 		Diagnostic::error("{} failed to save.", profStatsFile);
 		return false;
 	}
 
-	// Output::lineBreak();
-	Output::msgProfilerDone(profStatsFile);
+	if (Commands::pathExists(gmonOut))
+		Commands::remove(gmonOut);
 
-	return result;
+	// Output::lineBreak();
+	if (m_state.tools.bashAvailable())
+	{
+		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unit cat");
+		Output::lineBreak();
+
+		Commands::sleep(1.0);
+
+		StringList cmd{ "cat", profStatsFile, "|", "more" };
+		Commands::subprocessWithInput({ m_state.tools.bash(), "-c", String::join(cmd) });
+	}
+	else
+	{
+		Output::msgProfilerDone(profStatsFile);
+		Output::lineBreak();
+	}
+
+	return true;
 }
 
 #if defined(CHALET_WIN32)
@@ -192,18 +214,18 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	bool result = Commands::subprocessWithInput(inCommand);
 
 	// Shut down the service
-	result &= Commands::subprocessNoOutput({
-		vsperfcmd,
-		"/shutdown",
-	});
+	if (!Commands::subprocessNoOutput({
+			vsperfcmd,
+			"/shutdown",
+		}))
+	{
+		Diagnostic::error("Failed to shutdown trace: {}", analysisFile);
+		return false;
+	}
 
 	/////////////
 
-	if (!result)
-	{
-		Diagnostic::error("Failed to save: {}", analysisFile);
-		return false;
-	}
+	printExitedWithCode(result);
 
 	auto absAnalysisFile = Commands::getAbsolutePath(analysisFile);
 
@@ -215,7 +237,6 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 		return false;
 	}
 
-	Output::printSeparator();
 	Output::msgProfilerDoneAndLaunching(analysisFile, "Visual Studio");
 	Output::lineBreak();
 
@@ -333,11 +354,28 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 
 	bool result = Commands::subprocessWithInput(inCommand, std::move(onCreate));
 	if (!sampleResult)
+	{
 		Diagnostic::error("Error running sample...");
+		return false;
+	}
 
-	Output::lineBreak();
-	Output::msgProfilerDone(profStatsFile);
-	Output::lineBreak();
+	printExitedWithCode(result);
+
+	if (m_state.tools.bashAvailable())
+	{
+		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unit cat");
+		Output::lineBreak();
+
+		Commands::sleep(1.0);
+
+		StringList cmd{ "cat", profStatsFile, "|", "more" };
+		Commands::subprocessWithInput({ m_state.tools.bash(), "-c", String::join(cmd) });
+	}
+	else
+	{
+		Output::msgProfilerDone(profStatsFile);
+		Output::lineBreak();
+	}
 
 	return result;
 }
