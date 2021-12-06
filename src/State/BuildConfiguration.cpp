@@ -52,7 +52,7 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 
 	if (String::equals("Release", inName))
 	{
-		outConfig.setOptimizationLevel("3");
+		outConfig.setOptimizationLevel("2");
 		outConfig.setDebugSymbols(false);
 		outConfig.setLinkTimeOptimization(true);
 		outConfig.setStripSymbols(true);
