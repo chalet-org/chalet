@@ -30,6 +30,7 @@ struct GlobalSettingsState
 
 	uint maxJobs = 0;
 	bool benchmark = true;
+	bool launchProfiler = true;
 	bool showCommands = false;
 	bool dumpAssembly = false;
 	bool generateCompileCommands = false;

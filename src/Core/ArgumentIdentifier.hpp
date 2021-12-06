@@ -35,6 +35,7 @@ enum class ArgumentIdentifier : ushort
 	GenerateCompileCommands,
 	ShowCommands,
 	Benchmark,
+	LaunchProfiler,
 	//
 	// Init
 	InitPath,

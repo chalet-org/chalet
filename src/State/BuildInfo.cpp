@@ -30,6 +30,9 @@ BuildInfo::BuildInfo(const CommandLineInputs& inInputs) :
 
 	if (m_inputs.generateCompileCommands().has_value())
 		m_generateCompileCommands = *m_inputs.generateCompileCommands();
+
+	if (m_inputs.launchProfiler().has_value())
+		m_launchProfiler = *m_inputs.launchProfiler();
 }
 
 /*****************************************************************************/
@@ -167,6 +170,12 @@ bool BuildInfo::dumpAssembly() const noexcept
 bool BuildInfo::generateCompileCommands() const noexcept
 {
 	return m_generateCompileCommands;
+}
+
+/*****************************************************************************/
+bool BuildInfo::launchProfiler() const noexcept
+{
+	return m_launchProfiler;
 }
 
 }

@@ -197,6 +197,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 						m_inputs.setBenchmark(value);
 						break;
 
+					case ArgumentIdentifier::LaunchProfiler:
+						m_inputs.setLaunchProfiler(value);
+						break;
+
 					case ArgumentIdentifier::GenerateCompileCommands:
 						m_inputs.setGenerateCompileCommands(value);
 						break;
@@ -288,6 +292,7 @@ StringList ArgumentParser::parseRawArguments(const int argc, const char* const a
 		"--dump-assembly",
 		"--generate-compile-commands",
 		"--show-commands",
+		"--launch-profiler",
 		"--benchmark"
 	};
 

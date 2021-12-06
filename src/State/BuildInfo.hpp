@@ -40,6 +40,7 @@ struct BuildInfo
 	uint maxJobs() const noexcept;
 	bool dumpAssembly() const noexcept;
 	bool generateCompileCommands() const noexcept;
+	bool launchProfiler() const noexcept;
 
 private:
 	const CommandLineInputs& m_inputs;
@@ -56,6 +57,7 @@ private:
 
 	bool m_dumpAssembly = false;
 	bool m_generateCompileCommands = false;
+	bool m_launchProfiler = true;
 };
 }
 

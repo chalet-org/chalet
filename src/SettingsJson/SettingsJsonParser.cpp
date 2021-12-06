@@ -145,6 +145,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyShowCommands, m_inputs.showCommands(), inState.showCommands);
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyBenchmark, m_inputs.benchmark(), inState.benchmark);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
 	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildSettings, kKeyMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
 
@@ -442,6 +443,12 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 			val = *m_inputs.benchmark();
 
 		Output::setShowBenchmarks(val);
+	}
+
+	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyLaunchProfiler))
+	{
+		if (!m_inputs.launchProfiler().has_value())
+			m_inputs.setLaunchProfiler(val);
 	}
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))

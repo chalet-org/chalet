@@ -65,6 +65,7 @@ enum class Defs : ushort
 	MaxJobs,
 	ShowCommands,
 	Benchmark,
+	LaunchProfiler,
 	LastBuildConfiguration,
 	LastToolchain,
 	LastArchitecture,
@@ -398,6 +399,12 @@ Json SchemaSettingsJson::get()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::LaunchProfiler] = R"json({
+		"description": "If running profile targets, true to launch the preferred profiler afterwards, false to just generate the output files.",
+		"type": "boolean",
+		"default": true
+	})json"_ojson;
+
 	defs[Defs::LastBuildConfiguration] = R"json({
 		"description": "The build configuration to use for building, if not the previous one.",
 		"type": "string"
@@ -492,20 +499,6 @@ Json SchemaSettingsJson::get()
 		"additionalProperties": false,
 		"description": "A list of compilers and tools needing for the build itself."
 	})json"_ojson;
-	/*toolchains[kRequired] = {
-		"archiver",
-		"cmake",
-		"compilerCpp",
-		"compilerC",
-		"compilerWindowsResource",
-		"linker",
-		"profiler",
-		"make",
-		"disassembler",
-		"ninja",
-		"strategy",
-		"version"
-	};*/
 	toolchains[kProperties] = Json::object();
 	toolchains[kProperties]["version"] = defs[Defs::Version];
 	toolchains[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
@@ -572,27 +565,13 @@ Json SchemaSettingsJson::get()
 		"additionalProperties": false,
 		"description": "A list of settings related to the build."
 	})json"_ojson;
-	/*ret[kProperties][kKeyOptions][kRequired] = {
-		"dumpAssembly",
-		"maxJobs",
-		"showCommands",
-		"benchmark",
-		"configuration",
-		"toolchain",
-		"architecture",
-		"signingIdentity",
-		"inputFile",
-		"envFile",
-		"rootDir",
-		"outputDir",
-		"distributionDir",
-	};*/
 	ret[kProperties][kKeyOptions][kProperties] = Json::object();
 	ret[kProperties][kKeyOptions][kProperties]["dumpAssembly"] = defs[Defs::DumpAssembly];
 	ret[kProperties][kKeyOptions][kProperties]["generateCompileCommands"] = defs[Defs::GenerateCompileCommands];
 	ret[kProperties][kKeyOptions][kProperties]["maxJobs"] = defs[Defs::MaxJobs];
 	ret[kProperties][kKeyOptions][kProperties]["showCommands"] = defs[Defs::ShowCommands];
 	ret[kProperties][kKeyOptions][kProperties]["benchmark"] = defs[Defs::Benchmark];
+	ret[kProperties][kKeyOptions][kProperties]["launchProfiler"] = defs[Defs::LaunchProfiler];
 	ret[kProperties][kKeyOptions][kProperties]["configuration"] = defs[Defs::LastBuildConfiguration];
 	ret[kProperties][kKeyOptions][kProperties]["toolchain"] = defs[Defs::LastToolchain];
 	ret[kProperties][kKeyOptions][kProperties]["architecture"] = defs[Defs::LastArchitecture];

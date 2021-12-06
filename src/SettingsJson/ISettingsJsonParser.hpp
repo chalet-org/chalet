@@ -24,6 +24,7 @@ protected:
 	const std::string kKeyMaxJobs = "maxJobs";
 	const std::string kKeyShowCommands = "showCommands";
 	const std::string kKeyBenchmark = "benchmark";
+	const std::string kKeyLaunchProfiler = "launchProfiler";
 	const std::string kKeyLastBuildConfiguration = "configuration";
 	const std::string kKeyLastToolchain = "toolchain";
 	const std::string kKeyLastArchitecture = "architecture";

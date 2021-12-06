@@ -83,6 +83,7 @@ private:
 	void addGenerateCompileCommandsArg();
 	void addShowCommandsArg();
 	void addBenchmarkArg();
+	void addLaunchProfilerArg();
 	void addOptionalArguments();
 
 	void populateBuildRunArguments();

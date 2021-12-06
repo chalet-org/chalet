@@ -747,6 +747,15 @@ void CommandLineInputs::setBenchmark(const bool inValue) noexcept
 	m_benchmark = inValue;
 }
 
+const std::optional<bool>& CommandLineInputs::launchProfiler() const noexcept
+{
+	return m_launchProfiler;
+}
+void CommandLineInputs::setLaunchProfiler(const bool inValue) noexcept
+{
+	m_launchProfiler = inValue;
+}
+
 /*****************************************************************************/
 const std::optional<bool>& CommandLineInputs::generateCompileCommands() const noexcept
 {

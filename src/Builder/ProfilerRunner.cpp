@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -93,6 +94,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 	return false;
 }
 
+/*****************************************************************************/
 void ProfilerRunner::printExitedWithCode(const bool inResult) const
 {
 	auto outFile = m_state.paths.getTargetFilename(m_project);
@@ -109,9 +111,12 @@ void ProfilerRunner::printExitedWithCode(const bool inResult) const
 /*****************************************************************************/
 bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable)
 {
-	const bool result = Commands::subprocessWithInput(inCommand);
+	bool result = Commands::subprocessWithInput(inCommand);
 
 	printExitedWithCode(result);
+
+	if (!result)
+		return false;
 
 	auto executableName = String::getPathFilename(inExecutable);
 
@@ -132,7 +137,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 		Commands::remove(gmonOut);
 
 	// Output::lineBreak();
-	if (m_state.tools.bashAvailable())
+	if (m_state.info.launchProfiler() && m_state.tools.bashAvailable())
 	{
 		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unit cat");
 		Output::lineBreak();
@@ -227,22 +232,33 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 
 	printExitedWithCode(result);
 
-	auto absAnalysisFile = Commands::getAbsolutePath(analysisFile);
-
-	auto devEnvDir = Environment::getAsString("DevEnvDir");
-	auto visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
-	if (devEnvDir.empty() || !Commands::pathExists(visualStudio))
-	{
-		Diagnostic::error("Failed to launch in Visual Studio: {}", analysisFile);
+	if (!result)
 		return false;
+
+	if (m_state.info.launchProfiler())
+	{
+		auto absAnalysisFile = Commands::getAbsolutePath(analysisFile);
+
+		auto devEnvDir = Environment::getAsString("DevEnvDir");
+		auto visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
+		if (devEnvDir.empty() || !Commands::pathExists(visualStudio))
+		{
+			Diagnostic::error("Failed to launch in Visual Studio: {}", analysisFile);
+			return false;
+		}
+
+		Output::msgProfilerDoneAndLaunching(analysisFile, "Visual Studio");
+		Output::lineBreak();
+
+		Commands::sleep(1.0);
+
+		Commands::subprocessNoOutput({ visualStudio, absAnalysisFile }, devEnvDir);
 	}
-
-	Output::msgProfilerDoneAndLaunching(analysisFile, "Visual Studio");
-	Output::lineBreak();
-
-	Commands::sleep(1.0);
-
-	Commands::subprocessNoOutput({ visualStudio, absAnalysisFile }, devEnvDir);
+	else
+	{
+		Output::msgProfilerDone(analysisFile);
+		Output::lineBreak();
+	}
 
 	return true;
 }
@@ -266,6 +282,8 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 
 	auto libPath = Environment::get("DYLD_FALLBACK_LIBRARY_PATH");
 	auto frameworkPath = Environment::get("DYLD_FALLBACK_FRAMEWORK_PATH");
+
+	bool result = true;
 
 	// TODO: Could attach iPhone device here
 	if (inUseXcTrace)
@@ -296,8 +314,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 			cmd.push_back(arg);
 		}
 
-		if (!Commands::subprocessWithInput(cmd))
-			return false;
+		result = Commands::subprocessWithInput(cmd);
 	}
 	else
 	{
@@ -319,18 +336,31 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 		Diagnostic::info("Running {} through instruments without output...", inExecutable);
 		Output::lineBreak();
 
-		if (!Commands::subprocessWithInput(cmd))
-			return false;
+		result = Commands::subprocessWithInput(cmd);
 	}
 
-	Output::printSeparator();
-	Output::msgProfilerDoneAndLaunching(instrumentsTrace, "Instruments");
-	Output::lineBreak();
+	printExitedWithCode(result);
 
-	Commands::sleep(1.0);
+	if (!result)
+		return false;
 
-	auto open = Commands::which("open");
-	return Commands::subprocess({ std::move(open), instrumentsTrace });
+	if (m_state.info.launchProfiler())
+	{
+		Output::msgProfilerDoneAndLaunching(instrumentsTrace, "Instruments");
+		Output::lineBreak();
+
+		Commands::sleep(1.0);
+
+		auto open = Commands::which("open");
+		Commands::subprocess({ std::move(open), instrumentsTrace });
+	}
+	else
+	{
+		Output::msgProfilerDone(instrumentsTrace);
+		Output::lineBreak();
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -361,7 +391,10 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 
 	printExitedWithCode(result);
 
-	if (m_state.tools.bashAvailable())
+	if (!result)
+		return false;
+
+	if (m_state.info.launchProfiler() && m_state.tools.bashAvailable())
 	{
 		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unit cat");
 		Output::lineBreak();
@@ -377,7 +410,7 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 		Output::lineBreak();
 	}
 
-	return result;
+	return true;
 }
 
 #endif

@@ -100,6 +100,10 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		return m_inputs.benchmark();
 	});
 
+	assignSettingsBool(kKeyLaunchProfiler, outState.launchProfiler, [&]() {
+		return m_inputs.launchProfiler();
+	});
+
 	assignSettingsBool(kKeyGenerateCompileCommands, outState.generateCompileCommands, [&]() {
 		return m_inputs.generateCompileCommands();
 	});
@@ -247,6 +251,9 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyBenchmark))
 		outState.benchmark = val;
+
+	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyLaunchProfiler))
+		outState.launchProfiler = val;
 
 	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))
 		outState.generateCompileCommands = val;

@@ -242,6 +242,11 @@
 					"type": "boolean",
 					"default": true
 				},
+				"launchProfiler": {
+					"description": "If running profile targets, true to launch the preferred profiler afterwards, false to just generate the output files.",
+					"type": "boolean",
+					"default": true
+				},
 				"configuration": {
 					"description": "The build configuration to use for building, if not the previous one.",
 					"type": "string"
