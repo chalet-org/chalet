@@ -26,8 +26,6 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 {
 	m_versionMajorMinor = m_state.toolchain.compilerCxx(m_project.language()).versionMajorMinor;
 	m_versionPatch = m_state.toolchain.compilerCxx(m_project.language()).versionPatch;
-
-	LOG(m_versionMajorMinor, m_versionPatch);
 }
 
 /*****************************************************************************/
