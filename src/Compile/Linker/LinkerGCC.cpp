@@ -121,16 +121,6 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 
 	ret.emplace_back(getQuotedExecutablePath(executable));
 
-	addLibDirs(ret);
-
-	ret.emplace_back("-o");
-	ret.push_back(outputFile);
-
-	addRunPath(ret);
-	addSourceObjects(ret, sourceObjs);
-
-	addLinks(ret);
-
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
 	addMacosSysRootOption(ret);
@@ -146,6 +136,17 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addSubSystem(ret);
 	addEntryPoint(ret);
 	addMacosFrameworkOptions(ret);
+
+	addLibDirs(ret);
+
+	ret.emplace_back("-o");
+	ret.push_back(outputFile);
+
+	addRunPath(ret);
+	addSourceObjects(ret, sourceObjs);
+
+	addLinks(ret);
+	addObjectiveCxxLink(ret);
 
 	return ret;
 }
