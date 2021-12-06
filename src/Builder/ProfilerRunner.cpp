@@ -54,8 +54,6 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 			'sample' will need to be used instead if only CommandLineTools is selected.
 			sample requires the PID (get from subprocess somehow), while both flavors of making an
 			Instruments trace can be passed the commands directly
-
-			... 🤡
 		*/
 
 		bool xctraceAvailable = false;
@@ -149,9 +147,15 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			return false;
 	}
 
+	/////////////
+
 	// This returns false if the executable didn't change and the profiler *.instr.pdb already exists,
 	//   so we don't care about the result
-	Commands::subprocessNoOutput({ m_state.toolchain.profiler(), "/U", inExecutable });
+	Commands::subprocessNoOutput({
+		m_state.toolchain.profiler(),
+		"/U",
+		inExecutable,
+	});
 
 	// We need *.instr.pdb files for shared libraries as well
 	for (auto& target : m_state.targets)
@@ -167,8 +171,14 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 		}
 	}
 
+	/////////////
+
 	// Start the trace service
-	if (!Commands::subprocessNoOutput({ vsperfcmd, "/start:trace", fmt::format("/output:{}", analysisFile) }))
+	if (!Commands::subprocessNoOutput({
+			vsperfcmd,
+			"/start:trace",
+			fmt::format("/output:{}", analysisFile),
+		}))
 	{
 		Diagnostic::error("Failed to start trace: {}", analysisFile);
 		return false;
@@ -178,7 +188,12 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	bool result = Commands::subprocessWithInput(inCommand);
 
 	// Shut down the service
-	result &= Commands::subprocessNoOutput({ vsperfcmd, "/shutdown" });
+	result &= Commands::subprocessNoOutput({
+		vsperfcmd,
+		"/shutdown",
+	});
+
+	/////////////
 
 	if (!result)
 	{
