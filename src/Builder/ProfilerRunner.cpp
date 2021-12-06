@@ -110,8 +110,10 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	Diagnostic::info("Run task completed successfully. Profiling data for gprof has been written to gmon.out.");
 
+	auto executableName = String::getPathFilename(inExecutable);
+
 	const auto& buildDir = m_state.paths.buildOutputDir();
-	const auto profStatsFile = fmt::format("{}/profiler_analysis.stats", buildDir);
+	const auto profStatsFile = fmt::format("{}/{}.stats", buildDir, executableName);
 	Output::msgProfilerStartedGprof(profStatsFile);
 	Output::lineBreak();
 
@@ -139,8 +141,10 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	if (vsperfcmd.empty())
 		return false;
 
+	auto executableName = String::getPathFilename(inExecutable);
+
 	const auto& buildDir = m_state.paths.buildOutputDir();
-	auto analysisFile = fmt::format("{}/profiler_analysis.vsp", buildDir);
+	auto analysisFile = fmt::format("{}/{}.vsp", buildDir, executableName);
 	if (Commands::pathExists(analysisFile))
 	{
 		if (!Commands::removeRecursively(analysisFile))
@@ -229,8 +233,10 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 	// TOOD: profile could be defined elsewhere (maybe the cache json?)
 	std::string profile = "Time Profiler";
 
+	auto executableName = String::getPathFilename(inExecutable);
+
 	const auto& buildDir = m_state.paths.buildOutputDir();
-	auto instrumentsTrace = fmt::format("{}/profiler_analysis.trace", buildDir);
+	auto instrumentsTrace = fmt::format("{}/{}.trace", buildDir, executableName);
 	if (Commands::pathExists(instrumentsTrace))
 	{
 		if (!Commands::removeRecursively(instrumentsTrace))
@@ -309,8 +315,10 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 /*****************************************************************************/
 bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::string& inExecutable)
 {
+	auto executableName = String::getPathFilename(inExecutable);
+
 	const auto& buildDir = m_state.paths.buildOutputDir();
-	auto profStatsFile = fmt::format("{}/profiler_analysis.stats", buildDir);
+	auto profStatsFile = fmt::format("{}/{}.stats", buildDir, executableName);
 
 	bool sampleResult = true;
 	auto onCreate = [&](int pid) -> void {
