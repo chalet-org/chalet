@@ -17,6 +17,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -136,21 +137,34 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 	if (Commands::pathExists(gmonOut))
 		Commands::remove(gmonOut);
 
-	// Output::lineBreak();
+		// Output::lineBreak();
+#if defined(CHALET_WIN32)
+	if (m_state.info.launchProfiler())
+	{
+		Output::msgProfilerDoneAndLaunching(profStatsFile, "cmd type");
+		Output::lineBreak();
+
+		Commands::sleep(1.0);
+
+		auto statsFileForType = profStatsFile;
+		Path::sanitizeForWindows(statsFileForType);
+		StringList cmd{ "type", statsFileForType };
+		Commands::subprocessWithInput({ m_state.tools.commandPrompt(), "/c", String::join(cmd) });
+	}
+#else
 	if (m_state.info.launchProfiler() && m_state.tools.bashAvailable())
 	{
-		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unix cat");
+		Output::msgProfilerDoneAndLaunching(profStatsFile, "cat");
 		Output::lineBreak();
 
 		Commands::sleep(1.0);
 
 		StringList cmd{ "cat", profStatsFile };
-#if !defined(CHALET_WIN32)
 		cmd.emplace_back("|");
 		cmd.emplace_back("more");
-#endif
 		Commands::subprocessWithInput({ m_state.tools.bash(), "-c", String::join(cmd) });
 	}
+#endif
 	else
 	{
 		Output::msgProfilerDone(profStatsFile);
@@ -400,7 +414,7 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 
 	if (m_state.info.launchProfiler() && m_state.tools.bashAvailable())
 	{
-		Output::msgProfilerDoneAndLaunching(profStatsFile, "Unix cat");
+		Output::msgProfilerDoneAndLaunching(profStatsFile, "cat");
 		Output::lineBreak();
 
 		Commands::sleep(1.0);
