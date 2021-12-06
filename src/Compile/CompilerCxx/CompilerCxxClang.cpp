@@ -19,7 +19,6 @@ namespace chalet
 CompilerCxxClang::CompilerCxxClang(const BuildState& inState, const SourceTarget& inProject) :
 	CompilerCxxGCC(inState, inProject)
 {
-	LOG(m_versionMajorMinor);
 }
 
 /*****************************************************************************/
