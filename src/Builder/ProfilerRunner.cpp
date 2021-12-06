@@ -144,7 +144,11 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 		Commands::sleep(1.0);
 
-		StringList cmd{ "cat", profStatsFile, "|", "more" };
+		StringList cmd{ "cat", profStatsFile };
+#if !defined(CHALET_WIN32)
+		cmd.emplace_back("|");
+		cmd.emplace_back("more");
+#endif
 		Commands::subprocessWithInput({ m_state.tools.bash(), "-c", String::join(cmd) });
 	}
 	else
