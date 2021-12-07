@@ -33,6 +33,9 @@ struct MacosDiskImageTarget final : public IDistTarget
 	ushort iconSize() const noexcept;
 	void setIconSize(const ushort inValue) noexcept;
 
+	bool pathbarVisible() const noexcept;
+	void setPathbarVisible(const bool inValue) noexcept;
+
 	bool includeApplicationsSymlink() const noexcept;
 
 private:
@@ -45,6 +48,7 @@ private:
 
 	ushort m_iconSize = 48;
 
+	bool m_pathbarVisible = false;
 	bool m_includeApplicationsSymlink = false;
 };
 }

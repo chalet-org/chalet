@@ -94,7 +94,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 
 	const auto& background1x = inDiskImage.background1x();
 	const auto& background2x = inDiskImage.background2x();
-	const bool hasBackground = !background1x.empty() || !background2x.empty();
+	const bool hasBackground = !background1x.empty();
 
 	if (hasBackground)
 	{
@@ -111,8 +111,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 		{
 			StringList cmd{ tiffutil, "-cathidpicheck" };
 
-			if (!background1x.empty())
-				cmd.push_back(background1x);
+			cmd.push_back(background1x);
 
 			if (!background2x.empty())
 				cmd.push_back(background2x);
@@ -185,6 +184,8 @@ bool MacosDiskImageCreator::signDmgImage(const std::string& inPath) const
 /*****************************************************************************/
 std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget& inDiskImage) const
 {
+	std::string pathbar = inDiskImage.pathbarVisible() ? "true" : "false";
+
 	ushort iconSize = inDiskImage.iconSize();
 	ushort width = inDiskImage.size().width;
 	ushort height = inDiskImage.size().height;
@@ -223,7 +224,6 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
 	std::string background;
 	if (!inDiskImage.background1x().empty())
 	{
-		// TODO
 		background = fmt::format(R"applescript(
   set background picture of viewOptions to file ".background:background.tiff"
   set position of item ".background" of container window to {{{leftMost}, {bottomMost}}})applescript",
@@ -234,21 +234,22 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
 	return fmt::format(R"applescript(tell application "Finder"
  tell disk "{diskName}"
   open
-  set current view of container window to icon view
-  set toolbar visible of container window to false
-  set statusbar visible of container window to false
   set the bounds of container window to {{0, 0, {width}, {height}}}
   set viewOptions to the icon view options of container window
   set arrangement of viewOptions to not arranged
   set icon size of viewOptions to {iconSize}{positions}{background}
+  set pathbar visible of container window to {pathbar}
+  set toolbar visible of container window to false
+  set statusbar visible of container window to false
+  set current view of container window to icon view
   close
   update without registering applications
-  delay 2
  end tell
 end tell)applescript",
 		fmt::arg("diskName", m_diskName),
 		FMT_ARG(positions),
 		FMT_ARG(background),
+		FMT_ARG(pathbar),
 		FMT_ARG(iconSize),
 		FMT_ARG(width),
 		FMT_ARG(height));

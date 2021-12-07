@@ -114,6 +114,16 @@ void MacosDiskImageTarget::setIconSize(const ushort inValue) noexcept
 }
 
 /*****************************************************************************/
+bool MacosDiskImageTarget::pathbarVisible() const noexcept
+{
+	return m_pathbarVisible;
+}
+void MacosDiskImageTarget::setPathbarVisible(const bool inValue) noexcept
+{
+	m_pathbarVisible = inValue;
+}
+
+/*****************************************************************************/
 bool MacosDiskImageTarget::includeApplicationsSymlink() const noexcept
 {
 	return m_includeApplicationsSymlink;

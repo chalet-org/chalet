@@ -369,6 +369,9 @@
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
+				"pathbarVisible": {
+					"$ref": "#/definitions/distribution-macosDiskImage-target-pathbarVisible"
+				},
 				"iconSize": {
 					"$ref": "#/definitions/distribution-macosDiskImage-target-iconSize"
 				},
@@ -383,9 +386,14 @@
 				}
 			}
 		},
+		"distribution-macosDiskImage-target-pathbarVisible": {
+			"type": "boolean",
+			"description": "true to display the pathbar (aka breadcrumbs) in the root of the disk image. false to hide it.",
+			"default": false
+		},
 		"distribution-macosDiskImage-target-iconSize": {
 			"type": "integer",
-			"description": "The icon size in the root of the disk image?",
+			"description": "The icon size in the root of the disk image.",
 			"default": 48,
 			"minimum": 16,
 			"maximum": 512
