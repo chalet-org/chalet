@@ -597,7 +597,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 	if (!inScript.description().empty())
 		Output::msgTargetDescription(inScript.description(), color);
 	else
-		Output::msgScript(inScript.name(), color);
+		Output::msgTargetOfType("Script", inScript.name(), color);
 
 	Output::lineBreak();
 

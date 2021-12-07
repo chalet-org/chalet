@@ -108,9 +108,6 @@ bool AppBundlerMacOS::bundleForPlatform()
 		if (!signAppBundle())
 			return false;
 
-		if (!createDmgImage())
-			return false;
-
 		return true;
 	}
 }
@@ -375,101 +372,6 @@ bool AppBundlerMacOS::setExecutablePaths() const
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::createDmgImage() const
-{
-	auto& macosBundle = m_bundle.macosBundle();
-	const auto& name = m_bundle.name();
-	if (!macosBundle.makeDmg())
-		return true;
-
-	const auto& subdirectory = m_bundle.subdirectory();
-
-	auto& hdiutil = m_state.tools.hdiutil();
-	auto& tiffutil = m_state.tools.tiffutil();
-	const std::string volumePath = fmt::format("/Volumes/{}", name);
-	const std::string appPath = fmt::format("{}/{}.app", subdirectory, name);
-
-	Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
-
-	Timer timer;
-
-	Diagnostic::infoEllipsis("Creating the distribution disk image");
-
-	const std::string tmpDmg = fmt::format("{}/.tmp.dmg", subdirectory);
-
-	std::uintmax_t appSize = Commands::getPathSize(appPath);
-	std::uintmax_t mb = 1000000;
-	std::uintmax_t dmgSize = appSize > mb ? appSize / mb : 10;
-	// if (dmgSize > 10)
-	{
-		std::uintmax_t temp = 16;
-		while (temp < dmgSize)
-		{
-			temp += temp;
-		}
-		dmgSize = temp;
-	}
-
-	if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", fmt::format("{}", dmgSize), "-fs", "HFS+", "-volname", name, tmpDmg }))
-		return false;
-
-	if (!Commands::subprocessNoOutput({ hdiutil, "attach", tmpDmg }))
-		return false;
-
-	if (!Commands::copySilent(appPath, volumePath))
-		return false;
-
-	const std::string backgroundPath = fmt::format("{}/.background", volumePath);
-	if (!Commands::makeDirectory(backgroundPath))
-		return false;
-
-	const auto& background1x = macosBundle.dmgBackground1x();
-	const auto& background2x = macosBundle.dmgBackground2x();
-	const bool hasBackground = !background1x.empty() || !background2x.empty();
-
-	if (hasBackground)
-	{
-		StringList cmd{ tiffutil, "-cathidpicheck" };
-
-		if (!background1x.empty())
-			cmd.push_back(background1x);
-
-		if (!background2x.empty())
-			cmd.push_back(background2x);
-
-		cmd.emplace_back("-out");
-		cmd.emplace_back(fmt::format("{}/background.tiff", backgroundPath));
-
-		if (!Commands::subprocessNoOutput(cmd))
-			return false;
-	}
-
-	if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath)))
-		return false;
-
-	const auto applescriptText = PlatformFileTemplates::macosDmgApplescript(name, hasBackground);
-
-	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }))
-		return false;
-
-	Commands::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
-
-	if (!Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
-		return false;
-
-	const std::string outDmgPath = fmt::format("{}/{}.dmg", subdirectory, name);
-	if (!Commands::subprocessNoOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
-		return false;
-
-	if (!Commands::removeRecursively(tmpDmg))
-		return false;
-
-	Diagnostic::printDone(timer.asString());
-
-	return signDmgImage(outDmgPath);
-}
-
-/*****************************************************************************/
 bool AppBundlerMacOS::signAppBundle() const
 {
 	if (m_state.tools.signingIdentity().empty())
@@ -576,28 +478,5 @@ bool AppBundlerMacOS::signAppBundle() const
 		CHALET_EXCEPT_ERROR(err.what());
 		return false;
 	}
-}
-
-/*****************************************************************************/
-bool AppBundlerMacOS::signDmgImage(const std::string& inPath) const
-{
-	if (m_state.tools.signingIdentity().empty())
-	{
-		Diagnostic::warn("dmg '{}' was not signed - signingIdentity is not set, or was empty.", inPath);
-		return true;
-	}
-
-	Timer timer;
-	Diagnostic::infoEllipsis("Signing the disk image");
-
-	if (!m_state.tools.macosCodeSignDiskImage(inPath))
-	{
-		Diagnostic::error("Failed to sign: {}", inPath);
-		return false;
-	}
-
-	Diagnostic::printDone(timer.asString());
-
-	return true;
 }
 }

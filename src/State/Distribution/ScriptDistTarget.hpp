@@ -14,7 +14,6 @@ struct ScriptDistTarget final : public IDistTarget
 {
 	explicit ScriptDistTarget();
 
-	virtual bool initialize(const BuildState& inState) final;
 	virtual bool validate() final;
 
 	const StringList& scripts() const noexcept;

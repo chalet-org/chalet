@@ -22,13 +22,13 @@ struct IDistTarget
 
 	[[nodiscard]] static DistTarget make(const DistTargetType inType);
 
-	virtual bool initialize(const BuildState& inState) = 0;
 	virtual bool validate() = 0;
 
 	DistTargetType type() const noexcept;
 	bool isScript() const noexcept;
 	bool isDistributionBundle() const noexcept;
 	bool isArchive() const noexcept;
+	bool isMacosDiskImage() const noexcept;
 
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;

@@ -14,6 +14,7 @@ namespace chalet
 struct BundleTarget;
 struct ScriptDistTarget;
 struct BundleArchiveTarget;
+struct MacosDiskImageTarget;
 struct CommandLineInputs;
 struct StatePrototype;
 struct IAppBundler;
@@ -32,6 +33,8 @@ private:
 	bool runBundleTarget(IAppBundler& inBundler, BuildState& inState);
 	bool runScriptTarget(const ScriptDistTarget& inScript, const std::string& inInputFile);
 	bool runArchiveTarget(const BundleArchiveTarget& inArchive, const std::string& inInputFile);
+	bool runMacosDiskImageTarget(const MacosDiskImageTarget& inDiskImage, const std::string& inInputFile);
+
 	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inFrameworksPath, const std::string& inResourcePath);
 	BuildState* getBuildState(const std::string& inBuildConfiguration) const;

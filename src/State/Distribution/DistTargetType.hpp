@@ -12,7 +12,8 @@ enum class DistTargetType
 {
 	DistributionBundle,
 	Script,
-	BundleArchive
+	BundleArchive,
+	MacosDiskImage,
 };
 }
 

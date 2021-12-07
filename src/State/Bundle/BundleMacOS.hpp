@@ -20,6 +20,8 @@ struct BundleMacOS
 	void setBundleType(std::string&& inName);
 	bool isAppBundle() const noexcept;
 
+	const std::string& bundleExtension() const noexcept;
+
 	const std::string& bundleName() const noexcept;
 	void setBundleName(const std::string& inValue);
 
@@ -32,29 +34,16 @@ struct BundleMacOS
 	const std::string& infoPropertyListContent() const noexcept;
 	void setInfoPropertyListContent(std::string&& inValue);
 
-	bool makeDmg() const noexcept;
-	void setMakeDmg(const bool inValue) noexcept;
-
-	const std::string& dmgBackground1x() const noexcept;
-	void setDmgBackground1x(std::string&& inValue);
-
-	const std::string& dmgBackground2x() const noexcept;
-	void setDmgBackground2x(std::string&& inValue);
-
 private:
 	MacOSBundleType getBundleTypeFromString(const std::string& inValue) const;
 
 	std::string m_bundleName;
+	std::string m_bundleExtension;
 	std::string m_icon;
 	std::string m_infoPropertyList;
 	std::string m_infoPropertyListContent;
 
-	std::string m_dmgBackground1x;
-	std::string m_dmgBackground2x;
-
 	MacOSBundleType m_bundleType = MacOSBundleType::None;
-
-	bool m_makeDmg = false;
 };
 }
 

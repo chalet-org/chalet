@@ -10,11 +10,12 @@
 
 namespace chalet
 {
+struct MacosDiskImageTarget;
+
 namespace PlatformFileTemplates
 {
 std::string linuxDesktopEntry();
 std::string macosInfoPlist();
-std::string macosDmgApplescript(const std::string& inAppName, const bool inHasBackground);
 std::string minimumWindowsAppManifest();
 std::string minimumWindowsAppManifestWithCompatibility();
 std::string generalWindowsAppManifest(const std::string& inName, const Arch::Cpu inCpu);

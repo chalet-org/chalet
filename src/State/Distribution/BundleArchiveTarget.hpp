@@ -14,7 +14,6 @@ struct BundleArchiveTarget final : public IDistTarget
 {
 	explicit BundleArchiveTarget();
 
-	virtual bool initialize(const BuildState& inState) final;
 	virtual bool validate() final;
 
 	const StringList& includes() const noexcept;

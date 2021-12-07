@@ -32,9 +32,7 @@ private:
 	bool createBundleIcon();
 	bool createPListAndReplaceVariables() const;
 	bool setExecutablePaths() const;
-	bool createDmgImage() const;
 	bool signAppBundle() const;
-	bool signDmgImage(const std::string& inPath) const;
 
 	const std::string& m_inputFile;
 

@@ -19,6 +19,7 @@ struct GitDependency;
 struct BundleTarget;
 struct ScriptDistTarget;
 struct BundleArchiveTarget;
+struct MacosDiskImageTarget;
 
 struct BuildJsonProtoParser
 {
@@ -42,8 +43,9 @@ private:
 	bool parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionBundle(BundleTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionBundleLinux(BundleTarget& outTarget, const Json& inNode) const;
-	bool parseDistributionBundleMacOS(BundleTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionBundleWindows(BundleTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionBundleMacOS(BundleTarget& outTarget, const Json& inNode) const;
+	bool parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const;
 
 	bool parseExternalDependencies(const Json& inNode) const;
 	bool parseGitDependency(GitDependency& outDependency, const Json& inNode) const;

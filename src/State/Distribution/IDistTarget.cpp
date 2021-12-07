@@ -7,6 +7,7 @@
 
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 
 namespace chalet
@@ -28,6 +29,10 @@ IDistTarget::IDistTarget(const DistTargetType inType) :
 			return std::make_unique<ScriptDistTarget>();
 		case DistTargetType::BundleArchive:
 			return std::make_unique<BundleArchiveTarget>();
+#if defined(CHALET_MACOS)
+		case DistTargetType::MacosDiskImage:
+			return std::make_unique<MacosDiskImageTarget>();
+#endif
 		default:
 			break;
 	}
@@ -52,6 +57,10 @@ bool IDistTarget::isDistributionBundle() const noexcept
 bool IDistTarget::isArchive() const noexcept
 {
 	return m_type == DistTargetType::BundleArchive;
+}
+bool IDistTarget::isMacosDiskImage() const noexcept
+{
+	return m_type == DistTargetType::MacosDiskImage;
 }
 
 /*****************************************************************************/

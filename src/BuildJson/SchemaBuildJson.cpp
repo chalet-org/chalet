@@ -115,12 +115,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	//
 	defs[Defs::DistributionTargetKind] = R"json({
 		"type": "string",
-		"description": "Whether the distribution target is a bundle or script.",
+		"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
 		"minLength": 1,
 		"enum": [
 			"bundle",
 			"script",
-			"archive"
+			"archive",
+			"macosDiskImage"
 		]
 	})json"_ojson;
 
@@ -194,41 +195,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 				],
 				"default": "app"
 			},
-			"dmg": {
-				"type": "object",
-				"description": "If defined, a .dmg image will be created after the application bundle.",
-				"additionalProperties": false,
-				"properties": {
-					"background": {
-						"description": "If creating a .dmg image with 'makeDmg', this will define a background image for it.",
-						"oneOf": [
-							{
-								"type": "string",
-								"minLength": 1
-							},
-							{
-								"type": "object",
-								"additionalProperties": false,
-								"required": [
-									"1x"
-								],
-								"properties": {
-									"1x": {
-										"type": "string",
-										"description": "The path to a background image in PNG format created for 1x pixel density.",
-										"minLength": 1
-									},
-									"2x": {
-										"type": "string",
-										"description": "The path to a background image in PNG format created for 2x pixel density.",
-										"minLength": 1
-									}
-								}
-							}
-						]
-					}
-				}
-			},
 			"icon": {
 				"type": "string",
 				"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
@@ -291,7 +257,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	//
 	defs[Defs::DistributionArchiveTargetInclude] = R"json({
-		"description": "A list of files or folders to add to the archive, relative to the root bundle directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
+		"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
 		"oneOf": [
 			{
 				"type": "string",
@@ -309,6 +275,118 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			}
 		]
 	})json"_ojson;
+
+	//
+	defs[Defs::DistributionMacosDiskImageTargetToolbarVisible] = R"json({
+		"type": "boolean",
+		"description": "Is the toolbar visible in the root of the disk image?",
+		"default": false
+	})json"_ojson;
+
+	defs[Defs::DistributionMacosDiskImageTargetStatusBarVisible] = R"json({
+		"type": "boolean",
+		"description": "Is the statusbar visible in the root of the disk image?",
+		"default": false
+	})json"_ojson;
+
+	defs[Defs::DistributionMacosDiskImageTargetIconSize] = R"json({
+		"type": "integer",
+		"description": "The icon size in the root of the disk image?",
+		"default": 48,
+		"minimum": 16,
+		"maximum": 512
+	})json"_ojson;
+
+	defs[Defs::DistributionMacosDiskImageTargetBackground] = R"json({
+		"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",
+		"oneOf": [
+			{
+				"type": "string",
+				"minLength": 1
+			},
+			{
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"1x"
+				],
+				"properties": {
+					"1x": {
+						"type": "string",
+						"description": "The path to a background image in PNG format created for 1x pixel density.",
+						"minLength": 1
+					},
+					"2x": {
+						"type": "string",
+						"description": "The path to a background image in PNG format created for 2x pixel density.",
+						"minLength": 1
+					}
+				}
+			}
+		]
+	})json"_ojson;
+
+	defs[Defs::DistributionMacosDiskImageTargetSize] = R"json({
+		"type": "object",
+		"description": "The dimensions of the root of the disk image.",
+		"additionalProperties": false,
+		"required": [
+			"width",
+			"height"
+		],
+		"properties": {
+			"width": {
+				"type": "integer",
+				"description": "The width of the disk image",
+				"default": 512,
+				"minimum": 128,
+				"maximum": 32000
+			},
+			"height": {
+				"type": "integer",
+				"description": "The height of the disk image",
+				"default": 342,
+				"minimum": 128,
+				"maximum": 32000
+			}
+		}
+	})json"_ojson;
+
+	defs[Defs::DistributionMacosDiskImageTargetPositions] = R"json({
+		"type": "object",
+		"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
+		"additionalProperties": false
+	})json"_ojson;
+	defs[Defs::DistributionMacosDiskImageTargetPositions][kPatternProperties][kPatternDistributionName] = R"json({
+		"type": "object",
+		"description": "An icon position in the root disk image.",
+		"additionalProperties": false,
+		"required": [
+			"x",
+			"y"
+		],
+		"properties": {
+			"x": {
+				"type": "integer",
+				"description": "The x position of the path's icon",
+				"default": 80,
+				"minimum": -1024,
+				"maximum": 32000
+			},
+			"y": {
+				"type": "integer",
+				"description": "The x position of the path's icon",
+				"default": 80,
+				"minimum": -1024,
+				"maximum": 32000
+			}
+		}
+	})json"_ojson;
+
+	/*
+		DistributionMacosDiskImageTarget,
+		DistributionMacosDiskImageTargetPositions,
+	*/
 
 	//
 	// externalDependency
@@ -1185,8 +1263,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	{
 		auto configuration = R"json({
 			"type": "object",
-			"additionalProperties": false,
-			"description": "Properties to describe a single build configuration type."
+			"description": "Properties to describe a single build configuration type.",
+			"additionalProperties": false
 		})json"_ojson;
 		configuration[kProperties]["debugSymbols"] = getDefinition(Defs::ConfigurationDebugSymbols);
 		configuration[kProperties]["enableProfiling"] = getDefinition(Defs::ConfigurationEnableProfiling);
@@ -1200,8 +1278,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	{
 		auto distributionTarget = R"json({
 			"type": "object",
-			"additionalProperties": false,
 			"description": "Properties to describe an individual distribution target.",
+			"additionalProperties": false,
 			"anyOf": [
 				{
 					"required": [
@@ -1220,9 +1298,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionTarget[kProperties] = Json::object();
 		distributionTarget[kProperties]["condition"] = getDefinition(Defs::DistributionTargetCondition);
 		distributionTarget[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
+		distributionTarget[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionTarget[kProperties]["buildTargets"] = getDefinition(Defs::DistributionTargetBuildTargets);
 		distributionTarget[kProperties]["configuration"] = getDefinition(Defs::DistributionTargetConfiguration);
-		distributionTarget[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionTarget[kProperties]["exclude"] = getDefinition(Defs::DistributionTargetExclude);
 		distributionTarget[kProperties]["include"] = getDefinition(Defs::DistributionTargetInclude);
 		distributionTarget[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionTargetIncludeDependentSharedLibraries);
@@ -1240,8 +1318,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	{
 		auto distributionArchive = R"json({
 			"type": "object",
-			"additionalProperties": false,
 			"description": "Properties to describe an individual distribution archive.",
+			"additionalProperties": false,
 			"required": [
 				"kind",
 				"include"
@@ -1249,9 +1327,32 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		})json"_ojson;
 		distributionArchive[kProperties]["condition"] = getDefinition(Defs::DistributionTargetCondition);
 		distributionArchive[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
+		distributionArchive[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionArchive[kProperties]["include"] = getDefinition(Defs::DistributionArchiveTargetInclude);
 		distributionArchive[kPatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionArchiveTargetInclude);
 		defs[Defs::DistributionArchiveTarget] = std::move(distributionArchive);
+	}
+
+	{
+		auto distributionMacosDiskImage = R"json({
+			"type": "object",
+			"description": "Properties to describe a macos disk image (dmg). Implies 'condition: macos'",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"size",
+				"positions"
+			]
+		})json"_ojson;
+		distributionMacosDiskImage[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
+		distributionMacosDiskImage[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+		distributionMacosDiskImage[kProperties]["iconSize"] = getDefinition(Defs::DistributionMacosDiskImageTargetIconSize);
+		distributionMacosDiskImage[kProperties]["toolbarVisible"] = getDefinition(Defs::DistributionMacosDiskImageTargetToolbarVisible);
+		distributionMacosDiskImage[kProperties]["statusBarVisible"] = getDefinition(Defs::DistributionMacosDiskImageTargetStatusBarVisible);
+		distributionMacosDiskImage[kProperties]["background"] = getDefinition(Defs::DistributionMacosDiskImageTargetBackground);
+		distributionMacosDiskImage[kProperties]["size"] = getDefinition(Defs::DistributionMacosDiskImageTargetSize);
+		distributionMacosDiskImage[kProperties]["positions"] = getDefinition(Defs::DistributionMacosDiskImageTargetPositions);
+		defs[Defs::DistributionMacosDiskImageTarget] = std::move(distributionMacosDiskImage);
 	}
 
 	{
@@ -1509,6 +1610,14 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionArchiveTarget: return "distribution-archive-target";
 		case Defs::DistributionArchiveTargetInclude: return "distribution-archive-target-include";
 		//
+		case Defs::DistributionMacosDiskImageTarget: return "distribution-macosDiskImage-target";
+		case Defs::DistributionMacosDiskImageTargetIconSize: return "distribution-macosDiskImage-target-iconSize";
+		case Defs::DistributionMacosDiskImageTargetToolbarVisible: return "distribution-macosDiskImage-target-toolbarVisible";
+		case Defs::DistributionMacosDiskImageTargetStatusBarVisible: return "distribution-macosDiskImage-target-statusBarVisible";
+		case Defs::DistributionMacosDiskImageTargetBackground: return "distribution-macosDiskImage-target-background";
+		case Defs::DistributionMacosDiskImageTargetSize: return "distribution-macosDiskImage-target-size";
+		case Defs::DistributionMacosDiskImageTargetPositions: return "distribution-macosDiskImage-target-positions";
+		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
 		case Defs::ExternalDependencyGitBranch: return "external-git-branch";
@@ -1533,6 +1642,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::AbstractTarget: return "abstract-target";
 		case Defs::ExecutableSourceTarget: return "executable-source-target";
 		case Defs::LibrarySourceTarget: return "library-source-target";
+		//
 		case Defs::SourceTargetCxx: return "source-target-cxx";
 		case Defs::SourceTargetCxxCStandard: return "source-target-cxx-cStandard";
 		case Defs::SourceTargetCxxCppStandard: return "source-target-cxx-cppStandard";
@@ -1694,8 +1804,16 @@ Json SchemaBuildJson::get()
 				},
 				"then": {},
 				"else": {
-					"type": "object",
-					"additionalProperties": false
+					"if": {
+						"properties": {
+							"kind": { "const": "macosDiskImage" }
+						}
+					},
+					"then": {},
+					"else": {
+						"type": "object",
+						"additionalProperties": false
+					}
 				}
 			}
 		}
@@ -1703,6 +1821,7 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kThen] = getDefinition(Defs::DistributionTarget);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kThen] = getDefinition(Defs::DistributionScriptTarget);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kThen] = getDefinition(Defs::DistributionArchiveTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kElse][kThen] = getDefinition(Defs::DistributionMacosDiskImageTarget);
 
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "object",

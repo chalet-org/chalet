@@ -497,6 +497,9 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
 		fs::path from{ inFrom };
 		fs::path to{ inTo / from.filename() };
 
+		if (Output::showCommands())
+			Output::printCommand(fmt::format("copy to path: {} {}", inFrom, inTo));
+
 		if (fs::is_directory(from))
 			return copyDirectory(from, to, fs::copy_options::overwrite_existing);
 

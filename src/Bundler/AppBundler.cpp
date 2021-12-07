@@ -7,12 +7,14 @@
 
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/IAppBundler.hpp"
+#include "Bundler/MacosDiskImageCreator.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -88,7 +90,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		if (!bundle.description().empty())
 			Output::msgTargetDescription(bundle.description(), Output::theme().header);
 		else
-			Output::msgDistribution(bundle.name());
+			Output::msgTargetOfType("Bundle", bundle.name(), Output::theme().header);
 
 		Output::lineBreak();
 
@@ -133,6 +135,11 @@ bool AppBundler::run(const DistTarget& inTarget)
 	else if (inTarget->isArchive())
 	{
 		if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget), inputFile))
+			return false;
+	}
+	else if (inTarget->isMacosDiskImage())
+	{
+		if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget), inputFile))
 			return false;
 	}
 
@@ -380,7 +387,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 	if (!inScript.description().empty())
 		Output::msgTargetDescription(inScript.description(), Output::theme().header);
 	else
-		Output::msgScript(inScript.name(), Output::theme().header);
+		Output::msgTargetOfType("Script", inScript.name(), Output::theme().header);
 
 	Output::lineBreak();
 
@@ -420,7 +427,7 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const st
 	if (!inArchive.description().empty())
 		Output::msgTargetDescription(inArchive.description(), Output::theme().header);
 	else
-		Output::msgArchive(filename, Output::theme().header);
+		Output::msgTargetOfType("Archive", filename, Output::theme().header);
 
 	Output::lineBreak();
 
@@ -441,6 +448,25 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const st
 	m_archives.emplace_back(fmt::format("{}/{}", m_inputs.distributionDirectory(), filename));
 
 	Diagnostic::printDone(timer.asString());
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inDiskImage, const std::string& inInputFile)
+{
+	if (!inDiskImage.description().empty())
+		Output::msgTargetDescription(inDiskImage.description(), Output::theme().header);
+	else
+		Output::msgTargetOfType("Disk Image", inDiskImage.name(), Output::theme().header);
+
+	Output::lineBreak();
+
+	UNUSED(inInputFile);
+
+	MacosDiskImageCreator diskImageCreator(m_inputs, m_prototype);
+	if (!diskImageCreator.make(inDiskImage))
+		return false;
+
 	return true;
 }
 

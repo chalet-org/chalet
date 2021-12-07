@@ -1,0 +1,265 @@
+/*
+	Distributed under the OSI-approved BSD 3-Clause License.
+	See accompanying file LICENSE.txt for details.
+*/
+
+#include "Bundler/MacosDiskImageCreator.hpp"
+
+#include "Core/CommandLineInputs.hpp"
+#include "FileTemplates/PlatformFileTemplates.hpp"
+#include "State/Distribution/BundleTarget.hpp"
+#include "State/Distribution/MacosDiskImageTarget.hpp"
+#include "State/StatePrototype.hpp"
+#include "Terminal/Commands.hpp"
+#include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
+
+namespace chalet
+{
+/*****************************************************************************/
+MacosDiskImageCreator::MacosDiskImageCreator(const CommandLineInputs& inInputs, const StatePrototype& inPrototype) :
+	m_inputs(inInputs),
+	m_prototype(inPrototype)
+{
+}
+
+/*****************************************************************************/
+bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
+{
+	m_diskName = String::getPathFolderBaseName(inDiskImage.name());
+
+	const auto& distributionDirectory = m_inputs.distributionDirectory();
+
+	auto& hdiutil = m_prototype.tools.hdiutil();
+	auto& tiffutil = m_prototype.tools.tiffutil();
+	const std::string volumePath = fmt::format("/Volumes/{}", m_diskName);
+
+	Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
+
+	Timer timer;
+
+	Diagnostic::infoEllipsis("Creating the distribution disk image");
+
+	const std::string tmpDmg = fmt::format("{}/.tmp.dmg", distributionDirectory);
+
+	m_includedPaths.clear();
+	for (auto& [path, _] : inDiskImage.positions())
+	{
+		if (String::equals("Applications", path))
+			continue;
+
+		for (auto& target : m_prototype.distribution)
+		{
+			if (target->isDistributionBundle() && String::equals(target->name(), path))
+			{
+				auto& bundle = static_cast<BundleTarget&>(*target);
+				const auto& subdirectory = bundle.subdirectory();
+
+				std::string appPath = fmt::format("{}/{}.{}", subdirectory, path, bundle.macosBundle().bundleExtension());
+				if (!Commands::pathExists(appPath))
+				{
+					Diagnostic::error("Path not found, but it's required by {}.dmg: {}", m_diskName, appPath);
+					return false;
+				}
+
+				m_includedPaths.emplace(path, std::move(appPath));
+
+				break;
+			}
+		}
+	}
+
+	std::uintmax_t appSize = 0;
+	for (auto& [_, path] : m_includedPaths)
+	{
+		appSize += Commands::getPathSize(path);
+	}
+	LOG("appSize:", appSize);
+	std::uintmax_t mb = 1000000;
+	std::uintmax_t dmgSize = appSize > mb ? appSize / mb : 10;
+	// if (dmgSize > 10)
+	{
+		std::uintmax_t temp = 16;
+		while (temp < dmgSize)
+		{
+			temp += temp;
+		}
+		dmgSize = temp + 16;
+	}
+
+	if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", fmt::format("{}", dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
+		return false;
+
+	if (!Commands::subprocessNoOutput({ hdiutil, "attach", tmpDmg }))
+		return false;
+
+	for (auto& [_, path] : m_includedPaths)
+	{
+		if (!Commands::copySilent(path, volumePath))
+			return false;
+	}
+
+	const std::string backgroundPath = fmt::format("{}/.background", volumePath);
+	if (!Commands::makeDirectory(backgroundPath))
+		return false;
+
+	const auto& background1x = inDiskImage.background1x();
+	const auto& background2x = inDiskImage.background2x();
+	const bool hasBackground = !background1x.empty() || !background2x.empty();
+
+	if (hasBackground)
+	{
+		if (String::endsWith(".tiff", background1x))
+		{
+			if (!Commands::copyRename(background1x, fmt::format("{}/background.tiff", backgroundPath)))
+				return false;
+		}
+		else
+		{
+			StringList cmd{ tiffutil, "-cathidpicheck" };
+
+			if (!background1x.empty())
+				cmd.push_back(background1x);
+
+			if (!background2x.empty())
+				cmd.push_back(background2x);
+
+			cmd.emplace_back("-out");
+			cmd.emplace_back(fmt::format("{}/background.tiff", backgroundPath));
+
+			if (!Commands::subprocessNoOutput(cmd))
+				return false;
+		}
+	}
+
+	if (inDiskImage.includeApplicationsSymlink())
+	{
+		if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath)))
+			return false;
+	}
+
+	const auto applescriptText = getDmgApplescript(inDiskImage);
+
+	if (!Commands::subprocess({ m_prototype.tools.osascript(), "-e", applescriptText }))
+		return false;
+
+	Commands::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
+
+	if (!Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
+		return false;
+
+	std::string outDmgPath = fmt::format("{}/{}.dmg", distributionDirectory, m_diskName);
+	if (!Commands::subprocessNoOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
+		return false;
+
+	if (!Commands::removeRecursively(tmpDmg))
+		return false;
+
+	Diagnostic::printDone(timer.asString());
+
+	// return signDmgImage(outDmgPath);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool MacosDiskImageCreator::signDmgImage(const std::string& inPath) const
+{
+	if (m_prototype.tools.signingIdentity().empty())
+	{
+		Diagnostic::warn("dmg '{}' was not signed - signingIdentity is not set, or was empty.", inPath);
+		return true;
+	}
+
+	Timer timer;
+	Diagnostic::infoEllipsis("Signing the disk image");
+
+	if (!m_prototype.tools.macosCodeSignDiskImage(inPath))
+	{
+		Diagnostic::error("Failed to sign: {}", inPath);
+		return false;
+	}
+
+	Diagnostic::printDone(timer.asString());
+
+	return true;
+}
+
+/*****************************************************************************/
+std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget& inDiskImage) const
+{
+	std::string toolbar = inDiskImage.toolbarVisible() ? "true" : "false";
+	std::string statusbar = inDiskImage.statusbarVisible() ? "true" : "false";
+
+	ushort iconSize = inDiskImage.iconSize();
+	ushort width = inDiskImage.size().width;
+	ushort height = inDiskImage.size().height;
+
+	ushort leftMost = std::numeric_limits<ushort>::max();
+	ushort bottomMost = height + (iconSize / static_cast<ushort>(2)) + 16;
+
+	std::string positions;
+	for (auto& [path, pos] : inDiskImage.positions())
+	{
+		std::string label;
+		if (String::equals("Applications", path))
+		{
+			label = path;
+		}
+		else
+		{
+			chalet_assert(m_includedPaths.find(path) != m_includedPaths.end(), "");
+
+			const auto& outPath = m_includedPaths.at(path);
+			label = String::getPathFilename(outPath);
+		}
+
+		if (pos.x > 0 && pos.x < leftMost)
+		{
+			leftMost = static_cast<ushort>(pos.x);
+		}
+
+		positions += fmt::format(R"applescript(
+  set position of item "{label}" of container window to {{{posX}, {posY}}})applescript",
+			FMT_ARG(label),
+			fmt::arg("posX", pos.x),
+			fmt::arg("posY", pos.y));
+	}
+
+	std::string background;
+	if (!inDiskImage.background1x().empty())
+	{
+		// TODO
+		background = fmt::format(R"applescript(
+  set background picture of viewOptions to file ".background:background.tiff"
+  set position of item ".background" of container window to {{{leftMost}, {bottomMost}}})applescript",
+			FMT_ARG(leftMost),
+			FMT_ARG(bottomMost));
+	}
+
+	return fmt::format(R"applescript(tell application "Finder"
+ tell disk "{diskName}"
+  open
+  set current view of container window to icon view
+  set toolbar visible of container window to {toolbar}
+  set statusbar visible of container window to {statusbar}
+  set the bounds of container window to {{0, 0, {width}, {height}}}
+  set viewOptions to the icon view options of container window
+  set arrangement of viewOptions to not arranged
+  set icon size of viewOptions to {iconSize}{positions}{background}
+  close
+  update without registering applications
+  delay 2
+ end tell
+end tell)applescript",
+		fmt::arg("diskName", m_diskName),
+		FMT_ARG(positions),
+		FMT_ARG(background),
+		FMT_ARG(toolbar),
+		FMT_ARG(statusbar),
+		FMT_ARG(iconSize),
+		FMT_ARG(width),
+		FMT_ARG(height));
+}
+
+}

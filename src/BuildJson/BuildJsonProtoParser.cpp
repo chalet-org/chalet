@@ -8,12 +8,14 @@
 #include "BuildJson/SchemaBuildJson.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/Dependency/GitDependency.hpp"
-#include "State/Distribution/BundleArchiveTarget.hpp"
-#include "State/Distribution/BundleTarget.hpp"
-#include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/StatePrototype.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
+
+#include "State/Distribution/BundleArchiveTarget.hpp"
+#include "State/Distribution/BundleTarget.hpp"
+#include "State/Distribution/MacosDiskImageTarget.hpp"
+#include "State/Distribution/ScriptDistTarget.hpp"
 
 namespace chalet
 {
@@ -252,6 +254,14 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 			{
 				type = DistTargetType::BundleArchive;
 			}
+			else if (String::equals("macosDiskImage", val))
+			{
+#if defined(CHALET_MACOS)
+				type = DistTargetType::MacosDiskImage;
+#else
+				continue;
+#endif
+			}
 		}
 
 		DistTarget target = IDistTarget::make(type);
@@ -270,6 +280,11 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 		else if (target->isDistributionBundle())
 		{
 			if (!parseDistributionBundle(static_cast<BundleTarget&>(*target), targetJson))
+				return false;
+		}
+		else if (target->isMacosDiskImage())
+		{
+			if (!parseMacosDiskImage(static_cast<MacosDiskImageTarget&>(*target), targetJson))
 				return false;
 		}
 
@@ -403,6 +418,39 @@ bool BuildJsonProtoParser::parseDistributionBundleLinux(BundleTarget& outTarget,
 }
 
 /*****************************************************************************/
+bool BuildJsonProtoParser::parseDistributionBundleWindows(BundleTarget& outTarget, const Json& inNode) const
+{
+	if (!inNode.contains("windows"))
+		return true;
+
+	const Json& windowsNode = inNode.at("windows");
+	if (!windowsNode.is_object())
+	{
+		Diagnostic::error("{}: '{}.windows' must be an object.", m_filename, kKeyDistribution);
+		return false;
+	}
+
+	BundleWindows windowsBundle;
+
+	if (std::string val; m_chaletJson.assignFromKey(val, windowsNode, "nsisScript"))
+		windowsBundle.setNsisScript(std::move(val));
+
+	// int assigned = 0;
+	// if (std::string val; m_chaletJson.assignFromKey(val, windowsNode, "icon"))
+	// {
+	// 	windowsBundle.setIcon(val);
+	// 	assigned++;
+	// }
+
+	// if (assigned == 0)
+	// 	return false;
+
+	outTarget.setWindowsBundle(std::move(windowsBundle));
+
+	return true;
+}
+
+/*****************************************************************************/
 bool BuildJsonProtoParser::parseDistributionBundleMacOS(BundleTarget& outTarget, const Json& inNode) const
 {
 	if (!inNode.contains("macos"))
@@ -441,67 +489,83 @@ bool BuildJsonProtoParser::parseDistributionBundleMacOS(BundleTarget& outTarget,
 		}
 	}
 
-	const std::string kDmg{ "dmg" };
-	if (macosNode.contains(kDmg))
-	{
-		const Json& dmg = macosNode.at(kDmg);
-
-		macosBundle.setMakeDmg(true);
-		const std::string kBackground{ "background" };
-
-		if (dmg.contains(kBackground))
-		{
-			const Json& dmgBackground = dmg.at(kBackground);
-			if (dmgBackground.is_object())
-			{
-				if (std::string val; m_chaletJson.assignFromKey(val, dmgBackground, "1x"))
-					macosBundle.setDmgBackground1x(std::move(val));
-
-				if (std::string val; m_chaletJson.assignFromKey(val, dmgBackground, "2x"))
-					macosBundle.setDmgBackground2x(std::move(val));
-			}
-			else
-			{
-				if (std::string val; m_chaletJson.assignFromKey(val, dmg, kBackground))
-					macosBundle.setDmgBackground1x(std::move(val));
-			}
-		}
-	}
-
 	outTarget.setMacosBundle(std::move(macosBundle));
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDistributionBundleWindows(BundleTarget& outTarget, const Json& inNode) const
+bool BuildJsonProtoParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const
 {
-	if (!inNode.contains("windows"))
-		return true;
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
+		outTarget.setDescription(std::move(val));
 
-	const Json& windowsNode = inNode.at("windows");
-	if (!windowsNode.is_object())
+	if (int val; m_chaletJson.assignFromKey(val, inNode, "iconSize"))
+		outTarget.setIconSize(static_cast<ushort>(val));
+
+	if (bool val; m_chaletJson.assignFromKey(val, inNode, "toolbarVisible"))
+		outTarget.setToolbarVisible(val);
+
+	if (bool val; m_chaletJson.assignFromKey(val, inNode, "statusBarVisible"))
+		outTarget.setStatusbarVisible(val);
+
+	const std::string kBackground{ "background" };
+	if (inNode.contains(kBackground))
 	{
-		Diagnostic::error("{}: '{}.windows' must be an object.", m_filename, kKeyDistribution);
-		return false;
+		const Json& dmgBackground = inNode.at(kBackground);
+		if (dmgBackground.is_object())
+		{
+			if (std::string val; m_chaletJson.assignFromKey(val, dmgBackground, "1x"))
+				outTarget.setBackground1x(std::move(val));
+
+			if (std::string val; m_chaletJson.assignFromKey(val, dmgBackground, "2x"))
+				outTarget.setBackground2x(std::move(val));
+		}
+		else if (dmgBackground.is_string())
+		{
+			auto val = dmgBackground.get<std::string>();
+			outTarget.setBackground1x(std::move(val));
+		}
 	}
 
-	BundleWindows windowsBundle;
+	const std::string kSize{ "size" };
+	if (inNode.contains(kSize))
+	{
+		const Json& size = inNode.at(kSize);
 
-	if (std::string val; m_chaletJson.assignFromKey(val, windowsNode, "nsisScript"))
-		windowsBundle.setNsisScript(std::move(val));
+		int width = 0;
+		int height = 0;
 
-	// int assigned = 0;
-	// if (std::string val; m_chaletJson.assignFromKey(val, windowsNode, "icon"))
-	// {
-	// 	windowsBundle.setIcon(val);
-	// 	assigned++;
-	// }
+		bool res = m_chaletJson.assignFromKey(width, size, "width");
+		res &= m_chaletJson.assignFromKey(height, size, "height");
 
-	// if (assigned == 0)
-	// 	return false;
+		if (res)
+		{
+			outTarget.setSize(static_cast<ushort>(width), static_cast<ushort>(height));
+		}
+	}
 
-	outTarget.setWindowsBundle(std::move(windowsBundle));
+	const std::string kPositions{ "positions" };
+	if (inNode.contains(kPositions))
+	{
+		const Json& positions = inNode.at(kPositions);
+		if (positions.is_object())
+		{
+			for (auto& [name, pos] : positions.items())
+			{
+				int posX = 0;
+				int posY = 0;
+
+				bool res = m_chaletJson.assignFromKey(posX, pos, "x");
+				res &= m_chaletJson.assignFromKey(posY, pos, "y");
+
+				if (res)
+				{
+					outTarget.addPosition(name, static_cast<short>(posX), static_cast<short>(posY));
+				}
+			}
+		}
+	}
 
 	return true;
 }

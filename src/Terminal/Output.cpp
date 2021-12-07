@@ -585,24 +585,10 @@ void Output::msgRebuild(const std::string& inName)
 }
 
 /*****************************************************************************/
-void Output::msgDistribution(const std::string& inName)
+void Output::msgTargetOfType(const std::string& inType, const std::string& inName, const Color inColor)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(state.theme.header, symbol, fmt::format("Distribution: {}", inName));
-}
-
-/*****************************************************************************/
-void Output::msgScript(const std::string& inName, const Color inColor)
-{
-	auto symbol = Unicode::triangle();
-	displayStyledSymbol(inColor, symbol, fmt::format("Script: {}", inName));
-}
-
-/*****************************************************************************/
-void Output::msgArchive(const std::string& inName, const Color inColor)
-{
-	auto symbol = Unicode::triangle();
-	displayStyledSymbol(inColor, symbol, fmt::format("Archive: {}", inName));
+	displayStyledSymbol(inColor, symbol, fmt::format("{}: {}", inType, inName));
 }
 
 /*****************************************************************************/

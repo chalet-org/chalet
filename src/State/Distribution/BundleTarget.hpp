@@ -17,7 +17,7 @@ struct BundleTarget final : public IDistTarget
 {
 	explicit BundleTarget();
 
-	virtual bool initialize(const BuildState& inState) final;
+	bool initialize(const BuildState& inState);
 	virtual bool validate() final;
 
 	bool updateRPaths() const noexcept;

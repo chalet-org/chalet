@@ -41,6 +41,14 @@ class SchemaBuildJson
 		//
 		DistributionTargetCondition,
 		//
+		DistributionMacosDiskImageTarget,
+		DistributionMacosDiskImageTargetIconSize,
+		DistributionMacosDiskImageTargetToolbarVisible,
+		DistributionMacosDiskImageTargetStatusBarVisible,
+		DistributionMacosDiskImageTargetBackground,
+		DistributionMacosDiskImageTargetSize,
+		DistributionMacosDiskImageTargetPositions,
+		//
 		ExternalDependency,
 		ExternalDependencyGitRepository,
 		ExternalDependencyGitBranch,

@@ -20,18 +20,6 @@ BundleArchiveTarget::BundleArchiveTarget() :
 }
 
 /*****************************************************************************/
-bool BundleArchiveTarget::initialize(const BuildState& inState)
-{
-	UNUSED(inState);
-	for (auto& target : m_includes)
-	{
-		LOG("include:", target);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool BundleArchiveTarget::validate()
 {
 	return true;

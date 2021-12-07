@@ -73,34 +73,6 @@ bool BundleMacOS::validate()
 		}
 	}
 
-	if (!m_dmgBackground1x.empty())
-	{
-		if (!String::endsWith(".png", m_dmgBackground1x))
-		{
-			Diagnostic::error("distribution.macos.dmgBackground1x must end with '.png', but was '{}'.", m_dmgBackground1x);
-			result = false;
-		}
-		else if (!Commands::pathExists(m_dmgBackground1x))
-		{
-			Diagnostic::error("distribution.macos.dmgBackground1x '{}' was not found.", m_dmgBackground1x);
-			result = false;
-		}
-	}
-
-	if (!m_dmgBackground2x.empty())
-	{
-		if (!String::endsWith(".png", m_dmgBackground2x))
-		{
-			Diagnostic::error("distribution.macos.dmgBackground2x must end with '.png', but was '{}'.", m_dmgBackground2x);
-			result = false;
-		}
-		else if (!Commands::pathExists(m_dmgBackground2x))
-		{
-			Diagnostic::error("distribution.macos.dmgBackground2x '{}' was not found.", m_dmgBackground2x);
-			result = false;
-		}
-	}
-
 	return result;
 }
 
@@ -113,11 +85,20 @@ MacOSBundleType BundleMacOS::bundleType() const noexcept
 void BundleMacOS::setBundleType(std::string&& inName)
 {
 	m_bundleType = getBundleTypeFromString(inName);
+
+	if (m_bundleType != MacOSBundleType::None)
+		m_bundleExtension = std::move(inName);
 }
 
 bool BundleMacOS::isAppBundle() const noexcept
 {
 	return m_bundleType == MacOSBundleType::Application;
+}
+
+/*****************************************************************************/
+const std::string& BundleMacOS::bundleExtension() const noexcept
+{
+	return m_bundleExtension;
 }
 
 /*****************************************************************************/
@@ -164,39 +145,6 @@ const std::string& BundleMacOS::infoPropertyListContent() const noexcept
 void BundleMacOS::setInfoPropertyListContent(std::string&& inValue)
 {
 	m_infoPropertyListContent = std::move(inValue);
-}
-
-/*****************************************************************************/
-bool BundleMacOS::makeDmg() const noexcept
-{
-	return m_makeDmg;
-}
-
-void BundleMacOS::setMakeDmg(const bool inValue) noexcept
-{
-	m_makeDmg = inValue;
-}
-
-/*****************************************************************************/
-const std::string& BundleMacOS::dmgBackground1x() const noexcept
-{
-	return m_dmgBackground1x;
-}
-
-void BundleMacOS::setDmgBackground1x(std::string&& inValue)
-{
-	m_dmgBackground1x = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& BundleMacOS::dmgBackground2x() const noexcept
-{
-	return m_dmgBackground2x;
-}
-
-void BundleMacOS::setDmgBackground2x(std::string&& inValue)
-{
-	m_dmgBackground2x = std::move(inValue);
 }
 
 /*****************************************************************************/

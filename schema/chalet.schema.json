@@ -10,8 +10,8 @@
 	"definitions": {
 		"configuration": {
 			"type": "object",
-			"additionalProperties": false,
 			"description": "Properties to describe a single build configuration type.",
+			"additionalProperties": false,
 			"properties": {
 				"debugSymbols": {
 					"$ref": "#/definitions/configuration-debugSymbols"
@@ -87,8 +87,8 @@
 		},
 		"distribution-target": {
 			"type": "object",
-			"additionalProperties": false,
 			"description": "Properties to describe an individual distribution target.",
+			"additionalProperties": false,
 			"anyOf": [
 				{
 					"required": [
@@ -110,14 +110,14 @@
 				"kind": {
 					"$ref": "#/definitions/distribution-target-kind"
 				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
 				"buildTargets": {
 					"$ref": "#/definitions/distribution-target-buildTargets"
 				},
 				"configuration": {
 					"$ref": "#/definitions/distribution-target-configuration"
-				},
-				"description": {
-					"$ref": "#/definitions/target-description"
 				},
 				"exclude": {
 					"$ref": "#/definitions/distribution-target-exclude"
@@ -158,12 +158,13 @@
 		},
 		"distribution-target-kind": {
 			"type": "string",
-			"description": "Whether the distribution target is a bundle or script.",
+			"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
 			"minLength": 1,
 			"enum": [
 				"bundle",
 				"script",
-				"archive"
+				"archive",
+				"macosDiskImage"
 			]
 		},
 		"distribution-target-configuration": {
@@ -230,41 +231,6 @@
 						"app"
 					],
 					"default": "app"
-				},
-				"dmg": {
-					"type": "object",
-					"description": "If defined, a .dmg image will be created after the application bundle.",
-					"additionalProperties": false,
-					"properties": {
-						"background": {
-							"description": "If creating a .dmg image with 'makeDmg', this will define a background image for it.",
-							"oneOf": [
-								{
-									"type": "string",
-									"minLength": 1
-								},
-								{
-									"type": "object",
-									"additionalProperties": false,
-									"required": [
-										"1x"
-									],
-									"properties": {
-										"1x": {
-											"type": "string",
-											"description": "The path to a background image in PNG format created for 1x pixel density.",
-											"minLength": 1
-										},
-										"2x": {
-											"type": "string",
-											"description": "The path to a background image in PNG format created for 2x pixel density.",
-											"minLength": 1
-										}
-									}
-								}
-							]
-						}
-					}
 				},
 				"icon": {
 					"type": "string",
@@ -336,8 +302,8 @@
 		},
 		"distribution-archive-target": {
 			"type": "object",
-			"additionalProperties": false,
 			"description": "Properties to describe an individual distribution archive.",
+			"additionalProperties": false,
 			"required": [
 				"kind",
 				"include"
@@ -348,6 +314,9 @@
 				},
 				"kind": {
 					"$ref": "#/definitions/distribution-target-kind"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
 				},
 				"include": {
 					"$ref": "#/definitions/distribution-archive-target-include"
@@ -360,7 +329,7 @@
 			}
 		},
 		"distribution-archive-target-include": {
-			"description": "A list of files or folders to add to the archive, relative to the root bundle directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
+			"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -383,6 +352,144 @@
 			"description": "A rule describing when to include this target in the distribution.",
 			"minLength": 1,
 			"pattern": "^(!?(windows|macos|linux)\\b)$"
+		},
+		"distribution-macosDiskImage-target": {
+			"type": "object",
+			"description": "Properties to describe a macos disk image (dmg). Implies 'condition: macos'",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"size",
+				"positions"
+			],
+			"properties": {
+				"kind": {
+					"$ref": "#/definitions/distribution-target-kind"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"iconSize": {
+					"$ref": "#/definitions/distribution-macosDiskImage-target-iconSize"
+				},
+				"toolbarVisible": {
+					"$ref": "#/definitions/distribution-macosDiskImage-target-toolbarVisible"
+				},
+				"statusBarVisible": {
+					"$ref": "#/definitions/distribution-macosDiskImage-target-statusBarVisible"
+				},
+				"background": {
+					"$ref": "#/definitions/distribution-macosDiskImage-target-background"
+				},
+				"size": {
+					"$ref": "#/definitions/distribution-macosDiskImage-target-size"
+				},
+				"positions": {
+					"$ref": "#/definitions/distribution-macosDiskImage-target-positions"
+				}
+			}
+		},
+		"distribution-macosDiskImage-target-iconSize": {
+			"type": "integer",
+			"description": "The icon size in the root of the disk image?",
+			"default": 48,
+			"minimum": 16,
+			"maximum": 512
+		},
+		"distribution-macosDiskImage-target-toolbarVisible": {
+			"type": "boolean",
+			"description": "Is the toolbar visible in the root of the disk image?",
+			"default": false
+		},
+		"distribution-macosDiskImage-target-statusBarVisible": {
+			"type": "boolean",
+			"description": "Is the statusbar visible in the root of the disk image?",
+			"default": false
+		},
+		"distribution-macosDiskImage-target-background": {
+			"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"required": [
+						"1x"
+					],
+					"properties": {
+						"1x": {
+							"type": "string",
+							"description": "The path to a background image in PNG format created for 1x pixel density.",
+							"minLength": 1
+						},
+						"2x": {
+							"type": "string",
+							"description": "The path to a background image in PNG format created for 2x pixel density.",
+							"minLength": 1
+						}
+					}
+				}
+			]
+		},
+		"distribution-macosDiskImage-target-size": {
+			"type": "object",
+			"description": "The dimensions of the root of the disk image.",
+			"additionalProperties": false,
+			"required": [
+				"width",
+				"height"
+			],
+			"properties": {
+				"width": {
+					"type": "integer",
+					"description": "The width of the disk image",
+					"default": 512,
+					"minimum": 128,
+					"maximum": 32000
+				},
+				"height": {
+					"type": "integer",
+					"description": "The height of the disk image",
+					"default": 342,
+					"minimum": 128,
+					"maximum": 32000
+				}
+			}
+		},
+		"distribution-macosDiskImage-target-positions": {
+			"type": "object",
+			"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
+			"additionalProperties": false,
+			"patternProperties": {
+				"^[\\w\\-+. ()]{3,}$": {
+					"type": "object",
+					"description": "An icon position in the root disk image.",
+					"additionalProperties": false,
+					"required": [
+						"x",
+						"y"
+					],
+					"properties": {
+						"x": {
+							"type": "integer",
+							"description": "The x position of the path's icon",
+							"default": 80,
+							"minimum": -1024,
+							"maximum": 32000
+						},
+						"y": {
+							"type": "integer",
+							"description": "The x position of the path's icon",
+							"default": 80,
+							"minimum": -1024,
+							"maximum": 32000
+						}
+					}
+				}
+			}
 		},
 		"external-dependency": {
 			"type": "object",
@@ -2167,8 +2274,20 @@
 								"$ref": "#/definitions/distribution-archive-target"
 							},
 							"else": {
-								"type": "object",
-								"additionalProperties": false
+								"if": {
+									"properties": {
+										"kind": {
+											"const": "macosDiskImage"
+										}
+									}
+								},
+								"then": {
+									"$ref": "#/definitions/distribution-macosDiskImage-target"
+								},
+								"else": {
+									"type": "object",
+									"additionalProperties": false
+								}
 							}
 						}
 					}
