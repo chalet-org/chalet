@@ -293,11 +293,21 @@ std::uintmax_t Commands::getPathSize(const std::string& inPath)
 
 		const auto path = fs::path{ inPath };
 		std::uintmax_t ret = 0;
-		for (const auto& entry : fs::recursive_directory_iterator(path))
+		if (fs::is_directory(path))
 		{
-			if (entry.is_regular_file())
+			for (const auto& entry : fs::recursive_directory_iterator(path))
 			{
-				ret += entry.file_size();
+				if (entry.is_regular_file())
+				{
+					ret += entry.file_size();
+				}
+			}
+		}
+		else
+		{
+			if (fs::is_regular_file(path))
+			{
+				ret = fs::file_size(path);
 			}
 		}
 
@@ -478,8 +488,9 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs
 
 		if (fs::is_directory(from))
 			return copyDirectory(from, to, inOptions);
+		else
+			fs::copy(from, to, inOptions);
 
-		fs::copy(from, to, inOptions);
 		return true;
 	}
 	CHALET_CATCH(const fs::filesystem_error& err)
@@ -502,8 +513,9 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
 
 		if (fs::is_directory(from))
 			return copyDirectory(from, to, fs::copy_options::overwrite_existing);
+		else
+			fs::copy(from, to, fs::copy_options::overwrite_existing);
 
-		fs::copy(from, to, fs::copy_options::overwrite_existing);
 		return true;
 	}
 	CHALET_CATCH(const fs::filesystem_error& err)
@@ -528,8 +540,9 @@ bool Commands::copySkipExisting(const std::string& inFrom, const std::string& in
 
 		if (fs::is_directory(from))
 			return copyDirectory(from, to, fs::copy_options::skip_existing);
+		else
+			fs::copy(from, to, fs::copy_options::skip_existing);
 
-		fs::copy(from, to, fs::copy_options::skip_existing);
 		return true;
 	}
 	CHALET_CATCH(const fs::filesystem_error& err)

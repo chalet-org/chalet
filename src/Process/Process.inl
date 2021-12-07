@@ -35,7 +35,8 @@ void Process::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const
 #endif
 		if (bytesRead > 0)
 		{
-			onRead(std::string(inBuffer.data(), bytesRead));
+			if (onRead != nullptr)
+				onRead(std::string(inBuffer.data(), bytesRead));
 		}
 		else
 			break;

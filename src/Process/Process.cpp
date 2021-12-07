@@ -308,8 +308,8 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 #else
 	m_cmd = getCmdVector(inCmd);
 
-	bool openStdOut = inOptions.stdoutOption == PipeOption::Pipe;
-	bool openStdErr = inOptions.stderrOption == PipeOption::Pipe;
+	bool openStdOut = inOptions.stdoutOption == PipeOption::Pipe || inOptions.stdoutOption == PipeOption::Close;
+	bool openStdErr = inOptions.stderrOption == PipeOption::Pipe || inOptions.stderrOption == PipeOption::Close;
 
 	bool closeStdIn = inOptions.stdinOption == PipeOption::Close;
 
@@ -349,10 +349,10 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 			m_out.duplicateWrite(FileNo::StdOut);
 			m_out.closeRead();
 		}
-		else if (inOptions.stdoutOption == PipeOption::Close)
-		{
-			ProcessPipe::close(FileNo::StdOut);
-		}
+		// else if (inOptions.stdoutOption == PipeOption::Close)
+		// {
+		// 	ProcessPipe::close(FileNo::StdOut); // has side effects (see: making dmg on mac)
+		// }
 
 		if (openStdErr)
 		{
@@ -363,10 +363,10 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 		{
 			ProcessPipe::duplicate(FileNo::StdOut, FileNo::StdErr);
 		}
-		else if (inOptions.stderrOption == PipeOption::Close)
-		{
-			ProcessPipe::close(FileNo::StdErr);
-		}
+		// else if (inOptions.stderrOption == PipeOption::Close)
+		// {
+		// 	ProcessPipe::close(FileNo::StdErr);  // has side effects (see: making dmg on mac)
+		// }
 
 		if (inOptions.stdoutOption == PipeOption::StdErr)
 		{

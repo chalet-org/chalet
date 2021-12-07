@@ -74,7 +74,6 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 	{
 		appSize += Commands::getPathSize(path);
 	}
-	LOG("appSize:", appSize);
 	std::uintmax_t mb = 1000000;
 	std::uintmax_t dmgSize = appSize > mb ? appSize / mb : 10;
 	// if (dmgSize > 10)
@@ -87,20 +86,10 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 		dmgSize = temp + 16;
 	}
 
-	if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", fmt::format("{}", dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
+	if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", std::to_string(dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
 		return false;
 
 	if (!Commands::subprocessNoOutput({ hdiutil, "attach", tmpDmg }))
-		return false;
-
-	for (auto& [_, path] : m_includedPaths)
-	{
-		if (!Commands::copySilent(path, volumePath))
-			return false;
-	}
-
-	const std::string backgroundPath = fmt::format("{}/.background", volumePath);
-	if (!Commands::makeDirectory(backgroundPath))
 		return false;
 
 	const auto& background1x = inDiskImage.background1x();
@@ -109,6 +98,10 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 
 	if (hasBackground)
 	{
+		const std::string backgroundPath = fmt::format("{}/.background", volumePath);
+		if (!Commands::makeDirectory(backgroundPath))
+			return false;
+
 		if (String::endsWith(".tiff", background1x))
 		{
 			if (!Commands::copyRename(background1x, fmt::format("{}/background.tiff", backgroundPath)))
@@ -138,6 +131,12 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 			return false;
 	}
 
+	for (auto& [_, path] : m_includedPaths)
+	{
+		if (!Commands::copySilent(path, volumePath))
+			return false;
+	}
+
 	const auto applescriptText = getDmgApplescript(inDiskImage);
 
 	if (!Commands::subprocess({ m_prototype.tools.osascript(), "-e", applescriptText }))
@@ -157,9 +156,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 
 	Diagnostic::printDone(timer.asString());
 
-	// return signDmgImage(outDmgPath);
-
-	return true;
+	return signDmgImage(outDmgPath);
 }
 
 /*****************************************************************************/

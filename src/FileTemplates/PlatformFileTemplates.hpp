@@ -10,8 +10,6 @@
 
 namespace chalet
 {
-struct MacosDiskImageTarget;
-
 namespace PlatformFileTemplates
 {
 std::string linuxDesktopEntry();

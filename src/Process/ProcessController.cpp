@@ -117,10 +117,10 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 
 		{
 			std::array<char, 128> buffer{ 0 };
-			if (inOptions.stdoutOption == PipeOption::Pipe && inOptions.onStdOut != nullptr)
+			if (inOptions.stdoutOption == PipeOption::Pipe || inOptions.stdoutOption == PipeOption::Close)
 				process.read(FileNo::StdOut, buffer, inBufferSize, inOptions.onStdOut);
 
-			if (inOptions.stderrOption == PipeOption::Pipe && inOptions.onStdErr != nullptr)
+			if (inOptions.stderrOption == PipeOption::Pipe || inOptions.stderrOption == PipeOption::Close)
 				process.read(FileNo::StdErr, buffer, inBufferSize, inOptions.onStdErr);
 		}
 

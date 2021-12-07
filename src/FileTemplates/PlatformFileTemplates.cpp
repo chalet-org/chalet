@@ -5,8 +5,6 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
-#include "State/Distribution/MacosDiskImageTarget.hpp"
-
 namespace chalet
 {
 namespace
