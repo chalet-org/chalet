@@ -108,13 +108,13 @@ bool BinaryDependencyMap::gatherFromList(const StringList& inList, int levels)
 /*****************************************************************************/
 bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, int levels)
 {
-	if (m_map.find(inPath) != m_map.end())
-		return true;
-
 #if defined(CHALET_MACOS)
 	if (String::endsWith(".framework", inPath) || String::startsWith("/usr/lib/", inPath))
 		return true;
 #endif
+
+	if (m_map.find(inPath) != m_map.end())
+		return true;
 
 	StringList dependencies;
 	if (!getExecutableDependencies(inPath, dependencies))
@@ -286,7 +286,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 			if (dependency.empty())
 				continue;
 
-	#if defined(CHALET_LINUX)
+	#if defined(CHALET_LINUX) || defined(CHALET_MACOS)
 			if (String::startsWith("/usr/lib/", dependency))
 				continue;
 	#endif
