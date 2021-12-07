@@ -164,22 +164,13 @@
 				"**.7z",
 				"Thumbs.db",
 				".DS_Store"
-			],
+			]
 			/*"macos": {
-				// "bundleType": "app",
-				// "icon": "platform/chalet-logo.png"
-				"infoPropertyList": "platform/macos/Info.plist.json",
-				"makeDmg": false,
-				"dmgBackground": {
-					"1x": "platform/macos/dmg-background.png",
-					"2x": "platform/macos/dmg-background@2x.png"
-				}
+				"bundleType": "app",
+				"icon": "platform/chalet-logo.png"
+				"infoPropertyList": "platform/macos/Info.plist.json"
 			},*/
-			"windows": {
-				"nsisScript": "platform/windows/installer/install_script.nsi"
-			}
-			/*,
-			"linux": {
+			/*"linux": {
 				"icon": "platform/chalet-logo.png",
 				"desktopEntry": "platform/linux/app.desktop"
 			}*/
@@ -192,6 +183,10 @@
 		"chalet-(triple)": {
 			"kind": "archive",
 			"include": "*"
+		},
+		"chalet-windows-installer": {
+			"kind": "windowsNullsoftInstaller",
+			"nsisScript": "platform/windows/installer/install_script.nsi"
 		}
 	} /*,
 	"externalDependencies": {

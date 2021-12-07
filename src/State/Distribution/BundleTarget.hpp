@@ -8,7 +8,6 @@
 
 #include "State/Bundle/BundleLinux.hpp"
 #include "State/Bundle/BundleMacOS.hpp"
-#include "State/Bundle/BundleWindows.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 
 namespace chalet
@@ -28,9 +27,6 @@ struct BundleTarget final : public IDistTarget
 
 	const BundleMacOS& macosBundle() const noexcept;
 	void setMacosBundle(BundleMacOS&& inValue);
-
-	const BundleWindows& windowsBundle() const noexcept;
-	void setWindowsBundle(BundleWindows&& inValue);
 
 	const std::string& subdirectory() const noexcept;
 	void setSubdirectory(std::string&& inValue);
@@ -62,7 +58,6 @@ private:
 
 	BundleLinux m_linuxBundle;
 	BundleMacOS m_macosBundle;
-	BundleWindows m_windowsBundle;
 
 	StringList m_buildTargets;
 	StringList m_rawIncludes;

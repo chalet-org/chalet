@@ -34,7 +34,6 @@ class SchemaBuildJson
 		DistributionTargetMainExecutable,
 		DistributionTargetOutputDirectory,
 		DistributionTargetBuildTargets,
-		DistributionTargetWindows,
 		//
 		DistributionArchiveTarget,
 		DistributionArchiveTargetInclude,
@@ -48,6 +47,9 @@ class SchemaBuildJson
 		DistributionMacosDiskImageTargetBackground,
 		DistributionMacosDiskImageTargetSize,
 		DistributionMacosDiskImageTargetPositions,
+		//
+		DistributionWindowsNullsoftInstallerTarget,
+		DistributionWindowsNullsoftInstallerTargetScript,
 		//
 		ExternalDependency,
 		ExternalDependencyGitRepository,

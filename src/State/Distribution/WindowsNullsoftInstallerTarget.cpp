@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/Bundle/BundleWindows.hpp"
+#include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
@@ -11,9 +11,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-// Something might fit here in the future, but for now, nothing!!
+WindowsNullsoftInstallerTarget::WindowsNullsoftInstallerTarget() :
+	IDistTarget(DistTargetType::WindowsNullsoftInstaller)
+{
+}
+
 /*****************************************************************************/
-bool BundleWindows::validate()
+bool WindowsNullsoftInstallerTarget::validate()
 {
 	bool result = true;
 
@@ -21,12 +25,12 @@ bool BundleWindows::validate()
 	{
 		if (!String::endsWith("nsi", m_nsisScript))
 		{
-			Diagnostic::error("bundle.windows.nsisScript must end with '.nsi', but was '{}'.", m_nsisScript);
+			Diagnostic::error("windowsNullsoftInstaller.nsisScript must end with '.nsi', but was '{}'.", m_nsisScript);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_nsisScript))
 		{
-			Diagnostic::error("bundle.windows.nsisScript '{}' was not found.", m_nsisScript);
+			Diagnostic::error("windowsNullsoftInstaller.nsisScript '{}' was not found.", m_nsisScript);
 			result = false;
 		}
 	}
@@ -35,12 +39,12 @@ bool BundleWindows::validate()
 }
 
 /*****************************************************************************/
-const std::string& BundleWindows::nsisScript() const noexcept
+const std::string& WindowsNullsoftInstallerTarget::nsisScript() const noexcept
 {
 	return m_nsisScript;
 }
 
-void BundleWindows::setNsisScript(std::string&& inValue)
+void WindowsNullsoftInstallerTarget::setNsisScript(std::string&& inValue)
 {
 	m_nsisScript = std::move(inValue);
 }

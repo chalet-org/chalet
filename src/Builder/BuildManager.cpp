@@ -601,7 +601,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 
 	Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_inputs, m_state.tools, m_inputs.inputFile());
+	ScriptRunner scriptRunner(m_inputs, m_state.tools);
 	if (!scriptRunner.run(scripts, inRunCommand))
 		return false;
 

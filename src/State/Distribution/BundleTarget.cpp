@@ -95,17 +95,6 @@ void BundleTarget::setMacosBundle(BundleMacOS&& inValue)
 }
 
 /*****************************************************************************/
-const BundleWindows& BundleTarget::windowsBundle() const noexcept
-{
-	return m_windowsBundle;
-}
-
-void BundleTarget::setWindowsBundle(BundleWindows&& inValue)
-{
-	m_windowsBundle = std::move(inValue);
-}
-
-/*****************************************************************************/
 const std::string& BundleTarget::subdirectory() const noexcept
 {
 	return m_subdirectory;

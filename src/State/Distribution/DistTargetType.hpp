@@ -14,6 +14,7 @@ enum class DistTargetType
 	Script,
 	BundleArchive,
 	MacosDiskImage,
+	WindowsNullsoftInstaller,
 };
 }
 

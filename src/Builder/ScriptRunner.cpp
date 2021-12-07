@@ -18,10 +18,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools, const std::string& inInputFile) :
+ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools) :
 	m_inputs(inInputs),
 	m_tools(inTools),
-	m_inputFile(inInputFile)
+	m_inputFile(m_inputs.inputFile())
 {
 }
 

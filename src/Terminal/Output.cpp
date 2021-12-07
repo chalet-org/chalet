@@ -642,10 +642,10 @@ void Output::msgRebuild(const std::string& inName)
 }
 
 /*****************************************************************************/
-void Output::msgTargetOfType(const std::string& inType, const std::string& inName, const Color inColor)
+void Output::msgTargetOfType(const std::string& inLabel, const std::string& inName, const Color inColor)
 {
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(inColor, symbol, fmt::format("{}: {}", inType, inName));
+	displayStyledSymbol(inColor, symbol, fmt::format("{}: {}", inLabel, inName));
 }
 
 /*****************************************************************************/

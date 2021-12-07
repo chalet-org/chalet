@@ -134,9 +134,6 @@
 				"macos": {
 					"$ref": "#/definitions/distribution-target-macos"
 				},
-				"windows": {
-					"$ref": "#/definitions/distribution-target-windows"
-				},
 				"mainExecutable": {
 					"$ref": "#/definitions/distribution-target-mainExecutable"
 				},
@@ -164,7 +161,8 @@
 				"bundle",
 				"script",
 				"archive",
-				"macosDiskImage"
+				"macosDiskImage",
+				"windowsNullsoftInstaller"
 			]
 		},
 		"distribution-target-configuration": {
@@ -286,18 +284,6 @@
 				"description": "The name of the build target.",
 				"minLength": 1,
 				"pattern": "^[\\w\\-+.]{3,}$"
-			}
-		},
-		"distribution-target-windows": {
-			"type": "object",
-			"description": "Properties to describe the Windows distribution.\nAt the moment, metadata like versioning and descriptions are typically added during the build phase via an application manifest.",
-			"additionalProperties": false,
-			"properties": {
-				"nsisScript": {
-					"type": "string",
-					"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target.",
-					"minLength": 1
-				}
 			}
 		},
 		"distribution-archive-target": {
@@ -492,6 +478,31 @@
 					}
 				}
 			}
+		},
+		"distribution-windowsNullsoftInstaller-target": {
+			"type": "object",
+			"description": "Properties to describe an NSIS installer. Implies 'condition: windows'",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"nsisScript"
+			],
+			"properties": {
+				"kind": {
+					"$ref": "#/definitions/distribution-target-kind"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"nsisScript": {
+					"$ref": "#/definitions/distribution-windowsNullsoftInstaller-nsisScript"
+				}
+			}
+		},
+		"distribution-windowsNullsoftInstaller-nsisScript": {
+			"type": "string",
+			"description": "Relative path to an NSIS installer script (.nsi) to compile.",
+			"minLength": 1
 		},
 		"external-dependency": {
 			"type": "object",
@@ -2287,8 +2298,20 @@
 									"$ref": "#/definitions/distribution-macosDiskImage-target"
 								},
 								"else": {
-									"type": "object",
-									"additionalProperties": false
+									"if": {
+										"properties": {
+											"kind": {
+												"const": "windowsNullsoftInstaller"
+											}
+										}
+									},
+									"then": {
+										"$ref": "#/definitions/distribution-windowsNullsoftInstaller-target"
+									},
+									"else": {
+										"type": "object",
+										"additionalProperties": false
+									}
 								}
 							}
 						}

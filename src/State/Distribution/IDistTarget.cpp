@@ -9,6 +9,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
+#include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 
 namespace chalet
 {
@@ -32,6 +33,10 @@ IDistTarget::IDistTarget(const DistTargetType inType) :
 #if defined(CHALET_MACOS)
 		case DistTargetType::MacosDiskImage:
 			return std::make_unique<MacosDiskImageTarget>();
+#endif
+#if defined(CHALET_WIN32)
+		case DistTargetType::WindowsNullsoftInstaller:
+			return std::make_unique<WindowsNullsoftInstallerTarget>();
 #endif
 		default:
 			break;
@@ -61,6 +66,10 @@ bool IDistTarget::isArchive() const noexcept
 bool IDistTarget::isMacosDiskImage() const noexcept
 {
 	return m_type == DistTargetType::MacosDiskImage;
+}
+bool IDistTarget::isWindowsNullsoftInstaller() const noexcept
+{
+	return m_type == DistTargetType::WindowsNullsoftInstaller;
 }
 
 /*****************************************************************************/

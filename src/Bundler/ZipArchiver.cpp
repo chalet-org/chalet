@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Utility/ZipArchiver.hpp"
+#include "Bundler/ZipArchiver.hpp"
 
 #include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
@@ -47,7 +47,6 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 	Commands::makeDirectory(tmpDirectory);
 
 #if defined(CHALET_WIN32)
-
 	for (auto& file : inFiles)
 	{
 		if (List::contains(inExcludes, file))

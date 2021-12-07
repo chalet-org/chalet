@@ -29,6 +29,7 @@ struct IDistTarget
 	bool isDistributionBundle() const noexcept;
 	bool isArchive() const noexcept;
 	bool isMacosDiskImage() const noexcept;
+	bool isWindowsNullsoftInstaller() const noexcept;
 
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;

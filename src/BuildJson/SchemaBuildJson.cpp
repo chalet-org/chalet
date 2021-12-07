@@ -121,7 +121,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"bundle",
 			"script",
 			"archive",
-			"macosDiskImage"
+			"macosDiskImage",
+			"windowsNullsoftInstaller"
 		]
 	})json"_ojson;
 
@@ -241,19 +242,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 	defs[Defs::DistributionTargetBuildTargets][kItems][kPattern] = kPatternTargetName;
-
-	defs[Defs::DistributionTargetWindows] = R"json({
-		"type": "object",
-		"description": "Properties to describe the Windows distribution.\nAt the moment, metadata like versioning and descriptions are typically added during the build phase via an application manifest.",
-		"additionalProperties": false,
-		"properties": {
-			"nsisScript": {
-				"type": "string",
-				"description": "Relative path to an NSIS installer script (.nsi) to compile for this distribution target, if the Nullsoft installer is available.\nThis is mainly for convenience, as one can also write their own batch script to do something like this and use that as a distribution target.",
-				"minLength": 1
-			}
-		}
-	})json"_ojson;
 
 	//
 	defs[Defs::DistributionArchiveTargetInclude] = R"json({
@@ -386,10 +374,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	/*
-		DistributionMacosDiskImageTarget,
-		DistributionMacosDiskImageTargetPositions,
-	*/
+	//
+	defs[Defs::DistributionWindowsNullsoftInstallerTargetScript] = R"json({
+		"type": "string",
+		"description": "Relative path to an NSIS installer script (.nsi) to compile.",
+		"minLength": 1
+	})json"_ojson;
 
 	//
 	// externalDependency
@@ -1309,7 +1299,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionTarget[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionTargetIncludeDependentSharedLibraries);
 		distributionTarget[kProperties]["linux"] = getDefinition(Defs::DistributionTargetLinux);
 		distributionTarget[kProperties]["macos"] = getDefinition(Defs::DistributionTargetMacOS);
-		distributionTarget[kProperties]["windows"] = getDefinition(Defs::DistributionTargetWindows);
 		distributionTarget[kProperties]["mainExecutable"] = getDefinition(Defs::DistributionTargetMainExecutable);
 		distributionTarget[kProperties]["subdirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
 		distributionTarget[kPatternProperties][fmt::format("^description{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
@@ -1356,6 +1345,22 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionMacosDiskImage[kProperties]["size"] = getDefinition(Defs::DistributionMacosDiskImageTargetSize);
 		distributionMacosDiskImage[kProperties]["positions"] = getDefinition(Defs::DistributionMacosDiskImageTargetPositions);
 		defs[Defs::DistributionMacosDiskImageTarget] = std::move(distributionMacosDiskImage);
+	}
+
+	{
+		auto distributionWinNullsoft = R"json({
+			"type": "object",
+			"description": "Properties to describe an NSIS installer. Implies 'condition: windows'",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"nsisScript"
+			]
+		})json"_ojson;
+		distributionWinNullsoft[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
+		distributionWinNullsoft[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+		distributionWinNullsoft[kProperties]["nsisScript"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerTargetScript);
+		defs[Defs::DistributionWindowsNullsoftInstallerTarget] = std::move(distributionWinNullsoft);
 	}
 
 	{
@@ -1608,7 +1613,6 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTargetMainExecutable: return "distribution-target-mainExecutable";
 		case Defs::DistributionTargetOutputDirectory: return "distribution-target-subdirectory";
 		case Defs::DistributionTargetBuildTargets: return "distribution-target-buildTargets";
-		case Defs::DistributionTargetWindows: return "distribution-target-windows";
 		//
 		case Defs::DistributionArchiveTarget: return "distribution-archive-target";
 		case Defs::DistributionArchiveTargetInclude: return "distribution-archive-target-include";
@@ -1620,6 +1624,9 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionMacosDiskImageTargetBackground: return "distribution-macosDiskImage-target-background";
 		case Defs::DistributionMacosDiskImageTargetSize: return "distribution-macosDiskImage-target-size";
 		case Defs::DistributionMacosDiskImageTargetPositions: return "distribution-macosDiskImage-target-positions";
+		//
+		case Defs::DistributionWindowsNullsoftInstallerTarget: return "distribution-windowsNullsoftInstaller-target";
+		case Defs::DistributionWindowsNullsoftInstallerTargetScript: return "distribution-windowsNullsoftInstaller-nsisScript";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
@@ -1786,45 +1793,45 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName] = R"json({
 		"type": "object",
 		"description": "A single distribution target or script.",
-		"if": {
-			"properties": {
-				"kind": { "const": "bundle" }
-			}
-		},
+		"if": { "properties": {
+			"kind": { "const": "bundle" }
+		}},
 		"then": {},
 		"else": {
-			"if": {
-				"properties": {
-					"kind": { "const": "script" }
-				}
-			},
+			"if": { "properties": {
+				"kind": { "const": "script" }
+			}},
 			"then": {},
 			"else": {
-				"if": {
-					"properties": {
-						"kind": { "const": "archive" }
-					}
-				},
+				"if": { "properties": {
+					"kind": { "const": "archive" }
+				}},
 				"then": {},
 				"else": {
-					"if": {
-						"properties": {
-							"kind": { "const": "macosDiskImage" }
-						}
-					},
+					"if": { "properties": {
+						"kind": { "const": "macosDiskImage" }
+					}},
 					"then": {},
 					"else": {
-						"type": "object",
-						"additionalProperties": false
+						"if": { "properties": {
+							"kind": { "const": "windowsNullsoftInstaller" }
+						}},
+						"then": {},
+						"else": {
+							"type": "object",
+							"additionalProperties": false
+						}
 					}
 				}
 			}
 		}
 	})json"_ojson;
+	//
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kThen] = getDefinition(Defs::DistributionTarget);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kThen] = getDefinition(Defs::DistributionScriptTarget);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kThen] = getDefinition(Defs::DistributionArchiveTarget);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kElse][kThen] = getDefinition(Defs::DistributionMacosDiskImageTarget);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kElse][kElse][kThen] = getDefinition(Defs::DistributionWindowsNullsoftInstallerTarget);
 
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "object",
@@ -1845,39 +1852,29 @@ Json SchemaBuildJson::get()
 	ret[kProperties][targets][kPatternProperties][kPatternTargetName] = R"json({
 		"type": "object",
 		"description": "A single build target or script.",
-		"if": {
-			"properties": {
-				"kind": { "const": "executable" }
-			}
-		},
+		"if": { "properties": {
+			"kind": { "const": "executable" }
+		}},
 		"then": {},
 		"else": {
-			"if": {
-				"properties": {
-					"kind": { "enum": [ "staticLibrary", "sharedLibrary" ] }
-				}
-			},
+			"if": { "properties": {
+				"kind": { "enum": [ "staticLibrary", "sharedLibrary" ] }
+			}},
 			"then": {},
 			"else": {
-				"if": {
-					"properties": {
-						"kind": { "const": "cmakeProject" }
-					}
-				},
+				"if": { "properties": {
+					"kind": { "const": "cmakeProject" }
+				}},
 				"then": {},
 				"else": {
-					"if": {
-						"properties": {
-							"kind": { "const": "chaletProject" }
-						}
-					},
+					"if": { "properties": {
+						"kind": { "const": "chaletProject" }
+					}},
 					"then": {},
 					"else": {
-						"if": {
-							"properties": {
-								"kind": { "const": "script" }
-							}
-						},
+						"if": { "properties": {
+							"kind": { "const": "script" }
+						}},
 						"then": {},
 						"else": {
 							"type": "object",

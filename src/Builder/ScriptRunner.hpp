@@ -15,7 +15,7 @@ struct CommandLineInputs;
 class ScriptRunner
 {
 public:
-	explicit ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools, const std::string& inInputFile);
+	explicit ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools);
 
 	bool run(const StringList& inScripts, const bool inShowExitCode);
 	bool run(const std::string& inScript, const bool inShowExitCode);

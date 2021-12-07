@@ -8,6 +8,8 @@
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/IAppBundler.hpp"
 #include "Bundler/MacosDiskImageCreator.hpp"
+#include "Bundler/WindowsNullsoftInstallerRunner.hpp"
+#include "Bundler/ZipArchiver.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -16,6 +18,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
+#include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -24,7 +27,6 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
-#include "Utility/ZipArchiver.hpp"
 
 namespace chalet
 {
@@ -81,8 +83,6 @@ bool AppBundler::runBuilds()
 /*****************************************************************************/
 bool AppBundler::run(const DistTarget& inTarget)
 {
-	const auto& inputFile = m_inputs.inputFile();
-
 	if (inTarget->isDistributionBundle())
 	{
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
@@ -103,7 +103,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 				return false;
 		}
 
-		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, inputFile);
+		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, m_inputs.inputFile());
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget->name());
@@ -123,7 +123,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 	{
 		Timer buildTimer;
 
-		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget), inputFile))
+		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget)))
 			return false;
 
 		auto res = buildTimer.stop();
@@ -134,12 +134,17 @@ bool AppBundler::run(const DistTarget& inTarget)
 	}
 	else if (inTarget->isArchive())
 	{
-		if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget), inputFile))
+		if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget)))
 			return false;
 	}
 	else if (inTarget->isMacosDiskImage())
 	{
-		if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget), inputFile))
+		if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget)))
+			return false;
+	}
+	else if (inTarget->isWindowsNullsoftInstaller())
+	{
+		if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget)))
 			return false;
 	}
 
@@ -378,20 +383,15 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 }
 
 /*****************************************************************************/
-bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::string& inInputFile)
+bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 {
-	const auto& scripts = inScript.scripts();
+	const auto& scripts = inTarget.scripts();
 	if (scripts.empty())
 		return false;
 
-	if (!inScript.description().empty())
-		Output::msgTargetDescription(inScript.description(), Output::theme().header);
-	else
-		Output::msgTargetOfType("Script", inScript.name(), Output::theme().header);
+	displayHeader("Script", inTarget);
 
-	Output::lineBreak();
-
-	ScriptRunner scriptRunner(m_inputs, m_prototype.tools, inInputFile);
+	ScriptRunner scriptRunner(m_inputs, m_prototype.tools);
 	bool showExitCode = false;
 	if (!scriptRunner.run(scripts, showExitCode))
 	{
@@ -405,15 +405,15 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inScript, const std::st
 }
 
 /*****************************************************************************/
-bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const std::string& inInputFile)
+bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 {
-	const auto& includes = inArchive.includes();
+	const auto& includes = inTarget.includes();
 	if (includes.empty())
 		return false;
 
 	Timer timer;
 
-	auto baseName = inArchive.name();
+	auto baseName = inTarget.name();
 
 	BuildState* state = getBuildState(m_prototype.anyConfiguration());
 	if (state != nullptr)
@@ -424,22 +424,17 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const st
 
 	auto filename = fmt::format("{}.zip", baseName);
 
-	if (!inArchive.description().empty())
-		Output::msgTargetDescription(inArchive.description(), Output::theme().header);
-	else
-		Output::msgTargetOfType("Archive", filename, Output::theme().header);
-
-	Output::lineBreak();
-
-	UNUSED(inInputFile);
+	displayHeader("Compressing", inTarget, filename);
 
 	StringList resolvedIncludes;
-	for (auto& include : inArchive.includes())
+	for (auto& include : inTarget.includes())
 	{
 		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
 
-	Diagnostic::infoEllipsis("Archiving files");
+	m_dependencyMap.log();
+
+	Diagnostic::infoEllipsis("Compressing files");
 
 	ZipArchiver zipArchiver(m_prototype);
 	if (!zipArchiver.archive(baseName, resolvedIncludes, m_inputs.distributionDirectory(), m_archives))
@@ -452,22 +447,38 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inArchive, const st
 }
 
 /*****************************************************************************/
-bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inDiskImage, const std::string& inInputFile)
+bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
 {
-	if (!inDiskImage.description().empty())
-		Output::msgTargetDescription(inDiskImage.description(), Output::theme().header);
-	else
-		Output::msgTargetOfType("Disk Image", inDiskImage.name(), Output::theme().header);
-
-	Output::lineBreak();
-
-	UNUSED(inInputFile);
+	displayHeader("Disk Image", inTarget);
 
 	MacosDiskImageCreator diskImageCreator(m_inputs, m_prototype);
-	if (!diskImageCreator.make(inDiskImage))
+	if (!diskImageCreator.make(inTarget))
 		return false;
 
 	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstallerTarget& inTarget)
+{
+	displayHeader("Nullsoft Installer", inTarget);
+
+	WindowsNullsoftInstallerRunner nsis(m_prototype);
+	if (!nsis.compile(inTarget))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+void AppBundler::displayHeader(const std::string& inLabel, const IDistTarget& inTarget, const std::string& inName) const
+{
+	if (!inTarget.description().empty())
+		Output::msgTargetDescription(inTarget.description(), Output::theme().header);
+	else
+		Output::msgTargetOfType(inLabel, !inName.empty() ? inName : inTarget.name(), Output::theme().header);
+
+	Output::lineBreak();
 }
 
 /*****************************************************************************/

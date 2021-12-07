@@ -74,7 +74,7 @@ void msgProfilerDoneAndLaunching(const std::string& inProfileAnalysis, const std
 void msgClean(const std::string& inBuildConfiguration);
 void msgBuild(const std::string& inName);
 void msgRebuild(const std::string& inName);
-void msgTargetOfType(const std::string& inType, const std::string& inName, const Color inColor);
+void msgTargetOfType(const std::string& inLabel, const std::string& inName, const Color inColor);
 void msgTargetDescription(const std::string& inDescription, const Color inColor);
 void msgRun(const std::string& inName);
 void msgScanningForModuleDependencies();

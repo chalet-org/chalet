@@ -26,7 +26,7 @@ public:
 	virtual std::string getFrameworksPath() const final;
 
 private:
-	bool createWindowsInstaller() const;
+	//
 };
 }
 

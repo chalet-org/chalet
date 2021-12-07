@@ -16,6 +16,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
+#include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 
 namespace chalet
 {
@@ -262,6 +263,14 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 				continue;
 #endif
 			}
+			else if (String::equals("windowsNullsoftInstaller", val))
+			{
+#if defined(CHALET_WIN32)
+				type = DistTargetType::WindowsNullsoftInstaller;
+#else
+				continue;
+#endif
+			}
 		}
 
 		DistTarget target = IDistTarget::make(type);
@@ -285,6 +294,11 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 		else if (target->isMacosDiskImage())
 		{
 			if (!parseMacosDiskImage(static_cast<MacosDiskImageTarget&>(*target), targetJson))
+				return false;
+		}
+		else if (target->isWindowsNullsoftInstaller())
+		{
+			if (!parseWindowsNullsoftInstaller(static_cast<WindowsNullsoftInstallerTarget&>(*target), targetJson))
 				return false;
 		}
 
@@ -418,39 +432,6 @@ bool BuildJsonProtoParser::parseDistributionBundleLinux(BundleTarget& outTarget,
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDistributionBundleWindows(BundleTarget& outTarget, const Json& inNode) const
-{
-	if (!inNode.contains("windows"))
-		return true;
-
-	const Json& windowsNode = inNode.at("windows");
-	if (!windowsNode.is_object())
-	{
-		Diagnostic::error("{}: '{}.windows' must be an object.", m_filename, kKeyDistribution);
-		return false;
-	}
-
-	BundleWindows windowsBundle;
-
-	if (std::string val; m_chaletJson.assignFromKey(val, windowsNode, "nsisScript"))
-		windowsBundle.setNsisScript(std::move(val));
-
-	// int assigned = 0;
-	// if (std::string val; m_chaletJson.assignFromKey(val, windowsNode, "icon"))
-	// {
-	// 	windowsBundle.setIcon(val);
-	// 	assigned++;
-	// }
-
-	// if (assigned == 0)
-	// 	return false;
-
-	outTarget.setWindowsBundle(std::move(windowsBundle));
-
-	return true;
-}
-
-/*****************************************************************************/
 bool BuildJsonProtoParser::parseDistributionBundleMacOS(BundleTarget& outTarget, const Json& inNode) const
 {
 	if (!inNode.contains("macos"))
@@ -566,6 +547,18 @@ bool BuildJsonProtoParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, 
 			}
 		}
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const
+{
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
+		outTarget.setDescription(std::move(val));
+
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "nsisScript"))
+		outTarget.setNsisScript(std::move(val));
 
 	return true;
 }
