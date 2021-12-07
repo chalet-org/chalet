@@ -385,10 +385,10 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 
 #if defined(CHALET_LINUX)
 	{
-		if (std::string val; m_chaletJson.assignFromKey(val, linuxNode, "linuxDesktopEntry"))
+		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "linuxDesktopEntry"))
 			outTarget.setLinuxDesktopEntry(std::move(val));
 
-		if (std::string val; m_chaletJson.assignFromKey(val, linuxNode, "linuxDesktopEntryIcon"))
+		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "linuxDesktopEntryIcon"))
 			outTarget.setLinuxDesktopEntryIcon(std::move(val));
 	}
 

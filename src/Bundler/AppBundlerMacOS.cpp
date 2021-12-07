@@ -118,11 +118,13 @@ bool AppBundlerMacOS::bundleForPlatform()
 std::string AppBundlerMacOS::getBundlePath() const
 {
 	const auto& subdirectory = m_bundle.subdirectory();
+#if defined(CHALET_MACOS)
 	if (m_bundle.isMacosAppBundle())
 	{
 		return fmt::format("{}/{}.app/Contents", subdirectory, m_bundle.name());
 	}
 	else
+#endif
 	{
 		return subdirectory;
 	}
@@ -392,11 +394,13 @@ bool AppBundlerMacOS::signAppBundle() const
 
 	Timer timer;
 
+#if defined(CHALET_MACOS)
 	if (m_bundle.isMacosAppBundle())
 	{
 		Diagnostic::infoEllipsis("Signing the application bundle");
 	}
 	else
+#endif
 	{
 		Diagnostic::infoEllipsis("Signing binaries");
 	}
