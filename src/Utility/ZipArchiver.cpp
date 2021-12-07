@@ -29,14 +29,14 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 
 #if defined(CHALET_WIN32)
 	const auto& powershell = m_prototype.tools.powershell();
-	if (powershell.empty())
+	if (powershell.empty() || !Commands::pathExists(powershell))
 	{
 		Diagnostic::error("Couldn't create archive '{}' because 'powershell' was not found.", filename);
 		return false;
 	}
 #else
 	const auto& zip = m_prototype.tools.zip();
-	if (zip.empty())
+	if (zip.empty() || !Commands::pathExists(zip))
 	{
 		Diagnostic::error("Couldn't create archive '{}' because 'zip' was not found.", filename);
 		return false;
@@ -58,7 +58,9 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 
 	StringList cmd{
 		powershell,
+		"-Command",
 		"Compress-Archive",
+		"-Force",
 		"-Path",
 		inFilename,
 		"-DestinationPath",
@@ -84,13 +86,13 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 	}
 #endif
 
-	bool result = Commands::subprocessNoOutput(cmd, inCwd);
+	bool result = Commands::subprocess(cmd, inCwd);
 
 	Commands::removeRecursively(tmpDirectory);
 
 	if (!result)
 	{
-		Diagnostic::error("Couldn't create archive '{}' because 'zip' ran into a problem.", filename);
+		Diagnostic::error("Couldn't create archive '{}' because '{}' ran into a problem.", filename, cmd.front());
 	}
 
 	return result;

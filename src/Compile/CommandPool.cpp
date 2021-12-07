@@ -30,8 +30,8 @@ static std::mutex s_mutex;
 static struct
 {
 	uint index = 0;
-	uint threads = 0;
-	// std::atomic<CommandPoolErrorCode> errorCode = CommandPoolErrorCode::None;
+	// uint threads = 0;
+
 	CommandPoolErrorCode errorCode = CommandPoolErrorCode::None;
 	std::function<bool()> shutdownHandler;
 } state;
@@ -45,8 +45,8 @@ bool printCommand(std::string text)
 	std::cout.write(text.data(), text.size());
 	std::cout.put(std::cout.widen('\n'));
 
-	if (state.index % state.threads == 1)
-		std::cout.flush();
+	// if (state.index % state.threads == 1)
+	std::cout.flush();
 
 	++state.index;
 
@@ -288,7 +288,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 	m_reset = Output::getAnsiStyle(Color::Reset);
 	auto color = Output::getAnsiStyle(cmdColor);
 
-	state.threads = inJob.threads > 0 ? inJob.threads : static_cast<uint>(m_threadPool.threads());
+	// state.threads = inJob.threads > 0 ? inJob.threads : static_cast<uint>(m_threadPool.threads());
 	if (totalCompiles <= 1 || inJob.threads == 1)
 	{
 		for (auto& it : inJob.list)

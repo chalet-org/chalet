@@ -20,8 +20,8 @@
         "-t",
         "vs-stable",
         "-a",
-        "x64",
-        "build"
+        "auto",
+        "bundle"
       ]
     }
   ]
