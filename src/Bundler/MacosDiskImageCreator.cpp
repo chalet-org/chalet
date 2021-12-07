@@ -239,6 +239,7 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
   set the bounds of container window to {{0, 0, {width}, {height}}}
   set viewOptions to the icon view options of container window
   set arrangement of viewOptions to not arranged
+  set label position of viewOptions to bottom
   set text size of viewOptions to {textSize}
   set icon size of viewOptions to {iconSize}{positions}{background}
   set pathbar visible of container window to {pathbar}
