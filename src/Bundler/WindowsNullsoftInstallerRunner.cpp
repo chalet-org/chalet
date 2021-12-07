@@ -32,34 +32,32 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 		return true;
 
 	const auto& nsisScript = inTarget.nsisScript();
-	if (!nsisScript.empty())
+
+	Timer timer;
+	if (Output::showCommands())
+		Diagnostic::info("Creating the Windows installer executable");
+	else
+		Diagnostic::infoEllipsis("Creating the Windows installer executable");
+
+	StringList cmd{ m_prototype.tools.makeNsis() };
+	cmd.emplace_back("/WX");
+	cmd.emplace_back("/V3");
+	cmd.emplace_back("/NOCD");
+	cmd.emplace_back(nsisScript);
+
+	bool result = false;
+	if (Output::showCommands())
+		result = Commands::subprocess(cmd);
+	else
+		result = Commands::subprocess(cmd, PipeOption::Close, PipeOption::StdOut);
+
+	if (!result)
 	{
-		Timer timer;
-		if (Output::showCommands())
-			Diagnostic::info("Creating the Windows installer executable");
-		else
-			Diagnostic::infoEllipsis("Creating the Windows installer executable");
-
-		StringList cmd{ m_prototype.tools.makeNsis() };
-		cmd.emplace_back("/WX");
-		cmd.emplace_back("/V3");
-		cmd.emplace_back("/NOCD");
-		cmd.emplace_back(nsisScript);
-
-		bool result = false;
-		if (Output::showCommands())
-			result = Commands::subprocess(cmd);
-		else
-			result = Commands::subprocess(cmd, PipeOption::Close, PipeOption::StdOut);
-
-		if (!result)
-		{
-			Diagnostic::error("NSIS Installer failed to compile: {}", nsisScript);
-			return false;
-		}
-
-		Diagnostic::printDone(timer.asString());
+		Diagnostic::error("NSIS Installer failed to compile: {}", nsisScript);
+		return false;
 	}
+
+	Diagnostic::printDone(timer.asString());
 
 	return true;
 }
