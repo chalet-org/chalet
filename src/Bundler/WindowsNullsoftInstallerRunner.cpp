@@ -34,8 +34,6 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 	const auto& nsisScript = inTarget.nsisScript();
 	if (!nsisScript.empty())
 	{
-		Output::lineBreak();
-
 		Timer timer;
 		if (Output::showCommands())
 			Diagnostic::info("Creating the Windows installer executable");

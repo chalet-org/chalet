@@ -144,7 +144,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 	}
 	else if (inTarget->isWindowsNullsoftInstaller())
 	{
-		if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget)))
+		if (!runWindowsNullsoftInstallerTarget(static_cast<const WindowsNullsoftInstallerTarget&>(*inTarget)))
 			return false;
 	}
 
@@ -432,7 +432,7 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
 
-	m_dependencyMap.log();
+	// m_dependencyMap.log();
 
 	Diagnostic::infoEllipsis("Compressing files");
 
