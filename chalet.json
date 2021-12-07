@@ -165,15 +165,11 @@
 				"Thumbs.db",
 				".DS_Store"
 			]
-			/*"macos": {
-				"bundleType": "app",
-				"icon": "platform/chalet-logo.png"
-				"infoPropertyList": "platform/macos/Info.plist.json"
-			},*/
-			/*"linux": {
-				"icon": "platform/chalet-logo.png",
-				"desktopEntry": "platform/linux/app.desktop"
-			}*/
+			// "macosBundleType": "app",
+			// "macosBundleIcon": "platform/chalet-logo.png",
+			// "macosBundleInfoPropertyList": "platform/macos/Info.plist.json",
+			// "linuxDesktopEntry": "platform/linux/app.desktop",
+			// "linuxDesktopEntryIcon": "platform/chalet-logo.png"
 		},
 		"post-bundle": {
 			"kind": "script",

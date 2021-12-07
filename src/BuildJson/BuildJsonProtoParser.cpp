@@ -384,95 +384,47 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 		outTarget.addExcludes(std::move(list));
 
 #if defined(CHALET_LINUX)
-	return parseDistributionBundleLinux(outTarget, inNode);
-#elif defined(CHALET_MACOS)
-	return parseDistributionBundleMacOS(outTarget, inNode);
-#elif defined(CHALET_WIN32)
-	return parseDistributionBundleWindows(outTarget, inNode);
-#else
-	#error "Unrecognized platform"
-	return false;
-#endif
-}
-
-/*****************************************************************************/
-bool BuildJsonProtoParser::parseDistributionBundleLinux(BundleTarget& outTarget, const Json& inNode) const
-{
-	if (!inNode.contains("linux"))
-		return true;
-
-	const Json& linuxNode = inNode.at("linux");
-	if (!linuxNode.is_object())
 	{
-		Diagnostic::error("{}: '{}.linux' must be an object.", m_filename, kKeyDistribution);
-		return false;
+		if (std::string val; m_chaletJson.assignFromKey(val, linuxNode, "linuxDesktopEntry"))
+			outTarget.setLinuxDesktopEntry(std::move(val));
+
+		if (std::string val; m_chaletJson.assignFromKey(val, linuxNode, "linuxDesktopEntryIcon"))
+			outTarget.setLinuxDesktopEntryIcon(std::move(val));
 	}
-
-	BundleLinux linuxBundle;
-
-	int assigned = 0;
-	if (std::string val; m_chaletJson.assignFromKey(val, linuxNode, "icon"))
-	{
-		linuxBundle.setIcon(std::move(val));
-		assigned++;
-	}
-
-	if (std::string val; m_chaletJson.assignFromKey(val, linuxNode, "desktopEntry"))
-	{
-		linuxBundle.setDesktopEntry(std::move(val));
-		assigned++;
-	}
-
-	if (assigned == 0)
-		return false; // not an error
-
-	outTarget.setLinuxBundle(std::move(linuxBundle));
 
 	return true;
-}
-
-/*****************************************************************************/
-bool BuildJsonProtoParser::parseDistributionBundleMacOS(BundleTarget& outTarget, const Json& inNode) const
-{
-	if (!inNode.contains("macos"))
-		return true;
-
-	const Json& macosNode = inNode.at("macos");
-	if (!macosNode.is_object())
+#elif defined(CHALET_MACOS)
 	{
-		Diagnostic::error("{}: '{}.macos' must be an object.", m_filename, kKeyDistribution);
-		return false;
-	}
+		outTarget.setMacosBundleName(outTarget.name());
 
-	BundleMacOS macosBundle;
-	macosBundle.setBundleName(outTarget.name());
+		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "macosBundleType"))
+			outTarget.setMacosBundleType(std::move(val));
 
-	if (std::string val; m_chaletJson.assignFromKey(val, macosNode, "bundleType"))
-		macosBundle.setBundleType(std::move(val));
+		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "macosBundleIcon"))
+			outTarget.setMacosBundleIcon(std::move(val));
 
-	if (std::string val; m_chaletJson.assignFromKey(val, macosNode, "icon"))
-		macosBundle.setIcon(std::move(val));
-
-	const std::string kInfoPropertyList{ "infoPropertyList" };
-	if (macosNode.contains(kInfoPropertyList))
-	{
-		auto& infoPlistNode = macosNode.at(kInfoPropertyList);
-		if (infoPlistNode.is_object())
+		const std::string kInfoPropertyList{ "macosBundleInfoPropertyList" };
+		if (inNode.contains(kInfoPropertyList))
 		{
-			macosBundle.setInfoPropertyListContent(infoPlistNode.dump());
-		}
-		else
-		{
-			if (std::string val; m_chaletJson.assignFromKey(val, macosNode, kInfoPropertyList))
+			auto& infoPlistNode = inNode.at(kInfoPropertyList);
+			if (infoPlistNode.is_object())
 			{
-				macosBundle.setInfoPropertyList(std::move(val));
+				outTarget.setMacosBundleInfoPropertyListContent(infoPlistNode.dump());
+			}
+			else if (infoPlistNode.is_string())
+			{
+				outTarget.setMacosBundleInfoPropertyList(infoPlistNode.get<std::string>());
 			}
 		}
 	}
 
-	outTarget.setMacosBundle(std::move(macosBundle));
-
 	return true;
+#elif defined(CHALET_WIN32)
+	return true;
+#else
+	#error "Unrecognized platform"
+	return false;
+#endif
 }
 
 /*****************************************************************************/

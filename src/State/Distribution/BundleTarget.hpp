@@ -6,9 +6,8 @@
 #ifndef CHALET_BUNDLE_TARGET_HPP
 #define CHALET_BUNDLE_TARGET_HPP
 
-#include "State/Bundle/BundleLinux.hpp"
-#include "State/Bundle/BundleMacOS.hpp"
 #include "State/Distribution/IDistTarget.hpp"
+#include "State/MacOSBundleType.hpp"
 
 namespace chalet
 {
@@ -21,12 +20,6 @@ struct BundleTarget final : public IDistTarget
 
 	bool updateRPaths() const noexcept;
 	void setUpdateRPaths(const bool inValue) noexcept;
-
-	const BundleLinux& linuxBundle() const noexcept;
-	void setLinuxBundle(BundleLinux&& inValue);
-
-	const BundleMacOS& macosBundle() const noexcept;
-	void setMacosBundle(BundleMacOS&& inValue);
 
 	const std::string& subdirectory() const noexcept;
 	void setSubdirectory(std::string&& inValue);
@@ -53,11 +46,34 @@ struct BundleTarget final : public IDistTarget
 	void addInclude(std::string&& inValue);
 	void sortIncludes();
 
+#if defined(CHALET_MACOS)
+	MacOSBundleType macosBundleType() const noexcept;
+	void setMacosBundleType(std::string&& inName);
+	bool isMacosAppBundle() const noexcept;
+
+	const std::string& macosBundleExtension() const noexcept;
+
+	const std::string& macosBundleName() const noexcept;
+	void setMacosBundleName(const std::string& inValue);
+
+	const std::string& macosBundleIcon() const noexcept;
+	void setMacosBundleIcon(std::string&& inValue);
+
+	const std::string& macosBundleInfoPropertyList() const noexcept;
+	void setMacosBundleInfoPropertyList(std::string&& inValue);
+
+	const std::string& macosBundleInfoPropertyListContent() const noexcept;
+	void setMacosBundleInfoPropertyListContent(std::string&& inValue);
+#elif defined(CHALET_LINUX)
+	const std::string& linuxDesktopEntryIcon() const noexcept;
+	void setLinuxDesktopEntryIcon(std::string&& inValue);
+
+	const std::string& linuxDesktopEntry() const noexcept;
+	void setLinuxDesktopEntry(std::string&& inValue);
+#endif
+
 private:
 	bool resolveIncludesFromState(const BuildState& inState);
-
-	BundleLinux m_linuxBundle;
-	BundleMacOS m_macosBundle;
 
 	StringList m_buildTargets;
 	StringList m_rawIncludes;
@@ -67,6 +83,19 @@ private:
 	std::string m_subdirectory;
 	std::string m_configuration;
 	std::string m_mainExecutable;
+
+#if defined(CHALET_MACOS)
+	std::string m_macosBundleName;
+	std::string m_macosBundleExtension;
+	std::string m_macosBundleIcon;
+	std::string m_macosBundleInfoPropertyList;
+	std::string m_macosBundleInfoPropertyListContent;
+
+	MacOSBundleType m_macosBundleType = MacOSBundleType::None;
+#elif defined(CHALET_LINUX)
+	std::string m_linuxDesktopEntryIcon;
+	std::string m_linuxDesktopEntry;
+#endif
 
 	bool m_includeDependentSharedLibraries = true;
 	bool m_includesResolved = false;

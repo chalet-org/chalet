@@ -161,61 +161,53 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": true
 	})json"_ojson;
 
-	defs[Defs::DistributionTargetLinux] = R"json({
-		"type": "object",
-		"description": "Properties to describe the Linux distribution. At the moment, these only apply to desktop environments that support the XDG Desktop Entry Specification",
-		"additionalProperties": false,
-		"properties": {
-			"desktopEntry": {
-				"type": "string",
-				"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
-				"minLength": 1
-			},
-			"icon": {
-				"type": "string",
-				"description": "The location to an icon to use for the application (PNG 256x256 is recommended)",
-				"minLength": 1
-			}
-		}
+	/*
+		DistributionTargetMacOSBundleType,
+		DistributionTargetMacOSBundleIcon,
+		DistributionTargetMacOSBundleInfoPropertyList,
+	*/
+
+	defs[Defs::DistributionTargetLinuxDesktopEntry] = R"json({
+		"type": "string",
+		"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
+		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::DistributionTargetMacOS] = R"json({
-		"type": "object",
-		"description": "Properties to describe the MacOS distribution. Only one application bundle can be defined per distribution target.",
-		"additionalProperties": false,
-		"required": [
-			"bundleType"
+	defs[Defs::DistributionTargetLinuxDesktopEntryIcon] = R"json({
+		"type": "string",
+		"description": "The location to an icon to use for the application (PNG 256x256 is recommended)",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::DistributionTargetMacOSBundleType] = R"json({
+		"type": "string",
+		"description": "The MacOS bundle type (only .app is supported currently)",
+		"minLength": 1,
+		"enum": [
+			"app"
 		],
-		"properties": {
-			"bundleType": {
+		"default": "app"
+	})json"_ojson;
+
+	defs[Defs::DistributionTargetMacOSBundleIcon] = R"json({
+		"type": "string",
+		"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::DistributionTargetMacOSBundleInfoPropertyList] = R"json({
+		"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
+		"oneOf": [
+			{
 				"type": "string",
-				"description": "The MacOS bundle type (only .app is supported currently)",
-				"minLength": 1,
-				"enum": [
-					"app"
-				],
-				"default": "app"
-			},
-			"icon": {
-				"type": "string",
-				"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
 				"minLength": 1
 			},
-			"infoPropertyList": {
-				"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
-				"oneOf": [
-					{
-						"type": "string",
-						"minLength": 1
-					},
-					{
-						"type": "object"
-					}
-				]
+			{
+				"type": "object"
 			}
-		}
+		]
 	})json"_ojson;
-	defs[Defs::DistributionTargetMacOS]["properties"]["infoPropertyList"][kOneOf][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
+	defs[Defs::DistributionTargetMacOSBundleInfoPropertyList][kOneOf][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
 
 	defs[Defs::DistributionTargetMainExecutable] = R"json({
 		"type": "string",
@@ -1297,8 +1289,11 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionTarget[kProperties]["exclude"] = getDefinition(Defs::DistributionTargetExclude);
 		distributionTarget[kProperties]["include"] = getDefinition(Defs::DistributionTargetInclude);
 		distributionTarget[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionTargetIncludeDependentSharedLibraries);
-		distributionTarget[kProperties]["linux"] = getDefinition(Defs::DistributionTargetLinux);
-		distributionTarget[kProperties]["macos"] = getDefinition(Defs::DistributionTargetMacOS);
+		distributionTarget[kProperties]["macosBundleType"] = getDefinition(Defs::DistributionTargetMacOSBundleType);
+		distributionTarget[kProperties]["macosBundleIcon"] = getDefinition(Defs::DistributionTargetMacOSBundleIcon);
+		distributionTarget[kProperties]["macosBundleInfoPropertyList"] = getDefinition(Defs::DistributionTargetMacOSBundleInfoPropertyList);
+		distributionTarget[kProperties]["linuxDesktopEntry"] = getDefinition(Defs::DistributionTargetLinuxDesktopEntry);
+		distributionTarget[kProperties]["linuxDesktopEntryIcon"] = getDefinition(Defs::DistributionTargetLinuxDesktopEntryIcon);
 		distributionTarget[kProperties]["mainExecutable"] = getDefinition(Defs::DistributionTargetMainExecutable);
 		distributionTarget[kProperties]["subdirectory"] = getDefinition(Defs::DistributionTargetOutputDirectory);
 		distributionTarget[kPatternProperties][fmt::format("^description{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
@@ -1608,8 +1603,11 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionTargetInclude: return "distribution-target-include";
 		case Defs::DistributionTargetExclude: return "distribution-target-exclude";
 		case Defs::DistributionTargetIncludeDependentSharedLibraries: return "distribution-target-includeDependentSharedLibraries";
-		case Defs::DistributionTargetLinux: return "distribution-target-linux";
-		case Defs::DistributionTargetMacOS: return "distribution-target-macos";
+		case Defs::DistributionTargetMacOSBundleType: return "distribution-target-macosBundleType";
+		case Defs::DistributionTargetMacOSBundleIcon: return "distribution-target-macosBundleIcon";
+		case Defs::DistributionTargetMacOSBundleInfoPropertyList: return "distribution-target-macosBundleInfoPropertyList";
+		case Defs::DistributionTargetLinuxDesktopEntry: return "distribution-target-linuxDesktopEntry";
+		case Defs::DistributionTargetLinuxDesktopEntryIcon: return "distribution-target-linuxDesktopEntryIcon";
 		case Defs::DistributionTargetMainExecutable: return "distribution-target-mainExecutable";
 		case Defs::DistributionTargetOutputDirectory: return "distribution-target-subdirectory";
 		case Defs::DistributionTargetBuildTargets: return "distribution-target-buildTargets";

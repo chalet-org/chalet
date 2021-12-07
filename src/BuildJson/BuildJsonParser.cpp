@@ -12,8 +12,6 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/Platform.hpp"
 #include "State/BuildInfo.hpp"
-#include "State/Bundle/BundleLinux.hpp"
-#include "State/Bundle/BundleMacOS.hpp"
 #include "State/Dependency/BuildDependencyType.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"

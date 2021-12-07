@@ -72,8 +72,9 @@ bool AppBundlerLinux::removeOldFiles()
 /*****************************************************************************/
 bool AppBundlerLinux::bundleForPlatform()
 {
-	const auto& icon = m_bundle.linuxBundle().icon();
-	const auto& desktopEntry = m_bundle.linuxBundle().desktopEntry();
+#if defined(CHALET_LINUX)
+	const auto& icon = m_bundle.linuxDesktopEntryIcon();
+	const auto& desktopEntry = m_bundle.linuxDesktopEntry();
 	if (desktopEntry.empty())
 		return true; // Nothing to do
 
@@ -123,6 +124,9 @@ bool AppBundlerLinux::bundleForPlatform()
 	// Output::lineBreak();
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 /*****************************************************************************/

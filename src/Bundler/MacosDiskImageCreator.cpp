@@ -26,6 +26,7 @@ MacosDiskImageCreator::MacosDiskImageCreator(const CommandLineInputs& inInputs, 
 /*****************************************************************************/
 bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 {
+#if defined(CHALET_MACOS)
 	m_diskName = String::getPathFolderBaseName(inDiskImage.name());
 
 	const auto& distributionDirectory = m_inputs.distributionDirectory();
@@ -55,7 +56,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 				auto& bundle = static_cast<BundleTarget&>(*target);
 				const auto& subdirectory = bundle.subdirectory();
 
-				std::string appPath = fmt::format("{}/{}.{}", subdirectory, path, bundle.macosBundle().bundleExtension());
+				std::string appPath = fmt::format("{}/{}.{}", subdirectory, path, bundle.macosBundleExtension());
 				if (!Commands::pathExists(appPath))
 				{
 					Diagnostic::error("Path not found, but it's required by {}.dmg: {}", m_diskName, appPath);
@@ -156,6 +157,10 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 	Diagnostic::printDone(timer.asString());
 
 	return signDmgImage(outDmgPath);
+#else
+	UNUSED(inDiskImage);
+	return false;
+#endif
 }
 
 /*****************************************************************************/

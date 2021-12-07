@@ -56,8 +56,7 @@ bool AppBundlerMacOS::removeOldFiles()
 /*****************************************************************************/
 bool AppBundlerMacOS::bundleForPlatform()
 {
-	auto& macosBundle = m_bundle.macosBundle();
-
+#if defined(CHALET_MACOS)
 	m_bundlePath = getBundlePath();
 	m_frameworksPath = getFrameworksPath();
 	m_resourcePath = getResourcePath();
@@ -85,7 +84,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 		return false;
 
 	// treat it like linux/windows
-	if (macosBundle.bundleType() == MacOSBundleType::None)
+	if (m_bundle.macosBundleType() == MacOSBundleType::None)
 	{
 		Output::lineBreak();
 
@@ -110,13 +109,16 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 		return true;
 	}
+#else
+	return false;
+#endif
 }
 
 /*****************************************************************************/
 std::string AppBundlerMacOS::getBundlePath() const
 {
 	const auto& subdirectory = m_bundle.subdirectory();
-	if (m_bundle.macosBundle().isAppBundle())
+	if (m_bundle.isMacosAppBundle())
 	{
 		return fmt::format("{}/{}.app/Contents", subdirectory, m_bundle.name());
 	}
@@ -129,11 +131,13 @@ std::string AppBundlerMacOS::getBundlePath() const
 /*****************************************************************************/
 std::string AppBundlerMacOS::getExecutablePath() const
 {
-	if (m_bundle.macosBundle().isAppBundle())
+#if defined(CHALET_MACOS)
+	if (m_bundle.isMacosAppBundle())
 	{
 		return fmt::format("{}/MacOS", getBundlePath());
 	}
 	else
+#endif
 	{
 		return m_bundle.subdirectory();
 	}
@@ -142,11 +146,13 @@ std::string AppBundlerMacOS::getExecutablePath() const
 /*****************************************************************************/
 std::string AppBundlerMacOS::getResourcePath() const
 {
-	if (m_bundle.macosBundle().isAppBundle())
+#if defined(CHALET_MACOS)
+	if (m_bundle.isMacosAppBundle())
 	{
 		return fmt::format("{}/Resources", getBundlePath());
 	}
 	else
+#endif
 	{
 		return m_bundle.subdirectory();
 	}
@@ -155,11 +161,13 @@ std::string AppBundlerMacOS::getResourcePath() const
 /*****************************************************************************/
 std::string AppBundlerMacOS::getFrameworksPath() const
 {
-	if (m_bundle.macosBundle().isAppBundle())
+#if defined(CHALET_MACOS)
+	if (m_bundle.isMacosAppBundle())
 	{
 		return fmt::format("{}/Frameworks", getBundlePath());
 	}
 	else
+#endif
 	{
 		return m_bundle.subdirectory();
 	}
@@ -215,7 +223,8 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 /*****************************************************************************/
 bool AppBundlerMacOS::createBundleIcon()
 {
-	const auto& icon = m_bundle.macosBundle().icon();
+#if defined(CHALET_MACOS)
+	const auto& icon = m_bundle.macosBundleIcon();
 
 	if (!icon.empty())
 	{
@@ -243,6 +252,7 @@ bool AppBundlerMacOS::createBundleIcon()
 			}
 		}
 	}
+#endif
 
 	return true;
 }
@@ -250,8 +260,7 @@ bool AppBundlerMacOS::createBundleIcon()
 /*****************************************************************************/
 bool AppBundlerMacOS::createPListAndReplaceVariables() const
 {
-	auto& macosBundle = m_bundle.macosBundle();
-
+#if defined(CHALET_MACOS)
 	const auto& version = m_state.workspace.version();
 	auto icon = fmt::format("{}.icns", m_iconBaseName);
 
@@ -259,13 +268,13 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 		String::replaceAll(outContent, "${name}", m_bundle.name());
 		String::replaceAll(outContent, "${mainExecutable}", m_mainExecutable);
 		String::replaceAll(outContent, "${icon}", icon);
-		String::replaceAll(outContent, "${bundleName}", macosBundle.bundleName());
+		String::replaceAll(outContent, "${bundleName}", m_bundle.macosBundleName());
 		String::replaceAll(outContent, "${version}", version);
 	};
 
 	std::string tmpInfoPlist = fmt::format("{}/Info.plist.json", m_bundle.subdirectory());
-	std::string infoPropertyList = macosBundle.infoPropertyList();
-	std::string infoPropertyListContent = macosBundle.infoPropertyListContent();
+	std::string infoPropertyList = m_bundle.macosBundleInfoPropertyList();
+	std::string infoPropertyListContent = m_bundle.macosBundleInfoPropertyListContent();
 
 	if (infoPropertyListContent.empty())
 	{
@@ -304,6 +313,7 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 		return false;
 
 	Commands::remove(tmpInfoPlist);
+#endif
 
 	return true;
 }
@@ -382,7 +392,7 @@ bool AppBundlerMacOS::signAppBundle() const
 
 	Timer timer;
 
-	if (m_bundle.macosBundle().isAppBundle())
+	if (m_bundle.isMacosAppBundle())
 	{
 		Diagnostic::infoEllipsis("Signing the application bundle");
 	}

@@ -128,11 +128,20 @@
 				"includeDependentSharedLibraries": {
 					"$ref": "#/definitions/distribution-target-includeDependentSharedLibraries"
 				},
-				"linux": {
-					"$ref": "#/definitions/distribution-target-linux"
+				"macosBundleType": {
+					"$ref": "#/definitions/distribution-target-macosBundleType"
 				},
-				"macos": {
-					"$ref": "#/definitions/distribution-target-macos"
+				"macosBundleIcon": {
+					"$ref": "#/definitions/distribution-target-macosBundleIcon"
+				},
+				"macosBundleInfoPropertyList": {
+					"$ref": "#/definitions/distribution-target-macosBundleInfoPropertyList"
+				},
+				"linuxDesktopEntry": {
+					"$ref": "#/definitions/distribution-target-linuxDesktopEntry"
+				},
+				"linuxDesktopEntryIcon": {
+					"$ref": "#/definitions/distribution-target-linuxDesktopEntryIcon"
 				},
 				"mainExecutable": {
 					"$ref": "#/definitions/distribution-target-mainExecutable"
@@ -196,72 +205,55 @@
 			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
 			"default": true
 		},
-		"distribution-target-linux": {
-			"type": "object",
-			"description": "Properties to describe the Linux distribution. At the moment, these only apply to desktop environments that support the XDG Desktop Entry Specification",
-			"additionalProperties": false,
-			"properties": {
-				"desktopEntry": {
-					"type": "string",
-					"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
-					"minLength": 1
-				},
-				"icon": {
-					"type": "string",
-					"description": "The location to an icon to use for the application (PNG 256x256 is recommended)",
-					"minLength": 1
-				}
-			}
-		},
-		"distribution-target-macos": {
-			"type": "object",
-			"description": "Properties to describe the MacOS distribution. Only one application bundle can be defined per distribution target.",
-			"additionalProperties": false,
-			"required": [
-				"bundleType"
+		"distribution-target-macosBundleType": {
+			"type": "string",
+			"description": "The MacOS bundle type (only .app is supported currently)",
+			"minLength": 1,
+			"enum": [
+				"app"
 			],
-			"properties": {
-				"bundleType": {
+			"default": "app"
+		},
+		"distribution-target-macosBundleIcon": {
+			"type": "string",
+			"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
+			"minLength": 1
+		},
+		"distribution-target-macosBundleInfoPropertyList": {
+			"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
+			"oneOf": [
+				{
 					"type": "string",
-					"description": "The MacOS bundle type (only .app is supported currently)",
-					"minLength": 1,
-					"enum": [
-						"app"
-					],
-					"default": "app"
-				},
-				"icon": {
-					"type": "string",
-					"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
 					"minLength": 1
 				},
-				"infoPropertyList": {
-					"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
-					"oneOf": [
-						{
-							"type": "string",
-							"minLength": 1
-						},
-						{
-							"type": "object",
-							"default": {
-								"CFBundleDevelopmentRegion": "en-US",
-								"CFBundleDisplayName": "${name}",
-								"CFBundleExecutable": "${mainExecutable}",
-								"CFBundleIconFile": "${icon}",
-								"CFBundleIdentifier": "com.developer.application",
-								"CFBundleInfoDictionaryVersion": "6.0",
-								"CFBundleName": "${bundleName}",
-								"CFBundlePackageType": "APPL",
-								"CFBundleShortVersionString": "${version}",
-								"CFBundleVersion": "${version}",
-								"CFBundleSignature": "????",
-								"LSMinimumSystemVersion": "10.8"
-							}
-						}
-					]
+				{
+					"type": "object",
+					"default": {
+						"CFBundleDevelopmentRegion": "en-US",
+						"CFBundleDisplayName": "${name}",
+						"CFBundleExecutable": "${mainExecutable}",
+						"CFBundleIconFile": "${icon}",
+						"CFBundleIdentifier": "com.developer.application",
+						"CFBundleInfoDictionaryVersion": "6.0",
+						"CFBundleName": "${bundleName}",
+						"CFBundlePackageType": "APPL",
+						"CFBundleShortVersionString": "${version}",
+						"CFBundleVersion": "${version}",
+						"CFBundleSignature": "????",
+						"LSMinimumSystemVersion": "10.8"
+					}
 				}
-			}
+			]
+		},
+		"distribution-target-linuxDesktopEntry": {
+			"type": "string",
+			"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
+			"minLength": 1
+		},
+		"distribution-target-linuxDesktopEntryIcon": {
+			"type": "string",
+			"description": "The location to an icon to use for the application (PNG 256x256 is recommended)",
+			"minLength": 1
 		},
 		"distribution-target-mainExecutable": {
 			"type": "string",
