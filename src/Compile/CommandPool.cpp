@@ -288,7 +288,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 	m_reset = Output::getAnsiStyle(Color::Reset);
 	auto color = Output::getAnsiStyle(cmdColor);
 
-	state.threads = inJob.threads > 0 ? inJob.threads : m_threadPool.threads();
+	state.threads = inJob.threads > 0 ? inJob.threads : static_cast<uint>(m_threadPool.threads());
 	if (totalCompiles <= 1 || inJob.threads == 1)
 	{
 		for (auto& it : inJob.list)
