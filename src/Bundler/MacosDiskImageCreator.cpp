@@ -185,9 +185,6 @@ bool MacosDiskImageCreator::signDmgImage(const std::string& inPath) const
 /*****************************************************************************/
 std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget& inDiskImage) const
 {
-	std::string toolbar = inDiskImage.toolbarVisible() ? "true" : "false";
-	std::string statusbar = inDiskImage.statusbarVisible() ? "true" : "false";
-
 	ushort iconSize = inDiskImage.iconSize();
 	ushort width = inDiskImage.size().width;
 	ushort height = inDiskImage.size().height;
@@ -238,8 +235,8 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
  tell disk "{diskName}"
   open
   set current view of container window to icon view
-  set toolbar visible of container window to {toolbar}
-  set statusbar visible of container window to {statusbar}
+  set toolbar visible of container window to false
+  set statusbar visible of container window to false
   set the bounds of container window to {{0, 0, {width}, {height}}}
   set viewOptions to the icon view options of container window
   set arrangement of viewOptions to not arranged
@@ -252,8 +249,6 @@ end tell)applescript",
 		fmt::arg("diskName", m_diskName),
 		FMT_ARG(positions),
 		FMT_ARG(background),
-		FMT_ARG(toolbar),
-		FMT_ARG(statusbar),
 		FMT_ARG(iconSize),
 		FMT_ARG(width),
 		FMT_ARG(height));

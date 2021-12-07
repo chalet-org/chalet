@@ -114,26 +114,6 @@ void MacosDiskImageTarget::setIconSize(const ushort inValue) noexcept
 }
 
 /*****************************************************************************/
-bool MacosDiskImageTarget::statusbarVisible() const noexcept
-{
-	return m_statusbarVisible;
-}
-void MacosDiskImageTarget::setStatusbarVisible(const bool inValue) noexcept
-{
-	m_statusbarVisible = inValue;
-}
-
-/*****************************************************************************/
-bool MacosDiskImageTarget::toolbarVisible() const noexcept
-{
-	return m_toolbarVisible;
-}
-void MacosDiskImageTarget::setToolbarVisible(const bool inValue) noexcept
-{
-	m_toolbarVisible = inValue;
-}
-
-/*****************************************************************************/
 bool MacosDiskImageTarget::includeApplicationsSymlink() const noexcept
 {
 	return m_includeApplicationsSymlink;

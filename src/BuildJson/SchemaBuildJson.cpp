@@ -277,18 +277,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	})json"_ojson;
 
 	//
-	defs[Defs::DistributionMacosDiskImageTargetToolbarVisible] = R"json({
-		"type": "boolean",
-		"description": "Is the toolbar visible in the root of the disk image?",
-		"default": false
-	})json"_ojson;
-
-	defs[Defs::DistributionMacosDiskImageTargetStatusBarVisible] = R"json({
-		"type": "boolean",
-		"description": "Is the statusbar visible in the root of the disk image?",
-		"default": false
-	})json"_ojson;
-
 	defs[Defs::DistributionMacosDiskImageTargetIconSize] = R"json({
 		"type": "integer",
 		"description": "The icon size in the root of the disk image?",
@@ -1347,8 +1335,6 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionMacosDiskImage[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
 		distributionMacosDiskImage[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionMacosDiskImage[kProperties]["iconSize"] = getDefinition(Defs::DistributionMacosDiskImageTargetIconSize);
-		distributionMacosDiskImage[kProperties]["toolbarVisible"] = getDefinition(Defs::DistributionMacosDiskImageTargetToolbarVisible);
-		distributionMacosDiskImage[kProperties]["statusBarVisible"] = getDefinition(Defs::DistributionMacosDiskImageTargetStatusBarVisible);
 		distributionMacosDiskImage[kProperties]["background"] = getDefinition(Defs::DistributionMacosDiskImageTargetBackground);
 		distributionMacosDiskImage[kProperties]["size"] = getDefinition(Defs::DistributionMacosDiskImageTargetSize);
 		distributionMacosDiskImage[kProperties]["positions"] = getDefinition(Defs::DistributionMacosDiskImageTargetPositions);
@@ -1612,8 +1598,6 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		//
 		case Defs::DistributionMacosDiskImageTarget: return "distribution-macosDiskImage-target";
 		case Defs::DistributionMacosDiskImageTargetIconSize: return "distribution-macosDiskImage-target-iconSize";
-		case Defs::DistributionMacosDiskImageTargetToolbarVisible: return "distribution-macosDiskImage-target-toolbarVisible";
-		case Defs::DistributionMacosDiskImageTargetStatusBarVisible: return "distribution-macosDiskImage-target-statusBarVisible";
 		case Defs::DistributionMacosDiskImageTargetBackground: return "distribution-macosDiskImage-target-background";
 		case Defs::DistributionMacosDiskImageTargetSize: return "distribution-macosDiskImage-target-size";
 		case Defs::DistributionMacosDiskImageTargetPositions: return "distribution-macosDiskImage-target-positions";

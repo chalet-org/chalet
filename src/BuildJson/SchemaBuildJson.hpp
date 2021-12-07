@@ -43,8 +43,6 @@ class SchemaBuildJson
 		//
 		DistributionMacosDiskImageTarget,
 		DistributionMacosDiskImageTargetIconSize,
-		DistributionMacosDiskImageTargetToolbarVisible,
-		DistributionMacosDiskImageTargetStatusBarVisible,
 		DistributionMacosDiskImageTargetBackground,
 		DistributionMacosDiskImageTargetSize,
 		DistributionMacosDiskImageTargetPositions,

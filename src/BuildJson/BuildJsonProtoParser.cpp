@@ -503,12 +503,6 @@ bool BuildJsonProtoParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, 
 	if (int val; m_chaletJson.assignFromKey(val, inNode, "iconSize"))
 		outTarget.setIconSize(static_cast<ushort>(val));
 
-	if (bool val; m_chaletJson.assignFromKey(val, inNode, "toolbarVisible"))
-		outTarget.setToolbarVisible(val);
-
-	if (bool val; m_chaletJson.assignFromKey(val, inNode, "statusBarVisible"))
-		outTarget.setStatusbarVisible(val);
-
 	const std::string kBackground{ "background" };
 	if (inNode.contains(kBackground))
 	{

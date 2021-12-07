@@ -33,12 +33,6 @@ struct MacosDiskImageTarget final : public IDistTarget
 	ushort iconSize() const noexcept;
 	void setIconSize(const ushort inValue) noexcept;
 
-	bool statusbarVisible() const noexcept;
-	void setStatusbarVisible(const bool inValue) noexcept;
-
-	bool toolbarVisible() const noexcept;
-	void setToolbarVisible(const bool inValue) noexcept;
-
 	bool includeApplicationsSymlink() const noexcept;
 
 private:
@@ -51,8 +45,6 @@ private:
 
 	ushort m_iconSize = 48;
 
-	bool m_statusbarVisible = false;
-	bool m_toolbarVisible = false;
 	bool m_includeApplicationsSymlink = false;
 };
 }
