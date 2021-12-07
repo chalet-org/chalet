@@ -43,7 +43,9 @@ bool printCommand(std::string text)
 
 	std::cout.write(text.data(), text.size());
 	std::cout.put(std::cout.widen('\n'));
-	std::cout.flush();
+
+	if (state.index % 16 == 0)
+		std::cout.flush();
 
 	++state.index;
 
