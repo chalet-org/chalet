@@ -375,6 +375,9 @@
 				"iconSize": {
 					"$ref": "#/definitions/distribution-macosDiskImage-target-iconSize"
 				},
+				"textSize": {
+					"$ref": "#/definitions/distribution-macosDiskImage-target-textSize"
+				},
 				"background": {
 					"$ref": "#/definitions/distribution-macosDiskImage-target-background"
 				},
@@ -397,6 +400,13 @@
 			"default": 48,
 			"minimum": 16,
 			"maximum": 512
+		},
+		"distribution-macosDiskImage-target-textSize": {
+			"type": "integer",
+			"description": "The text size in the root of the disk image.",
+			"default": 12,
+			"minimum": 10,
+			"maximum": 16
 		},
 		"distribution-macosDiskImage-target-background": {
 			"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",

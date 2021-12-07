@@ -503,6 +503,9 @@ bool BuildJsonProtoParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, 
 	if (int val; m_chaletJson.assignFromKey(val, inNode, "iconSize"))
 		outTarget.setIconSize(static_cast<ushort>(val));
 
+	if (int val; m_chaletJson.assignFromKey(val, inNode, "textSize"))
+		outTarget.setTextSize(static_cast<ushort>(val));
+
 	if (bool val; m_chaletJson.assignFromKey(val, inNode, "pathbarVisible"))
 		outTarget.setPathbarVisible(val);
 

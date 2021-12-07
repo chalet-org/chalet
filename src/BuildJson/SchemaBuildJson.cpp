@@ -285,6 +285,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"maximum": 512
 	})json"_ojson;
 
+	//
+	defs[Defs::DistributionMacosDiskImageTargetTextSize] = R"json({
+		"type": "integer",
+		"description": "The text size in the root of the disk image.",
+		"default": 12,
+		"minimum": 10,
+		"maximum": 16
+	})json"_ojson;
+
 	defs[Defs::DistributionMacosDiskImageTargetPathbarVisible] = R"json({
 		"type": "boolean",
 		"description": "true to display the pathbar (aka breadcrumbs) in the root of the disk image. false to hide it.",
@@ -1342,6 +1351,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionMacosDiskImage[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionMacosDiskImage[kProperties]["pathbarVisible"] = getDefinition(Defs::DistributionMacosDiskImageTargetPathbarVisible);
 		distributionMacosDiskImage[kProperties]["iconSize"] = getDefinition(Defs::DistributionMacosDiskImageTargetIconSize);
+		distributionMacosDiskImage[kProperties]["textSize"] = getDefinition(Defs::DistributionMacosDiskImageTargetTextSize);
 		distributionMacosDiskImage[kProperties]["background"] = getDefinition(Defs::DistributionMacosDiskImageTargetBackground);
 		distributionMacosDiskImage[kProperties]["size"] = getDefinition(Defs::DistributionMacosDiskImageTargetSize);
 		distributionMacosDiskImage[kProperties]["positions"] = getDefinition(Defs::DistributionMacosDiskImageTargetPositions);
@@ -1606,6 +1616,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionMacosDiskImageTarget: return "distribution-macosDiskImage-target";
 		case Defs::DistributionMacosDiskImageTargetPathbarVisible: return "distribution-macosDiskImage-target-pathbarVisible";
 		case Defs::DistributionMacosDiskImageTargetIconSize: return "distribution-macosDiskImage-target-iconSize";
+		case Defs::DistributionMacosDiskImageTargetTextSize: return "distribution-macosDiskImage-target-textSize";
 		case Defs::DistributionMacosDiskImageTargetBackground: return "distribution-macosDiskImage-target-background";
 		case Defs::DistributionMacosDiskImageTargetSize: return "distribution-macosDiskImage-target-size";
 		case Defs::DistributionMacosDiskImageTargetPositions: return "distribution-macosDiskImage-target-positions";

@@ -114,6 +114,16 @@ void MacosDiskImageTarget::setIconSize(const ushort inValue) noexcept
 }
 
 /*****************************************************************************/
+ushort MacosDiskImageTarget::textSize() const noexcept
+{
+	return m_textSize;
+}
+void MacosDiskImageTarget::setTextSize(const ushort inValue) noexcept
+{
+	m_textSize = inValue;
+}
+
+/*****************************************************************************/
 bool MacosDiskImageTarget::pathbarVisible() const noexcept
 {
 	return m_pathbarVisible;

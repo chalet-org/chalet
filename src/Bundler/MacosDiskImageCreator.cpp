@@ -187,6 +187,8 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
 	std::string pathbar = inDiskImage.pathbarVisible() ? "true" : "false";
 
 	ushort iconSize = inDiskImage.iconSize();
+	ushort textSize = inDiskImage.textSize();
+
 	ushort width = inDiskImage.size().width;
 	ushort height = inDiskImage.size().height;
 
@@ -237,6 +239,7 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
   set the bounds of container window to {{0, 0, {width}, {height}}}
   set viewOptions to the icon view options of container window
   set arrangement of viewOptions to not arranged
+  set text size of viewOptions to {textSize}
   set icon size of viewOptions to {iconSize}{positions}{background}
   set pathbar visible of container window to {pathbar}
   set toolbar visible of container window to false
@@ -251,6 +254,7 @@ end tell)applescript",
 		FMT_ARG(background),
 		FMT_ARG(pathbar),
 		FMT_ARG(iconSize),
+		FMT_ARG(textSize),
 		FMT_ARG(width),
 		FMT_ARG(height));
 }
