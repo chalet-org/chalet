@@ -170,13 +170,15 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::DistributionTargetLinuxDesktopEntry] = R"json({
 		"type": "string",
 		"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
-		"minLength": 1
+		"minLength": 1,
+		"default": "app.desktop"
 	})json"_ojson;
 
 	defs[Defs::DistributionTargetLinuxDesktopEntryIcon] = R"json({
 		"type": "string",
-		"description": "The location to an icon to use for the application (PNG 256x256 is recommended)",
-		"minLength": 1
+		"description": "The location to an icon to use with the XDG Desktop Entry (PNG 256x256 is recommended)",
+		"minLength": 1,
+		"default": "icon.png"
 	})json"_ojson;
 
 	defs[Defs::DistributionTargetMacOSBundleType] = R"json({
@@ -191,8 +193,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::DistributionTargetMacOSBundleIcon] = R"json({
 		"type": "string",
-		"description": "The path to an application icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
-		"minLength": 1
+		"description": "The path to a MacOS bundle icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
+		"minLength": 1,
+		"default": "icon.png"
 	})json"_ojson;
 
 	defs[Defs::DistributionTargetMacOSBundleInfoPropertyList] = R"json({
@@ -200,7 +203,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"oneOf": [
 			{
 				"type": "string",
-				"minLength": 1
+				"minLength": 1,
+				"default": "Info.plist.json"
 			},
 			{
 				"type": "object"
