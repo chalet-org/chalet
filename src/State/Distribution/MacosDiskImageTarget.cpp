@@ -29,12 +29,12 @@ bool MacosDiskImageTarget::validate()
 	{
 		if (!String::endsWith({ ".png", ".tiff" }, m_background1x))
 		{
-			Diagnostic::error("distribution.macos.dmgBackground1x must end with '.png' or '.tiff', but was '{}'.", m_background1x);
+			Diagnostic::error("macosDiskImage.background1x must end with '.png' or '.tiff', but was '{}'.", m_background1x);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_background1x))
 		{
-			Diagnostic::error("distribution.macos.dmgBackground1x '{}' was not found.", m_background1x);
+			Diagnostic::error("macosDiskImage.background1x '{}' was not found.", m_background1x);
 			result = false;
 		}
 	}
@@ -43,14 +43,20 @@ bool MacosDiskImageTarget::validate()
 	{
 		if (!String::endsWith(".png", m_background2x))
 		{
-			Diagnostic::error("distribution.macos.dmgBackground2x must end with '.png', but was '{}'.", m_background2x);
+			Diagnostic::error("macosDiskImage.background2x must end with '.png', but was '{}'.", m_background2x);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_background2x))
 		{
-			Diagnostic::error("distribution.macos.dmgBackground2x '{}' was not found.", m_background2x);
+			Diagnostic::error("macosDiskImage.background2x '{}' was not found.", m_background2x);
 			result = false;
 		}
+	}
+
+	if (m_positions.empty())
+	{
+		Diagnostic::error("macosDiskImage.positions must contain at least one bundle or distribution path.", m_background2x);
+		result = false;
 	}
 
 	return result;

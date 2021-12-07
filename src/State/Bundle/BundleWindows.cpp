@@ -21,12 +21,12 @@ bool BundleWindows::validate()
 	{
 		if (!String::endsWith("nsi", m_nsisScript))
 		{
-			Diagnostic::error("distribution.windows.nsisScript must end with '.nsi', but was '{}'.", m_nsisScript);
+			Diagnostic::error("bundle.windows.nsisScript must end with '.nsi', but was '{}'.", m_nsisScript);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_nsisScript))
 		{
-			Diagnostic::error("distribution.windows.nsisScript '{}' was not found.", m_nsisScript);
+			Diagnostic::error("bundle.windows.nsisScript '{}' was not found.", m_nsisScript);
 			result = false;
 		}
 	}
