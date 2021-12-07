@@ -173,12 +173,14 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 		FMT_ARG(outResult),
 		FMT_ARG(answerColor));
 
-	std::cout << fmt::format("\n   {noteColor}{note}{reset}{lineUp}{output}",
+	auto withNote = fmt::format("\n   {noteColor}{note}{reset}{lineUp}{output}",
 		FMT_ARG(noteColor),
 		FMT_ARG(note),
 		FMT_ARG(reset),
 		FMT_ARG(lineUp),
 		FMT_ARG(output));
+
+	std::cout.write(withNote.data(), withNote.size());
 
 	std::string input;
 	std::getline(std::cin, input); // get up to first line break (if applicable)
@@ -198,7 +200,9 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 		FMT_ARG(reset));
 
 	// toOutput.append(80 - toOutput.size(), ' ');
-	std::cout << toOutput << std::endl;
+	std::cout.write(toOutput.data(), toOutput.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
 
 	return result;
 }
@@ -297,7 +301,11 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 	{
 		const auto color = getAnsiStyle(inColor);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << fmt::format("{}{}  {}", color, inSymbol, inMessage) << reset << std::endl;
+		auto message = fmt::format("{}{}  {}", color, inSymbol, inMessage);
+		std::cout.write(message.data(), message.size());
+		std::cout.write(reset.data(), reset.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 }
 
@@ -305,16 +313,16 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 void Output::resetStdout()
 {
 	auto reset = getAnsiStyle(Color::Reset);
-	if (!reset.empty())
-		std::cout << reset << std::flush;
+	std::cout.write(reset.data(), reset.size());
+	std::cout.flush();
 }
 
 /*****************************************************************************/
 void Output::resetStderr()
 {
 	auto reset = getAnsiStyle(Color::Reset);
-	if (!reset.empty())
-		std::cerr << reset << std::flush;
+	std::cerr.write(reset.data(), reset.size());
+	std::cerr.flush();
 }
 
 /*****************************************************************************/
@@ -322,7 +330,10 @@ void Output::lineBreak()
 {
 	if (!state.quietNonBuild)
 	{
-		std::cout << getAnsiStyle(Color::Reset) << std::endl;
+		auto reset = getAnsiStyle(Color::Reset);
+		std::cout.write(reset.data(), reset.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 }
 
@@ -331,7 +342,10 @@ void Output::lineBreakStderr()
 {
 	if (!state.quietNonBuild)
 	{
-		std::cerr << getAnsiStyle(Color::Reset) << std::endl;
+		auto reset = getAnsiStyle(Color::Reset);
+		std::cerr.write(reset.data(), reset.size());
+		std::cerr.write("\n", 1);
+		std::cerr.flush();
 	}
 }
 
@@ -340,7 +354,9 @@ void Output::previousLine()
 {
 	if (!state.quietNonBuild)
 	{
-		std::cout << fmt::format("{}[F", getEscapeChar()) << std::flush;
+		auto prevLine = fmt::format("{}[F", getEscapeChar());
+		std::cout.write(prevLine.data(), prevLine.size());
+		std::cout.flush();
 	}
 }
 
@@ -350,15 +366,20 @@ void Output::print(const Color inColor, const std::string& inText)
 	if (!state.quietNonBuild)
 	{
 		const auto reset = getAnsiStyle(Color::Reset);
+		std::string output;
 		if (inColor == Color::Reset)
 		{
-			std::cout << reset << inText << std::endl;
+			output = fmt::format("{}{}", reset, inText);
 		}
 		else
 		{
 			const auto color = getAnsiStyle(inColor);
-			std::cout << color << inText << reset << std::endl;
+			output = fmt::format("{}{}{}", color, inText, reset);
 		}
+
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 }
 
@@ -370,12 +391,20 @@ void Output::print(const Color inColor, const StringList& inList)
 		const auto reset = getAnsiStyle(Color::Reset);
 		if (inColor == Color::Reset)
 		{
-			std::cout << reset << String::join(inList) << std::endl;
+			auto output = fmt::format("{}{}", reset, String::join(inList));
+
+			std::cout.write(output.data(), output.size());
+			std::cout.put(std::cout.widen('\n'));
+			std::cout.flush();
 		}
 		else
 		{
 			const auto color = getAnsiStyle(inColor);
-			std::cout << color << String::join(inList) << reset << std::endl;
+			auto output = fmt::format("{}{}{}", color, String::join(inList), reset);
+
+			std::cout.write(output.data(), output.size());
+			std::cout.put(std::cout.widen('\n'));
+			std::cout.flush();
 		}
 	}
 }
@@ -387,7 +416,11 @@ void Output::printCommand(const std::string& inText)
 	{
 		const auto color = getAnsiStyle(state.theme.build);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << color << inText << reset << std::endl;
+		auto output = fmt::format("{}{}{}", color, inText, reset);
+
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 }
 
@@ -398,7 +431,11 @@ void Output::printCommand(const StringList& inList)
 	{
 		const auto color = getAnsiStyle(state.theme.build);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << color << String::join(inList) << reset << std::endl;
+		auto output = fmt::format("{}{}{}", color, String::join(inList), reset);
+
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 }
 
@@ -409,7 +446,11 @@ void Output::printInfo(const std::string& inText)
 	{
 		const auto color = getAnsiStyle(state.theme.info);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << color << inText << reset << std::endl;
+		auto output = fmt::format("{}{}{}", color, inText, reset);
+
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 }
 
@@ -420,7 +461,11 @@ void Output::printFlair(const std::string& inText)
 	{
 		const auto color = getAnsiStyle(state.theme.flair);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << color << inText << reset << std::endl;
+		auto output = fmt::format("{}{}{}", color, inText, reset);
+
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 }
 
@@ -431,7 +476,11 @@ void Output::printSeparator(const char inChar)
 	{
 		const auto color = getAnsiStyle(state.theme.flair);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << color << std::string(80, inChar) << reset << std::endl;
+		auto output = fmt::format("{}{}{}", color, std::string(80, inChar), reset);
+
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 }
 
@@ -499,7 +548,11 @@ void Output::msgCommandPoolError(const std::string& inMessage)
 	{
 		const auto colorError = getAnsiStyle(state.theme.error);
 		const auto reset = getAnsiStyle(Color::Reset);
-		std::cout << fmt::format("{}FAILED: {}{}", colorError, reset, inMessage) << std::endl;
+		auto output = fmt::format("{}FAILED: {}{}", colorError, reset, inMessage);
+
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 }
 
@@ -513,7 +566,11 @@ void Output::msgBuildFail()
 	const auto color = getAnsiStyle(state.theme.error);
 	const auto reset = getAnsiStyle(Color::Reset);
 
-	std::cout << fmt::format("{}{}  Failed!\n   Review the errors above.{}", color, symbol, reset) << std::endl;
+	auto output = fmt::format("{}{}  Failed!\n   Review the errors above.{}", color, symbol, reset);
+
+	std::cout.write(output.data(), output.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
 }
 
 /*****************************************************************************/

@@ -29,11 +29,13 @@ static struct
 void printError(const std::string& inType, const std::string& inDescription)
 {
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
-	std::cerr << boldRed << inType + '\n';
+	auto output = fmt::format("{}{}\n", boldRed, inType);
 
 	if (!inDescription.empty())
 	{
-		std::cerr << inDescription + ":\n";
+		output += inDescription + ":\n";
+
+		std::cerr.write(output.data(), output.size());
 	}
 }
 
@@ -60,8 +62,8 @@ void SignalHandler::handler(const int inSignal)
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
 	const auto reset = Output::getAnsiStyle(Color::Reset);
 
-	std::cerr << '\n'
-			  << boldRed;
+	std::cerr.put(std::cout.widen('\n'));
+	std::cerr.write(boldRed.data(), boldRed.size());
 	switch (inSignal)
 	{
 		case SIGABRT: {
@@ -94,16 +96,22 @@ void SignalHandler::handler(const int inSignal)
 			printError("SIGTERM", "Termination Request");
 			break;
 
-		default:
-			std::cerr << "Unknown Signal " + std::to_string(inSignal) + ":\n";
+		default: {
+			auto output = fmt::format("Unknown Signal {}:\n", inSignal);
+			std::cerr.write(output.data(), output.size());
 			break;
+		}
 	}
 
 	if (state.onErrorCallback != nullptr)
 		state.onErrorCallback();
 
-	std::cout << reset << std::flush;
-	std::cerr << reset << std::endl;
+	std::cout.write(reset.data(), reset.size());
+	std::cout.flush();
+
+	std::cerr.write(reset.data(), reset.size());
+	std::cerr.write("\n", 1);
+	std::cerr.flush();
 
 	::exit(1);
 }

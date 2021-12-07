@@ -693,7 +693,14 @@ void ProjectInitializer::printFileNameAndContents(const bool inCondition, const 
 	Output::lineBreak();
 
 	std::string contents = inGetContents();
-	std::cout << Output::getAnsiStyle(Output::theme().build) << contents << Output::getAnsiStyle(Color::Reset) << std::endl;
+	auto buildColor = Output::getAnsiStyle(Output::theme().build);
+	auto reset = Output::getAnsiStyle(Color::Reset);
+
+	std::cout.write(buildColor.data(), buildColor.size());
+	std::cout.write(contents.data(), contents.size());
+	std::cout.write(reset.data(), reset.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
 
 	Commands::sleep(m_stepTime);
 
@@ -705,7 +712,8 @@ void ProjectInitializer::printFileNameAndContents(const bool inCondition, const 
 void ProjectInitializer::printUserInputSplit() const
 {
 	const std::string blankLine(80, ' ');
-	std::cout << blankLine << std::flush;
+	std::cout.write(blankLine.data(), blankLine.size());
+	std::cout.flush();
 	// Commands::sleep(0.5);
 
 	Output::lineBreak();

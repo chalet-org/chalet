@@ -33,7 +33,9 @@ bool ScriptRunner::run(const StringList& inScripts, const bool inShowExitCode)
 		std::ptrdiff_t i = &scriptPath - &inScripts.front();
 		if (i == 0)
 		{
-			std::cout << Output::getAnsiStyle(Color::Reset) << std::flush;
+			auto reset = Output::getAnsiStyle(Color::Reset);
+			std::cout.write(reset.data(), reset.size());
+			std::cout.flush();
 		}
 
 		if (!run(scriptPath, inShowExitCode))

@@ -105,7 +105,10 @@ bool QueryController::printListOfRequestedType()
 			break;
 	}
 
-	std::cout << String::join(output) << std::endl;
+	auto result = String::join(output);
+	std::cout.write(result.data(), result.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
 
 	return true;
 }

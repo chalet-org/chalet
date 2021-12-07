@@ -22,7 +22,8 @@ void Process::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const
 	{
 		if (m_killed)
 		{
-			std::cout << std::endl;
+			std::cout.put(std::cout.widen('\n'));
+			std::cout.flush();
 			break;
 		}
 

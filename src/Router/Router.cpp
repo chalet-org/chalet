@@ -94,7 +94,7 @@ bool Router::run()
 
 	if (m_inputs.generator() != IdeType::None)
 	{
-		std::cout << fmt::format("generator: '{}'", m_inputs.generatorRaw()) << std::endl;
+		LOG(fmt::format("generator: '{}'", m_inputs.generatorRaw()));
 	}
 
 	bool result = false;
@@ -281,7 +281,7 @@ bool Router::routeXcodeGenTest(BuildState& inState)
 	// Run xcodebuild from the command line if possible
 	// This would be a lightweight BuildManager
 
-	std::cout << "brew available: " << inState.tools.brewAvailable() << "\n";
+	LOG("brew available:", inState.tools.brewAvailable());
 
 	// rm -rf build/Chalet.xcodeproj && xcodegen -s xcode-project.json -p build --use-cache
 

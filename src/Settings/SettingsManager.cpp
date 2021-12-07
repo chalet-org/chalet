@@ -116,11 +116,16 @@ bool SettingsManager::runSettingsGet(Json& node)
 	if (ptr->is_string())
 	{
 		auto value = ptr->get<std::string>();
-		std::cout << value << std::endl;
+		std::cout.write(value.data(), value.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 	else
 	{
-		std::cout << ptr->dump(3, ' ') << std::endl;
+		auto output = ptr->dump(3, ' ');
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 
 	return true;
@@ -193,7 +198,10 @@ bool SettingsManager::runSettingsKeyQuery(Json& node)
 
 	if (!keyResultList.empty())
 	{
-		std::cout << String::join(keyResultList) << std::endl;
+		auto output = String::join(keyResultList);
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 
 	return true;
@@ -280,10 +288,15 @@ bool SettingsManager::runSettingsSet(Json& node)
 		std::string key(m_key);
 		String::replaceAll(key, "\\.", ".");
 
+		std::string output;
 		if (ptr->is_object())
-			std::cout << fmt::format("\"{}\": {}", key, ptr->dump(3, ' ')) << std::endl;
+			output = fmt::format("\"{}\": {}", key, ptr->dump(3, ' '));
 		else
-			std::cout << fmt::format("{}: {}", key, m_value) << std::endl;
+			output = fmt::format("{}: {}", key, m_value);
+
+		std::cout.write(output.data(), output.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 
 		settings.setDirty(true);
 	}
@@ -384,7 +397,11 @@ bool SettingsManager::runSettingsUnset(Json& node)
 	}
 	settings.setDirty(true);
 
-	std::cout << fmt::format("unset: {}", m_key) << std::endl;
+	auto output = fmt::format("unset: {}", m_key);
+
+	std::cout.write(output.data(), output.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
 
 	return true;
 }

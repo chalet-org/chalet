@@ -34,13 +34,16 @@ bool ColorTest::run()
 	m_white = Output::getAnsiStyle(Color::BrightWhiteBold);
 	m_separator = fmt::format("{}{}{}\n", m_gray, kSeparator, m_reset);
 
-	std::cout << fmt::format("{esc}[2J{esc}[1;1H", fmt::arg("esc", kEsc));
+	auto output = fmt::format("{esc}[2J{esc}[1;1H", fmt::arg("esc", kEsc));
+	std::cout.write(output.data(), output.size());
+	std::cout.flush();
 
 	printChaletColorThemes();
 	printUnicodeCharacters();
 	printTerminalCapabilities();
 
-	std::cout << m_separator << std::flush;
+	std::cout.write(m_separator.data(), m_separator.size());
+	std::cout.flush();
 
 	return true;
 }
@@ -49,7 +52,7 @@ bool ColorTest::run()
 void ColorTest::printTerminalCapabilities()
 {
 	printBanner("Terminal Capabilities");
-	std::cout << m_separator;
+	std::cout.write(m_separator.data(), m_separator.size());
 
 	std::unordered_map<int, std::string> descriptions{
 		{ 0, "normal" },
@@ -66,42 +69,54 @@ void ColorTest::printTerminalCapabilities()
 	{
 		for (int clfg : { 30, 90, 37, 97, 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 })
 		{
-			std::cout << fmt::format("{esc}[{attr};{clfg}m {clfg} {esc}[0m",
+			auto output = fmt::format("{esc}[{attr};{clfg}m {clfg} {esc}[0m",
 				fmt::arg("esc", kEsc),
 				FMT_ARG(attr),
 				FMT_ARG(clfg));
+
+			std::cout.write(output.data(), output.size());
 		}
 		if (descriptions.find(attr) != descriptions.end())
 		{
-			std::cout << fmt::format("{} - {}({}) {}\n", m_gray, m_reset, attr, descriptions.at(attr));
+			auto output = fmt::format("{} - {}({}) {}\n", m_gray, m_reset, attr, descriptions.at(attr));
+			std::cout.write(output.data(), output.size());
 		}
 		else
 		{
-			std::cout << m_reset << '\n';
+			std::cout.write(m_reset.data(), m_reset.size());
+			std::cout.put(std::cout.widen('\n'));
 		}
 	}
 
-	std::cout << m_separator;
+	std::cout.write(m_separator.data(), m_separator.size());
 
 	{
+		std::string label;
 		int attr = 7;
 		for (int clfg : { 30, 37, 33, 31, 35, 34, 36, 32 })
 		{
-			std::cout << fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
+			auto output = fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
 				fmt::arg("esc", kEsc),
 				FMT_ARG(attr),
 				FMT_ARG(clfg));
+
+			std::cout.write(output.data(), output.size());
 		}
-		std::cout << fmt::format("{} - {}(3x) normal\n", m_gray, m_reset);
+
+		label = fmt::format("{} - {}(3x) normal\n", m_gray, m_reset);
+		std::cout.write(label.data(), label.size());
 
 		for (int clfg : { 90, 97, 93, 91, 95, 94, 96, 92 })
 		{
-			std::cout << fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
+			auto output = fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
 				fmt::arg("esc", kEsc),
 				FMT_ARG(attr),
 				FMT_ARG(clfg));
+
+			std::cout.write(output.data(), output.size());
 		}
-		std::cout << fmt::format("{} - {}(9x) bright\n", m_gray, m_reset);
+		label = fmt::format("{} - {}(9x) bright\n", m_gray, m_reset);
+		std::cout.write(label.data(), label.size());
 	}
 }
 
@@ -130,7 +145,7 @@ void ColorTest::printUnicodeCharacters()
 		output += fmt::format("{}  ", character);
 	}
 	output += fmt::format("{}\n", m_reset);
-	std::cout << output;
+	std::cout.write(output.data(), output.size());
 }
 
 /*****************************************************************************/
@@ -165,10 +180,13 @@ void ColorTest::printChaletColorThemes()
 		output += fmt::format("{}{}  theme.warning{}\n", Output::getAnsiStyle(theme.warning), Unicode::warning(), m_reset);
 		output += fmt::format("{}{}  theme.note{}\n", Output::getAnsiStyle(theme.note), Unicode::diamond(), m_reset);
 
-		std::cout << output;
+		std::cout.write(output.data(), output.size());
 	}
 
-	std::cout << m_separator << fmt::format("Total built-in themes: {}\n", totalThemes);
+	auto total = fmt::format("Total built-in themes: {}\n", totalThemes);
+
+	std::cout.write(m_separator.data(), m_separator.size());
+	std::cout.write(total.data(), total.size());
 }
 
 /*****************************************************************************/
@@ -177,6 +195,9 @@ void ColorTest::printBanner(const std::string& inText)
 	auto middle = static_cast<std::size_t>(static_cast<double>(kWidth) * 0.5);
 	auto textMiddle = static_cast<std::size_t>(static_cast<double>(inText.size()) * 0.5);
 	std::string padding(middle - textMiddle, ' ');
-	std::cout << fmt::format("{}{}{}\n", m_separator, padding, inText);
+
+	auto output = fmt::format("{}{}{}\n", m_separator, padding, inText);
+
+	std::cout.write(output.data(), output.size());
 }
 }

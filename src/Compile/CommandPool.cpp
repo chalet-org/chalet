@@ -41,7 +41,9 @@ bool printCommand(std::string text)
 	std::lock_guard<std::mutex> lock(s_mutex);
 	String::replaceAll(text, '#', std::to_string(state.index));
 
-	std::cout << text << '\n';
+	std::cout.write(text.data(), text.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
 
 	++state.index;
 
@@ -77,7 +79,7 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 
 		if (result)
 		{
-			std::cout << output;
+			std::cout.write(output.data(), output.size());
 		}
 		else
 		{
@@ -87,8 +89,11 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 			auto reset = Output::getAnsiStyle(Color::Reset);
 			auto cmdString = String::join(command);
 
-			std::cout << fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString) << output;
+			auto failure = fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString);
+			std::cout.write(failure.data(), failure.size());
+			std::cout.write(output.data(), output.size());
 		}
+		std::cout.flush();
 	}
 
 	return result;
@@ -102,7 +107,7 @@ bool executeCommandCarriageReturn(StringList command)
 	static auto onStdOut = [](std::string inData) {
 		String::replaceAll(inData, '\n', "\r\n");
 		std::lock_guard<std::mutex> lock(s_mutex);
-		std::cout << inData;
+		std::cout.write(inData.data(), inData.size());
 	};
 
 	std::string errorOutput;
@@ -126,7 +131,7 @@ bool executeCommandCarriageReturn(StringList command)
 		if (result)
 		{
 			// Warnings
-			std::cout << errorOutput;
+			std::cout.write(errorOutput.data(), errorOutput.size());
 		}
 		else
 		{
@@ -136,8 +141,11 @@ bool executeCommandCarriageReturn(StringList command)
 			auto reset = Output::getAnsiStyle(Color::Reset);
 			auto cmdString = String::join(command);
 
-			std::cout << fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString) << errorOutput;
+			auto failure = fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString);
+			std::cout.write(failure.data(), failure.size());
+			std::cout.write(errorOutput.data(), errorOutput.size());
 		}
+		std::cout.flush();
 	}
 
 	return result;
@@ -149,7 +157,7 @@ bool executeCommand(StringList command)
 	ProcessOptions options;
 	auto onStdOut = [](std::string inData) {
 		std::lock_guard<std::mutex> lock(s_mutex);
-		std::cout << inData;
+		std::cout.write(inData.data(), inData.size());
 	};
 
 	std::string errorOutput;
@@ -172,7 +180,7 @@ bool executeCommand(StringList command)
 		if (result)
 		{
 			// Warnings
-			std::cout << errorOutput;
+			std::cout.write(errorOutput.data(), errorOutput.size());
 		}
 		else
 		{
@@ -182,8 +190,11 @@ bool executeCommand(StringList command)
 			auto reset = Output::getAnsiStyle(Color::Reset);
 			auto cmdString = String::join(command);
 
-			std::cout << fmt::format("{}FAILED: {}{}\n", error, reset, cmdString) << errorOutput;
+			auto failure = fmt::format("{}FAILED: {}{}\n", error, reset, cmdString);
+			std::cout.write(failure.data(), failure.size());
+			std::cout.write(errorOutput.data(), errorOutput.size());
 		}
+		std::cout.flush();
 	}
 
 	return result;
@@ -285,8 +296,6 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 					totalCompiles)))
 				return onError();
 
-			std::cout << std::flush;
-
 #if defined(CHALET_WIN32)
 			if (msvcCommand)
 			{
@@ -387,7 +396,8 @@ bool CommandPool::onError()
 	else if (state.errorCode == CommandPoolErrorCode::BuildException)
 	{
 		Output::msgCommandPoolError(m_exceptionThrown);
-		std::cout << "Terminated running processes.";
+		std::string term("Terminated running processes.");
+		std::cout.write(term.data(), term.size());
 	}
 
 	cleanup();
@@ -406,7 +416,5 @@ void CommandPool::cleanup()
 	Output::setQuietNonBuild(m_quiet);
 
 	state.errorCode = CommandPoolErrorCode::None;
-
-	std::cout << std::flush;
 }
 }

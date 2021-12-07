@@ -50,7 +50,12 @@ Logger::Logger(const char* const inFile, const std::string& inFunction)
 Logger::~Logger()
 {
 	if (uncaught >= std::uncaught_exceptions())
-		std::cout << stream.str() << std::endl;
+	{
+		auto str = stream.str();
+		std::cout.write(str.data(), str.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/

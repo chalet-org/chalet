@@ -104,7 +104,8 @@ bool CmakeBuilder::run()
 			options.stdoutOption = PipeOption::Pipe;
 			options.onStdOut = [](std::string inData) {
 				String::replaceAll(inData, "\r\n", "\n");
-				std::cout << std::move(inData) << std::flush;
+				std::cout.write(inData.data(), inData.size());
+				std::cout.flush();
 			};
 			options.onStdErr = options.onStdOut;
 

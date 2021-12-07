@@ -81,7 +81,10 @@ void JsonFile::setDirty(const bool inValue) noexcept
 /*****************************************************************************/
 void JsonFile::dumpToTerminal()
 {
-	std::cout << json.dump(1, '\t') << std::endl;
+	auto output = json.dump(1, '\t');
+	std::cout.write(output.data(), output.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
 }
 
 /*****************************************************************************/

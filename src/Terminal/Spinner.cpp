@@ -17,7 +17,9 @@ namespace
 void signalHandler(int inSignal)
 {
 	UNUSED(inSignal);
-	std::cout << "\b\b  \b\b" << std::flush;
+	std::string output{ "\b\b  \b\b" };
+	std::cout.write(output.data(), output.size());
+	std::cout.flush();
 }
 }
 
@@ -85,7 +87,9 @@ void Spinner::doRegularEllipsis()
 {
 	{
 		std::lock_guard<std::mutex> lock(m_mutex);
-		std::cout << " ... " << std::flush;
+		std::string output{ " ... " };
+		std::cout.write(output.data(), output.size());
+		std::cout.flush();
 	}
 
 	if (Environment::isContinuousIntegrationServer())
@@ -114,7 +118,8 @@ void Spinner::doRegularEllipsis()
 
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
-			std::cout << output << std::flush;
+			std::cout.write(output.data(), output.size());
+			std::cout.flush();
 		}
 
 		if (!sleepWithContext(frameTime))
@@ -126,7 +131,9 @@ void Spinner::doRegularEllipsis()
 			i = 0;
 	}
 
-	std::cout << "\b\b\b\b\b ... " << std::flush;
+	std::string output{ "\b\b\b\b\b ... " };
+	std::cout.write(output.data(), output.size());
+	std::cout.flush();
 }
 
 }

@@ -74,14 +74,19 @@ void Diagnostic::printDone(const std::string& inTime)
 	// else
 	done = "done";
 
+	std::string output;
 	if (!inTime.empty() && Output::showBenchmarks())
 	{
-		std::cout << fmt::format("{}{} ({}){}", color, done, inTime, reset) << std::endl;
+		output = fmt::format("{}{} ({}){}", color, done, inTime, reset);
 	}
 	else
 	{
-		std::cout << fmt::format("{}{}{}", color, done, reset) << std::endl;
+		output = fmt::format("{}{}{}", color, done, reset);
 	}
+
+	std::cout.write(output.data(), output.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
 }
 
 /*****************************************************************************/
@@ -96,21 +101,29 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 	const auto reset = Output::getAnsiStyle(Color::Reset);
 	const auto symbol = '>';
 
-	std::cout << fmt::format("{}{}  {}{}", color, symbol, infoColor, inMessage);
+	auto output = fmt::format("{}{}  {}{}", color, symbol, infoColor, inMessage);
+	std::cout.write(output.data(), output.size());
+
 	if (inLineBreak)
 	{
-		std::cout << reset << std::endl;
+		std::cout.write(reset.data(), reset.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 	}
 	else
 	{
 		if (Output::showCommands())
 		{
 
-			std::cout << fmt::format("{} ... {}", color, reset) << std::flush;
+			output = fmt::format("{} ... {}", color, reset);
+			std::cout.write(output.data(), output.size());
+			std::cout.flush();
 		}
 		else
 		{
-			std::cout << color << std::flush;
+			std::cout.write(color.data(), color.size());
+			std::cout.flush();
+
 			destroySpinnerThread();
 			state.spinnerThread = std::make_unique<Spinner>();
 			state.spinnerThread->start();
@@ -130,7 +143,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 	if (Environment::isBashGenericColorTermOrWindowsTerminal())
 	{
 		const auto boldBlack = Output::getAnsiStyle(Output::theme().flair);
-		std::cerr << boldBlack;
+		std::cerr.write(boldBlack.data(), boldBlack.size());
 	}
 
 	state.exceptionThrown = true;
@@ -143,7 +156,8 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 {
 	if (state.spinnerThread != nullptr)
 	{
-		std::cerr << std::endl;
+		std::cerr.put(std::cout.widen('\n'));
+		std::cerr.flush();
 		destroySpinnerThread();
 	}
 
@@ -152,14 +166,19 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 	const auto blue = Output::getAnsiStyle(Output::theme().build);
 	const auto reset = Output::getAnsiStyle(Color::Reset);
 
-	std::cerr << '\n'
-			  << boldRed << "Assertion Failed:\n  at " << reset
-			  << inExpression << ' ' << blue << inFile << ':' << inLineNumber << reset << std::endl;
+	std::string output = fmt::format("\n{}Assertion Failed:\n  at {}{} {}{}:{}{}", boldRed, reset, inExpression, blue, inFile, inLineNumber, reset);
+
+	std::cerr.write(output.data(), output.size());
+	std::cerr.put(std::cout.widen('\n'));
+	std::cerr.flush();
 
 	if (!inMessage.empty())
 	{
-		std::cerr << '\n'
-				  << boldBlack << inMessage << reset << std::endl;
+		output = fmt::format("\n{}{}{}", boldBlack, inMessage, reset);
+
+		std::cerr.write(output.data(), output.size());
+		std::cerr.put(std::cout.widen('\n'));
+		std::cerr.flush();
 	}
 
 	state.assertionFailure = true;
@@ -218,7 +237,8 @@ void Diagnostic::printErrors()
 	{
 		if (!Environment::isSubprocess())
 		{
-			std::cout << std::endl;
+			std::cout.put(std::cout.widen('\n'));
+			std::cout.flush();
 		}
 	}
 

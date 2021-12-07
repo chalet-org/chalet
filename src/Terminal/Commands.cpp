@@ -419,7 +419,11 @@ bool Commands::setExecutableFlag(const std::string& inPath)
 	}
 	CHALET_CATCH(const fs::filesystem_error&)
 	{
-		// std::cout << err.what() << std::endl;
+		// std::string error(err.what());
+
+		// std::cout.write(error.data(), error.size());
+		// std::cout.put(std::cout.widen('\n'));
+		// std::cout.flush();
 		return false;
 	}
 #endif
@@ -947,7 +951,8 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 
 	ProcessOptions::PipeFunc onStdOut = [&cap](std::string inData) -> void {
 		String::replaceAll(inData, cap.eol, cap.endlineReplace);
-		std::cout << inData << std::flush;
+		std::cout.write(inData.data(), inData.size());
+		std::cout.flush();
 
 		auto lineBreak = inData.find('\n');
 		if (lineBreak == std::string::npos)

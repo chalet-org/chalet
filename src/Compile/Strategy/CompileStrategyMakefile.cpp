@@ -156,7 +156,8 @@ bool CompileStrategyMakefile::buildMake(const SourceTarget& inProject) const
 	auto& hash = m_hashes.at(inProject.name());
 
 #if defined(CHALET_WIN32)
-	std::cout << Output::getAnsiStyle(Output::theme().build);
+	auto buildColor = Output::getAnsiStyle(Output::theme().build);
+	std::cout.write(buildColor.data(), buildColor.size());
 #endif
 
 	{
@@ -206,7 +207,8 @@ bool CompileStrategyMakefile::buildNMake(const SourceTarget& inProject) const
 	auto& hash = m_hashes.at(inProject.name());
 
 	#if defined(CHALET_WIN32)
-	std::cout << Output::getAnsiStyle(Output::theme().build);
+	auto buildColor = Output::getAnsiStyle(Output::theme().build);
+	std::cout.write(buildColor.data(), buildColor.size());
 	#endif
 
 	command.emplace_back(std::string());
@@ -246,7 +248,8 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 		errorOutput += std::move(inData);
 	};
 	// static ProcessOptions::PipeFunc onStdErr = [](std::string inData) {
-	// 	std::cerr << inData << std::flush;
+	// 	std::cerr.write(inData.data(), inData.size());
+	// 	std::cerr.flush();
 	// };
 
 	ProcessOptions options;
@@ -264,14 +267,16 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 			String::replaceAll(inData, "\r\n", "\n");
 			String::replaceAll(inData, ": warning ", Output::getAnsiStyle(Color::Reset) + ": warning ");
 			String::replaceAll(inData, ": error ", Output::getAnsiStyle(Color::Reset) + ": error ");
-			std::cout << std::move(inData) << std::flush;
+			std::cout.write(inData.data(), inData.size());
+			std::cout.flush();
 		};
 	}
 	else
 	{
 		// options.onStdOut = [](std::string inData) {
 		// 	String::replaceAll(inData, "\r\n", "\n");
-		// 	std::cout << inData << std::flush;
+		// 	std::cout.write(inData.data(), inData.size());
+		//  std::cout.flush();
 		// };
 	}
 
@@ -314,13 +319,23 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 		}
 
 		// Note: std::cerr outputs after std::cout on windows (which we don't want)
+		auto reset = Output::getAnsiStyle(Color::Reset);
 #if defined(CHALET_WIN32)
 		if (result == EXIT_SUCCESS)
 #endif
-			std::cout << Output::getAnsiStyle(Color::Reset) << errorOutput << std::endl;
+		{
+			std::cout.write(reset.data(), reset.size());
+			std::cout.write(errorOutput.data(), errorOutput.size());
+			std::cout.put(std::cout.widen('\n'));
+			std::cout.flush();
+		}
 #if defined(CHALET_WIN32)
 		else
-			std::cout << Output::getAnsiStyle(Color::Reset) << errorOutput << std::flush;
+		{
+			std::cout.write(reset.data(), reset.size());
+			std::cout.write(errorOutput.data(), errorOutput.size());
+			std::cout.flush();
+		}
 #endif
 	}
 

@@ -622,7 +622,11 @@ bool IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const M
 			auto error = Output::getAnsiStyle(Output::theme().error);
 			auto reset = Output::getAnsiStyle(Color::Reset);
 
-			std::cout << fmt::format("{}FAILED: {}Cannot build the following source file due to a cyclical dependency: {} depends on {} depends on {}", error, reset, inModule.source, m_previousSource, inModule.source) << std::endl;
+			auto failure = fmt::format("{}FAILED: {}Cannot build the following source file due to a cyclical dependency: {} depends on {} depends on {}", error, reset, inModule.source, m_previousSource, inModule.source);
+			std::cout.write(failure.data(), failure.size());
+			std::cout.put(std::cout.widen('\n'));
+			std::cout.flush();
+
 			Output::lineBreak();
 
 			return false;

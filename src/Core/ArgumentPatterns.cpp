@@ -285,8 +285,10 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 bool ArgumentPatterns::showHelp()
 {
 	std::string help = getHelp();
-	// std::cout << err.what() << std::endl;
-	std::cout << help << std::endl;
+	std::cout.write(help.data(), help.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
+
 	m_route = Route::Help;
 	return true;
 }
