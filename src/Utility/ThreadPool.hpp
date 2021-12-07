@@ -49,9 +49,12 @@ public:
 	std::future<typename std::invoke_result_t<T, Args...>> enqueue(T&& f, Args&&... args);
 
 	void stop();
+	std::size_t threads() const noexcept;
 
 private:
 	void workerThread();
+
+	std::size_t m_threads = 0;
 
 	std::vector<std::thread> m_workers;
 	std::queue<std::function<void()>> m_tasks;

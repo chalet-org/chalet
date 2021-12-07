@@ -38,9 +38,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-ThreadPool::ThreadPool(const std::size_t inThreads)
+ThreadPool::ThreadPool(const std::size_t inThreads) :
+	m_threads(inThreads)
 {
-	for (std::size_t i = 0; i < inThreads; ++i)
+	for (std::size_t i = 0; i < m_threads; ++i)
 	{
 		std::thread thread(&ThreadPool::workerThread, this);
 #if defined(CHALET_WIN32)
@@ -72,6 +73,11 @@ void ThreadPool::stop()
 
 	while (!m_tasks.empty())
 		m_tasks.pop();
+}
+
+std::size_t ThreadPool::threads() const noexcept
+{
+	return m_threads;
 }
 
 /*****************************************************************************/
