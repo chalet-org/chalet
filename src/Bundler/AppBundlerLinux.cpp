@@ -99,7 +99,7 @@ bool AppBundlerLinux::bundleForPlatform()
 
 	const auto filename = fmt::format("{}/{}", bundlePath, m_mainExecutable);
 
-	const auto desktopEntryFile = fmt::format("{}.desktop", m_bundle.name());
+	const auto desktopEntryFile = fmt::format("{}/{}.desktop", bundlePath, m_bundle.name());
 	const auto iconPath = icon.empty() ? icon : Commands::getAbsolutePath(fmt::format("{}/{}", bundlePath, String::getPathFilename(icon)));
 
 	if (!Commands::copyRename(desktopEntry, desktopEntryFile))
