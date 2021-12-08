@@ -99,7 +99,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 			else
 #elif defined(CHALET_LINUX)
 			if (bundle.hasLinuxDesktopEntry())
-				Output::msgTargetOfType("Bundle", fmt::format("{}.desktop", bundle.name(), bundle.macosBundleExtension()), Output::theme().header);
+				Output::msgTargetOfType("Bundle", fmt::format("{}.desktop", bundle.name()), Output::theme().header);
 			else
 #endif
 				Output::msgTargetOfType("Bundle", bundle.name(), Output::theme().header);
