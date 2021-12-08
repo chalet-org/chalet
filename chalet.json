@@ -180,15 +180,23 @@
 			"script.!windows": "scripts/script_shell.sh",
 			"script.windows": "scripts/script_batch.bat"
 		},
-		"chalet-(triple)": {
+		"chalet-${targetTriple}": {
 			"kind": "archive",
 			"include": "*"
 		},
 		"chalet-windows-installer": {
 			"kind": "windowsNullsoftInstaller",
 			"nsisScript": "platform/windows/installer/install_script.nsi",
-			"pluginPaths": [
+			"pluginDirs": [
 				"platform/windows/installer/plugins"
+			]
+		},
+		"chalet-${targetTriple}-installer": {
+			"kind": "archive",
+			"include": [
+				"chalet-windows-installer.exe",
+				"LICENSE.txt",
+				"README.md"
 			]
 		}
 	} /*,

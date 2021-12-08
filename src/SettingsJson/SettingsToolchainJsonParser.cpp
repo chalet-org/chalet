@@ -445,7 +445,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		}
 		else if (preference.buildPathStyle == BuildPathStyle::ArchConfiguration)
 		{
-			toolchain[kKeyBuildPathStyle] = "arch-configuration";
+			toolchain[kKeyBuildPathStyle] = "architecture";
 		}
 
 		m_jsonFile.setDirty(true);

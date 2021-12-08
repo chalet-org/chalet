@@ -37,6 +37,9 @@ private:
 	bool runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget);
 	bool runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstallerTarget& inTarget);
 
+	bool isTargetNameValid(const IDistTarget& inTarget) const;
+	bool isTargetNameValid(const IDistTarget& inTarget, const BuildState& inState, std::string& outName) const;
+
 	void displayHeader(const std::string& inLabel, const IDistTarget& inTarget, const std::string& inName = std::string()) const;
 	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inFrameworksPath, const std::string& inResourcePath);

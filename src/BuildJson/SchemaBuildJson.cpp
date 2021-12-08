@@ -34,7 +34,7 @@ SchemaBuildJson::SchemaBuildJson() :
 	kPatternTargetName(R"(^[\w\-+.]{3,}$)"),
 	kPatternAbstractName(R"([A-Za-z-_]+)"),
 	kPatternSourceTargetLinks(R"(^[\w\-+.]+$)"),
-	kPatternDistributionName(R"(^[\w\-+. ()]{3,}$)"),
+	kPatternDistributionName(R"(^(([\w\-+. ()]*)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)"),
 	kPatternConditionConfigurations(R"regex((\.!?(debug)\b\.?)?)regex"),
 	kPatternConditionPlatforms(R"regex((\.!?(windows|macos|linux)\b){1,2})regex"),
 	kPatternConditionConfigurationsPlatforms(R"regex((\.!?(debug|windows|macos|linux)\b){1,2})regex"),
@@ -401,7 +401,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::DistributionWindowsNullsoftInstallerTargetPluginPaths] = R"json({
+	defs[Defs::DistributionWindowsNullsoftInstallerTargetPluginDirs] = R"json({
 		"type": "array",
 		"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
 		"uniqueItems": true,
@@ -1391,7 +1391,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionWinNullsoft[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
 		distributionWinNullsoft[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionWinNullsoft[kProperties]["nsisScript"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerTargetScript);
-		distributionWinNullsoft[kProperties]["pluginPaths"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerTargetPluginPaths);
+		distributionWinNullsoft[kProperties]["pluginDirs"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerTargetPluginDirs);
 		defs[Defs::DistributionWindowsNullsoftInstallerTarget] = std::move(distributionWinNullsoft);
 	}
 
@@ -1659,7 +1659,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		//
 		case Defs::DistributionWindowsNullsoftInstallerTarget: return "distribution-windowsNullsoftInstaller-target";
 		case Defs::DistributionWindowsNullsoftInstallerTargetScript: return "distribution-windowsNullsoftInstaller-nsisScript";
-		case Defs::DistributionWindowsNullsoftInstallerTargetPluginPaths: return "distribution-windowsNullsoftInstaller-pluginPaths";
+		case Defs::DistributionWindowsNullsoftInstallerTargetPluginDirs: return "distribution-windowsNullsoftInstaller-pluginDirs";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";

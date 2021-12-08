@@ -129,24 +129,13 @@ jobs:
         run: build/msvc_Debug/chalet-debug -t vs-stable -a x64 bundle
       - name: "Run: Tests"
         run: build/msvc_Debug/chalet-debug -c Release run tests_chalet
-      - name: "Make NSIS Installer"
-        uses: joncloud/makensis-action@v3.5
-        with:
-          script-file: "platform/windows/installer/install_script.nsi"
-          additional-plugin-paths: platform/windows/installer/plugins/Plugins
-          arguments: "/WX /V3 /NOCD"
-      - name: "Zip installer"
-        uses: papeloto/action-zip@v1
-        with:
-          files: dist/chalet-windows-installer.exe LICENSE.txt README.md
-          dest: dist/chalet-x64-pc-windows-msvc-installer.zip
       - name: "Upload assets"
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            ./dist/chalet-x64-pc-windows-msvc.zip
-            ./dist/chalet-x64-pc-windows-msvc-installer.zip
+            ./dist/chalet-x86_64-pc-windows-msvc.zip
+            ./dist/chalet-x86_64-pc-windows-msvc-installer.zip
           token: ${{ secrets.GITHUB_TOKEN }}
   # Windows-MSYS2:
   #   needs: Release

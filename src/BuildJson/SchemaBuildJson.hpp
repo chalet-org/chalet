@@ -50,7 +50,7 @@ class SchemaBuildJson
 		//
 		DistributionWindowsNullsoftInstallerTarget,
 		DistributionWindowsNullsoftInstallerTargetScript,
-		DistributionWindowsNullsoftInstallerTargetPluginPaths,
+		DistributionWindowsNullsoftInstallerTargetPluginDirs,
 		//
 		ExternalDependency,
 		ExternalDependencyGitRepository,

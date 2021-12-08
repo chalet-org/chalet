@@ -83,6 +83,9 @@ bool AppBundler::runBuilds()
 /*****************************************************************************/
 bool AppBundler::run(const DistTarget& inTarget)
 {
+	if (!inTarget->isArchive() && !isTargetNameValid(*inTarget))
+		return false;
+
 	if (inTarget->isDistributionBundle())
 	{
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
@@ -429,11 +432,14 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 	auto baseName = inTarget.name();
 
 	BuildState* state = getBuildState(m_prototype.anyConfiguration());
-	if (state != nullptr)
+	if (state == nullptr)
 	{
-		String::replaceAll(baseName, "(triple)", state->info.targetArchitectureTriple());
-		String::replaceAll(baseName, "(arch)", state->info.targetArchitectureString());
+		Diagnostic::error("No associated build found for target: {}", inTarget.name());
+		return false;
 	}
+
+	if (!isTargetNameValid(inTarget, *state, baseName))
+		return false;
 
 	auto filename = fmt::format("{}.zip", baseName);
 
@@ -479,6 +485,37 @@ bool AppBundler::runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstalle
 	WindowsNullsoftInstallerRunner nsis(m_prototype);
 	if (!nsis.compile(inTarget))
 		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::isTargetNameValid(const IDistTarget& inTarget) const
+{
+	if (String::contains({ "$", "{", "}" }, inTarget.name()))
+	{
+		Diagnostic::error("Variable(s) not allowed in target '{}' of its type.", inTarget.name());
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, const BuildState& inState, std::string& outName) const
+{
+	auto buildFolder = String::getPathFolder(inState.paths.buildOutputDir());
+	String::replaceAll(outName, "${targetTriple}", inState.info.targetArchitectureTriple());
+	String::replaceAll(outName, "${toolchainName}", m_inputs.toolchainPreferenceName());
+	String::replaceAll(outName, "${configuration}", inState.info.buildConfiguration());
+	String::replaceAll(outName, "${architecture}", inState.info.targetArchitectureString());
+	String::replaceAll(outName, "${buildDir}", buildFolder);
+
+	if (String::contains({ "$", "{", "}" }, outName))
+	{
+		Diagnostic::error("Invalid variable(s) found in target '{}'", inTarget.name());
+		return false;
+	}
 
 	return true;
 }

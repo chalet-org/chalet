@@ -378,10 +378,10 @@
 						},
 						"buildPathStyle": {
 							"type": "string",
-							"description": "The build path style. Examples:\nconfiguration: build/Debug\narch-configuration: build/x64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
+							"description": "The build path style, with the configuration appended following an underscore. Examples:\nconfiguration: build/Debug\narchitecture: build/x64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
 							"enum": [
 								"configuration",
-								"arch-configuration",
+								"architecture",
 								"target-triple",
 								"toolchain-name"
 							],

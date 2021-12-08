@@ -28,7 +28,7 @@ Dictionary<BuildPathStyle> getBuildPathstyles()
 		{ "target-triple", BuildPathStyle::TargetTriple },
 		{ "toolchain-name", BuildPathStyle::ToolchainName },
 		{ "configuration", BuildPathStyle::Configuration },
-		{ "arch-configuration", BuildPathStyle::ArchConfiguration },
+		{ "architecture", BuildPathStyle::ArchConfiguration },
 	};
 }
 
