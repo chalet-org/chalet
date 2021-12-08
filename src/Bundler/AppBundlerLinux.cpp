@@ -73,13 +73,14 @@ bool AppBundlerLinux::removeOldFiles()
 bool AppBundlerLinux::bundleForPlatform()
 {
 #if defined(CHALET_LINUX)
-	const auto& icon = m_bundle.linuxDesktopEntryIcon();
-	const auto& desktopEntry = m_bundle.linuxDesktopEntryTemplate();
-	if (desktopEntry.empty())
+	if (!m_bundle.hasLinuxDesktopEntry())
 		return true; // Nothing to do
 
 	if (!getMainExecutable())
 		return true; // No executable -- we don't care
+
+	const auto& icon = m_bundle.linuxDesktopEntryIcon();
+	const auto& desktopEntry = m_bundle.linuxDesktopEntryTemplate();
 
 	Output::lineBreak();
 	Diagnostic::info("Creating the XDG Desktop Entry for the application");
@@ -93,32 +94,32 @@ bool AppBundlerLinux::bundleForPlatform()
 			return false;
 	}
 
-	if (!m_mainExecutable.empty())
+	if (m_mainExecutable.empty())
+		return false;
+
+	const auto filename = fmt::format("{}/{}", bundlePath, m_mainExecutable);
+
+	const auto desktopEntryFile = fmt::format("{}.desktop", m_bundle.name());
+	const auto iconPath = icon.empty() ? icon : Commands::getAbsolutePath(fmt::format("{}/{}", bundlePath, String::getPathFilename(icon)));
+
+	if (!Commands::copyRename(desktopEntry, desktopEntryFile))
+		return false;
+
+	if (!Commands::readFileAndReplace(desktopEntryFile, [&](std::string& fileContents) {
+			String::replaceAll(fileContents, "${mainExecutable}", Commands::getAbsolutePath(filename));
+			String::replaceAll(fileContents, "${path}", Commands::getAbsolutePath(bundlePath));
+			String::replaceAll(fileContents, "${name}", m_bundle.name());
+			String::replaceAll(fileContents, "${icon}", iconPath);
+		}))
+		return false;
+
+	if (!Commands::setExecutableFlag(desktopEntryFile))
+		return false;
+
+	// TODO: Flag for this?
+	if (!Environment::isContinuousIntegrationServer())
 	{
-		const auto filename = fmt::format("{}/{}", bundlePath, m_mainExecutable);
-
-		const auto desktopEntryFile = fmt::format("{}.desktop", String::getPathFolderBaseName(filename));
-		const auto iconPath = icon.empty() ? icon : Commands::getAbsolutePath(fmt::format("{}/{}", bundlePath, String::getPathFilename(icon)));
-
-		if (!Commands::copyRename(desktopEntry, desktopEntryFile))
-			return false;
-
-		if (!Commands::readFileAndReplace(desktopEntryFile, [&](std::string& fileContents) {
-				String::replaceAll(fileContents, "${mainExecutable}", Commands::getAbsolutePath(filename));
-				String::replaceAll(fileContents, "${path}", Commands::getAbsolutePath(bundlePath));
-				String::replaceAll(fileContents, "${name}", m_bundle.name());
-				String::replaceAll(fileContents, "${icon}", iconPath);
-			}))
-			return false;
-
-		if (!Commands::setExecutableFlag(desktopEntryFile))
-			return false;
-
-		// TODO: Flag for this?
-		if (!Environment::isContinuousIntegrationServer())
-		{
-			Commands::copy(desktopEntryFile, m_applicationsPath);
-		}
+		Commands::copy(desktopEntryFile, m_applicationsPath);
 	}
 
 	// Output::lineBreak();

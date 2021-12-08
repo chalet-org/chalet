@@ -357,6 +357,11 @@ void BundleTarget::setMacosBundleType(std::string&& inName)
 		m_macosBundleExtension = std::move(inName);
 }
 
+/*****************************************************************************/
+bool BundleTarget::isMacosBundle() const noexcept
+{
+	return m_macosBundleType != MacOSBundleType::None;
+}
 bool BundleTarget::isMacosAppBundle() const noexcept
 {
 	return m_macosBundleType == MacOSBundleType::Application;
@@ -435,6 +440,12 @@ const std::string& BundleTarget::linuxDesktopEntryTemplate() const noexcept
 void BundleTarget::setLinuxDesktopEntryTemplate(std::string&& inValue)
 {
 	m_linuxDesktopEntryTemplate = std::move(inValue);
+}
+
+/*****************************************************************************/
+bool BundleTarget::hasLinuxDesktopEntry() const noexcept
+{
+	return !m_linuxDesktopEntryTemplate.empty();
 }
 
 #endif

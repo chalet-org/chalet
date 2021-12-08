@@ -88,12 +88,20 @@ bool AppBundler::run(const DistTarget& inTarget)
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
 
 		if (!bundle.description().empty())
+		{
 			Output::msgTargetDescription(bundle.description(), Output::theme().header);
+		}
 		else
 		{
+#if defined(CHALET_MACOS)
 			if (bundle.isMacosAppBundle())
 				Output::msgTargetOfType("Bundle", fmt::format("{}.{}", bundle.name(), bundle.macosBundleExtension()), Output::theme().header);
 			else
+#elif defined(CHALET_LINUX)
+			if (bundle.hasLinuxDesktopEntry())
+				Output::msgTargetOfType("Bundle", fmt::format("{}.desktop", bundle.name(), bundle.macosBundleExtension()), Output::theme().header);
+			else
+#endif
 				Output::msgTargetOfType("Bundle", bundle.name(), Output::theme().header);
 		}
 

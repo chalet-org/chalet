@@ -49,6 +49,7 @@ struct BundleTarget final : public IDistTarget
 #if defined(CHALET_MACOS)
 	MacOSBundleType macosBundleType() const noexcept;
 	void setMacosBundleType(std::string&& inName);
+	bool isMacosBundle() const noexcept;
 	bool isMacosAppBundle() const noexcept;
 
 	const std::string& macosBundleExtension() const noexcept;
@@ -70,6 +71,8 @@ struct BundleTarget final : public IDistTarget
 
 	const std::string& linuxDesktopEntryTemplate() const noexcept;
 	void setLinuxDesktopEntryTemplate(std::string&& inValue);
+
+	bool hasLinuxDesktopEntry() const noexcept;
 #endif
 
 private:
