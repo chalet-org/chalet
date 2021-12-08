@@ -520,6 +520,9 @@ bool BuildJsonProtoParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstalle
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "nsisScript"))
 		outTarget.setNsisScript(std::move(val));
 
+	if (StringList list; parseStringListFromConfig(list, inNode, "pluginPaths"))
+		outTarget.addPluginDirs(std::move(list));
+
 	return true;
 }
 

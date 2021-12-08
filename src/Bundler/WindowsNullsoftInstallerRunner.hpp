@@ -18,6 +18,8 @@ struct WindowsNullsoftInstallerRunner
 	bool compile(const WindowsNullsoftInstallerTarget& inTarget);
 
 private:
+	StringList getPluginPaths(const WindowsNullsoftInstallerTarget& inTarget);
+
 	const StatePrototype& m_prototype;
 };
 }

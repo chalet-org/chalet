@@ -909,6 +909,24 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 }
 
 /*****************************************************************************/
+bool Commands::subprocessNoOutput(const StringList& inCmd)
+{
+	if (Output::showCommands())
+		return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr);
+	else
+		return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::Close, PipeOption::StdErr);
+}
+
+/*****************************************************************************/
+bool Commands::subprocessNoOutput(const StringList& inCmd, std::string inCwd)
+{
+	if (Output::showCommands())
+		return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, PipeOption::StdErr);
+	else
+		return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::Close, PipeOption::StdErr);
+}
+
+/*****************************************************************************/
 bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr)
 {
 	if (Output::showCommands())

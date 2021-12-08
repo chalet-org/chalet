@@ -401,6 +401,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
+	defs[Defs::DistributionWindowsNullsoftInstallerTargetPluginPaths] = R"json({
+		"type": "array",
+		"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
+		"uniqueItems": true,
+		"minItems": 1,
+		"items": {
+			"type": "string",
+			"minLength": 1
+		}
+	})json"_ojson;
+
 	//
 	// externalDependency
 	//
@@ -1380,6 +1391,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionWinNullsoft[kProperties]["kind"] = getDefinition(Defs::DistributionTargetKind);
 		distributionWinNullsoft[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionWinNullsoft[kProperties]["nsisScript"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerTargetScript);
+		distributionWinNullsoft[kProperties]["pluginPaths"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerTargetPluginPaths);
 		defs[Defs::DistributionWindowsNullsoftInstallerTarget] = std::move(distributionWinNullsoft);
 	}
 
@@ -1647,6 +1659,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		//
 		case Defs::DistributionWindowsNullsoftInstallerTarget: return "distribution-windowsNullsoftInstaller-target";
 		case Defs::DistributionWindowsNullsoftInstallerTargetScript: return "distribution-windowsNullsoftInstaller-nsisScript";
+		case Defs::DistributionWindowsNullsoftInstallerTargetPluginPaths: return "distribution-windowsNullsoftInstaller-pluginPaths";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";

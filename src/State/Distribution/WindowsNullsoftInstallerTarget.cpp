@@ -6,6 +6,7 @@
 #include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 
 #include "Terminal/Commands.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -47,5 +48,21 @@ const std::string& WindowsNullsoftInstallerTarget::nsisScript() const noexcept
 void WindowsNullsoftInstallerTarget::setNsisScript(std::string&& inValue)
 {
 	m_nsisScript = std::move(inValue);
+}
+
+/*****************************************************************************/
+const StringList& WindowsNullsoftInstallerTarget::pluginDirs() const noexcept
+{
+	return m_pluginDirs;
+}
+
+void WindowsNullsoftInstallerTarget::addPluginDirs(StringList&& inList)
+{
+	List::forEach(inList, this, &WindowsNullsoftInstallerTarget::addPluginDir);
+}
+
+void WindowsNullsoftInstallerTarget::addPluginDir(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_pluginDirs, std::move(inValue));
 }
 }

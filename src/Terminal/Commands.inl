@@ -62,18 +62,6 @@ inline bool Commands::subprocessWithInput(const StringList& inCmd, CreateSubproc
 }
 
 /*****************************************************************************/
-inline bool Commands::subprocessNoOutput(const StringList& inCmd)
-{
-	return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::Close, PipeOption::Close);
-}
-
-/*****************************************************************************/
-inline bool Commands::subprocessNoOutput(const StringList& inCmd, std::string inCwd)
-{
-	return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::Close, PipeOption::Close);
-}
-
-/*****************************************************************************/
 inline bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile)
 {
 	return Commands::subprocessOutputToFile(inCmd, inOutputFile, PipeOption::Pipe);

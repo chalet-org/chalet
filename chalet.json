@@ -186,7 +186,10 @@
 		},
 		"chalet-windows-installer": {
 			"kind": "windowsNullsoftInstaller",
-			"nsisScript": "platform/windows/installer/install_script.nsi"
+			"nsisScript": "platform/windows/installer/install_script.nsi",
+			"pluginPaths": [
+				"platform/windows/installer/plugins"
+			]
 		}
 	} /*,
 	"externalDependencies": {

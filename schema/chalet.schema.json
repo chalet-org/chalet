@@ -504,6 +504,9 @@
 				},
 				"nsisScript": {
 					"$ref": "#/definitions/distribution-windowsNullsoftInstaller-nsisScript"
+				},
+				"pluginPaths": {
+					"$ref": "#/definitions/distribution-windowsNullsoftInstaller-pluginPaths"
 				}
 			}
 		},
@@ -511,6 +514,16 @@
 			"type": "string",
 			"description": "Relative path to an NSIS installer script (.nsi) to compile.",
 			"minLength": 1
+		},
+		"distribution-windowsNullsoftInstaller-pluginPaths": {
+			"type": "array",
+			"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
 		},
 		"external-dependency": {
 			"type": "object",
