@@ -21,7 +21,9 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				"bundle"
+				"-c",
+				"Release",
+				"build"
 			],
 		},
 		{

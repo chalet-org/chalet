@@ -384,29 +384,37 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 		outTarget.addExcludes(std::move(list));
 
 #if defined(CHALET_LINUX)
+	const std::string kLinuxDesktopEntry{ "linuxDesktopEntry" };
+	if (inNode.contains(kLinuxDesktopEntry))
 	{
-		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "linuxDesktopEntry"))
-			outTarget.setLinuxDesktopEntry(std::move(val));
+		const Json& linuxDesktopEntry = inNode.at(kLinuxDesktopEntry);
 
-		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "linuxDesktopEntryIcon"))
+		if (std::string val; m_chaletJson.assignFromKey(val, linuxDesktopEntry, "template"))
+			outTarget.setLinuxDesktopEntryTemplate(std::move(val));
+
+		if (std::string val; m_chaletJson.assignFromKey(val, linuxDesktopEntry, "icon"))
 			outTarget.setLinuxDesktopEntryIcon(std::move(val));
 	}
 
 	return true;
 #elif defined(CHALET_MACOS)
+	const std::string kMacosBundle{ "macosBundle" };
+	if (inNode.contains(kMacosBundle))
 	{
+		const Json& macosBundle = inNode.at(kMacosBundle);
+
 		outTarget.setMacosBundleName(outTarget.name());
 
-		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "macosBundleType"))
+		if (std::string val; m_chaletJson.assignFromKey(val, macosBundle, "type"))
 			outTarget.setMacosBundleType(std::move(val));
 
-		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "macosBundleIcon"))
+		if (std::string val; m_chaletJson.assignFromKey(val, macosBundle, "icon"))
 			outTarget.setMacosBundleIcon(std::move(val));
 
-		const std::string kInfoPropertyList{ "macosBundleInfoPropertyList" };
-		if (inNode.contains(kInfoPropertyList))
+		const std::string kInfoPropertyList{ "infoPropertyList" };
+		if (macosBundle.contains(kInfoPropertyList))
 		{
-			auto& infoPlistNode = inNode.at(kInfoPropertyList);
+			auto& infoPlistNode = macosBundle.at(kInfoPropertyList);
 			if (infoPlistNode.is_object())
 			{
 				outTarget.setMacosBundleInfoPropertyListContent(infoPlistNode.dump());

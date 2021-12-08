@@ -68,8 +68,8 @@ struct BundleTarget final : public IDistTarget
 	const std::string& linuxDesktopEntryIcon() const noexcept;
 	void setLinuxDesktopEntryIcon(std::string&& inValue);
 
-	const std::string& linuxDesktopEntry() const noexcept;
-	void setLinuxDesktopEntry(std::string&& inValue);
+	const std::string& linuxDesktopEntryTemplate() const noexcept;
+	void setLinuxDesktopEntryTemplate(std::string&& inValue);
 #endif
 
 private:
@@ -93,8 +93,8 @@ private:
 
 	MacOSBundleType m_macosBundleType = MacOSBundleType::None;
 #elif defined(CHALET_LINUX)
+	std::string m_linuxDesktopEntryTemplate;
 	std::string m_linuxDesktopEntryIcon;
-	std::string m_linuxDesktopEntry;
 #endif
 
 	bool m_includeDependentSharedLibraries = true;

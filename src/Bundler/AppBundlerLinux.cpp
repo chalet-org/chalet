@@ -74,7 +74,7 @@ bool AppBundlerLinux::bundleForPlatform()
 {
 #if defined(CHALET_LINUX)
 	const auto& icon = m_bundle.linuxDesktopEntryIcon();
-	const auto& desktopEntry = m_bundle.linuxDesktopEntry();
+	const auto& desktopEntry = m_bundle.linuxDesktopEntryTemplate();
 	if (desktopEntry.empty())
 		return true; // Nothing to do
 

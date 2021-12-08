@@ -164,12 +164,16 @@
 				"**.7z",
 				"Thumbs.db",
 				".DS_Store"
-			]
-			// "macosBundleType": "app",
-			// "macosBundleIcon": "platform/chalet-logo.png",
-			// "macosBundleInfoPropertyList": "platform/macos/Info.plist.json",
-			// "linuxDesktopEntry": "platform/linux/app.desktop",
-			// "linuxDesktopEntryIcon": "platform/chalet-logo.png"
+			],
+			"macosBundle": {
+				"type": "app",
+				"infoPropertyList": "platform/macos/Info.plist.json",
+				"icon": "platform/chalet-logo.png"
+			},
+			"linuxDesktopEntry": {
+				"template": "platform/linux/app.desktop",
+				"icon": "platform/chalet-logo.png"
+			}
 		},
 		"post-bundle": {
 			"kind": "script",

@@ -129,16 +129,16 @@ bool BundleTarget::validate()
 		}
 	}
 
-	if (!m_linuxDesktopEntry.empty())
+	if (!m_linuxDesktopEntryTemplate.empty())
 	{
-		if (!String::endsWith(".desktop", m_linuxDesktopEntry))
+		if (!String::endsWith(".desktop", m_linuxDesktopEntryTemplate))
 		{
-			Diagnostic::error("bundle.linuxDesktopEntry must end with '.desktop', but was '{}'.", m_linuxDesktopEntry);
+			Diagnostic::error("bundle.linuxDesktopEntry must end with '.desktop', but was '{}'.", m_linuxDesktopEntryTemplate);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_linuxDesktopEntry))
+		else if (!Commands::pathExists(m_linuxDesktopEntryTemplate))
 		{
-			std::ofstream(m_linuxDesktopEntry) << PlatformFileTemplates::linuxDesktopEntry();
+			std::ofstream(m_linuxDesktopEntryTemplate) << PlatformFileTemplates::linuxDesktopEntry();
 		}
 	}
 #endif
@@ -427,14 +427,14 @@ void BundleTarget::setLinuxDesktopEntryIcon(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const std::string& BundleTarget::linuxDesktopEntry() const noexcept
+const std::string& BundleTarget::linuxDesktopEntryTemplate() const noexcept
 {
-	return m_linuxDesktopEntry;
+	return m_linuxDesktopEntryTemplate;
 }
 
-void BundleTarget::setLinuxDesktopEntry(std::string&& inValue)
+void BundleTarget::setLinuxDesktopEntryTemplate(std::string&& inValue)
 {
-	m_linuxDesktopEntry = std::move(inValue);
+	m_linuxDesktopEntryTemplate = std::move(inValue);
 }
 
 #endif

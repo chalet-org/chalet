@@ -90,7 +90,12 @@ bool AppBundler::run(const DistTarget& inTarget)
 		if (!bundle.description().empty())
 			Output::msgTargetDescription(bundle.description(), Output::theme().header);
 		else
-			Output::msgTargetOfType("Bundle", bundle.name(), Output::theme().header);
+		{
+			if (bundle.isMacosAppBundle())
+				Output::msgTargetOfType("Bundle", fmt::format("{}.{}", bundle.name(), bundle.macosBundleExtension()), Output::theme().header);
+			else
+				Output::msgTargetOfType("Bundle", bundle.name(), Output::theme().header);
+		}
 
 		Output::lineBreak();
 

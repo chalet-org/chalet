@@ -128,20 +128,11 @@
 				"includeDependentSharedLibraries": {
 					"$ref": "#/definitions/distribution-target-includeDependentSharedLibraries"
 				},
-				"macosBundleType": {
-					"$ref": "#/definitions/distribution-target-macosBundleType"
-				},
-				"macosBundleIcon": {
-					"$ref": "#/definitions/distribution-target-macosBundleIcon"
-				},
-				"macosBundleInfoPropertyList": {
-					"$ref": "#/definitions/distribution-target-macosBundleInfoPropertyList"
+				"macosBundle": {
+					"$ref": "#/definitions/distribution-target-macosBundle"
 				},
 				"linuxDesktopEntry": {
 					"$ref": "#/definitions/distribution-target-linuxDesktopEntry"
-				},
-				"linuxDesktopEntryIcon": {
-					"$ref": "#/definitions/distribution-target-linuxDesktopEntryIcon"
 				},
 				"mainExecutable": {
 					"$ref": "#/definitions/distribution-target-mainExecutable"
@@ -205,59 +196,80 @@
 			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
 			"default": true
 		},
-		"distribution-target-macosBundleType": {
-			"type": "string",
-			"description": "The MacOS bundle type (only .app is supported currently)",
-			"minLength": 1,
-			"enum": [
-				"app"
+		"distribution-target-macosBundle": {
+			"type": "object",
+			"description": "Properties to describe the MacOS bundle. Only one can be defined per distribution target.",
+			"additionalProperties": false,
+			"required": [
+				"type",
+				"infoPropertyList"
 			],
-			"default": "app"
-		},
-		"distribution-target-macosBundleIcon": {
-			"type": "string",
-			"description": "The path to a MacOS bundle icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
-			"minLength": 1,
-			"default": "icon.png"
-		},
-		"distribution-target-macosBundleInfoPropertyList": {
-			"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
-			"oneOf": [
-				{
+			"properties": {
+				"type": {
 					"type": "string",
+					"description": "The MacOS bundle type (only .app is supported currently)",
 					"minLength": 1,
-					"default": "Info.plist.json"
+					"enum": [
+						"app"
+					],
+					"default": "app"
 				},
-				{
-					"type": "object",
-					"default": {
-						"CFBundleDevelopmentRegion": "en-US",
-						"CFBundleDisplayName": "${name}",
-						"CFBundleExecutable": "${mainExecutable}",
-						"CFBundleIconFile": "${icon}",
-						"CFBundleIdentifier": "com.developer.application",
-						"CFBundleInfoDictionaryVersion": "6.0",
-						"CFBundleName": "${bundleName}",
-						"CFBundlePackageType": "APPL",
-						"CFBundleShortVersionString": "${version}",
-						"CFBundleVersion": "${version}",
-						"CFBundleSignature": "????",
-						"LSMinimumSystemVersion": "10.8"
-					}
+				"icon": {
+					"type": "string",
+					"description": "The path to a MacOS bundle icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
+					"minLength": 1,
+					"default": "icon.png"
+				},
+				"infoPropertyList": {
+					"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
+					"oneOf": [
+						{
+							"type": "string",
+							"minLength": 1,
+							"default": "Info.plist.json"
+						},
+						{
+							"type": "object",
+							"default": {
+								"CFBundleDevelopmentRegion": "en-US",
+								"CFBundleDisplayName": "${name}",
+								"CFBundleExecutable": "${mainExecutable}",
+								"CFBundleIconFile": "${icon}",
+								"CFBundleIdentifier": "com.developer.application",
+								"CFBundleInfoDictionaryVersion": "6.0",
+								"CFBundleName": "${bundleName}",
+								"CFBundlePackageType": "APPL",
+								"CFBundleShortVersionString": "${version}",
+								"CFBundleVersion": "${version}",
+								"CFBundleSignature": "????",
+								"LSMinimumSystemVersion": "10.8"
+							}
+						}
+					]
 				}
-			]
+			}
 		},
 		"distribution-target-linuxDesktopEntry": {
-			"type": "string",
-			"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
-			"minLength": 1,
-			"default": "app.desktop"
-		},
-		"distribution-target-linuxDesktopEntryIcon": {
-			"type": "string",
-			"description": "The location to an icon to use with the XDG Desktop Entry (PNG 256x256 is recommended)",
-			"minLength": 1,
-			"default": "icon.png"
+			"type": "object",
+			"description": "Properties to describe an XDG Desktop Entry. Only one can be defined per distribution target.",
+			"additionalProperties": false,
+			"required": [
+				"template"
+			],
+			"properties": {
+				"template": {
+					"type": "string",
+					"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
+					"minLength": 1,
+					"default": "app.desktop"
+				},
+				"icon": {
+					"type": "string",
+					"description": "The location to an icon to use with the XDG Desktop Entry (PNG 256x256 is recommended)",
+					"minLength": 1,
+					"default": "icon.png"
+				}
+			}
 		},
 		"distribution-target-mainExecutable": {
 			"type": "string",
