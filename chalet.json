@@ -164,7 +164,7 @@
 				"**.7z",
 				"Thumbs.db",
 				".DS_Store"
-			],
+			] /*,
 			"macosBundle": {
 				"type": "app",
 				"infoPropertyList": "platform/macos/Info.plist.json",
@@ -173,7 +173,7 @@
 			"linuxDesktopEntry": {
 				"template": "platform/linux/app.desktop",
 				"icon": "platform/chalet-logo.png"
-			}
+			}*/
 		},
 		"post-bundle": {
 			"kind": "script",
