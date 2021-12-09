@@ -291,6 +291,29 @@
 			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
 			"default": true
 		},
+		"distribution-script": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/distribution-condition"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"kind": {
+					"$ref": "#/definitions/distribution-kind"
+				},
+				"script": {
+					"$ref": "#/definitions/target-script-script"
+				}
+			},
+			"patternProperties": {
+				"^script(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-script-script"
+				}
+			}
+		},
 		"distribution-archive": {
 			"type": "object",
 			"description": "Properties to describe an individual distribution archive.",
@@ -668,10 +691,10 @@
 			"additionalProperties": false,
 			"properties": {
 				"language": {
-					"$ref": "#/definitions/source-target-language"
+					"$ref": "#/definitions/target-source-language"
 				},
 				"settings:Cxx": {
-					"$ref": "#/definitions/source-target-cxx"
+					"$ref": "#/definitions/target-source-cxx"
 				},
 				"settings": {
 					"type": "object",
@@ -679,7 +702,7 @@
 					"additionalProperties": false,
 					"properties": {
 						"Cxx": {
-							"$ref": "#/definitions/source-target-cxx"
+							"$ref": "#/definitions/target-source-cxx"
 						}
 					}
 				}
@@ -690,7 +713,7 @@
 				}
 			}
 		},
-		"executable-source-target": {
+		"executable-target-source": {
 			"type": "object",
 			"additionalProperties": false,
 			"required": [
@@ -704,19 +727,19 @@
 					"$ref": "#/definitions/target-description"
 				},
 				"extends": {
-					"$ref": "#/definitions/source-target-extends"
+					"$ref": "#/definitions/target-source-extends"
 				},
 				"files": {
-					"$ref": "#/definitions/source-target-files"
+					"$ref": "#/definitions/target-source-files"
 				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
 				},
 				"language": {
-					"$ref": "#/definitions/source-target-language"
+					"$ref": "#/definitions/target-source-language"
 				},
 				"location": {
-					"$ref": "#/definitions/source-target-location"
+					"$ref": "#/definitions/target-source-location"
 				},
 				"settings": {
 					"type": "object",
@@ -724,12 +747,12 @@
 					"additionalProperties": false,
 					"properties": {
 						"Cxx": {
-							"$ref": "#/definitions/source-target-cxx"
+							"$ref": "#/definitions/target-source-cxx"
 						}
 					}
 				},
 				"settings:Cxx": {
-					"$ref": "#/definitions/source-target-cxx"
+					"$ref": "#/definitions/target-source-cxx"
 				},
 				"runArguments": {
 					"$ref": "#/definitions/target-runArguments"
@@ -753,7 +776,7 @@
 				}
 			}
 		},
-		"library-source-target": {
+		"library-target-source": {
 			"type": "object",
 			"additionalProperties": false,
 			"required": [
@@ -767,19 +790,19 @@
 					"$ref": "#/definitions/target-description"
 				},
 				"extends": {
-					"$ref": "#/definitions/source-target-extends"
+					"$ref": "#/definitions/target-source-extends"
 				},
 				"files": {
-					"$ref": "#/definitions/source-target-files"
+					"$ref": "#/definitions/target-source-files"
 				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
 				},
 				"language": {
-					"$ref": "#/definitions/source-target-language"
+					"$ref": "#/definitions/target-source-language"
 				},
 				"location": {
-					"$ref": "#/definitions/source-target-location"
+					"$ref": "#/definitions/target-source-location"
 				},
 				"settings": {
 					"type": "object",
@@ -787,12 +810,12 @@
 					"additionalProperties": false,
 					"properties": {
 						"Cxx": {
-							"$ref": "#/definitions/source-target-cxx"
+							"$ref": "#/definitions/target-source-cxx"
 						}
 					}
 				},
 				"settings:Cxx": {
-					"$ref": "#/definitions/source-target-cxx"
+					"$ref": "#/definitions/target-source-cxx"
 				}
 			},
 			"patternProperties": {
@@ -801,14 +824,14 @@
 				}
 			}
 		},
-		"source-target-extends": {
+		"target-source-extends": {
 			"type": "string",
 			"description": "A project template to extend. Defaults to '*' implicitly.",
 			"pattern": "^[A-Za-z-_]+$",
 			"minLength": 1,
 			"default": "*"
 		},
-		"source-target-files": {
+		"target-source-files": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -818,7 +841,7 @@
 				"minLength": 1
 			}
 		},
-		"source-target-location": {
+		"target-source-location": {
 			"description": "The root path of the source files, relative to the working directory.",
 			"oneOf": [
 				{
@@ -915,7 +938,7 @@
 				}
 			]
 		},
-		"source-target-language": {
+		"target-source-language": {
 			"type": "string",
 			"description": "The target language of the project.",
 			"minLength": 1,
@@ -927,12 +950,12 @@
 			],
 			"default": "C++"
 		},
-		"source-target-cxx": {
+		"target-source-cxx": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
 				"cStandard": {
-					"$ref": "#/definitions/source-target-cxx-cStandard"
+					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
 				"compileOptions": {
 					"type": "object",
@@ -946,21 +969,21 @@
 					}
 				},
 				"cppConcepts": {
-					"$ref": "#/definitions/source-target-cxx-cppConcepts"
+					"$ref": "#/definitions/target-source-cxx-cppConcepts"
 				},
 				"cppCoroutines": {
-					"$ref": "#/definitions/source-target-cxx-cppCoroutines"
+					"$ref": "#/definitions/target-source-cxx-cppCoroutines"
 				},
 				"cppModules": {
-					"$ref": "#/definitions/source-target-cxx-cppModules"
+					"$ref": "#/definitions/target-source-cxx-cppModules"
 				},
 				"cppStandard": {
-					"$ref": "#/definitions/source-target-cxx-cppStandard"
+					"$ref": "#/definitions/target-source-cxx-cppStandard"
 				},
 				"defines": {
 					"oneOf": [
 						{
-							"$ref": "#/definitions/source-target-cxx-defines"
+							"$ref": "#/definitions/target-source-cxx-defines"
 						},
 						{
 							"type": "object",
@@ -968,19 +991,19 @@
 							"description": "Options specific to each compiler",
 							"patternProperties": {
 								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/source-target-cxx-defines"
+									"$ref": "#/definitions/target-source-cxx-defines"
 								}
 							}
 						}
 					]
 				},
 				"exceptions": {
-					"$ref": "#/definitions/source-target-cxx-exceptions"
+					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
 				"includeDirs": {
 					"oneOf": [
 						{
-							"$ref": "#/definitions/source-target-cxx-includeDirs"
+							"$ref": "#/definitions/target-source-cxx-includeDirs"
 						},
 						{
 							"type": "object",
@@ -988,7 +1011,7 @@
 							"description": "Options specific to each compiler",
 							"patternProperties": {
 								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/source-target-cxx-includeDirs"
+									"$ref": "#/definitions/target-source-cxx-includeDirs"
 								}
 							}
 						}
@@ -997,7 +1020,7 @@
 				"libDirs": {
 					"oneOf": [
 						{
-							"$ref": "#/definitions/source-target-cxx-libDirs"
+							"$ref": "#/definitions/target-source-cxx-libDirs"
 						},
 						{
 							"type": "object",
@@ -1005,14 +1028,14 @@
 							"description": "Options specific to each compiler",
 							"patternProperties": {
 								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/source-target-cxx-libDirs"
+									"$ref": "#/definitions/target-source-cxx-libDirs"
 								}
 							}
 						}
 					]
 				},
 				"linkerScript": {
-					"$ref": "#/definitions/source-target-cxx-linkerScript"
+					"$ref": "#/definitions/target-source-cxx-linkerScript"
 				},
 				"linkerOptions": {
 					"type": "object",
@@ -1028,7 +1051,7 @@
 				"links": {
 					"oneOf": [
 						{
-							"$ref": "#/definitions/source-target-cxx-links"
+							"$ref": "#/definitions/target-source-cxx-links"
 						},
 						{
 							"type": "object",
@@ -1036,34 +1059,34 @@
 							"description": "Options specific to each compiler",
 							"patternProperties": {
 								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/source-target-cxx-links"
+									"$ref": "#/definitions/target-source-cxx-links"
 								}
 							}
 						}
 					]
 				},
 				"macosFrameworkPaths": {
-					"$ref": "#/definitions/source-target-cxx-macosFrameworkPaths"
+					"$ref": "#/definitions/target-source-cxx-macosFrameworkPaths"
 				},
 				"macosFrameworks": {
-					"$ref": "#/definitions/source-target-cxx-macosFrameworks"
+					"$ref": "#/definitions/target-source-cxx-macosFrameworks"
 				},
 				"pch": {
-					"$ref": "#/definitions/source-target-cxx-pch"
+					"$ref": "#/definitions/target-source-cxx-pch"
 				},
 				"threads": {
-					"$ref": "#/definitions/source-target-cxx-threads"
+					"$ref": "#/definitions/target-source-cxx-threads"
 				},
 				"rtti": {
-					"$ref": "#/definitions/source-target-cxx-rtti"
+					"$ref": "#/definitions/target-source-cxx-rtti"
 				},
 				"staticLinking": {
-					"$ref": "#/definitions/source-target-cxx-staticLinking"
+					"$ref": "#/definitions/target-source-cxx-staticLinking"
 				},
 				"staticLinks": {
 					"oneOf": [
 						{
-							"$ref": "#/definitions/source-target-cxx-staticLinks"
+							"$ref": "#/definitions/target-source-cxx-staticLinks"
 						},
 						{
 							"type": "object",
@@ -1071,103 +1094,103 @@
 							"description": "Options specific to each compiler",
 							"patternProperties": {
 								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/source-target-cxx-staticLinks"
+									"$ref": "#/definitions/target-source-cxx-staticLinks"
 								}
 							}
 						}
 					]
 				},
 				"warnings": {
-					"$ref": "#/definitions/source-target-cxx-warnings"
+					"$ref": "#/definitions/target-source-cxx-warnings"
 				},
 				"windowsApplicationIcon": {
-					"$ref": "#/definitions/source-target-cxx-windowsAppIcon"
+					"$ref": "#/definitions/target-source-cxx-windowsAppIcon"
 				},
 				"windowsApplicationManifest": {
-					"$ref": "#/definitions/source-target-cxx-windowsApplicationManifest"
+					"$ref": "#/definitions/target-source-cxx-windowsApplicationManifest"
 				},
 				"windowsSubSystem": {
-					"$ref": "#/definitions/source-target-cxx-windowsSubSystem"
+					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
 				},
 				"windowsEntryPoint": {
-					"$ref": "#/definitions/source-target-cxx-windowsEntryPoint"
+					"$ref": "#/definitions/target-source-cxx-windowsEntryPoint"
 				}
 			},
 			"patternProperties": {
 				"^cStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-cStandard"
+					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
 				"^cppModules(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-cppModules"
+					"$ref": "#/definitions/target-source-cxx-cppModules"
 				},
 				"^cppCoroutines(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-cppCoroutines"
+					"$ref": "#/definitions/target-source-cxx-cppCoroutines"
 				},
 				"^cppConcepts(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-cppConcepts"
+					"$ref": "#/definitions/target-source-cxx-cppConcepts"
 				},
 				"^cppStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-cppStandard"
+					"$ref": "#/definitions/target-source-cxx-cppStandard"
 				},
 				"^defines(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-defines"
+					"$ref": "#/definitions/target-source-cxx-defines"
 				},
 				"^includeDirs(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-includeDirs"
+					"$ref": "#/definitions/target-source-cxx-includeDirs"
 				},
 				"^libDirs(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-libDirs"
+					"$ref": "#/definitions/target-source-cxx-libDirs"
 				},
 				"^linkerScript(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-linkerScript"
+					"$ref": "#/definitions/target-source-cxx-linkerScript"
 				},
 				"^links(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-links"
+					"$ref": "#/definitions/target-source-cxx-links"
 				},
 				"^staticLinks(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-staticLinks"
+					"$ref": "#/definitions/target-source-cxx-staticLinks"
 				},
 				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-threads"
+					"$ref": "#/definitions/target-source-cxx-threads"
 				},
 				"^rtti(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-rtti"
+					"$ref": "#/definitions/target-source-cxx-rtti"
 				},
 				"^exceptions(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-exceptions"
+					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
 				"^staticLinking(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-staticLinking"
+					"$ref": "#/definitions/target-source-cxx-staticLinking"
 				},
 				"^windowsApplicationIcon(\\.!?(debug)\\b\\.?)?$": {
-					"$ref": "#/definitions/source-target-cxx-windowsAppIcon"
+					"$ref": "#/definitions/target-source-cxx-windowsAppIcon"
 				},
 				"^windowsApplicationManifest(\\.!?(debug)\\b\\.?)?$": {
-					"$ref": "#/definitions/source-target-cxx-windowsApplicationManifest"
+					"$ref": "#/definitions/target-source-cxx-windowsApplicationManifest"
 				},
 				"^windowsSubSystem(\\.!?(debug)\\b\\.?)?$": {
-					"$ref": "#/definitions/source-target-cxx-windowsSubSystem"
+					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
 				},
 				"^windowsEntryPoint(\\.!?(debug)\\b\\.?)?$": {
-					"$ref": "#/definitions/source-target-cxx-windowsEntryPoint"
+					"$ref": "#/definitions/target-source-cxx-windowsEntryPoint"
 				}
 			}
 		},
-		"source-target-cxx-cStandard": {
+		"target-source-cxx-cStandard": {
 			"type": "string",
 			"description": "The C standard to use in the compilation",
 			"pattern": "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$",
 			"minLength": 1,
 			"default": "c11"
 		},
-		"source-target-cxx-cppStandard": {
+		"target-source-cxx-cppStandard": {
 			"type": "string",
 			"description": "The C++ standard to use in the compilation",
 			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
 			"minLength": 1,
 			"default": "c++17"
 		},
-		"source-target-cxx-defines": {
+		"target-source-cxx-defines": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -1177,7 +1200,7 @@
 				"minLength": 1
 			}
 		},
-		"source-target-cxx-includeDirs": {
+		"target-source-cxx-includeDirs": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -1187,7 +1210,7 @@
 				"minLength": 1
 			}
 		},
-		"source-target-cxx-libDirs": {
+		"target-source-cxx-libDirs": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -1197,12 +1220,12 @@
 				"minLength": 1
 			}
 		},
-		"source-target-cxx-linkerScript": {
+		"target-source-cxx-linkerScript": {
 			"type": "string",
 			"description": "An LD linker script path (.ld file) to pass to the linker command",
 			"minLength": 1
 		},
-		"source-target-cxx-links": {
+		"target-source-cxx-links": {
 			"type": "array",
 			"uniqueItems": true,
 			"minItems": 1,
@@ -1213,7 +1236,7 @@
 				"pattern": "^[\\w\\-+.]+$"
 			}
 		},
-		"source-target-cxx-macosFrameworkPaths": {
+		"target-source-cxx-macosFrameworkPaths": {
 			"type": "array",
 			"description": "A list of paths to search for MacOS Frameworks",
 			"uniqueItems": true,
@@ -1223,7 +1246,7 @@
 				"minLength": 1
 			}
 		},
-		"source-target-cxx-macosFrameworks": {
+		"target-source-cxx-macosFrameworks": {
 			"type": "array",
 			"description": "A list of MacOS Frameworks to link to the project",
 			"uniqueItems": true,
@@ -1233,12 +1256,12 @@
 				"minLength": 1
 			}
 		},
-		"source-target-cxx-pch": {
+		"target-source-cxx-pch": {
 			"type": "string",
 			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root.",
 			"minLength": 1
 		},
-		"source-target-cxx-threads": {
+		"target-source-cxx-threads": {
 			"type": "string",
 			"description": "The thread model to use.",
 			"minLength": 1,
@@ -1249,37 +1272,37 @@
 			],
 			"default": "auto"
 		},
-		"source-target-cxx-cppModules": {
+		"target-source-cxx-cppModules": {
 			"type": "boolean",
 			"description": "true to enable C++20 modules, false to disable (default).",
 			"default": false
 		},
-		"source-target-cxx-cppCoroutines": {
+		"target-source-cxx-cppCoroutines": {
 			"type": "boolean",
 			"description": "true to enable C++20 coroutines, false to disable (default).",
 			"default": false
 		},
-		"source-target-cxx-cppConcepts": {
+		"target-source-cxx-cppConcepts": {
 			"type": "boolean",
 			"description": "true to enable C++20 concepts in previous language standards (equivalent to '-fconcepts' or '-fconcepts-ts'), false to disable (default).",
 			"default": false
 		},
-		"source-target-cxx-rtti": {
+		"target-source-cxx-rtti": {
 			"type": "boolean",
 			"description": "true to include run-time type information (default), false to exclude.",
 			"default": true
 		},
-		"source-target-cxx-exceptions": {
+		"target-source-cxx-exceptions": {
 			"type": "boolean",
 			"description": "true to use exceptions (default), false to turn off exceptions.",
 			"default": true
 		},
-		"source-target-cxx-staticLinking": {
+		"target-source-cxx-staticLinking": {
 			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 			"type": "boolean",
 			"default": false
 		},
-		"source-target-cxx-staticLinks": {
+		"target-source-cxx-staticLinks": {
 			"type": "array",
 			"description": "A list of static links to use with the linker",
 			"uniqueItems": true,
@@ -1290,7 +1313,7 @@
 				"pattern": "^[\\w\\-+.]+$"
 			}
 		},
-		"source-target-cxx-warnings": {
+		"target-source-cxx-warnings": {
 			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
 			"oneOf": [
 				{
@@ -1923,7 +1946,7 @@
 				}
 			]
 		},
-		"source-target-cxx-windowsApplicationManifest": {
+		"target-source-cxx-windowsApplicationManifest": {
 			"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",
 			"oneOf": [
 				{
@@ -1936,12 +1959,12 @@
 				}
 			]
 		},
-		"source-target-cxx-windowsAppIcon": {
+		"target-source-cxx-windowsAppIcon": {
 			"type": "string",
 			"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)",
 			"minLength": 1
 		},
-		"source-target-cxx-windowsSubSystem": {
+		"target-source-cxx-windowsSubSystem": {
 			"type": "string",
 			"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to 'console'",
 			"minLength": 1,
@@ -1958,7 +1981,7 @@
 			],
 			"default": "console"
 		},
-		"source-target-cxx-windowsEntryPoint": {
+		"target-source-cxx-windowsEntryPoint": {
 			"type": "string",
 			"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to 'main'",
 			"minLength": 1,
@@ -1971,7 +1994,7 @@
 			],
 			"default": "main"
 		},
-		"build-script-target": {
+		"target-script": {
 			"type": "object",
 			"additionalProperties": false,
 			"required": [
@@ -1991,7 +2014,7 @@
 					"$ref": "#/definitions/target-runTarget"
 				},
 				"script": {
-					"$ref": "#/definitions/script-target-script"
+					"$ref": "#/definitions/target-script-script"
 				}
 			},
 			"patternProperties": {
@@ -1999,34 +2022,11 @@
 					"$ref": "#/definitions/target-runTarget"
 				},
 				"^script(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/script-target-script"
+					"$ref": "#/definitions/target-script-script"
 				}
 			}
 		},
-		"distribution-script-target": {
-			"type": "object",
-			"additionalProperties": false,
-			"properties": {
-				"condition": {
-					"$ref": "#/definitions/distribution-condition"
-				},
-				"description": {
-					"$ref": "#/definitions/target-description"
-				},
-				"kind": {
-					"$ref": "#/definitions/distribution-kind"
-				},
-				"script": {
-					"$ref": "#/definitions/script-target-script"
-				}
-			},
-			"patternProperties": {
-				"^script(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/script-target-script"
-				}
-			}
-		},
-		"script-target-script": {
+		"target-script-script": {
 			"description": "Script(s) to run during this build step.",
 			"oneOf": [
 				{
@@ -2044,7 +2044,7 @@
 				}
 			]
 		},
-		"cmake-target": {
+		"target-cmake": {
 			"type": "object",
 			"description": "Build the location with CMake",
 			"additionalProperties": false,
@@ -2054,13 +2054,13 @@
 			],
 			"properties": {
 				"buildFile": {
-					"$ref": "#/definitions/cmake-target-buildFile"
+					"$ref": "#/definitions/target-cmake-buildFile"
 				},
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
 				"defines": {
-					"$ref": "#/definitions/cmake-target-defines"
+					"$ref": "#/definitions/target-cmake-defines"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
@@ -2069,53 +2069,53 @@
 					"$ref": "#/definitions/target-kind"
 				},
 				"location": {
-					"$ref": "#/definitions/cmake-target-location"
+					"$ref": "#/definitions/target-cmake-location"
 				},
 				"recheck": {
-					"$ref": "#/definitions/cmake-target-recheck"
+					"$ref": "#/definitions/target-cmake-recheck"
 				},
 				"runArguments": {
 					"$ref": "#/definitions/target-runArguments"
 				},
 				"runExecutable": {
-					"$ref": "#/definitions/cmake-target-runExecutable"
+					"$ref": "#/definitions/target-cmake-runExecutable"
 				},
 				"runTarget": {
 					"$ref": "#/definitions/target-runTarget"
 				},
 				"toolset": {
-					"$ref": "#/definitions/cmake-target-toolset"
+					"$ref": "#/definitions/target-cmake-toolset"
 				}
 			},
 			"patternProperties": {
 				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/cmake-target-buildFile"
+					"$ref": "#/definitions/target-cmake-buildFile"
 				},
 				"^defines(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/cmake-target-defines"
+					"$ref": "#/definitions/target-cmake-defines"
 				},
 				"^toolset(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/cmake-target-toolset"
+					"$ref": "#/definitions/target-cmake-toolset"
 				},
 				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-runTarget"
 				},
 				"^runExecutable(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/cmake-target-runExecutable"
+					"$ref": "#/definitions/target-cmake-runExecutable"
 				}
 			}
 		},
-		"cmake-target-location": {
+		"target-cmake-location": {
 			"type": "string",
 			"description": "The folder path of the root CMakeLists.txt for the project.",
 			"minLength": 1
 		},
-		"cmake-target-buildFile": {
+		"target-cmake-buildFile": {
 			"type": "string",
 			"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)",
 			"minLength": 1
 		},
-		"cmake-target-defines": {
+		"target-cmake-defines": {
 			"type": "array",
 			"description": "Macro definitions to be passed into CMake. (-D)",
 			"uniqueItems": true,
@@ -2125,22 +2125,22 @@
 				"minLength": 1
 			}
 		},
-		"cmake-target-recheck": {
+		"target-cmake-recheck": {
 			"type": "boolean",
 			"description": "If true, CMake will be invoked each time during the build.",
 			"default": false
 		},
-		"cmake-target-toolset": {
+		"target-cmake-toolset": {
 			"type": "string",
 			"description": "A toolset to be passed to CMake with the -T option.",
 			"minLength": 1
 		},
-		"cmake-target-runExecutable": {
+		"target-cmake-runExecutable": {
 			"type": "string",
 			"description": "The path to an executable to run, relative to the build directory.",
 			"minLength": 1
 		},
-		"chalet-target": {
+		"target-chalet": {
 			"type": "object",
 			"description": "Build the location with Chalet",
 			"additionalProperties": false,
@@ -2150,7 +2150,7 @@
 			],
 			"properties": {
 				"buildFile": {
-					"$ref": "#/definitions/chalet-target-buildFile"
+					"$ref": "#/definitions/target-chalet-buildFile"
 				},
 				"condition": {
 					"$ref": "#/definitions/target-condition"
@@ -2162,29 +2162,29 @@
 					"$ref": "#/definitions/target-kind"
 				},
 				"location": {
-					"$ref": "#/definitions/chalet-target-location"
+					"$ref": "#/definitions/target-chalet-location"
 				},
 				"recheck": {
-					"$ref": "#/definitions/chalet-target-recheck"
+					"$ref": "#/definitions/target-chalet-recheck"
 				}
 			},
 			"patternProperties": {
 				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/chalet-target-buildFile"
+					"$ref": "#/definitions/target-chalet-buildFile"
 				}
 			}
 		},
-		"chalet-target-location": {
+		"target-chalet-location": {
 			"type": "string",
 			"description": "The folder path of the root chalet.json for the project.",
 			"minLength": 1
 		},
-		"chalet-target-buildFile": {
+		"target-chalet-buildFile": {
 			"type": "string",
 			"description": "The build file to use, if not chalet.json, relative to the location.",
 			"minLength": 1
 		},
-		"chalet-target-recheck": {
+		"target-chalet-recheck": {
 			"type": "boolean",
 			"description": "If true, Chalet will be invoked each time during the build."
 		}
@@ -2280,7 +2280,7 @@
 							}
 						},
 						"then": {
-							"$ref": "#/definitions/distribution-script-target"
+							"$ref": "#/definitions/distribution-script"
 						},
 						"else": {
 							"if": {
@@ -2355,7 +2355,7 @@
 						}
 					},
 					"then": {
-						"$ref": "#/definitions/executable-source-target"
+						"$ref": "#/definitions/executable-target-source"
 					},
 					"else": {
 						"if": {
@@ -2369,7 +2369,7 @@
 							}
 						},
 						"then": {
-							"$ref": "#/definitions/library-source-target"
+							"$ref": "#/definitions/library-target-source"
 						},
 						"else": {
 							"if": {
@@ -2380,7 +2380,7 @@
 								}
 							},
 							"then": {
-								"$ref": "#/definitions/cmake-target"
+								"$ref": "#/definitions/target-cmake"
 							},
 							"else": {
 								"if": {
@@ -2391,7 +2391,7 @@
 									}
 								},
 								"then": {
-									"$ref": "#/definitions/chalet-target"
+									"$ref": "#/definitions/target-chalet"
 								},
 								"else": {
 									"if": {
@@ -2402,7 +2402,7 @@
 										}
 									},
 									"then": {
-										"$ref": "#/definitions/build-script-target"
+										"$ref": "#/definitions/target-script"
 									},
 									"else": {
 										"type": "object",
