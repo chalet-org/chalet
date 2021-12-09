@@ -85,7 +85,31 @@
 				]
 			}
 		},
-		"distribution-target": {
+		"distribution-kind": {
+			"type": "string",
+			"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
+			"minLength": 1,
+			"enum": [
+				"bundle",
+				"script",
+				"archive",
+				"macosDiskImage",
+				"windowsNullsoftInstaller"
+			]
+		},
+		"distribution-configuration": {
+			"type": "string",
+			"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
+			"minLength": 1,
+			"default": "Release"
+		},
+		"distribution-condition": {
+			"type": "string",
+			"description": "A rule describing when to include this target in the distribution.",
+			"minLength": 1,
+			"pattern": "^(!?(windows|macos|linux)\\b)$"
+		},
+		"distribution-bundle": {
 			"type": "object",
 			"description": "Properties to describe an individual distribution target.",
 			"additionalProperties": false,
@@ -104,74 +128,122 @@
 				}
 			],
 			"properties": {
-				"condition": {
-					"$ref": "#/definitions/distribution-target-condition"
+				"buildTargets": {
+					"$ref": "#/definitions/distribution-bundle-buildTargets"
 				},
-				"kind": {
-					"$ref": "#/definitions/distribution-target-kind"
+				"condition": {
+					"$ref": "#/definitions/distribution-condition"
+				},
+				"configuration": {
+					"$ref": "#/definitions/distribution-configuration"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
-				"buildTargets": {
-					"$ref": "#/definitions/distribution-target-buildTargets"
-				},
-				"configuration": {
-					"$ref": "#/definitions/distribution-target-configuration"
-				},
 				"exclude": {
-					"$ref": "#/definitions/distribution-target-exclude"
+					"$ref": "#/definitions/distribution-bundle-exclude"
 				},
 				"include": {
-					"$ref": "#/definitions/distribution-target-include"
+					"$ref": "#/definitions/distribution-bundle-include"
 				},
 				"includeDependentSharedLibraries": {
-					"$ref": "#/definitions/distribution-target-includeDependentSharedLibraries"
+					"$ref": "#/definitions/distribution-bundle-includeDependentSharedLibraries"
 				},
-				"macosBundle": {
-					"$ref": "#/definitions/distribution-target-macosBundle"
+				"kind": {
+					"$ref": "#/definitions/distribution-kind"
 				},
 				"linuxDesktopEntry": {
-					"$ref": "#/definitions/distribution-target-linuxDesktopEntry"
+					"type": "object",
+					"description": "Properties to describe an XDG Desktop Entry. Only one can be defined per distribution target.",
+					"additionalProperties": false,
+					"required": [
+						"template"
+					],
+					"properties": {
+						"template": {
+							"type": "string",
+							"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
+							"minLength": 1,
+							"default": "app.desktop"
+						},
+						"icon": {
+							"type": "string",
+							"description": "The location to an icon to use with the XDG Desktop Entry (PNG 256x256 is recommended)",
+							"minLength": 1,
+							"default": "icon.png"
+						}
+					}
+				},
+				"macosBundle": {
+					"type": "object",
+					"description": "Properties to describe the MacOS bundle. Only one can be defined per distribution target.",
+					"additionalProperties": false,
+					"required": [
+						"type",
+						"infoPropertyList"
+					],
+					"properties": {
+						"type": {
+							"type": "string",
+							"description": "The MacOS bundle type (only .app is supported currently)",
+							"minLength": 1,
+							"enum": [
+								"app"
+							],
+							"default": "app"
+						},
+						"icon": {
+							"type": "string",
+							"description": "The path to a MacOS bundle icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
+							"minLength": 1,
+							"default": "icon.png"
+						},
+						"infoPropertyList": {
+							"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1,
+									"default": "Info.plist.json"
+								},
+								{
+									"type": "object",
+									"default": {
+										"CFBundleDevelopmentRegion": "en-US",
+										"CFBundleDisplayName": "${name}",
+										"CFBundleExecutable": "${mainExecutable}",
+										"CFBundleIconFile": "${icon}",
+										"CFBundleIdentifier": "com.developer.application",
+										"CFBundleInfoDictionaryVersion": "6.0",
+										"CFBundleName": "${bundleName}",
+										"CFBundlePackageType": "APPL",
+										"CFBundleShortVersionString": "${version}",
+										"CFBundleVersion": "${version}",
+										"CFBundleSignature": "????",
+										"LSMinimumSystemVersion": "10.8"
+									}
+								}
+							]
+						}
+					}
 				},
 				"mainExecutable": {
-					"$ref": "#/definitions/distribution-target-mainExecutable"
+					"$ref": "#/definitions/distribution-bundle-mainExecutable"
 				},
 				"subdirectory": {
-					"$ref": "#/definitions/distribution-target-subdirectory"
+					"$ref": "#/definitions/distribution-bundle-subdirectory"
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-description"
-				},
 				"^include(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/distribution-target-include"
+					"$ref": "#/definitions/distribution-bundle-include"
 				},
 				"^exclude(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/distribution-target-exclude"
+					"$ref": "#/definitions/distribution-bundle-exclude"
 				}
 			}
 		},
-		"distribution-target-kind": {
-			"type": "string",
-			"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
-			"minLength": 1,
-			"enum": [
-				"bundle",
-				"script",
-				"archive",
-				"macosDiskImage",
-				"windowsNullsoftInstaller"
-			]
-		},
-		"distribution-target-configuration": {
-			"type": "string",
-			"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
-			"minLength": 1,
-			"default": "Release"
-		},
-		"distribution-target-exclude": {
+		"distribution-bundle-exclude": {
 			"type": "array",
 			"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
 			"uniqueItems": true,
@@ -180,7 +252,7 @@
 				"type": "string"
 			}
 		},
-		"distribution-target-include": {
+		"distribution-bundle-include": {
 			"type": "array",
 			"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
 			"uniqueItems": true,
@@ -191,12 +263,35 @@
 				"minLength": 1
 			}
 		},
-		"distribution-target-includeDependentSharedLibraries": {
+		"distribution-bundle-mainExecutable": {
+			"type": "string",
+			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'targets' array of the distribution target will be chosen as the main executable.",
+			"minLength": 1
+		},
+		"distribution-bundle-subdirectory": {
+			"type": "string",
+			"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
+			"minLength": 1,
+			"default": "dist"
+		},
+		"distribution-bundle-buildTargets": {
+			"type": "array",
+			"uniqueItems": true,
+			"description": "An array of build target names to include in this distribution target.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"description": "The name of the build target.",
+				"minLength": 1,
+				"pattern": "^[\\w\\-+.]{3,}$"
+			}
+		},
+		"distribution-bundle-includeDependentSharedLibraries": {
 			"type": "boolean",
 			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
 			"default": true
 		},
-		"distribution-target-macosBundle": {
+		"distribution-bundle-macosBundle": {
 			"type": "object",
 			"description": "Properties to describe the MacOS bundle. Only one can be defined per distribution target.",
 			"additionalProperties": false,
@@ -249,7 +344,7 @@
 				}
 			}
 		},
-		"distribution-target-linuxDesktopEntry": {
+		"distribution-bundle-linuxDesktopEntry": {
 			"type": "object",
 			"description": "Properties to describe an XDG Desktop Entry. Only one can be defined per distribution target.",
 			"additionalProperties": false,
@@ -271,30 +366,7 @@
 				}
 			}
 		},
-		"distribution-target-mainExecutable": {
-			"type": "string",
-			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'targets' array of the distribution target will be chosen as the main executable.",
-			"minLength": 1
-		},
-		"distribution-target-subdirectory": {
-			"type": "string",
-			"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
-			"minLength": 1,
-			"default": "dist"
-		},
-		"distribution-target-buildTargets": {
-			"type": "array",
-			"uniqueItems": true,
-			"description": "An array of build target names to include in this distribution target.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"description": "The name of the build target.",
-				"minLength": 1,
-				"pattern": "^[\\w\\-+.]{3,}$"
-			}
-		},
-		"distribution-archive-target": {
+		"distribution-archive": {
 			"type": "object",
 			"description": "Properties to describe an individual distribution archive.",
 			"additionalProperties": false,
@@ -304,25 +376,25 @@
 			],
 			"properties": {
 				"condition": {
-					"$ref": "#/definitions/distribution-target-condition"
-				},
-				"kind": {
-					"$ref": "#/definitions/distribution-target-kind"
+					"$ref": "#/definitions/distribution-condition"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
 				"include": {
-					"$ref": "#/definitions/distribution-archive-target-include"
+					"$ref": "#/definitions/distribution-archive-include"
+				},
+				"kind": {
+					"$ref": "#/definitions/distribution-kind"
 				}
 			},
 			"patternProperties": {
 				"^include(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/distribution-archive-target-include"
+					"$ref": "#/definitions/distribution-archive-include"
 				}
 			}
 		},
-		"distribution-archive-target-include": {
+		"distribution-archive-include": {
 			"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
 			"oneOf": [
 				{
@@ -341,13 +413,7 @@
 				}
 			]
 		},
-		"distribution-target-condition": {
-			"type": "string",
-			"description": "A rule describing when to include this target in the distribution.",
-			"minLength": 1,
-			"pattern": "^(!?(windows|macos|linux)\\b)$"
-		},
-		"distribution-macosDiskImage-target": {
+		"distribution-macosDiskImage": {
 			"type": "object",
 			"description": "Properties to describe a macos disk image (dmg). Implies 'condition: macos'",
 			"additionalProperties": false,
@@ -357,52 +423,128 @@
 				"positions"
 			],
 			"properties": {
-				"kind": {
-					"$ref": "#/definitions/distribution-target-kind"
+				"background": {
+					"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",
+					"oneOf": [
+						{
+							"type": "string",
+							"minLength": 1
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"required": [
+								"1x"
+							],
+							"properties": {
+								"1x": {
+									"type": "string",
+									"description": "The path to a background image in PNG format created for 1x pixel density.",
+									"minLength": 1
+								},
+								"2x": {
+									"type": "string",
+									"description": "The path to a background image in PNG format created for 2x pixel density.",
+									"minLength": 1
+								}
+							}
+						}
+					]
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
-				"pathbarVisible": {
-					"$ref": "#/definitions/distribution-macosDiskImage-target-pathbarVisible"
-				},
 				"iconSize": {
-					"$ref": "#/definitions/distribution-macosDiskImage-target-iconSize"
+					"$ref": "#/definitions/distribution-macosDiskImage-iconSize"
 				},
-				"textSize": {
-					"$ref": "#/definitions/distribution-macosDiskImage-target-textSize"
+				"kind": {
+					"$ref": "#/definitions/distribution-kind"
 				},
-				"background": {
-					"$ref": "#/definitions/distribution-macosDiskImage-target-background"
-				},
-				"size": {
-					"$ref": "#/definitions/distribution-macosDiskImage-target-size"
+				"pathbarVisible": {
+					"$ref": "#/definitions/distribution-macosDiskImage-pathbarVisible"
 				},
 				"positions": {
-					"$ref": "#/definitions/distribution-macosDiskImage-target-positions"
+					"type": "object",
+					"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
+					"additionalProperties": false,
+					"patternProperties": {
+						"^(([\\w\\-+. ()]*)|(\\$\\{(targetTriple|toolchainName|configuration|architecture|buildDir)\\}))+$": {
+							"type": "object",
+							"description": "An icon position in the root disk image.",
+							"additionalProperties": false,
+							"required": [
+								"x",
+								"y"
+							],
+							"properties": {
+								"x": {
+									"type": "integer",
+									"description": "The x position of the path's icon",
+									"default": 80,
+									"minimum": -1024,
+									"maximum": 32000
+								},
+								"y": {
+									"type": "integer",
+									"description": "The x position of the path's icon",
+									"default": 80,
+									"minimum": -1024,
+									"maximum": 32000
+								}
+							}
+						}
+					}
+				},
+				"size": {
+					"type": "object",
+					"description": "The dimensions of the root of the disk image.",
+					"additionalProperties": false,
+					"required": [
+						"width",
+						"height"
+					],
+					"properties": {
+						"width": {
+							"type": "integer",
+							"description": "The width of the disk image",
+							"default": 512,
+							"minimum": 128,
+							"maximum": 32000
+						},
+						"height": {
+							"type": "integer",
+							"description": "The height of the disk image",
+							"default": 342,
+							"minimum": 128,
+							"maximum": 32000
+						}
+					}
+				},
+				"textSize": {
+					"$ref": "#/definitions/distribution-macosDiskImage-textSize"
 				}
 			}
 		},
-		"distribution-macosDiskImage-target-pathbarVisible": {
+		"distribution-macosDiskImage-pathbarVisible": {
 			"type": "boolean",
 			"description": "true to display the pathbar (aka breadcrumbs) in the root of the disk image. false to hide it.",
 			"default": false
 		},
-		"distribution-macosDiskImage-target-iconSize": {
+		"distribution-macosDiskImage-iconSize": {
 			"type": "integer",
 			"description": "The icon size in the root of the disk image.",
 			"default": 48,
 			"minimum": 16,
 			"maximum": 512
 		},
-		"distribution-macosDiskImage-target-textSize": {
+		"distribution-macosDiskImage-textSize": {
 			"type": "integer",
 			"description": "The text size in the root of the disk image.",
 			"default": 12,
 			"minimum": 10,
 			"maximum": 16
 		},
-		"distribution-macosDiskImage-target-background": {
+		"distribution-macosDiskImage-background": {
 			"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",
 			"oneOf": [
 				{
@@ -430,7 +572,7 @@
 				}
 			]
 		},
-		"distribution-macosDiskImage-target-size": {
+		"distribution-macosDiskImage-size": {
 			"type": "object",
 			"description": "The dimensions of the root of the disk image.",
 			"additionalProperties": false,
@@ -455,7 +597,7 @@
 				}
 			}
 		},
-		"distribution-macosDiskImage-target-positions": {
+		"distribution-macosDiskImage-positions": {
 			"type": "object",
 			"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
 			"additionalProperties": false,
@@ -487,7 +629,7 @@
 				}
 			}
 		},
-		"distribution-windowsNullsoftInstaller-target": {
+		"distribution-windowsNullsoftInstaller": {
 			"type": "object",
 			"description": "Properties to describe an NSIS installer. Implies 'condition: windows'",
 			"additionalProperties": false,
@@ -496,11 +638,11 @@
 				"nsisScript"
 			],
 			"properties": {
-				"kind": {
-					"$ref": "#/definitions/distribution-target-kind"
-				},
 				"description": {
 					"$ref": "#/definitions/target-description"
+				},
+				"kind": {
+					"$ref": "#/definitions/distribution-kind"
 				},
 				"nsisScript": {
 					"$ref": "#/definitions/distribution-windowsNullsoftInstaller-nsisScript"
@@ -552,17 +694,17 @@
 						"repository"
 					],
 					"properties": {
-						"repository": {
-							"$ref": "#/definitions/external-git-repository"
-						},
-						"submodules": {
-							"$ref": "#/definitions/external-git-submodules"
-						},
 						"branch": {
 							"$ref": "#/definitions/external-git-branch"
 						},
 						"commit": {
 							"$ref": "#/definitions/external-git-commit"
+						},
+						"repository": {
+							"$ref": "#/definitions/external-git-repository"
+						},
+						"submodules": {
+							"$ref": "#/definitions/external-git-submodules"
 						}
 					}
 				}
@@ -657,6 +799,9 @@
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
+				"language": {
+					"$ref": "#/definitions/source-target-language"
+				},
 				"settings:Cxx": {
 					"$ref": "#/definitions/source-target-cxx"
 				},
@@ -669,9 +814,6 @@
 							"$ref": "#/definitions/source-target-cxx"
 						}
 					}
-				},
-				"language": {
-					"$ref": "#/definitions/source-target-language"
 				}
 			},
 			"patternProperties": {
@@ -721,28 +863,25 @@
 				"settings:Cxx": {
 					"$ref": "#/definitions/source-target-cxx"
 				},
-				"runTarget": {
-					"$ref": "#/definitions/target-runTarget"
-				},
 				"runArguments": {
 					"$ref": "#/definitions/target-runArguments"
 				},
 				"runDependencies": {
 					"$ref": "#/definitions/target-runDependencies"
+				},
+				"runTarget": {
+					"$ref": "#/definitions/target-runTarget"
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-description"
-				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
-				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-runTarget"
-				},
 				"^runDependencies(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-runDependencies"
+				},
+				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-runTarget"
 				}
 			}
 		},
@@ -789,9 +928,6 @@
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-description"
-				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				}
@@ -933,6 +1069,15 @@
 				"compileOptions": {
 					"$ref": "#/definitions/source-target-cxx-compileOptions"
 				},
+				"cppConcepts": {
+					"$ref": "#/definitions/source-target-cxx-cppConcepts"
+				},
+				"cppCoroutines": {
+					"$ref": "#/definitions/source-target-cxx-cppCoroutines"
+				},
+				"cppModules": {
+					"$ref": "#/definitions/source-target-cxx-cppModules"
+				},
 				"cppStandard": {
 					"$ref": "#/definitions/source-target-cxx-cppStandard"
 				},
@@ -952,6 +1097,9 @@
 							}
 						}
 					]
+				},
+				"exceptions": {
+					"$ref": "#/definitions/source-target-cxx-exceptions"
 				},
 				"includeDirs": {
 					"oneOf": [
@@ -1022,20 +1170,8 @@
 				"threads": {
 					"$ref": "#/definitions/source-target-cxx-threads"
 				},
-				"cppModules": {
-					"$ref": "#/definitions/source-target-cxx-cppModules"
-				},
-				"cppCoroutines": {
-					"$ref": "#/definitions/source-target-cxx-cppCoroutines"
-				},
-				"cppConcepts": {
-					"$ref": "#/definitions/source-target-cxx-cppConcepts"
-				},
 				"rtti": {
 					"$ref": "#/definitions/source-target-cxx-rtti"
-				},
-				"exceptions": {
-					"$ref": "#/definitions/source-target-cxx-exceptions"
 				},
 				"staticLinking": {
 					"$ref": "#/definitions/source-target-cxx-staticLinking"
@@ -1077,6 +1213,15 @@
 				"^cStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-cStandard"
 				},
+				"^cppModules(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-cppModules"
+				},
+				"^cppCoroutines(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-cppCoroutines"
+				},
+				"^cppConcepts(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/source-target-cxx-cppConcepts"
+				},
 				"^cppStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-cppStandard"
 				},
@@ -1100,15 +1245,6 @@
 				},
 				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-threads"
-				},
-				"^cppModules(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-cppModules"
-				},
-				"^cppCoroutines(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-cppCoroutines"
-				},
-				"^cppConcepts(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/source-target-cxx-cppConcepts"
 				},
 				"^rtti(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/source-target-cxx-rtti"
@@ -1980,31 +2116,28 @@
 				"kind"
 			],
 			"properties": {
-				"kind": {
-					"$ref": "#/definitions/target-kind"
-				},
-				"script": {
-					"$ref": "#/definitions/script-target-script"
+				"condition": {
+					"$ref": "#/definitions/target-condition"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
-				"condition": {
-					"$ref": "#/definitions/target-condition"
+				"kind": {
+					"$ref": "#/definitions/target-kind"
 				},
 				"runTarget": {
 					"$ref": "#/definitions/target-runTarget"
+				},
+				"script": {
+					"$ref": "#/definitions/script-target-script"
 				}
 			},
 			"patternProperties": {
-				"^script(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/script-target-script"
-				},
-				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-description"
-				},
 				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-runTarget"
+				},
+				"^script(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/script-target-script"
 				}
 			}
 		},
@@ -2012,25 +2145,22 @@
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
-				"kind": {
-					"$ref": "#/definitions/distribution-target-kind"
-				},
-				"script": {
-					"$ref": "#/definitions/script-target-script"
+				"condition": {
+					"$ref": "#/definitions/distribution-condition"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
-				"condition": {
-					"$ref": "#/definitions/distribution-target-condition"
+				"kind": {
+					"$ref": "#/definitions/distribution-kind"
+				},
+				"script": {
+					"$ref": "#/definitions/script-target-script"
 				}
 			},
 			"patternProperties": {
 				"^script(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/script-target-script"
-				},
-				"^description(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-description"
 				}
 			}
 		},
@@ -2061,44 +2191,41 @@
 				"location"
 			],
 			"properties": {
-				"kind": {
-					"$ref": "#/definitions/target-kind"
-				},
-				"description": {
-					"$ref": "#/definitions/target-description"
-				},
-				"location": {
-					"$ref": "#/definitions/cmake-target-location"
-				},
 				"buildFile": {
 					"$ref": "#/definitions/cmake-target-buildFile"
-				},
-				"defines": {
-					"$ref": "#/definitions/cmake-target-defines"
-				},
-				"toolset": {
-					"$ref": "#/definitions/cmake-target-toolset"
-				},
-				"recheck": {
-					"$ref": "#/definitions/cmake-target-recheck"
 				},
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
-				"runTarget": {
-					"$ref": "#/definitions/target-runTarget"
+				"defines": {
+					"$ref": "#/definitions/cmake-target-defines"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
+				"location": {
+					"$ref": "#/definitions/cmake-target-location"
+				},
+				"recheck": {
+					"$ref": "#/definitions/cmake-target-recheck"
 				},
 				"runArguments": {
 					"$ref": "#/definitions/target-runArguments"
 				},
 				"runExecutable": {
 					"$ref": "#/definitions/cmake-target-runExecutable"
+				},
+				"runTarget": {
+					"$ref": "#/definitions/target-runTarget"
+				},
+				"toolset": {
+					"$ref": "#/definitions/cmake-target-toolset"
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-description"
-				},
 				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/cmake-target-buildFile"
 				},
@@ -2160,29 +2287,26 @@
 				"location"
 			],
 			"properties": {
-				"kind": {
-					"$ref": "#/definitions/target-kind"
+				"buildFile": {
+					"$ref": "#/definitions/chalet-target-buildFile"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
 				"location": {
 					"$ref": "#/definitions/chalet-target-location"
 				},
-				"buildFile": {
-					"$ref": "#/definitions/chalet-target-buildFile"
-				},
 				"recheck": {
 					"$ref": "#/definitions/chalet-target-recheck"
-				},
-				"condition": {
-					"$ref": "#/definitions/target-condition"
 				}
 			},
 			"patternProperties": {
-				"^description(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-description"
-				},
 				"^buildFile(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/chalet-target-buildFile"
 				}
@@ -2283,7 +2407,7 @@
 						}
 					},
 					"then": {
-						"$ref": "#/definitions/distribution-target"
+						"$ref": "#/definitions/distribution-bundle"
 					},
 					"else": {
 						"if": {
@@ -2305,7 +2429,7 @@
 								}
 							},
 							"then": {
-								"$ref": "#/definitions/distribution-archive-target"
+								"$ref": "#/definitions/distribution-archive"
 							},
 							"else": {
 								"if": {
@@ -2316,7 +2440,7 @@
 									}
 								},
 								"then": {
-									"$ref": "#/definitions/distribution-macosDiskImage-target"
+									"$ref": "#/definitions/distribution-macosDiskImage"
 								},
 								"else": {
 									"if": {
@@ -2327,7 +2451,7 @@
 										}
 									},
 									"then": {
-										"$ref": "#/definitions/distribution-windowsNullsoftInstaller-target"
+										"$ref": "#/definitions/distribution-windowsNullsoftInstaller"
 									},
 									"else": {
 										"type": "object",
