@@ -129,14 +129,14 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::DistributionConfiguration] = R"json({
 		"type": "string",
-		"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
+		"description": "The name of the build configuration to use.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
 		"minLength": 1,
 		"default": "Release"
 	})json"_ojson;
 
 	defs[Defs::DistributionBundleInclude] = R"json({
 		"type": "array",
-		"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
+		"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
@@ -181,7 +181,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		})json"_ojson;
 
 		auto macosInfoPropertyList = R"json({
-			"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
+			"description": "The path to a property list (.plist) file, .json file, or the properties themselves to export as a plist defining the bundle.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -197,7 +197,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle] = R"json({
 			"type": "object",
-			"description": "Properties to describe the MacOS bundle. Only one can be defined per distribution target.",
+			"description": "Properties to describe the MacOS bundle.",
 			"additionalProperties": false,
 			"required": [
 				"type",
@@ -227,7 +227,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry] = R"json({
 			"type": "object",
-			"description": "Properties to describe an XDG Desktop Entry. Only one can be defined per distribution target.",
+			"description": "Properties to describe an XDG Desktop Entry.",
 			"additionalProperties": false,
 			"required": [
 				"template"
@@ -240,7 +240,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::DistributionBundleMainExecutable] = R"json({
 		"type": "string",
-		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'targets' array of the distribution target will be chosen as the main executable.",
+		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'buildTargets' array of the bundle will be chosen as the main executable.",
 		"minLength": 1
 	})json"_ojson;
 
@@ -254,7 +254,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::DistributionBundleBuildTargets] = R"json({
 		"type": "array",
 		"uniqueItems": true,
-		"description": "An array of build target names to include in this distribution target.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
+		"description": "An array of build target names to include in this bundle.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
 		"minItems": 1,
 		"items": {
 			"type": "string",
@@ -1307,7 +1307,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	{
 		auto distributionTarget = R"json({
 			"type": "object",
-			"description": "Properties to describe an individual distribution target.",
+			"description": "Properties to describe an individual bundle.",
 			"additionalProperties": false,
 			"anyOf": [
 				{
@@ -1824,7 +1824,7 @@ Json SchemaBuildJson::get()
 	})json"_ojson;
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName] = R"json({
 		"type": "object",
-		"description": "A single distribution target or script.",
+		"description": "A single distribution target.",
 		"if": { "properties": {
 			"kind": { "const": "bundle" }
 		}},
