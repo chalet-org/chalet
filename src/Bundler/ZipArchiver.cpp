@@ -85,7 +85,7 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 	}
 #endif
 
-	bool result = Commands::subprocessNoOutput(cmd, inCwd);
+	bool result = Commands::subprocessMinimalOutput(cmd, inCwd);
 
 	Commands::removeRecursively(tmpDirectory);
 

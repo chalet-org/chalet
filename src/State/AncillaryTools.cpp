@@ -567,16 +567,12 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inF
 	cmd.emplace_back("-s");
 	cmd.push_back(m_signingIdentity);
 
-	bool showCommands = Output::showCommands();
-	if (showCommands)
+	if (Output::showCommands())
 		cmd.emplace_back("-v");
 
 	cmd.push_back(inPath);
 
-	if (showCommands)
-		return Commands::subprocess(cmd);
-	else
-		return Commands::subprocessNoOutput(cmd);
+	return Commands::subprocessNoOutput(cmd);
 #else
 	UNUSED(inPath, inForce);
 	return false;
@@ -591,15 +587,12 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath) const
 
 	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--continue", "-s", m_signingIdentity };
 
-	bool showCommands = Output::showCommands();
-	if (showCommands)
+	if (Output::showCommands())
 		cmd.emplace_back("-v");
 
 	cmd.push_back(inPath);
-	if (showCommands)
-		return Commands::subprocess(cmd);
-	else
-		return Commands::subprocessNoOutput(cmd);
+
+	return Commands::subprocessNoOutput(cmd);
 #else
 	UNUSED(inPath);
 	return false;
@@ -615,15 +608,11 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--continue", "-f", "-s", m_signingIdentity };
 	cmd.emplace_back(fmt::format("-bundle-version={}", inVersionId));
 
-	bool showCommands = Output::showCommands();
-	if (showCommands)
+	if (Output::showCommands())
 		cmd.emplace_back("-v");
 
 	cmd.push_back(inFrameworkPath);
-	if (showCommands)
-		return Commands::subprocess(cmd);
-	else
-		return Commands::subprocessNoOutput(cmd);
+	return Commands::subprocessNoOutput(cmd);
 #else
 	UNUSED(inFrameworkPath, inVersionId);
 	return false;

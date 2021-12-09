@@ -46,7 +46,7 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 
 	cmd.emplace_back(nsisScript);
 
-	if (!Commands::subprocessNoOutput(cmd))
+	if (!Commands::subprocessMinimalOutput(cmd))
 	{
 		Diagnostic::error("NSIS Installer failed to compile: {}", nsisScript);
 		return false;

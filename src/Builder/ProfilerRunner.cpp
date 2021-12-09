@@ -200,7 +200,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 
 	// This returns false if the executable didn't change and the profiler *.instr.pdb already exists,
 	//   so we don't care about the result
-	Commands::subprocessNoOutput({
+	Commands::subprocessMinimalOutput({
 		m_state.toolchain.profiler(),
 		"/U",
 		inExecutable,
@@ -215,7 +215,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			if (project.isSharedLibrary())
 			{
 				auto file = m_state.paths.getTargetFilename(project);
-				Commands::subprocessNoOutput({ m_state.toolchain.profiler(), "/U", file });
+				Commands::subprocessMinimalOutput({ m_state.toolchain.profiler(), "/U", file });
 			}
 		}
 	}
@@ -223,7 +223,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	/////////////
 
 	// Start the trace service
-	if (!Commands::subprocessNoOutput({
+	if (!Commands::subprocessMinimalOutput({
 			vsperfcmd,
 			"/start:trace",
 			fmt::format("/output:{}", analysisFile),
@@ -237,7 +237,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	bool result = Commands::subprocessWithInput(inCommand);
 
 	// Shut down the service
-	if (!Commands::subprocessNoOutput({
+	if (!Commands::subprocessMinimalOutput({
 			vsperfcmd,
 			"/shutdown",
 		}))
@@ -270,7 +270,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 
 		Commands::sleep(1.0);
 
-		Commands::subprocessNoOutput({ visualStudio, absAnalysisFile }, devEnvDir);
+		Commands::subprocessMinimalOutput({ visualStudio, absAnalysisFile }, devEnvDir);
 	}
 	else
 	{

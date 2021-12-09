@@ -120,14 +120,10 @@ std::string AppBundlerMacOS::getBundlePath() const
 	const auto& subdirectory = m_bundle.subdirectory();
 #if defined(CHALET_MACOS)
 	if (m_bundle.isMacosAppBundle())
-	{
 		return fmt::format("{}/{}.app/Contents", subdirectory, m_bundle.name());
-	}
 	else
 #endif
-	{
 		return subdirectory;
-	}
 }
 
 /*****************************************************************************/
@@ -135,14 +131,10 @@ std::string AppBundlerMacOS::getExecutablePath() const
 {
 #if defined(CHALET_MACOS)
 	if (m_bundle.isMacosAppBundle())
-	{
 		return fmt::format("{}/MacOS", getBundlePath());
-	}
 	else
 #endif
-	{
 		return m_bundle.subdirectory();
-	}
 }
 
 /*****************************************************************************/
@@ -150,14 +142,10 @@ std::string AppBundlerMacOS::getResourcePath() const
 {
 #if defined(CHALET_MACOS)
 	if (m_bundle.isMacosAppBundle())
-	{
 		return fmt::format("{}/Resources", getBundlePath());
-	}
 	else
 #endif
-	{
 		return m_bundle.subdirectory();
-	}
 }
 
 /*****************************************************************************/
@@ -165,14 +153,10 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 {
 #if defined(CHALET_MACOS)
 	if (m_bundle.isMacosAppBundle())
-	{
 		return fmt::format("{}/Frameworks", getBundlePath());
-	}
 	else
 #endif
-	{
 		return m_bundle.subdirectory();
-	}
 }
 
 /*****************************************************************************/
@@ -238,7 +222,7 @@ bool AppBundlerMacOS::createBundleIcon()
 		if (String::endsWith(".png", icon) && sipsFound)
 		{
 			std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
-			if (!Commands::subprocessNoOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
+			if (!Commands::subprocessMinimalOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
 				return false;
 		}
 		else if (String::endsWith(".icns", icon))

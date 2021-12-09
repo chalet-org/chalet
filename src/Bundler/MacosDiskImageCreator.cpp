@@ -87,10 +87,10 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 		dmgSize = temp + 16;
 	}
 
-	if (!Commands::subprocessNoOutput({ hdiutil, "create", "-megabytes", std::to_string(dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
+	if (!Commands::subprocessMinimalOutput({ hdiutil, "create", "-megabytes", std::to_string(dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
 		return false;
 
-	if (!Commands::subprocessNoOutput({ hdiutil, "attach", tmpDmg }))
+	if (!Commands::subprocessMinimalOutput({ hdiutil, "attach", tmpDmg }))
 		return false;
 
 	const auto& background1x = inDiskImage.background1x();
@@ -144,11 +144,11 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 
 	Commands::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
 
-	if (!Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
+	if (!Commands::subprocessMinimalOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
 		return false;
 
 	std::string outDmgPath = fmt::format("{}/{}.dmg", distributionDirectory, m_diskName);
-	if (!Commands::subprocessNoOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
+	if (!Commands::subprocessMinimalOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
 		return false;
 
 	if (!Commands::removeRecursively(tmpDmg))

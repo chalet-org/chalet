@@ -77,7 +77,7 @@ void WindowsTerminal::initializeCreateProcess()
 {
 #if defined(CHALET_WIN32)
 	auto cmd = Commands::which("rundll32");
-	Commands::subprocessNoOutput({ cmd });
+	Commands::subprocessMinimalOutput({ cmd });
 #endif
 }
 
