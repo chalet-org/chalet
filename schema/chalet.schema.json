@@ -361,7 +361,7 @@
 				}
 			]
 		},
-		"dist-macosDiskImage": {
+		"dist-macos-disk-image": {
 			"type": "object",
 			"description": "Properties to describe a macos disk image (dmg). Implies 'condition: macos'",
 			"additionalProperties": false,
@@ -403,13 +403,13 @@
 					"$ref": "#/definitions/target-description"
 				},
 				"iconSize": {
-					"$ref": "#/definitions/dist-macosDiskImage-iconSize"
+					"$ref": "#/definitions/dist-macos-disk-image-iconSize"
 				},
 				"kind": {
 					"$ref": "#/definitions/dist-kind"
 				},
 				"pathbarVisible": {
-					"$ref": "#/definitions/dist-macosDiskImage-pathbarVisible"
+					"$ref": "#/definitions/dist-macos-disk-image-pathbarVisible"
 				},
 				"positions": {
 					"type": "object",
@@ -469,30 +469,30 @@
 					}
 				},
 				"textSize": {
-					"$ref": "#/definitions/dist-macosDiskImage-textSize"
+					"$ref": "#/definitions/dist-macos-disk-image-textSize"
 				}
 			}
 		},
-		"dist-macosDiskImage-pathbarVisible": {
+		"dist-macos-disk-image-pathbarVisible": {
 			"type": "boolean",
 			"description": "true to display the pathbar (aka breadcrumbs) in the root of the disk image. false to hide it.",
 			"default": false
 		},
-		"dist-macosDiskImage-iconSize": {
+		"dist-macos-disk-image-iconSize": {
 			"type": "integer",
 			"description": "The icon size in the root of the disk image.",
 			"default": 48,
 			"minimum": 16,
 			"maximum": 512
 		},
-		"dist-macosDiskImage-textSize": {
+		"dist-macos-disk-image-textSize": {
 			"type": "integer",
 			"description": "The text size in the root of the disk image.",
 			"default": 12,
 			"minimum": 10,
 			"maximum": 16
 		},
-		"dist-macosDiskImage-background": {
+		"dist-macos-disk-image-background": {
 			"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",
 			"oneOf": [
 				{
@@ -520,7 +520,7 @@
 				}
 			]
 		},
-		"dist-windowsNullsoftInstaller": {
+		"dist-windows-nullsoft-installer": {
 			"type": "object",
 			"description": "Properties to describe an NSIS installer. Implies 'condition: windows'",
 			"additionalProperties": false,
@@ -536,19 +536,19 @@
 					"$ref": "#/definitions/dist-kind"
 				},
 				"nsisScript": {
-					"$ref": "#/definitions/dist-windowsNullsoftInstaller-nsisScript"
+					"$ref": "#/definitions/dist-windows-nullsoft-installer-nsisScript"
 				},
 				"pluginDirs": {
-					"$ref": "#/definitions/dist-windowsNullsoftInstaller-pluginDirs"
+					"$ref": "#/definitions/dist-windows-nullsoft-installer-pluginDirs"
 				}
 			}
 		},
-		"dist-windowsNullsoftInstaller-nsisScript": {
+		"dist-windows-nullsoft-installer-nsisScript": {
 			"type": "string",
 			"description": "Relative path to an NSIS installer script (.nsi) to compile.",
 			"minLength": 1
 		},
-		"dist-windowsNullsoftInstaller-pluginDirs": {
+		"dist-windows-nullsoft-installer-pluginDirs": {
 			"type": "array",
 			"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
 			"uniqueItems": true,
@@ -2302,7 +2302,7 @@
 									}
 								},
 								"then": {
-									"$ref": "#/definitions/dist-macosDiskImage"
+									"$ref": "#/definitions/dist-macos-disk-image"
 								},
 								"else": {
 									"if": {
@@ -2313,7 +2313,7 @@
 										}
 									},
 									"then": {
-										"$ref": "#/definitions/dist-windowsNullsoftInstaller"
+										"$ref": "#/definitions/dist-windows-nullsoft-installer"
 									},
 									"else": {
 										"type": "object",

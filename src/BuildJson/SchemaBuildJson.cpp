@@ -1651,17 +1651,17 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionArchive: return "dist-archive";
 		case Defs::DistributionArchiveInclude: return "dist-archive-include";
 		//
-		case Defs::DistributionMacosDiskImage: return "dist-macosDiskImage";
-		case Defs::DistributionMacosDiskImagePathbarVisible: return "dist-macosDiskImage-pathbarVisible";
-		case Defs::DistributionMacosDiskImageIconSize: return "dist-macosDiskImage-iconSize";
-		case Defs::DistributionMacosDiskImageTextSize: return "dist-macosDiskImage-textSize";
-		case Defs::DistributionMacosDiskImageBackground: return "dist-macosDiskImage-background";
-		case Defs::DistributionMacosDiskImageSize: return "dist-macosDiskImage-size";
-		case Defs::DistributionMacosDiskImagePositions: return "dist-macosDiskImage-positions";
+		case Defs::DistributionMacosDiskImage: return "dist-macos-disk-image";
+		case Defs::DistributionMacosDiskImagePathbarVisible: return "dist-macos-disk-image-pathbarVisible";
+		case Defs::DistributionMacosDiskImageIconSize: return "dist-macos-disk-image-iconSize";
+		case Defs::DistributionMacosDiskImageTextSize: return "dist-macos-disk-image-textSize";
+		case Defs::DistributionMacosDiskImageBackground: return "dist-macos-disk-image-background";
+		case Defs::DistributionMacosDiskImageSize: return "dist-macos-disk-image-size";
+		case Defs::DistributionMacosDiskImagePositions: return "dist-macos-disk-image-positions";
 		//
-		case Defs::DistributionWindowsNullsoftInstaller: return "dist-windowsNullsoftInstaller";
-		case Defs::DistributionWindowsNullsoftInstallerScript: return "dist-windowsNullsoftInstaller-nsisScript";
-		case Defs::DistributionWindowsNullsoftInstallerPluginDirs: return "dist-windowsNullsoftInstaller-pluginDirs";
+		case Defs::DistributionWindowsNullsoftInstaller: return "dist-windows-nullsoft-installer";
+		case Defs::DistributionWindowsNullsoftInstallerScript: return "dist-windows-nullsoft-installer-nsisScript";
+		case Defs::DistributionWindowsNullsoftInstallerPluginDirs: return "dist-windows-nullsoft-installer-pluginDirs";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
