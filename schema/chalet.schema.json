@@ -99,7 +99,7 @@
 		},
 		"dist-configuration": {
 			"type": "string",
-			"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
+			"description": "The name of the build configuration to use.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
 			"minLength": 1,
 			"default": "Release"
 		},
@@ -111,7 +111,7 @@
 		},
 		"dist-bundle": {
 			"type": "object",
-			"description": "Properties to describe an individual distribution target.",
+			"description": "Properties to describe an individual bundle.",
 			"additionalProperties": false,
 			"anyOf": [
 				{
@@ -154,7 +154,7 @@
 				},
 				"linuxDesktopEntry": {
 					"type": "object",
-					"description": "Properties to describe an XDG Desktop Entry. Only one can be defined per distribution target.",
+					"description": "Properties to describe an XDG Desktop Entry.",
 					"additionalProperties": false,
 					"required": [
 						"template"
@@ -176,7 +176,7 @@
 				},
 				"macosBundle": {
 					"type": "object",
-					"description": "Properties to describe the MacOS bundle. Only one can be defined per distribution target.",
+					"description": "Properties to describe the MacOS bundle.",
 					"additionalProperties": false,
 					"required": [
 						"type",
@@ -199,7 +199,7 @@
 							"default": "icon.png"
 						},
 						"infoPropertyList": {
-							"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
+							"description": "The path to a property list (.plist) file, .json file, or the properties themselves to export as a plist defining the bundle.",
 							"oneOf": [
 								{
 									"type": "string",
@@ -254,7 +254,7 @@
 		},
 		"dist-bundle-include": {
 			"type": "array",
-			"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
+			"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {
@@ -265,7 +265,7 @@
 		},
 		"dist-bundle-mainExecutable": {
 			"type": "string",
-			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'targets' array of the distribution target will be chosen as the main executable.",
+			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'buildTargets' array of the bundle will be chosen as the main executable.",
 			"minLength": 1
 		},
 		"dist-bundle-subdirectory": {
@@ -277,7 +277,7 @@
 		"dist-bundle-buildTargets": {
 			"type": "array",
 			"uniqueItems": true,
-			"description": "An array of build target names to include in this distribution target.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
+			"description": "An array of build target names to include in this bundle.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
 			"minItems": 1,
 			"items": {
 				"type": "string",
@@ -2260,7 +2260,7 @@
 			"patternProperties": {
 				"^(([\\w\\-+. ()]+)|(\\$\\{(targetTriple|toolchainName|configuration|architecture|buildDir)\\}))+$": {
 					"type": "object",
-					"description": "A single distribution target or script.",
+					"description": "A single distribution target.",
 					"if": {
 						"properties": {
 							"kind": {
