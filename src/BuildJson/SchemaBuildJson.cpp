@@ -1682,9 +1682,9 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceLocation: return "target-source-location";
 		case Defs::TargetSourceLanguage: return "target-source-language";
 		//
-		case Defs::TargetAbstract: return "abstract-target";
-		case Defs::TargetSourceExecutable: return "executable-target-source";
-		case Defs::TargetSourceLibrary: return "library-target-source";
+		case Defs::TargetAbstract: return "target-abstract";
+		case Defs::TargetSourceExecutable: return "target-source-executable";
+		case Defs::TargetSourceLibrary: return "target-source-library";
 		//
 		case Defs::TargetSourceCxx: return "target-source-cxx";
 		case Defs::TargetSourceCxxCStandard: return "target-source-cxx-cStandard";

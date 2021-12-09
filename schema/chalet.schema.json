@@ -686,7 +686,7 @@
 				"minLength": 1
 			}
 		},
-		"abstract-target": {
+		"target-abstract": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
@@ -713,7 +713,7 @@
 				}
 			}
 		},
-		"executable-target-source": {
+		"target-source-executable": {
 			"type": "object",
 			"additionalProperties": false,
 			"required": [
@@ -776,7 +776,7 @@
 				}
 			}
 		},
-		"library-target-source": {
+		"target-source-library": {
 			"type": "object",
 			"additionalProperties": false,
 			"required": [
@@ -2196,7 +2196,7 @@
 			"description": "A list of abstract build targets",
 			"patternProperties": {
 				"^(\\*|[A-Za-z-_]+)$": {
-					"$ref": "#/definitions/abstract-target",
+					"$ref": "#/definitions/target-abstract",
 					"description": "An abstract build target. '*' is a special target that gets implicitely added to each project."
 				}
 			}
@@ -2355,7 +2355,7 @@
 						}
 					},
 					"then": {
-						"$ref": "#/definitions/executable-target-source"
+						"$ref": "#/definitions/target-source-executable"
 					},
 					"else": {
 						"if": {
@@ -2369,7 +2369,7 @@
 							}
 						},
 						"then": {
-							"$ref": "#/definitions/library-target-source"
+							"$ref": "#/definitions/target-source-library"
 						},
 						"else": {
 							"if": {
@@ -2435,7 +2435,7 @@
 	},
 	"patternProperties": {
 		"^abstracts:(\\*|[A-Za-z-_]+)$": {
-			"$ref": "#/definitions/abstract-target",
+			"$ref": "#/definitions/target-abstract",
 			"description": "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project"
 		},
 		"^searchPaths(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
