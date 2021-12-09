@@ -34,7 +34,7 @@ IDistTarget::IDistTarget(const DistTargetType inType) :
 		case DistTargetType::MacosDiskImage:
 			return std::make_unique<MacosDiskImageTarget>();
 #endif
-#if defined(CHALET_WIN32)
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 		case DistTargetType::WindowsNullsoftInstaller:
 			return std::make_unique<WindowsNullsoftInstallerTarget>();
 #endif

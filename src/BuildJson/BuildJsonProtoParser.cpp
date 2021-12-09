@@ -265,7 +265,7 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 			}
 			else if (String::equals("windowsNullsoftInstaller", val))
 			{
-#if defined(CHALET_WIN32)
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 				type = DistTargetType::WindowsNullsoftInstaller;
 #else
 				continue;

@@ -227,8 +227,8 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 #endif
 	whichAdd(tools, kKeyLdd);
 	whichAdd(tools, kKeyLua);
-#if defined(CHALET_WIN32)
-	whichAdd(tools, kKeyMakeNsis, HostPlatform::Windows);
+#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
+	whichAdd(tools, kKeyMakeNsis);
 #endif
 
 #if defined(CHALET_MACOS)

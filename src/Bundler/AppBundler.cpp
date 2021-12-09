@@ -10,6 +10,7 @@
 #include "Bundler/MacosDiskImageCreator.hpp"
 #include "Bundler/WindowsNullsoftInstallerRunner.hpp"
 #include "Bundler/ZipArchiver.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -160,6 +161,18 @@ bool AppBundler::run(const DistTarget& inTarget)
 	}
 	else if (inTarget->isWindowsNullsoftInstaller())
 	{
+#if defined(CHALET_LINUX)
+		BuildState* state = getBuildState(m_prototype.anyConfiguration());
+		if (state == nullptr)
+		{
+			Diagnostic::error("No associated build found for target: {}", inTarget->name());
+			return false;
+		}
+
+		if (!state->environment->isMingw())
+			return true;
+#endif
+
 		if (!runWindowsNullsoftInstallerTarget(static_cast<const WindowsNullsoftInstallerTarget&>(*inTarget)))
 			return false;
 	}

@@ -193,6 +193,7 @@
 		},
 		"chalet-${targetTriple}-installer": {
 			"kind": "archive",
+			"condition": "windows",
 			"include": [
 				"chalet-windows-installer.exe",
 				"LICENSE.txt",
