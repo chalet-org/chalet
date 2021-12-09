@@ -393,7 +393,7 @@
 					"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
 					"additionalProperties": false,
 					"patternProperties": {
-						"^(([\\w\\-+. ()]*)|(\\$\\{(targetTriple|toolchainName|configuration|architecture|buildDir)\\}))+$": {
+						"^[\\w\\-+. ()]{2,}$": {
 							"type": "object",
 							"description": "An icon position in the root disk image.",
 							"additionalProperties": false,
@@ -2258,7 +2258,7 @@
 			"additionalProperties": false,
 			"description": "A sequential list of distribution targets to be created during the bundle phase.",
 			"patternProperties": {
-				"^(([\\w\\-+. ()]*)|(\\$\\{(targetTriple|toolchainName|configuration|architecture|buildDir)\\}))+$": {
+				"^(([\\w\\-+. ()]+)|(\\$\\{(targetTriple|toolchainName|configuration|architecture|buildDir)\\}))+$": {
 					"type": "object",
 					"description": "A single distribution target or script.",
 					"if": {
