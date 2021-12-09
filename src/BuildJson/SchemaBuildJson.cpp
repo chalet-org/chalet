@@ -1632,34 +1632,36 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::ConfigurationStripSymbols: return "configuration-stripSymbols";
 		case Defs::ConfigurationSanitize: return "configuration-sanitize";
 		//
-		case Defs::DistributionKind: return "distribution-kind";
-		case Defs::DistributionConfiguration: return "distribution-configuration";
-		case Defs::DistributionCondition: return "distribution-condition";
+		case Defs::DistributionKind: return "dist-kind";
+		case Defs::DistributionConfiguration: return "dist-configuration";
+		case Defs::DistributionCondition: return "dist-condition";
 		//
-		case Defs::DistributionBundle: return "distribution-bundle";
-		case Defs::DistributionBundleInclude: return "distribution-bundle-include";
-		case Defs::DistributionBundleExclude: return "distribution-bundle-exclude";
-		case Defs::DistributionBundleMainExecutable: return "distribution-bundle-mainExecutable";
-		case Defs::DistributionBundleOutputDirectory: return "distribution-bundle-subdirectory";
-		case Defs::DistributionBundleBuildTargets: return "distribution-bundle-buildTargets";
-		case Defs::DistributionBundleIncludeDependentSharedLibraries: return "distribution-bundle-includeDependentSharedLibraries";
-		case Defs::DistributionBundleMacOSBundle: return "distribution-bundle-macosBundle";
-		case Defs::DistributionBundleLinuxDesktopEntry: return "distribution-bundle-linuxDesktopEntry";
+		case Defs::DistributionBundle: return "dist-bundle";
+		case Defs::DistributionBundleInclude: return "dist-bundle-include";
+		case Defs::DistributionBundleExclude: return "dist-bundle-exclude";
+		case Defs::DistributionBundleMainExecutable: return "dist-bundle-mainExecutable";
+		case Defs::DistributionBundleOutputDirectory: return "dist-bundle-subdirectory";
+		case Defs::DistributionBundleBuildTargets: return "dist-bundle-buildTargets";
+		case Defs::DistributionBundleIncludeDependentSharedLibraries: return "dist-bundle-includeDependentSharedLibraries";
+		case Defs::DistributionBundleMacOSBundle: return "dist-bundle-macosBundle";
+		case Defs::DistributionBundleLinuxDesktopEntry: return "dist-bundle-linuxDesktopEntry";
 		//
-		case Defs::DistributionArchive: return "distribution-archive";
-		case Defs::DistributionArchiveInclude: return "distribution-archive-include";
+		case Defs::DistributionScript: return "dist-script";
 		//
-		case Defs::DistributionMacosDiskImage: return "distribution-macosDiskImage";
-		case Defs::DistributionMacosDiskImagePathbarVisible: return "distribution-macosDiskImage-pathbarVisible";
-		case Defs::DistributionMacosDiskImageIconSize: return "distribution-macosDiskImage-iconSize";
-		case Defs::DistributionMacosDiskImageTextSize: return "distribution-macosDiskImage-textSize";
-		case Defs::DistributionMacosDiskImageBackground: return "distribution-macosDiskImage-background";
-		case Defs::DistributionMacosDiskImageSize: return "distribution-macosDiskImage-size";
-		case Defs::DistributionMacosDiskImagePositions: return "distribution-macosDiskImage-positions";
+		case Defs::DistributionArchive: return "dist-archive";
+		case Defs::DistributionArchiveInclude: return "dist-archive-include";
 		//
-		case Defs::DistributionWindowsNullsoftInstaller: return "distribution-windowsNullsoftInstaller";
-		case Defs::DistributionWindowsNullsoftInstallerScript: return "distribution-windowsNullsoftInstaller-nsisScript";
-		case Defs::DistributionWindowsNullsoftInstallerPluginDirs: return "distribution-windowsNullsoftInstaller-pluginDirs";
+		case Defs::DistributionMacosDiskImage: return "dist-macosDiskImage";
+		case Defs::DistributionMacosDiskImagePathbarVisible: return "dist-macosDiskImage-pathbarVisible";
+		case Defs::DistributionMacosDiskImageIconSize: return "dist-macosDiskImage-iconSize";
+		case Defs::DistributionMacosDiskImageTextSize: return "dist-macosDiskImage-textSize";
+		case Defs::DistributionMacosDiskImageBackground: return "dist-macosDiskImage-background";
+		case Defs::DistributionMacosDiskImageSize: return "dist-macosDiskImage-size";
+		case Defs::DistributionMacosDiskImagePositions: return "dist-macosDiskImage-positions";
+		//
+		case Defs::DistributionWindowsNullsoftInstaller: return "dist-windowsNullsoftInstaller";
+		case Defs::DistributionWindowsNullsoftInstallerScript: return "dist-windowsNullsoftInstaller-nsisScript";
+		case Defs::DistributionWindowsNullsoftInstallerPluginDirs: return "dist-windowsNullsoftInstaller-pluginDirs";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
@@ -1713,7 +1715,6 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxWindowsEntryPoint: return "target-source-cxx-windowsEntryPoint";
 		//
 		case Defs::TargetScript: return "target-script";
-		case Defs::DistributionScript: return "distribution-script";
 		case Defs::TargetScriptScript: return "target-script-script";
 		//
 		case Defs::TargetCMake: return "target-cmake";

@@ -85,7 +85,7 @@
 				]
 			}
 		},
-		"distribution-kind": {
+		"dist-kind": {
 			"type": "string",
 			"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
 			"minLength": 1,
@@ -97,19 +97,19 @@
 				"windowsNullsoftInstaller"
 			]
 		},
-		"distribution-configuration": {
+		"dist-configuration": {
 			"type": "string",
 			"description": "The name of the build configuration to use for this distribution target.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
 			"minLength": 1,
 			"default": "Release"
 		},
-		"distribution-condition": {
+		"dist-condition": {
 			"type": "string",
 			"description": "A rule describing when to include this target in the distribution.",
 			"minLength": 1,
 			"pattern": "^(!?(windows|macos|linux)\\b)$"
 		},
-		"distribution-bundle": {
+		"dist-bundle": {
 			"type": "object",
 			"description": "Properties to describe an individual distribution target.",
 			"additionalProperties": false,
@@ -129,28 +129,28 @@
 			],
 			"properties": {
 				"buildTargets": {
-					"$ref": "#/definitions/distribution-bundle-buildTargets"
+					"$ref": "#/definitions/dist-bundle-buildTargets"
 				},
 				"condition": {
-					"$ref": "#/definitions/distribution-condition"
+					"$ref": "#/definitions/dist-condition"
 				},
 				"configuration": {
-					"$ref": "#/definitions/distribution-configuration"
+					"$ref": "#/definitions/dist-configuration"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
 				"exclude": {
-					"$ref": "#/definitions/distribution-bundle-exclude"
+					"$ref": "#/definitions/dist-bundle-exclude"
 				},
 				"include": {
-					"$ref": "#/definitions/distribution-bundle-include"
+					"$ref": "#/definitions/dist-bundle-include"
 				},
 				"includeDependentSharedLibraries": {
-					"$ref": "#/definitions/distribution-bundle-includeDependentSharedLibraries"
+					"$ref": "#/definitions/dist-bundle-includeDependentSharedLibraries"
 				},
 				"kind": {
-					"$ref": "#/definitions/distribution-kind"
+					"$ref": "#/definitions/dist-kind"
 				},
 				"linuxDesktopEntry": {
 					"type": "object",
@@ -228,22 +228,22 @@
 					}
 				},
 				"mainExecutable": {
-					"$ref": "#/definitions/distribution-bundle-mainExecutable"
+					"$ref": "#/definitions/dist-bundle-mainExecutable"
 				},
 				"subdirectory": {
-					"$ref": "#/definitions/distribution-bundle-subdirectory"
+					"$ref": "#/definitions/dist-bundle-subdirectory"
 				}
 			},
 			"patternProperties": {
 				"^include(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/distribution-bundle-include"
+					"$ref": "#/definitions/dist-bundle-include"
 				},
 				"^exclude(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/distribution-bundle-exclude"
+					"$ref": "#/definitions/dist-bundle-exclude"
 				}
 			}
 		},
-		"distribution-bundle-exclude": {
+		"dist-bundle-exclude": {
 			"type": "array",
 			"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
 			"uniqueItems": true,
@@ -252,7 +252,7 @@
 				"type": "string"
 			}
 		},
-		"distribution-bundle-include": {
+		"dist-bundle-include": {
 			"type": "array",
 			"description": "A list of files or folders to copy into the output directory of the distribution target.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
 			"uniqueItems": true,
@@ -263,18 +263,18 @@
 				"minLength": 1
 			}
 		},
-		"distribution-bundle-mainExecutable": {
+		"dist-bundle-mainExecutable": {
 			"type": "string",
 			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'targets' array of the distribution target will be chosen as the main executable.",
 			"minLength": 1
 		},
-		"distribution-bundle-subdirectory": {
+		"dist-bundle-subdirectory": {
 			"type": "string",
 			"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
 			"minLength": 1,
 			"default": "dist"
 		},
-		"distribution-bundle-buildTargets": {
+		"dist-bundle-buildTargets": {
 			"type": "array",
 			"uniqueItems": true,
 			"description": "An array of build target names to include in this distribution target.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
@@ -286,23 +286,23 @@
 				"pattern": "^[\\w\\-+.]{3,}$"
 			}
 		},
-		"distribution-bundle-includeDependentSharedLibraries": {
+		"dist-bundle-includeDependentSharedLibraries": {
 			"type": "boolean",
 			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
 			"default": true
 		},
-		"distribution-script": {
+		"dist-script": {
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
 				"condition": {
-					"$ref": "#/definitions/distribution-condition"
+					"$ref": "#/definitions/dist-condition"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
 				"kind": {
-					"$ref": "#/definitions/distribution-kind"
+					"$ref": "#/definitions/dist-kind"
 				},
 				"script": {
 					"$ref": "#/definitions/target-script-script"
@@ -314,7 +314,7 @@
 				}
 			}
 		},
-		"distribution-archive": {
+		"dist-archive": {
 			"type": "object",
 			"description": "Properties to describe an individual distribution archive.",
 			"additionalProperties": false,
@@ -324,25 +324,25 @@
 			],
 			"properties": {
 				"condition": {
-					"$ref": "#/definitions/distribution-condition"
+					"$ref": "#/definitions/dist-condition"
 				},
 				"description": {
 					"$ref": "#/definitions/target-description"
 				},
 				"include": {
-					"$ref": "#/definitions/distribution-archive-include"
+					"$ref": "#/definitions/dist-archive-include"
 				},
 				"kind": {
-					"$ref": "#/definitions/distribution-kind"
+					"$ref": "#/definitions/dist-kind"
 				}
 			},
 			"patternProperties": {
 				"^include(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/distribution-archive-include"
+					"$ref": "#/definitions/dist-archive-include"
 				}
 			}
 		},
-		"distribution-archive-include": {
+		"dist-archive-include": {
 			"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
 			"oneOf": [
 				{
@@ -361,7 +361,7 @@
 				}
 			]
 		},
-		"distribution-macosDiskImage": {
+		"dist-macosDiskImage": {
 			"type": "object",
 			"description": "Properties to describe a macos disk image (dmg). Implies 'condition: macos'",
 			"additionalProperties": false,
@@ -403,13 +403,13 @@
 					"$ref": "#/definitions/target-description"
 				},
 				"iconSize": {
-					"$ref": "#/definitions/distribution-macosDiskImage-iconSize"
+					"$ref": "#/definitions/dist-macosDiskImage-iconSize"
 				},
 				"kind": {
-					"$ref": "#/definitions/distribution-kind"
+					"$ref": "#/definitions/dist-kind"
 				},
 				"pathbarVisible": {
-					"$ref": "#/definitions/distribution-macosDiskImage-pathbarVisible"
+					"$ref": "#/definitions/dist-macosDiskImage-pathbarVisible"
 				},
 				"positions": {
 					"type": "object",
@@ -469,30 +469,30 @@
 					}
 				},
 				"textSize": {
-					"$ref": "#/definitions/distribution-macosDiskImage-textSize"
+					"$ref": "#/definitions/dist-macosDiskImage-textSize"
 				}
 			}
 		},
-		"distribution-macosDiskImage-pathbarVisible": {
+		"dist-macosDiskImage-pathbarVisible": {
 			"type": "boolean",
 			"description": "true to display the pathbar (aka breadcrumbs) in the root of the disk image. false to hide it.",
 			"default": false
 		},
-		"distribution-macosDiskImage-iconSize": {
+		"dist-macosDiskImage-iconSize": {
 			"type": "integer",
 			"description": "The icon size in the root of the disk image.",
 			"default": 48,
 			"minimum": 16,
 			"maximum": 512
 		},
-		"distribution-macosDiskImage-textSize": {
+		"dist-macosDiskImage-textSize": {
 			"type": "integer",
 			"description": "The text size in the root of the disk image.",
 			"default": 12,
 			"minimum": 10,
 			"maximum": 16
 		},
-		"distribution-macosDiskImage-background": {
+		"dist-macosDiskImage-background": {
 			"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",
 			"oneOf": [
 				{
@@ -520,7 +520,7 @@
 				}
 			]
 		},
-		"distribution-windowsNullsoftInstaller": {
+		"dist-windowsNullsoftInstaller": {
 			"type": "object",
 			"description": "Properties to describe an NSIS installer. Implies 'condition: windows'",
 			"additionalProperties": false,
@@ -533,22 +533,22 @@
 					"$ref": "#/definitions/target-description"
 				},
 				"kind": {
-					"$ref": "#/definitions/distribution-kind"
+					"$ref": "#/definitions/dist-kind"
 				},
 				"nsisScript": {
-					"$ref": "#/definitions/distribution-windowsNullsoftInstaller-nsisScript"
+					"$ref": "#/definitions/dist-windowsNullsoftInstaller-nsisScript"
 				},
 				"pluginDirs": {
-					"$ref": "#/definitions/distribution-windowsNullsoftInstaller-pluginDirs"
+					"$ref": "#/definitions/dist-windowsNullsoftInstaller-pluginDirs"
 				}
 			}
 		},
-		"distribution-windowsNullsoftInstaller-nsisScript": {
+		"dist-windowsNullsoftInstaller-nsisScript": {
 			"type": "string",
 			"description": "Relative path to an NSIS installer script (.nsi) to compile.",
 			"minLength": 1
 		},
-		"distribution-windowsNullsoftInstaller-pluginDirs": {
+		"dist-windowsNullsoftInstaller-pluginDirs": {
 			"type": "array",
 			"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
 			"uniqueItems": true,
@@ -2269,7 +2269,7 @@
 						}
 					},
 					"then": {
-						"$ref": "#/definitions/distribution-bundle"
+						"$ref": "#/definitions/dist-bundle"
 					},
 					"else": {
 						"if": {
@@ -2280,7 +2280,7 @@
 							}
 						},
 						"then": {
-							"$ref": "#/definitions/distribution-script"
+							"$ref": "#/definitions/dist-script"
 						},
 						"else": {
 							"if": {
@@ -2291,7 +2291,7 @@
 								}
 							},
 							"then": {
-								"$ref": "#/definitions/distribution-archive"
+								"$ref": "#/definitions/dist-archive"
 							},
 							"else": {
 								"if": {
@@ -2302,7 +2302,7 @@
 									}
 								},
 								"then": {
-									"$ref": "#/definitions/distribution-macosDiskImage"
+									"$ref": "#/definitions/dist-macosDiskImage"
 								},
 								"else": {
 									"if": {
@@ -2313,7 +2313,7 @@
 										}
 									},
 									"then": {
-										"$ref": "#/definitions/distribution-windowsNullsoftInstaller"
+										"$ref": "#/definitions/dist-windowsNullsoftInstaller"
 									},
 									"else": {
 										"type": "object",
