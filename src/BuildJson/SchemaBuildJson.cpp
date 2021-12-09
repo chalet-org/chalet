@@ -194,7 +194,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		})json"_ojson;
 		macosInfoPropertyList[kOneOf][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
 
-		defs[Defs::DistributionBundleMacOSBundle] = R"json({
+		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle] = R"json({
 			"type": "object",
 			"description": "Properties to describe the MacOS bundle. Only one can be defined per distribution target.",
 			"additionalProperties": false,
@@ -204,9 +204,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			],
 			"properties": {}
 		})json"_ojson;
-		defs[Defs::DistributionBundleMacOSBundle][kProperties]["type"] = std::move(macosBundleType);
-		defs[Defs::DistributionBundleMacOSBundle][kProperties]["icon"] = std::move(macosBundleIcon);
-		defs[Defs::DistributionBundleMacOSBundle][kProperties]["infoPropertyList"] = std::move(macosInfoPropertyList);
+		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][kProperties]["type"] = std::move(macosBundleType);
+		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][kProperties]["icon"] = std::move(macosBundleIcon);
+		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][kProperties]["infoPropertyList"] = std::move(macosInfoPropertyList);
 	}
 
 	{
@@ -224,7 +224,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"default": "icon.png"
 		})json"_ojson;
 
-		defs[Defs::DistributionBundleLinuxDesktopEntry] = R"json({
+		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry] = R"json({
 			"type": "object",
 			"description": "Properties to describe an XDG Desktop Entry. Only one can be defined per distribution target.",
 			"additionalProperties": false,
@@ -233,8 +233,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			],
 			"properties": {}
 		})json"_ojson;
-		defs[Defs::DistributionBundleLinuxDesktopEntry][kProperties]["template"] = std::move(linuxDesktopEntryTemplate);
-		defs[Defs::DistributionBundleLinuxDesktopEntry][kProperties]["icon"] = std::move(linuxDesktopEntryIcon);
+		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][kProperties]["template"] = std::move(linuxDesktopEntryTemplate);
+		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][kProperties]["icon"] = std::move(linuxDesktopEntryIcon);
 	}
 
 	defs[Defs::DistributionBundleMainExecutable] = R"json({
@@ -337,7 +337,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		]
 	})json"_ojson;
 
-	defs[Defs::DistributionMacosDiskImageSize] = R"json({
+	m_nonIndexedDefs[Defs::DistributionMacosDiskImageSize] = R"json({
 		"type": "object",
 		"description": "The dimensions of the root of the disk image.",
 		"additionalProperties": false,
@@ -363,12 +363,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::DistributionMacosDiskImagePositions] = R"json({
+	m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions] = R"json({
 		"type": "object",
 		"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
 		"additionalProperties": false
 	})json"_ojson;
-	defs[Defs::DistributionMacosDiskImagePositions][kPatternProperties][kPatternDistributionName] = R"json({
+	m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions][kPatternProperties][kPatternDistributionName] = R"json({
 		"type": "object",
 		"description": "An icon position in the root disk image.",
 		"additionalProperties": false,
@@ -566,15 +566,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": "c11"
 	})json"_ojson;
 
-	defs[Defs::SourceTargetCxxCompileOptions] = R"json({
-		"type": "object",
-		"additionalProperties": false,
-		"description": "Addtional options (per compiler type) to add during the compilation step."
-	})json"_ojson;
-	defs[Defs::SourceTargetCxxCompileOptions][kPatternProperties][kPatternCompilers] = R"json({
-		"type": "string",
-		"minLength": 1
-	})json"_ojson;
+	{
+		m_nonIndexedDefs[Defs::SourceTargetCxxCompileOptions] = R"json({
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Addtional options (per compiler type) to add during the compilation step."
+		})json"_ojson;
+		m_nonIndexedDefs[Defs::SourceTargetCxxCompileOptions][kPatternProperties][kPatternCompilers] = R"json({
+			"type": "string",
+			"minLength": 1
+		})json"_ojson;
+	}
 
 	defs[Defs::SourceTargetCxxCppStandard] = R"json({
 		"type": "string",
@@ -623,15 +625,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::SourceTargetCxxLinkerOptions] = R"json({
-		"type": "object",
-		"additionalProperties": false,
-		"description": "Addtional options (per compiler type) to add during the linking step."
-	})json"_ojson;
-	defs[Defs::SourceTargetCxxLinkerOptions][kPatternProperties][kPatternCompilers] = R"json({
-		"type": "string",
-		"minLength": 1
-	})json"_ojson;
+	{
+		m_nonIndexedDefs[Defs::SourceTargetCxxLinkerOptions] = R"json({
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Addtional options (per compiler type) to add during the linking step."
+		})json"_ojson;
+		m_nonIndexedDefs[Defs::SourceTargetCxxLinkerOptions][kPatternProperties][kPatternCompilers] = R"json({
+			"type": "string",
+			"minLength": 1
+		})json"_ojson;
+	}
 
 	defs[Defs::SourceTargetCxxLinks] = R"json({
 		"type": "array",
@@ -1328,8 +1332,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionTarget[kProperties]["include"] = getDefinition(Defs::DistributionBundleInclude);
 		distributionTarget[kProperties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionBundleIncludeDependentSharedLibraries);
 		distributionTarget[kProperties]["kind"] = getDefinition(Defs::DistributionKind);
-		distributionTarget[kProperties]["linuxDesktopEntry"] = defs[Defs::DistributionBundleLinuxDesktopEntry];
-		distributionTarget[kProperties]["macosBundle"] = defs[Defs::DistributionBundleMacOSBundle];
+		distributionTarget[kProperties]["linuxDesktopEntry"] = m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry];
+		distributionTarget[kProperties]["macosBundle"] = m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle];
 		distributionTarget[kProperties]["mainExecutable"] = getDefinition(Defs::DistributionBundleMainExecutable);
 		distributionTarget[kProperties]["subdirectory"] = getDefinition(Defs::DistributionBundleOutputDirectory);
 		distributionTarget[kPatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionBundleInclude);
@@ -1371,8 +1375,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionMacosDiskImage[kProperties]["iconSize"] = getDefinition(Defs::DistributionMacosDiskImageIconSize);
 		distributionMacosDiskImage[kProperties]["kind"] = getDefinition(Defs::DistributionKind);
 		distributionMacosDiskImage[kProperties]["pathbarVisible"] = getDefinition(Defs::DistributionMacosDiskImagePathbarVisible);
-		distributionMacosDiskImage[kProperties]["positions"] = defs[Defs::DistributionMacosDiskImagePositions];
-		distributionMacosDiskImage[kProperties]["size"] = defs[Defs::DistributionMacosDiskImageSize];
+		distributionMacosDiskImage[kProperties]["positions"] = m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions];
+		distributionMacosDiskImage[kProperties]["size"] = m_nonIndexedDefs[Defs::DistributionMacosDiskImageSize];
 		distributionMacosDiskImage[kProperties]["textSize"] = getDefinition(Defs::DistributionMacosDiskImageTextSize);
 		defs[Defs::DistributionMacosDiskImage] = std::move(distributionMacosDiskImage);
 	}
@@ -1432,7 +1436,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"additionalProperties": false
 		})json"_ojson;
 		sourceTargetCxx[kProperties]["cStandard"] = getDefinition(Defs::SourceTargetCxxCStandard);
-		sourceTargetCxx[kProperties]["compileOptions"] = getDefinition(Defs::SourceTargetCxxCompileOptions);
+		sourceTargetCxx[kProperties]["compileOptions"] = m_nonIndexedDefs[Defs::SourceTargetCxxCompileOptions];
 		sourceTargetCxx[kProperties]["cppConcepts"] = getDefinition(Defs::SourceTargetCxxCppConcepts);
 		sourceTargetCxx[kProperties]["cppCoroutines"] = getDefinition(Defs::SourceTargetCxxCppCoroutines);
 		sourceTargetCxx[kProperties]["cppModules"] = getDefinition(Defs::SourceTargetCxxCppModules);
@@ -1442,7 +1446,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kProperties]["includeDirs"] = getDefinitionwithCompilerOptions(Defs::SourceTargetCxxIncludeDirs);
 		sourceTargetCxx[kProperties]["libDirs"] = getDefinitionwithCompilerOptions(Defs::SourceTargetCxxLibDirs);
 		sourceTargetCxx[kProperties]["linkerScript"] = getDefinition(Defs::SourceTargetCxxLinkerScript);
-		sourceTargetCxx[kProperties]["linkerOptions"] = getDefinition(Defs::SourceTargetCxxLinkerOptions);
+		sourceTargetCxx[kProperties]["linkerOptions"] = m_nonIndexedDefs[Defs::SourceTargetCxxLinkerOptions];
 		sourceTargetCxx[kProperties]["links"] = getDefinitionwithCompilerOptions(Defs::SourceTargetCxxLinks);
 		sourceTargetCxx[kProperties]["macosFrameworkPaths"] = getDefinition(Defs::SourceTargetCxxMacOsFrameworkPaths);
 		sourceTargetCxx[kProperties]["macosFrameworks"] = getDefinition(Defs::SourceTargetCxxMacOsFrameworks);
@@ -1684,12 +1688,10 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::SourceTargetCxx: return "source-target-cxx";
 		case Defs::SourceTargetCxxCStandard: return "source-target-cxx-cStandard";
 		case Defs::SourceTargetCxxCppStandard: return "source-target-cxx-cppStandard";
-		case Defs::SourceTargetCxxCompileOptions: return "source-target-cxx-compileOptions";
 		case Defs::SourceTargetCxxDefines: return "source-target-cxx-defines";
 		case Defs::SourceTargetCxxIncludeDirs: return "source-target-cxx-includeDirs";
 		case Defs::SourceTargetCxxLibDirs: return "source-target-cxx-libDirs";
 		case Defs::SourceTargetCxxLinkerScript: return "source-target-cxx-linkerScript";
-		case Defs::SourceTargetCxxLinkerOptions: return "source-target-cxx-linkerOptions";
 		case Defs::SourceTargetCxxLinks: return "source-target-cxx-links";
 		case Defs::SourceTargetCxxMacOsFrameworkPaths: return "source-target-cxx-macosFrameworkPaths";
 		case Defs::SourceTargetCxxMacOsFrameworks: return "source-target-cxx-macosFrameworks";

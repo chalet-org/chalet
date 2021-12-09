@@ -291,81 +291,6 @@
 			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
 			"default": true
 		},
-		"distribution-bundle-macosBundle": {
-			"type": "object",
-			"description": "Properties to describe the MacOS bundle. Only one can be defined per distribution target.",
-			"additionalProperties": false,
-			"required": [
-				"type",
-				"infoPropertyList"
-			],
-			"properties": {
-				"type": {
-					"type": "string",
-					"description": "The MacOS bundle type (only .app is supported currently)",
-					"minLength": 1,
-					"enum": [
-						"app"
-					],
-					"default": "app"
-				},
-				"icon": {
-					"type": "string",
-					"description": "The path to a MacOS bundle icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
-					"minLength": 1,
-					"default": "icon.png"
-				},
-				"infoPropertyList": {
-					"description": "The path to a .plist file, property list .json file, or an object of properties to export as a plist defining the distribution target.",
-					"oneOf": [
-						{
-							"type": "string",
-							"minLength": 1,
-							"default": "Info.plist.json"
-						},
-						{
-							"type": "object",
-							"default": {
-								"CFBundleDevelopmentRegion": "en-US",
-								"CFBundleDisplayName": "${name}",
-								"CFBundleExecutable": "${mainExecutable}",
-								"CFBundleIconFile": "${icon}",
-								"CFBundleIdentifier": "com.developer.application",
-								"CFBundleInfoDictionaryVersion": "6.0",
-								"CFBundleName": "${bundleName}",
-								"CFBundlePackageType": "APPL",
-								"CFBundleShortVersionString": "${version}",
-								"CFBundleVersion": "${version}",
-								"CFBundleSignature": "????",
-								"LSMinimumSystemVersion": "10.8"
-							}
-						}
-					]
-				}
-			}
-		},
-		"distribution-bundle-linuxDesktopEntry": {
-			"type": "object",
-			"description": "Properties to describe an XDG Desktop Entry. Only one can be defined per distribution target.",
-			"additionalProperties": false,
-			"required": [
-				"template"
-			],
-			"properties": {
-				"template": {
-					"type": "string",
-					"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
-					"minLength": 1,
-					"default": "app.desktop"
-				},
-				"icon": {
-					"type": "string",
-					"description": "The location to an icon to use with the XDG Desktop Entry (PNG 256x256 is recommended)",
-					"minLength": 1,
-					"default": "icon.png"
-				}
-			}
-		},
 		"distribution-archive": {
 			"type": "object",
 			"description": "Properties to describe an individual distribution archive.",
@@ -571,63 +496,6 @@
 					}
 				}
 			]
-		},
-		"distribution-macosDiskImage-size": {
-			"type": "object",
-			"description": "The dimensions of the root of the disk image.",
-			"additionalProperties": false,
-			"required": [
-				"width",
-				"height"
-			],
-			"properties": {
-				"width": {
-					"type": "integer",
-					"description": "The width of the disk image",
-					"default": 512,
-					"minimum": 128,
-					"maximum": 32000
-				},
-				"height": {
-					"type": "integer",
-					"description": "The height of the disk image",
-					"default": 342,
-					"minimum": 128,
-					"maximum": 32000
-				}
-			}
-		},
-		"distribution-macosDiskImage-positions": {
-			"type": "object",
-			"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
-			"additionalProperties": false,
-			"patternProperties": {
-				"^(([\\w\\-+. ()]*)|(\\$\\{(targetTriple|toolchainName|configuration|architecture|buildDir)\\}))+$": {
-					"type": "object",
-					"description": "An icon position in the root disk image.",
-					"additionalProperties": false,
-					"required": [
-						"x",
-						"y"
-					],
-					"properties": {
-						"x": {
-							"type": "integer",
-							"description": "The x position of the path's icon",
-							"default": 80,
-							"minimum": -1024,
-							"maximum": 32000
-						},
-						"y": {
-							"type": "integer",
-							"description": "The x position of the path's icon",
-							"default": 80,
-							"minimum": -1024,
-							"maximum": 32000
-						}
-					}
-				}
-			}
 		},
 		"distribution-windowsNullsoftInstaller": {
 			"type": "object",
@@ -1067,7 +935,15 @@
 					"$ref": "#/definitions/source-target-cxx-cStandard"
 				},
 				"compileOptions": {
-					"$ref": "#/definitions/source-target-cxx-compileOptions"
+					"type": "object",
+					"additionalProperties": false,
+					"description": "Addtional options (per compiler type) to add during the compilation step.",
+					"patternProperties": {
+						"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+							"type": "string",
+							"minLength": 1
+						}
+					}
 				},
 				"cppConcepts": {
 					"$ref": "#/definitions/source-target-cxx-cppConcepts"
@@ -1139,7 +1015,15 @@
 					"$ref": "#/definitions/source-target-cxx-linkerScript"
 				},
 				"linkerOptions": {
-					"$ref": "#/definitions/source-target-cxx-linkerOptions"
+					"type": "object",
+					"additionalProperties": false,
+					"description": "Addtional options (per compiler type) to add during the linking step.",
+					"patternProperties": {
+						"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+							"type": "string",
+							"minLength": 1
+						}
+					}
 				},
 				"links": {
 					"oneOf": [
@@ -1283,17 +1167,6 @@
 			"minLength": 1,
 			"default": "c++17"
 		},
-		"source-target-cxx-compileOptions": {
-			"type": "object",
-			"additionalProperties": false,
-			"description": "Addtional options (per compiler type) to add during the compilation step.",
-			"patternProperties": {
-				"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
-					"type": "string",
-					"minLength": 1
-				}
-			}
-		},
 		"source-target-cxx-defines": {
 			"type": "array",
 			"uniqueItems": true,
@@ -1328,17 +1201,6 @@
 			"type": "string",
 			"description": "An LD linker script path (.ld file) to pass to the linker command",
 			"minLength": 1
-		},
-		"source-target-cxx-linkerOptions": {
-			"type": "object",
-			"additionalProperties": false,
-			"description": "Addtional options (per compiler type) to add during the linking step.",
-			"patternProperties": {
-				"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
-					"type": "string",
-					"minLength": 1
-				}
-			}
 		},
 		"source-target-cxx-links": {
 			"type": "array",

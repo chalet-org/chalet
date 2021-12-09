@@ -165,6 +165,7 @@ private:
 	const std::string kPatternCompilers;
 
 	DefinitionMap m_defs;
+	DefinitionMap m_nonIndexedDefs;
 	bool m_useRefs = true;
 };
 }
