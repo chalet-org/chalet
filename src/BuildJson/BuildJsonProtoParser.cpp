@@ -302,6 +302,9 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 				return false;
 		}
 
+		if (!target->includeInDistribution())
+			continue;
+
 		m_prototype.distribution.emplace_back(std::move(target));
 	}
 
@@ -311,7 +314,7 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(inNode))
+	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
 	const std::string key{ "script" };
@@ -335,7 +338,7 @@ bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, 
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(inNode))
+	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
@@ -353,7 +356,7 @@ bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarg
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(inNode))
+	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "configuration"))
@@ -395,8 +398,6 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 		if (std::string val; m_chaletJson.assignFromKey(val, linuxDesktopEntry, "icon"))
 			outTarget.setLinuxDesktopEntryIcon(std::move(val));
 	}
-
-	return true;
 #elif defined(CHALET_MACOS)
 	const std::string kMacosBundle{ "macosBundle" };
 	if (inNode.contains(kMacosBundle))
@@ -425,14 +426,9 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 			}
 		}
 	}
+#endif
 
 	return true;
-#elif defined(CHALET_WIN32)
-	return true;
-#else
-	#error "Unrecognized platform"
-	return false;
-#endif
 }
 
 /*****************************************************************************/
@@ -589,12 +585,14 @@ bool BuildJsonProtoParser::parseGitDependency(GitDependency& outDependency, cons
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseTargetCondition(const Json& inNode) const
+bool BuildJsonProtoParser::parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const
 {
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
-		return conditionIsValid(val);
+	{
+		outTarget.setIncludeInDistribution(conditionIsValid(val));
+	}
 
-	return true;
+	return outTarget.includeInDistribution();
 }
 
 /*****************************************************************************/

@@ -16,6 +16,7 @@ struct CommandLineInputs;
 struct StatePrototype;
 struct JsonFile;
 struct GitDependency;
+struct IDistTarget;
 struct BundleTarget;
 struct ScriptDistTarget;
 struct BundleArchiveTarget;
@@ -48,7 +49,7 @@ private:
 
 	bool parseExternalDependencies(const Json& inNode) const;
 	bool parseGitDependency(GitDependency& outDependency, const Json& inNode) const;
-	bool parseTargetCondition(const Json& inNode) const;
+	bool parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const;
 
 	//
 	template <typename T>

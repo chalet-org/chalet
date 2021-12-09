@@ -37,11 +37,16 @@ struct IDistTarget
 	const std::string& description() const noexcept;
 	void setDescription(std::string&& inValue) noexcept;
 
+	bool includeInDistribution() const noexcept;
+	void setIncludeInDistribution(const bool inValue);
+
 private:
 	std::string m_name;
 	std::string m_description;
 
 	DistTargetType m_type;
+
+	bool m_includeInDistribution = true;
 };
 
 using DistributionTargetList = std::vector<DistTarget>;

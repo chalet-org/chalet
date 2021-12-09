@@ -92,4 +92,13 @@ void IDistTarget::setDescription(std::string&& inValue) noexcept
 	m_description = std::move(inValue);
 }
 
+/*****************************************************************************/
+bool IDistTarget::includeInDistribution() const noexcept
+{
+	return m_includeInDistribution;
+}
+void IDistTarget::setIncludeInDistribution(const bool inValue)
+{
+	m_includeInDistribution &= inValue;
+}
 }
