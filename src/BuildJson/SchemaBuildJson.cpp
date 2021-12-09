@@ -34,7 +34,8 @@ SchemaBuildJson::SchemaBuildJson() :
 	kPatternTargetName(R"(^[\w\-+.]{3,}$)"),
 	kPatternAbstractName(R"([A-Za-z-_]+)"),
 	kPatternSourceTargetLinks(R"(^[\w\-+.]+$)"),
-	kPatternDistributionName(R"(^(([\w\-+. ()]*)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)"),
+	kPatternDistributionName(R"(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)"),
+	kPatternDistributionNameSimple(R"(^[\w\-+. ()]{2,}$)"),
 	kPatternConditionConfigurations(R"regex((\.!?(debug)\b\.?)?)regex"),
 	kPatternConditionPlatforms(R"regex((\.!?(windows|macos|linux)\b){1,2})regex"),
 	kPatternConditionConfigurationsPlatforms(R"regex((\.!?(debug|windows|macos|linux)\b){1,2})regex"),
@@ -368,7 +369,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
 		"additionalProperties": false
 	})json"_ojson;
-	m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions][kPatternProperties][kPatternDistributionName] = R"json({
+	m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions][kPatternProperties][kPatternDistributionNameSimple] = R"json({
 		"type": "object",
 		"description": "An icon position in the root disk image.",
 		"additionalProperties": false,

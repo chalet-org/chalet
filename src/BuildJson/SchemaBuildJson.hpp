@@ -157,6 +157,7 @@ private:
 	const std::string kPatternAbstractName;
 	const std::string kPatternSourceTargetLinks;
 	const std::string kPatternDistributionName;
+	const std::string kPatternDistributionNameSimple;
 	const std::string kPatternConditionConfigurations;
 	const std::string kPatternConditionPlatforms;
 	const std::string kPatternConditionConfigurationsPlatforms;
