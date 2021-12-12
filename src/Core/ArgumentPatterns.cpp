@@ -847,7 +847,7 @@ void ArgumentPatterns::populateConfigureArguments()
 /*****************************************************************************/
 void ArgumentPatterns::populateInitArguments()
 {
-	const auto templates = m_inputs.getToolchainPresets();
+	const auto templates = m_inputs.getProjectInitializationPresets();
 	addTwoStringArguments(ArgumentIdentifier::InitTemplate, "-t", "--template")
 		.help(fmt::format("The project template to use during initialization (ex: {})", String::join(templates, ", ")));
 
