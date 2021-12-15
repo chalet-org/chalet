@@ -540,6 +540,9 @@
 				},
 				"pluginDirs": {
 					"$ref": "#/definitions/dist-windows-nullsoft-installer-pluginDirs"
+				},
+				"defines": {
+					"$ref": "#/definitions/dist-windows-nullsoft-installer-defines"
 				}
 			}
 		},
@@ -551,6 +554,16 @@
 		"dist-windows-nullsoft-installer-pluginDirs": {
 			"type": "array",
 			"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"dist-windows-nullsoft-installer-defines": {
+			"type": "array",
+			"description": "A list of defines to pass to MakeNSIS during the build of the installer.",
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {

@@ -12,6 +12,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -37,6 +38,16 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 	cmd.emplace_back("-WX");
 	cmd.emplace_back("-V3");
 	cmd.emplace_back("-NOCD");
+
+	StringList definePrefixes{ "-D", "/D" };
+
+	for (auto& define : inTarget.defines())
+	{
+		if (String::startsWith(definePrefixes, define))
+			cmd.emplace_back(define);
+		else
+			cmd.emplace_back(fmt::format("-D{}", define));
+	}
 
 	StringList resolvedPluginPaths = getPluginPaths(inTarget);
 	for (auto& path : resolvedPluginPaths)

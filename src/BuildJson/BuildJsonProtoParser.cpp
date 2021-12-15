@@ -519,6 +519,9 @@ bool BuildJsonProtoParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstalle
 	if (StringList list; parseStringListFromConfig(list, inNode, "pluginDirs"))
 		outTarget.addPluginDirs(std::move(list));
 
+	if (StringList list; parseStringListFromConfig(list, inNode, "defines"))
+		outTarget.addDefines(std::move(list));
+
 	return true;
 }
 

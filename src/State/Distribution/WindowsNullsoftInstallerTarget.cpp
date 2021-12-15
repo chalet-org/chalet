@@ -65,4 +65,19 @@ void WindowsNullsoftInstallerTarget::addPluginDir(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_pluginDirs, std::move(inValue));
 }
+
+/*****************************************************************************/
+const StringList& WindowsNullsoftInstallerTarget::defines() const noexcept
+{
+	return m_defines;
+}
+void WindowsNullsoftInstallerTarget::addDefines(StringList&& inList)
+{
+	List::forEach(inList, this, &WindowsNullsoftInstallerTarget::addDefine);
+}
+void WindowsNullsoftInstallerTarget::addDefine(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_defines, std::move(inValue));
+}
+
 }

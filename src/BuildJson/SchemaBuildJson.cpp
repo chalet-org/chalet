@@ -413,6 +413,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		}
 	})json"_ojson;
 
+	defs[Defs::DistributionWindowsNullsoftInstallerDefines] = R"json({
+		"type": "array",
+		"description": "A list of defines to pass to MakeNSIS during the build of the installer.",
+		"uniqueItems": true,
+		"minItems": 1,
+		"items": {
+			"type": "string",
+			"minLength": 1
+		}
+	})json"_ojson;
+
 	//
 	// externalDependency
 	//
@@ -1415,6 +1426,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionWinNullsoft[kProperties]["kind"] = getDefinition(Defs::DistributionKind);
 		distributionWinNullsoft[kProperties]["nsisScript"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerScript);
 		distributionWinNullsoft[kProperties]["pluginDirs"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerPluginDirs);
+		distributionWinNullsoft[kProperties]["defines"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerDefines);
 		defs[Defs::DistributionWindowsNullsoftInstaller] = std::move(distributionWinNullsoft);
 	}
 
@@ -1683,6 +1695,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionWindowsNullsoftInstaller: return "dist-windows-nullsoft-installer";
 		case Defs::DistributionWindowsNullsoftInstallerScript: return "dist-windows-nullsoft-installer-nsisScript";
 		case Defs::DistributionWindowsNullsoftInstallerPluginDirs: return "dist-windows-nullsoft-installer-pluginDirs";
+		case Defs::DistributionWindowsNullsoftInstallerDefines: return "dist-windows-nullsoft-installer-defines";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
