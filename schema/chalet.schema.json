@@ -1093,6 +1093,9 @@
 				"rtti": {
 					"$ref": "#/definitions/target-source-cxx-rtti"
 				},
+				"fastMath": {
+					"$ref": "#/definitions/target-source-cxx-fastMath"
+				},
 				"staticLinking": {
 					"$ref": "#/definitions/target-source-cxx-staticLinking"
 				},
@@ -1168,6 +1171,9 @@
 				},
 				"^rtti(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-rtti"
+				},
+				"^fastMath(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-fastMath"
 				},
 				"^exceptions(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
@@ -1304,6 +1310,11 @@
 			"type": "boolean",
 			"description": "true to include run-time type information (default), false to exclude.",
 			"default": true
+		},
+		"target-source-cxx-fastMath": {
+			"type": "boolean",
+			"description": "true to enable additional (and potentially dangerous) floating point optimizations (equivalent to '-ffast-math'). false to disable (default).",
+			"default": false
 		},
 		"target-source-cxx-exceptions": {
 			"type": "boolean",

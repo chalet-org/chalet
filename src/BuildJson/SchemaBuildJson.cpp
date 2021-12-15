@@ -789,6 +789,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::TargetSourceCxxFastMath] = R"json({
+		"type": "boolean",
+		"description": "true to enable additional (and potentially dangerous) floating point optimizations (equivalent to '-ffast-math'). false to disable (default).",
+		"default": false
+	})json"_ojson;
+
 	defs[Defs::TargetSourceCxxExceptions] = R"json({
 		"type": "boolean",
 		"description": "true to use exceptions (default), false to turn off exceptions.",
@@ -1472,6 +1478,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kProperties]["pch"] = getDefinition(Defs::TargetSourceCxxPrecompiledHeader);
 		sourceTargetCxx[kProperties]["threads"] = getDefinition(Defs::TargetSourceCxxThreads);
 		sourceTargetCxx[kProperties]["rtti"] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
+		sourceTargetCxx[kProperties]["fastMath"] = getDefinition(Defs::TargetSourceCxxFastMath);
 		sourceTargetCxx[kProperties]["staticLinking"] = getDefinition(Defs::TargetSourceCxxStaticLinking);
 		sourceTargetCxx[kProperties]["staticLinks"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxStaticLinks);
 		sourceTargetCxx[kProperties]["warnings"] = getDefinition(Defs::TargetSourceCxxWarnings);
@@ -1494,6 +1501,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kPatternProperties][fmt::format("^staticLinks{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticLinks);
 		sourceTargetCxx[kPatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxThreads);
 		sourceTargetCxx[kPatternProperties][fmt::format("^rtti{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
+		sourceTargetCxx[kPatternProperties][fmt::format("^fastMath{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxFastMath);
 		sourceTargetCxx[kPatternProperties][fmt::format("^exceptions{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxExceptions);
 		sourceTargetCxx[kPatternProperties][fmt::format("^staticLinking{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticLinking);
 
@@ -1725,6 +1733,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxCppCoroutines: return "target-source-cxx-cppCoroutines";
 		case Defs::TargetSourceCxxCppConcepts: return "target-source-cxx-cppConcepts";
 		case Defs::TargetSourceCxxRunTimeTypeInfo: return "target-source-cxx-rtti";
+		case Defs::TargetSourceCxxFastMath: return "target-source-cxx-fastMath";
 		case Defs::TargetSourceCxxExceptions: return "target-source-cxx-exceptions";
 		case Defs::TargetSourceCxxStaticLinking: return "target-source-cxx-staticLinking";
 		case Defs::TargetSourceCxxStaticLinks: return "target-source-cxx-staticLinks";

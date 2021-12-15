@@ -42,6 +42,7 @@ protected:
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;
 	virtual void addNoExceptionsOption(StringList& outArgList) const override;
+	virtual void addFastMathOption(StringList& outArgList) const override;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;
 

@@ -23,6 +23,7 @@ protected:
 	virtual void addNativeJustMyCodeDebugging(StringList& outArgList) const final;
 	virtual void addAdditionalSecurityChecks(StringList& outArgList) const final;
 	virtual void addExternalWarnings(StringList& outArgList) const final;
+	virtual void addFastMathOption(StringList& outArgList) const final;
 };
 }
 

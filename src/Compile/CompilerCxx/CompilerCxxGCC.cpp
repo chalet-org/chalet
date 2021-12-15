@@ -146,6 +146,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	addCompileOptions(ret);
 	addObjectiveCxxRuntimeOption(ret, specialization);
 	addDiagnosticColorOption(ret);
+	addFastMathOption(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
@@ -207,6 +208,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addCompileOptions(ret);
 	addObjectiveCxxRuntimeOption(ret, specialization);
 	addDiagnosticColorOption(ret);
+	addFastMathOption(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
@@ -558,6 +560,17 @@ void CompilerCxxGCC::addNoExceptionsOption(StringList& outArgList) const
 	if (!m_project.exceptions())
 	{
 		std::string option{ "-fno-exceptions" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxGCC::addFastMathOption(StringList& outArgList) const
+{
+	if (m_project.fastMath())
+	{
+		std::string option{ "-ffast-math" };
 		// if (isFlagSupported(option))
 		List::addIfDoesNotExist(outArgList, std::move(option));
 	}

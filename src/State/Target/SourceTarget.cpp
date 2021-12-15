@@ -662,6 +662,7 @@ void SourceTarget::setRtti(const bool inValue) noexcept
 	m_rtti = inValue;
 }
 
+/*****************************************************************************/
 bool SourceTarget::exceptions() const noexcept
 {
 	return m_exceptions;
@@ -669,6 +670,16 @@ bool SourceTarget::exceptions() const noexcept
 void SourceTarget::setExceptions(const bool inValue) noexcept
 {
 	m_exceptions = inValue;
+}
+
+/*****************************************************************************/
+bool SourceTarget::fastMath() const noexcept
+{
+	return m_fastMath;
+}
+void SourceTarget::setFastMath(const bool inValue) noexcept
+{
+	m_fastMath = inValue;
 }
 
 /*****************************************************************************/

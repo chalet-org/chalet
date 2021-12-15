@@ -155,6 +155,12 @@ void ICompilerCxx::addNoExceptionsOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void ICompilerCxx::addFastMathOption(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void ICompilerCxx::addThreadModelCompileOption(StringList& outArgList) const
 {
 	UNUSED(outArgList);

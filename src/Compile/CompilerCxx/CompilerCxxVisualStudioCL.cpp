@@ -115,7 +115,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 		addThreadModelCompileOption(ret);
 		addBufferSecurityCheck(ret);
 		addFunctionLevelLinking(ret);
-		addFloatingPointBehavior(ret);
+		addFastMathOption(ret);
 		addStandardsConformance(ret);
 		addStandardBehaviors(ret);
 		addProgramDatabaseOutput(ret);
@@ -189,7 +189,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 		addRuntimeErrorChecks(ret);
 		addThreadModelCompileOption(ret);
 		addBufferSecurityCheck(ret);
-		addFloatingPointBehavior(ret);
+		addFastMathOption(ret);
 		addFunctionLevelLinking(ret);
 		addStandardsConformance(ret);
 		addStandardBehaviors(ret);
@@ -297,7 +297,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 		addRuntimeErrorChecks(ret);
 		addThreadModelCompileOption(ret);
 		addBufferSecurityCheck(ret);
-		addFloatingPointBehavior(ret);
+		addFastMathOption(ret);
 		addFunctionLevelLinking(ret);
 		addStandardsConformance(ret);
 		addStandardBehaviors(ret);
@@ -675,6 +675,19 @@ void CompilerCxxVisualStudioCL::addNoExceptionsOption(StringList& outArgList) co
 }
 
 /*****************************************************************************/
+void CompilerCxxVisualStudioCL::addFastMathOption(StringList& outArgList) const
+{
+	if (m_project.fastMath())
+	{
+		List::addIfDoesNotExist(outArgList, "/fp:fast");
+	}
+	else
+	{
+		List::addIfDoesNotExist(outArgList, "/fp:precise");
+	}
+}
+
+/*****************************************************************************/
 void CompilerCxxVisualStudioCL::addThreadModelCompileOption(StringList& outArgList) const
 {
 	// /MD - dynamically links with MSVCRT.lib
@@ -758,12 +771,6 @@ void CompilerCxxVisualStudioCL::addStandardBehaviors(StringList& outArgList) con
 void CompilerCxxVisualStudioCL::addAdditionalSecurityChecks(StringList& outArgList) const
 {
 	List::addIfDoesNotExist(outArgList, "/sdl");
-}
-
-/*****************************************************************************/
-void CompilerCxxVisualStudioCL::addFloatingPointBehavior(StringList& outArgList) const
-{
-	List::addIfDoesNotExist(outArgList, "/fp:precise");
 }
 
 /*****************************************************************************/

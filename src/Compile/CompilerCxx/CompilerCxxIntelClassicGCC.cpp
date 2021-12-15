@@ -9,6 +9,7 @@
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -69,6 +70,15 @@ StringList CompilerCxxIntelClassicGCC::getWarningExclusions() const
 		"strict-null-sentinel",
 		"invalid-pch"
 	};
+}
+
+/*****************************************************************************/
+void CompilerCxxIntelClassicGCC::addFastMathOption(StringList& outArgList) const
+{
+	if (m_project.fastMath())
+	{
+		List::addIfDoesNotExist(outArgList, "-fp-model=fast");
+	}
 }
 
 }

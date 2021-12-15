@@ -31,6 +31,7 @@ protected:
 	virtual void addCompileOptions(StringList& outArgList) const override;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;
 	virtual void addNoExceptionsOption(StringList& outArgList) const override;
+	virtual void addFastMathOption(StringList& outArgList) const override;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;
 
@@ -42,7 +43,6 @@ protected:
 	virtual void addBufferSecurityCheck(StringList& outArgList) const;
 	virtual void addStandardBehaviors(StringList& outArgList) const;
 	virtual void addAdditionalSecurityChecks(StringList& outArgList) const;
-	virtual void addFloatingPointBehavior(StringList& outArgList) const;
 	virtual void addCallingConvention(StringList& outArgList) const;
 	virtual void addFullPathSourceCode(StringList& outArgList) const;
 	virtual void addStandardsConformance(StringList& outArgList) const;

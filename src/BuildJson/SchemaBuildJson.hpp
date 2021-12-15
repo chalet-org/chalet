@@ -99,6 +99,7 @@ class SchemaBuildJson
 		TargetSourceCxxCppCoroutines,
 		TargetSourceCxxCppConcepts,
 		TargetSourceCxxRunTimeTypeInfo,
+		TargetSourceCxxFastMath,
 		TargetSourceCxxExceptions,
 		TargetSourceCxxStaticLinking,
 		TargetSourceCxxStaticLinks,

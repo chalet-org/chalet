@@ -7,6 +7,7 @@
 
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Utility/List.hpp"
 
 namespace chalet
 {
@@ -62,6 +63,15 @@ void CompilerCxxIntelClassicCL::addAdditionalSecurityChecks(StringList& outArgLi
 void CompilerCxxIntelClassicCL::addExternalWarnings(StringList& outArgList) const
 {
 	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void CompilerCxxIntelClassicCL::addFastMathOption(StringList& outArgList) const
+{
+	if (m_project.fastMath())
+	{
+		List::addIfDoesNotExist(outArgList, "/fp-model=fast");
+	}
 }
 
 }

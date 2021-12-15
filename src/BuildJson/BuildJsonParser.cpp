@@ -520,6 +520,9 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 	if (bool val = false; parseKeyFromConfig(val, inNode, "staticLinking"))
 		outTarget.setStaticLinking(val);
 
+	if (bool val = false; parseKeyFromConfig(val, inNode, "fastMath"))
+		outTarget.setFastMath(val);
+
 	if (std::string val; parseKeyFromConfig(val, inNode, "threads"))
 		outTarget.setThreadType(val);
 
