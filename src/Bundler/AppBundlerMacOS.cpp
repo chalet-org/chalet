@@ -24,22 +24,6 @@
 
 namespace chalet
 {
-/*
-	{
-		"CFBundleName": "${bundleName}",
-		"CFBundleDisplayName": "${name}",
-		"CFBundleIdentifier": "${bundleIdentifier}",
-		"CFBundleVersion": "${version}",
-		"CFBundleDevelopmentRegion": "en",
-		"CFBundleInfoDictionaryVersion": "6.0",
-		"CFBundlePackageType": "APPL",
-		"CFBundleSignature": "????",
-		"CFBundleExecutable": "${mainExecutable}",
-		"CFBundleIconFile": "${icon}",
-		"NSHighResolutionCapable": true
-	}
-*/
-
 /*****************************************************************************/
 AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile) :
 	IAppBundler(inState, inBundle, inDependencyMap),
@@ -247,7 +231,7 @@ bool AppBundlerMacOS::createBundleIcon()
 bool AppBundlerMacOS::createPListAndReplaceVariables() const
 {
 #if defined(CHALET_MACOS)
-	const auto& version = m_state.workspace.version();
+	// const auto& version = m_state.workspace.version();
 	auto icon = fmt::format("{}.icns", m_iconBaseName);
 
 	auto replacePlistVariables = [&](std::string& outContent) {
@@ -255,7 +239,7 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 		String::replaceAll(outContent, "${mainExecutable}", m_mainExecutable);
 		String::replaceAll(outContent, "${icon}", icon);
 		String::replaceAll(outContent, "${bundleName}", m_bundle.macosBundleName());
-		String::replaceAll(outContent, "${version}", version);
+		// String::replaceAll(outContent, "${version}", version);
 	};
 
 	std::string tmpInfoPlist = fmt::format("{}/Info.plist.json", m_bundle.subdirectory());

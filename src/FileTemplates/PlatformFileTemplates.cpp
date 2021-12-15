@@ -57,8 +57,8 @@ std::string PlatformFileTemplates::macosInfoPlist()
 	"CFBundleInfoDictionaryVersion": "6.0",
 	"CFBundleName": "${bundleName}",
 	"CFBundlePackageType": "APPL",
-	"CFBundleShortVersionString": "${version}",
-	"CFBundleVersion": "${version}",
+	"CFBundleShortVersionString": "1.0.0",
+	"CFBundleVersion": "1.0.0",
 	"CFBundleSignature": "????",
 	"LSMinimumSystemVersion": "10.8"
 }
