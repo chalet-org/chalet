@@ -1,5 +1,5 @@
 Chalet - A cross-platform JSON-based project & build tool
-Copyright 2020-2021 ChaletOrg and Contributors
+Copyright (c) 2020-2021 Andrew R. King, author
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------------
-
-The following individuals and institutions are among the Contributors:
-
-* Andrew R. King <andrew.raymond.king@gmail.com>
 
 See version control history for details of individual contributions.
 
