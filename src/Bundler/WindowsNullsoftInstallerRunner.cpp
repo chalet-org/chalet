@@ -52,7 +52,10 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 	StringList resolvedPluginPaths = getPluginPaths(inTarget);
 	for (auto& path : resolvedPluginPaths)
 	{
-		cmd.emplace_back(fmt::format("-X!addplugindir {}", path));
+#if defined(CHALET_WIN32)
+		Path::sanitizeForWindows(path);
+#endif
+		cmd.emplace_back(fmt::format("-X!addplugindir \"{}\"", path));
 	}
 
 	cmd.emplace_back(nsisScript);
@@ -104,20 +107,24 @@ StringList WindowsNullsoftInstallerRunner::getPluginPaths(const WindowsNullsoftI
 
 	for (auto& path : inTarget.pluginDirs())
 	{
-		auto pluginPath = fmt::format("{}/{}", cwd, path);
-		Path::sanitizeForWindows(pluginPath);
+		bool checkRoot = true;
+		auto resolved = fmt::format("{}/{}", cwd, path);
+		Path::sanitizeForWindows(resolved);
 
-		auto resolved = fmt::format("{}/Plugins", pluginPath);
-		if (Commands::pathExists(resolved))
+		auto pluginsPath = fmt::format("{}/Plugins", resolved);
+		if (Commands::pathExists(pluginsPath))
+		{
+			checkRoot = false;
+			if (!addCommonPluginFolders(pluginsPath))
+				ret.push_back(std::move(pluginsPath));
+			else
+				checkRoot = true;
+		}
+
+		if (checkRoot && Commands::pathExists(resolved))
 		{
 			if (!addCommonPluginFolders(resolved))
 				ret.push_back(std::move(resolved));
-		}
-
-		if (Commands::pathExists(pluginPath))
-		{
-			if (!addCommonPluginFolders(pluginPath))
-				ret.push_back(std::move(pluginPath));
 		}
 	}
 
