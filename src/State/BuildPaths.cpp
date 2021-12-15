@@ -172,6 +172,18 @@ const std::string& BuildPaths::intermediateDir() const noexcept
 }
 
 /*****************************************************************************/
+StringList BuildPaths::buildDirectories() const
+{
+	const auto& buildDir = buildOutputDir();
+	return {
+		fmt::format("{}/obj", buildDir),
+		fmt::format("{}/asm", buildDir),
+		fmt::format("{}/obj.shared", buildDir),
+		fmt::format("{}/asm.shared", buildDir),
+	};
+}
+
+/*****************************************************************************/
 const StringList& BuildPaths::allFileExtensions() const noexcept
 {
 	return m_allFileExtensions;

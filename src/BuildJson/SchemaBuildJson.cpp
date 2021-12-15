@@ -1192,6 +1192,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": "main"
 	})json"_ojson;
 
+	//
+
 	defs[Defs::TargetScriptScript] = R"json({
 		"description": "Script(s) to run during this build step.",
 		"oneOf": [
@@ -1210,6 +1212,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			}
 		]
 	})json"_ojson;
+
+	//
 
 	defs[Defs::TargetCMakeLocation] = R"json({
 		"type": "string",
@@ -1237,7 +1241,13 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	defs[Defs::TargetCMakeRecheck] = R"json({
 		"type": "boolean",
 		"description": "If true, CMake will be invoked each time during the build.",
-		"default": false
+		"default": true
+	})json"_ojson;
+
+	defs[Defs::TargetCMakeRebuild] = R"json({
+		"type": "boolean",
+		"description": "If true, the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
+		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetCMakeToolset] = R"json({
@@ -1245,6 +1255,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"description": "A toolset to be passed to CMake with the -T option.",
 		"minLength": 1
 	})json"_ojson;
+
+	//
 
 	defs[Defs::TargetChaletLocation] = R"json({
 		"type": "string",
@@ -1260,7 +1272,14 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::TargetChaletRecheck] = R"json({
 		"type": "boolean",
-		"description": "If true, Chalet will be invoked each time during the build."
+		"description": "If true, Chalet will be invoked each time during the build.",
+		"default": true
+	})json"_ojson;
+
+	defs[Defs::TargetChaletRebuild] = R"json({
+		"type": "boolean",
+		"description": "If true, the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
+		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetCMakeRunExecutable] = R"json({
@@ -1584,6 +1603,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetCMake[kProperties]["kind"] = getDefinition(Defs::TargetKind);
 		targetCMake[kProperties]["location"] = getDefinition(Defs::TargetCMakeLocation);
 		targetCMake[kProperties]["recheck"] = getDefinition(Defs::TargetCMakeRecheck);
+		targetCMake[kProperties]["rebuild"] = getDefinition(Defs::TargetCMakeRebuild);
 		targetCMake[kProperties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
 		targetCMake[kProperties]["runExecutable"] = getDefinition(Defs::TargetCMakeRunExecutable);
 		targetCMake[kProperties]["runTarget"] = getDefinition(Defs::TargetRunTarget);
@@ -1612,6 +1632,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetChalet[kProperties]["kind"] = getDefinition(Defs::TargetKind);
 		targetChalet[kProperties]["location"] = getDefinition(Defs::TargetChaletLocation);
 		targetChalet[kProperties]["recheck"] = getDefinition(Defs::TargetChaletRecheck);
+		targetChalet[kProperties]["rebuild"] = getDefinition(Defs::TargetChaletRebuild);
 		targetChalet[kPatternProperties][fmt::format("^buildFile{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetChaletBuildFile);
 		defs[Defs::TargetChalet] = std::move(targetChalet);
 	}
@@ -1722,6 +1743,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetCMakeBuildFile: return "target-cmake-buildFile";
 		case Defs::TargetCMakeDefines: return "target-cmake-defines";
 		case Defs::TargetCMakeRecheck: return "target-cmake-recheck";
+		case Defs::TargetCMakeRebuild: return "target-cmake-rebuild";
 		case Defs::TargetCMakeToolset: return "target-cmake-toolset";
 		case Defs::TargetCMakeRunExecutable: return "target-cmake-runExecutable";
 		//
@@ -1729,6 +1751,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetChaletLocation: return "target-chalet-location";
 		case Defs::TargetChaletBuildFile: return "target-chalet-buildFile";
 		case Defs::TargetChaletRecheck: return "target-chalet-recheck";
+		case Defs::TargetChaletRebuild: return "target-chalet-rebuild";
 
 		default: break;
 	}

@@ -521,7 +521,7 @@ bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& 
 /*****************************************************************************/
 bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 {
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	std::string buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& outputDirectory = m_state.paths.outputDirectory();
 
 	const auto& inputBuild = m_inputs.buildConfiguration();
@@ -536,13 +536,54 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 	if (!Commands::pathExists(dirToClean))
 		return false;
 
+	StringList externalLocations;
+	for (const auto& target : m_state.targets)
+	{
+		if (target->isSubChalet())
+		{
+			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
+			List::addIfDoesNotExist(externalLocations, subChaletTarget.location());
+		}
+		else if (target->isCMake())
+		{
+			auto& cmakeTarget = static_cast<const CMakeTarget&>(*target);
+			List::addIfDoesNotExist(externalLocations, cmakeTarget.location());
+		}
+	}
+
+	CHALET_TRY
+	{
+		buildOutputDir += '/';
+		for (const auto& entry : fs::recursive_directory_iterator(dirToClean))
+		{
+			auto path = entry.path().string();
+			Path::sanitize(path);
+			String::replaceAll(path, buildOutputDir, "");
+
+			if (entry.is_regular_file())
+			{
+				if (String::startsWith(externalLocations, path))
+					continue;
+
+				fs::remove(entry.path());
+			}
+		}
+	}
+	CHALET_CATCH(...)
+	{}
+
+	auto buildDirs = m_state.paths.buildDirectories();
+	for (auto& dir : buildDirs)
+	{
+		if (Commands::pathExists(dir))
+			Commands::removeRecursively(dir);
+	}
+
 	if (Output::cleanOutput())
 	{
 		if (onClean != nullptr)
 			onClean();
 	}
-
-	Commands::removeRecursively(dirToClean);
 
 	return true;
 }
@@ -553,7 +594,7 @@ bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 	auto outputLocation = fmt::format("{}/{}", m_inputs.outputDirectory(), inTarget.name());
 	Path::sanitize(outputLocation);
 
-	if (Commands::pathExists(outputLocation))
+	if (inTarget.rebuild() && Commands::pathExists(outputLocation))
 	{
 		if (!Commands::removeRecursively(outputLocation))
 		{
@@ -572,7 +613,7 @@ bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 	auto outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), inTarget.location());
 	Path::sanitize(outputLocation);
 
-	if (Commands::pathExists(outputLocation))
+	if (inTarget.rebuild() && Commands::pathExists(outputLocation))
 	{
 		if (!Commands::removeRecursively(outputLocation))
 		{

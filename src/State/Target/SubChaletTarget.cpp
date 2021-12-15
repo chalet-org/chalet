@@ -84,4 +84,14 @@ void SubChaletTarget::setRecheck(const bool inValue) noexcept
 	m_recheck = inValue;
 }
 
+/*****************************************************************************/
+bool SubChaletTarget::rebuild() const noexcept
+{
+	return m_rebuild;
+}
+void SubChaletTarget::setRebuild(const bool inValue) noexcept
+{
+	m_rebuild = inValue;
+}
+
 }

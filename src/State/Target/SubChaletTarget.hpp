@@ -26,11 +26,15 @@ struct SubChaletTarget final : public IBuildTarget
 	bool recheck() const noexcept;
 	void setRecheck(const bool inValue) noexcept;
 
+	bool rebuild() const noexcept;
+	void setRebuild(const bool inValue) noexcept;
+
 private:
 	std::string m_location;
 	std::string m_buildFile;
 
 	bool m_recheck = true;
+	bool m_rebuild = true;
 };
 }
 

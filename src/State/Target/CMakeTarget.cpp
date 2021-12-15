@@ -154,4 +154,14 @@ void CMakeTarget::setRecheck(const bool inValue) noexcept
 	m_recheck = inValue;
 }
 
+/*****************************************************************************/
+bool CMakeTarget::rebuild() const noexcept
+{
+	return m_rebuild;
+}
+void CMakeTarget::setRebuild(const bool inValue) noexcept
+{
+	m_rebuild = inValue;
+}
+
 }

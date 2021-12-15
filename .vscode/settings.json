@@ -1,5 +1,10 @@
 {
 	"C_Cpp.preferredPathSeparator": "Forward Slash",
+	"C_Cpp.codeAnalysis.runAutomatically": false,
+	"C_Cpp.codeAnalysis.exclude": {
+		"${workspaceFolder}/vendor/**/*": true,
+		"${workspaceFolder}/test/**/*": true
+	},
 	"debug.toolBarLocation": "docked",
 	"editor.formatOnSave": true,
 	"editor.insertSpaces": false,
@@ -12,6 +17,5 @@
 		"dist": true,
 		"build": true,
 		"platform/windows/installer/plugins": true
-	},
-	"terminal.integrated.automationShell.windows": "C:/Program Files/Git/bin/bash.exe"
+	}
 }

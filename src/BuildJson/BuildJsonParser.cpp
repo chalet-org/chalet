@@ -409,6 +409,9 @@ bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Jso
 	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "recheck"))
 		outTarget.setRecheck(val);
 
+	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "rebuild"))
+		outTarget.setRebuild(val);
+
 	return true;
 }
 
@@ -431,6 +434,9 @@ bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNod
 
 	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "recheck"))
 		outTarget.setRecheck(val);
+
+	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "rebuild"))
+		outTarget.setRebuild(val);
 
 	if (std::string val; parseKeyFromConfig(val, inNode, "toolset"))
 		outTarget.setToolset(std::move(val));

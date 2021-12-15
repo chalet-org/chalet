@@ -28,6 +28,7 @@ struct BuildPaths
 	const std::string& depDir() const noexcept;
 	const std::string& asmDir() const noexcept;
 	const std::string& intermediateDir() const noexcept;
+	StringList buildDirectories() const;
 
 	const StringList& allFileExtensions() const noexcept;
 	StringList cxxExtensions() const noexcept;

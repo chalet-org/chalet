@@ -2074,6 +2074,9 @@
 				"recheck": {
 					"$ref": "#/definitions/target-cmake-recheck"
 				},
+				"rebuild": {
+					"$ref": "#/definitions/target-cmake-rebuild"
+				},
 				"runArguments": {
 					"$ref": "#/definitions/target-runArguments"
 				},
@@ -2128,7 +2131,12 @@
 		"target-cmake-recheck": {
 			"type": "boolean",
 			"description": "If true, CMake will be invoked each time during the build.",
-			"default": false
+			"default": true
+		},
+		"target-cmake-rebuild": {
+			"type": "boolean",
+			"description": "If true, the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
+			"default": true
 		},
 		"target-cmake-toolset": {
 			"type": "string",
@@ -2166,6 +2174,9 @@
 				},
 				"recheck": {
 					"$ref": "#/definitions/target-chalet-recheck"
+				},
+				"rebuild": {
+					"$ref": "#/definitions/target-chalet-rebuild"
 				}
 			},
 			"patternProperties": {
@@ -2186,7 +2197,13 @@
 		},
 		"target-chalet-recheck": {
 			"type": "boolean",
-			"description": "If true, Chalet will be invoked each time during the build."
+			"description": "If true, Chalet will be invoked each time during the build.",
+			"default": true
+		},
+		"target-chalet-rebuild": {
+			"type": "boolean",
+			"description": "If true, the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
+			"default": true
 		}
 	},
 	"properties": {

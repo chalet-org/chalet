@@ -117,6 +117,7 @@ class SchemaBuildJson
 		TargetCMakeBuildFile,
 		TargetCMakeDefines,
 		TargetCMakeRecheck,
+		TargetCMakeRebuild,
 		TargetCMakeToolset,
 		TargetCMakeRunExecutable,
 		//
@@ -124,6 +125,7 @@ class SchemaBuildJson
 		TargetChaletLocation,
 		TargetChaletBuildFile,
 		TargetChaletRecheck,
+		TargetChaletRebuild,
 	};
 	using DefinitionMap = std::map<Defs, Json>;
 
