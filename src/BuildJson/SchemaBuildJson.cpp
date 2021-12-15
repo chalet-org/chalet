@@ -1205,23 +1205,10 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	//
 
-	defs[Defs::TargetScriptScript] = R"json({
-		"description": "Script(s) to run during this build step.",
-		"oneOf": [
-			{
-				"type": "string",
-				"minLength": 1
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			}
-		]
+	defs[Defs::TargetScriptFile] = R"json({
+		"description": "The relative path to a script file to run.",
+		"type": "string",
+		"minLength": 1
 	})json"_ojson;
 
 	//
@@ -1579,9 +1566,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		targetBuildScript[kProperties]["kind"] = getDefinition(Defs::TargetKind);
 		// targetBuildScript[kProperties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
 		targetBuildScript[kProperties]["runTarget"] = getDefinition(Defs::TargetRunTarget);
-		targetBuildScript[kProperties]["script"] = getDefinition(Defs::TargetScriptScript);
+		targetBuildScript[kProperties]["file"] = getDefinition(Defs::TargetScriptFile);
 		targetBuildScript[kPatternProperties][fmt::format("^runTarget{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunTarget);
-		targetBuildScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptScript);
+		targetBuildScript[kPatternProperties][fmt::format("^file{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptFile);
 		defs[Defs::TargetScript] = std::move(targetBuildScript);
 	}
 
@@ -1593,8 +1580,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		distributionScript[kProperties]["condition"] = getDefinition(Defs::DistributionCondition);
 		distributionScript[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionScript[kProperties]["kind"] = getDefinition(Defs::DistributionKind);
-		distributionScript[kProperties]["script"] = getDefinition(Defs::TargetScriptScript);
-		distributionScript[kPatternProperties][fmt::format("^script{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetScriptScript);
+		distributionScript[kProperties]["file"] = getDefinition(Defs::TargetScriptFile);
+		distributionScript[kPatternProperties][fmt::format("^file{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetScriptFile);
 		defs[Defs::DistributionScript] = std::move(distributionScript);
 	}
 
@@ -1749,7 +1736,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxWindowsEntryPoint: return "target-source-cxx-windowsEntryPoint";
 		//
 		case Defs::TargetScript: return "target-script";
-		case Defs::TargetScriptScript: return "target-script-script";
+		case Defs::TargetScriptFile: return "target-script-file";
 		//
 		case Defs::TargetCMake: return "target-cmake";
 		case Defs::TargetCMakeLocation: return "target-cmake-location";

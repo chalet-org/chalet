@@ -7,6 +7,7 @@
 
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 
@@ -25,9 +26,12 @@ bool ScriptBuildTarget::initialize()
 		return false;
 
 	const auto& targetName = this->name();
-	for (auto& script : m_scripts)
+	m_state.paths.replaceVariablesInPath(m_file, targetName);
+
+	if (!Commands::pathExists(m_file))
 	{
-		m_state.paths.replaceVariablesInPath(script, targetName);
+		Diagnostic::error("File for the script target '{}' doesn't exist: {}", targetName, m_file);
+		return false;
 	}
 
 	return true;
@@ -40,19 +44,14 @@ bool ScriptBuildTarget::validate()
 }
 
 /*****************************************************************************/
-const StringList& ScriptBuildTarget::scripts() const noexcept
+const std::string& ScriptBuildTarget::file() const noexcept
 {
-	return m_scripts;
+	return m_file;
 }
 
-void ScriptBuildTarget::addScripts(StringList&& inList)
+void ScriptBuildTarget::setFile(std::string&& inValue) noexcept
 {
-	List::forEach(inList, this, &ScriptBuildTarget::addScript);
-}
-
-void ScriptBuildTarget::addScript(std::string&& inValue)
-{
-	List::addIfDoesNotExist(m_scripts, std::move(inValue));
+	m_file = std::move(inValue);
 }
 
 }

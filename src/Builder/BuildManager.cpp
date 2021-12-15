@@ -628,8 +628,8 @@ bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 /*****************************************************************************/
 bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand)
 {
-	const auto& scripts = inScript.scripts();
-	if (scripts.empty())
+	const auto& file = inScript.file();
+	if (file.empty())
 		return false;
 
 	const bool isRun = m_inputs.route() == Route::Run || inRunCommand;
@@ -643,7 +643,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 	Output::lineBreak();
 
 	ScriptRunner scriptRunner(m_inputs, m_state.tools);
-	if (!scriptRunner.run(scripts, inRunCommand))
+	if (!scriptRunner.run(file, inRunCommand))
 		return false;
 
 	return true;

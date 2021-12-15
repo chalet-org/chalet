@@ -16,12 +16,11 @@ struct ScriptDistTarget final : public IDistTarget
 
 	virtual bool validate() final;
 
-	const StringList& scripts() const noexcept;
-	void addScripts(StringList&& inList);
-	void addScript(std::string&& inValue);
+	const std::string& file() const noexcept;
+	void setFile(std::string&& inValue) noexcept;
 
 private:
-	StringList m_scripts;
+	std::string m_file;
 };
 }
 

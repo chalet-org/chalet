@@ -111,7 +111,7 @@ class SchemaBuildJson
 		TargetSourceCxxWindowsEntryPoint,
 		//
 		TargetScript,
-		TargetScriptScript,
+		TargetScriptFile,
 		//
 		TargetCMake,
 		TargetCMakeLocation,

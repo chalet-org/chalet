@@ -414,18 +414,18 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 /*****************************************************************************/
 bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 {
-	const auto& scripts = inTarget.scripts();
-	if (scripts.empty())
+	const auto& file = inTarget.file();
+	if (file.empty())
 		return false;
 
 	displayHeader("Script", inTarget);
 
 	ScriptRunner scriptRunner(m_inputs, m_prototype.tools);
 	bool showExitCode = false;
-	if (!scriptRunner.run(scripts, showExitCode))
+	if (!scriptRunner.run(file, showExitCode))
 	{
 		Output::lineBreak();
-		Output::msgBuildFail(); // TODO: Script failed
+		Output::msgBuildFail();
 		Output::lineBreak();
 		return false;
 	}

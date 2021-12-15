@@ -7,6 +7,7 @@
 
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 
@@ -21,23 +22,26 @@ ScriptDistTarget::ScriptDistTarget() :
 /*****************************************************************************/
 bool ScriptDistTarget::validate()
 {
+	const auto& targetName = this->name();
+
+	if (!Commands::pathExists(m_file))
+	{
+		Diagnostic::error("File for the script target '{}' doesn't exist: {}", targetName, m_file);
+		return false;
+	}
+
 	return true;
 }
 
 /*****************************************************************************/
-const StringList& ScriptDistTarget::scripts() const noexcept
+const std::string& ScriptDistTarget::file() const noexcept
 {
-	return m_scripts;
+	return m_file;
 }
 
-void ScriptDistTarget::addScripts(StringList&& inList)
+void ScriptDistTarget::setFile(std::string&& inValue) noexcept
 {
-	List::forEach(inList, this, &ScriptDistTarget::addScript);
-}
-
-void ScriptDistTarget::addScript(std::string&& inValue)
-{
-	List::addIfDoesNotExist(m_scripts, std::move(inValue));
+	m_file = std::move(inValue);
 }
 
 }

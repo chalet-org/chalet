@@ -89,61 +89,61 @@
 		},
 		"script-shell": {
 			"kind": "script",
-			"script.!windows": "scripts/script_shell.sh",
-			"script.windows": "scripts/script_batch.bat"
+			"file.!windows": "scripts/script_shell.sh",
+			"file.windows": "scripts/script_batch.bat"
 		}
 		/*"script-shell-env": {
 			"kind": "script",
-			"script.!windows": "scripts/script_shell_env.sh",
-			"script.windows": "scripts/script_batch.bat"
+			"file.!windows": "scripts/script_shell_env.sh",
+			"file.windows": "scripts/script_batch.bat"
 		},
 		"script-shell-bad": {
 			"kind": "script",
-			"script": "scripts/script_shell_bad.sh"
+			"file": "scripts/script_shell_bad.sh"
 		},
 		"script-batch": {
 			"kind": "script",
-			"script.windows": "scripts/script_batch.bat"
+			"file.windows": "scripts/script_batch.bat"
 		},
 		"script-powershell": {
 			"kind": "script",
-			"script": "scripts/script_powershell.ps1"
+			"file": "scripts/script_powershell.ps1"
 		},
 		"script-powershell-env": {
 			"kind": "script",
-			"script": "scripts/script_powershell_env.ps1"
+			"file": "scripts/script_powershell_env.ps1"
 		},
 		"script-python": {
 			"kind": "script",
-			"script": "scripts/script_python.py"
+			"file": "scripts/script_python.py"
 		},
 		"script-python-env": {
 			"kind": "script",
-			"script": "scripts/script_python_env.py"
+			"file": "scripts/script_python_env.py"
 		},
 		"script-ruby": {
 			"kind": "script",
-			"script": "scripts/script_ruby.rb"
+			"file": "scripts/script_ruby.rb"
 		},
 		"script-ruby-env": {
 			"kind": "script",
-			"script": "scripts/script_ruby_env.rb"
+			"file": "scripts/script_ruby_env.rb"
 		},
 		"script-perl": {
 			"kind": "script",
-			"script": "scripts/script_perl.pl"
+			"file": "scripts/script_perl.pl"
 		},
 		"script-perl-env": {
 			"kind": "script",
-			"script": "scripts/script_perl_env.pl"
+			"file": "scripts/script_perl_env.pl"
 		},
 		"script-lua": {
 			"kind": "script",
-			"script": "scripts/script_lua.lua"
+			"file": "scripts/script_lua.lua"
 		},
 		"script-lua-env": {
 			"kind": "script",
-			"script": "scripts/script_lua_env.lua"
+			"file": "scripts/script_lua_env.lua"
 		}*/
 	},
 	"distribution": {
@@ -177,8 +177,8 @@
 		},
 		"post-bundle": {
 			"kind": "script",
-			"script.!windows": "scripts/script_shell.sh",
-			"script.windows": "scripts/script_batch.bat"
+			"file.!windows": "scripts/script_shell.sh",
+			"file.windows": "scripts/script_batch.bat"
 		},
 		"chalet-${targetTriple}": {
 			"kind": "archive",

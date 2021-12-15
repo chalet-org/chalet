@@ -371,12 +371,8 @@ bool BuildJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
-	const std::string key{ "script" };
-
-	if (StringList list; parseStringListFromConfig(list, inNode, key))
-		outTarget.addScripts(std::move(list));
-	else if (std::string val; parseKeyFromConfig(val, inNode, key))
-		outTarget.addScript(std::move(val));
+	if (std::string val; parseKeyFromConfig(val, inNode, "file"))
+		outTarget.setFile(std::move(val));
 	else
 		return false;
 

@@ -304,13 +304,13 @@
 				"kind": {
 					"$ref": "#/definitions/dist-kind"
 				},
-				"script": {
-					"$ref": "#/definitions/target-script-script"
+				"file": {
+					"$ref": "#/definitions/target-script-file"
 				}
 			},
 			"patternProperties": {
-				"^script(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-script-script"
+				"^file(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-script-file"
 				}
 			}
 		},
@@ -2026,36 +2026,23 @@
 				"runTarget": {
 					"$ref": "#/definitions/target-runTarget"
 				},
-				"script": {
-					"$ref": "#/definitions/target-script-script"
+				"file": {
+					"$ref": "#/definitions/target-script-file"
 				}
 			},
 			"patternProperties": {
 				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-runTarget"
 				},
-				"^script(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-script-script"
+				"^file(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-script-file"
 				}
 			}
 		},
-		"target-script-script": {
-			"description": "Script(s) to run during this build step.",
-			"oneOf": [
-				{
-					"type": "string",
-					"minLength": 1
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"minLength": 1
-					}
-				}
-			]
+		"target-script-file": {
+			"description": "The relative path to a script file to run.",
+			"type": "string",
+			"minLength": 1
 		},
 		"target-cmake": {
 			"type": "object",
