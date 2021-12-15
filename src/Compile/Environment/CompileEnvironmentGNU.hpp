@@ -35,6 +35,8 @@ protected:
 
 private:
 	std::string getCompilerMacros(const std::string& inCompilerExec);
+
+	bool m_genericGcc = false;
 };
 }
 

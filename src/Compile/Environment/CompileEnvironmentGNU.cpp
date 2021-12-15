@@ -258,6 +258,13 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 			Arch expectedArch;
 			expectedArch.set(cachedArch);
 			Diagnostic::error("Expected '{}' or '{}'. Please use a different toolchain or create a new one for this architecture.", cachedArch, expectedArch.str);
+			if (m_genericGcc)
+			{
+				const auto& arch = m_state.info.targetArchitectureString();
+				auto name = m_inputs.toolchainPreferenceName();
+				String::replaceAll(name, arch, expectedArch.str);
+				m_inputs.setToolchainPreferenceName(std::move(name));
+			}
 			return false;
 		}
 
@@ -274,10 +281,12 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 bool CompileEnvironmentGNU::validateArchitectureFromInput()
 {
 	auto& toolchain = m_inputs.toolchainPreferenceName();
-	if (m_inputs.isToolchainPreset() && String::equals("gcc", toolchain))
+	// If the tooclhain was a preset and was not a target triple
+	if (m_inputs.isToolchainPreset() && (String::equals("gcc", toolchain) || String::startsWith("gcc-", toolchain)))
 	{
 		const auto& arch = m_state.info.targetArchitectureString();
 		m_inputs.setToolchainPreferenceName(fmt::format("{}-{}", arch, toolchain));
+		m_genericGcc = true;
 	}
 
 	return true;

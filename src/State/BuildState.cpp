@@ -254,7 +254,10 @@ bool BuildState::initializeToolchain()
 		{
 			Output::lineBreak();
 			auto& toolchainName = m_impl->inputs.toolchainPreferenceName();
-			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
+			if (m_impl->inputs.isToolchainPreset())
+				Diagnostic::error("Architecture '{}' is not supported by the detected '{}' toolchain.", targetArch, toolchainName);
+			else
+				Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
 		}
 		return false;
 	};
