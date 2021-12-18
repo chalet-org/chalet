@@ -579,10 +579,9 @@ void CompilerCxxGCC::addFastMathOption(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addThreadModelCompileOption(StringList& outArgList) const
 {
-	auto threadType = m_project.threadType();
 	if (!m_state.environment->isWindowsClang()
 		&& !m_state.environment->isMingwClang()
-		&& (threadType == ThreadType::Posix || threadType == ThreadType::Auto))
+		&& m_project.threads())
 	{
 		std::string option{ "-pthread" };
 		// if (isFlagSupported(option))

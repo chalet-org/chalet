@@ -10,7 +10,6 @@
 #include "State/ProjectKind.hpp"
 #include "State/ProjectWarningPresets.hpp"
 #include "State/Target/IBuildTarget.hpp"
-#include "State/ThreadType.hpp"
 #include "State/WindowsEntryPoint.hpp"
 #include "State/WindowsSubSystem.hpp"
 #include "Utility/GlobMatch.hpp"
@@ -122,10 +121,6 @@ struct SourceTarget final : public IBuildTarget
 	void setKind(const ProjectKind inValue) noexcept;
 	void setKind(const std::string& inValue);
 
-	ThreadType threadType() const noexcept;
-	void setThreadType(const ThreadType inValue) noexcept;
-	void setThreadType(const std::string& inValue);
-
 	WindowsSubSystem windowsSubSystem() const noexcept;
 	void setWindowsSubSystem(const WindowsSubSystem inValue) noexcept;
 	void setWindowsSubSystem(const std::string& inValue);
@@ -133,6 +128,9 @@ struct SourceTarget final : public IBuildTarget
 	WindowsEntryPoint windowsEntryPoint() const noexcept;
 	void setWindowsEntryPoint(const WindowsEntryPoint inValue) noexcept;
 	void setWindowsEntryPoint(const std::string& inValue);
+
+	bool threads() const noexcept;
+	void setThreads(const bool inValue) noexcept;
 
 	bool cppModules() const noexcept;
 	void setCppModules(const bool inValue) noexcept;
@@ -165,7 +163,6 @@ struct SourceTarget final : public IBuildTarget
 
 private:
 	ProjectKind parseProjectKind(const std::string& inValue);
-	ThreadType parseThreadType(const std::string& inValue);
 	WindowsSubSystem parseWindowsSubSystem(const std::string& inValue);
 	WindowsEntryPoint parseWindowsEntryPoint(const std::string& inValue);
 	StringList getWarningPreset();
@@ -205,10 +202,10 @@ private:
 	ProjectKind m_kind = ProjectKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
 	ProjectWarningPresets m_warningsPreset = ProjectWarningPresets::None;
-	ThreadType m_threadType = ThreadType::Auto;
 	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;
 
+	bool m_threads = true;
 	bool m_cppModules = false;
 	bool m_cppCoroutines = false;
 	bool m_cppConcepts = false;

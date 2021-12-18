@@ -561,19 +561,13 @@ void SourceTarget::setKind(const std::string& inValue)
 }
 
 /*****************************************************************************/
-ThreadType SourceTarget::threadType() const noexcept
+bool SourceTarget::threads() const noexcept
 {
-	return m_threadType;
+	return m_threads;
 }
-
-void SourceTarget::setThreadType(const ThreadType inValue) noexcept
+void SourceTarget::setThreads(const bool inValue) noexcept
 {
-	m_threadType = inValue;
-}
-
-void SourceTarget::setThreadType(const std::string& inValue)
-{
-	m_threadType = parseThreadType(inValue);
+	m_threads = inValue;
 }
 
 /*****************************************************************************/
@@ -723,18 +717,6 @@ ProjectKind SourceTarget::parseProjectKind(const std::string& inValue)
 		return ProjectKind::SharedLibrary;
 
 	return ProjectKind::None;
-}
-
-/*****************************************************************************/
-ThreadType SourceTarget::parseThreadType(const std::string& inValue)
-{
-	if (String::equals("auto", inValue))
-		return ThreadType::Auto;
-
-	if (String::equals("posix", inValue))
-		return ThreadType::Posix;
-
-	return ThreadType::None;
 }
 
 /*****************************************************************************/

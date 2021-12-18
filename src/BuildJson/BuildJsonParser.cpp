@@ -615,8 +615,6 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 				outTarget.setWindowsEntryPoint(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "pch", status))
 				outTarget.setPch(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "threads", status))
-				outTarget.setThreadType(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppStandard", status))
 				outTarget.setCppStandard(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cStandard", status))
@@ -636,6 +634,8 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 			bool val = false;
 			if (valueMatchesSearchKeyPattern(val, value, key, "windowsApplicationManifest", status))
 				outTarget.setWindowsApplicationManifestGenerationEnabled(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "threads", status))
+				outTarget.setThreads(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rtti", status))
 				outTarget.setRtti(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppModules", status))

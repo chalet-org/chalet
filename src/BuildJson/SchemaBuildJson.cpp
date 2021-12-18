@@ -754,15 +754,9 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	})json"_ojson;
 
 	defs[Defs::TargetSourceCxxThreads] = R"json({
-		"type": "string",
-		"description": "The thread model to use.",
-		"minLength": 1,
-		"enum": [
-			"auto",
-			"posix",
-			"none"
-		],
-		"default": "auto"
+		"type": "boolean",
+		"description": "true to enable the preferred thread implementation of the compiler, such as pthreads (default), false to disable.",
+		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetSourceCxxCppModules] = R"json({
