@@ -20,6 +20,15 @@
 
 namespace chalet
 {
+namespace
+{
+/*****************************************************************************/
+constexpr bool isUnread(JsonNodeReadStatus& inStatus)
+{
+	return inStatus == JsonNodeReadStatus::Unread;
+}
+}
+
 /*****************************************************************************/
 BuildJsonProtoParser::BuildJsonProtoParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype) :
 	m_inputs(inInputs),
@@ -101,14 +110,23 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode) const
 		return false;
 	}
 
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "workspace"))
-		m_prototype.workspace.setWorkspaceName(std::move(val));
-
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "version"))
-		m_prototype.workspace.setVersion(std::move(val));
-
-	if (StringList list; parseStringListFromConfig(list, inNode, "searchPaths"))
-		m_prototype.workspace.addSearchPaths(std::move(list));
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			if (String::equals("workspace", key))
+				m_prototype.workspace.setWorkspaceName(value.get<std::string>());
+			else if (String::equals("version", key))
+				m_prototype.workspace.setVersion(value.get<std::string>());
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "searchPaths", status))
+				m_prototype.workspace.addSearchPaths(std::move(val));
+		}
+	}
 
 	return true;
 }
@@ -189,23 +207,32 @@ bool BuildJsonProtoParser::parseConfigurations(const Json& inNode) const
 				BuildConfiguration config;
 				config.setName(name);
 
-				if (std::string val; m_chaletJson.assignFromKey(val, configJson, "optimizationLevel"))
-					config.setOptimizationLevel(std::move(val));
-
-				if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "linkTimeOptimization"))
-					config.setLinkTimeOptimization(val);
-
-				if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "stripSymbols"))
-					config.setStripSymbols(val);
-
-				if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "debugSymbols"))
-					config.setDebugSymbols(val);
-
-				if (bool val = false; m_chaletJson.assignFromKey(val, configJson, "enableProfiling"))
-					config.setEnableProfiling(val);
-
-				if (StringList list; parseStringListFromConfig(list, inNode, "sanitize"))
-					config.addSanitizeOptions(std::move(list));
+				for (const auto& [key, value] : configJson.items())
+				{
+					JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+					if (value.is_string())
+					{
+						if (String::equals("optimizationLevel", key))
+							config.setOptimizationLevel(value.get<std::string>());
+					}
+					else if (value.is_boolean())
+					{
+						if (String::equals("linkTimeOptimization", key))
+							config.setLinkTimeOptimization(value.get<bool>());
+						if (String::equals("stripSymbols", key))
+							config.setStripSymbols(value.get<bool>());
+						if (String::equals("debugSymbols", key))
+							config.setDebugSymbols(value.get<bool>());
+						if (String::equals("enableProfiling", key))
+							config.setEnableProfiling(value.get<bool>());
+					}
+					else if (value.is_array())
+					{
+						StringList val;
+						if (valueMatchesSearchKeyPattern(val, value, key, "sanitize", status))
+							config.addSanitizeOptions(std::move(val));
+					}
+				}
 
 				if (m_prototype.releaseConfiguration().empty())
 				{
@@ -271,6 +298,18 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 				continue;
 #endif
 			}
+			else if (String::equals("bundle", val))
+			{}
+			else
+			{
+				Diagnostic::error("{}: Found unrecognized distribution kind of '{}'", m_filename, val);
+				return false;
+			}
+		}
+		else
+		{
+			Diagnostic::error("{}: Found unrecognized distribution of '{}'", m_filename, name);
+			return false;
 		}
 
 		DistTarget target = IDistTarget::make(type);
@@ -317,18 +356,24 @@ bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, 
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
-	if (std::string val; parseKeyFromConfig(val, inNode, "file"))
-		outTarget.setFile(std::move(val));
-	else
-		return false;
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "file", status))
+			{
+				outTarget.setFile(std::move(val));
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
+				outTarget.setDescription(std::move(val));
+		}
+	}
 
-	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
-		outTarget.setDescription(std::move(val));
-
-	// if (!parsePlatformConfigExclusions(outProject, inNode))
-	// 	return false;
-
-	return true;
+	return valid;
 }
 
 /*****************************************************************************/
@@ -337,14 +382,24 @@ bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarg
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
-		outTarget.setDescription(std::move(val));
-
-	const std::string include{ "include" };
-	if (StringList list; parseStringListFromConfig(list, inNode, include))
-		outTarget.addIncludes(std::move(list));
-	else if (std::string val; parseKeyFromConfig(val, inNode, include))
-		outTarget.addInclude(std::move(val));
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "description", status))
+				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "include", status))
+				outTarget.addInclude(std::move(val));
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "include", status))
+				outTarget.addIncludes(std::move(val));
+		}
+	}
 
 	return true;
 }
@@ -355,74 +410,83 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "configuration"))
+	for (const auto& [key, value] : inNode.items())
 	{
-		outTarget.setConfiguration(std::move(val));
-		m_prototype.addRequiredBuildConfiguration(outTarget.configuration());
-	}
-
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
-		outTarget.setDescription(std::move(val));
-
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "subdirectory"))
-		outTarget.setSubdirectory(std::move(val));
-
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "mainExecutable"))
-		outTarget.setMainExecutable(std::move(val));
-
-	if (bool val; parseKeyFromConfig(val, inNode, "includeDependentSharedLibraries"))
-		outTarget.setIncludeDependentSharedLibraries(val);
-
-	if (StringList list; parseStringListFromConfig(list, inNode, "buildTargets"))
-		outTarget.addBuildTargets(std::move(list));
-
-	if (StringList list; parseStringListFromConfig(list, inNode, "include"))
-		outTarget.addIncludes(std::move(list));
-
-	if (StringList list; parseStringListFromConfig(list, inNode, "exclude"))
-		outTarget.addExcludes(std::move(list));
-
-#if defined(CHALET_LINUX)
-	const std::string kLinuxDesktopEntry{ "linuxDesktopEntry" };
-	if (inNode.contains(kLinuxDesktopEntry))
-	{
-		const Json& linuxDesktopEntry = inNode.at(kLinuxDesktopEntry);
-
-		if (std::string val; m_chaletJson.assignFromKey(val, linuxDesktopEntry, "template"))
-			outTarget.setLinuxDesktopEntryTemplate(std::move(val));
-
-		if (std::string val; m_chaletJson.assignFromKey(val, linuxDesktopEntry, "icon"))
-			outTarget.setLinuxDesktopEntryIcon(std::move(val));
-	}
-#elif defined(CHALET_MACOS)
-	const std::string kMacosBundle{ "macosBundle" };
-	if (inNode.contains(kMacosBundle))
-	{
-		const Json& macosBundle = inNode.at(kMacosBundle);
-
-		outTarget.setMacosBundleName(outTarget.name());
-
-		if (std::string val; m_chaletJson.assignFromKey(val, macosBundle, "type"))
-			outTarget.setMacosBundleType(std::move(val));
-
-		if (std::string val; m_chaletJson.assignFromKey(val, macosBundle, "icon"))
-			outTarget.setMacosBundleIcon(std::move(val));
-
-		const std::string kInfoPropertyList{ "infoPropertyList" };
-		if (macosBundle.contains(kInfoPropertyList))
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
 		{
-			auto& infoPlistNode = macosBundle.at(kInfoPropertyList);
-			if (infoPlistNode.is_object())
+			if (String::equals("configuration", key))
 			{
-				outTarget.setMacosBundleInfoPropertyListContent(infoPlistNode.dump());
+				outTarget.setConfiguration(value.get<std::string>());
+				m_prototype.addRequiredBuildConfiguration(outTarget.configuration());
 			}
-			else if (infoPlistNode.is_string())
+			else if (String::equals("description", key))
+				outTarget.setDescription(value.get<std::string>());
+			else if (String::equals("subdirectory", key))
+				outTarget.setSubdirectory(value.get<std::string>());
+			else if (String::equals("mainExecutable", key))
+				outTarget.setMainExecutable(value.get<std::string>());
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "buildTargets", status))
+				outTarget.addBuildTargets(std::move(val));
+			if (valueMatchesSearchKeyPattern(val, value, key, "include", status))
+				outTarget.addIncludes(std::move(val));
+			if (valueMatchesSearchKeyPattern(val, value, key, "exclude", status))
+				outTarget.addExcludes(std::move(val));
+		}
+		else if (value.is_boolean())
+		{
+			if (String::equals("includeDependentSharedLibraries", key))
+				outTarget.setIncludeDependentSharedLibraries(value.get<bool>());
+		}
+		else if (value.is_object())
+		{
+			if (String::equals("linuxDesktopEntry", key))
 			{
-				outTarget.setMacosBundleInfoPropertyList(infoPlistNode.get<std::string>());
+#if defined(CHALET_LINUX)
+				for (const auto& [k, v] : value.items())
+				{
+					if (v.is_string())
+					{
+						if (String::equals("template", k))
+							outTarget.setLinuxDesktopEntryTemplate(v.get<std::string>());
+						else if (String::equals("icon", k))
+							outTarget.setLinuxDesktopEntryIcon(v.get<std::string>());
+					}
+				}
+#endif
+			}
+			else if (String::equals("macosBundle", key))
+			{
+#if defined(CHALET_MACOS)
+				outTarget.setMacosBundleName(outTarget.name());
+
+				for (const auto& [k, v] : value.items())
+				{
+					if (v.is_string())
+					{
+						if (String::equals("type", k))
+							outTarget.setMacosBundleType(v.get<std::string>());
+						else if (String::equals("icon", k))
+							outTarget.setMacosBundleIcon(v.get<std::string>());
+						else if (String::equals("infoPropertyList", k))
+							outTarget.setMacosBundleInfoPropertyList(v.get<std::string>());
+					}
+					else if (v.is_object())
+					{
+						if (String::equals("infoPropertyList", k))
+						{
+							outTarget.setMacosBundleInfoPropertyListContent(v.dump());
+						}
+					}
+				}
+#endif
 			}
 		}
 	}
-#endif
 
 	return true;
 }
@@ -430,71 +494,82 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
-		outTarget.setDescription(std::move(val));
-
-	if (int val; m_chaletJson.assignFromKey(val, inNode, "iconSize"))
-		outTarget.setIconSize(static_cast<ushort>(val));
-
-	if (int val; m_chaletJson.assignFromKey(val, inNode, "textSize"))
-		outTarget.setTextSize(static_cast<ushort>(val));
-
-	if (bool val; m_chaletJson.assignFromKey(val, inNode, "pathbarVisible"))
-		outTarget.setPathbarVisible(val);
-
-	const std::string kBackground{ "background" };
-	if (inNode.contains(kBackground))
+	for (const auto& [key, value] : inNode.items())
 	{
-		const Json& dmgBackground = inNode.at(kBackground);
-		if (dmgBackground.is_object())
+		if (value.is_string())
 		{
-			if (std::string val; m_chaletJson.assignFromKey(val, dmgBackground, "1x"))
-				outTarget.setBackground1x(std::move(val));
-
-			if (std::string val; m_chaletJson.assignFromKey(val, dmgBackground, "2x"))
-				outTarget.setBackground2x(std::move(val));
+			if (String::equals("description", key))
+				outTarget.setDescription(value.get<std::string>());
+			else if (String::equals("background", key))
+				outTarget.setBackground1x(value.get<std::string>());
 		}
-		else if (dmgBackground.is_string())
+		else if (value.is_boolean())
 		{
-			auto val = dmgBackground.get<std::string>();
-			outTarget.setBackground1x(std::move(val));
+			if (String::equals("pathbarVisible", key))
+				outTarget.setPathbarVisible(value.get<bool>());
 		}
-	}
-
-	const std::string kSize{ "size" };
-	if (inNode.contains(kSize))
-	{
-		const Json& size = inNode.at(kSize);
-
-		int width = 0;
-		int height = 0;
-
-		bool res = m_chaletJson.assignFromKey(width, size, "width");
-		res &= m_chaletJson.assignFromKey(height, size, "height");
-
-		if (res)
+		else if (value.is_number())
 		{
-			outTarget.setSize(static_cast<ushort>(width), static_cast<ushort>(height));
+			if (String::equals("iconSize", key))
+				outTarget.setIconSize(static_cast<ushort>(value.get<int>()));
+			if (String::equals("textSize", key))
+				outTarget.setTextSize(static_cast<ushort>(value.get<int>()));
 		}
-	}
-
-	const std::string kPositions{ "positions" };
-	if (inNode.contains(kPositions))
-	{
-		const Json& positions = inNode.at(kPositions);
-		if (positions.is_object())
+		else if (value.is_object())
 		{
-			for (auto& [name, pos] : positions.items())
+			if (String::equals("background", key))
 			{
-				int posX = 0;
-				int posY = 0;
-
-				bool res = m_chaletJson.assignFromKey(posX, pos, "x");
-				res &= m_chaletJson.assignFromKey(posY, pos, "y");
-
-				if (res)
+				for (const auto& [k, v] : value.items())
 				{
-					outTarget.addPosition(name, static_cast<short>(posX), static_cast<short>(posY));
+					if (v.is_string())
+					{
+						if (String::equals("1x", k))
+							outTarget.setBackground1x(v.get<std::string>());
+						else if (String::equals("2x", k))
+							outTarget.setBackground2x(v.get<std::string>());
+					}
+				}
+			}
+			else if (String::equals("size", key))
+			{
+				int width = 0;
+				int height = 0;
+				for (const auto& [k, v] : value.items())
+				{
+					if (v.is_number())
+					{
+						if (String::equals("width", k))
+							width = v.get<int>();
+						else if (String::equals("height", k))
+							height = v.get<int>();
+					}
+				}
+				if (width > 0 && height > 0)
+				{
+					outTarget.setSize(static_cast<ushort>(width), static_cast<ushort>(height));
+				}
+			}
+			else if (String::equals("positions", key))
+			{
+				for (const auto& [name, posJson] : value.items())
+				{
+					if (posJson.is_object())
+					{
+						int posX = 0;
+						int posY = 0;
+						for (const auto& [k, v] : posJson.items())
+						{
+							if (v.is_number())
+							{
+								if (String::equals("x", k))
+									posX = v.get<int>();
+								else if (String::equals("y", k))
+									posY = v.get<int>();
+							}
+						}
+
+						outTarget.addPosition(name, static_cast<short>(posX), static_cast<short>(posY));
+					}
 				}
 			}
 		}
@@ -506,17 +581,26 @@ bool BuildJsonProtoParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, 
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "description"))
-		outTarget.setDescription(std::move(val));
-
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "nsisScript"))
-		outTarget.setNsisScript(std::move(val));
-
-	if (StringList list; parseStringListFromConfig(list, inNode, "pluginDirs"))
-		outTarget.addPluginDirs(std::move(list));
-
-	if (StringList list; parseStringListFromConfig(list, inNode, "defines"))
-		outTarget.addDefines(std::move(list));
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (String::equals("description", key))
+				outTarget.setDescription(std::move(val));
+			else if (String::equals("nsisScript", key))
+				outTarget.setNsisScript(std::move(val));
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "pluginDirs", status))
+				outTarget.addPluginDirs(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
+				outTarget.addDefines(std::move(val));
+		}
+	}
 
 	return true;
 }
@@ -553,32 +637,44 @@ bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode) const
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseGitDependency(GitDependency& outDependency, const Json& inNode) const
 {
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "repository"))
-		outDependency.setRepository(std::move(val));
-	else
+	for (const auto& [key, value] : inNode.items())
+	{
+		if (value.is_string())
+		{
+			if (String::equals("repository", key))
+				outDependency.setRepository(value.get<std::string>());
+			else if (String::equals("branch", key))
+				outDependency.setBranch(value.get<std::string>());
+			else if (String::equals("tag", key))
+				outDependency.setTag(value.get<std::string>());
+			else if (String::equals("commit", key))
+				outDependency.setCommit(value.get<std::string>());
+		}
+		else if (value.is_boolean())
+		{
+			if (String::equals("submodules", key))
+				outDependency.setSubmodules(value.get<bool>());
+		}
+	}
+
+	bool hasRepository = !outDependency.repository().empty();
+	bool hasCommit = !outDependency.commit().empty();
+	bool hasTag = !outDependency.tag().empty();
+
+	if (!hasRepository)
 	{
 		Diagnostic::error("{}: 'repository' is required for all  external dependencies.", m_filename);
 		return false;
 	}
 
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "branch"))
-		outDependency.setBranch(std::move(val));
-
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "tag"))
-		outDependency.setTag(std::move(val));
-	else if (m_chaletJson.assignFromKey(val, inNode, "commit"))
+	if (hasCommit && hasTag)
 	{
 		if (!outDependency.tag().empty())
 		{
 			Diagnostic::error("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_filename, outDependency.repository());
 			return false;
 		}
-
-		outDependency.setCommit(std::move(val));
 	}
-
-	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "submodules"))
-		outDependency.setSubmodules(val);
 
 	return true;
 }
@@ -596,37 +692,23 @@ bool BuildJsonProtoParser::parseTargetCondition(IDistTarget& outTarget, const Js
 
 /*****************************************************************************/
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const
-{
-	bool res = m_chaletJson.assignStringListAndValidate(outList, inNode, inKey);
-
-	const auto& platform = m_platform;
-
-	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
-
-	for (auto& notPlatform : m_notPlatforms)
-	{
-		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
-	}
-
-	return res;
-}
-
-/*****************************************************************************/
 bool BuildJsonProtoParser::conditionIsValid(const std::string& inContent) const
 {
-	const auto& platform = m_platform;
-
-	if (String::equals(platform, inContent))
-		return true;
-
-	for (auto& notPlatform : m_notPlatforms)
+	if (!String::equals(m_platform, inContent))
 	{
-		if (String::equals(fmt::format("!{}", notPlatform), inContent))
-			return true;
+		auto split = String::split(inContent, '.');
+		for (auto& notPlatform : m_notPlatforms)
+		{
+			if (List::contains(split, notPlatform))
+				return false;
+		}
+
+		const auto incCi = Environment::isContinuousIntegrationServer() ? "" : "!";
+		if (!List::contains(split, fmt::format("{}ci", incCi)))
+			return false;
 	}
 
-	return false;
+	return true;
 }
 
 }

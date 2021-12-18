@@ -107,7 +107,7 @@
 			"type": "string",
 			"description": "A rule describing when to include this target in the distribution.",
 			"minLength": 1,
-			"pattern": "^(!?(windows|macos|linux)\\b)$"
+			"pattern": "^(!?(ci|windows|macos|linux)\\b)$"
 		},
 		"dist-bundle": {
 			"type": "object",

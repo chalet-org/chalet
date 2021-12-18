@@ -8,7 +8,11 @@
 
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
+#include "Terminal/Environment.hpp"
+#include "Utility/List.hpp"
+#include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonNodeReadStatus.hpp"
 
 namespace chalet
 {
@@ -53,9 +57,7 @@ private:
 
 	//
 	template <typename T>
-	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey) const;
-
-	bool parseStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const;
+	bool valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
 
 	bool conditionIsValid(const std::string& inContent) const;
 

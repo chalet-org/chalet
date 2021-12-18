@@ -28,6 +28,15 @@
 
 namespace chalet
 {
+namespace
+{
+/*****************************************************************************/
+constexpr bool isUnread(JsonNodeReadStatus& inStatus)
+{
+	return inStatus == JsonNodeReadStatus::Unread;
+}
+}
+
 /*****************************************************************************/
 BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, BuildState& inState) :
 	m_inputs(inInputs),
@@ -36,7 +45,6 @@ BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, StatePrototy
 	m_state(inState),
 	kKeyTargets("targets"),
 	kKeyAbstracts("abstracts"),
-	m_debugIdentifier("debug"),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())
 {
@@ -217,6 +225,12 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		}
 	}
 
+	StringList sourceTargets{
+		"executable",
+		"staticLibrary",
+		"sharedLibrary",
+	};
+
 	for (auto& [name, targetJson] : targets.items())
 	{
 		if (!targetJson.is_object())
@@ -246,6 +260,18 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 			{
 				type = BuildTargetType::Script;
 			}
+			else if (String::equals(sourceTargets, val))
+			{}
+			else
+			{
+				Diagnostic::error("{}: Found unrecognized target kind of '{}'", m_filename, val);
+				return false;
+			}
+		}
+		else
+		{
+			Diagnostic::error("{}: Found unrecognized target of '{}'", m_filename, name);
+			return false;
 		}
 
 		BuildTarget target;
@@ -311,20 +337,73 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 	if (!parseTargetCondition(outTarget, inNode))
 		return true; // true to skip project
 
-	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
-		outTarget.setDescription(std::move(val));
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_object())
+		{
+			if (String::equals("location", key))
+			{
+				for (const auto& [k, v] : value.items())
+				{
+					JsonNodeReadStatus s = JsonNodeReadStatus::Unread;
+					if (v.is_string())
+					{
+						std::string val;
+						if (valueMatchesSearchKeyPattern(val, v, k, "include", s))
+							outTarget.addLocation(std::move(val));
+						else if (isUnread(s) && valueMatchesSearchKeyPattern(val, v, k, "exclude", s))
+							outTarget.addLocationExclude(std::move(val));
+					}
+					else if (v.is_array())
+					{
+						StringList val;
+						if (valueMatchesSearchKeyPattern(val, v, k, "include", s))
+							outTarget.addLocations(std::move(val));
+						else if (isUnread(s) && valueMatchesSearchKeyPattern(val, v, k, "exclude", s))
+							outTarget.addLocationExcludes(std::move(val));
+					}
+				}
+			}
+		}
+		else if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "description", status))
+				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "location", status))
+				outTarget.addLocation(std::move(val));
+			else if (isUnread(status) && String::equals("language", key))
+				outTarget.setLanguage(value.get<std::string>());
+			else if (isUnread(status) && String::equals("kind", key))
+				outTarget.setKind(value.get<std::string>());
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "files", status))
+				outTarget.addFiles(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "location", status))
+				outTarget.addLocations(std::move(val));
+		}
+	}
 
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "kind"))
-		outTarget.setKind(val);
+	if (!inAbstract)
+	{
+		bool hasFiles = !outTarget.files().empty();
+		bool hasLocations = !outTarget.locations().empty();
 
-	// if (std::string val; m_chaletJson.assignFromKey(val, inNode, "name"))
-	// 	outTarget.setName(val);
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "language"))
-		outTarget.setLanguage(val);
-
-	if (!parseFilesAndLocation(outTarget, inNode, inAbstract))
-		return false;
+		if (hasFiles && hasLocations)
+		{
+			Diagnostic::error("{}: Define either 'files' or 'location', not both.", m_filename);
+			return false;
+		}
+		else if (!hasFiles && !hasLocations)
+		{
+			Diagnostic::error("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outTarget.name());
+			return false;
+		}
+	}
 
 	if (!parseRunTargetProperties(outTarget, inNode))
 		return false;
@@ -371,18 +450,27 @@ bool BuildJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
-	if (std::string val; parseKeyFromConfig(val, inNode, "file"))
-		outTarget.setFile(std::move(val));
-	else
-		return false;
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
-		outTarget.setDescription(std::move(val));
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "file", status))
+			{
+				outTarget.setFile(std::move(val));
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
+				outTarget.setDescription(std::move(val));
+		}
+	}
 
 	if (!parseRunTargetProperties(outTarget, inNode))
 		return false;
 
-	return true;
+	return valid;
 }
 
 /*****************************************************************************/
@@ -391,24 +479,34 @@ bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Jso
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "location"))
-		outTarget.setLocation(std::move(val));
-	else
-		return false;
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "location", status))
+			{
+				outTarget.setLocation(std::move(val));
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
+				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "buildFile", status))
+				outTarget.setBuildFile(std::move(val));
+		}
+		else if (value.is_boolean())
+		{
+			bool val = false;
+			if (valueMatchesSearchKeyPattern(val, value, key, "recheck", status))
+				outTarget.setRecheck(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rebuild", status))
+				outTarget.setRebuild(val);
+		}
+	}
 
-	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
-		outTarget.setDescription(std::move(val));
-
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "buildFile"))
-		outTarget.setBuildFile(std::move(val));
-
-	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "recheck"))
-		outTarget.setRecheck(val);
-
-	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "rebuild"))
-		outTarget.setRebuild(val);
-
-	return true;
+	return valid;
 }
 
 /*****************************************************************************/
@@ -417,36 +515,47 @@ bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNod
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
 
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "location"))
-		outTarget.setLocation(std::move(val));
-	else
-		return false;
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "description"))
-		outTarget.setDescription(std::move(val));
-
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "buildFile"))
-		outTarget.setBuildFile(std::move(val));
-
-	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "recheck"))
-		outTarget.setRecheck(val);
-
-	if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "rebuild"))
-		outTarget.setRebuild(val);
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "toolset"))
-		outTarget.setToolset(std::move(val));
-
-	if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, "defines"))
-		outTarget.addDefines(std::move(list));
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "runExecutable"))
-		outTarget.setRunExecutable(std::move(val));
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (String::equals("location", key))
+			{
+				outTarget.setLocation(value.get<std::string>());
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
+				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && String::equals("buildFile", key))
+				outTarget.setBuildFile(value.get<std::string>());
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "toolset", status))
+				outTarget.setToolset(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runExecutable", status))
+				outTarget.setRunExecutable(std::move(val));
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "defines", status))
+				outTarget.addDefines(std::move(val));
+		}
+		else if (value.is_boolean())
+		{
+			bool val = false;
+			if (valueMatchesSearchKeyPattern(val, value, key, "recheck", status))
+				outTarget.setRecheck(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rebuild", status))
+				outTarget.setRebuild(val);
+		}
+	}
 
 	if (!parseRunTargetProperties(outTarget, inNode))
 		return false;
 
-	return true;
+	return valid;
 }
 
 /*****************************************************************************/
@@ -456,9 +565,7 @@ bool BuildJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& 
 	if (!buildConfiguration.empty())
 	{
 		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
-		{
 			outTarget.setIncludeInBuild(conditionIsValid(val));
-		}
 	}
 
 	return outTarget.includeInBuild();
@@ -467,14 +574,24 @@ bool BuildJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& 
 /*****************************************************************************/
 bool BuildJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
 {
-	if (StringList list; parseStringListFromConfig(list, inNode, "runArguments"))
-		outTarget.addRunArguments(std::move(list));
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "runTarget"))
-		outTarget.setRunTarget(val);
-
-	if (StringList list; parseStringListFromConfig(list, inNode, "runDependencies"))
-		outTarget.addRunDependencies(std::move(list));
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_boolean())
+		{
+			bool val = false;
+			if (valueMatchesSearchKeyPattern(val, value, key, "runTarget", status))
+				outTarget.setRunTarget(val);
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "runArguments", status))
+				outTarget.addRunArguments(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runDependencies", status))
+				outTarget.addRunDependencies(std::move(val));
+		}
+	}
 
 	return true;
 }
@@ -482,282 +599,135 @@ bool BuildJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Js
 /*****************************************************************************/
 bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; parseKeyFromConfig(val, inNode, "windowsApplicationManifest"))
-		outTarget.setWindowsApplicationManifest(std::move(val));
-	else if (bool enabled = false; m_chaletJson.assignFromKey(enabled, inNode, "windowsApplicationManifest"))
-		outTarget.setWindowsApplicationManifestGenerationEnabled(enabled);
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "windowsApplicationIcon"))
-		outTarget.setWindowsApplicationIcon(std::move(val));
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "windowsSubSystem"))
-		outTarget.setWindowsSubSystem(val);
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "windowsEntryPoint"))
-		outTarget.setWindowsEntryPoint(val);
-
-	// if (bool val = false; m_chaletJson.assignFromKey(val, inNode, "windowsOutputDef"))
-	// 	outTarget.setWindowsOutputDef(val);
-
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "pch"))
-		outTarget.setPch(std::move(val));
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "rtti"))
-		outTarget.setRtti(val);
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "cppModules"))
-		outTarget.setCppModules(val);
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "cppCoroutines"))
-		outTarget.setCppCoroutines(val);
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "cppConcepts"))
-		outTarget.setCppConcepts(val);
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "exceptions"))
-		outTarget.setExceptions(val);
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "staticLinking"))
-		outTarget.setStaticLinking(val);
-
-	if (bool val = false; parseKeyFromConfig(val, inNode, "fastMath"))
-		outTarget.setFastMath(val);
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "threads"))
-		outTarget.setThreadType(val);
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "cppStandard"))
-		outTarget.setCppStandard(std::move(val));
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "cStandard"))
-		outTarget.setCStandard(std::move(val));
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "warnings"))
-		outTarget.setWarningPreset(std::move(val));
-	else if (StringList list; parseStringListWithToolchain(list, inNode, "warnings"))
-		outTarget.addWarnings(std::move(list));
-
-	if (std::string val; parseKeyWithToolchain(val, inNode, "compileOptions"))
-		outTarget.addCompileOptions(std::move(val));
-
-	if (std::string val; parseKeyWithToolchain(val, inNode, "linkerOptions"))
-		outTarget.addLinkerOptions(std::move(val));
-
-	if (std::string val; parseKeyFromConfig(val, inNode, "linkerScript"))
-		outTarget.setLinkerScript(std::move(val));
-
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "windowsApplicationManifest", status))
+				outTarget.setWindowsApplicationManifest(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "windowsApplicationIcon", status))
+				outTarget.setWindowsApplicationIcon(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "windowsSubSystem", status))
+				outTarget.setWindowsSubSystem(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "windowsEntryPoint", status))
+				outTarget.setWindowsEntryPoint(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "pch", status))
+				outTarget.setPch(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "threads", status))
+				outTarget.setThreadType(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppStandard", status))
+				outTarget.setCppStandard(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cStandard", status))
+				outTarget.setCStandard(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "warnings", status))
+				outTarget.setWarningPreset(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerScript", status))
+				outTarget.setLinkerScript(std::move(val));
+			//
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "compileOptions", status))
+				outTarget.addCompileOptions(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
+				outTarget.addLinkerOptions(std::move(val));
+		}
+		else if (value.is_boolean())
+		{
+			bool val = false;
+			if (valueMatchesSearchKeyPattern(val, value, key, "windowsApplicationManifest", status))
+				outTarget.setWindowsApplicationManifestGenerationEnabled(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rtti", status))
+				outTarget.setRtti(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppModules", status))
+				outTarget.setCppModules(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppCoroutines", status))
+				outTarget.setCppCoroutines(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppConcepts", status))
+				outTarget.setCppConcepts(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "exceptions", status))
+				outTarget.setExceptions(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "staticLinking", status))
+				outTarget.setStaticLinking(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "fastMath", status))
+				outTarget.setFastMath(val);
+			// else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "windowsOutputDef", status))
+			// 	outTarget.setWindowsOutputDef(val);
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "warnings", status))
+				outTarget.addWarnings(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
+				outTarget.addDefines(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "links", status))
+				outTarget.addLinks(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "staticLinks", status))
+				outTarget.addStaticLinks(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "libDirs", status))
+				outTarget.addLibDirs(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "includeDirs", status))
+				outTarget.addIncludeDirs(std::move(val));
 #if defined(CHALET_MACOS)
-	if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, "macosFrameworkPaths"))
-		outTarget.addMacosFrameworkPaths(std::move(list));
-
-	if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, "macosFrameworks"))
-		outTarget.addMacosFrameworks(std::move(list));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworkPaths", status))
+				outTarget.addMacosFrameworkPaths(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworks", status))
+				outTarget.addMacosFrameworks(std::move(val));
 #endif
-
-	if (StringList list; parseStringListWithToolchain(list, inNode, "defines"))
-		outTarget.addDefines(std::move(list));
-
-	if (StringList list; parseStringListWithToolchain(list, inNode, "links"))
-		outTarget.addLinks(std::move(list));
-
-	if (StringList list; parseStringListWithToolchain(list, inNode, "staticLinks"))
-		outTarget.addStaticLinks(std::move(list));
-
-	if (StringList list; parseStringListWithToolchain(list, inNode, "libDirs"))
-		outTarget.addLibDirs(std::move(list));
-
-	if (StringList list; parseStringListWithToolchain(list, inNode, "includeDirs"))
-		outTarget.addIncludeDirs(std::move(list));
-
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseStringListWithToolchain(StringList& outList, const Json& inNode, const std::string& inKey) const
-{
-	chalet_assert(m_state.environment != nullptr, "");
-
-	if (parseStringListFromConfig(outList, inNode, inKey))
-	{
-		return true;
-	}
-	else if (inNode.contains(inKey))
-	{
-		auto& innerNode = inNode.at(inKey);
-		if (innerNode.is_object())
+		}
+		else if (value.is_object())
 		{
-			const auto& triple = m_state.info.targetArchitectureTriple();
-			const auto& toolchainName = m_inputs.toolchainPreferenceName();
-
-			bool res = parseStringListFromConfig(outList, innerNode, "*");
-
-			if (triple != toolchainName)
-				res |= parseStringListFromConfig(outList, innerNode, triple);
-
-			res |= parseStringListFromConfig(outList, innerNode, toolchainName);
-
-			return res;
+			{
+				std::string val;
+				if (valueMatchesToolchainSearchPattern(val, value, key, "compileOptions", status))
+					outTarget.addCompileOptions(std::move(val));
+				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "linkerOptions", status))
+					outTarget.addLinkerOptions(std::move(val));
+			}
+			if (isUnread(status))
+			{
+				StringList val;
+				if (valueMatchesToolchainSearchPattern(val, value, key, "warnings", status))
+					outTarget.addWarnings(std::move(val));
+				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "defines", status))
+					outTarget.addDefines(std::move(val));
+				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "links", status))
+					outTarget.addLinks(std::move(val));
+				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "staticLinks", status))
+					outTarget.addStaticLinks(std::move(val));
+				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "libDirs", status))
+					outTarget.addLibDirs(std::move(val));
+				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "includeDirs", status))
+					outTarget.addIncludeDirs(std::move(val));
+			}
 		}
 	}
 
-	return false;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseFilesAndLocation(SourceTarget& outTarget, const Json& inNode, const bool inAbstract) const
-{
-	bool locResult = parseProjectLocationOrFiles(outTarget, inNode);
-	if (locResult && inAbstract)
-	{
-		Diagnostic::error("{}: '{}' cannot contain a location configuration.", m_filename, kKeyAbstracts);
-		return false;
-	}
-
-	if (!locResult && !inAbstract)
-	{
-		Diagnostic::error("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outTarget.name());
-		return false;
-	}
-
 	return true;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::parseProjectLocationOrFiles(SourceTarget& outTarget, const Json& inNode) const
-{
-	const std::string loc{ "location" };
-
-	bool hasFiles = inNode.contains("files");
-
-	if (!inNode.contains(loc))
-	{
-		if (hasFiles)
-		{
-			if (StringList list; parseStringListFromConfig(list, inNode, "files"))
-				outTarget.addFiles(std::move(list));
-
-			return true;
-		}
-		else
-		{
-			// No location or files
-			return false;
-		}
-	}
-
-	if (hasFiles)
-	{
-		Diagnostic::error("{}: Define either 'files' or 'location', not both.", m_filename);
-		return false;
-	}
-
-	const Json& node = inNode.at(loc);
-	if (node.is_object())
-	{
-		// include is mandatory
-		if (StringList list; parseStringListFromConfig(list, node, "include"))
-			outTarget.addLocations(std::move(list));
-		else if (std::string val; parseKeyFromConfig(val, node, "include"))
-			outTarget.addLocation(std::move(val));
-		else
-			return false;
-
-		// exclude is optional
-		if (StringList list; parseStringListFromConfig(list, node, "exclude"))
-			outTarget.addLocationExcludes(std::move(list));
-		else if (std::string val; parseKeyFromConfig(val, node, "exclude"))
-			outTarget.addLocationExclude(std::move(val));
-	}
-	else if (StringList list; m_chaletJson.assignStringListAndValidate(list, inNode, loc))
-		outTarget.addLocations(std::move(list));
-	else if (std::string val; m_chaletJson.assignFromKey(val, inNode, loc))
-		outTarget.addLocation(std::move(val));
-	else
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-/*****************************************************************************/
-bool BuildJsonParser::parseStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const
-{
-	bool res = m_chaletJson.assignStringListAndValidate(outList, inNode, inKey);
-
-	const auto& platform = m_platform;
-
-	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}", inKey, platform));
-
-	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
-	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}", inKey, notSymbol, m_debugIdentifier));
-	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
-	res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}.{}{}", inKey, platform, notSymbol, m_debugIdentifier));
-
-	for (auto& notPlatform : m_notPlatforms)
-	{
-		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}", inKey, notPlatform));
-		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.!{}.{}{}", inKey, notPlatform, notSymbol, m_debugIdentifier));
-		res |= m_chaletJson.assignStringListAndValidate(outList, inNode, fmt::format("{}.{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
-	}
-
-	return res;
-}
-
-/*****************************************************************************/
-bool BuildJsonParser::containsComplexKey(const Json& inNode, const std::string& inKey) const
-{
-	bool res = inNode.contains(inKey);
-
-	const auto& platform = m_platform;
-
-	res |= inNode.contains(fmt::format("{}.{}", inKey, platform));
-
-	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
-	res |= inNode.contains(fmt::format("{}.{}{}", inKey, notSymbol, m_debugIdentifier));
-	res |= inNode.contains(fmt::format("{}.{}{}.{}", inKey, notSymbol, m_debugIdentifier, platform));
-	res |= inNode.contains(fmt::format("{}.{}.{}{}", inKey, platform, notSymbol, m_debugIdentifier));
-
-	for (auto& notPlatform : m_notPlatforms)
-	{
-		res |= inNode.contains(fmt::format("{}.!{}", inKey, notPlatform));
-		res |= inNode.contains(fmt::format("{}.!{}.{}{}", inKey, notPlatform, notSymbol, m_debugIdentifier));
-		res |= inNode.contains(fmt::format("{}.{}{}.!{}", inKey, notSymbol, m_debugIdentifier, notPlatform));
-	}
-
-	return res;
 }
 
 /*****************************************************************************/
 bool BuildJsonParser::conditionIsValid(const std::string& inContent) const
 {
-	const auto& platform = m_platform;
-
-	if (String::equals(platform, inContent))
-		return true;
-
-	const auto notSymbol = m_state.configuration.debugSymbols() ? "" : "!";
-
-	if (String::equals(fmt::format("{}{}", notSymbol, m_debugIdentifier), inContent))
-		return true;
-
-	if (String::equals(fmt::format("{}{}.{}", notSymbol, m_debugIdentifier, platform), inContent))
-		return true;
-
-	if (String::equals(fmt::format("{}.{}{}", platform, notSymbol, m_debugIdentifier), inContent))
-		return true;
-
-	for (auto& notPlatform : m_notPlatforms)
+	if (!String::equals(m_platform, inContent))
 	{
-		if (String::equals(fmt::format("!{}", notPlatform), inContent))
-			return true;
+		auto split = String::split(inContent, '.');
+		for (auto& notPlatform : m_notPlatforms)
+		{
+			if (List::contains(split, notPlatform))
+				return false;
+		}
 
-		if (String::equals(fmt::format("!{}.{}{}", notSymbol, m_debugIdentifier, notPlatform), inContent))
-			return true;
-		if (String::equals(fmt::format("{}{}.!{}", notSymbol, m_debugIdentifier, notPlatform), inContent))
-			return true;
+		const auto incDebug = m_state.configuration.debugSymbols() ? "" : "!";
+		if (!List::contains(split, fmt::format("{}debug", incDebug)))
+			return false;
+
+		// const auto incCi = Environment::isContinuousIntegrationServer() ? "" : "!";
+		// if (!List::contains(split, fmt::format("{}ci", incCi)))
+		// 	return false;
 	}
 
-	return false;
+	return true;
 }
 
 }

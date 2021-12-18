@@ -39,7 +39,7 @@ SchemaBuildJson::SchemaBuildJson() :
 	kPatternConditionConfigurations(R"regex((\.!?(debug)\b\.?)?)regex"),
 	kPatternConditionPlatforms(R"regex((\.!?(windows|macos|linux)\b){1,2})regex"),
 	kPatternConditionConfigurationsPlatforms(R"regex((\.!?(debug|windows|macos|linux)\b){1,2})regex"),
-	kPatternConditionPlatformsInner(R"regex((!?(windows|macos|linux)\b))regex"),
+	kPatternConditionPlatformsInner(R"regex((!?(ci|windows|macos|linux)\b))regex"),
 	kPatternConditionConfigurationsPlatformsInner(R"regex((!?(debug|windows|macos|linux)\b){1,2})regex"),
 	kPatternCompilers(R"regex(^(\*|[\w\-+.]{3,})(\.!?(debug|windows|macos|linux)\b){0,2}$)regex")
 {

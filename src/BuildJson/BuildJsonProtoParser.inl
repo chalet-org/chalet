@@ -9,19 +9,44 @@ namespace chalet
 {
 /*****************************************************************************/
 template <typename T>
-bool BuildJsonProtoParser::parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey) const
+bool BuildJsonProtoParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const
 {
-	bool res = m_chaletJson.assignFromKey(outVariable, inNode, inKey);
-
-	const auto& platform = m_platform;
-
-	res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.{}", inKey, platform));
-
-	for (auto& notPlatform : m_notPlatforms)
+	if (!String::equals(inSearch, inKey))
 	{
-		res |= m_chaletJson.assignFromKey(outVariable, inNode, fmt::format("{}.!{}", inKey, notPlatform));
+		if (!String::startsWith(fmt::format("{}.", inSearch), inKey))
+			return false;
+
+		inStatus = JsonNodeReadStatus::ValidKeyUnreadValue;
+
+		for (auto& notPlatform : m_notPlatforms)
+		{
+			if (String::contains(fmt::format(".{}", notPlatform), inKey))
+				return false;
+		}
+
+		const auto ci = Environment::isContinuousIntegrationServer() ? "" : "!";
+		if (!String::contains(fmt::format(".{}ci", ci), inKey))
+			return false;
 	}
 
-	return res;
+	// LOG(inKey);
+	inStatus = JsonNodeReadStatus::ValidKeyReadValue;
+	using Type = std::decay_t<T>;
+	if constexpr (std::is_same<Type, StringList>())
+	{
+		for (auto& itemRaw : inNode)
+		{
+			if (!itemRaw.is_string())
+				return false;
+
+			std::string item = itemRaw.get<std::string>();
+			List::addIfDoesNotExist(outVariable, std::move(item));
+		}
+	}
+	else
+	{
+		outVariable = inNode.template get<Type>();
+	}
+	return true;
 }
 }

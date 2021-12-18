@@ -11,8 +11,11 @@
 #include "Libraries/Json.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
+#include "Terminal/Environment.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonNodeReadStatus.hpp"
 
 namespace chalet
 {
@@ -43,25 +46,17 @@ private:
 	bool parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode) const;
-	bool parseFilesAndLocation(SourceTarget& outProject, const Json& inNode, const bool inAbstract) const;
-	bool parseProjectLocationOrFiles(SourceTarget& outProject, const Json& inNode) const;
 
 	bool validBuildRequested() const;
 	bool validRunTargetRequested() const;
 	bool validRunTargetRequestedFromInput() const;
-
-	template <typename T>
-	bool parseKeyFromConfig(T& outVariable, const Json& inNode, const std::string& inKey) const;
-
-	template <typename T>
-	bool parseKeyWithToolchain(T& outVariable, const Json& inNode, const std::string& inKey) const;
-
-	bool parseStringListFromConfig(StringList& outList, const Json& inNode, const std::string& inKey) const;
-	bool parseStringListWithToolchain(StringList& outList, const Json& inNode, const std::string& inKey) const;
-
-	bool containsComplexKey(const Json& inNode, const std::string& inKey) const;
-
 	bool conditionIsValid(const std::string& inContent) const;
+
+	template <typename T>
+	bool valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
+
+	template <typename T>
+	bool valueMatchesToolchainSearchPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
 
 	const CommandLineInputs& m_inputs;
 	JsonFile& m_chaletJson;
@@ -72,8 +67,6 @@ private:
 	const std::string kKeyAbstracts;
 
 	HeapDictionary<SourceTarget> m_abstractSourceTarget;
-
-	std::string m_debugIdentifier;
 
 	StringList m_notPlatforms;
 	std::string m_platform;
