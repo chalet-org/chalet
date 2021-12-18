@@ -43,7 +43,7 @@ bool BuildJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& i
 			if (!item.is_string())
 				return false;
 
-			List::addIfDoesNotExist(outVariable, item.get<std::string>());
+			List::addIfDoesNotExist(outVariable, item.template get<std::string>());
 		}
 	}
 	else
@@ -82,7 +82,7 @@ bool BuildJsonParser::valueMatchesToolchainSearchPattern(T& outVariable, const J
 							if (!item.is_string())
 								return false;
 
-							List::addIfDoesNotExist(outVariable, item.get<std::string>());
+							List::addIfDoesNotExist(outVariable, item.template get<std::string>());
 						}
 					}
 				}

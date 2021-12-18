@@ -39,7 +39,7 @@ bool BuildJsonProtoParser::valueMatchesSearchKeyPattern(T& outVariable, const Js
 			if (!itemRaw.is_string())
 				return false;
 
-			std::string item = itemRaw.get<std::string>();
+			std::string item = itemRaw.template get<std::string>();
 			List::addIfDoesNotExist(outVariable, std::move(item));
 		}
 	}
