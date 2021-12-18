@@ -11,6 +11,7 @@
 #include "SettingsJson/GlobalSettingsState.hpp"
 #include "State/StatePrototype.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -243,53 +244,50 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 		return false;
 	}
 
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyShowCommands))
-		outState.showCommands = val;
-
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyDumpAssembly))
-		outState.dumpAssembly = val;
-
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyBenchmark))
-		outState.benchmark = val;
-
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyLaunchProfiler))
-		outState.launchProfiler = val;
-
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))
-		outState.generateCompileCommands = val;
-
-	if (ushort val = 0; m_jsonFile.assignFromKey(val, buildSettings, kKeyMaxJobs))
-		outState.maxJobs = val;
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastBuildConfiguration))
-		outState.buildConfiguration = std::move(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
-		outState.toolchainPreference = std::move(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastArchitecture))
-		outState.architecturePreference = std::move(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeySigningIdentity))
-		outState.signingIdentity = std::move(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyInputFile))
-		outState.inputFile = std::move(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyEnvFile))
-		outState.envFile = std::move(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyRootDirectory))
-		outState.rootDirectory = std::move(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyOutputDirectory))
-		outState.outputDirectory = std::move(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyExternalDirectory))
-		outState.externalDirectory = std::move(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyDistributionDirectory))
-		outState.distributionDirectory = std::move(val);
+	for (const auto& [key, value] : buildSettings.items())
+	{
+		if (value.is_string())
+		{
+			if (String::equals(kKeyLastBuildConfiguration, key))
+				outState.buildConfiguration = value.get<std::string>();
+			else if (String::equals(kKeyLastToolchain, key))
+				outState.toolchainPreference = value.get<std::string>();
+			else if (String::equals(kKeyLastArchitecture, key))
+				outState.architecturePreference = value.get<std::string>();
+			else if (String::equals(kKeySigningIdentity, key))
+				outState.signingIdentity = value.get<std::string>();
+			else if (String::equals(kKeyInputFile, key))
+				outState.inputFile = value.get<std::string>();
+			else if (String::equals(kKeyEnvFile, key))
+				outState.envFile = value.get<std::string>();
+			else if (String::equals(kKeyRootDirectory, key))
+				outState.rootDirectory = value.get<std::string>();
+			else if (String::equals(kKeyOutputDirectory, key))
+				outState.outputDirectory = value.get<std::string>();
+			else if (String::equals(kKeyExternalDirectory, key))
+				outState.externalDirectory = value.get<std::string>();
+			else if (String::equals(kKeyDistributionDirectory, key))
+				outState.distributionDirectory = value.get<std::string>();
+		}
+		else if (value.is_boolean())
+		{
+			if (String::equals(kKeyShowCommands, key))
+				outState.showCommands = value.get<bool>();
+			else if (String::equals(kKeyDumpAssembly, key))
+				outState.dumpAssembly = value.get<bool>();
+			else if (String::equals(kKeyBenchmark, key))
+				outState.benchmark = value.get<bool>();
+			else if (String::equals(kKeyLaunchProfiler, key))
+				outState.launchProfiler = value.get<bool>();
+			else if (String::equals(kKeyGenerateCompileCommands, key))
+				outState.generateCompileCommands = value.get<bool>();
+		}
+		else if (value.is_number())
+		{
+			if (String::equals(kKeyMaxJobs, key))
+				outState.maxJobs = static_cast<uint>(value.get<int>());
+		}
+	}
 
 	return true;
 }

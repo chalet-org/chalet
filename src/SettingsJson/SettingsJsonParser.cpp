@@ -423,101 +423,110 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 		return false;
 	}
 
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyDumpAssembly))
+	for (const auto& [key, value] : buildSettings.items())
 	{
-		if (!m_inputs.dumpAssembly().has_value())
-			m_inputs.setDumpAssembly(val);
-	}
+		if (value.is_string())
+		{
+			if (String::equals(kKeyLastBuildConfiguration, key))
+			{
+				if (m_inputs.buildConfiguration().empty())
+					m_inputs.setBuildConfiguration(value.get<std::string>());
+			}
+			else if (String::equals(kKeyLastToolchain, key))
+			{
+				if (m_inputs.toolchainPreferenceName().empty())
+					m_inputs.setToolchainPreference(value.get<std::string>());
+			}
+			else if (String::equals(kKeyLastArchitecture, key))
+			{
+				if (m_inputs.architectureRaw().empty())
+					m_inputs.setArchitectureRaw(value.get<std::string>());
+			}
+			else if (String::equals(kKeySigningIdentity, key))
+			{
+				m_prototype.tools.setSigningIdentity(value.get<std::string>());
+			}
+			else if (String::equals(kKeyInputFile, key))
+			{
+				auto val = value.get<std::string>();
+				if (m_inputs.inputFile().empty() || !String::equals({ m_inputs.inputFile(), m_inputs.defaultInputFile() }, val))
+					m_inputs.setInputFile(std::move(val));
+			}
+			else if (String::equals(kKeyEnvFile, key))
+			{
+				auto val = value.get<std::string>();
+				if (m_inputs.envFile().empty() || !String::equals({ m_inputs.envFile(), m_inputs.defaultEnvFile() }, val))
+					m_inputs.setEnvFile(std::move(val));
+			}
+			else if (String::equals(kKeyRootDirectory, key))
+			{
+				auto val = value.get<std::string>();
+				if (m_inputs.rootDirectory().empty() || !String::equals(m_inputs.rootDirectory(), val))
+					m_inputs.setRootDirectory(std::move(val));
+			}
+			else if (String::equals(kKeyOutputDirectory, key))
+			{
+				auto val = value.get<std::string>();
+				if (m_inputs.outputDirectory().empty() || !String::equals({ m_inputs.outputDirectory(), m_inputs.defaultOutputDirectory() }, val))
+					m_inputs.setOutputDirectory(std::move(val));
+			}
+			else if (String::equals(kKeyExternalDirectory, key))
+			{
+				auto val = value.get<std::string>();
+				if (m_inputs.externalDirectory().empty() || !String::equals({ m_inputs.externalDirectory(), m_inputs.defaultExternalDirectory() }, val))
+					m_inputs.setExternalDirectory(std::move(val));
+			}
+			else if (String::equals(kKeyDistributionDirectory, key))
+			{
+				auto val = value.get<std::string>();
+				if (m_inputs.distributionDirectory().empty() || !String::equals({ m_inputs.distributionDirectory(), m_inputs.defaultDistributionDirectory() }, val))
+					m_inputs.setDistributionDirectory(std::move(val));
+			}
+		}
+		else if (value.is_boolean())
+		{
+			if (String::equals(kKeyDumpAssembly, key))
+			{
+				if (!m_inputs.dumpAssembly().has_value())
+					m_inputs.setDumpAssembly(value.get<bool>());
+			}
+			else if (String::equals(kKeyShowCommands, key))
+			{
+				bool val = value.get<bool>();
 
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyShowCommands))
-	{
-		if (m_inputs.showCommands().has_value())
-			val = *m_inputs.showCommands();
+				if (m_inputs.showCommands().has_value())
+					val = *m_inputs.showCommands();
 
-		Output::setShowCommands(val);
-	}
+				Output::setShowCommands(val);
+			}
+			else if (String::equals(kKeyBenchmark, key))
+			{
+				bool val = value.get<bool>();
 
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyBenchmark))
-	{
-		if (m_inputs.benchmark().has_value())
-			val = *m_inputs.benchmark();
+				if (m_inputs.benchmark().has_value())
+					val = *m_inputs.benchmark();
 
-		Output::setShowBenchmarks(val);
-	}
-
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyLaunchProfiler))
-	{
-		if (!m_inputs.launchProfiler().has_value())
-			m_inputs.setLaunchProfiler(val);
-	}
-
-	if (bool val = false; m_jsonFile.assignFromKey(val, buildSettings, kKeyGenerateCompileCommands))
-	{
-		if (!m_inputs.generateCompileCommands().has_value())
-			m_inputs.setGenerateCompileCommands(val);
-	}
-
-	if (ushort val = 0; m_jsonFile.assignFromKey(val, buildSettings, kKeyMaxJobs))
-	{
-		if (!m_inputs.maxJobs().has_value())
-			m_inputs.setMaxJobs(val);
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastBuildConfiguration))
-	{
-		if (m_inputs.buildConfiguration().empty())
-			m_inputs.setBuildConfiguration(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastToolchain))
-	{
-		if (m_inputs.toolchainPreferenceName().empty())
-			m_inputs.setToolchainPreference(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyLastArchitecture))
-	{
-		if (m_inputs.architectureRaw().empty())
-			m_inputs.setArchitectureRaw(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeySigningIdentity))
-		m_prototype.tools.setSigningIdentity(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyInputFile))
-	{
-		if (m_inputs.inputFile().empty() || !String::equals({ m_inputs.inputFile(), m_inputs.defaultInputFile() }, val))
-			m_inputs.setInputFile(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyEnvFile))
-	{
-		if (m_inputs.envFile().empty() || !String::equals({ m_inputs.envFile(), m_inputs.defaultEnvFile() }, val))
-			m_inputs.setEnvFile(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyRootDirectory))
-	{
-		if (m_inputs.rootDirectory().empty() || !String::equals(m_inputs.rootDirectory(), val))
-			m_inputs.setRootDirectory(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyOutputDirectory))
-	{
-		if (m_inputs.outputDirectory().empty() || !String::equals({ m_inputs.outputDirectory(), m_inputs.defaultOutputDirectory() }, val))
-			m_inputs.setOutputDirectory(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyExternalDirectory))
-	{
-		if (m_inputs.externalDirectory().empty() || !String::equals({ m_inputs.externalDirectory(), m_inputs.defaultExternalDirectory() }, val))
-			m_inputs.setExternalDirectory(std::move(val));
-	}
-
-	if (std::string val; m_jsonFile.assignFromKey(val, buildSettings, kKeyDistributionDirectory))
-	{
-		if (m_inputs.distributionDirectory().empty() || !String::equals({ m_inputs.distributionDirectory(), m_inputs.defaultDistributionDirectory() }, val))
-			m_inputs.setDistributionDirectory(std::move(val));
+				Output::setShowBenchmarks(val);
+			}
+			else if (String::equals(kKeyLaunchProfiler, key))
+			{
+				if (!m_inputs.launchProfiler().has_value())
+					m_inputs.setLaunchProfiler(value.get<bool>());
+			}
+			else if (String::equals(kKeyLaunchProfiler, key))
+			{
+				if (!m_inputs.generateCompileCommands().has_value())
+					m_inputs.setGenerateCompileCommands(value.get<bool>());
+			}
+		}
+		else if (value.is_number())
+		{
+			if (String::equals(kKeyMaxJobs, key))
+			{
+				if (!m_inputs.maxJobs().has_value())
+					m_inputs.setMaxJobs(static_cast<uint>(value.get<int>()));
+			}
+		}
 	}
 
 	return true;
@@ -539,83 +548,65 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 		return false;
 	}
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyBash))
-		m_prototype.tools.setBash(std::move(val));
+	for (const auto& [key, value] : tools.items())
+	{
+		if (value.is_string())
+		{
+			if (String::equals(kKeyBash, key))
+				m_prototype.tools.setBash(value.get<std::string>());
+			else if (String::equals(kKeyBrew, key))
+				m_prototype.tools.setBrew(value.get<std::string>());
+			else if (String::equals(kKeyCodesign, key))
+				m_prototype.tools.setCodesign(value.get<std::string>());
+			else if (String::equals(kKeyCommandPrompt, key))
+				m_prototype.tools.setCommandPrompt(value.get<std::string>());
+			else if (String::equals(kKeyGit, key))
+				m_prototype.tools.setGit(value.get<std::string>());
+			else if (String::equals(kKeyHdiutil, key))
+				m_prototype.tools.setHdiutil(value.get<std::string>());
+			else if (String::equals(kKeyInstallNameTool, key))
+				m_prototype.tools.setInstallNameTool(value.get<std::string>());
+			else if (String::equals(kKeyInstruments, key))
+				m_prototype.tools.setInstruments(value.get<std::string>());
+			else if (String::equals(kKeyLdd, key))
+				m_prototype.tools.setLdd(value.get<std::string>());
+			else if (String::equals(kKeyLua, key))
+				m_prototype.tools.setLua(value.get<std::string>());
+			else if (String::equals(kKeyMakeNsis, key))
+				m_prototype.tools.setMakeNsis(value.get<std::string>());
+			else if (String::equals(kKeyOsascript, key))
+				m_prototype.tools.setOsascript(value.get<std::string>());
+			else if (String::equals(kKeyOtool, key))
+				m_prototype.tools.setOtool(value.get<std::string>());
+			else if (String::equals(kKeyPerl, key))
+				m_prototype.tools.setPerl(value.get<std::string>());
 
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyBrew))
-		m_prototype.tools.setBrew(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyCodesign))
-		m_prototype.tools.setCodesign(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyCommandPrompt))
-		m_prototype.tools.setCommandPrompt(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyGit))
-		m_prototype.tools.setGit(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyHdiutil))
-		m_prototype.tools.setHdiutil(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyInstallNameTool))
-		m_prototype.tools.setInstallNameTool(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyInstruments))
-		m_prototype.tools.setInstruments(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLdd))
-		m_prototype.tools.setLdd(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyLua))
-		m_prototype.tools.setLua(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyMakeNsis))
-		m_prototype.tools.setMakeNsis(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyOsascript))
-		m_prototype.tools.setOsascript(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyOtool))
-		m_prototype.tools.setOtool(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPerl))
-		m_prototype.tools.setPerl(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPlutil))
-		m_prototype.tools.setPlutil(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPowershell))
-		m_prototype.tools.setPowershell(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPython))
-		m_prototype.tools.setPython(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyPython3))
-		m_prototype.tools.setPython3(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyRuby))
-		m_prototype.tools.setRuby(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeySample))
-		m_prototype.tools.setSample(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeySips))
-		m_prototype.tools.setSips(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyTiffutil))
-		m_prototype.tools.setTiffutil(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcodebuild))
-		m_prototype.tools.setXcodebuild(std::move(val));
-
-	// if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcodegen))
-	// 	m_prototype.tools.setXcodegen(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyXcrun))
-		m_prototype.tools.setXcrun(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, tools, kKeyZip))
-		m_prototype.tools.setZip(std::move(val));
+			else if (String::equals(kKeyPlutil, key))
+				m_prototype.tools.setPlutil(value.get<std::string>());
+			else if (String::equals(kKeyPowershell, key))
+				m_prototype.tools.setPowershell(value.get<std::string>());
+			else if (String::equals(kKeyPython, key))
+				m_prototype.tools.setPython(value.get<std::string>());
+			else if (String::equals(kKeyPython3, key))
+				m_prototype.tools.setPython3(value.get<std::string>());
+			else if (String::equals(kKeyRuby, key))
+				m_prototype.tools.setRuby(value.get<std::string>());
+			else if (String::equals(kKeySample, key))
+				m_prototype.tools.setSample(value.get<std::string>());
+			else if (String::equals(kKeySips, key))
+				m_prototype.tools.setSips(value.get<std::string>());
+			else if (String::equals(kKeyTiffutil, key))
+				m_prototype.tools.setTiffutil(value.get<std::string>());
+			else if (String::equals(kKeyXcodebuild, key))
+				m_prototype.tools.setXcodebuild(value.get<std::string>());
+			// else if (String::equals(kKeyXcodegen, key))
+			// 	m_prototype.tools.setXcodegen(value.get<std::string>());
+			else if (String::equals(kKeyXcrun, key))
+				m_prototype.tools.setXcrun(value.get<std::string>());
+			else if (String::equals(kKeyZip, key))
+				m_prototype.tools.setZip(value.get<std::string>());
+		}
+	}
 
 	return true;
 }

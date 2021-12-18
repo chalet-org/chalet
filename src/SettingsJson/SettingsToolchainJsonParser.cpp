@@ -462,46 +462,39 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 /*****************************************************************************/
 bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 {
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyStrategy))
-		m_state.toolchain.setStrategy(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyBuildPathStyle))
-		m_state.toolchain.setBuildPathStyle(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyVersion))
-		m_state.toolchain.setVersion(val);
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyArchiver))
-		m_state.toolchain.setArchiver(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCompilerCpp))
-		m_state.toolchain.setCompilerCpp(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCompilerC))
-		m_state.toolchain.setCompilerC(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCompilerWindowsResource))
-		m_state.toolchain.setCompilerWindowsResource(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyLinker))
-		m_state.toolchain.setLinker(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyProfiler))
-		m_state.toolchain.setProfiler(std::move(val));
-
-	//
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyCmake))
-		m_state.toolchain.setCmake(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyMake))
-		m_state.toolchain.setMake(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyNinja))
-		m_state.toolchain.setNinja(std::move(val));
-
-	if (std::string val; m_jsonFile.assignFromKey(val, inNode, kKeyDisassembler))
-		m_state.toolchain.setDisassembler(std::move(val));
+	for (const auto& [key, value] : inNode.items())
+	{
+		if (value.is_string())
+		{
+			if (String::equals(kKeyStrategy, key))
+				m_state.toolchain.setStrategy(value.get<std::string>());
+			else if (String::equals(kKeyBuildPathStyle, key))
+				m_state.toolchain.setBuildPathStyle(value.get<std::string>());
+			else if (String::equals(kKeyVersion, key))
+				m_state.toolchain.setVersion(value.get<std::string>());
+			else if (String::equals(kKeyArchiver, key))
+				m_state.toolchain.setArchiver(value.get<std::string>());
+			else if (String::equals(kKeyCompilerCpp, key))
+				m_state.toolchain.setCompilerCpp(value.get<std::string>());
+			else if (String::equals(kKeyCompilerC, key))
+				m_state.toolchain.setCompilerC(value.get<std::string>());
+			else if (String::equals(kKeyCompilerWindowsResource, key))
+				m_state.toolchain.setCompilerWindowsResource(value.get<std::string>());
+			else if (String::equals(kKeyLinker, key))
+				m_state.toolchain.setLinker(value.get<std::string>());
+			else if (String::equals(kKeyProfiler, key))
+				m_state.toolchain.setProfiler(value.get<std::string>());
+			//
+			else if (String::equals(kKeyCmake, key))
+				m_state.toolchain.setCmake(value.get<std::string>());
+			else if (String::equals(kKeyMake, key))
+				m_state.toolchain.setMake(value.get<std::string>());
+			else if (String::equals(kKeyNinja, key))
+				m_state.toolchain.setNinja(value.get<std::string>());
+			else if (String::equals(kKeyDisassembler, key))
+				m_state.toolchain.setDisassembler(value.get<std::string>());
+		}
+	}
 
 	return true;
 }
