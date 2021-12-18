@@ -24,6 +24,7 @@
 			"cppStandard": "c++17",
 			"rtti": false,
 			"staticLinking": true,
+			"cppFilesystem": true,
 			"warnings": "strict",
 			"defines.debug": [
 				"_DEBUG",
@@ -36,9 +37,6 @@
 				"vendor/argparse/include",
 				"vendor/glob/single_include",
 				"vendor"
-			],
-			"links": [
-				"stdc++fs"
 			],
 			"links.windows": [
 				"imagehlp"

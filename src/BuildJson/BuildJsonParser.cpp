@@ -638,6 +638,8 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 				outTarget.setThreads(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rtti", status))
 				outTarget.setRtti(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppFilesystem", status))
+				outTarget.setCppFilesystem(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppModules", status))
 				outTarget.setCppModules(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppCoroutines", status))

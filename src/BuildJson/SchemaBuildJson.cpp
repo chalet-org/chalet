@@ -738,7 +738,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 
 	defs[Defs::TargetSourceCxxMacOsFrameworks] = R"json({
 		"type": "array",
-		"description": "A list of MacOS Frameworks to link to the project",
+		"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of hte framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
@@ -757,6 +757,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"type": "boolean",
 		"description": "true to enable the preferred thread implementation of the compiler, such as pthreads (default), false to disable.",
 		"default": true
+	})json"_ojson;
+
+	defs[Defs::TargetSourceCxxCppFilesystem] = R"json({
+		"type": "boolean",
+		"description": "true to enable C++17 filesystem, false to disable (default).",
+		"default": false
 	})json"_ojson;
 
 	defs[Defs::TargetSourceCxxCppModules] = R"json({
@@ -1458,6 +1464,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kProperties]["compileOptions"] = m_nonIndexedDefs[Defs::TargetSourceCxxCompileOptions];
 		sourceTargetCxx[kProperties]["cppConcepts"] = getDefinition(Defs::TargetSourceCxxCppConcepts);
 		sourceTargetCxx[kProperties]["cppCoroutines"] = getDefinition(Defs::TargetSourceCxxCppCoroutines);
+		sourceTargetCxx[kProperties]["cppFilesystem"] = getDefinition(Defs::TargetSourceCxxCppFilesystem);
 		sourceTargetCxx[kProperties]["cppModules"] = getDefinition(Defs::TargetSourceCxxCppModules);
 		sourceTargetCxx[kProperties]["cppStandard"] = getDefinition(Defs::TargetSourceCxxCppStandard);
 		sourceTargetCxx[kProperties]["defines"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxDefines);
@@ -1483,9 +1490,10 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kProperties]["windowsEntryPoint"] = getDefinition(Defs::TargetSourceCxxWindowsEntryPoint);
 
 		sourceTargetCxx[kPatternProperties][fmt::format("^cStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCStandard);
-		sourceTargetCxx[kPatternProperties][fmt::format("^cppModules{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCppModules);
 		sourceTargetCxx[kPatternProperties][fmt::format("^cppCoroutines{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCppCoroutines);
 		sourceTargetCxx[kPatternProperties][fmt::format("^cppConcepts{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCppConcepts);
+		sourceTargetCxx[kPatternProperties][fmt::format("^cppFilesystem{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCppFilesystem);
+		sourceTargetCxx[kPatternProperties][fmt::format("^cppModules{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCppModules);
 		sourceTargetCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCppStandard);
 		sourceTargetCxx[kPatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxDefines);
 		sourceTargetCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxIncludeDirs);
@@ -1723,6 +1731,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxMacOsFrameworks: return "target-source-cxx-macosFrameworks";
 		case Defs::TargetSourceCxxPrecompiledHeader: return "target-source-cxx-pch";
 		case Defs::TargetSourceCxxThreads: return "target-source-cxx-threads";
+		case Defs::TargetSourceCxxCppFilesystem: return "target-source-cxx-cppFilesystem";
 		case Defs::TargetSourceCxxCppModules: return "target-source-cxx-cppModules";
 		case Defs::TargetSourceCxxCppCoroutines: return "target-source-cxx-cppCoroutines";
 		case Defs::TargetSourceCxxCppConcepts: return "target-source-cxx-cppConcepts";

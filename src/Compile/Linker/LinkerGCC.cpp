@@ -34,12 +34,6 @@ bool LinkerGCC::initialize()
 }
 
 /*****************************************************************************/
-StringList LinkerGCC::getLinkExclusions() const
-{
-	return {};
-}
-
-/*****************************************************************************/
 bool LinkerGCC::isLinkSupported(const std::string& inLink) const
 {
 	if (!m_supportedLinks.empty() && m_state.environment->isGcc())
@@ -101,6 +95,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	ret.push_back(outputFile);
 	addSourceObjects(ret, sourceObjs);
 
+	addCppFilesystem(ret);
 	addLinks(ret);
 	addObjectiveCxxLink(ret);
 
@@ -145,6 +140,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addRunPath(ret);
 	addSourceObjects(ret, sourceObjs);
 
+	addCppFilesystem(ret);
 	addLinks(ret);
 	addObjectiveCxxLink(ret);
 
@@ -193,13 +189,8 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 
 	if (hasDynamicLinks)
 	{
-		auto excludes = getLinkExclusions();
-
 		for (auto& link : m_project.links())
 		{
-			if (List::contains(excludes, link))
-				continue;
-
 			if (isLinkSupported(link))
 				outArgList.emplace_back(prefix + link);
 		}
@@ -393,6 +384,17 @@ void LinkerGCC::addEntryPoint(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void LinkerGCC::addCppFilesystem(StringList& outArgList) const
+{
+	if (m_project.cppFilesystem() && m_versionMajorMinor >= 710 && m_versionMajorMinor < 910)
+	{
+		std::string option{ "-lstdc++-fs" };
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
+	}
+}
+
+/*****************************************************************************/
 void LinkerGCC::startStaticLinkGroup(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
@@ -565,8 +567,6 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 	StringList libDirs;
 	addCompilerSearchPaths(libDirs); // do not quote paths for this
 
-	auto excludes = getLinkExclusions();
-
 	const auto& exec = m_state.toolchain.compilerCxx(m_project.language()).path;
 
 	for (auto& staticLink : m_project.staticLinks())
@@ -577,9 +577,6 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 
 	for (auto& link : m_project.links())
 	{
-		if (List::contains(excludes, link))
-			continue;
-
 		if (isLinkSupportedByExecutable(exec, link, libDirs) || List::contains(projectLinks, link) || String::contains(cmakeProjects, link))
 			m_supportedLinks.emplace(link, true);
 	}

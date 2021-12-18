@@ -19,7 +19,6 @@ struct LinkerGCC : public ILinker
 protected:
 	virtual bool isLinkSupported(const std::string& inLink) const;
 
-	virtual StringList getLinkExclusions() const override;
 	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 	virtual StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 
@@ -40,6 +39,7 @@ protected:
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;
 
 	// Linking (Misc)
+	virtual void addCppFilesystem(StringList& outArgList) const;
 	virtual void startStaticLinkGroup(StringList& outArgList) const;
 	virtual void endStaticLinkGroup(StringList& outArgList) const;
 	virtual void startExplicitDynamicLinkGroup(StringList& outArgList) const;

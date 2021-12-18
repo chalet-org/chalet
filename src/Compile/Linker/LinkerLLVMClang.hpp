@@ -15,8 +15,6 @@ struct LinkerLLVMClang : public LinkerGCC
 	explicit LinkerLLVMClang(const BuildState& inState, const SourceTarget& inProject);
 
 protected:
-	virtual StringList getLinkExclusions() const override;
-
 	virtual void addLinks(StringList& outArgList) const override;
 	virtual void addStripSymbols(StringList& outArgList) const override;
 	virtual void addLinkerScripts(StringList& outArgList) const override;
@@ -29,6 +27,7 @@ protected:
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;
 
 	// Linking (Misc)
+	virtual void addCppFilesystem(StringList& outArgList) const override;
 	virtual void startStaticLinkGroup(StringList& outArgList) const override;
 	virtual void endStaticLinkGroup(StringList& outArgList) const override;
 	virtual void startExplicitDynamicLinkGroup(StringList& outArgList) const override;

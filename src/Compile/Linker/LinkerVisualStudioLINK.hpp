@@ -20,7 +20,6 @@ struct LinkerVisualStudioLINK : public ILinker
 	static std::string getMsvcCompatibleEntryPoint(const SourceTarget& inProject);
 
 protected:
-	virtual StringList getLinkExclusions() const override;
 	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 	virtual StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 

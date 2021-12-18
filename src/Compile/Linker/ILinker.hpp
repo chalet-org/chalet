@@ -21,7 +21,6 @@ struct ILinker : public IToolchainExecutableBase
 	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
 
 protected:
-	virtual StringList getLinkExclusions() const = 0;
 	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;
 	virtual StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;
 

@@ -22,12 +22,6 @@ LinkerLLVMClang::LinkerLLVMClang(const BuildState& inState, const SourceTarget& 
 }
 
 /*****************************************************************************/
-StringList LinkerLLVMClang::getLinkExclusions() const
-{
-	return { "stdc++fs" };
-}
-
-/*****************************************************************************/
 void LinkerLLVMClang::addLinks(StringList& outArgList) const
 {
 	LinkerGCC::addLinks(outArgList);
@@ -146,8 +140,27 @@ bool LinkerLLVMClang::addArchitecture(StringList& outArgList, const std::string&
 }
 
 /*****************************************************************************/
-// TOOD: I think Clang on Linux could still use the system linker (LD), in which case,
-//   These flags could be used
+void LinkerLLVMClang::addCppFilesystem(StringList& outArgList) const
+{
+	if (m_project.cppFilesystem())
+	{
+		if (m_versionMajorMinor >= 700 && m_versionMajorMinor < 900)
+		{
+			std::string option{ "-lc++-fs" };
+			// if (isFlagSupported(option))
+			List::addIfDoesNotExist(outArgList, std::move(option));
+		}
+
+		if (m_versionMajorMinor < 700)
+		{
+			std::string option{ "-lc++-experimental" };
+			// if (isFlagSupported(option))
+			List::addIfDoesNotExist(outArgList, std::move(option));
+		}
+	}
+}
+
+/*****************************************************************************/
 void LinkerLLVMClang::startStaticLinkGroup(StringList& outArgList) const
 {
 	UNUSED(outArgList);

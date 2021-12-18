@@ -63,6 +63,7 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 	ret.push_back(outputFile);
 	addSourceObjects(ret, sourceObjs);
 
+	addCppFilesystem(ret);
 	addLinks(ret);
 	addObjectiveCxxLink(ret);
 

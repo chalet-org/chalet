@@ -603,6 +603,16 @@ void SourceTarget::setWindowsEntryPoint(const std::string& inValue)
 }
 
 /*****************************************************************************/
+bool SourceTarget::cppFilesystem() const noexcept
+{
+	return m_cppFilesystem;
+}
+void SourceTarget::setCppFilesystem(const bool inValue) noexcept
+{
+	m_cppFilesystem = inValue;
+}
+
+/*****************************************************************************/
 bool SourceTarget::cppModules() const noexcept
 {
 	return m_cppModules;

@@ -30,12 +30,6 @@ bool LinkerVisualStudioLINK::initialize()
 }
 
 /*****************************************************************************/
-StringList LinkerVisualStudioLINK::getLinkExclusions() const
-{
-	return { "stdc++fs" };
-}
-
-/*****************************************************************************/
 StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFile, sourceObjs);
@@ -160,13 +154,8 @@ void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 
 	if (hasDynamicLinks)
 	{
-		auto excludes = getLinkExclusions();
-
 		for (auto& link : m_project.links())
 		{
-			if (List::contains(excludes, link))
-				continue;
-
 			bool found = false;
 			for (auto& target : m_state.targets)
 			{

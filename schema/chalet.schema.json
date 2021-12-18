@@ -987,6 +987,9 @@
 				"cppCoroutines": {
 					"$ref": "#/definitions/target-source-cxx-cppCoroutines"
 				},
+				"cppFilesystem": {
+					"$ref": "#/definitions/target-source-cxx-cppFilesystem"
+				},
 				"cppModules": {
 					"$ref": "#/definitions/target-source-cxx-cppModules"
 				},
@@ -1136,14 +1139,17 @@
 				"^cStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
-				"^cppModules(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-cppModules"
-				},
 				"^cppCoroutines(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-cppCoroutines"
 				},
 				"^cppConcepts(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-cppConcepts"
+				},
+				"^cppFilesystem(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-cppFilesystem"
+				},
+				"^cppModules(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-cppModules"
 				},
 				"^cppStandard(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-cppStandard"
@@ -1267,7 +1273,7 @@
 		},
 		"target-source-cxx-macosFrameworks": {
 			"type": "array",
-			"description": "A list of MacOS Frameworks to link to the project",
+			"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of hte framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {
@@ -1281,15 +1287,14 @@
 			"minLength": 1
 		},
 		"target-source-cxx-threads": {
-			"type": "string",
-			"description": "The thread model to use.",
-			"minLength": 1,
-			"enum": [
-				"auto",
-				"posix",
-				"none"
-			],
-			"default": "auto"
+			"type": "boolean",
+			"description": "true to enable the preferred thread implementation of the compiler, such as pthreads (default), false to disable.",
+			"default": true
+		},
+		"target-source-cxx-cppFilesystem": {
+			"type": "boolean",
+			"description": "true to enable C++17 filesystem, false to disable (default).",
+			"default": false
 		},
 		"target-source-cxx-cppModules": {
 			"type": "boolean",

@@ -95,6 +95,7 @@ class SchemaBuildJson
 		TargetSourceCxxMacOsFrameworks,
 		TargetSourceCxxPrecompiledHeader,
 		TargetSourceCxxThreads,
+		TargetSourceCxxCppFilesystem,
 		TargetSourceCxxCppModules,
 		TargetSourceCxxCppCoroutines,
 		TargetSourceCxxCppConcepts,

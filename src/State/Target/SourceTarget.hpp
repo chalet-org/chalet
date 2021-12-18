@@ -132,6 +132,9 @@ struct SourceTarget final : public IBuildTarget
 	bool threads() const noexcept;
 	void setThreads(const bool inValue) noexcept;
 
+	bool cppFilesystem() const noexcept;
+	void setCppFilesystem(const bool inValue) noexcept;
+
 	bool cppModules() const noexcept;
 	void setCppModules(const bool inValue) noexcept;
 
@@ -206,6 +209,7 @@ private:
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;
 
 	bool m_threads = true;
+	bool m_cppFilesystem = false;
 	bool m_cppModules = false;
 	bool m_cppCoroutines = false;
 	bool m_cppConcepts = false;
