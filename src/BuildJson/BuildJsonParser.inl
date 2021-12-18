@@ -24,13 +24,13 @@ bool BuildJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& i
 				return false;
 		}
 
-		const auto debug = m_state.configuration.debugSymbols() ? "" : "!";
-		if (!String::contains(fmt::format(".{}debug", debug), inKey))
+		const auto debug = m_state.configuration.debugSymbols() ? "!" : "";
+		if (String::contains(fmt::format(".{}debug", debug), inKey))
 			return false;
 
-		// const auto ci = Environment::isContinuousIntegrationServer() ? "" : "!";
-		// if (!String::contains(fmt::format(".{}ci", ci), inKey))
-		// 	return false;
+		// const auto ci = Environment::isContinuousIntegrationServer() ? "!" : "";
+		// if (String::contains(fmt::format(".{}ci", ci), inKey))
+		// 	return true;
 	}
 
 	// LOG(inKey);
@@ -40,10 +40,10 @@ bool BuildJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& i
 	{
 		for (auto& item : inNode)
 		{
-			if (!item.is_string())
-				return false;
-
-			List::addIfDoesNotExist(outVariable, item.template get<std::string>());
+			if (item.is_string())
+			{
+				List::addIfDoesNotExist(outVariable, item.template get<std::string>());
+			}
 		}
 	}
 	else

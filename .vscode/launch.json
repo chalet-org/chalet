@@ -45,6 +45,7 @@
 				}
 			],
 			"windows": {
+				"cwd": "${workspaceFolder}/../chalet-example-sfml",
 				"program": "${workspaceFolder}/build/Debug/chalet-debug.exe",
 				"MIMode": "gdb",
 				"miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe"

@@ -24,8 +24,8 @@ bool BuildJsonProtoParser::valueMatchesSearchKeyPattern(T& outVariable, const Js
 				return false;
 		}
 
-		const auto ci = Environment::isContinuousIntegrationServer() ? "" : "!";
-		if (!String::contains(fmt::format(".{}ci", ci), inKey))
+		const auto ci = Environment::isContinuousIntegrationServer() ? "!" : "";
+		if (String::contains(fmt::format(".{}ci", ci), inKey))
 			return false;
 	}
 
@@ -34,13 +34,12 @@ bool BuildJsonProtoParser::valueMatchesSearchKeyPattern(T& outVariable, const Js
 	using Type = std::decay_t<T>;
 	if constexpr (std::is_same<Type, StringList>())
 	{
-		for (auto& itemRaw : inNode)
+		for (auto& item : inNode)
 		{
-			if (!itemRaw.is_string())
-				return false;
-
-			std::string item = itemRaw.template get<std::string>();
-			List::addIfDoesNotExist(outVariable, std::move(item));
+			if (item.is_string())
+			{
+				List::addIfDoesNotExist(outVariable, item.template get<std::string>());
+			}
 		}
 	}
 	else
