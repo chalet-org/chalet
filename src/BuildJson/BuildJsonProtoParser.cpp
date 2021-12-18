@@ -697,6 +697,10 @@ bool BuildJsonProtoParser::conditionIsValid(const std::string& inContent) const
 	if (!String::equals(m_platform, inContent))
 	{
 		auto split = String::split(inContent, '.');
+
+		if (List::contains(split, fmt::format("!{}", m_platform)))
+			return false;
+
 		for (auto& notPlatform : m_notPlatforms)
 		{
 			if (List::contains(split, notPlatform))

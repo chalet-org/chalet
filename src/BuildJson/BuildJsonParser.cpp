@@ -373,7 +373,7 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 				outTarget.setDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "location", status))
 				outTarget.addLocation(std::move(val));
-			else if (isUnread(status) && String::equals("language", key))
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "language", status))
 				outTarget.setLanguage(value.get<std::string>());
 			else if (isUnread(status) && String::equals("kind", key))
 				outTarget.setKind(value.get<std::string>());

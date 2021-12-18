@@ -128,6 +128,11 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 
 	Environment::set(kNinjaStatus, oldNinjaStatus);
 
+	if (!result)
+	{
+		Output::lineBreak();
+	}
+
 	return result;
 }
 }

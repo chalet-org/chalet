@@ -18,6 +18,9 @@ bool BuildJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& i
 
 		inStatus = JsonNodeReadStatus::ValidKeyUnreadValue;
 
+		if (String::contains(fmt::format(".!{}", m_platform), inKey))
+			return false;
+
 		for (auto& notPlatform : m_notPlatforms)
 		{
 			if (String::contains(fmt::format(".{}", notPlatform), inKey))
