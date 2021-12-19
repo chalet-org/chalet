@@ -17,7 +17,7 @@ class BinaryDependencyMap
 public:
 	explicit BinaryDependencyMap(const AncillaryTools& inTools);
 
-	static bool getExecutableDependencies(const std::string& inPath, StringList& outList, StringList* outNotFound = nullptr);
+	bool getExecutableDependencies(const std::string& inPath, StringList& outList, StringList* outNotFound = nullptr);
 
 	InnerMap::const_iterator begin() const;
 	InnerMap::const_iterator end() const;

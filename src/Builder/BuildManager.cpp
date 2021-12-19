@@ -825,10 +825,11 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 		if (lastExitCode < 0)
 		{
+			BinaryDependencyMap tmpMap(m_state.tools);
 			StringList dependencies;
 			StringList dependenciesNotFound;
 
-			if (BinaryDependencyMap::getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
+			if (tmpMap.getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
 			{
 				const auto& unknownDep = dependenciesNotFound.front();
 				Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", unknownDep));
