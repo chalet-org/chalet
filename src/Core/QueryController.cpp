@@ -439,6 +439,7 @@ StringList QueryController::getCurrentRunTarget() const
 		{
 			const std::string kKeyKind{ "kind" };
 			const std::string kKeyRunTarget{ "runTarget" };
+			const std::string kKeyRunExecutable{ "runExecutable" };
 			const auto& targets = buildJson.at(kKeyTargets);
 			for (auto& [key, target] : targets.items())
 			{
@@ -453,7 +454,20 @@ StringList QueryController::getCurrentRunTarget() const
 				if (!String::equals({ "executable", "script", "cmakeProject" }, kindValue))
 					continue;
 
-				executableProjects.push_back(key);
+				bool isExecutable = true;
+				if (String::equals("script", kindValue))
+				{
+					if (!target.contains(kKeyRunTarget))
+						isExecutable = false;
+				}
+				else if (String::equals("cmakeProject", kindValue))
+				{
+					if (!target.contains(kKeyRunExecutable))
+						isExecutable = false;
+				}
+
+				if (isExecutable)
+					executableProjects.push_back(key);
 
 				if (!target.contains(kKeyRunTarget))
 					continue;
