@@ -150,108 +150,86 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	bool error = false;
 	for (auto& target : m_state.targets)
 	{
-		auto& name = target->name();
-		if (runRoute || inRoute == Route::BuildRun)
-		{
-			if (m_runTargetName == name)
-			{
-				if (target->isSources())
-				{
-					auto& project = static_cast<const SourceTarget&>(*target);
-					if (project.isExecutable())
-						runTarget = target.get();
-				}
-				else if (target->isCMake())
-				{
-					auto& project = static_cast<const CMakeTarget&>(*target);
-					if (!project.runExecutable().empty())
-						runTarget = target.get();
-				}
-				else if (target->isScript())
-				{
-					runTarget = target.get();
-					continue;
-				}
-			}
-			else if (m_runTargetName.empty() && runTarget == nullptr)
-			{
-				if (target->isSources())
-				{
-					auto& project = static_cast<const SourceTarget&>(*target);
-					if (project.isExecutable())
-						runTarget = target.get();
-				}
-				else if (target->isCMake())
-				{
-					auto& project = static_cast<const CMakeTarget&>(*target);
-					if (!project.runExecutable().empty())
-						runTarget = target.get();
-				}
-				else if (target->isScript())
-				{
-					runTarget = target.get();
-					continue;
-				}
-			}
-			else if (runRoute)
-				continue;
-		}
+		bool isRunTarget = String::equals(m_runTargetName, target->name());
+		bool noExplicitRunTarget = m_runTargetName.empty() && runTarget == nullptr;
 
-		if (!runRoute)
+		if (isRunTarget || noExplicitRunTarget)
 		{
-			if (target->isSubChalet())
+			if (target->isSources())
 			{
-				if (!runSubChaletTarget(static_cast<const SubChaletTarget&>(*target)))
-				{
-					error = true;
-					break;
-				}
+				auto& project = static_cast<const SourceTarget&>(*target);
+				if (project.isExecutable())
+					runTarget = target.get();
 			}
 			else if (target->isCMake())
 			{
-				if (!runCMakeTarget(static_cast<const CMakeTarget&>(*target)))
-				{
-					error = true;
-					break;
-				}
+				auto& project = static_cast<const CMakeTarget&>(*target);
+				if (!project.runExecutable().empty())
+					runTarget = target.get();
 			}
 			else if (target->isScript())
 			{
-				Timer buildTimer;
-
-				if (!runScriptTarget(static_cast<const ScriptBuildTarget&>(*target), false))
-				{
-					error = true;
-					break;
-				}
-
-				auto res = buildTimer.stop();
-				if (res > 0 && Output::showBenchmarks())
-				{
-					Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
-				}
-
-				Output::lineBreak();
+				runTarget = target.get();
+				continue; // don't run the script in the normal order
 			}
-			else
+		}
+
+		if (runRoute)
+			continue;
+
+		// At this point, we build
+		if (target->isSubChalet())
+		{
+			if (!runSubChaletTarget(static_cast<const SubChaletTarget&>(*target)))
 			{
-				Timer buildTimer;
-
-				if (!m_buildRoutes[inRoute](*this, static_cast<const SourceTarget&>(*target)))
-				{
-					error = true;
-					break;
-				}
-
-				Output::msgTargetUpToDate(multiTarget, name);
-				auto res = buildTimer.stop();
-				if (res > 0 && Output::showBenchmarks())
-				{
-					Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
-				}
-
-				Output::lineBreak();
+				error = true;
+				break;
 			}
+		}
+		else if (target->isCMake())
+		{
+			if (!runCMakeTarget(static_cast<const CMakeTarget&>(*target)))
+			{
+				error = true;
+				break;
+			}
+		}
+		else if (target->isScript())
+		{
+			Timer buildTimer;
+
+			if (!runScriptTarget(static_cast<const ScriptBuildTarget&>(*target), false))
+			{
+				error = true;
+				break;
+			}
+
+			auto res = buildTimer.stop();
+			if (res > 0 && Output::showBenchmarks())
+			{
+				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+			}
+
+			Output::lineBreak();
+		}
+		else
+		{
+			Timer buildTimer;
+
+			if (!m_buildRoutes[inRoute](*this, static_cast<const SourceTarget&>(*target)))
+			{
+				error = true;
+				break;
+			}
+
+			Output::msgTargetUpToDate(multiTarget, target->name());
+			auto res = buildTimer.stop();
+			if (res > 0 && Output::showBenchmarks())
+			{
+				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+			}
+
+			Output::lineBreak();
 		}
 	}
 
