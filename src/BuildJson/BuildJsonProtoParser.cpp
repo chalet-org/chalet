@@ -491,9 +491,9 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 		}
 	}
 
+	const std::string kKeyTargets{ "targets" };
 	if (outTarget.hasAllBuildTargets())
 	{
-		const std::string kKeyTargets{ "targets" };
 		if (inRoot.contains(kKeyTargets))
 		{
 			const Json& targetsJson = inRoot.at(kKeyTargets);
@@ -522,6 +522,34 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 				{
 					outTarget.addBuildTargets(std::move(targetList));
 				}
+			}
+		}
+	}
+	else if (!outTarget.buildTargets().empty())
+	{
+		StringList targets;
+		const auto& buildTargets = outTarget.buildTargets();
+		if (inRoot.contains(kKeyTargets))
+		{
+			const Json& targetsJson = inRoot.at(kKeyTargets);
+			if (targetsJson.is_object())
+			{
+				for (auto& [name, _] : targetsJson.items())
+				{
+					targets.push_back(name);
+				}
+			}
+		}
+
+		if (targets.empty())
+			return false;
+
+		for (auto& target : buildTargets)
+		{
+			if (!List::contains(targets, target))
+			{
+				Diagnostic::error("{}: Distribution bundle '{}' contains a build target that was not found: '{}'", m_filename, outTarget.name(), target);
+				return false;
 			}
 		}
 	}

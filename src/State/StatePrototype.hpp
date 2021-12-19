@@ -61,7 +61,7 @@ private:
 	bool validateBuildFile();
 
 	bool runDependencyManager();
-	bool validateBundleDestinations();
+	bool validateDistribution();
 
 	bool makeDefaultBuildConfigurations();
 	void addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig);

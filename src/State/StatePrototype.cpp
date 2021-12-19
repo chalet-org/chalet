@@ -80,7 +80,7 @@ bool StatePrototype::initialize()
 		if (!parseBuildJson())
 			return false;
 
-		if (!validateBundleDestinations())
+		if (!validateDistribution())
 			return false;
 
 		if (!createCache())
@@ -193,7 +193,7 @@ bool StatePrototype::runDependencyManager()
 }
 
 /*****************************************************************************/
-bool StatePrototype::validateBundleDestinations()
+bool StatePrototype::validateDistribution()
 {
 	auto& distributionDirectory = m_inputs.distributionDirectory();
 
