@@ -169,8 +169,14 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			}
 			else if (target->isScript())
 			{
-				runTarget = target.get();
-				continue; // don't run the script in the normal order
+				auto& script = static_cast<const ScriptBuildTarget&>(*target);
+				if (script.runTarget())
+				{
+					runTarget = target.get();
+
+					// don't run the script in the normal order
+					continue;
+				}
 			}
 		}
 
