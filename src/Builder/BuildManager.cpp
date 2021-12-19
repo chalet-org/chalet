@@ -611,15 +611,17 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 	if (file.empty())
 		return false;
 
-	const bool isRun = m_inputs.route() == Route::Run || inRunCommand;
-	const Color color = isRun ? Output::theme().success : Output::theme().header;
+	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
 
 	if (!inScript.description().empty())
 		Output::msgTargetDescription(inScript.description(), color);
 	else
 		Output::msgTargetOfType("Script", inScript.name(), color);
 
-	Output::lineBreak();
+	if (inRunCommand)
+		Output::printSeparator();
+	else
+		Output::lineBreak();
 
 	ScriptRunner scriptRunner(m_inputs, m_state.tools);
 	if (!scriptRunner.run(file, inRunCommand))
@@ -761,12 +763,6 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	else
 		Output::msgRun(outputFile);
 
-	// LOG(runOptions);
-	// LOG(runArguments);
-	// Output::lineBreak();
-	Output::printSeparator();
-	// Output::lineBreak();
-
 	auto file = Commands::getAbsolutePath(outputFile);
 	if (!Commands::pathExists(file))
 	{
@@ -789,6 +785,8 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	}
 	else
 	{
+		Output::printSeparator();
+
 		bool result = Commands::subprocessWithInput(cmd);
 
 		auto outFile = outputFile;

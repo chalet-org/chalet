@@ -247,11 +247,12 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 
 	if (inShowExitCode || !result)
 	{
-		Output::lineBreak();
-		Output::print(result ? Output::theme().info : Output::theme().error, message);
-
-		if (!inShowExitCode && !result)
+		if (inShowExitCode)
+			Output::printSeparator();
+		else
 			Output::lineBreak();
+
+		Output::print(result ? Output::theme().info : Output::theme().error, message);
 	}
 
 	return result;
