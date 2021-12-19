@@ -187,11 +187,11 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep) const
 }
 
 /*****************************************************************************/
-bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, StringList& outList) const
+bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, StringList& outList, StringList* outNotFound)
 {
 #if defined(CHALET_WIN32)
 	DependencyWalker depsWalker;
-	if (!depsWalker.read(inPath, outList))
+	if (!depsWalker.read(inPath, outList, outNotFound))
 	{
 		Diagnostic::error("Dependencies for file '{}' could not be read.", inPath);
 		return false;
@@ -265,6 +265,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 				end--;
 	#endif
 
+			std::string dependencyFile;
 			std::string dependency = line.substr(beg, end - beg);
 	#if defined(CHALET_MACOS)
 			if (String::startsWith("/System/Library/Frameworks/", dependency))
@@ -279,12 +280,20 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 				if (lastSlash != std::string::npos)
 					dependency = dependency.substr(lastSlash + 1);
 			}
+			dependencyFile = String::getPathFilename(dependency);
 	#else
-			dependency = Commands::which(String::getPathFilename(dependency));
+			dependencyFile = String::getPathFilename(dependency);
+			dependency = Commands::which(dependencyFile);
 	#endif
 
 			if (dependency.empty())
+			{
+				if (outNotFound != nullptr && !dependencyFile.empty())
+				{
+					outNotFound->emplace_back(std::move(dependencyFile));
+				}
 				continue;
+			}
 
 	#if defined(CHALET_LINUX) || defined(CHALET_MACOS)
 			if (String::startsWith("/usr/lib/", dependency))

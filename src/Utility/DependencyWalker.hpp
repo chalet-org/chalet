@@ -15,11 +15,11 @@ struct DependencyWalker
 	DependencyWalker() = default;
 
 #if defined(CHALET_WIN32)
-	bool read(const std::string& inFile, StringList& outList);
+	bool read(const std::string& inFile, StringList& outList, StringList* outNotFound);
 
 private:
 	bool verifyImageFile(const std::string& inFile);
-	bool parseFile(const std::string& inFile, StringList& outList);
+	bool parseFile(const std::string& inFile, StringList& outList, StringList* outNotFound);
 	std::vector<char> readAllBytes(const std::string& inFile);
 #endif
 };

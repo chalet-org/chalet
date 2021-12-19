@@ -17,12 +17,12 @@ namespace chalet
 {
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
-bool DependencyWalker::read(const std::string& inFile, StringList& outList)
+bool DependencyWalker::read(const std::string& inFile, StringList& outList, StringList* outNotFound)
 {
 	if (!verifyImageFile(inFile))
 		return false;
 
-	if (!parseFile(inFile, outList))
+	if (!parseFile(inFile, outList, outNotFound))
 		return false;
 
 	return true;
@@ -40,7 +40,7 @@ bool DependencyWalker::verifyImageFile(const std::string& inFile)
 }
 
 /*****************************************************************************/
-bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
+bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList, StringList* outNotFound)
 {
 	std::vector<char> bytes = readAllBytes(inFile.c_str());
 	StringList ignoreList{ inFile, "System32", "SYSTEM32", "SysWOW64", "SYSWOW64" };
@@ -126,6 +126,10 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 
 					std::string dependency = String::toLowerCase(std::string(dependencyName));
 					std::string dependencyResolved = Commands::which(dependency);
+					if (outNotFound != nullptr && dependencyResolved.empty())
+					{
+						outNotFound->push_back(dependency);
+					}
 					if (!dependency.empty() && !String::contains(ignoreList, dependencyResolved))
 					{
 						// LOG(inFile, dependency);
@@ -168,6 +172,10 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList)
 
 					std::string dependency = String::toLowerCase(std::string(dependencyName));
 					std::string dependencyResolved = Commands::which(dependency);
+					if (outNotFound != nullptr && dependencyResolved.empty())
+					{
+						outNotFound->push_back(dependency);
+					}
 					if (!dependency.empty() && !String::contains(ignoreList, dependencyResolved))
 					{
 						// LOG(inFile, dependency);

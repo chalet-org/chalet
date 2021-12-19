@@ -5,6 +5,7 @@
 
 #include "Builder/BuildManager.hpp"
 
+#include "Builder/BinaryDependencyMap.hpp"
 #include "Builder/CmakeBuilder.hpp"
 #include "Builder/ProfilerRunner.hpp"
 #include "Builder/ScriptRunner.hpp"
@@ -822,13 +823,27 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		Output::printSeparator();
 		Output::print(result ? Output::theme().info : Output::theme().error, message);
 
-		auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
-		if (!lastSystemMessage.empty())
+		if (lastExitCode < 0)
 		{
+			StringList dependencies;
+			StringList dependenciesNotFound;
+
+			if (BinaryDependencyMap::getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
+			{
+				const auto& unknownDep = dependenciesNotFound.front();
+				Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", unknownDep));
+			}
+		}
+		else
+		{
+			auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
+			if (!lastSystemMessage.empty())
+			{
 #if defined(CHALET_WIN32)
-			String::replaceAll(lastSystemMessage, "%1", outputFile);
+				String::replaceAll(lastSystemMessage, "%1", outputFile);
 #endif
-			Output::print(Output::theme().info, fmt::format("Error: {}", lastSystemMessage));
+				Output::print(Output::theme().info, fmt::format("Error: {}", lastSystemMessage));
+			}
 		}
 
 		return result;
