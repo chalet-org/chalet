@@ -823,7 +823,15 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		Output::printSeparator();
 		Output::print(result ? Output::theme().info : Output::theme().error, message);
 
-		if (lastExitCode < 0)
+		auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
+		if (!lastSystemMessage.empty())
+		{
+#if defined(CHALET_WIN32)
+			String::replaceAll(lastSystemMessage, "%1", outputFile);
+#endif
+			Output::print(Output::theme().info, fmt::format("Error: {}", lastSystemMessage));
+		}
+		else if (lastExitCode < 0)
 		{
 			BinaryDependencyMap tmpMap(m_state.tools);
 			StringList dependencies;
@@ -833,17 +841,6 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 			{
 				const auto& unknownDep = dependenciesNotFound.front();
 				Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", unknownDep));
-			}
-		}
-		else
-		{
-			auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
-			if (!lastSystemMessage.empty())
-			{
-#if defined(CHALET_WIN32)
-				String::replaceAll(lastSystemMessage, "%1", outputFile);
-#endif
-				Output::print(Output::theme().info, fmt::format("Error: {}", lastSystemMessage));
 			}
 		}
 
