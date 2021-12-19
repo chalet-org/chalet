@@ -36,6 +36,7 @@ struct BundleTarget final : public IDistTarget
 	const StringList& buildTargets() const noexcept;
 	void addBuildTargets(StringList&& inList);
 	void addBuildTarget(std::string&& inValue);
+	bool hasAllBuildTargets() const noexcept;
 
 	const StringList& excludes() const noexcept;
 	void addExcludes(StringList&& inList);
@@ -100,6 +101,7 @@ private:
 	std::string m_linuxDesktopEntryIcon;
 #endif
 
+	bool m_hasAllBuildTargets = false;
 	bool m_includeDependentSharedLibraries = true;
 	bool m_includesResolved = false;
 	bool m_updateRPaths = true;

@@ -316,11 +316,10 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 		String::replaceAll(outPath, "${externalBuildDir}", fmt::format("{}/{}", buildDir, externalDir));
 	}
 
-	/*if (!inName.empty())
+	if (!inName.empty())
 	{
 		String::replaceAll(outPath, "${name}", inName);
-	}*/
-	UNUSED(inName);
+	}
 
 	const auto& homeDirectory = m_inputs.homeDirectory();
 	Environment::replaceCommonVariables(outPath, homeDirectory);
@@ -340,13 +339,13 @@ std::string BuildPaths::getTargetBasename(const SourceTarget& inProject) const
 	const auto& name = inProject.name();
 	std::string base;
 
-	if (!inProject.windowsPrefixOutputFilename())
+	if (inProject.unixSharedLibraryNamingConvention())
 	{
-		base = name;
+		base = String::getPathFolderBaseName(inProject.outputFile());
 	}
 	else
 	{
-		base = String::getPathFolderBaseName(inProject.outputFile());
+		base = name;
 	}
 
 	return fmt::format("{}/{}", buildOutputDir(), base);

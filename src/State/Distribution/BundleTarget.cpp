@@ -215,8 +215,21 @@ void BundleTarget::addBuildTargets(StringList&& inList)
 
 void BundleTarget::addBuildTarget(std::string&& inValue)
 {
-	Path::sanitize(inValue);
-	List::addIfDoesNotExist(m_buildTargets, std::move(inValue));
+	if (String::equals("*", inValue))
+	{
+		m_hasAllBuildTargets = true;
+	}
+	else
+	{
+		Path::sanitize(inValue);
+		List::addIfDoesNotExist(m_buildTargets, std::move(inValue));
+	}
+}
+
+/*****************************************************************************/
+bool BundleTarget::hasAllBuildTargets() const noexcept
+{
+	return m_hasAllBuildTargets;
 }
 
 /*****************************************************************************/

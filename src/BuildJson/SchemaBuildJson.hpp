@@ -108,7 +108,7 @@ class SchemaBuildJson
 		TargetSourceCxxWindowsAppManifest,
 		TargetSourceCxxWindowsAppIcon,
 		TargetSourceCxxWindowsOutputDef,
-		TargetSourceCxxWindowsPrefixOutputFilename,
+		TargetSourceCxxMinGWUnixSharedLibraryNamingConvention,
 		TargetSourceCxxWindowsSubSystem,
 		TargetSourceCxxWindowsEntryPoint,
 		//

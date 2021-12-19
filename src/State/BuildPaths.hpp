@@ -47,7 +47,7 @@ struct BuildPaths
 	void clearOutputCaches();
 	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly);
 
-	void replaceVariablesInPath(std::string& outPath, const std::string& inName = std::string()) const;
+	void replaceVariablesInPath(std::string& outPath, const std::string& inName) const;
 
 private:
 	friend class BuildState;

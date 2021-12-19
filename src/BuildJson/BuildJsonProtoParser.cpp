@@ -327,7 +327,8 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 		}
 		else if (target->isDistributionBundle())
 		{
-			if (!parseDistributionBundle(static_cast<BundleTarget&>(*target), targetJson))
+			auto& bundle = static_cast<BundleTarget&>(*target);
+			if (!parseDistributionBundle(bundle, targetJson, inNode))
 				return false;
 		}
 		else if (target->isMacosDiskImage())
@@ -405,7 +406,7 @@ bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarg
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode) const
+bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -420,6 +421,8 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 				outTarget.setConfiguration(value.get<std::string>());
 				m_prototype.addRequiredBuildConfiguration(outTarget.configuration());
 			}
+			else if (String::equals("buildTargets", key))
+				outTarget.addBuildTarget(value.get<std::string>());
 			else if (String::equals("description", key))
 				outTarget.setDescription(value.get<std::string>());
 			else if (String::equals("subdirectory", key))
@@ -484,6 +487,41 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 					}
 				}
 #endif
+			}
+		}
+	}
+
+	if (outTarget.hasAllBuildTargets())
+	{
+		const std::string kKeyTargets{ "targets" };
+		if (inRoot.contains(kKeyTargets))
+		{
+			const Json& targetsJson = inRoot.at(kKeyTargets);
+			if (targetsJson.is_object())
+			{
+				const std::string kKeyKind{ "kind" };
+				const StringList validKinds{ "executable", "sharedLibrary", "staticLibrary" };
+				StringList targetList;
+				for (auto& [name, targetJson] : targetsJson.items())
+				{
+					if (targetJson.is_object() && targetJson.contains(kKeyKind))
+					{
+						const Json& targetKind = targetJson.at(kKeyKind);
+						if (targetKind.is_string())
+						{
+							auto kind = targetKind.get<std::string>();
+							if (String::contains(validKinds, kind))
+							{
+								targetList.push_back(name);
+							}
+						}
+					}
+				}
+
+				if (!targetList.empty())
+				{
+					outTarget.addBuildTargets(std::move(targetList));
+				}
 			}
 		}
 	}
@@ -714,5 +752,4 @@ bool BuildJsonProtoParser::conditionIsValid(const std::string& inContent) const
 
 	return true;
 }
-
 }

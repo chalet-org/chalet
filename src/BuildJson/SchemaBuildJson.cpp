@@ -252,21 +252,30 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	})json"_ojson;
 
 	defs[Defs::DistributionBundleBuildTargets] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"description": "An array of build target names to include in this bundle.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
-		"minItems": 1,
-		"items": {
-			"type": "string",
+		"description": "Either an array of build target names to include in this bundle. A single string value of '*' will include all build targets.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
+		"oneOf": [
+			{
+				"type": "string",
+				"minLength": 1,
+				"default": "*"
+			},
+			{
+				"type": "array",
 			"description": "The name of the build target.",
-			"minLength": 1
-		}
+				"uniqueItems": true,
+				"minItems": 1,
+				"items": {
+					"type": "string",
+					"minLength": 1
+				}
+			}
+		]
 	})json"_ojson;
 	defs[Defs::DistributionBundleBuildTargets][kItems][kPattern] = kPatternTargetName;
 
 	//
 	defs[Defs::DistributionArchiveInclude] = R"json({
-		"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
+		"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of '*' will archive everything in the bundle directory.",
 		"oneOf": [
 			{
 				"type": "string",
@@ -1209,6 +1218,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"default": "main"
 	})json"_ojson;
 
+	defs[Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention] = R"json({
+		"type": "boolean",
+		"description": "If true, shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
+		"default": true
+	})json"_ojson;
+
 	//
 
 	defs[Defs::TargetScriptFile] = R"json({
@@ -1469,6 +1484,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kProperties]["cppStandard"] = getDefinition(Defs::TargetSourceCxxCppStandard);
 		sourceTargetCxx[kProperties]["defines"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxDefines);
 		sourceTargetCxx[kProperties]["exceptions"] = getDefinition(Defs::TargetSourceCxxExceptions);
+		sourceTargetCxx[kProperties]["fastMath"] = getDefinition(Defs::TargetSourceCxxFastMath);
 		sourceTargetCxx[kProperties]["includeDirs"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxIncludeDirs);
 		sourceTargetCxx[kProperties]["libDirs"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxLibDirs);
 		sourceTargetCxx[kProperties]["linkerScript"] = getDefinition(Defs::TargetSourceCxxLinkerScript);
@@ -1476,12 +1492,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kProperties]["links"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxLinks);
 		sourceTargetCxx[kProperties]["macosFrameworkPaths"] = getDefinition(Defs::TargetSourceCxxMacOsFrameworkPaths);
 		sourceTargetCxx[kProperties]["macosFrameworks"] = getDefinition(Defs::TargetSourceCxxMacOsFrameworks);
+		sourceTargetCxx[kProperties]["mingwUnixSharedLibraryNamingConvention"] = getDefinition(Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention);
 		sourceTargetCxx[kProperties]["pch"] = getDefinition(Defs::TargetSourceCxxPrecompiledHeader);
-		sourceTargetCxx[kProperties]["threads"] = getDefinition(Defs::TargetSourceCxxThreads);
 		sourceTargetCxx[kProperties]["rtti"] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
-		sourceTargetCxx[kProperties]["fastMath"] = getDefinition(Defs::TargetSourceCxxFastMath);
 		sourceTargetCxx[kProperties]["staticLinking"] = getDefinition(Defs::TargetSourceCxxStaticLinking);
 		sourceTargetCxx[kProperties]["staticLinks"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxStaticLinks);
+		sourceTargetCxx[kProperties]["threads"] = getDefinition(Defs::TargetSourceCxxThreads);
 		sourceTargetCxx[kProperties]["warnings"] = getDefinition(Defs::TargetSourceCxxWarnings);
 		// sourceTargetCxx[kProperties]["windowsOutputDef"] = getDefinition(Defs::TargetSourceCxxWindowsOutputDef);
 		sourceTargetCxx[kProperties]["windowsApplicationIcon"] = getDefinition(Defs::TargetSourceCxxWindowsAppIcon);
@@ -1496,16 +1512,17 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		sourceTargetCxx[kPatternProperties][fmt::format("^cppModules{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCppModules);
 		sourceTargetCxx[kPatternProperties][fmt::format("^cppStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCppStandard);
 		sourceTargetCxx[kPatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxDefines);
+		sourceTargetCxx[kPatternProperties][fmt::format("^exceptions{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxExceptions);
+		sourceTargetCxx[kPatternProperties][fmt::format("^fastMath{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxFastMath);
 		sourceTargetCxx[kPatternProperties][fmt::format("^includeDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxIncludeDirs);
 		sourceTargetCxx[kPatternProperties][fmt::format("^libDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxLibDirs);
 		sourceTargetCxx[kPatternProperties][fmt::format("^linkerScript{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxLinkerScript);
 		sourceTargetCxx[kPatternProperties][fmt::format("^links{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxLinks);
+		sourceTargetCxx[kPatternProperties][fmt::format("^mingwUnixSharedLibraryNamingConvention{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention);
 		sourceTargetCxx[kPatternProperties][fmt::format("^staticLinks{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticLinks);
-		sourceTargetCxx[kPatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxThreads);
 		sourceTargetCxx[kPatternProperties][fmt::format("^rtti{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
-		sourceTargetCxx[kPatternProperties][fmt::format("^fastMath{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxFastMath);
-		sourceTargetCxx[kPatternProperties][fmt::format("^exceptions{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxExceptions);
 		sourceTargetCxx[kPatternProperties][fmt::format("^staticLinking{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticLinking);
+		sourceTargetCxx[kPatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxThreads);
 
 		sourceTargetCxx[kPatternProperties][fmt::format("^windowsApplicationIcon{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxWindowsAppIcon);
 		sourceTargetCxx[kPatternProperties][fmt::format("^windowsApplicationManifest{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxWindowsAppManifest);
@@ -1743,6 +1760,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxWarnings: return "target-source-cxx-warnings";
 		case Defs::TargetSourceCxxWindowsAppManifest: return "target-source-cxx-windowsApplicationManifest";
 		case Defs::TargetSourceCxxWindowsAppIcon: return "target-source-cxx-windowsAppIcon";
+		case Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention: return "target-source-cxx-mingwUnixSharedLibraryNamingConvention";
 		// case Defs::TargetSourceCxxWindowsOutputDef: return "target-source-cxx-windowsOutputDef";
 		case Defs::TargetSourceCxxWindowsSubSystem: return "target-source-cxx-windowsSubSystem";
 		case Defs::TargetSourceCxxWindowsEntryPoint: return "target-source-cxx-windowsEntryPoint";
@@ -1768,7 +1786,7 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		default: break;
 	}
 
-	chalet_assert(false, "");
+	chalet_assert(false, "Missing definition name");
 
 	return std::string();
 }

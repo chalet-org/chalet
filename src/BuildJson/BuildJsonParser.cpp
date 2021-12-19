@@ -652,8 +652,12 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 				outTarget.setStaticLinking(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "fastMath", status))
 				outTarget.setFastMath(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "mingwUnixSharedLibraryNamingConvention", status))
+				outTarget.setMinGWUnixSharedLibraryNamingConvention(val);
 			// else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "windowsOutputDef", status))
 			// 	outTarget.setWindowsOutputDef(val);
+
+			//
 		}
 		else if (value.is_array())
 		{

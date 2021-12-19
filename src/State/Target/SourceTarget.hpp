@@ -159,7 +159,8 @@ struct SourceTarget final : public IBuildTarget
 	bool staticLinking() const noexcept;
 	void setStaticLinking(const bool inValue) noexcept;
 
-	bool windowsPrefixOutputFilename() const noexcept;
+	bool unixSharedLibraryNamingConvention() const noexcept;
+	void setMinGWUnixSharedLibraryNamingConvention(const bool inValue) noexcept;
 
 	bool windowsOutputDef() const noexcept;
 	void setWindowsOutputDef(const bool inValue) noexcept;
@@ -221,6 +222,7 @@ private:
 	bool m_posixThreads = true;
 	bool m_invalidWarningPreset = false;
 	bool m_windowsApplicationManifestGenerationEnabled = true;
+	bool m_mingwUnixSharedLibraryNamingConvention = true;
 	bool m_setWindowsPrefixOutputFilename = false;
 	bool m_windowsOutputDef = false;
 };

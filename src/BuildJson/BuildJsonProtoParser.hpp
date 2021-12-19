@@ -47,7 +47,7 @@ private:
 	bool parseDistribution(const Json& inNode) const;
 	bool parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const;
-	bool parseDistributionBundle(BundleTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const;
 	bool parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const;
 	bool parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const;
 

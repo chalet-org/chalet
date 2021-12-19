@@ -97,11 +97,11 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 		ret[kTargets][project][kSettingsCxx]["cppModules"] = true;
 	}
 
+	std::string distTarget = "all";
 	ret[kDistribution] = Json::object();
-	ret[kDistribution][project] = Json::object();
-	ret[kDistribution][project]["kind"] = "bundle";
-	ret[kDistribution][project]["buildTargets"] = Json::array();
-	ret[kDistribution][project]["buildTargets"][0] = project;
+	ret[kDistribution][distTarget] = Json::object();
+	ret[kDistribution][distTarget]["kind"] = "bundle";
+	ret[kDistribution][distTarget]["buildTargets"] = "*";
 
 	return ret;
 }

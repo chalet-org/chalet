@@ -698,10 +698,18 @@ void SourceTarget::setStaticLinking(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-// TODO: string prefix (lib) / suffix (-s) control
-bool SourceTarget::windowsPrefixOutputFilename() const noexcept
+void SourceTarget::setMinGWUnixSharedLibraryNamingConvention(const bool inValue) noexcept
 {
-	return !m_state.environment->isMsvc() && !m_state.environment->isWindowsClang();
+	m_mingwUnixSharedLibraryNamingConvention = inValue;
+}
+
+bool SourceTarget::unixSharedLibraryNamingConvention() const noexcept
+{
+	bool mingw = m_state.environment->isMingw();
+	bool mingwWithPrefix = m_mingwUnixSharedLibraryNamingConvention && mingw;
+	bool nonWindows = !mingw && !m_state.environment->isMsvc() && !m_state.environment->isWindowsClang();
+
+	return mingwWithPrefix || nonWindows;
 }
 
 /*****************************************************************************/
@@ -824,8 +832,10 @@ void SourceTarget::parseOutputFilename() noexcept
 		}
 		case ProjectKind::SharedLibrary:
 		case ProjectKind::StaticLibrary: {
-			if (windowsPrefixOutputFilename())
+			if (unixSharedLibraryNamingConvention())
 			{
+				// TODO: version number
+
 				m_outputFileNoPrefix = projectName + libraryExtension;
 				m_outputFile = "lib" + m_outputFileNoPrefix;
 			}

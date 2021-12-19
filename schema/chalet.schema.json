@@ -275,14 +275,25 @@
 			"default": "dist"
 		},
 		"dist-bundle-buildTargets": {
-			"type": "array",
-			"uniqueItems": true,
-			"description": "An array of build target names to include in this bundle.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
-			"minItems": 1,
+			"description": "Either an array of build target names to include in this bundle. A single string value of '*' will include all build targets.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1,
+					"default": "*"
+				},
+				{
+					"type": "array",
+					"description": "The name of the build target.",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			],
 			"items": {
-				"type": "string",
-				"description": "The name of the build target.",
-				"minLength": 1,
 				"pattern": "^[\\w\\-+.]{3,}$"
 			}
 		},
@@ -343,7 +354,7 @@
 			}
 		},
 		"dist-archive-include": {
-			"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. '*' will archive everything in the bundle directory.",
+			"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of '*' will archive everything in the bundle directory.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1016,6 +1027,9 @@
 				"exceptions": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
+				"fastMath": {
+					"$ref": "#/definitions/target-source-cxx-fastMath"
+				},
 				"includeDirs": {
 					"oneOf": [
 						{
@@ -1087,17 +1101,14 @@
 				"macosFrameworks": {
 					"$ref": "#/definitions/target-source-cxx-macosFrameworks"
 				},
+				"mingwUnixSharedLibraryNamingConvention": {
+					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
+				},
 				"pch": {
 					"$ref": "#/definitions/target-source-cxx-pch"
 				},
-				"threads": {
-					"$ref": "#/definitions/target-source-cxx-threads"
-				},
 				"rtti": {
 					"$ref": "#/definitions/target-source-cxx-rtti"
-				},
-				"fastMath": {
-					"$ref": "#/definitions/target-source-cxx-fastMath"
 				},
 				"staticLinking": {
 					"$ref": "#/definitions/target-source-cxx-staticLinking"
@@ -1118,6 +1129,9 @@
 							}
 						}
 					]
+				},
+				"threads": {
+					"$ref": "#/definitions/target-source-cxx-threads"
 				},
 				"warnings": {
 					"$ref": "#/definitions/target-source-cxx-warnings"
@@ -1157,6 +1171,12 @@
 				"^defines(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-defines"
 				},
+				"^exceptions(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-exceptions"
+				},
+				"^fastMath(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-fastMath"
+				},
 				"^includeDirs(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-includeDirs"
 				},
@@ -1169,23 +1189,20 @@
 				"^links(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-links"
 				},
+				"^mingwUnixSharedLibraryNamingConvention(\\.!?(debug)\\b\\.?)?$": {
+					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
+				},
 				"^staticLinks(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-staticLinks"
-				},
-				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-threads"
 				},
 				"^rtti(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-rtti"
 				},
-				"^fastMath(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-fastMath"
-				},
-				"^exceptions(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-exceptions"
-				},
 				"^staticLinking(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-staticLinking"
+				},
+				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-threads"
 				},
 				"^windowsApplicationIcon(\\.!?(debug)\\b\\.?)?$": {
 					"$ref": "#/definitions/target-source-cxx-windowsAppIcon"
@@ -1992,6 +2009,11 @@
 			"type": "string",
 			"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)",
 			"minLength": 1
+		},
+		"target-source-cxx-mingwUnixSharedLibraryNamingConvention": {
+			"type": "boolean",
+			"description": "If true, shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
+			"default": true
 		},
 		"target-source-cxx-windowsSubSystem": {
 			"type": "string",
