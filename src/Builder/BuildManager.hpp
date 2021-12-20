@@ -62,6 +62,8 @@ private:
 	bool createAppBundle();
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 
+	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist);
+
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 

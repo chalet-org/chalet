@@ -676,7 +676,12 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 		cmd.push_back(arg);
 	}
 
-	return Commands::subprocess(cmd);
+	bool result = runProcess(cmd, inTarget.path(), false);
+
+	if (!result)
+		Output::lineBreak();
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -834,43 +839,54 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	}
 	else
 	{
-		Output::printSeparator();
-
-		bool result = Commands::subprocessWithInput(cmd);
-
-		auto outFile = outputFile;
-		m_inputs.clearWorkingDirectory(outFile);
-
-		int lastExitCode = ProcessController::getLastExitCode();
-		auto message = fmt::format("{} exited with code: {}", outFile, lastExitCode);
-
-		// Output::lineBreak();
-		Output::printSeparator();
-		Output::print(result ? Output::theme().info : Output::theme().error, message);
-
-		auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
-		if (!lastSystemMessage.empty())
-		{
-#if defined(CHALET_WIN32)
-			String::replaceAll(lastSystemMessage, "%1", outputFile);
-#endif
-			Output::print(Output::theme().info, fmt::format("Error: {}", lastSystemMessage));
-		}
-		else if (lastExitCode < 0)
-		{
-			BinaryDependencyMap tmpMap(m_state.tools);
-			StringList dependencies;
-			StringList dependenciesNotFound;
-
-			if (tmpMap.getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
-			{
-				const auto& unknownDep = dependenciesNotFound.front();
-				Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", unknownDep));
-			}
-		}
-
-		return result;
+		return runProcess(cmd, outputFile, true);
 	}
+}
+
+/*****************************************************************************/
+bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist)
+{
+	if (inFromDist)
+		Output::printSeparator();
+
+	bool result = Commands::subprocessWithInput(inCmd);
+
+	m_inputs.clearWorkingDirectory(outputFile);
+
+	int lastExitCode = ProcessController::getLastExitCode();
+
+	if (lastExitCode != 0 || inFromDist)
+	{
+		auto message = fmt::format("{} exited with code: {}", outputFile, lastExitCode);
+
+		if (inFromDist)
+			Output::printSeparator();
+
+		Output::print(result ? Output::theme().info : Output::theme().error, message);
+	}
+
+	auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
+	if (!lastSystemMessage.empty())
+	{
+#if defined(CHALET_WIN32)
+		String::replaceAll(lastSystemMessage, "%1", outputFile);
+#endif
+		Output::print(Output::theme().info, fmt::format("Error: {}", lastSystemMessage));
+	}
+	else if (lastExitCode < 0)
+	{
+		BinaryDependencyMap tmpMap(m_state.tools);
+		StringList dependencies;
+		StringList dependenciesNotFound;
+
+		if (tmpMap.getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
+		{
+			const auto& unknownDep = dependenciesNotFound.front();
+			Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", unknownDep));
+		}
+	}
+
+	return result;
 }
 
 /*****************************************************************************/
