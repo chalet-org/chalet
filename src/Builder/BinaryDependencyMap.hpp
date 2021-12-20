@@ -32,9 +32,11 @@ public:
 	void populateToList(StringList& outList, const StringList& inExclusions) const;
 	bool gatherFromList(const StringList& inList, int levels = 2);
 
+	const StringList& notCopied() const noexcept;
+
 private:
 	bool gatherDependenciesOf(const std::string& inPath, int levels);
-	bool resolveDependencyPath(std::string& outDep) const;
+	bool resolveDependencyPath(std::string& outDep);
 
 	const BuildState& m_state;
 
@@ -43,6 +45,8 @@ private:
 
 	StringList m_excludes;
 	StringList m_searchDirs;
+
+	StringList m_notCopied;
 };
 }
 

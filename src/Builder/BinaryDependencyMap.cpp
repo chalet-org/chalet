@@ -74,7 +74,10 @@ void BinaryDependencyMap::log() const
 			LOG("    ", dep);
 		}
 	}
-	LOG("");
+	if (!m_map.empty())
+	{
+		LOG("");
+	}
 }
 
 /*****************************************************************************/
@@ -104,7 +107,29 @@ bool BinaryDependencyMap::gatherFromList(const StringList& inList, int levels)
 		}
 	}
 
+	for (auto& [file, dependencies] : m_map)
+	{
+		for (auto it = m_notCopied.begin(); it != m_notCopied.end();)
+		{
+			if (String::endsWith(*it, file))
+			{
+				it = m_notCopied.erase(it);
+				continue;
+			}
+			else
+			{
+				++it;
+			}
+		}
+	}
+
 	return true;
+}
+
+/*****************************************************************************/
+const StringList& BinaryDependencyMap::notCopied() const noexcept
+{
+	return m_notCopied;
 }
 
 /*****************************************************************************/
@@ -131,6 +156,7 @@ bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, int le
 	{
 		if (!resolveDependencyPath(*it))
 		{
+			m_notCopied.push_back(*it);
 			it = dependencies.erase(it);
 			continue;
 		}
@@ -151,7 +177,7 @@ bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, int le
 }
 
 /*****************************************************************************/
-bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep) const
+bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 {
 	const auto filename = String::getPathFilename(outDep);
 	if (outDep.empty()
@@ -177,12 +203,7 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep) const
 
 	resolved = Commands::which(filename);
 	if (resolved.empty())
-	{
-		// Diagnostic::warn("Dependency not copied (not found in path): '{}'", outDep);
-		// return false;
-		// We probably don't care about them anyway
 		return false;
-	}
 
 	outDep = std::move(resolved);
 	return true;

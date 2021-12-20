@@ -207,6 +207,8 @@ bool Router::routeBundle(StatePrototype& inPrototype)
 			return false;
 	}
 
+	bundler.reportErrors();
+
 	Output::msgBuildSuccess();
 	Output::lineBreak();
 

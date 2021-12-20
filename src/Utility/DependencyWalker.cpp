@@ -197,7 +197,10 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 					if (!dependency.empty() && !String::contains(ignoreList, dependencyResolved))
 					{
 						// LOG(inFile, dependency);
-						List::addIfDoesNotExist(outList, std::move(dependencyResolved));
+						if (!dependencyResolved.empty())
+							List::addIfDoesNotExist(outList, std::move(dependencyResolved));
+						else
+							List::addIfDoesNotExist(outList, std::move(dependency));
 					}
 					++foundDepends;
 
@@ -243,7 +246,10 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 					if (!dependency.empty() && !String::contains(ignoreList, dependencyResolved))
 					{
 						// LOG(inFile, dependency);
-						List::addIfDoesNotExist(outList, std::move(dependencyResolved));
+						if (!dependencyResolved.empty())
+							List::addIfDoesNotExist(outList, std::move(dependencyResolved));
+						else
+							List::addIfDoesNotExist(outList, std::move(dependency));
 					}
 					++foundDepends;
 

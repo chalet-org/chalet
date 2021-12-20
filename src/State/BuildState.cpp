@@ -613,6 +613,16 @@ bool BuildState::makePathVariable()
 	if (auto cppRoot = String::getPathFolder(toolchain.compilerCpp().path); !List::contains(pathList, cppRoot))
 		outList.emplace_back(std::move(cppRoot));
 
+	{
+		// Edge case for cross-compilers that have an extra bin folder (like MinGW on Linux)
+		auto extraBinDir = fmt::format("{}/bin", String::getPathFolder(toolchain.compilerCpp().libDir));
+		if (Commands::pathExists(extraBinDir))
+		{
+			if (!List::contains(pathList, extraBinDir))
+				outList.emplace_back(std::move(extraBinDir));
+		}
+	}
+
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	StringList osPaths{
 		"/usr/local/sbin",

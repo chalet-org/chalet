@@ -187,6 +187,15 @@ bool AppBundler::run(const DistTarget& inTarget)
 }
 
 /*****************************************************************************/
+void AppBundler::reportErrors() const
+{
+	for (auto& dep : m_notCopied)
+	{
+		Diagnostic::warn("Dependency not copied because it was not found in {}: '{}'", Environment::getPathKey(), dep);
+	}
+}
+
+/*****************************************************************************/
 BuildState* AppBundler::getBuildState(const std::string& inBuildConfiguration) const
 {
 	BuildState* ret = nullptr;
@@ -410,6 +419,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 	if (!m_dependencyMap->gatherFromList(allDependencies, levels))
 		return false;
 
+	m_notCopied = List::combine(m_notCopied, m_dependencyMap->notCopied());
 	// m_dependencyMap->log();
 
 	return true;
@@ -467,8 +477,6 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 	{
 		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
-
-	// m_dependencyMap->log();
 
 	Diagnostic::infoEllipsis("Compressing files");
 

@@ -32,6 +32,8 @@ struct AppBundler
 
 	bool gatherDependencies(const BundleTarget& inTarget, BuildState& inState);
 
+	void reportErrors() const;
+
 private:
 	bool runBundleTarget(IAppBundler& inBundler, BuildState& inState);
 	bool runScriptTarget(const ScriptDistTarget& inTarget);
@@ -55,6 +57,7 @@ private:
 
 	StringList m_removedDirs;
 	StringList m_archives;
+	StringList m_notCopied;
 
 	std::string m_detectedArch;
 };

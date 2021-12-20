@@ -36,7 +36,7 @@
 				"bundle"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}",
+			"cwd": "${workspaceFolder}/../chalet-example-sharedlib",
 			"preLaunchTask": "Build: Debug",
 			"externalConsole": false,
 			"setupCommands": [
