@@ -5,6 +5,7 @@
 
 #include "Bundler/AppBundler.hpp"
 
+#include "Builder/BinaryDependencyMap.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/IAppBundler.hpp"
 #include "Bundler/MacosDiskImageCreator.hpp"
@@ -34,10 +35,12 @@ namespace chalet
 /*****************************************************************************/
 AppBundler::AppBundler(const CommandLineInputs& inInputs, StatePrototype& inPrototype) :
 	m_inputs(inInputs),
-	m_prototype(inPrototype),
-	m_dependencyMap(m_prototype.tools)
+	m_prototype(inPrototype)
 {
 }
+
+/*****************************************************************************/
+AppBundler::~AppBundler() = default;
 
 /*****************************************************************************/
 bool AppBundler::runBuilds()
@@ -120,7 +123,8 @@ bool AppBundler::run(const DistTarget& inTarget)
 				return false;
 		}
 
-		auto bundler = IAppBundler::make(*buildState, bundle, m_dependencyMap, m_inputs.inputFile());
+		m_dependencyMap = std::make_unique<BinaryDependencyMap>(*buildState);
+		auto bundler = IAppBundler::make(*buildState, bundle, *m_dependencyMap, m_inputs.inputFile());
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget->name());
@@ -308,7 +312,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 		}
 	}
 
-	m_dependencyMap.populateToList(dependenciesToCopy, excludes);
+	m_dependencyMap->populateToList(dependenciesToCopy, excludes);
 
 	std::sort(dependenciesToCopy.begin(), dependenciesToCopy.end());
 	for (auto& dep : dependenciesToCopy)
@@ -364,14 +368,14 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 
 	const auto& buildTargets = inTarget.buildTargets();
 
-	m_dependencyMap.addExcludesFromList(inTarget.includes());
-	m_dependencyMap.clearSearchDirs();
+	m_dependencyMap->addExcludesFromList(inTarget.includes());
+	m_dependencyMap->clearSearchDirs();
 	for (auto& target : inState.targets)
 	{
 		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
-			m_dependencyMap.addSearchDirsFromList(project.libDirs());
+			m_dependencyMap->addSearchDirsFromList(project.libDirs());
 		}
 	}
 
@@ -403,10 +407,10 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 	}
 
 	int levels = 2;
-	if (!m_dependencyMap.gatherFromList(allDependencies, levels))
+	if (!m_dependencyMap->gatherFromList(allDependencies, levels))
 		return false;
 
-	// m_dependencyMap.log();
+	// m_dependencyMap->log();
 
 	return true;
 }
@@ -464,7 +468,7 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
 
-	// m_dependencyMap.log();
+	// m_dependencyMap->log();
 
 	Diagnostic::infoEllipsis("Compressing files");
 

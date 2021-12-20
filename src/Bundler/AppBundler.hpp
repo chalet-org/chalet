@@ -6,7 +6,6 @@
 #ifndef CHALET_APP_BUNDLER_HPP
 #define CHALET_APP_BUNDLER_HPP
 
-#include "Builder/BinaryDependencyMap.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 
 namespace chalet
@@ -18,11 +17,14 @@ struct MacosDiskImageTarget;
 struct WindowsNullsoftInstallerTarget;
 struct CommandLineInputs;
 struct StatePrototype;
+class BinaryDependencyMap;
 struct IAppBundler;
 
 struct AppBundler
 {
 	explicit AppBundler(const CommandLineInputs& inInputs, StatePrototype& inPrototype);
+	CHALET_DISALLOW_COPY_MOVE(AppBundler);
+	~AppBundler();
 
 	bool runBuilds();
 
@@ -49,7 +51,7 @@ private:
 	StatePrototype& m_prototype;
 
 	HeapDictionary<BuildState> m_states;
-	BinaryDependencyMap m_dependencyMap;
+	Unique<BinaryDependencyMap> m_dependencyMap;
 
 	StringList m_removedDirs;
 	StringList m_archives;

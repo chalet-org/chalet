@@ -5,7 +5,9 @@
 
 #include "Builder/BinaryDependencyMap.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/DependencyWalker.hpp"
 #include "Utility/List.hpp"
@@ -14,8 +16,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-BinaryDependencyMap::BinaryDependencyMap(const AncillaryTools& inTools) :
-	m_tools(inTools)
+BinaryDependencyMap::BinaryDependencyMap(const BuildState& inState) :
+	m_state(inState)
 {
 }
 
@@ -189,44 +191,46 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep) const
 /*****************************************************************************/
 bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, StringList& outList, StringList* outNotFound)
 {
-#if defined(CHALET_WIN32)
-	DependencyWalker depsWalker;
-	if (!depsWalker.read(inPath, outList, outNotFound))
+	if (m_state.environment->isWindowsTarget())
 	{
-		Diagnostic::error("Dependencies for file '{}' could not be read.", inPath);
-		return false;
+		DependencyWalker depsWalker;
+		if (!depsWalker.read(inPath, outList, outNotFound))
+		{
+			Diagnostic::error("Dependencies for file '{}' could not be read.", inPath);
+			return false;
+		}
+
+		return true;
 	}
 
-	return true;
-#else
-	#if defined(CHALET_MACOS)
-	const auto& otool = m_tools.otool();
+#if defined(CHALET_MACOS)
+	const auto& otool = m_state.tools.otool();
 	if (otool.empty())
 	{
 		Diagnostic::error("Dependencies for file '{}' could not be read. 'otool' was not found in cache.", inPath);
 		return false;
 	}
-	#else
-	const auto& ldd = m_tools.ldd();
+#else
+	const auto& ldd = m_state.tools.ldd();
 	if (ldd.empty())
 	{
 		Diagnostic::error("Dependencies for file '{}' could not be read. 'ldd' was not found in cache.", inPath);
 		return false;
 	}
-	#endif
+#endif
 
 	CHALET_TRY
 	{
 		StringList cmd;
-	#if defined(CHALET_MACOS)
+#if defined(CHALET_MACOS)
 		cmd = { otool, "-L", inPath };
-	#else
+#else
 		// This block detects the dependencies of each target and adds them to a list
 		// The list resolves each path, favoring the paths supplied by chalet.json
 		// Note: this doesn't seem to work in standalone builds of GCC (tested 7.3.0)
 		//   but works fine w/ MSYS2
 		cmd = { ldd, inPath };
-	#endif
+#endif
 		std::string targetDeps = Commands::subprocessOutput(cmd);
 
 		std::string line;
@@ -245,7 +249,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 			while (line[beg] == '\t' || line[beg] == ' ')
 				beg++;
 
-	#if defined(CHALET_MACOS)
+#if defined(CHALET_MACOS)
 			std::size_t end = line.find(".dylib");
 			if (end == std::string::npos)
 			{
@@ -259,15 +263,15 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 			{
 				end += 6;
 			}
-	#else
+#else
 			std::size_t end = line.find("=>");
 			if (end != std::string::npos && end > 0)
 				end--;
-	#endif
+#endif
 
 			std::string dependencyFile;
 			std::string dependency = line.substr(beg, end - beg);
-	#if defined(CHALET_MACOS)
+#if defined(CHALET_MACOS)
 			if (String::startsWith("/System/Library/Frameworks/", dependency))
 				continue;
 
@@ -281,10 +285,10 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 					dependency = dependency.substr(lastSlash + 1);
 			}
 			dependencyFile = String::getPathFilename(dependency);
-	#else
+#else
 			dependencyFile = String::getPathFilename(dependency);
 			dependency = Commands::which(dependencyFile);
-	#endif
+#endif
 
 			if (dependency.empty())
 			{
@@ -295,10 +299,10 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 				continue;
 			}
 
-	#if defined(CHALET_LINUX) || defined(CHALET_MACOS)
+#if defined(CHALET_LINUX) || defined(CHALET_MACOS)
 			if (String::startsWith("/usr/lib/", dependency))
 				continue;
-	#endif
+#endif
 
 			List::addIfDoesNotExist(outList, std::move(dependency));
 		}
@@ -310,7 +314,6 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 		CHALET_EXCEPT_ERROR(err.what());
 		return false;
 	}
-#endif
 }
 
 }

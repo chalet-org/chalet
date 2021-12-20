@@ -8,14 +8,14 @@
 
 namespace chalet
 {
-struct AncillaryTools;
+class BuildState;
 
 class BinaryDependencyMap
 {
 	using InnerMap = std::unordered_multimap<std::string, StringList>;
 
 public:
-	explicit BinaryDependencyMap(const AncillaryTools& inTools);
+	explicit BinaryDependencyMap(const BuildState& inState);
 
 	bool getExecutableDependencies(const std::string& inPath, StringList& outList, StringList* outNotFound = nullptr);
 
@@ -36,7 +36,7 @@ private:
 	bool gatherDependenciesOf(const std::string& inPath, int levels);
 	bool resolveDependencyPath(std::string& outDep) const;
 
-	const AncillaryTools& m_tools;
+	const BuildState& m_state;
 
 	InnerMap m_map;
 	StringList m_list;

@@ -877,7 +877,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	}
 	else if (lastExitCode < 0)
 	{
-		BinaryDependencyMap tmpMap(m_state.tools);
+		BinaryDependencyMap tmpMap(m_state);
 		StringList dependencies;
 		StringList dependenciesNotFound;
 
