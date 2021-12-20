@@ -13,9 +13,68 @@
 
 // https://stackoverflow.com/questions/43670731/programmatically-get-list-of-dlls-used-to-build-a-process-or-library-in-a-non-de
 
+#if !defined(CHALET_WIN32)
+// This is so MinGW on Linux can read the dependencies of the compiled binary
+namespace
+{
+using DWORD = std::uint32_t;
+using WORD = std::uint16_t;
+using BYTE = std::uint8_t;
+
+typedef struct
+{
+	WORD Machine;
+	WORD NumberOfSections;
+	DWORD TimeDateStamp;
+	DWORD PointerToSymbolTable;
+	DWORD NumberOfSymbols;
+	WORD SizeOfOptionalHeader;
+	WORD Characteristics;
+} IMAGE_FILE_HEADER;
+
+typedef struct
+{
+	DWORD VirtualAddress;
+	DWORD Size;
+} IMAGE_DATA_DIRECTORY;
+
+typedef struct
+{
+	BYTE Name[8];
+	union
+	{
+		DWORD PhysicalAddress;
+		DWORD VirtualSize;
+	} Misc;
+	DWORD VirtualAddress;
+	DWORD SizeOfRawData;
+	DWORD PointerToRawData;
+	DWORD PointerToRelocations;
+	DWORD PointerToLinenumbers;
+	WORD NumberOfRelocations;
+	WORD NumberOfLinenumbers;
+	DWORD Characteristics;
+} IMAGE_SECTION_HEADER;
+
+typedef struct
+{
+	union
+	{
+		DWORD Characteristics;
+		DWORD OriginalFirstThunk;
+	};
+	DWORD TimeDateStamp;
+
+	DWORD ForwarderChain;
+	DWORD Name;
+	DWORD FirstThunk;
+} IMAGE_IMPORT_DESCRIPTOR;
+}
+#endif
+
 namespace chalet
 {
-#if defined(CHALET_WIN32)
+// #if defined(CHALET_WIN32)
 /*****************************************************************************/
 bool DependencyWalker::read(const std::string& inFile, StringList& outList, StringList* outNotFound)
 {
@@ -206,5 +265,5 @@ std::vector<char> DependencyWalker::readAllBytes(const std::string& inFile)
 	return buffer;
 }
 
-#endif
+// #endif
 }
