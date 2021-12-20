@@ -184,11 +184,17 @@ bool Router::routeConfigure(BuildState& inState)
 bool Router::routeBundle(StatePrototype& inPrototype)
 {
 	const auto& inputFile = m_inputs.inputFile();
-	if (inPrototype.requiredBuildConfigurations().size() == 0)
+	if (inPrototype.distribution.empty())
+	{
+		Diagnostic::error("{}: There are no distribution targets: missing 'distribution'", inputFile);
+		return false;
+	}
+
+	/*if (inPrototype.requiredBuildConfigurations().empty())
 	{
 		Diagnostic::error("{}: 'bundle' ran without any valid distribution bundles: missing 'configuration'", inputFile);
 		return false;
-	}
+	}*/
 
 	AppBundler bundler(m_inputs, inPrototype);
 
