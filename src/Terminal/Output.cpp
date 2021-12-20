@@ -601,7 +601,7 @@ void Output::msgProfilerStartedSample(const std::string& inExecutable, const uin
 void Output::msgProfilerDone(const std::string& inProfileAnalysis)
 {
 	auto symbol = Unicode::diamond();
-	displayStyledSymbol(state.theme.note, symbol, fmt::format("Profiler Completed! View {} for details.", inProfileAnalysis));
+	displayStyledSymbol(state.theme.note, symbol, fmt::format("Profiler completed. View {} for details.", inProfileAnalysis));
 }
 
 /*****************************************************************************/
@@ -609,9 +609,9 @@ void Output::msgProfilerDoneAndLaunching(const std::string& inProfileAnalysis, c
 {
 	auto symbol = Unicode::diamond();
 	if (inApplication.empty())
-		displayStyledSymbol(state.theme.note, symbol, fmt::format("Profiler Completed! Opening {}", inProfileAnalysis));
+		displayStyledSymbol(state.theme.note, symbol, fmt::format("Profiler completed. Opening {}", inProfileAnalysis));
 	else
-		displayStyledSymbol(state.theme.note, symbol, fmt::format("Profiler Completed! Launching {} in {}.", inProfileAnalysis, inApplication));
+		displayStyledSymbol(state.theme.note, symbol, fmt::format("Profiler completed. Launching {} in {}.", inProfileAnalysis, inApplication));
 }
 
 // Leave the commands as separate functions in case symbols and things change

@@ -834,6 +834,8 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 	if (inTarget.isSources() && m_state.configuration.enableProfiling())
 	{
+		Output::printSeparator();
+
 		auto& project = static_cast<const SourceTarget&>(inTarget);
 		return runProfiler(project, cmd, file);
 	}
