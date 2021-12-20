@@ -31,6 +31,7 @@ struct IBuildTarget
 	bool isScript() const noexcept;
 	bool isSubChalet() const noexcept;
 	bool isCMake() const noexcept;
+	bool isProcess() const noexcept;
 
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;

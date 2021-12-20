@@ -535,7 +535,8 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"executable",
 			"cmakeProject",
 			"chaletProject",
-			"script"
+			"script",
+			"process"
 		]
 	})json"_ojson;
 
@@ -1307,6 +1308,25 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
+	//
+
+	defs[Defs::TargetProcessPath] = R"json({
+		"type": "string",
+		"description": "Either the full path to an exectuable, or a shell compatible name to be resolved.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::TargetProcessArguments] = R"json({
+		"type": "array",
+		"description": "A list of arguments to pass along to the process",
+		"uniqueItems": true,
+		"minItems": 1,
+		"items": {
+			"type": "string",
+			"minLength": 1
+		}
+	})json"_ojson;
+
 	auto getDefinitionwithCompilerOptions = [this](const Defs inDef) {
 		Json ret = R"json({
 			"oneOf": [
@@ -1663,6 +1683,26 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		defs[Defs::TargetChalet] = std::move(targetChalet);
 	}
 
+	{
+		auto targetProcess = R"json({
+			"type": "object",
+			"description": "Run a process",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			]
+		})json"_ojson;
+		targetProcess[kProperties]["arguments"] = getDefinition(Defs::TargetProcessArguments);
+		targetProcess[kProperties]["condition"] = getDefinition(Defs::TargetCondition);
+		targetProcess[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+		targetProcess[kProperties]["kind"] = getDefinition(Defs::TargetKind);
+		targetProcess[kProperties]["path"] = getDefinition(Defs::TargetProcessPath);
+		targetProcess[kPatternProperties][fmt::format("^arguments{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetProcessArguments);
+		targetProcess[kPatternProperties][fmt::format("^path{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetProcessPath);
+		defs[Defs::TargetProcess] = std::move(targetProcess);
+	}
+
 	return defs;
 }
 
@@ -1782,6 +1822,10 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::TargetChaletBuildFile: return "target-chalet-buildFile";
 		case Defs::TargetChaletRecheck: return "target-chalet-recheck";
 		case Defs::TargetChaletRebuild: return "target-chalet-rebuild";
+		//
+		case Defs::TargetProcess: return "target-process";
+		case Defs::TargetProcessPath: return "target-process-path";
+		case Defs::TargetProcessArguments: return "target-process-arguments";
 
 		default: break;
 	}
@@ -1962,8 +2006,14 @@ Json SchemaBuildJson::get()
 						}},
 						"then": {},
 						"else": {
-							"type": "object",
-							"additionalProperties": false
+							"if": { "properties": {
+								"kind": { "const": "process" }
+							}},
+							"then": {},
+							"else": {
+								"type": "object",
+								"additionalProperties": false
+							}
 						}
 					}
 				}
@@ -1975,6 +2025,7 @@ Json SchemaBuildJson::get()
 	ret[kProperties][targets][kPatternProperties][kPatternTargetName][kElse][kElse][kThen] = getDefinition(Defs::TargetCMake);
 	ret[kProperties][targets][kPatternProperties][kPatternTargetName][kElse][kElse][kElse][kThen] = getDefinition(Defs::TargetChalet);
 	ret[kProperties][targets][kPatternProperties][kPatternTargetName][kElse][kElse][kElse][kElse][kThen] = getDefinition(Defs::TargetScript);
+	ret[kProperties][targets][kPatternProperties][kPatternTargetName][kElse][kElse][kElse][kElse][kElse][kThen] = getDefinition(Defs::TargetProcess);
 	ret[kProperties][targets][kPatternProperties][kPatternTargetName][kElse][kElse][kElse][kElse][kElse][kProperties]["kind"] = getDefinition(Defs::TargetKind);
 
 	ret[kProperties]["version"] = R"json({

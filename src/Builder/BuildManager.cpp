@@ -23,6 +23,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
@@ -205,6 +206,24 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			Timer buildTimer;
 
 			if (!runScriptTarget(static_cast<const ScriptBuildTarget&>(*target), false))
+			{
+				error = true;
+				break;
+			}
+
+			auto res = buildTimer.stop();
+			if (res > 0 && Output::showBenchmarks())
+			{
+				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+			}
+
+			Output::lineBreak();
+		}
+		else if (target->isProcess())
+		{
+			Timer buildTimer;
+
+			if (!runProcessTarget(static_cast<const ProcessBuildTarget&>(*target)))
 			{
 				error = true;
 				break;
@@ -611,18 +630,18 @@ bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 }
 
 /*****************************************************************************/
-bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand)
+bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool inRunCommand)
 {
-	const auto& file = inScript.file();
+	const auto& file = inTarget.file();
 	if (file.empty())
 		return false;
 
 	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
 
-	if (!inScript.description().empty())
-		Output::msgTargetDescription(inScript.description(), color);
+	if (!inTarget.description().empty())
+		Output::msgTargetDescription(inTarget.description(), color);
 	else
-		Output::msgTargetOfType("Script", inScript.name(), color);
+		Output::msgTargetOfType("Script", inTarget.name(), color);
 
 	if (inRunCommand)
 		Output::printSeparator();
@@ -634,6 +653,30 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inScript, const bool
 		return false;
 
 	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
+{
+	const auto& path = inTarget.path();
+	if (path.empty())
+		return false;
+
+	if (!inTarget.description().empty())
+		Output::msgTargetDescription(inTarget.description(), Output::theme().header);
+	else
+		Output::msgTargetOfType("Process", inTarget.name(), Output::theme().header);
+
+	Output::lineBreak();
+
+	StringList cmd;
+	cmd.push_back(inTarget.path());
+	for (auto& arg : inTarget.runArguments())
+	{
+		cmd.push_back(arg);
+	}
+
+	return Commands::subprocess(cmd);
 }
 
 /*****************************************************************************/

@@ -129,6 +129,10 @@ class SchemaBuildJson
 		TargetChaletBuildFile,
 		TargetChaletRecheck,
 		TargetChaletRebuild,
+		//
+		TargetProcess,
+		TargetProcessPath,
+		TargetProcessArguments
 	};
 	using DefinitionMap = std::map<Defs, Json>;
 

@@ -22,6 +22,7 @@ namespace chalet
 struct BundleTarget;
 struct CMakeTarget;
 struct SourceTarget;
+struct ProcessBuildTarget;
 struct ScriptBuildTarget;
 struct SubChaletTarget;
 struct StatePrototype;
@@ -39,13 +40,14 @@ private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseTarget(const Json& inNode);
-	bool parseSourceTarget(SourceTarget& outProject, const Json& inNode, const bool inAbstract = false) const;
-	bool parseScriptTarget(ScriptBuildTarget& outScript, const Json& inNode) const;
-	bool parseSubChaletTarget(SubChaletTarget& outProject, const Json& inNode) const;
-	bool parseCMakeTarget(CMakeTarget& outProject, const Json& inNode) const;
+	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode, const bool inAbstract = false) const;
+	bool parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const;
+	bool parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const;
+	bool parseCMakeTarget(CMakeTarget& outTarget, const Json& inNode) const;
+	bool parseProcessTarget(ProcessBuildTarget& outTarget, const Json& inNode) const;
 	bool parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const;
-	bool parseCompilerSettingsCxx(SourceTarget& outProject, const Json& inNode) const;
+	bool parseCompilerSettingsCxx(SourceTarget& outTarget, const Json& inNode) const;
 
 	bool validBuildRequested() const;
 	bool validRunTargetRequested() const;

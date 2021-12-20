@@ -7,6 +7,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -308,6 +309,7 @@ void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string&
 
 	String::replaceAll(outPath, "${cwd}", m_inputs.workingDirectory());
 	String::replaceAll(outPath, "${buildDir}", buildDir);
+	String::replaceAll(outPath, "${configuration}", m_state.configuration.name());
 
 	const auto& externalDir = m_inputs.externalDirectory();
 	if (!externalDir.empty())

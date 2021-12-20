@@ -677,7 +677,8 @@
 				"executable",
 				"cmakeProject",
 				"chaletProject",
-				"script"
+				"script",
+				"process"
 			]
 		},
 		"target-condition": {
@@ -2242,6 +2243,55 @@
 			"type": "boolean",
 			"description": "If true, the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
 			"default": true
+		},
+		"target-process": {
+			"type": "object",
+			"description": "Run a process",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			],
+			"properties": {
+				"arguments": {
+					"$ref": "#/definitions/target-process-arguments"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"kind": {
+					"$ref": "#/definitions/target-kind"
+				},
+				"path": {
+					"$ref": "#/definitions/target-process-path"
+				}
+			},
+			"patternProperties": {
+				"^arguments(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-process-arguments"
+				},
+				"^path(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-process-path"
+				}
+			}
+		},
+		"target-process-path": {
+			"type": "string",
+			"description": "Either the full path to an exectuable, or a shell compatible name to be resolved.",
+			"minLength": 1
+		},
+		"target-process-arguments": {
+			"type": "array",
+			"description": "A list of arguments to pass along to the process",
+			"uniqueItems": true,
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
 		}
 	},
 	"properties": {
@@ -2460,8 +2510,20 @@
 										"$ref": "#/definitions/target-script"
 									},
 									"else": {
-										"type": "object",
-										"additionalProperties": false,
+										"if": {
+											"properties": {
+												"kind": {
+													"const": "process"
+												}
+											}
+										},
+										"then": {
+											"$ref": "#/definitions/target-process"
+										},
+										"else": {
+											"type": "object",
+											"additionalProperties": false
+										},
 										"properties": {
 											"kind": {
 												"$ref": "#/definitions/target-kind"

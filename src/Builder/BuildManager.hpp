@@ -18,6 +18,7 @@ struct SubChaletTarget;
 struct CMakeTarget;
 struct SourceTarget;
 struct AssemblyDumper;
+struct ProcessBuildTarget;
 struct ScriptBuildTarget;
 struct CommandLineInputs;
 
@@ -56,6 +57,7 @@ private:
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
+	bool runProcessTarget(const ProcessBuildTarget& inTarget);
 	std::string getRunTarget();
 	bool createAppBundle();
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);

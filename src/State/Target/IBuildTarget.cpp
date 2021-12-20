@@ -8,6 +8,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
@@ -35,6 +36,8 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 			return std::make_unique<SubChaletTarget>(inState);
 		case BuildTargetType::CMake:
 			return std::make_unique<CMakeTarget>(inState);
+		case BuildTargetType::Process:
+			return std::make_unique<ProcessBuildTarget>(inState);
 		default:
 			break;
 	}
@@ -47,6 +50,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 bool IBuildTarget::initialize()
 {
 	replaceVariablesInPathList(m_runDependencies);
+	replaceVariablesInPathList(m_runArguments);
 
 	return true;
 }
@@ -82,6 +86,11 @@ bool IBuildTarget::isCMake() const noexcept
 {
 	return m_type == BuildTargetType::CMake;
 }
+bool IBuildTarget::isProcess() const noexcept
+{
+	return m_type == BuildTargetType::Process;
+}
+
 /*****************************************************************************/
 const std::string& IBuildTarget::name() const noexcept
 {

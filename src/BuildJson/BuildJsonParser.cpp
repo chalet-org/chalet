@@ -16,6 +16,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/StatePrototype.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
@@ -260,6 +261,10 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 			{
 				type = BuildTargetType::Script;
 			}
+			else if (String::equals("process", val))
+			{
+				type = BuildTargetType::Process;
+			}
 			else if (String::equals(sourceTargets, val))
 			{}
 			else
@@ -301,7 +306,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		{
 			if (!parseSubChaletTarget(static_cast<SubChaletTarget&>(*target), targetJson))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' target of type 'Chalet'.", m_filename, name);
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'chaletProject'.", m_filename, name);
 				return false;
 			}
 		}
@@ -309,7 +314,15 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		{
 			if (!parseCMakeTarget(static_cast<CMakeTarget&>(*target), targetJson))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' target of type 'CMake'.", m_filename, name);
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'cmakeProject'.", m_filename, name);
+				return false;
+			}
+		}
+		else if (target->isProcess())
+		{
+			if (!parseProcessTarget(static_cast<ProcessBuildTarget&>(*target), targetJson))
+			{
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'cmakeProject'.", m_filename, name);
 				return false;
 			}
 		}
@@ -554,6 +567,38 @@ bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNod
 
 	if (!parseRunTargetProperties(outTarget, inNode))
 		return false;
+
+	return valid;
+}
+
+/*****************************************************************************/
+bool BuildJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const Json& inNode) const
+{
+	if (!parseTargetCondition(outTarget, inNode))
+		return true;
+
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "path", status))
+			{
+				outTarget.setPath(std::move(val));
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
+				outTarget.setDescription(std::move(val));
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addRunArguments(std::move(val));
+		}
+	}
 
 	return valid;
 }

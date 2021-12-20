@@ -14,7 +14,8 @@ enum class BuildTargetType
 	Project,
 	Script,
 	SubChalet,
-	CMake
+	CMake,
+	Process
 };
 }
 
