@@ -13,12 +13,14 @@
 #include "Bundler/ZipArchiver.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/ProcessController.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
+#include "State/Distribution/ProcessDistTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 #include "State/StatePrototype.hpp"
@@ -145,6 +147,19 @@ bool AppBundler::run(const DistTarget& inTarget)
 		Timer buildTimer;
 
 		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget)))
+			return false;
+
+		auto res = buildTimer.stop();
+		if (res > 0 && Output::showBenchmarks())
+		{
+			Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+		}
+	}
+	else if (inTarget->isProcess())
+	{
+		Timer buildTimer;
+
+		if (!runProcessTarget(static_cast<const ProcessDistTarget&>(*inTarget)))
 			return false;
 
 		auto res = buildTimer.stop();
@@ -445,6 +460,77 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::runProcessTarget(const ProcessDistTarget& inTarget)
+{
+	const auto& path = inTarget.path();
+	if (path.empty())
+		return false;
+
+	displayHeader("Process", inTarget);
+
+	StringList cmd;
+	cmd.push_back(inTarget.path());
+	for (auto& arg : inTarget.arguments())
+	{
+		cmd.push_back(arg);
+	}
+
+	bool result = runProcess(cmd, inTarget.path());
+
+	if (!result)
+	{
+		Output::lineBreak();
+		Output::msgBuildFail();
+		Output::lineBreak();
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
+{
+	bool result = Commands::subprocessWithInput(inCmd);
+
+	m_inputs.clearWorkingDirectory(outputFile);
+
+	int lastExitCode = ProcessController::getLastExitCode();
+	if (lastExitCode != 0)
+	{
+		auto message = fmt::format("{} exited with code: {}", outputFile, lastExitCode);
+		Output::print(result ? Output::theme().info : Output::theme().error, message);
+	}
+
+	auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
+	if (!lastSystemMessage.empty())
+	{
+#if defined(CHALET_WIN32)
+		String::replaceAll(lastSystemMessage, "%1", outputFile);
+#endif
+		Output::print(Output::theme().info, fmt::format("Error: {}", lastSystemMessage));
+	}
+	else if (lastExitCode < 0)
+	{
+		auto state = getBuildState(m_prototype.anyConfiguration());
+		if (state != nullptr)
+		{
+			BinaryDependencyMap tmpMap(*state);
+			StringList dependencies;
+			StringList dependenciesNotFound;
+
+			if (tmpMap.getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
+			{
+				const auto& unknownDep = dependenciesNotFound.front();
+				Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", unknownDep));
+			}
+		}
+	}
+
+	return result;
 }
 
 /*****************************************************************************/

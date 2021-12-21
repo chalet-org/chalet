@@ -26,7 +26,8 @@ WindowsNullsoftInstallerRunner::WindowsNullsoftInstallerRunner(const StateProtot
 /*****************************************************************************/
 bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarget& inTarget)
 {
-	const auto& nsisScript = inTarget.nsisScript();
+	const auto& file = inTarget.file();
+	chalet_assert(!file.empty(), "WindowsNullsoftInstallerRunner: validate target first");
 
 	Timer timer;
 	if (Output::showCommands())
@@ -58,11 +59,11 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 		cmd.emplace_back(fmt::format("-X!addplugindir \"{}\"", path));
 	}
 
-	cmd.emplace_back(nsisScript);
+	cmd.emplace_back(file);
 
 	if (!Commands::subprocessMinimalOutput(cmd))
 	{
-		Diagnostic::error("NSIS Installer failed to compile: {}", nsisScript);
+		Diagnostic::error("NSIS Installer failed to compile: {}", file);
 		return false;
 	}
 

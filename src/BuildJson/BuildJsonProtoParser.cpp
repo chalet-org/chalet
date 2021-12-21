@@ -15,6 +15,7 @@
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
+#include "State/Distribution/ProcessDistTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 
@@ -278,6 +279,10 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 			{
 				type = DistTargetType::Script;
 			}
+			else if (String::equals("process", val))
+			{
+				type = DistTargetType::Process;
+			}
 			else if (String::equals("archive", val))
 			{
 				type = DistTargetType::BundleArchive;
@@ -320,6 +325,11 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 			if (!parseDistributionScript(static_cast<ScriptDistTarget&>(*target), targetJson))
 				continue;
 		}
+		else if (target->isProcess())
+		{
+			if (!parseDistributionProcess(static_cast<ProcessDistTarget&>(*target), targetJson))
+				continue;
+		}
 		else if (target->isArchive())
 		{
 			if (!parseDistributionArchive(static_cast<BundleArchiveTarget&>(*target), targetJson))
@@ -327,8 +337,7 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 		}
 		else if (target->isDistributionBundle())
 		{
-			auto& bundle = static_cast<BundleTarget&>(*target);
-			if (!parseDistributionBundle(bundle, targetJson, inNode))
+			if (!parseDistributionBundle(static_cast<BundleTarget&>(*target), targetJson, inNode))
 				return false;
 		}
 		else if (target->isMacosDiskImage())
@@ -371,6 +380,38 @@ bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, 
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
 				outTarget.setDescription(std::move(val));
+		}
+	}
+
+	return valid;
+}
+
+/*****************************************************************************/
+bool BuildJsonProtoParser::parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const
+{
+	if (!parseTargetCondition(outTarget, inNode))
+		return true;
+
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "path", status))
+			{
+				outTarget.setPath(std::move(val));
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
+				outTarget.setDescription(std::move(val));
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArguments(std::move(val));
 		}
 	}
 
@@ -654,9 +695,9 @@ bool BuildJsonProtoParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstalle
 		{
 			std::string val;
 			if (String::equals("description", key))
-				outTarget.setDescription(std::move(val));
-			else if (String::equals("nsisScript", key))
-				outTarget.setNsisScript(std::move(val));
+				outTarget.setDescription(value.get<std::string>());
+			else if (String::equals("file", key))
+				outTarget.setFile(value.get<std::string>());
 		}
 		else if (value.is_array())
 		{

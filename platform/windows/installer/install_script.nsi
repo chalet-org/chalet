@@ -1,18 +1,19 @@
 Unicode true
+	!addplugindir platform\windows\installer\plugins\Plugins\x86-unicode
 
 ; 64-bit plugin
-!include x64.nsh
-!include nsDialogs.nsh
+	!include x64.nsh
+	!include nsDialogs.nsh
 
 ; folders
-!define FOLDERS_DIST "dist"
-!define FOLDERS_SCRIPTS "scripts"
-!define FOLDERS_BIN "bin"
-!define FOLDERS_PLATFORM "platform\windows\installer"
-!define FOLDERS_IMAGES "${FOLDERS_PLATFORM}\images"
+	!define FOLDERS_DIST "dist"
+	!define FOLDERS_SCRIPTS "scripts"
+	!define FOLDERS_BIN "bin"
+	!define FOLDERS_PLATFORM "platform\windows\installer"
+	!define FOLDERS_IMAGES "${FOLDERS_PLATFORM}\images"
 
-!include "${FOLDERS_PLATFORM}\pages\InstallOptions.nsh"
-!include "${FOLDERS_PLATFORM}\pages\ReadyToInstall.nsh"
+	!include "${FOLDERS_PLATFORM}\pages\InstallOptions.nsh"
+	!include "${FOLDERS_PLATFORM}\pages\ReadyToInstall.nsh"
 
 ; files
 	!define FILES_MAIN "chalet.exe"

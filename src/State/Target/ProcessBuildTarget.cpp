@@ -39,7 +39,7 @@ bool ProcessBuildTarget::validate()
 		auto resolved = Commands::which(m_path);
 		if (resolved.empty())
 		{
-			Diagnostic::error("The path for the process target '{}' doesn't exist: {}", this->name(), m_path);
+			Diagnostic::error("The process path for the target '{}' doesn't exist: {}", this->name(), m_path);
 			return false;
 		}
 

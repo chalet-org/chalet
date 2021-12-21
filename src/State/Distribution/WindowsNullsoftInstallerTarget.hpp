@@ -16,8 +16,8 @@ struct WindowsNullsoftInstallerTarget final : public IDistTarget
 
 	virtual bool validate() final;
 
-	const std::string& nsisScript() const noexcept;
-	void setNsisScript(std::string&& inValue);
+	const std::string& file() const noexcept;
+	void setFile(std::string&& inValue);
 
 	const StringList& pluginDirs() const noexcept;
 	void addPluginDirs(StringList&& inList);
@@ -31,7 +31,7 @@ private:
 	StringList m_pluginDirs;
 	StringList m_defines;
 
-	std::string m_nsisScript;
+	std::string m_file;
 };
 }
 

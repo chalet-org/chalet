@@ -92,6 +92,7 @@
 			"enum": [
 				"bundle",
 				"script",
+				"process",
 				"archive",
 				"macosDiskImage",
 				"windowsNullsoftInstaller"
@@ -537,7 +538,7 @@
 			"additionalProperties": false,
 			"required": [
 				"kind",
-				"nsisScript"
+				"file"
 			],
 			"properties": {
 				"description": {
@@ -546,8 +547,8 @@
 				"kind": {
 					"$ref": "#/definitions/dist-kind"
 				},
-				"nsisScript": {
-					"$ref": "#/definitions/dist-windows-nullsoft-installer-nsisScript"
+				"file": {
+					"$ref": "#/definitions/dist-windows-nullsoft-installer-file"
 				},
 				"pluginDirs": {
 					"$ref": "#/definitions/dist-windows-nullsoft-installer-pluginDirs"
@@ -557,7 +558,7 @@
 				}
 			}
 		},
-		"dist-windows-nullsoft-installer-nsisScript": {
+		"dist-windows-nullsoft-installer-file": {
 			"type": "string",
 			"description": "Relative path to an NSIS installer script (.nsi) to compile.",
 			"minLength": 1
@@ -580,6 +581,40 @@
 			"items": {
 				"type": "string",
 				"minLength": 1
+			}
+		},
+		"dist-process": {
+			"type": "object",
+			"description": "Run a process",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			],
+			"properties": {
+				"arguments": {
+					"$ref": "#/definitions/target-process-arguments"
+				},
+				"condition": {
+					"$ref": "#/definitions/dist-condition"
+				},
+				"description": {
+					"$ref": "#/definitions/target-description"
+				},
+				"kind": {
+					"$ref": "#/definitions/dist-kind"
+				},
+				"path": {
+					"$ref": "#/definitions/target-process-path"
+				}
+			},
+			"patternProperties": {
+				"^arguments(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-process-arguments"
+				},
+				"^path(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-process-path"
+				}
 			}
 		},
 		"external-dependency": {
@@ -2421,8 +2456,20 @@
 										"$ref": "#/definitions/dist-windows-nullsoft-installer"
 									},
 									"else": {
-										"type": "object",
-										"additionalProperties": false
+										"if": {
+											"properties": {
+												"kind": {
+													"const": "process"
+												}
+											}
+										},
+										"then": {
+											"$ref": "#/definitions/dist-process"
+										},
+										"else": {
+											"type": "object",
+											"additionalProperties": false
+										}
 									}
 								}
 							}
@@ -2541,13 +2588,13 @@
 			"type": "string",
 			"description": "Version of the workspace project.",
 			"minLength": 1,
-			"pattern": "^[\\w\\-\\+\\.]+$"
+			"pattern": "^[\\w-+.]+$"
 		},
 		"workspace": {
 			"type": "string",
 			"description": "The name of the workspace.",
 			"minLength": 1,
-			"pattern": "^[\\w\\-\\+ ]+$"
+			"pattern": "^[\\w-+ ]+$"
 		}
 	},
 	"patternProperties": {

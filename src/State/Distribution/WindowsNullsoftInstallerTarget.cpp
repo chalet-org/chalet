@@ -22,32 +22,37 @@ bool WindowsNullsoftInstallerTarget::validate()
 {
 	bool result = true;
 
-	if (!m_nsisScript.empty())
+	if (!m_file.empty())
 	{
-		if (!String::endsWith("nsi", m_nsisScript))
+		if (!String::endsWith("nsi", m_file))
 		{
-			Diagnostic::error("windowsNullsoftInstaller.nsisScript must end with '.nsi', but was '{}'.", m_nsisScript);
+			Diagnostic::error("windowsNullsoftInstaller.file must end with '.nsi', but was '{}'.", m_file);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_nsisScript))
+		else if (!Commands::pathExists(m_file))
 		{
-			Diagnostic::error("windowsNullsoftInstaller.nsisScript '{}' was not found.", m_nsisScript);
+			Diagnostic::error("windowsNullsoftInstaller.file '{}' was not found.", m_file);
 			result = false;
 		}
+	}
+	else
+	{
+		Diagnostic::error("Nullsoft script file not found for target: {}", this->name());
+		result = false;
 	}
 
 	return result;
 }
 
 /*****************************************************************************/
-const std::string& WindowsNullsoftInstallerTarget::nsisScript() const noexcept
+const std::string& WindowsNullsoftInstallerTarget::file() const noexcept
 {
-	return m_nsisScript;
+	return m_file;
 }
 
-void WindowsNullsoftInstallerTarget::setNsisScript(std::string&& inValue)
+void WindowsNullsoftInstallerTarget::setFile(std::string&& inValue)
 {
-	m_nsisScript = std::move(inValue);
+	m_file = std::move(inValue);
 }
 
 /*****************************************************************************/

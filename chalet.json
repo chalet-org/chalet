@@ -109,7 +109,7 @@
 		},
 		"script-powershell-env": {
 			"kind": "script",
-			"file": "scripts/script_powershell_env"
+			"file": "scripts/script_powershell_env.ps1"
 		},
 		"script-python": {
 			"kind": "script",
@@ -117,7 +117,7 @@
 		},
 		"script-python-env": {
 			"kind": "script",
-			"file": "scripts/script_python_env"
+			"file": "scripts/script_python_env.py"
 		},
 		"script-ruby": {
 			"kind": "script",
@@ -125,7 +125,7 @@
 		},
 		"script-ruby-env": {
 			"kind": "script",
-			"file": "scripts/script_ruby_env"
+			"file": "scripts/script_ruby_env.rb"
 		},
 		"script-perl": {
 			"kind": "script",
@@ -133,7 +133,7 @@
 		},
 		"script-perl-env": {
 			"kind": "script",
-			"file": "scripts/script_perl_env"
+			"file": "scripts/script_perl_env.pl"
 		},
 		"script-lua": {
 			"kind": "script",
@@ -141,7 +141,7 @@
 		},
 		"script-lua-env": {
 			"kind": "script",
-			"file": "scripts/script_lua_env"
+			"file": "scripts/script_lua_env.lua"
 		}*/
 	},
 	"distribution": {
@@ -184,7 +184,7 @@
 		},
 		"chalet-windows-installer": {
 			"kind": "windowsNullsoftInstaller",
-			"nsisScript": "platform/windows/installer/install_script.nsi",
+			"file": "platform/windows/installer/install_script.nsi",
 			"pluginDirs": [
 				"platform/windows/installer/plugins"
 			]

@@ -8,6 +8,7 @@
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
+#include "State/Distribution/ProcessDistTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 
@@ -28,6 +29,8 @@ IDistTarget::IDistTarget(const DistTargetType inType) :
 			return std::make_unique<BundleTarget>();
 		case DistTargetType::Script:
 			return std::make_unique<ScriptDistTarget>();
+		case DistTargetType::Process:
+			return std::make_unique<ProcessDistTarget>();
 		case DistTargetType::BundleArchive:
 			return std::make_unique<BundleArchiveTarget>();
 #if defined(CHALET_MACOS)
@@ -54,6 +57,10 @@ DistTargetType IDistTarget::type() const noexcept
 bool IDistTarget::isScript() const noexcept
 {
 	return m_type == DistTargetType::Script;
+}
+bool IDistTarget::isProcess() const noexcept
+{
+	return m_type == DistTargetType::Process;
 }
 bool IDistTarget::isDistributionBundle() const noexcept
 {

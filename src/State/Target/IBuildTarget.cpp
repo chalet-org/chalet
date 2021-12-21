@@ -119,7 +119,7 @@ const StringList& IBuildTarget::runArguments() const noexcept
 
 void IBuildTarget::addRunArguments(StringList&& inList)
 {
-	List::forEach(inList, this, &SourceTarget::addRunArgument);
+	List::forEach(inList, this, &IBuildTarget::addRunArgument);
 }
 
 void IBuildTarget::addRunArgument(std::string&& inValue)
@@ -135,7 +135,7 @@ const StringList& IBuildTarget::runDependencies() const noexcept
 
 void IBuildTarget::addRunDependencies(StringList&& inList)
 {
-	List::forEach(inList, this, &SourceTarget::addRunDependency);
+	List::forEach(inList, this, &IBuildTarget::addRunDependency);
 }
 
 void IBuildTarget::addRunDependency(std::string&& inValue)

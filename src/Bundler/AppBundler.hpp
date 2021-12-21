@@ -12,6 +12,7 @@ namespace chalet
 {
 struct BundleTarget;
 struct ScriptDistTarget;
+struct ProcessDistTarget;
 struct BundleArchiveTarget;
 struct MacosDiskImageTarget;
 struct WindowsNullsoftInstallerTarget;
@@ -37,9 +38,12 @@ struct AppBundler
 private:
 	bool runBundleTarget(IAppBundler& inBundler, BuildState& inState);
 	bool runScriptTarget(const ScriptDistTarget& inTarget);
+	bool runProcessTarget(const ProcessDistTarget& inTarget);
 	bool runArchiveTarget(const BundleArchiveTarget& inTarget);
 	bool runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget);
 	bool runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstallerTarget& inTarget);
+
+	bool runProcess(const StringList& inCmd, std::string outputFile);
 
 	bool isTargetNameValid(const IDistTarget& inTarget) const;
 	bool isTargetNameValid(const IDistTarget& inTarget, const BuildState& inState, std::string& outName) const;

@@ -121,6 +121,7 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 		"enum": [
 			"bundle",
 			"script",
+			"process",
 			"archive",
 			"macosDiskImage",
 			"windowsNullsoftInstaller"
@@ -1447,12 +1448,12 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 			"additionalProperties": false,
 			"required": [
 				"kind",
-				"nsisScript"
+				"file"
 			]
 		})json"_ojson;
 		distributionWinNullsoft[kProperties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionWinNullsoft[kProperties]["kind"] = getDefinition(Defs::DistributionKind);
-		distributionWinNullsoft[kProperties]["nsisScript"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerScript);
+		distributionWinNullsoft[kProperties]["file"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerScript);
 		distributionWinNullsoft[kProperties]["pluginDirs"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerPluginDirs);
 		distributionWinNullsoft[kProperties]["defines"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerDefines);
 		defs[Defs::DistributionWindowsNullsoftInstaller] = std::move(distributionWinNullsoft);
@@ -1633,6 +1634,26 @@ SchemaBuildJson::DefinitionMap SchemaBuildJson::getDefinitions()
 	}
 
 	{
+		// DistributionProcess
+		auto distProcess = R"json({
+			"type": "object",
+			"description": "Run a process",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			]
+		})json"_ojson;
+		distProcess[kProperties]["arguments"] = getDefinition(Defs::TargetProcessArguments);
+		distProcess[kProperties]["condition"] = getDefinition(Defs::DistributionCondition);
+		distProcess[kProperties]["description"] = getDefinition(Defs::TargetDescription);
+		distProcess[kProperties]["kind"] = getDefinition(Defs::DistributionKind);
+		distProcess[kProperties]["path"] = getDefinition(Defs::TargetProcessPath);
+		distProcess[kPatternProperties][fmt::format("^arguments{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetProcessArguments);
+		distProcess[kPatternProperties][fmt::format("^path{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetProcessPath);
+		defs[Defs::DistributionProcess] = std::move(distProcess);
+	}
+	{
 		auto targetCMake = R"json({
 			"type": "object",
 			"description": "Build the location with CMake",
@@ -1747,9 +1768,11 @@ std::string SchemaBuildJson::getDefinitionName(const Defs inDef)
 		case Defs::DistributionMacosDiskImagePositions: return "dist-macos-disk-image-positions";
 		//
 		case Defs::DistributionWindowsNullsoftInstaller: return "dist-windows-nullsoft-installer";
-		case Defs::DistributionWindowsNullsoftInstallerScript: return "dist-windows-nullsoft-installer-nsisScript";
+		case Defs::DistributionWindowsNullsoftInstallerScript: return "dist-windows-nullsoft-installer-file";
 		case Defs::DistributionWindowsNullsoftInstallerPluginDirs: return "dist-windows-nullsoft-installer-pluginDirs";
 		case Defs::DistributionWindowsNullsoftInstallerDefines: return "dist-windows-nullsoft-installer-defines";
+		//
+		case Defs::DistributionProcess: return "dist-process";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
@@ -1927,28 +1950,24 @@ Json SchemaBuildJson::get()
 		}},
 		"then": {},
 		"else": {
-			"if": { "properties": {
-				"kind": { "const": "script" }
-			}},
+			"if": { "properties": { "kind": { "const": "script" }}},
 			"then": {},
 			"else": {
-				"if": { "properties": {
-					"kind": { "const": "archive" }
-				}},
+				"if": { "properties": { "kind": { "const": "archive" }}},
 				"then": {},
 				"else": {
-					"if": { "properties": {
-						"kind": { "const": "macosDiskImage" }
-					}},
+					"if": { "properties": { "kind": { "const": "macosDiskImage" }}},
 					"then": {},
 					"else": {
-						"if": { "properties": {
-							"kind": { "const": "windowsNullsoftInstaller" }
-						}},
+						"if": { "properties": { "kind": { "const": "windowsNullsoftInstaller" }}},
 						"then": {},
 						"else": {
-							"type": "object",
-							"additionalProperties": false
+							"if": { "properties": { "kind": { "const": "process" }}},
+							"then": {},
+							"else": {
+								"type": "object",
+								"additionalProperties": false
+							}
 						}
 					}
 				}
@@ -1961,6 +1980,7 @@ Json SchemaBuildJson::get()
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kThen] = getDefinition(Defs::DistributionArchive);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kElse][kThen] = getDefinition(Defs::DistributionMacosDiskImage);
 	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kElse][kElse][kThen] = getDefinition(Defs::DistributionWindowsNullsoftInstaller);
+	ret[kProperties]["distribution"][kPatternProperties][kPatternDistributionName][kElse][kElse][kElse][kElse][kElse][kThen] = getDefinition(Defs::DistributionProcess);
 
 	ret[kProperties]["externalDependencies"] = R"json({
 		"type": "object",
@@ -1981,34 +2001,22 @@ Json SchemaBuildJson::get()
 	ret[kProperties][targets][kPatternProperties][kPatternTargetName] = R"json({
 		"type": "object",
 		"description": "A single build target or script.",
-		"if": { "properties": {
-			"kind": { "const": "executable" }
-		}},
+		"if": { "properties": { "kind": { "const": "executable" }}},
 		"then": {},
 		"else": {
-			"if": { "properties": {
-				"kind": { "enum": [ "staticLibrary", "sharedLibrary" ] }
-			}},
+			"if": { "properties": { "kind": { "enum": [ "staticLibrary", "sharedLibrary" ] }}},
 			"then": {},
 			"else": {
-				"if": { "properties": {
-					"kind": { "const": "cmakeProject" }
-				}},
+				"if": { "properties": { "kind": { "const": "cmakeProject" }}},
 				"then": {},
 				"else": {
-					"if": { "properties": {
-						"kind": { "const": "chaletProject" }
-					}},
+					"if": { "properties": { "kind": { "const": "chaletProject" }}},
 					"then": {},
 					"else": {
-						"if": { "properties": {
-							"kind": { "const": "script" }
-						}},
+						"if": { "properties": { "kind": { "const": "script" }}},
 						"then": {},
 						"else": {
-							"if": { "properties": {
-								"kind": { "const": "process" }
-							}},
+							"if": { "properties": { "kind": { "const": "process" }}},
 							"then": {},
 							"else": {
 								"type": "object",
@@ -2032,14 +2040,14 @@ Json SchemaBuildJson::get()
 		"type": "string",
 		"description": "Version of the workspace project.",
 		"minLength": 1,
-		"pattern": "^[\\w\\-\\+\\.]+$"
+		"pattern": "^[\\w-+.]+$"
 	})json"_ojson;
 
 	ret[kProperties]["workspace"] = R"json({
 		"type": "string",
 		"description": "The name of the workspace.",
 		"minLength": 1,
-		"pattern": "^[\\w\\-\\+ ]+$"
+		"pattern": "^[\\w-+ ]+$"
 	})json"_ojson;
 
 	return ret;

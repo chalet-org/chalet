@@ -26,6 +26,7 @@ struct IDistTarget
 
 	DistTargetType type() const noexcept;
 	bool isScript() const noexcept;
+	bool isProcess() const noexcept;
 	bool isDistributionBundle() const noexcept;
 	bool isArchive() const noexcept;
 	bool isMacosDiskImage() const noexcept;
