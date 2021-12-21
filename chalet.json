@@ -92,7 +92,7 @@
 		}
 		/*"script-shell-env": {
 			"kind": "script",
-			"file.!windows": "scripts/script_shell_env.sh",
+			"file.!windows": "scripts/script_shell_env",
 			"file.windows": "scripts/script_batch.bat"
 		},
 		"script-shell-bad": {
@@ -109,7 +109,7 @@
 		},
 		"script-powershell-env": {
 			"kind": "script",
-			"file": "scripts/script_powershell_env.ps1"
+			"file": "scripts/script_powershell_env"
 		},
 		"script-python": {
 			"kind": "script",
@@ -117,7 +117,7 @@
 		},
 		"script-python-env": {
 			"kind": "script",
-			"file": "scripts/script_python_env.py"
+			"file": "scripts/script_python_env"
 		},
 		"script-ruby": {
 			"kind": "script",
@@ -125,7 +125,7 @@
 		},
 		"script-ruby-env": {
 			"kind": "script",
-			"file": "scripts/script_ruby_env.rb"
+			"file": "scripts/script_ruby_env"
 		},
 		"script-perl": {
 			"kind": "script",
@@ -133,7 +133,7 @@
 		},
 		"script-perl-env": {
 			"kind": "script",
-			"file": "scripts/script_perl_env.pl"
+			"file": "scripts/script_perl_env"
 		},
 		"script-lua": {
 			"kind": "script",
@@ -141,16 +141,8 @@
 		},
 		"script-lua-env": {
 			"kind": "script",
-			"file": "scripts/script_lua_env.lua"
+			"file": "scripts/script_lua_env"
 		}*/
-		,
-		"script-perl": {
-			"kind": "process",
-			"path": "perl",
-			"arguments": [
-				"scripts/script_perl.pl"
-			]
-		}
 	},
 	"distribution": {
 		"Chalet": {

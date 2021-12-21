@@ -95,18 +95,10 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 
 				if (!shellFound)
 				{
-					if (String::startsWith("/bin", shell))
-					{
-						shell = fmt::format("/usr{}", shell);
-						shellFound = Commands::pathExists(shell);
+					shell = Commands::which(String::getPathFilename(shebang));
+					shellFound = !shell.empty();
 
-						if (!shellFound)
-						{
-							shell = fmt::format("/usr/local{}", shebang);
-							shellFound = Commands::pathExists(shell);
-						}
-					}
-					else
+					if (!shellFound)
 					{
 						shell = Environment::getShell();
 						shellFound = !shell.empty();
@@ -116,7 +108,7 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 		}
 		if (!shellFound)
 		{
-			if (String::endsWith(".sh", outScriptPath))
+			if (String::endsWith({ ".sh", ".bash" }, outScriptPath))
 			{
 				shell = Environment::getShell();
 				shellFound = !shell.empty();
@@ -124,6 +116,51 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 				if (!shellFound && !m_tools.bash().empty())
 				{
 					shell = m_tools.bash();
+					shellFound = true;
+				}
+			}
+			else if (String::endsWith(".py", outScriptPath))
+			{
+				auto python = Commands::which("python3");
+				if (!python.empty())
+				{
+					shell = std::move(python);
+					shellFound = true;
+				}
+				else
+				{
+					python = Commands::which("python");
+					if (!python.empty())
+					{
+						shell = std::move(python);
+						shellFound = true;
+					}
+				}
+			}
+			else if (String::endsWith(".rb", outScriptPath))
+			{
+				auto ruby = Commands::which("ruby");
+				if (!ruby.empty())
+				{
+					shell = std::move(ruby);
+					shellFound = true;
+				}
+			}
+			else if (String::endsWith(".pl", outScriptPath))
+			{
+				auto perl = Commands::which("perl");
+				if (!perl.empty())
+				{
+					shell = std::move(perl);
+					shellFound = true;
+				}
+			}
+			else if (String::endsWith(".lua", outScriptPath))
+			{
+				auto lua = Commands::which("lua");
+				if (!lua.empty())
+				{
+					shell = std::move(lua);
 					shellFound = true;
 				}
 			}
