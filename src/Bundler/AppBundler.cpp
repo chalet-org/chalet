@@ -204,8 +204,12 @@ bool AppBundler::run(const DistTarget& inTarget)
 /*****************************************************************************/
 void AppBundler::reportErrors() const
 {
+	StringList excludes{ "msvcrt.dll", "kernel32.dll" };
 	for (auto& dep : m_notCopied)
 	{
+		if (String::equals(excludes, String::toLowerCase(dep)))
+			continue;
+
 		Diagnostic::warn("Dependency not copied because it was not found in {}: '{}'", Environment::getPathKey(), dep);
 	}
 }
