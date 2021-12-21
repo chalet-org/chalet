@@ -887,7 +887,7 @@
 		"target-source-extends": {
 			"type": "string",
 			"description": "A project template to extend. Defaults to '*' implicitly.",
-			"pattern": "^[A-Za-z-_]+$",
+			"pattern": "^[A-Za-z\\-_]+$",
 			"minLength": 1,
 			"default": "*"
 		},
@@ -2335,7 +2335,7 @@
 			"additionalProperties": false,
 			"description": "A list of abstract build targets",
 			"patternProperties": {
-				"^(\\*|[A-Za-z-_]+)$": {
+				"^(\\*|[A-Za-z\\-_]+)$": {
 					"$ref": "#/definitions/target-abstract",
 					"description": "An abstract build target. '*' is a special target that gets implicitely added to each project."
 				}
@@ -2588,17 +2588,17 @@
 			"type": "string",
 			"description": "Version of the workspace project.",
 			"minLength": 1,
-			"pattern": "^[\\w-+.]+$"
+			"pattern": "^[\\w\\-+.]+$"
 		},
 		"workspace": {
 			"type": "string",
 			"description": "The name of the workspace.",
 			"minLength": 1,
-			"pattern": "^[\\w-+ ]+$"
+			"pattern": "^[\\w\\-+ ]+$"
 		}
 	},
 	"patternProperties": {
-		"^abstracts:(\\*|[A-Za-z-_]+)$": {
+		"^abstracts:(\\*|[A-Za-z\\-_]+)$": {
 			"$ref": "#/definitions/target-abstract",
 			"description": "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project"
 		},

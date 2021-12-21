@@ -32,7 +32,7 @@ SchemaBuildJson::SchemaBuildJson() :
 	kThen("then"),
 	kElse("else"),
 	kPatternTargetName(R"(^[\w\-+.]{3,}$)"),
-	kPatternAbstractName(R"([A-Za-z-_]+)"),
+	kPatternAbstractName(R"([A-Za-z\-_]+)"),
 	kPatternTargetSourceLinks(R"(^[\w\-+.]+$)"),
 	kPatternDistributionName(R"(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)"),
 	kPatternDistributionNameSimple(R"(^[\w\-+. ()]{2,}$)"),
@@ -2040,14 +2040,14 @@ Json SchemaBuildJson::get()
 		"type": "string",
 		"description": "Version of the workspace project.",
 		"minLength": 1,
-		"pattern": "^[\\w-+.]+$"
+		"pattern": "^[\\w\\-+.]+$"
 	})json"_ojson;
 
 	ret[kProperties]["workspace"] = R"json({
 		"type": "string",
 		"description": "The name of the workspace.",
 		"minLength": 1,
-		"pattern": "^[\\w-+ ]+$"
+		"pattern": "^[\\w\\-+ ]+$"
 	})json"_ojson;
 
 	return ret;
