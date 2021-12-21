@@ -14,7 +14,7 @@
 	#define CHALET_THROW(exception) throw exception
 	#define CHALET_TRY try
 	#define CHALET_CATCH(exception) catch (exception)
-	#define CHALET_EXCEPT_ERROR(...) Diagnostic::error(__VA_ARGS__);
+	#define CHALET_EXCEPT_ERROR(...) Diagnostic::fatalError(__VA_ARGS__);
 #else
 	#include <cstdlib>
 	#define CHALET_THROW(exception) std::abort()

@@ -132,6 +132,18 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 }
 
 /*****************************************************************************/
+void Diagnostic::showFatalError(std::string&& inMessage)
+{
+	const auto color = Output::getAnsiStyle(Color::Red);
+	const auto reset = Output::getAnsiStyle(Color::Reset);
+	auto output = fmt::format("{}Error: {}{}", color, reset, inMessage);
+
+	std::cout.write(output.data(), output.size());
+	std::cout.put(std::cout.widen('\n'));
+	std::cout.flush();
+}
+
+/*****************************************************************************/
 void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 {
 	if (state.exceptionThrown)

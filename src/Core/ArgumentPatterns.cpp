@@ -9,6 +9,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
@@ -237,15 +238,8 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 {
 	CHALET_TRY
 	{
-		if (inArguments.size() <= 1)
+		if (inArguments.size() <= 1 || List::contains(inArguments, std::string("-h")) || List::contains(inArguments, std::string("--help")))
 		{
-			// Diagnostic::error("No arguments were given");
-			return showHelp();
-		}
-
-		if (List::contains(inArguments, std::string("-h")) || List::contains(inArguments, std::string("--help")))
-		{
-			// Diagnostic::error("help");
 			return showHelp();
 		}
 
@@ -262,20 +256,26 @@ bool ArgumentPatterns::doParse(const StringList& inArguments)
 
 		if (m_routeString.empty())
 		{
-			// Diagnostic::error("No sub-command given");
-			return showHelp();
+			CHALET_EXCEPT_ERROR("Invalid subcommand requested. See 'chalet --help'.");
+			return false;
 		}
 	}
 	CHALET_CATCH(const std::runtime_error& err)
 	{
-		// LOG(err.what());
-		// showHelp();
-		CHALET_EXCEPT_ERROR("There was error during argument parsing: {}", err.what());
+		std::string error(err.what());
+		if (String::equals("Unknown argument", error))
+			error += '.';
+
+		CHALET_EXCEPT_ERROR("{} See 'chalet --help' or 'chalet <subcommand> --help'.", error);
 		return false;
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
-		CHALET_EXCEPT_ERROR("There was an unhandled exception during argument parsing: {}", err.what());
+		std::string error(err.what());
+		if (String::equals("Unknown argument", error))
+			error += '.';
+
+		CHALET_EXCEPT_ERROR("{} See 'chalet --help' or 'chalet <subcommand> --help'.", err.what());
 		return false;
 	}
 
@@ -321,7 +321,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		bool containsArgument = m_argumentMap.find(arg) != m_argumentMap.end();
 		if (arg.front() == '-' && !containsArgument && !isRun)
 		{
-			Diagnostic::error("An invalid argument was found: '{}'", arg);
+			CHALET_EXCEPT_ERROR("An invalid argument was found: '{}'. See 'chalet --help' or 'chalet <subcommand> --help'.", arg);
 			return false;
 		}
 	}
@@ -395,8 +395,7 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		}
 		CHALET_CATCH(const std::exception& err)
 		{
-			Diagnostic::error("Error parsing argument: {}", err.what());
-			Diagnostic::error("An invalid set of arguments were found.\n   Aborting...");
+			CHALET_EXCEPT_ERROR("Error parsing argument: {}. See 'chalet --help' or 'chalet <subcommand> --help'.", err.what());
 			return false;
 		}
 	}

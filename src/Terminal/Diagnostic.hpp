@@ -37,6 +37,9 @@ struct Diagnostic
 	template <typename... Args>
 	static void errorAbort(std::string_view inFmt, Args&&... args);
 
+	template <typename... Args>
+	static void fatalError(std::string_view inFmt, Args&&... args);
+
 	static void customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber);
 	static bool assertionFailure() noexcept;
 
@@ -46,6 +49,7 @@ struct Diagnostic
 
 private:
 	static void showInfo(std::string&& inMessage, const bool inLineBreak);
+	static void showFatalError(std::string&& inMessage);
 	static void showErrorAndAbort(std::string&& inMessage);
 	static void showHeader(const Type inType, std::string&& inTitle);
 	static void showMessage(const Type inType, std::string&& inMessage);

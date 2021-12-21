@@ -45,4 +45,11 @@ void Diagnostic::errorAbort(std::string_view inFmt, Args&&... args)
 {
 	Diagnostic::showErrorAndAbort(fmt::format(std::move(inFmt), (std::forward<Args>(args))...));
 }
+
+/*****************************************************************************/
+template <typename... Args>
+void Diagnostic::fatalError(std::string_view inFmt, Args&&... args)
+{
+	Diagnostic::showFatalError(fmt::format(std::move(inFmt), (std::forward<Args>(args))...));
+}
 }
