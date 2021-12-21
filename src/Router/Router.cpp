@@ -284,6 +284,7 @@ bool Router::parseTheme()
 /*****************************************************************************/
 bool Router::routeXcodeGenTest(BuildState& inState)
 {
+	UNUSED(inState);
 #if defined(CHALET_MACOS)
 	// Generate an XcodeGen spec in json based on the build state
 	// Run xcodebuild from the command line if possible
@@ -293,7 +294,6 @@ bool Router::routeXcodeGenTest(BuildState& inState)
 
 	return true;
 #else
-	UNUSED(inState);
 	Diagnostic::error("Xcode project generation (-g xcode) is only available on MacOS");
 	return false;
 #endif
